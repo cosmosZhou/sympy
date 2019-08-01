@@ -1,10 +1,11 @@
 import os
 import re
 from sympy import axiom  # @UnusedImport
-import util  # @UnresolvedImport
+
 
 from sympy import utility
 import traceback
+from sympy.utilities.misc import Text
 
 count = 0
 
@@ -37,7 +38,7 @@ def readFolder(rootdir, sufix='.py'):
                 __init__ = '/'.join(path[:index - 1]) + '/' + package.replace('.', '/') + '/__init__.py'
                 print('editing', __init__)
 
-                util.utility.Text(__init__).append('from . import %s' % module)
+                Text(__init__).append('from . import %s' % module)
                 return
 
             try:

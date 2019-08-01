@@ -118,7 +118,7 @@ batch_proving = False
 class cout:
 
     def __init__(self):
-        from util.utility import Text
+        from sympy.utilities.misc import Text        
         path = os.path.dirname(__file__) + '/../../latex/txt/latex.txt'
 
         self.file = Text(path)

@@ -508,3 +508,149 @@ def ordinal(num):
     else:
         suffix = 'th'
     return str(n) + suffix
+
+
+
+
+class Text:
+
+    def __init__(self, path, encoding="utf-8"):
+        self.f = open(path, "r+" if os.path.isfile(path) else "w+", encoding=encoding)
+
+    def __del__(self):
+        self.f.close()
+
+    def __iter__(self):  # Get iterator object on iter
+        return self
+
+    def __next__(self):
+        while True:
+            line = self.f.readline()
+            if not line:
+                self.home()
+                raise StopIteration
+            line = line.strip()
+
+            if len(line) != 0:
+                return line
+
+    def prepend(self, s):
+        '''
+        prepend = append before the list;
+        '''
+        self.home()
+
+        content = self.f.read()
+        self.write(s)
+#         self.f.seek(0, 2)
+        self.f.write(content)
+        self.f.flush()
+
+    def append(self, s):
+        self.end()
+
+        if type(s) == str:
+            self.f.write(s + '\n')
+        else:
+            for s in s:
+                self.f.write(s + '\n')
+        self.f.flush()
+
+    def insert(self, index, s):
+        if index < 0:
+            self.end()
+            index = -index - 1
+            offset = self.f.tell() - 1
+            while index > 0:
+                index -= 1
+                offset -= 1
+                while True:
+                    offset -= 1
+                    _offset = self.f.seek(offset, os.SEEK_SET)
+                    assert _offset == offset
+                    char = self.f.read(1)
+#                     print('char =', char)
+                    if char[0] == '\n' or char[0] == '\r':
+                        break
+        else:
+            self.home()
+            offset = self.f.tell()
+            while index > 0:
+                index -= 1
+                while True:
+                    offset += 1
+                    _offset = self.f.seek(offset, os.SEEK_SET)
+                    assert _offset == offset
+                    char = self.f.read(1)
+#                     print('char =', char)
+                    if char[0] == '\n' or char[0] == '\r':
+                        break
+
+        current_pos = self.f.tell()
+        assert current_pos == offset + 1
+
+        rest = self.f.read()
+        self.f.seek(current_pos, os.SEEK_SET)
+
+        if type(s) == str:
+            self.f.write(s + '\n')
+        else:
+            for s in s:
+                self.f.write(s + '\n')
+
+        self.f.write(rest)
+
+        self.f.flush()
+
+    def write(self, s):
+        self.home()
+
+        if type(s) == str:
+            self.f.write(s + '\n')
+        else:
+            for s in s:
+                self.f.write(str(s) + '\n')
+        self.f.truncate()
+        self.f.flush()
+
+    def clear(self):
+        self.home()
+        self.f.write('')
+        self.f.truncate()
+        self.f.flush()
+
+    def home(self):
+        self.f.seek(0, os.SEEK_SET)
+
+    def end(self):
+        self.f.seek(0, os.SEEK_END)
+
+    def collect(self):
+        self.home()
+
+        arr = []
+        for line in self:
+            if ord(line[0]) == 0xFEFF:
+                line = line[1:]
+                if not line:
+                    continue
+#             print(line)
+            arr.append(line)
+        return arr
+
+    def remove(self, value):
+        arr = self.collect()
+        if value in arr:
+            arr.remove(value)
+            self.write(arr)
+
+    def removeDuplicate(self):
+        arr = []
+        st = set()
+        for s in self.collect():
+            if s not in st:
+                st.add(s)
+                arr += [s]
+
+        self.write(arr)
+
