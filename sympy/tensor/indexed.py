@@ -795,9 +795,15 @@ class Slice(Expr):
     def expr_free_symbols(self):
         return {self}
 
-    def pop(self):
+    def bisect(self, front=None, back=None):
         start, stop = self.indices
-        return self.base[stop - 1], self.func(self.base, start, (stop - 1).simplify())
+        length = stop - start
+        if front is not None:
+            back = length - front
+        else:
+            front = length - back
+
+        return self.base[start, stop - back], self.base[stop - back: stop]
 
     def has_match(self, exp):
         from sympy.matrices.expressions.matexpr import MatrixElement

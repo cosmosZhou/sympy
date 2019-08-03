@@ -1090,7 +1090,7 @@ class Add(Expr, AssocOp):
                     dic[1] = ([arg], [])
                 continue
 
-            coeff, summation = arg.as_Sum()
+            coeff, summation = arg.as_coeff_Sum()
             if coeff is None:
                 result.append(arg)
                 continue

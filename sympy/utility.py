@@ -118,7 +118,7 @@ batch_proving = False
 class cout:
 
     def __init__(self):
-        from sympy.utilities.misc import Text        
+        from sympy.utilities.misc import Text
         path = os.path.dirname(__file__) + '/../../latex/txt/latex.txt'
 
         self.file = Text(path)
@@ -138,6 +138,10 @@ class cout:
                 Eq[index].plausible = True
             else:
                 eq = Eq[index]
+                if isinstance(rhs.equivalent, (list, tuple)):
+                    if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
+                        return index
+
                 if id(rhs.equivalent) != id(eq):
                     rhs_equivalent = equivalent_ancestor(rhs)
                     if eq != rhs_equivalent:

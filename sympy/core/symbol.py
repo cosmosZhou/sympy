@@ -306,7 +306,15 @@ class Symbol(AtomicExpr, Boolean):
 
     @property
     def domain(self):
+        from sympy.sets.sets import Interval
+
         if 'domain' in self._assumptions:
+            if self.is_integer:
+                domain = self._assumptions['domain']
+                args = [*domain.args]
+                args[-1] = True
+                return domain.func(*args)
+
             return self._assumptions['domain']
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo

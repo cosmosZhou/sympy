@@ -3830,7 +3830,7 @@ class Expr(Basic, EvalfMixin):
                     return Symbol(name, **kwargs)
         return None
 
-    def as_Sum(self):
+    def as_coeff_Sum(self):
         return None, None
 
     def as_Integral(self):

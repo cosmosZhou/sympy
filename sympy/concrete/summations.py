@@ -18,7 +18,7 @@ from sympy.logic.boolalg import And
 from sympy.polys import apart, PolynomialError, together
 from sympy.series.limitseq import limit_seq
 from sympy.series.order import O
-from sympy.sets.sets import FiniteSet
+from sympy.sets.sets import FiniteSet, EmptySet
 from sympy.simplify import denom
 from sympy.simplify.combsimp import combsimp
 from sympy.simplify.powsimp import powsimp
@@ -822,9 +822,21 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             p = old.as_poly(x)
 
             if p is None or p.degree() != 1:
-                function = self.function.subs(old, new)
+                function = None
+                equivalent_x = [_x for _x in old.free_symbols if x.name == _x.name]
+                if len(equivalent_x) == 1:
+                    _x, *_ = equivalent_x
+                    if a == _x.domain.min() and b == _x.domain.max():
+                        function = self.function.subs(x, _x)
+                        function = function.subs(old, new)
+                        function = function.subs(_x, x)
+
+                if function is None:
+                    function = self.function.subs(old, new)
+
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new)))
+
                 from sympy.tensor.indexed import Slice
                 if isinstance(x, Slice):
                     x = x.subs(old, new)
@@ -959,6 +971,15 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             domain &= Interval(a, b, integer=True)
             if isinstance(self.function, Piecewise):
                 return Add(*self.as_multiple_terms(x, domain))
+
+            if isinstance(domain, FiniteSet):
+                args = []
+                for k in domain:
+                    args.append(self.function.subs(x, k))
+                return Add(*args)
+            if isinstance(domain, EmptySet):
+                return S.Zero
+
             a, b = domain.min(), domain.max()
             limit = x, a, b
         var = limit[0]
@@ -982,12 +1003,20 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return self.func(dependent, limit) * independent
 
-    def separate(self):
-        (x, *_), *_ = self.limits
+    def bisect(self, front=None, back=None):
+        (x, *ab), *_ = self.limits
         from sympy.tensor.indexed import Slice
         if isinstance(x, Slice):
-            z, x = x.pop()
+            x, z = x.bisect(front=front, back=back)
             return self.func(self.func(self.function, (x,)).simplifier(), (z,))
+        if ab:
+            a, b = ab
+            if front is not None:
+                mid = a + front
+            else:
+                mid = b + 1 - back
+
+            return self.func(self.function, (x, a, mid - 1)).simplifier() + self.func(self.function, (x, mid, b)).simplifier()
         return self
 
     def as_Ref(self):

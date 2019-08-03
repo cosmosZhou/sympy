@@ -2065,8 +2065,14 @@ class Difference(Expr):
         return self.expr._diff_wrt and isinstance(self.doit(), Difference)
 
     def __new__(cls, expr, variable, count=1, **kwargs):
-
+        assert count >= 0 and (isinstance(count, int) or count.is_integer)
+        from sympy.core.relational import Equality
+        if isinstance(expr, Equality):
+            lhs = Difference.__new__(cls, expr.lhs, variable, count)
+            rhs = Difference.__new__(cls, expr.rhs, variable, count)
+            return expr.func(lhs, rhs, given=expr if expr.plausible else None, **expr.clauses())
         from sympy.matrices.common import MatrixCommon
+
         from sympy.tensor.array import NDimArray
 
         expr = sympify(expr)
@@ -2084,7 +2090,7 @@ class Difference(Expr):
         # Split the list of variables into a list of the variables we are diff
         # wrt, where each element of the list has the form (s, count) where
         # s is the entity to diff wrt and count is the order of the
-        # derivative.        
+        # derivative.
 
         variable_count = variable, count
 
@@ -2133,16 +2139,16 @@ class Difference(Expr):
                 # that have defined is_scalar=True but have no
                 # _eval_derivative defined
                 return S.One
-            return Expr.__new__(cls, expr, *variable_count)
+            return Expr.__new__(cls, expr, *variable_count).simplifier()
 
         # evaluate the derivative by calling _eval_derivative method
         # of expr for each variable
         # -------------------------------------------------------------
         nderivs = 0  # how many derivatives were performed
         unhandled = []
-        
+
         v = variable
-        
+
         old_expr = expr
         old_v = None
 
@@ -2440,8 +2446,10 @@ class Difference(Expr):
         if newargs[0] != args[0]:
             return Difference(*newargs)
 
-        viter = ((i, j) for ((i, _), (j, _)) in zip(newargs[1:], args[1:]))
-        if any(i != j for i, j in viter):  # a wrt-variable change
+        i, _ = newargs[1:]
+        j, _ = args[1:]
+
+        if i != j :  # a wrt-variable change
             # case (2) can't change vars by introducing a variable
             # that is contained in expr, e.g.
             # for Difference(f(z, g(h(x), y)), y), y cannot be changed to
@@ -2477,8 +2485,7 @@ class Difference(Expr):
                 return Subs(Difference(newe, *vc), *zip(*subs))
 
         # everything was ok
-        fx, (x, n) = newargs
-        return Difference(fx, x, n)
+        return Difference(*newargs)
 
     def _eval_lseries(self, x, logx):
         dx = self.variables
@@ -2587,20 +2594,60 @@ class Difference(Expr):
 
     def _latex(self, printer):
         x, n = self.variable_count
-        if n == 1:
-            return r'{\color{blue} \Delta}_{%s}\ {%s}' % (printer._print(x), printer._print(self.expr))
-        return r'{\color{blue} \Delta}_{%s}^{%s}\ {%s}' % (printer._print(x), printer._print(n), printer._print(self.expr))
+        from sympy import Mul
 
-    def separate(self, front = None, back = None):
+        expr = printer._print(self.expr)
+        if isinstance(self.expr, (Add, Mul)):
+            expr = r'\left(%s\right)' % expr
+
+        if n == 1:
+            return r'{\color{blue} \Delta}_{%s}\ {%s}' % (printer._print(x), expr)
+        return r'{\color{blue} \Delta}_{%s}^{%s}\ {%s}' % (printer._print(x), printer._print(n), expr)
+
+    def bisect(self, front=None, back=None):
         x, n = self.variable_count
         if front is not None:
-            back = n - front            
+            back = n - front
         elif back is not None:
             front = n - back
         else:
             front = 1
             back = n - 1
-        return self.func(self.func(self.expr, x, back).simplifier(), x,front)
+        return self.func(self.func(self.expr, x, back).simplifier(), x, front)
+
+    def simplifier(self):
+        x, n = self.variable_count
+
+        import sympy
+        function = self.expr
+        if isinstance(function, sympy.exp):
+            function = function.as_Mul()
+
+        independent, dependent = function.as_independent(x, as_Add=False)
+        if independent == S.One:
+            return self
+
+        if dependent == S.One:
+            if n == 0:
+                return self.expr
+            if n > 0:
+                return S.Zero
+
+        return self.func(dependent, x, n) * independent
+
+    def as_Sum(self):
+        from sympy import Sum
+        if isinstance(self.expr, Sum):
+            return self.expr.func(self.func(self.expr.function, *self.variable_count).simplifier(), *self.expr.limits)
+        return self
+
+    def as_one_term(self):
+        if isinstance(self.expr, self.func) and self.expr._wrt_variable == self._wrt_variable:
+            n = self.variable_count[1] + self.expr.variable_count[1]
+            return self.func(self.expr.expr, self._wrt_variable, n)
+
+        return self
+
 
 class Lambda(Expr):
     """

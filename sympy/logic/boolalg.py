@@ -509,6 +509,9 @@ def process_options(options, value=True):
                 array = plausibles(equivalent)
                 if len(array) == 1:
                     equivalent = array[0]
+                elif len(array) == 2:
+                    set_equivalence_relationship(*array)
+                    return
                 else:
                     return
 

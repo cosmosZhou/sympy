@@ -1006,6 +1006,14 @@ class Equality(Relational):
                         lhs_args.remove(arg)
                         rhs_args.remove(arg)
                     return self.func(op(*lhs_args), op(*rhs_args), equivalent=self if self.plausible else None, **self.clauses()).simplifier()
+        elif type(lhs) == Add and rhs in lhs.args:
+            args = [*lhs.args]
+            args.remove(rhs)
+            return self.func(Add(*args), 0, equivalent=self if self.plausible else None, **self.clauses()).simplifier()
+        elif type(rhs) == Add and lhs in rhs.args:
+            args = [*rhs.args]
+            args.remove(lhs)
+            return self.func(0, Add(*args), equivalent=self if self.plausible else None, **self.clauses()).simplifier()
 
         return self
 

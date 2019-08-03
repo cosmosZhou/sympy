@@ -1832,7 +1832,7 @@ class Mul(Expr, AssocOp):
 
         return sgm.func(Mul(*args).simplifier(), *sgm.limits)
 
-    def as_Sum(self):
+    def as_coeff_Sum(self):
         from sympy.concrete import summations
 
         summation = None
