@@ -13,11 +13,13 @@ from sympy.core.numbers import Rational
 from sympy.core.power import Pow
 from sympy.core.relational import Eq, Relational
 from sympy.core.singleton import Singleton
-from sympy.core.symbol import Dummy
+from sympy.core.symbol import Dummy, Symbol
 from sympy.core.rules import Transform
 from sympy.core.compatibility import with_metaclass, range
 from sympy.core.logic import fuzzy_and, fuzzy_or, _torf
 from sympy.logic.boolalg import And, Or
+from sympy.sets.sets import Union, Set, Interval
+from sympy.core.cache import cacheit
 
 
 def _minmax_as_Piecewise(op, *args):
@@ -997,6 +999,7 @@ class Min(MinMaxBase, Application):
         return MinMaxBase.__mul__(self, other)
 
 
+# difference with ExprWithIntLimits: ExprWithIntLimits can only take variables with integer interval domain!
 class ExprWithVariables(Expr):
     __slots__ = ['is_commutative']
 
@@ -1238,6 +1241,20 @@ class ExprWithVariables(Expr):
         if _aresame(self, old):
             return new
 
+        from sympy.tensor.indexed import Slice
+        if isinstance(old, Slice):
+#             function = self.function
+            rule = {}
+            for limit in self.limits:
+                x, *ab = limit
+                if ab:
+                    rule[x] = Symbol(x.name, domain=Interval(*ab, integer=True))
+            function = self.function.subs(rule);
+            _function = function.subs(old, new);
+            if _function != function:
+                function = _function.subs({v : k for k, v in rule.items()})
+                return self.func(function, *self.limits)
+
         hit = False
         args = list(self.args)
         for i, arg in enumerate(args):
@@ -1253,13 +1270,40 @@ class ExprWithVariables(Expr):
             return rv
         return self
 
-    def as_separate_limits(self):
+    def bisect(self, front=None, back=None):
         (x, *_), *_ = self.limits
         from sympy.tensor.indexed import Slice
         if isinstance(x, Slice):
-            z, x = x.pop()
+            z, x = x.bisect(front, back)
             return self.func(self.func(self.function, (x,)).simplifier(), (z,))
         return self
+
+    def _has(self, pattern):
+        """Helper for .has()"""
+        from sympy.tensor.indexed import Indexed, Slice
+        from sympy.core.assumptions import BasicMeta
+        from sympy.core.function import UndefinedFunction
+        if isinstance(pattern, (BasicMeta, UndefinedFunction)):
+            return Expr._has(self, pattern)
+        if not isinstance(pattern, (Symbol, Indexed, Slice)):
+            return Expr._has(self, pattern)
+
+        function = self.function
+        limits = []
+
+        if self.limits:
+            for limit in self.limits:
+                if len(limit) > 1:
+                    x, a, b = limit
+                    _x = Symbol(x.name, integer=x.is_integer, domain=Interval(a, b))
+                    function = function.subs(x, _x)
+                    limits.append(Tuple(_x, a, b))
+                else:
+                    limits.append(limit)
+
+        boolean = function._has(pattern)
+
+        return boolean or any(arg._has(pattern) for arg in limits)
 
 
 def bounds(function, x, domain):
@@ -1312,7 +1356,6 @@ class Minimum(ExprWithVariables):
         if len(self.limits) != 1:
             return self
         x, *ab = self.limits[0]
-        from sympy.sets.sets import Interval
 
         if ab:
             domain = Interval(*ab)
@@ -1522,7 +1565,7 @@ class Minimum(ExprWithVariables):
         Sum.is_absolutely_convergent()
         Product.is_convergent()
         """
-        from sympy import Interval, Integral, log, symbols, simplify
+        from sympy import Integral, log, symbols, simplify
         p, q, r = symbols('p q r', cls=Wild)
 
         sym = self.limits[0][0]
@@ -1954,12 +1997,12 @@ class Minimum(ExprWithVariables):
     def as_Ref(self):
         return self.func(Ref(self.function, *self.limits).simplifier())
 
-    def separate(self):
+    def bisect(self, front=None, back=None):
         (x, *_), *_ = self.limits
         from sympy.tensor.indexed import Slice
         if isinstance(x, Slice):
-            z, x = x.pop()
-            return self.func(self.func(self.function, (x,)).simplifier(), (z,))
+            z, x = x.bisect(front, back)
+            return self.func(self.func(self.function, (z,)).simplifier(), (x,))
         return self
 
 
@@ -1985,7 +2028,6 @@ class Maximum(ExprWithVariables):
         if len(self.limits) != 1:
             return self
         x, *ab = self.limits[0]
-        from sympy.sets.sets import Interval
 
         if ab:
             domain = Interval(*ab)
@@ -2196,7 +2238,7 @@ class Maximum(ExprWithVariables):
         Sum.is_absolutely_convergent()
         Product.is_convergent()
         """
-        from sympy import Interval, Integral, log, symbols, simplify
+        from sympy import Integral, log, symbols, simplify
         p, q, r = symbols('p q r', cls=Wild)
 
         sym = self.limits[0][0]
@@ -2651,8 +2693,6 @@ class Ref(ExprWithVariables):
 
         from sympy.core.symbol import Symbol
 
-#         from sympy.sets.sets import Interval
-
         symbols = list(symbols)
 
         for i, limit in enumerate(symbols):
@@ -2851,7 +2891,7 @@ class Ref(ExprWithVariables):
         Sum.is_absolutely_convergent()
         Product.is_convergent()
         """
-        from sympy import Interval, Integral, log, symbols, simplify
+        from sympy import Integral, log, symbols, simplify
         p, q, r = symbols('p q r', cls=Wild)
 
         sym = self.limits[0][0]
@@ -3547,7 +3587,6 @@ class Ref(ExprWithVariables):
         is_diagonal
         is_lower_hessenberg
         """
-        from sympy.sets.sets import Interval
         (i, *_), *_ = self.limits
         j = i.generate_free_symbol(domain=Interval(i + 1, self.cols, right_open=True, integer=True))
         return self[i, j] == 0
@@ -3594,7 +3633,6 @@ class Ref(ExprWithVariables):
         is_diagonal
         is_upper_hessenberg
         """
-        from sympy.sets.sets import Interval
         * _ , (j, *_) = self.limits
         i = j.generate_free_symbol(domain=Interval(j + 1, self.rows, right_open=True, integer=True))
         return self[i, j] == 0
@@ -3621,3 +3659,250 @@ class Ref(ExprWithVariables):
 
         return tex
 
+
+class UnionComprehension(Set, ExprWithVariables):
+    """
+    Represents a union of sets as a :class:`Set`.
+
+    Examples
+    ========
+
+    >>> from sympy import Union, Interval
+    >>> Union(Interval(1, 2), Interval(3, 4))
+    Union(Interval(1, 2), Interval(3, 4))
+
+    The Union constructor will always try to merge overlapping intervals,
+    if possible. For example:
+
+    >>> Union(Interval(1, 2), Interval(2, 3))
+    Interval(1, 3)
+
+    See Also
+    ========
+
+    Intersection
+
+    References
+    ==========
+
+    .. [1] https://en.wikipedia.org/wiki/Union_%28set_theory%29
+    """
+    is_UnionComprehension = True
+
+    def union_sets(self, expr):
+        if len(self.limits) == 1:
+            i, *ab = self.limits[0]
+            if ab:
+                a, b = ab
+                if self.function.subs(i, b + 1) == expr:
+                    return self.func(self.function, (i, a, b + 1))
+                if self.function.subs(i, a - 1) == expr:
+                    return self.func(self.function, (i, a - 1 , b))
+
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return 'Union[%s](%s)' % (limits, p.doprint(self.function))
+        return 'Union(%s)' % p.doprint(self.function)
+
+    def _latex(self, printer):
+        function = self.function
+        limits = self.limits
+
+        if len(limits) == 1:
+            limit = limits[0]
+            if len(limit) == 1:
+                tex = r"\bigcup_{%s} " % printer._print(limit[0])
+            else:
+                tex = r"\bigcup\limits_{%s=%s}^{%s} " % tuple([printer._print(i) for i in limit])
+        else:
+
+            def _format_ineq(l):
+                return r"%s \leq %s \leq %s" % \
+                    tuple([printer._print(s) for s in (l[1], l[0], l[2])])
+
+            tex = r"\bigcup\limits_{\substack{%s}} " % \
+                str.join('\\\\', [_format_ineq(l) for l in limits])
+
+        from sympy import Add
+        if isinstance(function, Add):
+            tex += r"\left(%s\right)" % printer._print(function)
+        else:
+            tex += printer._print(function)
+
+        return tex
+
+    @property
+    def identity(self):
+        return S.EmptySet
+
+    @property
+    def zero(self):
+        return S.UniversalSet
+
+    def __new__(cls, function, *symbols, **assumptions):
+        obj = ExprWithVariables.__new__(cls, function, *symbols, **assumptions)
+        return obj
+
+    @property
+    def function(self):
+        return self.args[0]
+
+    @property
+    def limits(self):
+        return self.args[1:]
+
+    @property
+    @cacheit
+    def args(self):
+        return self._args
+
+    def _complement(self, universe):
+        # DeMorgan's Law
+        return Intersection(s.complement(universe) for s in self.args)
+
+    @property
+    def _inf(self):
+        # We use Min so that sup is meaningful in combination with symbolic
+        # interval end points.
+        from sympy.functions.elementary.miscellaneous import Min
+        return Min(*[set.inf for set in self.args])
+
+    @property
+    def _sup(self):
+        # We use Max so that sup is meaningful in combination with symbolic
+        # end points.
+        from sympy.functions.elementary.miscellaneous import Max
+        return Max(*[set.sup for set in self.args])
+
+    def _contains(self, other):
+        exists = {}
+        for limit in self.limits:
+            x, *ab = limit
+            if ab:
+                domain = Interval(*ab, integer=True)
+            else:
+                domain = S.Integers
+            exists[x] = domain
+        from sympy.sets.contains import Contains
+        return Contains(other, self.function, exists=exists)
+
+    @property
+    def _measure(self):
+        # Measure of a union is the sum of the measures of the sets minus
+        # the sum of their pairwise intersections plus the sum of their
+        # triple-wise intersections minus ... etc...
+
+        # Sets is a collection of intersections and a set of elementary
+        # sets which made up those intersections (called "sos" for set of sets)
+        # An example element might of this list might be:
+        #    ( {A,B,C}, A.intersect(B).intersect(C) )
+
+        # Start with just elementary sets (  ({A}, A), ({B}, B), ... )
+        # Then get and subtract (  ({A,B}, (A int B), ... ) while non-zero
+        sets = [(FiniteSet(s), s) for s in self.args]
+        measure = 0
+        parity = 1
+        while sets:
+            # Add up the measure of these sets and add or subtract it to total
+            measure += parity * sum(inter.measure for sos, inter in sets)
+
+            # For each intersection in sets, compute the intersection with every
+            # other set not already part of the intersection.
+            sets = ((sos + FiniteSet(newset), newset.intersect(intersection))
+                    for sos, intersection in sets for newset in self.args
+                    if newset not in sos)
+
+            # Clear out sets with no measure
+            sets = [(sos, inter) for sos, inter in sets if inter.measure != 0]
+
+            # Clear out duplicates
+            sos_list = []
+            sets_list = []
+            for set in sets:
+                if set[0] in sos_list:
+                    continue
+                else:
+                    sos_list.append(set[0])
+                    sets_list.append(set)
+            sets = sets_list
+
+            # Flip Parity - next time subtract/add if we added/subtracted here
+            parity *= -1
+        return measure
+
+    @property
+    def _boundary(self):
+
+        def boundary_of_set(i):
+            """ The boundary of set i minus interior of all other sets """
+            b = self.args[i].boundary
+            for j, a in enumerate(self.args):
+                if j != i:
+                    b = b - a.interior
+            return b
+
+        return Union(*map(boundary_of_set, range(len(self.args))))
+
+    def as_relational(self, symbol):
+        """Rewrite a Union in terms of equalities and logic operators. """
+        if len(self.args) == 2:
+            a, b = self.args
+            if (a.sup == b.inf and a.inf is S.NegativeInfinity
+                    and b.sup is S.Infinity):
+                return And(Ne(symbol, a.sup), symbol < b.sup, symbol > a.inf)
+        return Or(*[set.as_relational(symbol) for set in self.args])
+
+    @property
+    def is_iterable(self):
+        return all(arg.is_iterable for arg in self.args)
+
+    def _eval_evalf(self, prec):
+        try:
+            return Union(*(set._eval_evalf(prec) for set in self.args))
+        except (TypeError, ValueError, NotImplementedError):
+            import sys
+            raise (TypeError("Not all sets are evalf-able"),
+                   None,
+                   sys.exc_info()[2])
+
+    def __iter__(self):
+        import itertools
+
+        # roundrobin recipe taken from itertools documentation:
+        # https://docs.python.org/2/library/itertools.html#recipes
+        def roundrobin(*iterables):
+            "roundrobin('ABC', 'D', 'EF') --> A D E B F C"
+            # Recipe credited to George Sakkis
+            pending = len(iterables)
+            if PY3:
+                nexts = itertools.cycle(iter(it).__next__ for it in iterables)
+            else:
+                nexts = itertools.cycle(iter(it).next for it in iterables)
+            while pending:
+                try:
+                    for next in nexts:
+                        yield next()
+                except StopIteration:
+                    pending -= 1
+                    nexts = itertools.cycle(itertools.islice(nexts, pending))
+
+        if all(set.is_iterable for set in self.args):
+            return roundrobin(*(iter(arg) for arg in self.args))
+        else:
+            raise TypeError("Not all constituent sets are iterable")
+
+    @property
+    def is_integer(self):
+        for arg in self.args:
+            is_integer = arg.is_integer
+            if is_integer is True:
+                continue
+            if is_integer is False:
+                return False
+            return None
+        return True
+
+    @property
+    def element_type(self):
+        return self.function.element_type

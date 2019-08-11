@@ -394,9 +394,11 @@ def intersection_sets(a, b):
 def intersection_sets(a, b):
     # handle (-oo, oo)
     infty = S.NegativeInfinity, S.Infinity
-    if a == Interval(*infty, integer=a.is_integer or b.is_integer):
+    if a == Interval(*infty, integer=a.is_integer):
         l, r = a.left, a.right
         if l.is_real or l in infty or r.is_real or r in infty:
+            if a.is_integer and not b.is_integer:
+                return b.flip_integer()
             return b
 
     # We can't intersect [0,3] with [x,6] -- we don't know if x>0 or x<0

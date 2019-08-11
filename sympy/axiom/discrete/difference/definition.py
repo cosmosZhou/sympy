@@ -10,7 +10,7 @@ from sympy.axiom.discrete.combinatorics.binomial import Pascal
 
 
 def apply(fx, x, n):
-    k = generate_free_symbol(fx.free_symbols | x.free_symbols | n.free_symbols, integer=True, nonnegative=True)
+    k = generate_free_symbol(fx.free_symbols | x.free_symbols | n.free_symbols, integer=True)
     return Equality(Difference(fx, x, n),
                     Sum[k:0:n]((-1) ** (n - k) * binomial(n, k) * fx.subs(x, x + k)),
                     plausible=plausible())
@@ -30,7 +30,11 @@ def prove():
     cout << Eq[-1].subs(n, 0).doit()
     cout << Eq[-1].subs(n, n + 1)
 
-    cout << Eq[-1].left.doit()
+    cout << Eq[-1].left.bisect(back=1)
+
+    cout << Eq[-1].left.expr.doit()
+
+    cout << Eq[-1].left.as_Add()
 
     cout << Eq[0].subs(x, x + 1) - Eq[0]
 

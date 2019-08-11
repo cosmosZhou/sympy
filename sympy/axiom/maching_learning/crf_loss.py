@@ -25,7 +25,7 @@ def apply(G, x, y):
 
     return Equality(x_quote[t + 1],
                     -log(Sum(exp(-x_quote[t] - G))) + x[t + 1],
-                    for_clause=t,
+                    forall=t,
                     definition=[s, z, x_quote],
                     plausible=plausible())
 
@@ -46,9 +46,8 @@ def prove():
 
     s, z, x_quote = Eq[-1].definition
 
-    t = Eq[-1].for_clause
+    t = Eq[-1].forall
 
-    cout << s[t].has(y[t])
     cout << Equality.by_definition_of(s)
     cout << Equality.by_definition_of(z)
 
@@ -62,7 +61,7 @@ def prove():
 
     cout << Eq[-1].right.as_two_terms()
 
-    cout << Eq[-1].right.args[0].function.separate()
+    cout << Eq[-1].right.args[0].function.bisect(back = 1)
 
     cout << Eq[-1].right.args[0].function.as_Ref()
 
@@ -87,6 +86,3 @@ def prove():
 
 if __name__ == '__main__':
     prove()
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))

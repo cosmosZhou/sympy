@@ -2796,6 +2796,39 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
                 i, r = divmod(expt.p, expt.q)
                 if i:
                     return self ** i * self ** Rational(r, expt.q)
+        if isinstance(expt, Add):
+            odd = []
+            args = []
+            found = False
+            for e in expt.args:
+                is_even = e.is_even
+                if is_even:
+                    found = True
+                    continue
+                if is_even is False:
+                    odd.append(e)
+                else:
+                    args.append(e)
+
+            if len(odd) == 1:
+                odd = odd[0]
+                args.append(odd)
+            elif len(odd) & 1:
+                args.append(S.One)
+                found = True
+            elif len(odd) > 0:
+                found = True
+
+            from sympy.core.function import _coeff_isneg
+
+            for i, arg in enumerate(args):
+                if _coeff_isneg(arg):
+                    args[i] = -arg
+                    found = True
+
+            if found:
+                return (-1) ** Add(*args)
+
         return
 
     def as_coeff_mmul(self):

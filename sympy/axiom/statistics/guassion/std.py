@@ -1,10 +1,8 @@
 from sympy.core.numbers import oo
 from sympy.utility import cout, Eq, plausible
 from sympy.core.relational import Equality
-from sympy import sqrt, pi, exp, Symbol, utility
+from sympy import sqrt, pi, exp, Symbol
 from sympy.integrals.integrals import Integral
-from sympy.core import relational
-from sympy.logic.boolalg import plausibles_dict
 
 
 def apply():
@@ -40,7 +38,3 @@ def prove():
 # https://ccjou.wordpress.com/2012/11/26/jacobian-矩陣與行列式/
 if __name__ == '__main__':
     prove()
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))
-

@@ -93,6 +93,10 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Point = False
     is_MatAdd = False
     is_MatMul = False
+    is_set = False
+
+    def union_sets(self, b):
+        return
 
     def __new__(cls, *args, **kwargs):
         obj = object.__new__(cls)
@@ -112,6 +116,11 @@ class Basic(with_metaclass(ManagedProperties)):
 
     def copy(self):
         return self.func(*self.args)
+
+    @property
+    def set(self):
+        from sympy.sets.sets import FiniteSet
+        return FiniteSet(self)
 
     def __reduce_ex__(self, proto):
         """ Pickling support."""
@@ -615,6 +624,9 @@ class Basic(with_metaclass(ManagedProperties)):
         dums = numbered_symbols('_')
         reps = {}
         v = self.bound_symbols
+        from sympy.tensor.indexed import Slice
+        if isinstance(v, Slice):
+            v = [v]
         # this free will include bound symbols that are not part of
         # self's bound symbols
         free = set([i.name for i in self.atoms(Symbol) - set(v)])

@@ -27,7 +27,7 @@ def apply(p, q):
     y = Symbol('y')
     return GreaterThan(KL(p(x, y), q(x, y)), KL(p(x), q(x)),
                     plausible=plausible(),
-                    for_clause=[x, y])
+                    forall=[x, y])
 
 
 from sympy.utility import check

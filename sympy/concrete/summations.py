@@ -960,6 +960,20 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return super(type(self), self).__sub__(autre)
 
+#     @_sympifyit('other', NotImplemented)
+#     @call_highest_priority('__radd__')
+    def __add__(self, expr):
+        if len(self.limits) == 1:
+            i, *ab = self.limits[0]
+            if ab:
+                a, b = ab
+                if self.function.subs(i, b + 1) == expr:
+                    return self.func(self.function, (i, a, b + 1))
+                if self.function.subs(i, a - 1) == expr:
+                    return self.func(self.function, (i, a - 1 , b))
+
+        return AddWithLimits.__add__(self, expr)
+
     def simplifier(self):
         if len(self.limits) != 1:
             return self

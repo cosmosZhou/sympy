@@ -1,9 +1,9 @@
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, cout, Eq, Sum
+from sympy.utility import plausible, cout, Eq, Sum, Difference
 from sympy.core.symbol import Symbol, generate_free_symbol
 from sympy.functions.special.gamma_functions import gamma
-from sympy.core.function import Difference, Function
+from sympy.core.function import Function
 from sympy.tensor.indexed import IndexedBase
 from sympy.core.numbers import oo
 from sympy.axiom.discrete.combinatorics.binomial import Pascal
@@ -15,7 +15,7 @@ from sympy.sets.sets import Interval
 def apply(x, n):
     if not isinstance(x, Symbol):
         return
-    return Equality(Difference(x ** n, x, n),
+    return Equality(Difference[x, n](x ** n),
                     factorial(n),
                     plausible=plausible())
 
@@ -53,7 +53,7 @@ def prove():
     k = Eq[-1].lhs.limits[0][0]
     k = Symbol(k.name, integer=True, domain=Interval(0, n, right_open=True))
     cout << Eq[0].subs(n, k)
-    cout << Difference(Eq[-1], x, n - k)
+    cout << Difference[x, n - k](Eq[-1])
 
     cout << Eq[-1].left.as_one_term()
 

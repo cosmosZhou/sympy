@@ -34,6 +34,7 @@ class Expr(Basic, EvalfMixin):
     is_Identity = False
     is_square = False
     is_infinitesimal = None
+    is_FiniteSet = None
 
     @property
     def _diff_wrt(self):
@@ -74,6 +75,14 @@ class Expr(Basic, EvalfMixin):
         Derivative(MySymbol(), MySymbol())
         """
         return False
+
+    @property
+    def element_type(self):
+        set_type = self.dtype
+        from sympy.core.symbol import DtypeSet
+        if isinstance(set_type, DtypeSet) :
+            return set_type.dtype
+        return None
 
     @cacheit
     def sort_key(self, order=None):
@@ -3670,7 +3679,7 @@ class Expr(Basic, EvalfMixin):
             free_symbols.add(symbol)
 
         graph = {x: set() for x in free_symbols }
-        for y in free_symbols:
+        for y in graph:
             for x in y.domain.free_symbols:
                 # y is dependent on x, so x is a parent of y
                 if x in graph:
@@ -3734,10 +3743,11 @@ class Expr(Basic, EvalfMixin):
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval
 
-        if 'domain' in self._assumptions:
-            domain = self._assumptions['domain']
-        else:
-            domain = Interval(-oo, oo, integer=self.is_integer)
+        domain = self.domain
+#         if 'domain' in self._assumptions:
+#             domain = self._assumptions['domain']
+#         else:
+#             domain = Interval(-oo, oo, integer=self.is_integer)
         from sympy.logic.boolalg import BooleanTrue, BooleanFalse
 
         if isinstance(condition, BooleanTrue):
@@ -3830,11 +3840,60 @@ class Expr(Basic, EvalfMixin):
                     return Symbol(name, **kwargs)
         return None
 
+    def contains(self, other):
+        from sympy import Contains
+        other = sympify(other, strict=True)
+        return Contains(other, self, evaluate=False)
+
     def as_coeff_Sum(self):
         return None, None
 
     def as_Integral(self):
         return None, None
+
+    def domain_latex(self, domain=None):
+        if domain is None:
+            domain = self.domain
+        if self.dtype == domain.dtype:
+            return r"%s = %s" % (self.latex, domain.latex)
+
+        from sympy.sets.sets import Interval
+        from sympy.core.numbers import oo
+        from sympy.core.symbol import dtype
+        if type(domain) == Interval:
+            start, end = domain.start, domain.end
+            if end == oo:
+                if start == -oo:
+                    if domain.is_integer:
+                        return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
+                    return r"%s\in%s" % (self.latex, r'\mathbb{R}')
+                if domain.left_open:
+                    return r"%s > %s" % (self.latex, start.latex)
+                return r"%s \ge %s" % (self.latex, start.latex)
+            else:
+                if start == -oo:
+                    if domain.right_open:
+                        return r"%s < %s" % (self.latex, end.latex)
+                    return r"%s \le %s" % (self.latex, end.latex)
+
+                if domain.left_open:
+                    if domain.right_open:
+                        return r"%s < %s < %s" % (start.latex, self.latex, end.latex)
+                    return r"%s < %s \le %s" % (start.latex, self.latex, end.latex)
+                if domain.right_open:
+                    return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
+                return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
+        elif domain.dtype == dtype.condition :
+            return r"%s \left| %s \right." % (self.latex, domain.latex)
+        else:
+            return r"%s \in %s" % (self.latex, domain.latex)
+
+    def __or__(self, exp):
+        if self.is_set:
+            from sympy.sets.sets import Union
+            return Union(self, exp)
+        from sympy.logic import Or
+        return Or(self, exp)
 
 
 class AtomicExpr(Atom, Expr):

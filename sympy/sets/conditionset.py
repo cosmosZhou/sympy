@@ -110,6 +110,7 @@ class ConditionSet(Set):
     >>> _.subs(_.sym, Symbol('_x'))
     ConditionSet(_x, (_x < y) & (_x + x < 2), Integers)
     """
+
     def __new__(cls, sym, condition, base_set=S.UniversalSet):
         # nonlinsolve uses ConditionSet to return an unsolved system
         # of equations (see _return_conditionset in solveset) so until
@@ -121,7 +122,7 @@ class ConditionSet(Set):
         condition = as_Boolean(condition)
         if isinstance(base_set, set):
             base_set = FiniteSet(*base_set)
-        elif not isinstance(base_set, Set):
+        elif not base_set.is_set:
             raise TypeError('expecting set for base_set')
         if condition is S.false:
             return S.EmptySet
@@ -158,17 +159,26 @@ class ConditionSet(Set):
                     condition.xreplace({sym: dum}),
                     c.xreplace({s: dum}))
                 sym = dum
-        if not isinstance(sym, Symbol):
-            s = Dummy('lambda')
-            if s not in condition.xreplace({sym: s}).free_symbols:
-                raise ValueError(
-                    'non-symbol dummy not recognized in condition')
+        from sympy.tensor.indexed import Slice                        
+        assert isinstance(sym, (Symbol, Slice))
+#             s = Dummy('lambda')
+#             if s not in condition.xreplace({sym: s}).free_symbols:
+#                 raise ValueError('non-symbol dummy not recognized in condition')
+
         rv = Basic.__new__(cls, sym, condition, base_set)
         return rv if know is None else Union(know, rv)
 
     sym = property(lambda self: self.args[0])
     condition = property(lambda self: self.args[1])
     base_set = property(lambda self: self.args[2])
+
+    @property
+    def element_type(self):
+        if self.base_set != S.UniversalSet:
+            return self.base_set.element_type
+#         if self.sym.is_set:
+#             return self.sym.element_type() + 's' 
+        return self.sym.dtype
 
     @property
     def free_symbols(self):

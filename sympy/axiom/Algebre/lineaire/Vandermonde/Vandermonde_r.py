@@ -126,11 +126,11 @@ def prove():
 
     cout << Eq[-1].det()
 
-    cout << Eq[-1].right.simplifier()
+    cout << Eq[-1].right.simplifier()  # 27
 
-    cout << Eq[-1] * (-1) ** (n - 1)
+    cout << Eq[-1] * (-1) ** (n - 1)  # 28
 
-    cout << Eq[-1].right.powsimp()
+    cout << Eq[-1].right.powsimp()  # 29
 
 #     s = Eq[-1].rhs.args[1].limits[0][0]
     cout << Eq[-1].right.args[1].subs_limits(k, k - 1)

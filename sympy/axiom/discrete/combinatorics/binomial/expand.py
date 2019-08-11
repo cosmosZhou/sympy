@@ -5,21 +5,21 @@ from sympy.core.symbol import Symbol
 
 
 def apply(n=None, k=None):
-    for_clause = None
+    forall = None
     if n is None:
         n = Symbol('n', integer=True)
-        for_clause = n
+        forall = n
 
     if k is None:
         k = Symbol('k', integer=True)
-        if for_clause is None:
-            for_clause = k
+        if forall is None:
+            forall = k
         else:
-            for_clause = [n, k]
+            forall = [n, k]
 
     return Equality(binomial(n, k), n / k * binomial(n - 1, k - 1),
                     plausible=plausible(),
-                    for_clause=for_clause)
+                    forall=forall)
 
 
 from sympy.utility import check

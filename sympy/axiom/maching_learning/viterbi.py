@@ -19,7 +19,7 @@ def apply(G, x, y):
                           definition=Ref[t](Ref[y[t]](Min[y[0:t]](s[t]))))
 
     return Equality(x_quote[t + 1], x[t + 1] + Min(x_quote[t] + G),
-                    for_clause=t,
+                    forall=t,
                     definition=[s, x_quote])
 
 
@@ -41,7 +41,7 @@ def prove():
     cout << Equality.by_definition_of(x_quote)
     cout << Equality.by_definition_of(s)
 
-    t = Eq[0].for_clause
+    t = Eq[0].forall
 
     Eq2 = Eq[-1].subs(t, t + 1)
     Eq2 -= Eq[-1]
@@ -53,7 +53,7 @@ def prove():
 
     cout << Eq[-1].right.function.simplifier()
 
-    cout << Eq[-1].right.args[1].function.as_separate_limits()
+    cout << Eq[-1].right.args[1].function.bisect(back = 1)
 
     cout << Eq[-1].right.args[1].function.as_Ref()
 

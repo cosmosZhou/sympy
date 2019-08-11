@@ -5,7 +5,6 @@ from sympy.core.numbers import oo
 from sympy.utility import Ref, Sum, cout, Eq, plausible
 from sympy.core.relational import Equality
 from sympy import axiom
-from sympy.logic.boolalg import plausibles_dict
 
 
 def apply(x, m, n, d, delta):
@@ -45,7 +44,7 @@ def prove():
     (k, *_), *_ = Eq[3].left.limits
     cout << Eq[-1].left.subs_limits(k, h)
 
-    cout << Eq[-1].right.function.args[-2].simplifier()
+    cout << Eq[-1].right.function.args[-1].simplifier()
 
     cout << axiom.discrete.combinatorics.binomial.theorem.apply(delta + i, h - i, j).reversed
 
@@ -53,7 +52,7 @@ def prove():
 
     cout << Eq[-3].right.subs(Eq[-1])
 
-    cout << Eq[-1].left.simplifier()
+#     cout << Eq[-1].left.simplifier()
 
 
 if __name__ == '__main__':

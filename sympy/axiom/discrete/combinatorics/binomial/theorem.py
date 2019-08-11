@@ -6,14 +6,12 @@ from sympy.utility import plausible, cout, Eq
 from sympy.utility import Sum
 from sympy.axiom.discrete.combinatorics.binomial import Pascal
 
-from sympy.logic.boolalg import plausibles_dict
-
 
 def apply(x, y, n=None):
     k = Symbol('k', integer=True)
     if n is None:
         n = Symbol('n', integer=True, nonnegative=True)
-        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)), plausible=plausible(), for_clause=n)
+        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)), plausible=plausible(), forall=n)
     elif n < 0:
         return None
     else:
@@ -62,9 +60,3 @@ def prove():
 if __name__ == '__main__':
     prove()
 
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))
-
-# executive
-# commander

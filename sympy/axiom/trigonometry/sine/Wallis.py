@@ -5,7 +5,6 @@ from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.functions.special.gamma_functions import gamma
 from sympy.utility import plausible, cout, Eq, Integral
 from sympy.core.sympify import sympify
-from sympy.functions.special.beta_functions import beta
 from sympy.functions.elementary.miscellaneous import sqrt
 
 from sympy import S

@@ -56,7 +56,69 @@ def as_Boolean(e):
 class Boolean(Basic):
     """A boolean object is an object for which logic operations make sense."""
 
+    is_FiniteSet = False
+
     __slots__ = []
+
+    def clause_latex(self, latex):
+        forall = self.forall
+
+        if forall is None:
+            forall = set()
+        else:
+            if not isinstance(forall, (list, tuple, dict, set)):
+                forall = (forall,)
+            if not isinstance(forall, dict):
+                forall = set(forall)
+
+        exists = self.exists
+        if exists is None:
+            exists = set()
+        else:
+            if not isinstance(exists, (list, tuple, dict, set)):
+                exists = (exists,)
+            if not isinstance(exists, dict):
+                exists = set(exists)
+
+        G = {x: set() for x in (forall.keys() if isinstance(forall, dict) else forall) | (exists.keys() if isinstance(exists, dict) else exists)}
+
+        if not G:
+            return latex
+
+        for kinder in G:
+            dic = forall if kinder in forall else exists
+            if isinstance(dic, set) or dic[kinder] is None:
+                continue
+
+            for parent in dic[kinder].free_symbols:
+                if parent in G:
+                    G[parent].add(kinder)
+
+        from sympy.utilities.iterables import topological_sort_depth_first
+        G = topological_sort_depth_first(G)
+
+        group = [[G[0]]]
+        for e in G[1:]:
+            prev_state = group[-1][-1] in forall
+            next_state = e in forall
+            if prev_state == next_state:
+                group[-1].append(e)
+            else:
+                group.append([e])
+
+        for g in group:
+            dic = forall if g[0] in forall else exists
+
+            if isinstance(dic, dict):
+                limit = r'\substack{%s}' % '\\\\'.join(var.latex if dic[var] is None else var.domain_latex(dic[var]) for var in g)
+            else:
+                limit = r'\substack{%s}' % '\\\\'.join(var.latex for var in g)
+
+            if dic == forall:
+                latex = r"\forall_{%s}{%s}" % (limit, latex)
+            else:
+                latex = r"\exists_{%s}{%s}" % (limit, latex)
+        return latex
 
     def __and__(self, other):
         """Overloading for & operator"""
@@ -167,9 +229,9 @@ class Boolean(Basic):
                            or isinstance(i, (Eq, Ne))])
 
     @property
-    def for_clause(self):
-        if 'for_clause' in self._assumptions:
-            return self._assumptions['for_clause']
+    def forall(self):
+        if 'forall' in self._assumptions:
+            return self._assumptions['forall']
         return None
 
     @property
@@ -179,9 +241,9 @@ class Boolean(Basic):
         return None
 
     @property
-    def with_clause(self):
-        if 'with_clause' in self._assumptions:
-            return self._assumptions['with_clause']
+    def exists(self):
+        if 'exists' in self._assumptions:
+            return self._assumptions['exists']
         return None
 
     @property
@@ -281,6 +343,26 @@ class Boolean(Basic):
         return None
 
     @property
+    def hypothesis(self):
+        substituent = self.substituent
+        if substituent is not None:
+            return {substituent}
+
+        given = self.equivalent
+        if given is None:
+            given = self.given
+
+        if given is not None:
+            if isinstance(given, (tuple, list)):
+                res = set()
+                for eq in given:
+                    res |= eq.hypothesis
+                return res
+            return given.hypothesis
+
+        return set()
+
+    @property
     def equivalent(self):
         if 'equivalent' in self._assumptions:
             return self._assumptions['equivalent']
@@ -313,12 +395,21 @@ class Boolean(Basic):
             return
 # perform mathematical induction
 
+        self_equivalent = equivalent_ancestor(self)
+        if len(self_equivalent) > 1:
+            return
+
+        self_equivalent, *_ = self_equivalent
+
         for var, replacement in derivative.items():
             initial = []
             step = None
 
             for rep, substituent in replacement.items():
                 if hasattr(rep, 'has') and rep.has(var):
+                    if step is not None:
+                        continue
+
                     from sympy.core.numbers import Integer
                     step = rep - var
                     if not isinstance(step, Integer):
@@ -326,39 +417,81 @@ class Boolean(Basic):
                         continue
                     equivalent = substituent.equivalent
 
-                    self_equivalent = equivalent_ancestor(self)
-
-                    def find_equivalent(equivalent):
-                        if isinstance(equivalent, (tuple, list)):
-                            return any(eq == self_equivalent or eq.given == self_equivalent for eq in equivalent)
-                        return equivalent == self_equivalent or equivalent.given == self_equivalent
-
-                    if equivalent is not None:
-                        if not find_equivalent(equivalent):
-                            step = None
+                    if equivalent is None:
+                        given = substituent.given
                     else:
-                        recurrence = False
-                        for key in derivative.keys() - {var}:
-                            if recurrence:
-                                break
+                        given = equivalent
 
-                            for _, _self in derivative[key].items():
-                                equivalent = _self.equivalent
-                                if equivalent is None:
+                    if given is not None:
+                        if isinstance(given, (tuple, list)):
+                            given = [*given]
+                            index = -1
+                            for i, g in enumerate(given):
+                                if g == self_equivalent:
+                                    index = i
+                                    break
+
+                            if index < 0:
+                                step = None
+                                continue
+                            del given[index]
+
+                            for g in given:
+                                found = False
+                                for key in derivative.keys() - {var}:
+                                    for _, _self in derivative[key].items():
+                                        if g == _self:
+                                            found = True
+                                            break
+                                    if found:
+                                        break
+                                if found:
                                     continue
 
-                                if isinstance(equivalent, (list, tuple)):
-                                    if substituent in equivalent:
-                                        if find_equivalent(equivalent):
-                                            recurrence = True
-                                            break
-                                else:
-                                    equivalent = equivalent_ancestor(equivalent)
+                                for key, _self in derivative[var].items():
+                                    if g == _self or g.given == _self:
+                                        if key < var:
+                                            found = True
+                                        else:
+                                            found = False
+                                            step = None
+                                if not found:
+                                    step = None
+                        else:
+                            given = given_ancestor(given)
+                            if len(given) != 1:
+                                step = None
+                            else:
+                                given, *_ = given
+                                if given != self_equivalent:
+                                    step = None
+                        continue
+
+                    recurrence = False
+                    for key in derivative.keys() - {var}:
+                        if recurrence:
+                            break
+
+                        for _, _self in derivative[key].items():
+                            equivalent = _self.equivalent
+
+                            if equivalent is None:
+                                continue
+
+                            if isinstance(equivalent, (list, tuple)):
+#                                 equivalent = [*equivalent]
+                                if substituent in equivalent and self_equivalent in equivalent:
+                                    recurrence = True
+                                    break
+                            else:
+                                equivalent = equivalent_ancestor(equivalent)
+                                if len(equivalent) == 1:
+                                    equivalent, *_ = equivalent
                                     if substituent == equivalent:
                                         recurrence = True
                                         break
-                        if not recurrence:
-                            step = None
+                    if not recurrence:
+                        step = None
 
                 else :
                     if substituent.plausible is None:
@@ -378,32 +511,87 @@ class Boolean(Basic):
                 self.plausible = True
                 return
 
-    def combine_clause(self, other, clause='with_clause'):
-        with_clause = getattr(self, clause)
-        _with_clause = getattr(other, clause)
-        if with_clause is None:
-            return _with_clause
-        if isinstance(with_clause, (tuple, list)):
-            if _with_clause is not None:
-                if isinstance(_with_clause, (tuple, list)):
-                    with_clause = [*with_clause] + [w for w in _with_clause if w not in with_clause]
-                else:
-                    if _with_clause not in with_clause:
-                        with_clause = [*with_clause] + [_with_clause]
-            return with_clause
+    def combine_clause(self, other, clause='exists'):
+        exists = getattr(self, clause)
+        _exists = getattr(other, clause)
+        if exists is None:
+            if _exists is None:
+                return None
+            return _exists.copy()
 
-        if _with_clause is not None:
-            if isinstance(_with_clause, (tuple, list)):
-                with_clause = [with_clause] + [w for w in _with_clause if w != with_clause]
+        if isinstance(exists, dict) or isinstance(_exists, dict):
+            dic = {}
+            if isinstance(exists, dict):
+                dic = {**exists}
+            elif isinstance(exists, (tuple, list, set)):
+                dic = {k : None for k in exists}
             else:
-                if _with_clause != with_clause:
-                    with_clause = [with_clause, _with_clause]
-        return with_clause
+                dic = {exists : None}
+
+            if isinstance(_exists, dict):
+                dic.update(_exists)
+            elif isinstance(_exists, (tuple, list, set)):
+                dic.update({k : None for k in _exists})
+            else:
+                dic[_exists] = None
+
+            return dic
+
+        if isinstance(exists, (tuple, list)):
+            if _exists is not None:
+                if isinstance(_exists, (tuple, list)):
+                    exists = [*exists] + [w for w in _exists if w not in exists]
+                else:
+                    if _exists not in exists:
+                        exists = [*exists] + [_exists]
+            return exists
+
+        if _exists is not None:
+            if isinstance(_exists, (tuple, list)):
+                exists = [exists] + [w for w in _exists if w != exists]
+            else:
+                if _exists != exists:
+                    exists = [exists, _exists]
+        deletes = []
+        for i, var in enumerate(exists):
+            from sympy.tensor.indexed import Slice, Indexed
+            if isinstance(var, Slice):
+                for var_indexed in exists:
+                    if isinstance(var_indexed, Indexed):
+                        if var.has(var_indexed):
+                            deletes.append(var_indexed)
+                        elif len(var_indexed.indices) == 1 and var.base == var_indexed.base:
+                            start, stop = var.indices
+                            index = var_indexed.indices[0]
+                            if index == stop:
+                                exists[i] = var.base[start : stop + 1]
+                                deletes.append(var_indexed)
+                            elif index == start - 1:
+                                exists[i] = var.base[start - 1: stop]
+                                deletes.append(var_indexed)
+
+        if deletes:
+            exists = list(set(exists) - set(deletes))
+            if len(exists) == 1:
+                exists = exists[0]
+
+        return exists
 
     def clauses(self, other=None):
         if other is None:
-            return {'with_clause' : self.with_clause, 'for_clause' : self.for_clause}
-        return {'with_clause' : self.combine_clause(other, 'with_clause'), 'for_clause' : self.combine_clause(other, 'for_clause')}
+            exists = self.exists
+            forall = self.forall
+        else:
+            exists = self.combine_clause(other, 'exists')
+            forall = self.combine_clause(other, 'forall')
+
+        if exists is None:
+            if forall is None:
+                return {}
+            return {'forall' : forall}
+        if forall is None:
+            return {'exists' : exists}
+        return {'exists' : exists, 'forall' : forall}
 
     @property
     def given(self):
@@ -435,69 +623,76 @@ def equivalent_ancestor(a):
     while True:
         equivalent = a.equivalent
         if equivalent is None:
-            return a
+            return {a}
 
         if isinstance(equivalent, (list, tuple)):
-            array = set()
+            res = set()
             for e in equivalent:
-                res = equivalent_ancestor(e)
-                if isinstance(res, (list, tuple)):
-                    array |= res
-                else:
-                    array.add(res)
-            return array
+                res |= equivalent_ancestor(e)
+            return res
 
         a = equivalent
 
 
+def given_ancestor(a):
+    if a is None:
+        return a
+    while True:
+        given = a.equivalent
+        if given is None:
+            given = a.given
+
+        if given is None:
+            return {a}
+
+        if isinstance(given, (list, tuple)):
+            res = set()
+            for e in given:
+                res |= given_ancestor(e)
+            return res
+
+        a = given
+
+
 def set_equivalence_relationship(a, b):
+    s = equivalent_ancestor(a) | equivalent_ancestor(b)
 
-    a = equivalent_ancestor(a)
-    b = equivalent_ancestor(b)
-
-    if isinstance(b, set) :
-        if isinstance(a, set):
-            s = b | a
-        else:
-            b |= {a}
-            s = b
-    else:
-        if isinstance(a, set):
-            s = {b} | a
-        else:
-            s = {a, b}
-
-    for a in s:
-        if a.substituent is None:
-            break
-
-    s -= {a}
-
-    substituent = set(equivalent_ancestor(b.substituent) for b in s)
-
-    if len(substituent) != 1:
-        return
-
-    substituent, *_ = substituent
-    if substituent == a:
-        given = a
-#         s <=> a <=> given
-
-    elif substituent == a.given:
-        given = a.given
-#         s <=> a <= given
-    else:
-        return
-
+    found = False
     for b in s:
-        equivalent = [*((s - {b}) | {a})]
+        if b.derivative is not None:
+            continue
+
+        equivalent = [*(s - {b})]
+        if len(equivalent) == 0:
+            continue
+
         if len(equivalent) == 1:
-            b.equivalent = equivalent[0]
+            equivalent = equivalent[0]
+
+            if b.given is not None:
+#                 b <=> equivalent <= b.given
+                equivalent.given = b.given
+                found = True
+                break
+        else:
+            if b.given is not None:
+                continue
+
+        if b.equivalent is not None:
+            b = equivalent_ancestor(b)
+            if len(b) == 1:
+                b, *_ = b
+                b.equivalent = equivalent
+                found = True
+                break
         else:
             b.equivalent = equivalent
-        break
+            found = True
+            break
 
-    given.derivative = None
+    if found:
+        for h in set().union(*(b.hypothesis for b in s)):
+            h.derivative = None
 
 
 def process_options(options, value=True):
@@ -806,6 +1001,11 @@ class BooleanFunction(Application, Boolean):
     It is used as base class for And, Or, Not, etc.
     """
     is_Boolean = True
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.condition
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
         rv = self.func(*[a._eval_simplify(ratio=ratio, measure=measure,
@@ -1124,8 +1324,190 @@ class And(LatticeOp, BooleanFunction):
         from sympy.sets.sets import Intersection
         return Intersection(*[arg.as_set() for arg in self.args])
 
+    def split(self):
+        given = self if self.plausible else None
+        return [eq.func(*eq.args, **eq.clauses(self), given=given) for eq in self.args]
+
 
 class Or(LatticeOp, BooleanFunction):
+    """
+    Logical OR function
+
+    It evaluates its arguments in order, giving True immediately
+    if any of them are True, and False if they are all False.
+
+    Examples
+    ========
+
+    >>> from sympy.core import symbols
+    >>> from sympy.abc import x, y
+    >>> from sympy.logic.boolalg import Or
+    >>> x | y
+    x | y
+
+    Notes
+    =====
+
+    The ``|`` operator is provided as a convenience, but note that its use
+    here is different from its normal use in Python, which is bitwise
+    or. Hence, ``Or(a, b)`` and ``a | b`` will return different things if
+    ``a`` and ``b`` are integers.
+
+    >>> Or(x, y).subs(x, 0)
+    y
+
+    """
+    zero = true
+    identity = false
+
+    @classmethod
+    def _new_args_filter(cls, args):
+        newargs = []
+        rel = []
+        args = BooleanFunction.binary_check_and_simplify(*args)
+        for x in args:
+            if x.is_Relational:
+                c = x.canonical
+                if c in rel:
+                    continue
+                nc = c.negated.canonical
+                if any(r == nc for r in rel):
+                    return [S.true]
+                rel.append(c)
+            newargs.append(x)
+        return LatticeOp._new_args_filter(newargs, Or)
+
+    def _eval_as_set(self):
+        from sympy.sets.sets import Union
+        return Union(*[arg.as_set() for arg in self.args])
+
+    def _eval_simplify(self, ratio, measure, rational, inverse):
+        # standard simplify
+        rv = super(Or, self)._eval_simplify(
+            ratio, measure, rational, inverse)
+        if not isinstance(rv, Or):
+            return rv
+        patterns = simplify_patterns_or()
+        return self._apply_patternbased_simplification(rv, patterns,
+                                                       measure, S.true)
+
+
+class AndComprehension(LatticeOp, BooleanFunction):
+    """
+    Logical AND function.
+
+    It evaluates its arguments in order, giving False immediately
+    if any of them are False, and True if they are all True.
+
+    Examples
+    ========
+
+    >>> from sympy.core import symbols
+    >>> from sympy.abc import x, y
+    >>> from sympy.logic.boolalg import And
+    >>> x & y
+    x & y
+
+    Notes
+    =====
+
+    The ``&`` operator is provided as a convenience, but note that its use
+    here is different from its normal use in Python, which is bitwise
+    and. Hence, ``And(a, b)`` and ``a & b`` will return different things if
+    ``a`` and ``b`` are integers.
+
+    >>> And(x, y).subs(x, 1)
+    y
+
+    """
+    zero = false
+    identity = true
+
+    nargs = None
+
+    @classmethod
+    def _new_args_filter(cls, args):
+        newargs = []
+        rel = []
+        args = BooleanFunction.binary_check_and_simplify(*args)
+        for x in reversed(args):
+            if x.is_Relational:
+                c = x.canonical
+                if c in rel:
+                    continue
+                nc = c.negated.canonical
+                if any(r == nc for r in rel):
+                    return [S.false]
+                rel.append(c)
+            newargs.append(x)
+        return LatticeOp._new_args_filter(newargs, And)
+
+    def _eval_simplify(self, ratio, measure, rational, inverse):
+        from sympy.core.relational import Equality, Relational
+        from sympy.solvers.solveset import linear_coeffs
+        # standard simplify
+        rv = super(And, self)._eval_simplify(
+            ratio, measure, rational, inverse)
+        if not isinstance(rv, And):
+            return rv
+        # simplify args that are equalities involving
+        # symbols so x == 0 & x == y -> x==0 & y == 0
+        Rel, nonRel = sift(rv.args, lambda i: isinstance(i, Relational),
+                           binary=True)
+        if not Rel:
+            return rv
+        eqs, other = sift(Rel, lambda i: isinstance(i, Equality), binary=True)
+        if not eqs:
+            return rv
+        reps = {}
+        sifted = {}
+        if eqs:
+            # group by length of free symbols
+            sifted = sift(ordered([
+                (i.free_symbols, i) for i in eqs]),
+                lambda x: len(x[0]))
+            eqs = []
+            while 1 in sifted:
+                for free, e in sifted.pop(1):
+                    x = free.pop()
+                    if e.lhs != x or x in e.rhs.free_symbols:
+                        try:
+                            m, b = linear_coeffs(
+                                e.rewrite(Add, evaluate=False), x)
+                            enew = e.func(x, -b / m)
+                            if measure(enew) <= ratio * measure(e):
+                                e = enew
+                            else:
+                                eqs.append(e)
+                                continue
+                        except ValueError:
+                            pass
+                    if x in reps:
+                        eqs.append(e.func(e.rhs, reps[x]))
+                    else:
+                        reps[x] = e.rhs
+                        eqs.append(e)
+                resifted = defaultdict(list)
+                for k in sifted:
+                    for f, e in sifted[k]:
+                        e = e.subs(reps)
+                        f = e.free_symbols
+                        resifted[len(f)].append((f, e))
+                sifted = resifted
+        for k in sifted:
+            eqs.extend([e for f, e in sifted[k]])
+        other = [ei.subs(reps) for ei in other]
+        rv = rv.func(*([i.canonical for i in (eqs + other)] + nonRel))
+        patterns = simplify_patterns_and()
+        return self._apply_patternbased_simplification(rv, patterns,
+                                                       measure, False)
+
+    def _eval_as_set(self):
+        from sympy.sets.sets import Intersection
+        return Intersection(*[arg.as_set() for arg in self.args])
+
+
+class OrComprehension(LatticeOp, BooleanFunction):
     """
     Logical OR function
 

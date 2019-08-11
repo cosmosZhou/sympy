@@ -887,7 +887,11 @@ def topological_sort(graph, key=None):
     .. [1] https://en.wikipedia.org/wiki/Topological_sorting
 
     """
-    V, E = graph
+    if isinstance(graph, dict):
+        V = graph.keys()
+        E = ((k, v) for k, array in graph.items() for v in array)
+    else:
+        V, E = graph
 
     L = []
     S = set(V)

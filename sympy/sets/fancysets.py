@@ -5,7 +5,7 @@ from sympy.core.compatibility import as_int, with_metaclass, range, PY3
 from sympy.core.expr import Expr
 from sympy.core.function import Lambda
 from sympy.core.singleton import Singleton, S
-from sympy.core.symbol import Dummy, symbols
+from sympy.core.symbol import Dummy, symbols, generate_free_symbol
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
 from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet
@@ -117,6 +117,7 @@ class Integers(with_metaclass(Singleton, Set)):
     """
 
     is_iterable = True
+    is_integer = True
 
     def _contains(self, other):
         if not isinstance(other, Expr):
@@ -145,6 +146,14 @@ class Integers(with_metaclass(Singleton, Set)):
     @property
     def _boundary(self):
         return self
+
+    def union_sets(self, b):
+        from sympy import Intersection
+        intersect = Intersection(self, b)
+        if intersect == self:
+            return b
+        elif intersect == b:
+            return self
 
 
 class Reals(with_metaclass(Singleton, Interval)):
@@ -176,6 +185,7 @@ class Reals(with_metaclass(Singleton, Interval)):
 
     ComplexRegion
     """
+
     def __new__(cls):
         return Interval.__new__(cls, -S.Infinity, S.Infinity)
 
@@ -243,6 +253,7 @@ class ImageSet(Set):
 
     sympy.sets.sets.imageset
     """
+
     def __new__(cls, flambda, *sets):
         if not isinstance(flambda, Lambda):
             raise ValueError('first argument must be a Lambda')
@@ -255,6 +266,48 @@ class ImageSet(Set):
 
     lamda = property(lambda self: self.args[0])
     base_set = property(lambda self: ProductSet(self.args[1:]))
+
+    @property
+    def element_type(self):
+        return self.lamda.expr.dtype
+
+    def _latex(self, p):
+        from sympy.sets.conditionset import ConditionSet
+        if isinstance(self.base_set, ConditionSet) and self.lamda.variables == self.base_set.sym:
+            return r"\left\{%s \left| %s \right. \right\}" % (p._print(self.lamda.expr), p._print(self.base_set.condition))
+
+        from sympy.core.containers import Tuple
+        if isinstance(self.lamda.variables, Tuple):
+            sets = self.args[1:]
+            varsets = [r"%s \in %s" % (p._print(var), p._print(setv)) for var, setv in zip(self.lamda.variables, sets)]
+    #         return r"\left\{%s\; |\; %s\right\}" % (self._print(s.lamda.expr), ', '.join(varsets))
+            return r"\left\{%s \left| %s \right. \right\}" % (p._print(self.lamda.expr), ', '.join(varsets))
+
+        var = self.lamda.variables
+        setv = self.base_set
+        varsets = r"%s \in %s" % (p._print(var), p._print(setv))
+        return r"\left\{%s \left| %s \right. \right\}" % (p._print(self.lamda.expr), varsets)
+
+    @property
+    def element_symbol(self):
+        element_symbol = self.base_set.element_symbol
+        if isinstance(element_symbol, (tuple, list)):
+            y = self.lamda(*self.base_set.element_symbol)
+        else:
+            y = self.lamda(element_symbol)
+        kwargs = {}
+        if y.is_integer:
+            kwargs['integer'] = True
+#         elif y.is_real:
+#             kwargs['real'] = True
+        elif y.is_complex:
+            kwargs['complex'] = True
+        elif y.is_Matrix:
+            kwargs['matrix'] = True
+        elif y.is_set:
+            kwargs['set'] = True
+
+        return generate_free_symbol(self.free_symbols, **kwargs)
 
     def __iter__(self):
         already_seen = set()
@@ -389,7 +442,7 @@ class Range(Set):
     not given it defaults to 1.
 
     `Range(stop)` is the same as `Range(0, stop, 1)` and the stop value
-    (juse as for Python ranges) is not included in the Range values.
+    (just as for Python ranges) is not included in the Range values.
 
         >>> from sympy import Range
         >>> list(Range(3))
@@ -463,7 +516,7 @@ class Range(Set):
         try:
             start, stop, step = [
                 w if w in [S.NegativeInfinity, S.Infinity]
-                else sympify(as_int(w))
+                else sympify(w)
                 for w in (start, stop, step)]
         except ValueError:
             raise ValueError(filldedent('''
@@ -484,19 +537,19 @@ class Range(Set):
     Either the start or end value of the Range must be finite.'''))
 
         if start.is_infinite:
-            if step*(stop - start) < 0:
+            if step * (stop - start) < 0:
                 start = stop = S.One
             else:
                 end = stop
         if not start.is_infinite:
             ref = start if start.is_finite else stop
-            n = ceiling((stop - ref)/step)
+            n = ceiling((stop - ref) / step)
             if n <= 0:
                 # null Range
                 start = end = S.Zero
                 step = S.One
             else:
-                end = ref + n*step
+                end = ref + n * step
         return Basic.__new__(cls, start, end, step)
 
     start = property(lambda self: self.args[0])
@@ -545,19 +598,19 @@ class Range(Set):
                 yield i
                 i += step
 
-    def __len__(self):
+    def __abs__(self):
         if not self:
             return 0
         dif = self.stop - self.start
         if dif.is_infinite:
             raise ValueError(
                 "Use .size to get the length of an infinite Range")
-        return abs(dif//self.step)
+        return abs(dif // self.step)
 
     @property
     def size(self):
         try:
-            return _sympify(len(self))
+            return _sympify(abs(self))
         except ValueError:
             return S.Infinity
 
@@ -578,12 +631,12 @@ class Range(Set):
         if isinstance(i, slice):
             if self.size.is_finite:
                 start, stop, step = i.indices(self.size)
-                n = ceiling((stop - start)/step)
+                n = ceiling((stop - start) / step)
                 if n <= 0:
                     return Range(0)
-                canonical_stop = start + n*step
+                canonical_stop = start + n * step
                 end = canonical_stop - step
-                ss = step*self.step
+                ss = step * self.step
                 return Range(self[start], self[end] + ss, ss)
             else:  # infinite Range
                 start = i.start
@@ -591,7 +644,7 @@ class Range(Set):
                 if i.step == 0:
                     raise ValueError(zerostep)
                 step = i.step or 1
-                ss = step*self.step
+                ss = step * self.step
                 #---------------------
                 # handle infinite on right
                 #   e.g. Range(0, oo) or Range(0, -oo, -1)
@@ -677,7 +730,7 @@ class Range(Set):
                 return self.start
             if i == -1 or i is S.Infinity:
                 return self.stop - self.step
-            rv = (self.stop if i < 0 else self.start) + i*self.step
+            rv = (self.stop if i < 0 else self.start) + i * self.step
             if rv.is_infinite:
                 raise ValueError(ooslice)
             if rv < self.inf or rv > self.sup:
@@ -711,6 +764,7 @@ if PY3:
     converter[range] = Range
 else:
     converter[xrange] = Range
+
 
 def normalize_theta_set(theta):
     """
@@ -755,24 +809,24 @@ def normalize_theta_set(theta):
     if theta.is_Interval:
         interval_len = theta.measure
         # one complete circle
-        if interval_len >= 2*S.Pi:
-            if interval_len == 2*S.Pi and theta.left_open and theta.right_open:
+        if interval_len >= 2 * S.Pi:
+            if interval_len == 2 * S.Pi and theta.left_open and theta.right_open:
                 k = coeff(theta.start)
-                return Union(Interval(0, k*S.Pi, False, True),
-                        Interval(k*S.Pi, 2*S.Pi, True, True))
-            return Interval(0, 2*S.Pi, False, True)
+                return Union(Interval(0, k * S.Pi, False, True),
+                        Interval(k * S.Pi, 2 * S.Pi, True, True))
+            return Interval(0, 2 * S.Pi, False, True)
 
         k_start, k_end = coeff(theta.start), coeff(theta.end)
 
         if k_start is None or k_end is None:
             raise NotImplementedError("Normalizing theta without pi as coefficient is "
                                     "not yet implemented")
-        new_start = k_start*S.Pi
-        new_end = k_end*S.Pi
+        new_start = k_start * S.Pi
+        new_end = k_end * S.Pi
 
         if new_start > new_end:
             return Union(Interval(S.Zero, new_end, False, theta.right_open),
-                         Interval(new_start, 2*S.Pi, theta.left_open, True))
+                         Interval(new_start, 2 * S.Pi, theta.left_open, True))
         else:
             return Interval(new_start, new_end, theta.left_open, theta.right_open)
 
@@ -784,7 +838,7 @@ def normalize_theta_set(theta):
                 raise NotImplementedError('Normalizing theta without pi as '
                                           'coefficient, is not Implemented.')
             else:
-                new_theta.append(k*S.Pi)
+                new_theta.append(k * S.Pi)
         return FiniteSet(*new_theta)
 
     elif theta.is_Union:
@@ -877,6 +931,20 @@ class ComplexRegion(Set):
     """
     is_ComplexRegion = True
 
+    def union_sets(self, b):
+        if b.is_subset(S.Reals):
+            # treat a subset of reals as a complex region
+            b = ComplexRegion.from_real(b)
+
+        if b.is_ComplexRegion:
+            # a in rectangular form
+            if (not self.polar) and (not b.polar):
+                return ComplexRegion(Union(self.sets, b.sets))
+            # a in polar form
+            elif self.polar and b.polar:
+                return ComplexRegion(Union(self.sets, b.sets), polar=True)
+        return None
+
     def __new__(cls, sets, polar=False):
         from sympy import sin, cos
 
@@ -894,12 +962,12 @@ class ComplexRegion(Set):
                 complex_num = []
                 for x in sets.args[0]:
                     for y in sets.args[1]:
-                        complex_num.append(x + I*y)
+                        complex_num.append(x + I * y)
                 obj = FiniteSet(*complex_num)
             else:
-                obj = ImageSet.__new__(cls, Lambda((x, y), x + I*y), sets)
+                obj = ImageSet.__new__(cls, Lambda((x, y), x + I * y), sets)
             obj._variables = (x, y)
-            obj._expr = x + I*y
+            obj._expr = x + I * y
 
         # Polar Form
         elif polar == True:
@@ -918,10 +986,10 @@ class ComplexRegion(Set):
                                          normalize_theta_set(v.args[1]))
             sets = Union(*new_sets)
             obj = ImageSet.__new__(cls, Lambda((r, theta),
-                                   r*(cos(theta) + I*sin(theta))),
+                                   r * (cos(theta) + I * sin(theta))),
                                    sets)
             obj._variables = (r, theta)
-            obj._expr = r*(cos(theta) + I*sin(theta))
+            obj._expr = r * (cos(theta) + I * sin(theta))
 
         else:
             raise ValueError("polar should be either True or False")
@@ -986,7 +1054,7 @@ class ComplexRegion(Set):
         """
         if self.sets.is_ProductSet:
             psets = ()
-            psets = psets + (self.sets, )
+            psets = psets + (self.sets,)
         else:
             psets = self.sets.args
         return psets
@@ -1148,13 +1216,13 @@ class ComplexRegion(Set):
 class Complexes(with_metaclass(Singleton, ComplexRegion)):
 
     def __new__(cls):
-        return ComplexRegion.__new__(cls, S.Reals*S.Reals)
+        return ComplexRegion.__new__(cls, S.Reals * S.Reals)
 
     def __eq__(self, other):
-        return other == ComplexRegion(S.Reals*S.Reals)
+        return other == ComplexRegion(S.Reals * S.Reals)
 
     def __hash__(self):
-        return hash(ComplexRegion(S.Reals*S.Reals))
+        return hash(ComplexRegion(S.Reals * S.Reals))
 
     def __str__(self):
         return "S.Complexes"

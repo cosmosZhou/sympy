@@ -9,7 +9,7 @@ from .evalf import EvalfMixin
 from .sympify import _sympify
 from .evaluate import global_evaluate
 
-from sympy.logic.boolalg import Boolean, BooleanAtom, process_options
+from sympy.logic.boolalg import Boolean, BooleanAtom, process_options, And
 
 __all__ = (
     'Rel', 'Eq', 'Ne', 'Lt', 'Le', 'Gt', 'Ge',
@@ -59,9 +59,86 @@ class Relational(Boolean, Expr, EvalfMixin):
     # ValidRelationOperator - Defined below, because the necessary classes
     #   have not yet been defined
 
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.condition
+
+    def __and__(self, other):
+        return And(self.func(*self.args), other.func(*other.args), **self.clauses(other))
+
+    def _has(self, pattern):
+        from .assumptions import BasicMeta
+        from sympy.core.function import UndefinedFunction
+        if isinstance(pattern, (UndefinedFunction, BasicMeta)):
+            return Expr._has(self, pattern)
+        forall = self.forall
+        if forall is None:
+            return Expr._has(self, pattern)
+
+        if not isinstance(forall, dict):
+            ...  # todo need more consideration!
+            return Expr._has(self, pattern)
+        from sympy.core.symbol import Symbol
+        eq = self
+        for k, domain in forall.items():
+            eq = eq.subs(k, Symbol(k.name, integer=k.is_integer, domain=domain))
+        return eq._has(pattern)
+
     def __new__(cls, lhs, rhs, rop=None, **assumptions):
+
         # If called by a subclass, do nothing special and pass on to Expr.
+        def simplify_assumptions(key_str, *condition):
+            exists = assumptions[key_str]
+            if isinstance(exists, (list, tuple, set)):
+                deletes = []
+                useful = []
+                for v in exists:
+                    if any(cond.has(v) for cond in condition):
+                        useful.append(v)
+                    else:
+                        deletes.append(v)
+                if deletes:
+                    if len(useful) == 1:
+                        useful, *_ = useful
+                    elif len(useful) == 0:
+                        useful = None
+                    assumptions[key_str] = useful
+            elif isinstance(exists, dict):
+                condition = set(condition)
+
+                for var in set(exists.keys()):
+                    if exists[var] is not None:
+                        _condition = condition - {exists[var]}
+                    else:
+                        _condition = condition
+
+                    for cond in _condition:
+                        print(cond._has(var))
+
+                    if not any(cond.has(var) for cond in _condition):
+                        del exists[var]
+                if not exists:
+                    del assumptions[key_str]
+            elif exists is not None:
+                if not lhs.has(exists) and not rhs.has(exists):
+                    del assumptions[key_str]
+
         if cls is not Relational:
+            condition = []
+            if 'forall' in assumptions and isinstance(assumptions['forall'], dict):
+                condition += [condition for condition in assumptions['forall'].values() if condition is not None]
+            if 'exists' in assumptions and isinstance(assumptions['exists'], dict):
+                condition += [condition for condition in assumptions['exists'].values() if condition is not None]
+
+            condition += [lhs, rhs]
+
+            if 'exists' in assumptions:
+                simplify_assumptions('exists', *condition)
+
+            if 'forall' in assumptions:
+                simplify_assumptions('forall', *condition)
+
             return Expr.__new__(cls, lhs, rhs, **assumptions)
         # If called directly with an operator, look up the subclass
         # corresponding to that operator and delegate to it
@@ -173,8 +250,8 @@ class Relational(Boolean, Expr, EvalfMixin):
         to exisiting ones as it will not be affected by the `evaluate` flag.
 
         """
-        for_clause = self.for_clause
-        with_clause = self.with_clause
+        forall = self.forall
+        exists = self.exists
         plausible = self.plausible
 
         if plausible is False:
@@ -188,8 +265,8 @@ class Relational(Boolean, Expr, EvalfMixin):
         # return ops.get(self.func, lambda a, b, evaluate=False: ~(self.func(a,
         #      b, evaluate=evaluate)))(*self.args, evaluate=False)
         return Relational.__new__(ops.get(self.func), *self.args,
-                                  for_clause=with_clause,
-                                  with_clause=for_clause,
+                                  forall=exists,
+                                  exists=forall,
                                   plausible=self.plausible)
 
     def _eval_evalf(self, prec):
@@ -367,42 +444,57 @@ class Relational(Boolean, Expr, EvalfMixin):
 
         return self
 
-    def sqrt(self):
-        from sympy import sqrt
-        return self.func(sqrt(self.lhs), sqrt(self.rhs), equivalent=self if self.plausible else None, with_clause=self.with_clause)
-
-    def real_root(self, n):
-        from sympy import real_root
-        return self.func(real_root(self.lhs, n), real_root(self.rhs, n), equivalent=self if self.plausible else None, with_clause=self.with_clause)
-
     def expand(self, *args, **kwargs):
-        return self.func(self.lhs.expand(*args, **kwargs), self.rhs.expand(*args, **kwargs), equivalent=self if self.plausible else None, with_clause=self.with_clause)
+        return self.func(self.lhs.expand(*args, **kwargs), self.rhs.expand(*args, **kwargs), equivalent=self if self.plausible else None, exists=self.exists)
 
     def rewrite(self, *args, **hints):
-        return self.func(self.lhs.rewrite(*args, **hints), self.rhs.rewrite(*args, **hints), equivalent=self if self.plausible else None, with_clause=self.with_clause)
+        if 'exists' in hints:
+            exists = self.exists
+            and_expr = []
+            for condition in exists.values():
+                if condition is not None:
+                    and_expr.append(condition)
+            exists = list(exists.keys())
+            for var in self.exists.keys():
+                from sympy.tensor.indexed import Slice
+                if isinstance(var, Slice):
+                    start, stop = var.indices
+                    if var.base[stop] in exists:
+                        exists.remove(var.base[stop])
+                        exists[exists.index(var)] = var.base[start : stop + 1]
+                    elif var.base[start - 1] in exists:
+                        exists.remove(var.base[start - 1])
+                        exists[exists.index(var)] = var.base[start - 1: stop]
+
+            if len(exists) == 1:
+                exists = exists[0]
+            and_expr.append(self.func(*self.args))
+            return And(*and_expr, forall=self.forall, exists=exists)
+
+        return self.func(self.lhs.rewrite(*args, **hints), self.rhs.rewrite(*args, **hints), equivalent=self if self.plausible else None, exists=self.exists)
 
     def doit(self, *args, **kwargs):
-        return self.func(self.lhs.doit(*args, **kwargs), self.rhs.doit(*args, **kwargs), equivalent=self if self.plausible else None, with_clause=self.with_clause)
+        return self.func(self.lhs.doit(*args, **kwargs), self.rhs.doit(*args, **kwargs), equivalent=self if self.plausible else None, exists=self.exists)
 
     def __add__(self, exp):
         if isinstance(exp, Equality):
             if exp.plausible:
                 if self.plausible:
-                    return self.func(self.lhs + exp.lhs, self.rhs + exp.rhs, equivalent=[self, exp])
-                return self.func(self.lhs + exp.lhs, self.rhs + exp.rhs, equivalent=exp)
-            return self.func(self.lhs + exp.lhs, self.rhs + exp.rhs, equivalent=self if self.plausible else None)
+                    return self.func(self.lhs + exp.lhs, self.rhs + exp.rhs, equivalent=[self, exp], **self.clauses(exp))
+                return self.func(self.lhs + exp.lhs, self.rhs + exp.rhs, equivalent=exp, **self.clauses(exp))
+            return self.func(self.lhs + exp.lhs, self.rhs + exp.rhs, equivalent=self if self.plausible else None, **self.clauses(exp))
         else:
-            return self.func(self.lhs + exp, self.rhs + exp, equivalent=self if self.plausible else None)
+            return self.func(self.lhs + exp, self.rhs + exp, equivalent=self if self.plausible else None, **self.clauses())
 
     def __sub__(self, exp):
         if isinstance(exp, Equality):
             if exp.plausible:
                 if self.plausible:
-                    return self.func(self.lhs - exp.lhs, self.rhs - exp.rhs, equivalent=[self, exp])
+                    return self.func(self.lhs - exp.lhs, self.rhs - exp.rhs, equivalent=[self, exp], **self.clauses(exp))
                 return self.func(self.lhs - exp.lhs, self.rhs - exp.rhs, equivalent=exp, **self.clauses(exp))
-            return self.func(self.lhs - exp.lhs, self.rhs - exp.rhs, equivalent=self if self.plausible else None)
+            return self.func(self.lhs - exp.lhs, self.rhs - exp.rhs, equivalent=self if self.plausible else None, **self.clauses(exp))
         else:
-            return self.func(self.lhs - exp, self.rhs - exp, equivalent=self if self.plausible else None)
+            return self.func(self.lhs - exp, self.rhs - exp, equivalent=self if self.plausible else None, **self.clauses())
 
     def __mul__(self, exp):
         if isinstance(exp, Equality):
@@ -423,13 +515,13 @@ class Relational(Boolean, Expr, EvalfMixin):
 
         else:
             if exp > 0:
-                return self.func(self.lhs * exp, self.rhs * exp, equivalent=self if self.plausible else None, with_clause=self.with_clause)
+                return self.func(self.lhs * exp, self.rhs * exp, equivalent=self if self.plausible else None, exists=self.exists)
             if exp < 0:
-                return reversed_ops[self.func](self.lhs * exp, self.rhs * exp, equivalent=self if self.plausible else None, with_clause=self.with_clause)
+                return reversed_ops[self.func](self.lhs * exp, self.rhs * exp, equivalent=self if self.plausible else None, exists=self.exists)
             elif exp >= 0:
-                return self.func(self.lhs * exp, self.rhs * exp, given=self if self.plausible else None, with_clause=self.with_clause)
+                return self.func(self.lhs * exp, self.rhs * exp, given=self if self.plausible else None, exists=self.exists)
             elif exp <= 0:
-                return reversed_ops[self.func](self.lhs * exp, self.rhs * exp, given=self if self.plausible else None, with_clause=self.with_clause)
+                return reversed_ops[self.func](self.lhs * exp, self.rhs * exp, given=self if self.plausible else None, exists=self.exists)
             return self
 
     def __truediv__(self, exp):
@@ -443,10 +535,13 @@ class Relational(Boolean, Expr, EvalfMixin):
             return self
         else:
             if exp > 0:
-                return self.func((self.lhs / exp).ratsimp(), (self.rhs / exp).ratsimp(), equivalent=self if self.plausible else None, with_clause=self.with_clause)
+                return self.func((self.lhs / exp).ratsimp(), (self.rhs / exp).ratsimp(), equivalent=self if self.plausible else None, exists=self.exists)
             if exp < 0:
-                return reversed_ops[self.func]((self.lhs / exp).ratsimp(), (self.rhs / exp).ratsimp(), equivalent=self if self.plausible else None, with_clause=self.with_clause)
+                return reversed_ops[self.func]((self.lhs / exp).ratsimp(), (self.rhs / exp).ratsimp(), equivalent=self if self.plausible else None, exists=self.exists)
             return self
+
+    def __iter__(self):
+        raise TypeError
 
 
 Rel = Relational
@@ -513,9 +608,9 @@ class Equality(Relational):
 
     def __new__(cls, lhs, rhs=None, **options):
 #         from sympy.core.add import Add
-        from sympy.core.logic import fuzzy_bool
-        from sympy.core.expr import _n2
-        from sympy.simplify.simplify import clear_coefficients
+#         from sympy.core.logic import fuzzy_bool
+#         from sympy.core.expr import _n2
+#         from sympy.simplify.simplify import clear_coefficients
 
         if rhs is None:
             SymPyDeprecationWarning(
@@ -564,7 +659,7 @@ class Equality(Relational):
 #             elif None in fin and False in fin:
 #                 return Relational.__new__(cls, lhs, rhs, **options)
 
-            if all(isinstance(i, Expr) for i in (lhs, rhs)):
+            if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.is_set and not rhs.is_set:
                 # see if the difference evaluates
                 dif = (lhs - rhs).simplifier()
                 z = dif.is_zero
@@ -760,8 +855,8 @@ class Equality(Relational):
             return self
         else:
             if exp.is_nonzero:
-                return Eq(self.lhs * exp, self.rhs * exp, equivalent=self if self.plausible else None, with_clause=self.with_clause)
-            return Eq(self.lhs * exp, self.rhs * exp, given=self if self.plausible else None, with_clause=self.with_clause)
+                return Eq(self.lhs * exp, self.rhs * exp, equivalent=self if self.plausible else None, exists=self.exists)
+            return Eq(self.lhs * exp, self.rhs * exp, given=self if self.plausible else None, exists=self.exists)
 
     def __rmatmul__(self, lhs):
         from sympy.matrices.expressions.determinant import det
@@ -782,11 +877,21 @@ class Equality(Relational):
             return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs)
         else:
             if det(lhs).is_nonzero:
-                return Eq(lhs @ self.lhs, lhs @ self.rhs, equivalent=self if self.plausible else None, with_clause=self.with_clause)
-            return Eq(lhs @ self.lhs, lhs @ self.rhs, given=self if self.plausible else None, with_clause=self.with_clause)
+                return Eq(lhs @ self.lhs, lhs @ self.rhs, equivalent=self if self.plausible else None, exists=self.exists)
+            return Eq(lhs @ self.lhs, lhs @ self.rhs, given=self if self.plausible else None, exists=self.exists)
 
     def __rpow__(self, exp):
-        return Eq(exp ** self.lhs, exp ** self.rhs, equivalent=self if self.plausible else None)
+        return Eq(exp ** self.lhs, exp ** self.rhs, equivalent=self if self.plausible else None, **self.clauses())
+
+    def union(self, exp):
+        if isinstance(exp, Equality):
+            if exp.plausible:
+                if self.plausible:
+                    return self.func(self.lhs | exp.lhs, self.rhs | exp.rhs, given=[self, exp], **self.clauses(exp))
+                return self.func(self.lhs | exp.lhs, self.rhs | exp.rhs, given=exp, **self.clauses(exp))
+            return self.func(self.lhs | exp.lhs, self.rhs | exp.rhs, given=self if self.plausible else None, **self.clauses(exp))
+        else:
+            return Eq(self.lhs | exp, self.rhs | exp, given=self if self.plausible else None, **self.clauses())
 
     def powsimp(self, *args, **kwargs):
         return Eq(self.lhs.powsimp(*args, **kwargs), self.rhs.powsimp(*args, **kwargs), equivalent=self if self.plausible else None)
@@ -802,6 +907,17 @@ class Equality(Relational):
     def left(self):
         return Invoker(self, False)
 
+    def sqrt(self):
+        from sympy import sqrt
+        return self.func(sqrt(self.lhs), sqrt(self.rhs), given=self if self.plausible else None, **self.clauses())
+
+    def abs(self):
+        return self.func(abs(self.lhs), abs(self.rhs), given=self if self.plausible else None, **self.clauses())
+
+    def real_root(self, n):
+        from sympy import real_root
+        return self.func(real_root(self.lhs, n), real_root(self.rhs, n), equivalent=self if self.plausible else None, exists=self.exists)
+
     def rsolve(self, y):
         from sympy.solvers.recurr import rsolve
         solution = rsolve(self, y, symbols=True)
@@ -813,29 +929,33 @@ class Equality(Relational):
         elif len(C) == 0:
             C = None
 
-        return self.func(y, solution, with_clause=C, equivalent=self if self.plausible else None)
+        return self.func(y, solution, exists=C, equivalent=self if self.plausible else None)
 
     def solve(self, x):
         from sympy.solvers.solvers import solve
         res = solve(self.lhs - self.rhs, x)
         clauses = self.clauses()
 
-        with_clause = clauses['with_clause']
+        if 'exists' in clauses:
+            exists = clauses['exists']
+        else:
+            exists = None
+
         if len(res) == 1:
             x_sol, *_ = res
             return Eq(x, x_sol, equivalent=self if self.plausible else None, **clauses)
         if len(res) > 1:
-            if x == with_clause or x in with_clause:
+            if x == exists or x in exists:
                 x_sol = [x_sol for x_sol in res if x_sol.domain & x.domain]
 
                 if len(x_sol) == 1:
                     x_sol = x_sol[0]
                     from sympy.sets.contains import Contains
 
-                    if x == with_clause:
-                        del clauses['with_clause']
+                    if x == exists:
+                        del clauses['exists']
                     else:
-                        clauses['with_clause'].remove(x)
+                        clauses['exists'].remove(x)
 
                     return Contains(x_sol, x.domain, equivalent=self if self.plausible else None, **clauses)
                 if not x_sol:
@@ -864,51 +984,38 @@ class Equality(Relational):
                 for eq in args:
                     res = res.subs(eq)
                 return res
+        if len(args) == 1:
+            dic = args[0]
+            if dic:
+                subs = self
+                for key, value in dic.items():
+                    subs = subs.subs(key, value)
+                return subs
+            else:
+                return self
         old, new = args
-#         if old in self.for_clause:
-#             domain = self.for_clause[old]
+#         if old in self.forall:
+#             domain = self.forall[old]
 #
-#             for_clause[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, for_clause=for_clause)
+#             forall[old] = domain.subs(old, new)
+#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
 #         else:
         from sympy import Symbol
         if not isinstance(old, Symbol):
-            free_symbols = self.free_symbols
-            variables = [symbol for symbol in old.free_symbols if symbol in free_symbols]
-            if not variables:
-                return self
+            lhs = self.lhs.subs(old, new)
+            rhs = self.rhs.subs(old, new)
 
-            if len(variables) == 1:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
+            g = self.lhs - self.rhs
+            _g = lhs - rhs
+            if g > _g:
+                return StrictLessThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
+            if g >= _g:
+                return LessThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
 
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
-
-            else:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
-
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
+            if g < _g:
+                return StrictGreaterThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
+            if g <= _g:
+                return GreaterThan(lhs, rhs, given=self if self.plausible else None, **self.clauses())
 
         if self.plausible:
 
@@ -973,10 +1080,24 @@ class Equality(Relational):
 
         elif isinstance(x, PDF):
             return Eq(x, x.doit(evaluate=False))
+        elif x.is_symbol and x.is_set :
+            return x.assertion()
+
         return Eq(x, x.definition)
+
+    @staticmethod
+    def define(x, expr):
+        from sympy.tensor.indexed import IndexedBase, Indexed, Slice
+        from sympy.core.symbol import Symbol
+        if isinstance(x, (Symbol, Indexed, IndexedBase, Slice)):
+            return Eq(x, expr, exists=x)
 
     def subscript(self, *key):
         return self.func(self.lhs[key], self.rhs[key], equivalent=self if self.plausible else None)
+
+    @property
+    def set(self):
+        return self.func(self.lhs.set, self.rhs.set, equivalent=self if self.plausible else None, **self.clauses())
 
     def log(self):
         from sympy import log
@@ -1585,11 +1706,11 @@ class LessThan(_Less):
             return self
 
         old, new = args
-#         if old in self.for_clause:
-#             domain = self.for_clause[old]
+#         if old in self.forall:
+#             domain = self.forall[old]
 #
-#             for_clause[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, for_clause=for_clause)
+#             forall[old] = domain.subs(old, new)
+#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
 #         else:
         from sympy import Symbol
         if not isinstance(old, Symbol):
@@ -1717,14 +1838,22 @@ class StrictGreaterThan(_Greater):
                         return self
                     return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), imply=self if self.plausible else None)
                 return self
+            elif isinstance(eq, dict):
+                if eq:
+                    subs = self
+                    for key, value in eq.items():
+                        subs = subs.subs(key, value)
+                    return subs
+                else:
+                    return self
 
             return self
         old, new = args
-#         if old in self.for_clause:
-#             domain = self.for_clause[old]
+#         if old in self.forall:
+#             domain = self.forall[old]
 #
-#             for_clause[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, for_clause=for_clause)
+#             forall[old] = domain.subs(old, new)
+#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
 #         else:
         from sympy import Symbol
         if not isinstance(old, Symbol):

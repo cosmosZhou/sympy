@@ -112,6 +112,12 @@ class StrPrinter(Printer):
         dvars = [i[0] if i[1] == 1 else i for i in expr.variable_count]
         return 'Derivative(%s)' % ", ".join(map(lambda arg: self._print(arg), [dexpr] + dvars))
 
+    def _print_Difference(self, expr):
+        expr,x, n = expr.args
+        if n == 1:
+            return 'Difference[%s](%s)' % (self._print(x), self._print(expr))
+        return 'Difference[%s, %s](%s)' % (self._print(x), self._print(n), self._print(expr))
+
     def _print_dict(self, d):
         keys = sorted(d.keys(), key=default_sort_key)
         items = []
@@ -221,14 +227,6 @@ class StrPrinter(Printer):
         tex = r"%s(%s)" % (self._print(expr), symbols)
 
         return tex
-
-    def _print_Lambda(self, obj):
-        args, expr = obj.args
-        if len(args) == 1:
-            return "Lambda(%s, %s)" % (self._print(args.args[0]), self._print(expr))
-        else:
-            arg_string = ", ".join(self._print(arg) for arg in args)
-            return "Lambda((%s), %s)" % (arg_string, self._print(expr))
 
     def _print_LatticeOp(self, expr):
         args = sorted(expr.args, key=default_sort_key)

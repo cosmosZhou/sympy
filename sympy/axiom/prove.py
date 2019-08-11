@@ -2,12 +2,15 @@ import os
 import re
 from sympy import axiom  # @UnusedImport
 
-
 from sympy import utility
 import traceback
 from sympy.utilities.misc import Text
 
 count = 0
+
+unproven = []
+
+erroneous = []
 
 
 def readFolder(rootdir, sufix='.py'):
@@ -46,10 +49,10 @@ def readFolder(rootdir, sufix='.py'):
                 count += 1
 
                 if not package.prove():
-                    print(package, 'is not yet proven')
+                    unproven.append(package)
 
             except Exception as e:
-                print(package)
+                erroneous.append(package)
                 traceback.print_exc()
 
         elif os.path.isdir(path):
@@ -67,3 +70,13 @@ if __name__ == '__main__':
             arr = readFolder(path)
 
     print('in all %d axioms' % count)
+
+    if unproven:
+        print('unproven axioms')
+        for p in unproven:
+            print(p)
+
+    if erroneous:
+        print('erroneous axioms')
+        for p in erroneous:
+            print(p)

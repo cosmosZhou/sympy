@@ -13,7 +13,7 @@ def apply():
     z = Symbol('z', integer=True, positive=True)
     return Unequality(x ** 3 + y ** 3, z ** 3,
                     plausible=plausible(),
-                    for_clause=(x, y, z))
+                    forall=(x, y, z))
 
 
 from sympy.utility import check
@@ -23,7 +23,7 @@ from sympy.utility import check
 def prove():
     cout << apply()
     return
-    x, y, z = Eq[-1].for_clause
+    x, y, z = Eq[-1].forall
     cout << Eq[-1].negated
 
     cout << binomial.theorem.apply(x, y, 3).doit().reversed - Eq[-1]

@@ -99,9 +99,11 @@ class Dispatcher(object):
         >>> f([1, 2, 3])
         [3, 2, 1]
         """
+
         def _(func):
             self.add(types, func, **kwargs)
             return func
+
         return _
 
     @classmethod
@@ -190,9 +192,10 @@ class Dispatcher(object):
         except KeyError:
             func = self.dispatch(*types)
             if not func:
-                raise NotImplementedError(
-                    'Could not find signature for %s: <%s>' %
-                    (self.name, str_signature(types)))
+                return None
+#                 raise NotImplementedError(
+#                     'Could not find signature for %s: <%s>' %
+#                     (self.name, str_signature(types)))
             self._cache[types] = func
         try:
             return func(*args, **kwargs)
@@ -211,6 +214,7 @@ class Dispatcher(object):
 
     def __str__(self):
         return "<dispatched %s>" % self.name
+
     __repr__ = __str__
 
     def dispatch(self, *types):
@@ -364,5 +368,5 @@ def warning_text(name, amb):
             ', '.join('[' + str_signature(s) + ']' for s in pair) + "\n"
     text += "\n\nConsider making the following additions:\n\n"
     text += '\n\n'.join(['@dispatch(' + str_signature(super_signature(s))
-                         + ')\ndef %s(...)' % name for s in amb])
+                         +')\ndef %s(...)' % name for s in amb])
     return text

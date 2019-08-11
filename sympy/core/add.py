@@ -1248,6 +1248,24 @@ class Add(Expr, AssocOp):
 
         return Integral(self.func(*function), *limits)
 
+    @property
+    def is_integer(self):
+        non_integer_count = 0
+        for arg in self.args:
+            is_integer = arg.is_integer
+            if is_integer:
+                continue
+            if is_integer is None:
+                return None
+            non_integer_count += 1
+
+        if non_integer_count == 1:
+            return False
+
+        if non_integer_count >= 2:
+            return None
+        return True
+
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

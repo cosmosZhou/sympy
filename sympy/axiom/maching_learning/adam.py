@@ -1,8 +1,6 @@
-from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.symbol import Symbol
-from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, cout, Eq, plausible
+from sympy.utility import Sum, cout, Eq
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 
@@ -43,7 +41,7 @@ def apply(*given):
 
     return Equality(m[k],
                     beta ** k * (1 - beta) * Sum[t:1:k](beta ** (-t) * g[t]),
-                    for_clause=k,
+                    forall=k,
                     given=given)
 
 
@@ -66,7 +64,7 @@ def prove():
 
     cout << Eq[-1].collect(g[t])
 
-    k = Eq[0].for_clause
+    k = Eq[0].forall
     cout << Sum[t:1 : k](Eq[-1]).right.as_two_terms()
 
     cout << Eq[-1] - Eq[-1].rhs.args[0]

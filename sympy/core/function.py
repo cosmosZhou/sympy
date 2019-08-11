@@ -965,7 +965,7 @@ class WildFunction(Function, AtomicExpr):
         from sympy.sets.sets import Set, FiniteSet
         cls.name = name
         nargs = assumptions.pop('nargs', S.Naturals0)
-        if not isinstance(nargs, Set):
+        if not nargs.is_set:
             # Canonicalize nargs here.  See also FunctionClass.
             if is_sequence(nargs):
                 nargs = tuple(ordered(set(nargs)))
@@ -2641,6 +2641,11 @@ class Difference(Expr):
             return self.expr.func(self.func(self.expr.function, *self.variable_count).simplifier(), *self.expr.limits)
         return self
 
+    def as_Add(self):
+        if isinstance(self.expr, Add):
+            return self.expr.func(*(self.func(arg, *self.variable_count).simplifier() for arg in self.expr.args))
+        return self
+
     def as_one_term(self):
         if isinstance(self.expr, self.func) and self.expr._wrt_variable == self._wrt_variable:
             n = self.variable_count[1] + self.expr.variable_count[1]
@@ -2686,12 +2691,32 @@ class Lambda(Expr):
         for i in v:
             if not getattr(i, 'is_symbol', False):
                 raise TypeError('variable is not a symbol: %s' % i)
-        if len(v) == 1 and v[0] == expr:
-            return S.IdentityFunction
 
-        obj = Expr.__new__(cls, Tuple(*v), sympify(expr))
-        obj.nargs = FiniteSet(len(v))
+        nargs = len(v)
+        if len(v) == 1:
+            v = v[0]
+            if v == expr:
+                return S.IdentityFunction
+            from sympy.tensor.indexed import Slice
+            if isinstance(v, Slice):
+                shape = v.shape
+                if len(shape) > 1:
+                    raise TypeError('multidimentional variables is not supported: %s, with shape' % (v, shape))
+                nargs = shape[0]
+        else:
+            v = Tuple(*v)
+
+        obj = Expr.__new__(cls, v, sympify(expr))
+        obj.nargs = FiniteSet(nargs)
         return obj
+
+    def _sympystr(self, p):
+        args, expr = self.args
+        if isinstance(args, Tuple):
+            arg_string = ", ".join(p._print(arg) for arg in args)
+            return "Lambda((%s), %s)" % (arg_string, p._print(expr))
+        else:
+            return "Lambda(%s, %s)" % (p._print(args), p._print(expr))
 
     @property
     def variables(self):
@@ -2707,10 +2732,21 @@ class Lambda(Expr):
 
     @property
     def free_symbols(self):
-        return self.expr.free_symbols - set(self.variables)
+        if isinstance(self.variables, Tuple):
+            return self.expr.free_symbols - set(self.variables)
+        return self.expr.free_symbols - {self.variables}
 
     def __call__(self, *args):
         n = len(args)
+        if n == 1:
+            args = args[0]
+            from sympy.tensor.indexed import IndexedBase
+            if isinstance(args, IndexedBase):
+                n = args.shape
+                if len(n) > 1:
+                    raise TypeError('lambda only allows 1 dimentional args')
+                n = n[0]
+
         if n not in self.nargs:  # Lambda only ever has 1 value in nargs
             # XXX: exception message must be in exactly this format to
             # make it work with NumPy's functions like vectorize(). See,
@@ -2718,14 +2754,16 @@ class Lambda(Expr):
             # The ideal solution would be just to attach metadata to
             # the exception and change NumPy to take advantage of this.
             # # XXX does this apply to Lambda? If not, remove this comment.
-            temp = ('%(name)s takes exactly %(args)s '
-                   'argument%(plural)s (%(given)s given)')
+            temp = ('%(name)s takes exactly %(args)s argument%(plural)s (%(given)s given)')
             raise TypeError(temp % {
                 'name': self,
                 'args': list(self.nargs)[0],
                 'plural': 's' * (list(self.nargs)[0] != 1),
                 'given': n})
-        return self.expr.xreplace(dict(list(zip(self.variables, args))))
+        if isinstance(self.variables, Tuple):
+            return self.expr.xreplace(dict(list(zip(self.variables, args))))
+#         return self.expr.xreplace({self.variables: args})
+        return self.expr.subs({self.variables: args})
 
     def __eq__(self, other):
         if not isinstance(other, Lambda):

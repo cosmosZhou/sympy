@@ -286,44 +286,6 @@ class ExprWithIntLimits(ExprWithLimits):
         else:
             raise ReorderError(expr, "could not interchange the two limits specified")
 
-    def _has(self, pattern):
-        """Helper for .has()"""
-        from sympy.tensor.indexed import Indexed, Slice
-        if isinstance(pattern, (Indexed, Slice)):
-            from sympy.core.function import UndefinedFunction, Function
-            if isinstance(pattern, UndefinedFunction):
-                return any(f.func == pattern or f == pattern for f in self.atoms(Function, UndefinedFunction))
-
-            from sympy import sympify, preorder_traversal
-            from sympy.core.assumptions import BasicMeta
-            pattern = sympify(pattern)
-            if isinstance(pattern, BasicMeta):
-                return any(isinstance(arg, pattern) for arg in preorder_traversal(self))
-
-#             _has_matcher = getattr(pattern, '_has_matcher', None)
-            has_match = getattr(pattern, 'has_match', None)
-
-            if has_match is not None:
-                if has_match(self):
-                    return True
-            else:
-                if self == pattern:
-                    return True
-
-            function = self.function
-            if self.limits:
-                for limit in self.limits:
-                    if len(limit) > 1:
-                        x, a, b = limit
-                        from sympy import Symbol, Interval
-                        function = function.subs(x, Symbol(x.name, integer=True, domain=Interval(a, b)))
-
-            boolean = function._has(pattern)
-
-            return boolean or any(arg._has(pattern) for arg in self.limits)
-
-        return ExprWithLimits._has(self, pattern)
-
     def as_multiple_terms(self, x, domain):
         from sympy.sets.sets import Interval, FiniteSet
         univeralSet = Interval(S.NegativeInfinity, S.Infinity, integer=True)
@@ -332,6 +294,7 @@ class ExprWithIntLimits(ExprWithLimits):
         for f, condition in self.function.args:
             _domain = (univeralSet - union) & x.conditional_domain(condition) & domain
             union |= _domain
+
             if isinstance(_domain, FiniteSet):
                 for e in _domain:
                     args.append(f.subs(x, e))

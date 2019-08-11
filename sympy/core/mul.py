@@ -1832,6 +1832,13 @@ class Mul(Expr, AssocOp):
 
         return sgm.func(Mul(*args).simplifier(), *sgm.limits)
 
+#     def as_Sum(self):
+#         from sympy import Sum
+
+#         if isinstance(self.expr, Sum):
+#             return self.expr.func(self.func(self.expr.function, *self.variable_count).simplifier(), *self.expr.limits)
+#         return self
+
     def as_coeff_Sum(self):
         from sympy.concrete import summations
 
@@ -1898,6 +1905,23 @@ class Mul(Expr, AssocOp):
 
                 odd = None
             return odd
+        return None
+
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices, **kw_args):
+        from sympy.functions.elementary.miscellaneous import Ref
+        args = []
+        found = False
+        for arg in self.args:
+            if isinstance(arg, Ref):
+                args.append(arg[indices])
+                found = True
+            else:
+                args.append(arg)
+        if found :
+            return self.func(*args)
         return None
 
 

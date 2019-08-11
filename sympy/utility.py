@@ -2,11 +2,10 @@ from sympy.concrete import summations, products
 from sympy.core.relational import Equality, Relational
 import sympy
 import os
-from sympy.logic.boolalg import BooleanTrue, plausibles_dict, \
-    equivalent_ancestor
+from sympy.logic.boolalg import plausibles_dict, equivalent_ancestor, \
+    BooleanFunction
 from sympy.sets.contains import Contains
 import traceback
-from sympy.matrices.expressions import matexpr
 from sympy.functions.elementary import miscellaneous
 
 
@@ -107,6 +106,17 @@ class Ref(Operator):
 
 Ref = Ref()
 
+
+class Difference(Operator):
+
+    def __call__(self, hk):
+        limit = self.stack.pop()
+        from sympy.core import function
+        return function.Difference(hk, *limit)
+
+
+Difference = Difference()
+
 sympy.init_printing()
 
 # https://www.programiz.com/python-programming/operator-overloading
@@ -142,12 +152,17 @@ class cout:
                     if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
                         return index
 
-                if id(rhs.equivalent) != id(eq):
+                if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
                     rhs_equivalent = equivalent_ancestor(rhs)
-                    if eq != rhs_equivalent:
-                        if not isinstance(rhs_equivalent, set):
+                    if len(rhs_equivalent) == 1:
+                        rhs_equivalent, *_ = rhs_equivalent
+                        if eq != rhs_equivalent:
                             rhs_equivalent.equivalent = eq
+                            hypothesis = rhs_equivalent.hypothesis
+                            for h in hypothesis:
+                                h.derivative = None
 
+            Eq[index] = rhs
             return index
 
     def __lshift__(self, rhs):
@@ -161,7 +176,7 @@ class cout:
             rhs = rhs.expr
 
         if batch_proving:
-            if isinstance(rhs, (Relational, Contains)):
+            if isinstance(rhs, (Relational, BooleanFunction)):
                 self.add_to_list(rhs)
             return self
 
@@ -173,47 +188,16 @@ class cout:
             latex = ''
 
         infix = str(rhs)
-        if isinstance(rhs, (Relational, Contains)):
+        if isinstance(rhs, (Relational, BooleanFunction)):
             index = self.add_to_list(rhs)
 
             tag = r'\tag*{Eq[%d]}' % index
-#             if rhs.given is not None:
-#                 if isinstance(rhs.given, (list, tuple)):
-#                     tag += r'\Leftarrow ' + ','.join('Eq[%d]' % Eq.index(given) for given in rhs.given)
-#                 else:
-#                     tag += r'\Leftarrow Eq[%d]' % Eq.index(rhs.given)
-#             elif rhs.equivalent is not None:
-#                 if isinstance(rhs.equivalent, (list, tuple)):
-#                     tag += r'\Leftrightarrow ' + ','.join('Eq[%d]' % Eq.index(equivalent) for equivalent in rhs.equivalent)
-#                 else:
-#                     tag += r'\Leftrightarrow Eq[%d]' % Eq.index(rhs.equivalent)
-#
-#             tag += '}'
+            latex = rhs.clause_latex(latex)
             latex += tag
-            for_clause = rhs.for_clause
-            with_clause = rhs.with_clause
-            if for_clause is not None:
-                latex += r',\ for\ '
-                if isinstance(for_clause, (tuple, list)):
-                    latex += ',\ '.join(var.domain_latex() for var in for_clause)
 
-                else:
-                    latex += for_clause.domain_latex()
-            if with_clause is not None:
-                latex += r',\ with\ '
-                if isinstance(with_clause, (tuple, list)):
-                    latex += ',\ '.join(var.domain_latex() for var in with_clause)
-
-                else:
-                    latex += with_clause.domain_latex()
-#             latex += r'\\'
             infix = 'Eq[%d] : %s' % (index, infix)
 
-#         else:
-#             latex += r'\\'
-
         self.file.append(r'\[%s\]' % latex)
-#         self.file.insert(-2, latex)
 
         print(infix)
         return self

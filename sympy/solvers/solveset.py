@@ -1664,7 +1664,7 @@ def solveset(f, symbol=None, domain=S.Complexes):
     if not isinstance(symbol, Expr) and  symbol is not None:
         raise ValueError("%s is not a valid SymPy symbol" % symbol)
 
-    if not isinstance(domain, Set):
+    if not domain.is_set:
         raise ValueError("%s is not a valid domain" %(domain))
 
     free_symbols = f.free_symbols

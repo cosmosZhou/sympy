@@ -13,14 +13,14 @@ def apply():
     z = Symbol('z', integer=True, nonnegative=True)
     return Unequality(x ** n + y ** n, z ** n,
                     plausible=plausible(),
-                    for_clause=(n, x, y, z))
+                    forall=(n, x, y, z))
 
 
 from sympy.utility import check
 @check
 def prove():
     cout << apply()
-    n, x, y, z = Eq[-1].for_clause
+    n, x, y, z = Eq[-1].forall
 
 
 if __name__ == '__main__':

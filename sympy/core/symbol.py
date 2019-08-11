@@ -128,11 +128,11 @@ def _uniquely_named_symbol(xname, exprs=(), compare=str, modify=None, **assumpti
     return _symbol(x, default, **assumptions)
 
 
-def generate_free_symbol(free_symbols, **kwargs):
+def generate_free_symbol(free_symbols, shape=(), **kwargs):
     free_symbols = [*free_symbols]
     free_symbols.sort(key=lambda x : x.name)
     for s in free_symbols:
-        s = s.generate_free_symbol(free_symbols=free_symbols, **kwargs)
+        s = s.generate_free_symbol(free_symbols=free_symbols, shape=shape, **kwargs)
         if s is not None:
             return s
     return None
@@ -208,7 +208,7 @@ class Symbol(AtomicExpr, Boolean):
                 assumptions.pop(key)
                 continue
 
-            if key != 'domain' and key != 'definition':
+            if key != 'domain' and key != 'definition' and key != 'dtype':
                 assumptions[key] = bool(v)
 
     def __new__(cls, name, **assumptions):
@@ -309,14 +309,11 @@ class Symbol(AtomicExpr, Boolean):
         from sympy.sets.sets import Interval
 
         if 'domain' in self._assumptions:
-            if self.is_integer:
-                domain = self._assumptions['domain']
-                args = [*domain.args]
-                args[-1] = True
-                return domain.func(*args)
+            domain = self._assumptions['domain']
+            if self.is_integer and not domain.is_integer:
+                return domain.flip_integer()
+            return domain
 
-            return self._assumptions['domain']
-        from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
 
         if self.is_integer:
@@ -348,48 +345,22 @@ class Symbol(AtomicExpr, Boolean):
             return self._assumptions['definition']
         return None
 
-    def generate_free_symbol(self, free_symbols=None, **kwargs):
+    def generate_free_symbol(self, free_symbols=None, shape=(), **kwargs):
         if free_symbols is None:
             free_symbols = set()
         free_symbols = set(symbol.name for symbol in free_symbols)
         name = self.name
-        if len(name) == 1:
-            while True:
-                name = chr(ord(name) + 1)
-                if name not in free_symbols:
-                    return self.func(name, **kwargs)
+        if len(name) > 1:
+            name = 'a'
+
+        while True:
+            name = chr(ord(name) + 1)
+            if name not in free_symbols:
+                if len(shape) > 0:
+                    from sympy.tensor.indexed import IndexedBase
+                    return IndexedBase(name, shape, **kwargs)
+                return self.func(name, **kwargs)
         return None
-
-    def domain_latex(self):
-
-        domain = self.domain
-        from sympy.sets.sets import Interval
-        from sympy.core.numbers import oo
-        if type(domain) == Interval:
-            start, end = domain.start, domain.end
-            if end == oo:
-                if start == -oo:
-                    if domain.is_integer:
-                        return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
-                    return r"%s\in%s" % (self.latex, r'\mathbb{R}')
-                if domain.left_open:
-                    return r"%s > %s" % (self.latex, start.latex)
-                return r"%s \ge %s" % (self.latex, start.latex)
-            else:
-                if start == -oo:
-                    if domain.right_open:
-                        return r"%s < %s" % (self.latex, end.latex)
-                    return r"%s \le %s" % (self.latex, end.latex)
-
-                if domain.left_open:
-                    if domain.right_open:
-                        return r"%s < %s < %s" % (start.latex, self.latex, end.latex)
-                    return r"%s < %s \le %s" % (start.latex, self.latex, end.latex)
-                if domain.right_open:
-                    return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
-                return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
-        else:
-            return r"%s \in %s" % (start.latex, domain.latex)
 
     def nonzero_domain(self, x):
         from sympy.sets.sets import Interval
@@ -408,6 +379,86 @@ class Symbol(AtomicExpr, Boolean):
             domain = self._assumptions['domain']
             return domain.is_integer
         return None
+
+    @property
+    def is_set(self):
+        if 'dtype' in self._assumptions:
+            dtype = self._assumptions['dtype']
+            if dtype is not None:
+                return True
+        definition = self.definition
+        if definition is not None:
+            return definition.is_set
+        return False
+
+    @property
+    def dtype(self):
+        if 'dtype' in self._assumptions:
+            return self._assumptions['dtype'].set
+        definition = self.definition
+        if definition is not None:
+            return definition.dtype
+        if self.is_integer:
+            return dtype.integer
+        if self.is_rational:
+            return dtype.rational
+        if self.is_real:
+            return dtype.real
+        if self.is_complex:
+            return dtype.complex
+
+    def _has(self, pattern):
+        """Helper for .has()"""
+        if Expr._has(self, pattern):
+            return True
+
+        from sympy.core.assumptions import ManagedProperties
+
+        if not isinstance(pattern, (FunctionClass, ManagedProperties)):
+            if 'definition' in self._assumptions:
+                definition = self._assumptions['definition']
+                return definition._has(pattern)
+
+            if 'domain' in self._assumptions:
+                domain = self._assumptions['domain']
+                return domain._has(pattern)
+
+        return False
+
+    @property
+    def element_type(self):
+        if 'dtype' in self._assumptions:
+            return self._assumptions['dtype']
+        definition = self.definition
+        if definition is not None:
+            return definition.element_type
+        return None
+
+    @property
+    def element_symbol(self):
+        element_type = self.element_type
+        if element_type is None:
+            return
+
+        return self.generate_free_symbol(shape=element_type.shape, **element_type.dict)
+
+    def assertion(self):
+        definition = self.definition
+        from sympy.sets.conditionset import ConditionSet
+        from sympy.sets.fancysets import ImageSet
+        from sympy.tensor.indexed import Slice
+        if isinstance(definition, ImageSet) and isinstance(definition.base_set, ConditionSet):
+            sym = definition.base_set.sym
+            if isinstance(sym, Symbol):
+                ...
+            elif isinstance(sym, Slice):
+                condition = definition.base_set.condition
+                element_symbol = self.element_symbol
+                assert definition.lamda.expr.dtype == element_symbol.dtype
+
+                from sympy.core.relational import Equality
+
+                return condition.func(*condition.args, forall={element_symbol:self}, exists={definition.lamda.variables: Equality(definition.lamda.expr, element_symbol)})
 
 
 class Dummy(Symbol):
@@ -940,3 +991,243 @@ def disambiguate(*iter):
             ki = mapping[k][i]
             reps[ki] = Symbol(name, **ki.assumptions0)
     return new_iter.xreplace(reps)
+
+
+class Dtype:
+    is_set = False
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    @property
+    def natural(self):
+        return DtypeNatural()
+
+    @property
+    def integer(self):
+        return DtypeInteger()
+
+    @property
+    def real(self):
+        return DtypeReal()
+
+    @property
+    def rational(self):
+        return DtypeRational()
+
+    @property
+    def complex(self):
+        return DtypeComplex()
+
+    @property
+    def set(self):
+        return DtypeSet(self)
+
+    @property
+    def condition(self):
+        return DtypeCondition()
+
+    def __mul__(self, length):
+        if isinstance(length, (tuple, Tuple, list)):
+            if len(length) == 1:
+                return DtypeVector(self, length[0])
+            return DtypeMatrix(self, length)
+        return DtypeVector(self, length)
+
+    @property
+    def shape(self):
+        return ()
+
+#     def __eq__(self, other):
+#         return False
+
+
+class DtypeComplex(Dtype):
+
+    def __str__(self):
+        return 'complex'
+
+    @property
+    def dict(self):
+        return {'complex' : True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeComplex)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeCondition(Dtype):
+
+    def __str__(self):
+        return 'condition'
+
+    @property
+    def dict(self):
+        return {'condition' : True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeCondition)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeReal(DtypeComplex):
+
+    def __str__(self):
+        return 'real'
+
+    @property
+    def dict(self):
+        return {'real' : True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeReal)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeRational(DtypeReal):
+
+    def __str__(self):
+        return 'rational'
+
+    @property
+    def dict(self):
+        return {'rational' : True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeRational)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeInteger(DtypeRational):
+
+    def __str__(self):
+        return 'integer'
+
+    @property
+    def dict(self):
+        return {'integer' : True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeInteger)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeNatural(DtypeInteger):
+
+    def __str__(self):
+        return 'natural'
+
+    @property
+    def dict(self):
+        return {'integer' : True, 'positive': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeNatural)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeSet(Dtype):
+
+    def __init__(self, dtype):
+        self.dtype = dtype
+
+    def __str__(self):
+        return '{%s}' % self.dtype
+
+    @property
+    def dict(self):
+        return {'dtype' : self.dtype}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeSet) and self.dtype == other.dtype
+
+    def __hash__(self):
+        return hash((type(self).__name__, self.dtype))
+
+    is_set = True
+
+
+class DtypeVector(Dtype):
+
+    def __init__(self, dtype, length):
+        self.dtype = dtype
+        self.length = length
+
+    def __str__(self):
+        return '%s[%s]' % (self.dtype, self.length)
+
+    def __getitem__(self, indices):
+        if isinstance(indices, slice):
+            start, stop = indices.start, indices.stop
+            return DtypeVector(self.dtype, stop - start)
+        else:
+            return self.dtype
+
+    def __mul__(self, length):
+        if isinstance(length, (tuple, Tuple, list)):
+            return DtypeMatrix(self.dtype, (self.length,) + length)
+        return DtypeMatrix(self, (self.length, length))
+
+    @property
+    def shape(self):
+        return (self.length,)
+
+    @property
+    def dict(self):
+        return self.dtype.dict
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeVector) and self.length == other.length and self.dtype == other.dtype
+
+    def __hash__(self):
+        return hash((type(self).__name__, self.dtype, self.length))
+
+
+class DtypeMatrix(Dtype):
+
+    def __init__(self, dtype, shape):
+        self.dtype = dtype
+        self.shape = tuple(shape)
+
+    def __str__(self):
+        return '%s[%s]' % (self.dtype, ', '.join(str(length) for length in self.shape))
+
+    def __getitem__(self, indices):
+        if isinstance(indices, (tuple, Tuple, list)):
+            ...
+        elif isinstance(indices, slice):
+            start, stop = indices.start, indices.stop
+            shape = (stop - start,) + self.shape[1:]
+            return Basic.__new__(DtypeMatrix, self.dtype, shape)
+        else:
+            ...
+
+    def __mul__(self, length):
+        if isinstance(length, (tuple, Tuple, list)):
+            return Basic.__new__(DtypeMatrix, self.dtype, self.shape + length)
+        return Basic.__new__(DtypeMatrix, self, self.shape + (length,))
+
+    @property
+    def dict(self):
+        return self.dtype.dict
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeVector) and self.shape == other.shape and self.dtype == other.dtype
+
+    def __hash__(self):
+        return hash((type(self).__name__, self.dtype, self.shape))
+
+
+dtype = Dtype()

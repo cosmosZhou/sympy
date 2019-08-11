@@ -143,3 +143,4 @@ def union_sets(a, b):
 @dispatch(Set, Set)
 def union_sets(a, b):
     return None
+

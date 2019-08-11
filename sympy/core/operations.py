@@ -391,6 +391,9 @@ class AssocOp(Basic):
             return odd
         return not odd
 
+    def as_expr(self):
+        return self
+
 
 class ShortCircuit(Exception):
     pass
@@ -448,7 +451,7 @@ class LatticeOp(AssocOp):
         else:
             # XXX in almost every other case for __new__, *_args is
             # passed along, but the expectation here is for _args
-            obj = super(AssocOp, cls).__new__(cls, _args)
+            obj = super(AssocOp, cls).__new__(cls, _args, **options)
             obj._argset = _args
             return obj
 

@@ -1011,17 +1011,24 @@ class LatexPrinter(Printer):
             return r"\neg %s" % self._print(e.args[0])
 
     def _print_LogOp(self, args, char):
+
+        def combine_clause(arg):
+            latex = self._print(arg)
+            if arg.exists is not None or arg.forall is not None:
+                return '{%s}' % arg.clause_latex(latex)
+            return latex
+
         arg = args[0]
         if arg.is_Boolean and not arg.is_Not:
             tex = r"\left(%s\right)" % self._print(arg)
         else:
-            tex = r"%s" % self._print(arg)
+            tex = r"%s" % combine_clause(arg)
 
         for arg in args[1:]:
             if arg.is_Boolean and not arg.is_Not:
                 tex += r" %s \left(%s\right)" % (char, self._print(arg))
             else:
-                tex += r" %s %s" % (char, self._print(arg))
+                tex += r" %s %s" % (char, combine_clause(arg))
 
         return tex
 
@@ -1526,10 +1533,10 @@ class LatexPrinter(Printer):
         ecpairs = [r"%s & \text{for}\: %s" % (self._print(e), self._print(c))
                    for e, c in expr.args[:-1]]
         if expr.args[-1].cond == true:
-            ecpairs.append(r"%s & \text{otherwise}" %
+            ecpairs.append(r"%s & \text{otherwise}" % 
                            self._print(expr.args[-1].expr))
         else:
-            ecpairs.append(r"%s & \text{for}\: %s" %
+            ecpairs.append(r"%s & \text{for}\: %s" % 
                            (self._print(expr.args[-1].expr),
                             self._print(expr.args[-1].cond)))
         tex = r"\begin{cases} %s \end{cases}"
@@ -1585,8 +1592,8 @@ class LatexPrinter(Printer):
                 x[0] = ''
             return ':'.join(map(self._print, x))
 
-        return (self._print(expr.parent) + r'\left[' +
-                latexslice(expr.rowslice) + ', ' +
+        return (self._print(expr.parent) + r'\left[' + 
+                latexslice(expr.rowslice) + ', ' + 
                 latexslice(expr.colslice) + r'\right]')
 
     def _print_BlockMatrix(self, expr):
@@ -1904,7 +1911,7 @@ class LatexPrinter(Printer):
         if hasattr(d, 'as_boolean'):
             return '\\text{Domain: }' + self._print(d.as_boolean())
         elif hasattr(d, 'set'):
-            return ('\\text{Domain: }' + self._print(d.symbols) + '\\text{ in }' +
+            return ('\\text{Domain: }' + self._print(d.symbols) + '\\text{ in }' + 
                     self._print(d.set))
         elif hasattr(d, 'symbols'):
             return '\\text{Domain on }' + self._print(d.symbols)
@@ -1930,14 +1937,14 @@ class LatexPrinter(Printer):
         elif s.stop.is_infinite:
             it = iter(s)
             printset = next(it), next(it), dots
-        elif len(s) > 4:
+        elif abs(s) > 4:
             it = iter(s)
             printset = next(it), next(it), dots, s[-1]
         else:
             printset = tuple(s)
 
-        return (r"\left\{" +
-                r", ".join(self._print(el) for el in printset) +
+        return (r"\left\{" + 
+                r", ".join(self._print(el) for el in printset) + 
                 r"\right\}")
 
     def _print_bernoulli(self, expr, exp=None):
@@ -1984,8 +1991,8 @@ class LatexPrinter(Printer):
         else:
             printset = tuple(s)
 
-        return (r"\left[" +
-                r", ".join(self._print(el) for el in printset) +
+        return (r"\left[" + 
+                r", ".join(self._print(el) for el in printset) + 
                 r"\right]")
 
     _print_SeqPer = _print_SeqFormula
@@ -2043,14 +2050,6 @@ class LatexPrinter(Printer):
 
     def _print_Complexes(self, i):
         return r"\mathbb{C}"
-
-    def _print_ImageSet(self, s):
-        sets = s.args[1:]
-        varsets = [r"%s \in %s" % (self._print(var), self._print(setv))
-                   for var, setv in zip(s.lamda.variables, sets)]
-        return r"\left\{%s\; |\; %s\right\}" % (
-            self._print(s.lamda.expr),
-            ', '.join(varsets))
 
     def _print_ConditionSet(self, s):
         vars_print = ', '.join([self._print(var) for var in Tuple(s.sym)])

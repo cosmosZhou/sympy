@@ -286,6 +286,33 @@ class ExprWithLimits(Expr):
         """Return True if the Sum has no free symbols, else False."""
         return not self.free_symbols
 
+    def _has(self, pattern):
+        """Helper for .has()"""
+        from sympy.tensor.indexed import Indexed, Slice
+        from sympy.core.assumptions import BasicMeta
+        from sympy.core.function import UndefinedFunction
+        if isinstance(pattern, (BasicMeta, UndefinedFunction)):
+            return ExprWithLimits._has(self, pattern)
+        if not isinstance(pattern, (Symbol, Indexed, Slice)):
+            return ExprWithLimits._has(self, pattern)
+
+        function = self.function
+        limits = []
+
+        if self.limits:
+            for limit in self.limits:
+                if len(limit) > 1:
+                    x, a, b = limit
+                    _x = Symbol(x.name, integer=x.is_integer, domain=Interval(a, b))
+                    function = function.subs(x, _x)
+                    limits.append(Tuple(_x, a, b))
+                else:
+                    limits.append(limit)
+
+        boolean = function._has(pattern)
+
+        return boolean or any(arg._has(pattern) for arg in limits)
+
     def _eval_interval(self, x, a, b):
         limits = [(i if i[0] != x else (x, a, b)) for i in self.limits]
         integrand = self.function

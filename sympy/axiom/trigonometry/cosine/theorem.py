@@ -67,7 +67,7 @@ def apply(*given):
 #     given.clauses()
     theta = Symbol("theta", domain=Interval(pi / 3, pi, right_open=True))
     return Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta),
-                    with_clause=theta,
+                    exists=theta,
                     given=given,
                     plausible=plausible())
 
@@ -79,7 +79,7 @@ def prove():
     x_constraint, y_constraint, z_constraint = Eq[-1].given
     x, y, z = extract(x_constraint, y_constraint, z_constraint)
 
-    cout << Eq[-1].solve(Eq[-1].with_clause)
+    cout << Eq[-1].solve(Eq[-1].exists)
 
     cout << Eq[-1].cos()
 

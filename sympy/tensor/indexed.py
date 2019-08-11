@@ -168,6 +168,10 @@ class Indexed(Expr):
         """Allow derivatives with respect to an ``Indexed`` object."""
         return True
 
+    @property
+    def is_set(self):
+        return self.base.dtype[self.indices].is_set
+
     def _eval_derivative(self, wrt):
         from sympy.tensor.array.ndim_array import NDimArray
 
@@ -337,10 +341,10 @@ class Indexed(Expr):
         from sympy.matrices.expressions.matexpr import MatrixElement
         if isinstance(exp, MatrixElement) and exp.parent == self.base:
             return True
+        from sympy.core.symbol import Wild
         if isinstance(exp, Indexed) and exp.base == self.base:
             if len(exp.indices) == 1:
                 index_fixed, *_ = self.indices
-                from sympy.core.symbol import Wild
                 if isinstance(index_fixed, Wild):
                     return False
                 index, *_ = exp.indices
@@ -352,6 +356,20 @@ class Indexed(Expr):
                 # it is possible for them to be equal!
                 return True
 
+        if isinstance(exp, Slice) and exp.base == self.base:
+            if len(self.indices) == 1:
+                start, stop = exp.indices
+                index_fixed, *_ = self.indices
+
+                if isinstance(index_fixed, Wild):
+                    return False
+
+                if stop <= index_fixed:
+                    return False
+                if start > index_fixed:
+                    return False
+                # it is possible for them to be equal!
+                return True
         return False
 
     def _has(self, pattern):
@@ -367,6 +385,11 @@ class Indexed(Expr):
     def _subs(self, old, new):
         if self.base == old:
             return new[self.indices]
+        if isinstance(old, Slice) and old.base == self.base and len(self.indices) == 1:
+            k = self.indices[0]
+            start, stop = old.indices
+            if k >= start and  k < stop:
+                return new[k - start]
         return Expr._subs(self, old, new)
 
     @property
@@ -387,6 +410,10 @@ class Indexed(Expr):
             if isinstance(definition, RandomSymbol) or contain_random_symbols(definition):
                 return True
         return False
+
+    @property
+    def dtype(self):
+        return self.base.dtype[self.indices]
 
 
 class IndexedBase(Expr, NotIterable):
@@ -469,14 +496,19 @@ class IndexedBase(Expr, NotIterable):
 #         if shape is not None:
 #             obj = Expr.__new__(cls, label, shape)
 #         else:
-        obj = Expr.__new__(cls, label)
+        obj = Expr.__new__(cls, label, **kw_args)
 
         obj._shape = shape
         obj._offset = offset
         obj._strides = strides
         obj._name = str(label)
-        obj.definition = kw_args.pop('definition', None)
         return obj
+
+    @property
+    def definition(self):
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition']
+        return None
 
     @property
     def name(self):
@@ -489,6 +521,11 @@ class IndexedBase(Expr, NotIterable):
 #                 raise IndexException("Rank mismatch.")
             return Indexed(self, *indices, **kw_args)
         elif isinstance(indices, slice):
+            start, stop = indices.start, indices.stop
+            if start is None:
+                start = 0
+            if start == stop - 1:
+                return Indexed(self, start, **kw_args)
             return Slice(self, indices, **kw_args)
         else:
 #             if self.shape and len(self.shape) != 1:
@@ -586,20 +623,26 @@ class IndexedBase(Expr, NotIterable):
     def _sympystr(self, p):
         return p.doprint(self.label)
 
+    @property
+    def dtype(self):
+        if 'dtype' in self._assumptions:
+            return self._assumptions['dtype'].set * self.shape
+        definition = self.definition
+        if definition is not None:
+            return definition.dtype
+        from sympy.core.symbol import dtype
+        if self.is_integer:
+            return dtype.integer * self.shape
+        if self.is_rational:
+            return dtype.rational * self.shape
+        if self.is_real:
+            return dtype.real * self.shape
+        if self.is_complex:
+            return dtype.complex * self.shape
+
 
 class Slice(Expr):
     """Represents a mathematical object with Slices.
-
-    >>> from sympy import Indexed, IndexedBase, Idx, symbols
-    >>> i, j = symbols('i j', cls=Idx)
-    >>> Indexed('A', i, j)
-    A[i, j]
-
-    It is recommended that ``Indexed`` objects be created via ``IndexedBase``:
-
-    >>> A = IndexedBase('A')
-    >>> Indexed('A', i, j) == A[i, j]
-    True
 
     """
     is_commutative = True
@@ -619,7 +662,10 @@ class Slice(Expr):
                 Indexed expects string, Symbol, or IndexedBase as base."""))
         if len(args) == 1:
             args, *_ = args
-            args = [sympify(args.start), sympify(args.stop)]
+            start, stop = args.start, args.stop
+            if start is None:
+                start = 0
+            args = [sympify(start), sympify(stop)]
 
         return Expr.__new__(cls, base, *args, **kw_args)
 
@@ -726,25 +772,19 @@ class Slice(Expr):
         >>> B[i, j].shape
         (m, m)
         """
-        from sympy.utilities.misc import filldedent
 
-        if self.base.shape:
-            return self.base.shape
         sizes = []
-        for i in self.indices:
-            upper = getattr(i, 'upper', None)
-            lower = getattr(i, 'lower', None)
-            if None in (upper, lower):
-                raise IndexException(filldedent("""
-                    Range is not defined for all indices in: %s""" % self))
-            try:
-                size = upper - lower + 1
-            except TypeError:
-                raise IndexException(filldedent("""
-                    Shape cannot be inferred from Idx with
-                    undefined range: %s""" % self))
-            sizes.append(size)
+        start, stop = self.indices
+        sizes.append(stop - start)
+
+        if len(self.base.shape) > len(sizes):
+            sizes += [self.base.shape[i] for i in range(len(sizes), len(self.base.shape))]
+
         return Tuple(*sizes)
+
+    def __len__(self):
+        start, stop = self.indices
+        return stop - start
 
     @property
     def ranges(self):
@@ -803,7 +843,7 @@ class Slice(Expr):
         else:
             front = length - back
 
-        return self.base[start, stop - back], self.base[stop - back: stop]
+        return self.base[start:stop - back], self.base[stop - back: stop]
 
     def has_match(self, exp):
         from sympy.matrices.expressions.matexpr import MatrixElement
@@ -827,6 +867,11 @@ class Slice(Expr):
         """Helper for .has()"""
 
         return self.match
+
+    @property
+    def dtype(self):
+        start, stop = self.indices
+        return self.base.dtype[start : stop]
 
 
 class Idx(Expr):

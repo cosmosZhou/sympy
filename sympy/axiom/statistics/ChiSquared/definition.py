@@ -21,7 +21,7 @@ def apply():
     y = Y.symbol
 
     return Equality(Density(Sum[i:k](X[i] * X[i]))(y), Density(Y)(y).doit(),
-                    for_clause=(y, k),
+                    forall=(y, k),
                     where=X,
                     plausible=plausible())
 
@@ -32,7 +32,7 @@ from sympy.utility import check
 @check
 def prove():
     cout << apply()  # 0
-    y, k = Eq[0].for_clause
+    y, k = Eq[0].forall
     X = Eq[0].where
     i = Symbol('i', integer=True)
 
