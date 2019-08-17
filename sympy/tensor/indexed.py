@@ -635,11 +635,11 @@ class IndexedBase(Expr, NotIterable):
             return dtype.integer * self.shape
         if self.is_rational:
             return dtype.rational * self.shape
-        if self.is_real:
-            return dtype.real * self.shape
+            
         if self.is_complex:
             return dtype.complex * self.shape
-
+#         if self.is_real:
+        return dtype.real * self.shape
 
 class Slice(Expr):
     """Represents a mathematical object with Slices.

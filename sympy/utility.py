@@ -8,6 +8,7 @@ from sympy.logic.boolalg import plausibles_dict, equivalent_ancestor, \
 from sympy.sets.contains import Contains
 import traceback
 from sympy.functions.elementary import miscellaneous
+from sympy import concrete
 
 
 def init(func):
@@ -102,7 +103,7 @@ class Ref(Operator):
     def __call__(self, hk):
         limit = self.stack.pop()
 
-        return miscellaneous.Ref(hk, *limit)
+        return concrete.expr_with_limits.Ref(hk, *limit)
 
 
 Ref = Ref()

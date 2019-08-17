@@ -11,6 +11,8 @@ from sympy.core.basic import _aresame
 from sympy.core.function import Function, Application
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.tensor.indexed import IndexedBase
+from sympy.concrete.expr_with_limits import UnionComprehension
+
 
 
 def apply(n, k):
@@ -122,10 +124,9 @@ def prove():
 
     cout << Equality.by_definition_of(s4_imageset)
 
-    eq = Eq[-1]
-#     cout << eq.split_debug()
-    cout << eq.split()
-#     cout << Eq[-1].split_debug()
+    cout << Eq[-1].split()
+    
+    cout << UnionComprehension(Eq[38], (i, 0, k))
 
 
 if __name__ == '__main__':

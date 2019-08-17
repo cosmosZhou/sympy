@@ -2246,7 +2246,7 @@ class SymmetricDifference(Set):
 
 
 def imageset(sym, expr, condition):
-    from sympy.functions.elementary.miscellaneous import UnionComprehension
+    from sympy.concrete.expr_with_limits import UnionComprehension
     return UnionComprehension(FiniteSet(expr), (sym, condition))
 
 

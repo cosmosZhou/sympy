@@ -285,25 +285,7 @@ class ExprWithIntLimits(ExprWithLimits):
             return type(expr)(expr.function, *limits)
         else:
             raise ReorderError(expr, "could not interchange the two limits specified")
-
-    def as_multiple_terms(self, x, domain):
-        from sympy.sets.sets import Interval, FiniteSet
-        univeralSet = Interval(S.NegativeInfinity, S.Infinity, integer=True)
-        args = []
-        union = S.EmptySet
-        for f, condition in self.function.args:
-            _domain = (univeralSet - union) & x.conditional_domain(condition) & domain
-            union |= _domain
-
-            if isinstance(_domain, FiniteSet):
-                for e in _domain:
-                    args.append(f.subs(x, e))
-            elif _domain != S.EmptySet:
-                assert _domain.is_integer
-                args.append(self.func(f, (x, _domain.min(), _domain.max())).simplifier())
-
-        return args
-
+        
     def subs_limits(self, old, new):
         from sympy.solvers import solve
         if len(self.limits) == 1:

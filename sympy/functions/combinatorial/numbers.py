@@ -2039,7 +2039,7 @@ class Stirling(Function):
 
     @property
     def definition(self):
-        from sympy.functions.elementary.miscellaneous import UnionComprehension
+        from sympy.concrete.expr_with_limits import UnionComprehension
         from sympy.sets.conditionset import ConditionSet
         from sympy.tensor.indexed import IndexedBase
         from sympy.core.numbers import oo

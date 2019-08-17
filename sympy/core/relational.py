@@ -1052,7 +1052,7 @@ class Equality(Relational):
 
         if isinstance(x, IndexedBase):
             from sympy import Mul
-            from sympy.functions.elementary.miscellaneous import Ref
+            from sympy.concrete.expr_with_limits import Ref
             if isinstance(x.definition, Ref):
                 return Eq(x[tuple(var for var, *_ in x.definition.limits)], x.definition.function)
             elif isinstance(x.definition, Mul):

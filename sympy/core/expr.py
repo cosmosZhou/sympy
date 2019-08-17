@@ -3690,13 +3690,13 @@ class Expr(Basic, EvalfMixin):
                     graph[x].add(y)
 
         from sympy.utilities.iterables import topological_sort_depth_first
-        from sympy.functions.elementary import miscellaneous
+        from sympy.concrete.expr_with_limits import Minimum
         G = topological_sort_depth_first(graph)
 
         f = self
         for x in G:
-            f = miscellaneous.Minimum(f, (x,)).doit()
-            if isinstance(f, miscellaneous.Minimum):
+            f = Minimum(f, (x,)).doit()
+            if isinstance(f, Minimum):
                 return None
 
         return f
@@ -3720,7 +3720,7 @@ class Expr(Basic, EvalfMixin):
 #                 graph[x].add(y)
 
         from sympy.utilities.iterables import topological_sort_depth_first
-        from sympy.functions.elementary import miscellaneous
+        from sympy.concrete.expr_with_limits import Maximum
         G = topological_sort_depth_first(graph)
 
         f = self
@@ -3728,8 +3728,8 @@ class Expr(Basic, EvalfMixin):
             if x not in free_symbols:
                 continue
 
-            f = miscellaneous.Maximum(f, (x,)).doit()
-            if isinstance(f, miscellaneous.Maximum):
+            f = Maximum(f, (x,)).doit()
+            if isinstance(f, Maximum):
                 return None
 
         return f
