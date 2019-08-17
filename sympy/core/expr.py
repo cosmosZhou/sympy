@@ -37,6 +37,10 @@ class Expr(Basic, EvalfMixin):
     is_FiniteSet = None
 
     @property
+    def shape(self):
+        return ()
+
+    @property
     def _diff_wrt(self):
         """Return True if one can differentiate with respect to this
         object, else False.

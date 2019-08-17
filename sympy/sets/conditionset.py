@@ -159,7 +159,7 @@ class ConditionSet(Set):
                     condition.xreplace({sym: dum}),
                     c.xreplace({s: dum}))
                 sym = dum
-        from sympy.tensor.indexed import Slice                        
+        from sympy.tensor.indexed import Slice
         assert isinstance(sym, (Symbol, Slice))
 #             s = Dummy('lambda')
 #             if s not in condition.xreplace({sym: s}).free_symbols:
@@ -172,12 +172,18 @@ class ConditionSet(Set):
     condition = property(lambda self: self.args[1])
     base_set = property(lambda self: self.args[2])
 
+    def assertion(self):
+        sym = self.sym
+        condition = self.condition
+
+        return condition.func(*condition.args, forall={sym:self})
+
     @property
     def element_type(self):
         if self.base_set != S.UniversalSet:
             return self.base_set.element_type
 #         if self.sym.is_set:
-#             return self.sym.element_type() + 's' 
+#             return self.sym.element_type() + 's'
         return self.sym.dtype
 
     @property

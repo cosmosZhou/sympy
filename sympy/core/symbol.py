@@ -17,6 +17,7 @@ from sympy.core.containers import Tuple
 import string
 import re as _re
 import random
+from builtins import isinstance
 
 
 def _symbol(s, matching_symbol=None, **assumptions):
@@ -445,20 +446,29 @@ class Symbol(AtomicExpr, Boolean):
     def assertion(self):
         definition = self.definition
         from sympy.sets.conditionset import ConditionSet
-        from sympy.sets.fancysets import ImageSet
         from sympy.tensor.indexed import Slice
-        if isinstance(definition, ImageSet) and isinstance(definition.base_set, ConditionSet):
-            sym = definition.base_set.sym
+        from sympy.core.relational import Equality
+
+        if isinstance(definition, ConditionSet):
+            sym = definition.sym
+            condition = definition.condition
+
+            return condition.func(*condition.args, forall={sym:self})
+
+        image_set = definition.image_set()
+        if image_set is None:
+            return
+
+        expr, variables, base_set = image_set
+        if isinstance(base_set, ConditionSet):
+            sym = base_set.sym
             if isinstance(sym, Symbol):
                 ...
             elif isinstance(sym, Slice):
-                condition = definition.base_set.condition
+                condition = base_set.condition
                 element_symbol = self.element_symbol
-                assert definition.lamda.expr.dtype == element_symbol.dtype
-
-                from sympy.core.relational import Equality
-
-                return condition.func(*condition.args, forall={element_symbol:self}, exists={definition.lamda.variables: Equality(definition.lamda.expr, element_symbol)})
+                assert expr.dtype == element_symbol.dtype
+                return condition.func(*condition.args, forall={element_symbol:self}, exists={variables: Equality(expr, element_symbol)})
 
 
 class Dummy(Symbol):

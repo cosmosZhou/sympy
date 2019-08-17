@@ -1033,11 +1033,11 @@ class LatexPrinter(Printer):
         return tex
 
     def _print_And(self, e):
-        args = sorted(e.args, key=default_sort_key)
+        args = sorted(e._argset, key=default_sort_key)
         return self._print_LogOp(args, r"\wedge")
 
     def _print_Or(self, e):
-        args = sorted(e.args, key=default_sort_key)
+        args = sorted(e._argset, key=default_sort_key)
         return self._print_LogOp(args, r"\vee")
 
     def _print_Xor(self, e):
@@ -1533,10 +1533,10 @@ class LatexPrinter(Printer):
         ecpairs = [r"%s & \text{for}\: %s" % (self._print(e), self._print(c))
                    for e, c in expr.args[:-1]]
         if expr.args[-1].cond == true:
-            ecpairs.append(r"%s & \text{otherwise}" % 
+            ecpairs.append(r"%s & \text{otherwise}" %
                            self._print(expr.args[-1].expr))
         else:
-            ecpairs.append(r"%s & \text{for}\: %s" % 
+            ecpairs.append(r"%s & \text{for}\: %s" %
                            (self._print(expr.args[-1].expr),
                             self._print(expr.args[-1].cond)))
         tex = r"\begin{cases} %s \end{cases}"
@@ -1592,8 +1592,8 @@ class LatexPrinter(Printer):
                 x[0] = ''
             return ':'.join(map(self._print, x))
 
-        return (self._print(expr.parent) + r'\left[' + 
-                latexslice(expr.rowslice) + ', ' + 
+        return (self._print(expr.parent) + r'\left[' +
+                latexslice(expr.rowslice) + ', ' +
                 latexslice(expr.colslice) + r'\right]')
 
     def _print_BlockMatrix(self, expr):
@@ -1911,7 +1911,7 @@ class LatexPrinter(Printer):
         if hasattr(d, 'as_boolean'):
             return '\\text{Domain: }' + self._print(d.as_boolean())
         elif hasattr(d, 'set'):
-            return ('\\text{Domain: }' + self._print(d.symbols) + '\\text{ in }' + 
+            return ('\\text{Domain: }' + self._print(d.symbols) + '\\text{ in }' +
                     self._print(d.set))
         elif hasattr(d, 'symbols'):
             return '\\text{Domain on }' + self._print(d.symbols)
@@ -1943,8 +1943,8 @@ class LatexPrinter(Printer):
         else:
             printset = tuple(s)
 
-        return (r"\left\{" + 
-                r", ".join(self._print(el) for el in printset) + 
+        return (r"\left\{" +
+                r", ".join(self._print(el) for el in printset) +
                 r"\right\}")
 
     def _print_bernoulli(self, expr, exp=None):
@@ -1991,8 +1991,8 @@ class LatexPrinter(Printer):
         else:
             printset = tuple(s)
 
-        return (r"\left[" + 
-                r", ".join(self._print(el) for el in printset) + 
+        return (r"\left[" +
+                r", ".join(self._print(el) for el in printset) +
                 r"\right]")
 
     _print_SeqPer = _print_SeqFormula
@@ -2014,8 +2014,9 @@ class LatexPrinter(Printer):
             else:
                 right = ']'
 
-            return r"\left%s%s, %s\right%s" % \
-                   (left, self._print(i.start), self._print(i.end), right)
+            if i.is_integer:
+                return r"\left%s%s; %s\right%s" % (left, self._print(i.start), self._print(i.end), right)
+            return r"\left%s%s, %s\right%s" % (left, self._print(i.start), self._print(i.end), right)
 
     def _print_AccumulationBounds(self, i):
         return r"\left\langle %s, %s\right\rangle" % \

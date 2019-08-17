@@ -1,3 +1,4 @@
+
 from sympy.concrete import summations, products
 from sympy.core.relational import Equality, Relational
 import sympy
@@ -136,31 +137,39 @@ class cout:
 #         self.file.write(["$$\\begin{align}", "\\end{align}$$"])
 
     def add_to_list(self, rhs):
-        if rhs not in Eq:
+        index = -1
+        for i, eq in enumerate(Eq):
+            if eq == rhs and eq.clauses_equals(rhs):
+                index = i
+                break
+
+        if index < 0:
             Eq.append(rhs)
             return len(Eq) - 1
         else:
-            index = Eq.index(rhs)
+
             plausible = rhs.plausible
             if plausible is False:
-                Eq[index].plausible = False
+                eq.plausible = False
             elif plausible is None:
-                Eq[index].plausible = True
+                eq.plausible = True
             else:
-                eq = Eq[index]
-                if isinstance(rhs.equivalent, (list, tuple)):
-                    if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
-                        return index
-
-                if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
-                    rhs_equivalent = equivalent_ancestor(rhs)
-                    if len(rhs_equivalent) == 1:
-                        rhs_equivalent, *_ = rhs_equivalent
-                        if eq != rhs_equivalent:
-                            rhs_equivalent.equivalent = eq
-                            hypothesis = rhs_equivalent.hypothesis
-                            for h in hypothesis:
-                                h.derivative = None
+                if eq.plausible is None:
+                    rhs.plausible = True
+                else:
+                    if isinstance(rhs.equivalent, (list, tuple)):
+                        if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
+                            Eq[index] = rhs
+                            return index
+                    if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
+                        rhs_equivalent = equivalent_ancestor(rhs)
+                        if len(rhs_equivalent) == 1:
+                            rhs_equivalent, *_ = rhs_equivalent
+                            if eq != rhs_equivalent:
+                                rhs_equivalent.equivalent = eq
+                                hypothesis = rhs_equivalent.hypothesis
+                                for h in hypothesis:
+                                    h.derivative = None
 
             Eq[index] = rhs
             return index
@@ -337,6 +346,7 @@ def check(func):
     return _func
 
 
+
 # https://en.wikipedia.org/wiki/Topological_sorting#
 # http://ctex.math.org.cn/blackboard.html
 # https://tex.stackexchange.com/questions/256644/convert-latex-to-sympy-format
@@ -351,4 +361,14 @@ def check(func):
 # http://www.sagemath.org/download-source.html
 # https://www.sagemath.org/
 if __name__ == '__main__':
-    ...
+    str1 = "/a/b/c/?.oietlover?e/f/g/zIwyouty.cnd"
+    
+    str2 = "d/a/youb/c/alovewp.neeg/e/fI/g/zxtn.cc"
+    
+    str3 = "d/a/b/c/.neeg/e/f/g/zIxtn.ccI love you"
+    
+    str4 = "I love you"
+        
+    print(common_fragments(str1, str2, str3, str4));
+    
+

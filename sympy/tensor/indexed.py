@@ -678,6 +678,23 @@ class Slice(Expr):
         """Allow derivatives with respect to an ``Indexed`` object."""
         return True
 
+    def __getitem__(self, indices, **kw_args):
+        if is_sequence(indices):
+            # Special case needed because M[*my_tuple] is a syntax error.
+#             if self.shape and len(self.shape) != len(indices):
+#                 raise IndexException("Rank mismatch.")
+            return Indexed(self, *indices, **kw_args)
+        elif isinstance(indices, slice):
+            start, stop = indices.start, indices.stop
+            if start is None:
+                start = 0
+            if start == stop - 1:
+                return Indexed(self, start, **kw_args)
+            return Slice(self, indices, **kw_args)
+        else:
+            start, stop = self.indices
+            return self.base[indices - start]
+
     def _eval_derivative(self, wrt):
         from sympy.tensor.array.ndim_array import NDimArray
 

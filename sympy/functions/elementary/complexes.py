@@ -514,7 +514,7 @@ class Abs(Function):
 
         if isinstance(arg, exp):
             return exp(re(arg.args[0]))
-        if isinstance(arg, AppliedUndef):
+        if isinstance(arg, AppliedUndef) or arg.is_set:
             return
         if arg.is_Add and arg.has(S.Infinity, S.NegativeInfinity):
             if any(a.is_infinite for a in arg.as_real_imag()):

@@ -18,8 +18,9 @@ from sympy.core.rules import Transform
 from sympy.core.compatibility import with_metaclass, range
 from sympy.core.logic import fuzzy_and, fuzzy_or, _torf
 from sympy.logic.boolalg import And, Or
-from sympy.sets.sets import Union, Set, Interval
+from sympy.sets.sets import Union, Set, Interval, FiniteSet
 from sympy.core.cache import cacheit
+from builtins import isinstance
 
 
 def _minmax_as_Piecewise(op, *args):
@@ -1293,13 +1294,19 @@ class ExprWithVariables(Expr):
 
         if self.limits:
             for limit in self.limits:
-                if len(limit) > 1:
-                    x, a, b = limit
+                x, *args = limit
+                if x == pattern:
+                    return False
+
+                if len(args) == 0:
+                    limits.append(limit)
+                elif len(args) == 1:
+                    limits.append(limit)
+                else:
+                    a, b = args
                     _x = Symbol(x.name, integer=x.is_integer, domain=Interval(a, b))
                     function = function.subs(x, _x)
                     limits.append(Tuple(_x, a, b))
-                else:
-                    limits.append(limit)
 
         boolean = function._has(pattern)
 
@@ -3637,25 +3644,25 @@ class Ref(ExprWithVariables):
         i = j.generate_free_symbol(domain=Interval(j + 1, self.rows, right_open=True, integer=True))
         return self[i, j] == 0
 
-    def _latex(self, printer):
+    def _latex(self, p):
         args = []
         for limit in self.limits:
             if len(limit) == 1:
-                args.append(printer._print(limit[0]))
+                args.append(p._print(limit[0]))
             elif len(limit) == 2:
-                args.append(r"%s:%s" % (printer._print(limit[0]), printer._print(limit[1])))
+                args.append(r"%s:%s" % (p._print(limit[0]), p._print(limit[1])))
             elif len(limit) == 3:
                 if limit[1] == 0:
-                    args.append(r"%s:%s" % (printer._print(limit[0]), printer._print(limit[2])))
+                    args.append(r"%s:%s" % (p._print(limit[0]), p._print(limit[2])))
                 else:
-                    args.append(r"%s:%s:%s" % (printer._print(limit[1]), printer._print(limit[0]), printer._print(limit[2])))
+                    args.append(r"%s:%s:%s" % (p._print(limit[1]), p._print(limit[0]), p._print(limit[2])))
 
         tex = r"[%s]" % ','.join(args)
 
         if isinstance(self.function, (Add, Mul)):
-            tex += r"\left(%s\right)" % printer._print(self.function)
+            tex += r"\left(%s\right)" % p._print(self.function)
         else:
-            tex += printer._print(self.function)
+            tex += p._print(self.function)
 
         return tex
 
@@ -3689,6 +3696,35 @@ class UnionComprehension(Set, ExprWithVariables):
     """
     is_UnionComprehension = True
 
+    def assertion(self):
+
+        from sympy.sets.conditionset import ConditionSet
+        from sympy.tensor.indexed import Slice
+        from sympy.core.relational import Equality
+
+        image_set = self.image_set()
+        if image_set is None:
+            return
+
+        expr, variables, base_set = image_set
+        if isinstance(base_set, Symbol):
+            if isinstance(base_set.definition, ConditionSet):
+                base_set = base_set.definition
+            else:
+                return
+        else:
+            if not isinstance(base_set, ConditionSet):
+                return
+
+        sym = base_set.sym
+        if isinstance(sym, Symbol):
+            ...
+        elif isinstance(sym, Slice):
+            condition = base_set.condition
+            element_symbol = self.element_symbol
+            assert expr.dtype == element_symbol.dtype
+            return condition.func(*condition.args, forall={element_symbol:self}, exists={variables: Equality(expr, element_symbol)})
+
     def union_sets(self, expr):
         if len(self.limits) == 1:
             i, *ab = self.limits[0]
@@ -3705,30 +3741,94 @@ class UnionComprehension(Set, ExprWithVariables):
             return 'Union[%s](%s)' % (limits, p.doprint(self.function))
         return 'Union(%s)' % p.doprint(self.function)
 
-    def _latex(self, printer):
+    def int_limit(self):
+        if len(self.limits) != 1:
+            return False
+        limit = self.limits[0]
+        if len(limit) == 3:
+            return limit
+
+    def condition_limit(self):
+        if len(self.limits) != 1:
+            return False
+        limit = self.limits[0]
+        if len(limit) == 2:
+            return limit
+
+    def expr_iterable(self):
+        function = self.function
+        from sympy.tensor.indexed import Indexed
+
+        if isinstance(function, FiniteSet):
+            if len(function) == 1:
+                expr, *_ = function
+                if isinstance(expr, Indexed):
+                    return expr.base
+
+                    if len(self.limits) == 1:
+                        limit = self.limits[0]
+                        return len(limit) == 3
+
+    def image_set(self):
+        function = self.function
+        if isinstance(function, FiniteSet) and len(function) == 1:
+            condition_limit = self.condition_limit()
+            if condition_limit  is not None:
+                x, condition = condition_limit
+                expr, *_ = function
+                return expr, x, condition
+
+    def finite_set(self):
+        int_limit = self.int_limit()
+        if int_limit is not None:
+            expr_iterable = self.expr_iterable()
+            if expr_iterable is not None:
+                _, a, b = int_limit
+                return expr_iterable[a:b + 1]
+
+    def _latex(self, p):
+        finite_set = self.finite_set()
+        if finite_set is not None:
+            return r"set\left(%s\right) " % p._print(finite_set)
+
+        image_set = self.image_set()
+        if image_set is not None:
+            lamda_expr, lamda_variables, base_set = image_set
+            from sympy.sets.conditionset import ConditionSet
+            if isinstance(base_set, ConditionSet) and lamda_variables == base_set.sym:
+                return r"\left\{%s \left| %s \right. \right\}" % (p._print(lamda_expr), p._print(base_set.condition))
+
+#             from sympy.core.containers import Tuple
+            if isinstance(lamda_variables, Tuple):
+                varsets = [r"%s \in %s" % (p._print(var), p._print(setv)) for var, setv in zip(lamda_variables, base_set)]
+                return r"\left\{%s \left| %s \right. \right\}" % (p._print(lamda_expr), ', '.join(varsets))
+
+            varsets = r"%s \in %s" % (p._print(lamda_variables), p._print(base_set))
+            return r"\left\{\left. %s \right| %s \right\}" % (p._print(lamda_expr), varsets)
+
         function = self.function
         limits = self.limits
 
         if len(limits) == 1:
             limit = limits[0]
             if len(limit) == 1:
-                tex = r"\bigcup_{%s} " % printer._print(limit[0])
+                tex = r"\bigcup_{%s} " % p._print(limit[0])
             else:
-                tex = r"\bigcup\limits_{%s=%s}^{%s} " % tuple([printer._print(i) for i in limit])
+                tex = r"\bigcup\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
         else:
 
             def _format_ineq(l):
                 return r"%s \leq %s \leq %s" % \
-                    tuple([printer._print(s) for s in (l[1], l[0], l[2])])
+                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
 
             tex = r"\bigcup\limits_{\substack{%s}} " % \
                 str.join('\\\\', [_format_ineq(l) for l in limits])
 
         from sympy import Add
         if isinstance(function, Add):
-            tex += r"\left(%s\right)" % printer._print(function)
+            tex += r"\left(%s\right)" % p._print(function)
         else:
-            tex += printer._print(function)
+            tex += p._print(function)
 
         return tex
 

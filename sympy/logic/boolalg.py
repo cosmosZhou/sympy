@@ -6,7 +6,7 @@ from __future__ import print_function, division
 from collections import defaultdict
 from itertools import combinations, product
 from sympy.core.add import Add
-from sympy.core.basic import Basic
+from sympy.core.basic import Basic, _aresame
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import (ordered, range, with_metaclass,
     as_int)
@@ -122,7 +122,19 @@ class Boolean(Basic):
 
     def __and__(self, other):
         """Overloading for & operator"""
-        return And(self, other)
+        kwargs = self.clauses(other)
+
+        if isinstance(self, And):
+            lhs = tuple(self._argset)
+        else:
+            lhs = (self.func(*self.args),)
+
+        if isinstance(other, And):
+            rhs = tuple(other._argset)
+        else:
+            rhs = (other.func(*other.args),)
+
+        return And(*(lhs + rhs), **kwargs)
 
     __rand__ = __and__
 
@@ -234,6 +246,13 @@ class Boolean(Basic):
             return self._assumptions['forall']
         return None
 
+    @forall.setter
+    def forall(self, forall):
+        if forall is None:
+            del self._assumptions['forall']
+        else:
+            self._assumptions['forall'] = forall
+
     @property
     def where(self):
         if 'where' in self._assumptions:
@@ -245,6 +264,13 @@ class Boolean(Basic):
         if 'exists' in self._assumptions:
             return self._assumptions['exists']
         return None
+
+    @exists.setter
+    def exists(self, exists):
+        if exists is None:
+            del self._assumptions['exists']
+        else:
+            self._assumptions['exists'] = exists
 
     @property
     def plausible(self):
@@ -511,13 +537,16 @@ class Boolean(Basic):
                 self.plausible = True
                 return
 
-    def combine_clause(self, other, clause='exists'):
-        exists = getattr(self, clause)
-        _exists = getattr(other, clause)
+    @staticmethod
+    def combine_clause(exists, _exists):
+#         exists = getattr(self, clause)
+#         _exists = getattr(other, clause)
         if exists is None:
             if _exists is None:
                 return None
             return _exists.copy()
+        if _exists is None:
+            return exists.copy()
 
         if isinstance(exists, dict) or isinstance(_exists, dict):
             dic = {}
@@ -538,20 +567,22 @@ class Boolean(Basic):
             return dic
 
         if isinstance(exists, (tuple, list)):
-            if _exists is not None:
-                if isinstance(_exists, (tuple, list)):
-                    exists = [*exists] + [w for w in _exists if w not in exists]
-                else:
-                    if _exists not in exists:
-                        exists = [*exists] + [_exists]
+            if isinstance(_exists, (tuple, list)):
+                exists = [*exists] + [w for w in _exists if w not in exists]
+            else:
+                if _exists not in exists:
+                    exists = [*exists] + [_exists]
             return exists
 
-        if _exists is not None:
-            if isinstance(_exists, (tuple, list)):
-                exists = [exists] + [w for w in _exists if w != exists]
-            else:
-                if _exists != exists:
-                    exists = [exists, _exists]
+        if isinstance(_exists, (tuple, list)):
+            exists = [exists] + [w for w in _exists if w != exists]
+        else:
+            if _exists != exists:
+                exists = [exists, _exists]
+
+        if not isinstance(exists, list):
+            return exists
+
         deletes = []
         for i, var in enumerate(exists):
             from sympy.tensor.indexed import Slice, Indexed
@@ -577,13 +608,31 @@ class Boolean(Basic):
 
         return exists
 
+    @staticmethod
+    def clause_equals(exists, _exists):
+        if type(exists) == type(_exists):
+            if exists == _exists:
+                return True
+
+            if isinstance(exists, (tuple, list)):
+                exists = set(exists)
+                _exists = set(_exists)
+
+                if exists == _exists:
+                    return True
+
+        return False
+
+    def clauses_equals(self, other):
+        return self.clause_equals(self.exists, other.exists) and self.clause_equals(self.forall, other.forall)
+
     def clauses(self, other=None):
         if other is None:
             exists = self.exists
             forall = self.forall
         else:
-            exists = self.combine_clause(other, 'exists')
-            forall = self.combine_clause(other, 'forall')
+            exists = self.combine_clause(self.exists, other.exists)
+            forall = self.combine_clause(self.forall, other.forall)
 
         if exists is None:
             if forall is None:
@@ -1002,6 +1051,11 @@ class BooleanFunction(Application, Boolean):
     """
     is_Boolean = True
 
+#     def __eq__(self, other):
+#         if isinstance(other, Boolean) and not self.clauses_equals(other):
+#             return False
+#         return Boolean.__eq__(self, other)
+
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
@@ -1243,6 +1297,105 @@ class And(LatticeOp, BooleanFunction):
 
     nargs = None
 
+    def rewrite(self, *args, **hints):
+        if 'exists' in hints:
+            exists = self.exists
+            if exists is None:
+                return self
+
+            if hints['exists'] == False:
+                eqs = [eq.func(*eq.args, exists=eq.combine_clause(eq.exists, exists), forall=eq.forall) for eq in self.args]
+                return self.func(*eqs, forall=self.forall, equivalent=self)
+            if hints['exists'] == True:
+                eqs = []
+                for eq in self.args:
+                    eqs.append(eq.func(*eq.args, forall=eq.forall))
+                    exists = eq.combine_clause(eq.exists, exists)
+
+                return self.func(*eqs, exists=exists, forall=self.forall, equivalent=self)
+
+            if isinstance(hints['exists'], int):
+                index = hints['exists']
+                args = [*self.args]
+                condition = args.pop(index)
+                exists = self.exists.copy()
+                if isinstance(exists, dict):
+                    for k, v in exists.items():
+                        if v is None and condition.has(k):
+                            exists[k] = condition
+                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
+                elif isinstance(exists, (list, tuple, set)):
+                    for k in exists:
+                        if condition.has(k):
+                            exists = {e : None for e in exists}
+                            exists[k] = condition
+                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
+                elif condition.has(exists):
+                    exists = {exists : condition}
+                    return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
+
+                return self
+
+            exists = self.exists
+            and_expr = []
+            for condition in exists.values():
+                if condition is not None:
+                    and_expr.append(condition)
+            exists = list(exists.keys())
+            for var in self.exists.keys():
+                from sympy.tensor.indexed import Slice
+                if isinstance(var, Slice):
+                    start, stop = var.indices
+                    if var.base[stop] in exists:
+                        exists.remove(var.base[stop])
+                        exists[exists.index(var)] = var.base[start : stop + 1]
+                    elif var.base[start - 1] in exists:
+                        exists.remove(var.base[start - 1])
+                        exists[exists.index(var)] = var.base[start - 1: stop]
+
+            if len(exists) == 1:
+                exists = exists[0]
+            and_expr.append(self.func(*self.args))
+            return And(*and_expr, forall=self.forall, exists=exists, equivalent=self)
+
+        if 'forall' in hints:
+            forall = self.forall
+            if forall is None:
+                return self
+
+            if hints['forall'] == False:
+                if 'var' in hints:
+                    var = hints['var']
+                    subforall = {}
+                    from _collections_abc import dict_keys
+                    forall = forall.copy()
+                    if isinstance(var, (set, dict_keys, list, tuple)):
+                        for v in var:
+                            subforall[v] = forall[v]
+                            del forall[v]
+                    else:
+                        subforall[var] = forall[var]
+                        del forall[var]
+
+                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, subforall), exists=eq.exists) for eq in self.args]
+                    return self.func(*eqs, exists=self.exists, forall=forall, equivalent=self)
+
+                else:
+                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, forall), exists=eq.exists) for eq in self.args]
+                    return self.func(*eqs, exists=self.exists, equivalent=self)
+
+            if hints['forall'] == True:
+                eqs = []
+                for eq in self.args:
+                    eqs.append(eq.func(*eq.args, exists=eq.exists))
+                    forall = eq.combine_clause(eq.forall, forall)
+
+                return self.func(*eqs, forall=forall, exists=self.exists, equivalent=self)
+            ...
+            return self
+
+        return self
+
     @classmethod
     def _new_args_filter(cls, args):
         newargs = []
@@ -1324,9 +1477,118 @@ class And(LatticeOp, BooleanFunction):
         from sympy.sets.sets import Intersection
         return Intersection(*[arg.as_set() for arg in self.args])
 
+    def split_debug(self):
+        arr = []
+        for eq in self.args:
+            eq = eq.func(*eq.args, **eq.clauses(self), given=self)
+            arr.append(eq)
+        return arr
+
     def split(self):
         given = self if self.plausible else None
         return [eq.func(*eq.args, **eq.clauses(self), given=given) for eq in self.args]
+
+    def simplifier(self):
+        forall = self.forall
+        if forall is None or not isinstance(forall, dict):
+            return self
+
+        for i, domain in forall.items():
+            if not i.is_integer:
+                continue
+
+            i_expr = []
+            patterns = []
+            non_i_expr = set()
+            from sympy import Wild
+            _i = Wild(i.name)
+            for eq in self.args:
+                if eq.has(i):
+                    i_expr.append(eq)
+                    patterns.append(eq._subs(i, _i))
+                else:
+                    non_i_expr.add(eq)
+
+            matched_dic = {}
+            for eq in non_i_expr:
+                for pattern in patterns:
+                    res = eq.match(pattern)
+                    if not res:
+                        continue
+
+                    t, *_ = res.values()
+                    if t in matched_dic:
+                        matched_dic[t].add(eq)
+                    else:
+                        matched_dic[t] = {eq}
+                    break
+
+            new_set = set()
+            for t, eqs in matched_dic.items():
+                if len(eqs) != len(non_i_expr):
+                    continue
+                non_i_expr -= eqs
+                new_set.add(t)
+
+            if not new_set:
+                continue
+
+            forall = {**forall}
+            forall[i] = domain | new_set
+            eqs = i_expr + [*non_i_expr]
+
+            if len(eqs) == 1:
+                eq = eqs[0]
+                return eq.func(*eq.args,
+                               forall=eq.combine_clause(eq.forall, forall),
+                               exists=eq.combine_clause(eq.exists, self.exists),
+                               equivalent=self)
+            return self.func(*eqs, forall=forall, exists=self.exists, equivalent=self)
+
+        return self
+
+    def _subs(self, old, new, **hints):
+        """Substitutes an expression old -> new.
+        """
+
+        if _aresame(self, old):
+            return new
+
+        hit = False
+        args = list(self.args)
+        for i, arg in enumerate(args):
+            if not hasattr(arg, '_eval_subs'):
+                continue
+            arg = arg._subs(old, new, **hints)
+            if not _aresame(arg, args[i]):
+                hit = True
+                args[i] = arg
+
+        if isinstance(self.forall, dict):
+            forall = self.forall.copy()
+            for k, v in forall.items():
+                if v is not None:
+                    _v = v._subs(old, new)
+                    if v != _v:
+                        hit = True
+                        forall[k] = _v
+        else:
+            forall = self.forall
+        if isinstance(self.exists, dict):
+            exists = self.exists.copy()
+            for k, v in exists.items():
+                if v is not None:
+                    _v = v._subs(old, new)
+                    if v != _v:
+                        hit = True
+                        exists[k] = _v
+        else:
+            exists = self.exists
+
+        if hit:
+            rv = self.func(*args, forall=forall, exists=exists)
+            return rv
+        return self
 
 
 class Or(LatticeOp, BooleanFunction):

@@ -99,11 +99,35 @@ class Contains(BooleanFunction):
         if forall is not None:
             if len(forall) == 1 and isinstance(forall, dict):
                 (e, s), *_ = forall.items()
-                from sympy.sets.fancysets import ImageSet
-                element = s.base_set.element_symbol
-                if isinstance(s, ImageSet):
+                image_set = s.image_set()
+                if image_set is not None:
+                    expr, sym, base_set = image_set
+                    element = base_set.element_symbol
+
                     _e, S = self.args
-                    return self.func(_e.subs(e, s.lamda(element)), S, forall={element : s.base_set}, equivalent=self if self.plausible else None)
+                    return self.func(_e.subs(e, expr.subs(sym, element)), S, forall={element : base_set}, equivalent=self)
+
+        return self
+
+    @property
+    def definition(self):
+        e, S = self.args
+        from sympy.core.symbol import Symbol
+        if isinstance(S, Symbol):
+            assertion = S.assertion()
+
+            for k, v in assertion.forall.items():
+                if v == S:
+                    b = k
+                    break
+
+            del assertion.forall[b]
+            assertion = assertion.subs(b, e)
+
+            assertion.forall = assertion.combine_clause(assertion.forall, self.forall)
+            assertion.exists = assertion.combine_clause(assertion.exists, self.exists)
+            assertion.equivalent = self
+            return assertion
 
         return self
 

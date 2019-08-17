@@ -862,7 +862,7 @@ class Interval(Set, EvalfMixin):
                 start = self.start
 
             if drapeau:
-                new_a = Interval(start, end, self.left_open, self.right_open)
+                new_a = Interval(start, end, self.left_open, self.right_open, True)
                 return set((new_a, b))
 
         return None
@@ -2245,7 +2245,12 @@ class SymmetricDifference(Set):
             return SymmetricDifference(A, B, evaluate=False)
 
 
-def imageset(*args):
+def imageset(sym, expr, condition):
+    from sympy.functions.elementary.miscellaneous import UnionComprehension
+    return UnionComprehension(FiniteSet(expr), (sym, condition))
+
+
+def _imageset(*args):
     r"""
     Return an image of the set under transformation ``f``.
 

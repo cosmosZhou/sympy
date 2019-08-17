@@ -625,7 +625,7 @@ class Basic(with_metaclass(ManagedProperties)):
         reps = {}
         v = self.bound_symbols
         from sympy.tensor.indexed import Slice
-        if isinstance(v, Slice):
+        if isinstance(v, (Slice, Symbol)):
             v = [v]
         # this free will include bound symbols that are not part of
         # self's bound symbols
@@ -635,6 +635,16 @@ class Basic(with_metaclass(ManagedProperties)):
             if v.is_Symbol:
                 while v.name == d.name or d.name in free:
                     d = next(dums)
+
+            from sympy.tensor.indexed import IndexedBase
+#             print('v.dtype =', v.dtype)
+#             print('d.dtype =', d.dtype)
+            if len(v.shape) > 0:
+                d = IndexedBase(d.name, shape=v.shape, **v.dtype.dict)
+            else:
+                d = Symbol(d.name, **v.dtype.dict)
+            assert v.dtype == d.dtype
+
             reps[v] = d
         return reps
 
@@ -2133,3 +2143,4 @@ def _make_find_query(query):
     elif isinstance(query, Basic):
         return lambda expr: expr.match(query) is not None
     return query
+

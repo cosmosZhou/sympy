@@ -59,13 +59,18 @@ class Relational(Boolean, Expr, EvalfMixin):
     # ValidRelationOperator - Defined below, because the necessary classes
     #   have not yet been defined
 
+#     def __eq__(self, other):
+#         if isinstance(other, Boolean) and not self.clauses_equals(other):
+#             return False
+#         return Expr.__eq__(self, other)
+
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.condition
 
-    def __and__(self, other):
-        return And(self.func(*self.args), other.func(*other.args), **self.clauses(other))
+#     def __and__(self, other):
+#         return And(self.func(*self.args), other.func(*other.args), **self.clauses(other))
 
     def _has(self, pattern):
         from .assumptions import BasicMeta
@@ -113,8 +118,8 @@ class Relational(Boolean, Expr, EvalfMixin):
                     else:
                         _condition = condition
 
-                    for cond in _condition:
-                        print(cond._has(var))
+#                     for cond in _condition:
+#                         print(cond._has(var))
 
                     if not any(cond.has(var) for cond in _condition):
                         del exists[var]
@@ -449,27 +454,28 @@ class Relational(Boolean, Expr, EvalfMixin):
 
     def rewrite(self, *args, **hints):
         if 'exists' in hints:
-            exists = self.exists
-            and_expr = []
-            for condition in exists.values():
-                if condition is not None:
-                    and_expr.append(condition)
-            exists = list(exists.keys())
-            for var in self.exists.keys():
-                from sympy.tensor.indexed import Slice
-                if isinstance(var, Slice):
-                    start, stop = var.indices
-                    if var.base[stop] in exists:
-                        exists.remove(var.base[stop])
-                        exists[exists.index(var)] = var.base[start : stop + 1]
-                    elif var.base[start - 1] in exists:
-                        exists.remove(var.base[start - 1])
-                        exists[exists.index(var)] = var.base[start - 1: stop]
+            if hints['exists'] is None:
+                exists = self.exists
+                and_expr = []
+                for condition in exists.values():
+                    if condition is not None:
+                        and_expr.append(condition)
+                exists = list(exists.keys())
+                for var in self.exists.keys():
+                    from sympy.tensor.indexed import Slice
+                    if isinstance(var, Slice):
+                        start, stop = var.indices
+                        if var.base[stop] in exists:
+                            exists.remove(var.base[stop])
+                            exists[exists.index(var)] = var.base[start : stop + 1]
+                        elif var.base[start - 1] in exists:
+                            exists.remove(var.base[start - 1])
+                            exists[exists.index(var)] = var.base[start - 1: stop]
 
-            if len(exists) == 1:
-                exists = exists[0]
-            and_expr.append(self.func(*self.args))
-            return And(*and_expr, forall=self.forall, exists=exists)
+                if len(exists) == 1:
+                    exists = exists[0]
+                and_expr.append(self.func(*self.args))
+                return And(*and_expr, forall=self.forall, exists=exists, equivalent=self)
 
         return self.func(self.lhs.rewrite(*args, **hints), self.rhs.rewrite(*args, **hints), equivalent=self if self.plausible else None, exists=self.exists)
 
@@ -1080,7 +1086,7 @@ class Equality(Relational):
 
         elif isinstance(x, PDF):
             return Eq(x, x.doit(evaluate=False))
-        elif x.is_symbol and x.is_set :
+        elif x.is_set :
             return x.assertion()
 
         return Eq(x, x.definition)
