@@ -17,6 +17,7 @@ from sympy.core.compatibility import (
 
 from sympy.utilities.enumerative import (
     multiset_partitions_taocp, list_visitor, MultisetPartitionTraverser)
+from builtins import isinstance
 
 
 def flatten(iterable, levels=None, cls=None):
@@ -966,7 +967,7 @@ def topological_sort_depth_first(graph):
     return L
 
 
-def strongly_connected_components(G):
+def strongly_connected_components(Gmap):
     r"""
     Strongly connected components of a directed graph in reverse topological
     order.
@@ -1038,10 +1039,14 @@ def strongly_connected_components(G):
 
     """
     # Map from a vertex to its neighbours
-    V, E = G
-    Gmap = {vi: [] for vi in V}
-    for v1, v2 in E:
-        Gmap[v1].append(v2)
+    if isinstance(Gmap, dict):
+        V = [*Gmap.keys()]
+        E = [*Gmap.items()]
+    else:
+        V, E = Gmap
+        Gmap = {vi: [] for vi in V}
+        for v1, v2 in E:
+            Gmap[v1].append(v2)
 
     # Non-recursive Tarjan's algorithm:
     lowlink = {}
@@ -2622,3 +2627,18 @@ def rotations(s, dir=1):
     for i in range(len(seq)):
         yield seq
         seq = rotate_left(seq, dir)
+
+
+if __name__ == '__main__':
+    V = ['A', 'B', 'C', 'D']
+    E = [('A', 'B'), ('A', 'C'), ('B', 'C'), ('C', 'B'), ('B', 'D')]
+
+    G = {}
+    for v in V:
+        G[v] = set()
+    for parent, kinder in E:
+        G[parent].add(kinder)
+
+    scc = strongly_connected_components(G)
+
+    print(scc)

@@ -2763,7 +2763,7 @@ class Lambda(Expr):
         if isinstance(self.variables, Tuple):
             return self.expr.xreplace(dict(list(zip(self.variables, args))))
 #         return self.expr.xreplace({self.variables: args})
-        return self.expr.subs({self.variables: args})
+        return self.expr._subs(self.variables, args)
 
     def __eq__(self, other):
         if not isinstance(other, Lambda):

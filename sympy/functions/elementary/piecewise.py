@@ -864,6 +864,10 @@ class Piecewise(Function):
         args = [(ec.expr._eval_nseries(x, n, logx), ec.cond) for ec in self.args]
         return self.func(*args)
 
+    def _eval_Abs(self):
+        args = [(abs(ec.expr), ec.cond) for ec in self.args]
+        return self.func(*args)
+
     def _eval_power(self, s):
         return self.func(*[(e ** s, c) for e, c in self.args])
 
@@ -1042,6 +1046,16 @@ class Piecewise(Function):
         for function, condition in self.args:
             domain.append(x.conditional_domain(condition) & function.nonzero_domain(x))
         return Union(*domain)
+
+    @property
+    def dtype(self):
+#         from sympy.core.symbol import dtype
+        dtype = None
+        for function, _ in self.args:
+            _dtype = function.dtype
+            if dtype is None or dtype in _dtype and dtype != _dtype:
+                dtype = _dtype
+        return dtype
 
 
 def piecewise_fold(expr):

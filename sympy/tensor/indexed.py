@@ -505,6 +505,10 @@ class IndexedBase(Expr, NotIterable):
         return obj
 
     @property
+    def free_symbols(self):
+        return {self}
+
+    @property
     def definition(self):
         if 'definition' in self._assumptions:
             return self._assumptions['definition']
@@ -635,11 +639,12 @@ class IndexedBase(Expr, NotIterable):
             return dtype.integer * self.shape
         if self.is_rational:
             return dtype.rational * self.shape
-            
+
         if self.is_complex:
             return dtype.complex * self.shape
 #         if self.is_real:
         return dtype.real * self.shape
+
 
 class Slice(Expr):
     """Represents a mathematical object with Slices.
@@ -668,6 +673,9 @@ class Slice(Expr):
             args = [sympify(start), sympify(stop)]
 
         return Expr.__new__(cls, base, *args, **kw_args)
+
+    def __iter__(self):
+        raise TypeError
 
     @property
     def name(self):

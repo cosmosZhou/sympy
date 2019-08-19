@@ -460,15 +460,24 @@ class Symbol(AtomicExpr, Boolean):
             return
 
         expr, variables, base_set = image_set
-        if isinstance(base_set, ConditionSet):
-            sym = base_set.sym
-            if isinstance(sym, Symbol):
-                ...
-            elif isinstance(sym, Slice):
-                condition = base_set.condition
-                element_symbol = self.element_symbol
-                assert expr.dtype == element_symbol.dtype
-                return condition.func(*condition.args, forall={element_symbol:self}, exists={variables: Equality(expr, element_symbol)})
+
+        if isinstance(base_set, Symbol):
+            if isinstance(base_set.definition, ConditionSet):
+                base_set = base_set.definition
+            else:
+                return
+        else:
+            if not isinstance(base_set, ConditionSet):
+                return
+
+        sym = base_set.sym
+        if isinstance(sym, Symbol):
+            ...
+        elif isinstance(sym, Slice):
+            condition = base_set.condition
+            element_symbol = self.element_symbol
+            assert expr.dtype == element_symbol.dtype
+            return condition.func(*condition.args, forall={element_symbol:self}, exists={variables: Equality(expr, element_symbol)})
 
 
 class Dummy(Symbol):
@@ -1043,6 +1052,9 @@ class Dtype:
                 return DtypeVector(self, length[0])
             return DtypeMatrix(self, length)
         return DtypeVector(self, length)
+
+    def __contains__(self, x):
+        return isinstance(x, type(self))
 
     @property
     def shape(self):

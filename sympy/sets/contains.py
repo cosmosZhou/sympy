@@ -122,7 +122,7 @@ class Contains(BooleanFunction):
                     break
 
             del assertion.forall[b]
-            assertion = assertion.subs(b, e)
+            assertion = assertion._subs(b, e)
 
             assertion.forall = assertion.combine_clause(assertion.forall, self.forall)
             assertion.exists = assertion.combine_clause(assertion.exists, self.exists)
@@ -143,10 +143,11 @@ class Subset(BooleanFunction):
 
     @classmethod
     def eval(cls, x, s):
-        from sympy.sets.sets import Set
+#         from sympy.sets.sets import Set
 
-        if not s.is_set:
-            raise TypeError('expecting Set, not %s' % func_name(s))
+        assert x.is_set and s.is_set, 'expecting Set, not %s' % func_name(s)
+        if x == s:
+            return S.true
 
     @property
     def binary_symbols(self):

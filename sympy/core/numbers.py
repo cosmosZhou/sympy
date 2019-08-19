@@ -594,6 +594,11 @@ class Number(AtomicExpr):
     # Used to make max(x._prec, y._prec) return x._prec when only x is a float
     _prec = -1
 
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.real
+
     def __new__(cls, *obj):
         if len(obj) == 1:
             obj = obj[0]
@@ -1619,6 +1624,11 @@ class Rational(Number):
 
     is_Rational = True
 
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.rational
+
     @cacheit
     def __new__(cls, p, q=None, gcd=None):
         if q is None:
@@ -2113,6 +2123,11 @@ class Integer(Rational):
     is_Integer = True
 
     __slots__ = ['p']
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
 
     def _as_mpf_val(self, prec):
         return mlib.from_int(self.p, prec, rnd)

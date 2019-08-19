@@ -53,6 +53,11 @@ class AssocOp(Basic):
             return Order(obj, *order_symbols)
         return obj
 
+    @property
+    def dtype(self):
+#         from sympy.core.symbol import dtype
+        return self.args[0].dtype
+
     @classmethod
     def _from_args(cls, args, is_commutative=None):
         """Create new instance with already-processed args"""

@@ -9,6 +9,8 @@ from sympy.sets.contains import Contains
 import traceback
 from sympy.functions.elementary import miscellaneous
 from sympy import concrete
+from sympy.sets import sets
+from sympy.concrete.expr_with_limits import UnionComprehension
 
 
 def init(func):
@@ -60,6 +62,20 @@ class Sum(Operator):
 
 
 Sum = Sum()
+
+
+class Union(Operator):
+
+    def __call__(self, *args):
+        if len(args) > 1:
+            return sets.Union(*args)
+
+        assert self.stack
+        limits = self.stack.pop()
+        return UnionComprehension(args[0], *limits)
+
+
+Union = Union()
 
 
 class Integral(Operator):
@@ -347,7 +363,6 @@ def check(func):
     return _func
 
 
-
 # https://en.wikipedia.org/wiki/Topological_sorting#
 # http://ctex.math.org.cn/blackboard.html
 # https://tex.stackexchange.com/questions/256644/convert-latex-to-sympy-format
@@ -363,13 +378,12 @@ def check(func):
 # https://www.sagemath.org/
 if __name__ == '__main__':
     str1 = "/a/b/c/?.oietlover?e/f/g/zIwyouty.cnd"
-    
+
     str2 = "d/a/youb/c/alovewp.neeg/e/fI/g/zxtn.cc"
-    
+
     str3 = "d/a/b/c/.neeg/e/f/g/zIxtn.ccI love you"
-    
+
     str4 = "I love you"
-        
+
     print(common_fragments(str1, str2, str3, str4));
-    
 

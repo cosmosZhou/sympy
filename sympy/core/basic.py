@@ -94,6 +94,114 @@ class Basic(with_metaclass(ManagedProperties)):
     is_MatAdd = False
     is_MatMul = False
     is_set = False
+    is_EmptySet = None
+    is_Union = False
+    is_Complement = False
+
+    @classmethod
+    def simplify_assumptions(cls, *args, **assumptions):
+
+        def simplify_assumptions(key_str, *condition):
+            exists = assumptions[key_str]
+            if isinstance(exists, (list, tuple, set)):
+                deletes = []
+                useful = []
+                for v in exists:
+                    if any(cond.has(v) for cond in condition):
+                        useful.append(v)
+                    else:
+                        deletes.append(v)
+                if deletes:
+                    if len(useful) == 1:
+                        useful, *_ = useful
+                    elif len(useful) == 0:
+                        useful = None
+                    assumptions[key_str] = useful
+            elif isinstance(exists, dict):
+                condition = set(condition)
+
+                for var in set(exists.keys()):
+                    if exists[var] is not None:
+                        _condition = condition - {exists[var]}
+                    else:
+                        _condition = condition
+
+#                     for cond in _condition:
+#                         print(cond._has(var))
+
+                    if not any(cond.has(var) for cond in _condition):
+                        del exists[var]
+                if not exists:
+                    del assumptions[key_str]
+            elif exists is not None:
+                if all(not arg.has(exists) for arg in args):
+                    del assumptions[key_str]
+
+        condition = []
+        if 'forall' in assumptions and isinstance(assumptions['forall'], dict):
+            condition += [condition for condition in assumptions['forall'].values() if condition is not None]
+        if 'exists' in assumptions and isinstance(assumptions['exists'], dict):
+            condition += [condition for condition in assumptions['exists'].values() if condition is not None]
+
+        condition += args
+
+        if 'exists' in assumptions:
+            simplify_assumptions('exists', *condition)
+
+        if 'forall' in assumptions:
+            simplify_assumptions('forall', *condition)
+        return assumptions
+
+    def and_execute(self, other, forall):
+        kwargs = {}
+        kwargs['equivalent'] = self.combine_equivalent(other)
+
+        kwargs['exists'] = self.combine_clause(self.exists, other.exists)
+        kwargs['forall'] = forall
+
+        from sympy.logic.boolalg import And
+        if isinstance(self, And):
+            lhs = tuple(self._argset)
+        else:
+            lhs = (self.func(*self.args),)
+
+        if isinstance(other, And):
+            rhs = tuple(other._argset)
+        else:
+            rhs = (other.func(*other.args),)
+
+        return And(*(lhs + rhs), **kwargs)
+
+    def __and__(self, other):
+        if self.is_set:
+            return self.intersect(other)
+        """Overloading for & operator"""
+
+        if self.forall == other.forall:
+            return self.and_execute(other, self.forall)
+        if self.args == other.args and self.exists == other.exists:
+            kwargs = {}
+            kwargs['equivalent'] = self.combine_equivalent(other)
+
+            kwargs['exists'] = self.exists
+            kwargs['forall'] = self.combine_clause(self.forall, other.forall, True)
+            return self.func(*self.args, **kwargs)
+        if other.forall is None and other.plausible is None:
+            return self.and_execute(other, self.forall)
+        if self.forall is None and self.plausible is None:
+            return self.and_execute(other, other.forall)
+        if other.plausible is None and self.plausible is None:
+            return self.and_execute(other, self.combine_clause(self.forall, other.forall))
+        return None
+
+    __rand__ = __and__
+
+    def __or__(self, other):
+        from sympy.logic.boolalg import Or
+        """Overloading for |"""
+        return Or(self, other)
+
+    __ror__ = __or__
 
     def union_sets(self, b):
         return

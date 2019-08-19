@@ -585,7 +585,7 @@ class LatexPrinter(Printer):
             if len(limit) == 1:
                 tex = r"\sum_{%s} " % self._print(limit[0])
             elif len(limit) == 2:
-                tex = r"\sum_{%s \lt %s} " % tuple([self._print(i) for i in limit])
+                tex = r"\sum_{%s \in %s} " % tuple([self._print(i) for i in limit])
 #                 tex = r"\sum\limits_{%s<%s}^{0} " % tuple([self._print(i) for i in limit])
             else:
                 tex = r"\sum\limits_{%s=%s}^{%s} " % tuple([self._print(i) for i in limit])
@@ -2023,7 +2023,14 @@ class LatexPrinter(Printer):
                 (self._print(i.min), self._print(i.max))
 
     def _print_Union(self, u):
-        return r" \cup ".join([self._print(i) for i in u.args])
+        args = []
+        for i in u.args:
+            latex = self._print(i)
+            if i.is_Complement:
+                latex = r'\left(%s\right)' % latex
+            args.append(latex)
+
+        return r" \cup ".join(args)
 
     def _print_Complement(self, u):
         return r" \setminus ".join([self._print(i) for i in u.args])

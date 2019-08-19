@@ -34,11 +34,26 @@ class Expr(Basic, EvalfMixin):
     is_Identity = False
     is_square = False
     is_infinitesimal = None
-    is_FiniteSet = None
+    is_FiniteSet = False
 
     @property
     def shape(self):
         return ()
+
+    def intersect(self, other):
+        from sympy.sets.sets import Intersection
+        return Intersection(self, other)
+
+    def complement(self, universe):
+        from sympy.sets.sets import Complement
+        return Complement(universe, self)
+
+    def is_subset(self, other):
+        from sympy.sets.contains import Subset
+        return Subset(self, other)
+
+    def _complement(self, other):
+        ...
 
     @property
     def _diff_wrt(self):
@@ -196,6 +211,9 @@ class Expr(Basic, EvalfMixin):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rsub__')
     def __sub__(self, other):
+        if self.is_set:
+            assert other.is_set
+            return other.complement(self)
         return Add(self, -other)
 
     @_sympifyit('other', NotImplemented)
@@ -3759,6 +3777,10 @@ class Expr(Basic, EvalfMixin):
 
         if isinstance(condition, BooleanFalse):
             return S.EmptySet
+
+        if condition.lhs.is_set:
+            from sympy.sets.conditionset import ConditionSet
+            return ConditionSet(self, condition)
 
         from sympy import solve
         equation = condition.lhs - condition.rhs

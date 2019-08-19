@@ -7,7 +7,7 @@ from sympy import exp, Symbol
 from sympy import factorial, cos, pi
 from sympy.sets.sets import Interval
 from sympy.core.numbers import Infinitesimal, NegativeInfinitesimal, epsilon, oo
-from sympy.functions.elementary.miscellaneous import Maximum
+from sympy.concrete.expr_with_limits import Maximum
 from sympy.core.add import Add
 from sympy.logic.boolalg import plausibles_dict
 

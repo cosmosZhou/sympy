@@ -575,8 +575,8 @@ class Set(Basic):
     def __contains__(self, other):
         symb = sympify(self.contains(other))
         if not (symb is S.true or symb is S.false):
-#             return None
-            raise TypeError('contains did not evaluate to a bool: %r' % symb)
+            return False
+#             raise TypeError('contains did not evaluate to a bool: %r' % symb)
         return bool(symb)
 
     def __abs__(self):
@@ -848,6 +848,12 @@ class Interval(Set, EvalfMixin):
             new_a = Interval(self.start, self.end, open_left, open_right)
             return set((new_a, b))
         if self.is_integer:
+            if b.is_Interval and b.is_integer:
+                if self.max() in b:
+                    return Interval(self.start, b.end, self.left_open, b.right_open, True)
+                if self.min() in b:
+                    return Interval(b.start, self.end, b.left_open, self.right_open, True)
+
             drapeau = False
             end = self.end + 1
             if not self.right_open and sympify(b.contains(end)) is S.true:
@@ -948,6 +954,10 @@ class Interval(Set, EvalfMixin):
             return end - start
         else:
             return self.end - self.start
+
+    def _eval_Abs(self):
+        if self.is_integer:
+            return self.size
 
     @property
     def start(self):
@@ -1454,6 +1464,34 @@ class Union(Set, LatticeOp, EvalfMixin):
 
         return dtype
 
+    def rewrite(self, *args, **hints):
+        if 'complement' in hints:
+            complement = hints['complement']
+            A = self.args[complement]
+            return self.func(*[(arg if i == complement else A.complement(arg)) for i, arg in enumerate(self.args)], evaluate=False)
+        return self
+
+    def _eval_Abs(self):
+        non_intersect = []
+        args = [*self.args]
+        for A in self.args:
+            intersect = False
+            for B in args:
+                if A == B:
+                    continue
+
+                if A & B:
+                    intersect = True
+                    break
+            if intersect:
+                continue
+            non_intersect.append(A)
+            args.remove(A)
+
+        from sympy.core.add import Add
+        if non_intersect:
+            return  Add(*[abs(A) for A in non_intersect]) + abs(self.func(*args))
+
 
 class Intersection(Set, LatticeOp):
     """
@@ -1867,6 +1905,15 @@ class Complement(Set, EvalfMixin):
         B = self.args[1]
         return And(A.contains(other), Not(B.contains(other)))
 
+    def union_sets(self, C):
+        A, B = self.args
+        if B.is_subset(C):
+            return A | C
+
+    @property
+    def is_integer(self):
+        return self.args[0].is_integer
+
 
 class EmptySet(with_metaclass(Singleton, Set)):
     """
@@ -1895,6 +1942,9 @@ class EmptySet(with_metaclass(Singleton, Set)):
     """
     is_EmptySet = True
     is_FiniteSet = True
+
+    def _eval_Abs(self):
+        return 0
 
     def union_sets(self, b):
         return b

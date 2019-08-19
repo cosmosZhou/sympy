@@ -172,6 +172,13 @@ class ConditionSet(Set):
     condition = property(lambda self: self.args[1])
     base_set = property(lambda self: self.args[2])
 
+#     def __contains__(self, other):
+#         symb = self.contains(other)
+#         if not (symb is S.true or symb is S.false):
+#             return False
+# #             raise TypeError('contains did not evaluate to a bool: %r' % symb)
+#         return bool(symb)
+
     def assertion(self):
         sym = self.sym
         condition = self.condition
@@ -192,8 +199,7 @@ class ConditionSet(Set):
         return (c.free_symbols - s.free_symbols) | b.free_symbols
 
     def contains(self, other):
-        return And(Lambda(self.sym, self.condition)(
-            other), self.base_set.contains(other))
+        return And(Lambda(self.sym, self.condition)(other), self.base_set.contains(other))
 
     def _eval_subs(self, old, new):
         if not isinstance(self.sym, Expr):

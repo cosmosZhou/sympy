@@ -442,6 +442,11 @@ class Abs(Function):
     is_extended_nonnegative = True
     unbranched = True
 
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.real
+
     def fdiff(self, argindex=1):
         """
         Get the first derivative of the argument to Abs().

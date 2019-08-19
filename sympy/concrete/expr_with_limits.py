@@ -14,12 +14,13 @@ from sympy.functions.elementary.piecewise import (piecewise_fold,
 from sympy.logic.boolalg import BooleanFunction
 from sympy.matrices import Matrix
 from sympy.tensor.indexed import Idx
-from sympy.sets.sets import Interval, Set, FiniteSet
+from sympy.sets.sets import Interval, Set, FiniteSet, Union, Complement, \
+    EmptySet, Intersection
 from sympy.sets.fancysets import Range
 from sympy.utilities import flatten
 from sympy.utilities.iterables import sift
 from sympy.core.cache import cacheit
-from sympy.functions.elementary.miscellaneous import Min
+from sympy.functions.elementary.miscellaneous import Min, Max
 
 
 def _common_new(cls, function, *symbols, **assumptions):
@@ -156,11 +157,11 @@ class ExprWithLimits(Expr):
 
     def __new__(cls, function, *symbols, **assumptions):
         if cls in (Minimum, Maximum, Ref, UnionComprehension):
-            if isinstance(function, Equality):
+            if 'condition' in function.dtype.dict:
                 lhs = function.lhs
                 rhs = function.rhs
-                return Equality(cls(lhs, *symbols, **assumptions), cls(rhs, *symbols, **assumptions))
-            
+                return function.func(cls(lhs, *symbols, **assumptions), cls(rhs, *symbols, **assumptions))
+
             limits = [None] * len(symbols)
             for i, sym in enumerate(symbols):
                 if isinstance(sym, Tuple):
@@ -168,8 +169,8 @@ class ExprWithLimits(Expr):
                 elif isinstance(sym, tuple):
                     limits[i] = Tuple(*sym)
                 else:
-                    limits[i] = Tuple(sym,)    
-        else:                
+                    limits[i] = Tuple(sym,)
+        else:
             pre = _common_new(cls, function, *symbols, **assumptions)
             if type(pre) is tuple:
                 function, limits, _ = pre
@@ -362,7 +363,7 @@ class ExprWithLimits(Expr):
                     if len(xab[0].free_symbols.intersection(old.free_symbols)) != 0:
                         sub_into_func = False
                         break
-                    
+
             if isinstance(old, AppliedUndef) or isinstance(old, UndefinedFunction):
                 sy2 = set(self.variables).intersection(set(new.atoms(Symbol)))
                 sy1 = set(self.variables).intersection(set(old.args))
@@ -389,9 +390,7 @@ class ExprWithLimits(Expr):
 
         return self.func(func, *limits)
 
-
     def as_multiple_terms(self, x, domain):
-        from sympy.sets.sets import FiniteSet
         univeralSet = Interval(S.NegativeInfinity, S.Infinity, integer=True)
         args = []
         union = S.EmptySet
@@ -404,10 +403,12 @@ class ExprWithLimits(Expr):
                     args.append(f.subs(x, e))
             elif _domain != S.EmptySet:
                 assert _domain.is_integer
-                args.append(self.func(f, (x, _domain.min(), _domain.max())).simplifier())
+                if _domain.is_Interval:
+                    args.append(self.func(f, (x, _domain.min(), _domain.max())).simplifier())
+                else:
+                    args.append(self.func(f, (x, _domain)).simplifier())
 
         return args
-
 
     def _subs(self, old, new):
         """Override this stub if you want to do anything more than
@@ -425,8 +426,8 @@ class ExprWithLimits(Expr):
                 x, *ab = limit
                 if ab:
                     rule[x] = Symbol(x.name, domain=Interval(*ab, integer=True))
-            function = self.function.subs(rule);
-            _function = function.subs(old, new);
+            function = self.function.subs(rule)
+            _function = function.subs(old, new)
             if _function != function:
                 function = _function.subs({v : k for k, v in rule.items()})
                 return self.func(function, *self.limits)
@@ -3013,15 +3014,78 @@ class UnionComprehension(Set, ExprWithLimits):
             assert expr.dtype == element_symbol.dtype
             return condition.func(*condition.args, forall={element_symbol:self}, exists={variables: Equality(expr, element_symbol)})
 
+    def simplifier(self):
+        if len(self.limits) != 1:
+            return self
+        limit = self.limits[0]
+
+        if len(limit) == 2:
+            return self
+
+        if len(limit) > 1:
+            x, a, b = limit
+            domain = Interval(a, b, integer=True)
+            if isinstance(self.function, Piecewise):
+                return Union(*self.as_multiple_terms(x, domain))
+
+            if isinstance(domain, FiniteSet):
+                args = []
+                for k in domain:
+                    args.append(self.function.subs(x, k))
+                return Union(*args)
+            if isinstance(domain, EmptySet):
+                return S.EmptySet
+
+            a, b = domain.min(), domain.max()
+            limit = x, a, b
+        var = limit[0]
+
+        import sympy
+        function = self.function
+        if isinstance(function, sympy.exp):
+            function = function.as_Mul()
+
+        independent, dependent = function.as_independent(var, as_Add=False)
+        if independent == S.One:
+            if limit != self.limits[0]:
+                return self.func(function, limit)
+            return self
+
+        if dependent == S.One:
+            if len(limit) > 1:
+                return self.function * (b - a + 1)
+            else:
+                return self.function * var.dimension
+
+        return self.func(dependent, limit) * independent
+
     def union_sets(self, expr):
         if len(self.limits) == 1:
-            i, *ab = self.limits[0]
-            if ab:
-                a, b = ab
+            i, *args = self.limits[0]
+            if len(args) == 2:
+                a, b = args
                 if self.function.subs(i, b + 1) == expr:
                     return self.func(self.function, (i, a, b + 1))
                 if self.function.subs(i, a - 1) == expr:
                     return self.func(self.function, (i, a - 1 , b))
+            elif len(args) == 1:
+                domain = args[0]
+                if isinstance(domain, Complement):
+                    A, B = domain.args
+                    if isinstance(B, FiniteSet):
+                        deletes = set()
+                        for b in B:
+                            if self.function.subs(i, b) == expr:
+                                deletes.add(b)
+                        if deletes:
+                            B -= FiniteSet(*deletes)
+                            if B:
+                                domain = Complement(A, B, evaluate=False)
+                                return self.func(self.function, (i, domain))
+                            domain = A
+                            if isinstance(domain, Interval) and domain.is_integer:
+                                return self.func(self.function, (i, domain.min(), domain.max()))
+                            return self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])
@@ -3101,6 +3165,8 @@ class UnionComprehension(Set, ExprWithLimits):
             limit = limits[0]
             if len(limit) == 1:
                 tex = r"\bigcup_{%s} " % p._print(limit[0])
+            elif len(limit) == 2:
+                tex = r"\bigcup\limits_{%s \in %s} " % tuple([p._print(i) for i in limit])
             else:
                 tex = r"\bigcup\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
         else:
@@ -3112,7 +3178,6 @@ class UnionComprehension(Set, ExprWithLimits):
             tex = r"\bigcup\limits_{\substack{%s}} " % \
                 str.join('\\\\', [_format_ineq(l) for l in limits])
 
-        from sympy import Add
         if isinstance(function, Add):
             tex += r"\left(%s\right)" % p._print(function)
         else:
@@ -3167,8 +3232,10 @@ class UnionComprehension(Set, ExprWithLimits):
         exists = {}
         for limit in self.limits:
             x, *ab = limit
-            if ab:
+            if len(ab) == 2:
                 domain = Interval(*ab, integer=True)
+            elif len(ab) == 1:
+                domain = ab[0]
             else:
                 domain = S.Integers
             exists[x] = domain

@@ -1,9 +1,9 @@
-from sympy.core.symbol import Symbol, Wild
+from sympy.core.symbol import Symbol, Wild, dtype
 from sympy.core.relational import Equality
-from sympy.utility import plausible, cout, Eq, Sum, Ref
+from sympy.utility import plausible, cout, Eq, Sum, Ref, Union
 
 from sympy.functions.combinatorial.numbers import Stirling
-from sympy.sets.sets import FiniteSet, imageset, Union, Interval
+from sympy.sets.sets import FiniteSet, imageset, Interval
 from sympy.sets.contains import Subset
 from sympy.logic.boolalg import And
 from sympy.functions.elementary.complexes import Abs
@@ -11,8 +11,7 @@ from sympy.core.basic import _aresame
 from sympy.core.function import Function, Application
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.tensor.indexed import IndexedBase
-from sympy.concrete.expr_with_limits import UnionComprehension
-
+from sympy.axiom import discrete
 
 
 def apply(n, k):
@@ -26,6 +25,7 @@ from sympy.utility import check
 @check
 def prove():
     k = Symbol('k', integer=True, nonnegative=True)
+
     n = Symbol('n', integer=True, nonnegative=True)
     cout << apply(n, k)
 
@@ -37,12 +37,11 @@ def prove():
     s2 = Symbol('s2', definition=Eq[2].rhs.arg)
     s3 = Symbol('s3', definition=Eq[3].rhs.arg)
 
-    from sympy.core.symbol import dtype
-
     e = Symbol('e', dtype=dtype.integer.set)
     s2_ = imageset(e, Union(e, FiniteSet(FiniteSet(n))), s2)
 
-    cout << Subset(s2_, s1, plausible=True)
+    plausible0 = Subset(s2_, s1, plausible=True)
+    cout << plausible0
 
     cout << Eq[-1].definition
 
@@ -116,7 +115,8 @@ def prove():
 
     s4_imageset_imageset = imageset(imageSymbol, imageFunction, s4_imageset)
 
-    cout << Subset(s4_imageset_imageset, s1, plausible=True)
+    plausible1 = Subset(s4_imageset_imageset, s1, plausible=True)
+    cout << plausible1
 
     cout << Eq[-1].definition
 
@@ -125,8 +125,78 @@ def prove():
     cout << Equality.by_definition_of(s4_imageset)
 
     cout << Eq[-1].split()
-    
-    cout << UnionComprehension(Eq[38], (i, 0, k))
+
+    cout << Union[i:0:k](Eq[38])
+
+    cout << Eq[-1].right.simplifier()
+
+    cout << Eq[-1].subs(Eq[-3])
+
+    cout << Eq[38].abs()
+
+    cout << Sum[i:0:k](Eq[-1])
+
+    cout << Eq[-1].right.simplifier()
+
+    cout << discrete.sets.union.inequality.apply(*Eq[-1].rhs.args[1].arg.args)
+
+    cout << Eq[-2].subs(Eq[-1])
+
+    cout << Eq[-1].subs(Eq[44])
+
+    cout << Eq[48].abs()
+
+    u = Eq[-1].lhs.arg
+    cout << discrete.sets.union.inequalities.apply(u.function, *u.limits)
+
+    cout << Eq[-2].subs(Eq[-1])
+
+    cout << Eq[-1].subs(Eq[-4])
+
+    cout << Eq[49].split()
+
+    cout << discrete.sets.union.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
+
+    cout << Eq[-1].subs(Eq[43])
+
+    cout << Eq[-4].subs(Eq[-1])
+
+    cout << Eq[-4].subs(Eq[43])
+
+    cout << (Eq[-1] & Eq[-2])
+
+    cout << (Eq[48] & Eq[58] & Eq[-1])
+
+    cout << Eq[-1].rewrite(forall=False, var=i)
+
+    assumption, *_ = Eq[-1].exists.values()
+    cout << Eq[-1].subs(assumption)
+
+    cout << Eq[41].definition
+
+    b, *_ = Eq[-1].forall.keys()
+
+    cout << Eq[-1].subs(x[0:k + 1], b)
+
+    cout << Ref[i](Eq[38])
+
+    cout << plausible1.subs(Eq[-1])
+
+    A = IndexedBase("A", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq[-1].args[0]))
+
+    cout << Equality.by_definition_of(A)
+
+    cout << Eq[-2].subs(Eq[-1].reversed)
+
+    cout << Union[j](Eq[-1])
+
+    B = Symbol("B", dtype=dtype.integer.set.set, definition=plausible0.args[0])
+
+    cout << Equality.by_definition_of(B)
+
+    cout << plausible0.subs(Eq[-1].reversed)
+
+#
 
 
 if __name__ == '__main__':

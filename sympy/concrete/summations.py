@@ -18,7 +18,7 @@ from sympy.logic.boolalg import And
 from sympy.polys import apart, PolynomialError, together
 from sympy.series.limitseq import limit_seq
 from sympy.series.order import O
-from sympy.sets.sets import FiniteSet, EmptySet
+from sympy.sets.sets import FiniteSet, EmptySet, Complement, Interval
 from sympy.simplify import denom
 from sympy.simplify.combsimp import combsimp
 from sympy.simplify.powsimp import powsimp
@@ -381,7 +381,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         Sum.is_absolutely_convergent()
         Product.is_convergent()
         """
-        from sympy import Interval, Integral, log, symbols, simplify
+        from sympy import Integral, log, symbols, simplify
         p, q, r = symbols('p q r', cls=Wild)
 
         sym = self.limits[0][0]
@@ -813,11 +813,20 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if self == old:
             return new
 
+        from sympy.tensor.indexed import Slice
         if len(self.limits) == 1:
             limit = self.limits[0]
             x, *ab = limit
             if ab:
                 a, b = ab
+
+            if isinstance(old, Slice) and len(ab) == 2:
+                _x = Symbol(x.name, domain=Interval(*ab))
+                function = self.function.subs(x, _x)
+                _function = function.subs(old, new)
+                if _function != function:
+                    function = _function.subs(_x, x)
+                    return self.func(function, *self.limits)
 
             p = old.as_poly(x)
 
@@ -837,7 +846,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new)))
 
-                from sympy.tensor.indexed import Slice
                 if isinstance(x, Slice):
                     x = x.subs(old, new)
                 return self.func(function, (x,))
@@ -978,10 +986,24 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if len(self.limits) != 1:
             return self
         limit = self.limits[0]
+        if len(limit) == 2:
+            x, domain = limit
+            if isinstance(domain, Complement):
+                A, B = domain.args
+                if isinstance(A, Interval) and A.is_integer:
+                    A = self.func(self.function, (x, A.min(), A.max()))
+                    if isinstance(B, FiniteSet):
+                        B = Add(*[self.function.subs(x, b) for b in B])
+                    else:
+                        B = self.func(self.function, (x, B))
+                    return A - B
+
+            return self
+
         if len(limit) > 1:
             x, a, b = limit
             domain = self.function.nonzero_domain(x)
-            from sympy.sets.sets import Interval
+
             domain &= Interval(a, b, integer=True)
             if isinstance(self.function, Piecewise):
                 return Add(*self.as_multiple_terms(x, domain))
