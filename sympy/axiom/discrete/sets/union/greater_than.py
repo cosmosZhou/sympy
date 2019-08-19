@@ -3,7 +3,6 @@ from sympy.utility import plausible, cout, Eq, Sum
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Union
 from sympy.axiom import discrete
-from tensorboardX.embedding import make_sprite
 
 
 def apply(A, B):
