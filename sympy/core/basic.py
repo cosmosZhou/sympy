@@ -87,6 +87,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Relational = False
     is_Equality = False
     is_Boolean = False
+    is_BooleanFunction = False
     is_Not = False
     is_Matrix = False
     is_Vector = False
@@ -152,13 +153,10 @@ class Basic(with_metaclass(ManagedProperties)):
             simplify_assumptions('forall', *condition)
         return assumptions
 
-    def and_execute(self, other, forall):
-        kwargs = {}
-        kwargs['equivalent'] = self.combine_equivalent(other)
-
-        kwargs['exists'] = self.combine_clause(self.exists, other.exists)
-        kwargs['forall'] = forall
-
+    def __and__(self, other):
+        """Overloading for & operator"""
+        if self.is_set:
+            return self.intersect(other)
         from sympy.logic.boolalg import And
         if isinstance(self, And):
             lhs = tuple(self._argset)
@@ -170,29 +168,7 @@ class Basic(with_metaclass(ManagedProperties)):
         else:
             rhs = (other.func(*other.args),)
 
-        return And(*(lhs + rhs), **kwargs)
-
-    def __and__(self, other):
-        if self.is_set:
-            return self.intersect(other)
-        """Overloading for & operator"""
-
-        if self.forall == other.forall:
-            return self.and_execute(other, self.forall)
-        if self.args == other.args and self.exists == other.exists:
-            kwargs = {}
-            kwargs['equivalent'] = self.combine_equivalent(other)
-
-            kwargs['exists'] = self.exists
-            kwargs['forall'] = self.combine_clause(self.forall, other.forall, True)
-            return self.func(*self.args, **kwargs)
-        if other.forall is None and other.plausible is None:
-            return self.and_execute(other, self.forall)
-        if self.forall is None and self.plausible is None:
-            return self.and_execute(other, other.forall)
-        if other.plausible is None and self.plausible is None:
-            return self.and_execute(other, self.combine_clause(self.forall, other.forall))
-        return None
+        return And(*lhs + rhs, equivalent=[self, other])
 
     __rand__ = __and__
 
@@ -218,12 +194,10 @@ class Basic(with_metaclass(ManagedProperties)):
             if name not in obj._assumptions:
                 if value is not None:
                     obj._assumptions[name] = value
-            else:
-                print('%s already in (%s)._assumptions' % (name, obj))
         return obj
 
-    def copy(self):
-        return self.func(*self.args)
+    def copy(self, **kwargs):
+        return self.func(*self.args, **kwargs)
 
     @property
     def set(self):

@@ -54,11 +54,14 @@ class Set(Basic):
     is_UniversalSet = None
     is_Complement = None
     is_ComplexRegion = False
+    is_ConditionSet = False
 
-    @property
-    def element_symbol(self):
+    def image_set(self):
+        return None
+
+    def element_symbol(self, excludes=set()):
         element_type = self.element_type
-        return generate_free_symbol(self.free_symbols, shape=element_type.shape, **element_type.dict)
+        return generate_free_symbol(self.free_symbols | excludes, shape=element_type.shape, **element_type.dict)
 
     @property
     def dtype(self):
@@ -573,11 +576,7 @@ class Set(Basic):
         return Complement(self, other)
 
     def __contains__(self, other):
-        symb = sympify(self.contains(other))
-        if not (symb is S.true or symb is S.false):
-            return False
-#             raise TypeError('contains did not evaluate to a bool: %r' % symb)
-        return bool(symb)
+        return sympify(self.contains(other))
 
     def __abs__(self):
         from sympy.functions.elementary.complexes import Abs
@@ -924,9 +923,8 @@ class Interval(Set, EvalfMixin):
 
         return Basic.__new__(cls, start, end, left_open, right_open, integer)
 
-    @property
-    def element_symbol(self):
-        return generate_free_symbol(self.free_symbols, integer=self.is_integer)
+    def element_symbol(self, excludes=set()):
+        return generate_free_symbol(self.free_symbols | excludes, integer=self.is_integer)
 
     @property
     def is_nonnegative(self):
@@ -1877,6 +1875,12 @@ class Complement(Set, EvalfMixin):
     is_Complement = True
 
     def __new__(cls, a, b, evaluate=True):
+        if isinstance(b, set):
+            b = FiniteSet(*b)
+        
+        if isinstance(a, set):
+            a = FiniteSet(*a)
+
         if evaluate:
             return Complement.reduce(a, b)
 
@@ -2227,6 +2231,9 @@ class FiniteSet(Set, EvalfMixin):
         return self.is_proper_subset(other)
 
     def __abs__(self):
+        return len(self)
+
+    def _eval_Abs(self):
         return len(self)
 
     @property

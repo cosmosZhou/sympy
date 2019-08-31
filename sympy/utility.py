@@ -4,7 +4,7 @@ from sympy.core.relational import Equality, Relational
 import sympy
 import os
 from sympy.logic.boolalg import plausibles_dict, equivalent_ancestor, \
-    BooleanFunction
+    BooleanFunction, Boolean
 from sympy.sets.contains import Contains
 import traceback
 from sympy.functions.elementary import miscellaneous
@@ -154,17 +154,13 @@ class cout:
 #         self.file.write(["$$\\begin{align}", "\\end{align}$$"])
 
     def add_to_list(self, rhs):
-        index = -1
-        for i, eq in enumerate(Eq):
-            if eq == rhs and eq.clauses_equals(rhs):
-                index = i
-                break
-
-        if index < 0:
+        try:
+            index = Eq.index(rhs)
+        except:
             Eq.append(rhs)
             return len(Eq) - 1
         else:
-
+            eq = Eq[index]
             plausible = rhs.plausible
             if plausible is False:
                 eq.plausible = False
@@ -176,7 +172,7 @@ class cout:
                 else:
                     if isinstance(rhs.equivalent, (list, tuple)):
                         if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
-                            Eq[index] = rhs
+#                             Eq[index] = rhs
                             return index
                     if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
                         rhs_equivalent = equivalent_ancestor(rhs)
@@ -188,8 +184,20 @@ class cout:
                                 for h in hypothesis:
                                     h.derivative = None
 
-            Eq[index] = rhs
+#             Eq[index] = rhs
             return index
+
+    def needs_to_add_to_list(self, rhs):
+        index = -1
+        for i, eq in enumerate(Eq):
+            if eq == rhs and eq.clauses_equals(rhs):
+                index = i
+                break
+
+        if index < 0:
+            return True
+
+        return False
 
     def __lshift__(self, rhs):
 
@@ -202,7 +210,7 @@ class cout:
             rhs = rhs.expr
 
         if batch_proving:
-            if isinstance(rhs, (Relational, BooleanFunction)):
+            if isinstance(rhs, Boolean):
                 self.add_to_list(rhs)
             return self
 
@@ -214,11 +222,11 @@ class cout:
             latex = ''
 
         infix = str(rhs)
-        if isinstance(rhs, (Relational, BooleanFunction)):
+        if isinstance(rhs, Boolean):
             index = self.add_to_list(rhs)
 
             tag = r'\tag*{Eq[%d]}' % index
-            latex = rhs.clause_latex(latex)
+#             latex = rhs.clause_latex(latex)
             latex += tag
 
             infix = 'Eq[%d] : %s' % (index, infix)

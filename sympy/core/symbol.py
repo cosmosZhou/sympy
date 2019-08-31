@@ -17,7 +17,7 @@ from sympy.core.containers import Tuple
 import string
 import re as _re
 import random
-from builtins import isinstance
+
 
 
 def _symbol(s, matching_symbol=None, **assumptions):
@@ -129,17 +129,18 @@ def _uniquely_named_symbol(xname, exprs=(), compare=str, modify=None, **assumpti
     return _symbol(x, default, **assumptions)
 
 
-def generate_free_symbol(free_symbols, shape=(), **kwargs):
-    free_symbols = [*free_symbols]
+def generate_free_symbol(excludes, shape=(), **kwargs):
+    free_symbols = [*excludes]
     free_symbols.sort(key=lambda x : x.name)
     for s in free_symbols:
-        s = s.generate_free_symbol(free_symbols=free_symbols, shape=shape, **kwargs)
+        s = s.generate_free_symbol(excludes=excludes, shape=shape, **kwargs)
         if s is not None:
             return s
     return None
 
 
-class Symbol(AtomicExpr, Boolean):
+class Symbol(AtomicExpr):
+# class Symbol(AtomicExpr, Boolean):
     """
     Assumptions:
        commutative = True
@@ -162,6 +163,9 @@ class Symbol(AtomicExpr, Boolean):
     is_Symbol = True
     is_symbol = True
 
+    def copy(self, **kwargs):
+        return self.func(self.name, **kwargs)
+
     @property
     def _diff_wrt(self):
         """Allow derivatives wrt Symbols.
@@ -175,6 +179,12 @@ class Symbol(AtomicExpr, Boolean):
             True
         """
         return True
+
+    def image_set(self):
+        definition = self.definition
+        if definition is None:
+            return None
+        return definition.image_set()
 
     @staticmethod
     def _sanitize(assumptions, obj=None):
@@ -346,17 +356,15 @@ class Symbol(AtomicExpr, Boolean):
             return self._assumptions['definition']
         return None
 
-    def generate_free_symbol(self, free_symbols=None, shape=(), **kwargs):
-        if free_symbols is None:
-            free_symbols = set()
-        free_symbols = set(symbol.name for symbol in free_symbols)
+    def generate_free_symbol(self, excludes=set(), shape=(), **kwargs):
+        excludes = set(symbol.name for symbol in excludes)
         name = self.name
         if len(name) > 1:
             name = 'a'
 
         while True:
             name = chr(ord(name) + 1)
-            if name not in free_symbols:
+            if name not in excludes:
                 if len(shape) > 0:
                     from sympy.tensor.indexed import IndexedBase
                     return IndexedBase(name, shape, **kwargs)
@@ -403,10 +411,10 @@ class Symbol(AtomicExpr, Boolean):
             return dtype.integer
         if self.is_rational:
             return dtype.rational
-        if self.is_real:
-            return dtype.real
         if self.is_complex:
             return dtype.complex
+
+        return dtype.real
 
     def _has(self, pattern):
         """Helper for .has()"""
@@ -435,49 +443,26 @@ class Symbol(AtomicExpr, Boolean):
             return definition.element_type
         return None
 
-    @property
-    def element_symbol(self):
+    def element_symbol(self, excludes=set()):
         element_type = self.element_type
         if element_type is None:
             return
 
-        return self.generate_free_symbol(shape=element_type.shape, **element_type.dict)
+        return self.generate_free_symbol(excludes=excludes, shape=element_type.shape, **element_type.dict)
 
     def assertion(self):
         definition = self.definition
         from sympy.sets.conditionset import ConditionSet
-        from sympy.tensor.indexed import Slice
-        from sympy.core.relational import Equality
 
         if isinstance(definition, ConditionSet):
             sym = definition.sym
             condition = definition.condition
 
-            return condition.func(*condition.args, forall={sym:self})
+            from sympy.concrete.expr_with_limits import Forall
+            return Forall(condition, (sym, self))
 
-        image_set = definition.image_set()
-        if image_set is None:
-            return
-
-        expr, variables, base_set = image_set
-
-        if isinstance(base_set, Symbol):
-            if isinstance(base_set.definition, ConditionSet):
-                base_set = base_set.definition
-            else:
-                return
-        else:
-            if not isinstance(base_set, ConditionSet):
-                return
-
-        sym = base_set.sym
-        if isinstance(sym, Symbol):
-            ...
-        elif isinstance(sym, Slice):
-            condition = base_set.condition
-            element_symbol = self.element_symbol
-            assert expr.dtype == element_symbol.dtype
-            return condition.func(*condition.args, forall={element_symbol:self}, exists={variables: Equality(expr, element_symbol)})
+        from sympy.sets.conditionset import image_set_definition
+        return image_set_definition(self)
 
 
 class Dummy(Symbol):

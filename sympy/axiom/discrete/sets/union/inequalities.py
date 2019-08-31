@@ -10,7 +10,7 @@ from sympy.concrete import summations
 
 def apply(expr, *limits):    
     return LessThan(abs(UnionComprehension(expr, *limits)),
-                    summations.Sum(abs(expr), *limits),
+                    summations.Sum(abs(expr), *limits).simplifier(),
                     plausible=plausible())
 
 

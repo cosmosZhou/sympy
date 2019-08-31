@@ -3840,11 +3840,9 @@ class Expr(Basic, EvalfMixin):
         from sympy.core.numbers import oo
         return Interval(-oo, oo, integer=x.is_integer)
 
-    def generate_free_symbol(self, free_symbols=None, **kwargs):
-        if free_symbols is None:
-            free_symbols = set()
-        free_symbols |= self.free_symbols
-        free_symbols = [*set(symbol.name for symbol in free_symbols)]
+    def generate_free_symbol(self, excludes=set(), shape=None, **kwargs):
+        excludes = self.free_symbols | excludes
+        free_symbols = [*set(symbol.name for symbol in excludes)]
         free_symbols.sort()
         name = None
 
@@ -3863,7 +3861,11 @@ class Expr(Basic, EvalfMixin):
                     name = 'a'
 
                 if name not in free_symbols:
-                    return Symbol(name, **kwargs)
+                    if shape:
+                        from sympy.tensor.indexed import IndexedBase
+                        return IndexedBase(name, shape=shape, **kwargs)
+                    else:
+                        return Symbol(name, **kwargs)
         return None
 
     def contains(self, other):

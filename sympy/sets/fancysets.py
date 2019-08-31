@@ -288,27 +288,6 @@ class ImageSet(Set):
         varsets = r"%s \in %s" % (p._print(var), p._print(setv))
         return r"\left\{%s \left| %s \right. \right\}" % (p._print(self.lamda.expr), varsets)
 
-    @property
-    def element_symbol(self):
-        element_symbol = self.base_set.element_symbol
-        if isinstance(element_symbol, (tuple, list)):
-            y = self.lamda(*self.base_set.element_symbol)
-        else:
-            y = self.lamda(element_symbol)
-        kwargs = {}
-        if y.is_integer:
-            kwargs['integer'] = True
-#         elif y.is_real:
-#             kwargs['real'] = True
-        elif y.is_complex:
-            kwargs['complex'] = True
-        elif y.is_Matrix:
-            kwargs['matrix'] = True
-        elif y.is_set:
-            kwargs['set'] = True
-
-        return generate_free_symbol(self.free_symbols, **kwargs)
-
     def __iter__(self):
         already_seen = set()
         for i in self.base_set:

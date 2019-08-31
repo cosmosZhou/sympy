@@ -278,6 +278,8 @@ class Application(with_metaclass(FunctionClass, Basic)):
         if evaluate:
             evaluated = cls.eval(*args)
             if evaluated is not None:
+#                 if evaluated.is_Relational or evaluated.is_BooleanFunction:
+#                     return evaluated.func(*evaluated.args, **options)
                 return evaluated
 
         obj = super(Application, cls).__new__(cls, *args, **options)

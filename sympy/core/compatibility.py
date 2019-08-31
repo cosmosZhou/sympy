@@ -304,8 +304,9 @@ def iterable(i, exclude=(string_types, dict, NotIterable)):
         return i._iterable
     try:
         iter(i)
-    except TypeError:
+    except (TypeError, AttributeError):
         return False
+    
     if exclude:
         return not isinstance(i, exclude)
     return True

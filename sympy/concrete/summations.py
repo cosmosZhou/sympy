@@ -157,7 +157,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     """
 
     __slots__ = ['is_commutative']
-
+    operator = Add
+    
     def __new__(cls, function, *symbols, **assumptions):
         obj = AddWithLimits.__new__(cls, function, *symbols, **assumptions)
         if not hasattr(obj, 'limits'):
@@ -817,7 +818,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if len(self.limits) == 1:
             limit = self.limits[0]
             x, *ab = limit
+            
             if ab:
+                if len(ab) == 1:
+                    return self
+                
                 a, b = ab
 
             if isinstance(old, Slice) and len(ab) == 2:
@@ -998,6 +1003,12 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         B = self.func(self.function, (x, B))
                     return A - B
 
+            elif isinstance(domain, FiniteSet):
+                args = []
+                for k in domain:
+                    args.append(self.function.subs(x, k))
+                return Add(*args)
+
             return self
 
         if len(limit) > 1:
@@ -1039,24 +1050,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return self.func(dependent, limit) * independent
 
-    def bisect(self, front=None, back=None):
-        (x, *ab), *_ = self.limits
-        from sympy.tensor.indexed import Slice
-        if isinstance(x, Slice):
-            x, z = x.bisect(front=front, back=back)
-            return self.func(self.func(self.function, (x,)).simplifier(), (z,))
-        if ab:
-            a, b = ab
-            if front is not None:
-                mid = a + front
-            else:
-                mid = b + 1 - back
-
-            return self.func(self.function, (x, a, mid - 1)).simplifier() + self.func(self.function, (x, mid, b)).simplifier()
-        return self
-
     def as_Ref(self):
-        from sympy.functions.elementary.miscellaneous import Ref
+        from sympy.concrete.expr_with_limits import Ref
         return self.func(Ref(self.function, *self.limits).simplifier())
 
     def swap(self):

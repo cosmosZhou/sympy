@@ -1012,23 +1012,17 @@ class LatexPrinter(Printer):
 
     def _print_LogOp(self, args, char):
 
-        def combine_clause(arg):
-            latex = self._print(arg)
-            if arg.exists is not None or arg.forall is not None:
-                return '{%s}' % arg.clause_latex(latex)
-            return latex
-
         arg = args[0]
-        if arg.is_Boolean and not arg.is_Not:
-            tex = r"\left(%s\right)" % self._print(arg)
-        else:
-            tex = r"%s" % combine_clause(arg)
+#         if arg.is_Boolean and not arg.is_Not:
+#             tex = r"\left(%s\right)" % self._print(arg)
+#         else:
+        tex = r"%s" % self._print(arg)
 
         for arg in args[1:]:
-            if arg.is_Boolean and not arg.is_Not:
-                tex += r" %s \left(%s\right)" % (char, self._print(arg))
-            else:
-                tex += r" %s %s" % (char, combine_clause(arg))
+#             if arg.is_Boolean and not arg.is_Not:
+#                 tex += r" %s \left(%s\right)" % (char, self._print(arg))
+#             else:
+            tex += r" %s %s" % (char, self._print(arg))
 
         return tex
 
@@ -1530,15 +1524,12 @@ class LatexPrinter(Printer):
                              charmap[expr.rel_op], self._print(expr.rhs))
 
     def _print_Piecewise(self, expr):
-        ecpairs = [r"%s & \text{for}\: %s" % (self._print(e), self._print(c))
+        ecpairs = [r"%s & \text{if}\: %s" % (self._print(e), self._print(c))
                    for e, c in expr.args[:-1]]
         if expr.args[-1].cond == true:
-            ecpairs.append(r"%s & \text{otherwise}" %
-                           self._print(expr.args[-1].expr))
+            ecpairs.append(r"%s & \text{else}" % self._print(expr.args[-1].expr))
         else:
-            ecpairs.append(r"%s & \text{for}\: %s" %
-                           (self._print(expr.args[-1].expr),
-                            self._print(expr.args[-1].cond)))
+            ecpairs.append(r"%s & \text{if}\: %s" % (self._print(expr.args[-1].expr), self._print(expr.args[-1].cond)))
         tex = r"\begin{cases} %s \end{cases}"
         return tex % r" \\".join(ecpairs)
 
@@ -2062,14 +2053,9 @@ class LatexPrinter(Printer):
     def _print_ConditionSet(self, s):
         vars_print = ', '.join([self._print(var) for var in Tuple(s.sym)])
         if s.base_set is S.UniversalSet:
-            return r"\left\{%s \mid %s \right\}" % \
-                (vars_print, self._print(s.condition.as_expr()))
+            return r"\left\{%s \mid %s \right\}" % (vars_print, self._print(s.condition.as_expr()))
 
-        return r"\left\{%s \mid %s \in %s \wedge %s \right\}" % (
-            vars_print,
-            vars_print,
-            self._print(s.base_set),
-            self._print(s.condition))
+        return r"\left\{%s \in %s \mid %s \right\}" % (vars_print, self._print(s.base_set), self._print(s.condition))
 
     def _print_ComplexRegion(self, s):
         vars_print = ', '.join([self._print(var) for var in s.variables])
@@ -2077,9 +2063,6 @@ class LatexPrinter(Printer):
             self._print(s.expr),
             vars_print,
             self._print(s.sets))
-
-    def _print_Contains(self, e):
-        return r"%s \in %s" % tuple(self._print(a) for a in e.args)
 
     def _print_FourierSeries(self, s):
         return self._print_Add(s.truncate()) + self._print(r' + \ldots')

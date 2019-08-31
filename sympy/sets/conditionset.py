@@ -14,6 +14,7 @@ from sympy.utilities.iterables import sift
 from sympy.utilities.misc import filldedent
 
 
+
 class ConditionSet(Set):
     """
     Set of elements which satisfies a given condition.
@@ -110,6 +111,7 @@ class ConditionSet(Set):
     >>> _.subs(_.sym, Symbol('_x'))
     ConditionSet(_x, (_x < y) & (_x + x < 2), Integers)
     """
+    is_ConditionSet = True
 
     def __new__(cls, sym, condition, base_set=S.UniversalSet):
         # nonlinsolve uses ConditionSet to return an unsolved system
@@ -179,11 +181,20 @@ class ConditionSet(Set):
 # #             raise TypeError('contains did not evaluate to a bool: %r' % symb)
 #         return bool(symb)
 
-    def assertion(self):
-        sym = self.sym
-        condition = self.condition
+    def assertion(self, condition=True):
+        if condition:
+            from sympy.concrete.expr_with_limits import Forall
+            return Forall(self.condition, (self.sym, self))
+        from sympy.core.relational import Equality
+        return Equality(self.base_set, Union(self, self.negated))
 
-        return condition.func(*condition.args, forall={sym:self})
+    @property
+    def negated(self):
+        negated = self.condition.negated
+        if negated.counterpart is not None:
+            negated.counterpart = None
+            
+        return self.func(self.sym, negated, self.base_set)
 
     @property
     def element_type(self):
@@ -259,3 +270,35 @@ class ConditionSet(Set):
                 other.condition.subs(other.sym, self.sym),
                 other.base_set)
         return self == o
+
+
+def image_set_definition(self):
+    image_set = self.image_set()
+    if image_set is None:
+        return
+
+    expr, variables, base_set = image_set
+    from sympy.tensor.indexed import Slice
+    from sympy.core.relational import Equality
+    from sympy.concrete.expr_with_limits import Forall, Exists
+
+    if isinstance(base_set, Symbol):
+        if isinstance(base_set.definition, ConditionSet):
+            base_set = base_set.definition
+        else:
+            return
+    else:
+        if not isinstance(base_set, ConditionSet):
+            return
+
+    sym = base_set.sym
+    if isinstance(sym, Symbol):
+        ...
+    elif isinstance(sym, Slice):
+        condition = base_set.condition
+        element_symbol = self.element_symbol()
+        assert expr.dtype == element_symbol.dtype
+
+        exists = Exists(condition.func(*condition.args), (variables, Equality(expr, element_symbol)))
+        return Forall(exists, (element_symbol, self))
+

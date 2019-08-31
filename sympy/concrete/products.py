@@ -186,7 +186,8 @@ class Product(ExprWithIntLimits):
     """
 
     __slots__ = ['is_commutative']
-
+    operator = Mul
+    
     def __new__(cls, function, *symbols, **assumptions):
         obj = ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
         return obj

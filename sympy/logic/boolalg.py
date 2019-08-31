@@ -17,7 +17,6 @@ from sympy.core.singleton import Singleton, S
 from sympy.core.sympify import converter, _sympify, sympify
 from sympy.utilities.iterables import sift, ibin
 from sympy.utilities.misc import filldedent
-from builtins import isinstance
 
 
 def as_Boolean(e):
@@ -58,12 +57,123 @@ class Boolean(Basic):
     """A boolean object is an object for which logic operations make sense."""
 
     is_FiniteSet = False
-
+    is_And = False
+    is_Forall = False
+    is_Exists = False
+    is_Boolean = True
+    is_ConditionalBoolean = False
+    is_Contains = False
     __slots__ = []
 
-    def clause_latex(self, latex):
-        forall = self.forall
+    def __new__(cls, *args, **kwargs):
+        for name, value in [*kwargs.items()]:
+            if value is None:
+#              or (isinstance(value, Boolean) and not value.plausible):
+                del kwargs[name]
+        return Basic.__new__(cls, *args, **kwargs)
 
+    @staticmethod
+    def convert_limits_to_dict(limits):
+        return {x : domain for x, *domain in limits}
+
+    @property
+    def this(self):
+        return Invoker(self)
+
+    def rewrite(self, *args, **hints):
+        from sympy.sets.contains import Contains
+        if 'exists' in hints:
+            exists = self.exists.copy()
+
+            if hints['exists'] is None:
+                and_expr = []
+                if 'var' in hints:
+                    var = hints['var']
+
+                    from _collections_abc import dict_keys
+                    if isinstance(var, (set, dict_keys, list, tuple)):
+                        for x in var:
+                            condition = exists[x]
+
+                            if condition.is_set:
+                                and_expr.append(Contains(x, condition, evaluate=False))
+                            else:
+                                and_expr.append(condition)
+                            exists[x] = None
+                    else:
+                        condition = exists[var]
+
+                        if condition.is_set:
+                            and_expr.append(Contains(var, condition, evaluate=False))
+                        else:
+                            and_expr.append(condition)
+                        exists[var] = None
+
+                else:
+                    for x, condition in exists.items():
+                        if condition is None:
+                            continue
+                        if condition.is_set:
+                            and_expr.append(Contains(x, condition, evaluate=False))
+                        else:
+                            and_expr.append(condition)
+                        exists[x] = None
+                for var in self.exists.keys():
+                    from sympy.tensor.indexed import Slice
+                    if isinstance(var, Slice):
+                        start, stop = var.indices
+                        if var.base[stop] in exists and exists[var.base[stop]] is None and exists[var] is None:
+                            del exists[var.base[stop]]
+                            del exists[var]
+                            exists[var.base[start : stop + 1]] = None
+                        elif var.base[start - 1] in exists and exists[var.base[start - 1]] is None and exists[var] is None:
+                            del exists[var.base[start - 1]]
+                            del exists[var]
+                            exists[var.base[start - 1: stop]] = None
+
+                and_expr.append(self.func(*self.args))
+                return And(*and_expr, forall=self.forall, exists=self.simplify_exists(exists), equivalent=self)
+            return self
+        if 'var' in hints:
+            var = hints['var']
+
+            if isinstance(self.exists, dict) and var in self.exists:
+                exists = self.exists.copy()
+                domain = exists.pop(var)
+                if domain.is_set:
+                    image_set = domain.image_set()
+                    if image_set:
+                        _var, x, condition = image_set
+                        exists[x] = condition
+                    else:
+                        _var = var.copy(domain=domain)
+                        exists[_var] = None
+                    return self.func(*[arg._subs(var, _var) for arg in self.args], exists=self.simplify_exists(exists), forall=self.forall, equivalent=self)
+            elif isinstance(self.forall, dict) and var in self.forall:
+                forall = self.forall.copy()
+                exists = None if self.exists is None else self.exists.copy()
+                domain = forall.pop(var)
+                if domain.is_set:
+                    image_set = domain.image_set()
+                    if image_set:
+                        _var, x, condition = image_set
+                        forall[x] = condition
+
+                        if isinstance(exists, dict) and x in exists:
+                            condition = exists.pop(x)
+                            condition = condition.subs(var, _var)
+                            if not condition:
+                                return And(self.func(*[arg._subs(var, _var) for arg in self.args]), condition, forall=self.simplify_forall(forall), exists=self.simplify_exists(exists), equivalent=self)
+                    else:
+                        _var = var.copy(domain=domain)
+                        forall[_var] = None
+
+                    return self.func(*[arg._subs(var, _var) for arg in self.args], forall=self.simplify_forall(forall), exists=self.simplify_exists(exists), equivalent=self)
+
+        return self.func(self.lhs.rewrite(*args, **hints), self.rhs.rewrite(*args, **hints), equivalent=self, exists=self.exists)
+
+    @staticmethod
+    def make_set(forall):
         if forall is None:
             forall = set()
         else:
@@ -71,15 +181,45 @@ class Boolean(Basic):
                 forall = (forall,)
             if not isinstance(forall, dict):
                 forall = set(forall)
+        return forall
 
-        exists = self.exists
-        if exists is None:
-            exists = set()
+    @staticmethod
+    def make_latex(forall, latex, clause):
+        G = {x: set() for x in (forall.keys() if isinstance(forall, dict) else forall)}
+
+        if not G:
+            return latex
+
+        for kinder in G:
+            if isinstance(forall, set) or forall[kinder] is None:
+                continue
+
+            for parent in forall[kinder].free_symbols:
+                if parent in G:
+                    G[parent].add(kinder)
+
+        from sympy.utilities.iterables import topological_sort_depth_first, strongly_connected_components
+        g = topological_sort_depth_first(G)
+
+        if g is None:
+            g = strongly_connected_components(G)
+            for components in g:
+                limit = And(*(forall[v] for v in components)).latex
+                latex = r"\%s_{%s}{%s}" % (clause, limit, latex)
+
+            return latex
+
+        if isinstance(forall, dict):
+            limit = r'\substack{%s}' % '\\\\'.join(var.latex if forall[var] is None else var.domain_latex(forall[var]) for var in g)
         else:
-            if not isinstance(exists, (list, tuple, dict, set)):
-                exists = (exists,)
-            if not isinstance(exists, dict):
-                exists = set(exists)
+            limit = ', '.join(var.latex for var in g)
+
+        latex = r"\%s_{%s}{%s}" % (clause, limit, latex)
+        return latex
+
+    def clause_latex_unused(self, latex):
+#         forall = self.make_set(self.forall)
+#         exists = self.make_set(self.exists)
 
         G = {x: set() for x in (forall.keys() if isinstance(forall, dict) else forall) | (exists.keys() if isinstance(exists, dict) else exists)}
 
@@ -130,7 +270,7 @@ class Boolean(Basic):
             if isinstance(dic, dict):
                 limit = r'\substack{%s}' % '\\\\'.join(var.latex if dic[var] is None else var.domain_latex(dic[var]) for var in g)
             else:
-                limit = r'\substack{%s}' % '\\\\'.join(var.latex for var in g)
+                limit = ', '.join(var.latex for var in g)
 
             if dic == forall:
                 latex = r"\forall_{%s}{%s}" % (limit, latex)
@@ -235,36 +375,10 @@ class Boolean(Basic):
                            or isinstance(i, (Eq, Ne))])
 
     @property
-    def forall(self):
-        if 'forall' in self._assumptions:
-            return self._assumptions['forall']
-        return None
-
-    @forall.setter
-    def forall(self, forall):
-        if forall is None:
-            del self._assumptions['forall']
-        else:
-            self._assumptions['forall'] = forall
-
-    @property
     def where(self):
         if 'where' in self._assumptions:
             return self._assumptions['where']
         return None
-
-    @property
-    def exists(self):
-        if 'exists' in self._assumptions:
-            return self._assumptions['exists']
-        return None
-
-    @exists.setter
-    def exists(self, exists):
-        if exists is None:
-            del self._assumptions['exists']
-        else:
-            self._assumptions['exists'] = exists
 
     @property
     def plausible(self):
@@ -293,6 +407,14 @@ class Boolean(Basic):
             imply = self.imply
             if imply is not None:
                 return imply.plausible
+            counterpart = self.counterpart
+            if counterpart is not None:
+                plausible = counterpart.plausible
+                if plausible is True:
+                    return True
+                if plausible is False:
+                    return None
+                return False
             return None
         if type(equivalent) == list:
             for parent in equivalent:
@@ -358,9 +480,22 @@ class Boolean(Basic):
             equivalent = self.equivalent
             if equivalent is None:
                 given = self.given
-                if isinstance(given, list):
-                    for p in given:
-                        p.plausible_false()
+                if given is None:
+                    counterpart = self.counterpart
+                    if counterpart is not None:
+                        counterpart.plausible = True
+
+                elif isinstance(given, list):
+                    plausibility_array = plausibles(given)
+                    if len(plausibility_array) == 1:
+                        plausibility_array[0].plausible = False
+                else:
+                    given.plausible = False
+
+            elif isinstance(equivalent, list):
+                plausibility_array = plausibles(equivalent)
+                if len(plausibility_array) == 1:
+                    plausibility_array[0].plausible = False
             else:
                 equivalent.plausible = False
 
@@ -406,14 +541,22 @@ class Boolean(Basic):
         if 'equivalent' in self._assumptions:
             del self._assumptions['equivalent']
 
-    def combine_equivalent(self, eq):
-        if self.plausible:
-            if eq.plausible:
-                return [self, eq]
-            return self
-        if eq.plausible:
-            return eq
+# here we define counterpart = counterproposition
+    @property
+    def counterpart(self):
+        if 'counterpart' in self._assumptions:
+            return self._assumptions['counterpart']
         return None
+
+    @counterpart.setter
+    def counterpart(self, eq):
+        if eq is not None:
+            assert 'counterpart' not in self._assumptions
+            self._assumptions['counterpart'] = eq
+            return
+
+        if 'counterpart' in self._assumptions:
+            del self._assumptions['counterpart']
 
     @property
     def derivative(self):
@@ -549,16 +692,57 @@ class Boolean(Basic):
                 return
 
     @staticmethod
-    def combine_clause(exists, _exists, is_or=False):
-#         exists = getattr(self, clause)
-#         _exists = getattr(other, clause)
-        if exists is None:
+    def simplify_forall(forall):
+        if isinstance(forall, dict):
+            if all(value is None for value in forall.values()):
+                keys = []
+                for x in forall.keys():
+                    if x.is_Symbol and 'domain' in x._assumptions:
+                        continue
+                    keys.append(x)
+
+                if len(keys) == 0:
+                    return None
+                if len(keys) == 1:
+                    return keys[0]
+                return keys
+        return None if forall is None else forall.copy()
+
+    @staticmethod
+    def simplify_exists(exists):
+        if isinstance(exists, dict):
+            if all(value is None for value in exists.values()):
+                keys = [*exists.keys()]
+
+                if len(keys) == 0:
+                    return None
+                if len(keys) == 1:
+                    return keys[0]
+                return keys
+        return None if exists is None else exists.copy()
+
+    def combine_exists(self, _exists, is_or=False):
+        if self.exists is None:
             if _exists is None:
                 return None
-            return _exists.copy()
+            return Boolean.simplify_exists(_exists)
         if _exists is None:
-            return exists.copy()
+            return Boolean.simplify_exists(self.exists)
 
+        return self.combine_clauses(self.exists, _exists, is_or)
+
+    def combine_forall(self, _forall, is_or=False):
+        if self.forall is None:
+            if _forall is None:
+                return None
+            return Boolean.simplify_forall(_forall)
+        if _forall is None:
+            return Boolean.simplify_forall(self.forall)
+
+        return self.combine_clauses(self.forall, _forall, is_or)
+
+    @staticmethod
+    def combine_clauses(exists, _exists, is_or=False):
         if isinstance(exists, dict) or isinstance(_exists, dict):
             dic = {}
             if isinstance(exists, dict):
@@ -568,26 +752,7 @@ class Boolean(Basic):
             else:
                 dic = {exists : None}
 
-            if isinstance(_exists, dict):
-                for x, domain in _exists.items():
-                    if x in dic:
-                        _domain = dic[x]
-                        if _domain.is_set:
-                            if not domain.is_set:
-                                domain = x.conditional_domain(domain)
-                        else:
-                            if domain.is_set:
-                                _domain = x.conditional_domain(_domain)
-
-                        if is_or:
-                            dic[x] = domain | _domain
-                        else:
-                            dic[x] = domain & _domain
-
-                    else:
-                        dic[x] = domain
-
-            elif isinstance(_exists, (tuple, list, set)):
+            if isinstance(_exists, (tuple, list, set)):
                 dic.update({k : None for k in _exists})
             else:
                 dic[_exists] = None
@@ -654,13 +819,31 @@ class Boolean(Basic):
     def clauses_equals(self, other):
         return self.clause_equals(self.exists, other.exists) and self.clause_equals(self.forall, other.forall)
 
-    def clauses(self, other=None):
+    def clauses_unused(self, other=None):
         if other is None:
             exists = self.exists
             forall = self.forall
         else:
-            exists = self.combine_clause(self.exists, other.exists)
-            forall = self.combine_clause(self.forall, other.forall)
+            exists = self.combine_exists(other.exists)
+            forall = self.combine_forall(other.forall)
+
+        def keys(forall):
+            if isinstance(forall, dict):
+                return forall.keys()
+            elif isinstance(forall, (list, tuple)):
+                return set(forall)
+            elif isinstance(forall, set):
+                return forall
+            elif forall is None:
+                return set()
+            else:
+                return {forall}
+
+        common_keys = keys(forall) & keys(exists)
+        if common_keys:
+            for k in common_keys:
+                del forall[k]
+            forall = self.simplify_forall(forall)
 
         if exists is None:
             if forall is None:
@@ -668,6 +851,7 @@ class Boolean(Basic):
             return {'forall' : forall}
         if forall is None:
             return {'exists' : exists}
+
         return {'exists' : exists, 'forall' : forall}
 
     @property
@@ -1093,11 +1277,15 @@ class BooleanFunction(Application, Boolean):
     It is used as base class for And, Or, Not, etc.
     """
     is_Boolean = True
+    is_BooleanFunction = True
 
-#     def __eq__(self, other):
-#         if isinstance(other, Boolean) and not self.clauses_equals(other):
-#             return False
-#         return Boolean.__eq__(self, other)
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        assumptions = cls.simplify_assumptions(*_args, **assumptions)
+        return Application.__new__(cls, *args, **assumptions)
 
     def __bool__(self):
         return False
@@ -1338,54 +1526,35 @@ class And(LatticeOp, BooleanFunction):
     y
 
     """
+    is_And = True
+    def subs(self, *args, **kwargs):
+        result = LatticeOp.subs(self, *args, **kwargs)
+        if all(isinstance(arg, Boolean) for arg in args):            
+            result.equivalent = [self, *args]
+        else:
+            result.equivalent = self
+        return result
+            
+    def __new__(cls, *args, **options):
+        valuable = []
+        truthDetected = False
+        for arg in args:
+            if arg:
+                truthDetected = True
+                continue
+            valuable.append(arg)
+
+        if truthDetected:
+            args = valuable
+            if len(args) == 1:
+                eq = args[0]
+                return eq.func(*eq.args, **options)
+        return LatticeOp.__new__(cls, *args, **options)
+
     zero = false
     identity = true
 
     nargs = None
-
-    def subs(self, *args, **kwargs):
-        if len(args) == 1:
-            eq = args[0]
-            from sympy.core.relational import Equality
-            if isinstance(eq, Equality):
-                if eq.plausible is None:
-                    old, new = eq.args
-                    if old in self.exists or old in self.forall:
-                        return self
-                    eqs = []
-                    for equation in self._argset:
-                        eqs.append(equation.func(*(arg.subs(old, new) for arg in equation.args), **equation.clauses()))
-                    kwargs = self.clauses(eq)
-                    kwargs = self.func.simplify_assumptions(*eqs, **kwargs)
-                    return self.func(*eqs, equivalent=self, **kwargs)
-
-            return self
-        old, new = args
-        if old in self.exists:
-            exists = self.exists
-            domain = exists.pop(old)
-            if not domain.is_set:
-                domain = old.conditional_domain(domain)
-
-            if new not in domain:
-                return self
-
-            eqs = []
-            for equation in self._argset:
-                _equation = equation._subs(old, new)
-                if equation.exists is not None:
-                    _equation.exists = equation.exists
-                if equation.forall is not None:
-                    _equation.forall = equation.forall
-                eqs.append(_equation)
-
-            kwargs = {}
-            kwargs['exists'] = exists
-            kwargs['forall'] = self.forall
-
-            kwargs = self.func.simplify_assumptions(*eqs, **kwargs)
-            return self.func(*eqs, imply=self, **kwargs)
-        return self
 
     def rewrite(self, *args, **hints):
         if 'exists' in hints:
@@ -1403,28 +1572,6 @@ class And(LatticeOp, BooleanFunction):
                     exists = eq.combine_clause(eq.exists, exists)
 
                 return self.func(*eqs, exists=exists, forall=self.forall, equivalent=self)
-
-            if isinstance(hints['exists'], int):
-                index = hints['exists']
-                args = [*self.args]
-                condition = args.pop(index)
-                exists = self.exists.copy()
-                if isinstance(exists, dict):
-                    for k, v in exists.items():
-                        if v is None and condition.has(k):
-                            exists[k] = condition
-                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
-                elif isinstance(exists, (list, tuple, set)):
-                    for k in exists:
-                        if condition.has(k):
-                            exists = {e : None for e in exists}
-                            exists[k] = condition
-                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
-                elif condition.has(exists):
-                    exists = {exists : condition}
-                    return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
-
-                return self
 
             exists = self.exists
             and_expr = []
@@ -1467,7 +1614,7 @@ class And(LatticeOp, BooleanFunction):
                         subforall[var] = forall[var]
                         del forall[var]
 
-                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, subforall), exists=eq.exists) for eq in self.args]
+                    eqs = [eq.func(*eq.args, forall=eq.combine_forall(subforall), exists=eq.exists) for eq in self.args]
                     return self.func(*eqs, exists=self.exists, forall=forall, equivalent=self)
 
                 else:
@@ -1567,118 +1714,8 @@ class And(LatticeOp, BooleanFunction):
         from sympy.sets.sets import Intersection
         return Intersection(*[arg.as_set() for arg in self.args])
 
-    def split_debug(self):
-        arr = []
-        for eq in self.args:
-            eq = eq.func(*eq.args, **eq.clauses(self), given=self)
-            arr.append(eq)
-        return arr
-
     def split(self):
-        given = self if self.plausible else None
-        return [eq.func(*eq.args, **eq.clauses(self), given=given) for eq in self.args]
-
-    def simplifier(self):
-        forall = self.forall
-        if forall is None or not isinstance(forall, dict):
-            return self
-
-        for i, domain in forall.items():
-            if not i.is_integer:
-                continue
-
-            i_expr = []
-            patterns = []
-            non_i_expr = set()
-            from sympy import Wild
-            _i = Wild(i.name)
-            for eq in self.args:
-                if eq.has(i):
-                    i_expr.append(eq)
-                    patterns.append(eq._subs(i, _i))
-                else:
-                    non_i_expr.add(eq)
-
-            matched_dic = {}
-            for eq in non_i_expr:
-                for pattern in patterns:
-                    res = eq.match(pattern)
-                    if not res:
-                        continue
-
-                    t, *_ = res.values()
-                    if t in matched_dic:
-                        matched_dic[t].add(eq)
-                    else:
-                        matched_dic[t] = {eq}
-                    break
-
-            new_set = set()
-            for t, eqs in matched_dic.items():
-                if len(eqs) != len(non_i_expr):
-                    continue
-                non_i_expr -= eqs
-                new_set.add(t)
-
-            if not new_set:
-                continue
-
-            forall = {**forall}
-            forall[i] = domain | new_set
-            eqs = i_expr + [*non_i_expr]
-
-            if len(eqs) == 1:
-                eq = eqs[0]
-                return eq.func(*eq.args,
-                               forall=eq.combine_clause(eq.forall, forall),
-                               exists=eq.combine_clause(eq.exists, self.exists),
-                               equivalent=self)
-            return self.func(*eqs, forall=forall, exists=self.exists, equivalent=self)
-
-        return self
-
-    def _subs(self, old, new, **hints):
-        """Substitutes an expression old -> new.
-        """
-
-        if _aresame(self, old):
-            return new
-
-        hit = False
-        args = list(self.args)
-        for i, arg in enumerate(args):
-            if not hasattr(arg, '_eval_subs'):
-                continue
-            arg = arg._subs(old, new, **hints)
-            if not _aresame(arg, args[i]):
-                hit = True
-                args[i] = arg
-
-        if isinstance(self.forall, dict):
-            forall = self.forall.copy()
-            for k, v in forall.items():
-                if v is not None:
-                    _v = v._subs(old, new)
-                    if v != _v:
-                        hit = True
-                        forall[k] = _v
-        else:
-            forall = self.forall
-        if isinstance(self.exists, dict):
-            exists = self.exists.copy()
-            for k, v in exists.items():
-                if v is not None:
-                    _v = v._subs(old, new)
-                    if v != _v:
-                        hit = True
-                        exists[k] = _v
-        else:
-            exists = self.exists
-
-        if hit:
-            rv = self.func(*args, forall=forall, exists=exists)
-            return rv
-        return self
+        return [eq.func(*eq.args, given=self) for eq in self.args]
 
 
 class Or(LatticeOp, BooleanFunction):
@@ -1729,183 +1766,114 @@ class Or(LatticeOp, BooleanFunction):
             newargs.append(x)
         return LatticeOp._new_args_filter(newargs, Or)
 
-    def _eval_as_set(self):
-        from sympy.sets.sets import Union
-        return Union(*[arg.as_set() for arg in self.args])
+# needs to be improved!
+    def rewrite(self, *args, **hints):
+        if 'exists' in hints:
+            exists = self.exists
+            if exists is None:
+                return self
 
-    def _eval_simplify(self, ratio, measure, rational, inverse):
-        # standard simplify
-        rv = super(Or, self)._eval_simplify(
-            ratio, measure, rational, inverse)
-        if not isinstance(rv, Or):
-            return rv
-        patterns = simplify_patterns_or()
-        return self._apply_patternbased_simplification(rv, patterns,
-                                                       measure, S.true)
+            if hints['exists'] == False:
+                eqs = [eq.func(*eq.args, exists=eq.combine_clause(eq.exists, exists), forall=eq.forall) for eq in self.args]
+                return self.func(*eqs, forall=self.forall, equivalent=self)
+            if hints['exists'] == True:
+                eqs = []
+                for eq in self.args:
+                    eqs.append(eq.func(*eq.args, forall=eq.forall))
+                    exists = eq.combine_clause(eq.exists, exists)
 
+                return self.func(*eqs, exists=exists, forall=self.forall, equivalent=self)
 
-class AndComprehension(LatticeOp, BooleanFunction):
-    """
-    Logical AND function.
+            if isinstance(hints['exists'], int):
+                index = hints['exists']
+                args = [*self.args]
+                condition = args.pop(index)
+                exists = self.exists.copy()
+                if isinstance(exists, dict):
+                    for k, v in exists.items():
+                        if v is None and condition.has(k):
+                            exists[k] = condition
+                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
+                elif isinstance(exists, (list, tuple, set)):
+                    for k in exists:
+                        if condition.has(k):
+                            exists = {e : None for e in exists}
+                            exists[k] = condition
+                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
+                elif condition.has(exists):
+                    exists = {exists : condition}
+                    return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
 
-    It evaluates its arguments in order, giving False immediately
-    if any of them are False, and True if they are all True.
+                return self
 
-    Examples
-    ========
+            exists = self.exists
+            and_expr = []
+            for condition in exists.values():
+                if condition is not None:
+                    and_expr.append(condition)
+            exists = list(exists.keys())
+            for var in self.exists.keys():
+                from sympy.tensor.indexed import Slice
+                if isinstance(var, Slice):
+                    start, stop = var.indices
+                    if var.base[stop] in exists:
+                        exists.remove(var.base[stop])
+                        exists[exists.index(var)] = var.base[start : stop + 1]
+                    elif var.base[start - 1] in exists:
+                        exists.remove(var.base[start - 1])
+                        exists[exists.index(var)] = var.base[start - 1: stop]
 
-    >>> from sympy.core import symbols
-    >>> from sympy.abc import x, y
-    >>> from sympy.logic.boolalg import And
-    >>> x & y
-    x & y
+            if len(exists) == 1:
+                exists = exists[0]
+            and_expr.append(self.func(*self.args))
+            return And(*and_expr, forall=self.forall, exists=exists, equivalent=self)
 
-    Notes
-    =====
+        if 'forall' in hints:
+            forall = self.forall
+            if forall is None:
+                return self
 
-    The ``&`` operator is provided as a convenience, but note that its use
-    here is different from its normal use in Python, which is bitwise
-    and. Hence, ``And(a, b)`` and ``a & b`` will return different things if
-    ``a`` and ``b`` are integers.
-
-    >>> And(x, y).subs(x, 1)
-    y
-
-    """
-    zero = false
-    identity = true
-
-    nargs = None
-
-    @classmethod
-    def _new_args_filter(cls, args):
-        newargs = []
-        rel = []
-        args = BooleanFunction.binary_check_and_simplify(*args)
-        for x in reversed(args):
-            if x.is_Relational:
-                c = x.canonical
-                if c in rel:
-                    continue
-                nc = c.negated.canonical
-                if any(r == nc for r in rel):
-                    return [S.false]
-                rel.append(c)
-            newargs.append(x)
-        return LatticeOp._new_args_filter(newargs, And)
-
-    def _eval_simplify(self, ratio, measure, rational, inverse):
-        from sympy.core.relational import Equality, Relational
-        from sympy.solvers.solveset import linear_coeffs
-        # standard simplify
-        rv = super(And, self)._eval_simplify(
-            ratio, measure, rational, inverse)
-        if not isinstance(rv, And):
-            return rv
-        # simplify args that are equalities involving
-        # symbols so x == 0 & x == y -> x==0 & y == 0
-        Rel, nonRel = sift(rv.args, lambda i: isinstance(i, Relational),
-                           binary=True)
-        if not Rel:
-            return rv
-        eqs, other = sift(Rel, lambda i: isinstance(i, Equality), binary=True)
-        if not eqs:
-            return rv
-        reps = {}
-        sifted = {}
-        if eqs:
-            # group by length of free symbols
-            sifted = sift(ordered([
-                (i.free_symbols, i) for i in eqs]),
-                lambda x: len(x[0]))
-            eqs = []
-            while 1 in sifted:
-                for free, e in sifted.pop(1):
-                    x = free.pop()
-                    if e.lhs != x or x in e.rhs.free_symbols:
-                        try:
-                            m, b = linear_coeffs(
-                                e.rewrite(Add, evaluate=False), x)
-                            enew = e.func(x, -b / m)
-                            if measure(enew) <= ratio * measure(e):
-                                e = enew
-                            else:
-                                eqs.append(e)
-                                continue
-                        except ValueError:
-                            pass
-                    if x in reps:
-                        eqs.append(e.func(e.rhs, reps[x]))
+            if hints['forall'] == False:
+                if 'var' in hints:
+                    var = hints['var']
+                    subforall = {}
+                    from _collections_abc import dict_keys
+                    forall = forall.copy()
+                    if isinstance(var, (set, dict_keys, list, tuple)):
+                        for v in var:
+                            subforall[v] = forall[v]
+                            del forall[v]
                     else:
-                        reps[x] = e.rhs
-                        eqs.append(e)
-                resifted = defaultdict(list)
-                for k in sifted:
-                    for f, e in sifted[k]:
-                        e = e.subs(reps)
-                        f = e.free_symbols
-                        resifted[len(f)].append((f, e))
-                sifted = resifted
-        for k in sifted:
-            eqs.extend([e for f, e in sifted[k]])
-        other = [ei.subs(reps) for ei in other]
-        rv = rv.func(*([i.canonical for i in (eqs + other)] + nonRel))
-        patterns = simplify_patterns_and()
-        return self._apply_patternbased_simplification(rv, patterns,
-                                                       measure, False)
+                        subforall[var] = forall[var]
+                        del forall[var]
 
-    def _eval_as_set(self):
-        from sympy.sets.sets import Intersection
-        return Intersection(*[arg.as_set() for arg in self.args])
+                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, subforall), exists=eq.exists) for eq in self.args]
+                    return self.func(*eqs, exists=self.exists, forall=forall, equivalent=self)
 
+                else:
+                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, forall), exists=eq.exists) for eq in self.args]
+                    return self.func(*eqs, exists=self.exists, equivalent=self)
 
-class OrComprehension(LatticeOp, BooleanFunction):
-    """
-    Logical OR function
+            if hints['forall'] == True:
+                if 'expr' in hints:
+                    expr = hints['expr']
+                    if expr not in self._argset:
+                        return self
+                    index = self.args.index(expr)
+                    args = [*self.args]
+                    del args[index]
+                    forall
 
-    It evaluates its arguments in order, giving True immediately
-    if any of them are True, and False if they are all False.
+                eqs = []
+                for eq in self.args:
+                    eqs.append(eq.func(*eq.args, exists=eq.exists))
+                    forall = eq.combine_clause(eq.forall, forall)
 
-    Examples
-    ========
+                return self.func(*eqs, forall=forall, exists=self.exists, equivalent=self)
+            ...
+            return self
 
-    >>> from sympy.core import symbols
-    >>> from sympy.abc import x, y
-    >>> from sympy.logic.boolalg import Or
-    >>> x | y
-    x | y
-
-    Notes
-    =====
-
-    The ``|`` operator is provided as a convenience, but note that its use
-    here is different from its normal use in Python, which is bitwise
-    or. Hence, ``Or(a, b)`` and ``a | b`` will return different things if
-    ``a`` and ``b`` are integers.
-
-    >>> Or(x, y).subs(x, 0)
-    y
-
-    """
-    zero = true
-    identity = false
-
-    @classmethod
-    def _new_args_filter(cls, args):
-        newargs = []
-        rel = []
-        args = BooleanFunction.binary_check_and_simplify(*args)
-        for x in args:
-            if x.is_Relational:
-                c = x.canonical
-                if c in rel:
-                    continue
-                nc = c.negated.canonical
-                if any(r == nc for r in rel):
-                    return [S.true]
-                rel.append(c)
-            newargs.append(x)
-        return LatticeOp._new_args_filter(newargs, Or)
+        return self
 
     def _eval_as_set(self):
         from sympy.sets.sets import Union
@@ -3686,3 +3654,91 @@ def simplify_patterns_xor():
                       And(Lt(a, Max(b, c)), Ge(a, Min(b, c)))),
                      )
     return _matchers_xor
+
+
+class Invoker:
+
+    def __init__(self, eq):
+        self.eq = eq
+        self.obj = eq
+        self.func = []
+        self._args = []
+        self.index = []
+
+    def result(self, obj, equivalent = True):
+        kwargs = {}
+        if obj.is_Boolean:
+            kwargs = {}
+            if obj.equivalent is not None:
+                kwargs['equivalent'] = self.eq
+                obj.equivalent = None
+            elif obj.given is not None:
+                kwargs['given'] = self.eq
+                obj.given = None
+        else:
+            if equivalent:
+                kwargs['equivalent'] = self.eq                
+            else:
+                kwargs['given'] = self.eq
+
+        for i in range(-1, -len(self.func) - 1, -1):
+            self._args[i][self.index[i]] = obj
+
+            if i == -len(self.func):
+                obj = self.func[i](*self._args[i], **kwargs)
+            else:
+                obj = self.func[i](*self._args[i])
+
+            obj = obj.simplifier()
+        return obj
+        
+    def __call__(self, *args, **kwargs):
+        funcname = self.obj.__name__
+        if funcname == 'subs':
+            from sympy.concrete.summations import Sum
+            from sympy.integrals.integrals import Integral
+            from sympy.core.relational import Equality
+            if isinstance(self.obj.__self__, Sum) or isinstance(self.obj.__self__, Integral):
+                if len(args) == 2:
+                    (x, *_), *_ = self.obj.__self__.limits
+                    # domain might be different!
+                    assert args[0].name == x.name
+            else:
+                assert all(isinstance(arg, Equality) for arg in args)
+
+        obj = self.obj(*args, **kwargs)
+        return self.result(obj, funcname not in ('abs',))
+
+    def append(self):
+        self.func.append(self.obj.func)
+        self._args.append([*self.obj.args])
+        
+    def __getattr__(self, method):
+        obj = getattr(self.obj, method)
+        if not callable(obj):
+            if isinstance(obj, tuple):
+                self.append()
+            elif obj in self.obj.args:
+                self.append()
+                self.index.append(self.obj.args.index(obj))                
+            else:                                        
+                return self.result(obj)
+
+        self.obj = obj
+        return self
+
+    def __str__(self):
+        return str(self.obj)
+
+    @property
+    def latex(self):
+        return self.obj.latex
+
+    def __getitem__(self, j):
+        self.obj = self.obj[j]
+        self.index.append(j)
+        return self
+
+    def __iter__(self):
+        return iter(self.obj)
+

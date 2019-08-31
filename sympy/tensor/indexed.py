@@ -415,7 +415,9 @@ class Indexed(Expr):
     def dtype(self):
         return self.base.dtype[self.indices]
 
-
+#     def __iter__(self):
+#         raise TypeError
+    
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object
 
@@ -535,7 +537,7 @@ class IndexedBase(Expr, NotIterable):
 #             if self.shape and len(self.shape) != 1:
 #                 raise IndexException("Rank mismatch.")
             if self.definition is not None:
-                from sympy.functions.elementary.miscellaneous import Ref
+                from sympy.concrete.expr_with_limits import Ref
                 if isinstance(self.definition, Ref):
                     ref = self.definition
                     from sympy.stats.rv import RandomSymbol
@@ -626,6 +628,25 @@ class IndexedBase(Expr, NotIterable):
 
     def _sympystr(self, p):
         return p.doprint(self.label)
+
+    def _has(self, pattern):
+        """Helper for .has()"""
+        if Expr._has(self, pattern):
+            return True
+
+        from sympy.core.assumptions import ManagedProperties
+        from sympy.core.function import FunctionClass
+
+        if not isinstance(pattern, (FunctionClass, ManagedProperties)):
+            if 'definition' in self._assumptions:
+                definition = self._assumptions['definition']
+                return definition._has(pattern)
+
+            if 'domain' in self._assumptions:
+                domain = self._assumptions['domain']
+                return domain._has(pattern)
+
+        return False
 
     @property
     def dtype(self):
@@ -807,9 +828,9 @@ class Slice(Expr):
 
         return Tuple(*sizes)
 
-    def __len__(self):
-        start, stop = self.indices
-        return stop - start
+#     def __len__(self):
+#         start, stop = self.indices
+#         return stop - start
 
     @property
     def ranges(self):
