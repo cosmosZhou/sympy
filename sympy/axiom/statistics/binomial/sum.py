@@ -1,12 +1,18 @@
-from sympy.utility import cout, Eq, plausible
-from sympy.core.relational import Equality
-
-from sympy.stats.rv import Density, RandomSymbol
+import sys
 from sympy import Symbol
-
+from sympy import axiom
+from sympy.core.relational import Equality
 from sympy.stats.drv import SingleDiscretePSpace
 from sympy.stats.drv_types import BinomialDistribution, Binomial
-from sympy.logic.boolalg import plausibles_dict
+from sympy.stats.rv import Density, RandomSymbol
+from sympy.utility import check
+from sympy.utility import plausible
+
+# sys.getrecursionlimit()
+# print('sys.getrecursionlimit() =', sys.getrecursionlimit())
+# sys.setrecursionlimit(100000000)
+
+from sympy import Interval
 
 
 def apply(x0, x1):
@@ -29,51 +35,45 @@ def apply(x0, x1):
     return Equality(Density(x0 + x1)(y), Density(Y)(y).doit(), plausible=plausible())
 
 
-from sympy.utility import check
-
-
 @check
-def prove():
-
-    from sympy import Interval
+def prove(Eq):
     n0 = Symbol("n0", integer=True, positive=True)
     n1 = Symbol("n1", integer=True, positive=True)
+
     p = Symbol("p", domain=Interval(0, 1))
 
     x0 = Binomial('x0', n0, p)
     x1 = Binomial('x1', n1, p)
 
-    cout << apply(x0, x1)
+    Eq << apply(x0, x1)
 
-    cout << Equality.by_definition_of(Density(x0 + x1))
+    Eq << Equality.by_definition_of(Density(x0 + x1))
 
-    cout << Eq[-1].right.function.args[3].doit()
+    Eq << Eq[-1].this.rhs.function.args[3].doit(deep=False)
 
-    cout << Eq[-1].right.function.powsimp()
+    Eq << Eq[-1].this.rhs.function.powsimp()
 
-    cout << Eq[-1].subs(Eq[0])
+    Eq << Eq[-1].subs(Eq[0])
 
-    from sympy import axiom
+    Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0)
+    Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n1)
 
-    cout << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0)
-    cout << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n1)
+    Eq << Eq[-1] * Eq[-2]
+    Eq << Eq[-1].this.lhs.powsimp()
+    Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0 + n1).subs(Eq[-1])
 
-    cout << Eq[-1] * Eq[-2]
-    cout << Eq[-1].left.powsimp()
-    cout << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0 + n1).subs(Eq[-1])
+    Eq << Eq[-1].this.lhs.as_multiple_limits()
 
-    cout << Eq[-1].left.as_multiple_limits()
+    (k, *_), (l, *_) = Eq[-1].this.lhs.limits
+    Eq << Eq[-1].this.lhs.subs(k, k - l)
 
-    (k, *_), (l, *_) = Eq[-1].left.limits
-    cout << Eq[-1].left.subs(k, k - l)
+    Eq << Eq[-1].this.lhs.as_separate_limits()
 
-    cout << Eq[-1].left.as_separate_limits()
-
-    cout << Eq[-1].as_two_terms()
+    Eq << Eq[-1].as_two_terms()
 
     y = Eq[0].lhs.symbol
-    cout << Eq[-1].subscript(y).subs(Eq[4])
+    Eq << Eq[-1][y].subs(Eq[4])
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, cout, Eq
+from sympy.utility import plausible, Eq
 
 from sympy.utility import Sum
 from sympy.axiom.discrete.combinatorics.binomial import Pascal
@@ -22,41 +22,36 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     x = Symbol('x', integer=True)
     y = Symbol('y', integer=True)
     n = Symbol('n', integer=True, nonnegative=True)
-    cout << apply(x, y, n)
+    Eq << apply(x, y, n)
 
-    cout << Eq[-1].subs(n, n + 1)
+    Eq << Eq[-1].subs(n, n + 1)
 
-    cout << (Eq[-2] * (x + y)).powsimp()
+    Eq << (Eq[-2] * (x + y)).powsimp()
 
-    cout << Eq[-1].subs(Eq[-2])
+    Eq << Eq[-1].subs(Eq[-2])
 
-    cout << Eq[-1].right.as_one_term()
+    Eq << Eq[-1].this.rhs.as_one_term()
 
-    cout << Eq[-1].right.function.expand()
+    Eq << Eq[-1].this.rhs.function.expand()
 
-    cout << Eq[-1].right.function.powsimp()
+    Eq << Eq[-1].this.rhs.function.powsimp()
 
-    (k, *_), *_ = Eq[-1].right.limits
-    cout << Eq[-1].right.as_two_terms()
+    (k, *_), *_ = Eq[-1].this.rhs.limits
+    Eq << Eq[-1].this.rhs.as_two_terms()
 
-    cout << Eq[-1].right.args[1].subs(k, k - 1)
+    Eq << Eq[-1].this.rhs.args[1].subs(k, k - 1)
 
-    cout << Eq[-1].subs(Pascal.apply(n + 1, k))
+    Eq << Eq[-1].subs(Pascal.apply(n + 1, k))
 
-    cout << Eq[-1].left.expand()
-    cout << Eq[-1].left.powsimp(deep=True)
+    Eq << Eq[-1].this.lhs.expand()
 
-    cout << Eq[-1].left.args[0].simplifier()
-
-    cout << Eq[-1].left.simplifier()
-
-    cout << Eq[0].subs(n, 0).right.doit()
+    Eq << Eq[0].subs(n, 0)
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)
 

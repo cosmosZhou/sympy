@@ -1,3 +1,4 @@
+
 from __future__ import print_function, division
 
 from sympy.core import Function, S, sympify
@@ -340,6 +341,13 @@ def real_root(arg, n=None, evaluate=None):
 
 
 class MinMaxBase(Expr, LatticeOp):
+    def try_sub(self, other):
+        if isinstance(other, self.func) and len(other.args) == len(self.args):
+            diff = Add(*self.args) - Add(*other.args)
+            diff /= len(self.args)
+            if all(e + diff in self._argset for e in other.args):
+                return diff
+            
 
     def __new__(cls, *args, **assumptions):
         evaluate = assumptions.pop('evaluate', True)
@@ -652,10 +660,22 @@ class MinMaxBase(Expr, LatticeOp):
     _eval_is_zero = lambda s: _torf(i.is_zero for i in s.args)
 
     def __add__(self, other):
+        if isinstance(other, self.func):
+            args = []
+            argset = self._argset & other._argset
+            for arg in self.args:
+                for _arg in other.args:
+                    if arg != _arg and arg in argset and _arg in argset:
+                        continue
+                    args.append(arg + _arg)
+            return self.func(*args)
+        
+        if isinstance(other, MinMaxBase): 
+            diff = self.try_sub(-other)
+            if diff is not None:
+                return diff
+        
         return self.func(*(arg + other for arg in self.args))
-
-#     def __sub__(self, other):
-#         return self.func(*(arg - other for arg in self.args))
 
 
 class Max(MinMaxBase, Application):
@@ -848,20 +868,6 @@ class Max(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
-    def __add__(self, other):
-        if isinstance(other, Max):
-            args = []
-            for arg in self.args:
-                for _arg in other.args:
-                    args.append(arg + _arg)
-            return self.func(*args)
-
-        return MinMaxBase.__add__(self, other)
-
-#     def __sub__(self, other):
-#         return self.func(*(arg - other for arg in self.args))
-
-
 class Min(MinMaxBase, Application):
     """
     Return, if possible, the minimum value of the list.
@@ -997,3 +1003,4 @@ class Min(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
+        

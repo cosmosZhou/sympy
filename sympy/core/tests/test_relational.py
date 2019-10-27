@@ -838,16 +838,16 @@ def test_issue_15847():
 
 def test_negated_property():
     eq = Eq(x, y)
-    assert eq.negated == Ne(x, y)
+    assert ~eq == Ne(x, y)
 
     eq = Ne(x, y)
-    assert eq.negated == Eq(x, y)
+    assert ~eq == Eq(x, y)
 
     eq = Ge(x + y, y - x)
-    assert eq.negated == Lt(x + y, y - x)
+    assert ~eq == Lt(x + y, y - x)
 
     for f in (Eq, Ne, Ge, Gt, Le, Lt):
-        assert f(x, y).negated.negated == f(x, y)
+        assert ~~f(x, y) == f(x, y)
 
 
 def test_neg_property():

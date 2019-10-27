@@ -165,7 +165,7 @@ class MatMul(MatrixExpr, Mul):
 
     def _eval_inverse(self):
         try:
-            from sympy.functions.elementary.miscellaneous import Ref
+            from sympy.concrete.expr_with_limits import Ref
             return MatMul(*[
                 arg.inverse() if isinstance(arg, (MatrixExpr, Ref)) else arg ** -1
                     for arg in self.args[::-1]]).doit()
@@ -223,7 +223,7 @@ class MatMul(MatrixExpr, Mul):
         return self
 
     def expand(self, deep=True):
-        from sympy.functions.elementary.miscellaneous import Ref
+        from sympy.concrete.expr_with_limits import Ref
         from sympy.concrete.summations import Sum
         if len(self.args) == 2:
             A, B = self.args

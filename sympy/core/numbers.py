@@ -877,7 +877,7 @@ class Number(AtomicExpr):
     def T(self):
         return self
 
-    def simplifier(self):
+    def simplifier(self, deep=False):
         return self
 
 
@@ -3518,6 +3518,11 @@ class NumberSymbol(AtomicExpr):
 
     is_NumberSymbol = True
 
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.real
+
     def __new__(cls):
         return AtomicExpr.__new__(cls)
 
@@ -4121,6 +4126,10 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     __slots__ = []
     is_infinitesimal = True
 
+    @classmethod
+    def class_key(cls):
+        return 4, 50, 'Number'
+
     def clear_infinitesimal(self):
         return S.Zero
 
@@ -4336,6 +4345,11 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
 
     __slots__ = []
     is_infinitesimal = False
+
+    @classmethod
+    def class_key(cls):
+        # this value should be big enough so that Infinitesimal will be put at the rear of the _argset
+        return 4, 50, 'Number'
 
     def clear_infinitesimal(self):
         return S.Zero

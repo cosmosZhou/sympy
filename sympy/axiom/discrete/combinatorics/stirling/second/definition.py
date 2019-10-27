@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol, generate_free_symbol
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, cout, Eq, Ref, identity
+from sympy.utility import plausible, Eq, Ref, identity
 
 from sympy.utility import Sum
 
@@ -24,117 +24,108 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     k = Symbol('k', integer=True, nonnegative=True)
     n = Symbol('n', integer=True, nonnegative=True)
-    cout << apply(n, k)
+    Eq << apply(n, k)
 
-    cout << Eq[-1].subs(k, 0).doit()
+    Eq << Eq[-1].subs(k, 0).doit()
 
-    cout << stirling.second.recurrence.apply(n, k)
+    Eq << stirling.second.recurrence.apply(n, k)
 
-    cout << Eq[-1].subs(Eq[0])
+    Eq << Eq[-1].subs(Eq[0])
 
     from sympy import oo
     y = IndexedBase('y', (oo,), definition=Ref[n](Stirling(n, k + 1)))
 
-    cout << Equality.by_definition_of(y)
+    Eq << Equality.by_definition_of(y)
 
-    cout << Eq[-1].subs(n, n + 1)
+    Eq << Eq[-1].subs(n, n + 1)
 
-    cout << Eq[-3].subs(Eq[-1].reversed, Eq[-2].reversed)
+    Eq << Eq[-3].subs(Eq[-1].reversed, Eq[-2].reversed)
 
-    cout << Eq[-1].rsolve(y[n])
+    Eq << Eq[-1].rsolve(y[n])
 
-    cout << Eq[-1].subs(Eq[3])
+    Eq.stirling_solution = Eq[-1].subs(Eq[3])
 
-    cout << Eq[-1].subs(n, k + 1)
+    Eq << Eq.stirling_solution.subs(n, k + 1)
 
-    cout << Eq[-1].solve(Eq[-1].exists)
-    cout << Eq[-1].right.powsimp(deep=True)
+    Eq << Eq[-1].this.function.solve(Eq[-1].variable)
+
+    Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp(deep=True)
 
     l = Eq[0].rhs.args[1].limits[0][0]
-    cout << identity(binomial(k + 1, l)).rewrite(factorial)
+    Eq << identity(binomial(k + 1, l)).rewrite(factorial)
 
-    cout << axiom.discrete.combinatorics.factorial.expand.apply(k - l + 1)
+    Eq << axiom.discrete.combinatorics.factorial.expand.apply(k - l + 1)
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-2].subs(Eq[-1])
 
-    cout << Eq[-1] / factorial(k + 1)
+    Eq << Eq[-1] / factorial(k + 1)
 
-    cout << Eq[-1].reversed
+    Eq << Eq[-1].reversed
 
-    cout << axiom.discrete.combinatorics.factorial.expand.apply(k + 1)
-    cout << Eq[10].subs(Eq[-2], Eq[-1])
+    Eq.factorial_expand = axiom.discrete.combinatorics.factorial.expand.apply(k + 1)
 
-    cout << Eq[-1].right.expand(deep=False)
+    Eq << Eq.exist_C0.subs(Eq[-1], Eq.factorial_expand)
 
-    cout << Eq[-1].right.args[1].args[-1].simplifier()
+    Eq << Eq[-1].this.function.rhs.expand(deep=False)
 
-    cout << Eq[-1].right.args[1].args[0].expand(power_base=True)
-
-    cout << Eq[-1].right.powsimp()
+    Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp()
 
     x = Symbol('x')
 
-    cout << difference.definition.apply(x ** (k + 1), x, k + 1)
+    Eq << difference.definition.apply(x ** (k + 1), x, k + 1)
 
-    cout << difference.factorial.apply(x, k + 1)
+    Eq << difference.factorial.apply(x, k + 1)
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-2].subs(Eq[-1])
 
-    cout << Eq[-1].subs(x, 0)
+    Eq << Eq[-1].subs(x, 0)
 
-    cout << Eq[-1].right.simplifier()
+    Eq << Eq[-1] * (-1) ** (k + 1)
 
-    cout << Eq[-1] * (-1) ** (k + 1)
+    Eq << Eq[-1].this.rhs.as_one_term()
 
-    cout << Eq[-1].right.as_one_term()
+    Eq << Eq[-1].this.rhs.function.powsimp(combine='exp')
 
-    cout << Eq[-1].right.function.powsimp(combine='exp')
+    Eq << Eq[-1].this.rhs.bisect(back=1)
 
-    cout << Eq[-1].right.bisect(back=1)
+    Eq << Eq[-1] - Eq[-1].rhs.args[0]
 
-    cout << Eq[-1] - Eq[-1].rhs.args[0]
+    Eq << Eq.exist_C0.subs(Eq[-1].reversed, Eq.factorial_expand)
 
-    cout << Eq[21].subs(Eq[-1].reversed, Eq[16])
+    Eq << Eq[-1].this.function.rhs.expand()
 
-    cout << Eq[-1].right.expand()
+    Eq << Eq[-1].this.function.rhs.ratsimp()
 
-    cout << Eq[-1].right.ratsimp()
+    Eq << Eq[-1].subs(Eq.factorial_expand.this.rhs.expand().reversed)
 
-    cout << Eq[-1].subs(Eq[16].right.expand().reversed)
+    Eq.stirling_solution = Eq.stirling_solution.subs(Eq[-1])
 
-    cout << Eq[7].subs(Eq[-1])
+    Eq << discrete.combinatorics.binomial.expand.apply(k + 1, k - l + 1)
+    Eq << discrete.combinatorics.binomial.complement.apply(k, l)
+    Eq << discrete.combinatorics.binomial.complement.apply(k + 1, l)
 
-    cout << discrete.combinatorics.binomial.expand.apply(k + 1, k - l + 1)
+    Eq << Eq[-3].subs(Eq[-1].reversed, Eq[-2].reversed)
 
-    cout << discrete.combinatorics.binomial.complement.apply(k, l)
-    cout << discrete.combinatorics.binomial.complement.apply(k + 1, l)
+    Eq << Eq[-1] / (k + 1)
 
-    cout << Eq[-3].subs(Eq[-1].reversed, Eq[-2].reversed)
+    Eq << Eq.stirling_solution.subs(Eq[-1].reversed)
 
-    cout << Eq[-1] / (k + 1)
+    Eq << Eq[-1].subs(Eq.factorial_expand.reversed)
 
-    cout << Eq[36].subs(Eq[-1].reversed)
+    Eq << Eq[-1] * factorial(k + 1)
+    Eq << Eq[-1].expand()
 
-    cout << Eq[-1].right.args[1].args[-1].simplifier()
+    Eq << Eq[-1].this.rhs.args[1].as_one_term()
 
-    cout << Eq[-1].subs(Eq[16].reversed)
+    Eq << Eq[-1].this.rhs.args[1].function.powsimp()
 
-    cout << Eq[-1] * factorial(k + 1)
-    cout << Eq[-1].expand()
+    Eq << Eq[0].subs(k, k + 1) * factorial(k + 1)
 
-    cout << Eq[-1].right.args[1].as_one_term()
-
-    cout << Eq[-1].right.args[1].function.powsimp()
-
-    cout << Eq[0].subs(k, k + 1) * factorial(k + 1)
-
-    cout << Eq[-1].right.simplifier()
-
-    cout << Eq[-1].right.bisect(back=1)
+    Eq << Eq[-1].this.rhs.bisect(back=1)
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

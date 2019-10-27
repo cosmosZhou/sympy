@@ -1,6 +1,6 @@
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, cout, Eq
+from sympy.utility import plausible, Eq
 from sympy.core.symbol import Symbol
 
 
@@ -12,13 +12,13 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     n = Symbol('n', integer=True)
     k = Symbol('k', integer=True)
 
-    cout << apply(n, k)
-    cout << Eq[-1].combsimp()
+    Eq << apply(n, k)
+    Eq << Eq[-1].combsimp()
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

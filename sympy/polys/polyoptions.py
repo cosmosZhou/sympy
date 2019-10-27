@@ -14,6 +14,7 @@ import sympy.polys
 
 import re
 
+
 class Option(object):
     """Base class for all kinds of options. """
 
@@ -61,6 +62,7 @@ class OptionType(type):
     """Base type for all options that does registers options. """
 
     def __init__(cls, *args, **kwargs):
+
         @property
         def getter(self):
             try:
@@ -280,9 +282,11 @@ class Gens(with_metaclass(OptionType, Option)):
 
     @classmethod
     def preprocess(cls, gens):
+        from sympy.core.symbol import Wild
+        from sympy.tensor.indexed import Slice
         if isinstance(gens, Basic):
             gens = (gens,)
-        elif len(gens) == 1 and hasattr(gens[0], '__iter__'):
+        elif len(gens) == 1 and hasattr(gens[0], '__iter__') and not isinstance(gens[0], (Wild, Slice)):
             gens = gens[0]
 
         if gens == (None,):
@@ -771,5 +775,6 @@ def set_defaults(options, **defaults):
         options['defaults'] = defaults
 
     return options
+
 
 Options._init_dependencies_order()

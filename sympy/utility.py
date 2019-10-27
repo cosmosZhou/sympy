@@ -3,14 +3,16 @@ from sympy.concrete import summations, products
 from sympy.core.relational import Equality, Relational
 import sympy
 import os
-from sympy.logic.boolalg import plausibles_dict, equivalent_ancestor, \
-    BooleanFunction, Boolean
+from sympy.logic.boolalg import equivalent_ancestor, BooleanFunction, Boolean
 from sympy.sets.contains import Contains
 import traceback
 from sympy.functions.elementary import miscellaneous
 from sympy import concrete
 from sympy.sets import sets
 from sympy.concrete.expr_with_limits import UnionComprehension
+from sympy.logic import boolalg
+from sympy.utilities.misc import Text
+import json
 
 
 def init(func):
@@ -33,14 +35,14 @@ class Operator:
                     if t.step:
                         limit.append((t.start, t.stop, t.step))
                     else:
-                        limit.append((t.start, t.stop))
+                        limit.append((t.start, 0, t.stop - 1))
                 else:
                     limit.append(t)
         elif isinstance(key, slice):
             if key.step:
                 limit = [(key.start, key.stop, key.step)]
             else:
-                limit = [(key.start, key.stop)]
+                limit = [(key.start, 0, key.stop - 1)]
         else:
             limit = [(key,)]
         self.stack.append(limit)
@@ -103,7 +105,7 @@ Product = Product()
 class Min(Operator):
 
     def __call__(self, hk):
-        from sympy.functions.elementary.miscellaneous import Minimum
+        from sympy.concrete.expr_with_limits import Minimum
         if self.stack:
             limit = self.stack.pop()
             return Minimum(hk, *limit)
@@ -138,42 +140,138 @@ Difference = Difference()
 sympy.init_printing()
 
 # https://www.programiz.com/python-programming/operator-overloading
-Eq = []
-
-batch_proving = False
 
 
-class cout:
+class Eq:
 
-    def __init__(self):
+    def __init__(self, txt):
+        self.__dict__['list'] = []
+
         from sympy.utilities.misc import Text
-        path = os.path.dirname(__file__) + '/../../latex/txt/latex.txt'
+#         txt = os.path.dirname(__file__) + '/../../latex/latex.txt'
 
-        self.file = Text(path)
+        self.__dict__['file'] = Text(txt)
         self.file.clear()
-#         self.file.write(["$$\\begin{align}", "\\end{align}$$"])
+        php = txt.replace('.txt', '.php')
+        if not os.path.exists(php):
+            print('writing .php :', php)
+            utility_php = re.compile(r'\\\w+').sub(r'\\utility', re.compile(r'\w+\\').sub(r'..\\', php[php.index('axiom'):]))
+            php = Text(php)
 
-    def add_to_list(self, rhs):
+            php_code = """\
+<?php
+require_once '%s';
+render(__FILE__);
+?>        
+            """ % utility_php
+            php.write(php_code)
+
+    @property
+    def plausibles_dict(self):
+        plausibles = {i : eq for i, eq in enumerate(self) if eq.plausible}
+
+        for k, v in self.__dict__.items():
+            if k == 'list' or k == 'file':
+                continue
+            if v.plausible:
+                plausibles[k] = v
+        return plausibles
+
+    def index(self, eq):
+        for i, _eq in enumerate(self.list):
+            if _eq == eq or eq.dummy_eq(_eq):
+                return i
+        for k, v in self.__dict__.items():
+            if k == 'list' or k == 'file':
+                continue
+            if eq == v or eq.dummy_eq(v):
+                return k
+        return -1
+
+    def append(self, eq):
+        self.list.append(eq)
+        return len(self.list) - 1
+
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return self.list[index]
+        return self.__dict__[index]
+
+    def process(self, rhs, index=None, end_of_line='\n'):
+        if isinstance(rhs, identity):
+            rhs = rhs.equation
+
         try:
-            index = Eq.index(rhs)
+            latex = rhs.latex
         except:
-            Eq.append(rhs)
-            return len(Eq) - 1
+#             print(e)
+            traceback.print_exc()
+            latex = ''
+
+        infix = str(rhs)
+        if isinstance(rhs, Boolean):
+            index = self.add_to_list(rhs, index)
+            if index != -1:
+                if isinstance(index, int):
+                    index = 'Eq[%d]' % index
+                else:
+                    index = 'Eq.%s' % index
+
+                tag = r'\tag*{%s}' % index
+
+                latex += tag
+                infix = '%s : %s' % (index, infix)
+
+#         self.file.append(r'\[%s\]' % latex)
+        self.file.append(r'\(%s\)' % latex, end_of_line)
+
+        print(infix)
+        return self
+
+    def __setattr__(self, index, rhs):
+        if index in self.__dict__:
+            eq = self.__dict__[index]
+            if eq.plausible:
+                equivalent = rhs.equivalent
+                while True:
+                    if isinstance(equivalent.equivalent, list):
+                        equivalent = [e for e in equivalent.equivalent if e.plausible]
+                        assert len(equivalent) == 1
+                        equivalent, *_ = equivalent
+                    else:
+                        equivalent = equivalent.equivalent
+
+                    if equivalent == eq:
+                        break
+
+        self.process(rhs, index)
+
+    def add_to_list(self, rhs, index=None):
+        old_index = self.index(rhs)
+        if old_index == -1:
+            if rhs.is_BooleanAtom:
+                boolalg.process_options(rhs._assumptions, value=bool(rhs))
+                return -1
+            if index is not None:
+                self.__dict__[index] = rhs
+                return index
+            return self.append(rhs)
         else:
-            eq = Eq[index]
+            eq = self[old_index]
             plausible = rhs.plausible
             if plausible is False:
                 eq.plausible = False
             elif plausible is None:
-                eq.plausible = True
+                if eq.plausible:
+                    eq.plausible = True
             else:
                 if eq.plausible is None:
                     rhs.plausible = True
                 else:
                     if isinstance(rhs.equivalent, (list, tuple)):
                         if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
-#                             Eq[index] = rhs
-                            return index
+#                             self[index] = rhs
+                            return old_index
                     if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
@@ -183,61 +281,20 @@ class cout:
                                 hypothesis = rhs_equivalent.hypothesis
                                 for h in hypothesis:
                                     h.derivative = None
-
-#             Eq[index] = rhs
-            return index
-
-    def needs_to_add_to_list(self, rhs):
-        index = -1
-        for i, eq in enumerate(Eq):
-            if eq == rhs and eq.clauses_equals(rhs):
-                index = i
-                break
-
-        if index < 0:
-            return True
-
-        return False
+            if isinstance(old_index, int):
+                self.list[old_index] = rhs
+            else:
+                self.__dict__[old_index] = rhs
+            return old_index
 
     def __lshift__(self, rhs):
 
         if isinstance(rhs, (list, tuple)):
             for arg in rhs:
-                self.__lshift__(arg)
-            return self
-
-        if isinstance(rhs, identity):
-            rhs = rhs.expr
-
-        if batch_proving:
-            if isinstance(rhs, Boolean):
-                self.add_to_list(rhs)
-            return self
-
-        try:
-            latex = rhs.latex
-        except Exception as e:
-            print(e)
-            traceback.print_exc()
-            latex = ''
-
-        infix = str(rhs)
-        if isinstance(rhs, Boolean):
-            index = self.add_to_list(rhs)
-
-            tag = r'\tag*{Eq[%d]}' % index
-#             latex = rhs.clause_latex(latex)
-            latex += tag
-
-            infix = 'Eq[%d] : %s' % (index, infix)
-
-        self.file.append(r'\[%s\]' % latex)
-
-        print(infix)
-        return self
-
-
-cout = cout()
+                self.process(arg, end_of_line='')
+            self.file.append('')
+        else:
+            self.process(rhs)
 
 
 def show_latex():
@@ -287,91 +344,164 @@ def plausible():
     return None
 
 
-class identity:
-
-    def __init__(self, lhs):
-        self.lhs = lhs
-        self.rhs = lhs
-
-        self.func = []
-        self._args = []
-        self.index = []
+class identity(boolalg.Invoker):
 
     @property
-    def expr(self):
-        return Relational.__new__(Equality, self.lhs, self.rhs)
+    def equation(self):
+        return Relational.__new__(Equality, self.expr, self.obj)
 
     def __call__(self, *args, **kwargs):
-        if self.rhs.__name__ == 'subs':
+        if self.obj.__name__ == 'subs':
             from sympy.concrete.summations import Sum
             from sympy.integrals.integrals import Integral
-            if isinstance(self.rhs.__self__, Sum) or isinstance(self.rhs.__self__, Integral):
+            if isinstance(self.obj.__self__, Sum) or isinstance(self.obj.__self__, Integral):
                 if len(args) == 2:
-                    (x, *_), *_ = self.rhs.__self__.limits
+                    (x, *_), *_ = self.obj.__self__.limits
                     # domain might be different!
                     assert args[0].name == x.name
             else:
                 assert len(args) == 1 and isinstance(args[0], Equality)
 
-        obj = self.rhs(*args, **kwargs)
+        obj = self.obj(*args, **kwargs)
 
         for i in range(-1, -len(self.func) - 1, -1):
             self._args[i][self.index[i]] = obj
-
-            if i == -len(self.func):
-                obj = self.func[i](*self._args[i], equivalent=self.eq if self.eq.plausible else None)
-            else:
-                obj = self.func[i](*self._args[i])
-
+            obj = self.func[i](*self._args[i])
             obj = obj.simplifier()
-        self.rhs = obj
+        self.obj = obj
         return self
 
     def __getattr__(self, method):
-        obj = getattr(self.rhs, method)
+        obj = getattr(self.obj, method)
         if not callable(obj):
-            self.func.append(self.rhs.func)
-            self._args.append([*self.rhs.args])
-            if not isinstance(obj, tuple):
-                self.index.append(self.rhs.args.index(obj))
+            if isinstance(obj, tuple):
+                self.append()
+            elif obj in self.obj.args:
+                self.append()
+                self.index.append(self.obj.args.index(obj))
+            else:
+                ...
 
-        self.rhs = obj
+        self.obj = obj
         return self
-
-    def __str__(self):
-        return str(self.rhs)
-
-    @property
-    def latex(self):
-        return self.rhs.latex
-
-    def __getitem__(self, j):
-        self.rhs = self.rhs[j]
-        self.index.append(j)
-        return self
-
-    def __iter__(self):
-        return iter(self.rhs)
 
 
 def check(func):
 
-    def _func():
-        Eq.clear()
-        func()
-        plausibles = plausibles_dict(Eq)
+    def _func(py):
+        py = py.replace('sympy\sympy', 'latex')
+        txt = py.replace('.py', '.txt')
+#         py = Text(py)
+
+        eqs = Eq(txt)
+#         for statement in inspect.getsourcelines(func)[0][2:]:
+#             statement = statement.rstrip()
+#             if re.compile('\s*').fullmatch(statement):
+#                 continue
+#             if re.compile('\s*#.*').fullmatch(statement):
+#                 continue
+#             if statement[:4] != ' ' * 4:
+#                 print(statement)
+#                 continue
+#             statement = statement[4:]
+#             print(statement, file=py.file)
+
+        try:
+            func(eqs)
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            return None
+
+        jsonFile = py.replace('.py', '.json')
+        plausibles = eqs.plausibles_dict
         if plausibles:
             print('plausibles_dict:')
+            dependency = {}
+
+            def get_equivalent(eq):
+                if eq.equivalent is not None:
+                    return eq.equivalent
+                elif eq.given is not None:
+                    return eq.given
+                elif eq.imply is not None:
+                    return eq.imply
+                elif eq.substituent is not None:
+                    return eq.substituent
+
+            def get_index(equivalent):
+                if equivalent is None:
+                    return -1
+                if isinstance(equivalent, list):
+                    _index = []
+                    for eq in equivalent:
+                        if eq.plausible:
+                            _index.append(get_index(eq))
+
+                    if len(_index) == 1:
+                        _index = _index[0]
+                else:
+                    _index = eqs.index(equivalent)
+                    if _index == -1:
+                        equivalent = get_equivalent(equivalent)
+                        return get_index(equivalent)
+                return _index
+
             for index, eq in plausibles.items():
-                print("Eq[%d] : %s" % (index, eq))
+                equivalent = get_equivalent(eq)
+                _index = get_index(equivalent)
+
+                dependency[index] = _index
+
+                def reference(index):
+                    if isinstance(index, list):
+                        return ', '.join(reference(d) for d in index)
+                    elif isinstance(index, int):
+                        if index < 0:
+                            return "plausible"
+                        else:
+                            return "Eq[%d]" % index
+                    else:
+                        return "Eq.%s" % index
+
+                print("%s->%s : %s" % (reference(dependency[index]), reference(index), eq))
+
+            with open(jsonFile, 'w', encoding='utf-8') as file:
+                json.dump(dependency, file, indent=4)
 
             return False
+        else:
+            if os.path.exists(jsonFile):
+                os.remove(jsonFile)
+
         return True
 
     return _func
 
 
+import inspect
+import re
+from itertools import dropwhile
+
+
+# https://cloud.tencent.com/developer/ask/222013
+def get_function_body(func):
+    print()
+    print("{func.__name__}'s body:".format(func=func))
+    source_lines = inspect.getsourcelines(func)[0]
+    source_lines = dropwhile(lambda x: x.startswith('@'), source_lines)
+    source = ''.join(source_lines)
+    pattern = re.compile(r'(async\s+)?def\s+\w+\s*\(.*?\)\s*:\s*(.*)', flags=re.S)
+    lines = pattern.search(source).group(2).splitlines()
+    if len(lines) == 1:
+        return lines[0]
+    else:
+        indentation = len(lines[1]) - len(lines[1].lstrip())
+        return '\n'.join([lines[0]] + [line[indentation:] for line in lines[1:]])
+
+
 # https://en.wikipedia.org/wiki/Topological_sorting#
+# http://latex.91maths.com/
 # http://ctex.math.org.cn/blackboard.html
 # https://tex.stackexchange.com/questions/256644/convert-latex-to-sympy-format
 # https://cloud.tencent.com/developer/article/1057779
@@ -385,13 +515,4 @@ def check(func):
 # http://www.sagemath.org/download-source.html
 # https://www.sagemath.org/
 if __name__ == '__main__':
-    str1 = "/a/b/c/?.oietlover?e/f/g/zIwyouty.cnd"
-
-    str2 = "d/a/youb/c/alovewp.neeg/e/fI/g/zxtn.cc"
-
-    str3 = "d/a/b/c/.neeg/e/f/g/zIxtn.ccI love you"
-
-    str4 = "I love you"
-
-    print(common_fragments(str1, str2, str3, str4));
-
+    ...

@@ -125,6 +125,25 @@ class Piecewise(Function):
     nargs = None
     is_Piecewise = True
 
+    @property
+    def scope_variables(self):
+        variables = {*()}
+        for _, c in self.args:
+            variables |= c.scope_variables
+        return variables 
+        
+    @property
+    def set(self):
+        newargs = []
+        for e, c in self.args:
+            newargs.append((e.set, c))
+        return self.func(*newargs, evaluate=False)
+
+    @property
+    def is_set(self):
+        for e, _ in self.args:
+            return e.is_set
+
     def __new__(cls, *args, **options):
         if len(args) == 0:
             raise TypeError("At least one (expr, cond) pair expected.")
@@ -267,12 +286,12 @@ class Piecewise(Function):
                 nonredundant = []
                 for c in cond.args:
                     if (isinstance(c, Relational) and
-                            c.negated.canonical in current_cond):
+                            (~c).canonical in current_cond):
                         continue
                     nonredundant.append(c)
                 cond = cond.func(*nonredundant)
             elif isinstance(cond, Relational):
-                if cond.negated.canonical in current_cond:
+                if (~cond).canonical in current_cond:
                     cond = S.true
 
             current_cond.add(cond)
@@ -320,6 +339,12 @@ class Piecewise(Function):
                 if isinstance(c, Basic):
                     c = c.doit(**hints)
             newargs.append((e, c))
+        return self.func(*newargs)
+
+    def __sub__(self, other):
+        newargs = []
+        for e, c in self.args:
+            newargs.append((e - other, c))
         return self.func(*newargs)
 
     def _eval_simplify(self, ratio, measure, rational, inverse):

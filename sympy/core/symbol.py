@@ -10,14 +10,12 @@ from .expr import Expr, AtomicExpr
 from .cache import cacheit
 from .function import FunctionClass
 from sympy.core.logic import fuzzy_bool
-from sympy.logic.boolalg import Boolean
 from sympy.utilities.iterables import cartes
 from sympy.core.containers import Tuple
 
 import string
 import re as _re
 import random
-
 
 
 def _symbol(s, matching_symbol=None, **assumptions):
@@ -163,6 +161,35 @@ class Symbol(AtomicExpr):
     is_Symbol = True
     is_symbol = True
 
+#     def __iter__(self):
+#         raise TypeError
+    def intersection_sets(self, b):
+        if b.is_ConditionSet:
+            return b.func(b.sym, b.condition, b.base_set & self)
+
+    def bisect(self, domain):
+        from sympy import Union
+        if self.is_set:
+            return Union(self & domain, self - domain, evaluate=False)
+        return self
+
+    # performing other in self
+    def __contains__(self, other):
+        if other == self:
+            return True
+        if self.definition is not None:
+            return other in self.definition
+
+# precondition, self and other are structurally equal!
+    def _dummy_eq(self, other):
+        return self == other
+
+    def structure_eq(self, other):
+        from sympy.tensor.indexed import Slice, Indexed, IndexedBase
+        if isinstance(other, (Symbol, Indexed, IndexedBase, Slice)):
+            return self.shape == other.shape
+        return False
+
     def copy(self, **kwargs):
         return self.func(self.name, **kwargs)
 
@@ -185,6 +212,12 @@ class Symbol(AtomicExpr):
         if definition is None:
             return None
         return definition.image_set()
+
+    def condition_set(self):
+        definition = self.definition
+        if definition is None:
+            return None
+        return definition.condition_set()
 
     @staticmethod
     def _sanitize(assumptions, obj=None):
@@ -219,7 +252,7 @@ class Symbol(AtomicExpr):
                 assumptions.pop(key)
                 continue
 
-            if key != 'domain' and key != 'definition' and key != 'dtype':
+            if key not in ('domain', 'definition', 'dtype', 'shape'):
                 assumptions[key] = bool(v)
 
     def __new__(cls, name, **assumptions):
@@ -321,8 +354,8 @@ class Symbol(AtomicExpr):
 
         if 'domain' in self._assumptions:
             domain = self._assumptions['domain']
-            if self.is_integer and not domain.is_integer:
-                return domain.flip_integer()
+            if self.is_integer and domain.is_Interval and not domain.is_integer:
+                return domain.copy(integer=True)
             return domain
 
         from sympy.core.numbers import oo
@@ -357,18 +390,19 @@ class Symbol(AtomicExpr):
         return None
 
     def generate_free_symbol(self, excludes=set(), shape=(), **kwargs):
-        excludes = set(symbol.name for symbol in excludes)
+        excludes = set(symbol.name for symbol in excludes | self.free_symbols)
         name = self.name
-        if len(name) > 1:
+        if len(name) > 1 or self.is_set:
             name = 'a'
 
         while True:
-            name = chr(ord(name) + 1)
             if name not in excludes:
                 if len(shape) > 0:
                     from sympy.tensor.indexed import IndexedBase
                     return IndexedBase(name, shape, **kwargs)
                 return self.func(name, **kwargs)
+            name = chr(ord(name) + 1)
+
         return None
 
     def nonzero_domain(self, x):
@@ -402,19 +436,25 @@ class Symbol(AtomicExpr):
 
     @property
     def dtype(self):
-        if 'dtype' in self._assumptions:
-            return self._assumptions['dtype'].set
         definition = self.definition
         if definition is not None:
             return definition.dtype
-        if self.is_integer:
-            return dtype.integer
-        if self.is_rational:
-            return dtype.rational
-        if self.is_complex:
-            return dtype.complex
 
-        return dtype.real
+        if 'dtype' in self._assumptions:
+            _dtype = self._assumptions['dtype'].set
+        elif self.is_integer:
+            _dtype = dtype.integer
+        elif self.is_rational:
+            _dtype = dtype.rational
+        elif self.is_complex:
+            _dtype = dtype.complex
+        else:
+            _dtype = dtype.real
+
+        shape = self.shape
+        if shape:
+            return _dtype * shape
+        return _dtype
 
     def _has(self, pattern):
         """Helper for .has()"""
@@ -448,21 +488,23 @@ class Symbol(AtomicExpr):
         if element_type is None:
             return
 
-        return self.generate_free_symbol(excludes=excludes, shape=element_type.shape, **element_type.dict)
+        return self.generate_free_symbol(excludes=excludes, **element_type.dict)
 
-    def assertion(self):
+    def assertion(self, reverse=False):
         definition = self.definition
         from sympy.sets.conditionset import ConditionSet
 
         if isinstance(definition, ConditionSet):
             sym = definition.sym
             condition = definition.condition
-
             from sympy.concrete.expr_with_limits import Forall
+            if not definition.base_set.is_UniversalSet:
+                from sympy.sets.contains import Contains
+                condition &= Contains(sym, definition.base_set)
             return Forall(condition, (sym, self))
 
         from sympy.sets.conditionset import image_set_definition
-        return image_set_definition(self)
+        return image_set_definition(self, reverse=reverse)
 
 
 class Dummy(Symbol):
@@ -650,6 +692,20 @@ class Wild(Symbol):
         repl_dict = repl_dict.copy()
         repl_dict[self] = expr
         return repl_dict
+
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices, **kw_args):
+        assert self.shape
+        from sympy.tensor.indexed import Indexed
+        return Indexed(self, indices, **kw_args)
+
+    @property
+    def shape(self):
+        if 'shape' in self._assumptions:
+            return self._assumptions['shape']
+        return ()
 
 
 _range = _re.compile('([0-9]*:[0-9]+|[a-zA-Z]?:[a-zA-Z])')
@@ -1193,7 +1249,9 @@ class DtypeVector(Dtype):
 
     @property
     def dict(self):
-        return self.dtype.dict
+        dic = self.dtype.dict
+        dic['shape'] = (self.length,)
+        return dic
 
     def __eq__(self, other):
         return isinstance(other, DtypeVector) and self.length == other.length and self.dtype == other.dtype
@@ -1206,14 +1264,23 @@ class DtypeMatrix(Dtype):
 
     def __init__(self, dtype, shape):
         self.dtype = dtype
-        self.shape = tuple(shape)
+        self.lengths = tuple(shape)
+
+    @property
+    def shape(self):
+        return self.lengths
 
     def __str__(self):
         return '%s[%s]' % (self.dtype, ', '.join(str(length) for length in self.shape))
 
     def __getitem__(self, indices):
         if isinstance(indices, (tuple, Tuple, list)):
-            ...
+            diff = len(self.shape) - len(indices)
+            if diff == 0:
+                return self.dtype
+            if diff == 1:
+                return DtypeVector(self.dtype, self.shape[-1])
+            return DtypeMatrix(self.dtype, self.shape[-diff:])
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
             shape = (stop - start,) + self.shape[1:]
@@ -1228,7 +1295,9 @@ class DtypeMatrix(Dtype):
 
     @property
     def dict(self):
-        return self.dtype.dict
+        dic = self.dtype.dict
+        dic['shape'] = self.shape
+        return dic
 
     def __eq__(self, other):
         return isinstance(other, DtypeVector) and self.shape == other.shape and self.dtype == other.dtype

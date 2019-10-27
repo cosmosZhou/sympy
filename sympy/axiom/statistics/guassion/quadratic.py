@@ -1,12 +1,11 @@
 from sympy.core.numbers import oo
-from sympy.utility import cout, Eq, plausible
+from sympy.utility import Eq, plausible
 from sympy.core.relational import Equality
 from sympy import sqrt, pi, exp, Symbol, log
 from sympy.integrals.integrals import Integral
 
 from sympy.core.mul import Mul
 from sympy.axiom.statistics.guassion import std
-from sympy.logic.boolalg import plausibles_dict
 
 
 def coefficient(y, x):
@@ -54,33 +53,31 @@ def apply(y, x=None):
 
 
 from sympy.utility import check
+
+
 @check
-def prove():
+def prove(Eq):
     a = Symbol("a", positive=True)
     b = Symbol("b", real=True)
     c = Symbol("c", real=True)
     x = Symbol("x", real=True)
     y = a * x * x + b * x + c
 
-    cout << apply(exp(-y), x)
+    Eq << apply(exp(-y), x)
 
-    cout << Eq[0].left.subs(x, x - b / (2 * a))
+    Eq << Eq[0].this.lhs.subs(x, x - b / (2 * a))
 
-    cout << Eq[-1].left.powsimp()
+    Eq << Eq[-1].this.lhs.powsimp()
 
-    cout << std.apply()
+    Eq << std.apply()
 
-    cout << Eq[-1] * sqrt(2 * pi)
+    Eq << Eq[-1] * sqrt(2 * pi)
 
-    cout << Eq[-1].left.subs_limits(x, sqrt(2 * a) * x)
+    Eq << Eq[-1].this.lhs.limits_subs(x, sqrt(2 * a) * x)
 
-    cout << Eq[-1] / sqrt(a)
+    Eq << Eq[-1] / sqrt(a)
 
 
 if __name__ == '__main__':
-    prove()
-
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))
+    prove(__file__)
 

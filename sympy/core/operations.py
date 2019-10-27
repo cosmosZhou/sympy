@@ -7,6 +7,7 @@ from sympy.core.compatibility import ordered, range
 from sympy.core.logic import fuzzy_and
 from sympy.core.evaluate import global_evaluate
 from sympy.utilities.iterables import sift
+from functools import cmp_to_key
 
 
 class AssocOp(Basic):
@@ -65,6 +66,9 @@ class AssocOp(Basic):
             return cls.identity
         elif len(args) == 1:
             return args[0]
+
+        args = tuple(ordered(args))
+#         args = tuple(sorted(args, key=lambda x: str(x)))
 
         obj = super(AssocOp, cls).__new__(cls, *args)
         if is_commutative is None:
@@ -438,8 +442,27 @@ class LatticeOp(AssocOp):
 
     is_commutative = True
 
+    def as_two_terms(self):
+        """Return head and tail of self.
+
+        This is the most efficient way to get the head and tail of an
+        expression.
+
+        - if you want only the head, use self.args[0];
+        - if you want to process the arguments of the tail then use
+          self.as_coef_add() which gives the head and a tuple containing
+          the arguments of the tail when treated as an Add.
+        - if you want the coefficient when self is treated as a Mul
+          then use self.as_coeff_mul()[0]
+
+        >>> from sympy.abc import x, y
+        >>> (3*x - 2*y + 5).as_two_terms()
+        (5, 3*x - 2*y)
+        """
+        return self.args[0], self.func(*self.args[1:])
+
     def __new__(cls, *args, **options):
-        args = (_sympify(arg) for arg in args)
+        args = [_sympify(arg) for arg in args]
 
         try:
             # /!\ args is a generator and _new_args_filter

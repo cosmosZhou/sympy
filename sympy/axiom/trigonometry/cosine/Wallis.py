@@ -3,7 +3,7 @@ from sympy.core.relational import Equality
 from sympy.core.numbers import pi
 from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.functions.special.gamma_functions import gamma
-from sympy.utility import plausible, cout, Eq, Integral
+from sympy.utility import plausible, Eq, Integral
 from sympy.core.sympify import sympify
 from sympy.functions.special.beta_functions import beta
 from sympy.functions.elementary.miscellaneous import sqrt
@@ -23,34 +23,34 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     n = Symbol("n", integer=True, positive=True)
-    cout << apply(n)
+    Eq << apply(n)
     (x, *_), *_ = Eq[0].lhs.limits
 
-    cout << Eq[0].subs(n, 1).doit()
-    cout << Eq[0].subs(n, 2).doit()
-    cout << Eq[0].subs(n, n + 2)
+    Eq << Eq[0].subs(n, 1).doit()
+    Eq << Eq[0].subs(n, 2).doit()
+    Eq << Eq[0].subs(n, n + 2)
 #     Integration by parts
-    cout << Eq[-1].left.by_parts(dv=cos(x))
-    cout << Eq[-1].left.args[1].function.powsimp()
+    Eq << Eq[-1].this.lhs.by_parts(dv=cos(x))
+    Eq << Eq[-1].this.lhs.args[1].function.powsimp()
 
-    cout << Eq[0] - Eq[-1] / n
+    Eq << Eq[0] - Eq[-1] / n
 
-    cout << Eq[-1].left.as_one_term()
+    Eq << Eq[-1].this.lhs.as_one_term()
 
-    cout << Eq[-1].left.trigsimp()
+    Eq << Eq[-1].this.lhs.trigsimp()
 
-    cout << Eq[-1].left.function.powsimp()
+    Eq << Eq[-1].this.lhs.function.powsimp()
 
-    cout << Eq[1].left.function.powsimp().subs(Eq[-1])
+    Eq << Eq[1].this.lhs.function.powsimp().subs(Eq[-1])
 
-    cout << Eq[-1].expand(func=True)
-    cout << Eq[-1] + Eq[-1].rhs / n
+    Eq << Eq[-1].expand(func=True)
+    Eq << Eq[-1] + Eq[-1].rhs / n
 
-    cout << Eq[-1].right.ratsimp()
+    Eq << Eq[-1].this.rhs.ratsimp()
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)
 

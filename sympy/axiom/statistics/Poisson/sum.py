@@ -1,12 +1,12 @@
-from sympy.utility import cout, Eq, plausible
-from sympy.core.relational import Equality
-
-from sympy.stats.rv import Density, RandomSymbol
-from sympy.stats.drv_types import Poisson, PoissonDistribution
 from sympy import exp, Symbol
-
-from sympy.stats.drv import SingleDiscretePSpace
 from sympy import factorial
+from sympy.core.relational import Equality
+from sympy.stats.drv import SingleDiscretePSpace
+from sympy.stats.drv_types import Poisson, PoissonDistribution
+from sympy.stats.rv import Density, RandomSymbol
+from sympy.utility import plausible
+from sympy.utility import check
+from sympy import axiom
 
 
 def apply(x0, x1):
@@ -26,11 +26,8 @@ def apply(x0, x1):
                     plausible=plausible())
 
 
-from sympy.utility import check
-
-
 @check
-def prove():
+def prove(Eq):
 
     lamda0 = Symbol("lamda0", positive=True)
     lamda1 = Symbol("lamda1", positive=True)
@@ -38,27 +35,25 @@ def prove():
     x0 = Poisson('x0', lamda0)
     x1 = Poisson('x1', lamda1)
 
-    cout << apply(x0, x1)
+    Eq << apply(x0, x1)
 
-    cout << Equality.by_definition_of(Density(x0 + x1))
+    Eq << Equality.by_definition_of(Density(x0 + x1))
 
-    cout << Eq[-1].right.function.args[2].doit()
+    Eq << Eq[-1].this.rhs.args[-1].function.args[-1].doit(deep=False)
 
-    cout << Eq[-1].subs(Eq[0])
+    Eq << Eq[-1].subs(Eq[0])
 
-    cout << Eq[-1].right.powsimp()
+    Eq << Eq[-1].this.rhs.powsimp()
 
     y = Eq[0].lhs.symbol
-    cout << Eq[-1] * factorial(y)
+    Eq << Eq[-1] * factorial(y)
 
-    from sympy import axiom
+    Eq << axiom.discrete.combinatorics.binomial.theorem.apply(lamda0, lamda1, y)
 
-    cout << axiom.discrete.combinatorics.binomial.theorem.apply(lamda0, lamda1, y)
+    Eq << Eq[-1].subs(Eq[-2])
 
-    cout << Eq[-1].subs(Eq[-2])
-
-    cout << Eq[-1].right.combsimp()
+    Eq << Eq[-1].this.rhs.combsimp()
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

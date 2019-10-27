@@ -398,7 +398,7 @@ def intersection_sets(a, b):
         l, r = a.left, a.right
         if l.is_real or l in infty or r.is_real or r in infty:
             if a.is_integer and not b.is_integer:
-                return b.flip_integer()
+                return b.copy(integer = True)
             return b
 
     # We can't intersect [0,3] with [x,6] -- we don't know if x>0 or x<0

@@ -1,9 +1,8 @@
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, cout, Eq, plausible
+from sympy.utility import Ref, plausible
 from sympy.core.relational import Unequality
-from sympy.logic.boolalg import plausibles_dict
 
 
 def apply():
@@ -17,14 +16,12 @@ def apply():
 
 
 from sympy.utility import check
+
+
 @check
-def prove():
-    cout << apply()
-    n, x, y, z = Eq[-1].forall
+def prove(Eq):
+    Eq << apply()
 
 
 if __name__ == '__main__':
-    prove()
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))
+    prove(__file__)

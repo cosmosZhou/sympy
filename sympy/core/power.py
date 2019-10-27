@@ -240,6 +240,10 @@ class Pow(Expr):
 
     __slots__ = ['is_commutative']
 
+    @property
+    def dtype(self):
+        return self.base.dtype
+
     @cacheit
     def __new__(cls, b, e, evaluate=None):
         if evaluate is None:
@@ -1708,8 +1712,10 @@ class Pow(Expr):
     def nonzero_domain(self, x):
         domain = self.base.nonzero_domain(x)
         if self.exp > 0:
-            return domain
-        return domain & self.defined_domain(x)
+            return domain & self.defined_domain(x)
+        if self.exp < 0:
+            return domain & self.defined_domain(x)
+        return self.defined_domain(x)
 
     def defined_domain(self, x):
         domain = self.base.defined_domain(x) & self.exp.defined_domain(x)

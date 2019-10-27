@@ -1,6 +1,6 @@
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, cout, Eq, Sum
+from sympy.utility import plausible, Eq, Sum
 from sympy.core.symbol import Symbol, generate_free_symbol
 from sympy.functions.special.gamma_functions import gamma
 from sympy.core.function import Difference, Function
@@ -20,48 +20,38 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     f = Function('f')
     x = Symbol('x')
     fx = f(x)
     n = Symbol('n', integer=True, nonnegative=True)
-    cout << apply(fx, x, n)
+    Eq << apply(fx, x, n)
 
-    cout << Eq[-1].subs(n, 0).doit()
-    cout << Eq[-1].subs(n, n + 1)
+    Eq << Eq[-1].subs(n, 0).doit()
+    Eq << Eq[-1].subs(n, n + 1)
 
-    cout << Eq[-1].left.bisect(back=1)
+    Eq << Eq[-1].this.lhs.bisect(back=1)
 
-    cout << Eq[-1].left.expr.doit()
+    Eq << Eq[-1].this.lhs.expr.doit()
 
-    cout << Eq[-1].left.as_Add()
+    Eq << Eq[-1].this.lhs.as_Add()
 
-    cout << Eq[0].subs(x, x + 1) - Eq[0]
+    Eq << Eq[0].subs(x, x + 1) - Eq[0]
 
-    cout << Eq[-1].subs(Eq[-2])
+    Eq << Eq[-1].subs(Eq[-2])
 
     k = Eq[0].rhs.limits[0][0]
-    cout << Pascal.apply(n + 1, k)
+    Eq << Pascal.apply(n + 1, k)
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-2].subs(Eq[-1])
 
-    cout << Eq[-1].expand()
+    Eq << Eq[-1].expand()
 
-    cout << Eq[-1].left.args[0].simplifier()
+    Eq << Eq[-1].this.lhs.args[0].simplifier()
 
-    cout << Eq[-1].right.args[0].args[1].simplifier()
-
-    cout << Eq[-1].left.subs_limits(k, k + 1)
-
-    cout << Eq[-1].right.simplifier()
-
-    cout << -Eq[-1]
-
-    cout << Eq[-1].left.expand()
-
-    cout << Eq[-1].left.simplifier()
+    Eq << Eq[-1].this.rhs.args[1].args[1].simplifier()
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)
 

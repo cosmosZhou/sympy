@@ -1,19 +1,17 @@
-from sympy.core.symbol import Symbol, Wild, dtype
-from sympy.core.relational import Equality
-from sympy.utility import plausible, cout, Eq, Sum, Ref, Union
+from sympy.core.symbol import Symbol, dtype
+from sympy.core.relational import Equality, Unequality
+from sympy.utility import plausible, Sum, Ref, Union, identity
 
 from sympy.functions.combinatorial.numbers import Stirling
-from sympy.sets.sets import FiniteSet, imageset, Interval
-from sympy.sets.contains import Subset, Supset, Contains
-from sympy.logic.boolalg import And, plausibles_dict
-from sympy.functions.elementary.complexes import Abs
-from sympy.core.basic import _aresame
-from sympy.core.function import Function, Application
+from sympy.sets.sets import image_set, Interval
+from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.tensor.indexed import IndexedBase
 from sympy.axiom import discrete
 from sympy.sets.conditionset import ConditionSet
-from sympy.concrete.expr_with_limits import UnionComprehension
+from sympy.concrete.expr_with_limits import UnionComprehension, Forall
+from sympy import axiom
+from sympy.core.numbers import oo
 
 
 def apply(n, k):
@@ -25,286 +23,590 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     k = Symbol('k', integer=True, nonnegative=True)
 
     n = Symbol('n', integer=True, nonnegative=True)
-    cout << apply(n, k)
+    Eq << apply(n, k)
 
-    cout << Equality.by_definition_of(Eq[0].lhs)
-    cout << Equality.by_definition_of(Eq[0].rhs.args[1])
-    cout << Equality.by_definition_of(Eq[0].rhs.args[0].args[1])
+    Eq.stirling1 = identity(Eq[0].lhs).definition
+    Eq.stirling2 = identity(Eq[0].rhs.args[0]).definition
+    Eq.stirling3 = identity(Eq[0].rhs.args[1].args[1]).definition
 
-    s1 = Symbol('s1', definition=Eq[1].rhs.arg)
-    s1_quote = Symbol("s1'", definition=Eq[1].rhs.arg.limits[0][1])
-    s2 = Symbol('s2', definition=Eq[2].rhs.arg)
-    s2_quote = Symbol("s2'", definition=Eq[2].rhs.arg.limits[0][1])
-    s3 = Symbol('s3', definition=Eq[3].rhs.arg)
-    s3_quote = Symbol("s3'", definition=Eq[3].rhs.arg.limits[0][1])
+    s1 = Symbol('s1', definition=Eq.stirling1.rhs.arg)
+    Eq << identity(s1).definition
+    s1_quote = Symbol("s'_1", definition=Eq.stirling1.rhs.arg.limits[0][1])
+    Eq.stirling1 = Eq.stirling1.subs(Eq[-1].reversed)
+    Eq << identity(s1_quote).definition
+
+    Eq.s1_definition = Eq[-2].subs(Eq[-1].reversed)
+
+    s2 = Symbol('s2', definition=Eq.stirling2.rhs.arg)
+    Eq << identity(s2).definition
+    s2_quote = Symbol("s'_2", definition=Eq.stirling2.rhs.arg.limits[0][1])
+    Eq.stirling2 = Eq.stirling2.subs(Eq[-1].reversed)
+    Eq << identity(s2_quote).definition
+    Eq << Eq[-2].subs(Eq[-1].reversed)
+    s2_definition = Eq[-1]
+
+    s3 = Symbol('s3', definition=Eq.stirling3.rhs.arg)
+    Eq << identity(s3).definition
+    s3_quote = Symbol("s'_3", definition=Eq.stirling3.rhs.arg.limits[0][1])
+    Eq.stirling3 = Eq.stirling3.subs(Eq[-1].reversed)
+    Eq << identity(s3_quote).definition
+    Eq << Eq[-2].subs(Eq[-1].reversed)
 
     e = Symbol('e', dtype=dtype.integer.set)
-    s2_ = imageset(e, Union(e, FiniteSet(FiniteSet(n))), s2)
+    s2_ = image_set(e, Union(e, n.set.set), s2)
 
     plausible0 = Subset(s2_, s1, plausible=True)
-    cout << plausible0
+    Eq << plausible0
 
-    cout << Eq[-1].definition
+    Eq << Eq[-1].definition
 
-    cout << Eq[-1].simplifier()
+    Eq << Eq[-1].this.limits[0][1].subs(s2_definition)
+    Eq << Eq[-1].subs(Eq.s1_definition)
+    s2_plausible = Eq[-1]
 
-    cout << Equality.by_definition_of(s2)
+    Eq.s1_quote_definition = s1_quote.assertion()
+    Eq << s2_quote.assertion()
+    Eq << s3_quote.assertion()
+    s3_quote_definition = Eq[-1]
 
-    cout << Equality.by_definition_of(s1)
-
-    cout << Eq[-2].split()
+    Eq << Eq[-2].split()
+    x_abs_positive = Eq[-3]
+    x_abs_sum = Eq[-2]
+    x_union_s2 = Eq[-1]
 
     i = Eq[-1].lhs.limits[0][0]
+    x = Eq[-1].variable.base
 
-    x, *_ = Eq[-1].function.variables
-    x = x.base
+    Eq << Equality.define(x[k], n.set)
+    x_k_definition = Eq[-1]
 
-    cout << Equality.define(x[k], FiniteSet(n))
-    cout << Eq[-1].union(Eq[-2])
+    Eq << Eq[-1].union(Eq[-2])
+    x_union = Eq[-1]
 
-    cout << Eq[-1].this.function.function.rewrite()
+    Eq << x_k_definition.set
 
-    cout << Eq[-1].split()
+    Eq << Eq[-1].union(x[:k].set)
 
-    cout << Eq[12].set
+    Eq << s2_plausible.subs(Eq[-1].reversed)
 
-    cout << Eq[-1].union(Eq[-3])
+    Eq << Eq[-1].definition.definition
 
-    cout << Eq[-1].swap()
+    Eq << x_k_definition.abs()
 
-    cout << Eq[12].abs()
+    Eq << Eq[-1].subs(1, 0)
 
-    cout << Eq[10] + Eq[-1]
+    Eq << x_abs_sum + Eq[-2]
 
-    cout << Eq[-1].this.function.function.rewrite()
+    Eq << (x_abs_positive & Eq[-2])
 
-    cout << Eq[-1].split()
+    Eq << (x_union & Eq[-1] & Eq[-2])
 
-    cout << Eq[20].subs(1, 0)
+    assert len(Eq.plausibles_dict) == 1
 
-    cout << Eq[9].this.function.rewrite()
-    cout << Eq[-1].split()
+    x_tuple = s3_quote_definition.limits[0][0]
 
-    cout << (Eq[-1] & Eq[-3])
-
-    cout << (Eq[19] & Eq[16] & Eq[-1] & Eq[23])
-
-    cout << Eq[-1].this.function.rewrite(index=-1)
-
-    cout << Eq[6].this.function.definition
-    
-    cout << Eq[-1].subs(Eq[-1].variables[0], Eq[-2].variables[0])
-
-    assert len(plausibles_dict(Eq)) == 1
-
-    cout << Equality.by_definition_of(s3)
-
-    s4 = Symbol('s4', definition=s3.definition.limits[0][1])
-    cout << Equality.by_definition_of(s4)
-
-    x_tuple = Eq[-1].limits[0][0]
-    cout << Eq[-1].split()
-    assert len(plausibles_dict(Eq)) == 1
+    Eq.x_abs_positive_s3, Eq.x_abs_sum_s3, Eq.x_union_s3 = s3_quote_definition.split()
 
     j = Symbol('j', integer=True, domain=Interval(0, k))
 
-    x_ = IndexedBase("x'", (k + 1,), dtype=dtype.integer,
-                     definition=Ref[i](Piecewise((Union(x_tuple[i], FiniteSet(n)) , Equality(i, j)), (x_tuple[i], True))))
+    x_quote = IndexedBase("x'", (k + 1,), dtype=dtype.integer,
+                     definition=Ref[i](Piecewise((Union(x_tuple[i], n.set) , Equality(i, j)), (x_tuple[i], True))))
 
-    x_quote_definition = Equality.by_definition_of(x_)
-    cout << x_quote_definition
+    Eq.x_quote_definition = Equality.by_definition_of(x_quote)
 
-    s4_imageset = imageset(x_tuple, x_, s4)
-    imageFunction, imageSymbol, _ = s3.definition.image_set()
+    Eq.x_quote_set_in_s1 = Subset(image_set(x_tuple, Union[i:0:k](x_quote[i].set), s3_quote), s1, plausible=True)
 
-    s4_imageset_imageset = imageset(imageSymbol, imageFunction, s4_imageset)
+    Eq << Eq.x_quote_set_in_s1.definition
 
-    plausible1 = Subset(s4_imageset_imageset, s1, plausible=True)
-    cout << plausible1
-
-    cout << Eq[-1].definition
-
-    cout << Eq[-1].simplifier()
-    
     plausible1_simplified = Eq[-1]
 
-    cout << Equality.by_definition_of(s4_imageset)
+    Eq << Eq[-1].subs(Eq.s1_definition)
 
-    cout << Eq[-1].split()
+    Eq << Eq[-1].definition.definition
 
-    positiveRequirement = Eq[-3]
-    
-    cout << Union[i:0:k](x_quote_definition)
+    Eq << Union[i:0:k](Eq.x_quote_definition)
 
-    x_quote_union = Eq[-1].subs(Eq[-2])
-    cout << x_quote_union
+    x_quote_union = Eq[-1].subs(Eq.x_union_s3)
+    Eq << x_quote_union
 
-    cout << x_quote_definition.abs()
+    Eq << Eq.x_quote_definition.abs()
     x_quote_abs = Eq[-1]
-    
-    cout << Sum[i:0:k](Eq[-1])
 
-    cout << discrete.sets.union.inequality.apply(*Eq[-1].rhs.args[1].arg.args)
+    Eq << Sum[i:0:k](Eq[-1])
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << discrete.sets.union.inequality.apply(*Eq[-1].rhs.args[1].arg.args)
 
-    cout << Eq[-1].subs(Eq[41])
+    Eq << Eq[-2].subs(Eq[-1])
 
-    cout << x_quote_union.abs()
+    Eq << Eq[-1].subs(Eq.x_abs_sum_s3)
+
+    Eq << x_quote_union.abs()
+    x_quote_union_abs = Eq[-1]
 
     u = Eq[-1].lhs.arg
-    cout << discrete.sets.union.inequalities.apply(u.function, *u.limits)
+    Eq << discrete.sets.union_comprehension.inequality.apply(u.function, *u.limits)
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-2].subs(Eq[-1])
 
-    cout << Eq[-1].subs(Eq[-4])
+    Eq << Eq[-4].subs(Eq[-1])
     SqueezeTheorem = Eq[-1]
-     
-    cout << x_quote_abs.split()
 
-    cout << discrete.sets.union.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
+    Eq << x_quote_abs.split()
 
-#     cout << Eq[-1].subs(Eq[43])
-    cout << Eq[-1].subs(positiveRequirement)
-    
-    cout << Eq[-4].subs(Eq[-1])
+    Eq << discrete.sets.union.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
 
-#     cout << Eq[-4].subs(Eq[43])
-    cout << Eq[-4].subs(positiveRequirement)
+    Eq << Eq[-1].subs(Eq.x_abs_positive_s3.limits_subs(i, j))
 
-    cout << (Eq[-1] & Eq[-2])
+    Eq << Eq[-4].subs(Eq[-1])
 
-    cout << (x_quote_union & SqueezeTheorem & Eq[-1])
+    Eq << Eq[-4].subs(Eq.x_abs_positive_s3)
 
-# application of assumption of other statements should be disallowed!
-    cout << Eq[-1].this.function.subs(var=x[0:k + 1])
+    Eq << (Eq[-1] & Eq[-2])
 
-    cout << plausible1_simplified.this.function.definition
+    Eq << (x_quote_union & SqueezeTheorem & Eq[-1])
 
-    b, *_ = Eq[-1].variables
+    assert len(Eq.plausibles_dict) == 1
+    Eq.x_quote_definition = Ref[i](Eq.x_quote_definition)
 
-    cout << Eq[-1].subs(x[0:k + 1], b)
+    A = IndexedBase("A", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s1.args[0]))
 
-    _b, *_ = Eq[-3].variables
-    cout << Eq[-1].subs(b, _b)
+    Eq.A_definition = Equality.by_definition_of(A)
 
-    assert len(plausibles_dict(Eq)) == 1
+    Eq << Eq.x_quote_set_in_s1.subs(Eq.A_definition.reversed)
 
-    cout << Ref[i](x_quote_definition)
-    
-    x_quote_ref = Eq[-1]
-
-    cout << plausible1.subs(Eq[-1])
-
-    A = IndexedBase("A", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq[-1].args[0]))
-
-    cout << Equality.by_definition_of(A)
-    
-    A_definition = Eq[-1]
-
-    cout << Eq[-2].subs(Eq[-1].reversed)
-
-    cout << Union[j](Eq[-1])
+    Eq << Union[j](Eq[-1])
 
     B = Symbol("B", dtype=dtype.integer.set.set, definition=plausible0.args[0])
 
-    cout << Equality.by_definition_of(B)
+    Eq.B_definition = identity(B).definition
 
-    cout << plausible0.subs(Eq[-1].reversed)
+    Eq << plausible0.subs(Eq.B_definition.reversed)
 
-    cout << Eq[-3].union(Eq[-1])
+    Eq << Eq[-3].union(Eq[-1])
 
-    cout << Supset(*Eq[-1].args, plausible=True)  # unproven
+    Eq << identity(s1).bisect(ConditionSet(e, Contains(n.set, e), s1))
 
-    cout << ConditionSet(e, Contains(FiniteSet(n), e), s1).assertion(condition=False)
+    Eq.subset_B = Subset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
+    Eq.supset_B = Supset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
+    Eq.subset_A = Subset(Eq[-1].rhs.args[1], Union[j](Eq[-2].lhs.args[1]), plausible=True)  # unproven
+    Eq.supset_A = Supset(Eq[-1].rhs.args[1], Eq[-2].lhs.args[1], plausible=True)
 
-    cout << Subset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
-    cout << Supset(Eq[-2].rhs.args[0], Eq[-3].lhs.args[0], plausible=True)  # unproven
+    assert discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].rhs.args)
+    Eq.s1_abs = Eq[-1].abs()
 
-    cout << Subset(Eq[-3].rhs.args[1], Eq[-4].lhs.args[1], plausible=True)  # unproven
-    cout << Supset(Eq[-4].rhs.args[1], Eq[-5].lhs.args[1], plausible=True)
+    assert len(Eq.plausibles_dict) == 5
 
-    cout << Eq[-1].simplifier()
+    Eq << Eq.supset_A.subs(Eq.A_definition)
 
-    cout << Eq[-1].subs(A_definition)
+    Eq << Eq[-1].definition.definition
 
-    cout << Eq[-1].subs(x_quote_ref.reversed)
+    Eq << Eq[-1].split()
 
-    cout << Eq[-1].definition
+    notContains = Eq[-1]
+    Eq << ~Eq[-1]
 
-    cout << Eq[-1].simplifier()
+    Eq << Eq[-1].definition
 
-    cout << Eq[-1].this.function.definition
+    Eq << Eq.x_quote_definition[j]
 
-    cout << Eq[38].simplifier()
-    cout << Eq[-1].split()
+    Eq << Eq[-1].intersect(Eq[-2].reversed)
 
-    cout << Eq[-1].negated
+    Eq << discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].lhs.args)
 
-    cout << Eq[-1].definition
+    Eq << Eq[-1].subs(Eq[-2])
 
-    l, *_ = Eq[-2].exists.keys()
-    cout << Eq[-1].rewrite(var=l)
+    Eq.set_size_inequality = Eq[-1].subs(1, 0)
 
-    cout << x_quote_ref[j]
+    Eq << x_quote_union.this.function.lhs.bisect(domain={i, j})
 
-    cout << Eq[-1].intersect(Eq[-2].reversed)
+    Eq << discrete.sets.union.inequality.apply(*Eq[-1].lhs.args)
 
-    cout << discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].lhs.args)
+    Eq << discrete.sets.union_comprehension.inequality.apply(*Eq[-2].lhs.args[0].args)
 
-    cout << Eq[-1].subs(Eq[-2])
+    Eq << Eq[-2].subs(Eq[-1]) + Eq.set_size_inequality
 
-    cout << Eq[-1].subs(1, 0)
+    Eq << Eq[-1].simplifier(deep=True)
 
-    cout << Eq[-1].rewrite(var=i)
+    Eq << Eq[-1].subs(x_quote_union_abs)
 
-    * _, _i = Eq[-1].exists.keys()
-    cout << x_quote_union.left.bisect(domain={_i, j})
+    Eq << Eq[-1].subs(SqueezeTheorem)
 
-    cout << discrete.sets.union.inequality.apply(*Eq[-1].lhs.args)
+    Eq << (notContains & plausible1_simplified)
 
-    cout << discrete.sets.union.inequalities.apply(*Eq[-2].lhs.args[1].args)
+    assert len(Eq.plausibles_dict) == 4
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << Eq.supset_B.subs(Eq.B_definition)
 
-    cout << Eq[-1].subs(Eq[98])
+    Eq << Eq[-1].definition.definition
 
-    b, *_ = Eq[53].forall.keys()
-    cout << Eq[53].rewrite(var=b)
+    assert len(Eq.plausibles_dict) == 3
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << Eq.subset_B.subs(Eq.B_definition)
 
-    cout << SqueezeTheorem.rewrite(var=b)
+    Eq << Eq[-1].definition.definition
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq.subset_B_definition = Eq[-1] - n.set.set
 
-    cout << (Eq[89] & plausible1_simplified)
+    num_plausibles = len(Eq.plausibles_dict)
 
-    assert len(plausibles_dict(Eq)) == 5
+    Eq.plausible_notcontains = Forall(NotContains(n.set, e), (e, s2), plausible=True)
 
-    cout << Eq[80].subs(Eq[74])
+    Eq << Eq.plausible_notcontains.this.limits[0][1].subs(s2_definition)
 
-    cout << Eq[-1].definition
+    Eq << ~Eq[-1]
 
-    var, *_ = Eq[-1].forall.keys()
-    cout << Eq[-1].rewrite(var=var)
+    Eq << Eq[-1].definition
 
-    cout << Eq[-1].definition
+    Eq << x_union_s2.union(Eq[-1].reversed).simplifier(deep=True)
 
-    var, *_ = Eq[5].forall.keys()
-    cout << Eq[5].rewrite(var=var)
-    assert len(plausibles_dict(Eq)) == 4
+    Eq << Eq[-1].subs(x_union_s2)
 
-    cout << Eq[79].subs(Eq[74])
+    assert num_plausibles == len(Eq.plausibles_dict)
 
-    cout << Eq[-1].definition
+    Eq << Eq.plausible_notcontains.apply(axiom.discrete.sets.intersect.emptyset)
 
-    cout << Eq[-1].definition
+    Eq.s2_complement_n = Eq[-1].apply(axiom.discrete.sets.intersect.complement)
+
+    Eq << Eq.subset_B_definition.subs(Eq.s2_complement_n)
+
+    s1_n = Symbol('s_{1, n}', definition=Eq[-1].limits[0][1]);
+
+    Eq.s1_n_definition = identity(s1_n).definition
+
+    Eq << s1_n.assertion()
+
+    Eq << Eq[-1].split()
+
+    Eq << Eq[-2].subs(Eq.s1_definition)
+
+    Eq.s1_n_assertion = Eq[-1].definition
+
+    Eq << Eq[-2].subs(Eq.s1_n_assertion)
+
+    Eq << Eq[-1].definition
+
+    Eq.x_j_definition = Eq[-1].limits_subs(Eq[-1].variable, j).reversed
+
+    Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = Eq.s1_quote_definition.split()
+
+    Eq << Eq.x_union_s1 - Eq.x_j_definition
+
+    Eq << Eq[-1].this.function.lhs.args[0].bisect(domain={j})
+
+    x_tilde = IndexedBase(r"\tilde{x}", (k,), dtype=dtype.integer,
+                     definition=Ref[i](Piecewise((x[i], i < j), (x[i + 1], True))))
+
+    Eq.x_tilde_definition = Equality.by_definition_of(x_tilde)
+
+    Eq << Union[i:0:k - 1](Eq.x_tilde_definition)
+
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
+
+    Eq.x_tilde_union = Eq[-1].subs(Eq[-3])
+
+    Eq.x_tilde_abs = Eq.x_tilde_definition.abs()
+
+    Eq << Sum[i:0:k - 1](Eq.x_tilde_abs)
+
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
+
+    Eq.x_tilde_abs_sum = Eq[-1].subs(Eq.x_abs_sum_s1, Eq.x_j_definition.abs())
+
+    Eq << Eq.x_tilde_abs.split()
+
+    Eq << Eq[-2].subs(Eq.x_abs_positive_s1)
+
+    Eq << Eq[-2].subs(Eq.x_abs_positive_s1.limits_subs(i, i + 1))
+
+    Eq << (Eq[-1] & Eq[-2])
+
+    Eq << (Eq[-1] & Eq.x_tilde_abs_sum & Eq.x_tilde_union)
+
+    Eq << Eq[-1].func(Contains(x_tilde, s2_quote), *Eq[-1].limits, plausible=True)
+
+    Eq << Eq[-1].definition
+
+    Eq.x_tilde_set_in_s2 = Eq[-2].func(Contains(UnionComprehension.construct_finite_set(x_tilde), s2), *Eq[-2].limits, plausible=True)
+
+    Eq << Eq.x_tilde_set_in_s2.subs(s2_definition)
+
+    Eq << Eq[-1].definition
+
+    Eq << Union[i:0:k - 1](Eq.x_tilde_definition.set)
+
+    Eq << Eq[-1].subs(Eq.x_j_definition)
+
+    Eq << Eq[-1].subs(Eq.s1_n_assertion.reversed)
+
+    Eq << Eq.x_tilde_set_in_s2.subs(Eq[-1])
+
+    Eq << Eq[-1].this.limits[0].subs(Eq.s1_n_definition)
+
+    assert len(Eq.plausibles_dict) == 2
+
+    Eq << Eq.subset_A.subs(Eq.A_definition)
+
+    Eq << Eq[-1].definition.definition.definition
+
+    s1_hat_n = Symbol("\hat{s}_{1, n}", definition=Eq[-1].limits[0][1])
+
+    Eq << identity(s1_hat_n).definition
+
+    Eq.s1_hat_n_assertion = Eq[-2].this.limits[0].subs(Eq[-1].reversed)
+
+    Eq << Eq[-1].this.rhs.as_image_set()
+
+    s1_quote_n = Symbol("s'_{1, n}", definition=Eq[-1].rhs.limits[0][1])
+
+    assert s1_quote_n in s1_quote
+    assert Supset(s1_quote, s1_quote_n)
+
+    Eq << identity(s1_quote_n).definition
+
+    Eq << Eq[-2].subs(Eq[-1].reversed)
+
+    Eq.s1_hat_n_hypothesis = Eq.s1_hat_n_assertion.this.limits[0].subs(Eq[-1])
+#     Eq.s1_hat_n_hypothesis = Eq.s1_hat_n_assertion.this.limits[0].subs(Eq[-1])
+
+    Eq << s1_quote_n.assertion()
+
+    Eq.x_abs_positive_s1_n, Eq.n_not_in_x, Eq.x_abs_sum_s1_n, Eq.x_union_s1_n = Eq[-1].split()
+
+    Eq << Eq.n_not_in_x.definition
+
+    Eq.x_j_inequality = Eq[-1].limits_subs(i, j)
+
+    Eq << Eq.x_union_s1_n.func(Contains(n, Eq.x_union_s1_n.lhs), *Eq.x_union_s1_n.limits, plausible=True)
+
+    Eq << Eq[-1].subs(Eq.x_union_s1_n)
+
+    Eq << Eq[-1].definition
+
+    x_hat = IndexedBase(r"\hat{x}", (oo,), dtype=dtype.integer,
+                     definition=Ref[i](Piecewise((x_tuple[i] - n.set , Equality(i, j)), (x_tuple[i], True))))
+
+    Eq.x_hat_definition = Equality.by_definition_of(x_hat)
+
+    Eq << Eq[-1].this.function.limits_subs(i, j)
+
+    Eq.x_j_subset = Eq[-1].apply(discrete.sets.contains.subset)
+
+    Eq << Eq.x_j_subset.apply(discrete.sets.complement.emptyset, Eq.x_j_inequality)
+
+    Eq << Eq[-1].apply(discrete.sets.emptyset.strict_greater_than)  # -4
+
+    Eq.x_hat_abs = Eq.x_hat_definition.abs()
+
+    Eq << Eq.x_hat_abs.split()  # -2, -3
+
+    Eq << Eq[-1].subs(Eq.x_abs_positive_s1_n)  # -1
+
+    Eq << Eq[-3].subs(Eq[-4])
+
+    Eq.x_hat_abs_positive = Eq[-1] & Eq[-2]
+
+    Eq.x_hat_union = Union[i:0:k](Eq.x_hat_definition)
+
+    Eq.x_union_complement = Eq.x_union_s1_n - {n}
+
+    Eq << Eq.x_union_s1_n.abs().subs(Eq.x_abs_sum_s1_n.reversed).apply(discrete.sets.union_comprehension.nonoverlapping)
+
+    Eq << Eq[-1].limits_subs(Eq[-1].variables[1], j).limits_subs(Eq[-1].variable, i)
+
+    Eq.x_complement_n = Eq[-1].apply(discrete.sets.complement.subset, Eq.x_j_subset)
+
+    Eq << Eq.x_complement_n.union_comprehension(*Eq.x_complement_n.function.function.limits)
+
+    Eq << Eq.x_hat_union.subs(Eq[-1].reversed)
+
+    Eq.x_hat_union = Eq[-1].subs(Eq.x_union_complement)
+
+    Eq << Sum[i:0:k](Eq.x_hat_abs).subs(Eq.x_abs_sum_s1_n)
+
+    Eq << Eq.x_j_subset.apply(discrete.sets.subset.complement)
+
+    Eq << Eq[-2].subs(Eq[-1])
+
+    Eq << (Eq[-1] & Eq.x_hat_abs_positive & Eq.x_hat_union)
+
+    function = Contains(x_hat[:k + 1], s3_quote)
+    function = Eq[-1].function.func(function, *Eq[-1].function.limits)
+
+    Eq.x_hat_in_s3 = Eq[-1].func(function, *Eq[-1].limits, plausible=True)
+
+    Eq << Eq.x_hat_in_s3.definition
+
+    Eq << Eq.x_hat_definition.split()
+
+    Eq << Eq[-1].subs(Eq.x_complement_n.reversed)
+
+    Eq << (Eq[-1] & Eq[-3])
+
+    Eq << Eq[-1].reference(*Eq[-1].function.function.limits)
+
+    Eq << Eq.x_hat_in_s3.subs(Eq[-1])
+
+    Eq << Eq.s1_hat_n_hypothesis.strip().strip()
+
+    Eq << Eq[-1].subs(Eq.x_quote_definition)
+
+    Eq.equation = Eq[-1] - {n}
+
+    Eq << Eq.x_union_s3.intersect({n})
+
+    Eq.nonoverlapping_s3_quote = Eq[-1].apply(discrete.sets.union_comprehension.emptyset.intersect)
+
+    Eq << Eq.nonoverlapping_s3_quote.apply(discrete.sets.intersect.complement, reverse=True)
+
+    Eq << Eq.equation.subs(Eq[-1])
+
+    Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[-1].function.variable)
+
+    Eq << Eq[-1].reference(*Eq[-1].function.function.limits)
+
+    assert len(Eq.plausibles_dict) == 1
+
+    Eq.s1_abs_plausible = Eq[0].subs(Eq.stirling1, Eq.stirling2, Eq.stirling3)
+
+    Eq.supset_A = Eq.supset_A.union_comprehension((j,))
+
+    Eq << Eq.supset_A.subs(Eq.subset_A)
+
+    Eq << Eq.supset_B.subs(Eq.subset_B)
+
+    Eq.s1_abs = Eq.s1_abs.subs(Eq[-1], Eq[-2])
+
+    Eq.B_assertion = B.assertion()
+
+    Eq << Eq.B_assertion - n.set.set
+
+    Eq << Eq[-1].subs(Eq.s2_complement_n).limits_subs(Eq[-1].variable, Eq[-1].function.variable)
+
+    Eq.s2_supset = Supset(s2, image_set(e, e - n.set.set, B), plausible=True)
+
+    Eq << Eq.s2_supset.simplifier()
+
+    Eq.s2_subset = Subset(s2, image_set(e, e - n.set.set, B), plausible=True)
+
+    Eq << Eq.s2_subset.definition.definition
+
+    Eq << Eq[-1].union(n.set.set)
+
+    Eq << B.assertion(reverse=True)
+
+    Eq << Eq.B_assertion.intersect(n.set.set).limits_subs(Eq.B_assertion.variable, Eq.B_assertion.function.variable)
+
+    Eq << Eq[-1].union(Eq[-1].variable)
+
+    Eq << Eq[-4].subs(Eq[-1])
+
+    Eq << Eq[-4] - n.set.set
+
+    Eq << Eq.s2_complement_n.limits_subs(Eq.s2_complement_n.variable, Eq[-1].variable)
+
+    Eq << Eq[-1].subs(Eq.s2_complement_n)
+
+    Eq << Eq.s2_supset.subs(Eq.s2_subset)
+
+    Eq << discrete.sets.union_comprehension.inequality.apply(*Eq[-1].rhs.args)
+
+    Eq << Eq[-1].subs(Eq[-2].reversed)
+
+    Eq << discrete.sets.union_comprehension.inequality.apply(*Eq.B_definition.rhs.args)
+
+    Eq << Eq[-1].subs(Eq.B_definition.reversed)
+
+    Eq << Eq[-3].subs(Eq[-1])
+
+    Eq << Eq.s1_abs.subs(Eq[-1].reversed)
+
+    assert len(Eq.plausibles_dict) == 2
+
+    Eq.A_union_abs = Eq.s1_abs_plausible.subs(Eq[-1])
+
+    assert len(Eq.plausibles_dict) == 3
+
+#     Eq << identity(Eq[-1].lhs.arg).subs(Eq.A_definition)
+
+    A_quote = IndexedBase("A'", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.A_definition.rhs.function))
+
+    Eq.A_quote_definition = identity(A_quote).definition
+
+    Eq.A_definition_simplified = Eq.A_definition.subs(Eq.A_quote_definition[j].reversed)
+
+    from sympy import S
+
+    j_quote = Symbol("j'", integer=True)
+
+    Eq.nonoverlapping = Forall(Equality(A_quote[j_quote] & A_quote[j], S.EmptySet), *((j_quote, Interval(0, k, integer=True) - {j}),) + Eq.A_definition_simplified.rhs.limits, plausible=True)
+
+    assert len(Eq.plausibles_dict) == 4
+
+    Eq << ~Eq.nonoverlapping
+
+    Eq << Eq[-1].apply(discrete.sets.intersect.overlapping)
+
+    Eq << Eq[-1].subs(Eq.A_quote_definition[j])
+
+    Eq << Eq[-1].subs(Eq.A_quote_definition[j_quote])
+
+    Eq << Eq[-1].apply(discrete.sets.equality.supset)
+
+    Eq << Eq[-1].this.function.subs(Eq[-1].function.variable, Eq[-1].variable)
+
+    Eq << Eq[-1].definition
+
+    Eq << Eq[-1].subs(Eq.x_quote_definition)
+
+    Eq << Eq[-1].split()
+
+    Eq << Eq[-1].intersect(n.set)
+
+    Eq << Eq[-1].subs(Eq.nonoverlapping_s3_quote)
+
+    assert len(Eq.plausibles_dict) == 3
+
+    Eq << Eq.nonoverlapping.union_comprehension(Eq.nonoverlapping.limits[1])
+
+    Eq << Eq[-1].this.function.lhs.as_two_terms()
+
+    Eq << Eq.A_definition_simplified.subs(j, j_quote)
+
+    Eq << Eq[-2].subs(Eq[-1].reversed, Eq.A_definition_simplified.reversed)
+
+    Eq << Equality(Eq.A_union_abs.lhs, Sum[j](abs(A[j])), plausible=True)
+
+    Eq << Eq[-1].apply(discrete.sets.union_comprehension.nonoverlapping)
+
+    Eq << Eq.A_union_abs.subs(Eq[-1])
+
+    e = A[j].element_symbol()
+    A_hat_j = Symbol("\hat{A}_{j}", definition=Union[e: A[j]](e.list_set))
+
+    Eq << identity(A_hat_j).definition
+
+    Eq << Eq.A_definition.rhs.assertion()
+
+    Eq << Eq[-1].subs(Eq.A_definition.reversed)
+
+    Eq << Eq[-1].abs()
+
+    i_quote = Symbol("i'", domain=Interval(0, k, integer=True))
+    Eq << Forall(Unequality(x_quote[i], x_quote[i_quote]), (i, Interval(0, k, integer=True) - {i_quote}), plausible=True)
+
+    Eq << ~Eq[-1]
+
+    Eq << Eq[-1].subs(Eq.x_quote_definition[i_quote], Eq.x_quote_definition[i])
+
+    Eq << Eq[-1].split()
+
+    Eq << Eq[-1].split()
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)
+

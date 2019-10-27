@@ -441,10 +441,13 @@ class Abs(Function):
     is_extended_negative = False
     is_extended_nonnegative = True
     unbranched = True
+    is_Abs = True
 
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
+        if self.arg.is_set:
+            return dtype.natural
         return dtype.real
 
     def fdiff(self, argindex=1):

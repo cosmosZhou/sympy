@@ -46,6 +46,10 @@ class Determinant(Expr):
             return self.arg._eval_determinant()
         except (AttributeError, NotImplementedError):
             return self
+        except Exception as e:
+            print(e)
+            self.arg._eval_determinant()
+            return self
 
 
 def det(matexpr):

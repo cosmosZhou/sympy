@@ -137,6 +137,34 @@ class Indexed(Expr):
     is_symbol = True
     is_Atom = True
 
+    def image_set(self):
+        definition = self.base.definition
+        if definition is None:
+            return None
+        return definition[self.indices].image_set()
+
+    def element_symbol(self, excludes=set()):
+        element_type = self.element_type
+        if element_type is None:
+            return
+
+        return self.generate_free_symbol(excludes=excludes, **element_type.dict)
+
+    # performing other in self
+    def __contains__(self, other):
+        if other == self:
+            return True
+        if self.base.definition is not None:
+            return other in self.base.definition[self.indices]
+
+    def _dummy_eq(self, other):
+        return self == other
+
+    def structure_eq(self, other):
+        if isinstance(other, (Symbol, Indexed, IndexedBase, Slice)):
+            return self.shape == other.shape
+        return False
+
     def __new__(cls, base, *args, **kw_args):
         from sympy.utilities.misc import filldedent
         from sympy.tensor.array.ndim_array import NDimArray
@@ -145,8 +173,10 @@ class Indexed(Expr):
         if not args:
             return base
 #             raise IndexException("Indexed needs at least one index.")
-        if isinstance(base, (string_types, Symbol)):
+        if isinstance(base, string_types):
             base = IndexedBase(base)
+        elif isinstance(base, Symbol):
+            assert base.shape
         elif not hasattr(base, '__getitem__') and not isinstance(base, IndexedBase):
             raise TypeError(filldedent("""
                 Indexed expects string, Symbol, or IndexedBase as base."""))
@@ -266,8 +296,11 @@ class Indexed(Expr):
         >>> B[i, j].shape
         (m, m)
         """
-
-        return self.base.shape[len(self.indices):]
+        try:
+            return self.base.shape[len(self.indices):]
+        except:
+            print(self.base)
+            print(self.base.shape)
 #         from sympy.utilities.misc import filldedent
 #
 #         if self.base.shape:
@@ -388,7 +421,7 @@ class Indexed(Expr):
         if isinstance(old, Slice) and old.base == self.base and len(self.indices) == 1:
             k = self.indices[0]
             start, stop = old.indices
-            if k >= start and  k < stop:
+            if k >= start and k < stop:
                 return new[k - start]
         return Expr._subs(self, old, new)
 
@@ -405,10 +438,11 @@ class Indexed(Expr):
     def is_random_symbol(self):
         from sympy.stats.rv import RandomSymbol
         from sympy.stats.rv import contain_random_symbols
-        if self.base.definition is not None:
-            definition = self.base.definition[self.indices]
-            if isinstance(definition, RandomSymbol) or contain_random_symbols(definition):
-                return True
+        if 'definition' in self.base._assumptions:
+            if self.base.definition.is_Ref and len(self.base.definition.limits) == len(self.indices):
+                definition = self.base.definition.function
+                if isinstance(definition, RandomSymbol) or contain_random_symbols(definition):
+                    return True
         return False
 
     @property
@@ -417,7 +451,8 @@ class Indexed(Expr):
 
 #     def __iter__(self):
 #         raise TypeError
-    
+
+
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object
 
@@ -473,8 +508,42 @@ class IndexedBase(Expr, NotIterable):
     is_symbol = True
     is_Atom = True
 
-    def __new__(cls, label, shape=None, **kw_args):
+    def bisect(self, front=None, back=None):
+        start = 0
+        stop = self.shape[0]
+        length = stop - start
+        if front is not None:
+            back = length - front
+        else:
+            front = length - back
+
+        return self[start:stop - back], self[stop - back: stop]
+
+    def __eq__(self, other):
+        if not Expr.__eq__(self, other):
+            return False
+        if self.definition != other.definition:
+            return False
+
+        return True
+
+    __hash__ = Expr.__hash__
+
+    def _dummy_eq(self, other):
+        return self == other
+
+    def structure_eq(self, other):
+        if isinstance(other, (Symbol, Indexed, IndexedBase, Slice)):
+            return self.shape == other.shape
+        return False
+
+    def doit(self, **hints):
+        return self
+
+    def __new__(cls, label, shape, **kw_args):
         from sympy import MatrixBase, NDimArray
+
+        assert shape is not None
 
         if isinstance(label, string_types):
             label = Symbol(label)
@@ -532,6 +601,8 @@ class IndexedBase(Expr, NotIterable):
                 start = 0
             if start == stop - 1:
                 return Indexed(self, start, **kw_args)
+            if start == 0 and stop == self.shape[-1]:
+                return self
             return Slice(self, indices, **kw_args)
         else:
 #             if self.shape and len(self.shape) != 1:
@@ -675,23 +746,61 @@ class Slice(Expr):
     is_Indexed = True
     is_symbol = True
     is_Atom = True
+    is_Slice = True
+
+    def _dummy_eq(self, other):
+        return self == other
+
+    def structure_eq(self, other):
+        if isinstance(other, (Symbol, Indexed, IndexedBase, Slice)):
+            return self.shape == other.shape
+        return False
+
+    # performing other in self
+    def __contains__(self, other):
+        if not other.is_Indexed or self.base != other.base:
+            return False
+
+        if other.is_Slice:
+            start, stop = self.indices
+            _start, _stop = other.indices
+            return _start >= start and _stop <= stop
+        if len(self.indices) > 1:
+            return False
+
+        index = self.indices[0]
+        return index >= start and index < stop
+
+    @property
+    def set(self):
+        from sympy.concrete.expr_with_limits import UnionComprehension
+        from sympy.sets.sets import FiniteSet
+
+        i = self.generate_free_symbol(integer=True)
+        start, stop = self.indices
+        return UnionComprehension(FiniteSet(self.base[i]), (i, start, stop - 1))
 
     def __new__(cls, base, *args, **kw_args):
         from sympy.utilities.misc import filldedent
 
         if not args:
             raise IndexException("Indexed needs at least one index.")
-        if isinstance(base, (string_types, Symbol)):
-            base = IndexedBase(base)
-        elif not hasattr(base, '__getitem__') and not isinstance(base, IndexedBase):
-            raise TypeError(filldedent("""
-                Indexed expects string, Symbol, or IndexedBase as base."""))
+
         if len(args) == 1:
             args, *_ = args
             start, stop = args.start, args.stop
             if start is None:
                 start = 0
             args = [sympify(start), sympify(stop)]
+
+        if isinstance(base, (string_types, Symbol)):
+            base = IndexedBase(base)
+        elif not hasattr(base, '__getitem__') and not isinstance(base, IndexedBase):
+            raise TypeError(filldedent("""
+                Indexed expects string, Symbol, or IndexedBase as base."""))
+        elif base.is_Ref:
+            start, stop = args
+            return base[start : stop]
 
         return Expr.__new__(cls, base, *args, **kw_args)
 
@@ -709,16 +818,23 @@ class Slice(Expr):
 
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
-            # Special case needed because M[*my_tuple] is a syntax error.
-#             if self.shape and len(self.shape) != len(indices):
-#                 raise IndexException("Rank mismatch.")
-            return Indexed(self, *indices, **kw_args)
+            if len(indices) == 0:
+                return self
+
+            index = indices[0]
+            start, stop = self.indices
+            base = self.base[index - start]
+
+            if len(indices) == 1:
+                return base
+
+            return base[indices[1:]]
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
             if start is None:
                 start = 0
             if start == stop - 1:
-                return Indexed(self, start, **kw_args)
+                return self[start]
             return Slice(self, indices, **kw_args)
         else:
             start, stop = self.indices
@@ -907,6 +1023,16 @@ class Slice(Expr):
                     return False  # index >= stop
 # it is possible for them to be equal!
                 return True
+        if isinstance(exp, Slice) and exp.base == self.base:
+            index_start, index_stop = exp.indices
+            start, stop = self.indices
+
+            if index_stop <= start:
+                return False  # index < start
+            if index_start >= stop:
+                return False  # index >= stop
+# it is possible for them to be equal!
+            return True
         return False
 
     def _has_matcher(self):

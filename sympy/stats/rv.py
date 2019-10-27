@@ -246,6 +246,10 @@ class RandomSymbol(Expr):
     convenience functions Normal, Exponential, Coin, Die, FiniteRV, etc....
     """
 
+    @property
+    def dtype(self):
+        return self.symbol.dtype
+
     def __new__(cls, symbol, pspace=None):
         from sympy.stats.joint_rv import JointRandomSymbol
         if pspace is None:
@@ -424,13 +428,15 @@ class IndependentProductPSpace(ProductPSpace):
         z = Dummy('z', real=True, finite=True)
         rvs = random_symbols(expr)
 #         dic = {}
-#         for var in rvs:
+        for var in rvs:
 #             if not isinstance(var, RandomSymbol):
 #                 dic[var] = var.pspace.value.symbol
-#
+            expr = expr._subs(var, var.pspace.value.symbol)
+
 #         if dic:
 #             expr = expr.xreplace(dic)
-#         assert not random_symbols(expr)
+        assert not random_symbols(expr)
+
         if any(pspace(rv).is_Continuous for rv in rvs):
             expr = self.compute_expectation(DiracDelta(expr - z), **kwargs)
         else:

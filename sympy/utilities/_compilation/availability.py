@@ -3,6 +3,7 @@ import os
 from .compilation import compile_run_strings
 from .util import CompilerNotFoundError
 
+
 def has_fortran():
     if not hasattr(has_fortran, 'result'):
         try:
@@ -60,7 +61,7 @@ def has_cxx():
                 [('main.cxx', (
                     '#include <iostream>\n'
                     'int main(){\n'
-                    'std::cout << "hello world" << std::endl;\n'
+                    'std::cout<< "hello world" << std::endl;\n'
                     '}'
                 ))], clean=True
             )

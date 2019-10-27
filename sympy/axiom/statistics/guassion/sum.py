@@ -2,7 +2,7 @@ from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, cout, Eq, plausible
+from sympy.utility import Ref, Sum, Eq, plausible
 from sympy.core.relational import Equality
 from sympy.core.function import Function
 from sympy.stats.crv_types import Arcsin, NormalDistribution
@@ -12,7 +12,6 @@ from sympy import sqrt, pi, exp, Symbol, log
 from sympy.stats import P, E, Normal, density, variance
 from sympy.stats.crv import SingleContinuousPSpace
 from sympy.axiom.statistics.guassion import quadratic
-from sympy.logic.boolalg import plausibles_dict
 
 
 def apply(x0, x1):
@@ -34,8 +33,10 @@ def apply(x0, x1):
 
 
 from sympy.utility import check
+
+
 @check
-def prove():
+def prove(Eq):
 
     mu0 = Symbol("mu0", real=True)
     mu1 = Symbol("mu1", real=True)
@@ -46,31 +47,28 @@ def prove():
     x0 = Normal('x0', mu0, sigma0)
     x1 = Normal('x1', mu1, sigma1)
 
-    cout << apply(x0, x1)
+    Eq << apply(x0, x1)
 
-    cout << Equality.by_definition_of(Density(x0 + x1))
+    Eq << Equality.by_definition_of(Density(x0 + x1))
 
-    cout << Eq[-1].right.function.args[4].doit()
+    Eq << Eq[-1].this.rhs.args[-1].args[0].doit()
 
-    cout << quadratic.apply(Eq[-1].right.args[-2].obj)
+    Eq << quadratic.apply(Eq[-1].rhs.args[-1])
 
-    cout << Eq[-2].right.subs(Eq[-1])
+    Eq << Eq[-2].this.rhs.subs(Eq[-1])
 
-    cout << Eq[0].left.subs(Eq[-1])
+    Eq << Eq[0].this.lhs.subs(Eq[-1])
 
-    cout << Eq[-1] / Eq[-1].right.obj
+    Eq << Eq[-1] / Eq[-1].rhs
 
-    cout << Eq[-1].log()
+    Eq << Eq[-1].log()
 
-    cout << Eq[-1].left.simplifier()
+    Eq << Eq[-1].this.lhs.simplifier()
 
-    cout << Eq[-1].left.ratsimp()
+    Eq << Eq[-1].this.lhs.ratsimp()
 
 
 # https://www.asmeurer.com/blog/
 if __name__ == '__main__':
-    prove()
+    prove(__file__)
 
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))

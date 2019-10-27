@@ -64,6 +64,7 @@ class Basic(with_metaclass(ManagedProperties)):
     # To be overridden with True in the appropriate subclasses
     is_number = False
     is_Atom = False
+    is_BooleanAtom = False
     is_Symbol = False
     is_symbol = False
     is_Indexed = False
@@ -97,76 +98,102 @@ class Basic(with_metaclass(ManagedProperties)):
     is_set = False
     is_EmptySet = None
     is_Union = False
+    is_Interval = False
+    is_Intersection = False
     is_Complement = False
+    is_UnionComprehension = False
+    is_Forall = False
+    is_Exists = False
+    is_ConditionalBoolean = False
+    is_Slice = False
+    is_UniversalSet = None
+    is_Abs = False
+    is_Sum = False
+    is_ConditionSet = False
+    is_ExprWithLimits = False
+    is_Ref = False
 
-    @classmethod
-    def simplify_assumptions(cls, *args, **assumptions):
+    @property
+    def list(self):
+        from sympy.sets.sets import List
+        return List(self)
 
-        def simplify_assumptions(key_str, *condition):
-            exists = assumptions[key_str]
-            if isinstance(exists, (list, tuple, set)):
-                deletes = []
-                useful = []
-                for v in exists:
-                    if any(cond.has(v) for cond in condition):
-                        useful.append(v)
-                    else:
-                        deletes.append(v)
-                if deletes:
-                    if len(useful) == 1:
-                        useful, *_ = useful
-                    elif len(useful) == 0:
-                        useful = None
-                    assumptions[key_str] = useful
-            elif isinstance(exists, dict):
-                condition = set(condition)
+    @property
+    def list_set(self):
+        from sympy.core.symbol import Symbol
+        from sympy import Interval, Equality
+        from sympy.sets import image_set
+        l = self.list
 
-                for var in set(exists.keys()):
-                    if exists[var] is not None:
-                        _condition = condition - {exists[var]}
-                    else:
-                        _condition = condition
+        from sympy.tensor.indexed import IndexedBase
+        n = abs(self)
+        a = IndexedBase('a', shape=(n,), integer=True)
+        i = Symbol('i', integer=True)
+        from sympy.concrete.expr_with_limits import Ref
+        domain = Interval(0, n, right_open=True, integer=True)
+        return image_set(a, Ref(l[a[i]], (i, 0, n - 1)), Equality(image_set(i, a[i], domain), domain))
 
-#                     for cond in _condition:
-#                         print(cond._has(var))
+    @property
+    def scope_variables(self):
+        return {*()}
 
-                    if not any(cond.has(var) for cond in _condition):
-                        del exists[var]
-                if not exists:
-                    del assumptions[key_str]
-            elif exists is not None:
-                if all(not arg.has(exists) for arg in args):
-                    del assumptions[key_str]
+    def condition_set(self):
+        ...
 
-        condition = []
-        if 'forall' in assumptions and isinstance(assumptions['forall'], dict):
-            condition += [condition for condition in assumptions['forall'].values() if condition is not None]
-        if 'exists' in assumptions and isinstance(assumptions['exists'], dict):
-            condition += [condition for condition in assumptions['exists'].values() if condition is not None]
+    def intersection_sets(self, b):
+        ...
 
-        condition += args
-
-        if 'exists' in assumptions:
-            simplify_assumptions('exists', *condition)
-
-        if 'forall' in assumptions:
-            simplify_assumptions('forall', *condition)
-        return assumptions
+    def subs_limits_with_epitome(self, epitome):
+        return self
 
     def __and__(self, other):
         """Overloading for & operator"""
         if self.is_set:
             return self.intersect(other)
         from sympy.logic.boolalg import And
+        lhs = None
         if isinstance(self, And):
             lhs = tuple(self._argset)
-        else:
-            lhs = (self.func(*self.args),)
+        elif self.is_Or and not other.is_Or:
+            _other = ~other
+            if _other in self._argset:
+                args = set(self._argset)
+                args.remove(_other)
+                lhs = (self.func(*args),)
+        elif self.is_Contains:
+            if other.is_NotContains:
+                if self.element == other.element:
+                    s = self.set - other.set
+                    return self.func(self.element, s, equivalent=[self, other])
+            if other.is_Contains:
+                if self.element == other.element:
+                    s = self.set & other.set
+                    return self.func(self.element, s, equivalent=[self, other])
+        elif self.is_NotContains:
+            if other.is_NotContains:
+                if self.element == other.element:
+                    s = self.set | other.set
+                    return self.func(self.element, s, equivalent=[self, other])
+            if other.is_Contains:
+                if self.element == other.element:
+                    s = other.set - self.set
+                    return other.func(self.element, s, equivalent=[self, other])
 
+        if lhs is None:
+            lhs = (self,)
+
+        rhs = None
         if isinstance(other, And):
             rhs = tuple(other._argset)
-        else:
-            rhs = (other.func(*other.args),)
+        elif other.is_Or and not self.is_Or:
+            _self = ~self
+            if _self in other._argset:
+                args = set(other._argset)
+                args.remove(_self)
+                rhs = (other.func(*args),)
+
+        if rhs is None:
+            rhs = (other,)
 
         return And(*lhs + rhs, equivalent=[self, other])
 
@@ -453,6 +480,23 @@ class Basic(with_metaclass(ManagedProperties)):
         """
         return not self == other
 
+    def structure_eq(self, other):
+        if other.func != self.func or len(self.args) != len(other.args):
+            return False
+        for x, y in zip(self.args, other.args):
+            if not x.structure_eq(y):
+                return False
+        return True
+
+# precondition, self and other are structurally equal!
+    def _dummy_eq(self, other):
+        assert len(self.args) == len(other.args) and self.func == other.func
+
+        for x, y in zip(self.args, other.args):
+            if not x._dummy_eq(y):
+                return False
+        return True
+
     def dummy_eq(self, other, symbol=None):
         """
         Compare two expressions and handle dummy symbols.
@@ -476,6 +520,8 @@ class Basic(with_metaclass(ManagedProperties)):
         False
 
         """
+        return self.structure_eq(other) and self._dummy_eq(other)
+
         s = self.as_dummy()
         o = _sympify(other)
         o = o.as_dummy()
@@ -1076,8 +1122,7 @@ class Basic(with_metaclass(ManagedProperties)):
                 # when old is a string we prefer Symbol
                 s = Symbol(s[0]), s[1]
             try:
-                s = [sympify(_, strict=not isinstance(_, string_types))
-                     for _ in s]
+                s = [sympify(_, strict=not isinstance(_, string_types)) for _ in s]
             except SympifyError:
                 # if it can't be sympified, skip it
                 sequence[i] = None
@@ -1130,7 +1175,7 @@ class Basic(with_metaclass(ManagedProperties)):
                     break
             return rv
 
-    @cacheit
+#     @cacheit
     def _subs(self, old, new, **hints):
         """Substitutes an expression old -> new.
 
@@ -1234,8 +1279,10 @@ class Basic(with_metaclass(ManagedProperties)):
                 return rv
             return self
 
-        if _aresame(self, old):
+        if _aresame(self, old) or self.dummy_eq(old):
             return new
+#         if _aresame(self, old):
+#             return new
 
         rv = self._eval_subs(old, new)
         if rv is None:
@@ -1813,8 +1860,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
         """
         if hints.get('deep', True):
-            terms = [term.doit(**hints) if isinstance(term, Basic) else term
-                                         for term in self.args]
+            terms = [term.doit(**hints) if isinstance(term, Basic) else term for term in self.args]
             return self.func(*terms)
         else:
             return self
@@ -1976,7 +2022,24 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.printing.latex import latex
         return latex(self)
 
-    def simplifier(self):
+    def simplifier(self, deep=False):
+        if deep:
+            hit = False
+            args = []
+            for arg in self.args:
+                try:
+                    _arg = arg.simplifier(deep=True)
+                except Exception as e:
+                    print(type(arg))
+                    print(arg)
+                    raise e
+
+                if _arg != arg:
+                    hit = True
+                args.append(_arg)
+            if hit:
+                return self.func(*args).simplifier()
+
         return self
 
 

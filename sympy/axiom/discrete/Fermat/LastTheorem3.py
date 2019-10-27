@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, cout, Eq, plausible
+from sympy.utility import Ref, Sum, Eq, plausible
 from sympy.core.relational import Unequality
 from sympy.axiom.discrete.combinatorics import binomial
 from sympy.axiom.trigonometry import cosine
@@ -20,48 +20,45 @@ from sympy.utility import check
 
 
 @check
-def prove():
-    cout << apply()
+def prove(Eq):
+    Eq << apply()
     return
     x, y, z = Eq[-1].forall
-    cout << Eq[-1].negated
+    Eq << ~Eq[-1]
 
-    cout << binomial.theorem.apply(x, y, 3).doit().reversed - Eq[-1]
+    Eq << binomial.theorem.apply(x, y, 3).doit().reversed - Eq[-1]
 
-    cout << Eq[-1].subs(Eq[-1].lhs, 0)
+    Eq << Eq[-1].subs(Eq[-1].lhs, 0)
 
-    cout << (Eq[-1] + z ** 3).real_root(3)
-    cout << Eq[1].subs(x ** 3, 0).real_root(3)
-    cout << Eq[1].subs(y ** 3, 0).real_root(3)
+    Eq << (Eq[-1] + z ** 3).real_root(3)
+    Eq << Eq[1].subs(x ** 3, 0).real_root(3)
+    Eq << Eq[1].subs(y ** 3, 0).real_root(3)
 
     cosine_theorem = cosine.theorem.apply(Eq[-1], Eq[-2], Eq[-3])
-    cout << cosine_theorem
+    Eq << cosine_theorem
 
-    cout << (Eq[-1] * z).expand()
+    Eq << (Eq[-1] * z).expand()
 
-    cout << (Eq[-3] * x ** 2 + Eq[-4] * y ** 2).reversed
+    Eq << (Eq[-3] * x ** 2 + Eq[-4] * y ** 2).reversed
 
-    cout << Eq[-1] + Eq[-2]
+    Eq << Eq[-1] + Eq[-2]
 
-    cout << Eq[-1].subs(Eq[1]).simplifier()
+    Eq << Eq[-1].subs(Eq[1]).simplifier()
 
-    cout << -Eq[-1].reversed
+    Eq << -Eq[-1].reversed
 
-    cout << Eq[-1] / (2 * x * y * z)
+    Eq << Eq[-1] / (2 * x * y * z)
 
-    cout << cosine_theorem * Eq[4]
-    cout << Eq[-1].expand().subs(Eq[1])
-    cout << Eq[-1].simplifier()
+    Eq << cosine_theorem * Eq[4]
+    Eq << Eq[-1].expand().subs(Eq[1])
+    Eq << Eq[-1].simplifier()
 
-    cout << Eq[-1] / (x * y * (x + y))
+    Eq << Eq[-1] / (x * y * (x + y))
 
-    cout << Eq[-1] - 1
+    Eq << Eq[-1] - 1
 
-    cout << Eq[-1] / -2
+    Eq << Eq[-1] / -2
 
 
 if __name__ == '__main__':
-    prove()
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))
+    prove(__file__)

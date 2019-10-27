@@ -1076,35 +1076,31 @@ class Add(Expr, AssocOp):
 
         return (Float(re_part)._mpf_, Float(im_part)._mpf_)
 
-    def simplifier(self):
+    def simplifier(self, deep=False):
+        if deep:
+            return Expr.simplifier(self, deep=True)
         from sympy.concrete import summations
         from sympy import Wild
         dic = {}
-        result = []
+        ceoffs = []
         for arg in self.args:
 
             if isinstance(arg, summations.Sum):
-                if 1 in dic:
-                    dic[1][0].append(arg)
+                if S.One in dic:
+                    dic[S.One].append(arg)
                 else:
-                    dic[1] = ([arg], [])
+                    dic[S.One] = [arg]
                 continue
 
             coeff, summation = arg.as_coeff_Sum()
             if coeff is None:
-                result.append(arg)
+                ceoffs.append(arg)
                 continue
 
             if coeff in dic:
-                dic[coeff][0].append(summation)
-            elif -coeff in dic:
-                dic[-coeff][1].append(summation)
+                dic[coeff].append(summation)
             else:
-                from sympy.core.function import _coeff_isneg
-                if _coeff_isneg(coeff):
-                    dic[-coeff] = ([], [summation])
-                else:
-                    dic[coeff] = ([summation], [])
+                dic[coeff] = [summation]
 
         if not dic:
             positiveInfinity = False
@@ -1124,13 +1120,25 @@ class Add(Expr, AssocOp):
 
             return self
 
+        hit = False
         for coeff in dic:
-            positive, negative = dic[coeff]
-            for pos in positive:
+            if -coeff not in dic:
+                continue
+            from sympy.core.function import _coeff_isneg
+            if _coeff_isneg(coeff):
+                continue
+
+            positive = dic[coeff]
+            negative = dic[-coeff]
+
+            for index, pos in enumerate(positive):
+                if not pos.limits:
+                    continue
                 t = pos.limits[0][0]
                 pattern = pos.function.subs(t, Wild(t.name))
-                flag = True
                 for i, neg in enumerate(negative):
+                    if not (len(pos.limits) == len(neg.limits) == 1 and len(pos.limits[0]) == len(neg.limits[0]) == 3):
+                        continue
                     res = neg.function.match(pattern)
                     if not res:
                         continue
@@ -1138,21 +1146,36 @@ class Add(Expr, AssocOp):
                     t_, *_ = res.values()
                     neg = neg.subs(t_, t)
 
-                    result.append((pos - neg) * coeff)
+                    if pos.function != neg.function:
+                        neg = neg.func(pos.function, *neg.limits)
+
+                    positive[index] = pos - neg
                     del negative[i]
-                    flag = False
-
+                    hit = True
                     break
-                if flag:
-                    result.append(pos * coeff)
-        negative = []
-        for coeff in dic:
-            pos, neg = dic[coeff]
-            negative += [n * coeff for n in neg]
 
-        if negative:
-            return Add(*result) - Add(*negative)
-        return Add(*result)
+        for coeff in dic:
+            if self.sum_result(dic[coeff]):
+                hit = True
+
+        if hit:
+            arr = []
+            for coeff, expr in dic.items():
+                arr += [n * coeff for n in expr]
+            return Add(*arr + ceoffs).simplifier()
+
+        return self
+
+    def sum_result(self, positive):
+        for i in range(len(positive)):
+            for j in range(i + 1, len(positive)):
+                if not positive[i].is_Sum or not positive[j].is_Sum:
+                    continue
+                if positive[i].function == positive[j].function:
+                    limits = positive[i].limits_union(positive[j])
+                    positive[i] = positive[i].func(positive[i].function, *limits)
+                    del positive[j]
+                    return True
 
     @property
     def domain(self):

@@ -1,10 +1,9 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import Ref, Sum, cout, Eq, Min, plausible
+from sympy.utility import Ref, Sum, Eq, Min, plausible
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 import sympy
 from sympy import log, exp
-from sympy.logic.boolalg import plausibles_dict
 
 
 def apply(G, x, y):
@@ -23,16 +22,15 @@ def apply(G, x, y):
     x_quote = IndexedBase("x'", shape=(n, d),
                     definition=-Ref[t](sympy.log(z[t])))
 
-    return Equality(x_quote[t + 1],
-                    -log(Sum(exp(-x_quote[t] - G))) + x[t + 1],
-                    forall=t,
-                    definition=[s, z, x_quote],
-                    plausible=plausible())
+    return Equality(x_quote[t + 1], -log(Sum(exp(-x_quote[t] - G))) + x[t + 1], plausible=plausible()), \
+        Equality(-log(exp(-s[n - 1]) / Sum[y](exp(-s[n - 1]))), log(Sum(exp(-x_quote[n - 1]))) + s[n - 1], plausible=plausible())
 
 
 from sympy.utility import check
+
+
 @check
-def prove():
+def prove(Eq):
     n = Symbol('n', integer=True)
     d = Symbol('d', integer=True)
     G = IndexedBase('G', (d, d))
@@ -42,47 +40,60 @@ def prove():
     # n is the length of the sequence
     # d is the number of output labels
 
-    cout << apply(G, x, y)
+    Eq << apply(G, x, y)
 
-    s, z, x_quote = Eq[-1].definition
+    t = Eq[0].lhs.indices[0] - 1
+    x_quote = Eq[0].lhs.base
+    Eq.x_quote_definition = Equality.by_definition_of(x_quote)
 
-    t = Eq[-1].forall
+    z = x_quote.definition.args[1].function.arg.base
+    s = z.definition.function.function.function.arg.args[1].base
 
-    cout << Equality.by_definition_of(s)
-    cout << Equality.by_definition_of(z)
+    Eq << Equality.by_definition_of(s)
+    Eq.z_definition = Equality.by_definition_of(z)
 
-    eq = Eq[-2].subs(t, t + 1) - Eq[-2]
-    cout << eq.right.simplifier() + s[t]
+    Eq << Eq[-1].subs(t, t + 1) - Eq[-1]
 
-    cout << Eq[2].subs(t, t + 1)
-    cout << Eq[-1].right.subs(Eq[-2])
+    Eq << Eq[-1].this.rhs.simplifier() + s[t]
 
-    cout << Eq[-1].right.function.simplifier()
+    Eq << Eq.z_definition.subs(t, t + 1)
+    Eq << Eq[-1].this.rhs.subs(Eq[-2])
 
-    cout << Eq[-1].right.as_two_terms()
+    Eq << Eq[-1].this.rhs.function.simplifier()
 
-    cout << Eq[-1].right.args[0].function.bisect(back = 1)
+    Eq << Eq[-1].this.rhs.as_two_terms()
 
-    cout << Eq[-1].right.args[0].function.as_Ref()
+    Eq << Eq[-1].this.rhs.args[1].function.bisect(back=1)
 
-    cout << Eq[-1].right.args[0].function.function.as_two_terms()
+    Eq << Eq[-1].this.rhs.args[1].function.as_Ref()
 
-    cout << Eq[-1].right.subs(Eq[2].reversed)
+    Eq << Eq[-1].this.rhs.args[1].function.function.as_two_terms()
 
-    cout << Equality.by_definition_of(x_quote)
+    Eq << Eq[-1].this.rhs.subs(Eq.z_definition.reversed)
 
-    cout << Eq[-1].subs(t, t + 1)
+    Eq << Eq.x_quote_definition.subs(t, t + 1)
 
-    cout << Eq[-1].right.subs(Eq[-3])
+    Eq << Eq[-1].this.rhs.subs(Eq[-2])
 
-    cout << Eq[-1].right.args[1].as_Add()
+    Eq << Eq[-1].this.rhs.args[1].as_Add()
 
-    cout << sympy.E ** -Eq[-4].reversed
+    Eq.z_definition_by_x_quote = sympy.E ** -Eq.x_quote_definition.reversed
 
-    cout << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
 
-    cout << Eq[-1].right.args[0].args[1].arg.simplifier()
+    Eq << Eq[-1].this.rhs.args[1].args[1].arg.simplifier()
+
+    Eq << Eq[1].this.lhs.args[1].as_Add()
+
+    Eq << Eq[-1].exp().reversed
+
+    Eq << Eq.z_definition.subs(t, n - 1).summation()
+
+    Eq << Eq[-1].this.rhs.as_Sum()
+
+    Eq << Eq[-1].subs(Eq.z_definition_by_x_quote.subs(t, n - 1))
 
 
+# reference: Neural Architectures for Named Entity Recognition.pdf
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality, LessThan
-from sympy.utility import plausible, cout, Eq, Sum
+from sympy.utility import plausible, Eq, Sum
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Union
 from sympy.axiom import discrete
@@ -15,17 +15,17 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     A = Symbol('A', dtype = dtype.integer)
     B = Symbol('B', dtype = dtype.integer)
-    cout << apply(A, B)
+    Eq << apply(A, B)
     
-    cout << discrete.sets.union.inclusion_exclusion_principle.apply(A, B).reversed
+    Eq << discrete.sets.union.inclusion_exclusion_principle.apply(A, B).reversed
     
-    cout << Eq[-1] + Eq[-2]
+    Eq << Eq[-1] + Eq[-2]
     
     
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)
 

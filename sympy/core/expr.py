@@ -214,7 +214,8 @@ class Expr(Basic, EvalfMixin):
         if self.is_set:
             assert other.is_set
             return other.complement(self)
-        return Add(self, -other)
+        return self + (-other)
+#         return Add(self, -other)
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__sub__')
@@ -389,6 +390,11 @@ class Expr(Basic, EvalfMixin):
             for arg in other.args:
                 if self >= arg:
                     return S.true
+            if isinstance(self, Min):
+                diff = self.try_sub(other)
+                if diff is not None and diff >= 0:
+                    return S.true
+
             return GreaterThan(self, other, evaluate=False)
 
         try:
@@ -411,6 +417,10 @@ class Expr(Basic, EvalfMixin):
         f = dif.min()
         if f is not None and f >= 0:
             return sympify(True)
+        f = dif.max()
+        if f is not None and f < 0:
+            return sympify(False)
+
         return GreaterThan(self, other, evaluate=False)
 
     def __le__(self, other):
@@ -420,6 +430,12 @@ class Expr(Basic, EvalfMixin):
             for arg in other.args:
                 if self <= arg:
                     return S.true
+
+            if isinstance(self, Max):
+                diff = self.try_sub(other)
+                if diff is not None and diff <= 0:
+                    return S.true
+
             return LessThan(self, other, evaluate=False)
 
         try:
@@ -443,6 +459,9 @@ class Expr(Basic, EvalfMixin):
         f = dif.max()
         if f is not None and f <= 0:
             return sympify(True)
+        f = dif.min()
+        if f is not None and f > 0:
+            return sympify(False)
 
         return LessThan(self, other, evaluate=False)
 
@@ -453,6 +472,11 @@ class Expr(Basic, EvalfMixin):
             for arg in other.args:
                 if self > arg:
                     return S.true
+            if isinstance(self, Min):
+                diff = self.try_sub(other)
+                if diff is not None and diff > 0:
+                    return S.true
+
             return StrictGreaterThan(self, other, evaluate=False)
 
         try:
@@ -477,6 +501,9 @@ class Expr(Basic, EvalfMixin):
         f = dif.min()
         if f is not None and f > 0:
             return sympify(True)
+        f = dif.max()
+        if f is not None and f <= 0:
+            return sympify(False)
 
         return StrictGreaterThan(self, other, evaluate=False)
 
@@ -487,6 +514,11 @@ class Expr(Basic, EvalfMixin):
             for arg in other.args:
                 if self < arg:
                     return S.true
+            if isinstance(self, Max):
+                diff = self.try_sub(other)
+                if diff is not None and diff < 0:
+                    return S.true
+
             return StrictLessThan(self, other, evaluate=False)
 
         try:
@@ -511,6 +543,9 @@ class Expr(Basic, EvalfMixin):
         f = dif.max()
         if f is not None and f < 0:
             return sympify(True)
+        f = dif.min()
+        if f is not None and f >= 0:
+            return sympify(False)
 
         return StrictLessThan(self, other, evaluate=False)
 
@@ -3752,9 +3787,6 @@ class Expr(Basic, EvalfMixin):
 
         return f
 
-    def simplifier(self):
-        return self
-
     @property
     def domain(self):
         from sympy import Interval
@@ -3778,8 +3810,19 @@ class Expr(Basic, EvalfMixin):
         if isinstance(condition, BooleanFalse):
             return S.EmptySet
 
+        from sympy.sets.conditionset import ConditionSet
+        if condition.is_Contains:
+            if self == condition.lhs:
+                return condition.rhs
+            return ConditionSet(self, condition)
+
+        if condition.is_And:
+            sol = domain
+            for eq in condition.args:
+                sol &= self.conditional_domain(eq)
+            return sol
+
         if condition.lhs.is_set:
-            from sympy.sets.conditionset import ConditionSet
             return ConditionSet(self, condition)
 
         from sympy import solve
@@ -3789,7 +3832,7 @@ class Expr(Basic, EvalfMixin):
             return domain
         solution = solution[0]
         from sympy.core.relational import LessThan, GreaterThan, StrictLessThan, StrictGreaterThan, Unequality, Equality
-        from sympy.sets.sets import FiniteSet, EmptySet
+        from sympy.sets.sets import FiniteSet
 
         op = type(condition)
 
@@ -3811,7 +3854,7 @@ class Expr(Basic, EvalfMixin):
                 elif op == StrictLessThan:
                     domain = S.EmptySet
                 elif op == (StrictGreaterThan, Unequality):  # >
-                    domain &= Interval(-oo, solution, right_open=True) | Interval(solution, oo, left_open=True)
+                    domain -= FiniteSet(solution)
             else :
                 if op == LessThan:
                     domain &= Interval(-oo, solution)
@@ -3822,7 +3865,7 @@ class Expr(Basic, EvalfMixin):
                 elif op == StrictGreaterThan:
                     domain &= Interval(solution, oo, left_open=True)
                 elif op == Unequality:
-                    domain &= Interval(-oo, solution, right_open=True) | Interval(solution, oo, left_open=True)
+                    domain -= FiniteSet(solution)
                 elif op == Equality:
                     domain &= FiniteSet(solution)
 

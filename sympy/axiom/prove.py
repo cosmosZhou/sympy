@@ -44,23 +44,20 @@ def readFolder(rootdir, sufix='.py'):
                 Text(__init__).append('from . import %s' % module)
                 return
 
-            try:
-                global count
-                count += 1
+            global count
+            count += 1
 
-                if not package.prove():
-                    unproven.append(package)
-
-            except Exception as e:
+            ret = package.prove(package.__file__)
+            if ret is False:
+                unproven.append(package)
+            elif ret is None:
                 erroneous.append(package)
-                traceback.print_exc()
 
         elif os.path.isdir(path):
             readFolder(path, sufix)
 
 
 if __name__ == '__main__':
-    utility.batch_proving = True
     rootdir = os.path.dirname(__file__)
     for name in os.listdir(rootdir):
         path = os.path.join(rootdir, name)

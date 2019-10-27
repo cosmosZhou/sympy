@@ -2,7 +2,7 @@ from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, cout, Eq, Min
+from sympy.utility import Ref, Sum, Min, plausible
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 
@@ -13,19 +13,20 @@ def apply(G, x, y):
     t = Symbol('t', integer=True)
 
     s = IndexedBase('s', (n,),
-                    definition=Ref[t](Sum[i:1: t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
+                    definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
     x_quote = IndexedBase("x'", (n, d),
                           definition=Ref[t](Ref[y[t]](Min[y[0:t]](s[t]))))
 
-    return Equality(x_quote[t + 1], x[t + 1] + Min(x_quote[t] + G),
-                    forall=t,
-                    definition=[s, x_quote])
+    return Equality(x_quote[t + 1], x[t + 1] + Min(x_quote[t] + G), plausible=plausible()), \
+        Equality(Min[y](s[n - 1]), Min(x_quote[n - 1]), plausible=plausible())
 
 
 from sympy.utility import check
+
+
 @check
-def prove():
+def prove(Eq):
     n = Symbol('n', integer=True)
     d = Symbol('d', integer=True)
 
@@ -35,34 +36,43 @@ def prove():
     x = IndexedBase('x', (n, d))
     y = IndexedBase('y', (n,))
 
-    cout << apply(G, x, y)
-    s, x_quote = Eq[0].definition
+    Eq.recursion, Eq.aggregate = apply(G, x, y)
+    x_quote = Eq.recursion.lhs.base
 
-    cout << Equality.by_definition_of(x_quote)
-    cout << Equality.by_definition_of(s)
+    Eq.x_quote_definition = Equality.by_definition_of(x_quote)
 
-    t = Eq[0].forall
+    s = Eq.x_quote_definition.rhs.function.function.base
+    Eq << Equality.by_definition_of(s)
 
-    Eq2 = Eq[-1].subs(t, t + 1)
-    Eq2 -= Eq[-1]
-    cout << Eq2.right.simplifier() + s[t]
+    t = Eq.recursion.lhs.indices[0] - 1
+    Eq << Eq[-1].subs(t, t + 1)
 
-    cout << Eq[1].subs(t, t + 1)
+    Eq << Eq[-1] - Eq[-2]
 
-    cout << Eq[-1].right.subs(Eq[-2])
+    Eq << Eq[-1].this.rhs.simplifier() + s[t]
 
-    cout << Eq[-1].right.function.simplifier()
+    Eq << Eq.x_quote_definition.subs(t, t + 1)
 
-    cout << Eq[-1].right.args[1].function.bisect(back = 1)
+    Eq << Eq[-1].this.rhs.subs(Eq[-2])
 
-    cout << Eq[-1].right.args[1].function.as_Ref()
+    Eq << Eq[-1].this.rhs.function.simplifier()
 
-    cout << Eq[-1].right.args[1].as_Min()
+    Eq << Eq[-1].this.rhs.args[1].function.bisect(back=1)
 
-    cout << Eq[-1].right.subs(Eq[1].reversed)
+    Eq << Eq[-1].this.rhs.args[1].function.as_Ref()
 
-    cout << Eq[-1].subs(Eq[0])
+    Eq << Eq[-1].this.rhs.args[1].as_Min()
+
+    Eq << Eq[-1].this.rhs.subs(Eq.x_quote_definition.reversed)
+
+    Eq << Eq.aggregate.this.lhs.bisect(back=1)
+
+    Eq << Eq[-1].this.lhs.as_Ref()
+
+    Eq << Eq.x_quote_definition.subs(t, n - 1)
+
+    Eq << Eq[-2].subs(Eq[-1].reversed)
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

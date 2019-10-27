@@ -2043,7 +2043,7 @@ class Stirling(Function):
         from sympy.sets.conditionset import ConditionSet
         from sympy.tensor.indexed import IndexedBase
         from sympy.core.numbers import oo
-        from sympy.sets.sets import Interval, FiniteSet, imageset
+        from sympy.sets.sets import Interval, FiniteSet, image_set
         from sympy.core.relational import Equality
         from sympy.logic.boolalg import And
         from sympy import Sum
@@ -2056,7 +2056,7 @@ class Stirling(Function):
         i = Symbol('i', integer=True)
 
         return abs(
-            imageset(x[:k],
+            image_set(x[:k],
                      UnionComprehension(FiniteSet(x[i]), (i, 0, k - 1)),
                      ConditionSet(x[:k],
                                 And(Equality(UnionComprehension(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),

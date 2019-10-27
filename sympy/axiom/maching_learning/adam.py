@@ -1,6 +1,6 @@
 from sympy.core.symbol import Symbol
 from sympy.core.numbers import oo
-from sympy.utility import Sum, cout, Eq
+from sympy.utility import Sum, plausible
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 
@@ -39,45 +39,47 @@ def apply(*given):
 
     k = Symbol('k', integer=True, nonnegative=True)
 
-    return Equality(m[k],
-                    beta ** k * (1 - beta) * Sum[t:1:k](beta ** (-t) * g[t]),
-                    forall=k,
-                    given=given)
+    return Equality(m[k], beta ** k * (1 - beta) * Sum[t:1:k](beta ** (-t) * g[t]),
+                    given=given,
+                    plausible=plausible())
 
 
 from sympy.utility import check
 
 
 @check
-def prove():
-    cout << apply()
+def prove(Eq):
+    Eq << apply()
 
-    cout << Eq[-1].given
+    Eq << Eq[-1].given
 
     m, g, beta, t = extract(Eq[-1])
 
-    cout << Eq[-1] / beta ** t
+    Eq << Eq[-1] / beta ** t
 
-    cout << Eq[-1].expand()
+    Eq << Eq[-1].expand()
 
-    cout << Eq[-1].powsimp()
+    Eq << Eq[-1].powsimp()
 
-    cout << Eq[-1].collect(g[t])
+    Eq << Eq[-1].collect(g[t])
 
-    k = Eq[0].forall
-    cout << Sum[t:1 : k](Eq[-1]).right.as_two_terms()
+    k = Eq[0].lhs.indices[0]
 
-    cout << Eq[-1] - Eq[-1].rhs.args[0]
+    Eq << Eq[-1].summation((t, 1, k))
 
-    cout << Eq[-1].left.simplifier()
+    Eq << Eq[-1].this.rhs.as_two_terms()
 
-    cout << Eq[-1].subs(Eq[1])
+    Eq << Eq[-1] - Eq[-1].rhs.args[0]
 
-    cout << Eq[-1].solve(m[k])
+    Eq << Eq[-1].this.lhs.simplifier()
 
-    cout << Eq[-1].subs(Eq[0])
+    Eq << Eq[-1].subs(Eq[1])
+
+    Eq << Eq[-1].solve(m[k])
+
+#     Eq << Eq[-1].subs(Eq[0])
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)
 

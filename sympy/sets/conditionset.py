@@ -14,7 +14,6 @@ from sympy.utilities.iterables import sift
 from sympy.utilities.misc import filldedent
 
 
-
 class ConditionSet(Set):
     """
     Set of elements which satisfies a given condition.
@@ -113,6 +112,25 @@ class ConditionSet(Set):
     """
     is_ConditionSet = True
 
+    def _complement(self, universe):
+        if self.base_set == universe:
+            return ~self
+
+    def intersection_sets(self, b):
+        return ConditionSet(self.sym, self.condition, self.base_set & b)
+
+    def as_image_set(self):
+        try:
+            expr, sym, base_set = self.base_set.image_set()
+            from sympy import sets
+            condition = Contains(sym, base_set).simplifier() & self.condition._subs(self.sym, expr)
+            return sets.image_set(sym, expr, ConditionSet(sym, condition))
+        except:
+            return
+
+    def condition_set(self):
+        return self
+
     def __new__(cls, sym, condition, base_set=S.UniversalSet):
         # nonlinsolve uses ConditionSet to return an unsolved system
         # of equations (see _return_conditionset in solveset) so until
@@ -161,12 +179,13 @@ class ConditionSet(Set):
                     condition.xreplace({sym: dum}),
                     c.xreplace({s: dum}))
                 sym = dum
-        from sympy.tensor.indexed import Slice
-        assert isinstance(sym, (Symbol, Slice))
+        from sympy.tensor.indexed import Slice, IndexedBase
+        assert isinstance(sym, (Symbol, Slice, IndexedBase))
 #             s = Dummy('lambda')
 #             if s not in condition.xreplace({sym: s}).free_symbols:
 #                 raise ValueError('non-symbol dummy not recognized in condition')
-
+        if condition.is_BooleanFalse:
+            return S.EmptySet
         rv = Basic.__new__(cls, sym, condition, base_set)
         return rv if know is None else Union(know, rv)
 
@@ -181,20 +200,14 @@ class ConditionSet(Set):
 # #             raise TypeError('contains did not evaluate to a bool: %r' % symb)
 #         return bool(symb)
 
-    def assertion(self, condition=True):
-        if condition:
-            from sympy.concrete.expr_with_limits import Forall
-            return Forall(self.condition, (self.sym, self))
-        from sympy.core.relational import Equality
-        return Equality(self.base_set, Union(self, self.negated))
+    def assertion(self):
+        from sympy.concrete.expr_with_limits import Forall
+        return Forall(self.condition, (self.sym, self))
 
-    @property
-    def negated(self):
-        negated = self.condition.negated
-        if negated.counterpart is not None:
-            negated.counterpart = None
-            
-        return self.func(self.sym, negated, self.base_set)
+    def __invert__(self):
+        condition = ~self.condition
+        condition.counterpart = None
+        return self.func(self.sym, condition, self.base_set)
 
     @property
     def element_type(self):
@@ -253,26 +266,46 @@ class ConditionSet(Set):
             return ConditionSet(new, Contains(new, base), base)
         return self.func(self.sym, cond, base)
 
-    def dummy_eq(self, other, symbol=None):
-        if not isinstance(other, self.func):
+    def _has(self, pattern):
+        """Helper for .has()"""
+        x = self.sym
+        if self.sym == pattern:
+            return self.base_set._has(pattern)
+        if x.is_Slice and pattern.is_Slice and x.base == pattern.base:
+            if pattern in x:
+                return False
+            if x in pattern:
+                start, stop = x.indices
+                _start, _stop = pattern.indices
+                if _start < start:
+                    if self._has(pattern[_start : start]):
+                        return True
+                if stop < _stop:
+                    if self._has(pattern[stop  : _stop]):
+                        return True
             return False
-        if isinstance(self.sym, Symbol) != isinstance(other.sym, Symbol):
-            # this test won't be necessary when unsolved equations
-            # syntax is removed
-            return False
-        if symbol:
-            raise ValueError('symbol arg not supported for ConditionSet')
-        o = other
-        if isinstance(self.sym, Symbol) and isinstance(other.sym, Symbol):
-            # this code will not need to be in an if-block when
-            # the unsolved equations syntax is removed
-            o = other.func(self.sym,
-                other.condition.subs(other.sym, self.sym),
-                other.base_set)
-        return self == o
+        return Set._has(self, pattern)
+
+#     def dummy_eq(self, other, symbol=None):
+#         if not isinstance(other, self.func):
+#             return False
+#         if isinstance(self.sym, Symbol) != isinstance(other.sym, Symbol):
+#             # this test won't be necessary when unsolved equations
+#             # syntax is removed
+#             return False
+#         if symbol:
+#             raise ValueError('symbol arg not supported for ConditionSet')
+#         o = other
+#         if isinstance(self.sym, Symbol) and isinstance(other.sym, Symbol):
+#             # this code will not need to be in an if-block when
+#             # the unsolved equations syntax is removed
+#             o = other.func(self.sym,
+#                 other.condition.subs(other.sym, self.sym),
+#                 other.base_set)
+#         return self == o
 
 
-def image_set_definition(self):
+def image_set_definition(self, reverse=False):
     image_set = self.image_set()
     if image_set is None:
         return
@@ -283,10 +316,14 @@ def image_set_definition(self):
     from sympy.concrete.expr_with_limits import Forall, Exists
 
     if isinstance(base_set, Symbol):
-        if isinstance(base_set.definition, ConditionSet):
-            base_set = base_set.definition
-        else:
-            return
+        if reverse:
+            return Forall(Contains(expr, self), (variables, base_set))
+
+        element_symbol = self.element_symbol()
+        assert expr.dtype == element_symbol.dtype
+        condition = Equality(expr, element_symbol)
+        return Forall(Exists(condition, (variables, base_set)), (element_symbol, self))
+
     else:
         if not isinstance(base_set, ConditionSet):
             return

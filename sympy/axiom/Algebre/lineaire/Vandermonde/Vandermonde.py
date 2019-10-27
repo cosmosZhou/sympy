@@ -2,7 +2,7 @@ from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, cout, Eq, plausible
+from sympy.utility import Ref, Sum, Eq, plausible
 from sympy.core.relational import Equality
 from sympy import axiom
 
@@ -21,7 +21,7 @@ from sympy.utility import check
 
 
 @check
-def prove():
+def prove(Eq):
     n = Symbol('n', domain=Interval(1, oo, right_open=True, integer=True))
     m = Symbol('m', domain=Interval(1, oo, right_open=True, integer=True))
     d = Symbol('d', domain=Interval(0, oo, right_open=True, integer=True))
@@ -33,27 +33,29 @@ def prove():
     delta = Symbol('delta', real=True)
     x = Symbol('x', real=True)
 
-    cout << apply(x, m, n, d, delta)
+    Eq << apply(x, m, n, d, delta)
 
-    cout << Eq[-1].expand().subscript(i, j)
+    Eq << Eq[-1].expand()
 
-    cout << Eq[-1].right.swap()
+    Eq << Eq[-1][i, j]
 
-    cout << Eq[-1].right.subs_limits(h, h - i)
+    Eq << Eq[-1].this.rhs.swap()
 
-    (k, *_), *_ = Eq[3].left.limits
-    cout << Eq[-1].left.subs_limits(k, h)
+    Eq << Eq[-1].this.rhs.limits_subs(h, h - i)
 
-    cout << Eq[-1].right.function.args[-1].simplifier()
+    (k, *_), *_ = Eq[3].lhs.limits
+    Eq << Eq[-1].this.lhs.limits_subs(k, h)
 
-    cout << axiom.discrete.combinatorics.binomial.theorem.apply(delta + i, h - i, j).reversed
+    Eq << Eq[-1].this.rhs.function.args[-1].simplifier()
 
-    cout << Eq[-1].left.subs_limits(Eq[-1].lhs.limits[0][0], k)
+    Eq << axiom.discrete.combinatorics.binomial.theorem.apply(delta + i, h - i, j).reversed
 
-    cout << Eq[-3].right.subs(Eq[-1])
+    Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.limits[0][0], k)
 
-#     cout << Eq[-1].left.simplifier()
+    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+
+    Eq << Eq[2].reference((i,), (j,))
 
 
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

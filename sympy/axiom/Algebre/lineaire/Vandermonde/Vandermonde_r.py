@@ -2,7 +2,7 @@ from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, cout, Eq, plausible, Product, identity
+from sympy.utility import Ref, plausible, Product, identity
 from sympy.core.relational import Equality
 from sympy.matrices.expressions.determinant import Determinant
 
@@ -65,77 +65,80 @@ def numeric_prove():
 
 
 @check
-def prove():
+def prove(Eq):
     r = Symbol('r')
     n = Symbol('n', domain=Interval(2, oo, integer=True))
 
-    cout << apply(r, n)
+    Eq << apply(r, n)
 
-    (i, *_), (j, *_) = Eq[0].lhs.arg.args[1].limits
+    (i, *iab), (j, *_) = Eq[0].lhs.arg.args[1].limits
+    i = i.copy(domain=Interval(*iab, integer=True))
     E = Ref[i:n, j]((-1) ** (j - i) * binomial(j + 1, i + 1))
 
-    cout << identity(Eq[0].lhs.arg @ E).expand()
+    Eq << identity(Eq[0].lhs.arg @ E).expand()
+    Eq << Eq[-1].this.rhs.args[1].function.simplifier()
 
     (k, *_), *_ = Eq[-1].rhs.args[1].function.limits
 
-    cout << discrete.combinatorics.stirling.second.definition.apply(i + 1, j + 1)
+    Eq << discrete.combinatorics.stirling.second.definition.apply(i + 1, j + 1)
 
-    cout << Eq[-1] * factorial(j + 1)
-    cout << Eq[-1].reversed
+    Eq << Eq[-1] * factorial(j + 1)
+    Eq << Eq[-1].reversed
 
-    cout << Eq[-1].left.simplifier()
+    Eq << Eq[-1].this.lhs.simplifier()
 
-    cout << identity(Eq[1].rhs.args[1].function).subs_limits(k, k - 1)
+    Eq << Eq[-1].forall(i)
 
-    cout << Eq[-1].subs(Eq[-2])
+    Eq << identity(Eq[2].rhs.args[1].function).limits_subs(k, k - 1)
 
-    cout << Eq[1].subs(Eq[-1])
+    Eq << Eq[-1].subs(Eq[-2])
 
-    cout << identity(Eq[-1].rhs.args[0].function).simplifier()
+    Eq.equation = Eq[2].subs(Eq[-1])
 
-    cout << Eq[-1].right.subs_limits(k, k - 1)
-    cout << Eq[-1].right.expand()
+    Eq << identity(Eq.equation.rhs.args[0].function).simplifier().limits_subs(k, k - 1)
 
-    cout << Eq[-1].right.args[1].simplifier()
+    Eq << Eq[-1].this.rhs.expand()
 
-    cout << discrete.combinatorics.binomial.theorem.apply(r, -1, j + 1)
+    Eq << Eq[-1].this.rhs.args[1].simplifier()
 
-    cout << Eq[-1].right.expand()
+    Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, j + 1)
 
-    cout << Eq[-1].right.simplifier()
+    Eq << Eq[-1].this.rhs.expand()
 
-    cout << Eq[-4] + (Eq[-1] - Eq[-1].lhs)
+    Eq << Eq[-1].this.rhs.simplifier()
 
-    cout << Eq[-1].right.simplifier()
+    Eq << Eq[-4] + (Eq[-1] - Eq[-1].lhs)
 
-    cout << Eq[-1].right.args[2].simplifier()
+    Eq << Eq[-1].this.rhs.simplifier()
 
-    cout << discrete.combinatorics.binomial.theorem.apply(1, -1, j + 1)
+    Eq << Eq[-1].this.rhs.args[2].simplifier()
 
-    cout << Eq[-1].right.expand()
+    Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, j + 1)
 
-    cout << Eq[-1].right.simplifier()
+    Eq << Eq[-1].this.rhs.expand()
 
-    cout << Eq[-4] - Eq[-1]
+    Eq << Eq[-1].this.rhs.simplifier()
 
-    cout << Eq[-1].right.simplifier()
+    Eq << Eq[-4] + Eq[-1]
 
-    cout << Eq[8].right.subs(Eq[-1])
+    Eq << Eq[-1].this.rhs.simplifier()
 
-    cout << Shift(n, 0, n - 1) @ Eq[-1]
+    Eq << Eq.equation.this.rhs.subs(Eq[-1])
 
-    cout << Eq[-1].det()
+    Eq << Shift(n, 0, n - 1) @ Eq[-1]
 
-    cout << Eq[-1].right.simplifier()  # 27
+    Eq << Eq[-1].det()
 
-    cout << Eq[-1] * (-1) ** (n - 1)  # 28
+    Eq << Eq[-1].this.rhs.simplifier()  # 27
 
-    cout << Eq[-1].right.powsimp()  # 29
+    Eq << Eq[-1] * (-1) ** (n - 1)  # 28
+
+    Eq << Eq[-1].this.rhs.powsimp()  # 29
 
 #     s = Eq[-1].rhs.args[1].limits[0][0]
-    cout << Eq[-1].right.args[1].subs_limits(k, k - 1)
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(k, k - 1)
 
 
-#     cout << Eq[-1].rhs.args
+#     Eq << Eq[-1].rhs.args
 if __name__ == '__main__':
-    prove()
+    prove(__file__)

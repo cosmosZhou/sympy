@@ -591,12 +591,15 @@ class LatexPrinter(Printer):
                 tex = r"\sum\limits_{%s=%s}^{%s} " % tuple([self._print(i) for i in limit])
         else:
 
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([self._print(s) for s in (l[1], l[0], l[2])])
+            def _format_ineq(limit):
+                if len(limit) == 1:
+                    return self._print(limit[0])
+                elif len(limit) == 2:
+                    return r"%s \in %s" % tuple([self._print(i) for i in limit])
+                else:
+                    return r"%s \leq %s \leq %s" % tuple([self._print(s) for s in (limit[1], limit[0], limit[2])])
 
-            tex = r"\sum\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in expr.limits])
+            tex = r"\sum\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in expr.limits])
 
         from sympy.matrices.expressions.hadamard import HadamardProduct
         if isinstance(expr.function, (Add, HadamardProduct)):
@@ -636,7 +639,7 @@ class LatexPrinter(Printer):
 
     def _print_Product(self, expr):
         if len(expr.limits) == 1:
-            tex = r"\prod_{%s=%s}^{%s} " % \
+            tex = r"\prod\limits_{%s=%s}^{%s} " % \
                 tuple([self._print(i) for i in expr.limits[0]])
         else:
 
@@ -1025,14 +1028,6 @@ class LatexPrinter(Printer):
             tex += r" %s %s" % (char, self._print(arg))
 
         return tex
-
-    def _print_And(self, e):
-        args = sorted(e._argset, key=default_sort_key)
-        return self._print_LogOp(args, r"\wedge")
-
-    def _print_Or(self, e):
-        args = sorted(e._argset, key=default_sort_key)
-        return self._print_LogOp(args, r"\vee")
 
     def _print_Xor(self, e):
         args = sorted(e.args, key=default_sort_key)
@@ -2017,7 +2012,7 @@ class LatexPrinter(Printer):
         args = []
         for i in u.args:
             latex = self._print(i)
-            if i.is_Complement:
+            if i.is_Complement or i.is_Union:
                 latex = r'\left(%s\right)' % latex
             args.append(latex)
 

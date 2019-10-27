@@ -514,7 +514,8 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
             return expr
 
         expr = expr.xreplace(dict((rv, rv.symbol) for rv in rvs))
-
+        from sympy.stats.rv import RandomSymbol
+        assert not expr.has(RandomSymbol)
         x = self.value.symbol
         try:
             return self.distribution.expectation(expr, x, evaluate=evaluate, **kwargs)

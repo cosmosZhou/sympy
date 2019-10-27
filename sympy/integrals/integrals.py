@@ -1208,7 +1208,7 @@ class Integral(AddWithLimits):
 
         return self
 
-    def subs_limits(self, old, new):
+    def limits_subs(self, old, new):
         from sympy.solvers.solvers import solve
 
         if len(self.limits) == 1:

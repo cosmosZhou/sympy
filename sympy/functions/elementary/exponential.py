@@ -794,8 +794,8 @@ class log(Function):
         return self.func(arg)
 
     def as_Add(self):
-        if isinstance(self.args[0], Mul):
-            return Add(*(self.func(arg).simplifier() for arg in self.args[0].args))
+        if isinstance(self.arg, Mul):
+            return Add(*(self.func(arg).simplifier() for arg in self.arg.args))
         return self
 
     def simplifier(self):
@@ -812,6 +812,12 @@ class log(Function):
                 else:
                     exponent.append(e)
             return Add(*coeff) + self.func(Mul(*exponent))
+        if isinstance(arg, Pow):
+            base, exponent = arg.args
+            if _coeff_isneg(exponent):
+                exponent = -exponent
+            arg = base ** exponent
+            return -self.func(arg)
 
         return self
 

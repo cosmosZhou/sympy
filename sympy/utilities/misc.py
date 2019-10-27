@@ -11,7 +11,6 @@ from sympy.core.compatibility import (get_function_name, range, as_int,
     string_types)
 
 
-
 class Undecidable(ValueError):
     # an error to be raised when a decision cannot be made definitively
     # where a definitive answer is needed
@@ -68,7 +67,7 @@ def strlines(s, c=64, short=False):
     if '\n' in s:
         return rawlines(s)
     q = '"' if repr(s).startswith('"') else "'"
-    q = (q,)*2
+    q = (q,) * 2
     if '\\' in s:  # use r-string
         m = '(\nr%s%%s%s\n)' % q
         j = '%s\nr%s' % q
@@ -80,7 +79,7 @@ def strlines(s, c=64, short=False):
     out = []
     while s:
         out.append(s[:c])
-        s=s[c:]
+        s = s[c:]
     if short and len(out) == 1:
         return (m % out[0]).splitlines()[1]  # strip bounding (\n...\n)
     return m % j.join(out)
@@ -168,14 +167,15 @@ def rawlines(s):
         else:
             return "dedent('''\\\n    %s''')" % rv
 
-ARCH = str(struct.calcsize('P') * 8) + "-bit"
 
+ARCH = str(struct.calcsize('P') * 8) + "-bit"
 
 # XXX: PyPy doesn't support hash randomization
 HASH_RANDOMIZATION = getattr(sys.flags, 'hash_randomization', False)
 
 _debug_tmp = []
 _debug_iter = 0
+
 
 def debug_decorator(func):
     """If SYMPY_DEBUG is True, it will print a nice execution tree with
@@ -194,6 +194,7 @@ def debug_decorator(func):
         _debug_iter += 1
 
         def tree(subtrees):
+
             def indent(s, type=1):
                 x = s.split("\n")
                 r = "+-%s\n" % x[0]
@@ -205,6 +206,7 @@ def debug_decorator(func):
                     else:
                         r += "  %s\n" % a
                 return r
+
             if len(subtrees) == 0:
                 return ""
             f = []
@@ -216,8 +218,8 @@ def debug_decorator(func):
         # If there is a bug and the algorithm enters an infinite loop, enable the
         # following lines. It will print the names and parameters of all major functions
         # that are called, *before* they are called
-        #from sympy.core.compatibility import reduce
-        #print("%s%s %s%s" % (_debug_iter, reduce(lambda x, y: x + y, \
+        # from sympy.core.compatibility import reduce
+        # print("%s%s %s%s" % (_debug_iter, reduce(lambda x, y: x + y, \
         #    map(lambda x: '-', range(1, 2 + _debug_iter))), get_function_name(f), args))
 
         r = f(*args, **kw)
@@ -510,22 +512,39 @@ def ordinal(num):
     return str(n) + suffix
 
 
+def createNewFile(path):
+    createNewPath(os.path.dirname(path))
+
+    try:
+        os.mknod(path)
+    except :
+        with open(path, 'w') as _:
+            ...
+
+
+def createNewPath(basedir):
+    if not os.path.exists(basedir):
+        os.makedirs(basedir)
 
 
 class Text:
 
     def __init__(self, path, encoding="utf-8"):
-        self.f = open(path, "r+" if os.path.isfile(path) else "w+", encoding=encoding)
+        try:
+            self.file = open(path, "r+" if os.path.isfile(path) else "w+", encoding=encoding)
+        except FileNotFoundError:
+            createNewFile(path)
+            self.file = open(path, "w+", encoding=encoding)
 
     def __del__(self):
-        self.f.close()
+        self.file.close()
 
     def __iter__(self):  # Get iterator object on iter
         return self
 
     def __next__(self):
         while True:
-            line = self.f.readline()
+            line = self.file.readline()
             if not line:
                 self.home()
                 raise StopIteration
@@ -540,90 +559,90 @@ class Text:
         '''
         self.home()
 
-        content = self.f.read()
+        content = self.file.read()
         self.write(s)
-#         self.f.seek(0, 2)
-        self.f.write(content)
-        self.f.flush()
+#         self.file.seek(0, 2)
+        self.file.write(content)
+        self.file.flush()
 
-    def append(self, s):
+    def append(self, s, end_of_line='\n'):
         self.end()
 
         if type(s) == str:
-            self.f.write(s + '\n')
+            self.file.write(s + end_of_line)
         else:
             for s in s:
-                self.f.write(s + '\n')
-        self.f.flush()
+                self.file.write(s + end_of_line)
+        self.file.flush()
 
     def insert(self, index, s):
         if index < 0:
             self.end()
             index = -index - 1
-            offset = self.f.tell() - 1
+            offset = self.file.tell() - 1
             while index > 0:
                 index -= 1
                 offset -= 1
                 while True:
                     offset -= 1
-                    _offset = self.f.seek(offset, os.SEEK_SET)
+                    _offset = self.file.seek(offset, os.SEEK_SET)
                     assert _offset == offset
-                    char = self.f.read(1)
+                    char = self.file.read(1)
 #                     print('char =', char)
                     if char[0] == '\n' or char[0] == '\r':
                         break
         else:
             self.home()
-            offset = self.f.tell()
+            offset = self.file.tell()
             while index > 0:
                 index -= 1
                 while True:
                     offset += 1
-                    _offset = self.f.seek(offset, os.SEEK_SET)
+                    _offset = self.file.seek(offset, os.SEEK_SET)
                     assert _offset == offset
-                    char = self.f.read(1)
+                    char = self.file.read(1)
 #                     print('char =', char)
                     if char[0] == '\n' or char[0] == '\r':
                         break
 
-        current_pos = self.f.tell()
+        current_pos = self.file.tell()
         assert current_pos == offset + 1
 
-        rest = self.f.read()
-        self.f.seek(current_pos, os.SEEK_SET)
+        rest = self.file.read()
+        self.file.seek(current_pos, os.SEEK_SET)
 
         if type(s) == str:
-            self.f.write(s + '\n')
+            self.file.write(s + '\n')
         else:
             for s in s:
-                self.f.write(s + '\n')
+                self.file.write(s + '\n')
 
-        self.f.write(rest)
+        self.file.write(rest)
 
-        self.f.flush()
+        self.file.flush()
 
     def write(self, s):
         self.home()
 
         if type(s) == str:
-            self.f.write(s + '\n')
+            self.file.write(s + '\n')
         else:
             for s in s:
-                self.f.write(str(s) + '\n')
-        self.f.truncate()
-        self.f.flush()
+                self.file.write(str(s) + '\n')
+        self.file.truncate()
+        self.file.flush()
 
     def clear(self):
         self.home()
-        self.f.write('')
-        self.f.truncate()
-        self.f.flush()
+        self.file.write('')
+        self.file.truncate()
+        self.file.flush()
 
     def home(self):
-        self.f.seek(0, os.SEEK_SET)
+        self.file.seek(0, os.SEEK_SET)
 
     def end(self):
-        self.f.seek(0, os.SEEK_END)
+        self.file.seek(0, os.SEEK_END)
 
     def collect(self):
         self.home()

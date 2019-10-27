@@ -261,7 +261,7 @@ class Application(with_metaclass(FunctionClass, Basic)):
 
     is_Function = True
 
-    @cacheit
+#     @cacheit
     def __new__(cls, *args, **options):
         from sympy.sets.fancysets import Naturals0
         from sympy.sets.sets import FiniteSet
@@ -278,9 +278,17 @@ class Application(with_metaclass(FunctionClass, Basic)):
         if evaluate:
             evaluated = cls.eval(*args)
             if evaluated is not None:
-#                 if evaluated.is_Relational or evaluated.is_BooleanFunction:
-#                     return evaluated.func(*evaluated.args, **options)
-                return evaluated
+
+                if options and evaluated.is_BooleanAtom:
+                    if 'plausible' in options:
+                        if evaluated:
+                            del options['plausible']
+                        else:
+                            options['plausible'] = False
+                    else:
+                        return evaluated.copy(**options)
+                else:
+                    return evaluated
 
         obj = super(Application, cls).__new__(cls, *args, **options)
 
@@ -431,6 +439,10 @@ class Function(Application, Expr):
     >>>
 
     """
+
+    @property
+    def dtype(self):
+        return self.args[0].dtype
 
     @property
     def _diff_wrt(self):
@@ -1386,8 +1398,7 @@ class Derivative(Expr):
             old_expr = expr
             old_v = None
 
-            is_symbol = v.is_symbol or isinstance(v,
-                (Iterable, Tuple, MatrixCommon, NDimArray))
+            is_symbol = v.is_symbol or isinstance(v, (Iterable, Tuple, MatrixCommon, NDimArray))
 
             if not is_symbol:
                 old_v = v
@@ -2072,7 +2083,7 @@ class Difference(Expr):
         if isinstance(expr, Equality):
             lhs = Difference.__new__(cls, expr.lhs, variable, count)
             rhs = Difference.__new__(cls, expr.rhs, variable, count)
-            return expr.func(lhs, rhs, given=expr if expr.plausible else None, **expr.clauses())
+            return expr.func(lhs, rhs, given=expr if expr.plausible else None)
         from sympy.matrices.common import MatrixCommon
 
         from sympy.tensor.array import NDimArray
@@ -2709,7 +2720,12 @@ class Lambda(Expr):
             v = Tuple(*v)
 
         obj = Expr.__new__(cls, v, sympify(expr))
-        obj.nargs = FiniteSet(nargs)
+
+        from sympy.tensor.indexed import IndexedBase
+        if isinstance(v, IndexedBase):
+            obj.nargs = FiniteSet(nargs, v.shape[0])
+        else:
+            obj.nargs = FiniteSet(nargs)
         return obj
 
     def _sympystr(self, p):
@@ -2742,8 +2758,8 @@ class Lambda(Expr):
         n = len(args)
         if n == 1:
             args = args[0]
-            from sympy.tensor.indexed import IndexedBase
-            if isinstance(args, IndexedBase):
+            from sympy.tensor.indexed import IndexedBase, Slice
+            if isinstance(args, (IndexedBase, Slice)):
                 n = args.shape
                 if len(n) > 1:
                     raise TypeError('lambda only allows 1 dimentional args')

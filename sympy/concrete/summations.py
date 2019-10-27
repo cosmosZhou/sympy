@@ -158,7 +158,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     __slots__ = ['is_commutative']
     operator = Add
-    
+    is_Sum = True
+
     def __new__(cls, function, *symbols, **assumptions):
         obj = AddWithLimits.__new__(cls, function, *symbols, **assumptions)
         if not hasattr(obj, 'limits'):
@@ -186,6 +187,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             return self.expand().doit()
 
         for n, limit in enumerate(self.limits):
+            if len(limit) != 3:
+                return self
             i, a, b = limit
             dif = b - a
             if dif.is_integer and (dif < 0) == True:
@@ -806,7 +809,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         if isinstance(self.function, Add):
             return self.func(first, *self.limits) + self.func(second, *self.limits)
-        from sympy.functions.elementary.miscellaneous import Ref
+        from sympy.concrete.expr_with_limits import Ref
 
         return Ref(first, *self.limits) @ Ref(second, *self.limits)
 
@@ -818,11 +821,23 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if len(self.limits) == 1:
             limit = self.limits[0]
             x, *ab = limit
-            
+
             if ab:
                 if len(ab) == 1:
+                    domain = ab[0]
+                    if old.has(x):
+                        if domain.is_set:
+                            _domain = domain._subs(old, new)
+                            if _domain != domain:
+                                return self.func(self.function, (x, _domain)).simplifier()
+                    else:
+                        _domain = domain._subs(old, new)
+                        function = self.function._subs(old, new)
+                        if _domain != domain or function != self.function:
+                            return self.func(function, (x, _domain)).simplifier()
+
                     return self
-                
+
                 a, b = ab
 
             if isinstance(old, Slice) and len(ab) == 2:
@@ -846,10 +861,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         function = function.subs(_x, x)
 
                 if function is None:
-                    function = self.function.subs(old, new)
+                    function = self.function._subs(old, new)
 
                 if ab:
-                    return self.func(function, (x, a.subs(old, new), b.subs(old, new)))
+                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplifier()
 
                 if isinstance(x, Slice):
                     x = x.subs(old, new)
@@ -946,7 +961,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return self
 
     def __sub__(self, autre):
-        if isinstance(autre, Sum) and self.function == autre.function and len(self.limits) == len(autre.limits) == 1:
+        if isinstance(autre, Sum) and self.function == autre.function and len(self.limits) == len(autre.limits) == 1 and len(self.limits[0]) == len(autre.limits[0]) == 3:
             (x, a, b), *_ = self.limits
             (_x, _a, _b), *_ = autre.limits
 
@@ -955,19 +970,21 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 b_diff = b - _b
                 if a_diff > 0:
                     if b_diff > 0:
-                        return Sum(self.function, (x, _b + 1, b)).doit() - Sum(self.function, (x, _a, a - 1)).doit()
+                        return Sum(self.function, (x, _b + 1, b)).doit(deep=False) - Sum(self.function, (x, _a, a - 1)).doit(deep=False)
                     elif b_diff == 0:
-                        return -Sum(self.function, (x, _a, a - 1)).doit()
+                        return -Sum(self.function, (x, _a, a - 1)).doit(deep=False)
 
                 if a_diff == 0:
-                    if b_diff > 0:
-                        return Sum(self.function, (x, _b + 1, b)).doit()
+                    if b_diff >= 0:
+                        return Sum(self.function, (x, _b + 1, b)).doit(deep=False)
+                    if b_diff < 0:
+                        return -Sum(self.function, (x, b + 1, _b)).doit(deep=False)
 
                 elif a_diff < 0:
                     if b_diff < 0:
                         ...
                     elif b_diff == 0:
-                        return Sum(self.function, (x, a, _a - 1)).doit()
+                        return Sum(self.function, (x, a, _a - 1)).doit(deep=False)
                 elif a_diff == 0:
                     ...
 
@@ -978,7 +995,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     def __add__(self, expr):
         if len(self.limits) == 1:
             i, *ab = self.limits[0]
-            if ab:
+            if len(ab) == 2 and expr:
                 a, b = ab
                 if self.function.subs(i, b + 1) == expr:
                     return self.func(self.function, (i, a, b + 1))
@@ -987,7 +1004,22 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return AddWithLimits.__add__(self, expr)
 
-    def simplifier(self):
+    def simplifier(self, deep=False):
+        if deep:
+            return ExprWithIntLimits.simplifier(self, deep=True)
+        if len(self.limits) == 2:
+            from sympy.tensor.indexed import Indexed, Slice
+            limit0, limit1 = self.limits
+            if len(limit0) == 1 and len(limit1) == 1:
+                x_slice = limit0[0]
+                x = limit1[0]
+                if isinstance(x_slice, Slice) and isinstance(x, Indexed):
+                    start, stop = x_slice.indices
+                    if len(x.indices) == 1 and x.indices[0] == stop:
+                        x_slice = x_slice.base[start : stop + 1]
+                        return self.func(self.function, (x_slice,))
+            return self
+
         if len(self.limits) != 1:
             return self
         limit = self.limits[0]
@@ -995,12 +1027,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             x, domain = limit
             if isinstance(domain, Complement):
                 A, B = domain.args
-                if isinstance(A, Interval) and A.is_integer:
+                if isinstance(A, Interval) and A.is_integer and B in A:
                     A = self.func(self.function, (x, A.min(), A.max()))
                     if isinstance(B, FiniteSet):
                         B = Add(*[self.function.subs(x, b) for b in B])
                     else:
-                        B = self.func(self.function, (x, B))
+                        return self
+#                         B = self.func(self.function, (x, B))
                     return A - B
 
             elif isinstance(domain, FiniteSet):
@@ -1009,6 +1042,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     args.append(self.function.subs(x, k))
                 return Add(*args)
 
+            if not self.function.has(x):
+                if not domain.is_set:
+                    domain = x.conditional_domain(domain)
+                return self.function * abs(domain)
+
             return self
 
         if len(limit) > 1:
@@ -1016,14 +1054,18 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             domain = self.function.nonzero_domain(x)
 
             domain &= Interval(a, b, integer=True)
+            if not domain:
+                return S.Zero
+            assert domain.is_integer
+
             if isinstance(self.function, Piecewise):
-                return Add(*self.as_multiple_terms(x, domain))
+                return self.operator(*self.as_multiple_terms(x, domain))
 
             if isinstance(domain, FiniteSet):
                 args = []
                 for k in domain:
                     args.append(self.function.subs(x, k))
-                return Add(*args)
+                return self.operator(*args)
             if isinstance(domain, EmptySet):
                 return S.Zero
 
@@ -1052,10 +1094,23 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     def as_Ref(self):
         from sympy.concrete.expr_with_limits import Ref
-        return self.func(Ref(self.function, *self.limits).simplifier())
+        return self.func(Ref(self.function, self.limits[0]).simplifier(), *self.limits[1:])
+
+    def as_Sum(self):
+        from sympy.concrete.expr_with_limits import Ref
+        if self.function.is_Ref:
+            limit = self.function.limits[-1]
+            limits = self.function.limits[:-1]
+            if limits:
+                function = Ref(self.function.function, *limits)
+            else:
+                function = self.function.function
+
+            return self.func(function, *self.limits, limit).simplifier()
+        return self
 
     def swap(self):
-        from sympy.core.mul import Mul
+#         from sympy.core.mul import Mul
         if isinstance(self.function, Mul):
             index = -1
             for i in range(len(self.function.args)):
@@ -1184,6 +1239,11 @@ def telescopic(L, R, limits):
         try:
             sol = solve(L.subs(i, i + m) + R, m) or []
         except NotImplementedError:
+            return None
+        except Exception as e:
+            print(e)
+            import traceback
+            traceback.print_exc()
             return None
         sol = [si for si in sol if si.is_Integer and
                (L.subs(i, i + si) + R).expand().is_zero]

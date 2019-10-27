@@ -1,4 +1,4 @@
-from sympy.utility import cout, Eq, plausible
+from sympy.utility import Eq, plausible
 from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan
 
@@ -9,7 +9,6 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import Infinitesimal, NegativeInfinitesimal, epsilon, oo
 from sympy.concrete.expr_with_limits import Maximum
 from sympy.core.add import Add
-from sympy.logic.boolalg import plausibles_dict
 
 
 def extract(x_constraint, y_constraint, z_constraint):
@@ -67,37 +66,28 @@ def apply(*given):
 #     given.clauses()
     theta = Symbol("theta", domain=Interval(pi / 3, pi, right_open=True))
     return Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta),
-                    exists=theta,
                     given=given,
                     plausible=plausible())
 
 
 from sympy.utility import check
+
+
 @check
-def prove():
-    cout << apply()
+def prove(Eq):
+    Eq << apply()
     x_constraint, y_constraint, z_constraint = Eq[-1].given
     x, y, z = extract(x_constraint, y_constraint, z_constraint)
 
-    cout << Eq[-1].solve(Eq[-1].exists)
+    theta, *_ = Eq[-1].free_symbols - {x, y, z}
 
-    cout << Eq[-1].cos()
+    Eq << Eq[-1].solve(cos(theta))
 
-    cout << Eq[-1].as_two_terms()
+    Eq << Eq[-1].subs(z_constraint)
+    Eq << Eq[-1] * (2 * x * y) - x * y + z ** 2
 
-    cout << Eq[-2].subs(z_constraint)
-    cout << Eq[-1] * (2 * x * y) - x * y + z ** 2
-
-    cout << Eq[-1].subs(x_constraint, y_constraint)
-
-    cout << (Eq[-2] & Eq[-3]).acos()
-
-#     cout << (Eq[-1] & Eq[1])
+    Eq << Eq[-1].subs(x_constraint, y_constraint)
 
 
 if __name__ == '__main__':
-    prove()
-
-    print('plausibles_dict:')
-    for index, eq in plausibles_dict(Eq).items():
-        print("Eq[%d] : %s" % (index, eq))
+    prove(__file__)

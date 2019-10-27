@@ -45,6 +45,11 @@ class Naturals(with_metaclass(Singleton, Set)):
     _inf = S.One
     _sup = S.Infinity
 
+    @property
+    def element_type(self):
+        from sympy.core.symbol import dtype
+        return dtype.natural
+
     def _contains(self, other):
         if not isinstance(other, Expr):
             return S.false
@@ -146,6 +151,13 @@ class Integers(with_metaclass(Singleton, Set)):
     @property
     def _boundary(self):
         return self
+    
+    def intersection_sets(self, b):
+        if isinstance(b, Reals):
+            return self
+
+        if isinstance(b, Naturals):
+            return b
 
     def union_sets(self, b):
         from sympy import Intersection

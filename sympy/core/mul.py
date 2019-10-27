@@ -95,6 +95,18 @@ class Mul(Expr, AssocOp):
 
     is_Mul = True
 
+    def argmax_shape(self):
+        import numpy as np
+        return np.argmax([len(arg.shape) for arg in self.args])
+
+    @property
+    def dtype(self):
+        return self.args[self.argmax_shape()].dtype
+
+    @property
+    def shape(self):
+        return self.args[self.argmax_shape()].shape
+
     @classmethod
     def flatten(cls, seq):
         """Return commutative, noncommutative and order arguments by
@@ -1740,7 +1752,10 @@ class Mul(Expr, AssocOp):
     def as_coeff_mmul(self):
         return 1, self
 
-    def simplifier(self):
+    def simplifier(self, deep=False):
+        if deep:
+            return Expr.simplifier(self, deep=True)
+
         a = self.args[0]
         b = self.args[1]
         # dissolve the initial minus sign
