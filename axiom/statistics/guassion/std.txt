@@ -1,0 +1,8 @@
+\(\frac{\sqrt{2} \int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2}}\, dx}{2 \sqrt{\pi}} = 1\tag*{Eq[0]}\)
+\(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2}}\, dx = \sqrt{2} \sqrt{\pi}\tag*{Eq[1]}\)
+\(\left(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2}}\, dx\right) \int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{y^{2}}{2}}\, dy = 2 \pi\tag*{Eq[2]}\)
+\(\int\limits_{-\infty}^{\infty}\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2} - \frac{y^{2}}{2}}\, dx\, dy = 2 \pi\tag*{Eq[3]}\)
+\(\int\limits_{- \pi}^{\pi}\int\limits_{0}^{\infty} \rho {\color{blue} e}^{- \frac{\rho^{2}}{2}}\, d\rho\, d\theta = 2 \pi\tag*{Eq[4]}\)
+\(\text{True}\)
+\(\left(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2}}\, dx\right)^{2} = 2 \pi\tag*{Eq[5]}\)
+\(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2}}\, dx = \sqrt{2} \sqrt{\pi}\tag*{Eq[1]}\)

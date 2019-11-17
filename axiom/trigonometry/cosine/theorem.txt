@@ -1,0 +1,5 @@
+\(z^{2} = x^{2} - 2 x y \cos {\theta} + y^{2}\tag*{Eq[0]}\)
+\(\cos {\theta} = \frac{x^{2} + y^{2} - z^{2}}{2 x y}\tag*{Eq[1]}\)
+\(\cos {\theta} = \frac{x^{2} + y^{2} - z^{2}}{2 x y}\tag*{Eq[1]}\)
+\(2 x y \cos {\theta} - x y + z^{2} = x^{2} - x y + y^{2}\tag*{Eq[2]}\)
+\(2 x y \cos {\theta} - x y + z^{2} = x^{2} - x y + y^{2}\tag*{Eq[2]}\)

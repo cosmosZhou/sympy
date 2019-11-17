@@ -148,7 +148,6 @@ class Eq:
         self.__dict__['list'] = []
 
         from sympy.utilities.misc import Text
-#         txt = os.path.dirname(__file__) + '/../../latex/latex.txt'
 
         self.__dict__['file'] = Text(txt)
         self.file.clear()
@@ -177,14 +176,14 @@ render(__FILE__);
                 plausibles[k] = v
         return plausibles
 
-    def index(self, eq):
+    def index(self, eq, dummy_eq=True):
         for i, _eq in enumerate(self.list):
-            if _eq == eq or eq.dummy_eq(_eq):
+            if _eq == eq or (dummy_eq and eq.dummy_eq(_eq)):
                 return i
         for k, v in self.__dict__.items():
             if k == 'list' or k == 'file':
                 continue
-            if eq == v or eq.dummy_eq(v):
+            if eq == v or (dummy_eq and eq.dummy_eq(v)):
                 return k
         return -1
 
@@ -389,7 +388,7 @@ class identity(boolalg.Invoker):
 def check(func):
 
     def _func(py):
-        py = py.replace('sympy\sympy', 'latex')
+#         py = py.replace('sympy\sympy', 'latex')
         txt = py.replace('.py', '.txt')
 #         py = Text(py)
 
@@ -441,7 +440,7 @@ def check(func):
                     if len(_index) == 1:
                         _index = _index[0]
                 else:
-                    _index = eqs.index(equivalent)
+                    _index = eqs.index(equivalent, False)
                     if _index == -1:
                         equivalent = get_equivalent(equivalent)
                         return get_index(equivalent)

@@ -14,6 +14,7 @@ from sympy.simplify.ratsimp import ratsimp
 from sympy.simplify.simplify import together
 from .gruntz import gruntz
 
+
 def limit(e, z, z0, dir="+"):
     """Computes the limit of ``e(z)`` at the point ``z0``.
 
@@ -93,7 +94,7 @@ def heuristics(e, z, z0, dir):
     from sympy.calculus.util import AccumBounds
     rv = None
     if abs(z0) is S.Infinity:
-        rv = limit(e.subs(z, 1/z), z, S.Zero, "+" if z0 is S.Infinity else "-")
+        rv = limit(e.subs(z, 1 / z), z, S.Zero, "+" if z0 is S.Infinity else "-")
         if isinstance(rv, Limit):
             return
     elif e.is_Mul or e.is_Add or e.is_Pow or e.is_Function:
@@ -103,9 +104,9 @@ def heuristics(e, z, z0, dir):
             if l.has(S.Infinity) and l.is_finite is None:
                 if isinstance(e, Add):
                     m = factor_terms(e)
-                    if not isinstance(m, Mul): # try together
+                    if not isinstance(m, Mul):  # try together
                         m = together(m)
-                    if not isinstance(m, Mul): # try factor if the previous methods failed
+                    if not isinstance(m, Mul):  # try factor if the previous methods failed
                         m = factor(e)
                     if isinstance(m, Mul):
                         return heuristics(m, z, z0, dir)
@@ -158,6 +159,7 @@ class Limit(Expr):
     Limit(1/x, x, 0, dir='-')
 
     """
+    is_Limit = True
 
     def __new__(cls, e, z, z0, dir="+"):
         e = sympify(e)
@@ -182,7 +184,6 @@ class Limit(Expr):
         obj._args = (e, z, z0, dir)
         return obj
 
-
     @property
     def free_symbols(self):
         e = self.args[0]
@@ -190,7 +191,6 @@ class Limit(Expr):
         isyms.difference_update(self.args[1].free_symbols)
         isyms.update(self.args[2].free_symbols)
         return isyms
-
 
     def doit(self, **hints):
         """Evaluates the limit.
@@ -244,9 +244,9 @@ class Limit(Expr):
                 if all(ok(w) for w in e.as_numer_denom()):
                     u = Dummy(positive=True)
                     if z0 is S.NegativeInfinity:
-                        inve = e.subs(z, -1/u)
+                        inve = e.subs(z, -1 / u)
                     else:
-                        inve = e.subs(z, 1/u)
+                        inve = e.subs(z, 1 / u)
                     try:
                         r = limit(inve.as_leading_term(u), u, S.Zero, "+")
                         if isinstance(r, Limit):
@@ -260,9 +260,15 @@ class Limit(Expr):
             return Order(limit(e.expr, z, z0), *e.args[1:])
 
         try:
-            r = gruntz(e, z, z0, dir)
-            if r is S.NaN:
-                raise PoleError()
+            if str(dir) == '+-':
+                r = gruntz(e, z, z0, '+')
+                _r = gruntz(e, z, z0, '-')
+                if r != _r:
+                    raise PoleError()
+            else:
+                r = gruntz(e, z, z0, dir)
+                if r is S.NaN:
+                    raise PoleError()
         except (PoleError, ValueError):
             r = heuristics(e, z, z0, dir)
             if r is None:

@@ -3896,6 +3896,9 @@ class Expr(Basic, EvalfMixin):
         from sympy import Symbol
 
         if name is not None:
+            if len(name) > 1:
+                name = name[0]
+            
             for _ in range(52):
                 name = chr(ord(name) + 1)
                 if name == '{':

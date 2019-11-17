@@ -1070,6 +1070,8 @@ class Interval(Set, EvalfMixin):
 
         if not integer:
             assert real
+            if integer is None:
+                integer = False
 
         if integer and not right_open and end.is_Add:
             try:

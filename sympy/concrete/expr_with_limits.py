@@ -3789,8 +3789,11 @@ class ConditionalBoolean(Boolean):
 
     def comprehension(self, operator, *limits):
         func, function = self.funcs()
+        if any(op.is_Exists for op, _ in func):
+            return self
+        
         if function.is_Equality:
-            return function.comprehension(operator, *limits, func)
+            return function.comprehension(operator, *limits, func=func)
         return self
 
     @staticmethod
@@ -4204,7 +4207,8 @@ class ConditionalBoolean(Boolean):
                         expr, sym, base_set = image_set
                         if self.function.is_ExprWithLimits:
                             if sym in self.function.bound_symbols:
-                                _sym = base_set.element_symbol(self.function.bound_symbols)
+                                _sym = base_set.element_symbol(self.function.variables_set)
+#                                 _sym = base_set.element_symbol(self.function.bound_symbols)
                                 _expr = expr.subs(sym, _sym)
                                 if _expr == expr:
                                     for var in postorder_traversal(expr):
@@ -4271,13 +4275,13 @@ class Forall(ConditionalBoolean, ExprWithLimits):
         x_domain = limits_dict[x]
 
         if len(args) == 2:
-            domain = Interval(*args, integer=True)
+            domain = Interval(*args, integer=x.is_integer)
         else:
             domain = args[0]
             if not domain.is_set:
                 domain = x.conditional_domain(domain)
 
-        if domain in x_domain and x_domain not in domain:
+        if x_domain is None and domain is not None or domain in x_domain and x_domain not in domain:
             limits = self.limits_update({x : domain})
             function = self.function
             _x = x.copy(domain=domain)
@@ -5128,7 +5132,7 @@ def limits_update(limits, *args):
         else:
             new = old
 
-        if isinstance(domain, Interval) and domain.is_integer:
+        if isinstance(domain, Interval) and (not new.is_integer) == (not domain.is_integer):
             limit = (new, domain.min(), domain.max())
         elif isinstance(domain, (tuple, list)):
             limit = (new, *domain)

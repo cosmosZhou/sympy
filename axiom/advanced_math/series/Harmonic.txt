@@ -1,0 +1,6 @@
+\(\lim\limits_{n \to \infty} \frac{\sum\limits_{k=1}^{n} \frac{1}{k}}{\log{\left(n + 1 \right)}} = 1\tag*{Eq[0]}\)
+\(\lim\limits_{x \to x_{0}} \frac{1}{x} = \frac{1}{x_{0}}\tag*{Eq.continuity}\)
+\(\text{True}\)
+\(\forall_{\substack{k \le x_{0} \le k + 1}}{\lim\limits_{x \to x_{0}} \frac{1}{x} = \frac{1}{x_{0}}}\tag*{Eq[1]}\)
+\(\exists_{\substack{k \le x_{0} \le k + 1}}{\int\limits_{k}^{k + 1} \frac{1}{x}\, dx = \frac{1}{x_{0}}}\tag*{Eq[2]}\)
+\(\exists_{\substack{k \le x_{0} \le k + 1}}{\int\limits_{k}^{k + 1} \frac{1}{x}\, dx = \frac{1}{x_{0}}}\tag*{Eq[2]}\)

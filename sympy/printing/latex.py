@@ -776,13 +776,14 @@ class LatexPrinter(Printer):
     def _print_Limit(self, expr):
         e, z, z0, dir = expr.args
 
-        tex = r"\lim_{%s \to " % self._print(z)
+        tex = r"\lim\limits_{%s \to " % self._print(z)
         if str(dir) == '+-' or z0 in (S.Infinity, S.NegativeInfinity):
             tex += r"%s}" % self._print(z0)
         else:
             tex += r"%s^%s}" % (self._print(z0), self._print(dir))
 
-        if isinstance(e, AssocOp):
+        if isinstance(e, Add):
+#         if isinstance(e, AssocOp):
             return r"%s\left(%s\right)" % (tex, self._print(e))
         else:
             return r"%s %s" % (tex, self._print(e))

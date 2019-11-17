@@ -112,6 +112,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_ConditionSet = False
     is_ExprWithLimits = False
     is_Ref = False
+    is_Limit = False
 
     @property
     def list(self):

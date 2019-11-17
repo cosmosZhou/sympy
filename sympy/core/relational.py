@@ -958,10 +958,6 @@ class Equality(Relational):
     def as_two_terms(self):
         return self.func(self.lhs.as_two_terms(), self.rhs.as_two_terms(), equivalent=self).simplifier()
 
-    def summation(self, *limits):
-        from sympy.concrete.summations import Sum
-        return self.comprehension(Sum, *limits)
-
     def comprehension(self, operator, *limits, func=None):
         lhs = operator(self.lhs, *limits).simplifier()
         rhs = operator(self.rhs, *limits).simplifier()
@@ -982,10 +978,6 @@ class Equality(Relational):
                         continue
                 this = f(this, *limits).simplifier()
 
-        if operator.is_UnionComprehension or operator.is_Sum:
-            this.given = self
-        else:
-            this.equivalent = self
         return this
 
     def split(self):

@@ -1,0 +1,2 @@
+\(Density\left({\color{red} {x_{0}}} + {\color{red} {x_{1}}}\right)\left(y \right) = p^{y} \left(1 - p\right)^{n_{0} + n_{1} - y} {\binom{n_{0} + n_{1}}{y}}\tag*{Eq[0]}\)
+\(Density\left({\color{red} {x_{0}}} + {\color{red} {x_{1}}}\right)\left(y \right) = \sum\limits_{x_{1}=0}^{n_{1}} p^{x_{1}} \left(1 - p\right)^{n_{1} - x_{1}} {\binom{n_{1}}{x_{1}}} \sum\limits_{x_{0}=0}^{n_{0}} p^{x_{0}} \left(1 - p\right)^{n_{0} - x_{0}} \delta_{y, x_{0} + x_{1}} {\binom{n_{0}}{x_{0}}}\tag*{Eq[1]}\)

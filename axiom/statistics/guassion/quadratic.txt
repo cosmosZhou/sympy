@@ -1,0 +1,7 @@
+\(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- a x^{2} - b x - c}\, dx = \frac{\sqrt{\pi} {\color{blue} e}^{- c + \frac{b^{2}}{4 a}}}{\sqrt{a}}\tag*{Eq[0]}\)
+\({\color{blue} e}^{- c} {\color{blue} e}^{\frac{b^{2}}{4 a}} \int\limits_{-\infty}^{\infty} {\color{blue} e}^{- a x^{2}}\, dx = \frac{\sqrt{\pi} {\color{blue} e}^{- c + \frac{b^{2}}{4 a}}}{\sqrt{a}}\tag*{Eq[1]}\)
+\(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- a x^{2}}\, dx = \frac{\sqrt{\pi}}{\sqrt{a}}\tag*{Eq[2]}\)
+\(\frac{\sqrt{2} \int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2}}\, dx}{2 \sqrt{\pi}} = 1\tag*{Eq[3]}\)
+\(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- \frac{x^{2}}{2}}\, dx = \sqrt{2} \sqrt{\pi}\tag*{Eq[4]}\)
+\(\sqrt{a} \int\limits_{-\infty}^{\infty} {\color{blue} e}^{- a x^{2}}\, dx = \sqrt{\pi}\tag*{Eq[5]}\)
+\(\int\limits_{-\infty}^{\infty} {\color{blue} e}^{- a x^{2}}\, dx = \frac{\sqrt{\pi}}{\sqrt{a}}\tag*{Eq[2]}\)

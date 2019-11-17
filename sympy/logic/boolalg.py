@@ -73,11 +73,24 @@ class Boolean(Basic):
 
     def reference(self, *limits):
         from sympy.concrete import expr_with_limits
-        return self.comprehension(expr_with_limits.Ref, *limits)
+        this = self.comprehension(expr_with_limits.Ref, *limits)
+        if this != self:                    
+            this.equivalent = self
+        return this
 
     def union_comprehension(self, *limits):
         from sympy.concrete import expr_with_limits
-        return self.comprehension(expr_with_limits.UnionComprehension, *limits)
+        this = self.comprehension(expr_with_limits.UnionComprehension, *limits)
+        if this != self:
+            this.given = self
+        return this
+
+    def summation(self, *limits):
+        from sympy.concrete import summations
+        this = self.comprehension(summations.Sum, *limits)
+        if this != self:
+            this.given = self
+        return this
 
     def simplifier(self, deep=False):
         if deep:
@@ -121,7 +134,7 @@ class Boolean(Basic):
         if len(args) == 2:
             from sympy.sets.sets import Interval
 
-            domain = Interval(*args, integer=True)
+            domain = Interval(*args, integer=x.is_integer)
         elif len(args) == 1:
             domain = args[0]
         else:
