@@ -79,7 +79,17 @@ class Contains(BooleanFunction):
             return [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
         if self.rhs.is_Intersection:
             return [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
-
+        if self.rhs.is_Interval:
+            if self.rhs.left_open:
+                lower_bound = self.lhs > self.rhs.start
+            else:
+                lower_bound = self.lhs >= self.rhs.start
+            if self.rhs.right_open:
+                upper_bound = self.lhs < self.rhs.end
+            else:
+                upper_bound = self.lhs <= self.rhs.end
+            upper_bound.given = lower_bound.given = self
+            return [lower_bound, upper_bound]
         return self
 
     def as_set(self):
