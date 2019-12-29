@@ -3781,6 +3781,9 @@ class ConditionalBoolean(Boolean):
     is_ConditionalBoolean = True
     __slots__ = []
 
+    def inverse(self):
+        return self.this.function.inverse()
+
     def strip(self):
         return self.this.function.strip()
 
@@ -3791,7 +3794,7 @@ class ConditionalBoolean(Boolean):
         func, function = self.funcs()
         if any(op.is_Exists for op, _ in func):
             return self
-        
+
         if function.is_Equality:
             return function.comprehension(operator, *limits, func=func)
         return self
@@ -3859,6 +3862,9 @@ class ConditionalBoolean(Boolean):
 
     def as_two_terms(self):
         return self.this.function.as_two_terms()
+
+    def limits_assertion(self):
+        return Forall(self.limits_condition, *self.limits)
 
     def limits_include(self, eq):
         variables = self.variables_set
@@ -5114,7 +5120,7 @@ def limits_dict(limits):
         elif len(domain) == 1:
             dic[x] = domain[0]
         else:
-            dic[x] = Interval(*domain, integer=True)
+            dic[x] = Interval(*domain, integer=x.is_integer)
     return dic
 
 

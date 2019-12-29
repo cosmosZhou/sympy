@@ -23,7 +23,7 @@ from sympy.utility import check
 def prove(Eq):
     n = Symbol('n', integer=True, positive=True)
     Eq << apply(n)
-    
+
     x = Symbol('x', real=True)
     x0 = Symbol('x0', real=True, positive=True)
     Eq.continuity = Equality(Limit(1 / x, x, x0, "+-"), 1 / x0, plausible=True)
@@ -31,13 +31,19 @@ def prove(Eq):
     Eq << Eq.continuity.this.lhs.doit()
 
     k, *ab = Eq[-1].lhs.args[0].args[-1].limits[0]
-    k = k.copy(domain=Interval(*ab, integer=True))    
+    k = k.copy(domain=Interval(*ab, integer=True))
 
     Eq << Eq.continuity.forall(x0, k, k + 1)
 
-    Eq << advanced_math.integral.mean_value_theorems.apply(Eq[-1])
-    
-    Eq << Eq[-1].summation((k, *ab))
+    Eq.mean_value_theorems = advanced_math.integral.mean_value_theorems.apply(Eq[-1])
+
+    Eq << Eq[-1].limits_assertion().split()
+
+    Eq << (Eq[-2].inverse(), Eq[-1].inverse())
+
+    Eq << (Eq.mean_value_theorems.subs(Eq[-2]), Eq.mean_value_theorems.subs(Eq[-1]))
+
+    Eq << (Eq[-2].summation((k, 1, n)), Eq[-1].summation((k, 1, n - 1)))
 
 
 if __name__ == '__main__':

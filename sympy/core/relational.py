@@ -9,7 +9,7 @@ from .evalf import EvalfMixin
 from .sympify import _sympify
 from .evaluate import global_evaluate
 
-from sympy.logic.boolalg import Boolean, BooleanAtom, And
+from sympy.logic.boolalg import Boolean, BooleanAtom
 
 __all__ = (
     'Rel', 'Eq', 'Ne', 'Lt', 'Le', 'Gt', 'Ge',
@@ -1426,6 +1426,18 @@ class GreaterThan(_Greater):
         # We don't use the op symbol here: workaround issue #7951
         return _sympify(lhs.__ge__(rhs))
 
+    def inverse(self):
+        if self.rhs > 0:
+            if self.lhs > 0:
+                return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
+            from sympy.sets import Contains, Interval
+            return Contains(1 / self.lhs, Interval(0, 1 / self.rhs, left_open=True), equivalent=self)
+        if self.rhs < 0:
+            if self.lhs < 0:
+                return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
+
+        return self
+
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
@@ -1594,11 +1606,47 @@ class LessThan(_Less):
 
     rel_op = '<='
 
+    def comprehension(self, operator, *limits, func=None):
+        if not operator.is_Sum:
+            return self
+        lhs = operator(self.lhs, *limits).simplifier()
+        rhs = operator(self.rhs, *limits).simplifier()
+        this = self.func(lhs, rhs)
+
+        if func:
+            from sympy.concrete import expr_with_limits
+            dic = expr_with_limits.limits_dict(limits)
+            for f, limits in func:
+                _dic = expr_with_limits.limits_dict(limits)
+                keys = dic.keys() & _dic.keys()
+                if keys:
+                    for k in keys:
+                        if dic[k] not in _dic[k]:
+                            return self
+                    limits = expr_with_limits.limits_delete(limits, keys)
+                    if not limits:
+                        continue
+                this = f(this, *limits).simplifier()
+
+        return this
+
     def __add__(self, exp):
         if isinstance(exp, (StrictLessThan, LessThan)):
             return exp.func(self.lhs + exp.lhs, self.rhs + exp.rhs, given=[self, exp])
         else:
             return Relational.__add__(self, exp)
+
+    def inverse(self):
+        if self.rhs > 0:
+            if self.lhs > 0:
+                return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
+        if self.rhs < 0:
+            if self.lhs < 0:
+                return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
+            from sympy.sets import Contains, Interval
+            return Contains(1 / self.lhs, Interval(1 / self.rhs, 0, right_open=True), equivalent=self)
+
+        return self
 
     @classmethod
     def _eval_relation(cls, lhs, rhs):

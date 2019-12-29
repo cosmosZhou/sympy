@@ -1925,19 +1925,16 @@ class Mul(Expr, AssocOp):
     def __iter__(self):
         raise TypeError
 
-    def __getitem__(self, indices, **kw_args):
-        from sympy.functions.elementary.miscellaneous import Ref
+    def __getitem__(self, indices, **kwargs):
         args = []
-        found = False
         for arg in self.args:
-            if isinstance(arg, Ref):
-                args.append(arg[indices])
-                found = True
-            else:
+            shape_length = len(arg.shape)
+            if shape_length == 0:
                 args.append(arg)
-        if found :
-            return self.func(*args)
-        return None
+            else:
+                args.append(arg[indices[:shape_length]])
+
+        return self.func(*args)
 
 
 def prod(a, start=1):
