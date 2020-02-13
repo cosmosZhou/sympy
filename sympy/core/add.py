@@ -1135,7 +1135,7 @@ class Add(Expr, AssocOp):
                 if not pos.limits:
                     continue
                 t = pos.limits[0][0]
-                pattern = pos.function.subs(t, Wild(t.name))
+                pattern = pos.function.subs(t, Wild(t.name, **t.assumptions0))
                 for i, neg in enumerate(negative):
                     if not (len(pos.limits) == len(neg.limits) == 1 and len(pos.limits[0]) == len(neg.limits[0]) == 3):
                         continue

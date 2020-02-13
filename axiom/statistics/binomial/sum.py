@@ -1,4 +1,4 @@
-import sys
+
 from sympy import Symbol
 import axiom
 from sympy.core.relational import Equality

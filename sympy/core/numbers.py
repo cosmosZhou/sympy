@@ -4545,7 +4545,7 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
         return S.One
 
     def __neg__(self):
-        return S.NegativeInfinitesimal
+        return S.Infinitesimal
 
 
 _register_classes()

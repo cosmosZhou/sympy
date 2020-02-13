@@ -44,6 +44,13 @@ def prove(Eq):
     Eq << (Eq.mean_value_theorems.subs(Eq[-2]), Eq.mean_value_theorems.subs(Eq[-1]))
 
     Eq << (Eq[-2].summation((k, 1, n)), Eq[-1].summation((k, 1, n - 1)))
+    
+    Eq << (Eq[-2].this.lhs.doit(), Eq[-1].this.lhs.doit().reversed)
+    
+    k = Eq[-1].lhs.variable
+    Eq << Eq[-1].this.lhs.limits_subs(k, k - 1) + 1
+
+    Eq << (Eq[-3] / Eq[-3].lhs, Eq[-1] / Eq[-3].lhs) 
 
 
 if __name__ == '__main__':

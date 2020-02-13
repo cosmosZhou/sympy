@@ -10,6 +10,7 @@ from .sympify import _sympify
 from .evaluate import global_evaluate
 
 from sympy.logic.boolalg import Boolean, BooleanAtom
+from sympy.core.sympify import sympify
 
 __all__ = (
     'Rel', 'Eq', 'Ne', 'Lt', 'Le', 'Gt', 'Ge',
@@ -59,6 +60,28 @@ class Relational(Boolean, Expr, EvalfMixin):
     _op_priority = 12
     # ValidRelationOperator - Defined below, because the necessary classes
     #   have not yet been defined
+
+    def comprehension(self, operator, *limits, func=None):
+        lhs = operator(self.lhs, *limits).simplifier()
+        rhs = operator(self.rhs, *limits).simplifier()
+        this = self.func(lhs, rhs)
+
+        if func:
+            from sympy.concrete import expr_with_limits
+            dic = expr_with_limits.limits_dict(limits)
+            for f, limits in func:
+                _dic = expr_with_limits.limits_dict(limits)
+                keys = dic.keys() & _dic.keys()
+                if keys:
+                    for k in keys:
+                        if dic[k] not in _dic[k]:
+                            return self
+                    limits = expr_with_limits.limits_delete(limits, keys)
+                    if not limits:
+                        continue
+                this = f(this, *limits).simplifier()
+
+        return this
 
     @property
     def scope_variables(self):
@@ -507,7 +530,7 @@ class Equality(Relational):
             elif all(isinstance(i, BooleanAtom) for i in (rhs, lhs)):
                 return S.false  # True != False
             elif not (lhs.is_Symbol or rhs.is_Symbol) and (
-                    isinstance(lhs, Boolean) !=
+                    isinstance(lhs, Boolean) != 
                     isinstance(rhs, Boolean)):
                 return S.false  # only Booleans can equal Booleans
 
@@ -958,28 +981,6 @@ class Equality(Relational):
     def as_two_terms(self):
         return self.func(self.lhs.as_two_terms(), self.rhs.as_two_terms(), equivalent=self).simplifier()
 
-    def comprehension(self, operator, *limits, func=None):
-        lhs = operator(self.lhs, *limits).simplifier()
-        rhs = operator(self.rhs, *limits).simplifier()
-        this = self.func(lhs, rhs)
-
-        if func:
-            from sympy.concrete import expr_with_limits
-            dic = expr_with_limits.limits_dict(limits)
-            for f, limits in func:
-                _dic = expr_with_limits.limits_dict(limits)
-                keys = dic.keys() & _dic.keys()
-                if keys:
-                    for k in keys:
-                        if dic[k] not in _dic[k]:
-                            return self
-                    limits = expr_with_limits.limits_delete(limits, keys)
-                    if not limits:
-                        continue
-                this = f(this, *limits).simplifier()
-
-        return this
-
     def split(self):
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.concrete.expr_with_limits import Forall
@@ -1056,6 +1057,9 @@ class Unequality(Relational):
     is_Unequality = True
     __slots__ = []
 
+    def comprehension(self, operator, *limits, func=None):
+        ...
+
     def abs(self):
         return self.func(abs(self.lhs), abs(self.rhs), given=self)
 
@@ -1110,6 +1114,11 @@ class _Inequality(Relational):
 
     """
     __slots__ = []
+
+    def comprehension(self, operator, *limits, func=None):
+        if not operator.is_Sum:
+            return self
+        return Relational.comprehension(self, operator, *limits, func=func)
 
     def __new__(cls, lhs, rhs, **options):
         lhs = _sympify(lhs)
@@ -1606,31 +1615,8 @@ class LessThan(_Less):
 
     rel_op = '<='
 
-    def comprehension(self, operator, *limits, func=None):
-        if not operator.is_Sum:
-            return self
-        lhs = operator(self.lhs, *limits).simplifier()
-        rhs = operator(self.rhs, *limits).simplifier()
-        this = self.func(lhs, rhs)
-
-        if func:
-            from sympy.concrete import expr_with_limits
-            dic = expr_with_limits.limits_dict(limits)
-            for f, limits in func:
-                _dic = expr_with_limits.limits_dict(limits)
-                keys = dic.keys() & _dic.keys()
-                if keys:
-                    for k in keys:
-                        if dic[k] not in _dic[k]:
-                            return self
-                    limits = expr_with_limits.limits_delete(limits, keys)
-                    if not limits:
-                        continue
-                this = f(this, *limits).simplifier()
-
-        return this
-
     def __add__(self, exp):
+        exp = sympify(exp)
         if isinstance(exp, (StrictLessThan, LessThan)):
             return exp.func(self.lhs + exp.lhs, self.rhs + exp.rhs, given=[self, exp])
         else:

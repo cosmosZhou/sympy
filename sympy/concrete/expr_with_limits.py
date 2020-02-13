@@ -111,6 +111,10 @@ def _process_limits(*symbols):
                     # general case
                     if V[2] is None and not V[1] is None:
                         orientation *= -1
+                            # added here by cosmos to remove the domain of this variable!
+#                     if isinstance(newsymbol, Symbol) and {'domain', 'positive', 'negative', 'nonpositive', 'nonnegative'} & newsymbol.assumptions0.keys():
+#                         newsymbol = newsymbol.copy(integer=newsymbol.is_integer)
+                        
                     V = [newsymbol] + [i for i in V[1:] if i is not None]
 
                 if not isinstance(newsymbol, Idx) or len(V) == 3:
@@ -136,6 +140,7 @@ def _process_limits(*symbols):
                                     raise ValueError("Summation will set Idx value too high.")
                             except TypeError:
                                 pass
+                            
                         limits.append(Tuple(*V))
                         continue
                     if len(V) == 1 or (len(V) == 2 and V[1] is None):
