@@ -733,12 +733,6 @@ class StrPrinter(Printer):
             return 'Sum[%s](%s)' % (limits, self._print(expr.function))
         return 'Sum(%s)' % self._print(expr.function)
 
-    def _print_Minimum(self, expr):
-        limits = ','.join([':'.join([self._print(arg) for arg in limit]) for limit in expr.limits])
-        if limits:
-            return 'Min[%s](%s)' % (limits, self._print(expr.function))
-        return 'Min(%s)' % self._print(expr.function)
-
     def _print_Equality(self, expr):
         return '%s == %s' % tuple(self._print(arg) for arg in expr.args)
 

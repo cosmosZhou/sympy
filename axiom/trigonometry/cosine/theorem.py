@@ -1,14 +1,11 @@
-from sympy.utility import Eq, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan
 
-from sympy import exp, Symbol
+from sympy import Symbol
 
-from sympy import factorial, cos, pi
+from sympy import cos, pi
 from sympy.sets.sets import Interval
-from sympy.core.numbers import Infinitesimal, NegativeInfinitesimal, epsilon, oo
-from sympy.concrete.expr_with_limits import Maximum
-from sympy.core.add import Add
 
 
 def extract(x_constraint, y_constraint, z_constraint):

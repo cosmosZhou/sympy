@@ -1153,7 +1153,11 @@ class Integral(AddWithLimits):
                     sgm.append(self.func(f, (x, domain.start, domain.end)).simplifier())
 
                 return Add(*sgm)
-            limit = x, domain.start, domain.end
+            try:
+                limit = x, domain.start, domain.end
+            except AttributeError:
+#                 AttributeError: 'Union' object has no attribute 'start'
+                return self
         var = limit[0]
 
         import sympy
@@ -1411,7 +1415,7 @@ class Integral(AddWithLimits):
         elif method == "midpoint":
             result = dx * Sum(f.subs(x, a + k * dx - dx / 2), (k, 1, n))
         elif method == "trapezoid":
-            result = dx * ((f.subs(x, a) + f.subs(x, b)) / 2 +
+            result = dx * ((f.subs(x, a) + f.subs(x, b)) / 2 + 
                 Sum(f.subs(x, a + k * dx), (k, 1, n - 1)))
         else:
             raise ValueError("Unknown method %s" % method)

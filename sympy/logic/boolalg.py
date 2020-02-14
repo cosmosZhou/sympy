@@ -92,6 +92,13 @@ class Boolean(Basic):
             this.given = self
         return this
 
+    def integral(self, *limits):
+        from sympy.integrals.integrals import Integral
+        this = self.comprehension(Integral, *limits)
+        if this != self:
+            this.given = self
+        return this
+
     def simplifier(self, deep=False):
         if deep:
             hit = False

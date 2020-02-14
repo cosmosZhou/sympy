@@ -5,7 +5,7 @@ from sympy.core.compatibility import is_sequence
 from sympy.core.containers import Tuple
 from sympy.core.expr import Expr
 from sympy.core.mul import Mul
-from sympy.core.relational import Relational, Equality
+from sympy.core.relational import Relational
 from sympy.core.singleton import S
 from sympy.core.symbol import Symbol, Dummy
 from sympy.core.sympify import sympify
@@ -41,6 +41,15 @@ def _common_new(cls, function, *symbols, **assumptions):
             if len(li) == 4:
                 function = function.subs(li[0], li[-1])
                 limits[i] = tuple(li[:-1])
+                
+            if len(li) == 3:
+                oldsymbol = li[0] 
+# added here by cosmos to remove the domain of this variable!
+                if isinstance(oldsymbol, Symbol) and {'domain', 'positive', 'negative', 'nonpositive', 'nonnegative'} & oldsymbol.assumptions0.keys():
+                    newsymbol = oldsymbol.copy(integer=oldsymbol.is_integer)
+                    function = function.subs(oldsymbol, newsymbol)
+                    limits[i] = Tuple(newsymbol, *li[1:])
+ 
     else:
         # symbol not provided -- we can still try to compute a general form
 #         free = function.free_symbols
@@ -111,9 +120,6 @@ def _process_limits(*symbols):
                     # general case
                     if V[2] is None and not V[1] is None:
                         orientation *= -1
-                            # added here by cosmos to remove the domain of this variable!
-#                     if isinstance(newsymbol, Symbol) and {'domain', 'positive', 'negative', 'nonpositive', 'nonnegative'} & newsymbol.assumptions0.keys():
-#                         newsymbol = newsymbol.copy(integer=newsymbol.is_integer)
                         
                     V = [newsymbol] + [i for i in V[1:] if i is not None]
 
@@ -1612,6 +1618,43 @@ class Minimum(ExprWithLimits):
 #             z, x = x.bisect(front, back)
 #             return self.func(self.func(self.function, (z,)).simplifier(), (x,))
 #         return self
+    def _latex(self, p):
+        if len(self.limits) == 1:
+            args = tuple([p._print(i) for i in self.limits[0]])
+            if len(args) == 1:
+                tex = r"\min\limits_{%s} " % args
+            elif len(args) == 3:
+                tex = r"\min\limits_{%s \leq %s \leq %s} " % (args[1], args[0], args[2])
+            else:
+                raise Exception(self)
+
+        elif len(self.limits) == 0:
+            tex = r"\min "
+        else:
+
+            def _format_ineq(l):
+                return r"%s \leq %s \leq %s" % \
+                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
+
+            tex = r"\min\limits_{\substack{%s}} " % \
+                str.join('\\\\', [_format_ineq(l) for l in self.limits])
+
+        if isinstance(self.function, Add):
+            tex += r"\left(%s\right)" % p._print(self.function)
+        else:
+            tex += p._print(self.function)
+
+        return tex
+
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return 'Min[%s](%s)' % (limits, p._print(self.function))
+        return 'Min(%s)' % p._print(self.function)
+
+    def assertion(self):
+        from sympy.core.relational import LessThan
+        return Forall(LessThan(self, self.function), *self.limits)
 
 
 class Maximum(ExprWithLimits):
@@ -2285,6 +2328,44 @@ class Maximum(ExprWithLimits):
             z, x = x.pop()
             return self.func(self.func(self.function, (x,)).simplifier(), (z,))
         return self
+
+    def _latex(self, p):
+        if len(self.limits) == 1:
+            args = tuple([p._print(i) for i in self.limits[0]])
+            if len(args) == 1:
+                tex = r"\max\limits_{%s} " % args
+            elif len(args) == 3:
+                tex = r"\max\limits_{%s \leq %s \leq %s} " % (args[1], args[0], args[2])
+            else:
+                raise Exception(self)
+
+        elif len(self.limits) == 0:
+            tex = r"\min "
+        else:
+
+            def _format_ineq(l):
+                return r"%s \leq %s \leq %s" % \
+                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
+
+            tex = r"\min\limits_{\substack{%s}} " % \
+                str.join('\\\\', [_format_ineq(l) for l in self.limits])
+
+        if isinstance(self.function, Add):
+            tex += r"\left(%s\right)" % p._print(self.function)
+        else:
+            tex += p._print(self.function)
+
+        return tex
+
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return 'Max[%s](%s)' % (limits, p._print(self.function))
+        return 'Max(%s)' % p._print(self.function)
+
+    def assertion(self):
+        from sympy.core.relational import GreaterThan
+        return Forall(GreaterThan(self, self.function), *self.limits)
 
 
 class Ref(ExprWithLimits):
@@ -3786,6 +3867,9 @@ class ConditionalBoolean(Boolean):
     is_ConditionalBoolean = True
     __slots__ = []
 
+    def __mul__(self, rhs):
+        return self.this.function.__mul__(rhs)
+        
     def inverse(self):
         return self.this.function.inverse()
 
@@ -3800,8 +3884,13 @@ class ConditionalBoolean(Boolean):
         if any(op.is_Exists for op, _ in func):
             return self
 
-        if function.is_Equality:
+        from sympy.core.relational import _Greater, _Less
+        from sympy import Integral, Sum
+        
+        if function.is_Equality or \
+        isinstance(function, (_Less, _Greater)) and operator in (Integral, Sum):
             return function.comprehension(operator, *limits, func=func)
+        
         return self
 
     @staticmethod

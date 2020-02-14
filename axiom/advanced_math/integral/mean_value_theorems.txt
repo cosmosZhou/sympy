@@ -1,2 +1,0 @@
-\(\forall_{\substack{a \le \xi \le b}}{\lim\limits_{z \to \xi} f{\left(z \right)} = f{\left(\xi \right)}}\tag*{Eq[0]}\)
-\(\exists_{\substack{a \le \xi \le b}}{\int\limits_{a}^{b} f{\left(z \right)}\, dz = \left(- a + b\right) f{\left(\xi \right)}}\tag*{Eq[1]}\)

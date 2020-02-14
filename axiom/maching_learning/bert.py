@@ -1,7 +1,4 @@
-from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.symbol import Symbol
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
 from sympy.utility import Ref, Sum, Min, plausible
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase

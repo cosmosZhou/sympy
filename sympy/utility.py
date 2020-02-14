@@ -410,6 +410,8 @@ def check(func):
         except Exception as e:
             print(e)
             traceback.print_exc()
+            if Operator.stack:
+                Operator.stack = [] 
             return None
 
         jsonFile = py.replace('.py', '.json')

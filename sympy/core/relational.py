@@ -474,6 +474,14 @@ class Equality(Relational):
 
     is_Equality = True
 
+    @staticmethod
+    def continuity(f, a, b):
+        from sympy.concrete.expr_with_limits import Forall
+        from sympy import Symbol, Limit
+        xi = Symbol('xi', real=True)
+        z = Symbol('z', real=True)
+        return Forall(Equality(Limit(f(z), z, xi, '+-'), f(xi)), (xi, a, b))
+        
     def strip(self):
         from sympy.concrete.expr_with_limits import Forall
         if self.lhs.func == self.rhs.func:
@@ -1116,9 +1124,10 @@ class _Inequality(Relational):
     __slots__ = []
 
     def comprehension(self, operator, *limits, func=None):
-        if not operator.is_Sum:
-            return self
-        return Relational.comprehension(self, operator, *limits, func=func)
+        from sympy import Integral, Sum
+        if operator in (Integral, Sum):
+            return Relational.comprehension(self, operator, *limits, func=func)
+        return self
 
     def __new__(cls, lhs, rhs, **options):
         lhs = _sympify(lhs)
@@ -1163,6 +1172,46 @@ class _Greater(_Inequality):
     """
     __slots__ = ()
 
+    def __and__(self, other):
+        from sympy.sets.sets import Interval
+        from sympy.sets.contains import Contains
+        x = None
+        if isinstance(other, _Greater):
+            if self.lhs == other.rhs:
+                x = self.lhs
+                
+                left = self.rhs
+                left_open = isinstance(self, StrictGreaterThan)
+                
+                right = other.lhs                
+                right_open = isinstance(other, StrictGreaterThan)
+            elif self.rhs == other.lhs:
+                x = self.rhs
+                left = other.rhs
+                left_open = isinstance(other, StrictGreaterThan)
+                
+                right = self.lhs
+                right_open = isinstance(self, StrictGreaterThan)
+        elif isinstance(other, _Less):
+            if self.rhs == other.rhs:
+                x = self.rhs
+                left = other.lhs
+                left_open = isinstance(other, StrictLessThan)
+                
+                right = self.lhs
+                right_open = isinstance(self, StrictGreaterThan)
+            elif self.lhs == other.lhs:
+                x = self.lhs
+                left = self.rhs
+                left_open = isinstance(self, StrictGreaterThan)
+                
+                right = other.rhs
+                right_open = isinstance(other, StrictLessThan)
+        if x is not None:                
+            return Contains(x, Interval(left, right, left_open=left_open, right_open=right_open), equivalent=[self, other])
+                
+        return Relational.__and__(self, other)
+
     @property
     def gts(self):
         return self._args[0]
@@ -1170,6 +1219,11 @@ class _Greater(_Inequality):
     @property
     def lts(self):
         return self._args[1]
+
+    def limit(self, x, xlim, dir='+'):
+        """ Compute limit x->xlim.
+        """
+        return GreaterThan(self.lhs.limit(x, xlim, dir), self.rhs.limit(x, xlim, dir), given=self, evaluate=False)
 
 
 class _Less(_Inequality):
@@ -1192,13 +1246,51 @@ class _Less(_Inequality):
     def __and__(self, other):
         from sympy.sets.sets import Interval
         from sympy.sets.contains import Contains
-        if isinstance(other, _Greater) and self.lhs == other.lhs:
-            return Contains(self.lhs,
-                            Interval(other.rhs, self.rhs,
-                                     left_open=isinstance(other, StrictGreaterThan),
-                                     right_open=isinstance(self, StrictLessThan)),
-                            equivalent=[self, other])
+        x = None
+        if isinstance(other, _Greater) :
+            if self.rhs == other.rhs:
+                x = self.rhs
+                
+                left = self.lhs 
+                left_open = isinstance(self, StrictLessThan)
+                
+                right = other.lhs 
+                right_open = isinstance(other, StrictGreaterThan)
+            elif self.lhs == other.lhs:
+                x = self.lhs
+                
+                left = other.rhs
+                left_open = isinstance(other, StrictGreaterThan)
+                                         
+                right = self.rhs
+                right_open = isinstance(self, StrictLessThan)
+        elif isinstance(other, _Less) :
+            if self.rhs == other.lhs:
+                x = self.rhs
+                
+                left = self.lhs
+                left_open = isinstance(self, StrictLessThan)
+                
+                right = other.rhs
+                right_open = isinstance(other, StrictLessThan)
+            elif self.lhs == other.rhs:
+                x = self.lhs
+                
+                left = other.lhs
+                left_open = isinstance(other, StrictLessThan)
+                
+                right = self.rhs
+                right_open = isinstance(self, StrictLessThan)
+
+        if x is not None:                
+            return Contains(x, Interval(left, right, left_open=left_open, right_open=right_open), equivalent=[self, other])
+    
         return Relational.__and__(self, other)
+
+    def limit(self, x, xlim, dir='+'):
+        """ Compute limit x->xlim.
+        """
+        return LessThan(self.lhs.limit(x, xlim, dir), self.rhs.limit(x, xlim, dir), given=self, evaluate=False)
 
 
 class GreaterThan(_Greater):
@@ -1452,7 +1544,7 @@ class GreaterThan(_Greater):
             eq, *_ = args
             if isinstance(eq, Equality):
                 args = eq.args
-                return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), equivalent=[self, eq])
+                return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), equivalent=[self, eq])
             elif isinstance(eq, StrictLessThan):
                 old, new = eq.args
                 if eq.plausible:

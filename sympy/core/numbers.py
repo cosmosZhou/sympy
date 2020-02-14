@@ -672,7 +672,7 @@ class Number(AtomicExpr):
 
     def _as_mpf_val(self, prec):
         """Evaluation of mpf tuple accurate to at least prec bits."""
-        raise NotImplementedError('%s needs ._as_mpf_val() method' %
+        raise NotImplementedError('%s needs ._as_mpf_val() method' % 
             (self.__class__.__name__))
 
     def _eval_evalf(self, prec):
@@ -686,11 +686,11 @@ class Number(AtomicExpr):
         return mlib.to_float(self._as_mpf_val(53))
 
     def floor(self):
-        raise NotImplementedError('%s needs .floor() method' %
+        raise NotImplementedError('%s needs .floor() method' % 
             (self.__class__.__name__))
 
     def ceiling(self):
-        raise NotImplementedError('%s needs .ceiling() method' %
+        raise NotImplementedError('%s needs .ceiling() method' % 
             (self.__class__.__name__))
 
     def __floor__(self):
@@ -785,11 +785,11 @@ class Number(AtomicExpr):
     __truediv__ = __div__
 
     def __eq__(self, other):
-        raise NotImplementedError('%s needs .__eq__() method' %
+        raise NotImplementedError('%s needs .__eq__() method' % 
             (self.__class__.__name__))
 
     def __ne__(self, other):
-        raise NotImplementedError('%s needs .__ne__() method' %
+        raise NotImplementedError('%s needs .__ne__() method' % 
             (self.__class__.__name__))
 
     def __lt__(self, other):
@@ -797,7 +797,7 @@ class Number(AtomicExpr):
             other = _sympify(other)
         except SympifyError:
             raise TypeError("Invalid comparison %s < %s" % (self, other))
-        raise NotImplementedError('%s needs .__lt__() method' %
+        raise NotImplementedError('%s needs .__lt__() method' % 
             (self.__class__.__name__))
 
     def __le__(self, other):
@@ -805,7 +805,7 @@ class Number(AtomicExpr):
             other = _sympify(other)
         except SympifyError:
             raise TypeError("Invalid comparison %s <= %s" % (self, other))
-        raise NotImplementedError('%s needs .__le__() method' %
+        raise NotImplementedError('%s needs .__le__() method' % 
             (self.__class__.__name__))
 
     def __gt__(self, other):
@@ -2704,6 +2704,12 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
     def nonzero_domain(self, x):
         from sympy.sets.sets import EmptySet
         return EmptySet()
+    
+#     def __hash__(self):
+#         return super(Zero, self).__hash__()
+#     
+#     def __eq__(self, other):
+#         return isinstance(other, Zero) or other == 0
 
 
 class One(with_metaclass(Singleton, IntegerConstant)):
@@ -4196,7 +4202,7 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
 
     @_sympifyit('other', NotImplemented)
     def __div__(self, other):
-        if isinstance(other, (Infinitesimal, NegativeInfinitesimal, Zero)):
+        if isinstance(other, (Infinitesimal, NegativeInfinitesimal)) or other == 0:
             return S.NaN
 
         if other > 0:
@@ -4265,8 +4271,9 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     def __lt__(self, other):
         if isinstance(other, Infinitesimal):
             raise TypeError("Invalid comparison %s < %s" % (self, other))
-        if isinstance(other, (NegativeInfinitesimal, Zero)):
+        if isinstance(other, NegativeInfinitesimal) or other == 0:
             return S.false
+        
         if other > 0:
             return S.true
         if other < 0:
@@ -4277,7 +4284,7 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     def __le__(self, other):
         if isinstance(other, Infinitesimal):
             raise TypeError("Invalid comparison %s <= %s" % (self, other))
-        if isinstance(other, (NegativeInfinitesimal, Zero)):
+        if isinstance(other, NegativeInfinitesimal) or other == 0:
             return S.false
 
         if other > 0:
@@ -4290,10 +4297,9 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     def __gt__(self, other):
         if isinstance(other, Infinitesimal):
             raise TypeError("Invalid comparison %s > %s" % (self, other))
-
-        if isinstance(other, (NegativeInfinitesimal, Zero)):
+        if isinstance(other, NegativeInfinitesimal) or other == 0:
             return S.true
-
+        
         if other > 0:
             return S.false
         if other < 0:
@@ -4304,7 +4310,7 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     def __ge__(self, other):
         if isinstance(other, Infinitesimal):
             raise TypeError("Invalid comparison %s >= %s" % (self, other))
-        if isinstance(other, (NegativeInfinitesimal, Zero)):
+        if isinstance(other, NegativeInfinitesimal) or other == 0:
             return S.true
         if other > 0:
             return S.false
@@ -4417,7 +4423,7 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
 
     @_sympifyit('other', NotImplemented)
     def __div__(self, other):
-        if isinstance(other, (Infinitesimal, NegativeInfinitesimal, Zero)):
+        if isinstance(other, (Infinitesimal, NegativeInfinitesimal)) or other == 0:
             return S.NaN
 
         if other > 0:
@@ -4486,8 +4492,9 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     def __lt__(self, other):
         if isinstance(other, NegativeInfinitesimal):
             raise TypeError("Invalid comparison %s < %s" % (self, other))
-        if isinstance(other, (Infinitesimal, Zero)):
+        if isinstance(other, Infinitesimal) or other == 0:
             return S.true
+        
         if other > 0:
             return S.true
         if other < 0:
@@ -4499,7 +4506,7 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     def __le__(self, other):
         if isinstance(other, NegativeInfinitesimal):
             raise TypeError("Invalid comparison %s <= %s" % (self, other))
-        if isinstance(other, (Infinitesimal, Zero)):
+        if isinstance(other, Infinitesimal) or other == 0:
             return S.true
         if other > 0:
             return S.true
@@ -4512,8 +4519,9 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     def __gt__(self, other):
         if isinstance(other, NegativeInfinitesimal):
             raise TypeError("Invalid comparison %s > %s" % (self, other))
-        if isinstance(other, (Infinitesimal, Zero)):
+        if isinstance(other, Infinitesimal) or other == 0:
             return S.false
+        
         if other > 0:
             return S.false
         if other < 0:
@@ -4524,8 +4532,9 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     def __ge__(self, other):
         if isinstance(other, NegativeInfinitesimal):
             raise TypeError("Invalid comparison %s >= %s" % (self, other))
-        if isinstance(other, (Infinitesimal, Zero)):
+        if isinstance(other, Infinitesimal) or other == 0:
             return S.false
+        
         if other > 0:
             return S.false
         if other < 0:

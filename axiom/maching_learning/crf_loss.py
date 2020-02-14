@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import Ref, Sum, Eq, Min, plausible
+from sympy.utility import Ref, Sum, plausible
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 import sympy

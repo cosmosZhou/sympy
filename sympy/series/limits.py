@@ -273,5 +273,6 @@ class Limit(Expr):
             r = heuristics(e, z, z0, dir)
             if r is None:
                 return self
-
+        except NotImplementedError:
+            return self
         return r

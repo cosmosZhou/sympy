@@ -5,7 +5,6 @@ from sympy.core.relational import Equality
 
 from sympy.series.limits import Limit
 from sympy.functions.elementary.exponential import log
-from sympy.concrete.expr_with_limits import Forall
 from axiom import advanced_math
 from sympy.sets.sets import Interval
 
@@ -35,13 +34,13 @@ def prove(Eq):
 
     Eq << Eq.continuity.forall(x0, k, k + 1)
 
-    Eq.mean_value_theorems = advanced_math.integral.mean_value_theorems.apply(Eq[-1])
+    Eq.mean_value_theorem = advanced_math.integral.mean_value_theorem.apply(Eq[-1])
 
     Eq << Eq[-1].limits_assertion().split()
 
     Eq << (Eq[-2].inverse(), Eq[-1].inverse())
 
-    Eq << (Eq.mean_value_theorems.subs(Eq[-2]), Eq.mean_value_theorems.subs(Eq[-1]))
+    Eq << (Eq.mean_value_theorem.subs(Eq[-2]), Eq.mean_value_theorem.subs(Eq[-1]))
 
     Eq << (Eq[-2].summation((k, 1, n)), Eq[-1].summation((k, 1, n - 1)))
     
@@ -51,6 +50,10 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.limits_subs(k, k - 1) + 1
 
     Eq << (Eq[-3] / Eq[-3].lhs, Eq[-1] / Eq[-3].lhs) 
+    
+    Eq << (Eq[-2].limit(n, oo), Eq[-1].limit(n, oo))
+    
+    Eq << Eq[-1].subs(Eq[-2])
 
 
 if __name__ == '__main__':

@@ -609,34 +609,6 @@ class LatexPrinter(Printer):
 
         return tex
 
-    def _print_Minimum(self, expr):
-        if len(expr.limits) == 1:
-            args = tuple([self._print(i) for i in expr.limits[0]])
-            if len(args) == 1:
-                tex = r"\min\limits_{%s} " % args
-            elif len(args) == 3:
-                tex = r"\min\limits_{%s=%s}^{%s} " % args
-            else:
-                raise Exception(expr)
-
-        elif len(expr.limits) == 0:
-            tex = r"\min "
-        else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([self._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\min\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in expr.limits])
-
-        if isinstance(expr.function, Add):
-            tex += r"\left(%s\right)" % self._print(expr.function)
-        else:
-            tex += self._print(expr.function)
-
-        return tex
-
     def _print_Product(self, expr):
         if len(expr.limits) == 1:
             tex = r"\prod\limits_{%s=%s}^{%s} " % \
@@ -1579,8 +1551,8 @@ class LatexPrinter(Printer):
                 x[0] = ''
             return ':'.join(map(self._print, x))
 
-        return (self._print(expr.parent) + r'\left[' +
-                latexslice(expr.rowslice) + ', ' +
+        return (self._print(expr.parent) + r'\left[' + 
+                latexslice(expr.rowslice) + ', ' + 
                 latexslice(expr.colslice) + r'\right]')
 
     def _print_BlockMatrix(self, expr):
@@ -1898,7 +1870,7 @@ class LatexPrinter(Printer):
         if hasattr(d, 'as_boolean'):
             return '\\text{Domain: }' + self._print(d.as_boolean())
         elif hasattr(d, 'set'):
-            return ('\\text{Domain: }' + self._print(d.symbols) + '\\text{ in }' +
+            return ('\\text{Domain: }' + self._print(d.symbols) + '\\text{ in }' + 
                     self._print(d.set))
         elif hasattr(d, 'symbols'):
             return '\\text{Domain on }' + self._print(d.symbols)
@@ -1930,8 +1902,8 @@ class LatexPrinter(Printer):
         else:
             printset = tuple(s)
 
-        return (r"\left\{" +
-                r", ".join(self._print(el) for el in printset) +
+        return (r"\left\{" + 
+                r", ".join(self._print(el) for el in printset) + 
                 r"\right\}")
 
     def _print_bernoulli(self, expr, exp=None):
@@ -1978,8 +1950,8 @@ class LatexPrinter(Printer):
         else:
             printset = tuple(s)
 
-        return (r"\left[" +
-                r", ".join(self._print(el) for el in printset) +
+        return (r"\left[" + 
+                r", ".join(self._print(el) for el in printset) + 
                 r"\right]")
 
     _print_SeqPer = _print_SeqFormula
