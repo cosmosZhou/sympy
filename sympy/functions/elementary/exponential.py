@@ -30,6 +30,12 @@ class ExpBase(Function):
 
     unbranched = True
 
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, index):
+        return self.func(self.arg[index])
+
     def inverse(self, argindex=1):
         """
         Returns the inverse function of ``exp(x)``.
@@ -961,10 +967,13 @@ class softmax(Function):
     def simplifier(self):
         return self
 
-    def __getitem__(self, key):
+    def __getitem__(self, index):
         if len(self.shape) == 1:
             from sympy.concrete.summations import Sum
             x = self.arg
-            return exp(x[key]) / Sum(exp(x))
-        return Function.__getitem__(self, key)
+            return exp(x[index]) / Sum(exp(x))
+        return self.func(self.arg[index])
+
+    def __iter__(self):
+        raise TypeError
 

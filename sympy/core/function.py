@@ -445,6 +445,12 @@ class Function(Application, Expr):
     def dtype(self):
         return self.args[0].dtype
 
+#it is highly dangerous to write the following codes below: this pitfall will disable the function sympy.solvers.recurr.rsolve
+#     def __iter__(self):
+#         raise TypeError
+#     def __getitem__(self, index):
+#         return self.func(self.arg[index])
+
     @property
     def _diff_wrt(self):
         return False

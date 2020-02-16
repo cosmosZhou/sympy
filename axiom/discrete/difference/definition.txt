@@ -13,4 +13,4 @@
 \(- \sum\limits_{o=0}^{n + 1} \left(-1\right)^{n} \left(-1\right)^{o} f{\left(o + x \right)} {\binom{n}{o - 1}} = \sum\limits_{o=0}^{n} \left(-1\right)^{n} \left(-1\right)^{o} f{\left(o + x + 1 \right)} {\binom{n}{o}}\tag*{Eq[11]}\)
 \(- \left(-1\right)^{n} \sum\limits_{o=0}^{n} \left(-1\right)^{o + 1} f{\left(o + x + 1 \right)} {\binom{n}{o}} = \sum\limits_{o=0}^{n} \left(-1\right)^{n} \left(-1\right)^{o} f{\left(o + x + 1 \right)} {\binom{n}{o}}\tag*{Eq[12]}\)
 \(- \sum\limits_{o=0}^{n} \left(-1\right)^{o + 1} f{\left(o + x + 1 \right)} {\binom{n}{o}} = \sum\limits_{o=0}^{n} \left(-1\right)^{o} f{\left(o + x + 1 \right)} {\binom{n}{o}}\tag*{Eq[13]}\)
-\(- \sum\limits_{o=0}^{n} - \left(-1\right)^{o} f{\left(o + x + 1 \right)} {\binom{n}{o}} = \sum\limits_{o=0}^{n} \left(-1\right)^{o} f{\left(o + x + 1 \right)} {\binom{n}{o}}\tag*{Eq[14]}\)
+\(\text{True}\)

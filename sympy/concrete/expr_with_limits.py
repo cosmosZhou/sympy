@@ -882,8 +882,8 @@ class AddWithLimits(ExprWithLimits):
             return Matrix._new(summand.rows, summand.cols,
                 [self.func(i, *self.limits) for i in summand._mat])
         elif summand != self.function:
-#             if _coeff_isneg(summand):
-#                 return -self.func(-summand, *self.limits)
+            if _coeff_isneg(summand):
+                return -self.func(-summand, *self.limits)
             return self.func(summand, *self.limits)
         
         return self

@@ -72,6 +72,8 @@ def prove(Eq):
     Eq << Eq[-1].this.function.rhs.expand(deep=False)
 
     Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp()
+    
+    Eq.exist_C0 = Eq.exist_C0.subs(Eq[10].reversed)        
 
     x = Symbol('x')
 
@@ -93,6 +95,10 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-1].rhs.args[0]
 
+    Eq << Eq[-1].this.rhs.rewrite(factorial) / factorial(k + 1)
+    
+    Eq << Eq[-1].this.rhs.powsimp(deep=True)
+    
     Eq << Eq.exist_C0.subs(Eq[-1].reversed, Eq.factorial_expand)
 
     Eq << Eq[-1].this.function.rhs.expand()
