@@ -1,13 +1,8 @@
-from sympy.core.relational import Equality, LessThan, Unequality, \
-    StrictGreaterThan, GreaterThan
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Equality
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
 from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset
-from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
 
 # provided: |A| = 0
 # A == {}

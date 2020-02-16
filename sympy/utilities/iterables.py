@@ -961,7 +961,7 @@ def topological_sort_depth_first(graph):
     try:
         for n in graph:
             visit(n)
-    except Exception as e:
+    except Exception:
         return None
 
     return L

@@ -127,11 +127,11 @@ def _uniquely_named_symbol(xname, exprs=(), compare=str, modify=None, **assumpti
     return _symbol(x, default, **assumptions)
 
 
-def generate_free_symbol(excludes, shape=(), **kwargs):
+def generate_free_symbol(excludes, shape=(), free_symbol=None, **kwargs):
     free_symbols = [*excludes]
     free_symbols.sort(key=lambda x : x.name)
     for s in free_symbols:
-        s = s.generate_free_symbol(excludes=excludes, shape=shape, **kwargs)
+        s = s.generate_free_symbol(excludes=excludes, shape=shape, free_symbol=free_symbol, **kwargs)
         if s is not None:
             return s
     return None
@@ -389,8 +389,12 @@ class Symbol(AtomicExpr):
             return self._assumptions['definition']
         return None
 
-    def generate_free_symbol(self, excludes=set(), shape=(), **kwargs):
-        excludes = set(symbol.name for symbol in excludes | self.free_symbols)
+    def generate_free_symbol(self, excludes=set(), shape=(), free_symbol=None, **kwargs):
+        excludes = self.free_symbols | excludes
+        if free_symbol is not None and free_symbol not in excludes:
+            return free_symbol.copy(shape=shape, **kwargs)
+        
+        excludes = set(symbol.name for symbol in excludes)
         name = self.name
         if len(name) > 1 or self.is_set:
             name = 'a'
@@ -1304,6 +1308,9 @@ class DtypeMatrix(Dtype):
 
     def __hash__(self):
         return hash((type(self).__name__, self.dtype, self.shape))
+    
+    def transpose(self):         
+        return DtypeMatrix(self.dtype, (*self.lengths[:-2], self.lengths[-1], self.lengths[-2]))
 
 
 dtype = Dtype()

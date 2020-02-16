@@ -11,6 +11,7 @@ from sympy.utilities.misc import func_name
 from mpmath.libmp import mpf_log, prec_to_dps
 
 from collections import defaultdict
+from builtins import isinstance
 
 
 class Expr(Basic, EvalfMixin):
@@ -40,6 +41,14 @@ class Expr(Basic, EvalfMixin):
     def shape(self):
         return ()
 
+    def as_Ref(self):
+        from sympy import Interval
+        from sympy.concrete.expr_with_limits import Ref
+        k = []
+        for size in self.shape:             
+            k.append(self.generate_free_symbol(excludes={*k}, domain=Interval(0, size - 1, integer=True)))
+        return Ref(self[k], *k) 
+        
     def intersect(self, other):
         from sympy.sets.sets import Intersection
         return Intersection(self, other)
@@ -1178,9 +1187,14 @@ class Expr(Basic, EvalfMixin):
             return -conjugate(self)
 
     def transpose(self):
-        from sympy.functions.elementary.complexes import transpose
-        return transpose(self)
+#         from sympy.functions.elementary.complexes import transpose
+        from sympy.matrices.expressions.transpose import Transpose
+        if isinstance(self, Transpose):
+            return self.arg
+        return Transpose(self)
 
+    T = property(transpose, None, None, 'Matrix transposition.')
+    
     def _eval_adjoint(self):
         from sympy.functions.elementary.complexes import conjugate, transpose
         if self.is_hermitian:
@@ -1461,7 +1475,7 @@ class Expr(Basic, EvalfMixin):
             clen = len(c)
             c = set(c)
             if clen and warn and len(c) != clen:
-                raise ValueError('repeated commutative arguments: %s' %
+                raise ValueError('repeated commutative arguments: %s' % 
                                  [ci for ci in c if list(self.args).count(ci) > 1])
         return [c, nc]
 
@@ -3883,8 +3897,11 @@ class Expr(Basic, EvalfMixin):
         from sympy.core.numbers import oo
         return Interval(-oo, oo, integer=x.is_integer)
 
-    def generate_free_symbol(self, excludes=set(), shape=None, **kwargs):
+    def generate_free_symbol(self, excludes=set(), shape=None, free_symbol=None, **kwargs):
         excludes = self.free_symbols | excludes
+        if free_symbol is not None and free_symbol not in excludes:
+            return free_symbol.copy(shape=shape, **kwargs)
+            
         free_symbols = [*set(symbol.name for symbol in excludes)]
         free_symbols.sort()
         name = None

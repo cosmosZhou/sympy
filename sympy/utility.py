@@ -13,6 +13,9 @@ from sympy.concrete.expr_with_limits import UnionComprehension
 from sympy.logic import boolalg
 from sympy.utilities.misc import Text
 import json
+from sympy.core.basic import preorder_traversal
+from sympy.utilities.iterables import topological_sort_depth_first
+from builtins import isinstance
 
 
 def init(func):
@@ -336,13 +339,6 @@ def topological_sort(graph):
     return None
 
 
-def plausible():
-    s = traceback.extract_stack()
-    if s[-2][0] == s[-3][0]:
-        return True
-    return None
-
-
 class identity(boolalg.Invoker):
 
     @property
@@ -470,6 +466,7 @@ def check(func):
             with open(jsonFile, 'w', encoding='utf-8') as file:
                 json.dump(dependency, file, indent=4)
 
+            print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
             return False
         else:
             if os.path.exists(jsonFile):
@@ -478,6 +475,44 @@ def check(func):
         return True
 
     return _func
+
+
+def plausible(apply=None):
+    if apply is None:
+        s = traceback.extract_stack()
+        if s[-2][0] != s[-3][0]:
+            return None        
+        return True
+
+    def process(s, dependency):
+        s.definition_set(dependency)
+                
+        assert 'plausible' not in s._assumptions
+        s._assumptions['plausible'] = True
+        
+    def plausible(*args, **kwargs):
+        statement = apply(*args, **kwargs)
+        s = traceback.extract_stack()
+        if apply.__code__.co_filename != s[-2][0]:
+            return statement
+        
+        dependency = {}
+        if isinstance(statement, tuple):
+            for s in statement:
+                process(s, dependency)
+        else:
+            process(statement, dependency)
+        G = topological_sort_depth_first(dependency)
+        if G:
+            definition = [Equality.by_definition_of(s) for s in G]
+            if isinstance(statement, tuple):
+                return definition + [*statement]
+            return definition + [statement]
+            
+        else:
+            return statement
+
+    return plausible
 
 
 import inspect

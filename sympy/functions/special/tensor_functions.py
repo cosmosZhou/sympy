@@ -177,7 +177,7 @@ class KroneckerDelta(Function):
         if expt.is_positive:
             return self
         if expt.is_negative and not -expt is S.One:
-            return 1/self
+            return 1 / self
 
     @property
     def is_above_fermi(self):
@@ -274,7 +274,7 @@ class KroneckerDelta(Function):
 
 
         """
-        return ( self.args[0].assumptions0.get("above_fermi")
+        return (self.args[0].assumptions0.get("above_fermi")
                 or
                 self.args[1].assumptions0.get("above_fermi")
                 ) or False
@@ -307,7 +307,7 @@ class KroneckerDelta(Function):
 
 
         """
-        return ( self.args[0].assumptions0.get("below_fermi")
+        return (self.args[0].assumptions0.get("below_fermi")
                 or
                 self.args[1].assumptions0.get("below_fermi")
                 ) or False
@@ -444,3 +444,15 @@ class KroneckerDelta(Function):
     def _sage_(self):
         import sage.all as sage
         return sage.kronecker_delta(self.args[0]._sage_(), self.args[1]._sage_())
+
+    def nonzero_domain(self, x):
+        from sympy.sets.sets import FiniteSet, Interval
+        from sympy import oo
+        i, j = self.args
+        if x == j:
+            return FiniteSet(i)
+        elif x == i:
+            return FiniteSet(j)
+        
+        return Interval(-oo, oo, integer=x.is_integer)
+

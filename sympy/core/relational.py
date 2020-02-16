@@ -666,11 +666,11 @@ class Equality(Relational):
     def __truediv__(self, exp):
         if isinstance(exp, Equality):
             if exp.lhs != 0 or exp.rhs != 0:
-                return Eq(self.lhs / exp.lhs, self.rhs / exp.rhs, equivalent=[self, exp])
+                return self.func((self.lhs / exp.lhs).ratsimp(), (self.rhs / exp.rhs).ratsimp(), equivalent=[self, exp])
             return self
         else:
             if exp != 0:
-                return Eq(self.lhs / exp, self.rhs / exp, equivalent=self)
+                return self.func((self.lhs / exp).ratsimp(), (self.rhs / exp).ratsimp(), equivalent=self)
             return self
 
     def __mul__(self, exp):
@@ -1024,6 +1024,10 @@ class Equality(Relational):
             return args
 
         return self
+
+    def diff(self, *symbols):
+        from sympy.core.function import Derivative
+        return self.func(Derivative(self.lhs, *symbols), Derivative(self.rhs, *symbols), given=self)
 
 
 Eq = Equality

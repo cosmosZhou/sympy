@@ -137,6 +137,10 @@ class Indexed(Expr):
     is_symbol = True
     is_Atom = True
 
+    @classmethod
+    def class_key(cls):
+        return 3, 0, cls.__name__
+
     def image_set(self):
         definition = self.base.definition
         if definition is None:
@@ -518,6 +522,11 @@ class IndexedBase(Expr, NotIterable):
             front = length - back
 
         return self[start:stop - back], self[stop - back: stop]
+
+    @property
+    def _diff_wrt(self):
+        """Allow derivatives with respect to an ``Indexed`` object."""
+        return True
 
     def __eq__(self, other):
         if not Expr.__eq__(self, other):

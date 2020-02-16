@@ -1558,15 +1558,6 @@ class LatexPrinter(Printer):
     def _print_BlockMatrix(self, expr):
         return self._print(expr.blocks)
 
-    def _print_Transpose(self, expr):
-        mat = expr.arg
-#         from sympy.matrices import MatrixSymbol
-#         if not isinstance(mat, MatrixSymbol):
-#             return r"\left(%s\right)^{T}" % self._print(mat)
-#         else:
-
-        return r"%s^{\color{blue} T}" % self.parenthesize(mat, precedence_traditional(expr), True)
-
     def _print_Trace(self, expr):
         mat = expr.arg
         return r"\operatorname{tr}\left(%s \right)" % self._print(mat)
@@ -1596,7 +1587,7 @@ class LatexPrinter(Printer):
                 args = args[1:]
             else:
                 args[0] = -args[0]
-            return '- ' + ' '.join(map(parens, args))
+            return '- ' + r' \times '.join(map(parens, args))
         else:
             return r' \times '.join(map(parens, args))
 

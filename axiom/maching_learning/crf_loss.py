@@ -6,6 +6,7 @@ import sympy
 from sympy import log, exp
 
 
+@plausible
 def apply(G, x, y):
     n, d = x.shape
 
@@ -22,8 +23,8 @@ def apply(G, x, y):
     x_quote = IndexedBase("x'", shape=(n, d),
                     definition=-Ref[t](sympy.log(z[t])))
 
-    return Equality(x_quote[t + 1], -log(Sum(exp(-x_quote[t] - G))) + x[t + 1], plausible=plausible()), \
-        Equality(-log(exp(-s[n - 1]) / Sum[y](exp(-s[n - 1]))), log(Sum(exp(-x_quote[n - 1]))) + s[n - 1], plausible=plausible())
+    return Equality(x_quote[t + 1], -log(Sum(exp(-x_quote[t] - G))) + x[t + 1]), \
+        Equality(-log(exp(-s[n - 1]) / Sum[y](exp(-s[n - 1]))), log(Sum(exp(-x_quote[n - 1]))) + s[n - 1])
 
 
 from sympy.utility import check
@@ -40,19 +41,15 @@ def prove(Eq):
     # n is the length of the sequence
     # d is the number of output labels
 
-    Eq << apply(G, x, y)
-
-    t = Eq[0].lhs.indices[0] - 1
-    x_quote = Eq[0].lhs.base
-    Eq.x_quote_definition = Equality.by_definition_of(x_quote)
+    Eq.s_definition, Eq.z_definition, Eq.x_quote_definition, Eq.plausible0, Eq.plausible1 = apply(G, x, y)
+    
+    t = Eq.plausible0.lhs.indices[0] - 1
+    x_quote = Eq.plausible0.lhs.base
 
     z = x_quote.definition.args[1].function.arg.base
     s = z.definition.function.function.function.arg.args[1].base
 
-    Eq << Equality.by_definition_of(s)
-    Eq.z_definition = Equality.by_definition_of(z)
-
-    Eq << Eq[-1].subs(t, t + 1) - Eq[-1]
+    Eq << Eq.s_definition.subs(t, t + 1) - Eq.s_definition
 
     Eq << Eq[-1].this.rhs.simplifier() + s[t]
 
@@ -83,7 +80,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].args[1].arg.simplifier()
 
-    Eq << Eq[1].this.lhs.args[1].as_Add()
+    Eq << Eq.plausible1.this.lhs.args[1].as_Add()
 
     Eq << Eq[-1].exp().reversed
 

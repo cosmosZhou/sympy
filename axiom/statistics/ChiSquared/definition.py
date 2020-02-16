@@ -1,6 +1,6 @@
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, Eq, plausible
+from sympy.utility import Ref, Sum, plausible
 from sympy.core.relational import Equality
 from sympy.stats.crv_types import ChiSquared, ChiSquaredDistribution
 from sympy.stats.rv import Density, RandomSymbol

@@ -20,6 +20,7 @@ from sympy.sets.fancysets import Range
 from sympy.utilities import flatten
 from sympy.utilities.iterables import sift, postorder_traversal
 from sympy.functions.elementary.miscellaneous import Min, Max
+from sympy.core.function import Derivative
 
 
 def _common_new(cls, function, *symbols, **assumptions):
@@ -738,7 +739,8 @@ class ExprWithLimits(Expr):
             elif len(args) == 2:
                 baseset = Interval(*args, integer=True)
 
-            return self.func.operator(self.func(self.function, (x, baseset & domain)).simplifier(), self.func(self.function, (x, baseset - domain)).simplifier(), evaluate=False)
+            return self.func.operator(self.func(self.function, (x, baseset & domain)).simplifier(), self.func(self.function, (x, baseset - domain)), evaluate=False)
+#             return self.func.operator(self.func(self.function, (x, baseset & domain)).simplifier(), self.func(self.function, (x, baseset - domain)).simplifier(), evaluate=False)
 
         if len(args) == 2:
             a, b = args
@@ -807,6 +809,11 @@ class ExprWithLimits(Expr):
 
         return boolean or any(arg._has(pattern) for arg in limits)
 
+    @classmethod
+    def class_key(cls):
+        """Nice order of classes. """
+        return 6, 0, cls.__name__
+
 
 class AddWithLimits(ExprWithLimits):
     r"""Represents unevaluated oriented additions.
@@ -860,14 +867,25 @@ class AddWithLimits(ExprWithLimits):
         return self
 
     def _eval_expand_basic(self, **hints):
+        from sympy.core.function import _coeff_isneg
         summand = self.function.expand(**hints)
         if summand.is_Add and summand.is_commutative:
-            return Add(*[self.func(i, *self.limits) for i in summand.args])
+            args = []
+            for arg in summand.args:
+                if _coeff_isneg(arg):
+                    args.append(-self.func(-arg, *self.limits))
+                else:
+                    args.append(self.func(arg, *self.limits))
+            return Add(*args)
+#             return Add(*[self.func(i, *self.limits) for i in summand.args])
         elif summand.is_Matrix:
             return Matrix._new(summand.rows, summand.cols,
                 [self.func(i, *self.limits) for i in summand._mat])
         elif summand != self.function:
+#             if _coeff_isneg(summand):
+#                 return -self.func(-summand, *self.limits)
             return self.func(summand, *self.limits)
+        
         return self
 
     def as_multiple_limits(self):
@@ -3014,6 +3032,9 @@ class Ref(ExprWithLimits):
             return first * second
 
     def simplifier(self):
+        from sympy import Transpose
+        from sympy.matrices.expressions.matmul import MatMul
+        
         if self.function.is_set:
             independent, dependent = self.simplifier_set(self.function)
             if independent is not None:
@@ -3035,8 +3056,6 @@ class Ref(ExprWithLimits):
             if not independent:
                 return self
 
-            from sympy import Transpose
-            from sympy.matrices.expressions.matmul import MatMul
             dependent = Mul(*dependent)
             dependent = self.func(dependent, *self.limits)
             dependent = dependent.simplifier()
@@ -3046,6 +3065,23 @@ class Ref(ExprWithLimits):
             independent = Mul(*independent)
             return MatMul(independent, dependent)
 
+        if isinstance(self.function, Derivative):
+            x, n = self.function.variable_count[0]
+            order = 0
+            for i, (_i, *ab) in zip(x.indices[::-1], self.limits[::-1]):
+                if i == _i:
+                    order += 1
+                    continue
+                else:
+                    break
+            
+            x = x.base[x.indices[:-order]]            
+            function = Expr.__new__(self.function.func, self.function.expr, (x, n))
+            limits = self.limits[:-order]
+            if limits:
+                return self.func(function, *limits)
+            return function
+        
         first, second = self.simplifier_add(self.function)
         if first is None:
             first, second = self.simplifier_mul(self.function)

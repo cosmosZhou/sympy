@@ -1176,6 +1176,29 @@ class Add(Expr, AssocOp):
                     positive[i] = positive[i].func(positive[i].function, *limits)
                     del positive[j]
                     return True
+#                 from sympy import Wild
+#                 pos = positive[j]
+#                 neg = positive[i]
+#                 t = pos.limits[0][0]
+#                 pattern = pos.function.subs(t, Wild(t.name, **t.assumptions0))
+#                 
+#                 if not (len(pos.limits) == len(neg.limits) == 1 and len(pos.limits[0]) == len(neg.limits[0]) == 3):
+#                     continue
+#                 neg_function = -neg.function
+#                 res = neg_function.match(pattern)
+#                 if not res:
+#                     continue
+# 
+#                 t_, *_ = res.values()
+#                 neg = neg.subs(t_, t)
+# 
+#                 if pos.function != neg_function:
+#                     neg = neg.func(pos.function, *neg.limits)
+# 
+#                 positive[j] = pos - neg
+#                 del positive[i]
+#                 return True
+                
 
     @property
     def domain(self):

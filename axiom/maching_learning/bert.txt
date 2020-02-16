@@ -1,0 +1,1 @@
+\(S = \operatorname{softmax}{\left(\frac{Q \times K^{\color{red} T}}{\sqrt{d}} \right)} \times V\tag*{Eq[0]}\)\({S}_{0} = \operatorname{softmax}{\left(\frac{{Q}_{0} \times K^{\color{red} T}}{\sqrt{d}} \right)} \times V\tag*{Eq[1]}\)

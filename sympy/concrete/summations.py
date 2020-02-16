@@ -25,6 +25,7 @@ from sympy.simplify.powsimp import powsimp
 from sympy.solvers import solve
 from sympy.solvers.solveset import solveset
 import itertools
+from builtins import isinstance
 
 
 class Sum(AddWithLimits, ExprWithIntLimits):
@@ -1049,6 +1050,12 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
             return self
 
+        if len(limit) == 1:
+            x = limit[0]
+            domain = x.domain
+            if isinstance(domain, Interval): 
+                limit = x, domain.min(), domain.max() 
+        
         if len(limit) > 1:
             x, a, b = limit
             domain = self.function.nonzero_domain(x)
@@ -1071,15 +1078,17 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
             a, b = domain.min(), domain.max()
             limit = x, a, b
-        var = limit[0]
+        x = limit[0]
 
         import sympy
         function = self.function
         if isinstance(function, sympy.exp):
             function = function.as_Mul()
 
-        independent, dependent = function.as_independent(var, as_Add=False)
+        independent, dependent = function.as_independent(x, as_Add=False)
         if independent == S.One:
+            if len(self.limits[0]) == 1:
+                return self
             if limit != self.limits[0]:
                 return self.func(function, limit)
             return self
@@ -1088,8 +1097,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if len(limit) > 1:
                 return self.function * (b - a + 1)
             else:
-                return self.function * var.dimension
-
+                return self.function * x.dimension
+        if len(self.limits[0]) == 1:
+            return self.func(dependent, *self.limits) * independent
         return self.func(dependent, limit) * independent
 
     def as_Ref(self):
@@ -1098,16 +1108,20 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     def as_Sum(self):
         from sympy.concrete.expr_with_limits import Ref
-        if self.function.is_Ref:
-            limit = self.function.limits[-1]
-            limits = self.function.limits[:-1]
-            if limits:
-                function = Ref(self.function.function, *limits)
-            else:
-                function = self.function.function
+        function = self.function
+        if not function.is_Ref:            
+            function = function.as_Ref()
 
-            return self.func(function, *self.limits, limit).simplifier()
-        return self
+        limit = function.limits[-1]
+        limits = function.limits[:-1]
+        if limits:
+            function = Ref(function.function, *limits)
+        else:
+            function = function.function
+
+        return self.func(function, *self.limits, limit).simplifier()
+        
+
 
     def swap(self):
 #         from sympy.core.mul import Mul

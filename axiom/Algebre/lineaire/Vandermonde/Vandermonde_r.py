@@ -111,7 +111,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.simplifier()
 
-    Eq << Eq[-1].this.rhs.args[2].simplifier()
+    Eq << Eq[-1].this.rhs.args[2].args[1].simplifier()
 
     Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, j + 1)
 

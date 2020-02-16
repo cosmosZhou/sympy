@@ -821,6 +821,11 @@ class log(Function):
 
         return self
 
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, index):
+        return self.func(self.arg[index])
 
 class LambertW(Function):
     r"""
@@ -931,3 +936,35 @@ class LambertW(Function):
                 return False
         else:
             return s.is_algebraic
+
+
+class softmax(Function):
+    r"""
+    x is a vector
+    softmax(x) = exp(x) / Sum(exp(x))
+    Sum(softmax(x)) = 1
+    """
+
+    def fdiff(self, argindex=1):
+        """
+        Returns the first derivative of the function.
+        """
+        if argindex == 1:
+            return 1 / self.args[0]
+        else:
+            raise ArgumentIndexError(self, argindex)
+
+    @classmethod
+    def eval(cls, arg):
+        ...
+
+    def simplifier(self):
+        return self
+
+    def __getitem__(self, key):
+        if len(self.shape) == 1:
+            from sympy.concrete.summations import Sum
+            x = self.arg
+            return exp(x[key]) / Sum(exp(x))
+        return Function.__getitem__(self, key)
+

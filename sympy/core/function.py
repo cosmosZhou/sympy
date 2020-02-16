@@ -57,6 +57,7 @@ import mpmath.libmp as mlib
 
 import inspect
 from collections import Counter
+from builtins import isinstance
 
 
 def _coeff_isneg(a):
@@ -100,7 +101,7 @@ class PoleError(Exception):
 class ArgumentIndexError(ValueError):
 
     def __str__(self):
-        return ("Invalid operation with argument number %s for Function %s" %
+        return ("Invalid operation with argument number %s for Function %s" % 
                (self.args[1], self.args[0]))
 
 
@@ -448,6 +449,12 @@ class Function(Application, Expr):
     def _diff_wrt(self):
         return False
 
+#     def __iter__(self):
+#         raise TypeError
+# 
+#     def __getitem__(self, index):
+#         return self.func(self.arg[index])
+
     @cacheit
     def __new__(cls, *args, **options):
         # Handle calls like Function('f')
@@ -528,8 +535,9 @@ class Function(Application, Expr):
             i = funcs[name]
         except KeyError:
             i = 0 if isinstance(cls.nargs, Naturals0) else 10000
-
-        return 4, i, name
+# modified by cosmos, in the case of t log y, to prevent logy t 
+        return 5, i, name
+#         return 4, i, name
 
     @property
     def is_commutative(self):
@@ -1323,8 +1331,8 @@ class Derivative(Expr):
         # good way to unambiguously print this.
         if len(variable_count) == 0:
             return expr
-
-        evaluate = kwargs.get('evaluate', False)
+        
+        evaluate = kwargs.get('evaluate', False) and not expr.definition_set({})
 
         if evaluate:
             if isinstance(expr, Derivative):
@@ -1594,9 +1602,35 @@ class Derivative(Expr):
         if hints.get('deep', True):
             expr = expr.doit(**hints)
         hints['evaluate'] = True
-        rv = self.func(expr, *self.variable_count, **hints)
-        if rv != self and rv.has(Derivative):
-            rv = rv.doit(**hints)
+        try:
+            rv = self.func(expr, *self.variable_count, **hints)
+        except:
+            rv = self
+            
+        if rv != self:
+            if rv.has(Derivative):
+                rv = rv.doit(**hints)
+        else:
+            from sympy import log, Mul, Pow, Sum        
+            if isinstance(self.expr, log):
+                return 1 / self.expr.arg * Expr.__new__(self.func, self.expr.arg, *self.variable_count)
+            elif isinstance(self.expr, Mul):
+                args = []
+                for i, factor in enumerate(self.expr.args):
+                    args.append(Mul(*self.expr.args[:i] + self.expr.args[i + 1:]) * Expr.__new__(self.func, factor, *self.variable_count).doit(deep=False))
+                return Add(*args)
+            elif isinstance(self.expr, Pow):
+                base, exponent = self.expr.args
+                if not exponent.has(self._wrt_variables):
+                    return exponent * base ** (exponent - 1) * Expr.__new__(self.func, base, *self.variable_count).doit(deep=False)
+                if not base.has(self._wrt_variables):
+                    return self.expr * log(base) * Expr.__new__(self.func, exponent, *self.variable_count)
+            elif isinstance(self.expr, Sum):
+                if self.expr.limits:
+                    return self.swap(evaluate=True)
+                else:                    
+                    return Expr.__new__(self.func, self.expr.as_Sum(), *self.variable_count).doit(deep=False)
+                    
         return rv
 
     @_sympifyit('z0', NotImplementedError)
@@ -1629,6 +1663,12 @@ class Derivative(Expr):
         # return the variables of differentiation without
         # respect to the type of count (int or symbolic)
         return [i[0] for i in self.variable_count]
+
+    @property
+    def _wrt_variable(self):
+        # return the variables of differentiation without
+        # respect to the type of count (int or symbolic)
+        return self.variable_count[0][0]
 
     @property
     def variables(self):
@@ -1860,6 +1900,46 @@ class Derivative(Expr):
         """
         from ..calculus.finite_diff import _as_finite_diff
         return _as_finite_diff(self, points, x0, wrt)
+
+    def swap(self, evaluate=False):
+        from sympy.concrete.summations import Sum
+        if isinstance(self.expr, Sum):
+            _wrt_variables = self._wrt_variables
+            for limit in self.expr.limits:
+                for bound in limit[1:]:
+                    if bound.has(_wrt_variables):
+                        return self
+            
+            derivative = Expr.__new__(self.func, self.expr.function, *self.variable_count)
+            if evaluate:
+                derivative = derivative.doit(deep=False)
+            else:
+                derivative = derivative.simplifier()
+            return Sum(derivative, *self.expr.limits).simplifier()
+
+        return self
+
+    def simplifier(self):        
+        if len(self.variable_count) > 1:
+            return self
+        x, n = self.variable_count[0]
+
+        import sympy
+        function = self.expr
+        if isinstance(function, sympy.exp):
+            function = function.as_Mul()
+
+        independent, dependent = function.as_independent(x, as_Add=False)
+        if independent == S.One:
+            return self
+
+        if dependent == S.One:
+            if n == 0:
+                return self.expr
+            if n > 0:
+                return S.Zero
+         
+        return Expr.__new__(self.func, dependent, *self.variable_count) * independent
 
 
 class Difference(Expr):
@@ -3039,12 +3119,12 @@ class Subs(Expr):
 
     @property
     def free_symbols(self):
-        return (self.expr.free_symbols - set(self.variables) |
+        return (self.expr.free_symbols - set(self.variables) | 
             set(self.point.free_symbols))
 
     @property
     def expr_free_symbols(self):
-        return (self.expr.expr_free_symbols - set(self.variables) |
+        return (self.expr.expr_free_symbols - set(self.variables) | 
             set(self.point.expr_free_symbols))
 
     def __eq__(self, other):
@@ -3894,7 +3974,7 @@ def count_ops(expr, visual=False):
                 args.extend(a.args)
 
     elif type(expr) is dict:
-        ops = [count_ops(k, visual=visual) +
+        ops = [count_ops(k, visual=visual) + 
                count_ops(v, visual=visual) for k, v in expr.items()]
     elif iterable(expr):
         ops = [count_ops(i, visual=visual) for i in expr]

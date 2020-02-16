@@ -33,6 +33,24 @@ class Transpose(MatrixExpr):
     """
     is_Transpose = True
 
+    @property
+    def dtype(self):
+        return self.arg.dtype.transpose()
+
+#     def _sympystr(self, p):
+#         return p.parenthesize(self.arg, 0) + ".T"
+    
+    def _sympystr(self, p):
+        from sympy.printing.precedence import PRECEDENCE
+        return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Pow"])
+
+    def _latex(self, p): 
+        from sympy.printing.precedence import precedence_traditional
+        return r"%s^{\color{red} T}" % p.parenthesize(self.arg, precedence_traditional(self), True)
+
+#     def _latex(self, p):        
+#         return r"{%s}^{\color{red} T}" % p._print(self.arg)
+
     def doit(self, **hints):
         arg = self.arg
         if hints.get('deep', True) and isinstance(arg, Basic):

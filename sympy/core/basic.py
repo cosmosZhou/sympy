@@ -119,6 +119,17 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.sets.sets import List
         return List(self)
 
+    def definition_set(self, dependency):
+        hashset = set()
+        for arg in preorder_traversal(self):
+            if hasattr(arg, "definition") and arg.definition is not None:
+                if arg not in hashset:
+                    hashset.add(arg)   
+                    if arg not in dependency:                 
+                        dependency[arg] = arg.definition.definition_set(dependency)                    
+            
+        return hashset
+        
     @property
     def list_set(self):
         from sympy.core.symbol import Symbol

@@ -66,7 +66,10 @@ class MatMul(MatrixExpr, Mul):
 #         matrices = [arg for arg in self.args if arg.is_Matrix]
 #         return (matrices[0].rows, matrices[-1].cols)
 
-    def _entry(self, i, j, expand=True, **kwargs):
+    def _entry(self, i, j=None, expand=True, **kwargs):
+        if j is None:
+            return self.args[0][i] @ self.func(*self.args[1:])            
+                
         from sympy import Dummy, Sum, Mul, ImmutableMatrix, Integer
 
         coeff, matrices = self.as_coeff_matrices()
@@ -222,7 +225,7 @@ class MatMul(MatrixExpr, Mul):
                 return summations.Sum(exp(self.args[0].arg + self.args[1].arg.T))
         return self
 
-    def expand(self, deep=True):
+    def expand(self, free_symbol=None, deep=True):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.concrete.summations import Sum
         if len(self.args) == 2:
@@ -234,19 +237,23 @@ class MatMul(MatrixExpr, Mul):
                     args = [arg.expand(deep=True) for arg in args]
                 return A.func(*args)
 
-            k = self.generate_free_symbol(integer=True)
+            k = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
             if len(A.shape) < 2:
+                n = A.shape[0]
+                
                 if isinstance(A, Ref):
                     A_limit = A.limits[0]
-                else:
+                elif hasattr(A, "definition") and A.definition is not None:
                     A_limit = A.definition.limits[0]
+                else:                    
+                    A_limit = None
 
-                n = A.shape[0]
-
-                j, *_ = A_limit
-
-                return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)), A_limit)
-
+                if A_limit:
+                    j, *_ = A_limit
+    
+                    return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)), A_limit)
+                else:
+                    return Sum(A[k] * B[k], (k, 0, n - 1))
             else:
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]

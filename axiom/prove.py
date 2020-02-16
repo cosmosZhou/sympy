@@ -1,8 +1,6 @@
 import os
 import re
 import axiom  # @UnusedImport
-from sympy import utility
-import traceback
 from sympy.utilities.misc import Text
 
 count = 0
@@ -10,6 +8,8 @@ count = 0
 unproven = []
 
 erroneous = []
+
+websites = []
 
 
 def readFolder(rootdir, sufix='.py'):
@@ -21,7 +21,7 @@ def readFolder(rootdir, sufix='.py'):
             if name == '__init__':
                 continue
 
-            print('testing ', path)
+            print('testing', path)
             path = re.compile(r'[\\/]+').split(path[:-len(sufix)])
 #             print(path)
             index = path.index('axiom')
@@ -51,6 +51,9 @@ def readFolder(rootdir, sufix='.py'):
                 unproven.append(package)
             elif ret is None:
                 erroneous.append(package)
+            else:
+                continue
+            websites.append("http://localhost/sympy/axiom" + package.__file__[len(os.path.dirname(__file__)):-3] + ".php")
 
         elif os.path.isdir(path):
             readFolder(path, sufix)
@@ -75,4 +78,9 @@ if __name__ == '__main__':
     if erroneous:
         print('erroneous axioms')
         for p in erroneous:
+            print(p)
+
+    if websites :
+        print('.php websites')
+        for p in websites:
             print(p)

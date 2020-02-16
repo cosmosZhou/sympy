@@ -769,9 +769,6 @@ class StrPrinter(Printer):
     def _print_Tuple(self, expr):
         return self._print_tuple(expr)
 
-    def _print_Transpose(self, T):
-        return "%s.T" % self.parenthesize(T.arg, PRECEDENCE["Pow"])
-
     def _print_Uniform(self, expr):
         return "Uniform(%s, %s)" % (self._print(expr.a), self._print(expr.b))
 

@@ -1,0 +1,7 @@
+\(\sum\limits_{j=0}^{n - 1} {t}_{j} = 1\tag*{Eq[0]}\)
+\(y = \operatorname{softmax}{\left(x \right)}\tag*{Eq[1]}\)\(L = - t \times \log{y}\tag*{Eq[2]}\)\(\frac{d}{d x} L = - t + y\tag*{Eq[3]}\)
+\(L = \sum\limits_{j=0}^{n - 1} - {t}_{j} \log{{y}_{j}}\tag*{Eq[4]}\)
+\(\frac{d}{d {x}_{i}} L = \frac{\partial}{\partial {x}_{i}} \sum\limits_{j=0}^{n - 1} - {t}_{j} \log{{y}_{j}}\tag*{Eq[5]}\)
+\(\frac{d}{d {x}_{i}} L = - \sum\limits_{j=0}^{n - 1} \frac{{t}_{j} \frac{\partial}{\partial {x}_{i}} {y}_{j}}{{y}_{j}}\tag*{Eq.loss}\)
+\({y}_{i} = \frac{{\color{blue} e}^{{x}_{i}}}{\sum\limits_{\substack{}} {\color{blue} e}^{x}}\tag*{Eq[6]}\)
+\({y}_{j} = \frac{{\color{blue} e}^{{x}_{j}}}{\sum\limits_{\substack{}} {\color{blue} e}^{x}}\tag*{Eq[7]}\)

@@ -964,7 +964,7 @@ class Mul(Expr, AssocOp):
         from sympy.series.limitseq import difference_delta as dd
         arg0 = self.args[0]
         rest = Mul(*self.args[1:])
-        return (arg0.subs(n, n + step) * dd(rest, n, step) + dd(arg0, n, step) *
+        return (arg0.subs(n, n + step) * dd(rest, n, step) + dd(arg0, n, step) * 
                 rest)
 
     def _matches_simple(self, expr, repl_dict):
@@ -1602,7 +1602,7 @@ class Mul(Expr, AssocOp):
 
                             # the left residual
 
-                            l = rejoin(nc[i][0], nc[i][1] - ndo *
+                            l = rejoin(nc[i][0], nc[i][1] - ndo * 
                                     old_nc[0][1])
 
                             # eliminate all middle terms
@@ -1612,7 +1612,7 @@ class Mul(Expr, AssocOp):
                             # the right residual (which may be the same as the middle if take == 2)
 
                             ir = i + take - 1
-                            r = (nc[ir][0], nc[ir][1] - ndo *
+                            r = (nc[ir][0], nc[ir][1] - ndo * 
                                  old_nc[-1][1])
                             if r[1]:
                                 if i + take < len(nc):
@@ -1925,14 +1925,16 @@ class Mul(Expr, AssocOp):
     def __iter__(self):
         raise TypeError
 
-    def __getitem__(self, indices, **kwargs):
+    def __getitem__(self, index, **kwargs):
         args = []
         for arg in self.args:
             shape_length = len(arg.shape)
             if shape_length == 0:
                 args.append(arg)
+            elif hasattr(index, "__len__"):
+                args.append(arg[index[:shape_length]])
             else:
-                args.append(arg[indices[:shape_length]])
+                args.append(arg[index])
 
         return self.func(*args)
 

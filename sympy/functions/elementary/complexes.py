@@ -675,7 +675,7 @@ class arg(Function):
 
     def _eval_derivative(self, t):
         x, y = self.args[0].as_real_imag()
-        return (x * Derivative(y, t, evaluate=True) - y *
+        return (x * Derivative(y, t, evaluate=True) - y * 
                     Derivative(x, t, evaluate=True)) / (x ** 2 + y ** 2)
 
     def _eval_rewrite_as_atan2(self, arg, **kwargs):
@@ -750,6 +750,16 @@ class transpose(Function):
         obj = arg._eval_transpose()
         if obj is not None:
             return obj
+
+    @property
+    def dtype(self):
+        return self.arg.dtype.transpose()
+
+    def _sympystr(self, p):
+        return p.parenthesize(self.arg, 0) + ".T"
+
+    def _latex(self, p):        
+        return r"{%s}^{\color{red} T}" % p._print(self.arg)
 
     def _eval_adjoint(self):
         return conjugate(self.args[0])

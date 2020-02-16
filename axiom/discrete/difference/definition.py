@@ -1,11 +1,8 @@
-from sympy.functions.combinatorial.factorials import binomial, factorial
+from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Eq, Sum
+from sympy.utility import plausible, Sum
 from sympy.core.symbol import Symbol, generate_free_symbol
-from sympy.functions.special.gamma_functions import gamma
 from sympy.core.function import Difference, Function
-from sympy.tensor.indexed import IndexedBase
-from sympy.core.numbers import oo
 from axiom.discrete.combinatorics.binomial import Pascal
 
 
@@ -47,9 +44,15 @@ def prove(Eq):
 
     Eq << Eq[-1].expand()
 
-    Eq << Eq[-1].this.lhs.args[0].simplifier()
+    Eq << Eq[-1].this.lhs.args[0].args[1].simplifier()
 
     Eq << Eq[-1].this.rhs.args[1].args[1].simplifier()
+    
+    Eq << Eq[-1].this.lhs.args[1].limits_subs(k, k + 1)
+    
+    Eq << Eq[-1].this.rhs.simplifier()
+    
+    Eq << Eq[-1].this.lhs.expand()
 
 
 if __name__ == '__main__':

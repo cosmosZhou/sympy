@@ -1,12 +1,12 @@
-from sympy.functions.combinatorial.factorials import binomial
+
 from sympy.core.symbol import Symbol
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
+
 from sympy.utility import Ref, Sum, Min, plausible
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 
 
+@plausible
 def apply(G, x, y):
     n, d = x.shape
     i = Symbol('i', integer=True)
@@ -18,8 +18,8 @@ def apply(G, x, y):
     x_quote = IndexedBase("x'", (n, d),
                           definition=Ref[t](Ref[y[t]](Min[y[0:t]](s[t]))))
 
-    return Equality(x_quote[t + 1], x[t + 1] + Min(x_quote[t] + G), plausible=plausible()), \
-        Equality(Min[y](s[n - 1]), Min(x_quote[n - 1]), plausible=plausible())
+    return Equality(x_quote[t + 1], x[t + 1] + Min(x_quote[t] + G)), \
+        Equality(Min[y](s[n - 1]), Min(x_quote[n - 1]))
 
 
 from sympy.utility import check
@@ -36,18 +36,14 @@ def prove(Eq):
     x = IndexedBase('x', (n, d))
     y = IndexedBase('y', (n,))
 
-    Eq.recursion, Eq.aggregate = apply(G, x, y)
-    x_quote = Eq.recursion.lhs.base
-
-    Eq.x_quote_definition = Equality.by_definition_of(x_quote)
-
+    Eq.s_definition, Eq.x_quote_definition, Eq.recursion, Eq.aggregate = apply(G, x, y)
+    
     s = Eq.x_quote_definition.rhs.function.function.base
-    Eq << Equality.by_definition_of(s)
 
     t = Eq.recursion.lhs.indices[0] - 1
-    Eq << Eq[-1].subs(t, t + 1)
+    Eq << Eq.s_definition.subs(t, t + 1)
 
-    Eq << Eq[-1] - Eq[-2]
+    Eq << Eq[-1] - Eq.s_definition
 
     Eq << Eq[-1].this.rhs.simplifier() + s[t]
 

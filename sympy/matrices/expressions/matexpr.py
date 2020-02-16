@@ -99,10 +99,10 @@ class MatrixExpr(Expr):
     def __sub__(self, other):
         return MatAdd(self, -other, check=True).doit()
 
-    @_sympifyit('other', NotImplemented)
-    @call_highest_priority('__sub__')
-    def __rsub__(self, other):
-        return MatAdd(other, -self, check=True).doit()
+#     @_sympifyit('other', NotImplemented)
+#     @call_highest_priority('__sub__')
+#     def __rsub__(self, other):
+#         return MatAdd(other, -self, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
@@ -245,11 +245,11 @@ class MatrixExpr(Expr):
     def conjugate(self):
         return conjugate(self)
 
-    def transpose(self):
-        from sympy.matrices.expressions.transpose import transpose
-        return transpose(self)
+#     def transpose(self):
+#         from sympy.matrices.expressions.transpose import transpose
+#         return transpose(self)
 
-    T = property(transpose, None, None, 'Matrix transposition.')
+#     T = property(transpose, None, None, 'Matrix transposition.')
 
     def inverse(self):
         return self._eval_inverse()
@@ -285,7 +285,7 @@ class MatrixExpr(Expr):
             else:
                 raise IndexError("Invalid indices (%s, %s)" % (i, j))
         elif isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
-            return self._entry(key, None)
+            return self._entry(key)
 #             # row-wise decomposition of matrix
 #             rows, cols = self.shape
 #             # allow single indexing if number of columns is known
