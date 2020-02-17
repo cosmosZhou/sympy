@@ -133,8 +133,9 @@ class Basic(with_metaclass(ManagedProperties)):
     @property
     def list_set(self):
         from sympy.core.symbol import Symbol
-        from sympy import Interval, Equality
-        from sympy.sets import image_set
+        from sympy import Interval, Equality         
+        from sympy.sets.sets import image_set
+        
         l = self.list
 
         from sympy.tensor.indexed import IndexedBase

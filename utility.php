@@ -137,6 +137,7 @@ function render($php)
     }
 
     if ($json) {
+        println("plausibles: " . json_encode($json));
         $json = array_keys($json);
         foreach ($json as &$key) {
             $key = reference($key);

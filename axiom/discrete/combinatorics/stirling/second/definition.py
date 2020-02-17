@@ -57,9 +57,9 @@ def prove(Eq):
     l = Eq[0].rhs.args[1].limits[0][0]
     Eq << identity(binomial(k + 1, l)).rewrite(factorial)
 
-    Eq << axiom.discrete.combinatorics.factorial.expand.apply(k - l + 1)
+    Eq.factorial_expand_kl = axiom.discrete.combinatorics.factorial.expand.apply(k - l + 1)
 
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-1].subs(Eq.factorial_expand_kl)
 
     Eq << Eq[-1] / factorial(k + 1)
 
@@ -73,7 +73,7 @@ def prove(Eq):
 
     Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp()
     
-    Eq.exist_C0 = Eq.exist_C0.subs(Eq[10].reversed)        
+    Eq.exist_C0 = Eq.exist_C0.subs(Eq.factorial_expand_kl.reversed)        
 
     x = Symbol('x')
 

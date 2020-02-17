@@ -3216,8 +3216,8 @@ class Ref(ExprWithLimits):
         return self
 
     def __getitem__(self, indices, **kwargs):
-        if isinstance(indices, (tuple, list)):
-            function = self.function
+        function = self.function
+        if isinstance(indices, (tuple, list)):            
             for i, index in enumerate(indices):
                 x, *domain = self.limits[i]
                 if x != index:
@@ -3239,7 +3239,7 @@ class Ref(ExprWithLimits):
                 n = S.Infinity
 
             if start > 0:
-                function = self.function.subs(x, x + start)
+                function = function.subs(x, x + start)
                 stop -= start
 
                 if stop >= n:
@@ -3253,10 +3253,20 @@ class Ref(ExprWithLimits):
                     return self
                 limits = [*self.limits]
                 limits[-1] = x, 0, stop - 1
-                return self.func(self.function, *limits)
+                return self.func(function, *limits)
 
         x, *_ = self.limits[0]
-        return self.function.subs(x, indices)
+        if x != indices:
+            function = function._subs(x, indices)
+            if function._has(x):
+                for var in postorder_traversal(function):
+                    if var._has(x):
+                        break
+                function = function._subs(var, var.definition)
+                function = function._subs(x, indices)
+                assert not function._has(x)
+        return function
+        
 
     @property
     def shape(self):
