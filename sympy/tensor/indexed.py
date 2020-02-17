@@ -783,11 +783,10 @@ class Slice(Expr):
     @property
     def set(self):
         from sympy.concrete.expr_with_limits import UnionComprehension
-        from sympy.sets.sets import FiniteSet
 
         i = self.generate_free_symbol(integer=True)
         start, stop = self.indices
-        return UnionComprehension(FiniteSet(self.base[i]), (i, start, stop - 1))
+        return UnionComprehension({self.base[i]}, (i, start, stop - 1))
 
     def __new__(cls, base, *args, **kw_args):
         from sympy.utilities.misc import filldedent

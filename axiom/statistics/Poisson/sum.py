@@ -8,7 +8,7 @@ from sympy.utility import plausible
 from sympy.utility import check
 import axiom
 
-
+@plausible
 def apply(x0, x1):
     if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):
         return None
@@ -22,8 +22,7 @@ def apply(x0, x1):
         return None
     y = Symbol("y", integer=True, nonnegative=True)
     lamda = distribution0.lamda + distribution1.lamda
-    return Equality(Density(x0 + x1)(y), exp(-lamda) * lamda ** y / factorial(y),
-                    plausible=plausible())
+    return Equality(Density(x0 + x1)(y), exp(-lamda) * lamda ** y / factorial(y))
 
 
 @check

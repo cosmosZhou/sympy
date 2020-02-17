@@ -12,7 +12,6 @@ from .singleton import S
 
 from inspect import getmro
 
-
 def as_Basic(expr):
     """Return expr as a Basic instance using strict sympify
     or raise a TypeError; this is just a wrapper to _sympify,
@@ -113,16 +112,21 @@ class Basic(with_metaclass(ManagedProperties)):
     is_ExprWithLimits = False
     is_Ref = False
     is_Limit = False
-
+    is_BooleanTrue = None
+    is_BooleanFalse = None
+    
     @property
     def list(self):
         from sympy.sets.sets import List
         return List(self)
 
     def definition_set(self, dependency):
+        from sympy.core.symbol import Symbol
+        from sympy.tensor.indexed import IndexedBase
+
         hashset = set()
         for arg in preorder_traversal(self):
-            if hasattr(arg, "definition") and arg.definition is not None:
+            if isinstance(arg, (Symbol, IndexedBase)) and arg.definition is not None:
                 if arg not in hashset:
                     hashset.add(arg)   
                     if arg not in dependency:                 

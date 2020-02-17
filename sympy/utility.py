@@ -3,17 +3,13 @@ from sympy.concrete import summations, products
 from sympy.core.relational import Equality, Relational
 import sympy
 import os
-from sympy.logic.boolalg import equivalent_ancestor, BooleanFunction, Boolean
-from sympy.sets.contains import Contains
+from sympy.logic.boolalg import equivalent_ancestor, Boolean
 import traceback
-from sympy.functions.elementary import miscellaneous
 from sympy import concrete
 from sympy.sets import sets
 from sympy.concrete.expr_with_limits import UnionComprehension
 from sympy.logic import boolalg
-from sympy.utilities.misc import Text
 import json
-from sympy.core.basic import preorder_traversal
 from sympy.utilities.iterables import topological_sort_depth_first
 from builtins import isinstance
 
@@ -42,10 +38,12 @@ class Operator:
                 else:
                     limit.append(t)
         elif isinstance(key, slice):
-            if key.step:
+            if key.step is not None:
                 limit = [(key.start, key.stop, key.step)]
-            else:
+            elif key.stop.is_integer:
                 limit = [(key.start, 0, key.stop - 1)]
+            else:
+                limit = [(key.start, key.stop)]
         else:
             limit = [(key,)]
         self.stack.append(limit)

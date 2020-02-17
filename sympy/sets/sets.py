@@ -27,6 +27,7 @@ from sympy.utilities.iterables import sift
 from sympy.utilities.misc import func_name, filldedent
 
 from mpmath import mpi, mpf
+from builtins import isinstance
 
 
 class Set(Basic):
@@ -893,7 +894,9 @@ class Interval(Set, EvalfMixin):
             a_end = self.max()
             b_end = b.max()
 
+#             print("Min(%s, %s) = " % (a_end, b_end), end='')    
             end = miscellaneous.Min(a_end, b_end)
+#             print(end)
             return Interval(start, end, integer=self.is_integer or b.is_integer)
 
         empty = False
@@ -2668,7 +2671,7 @@ def image_set(sym, expr, condition):
         limit = (sym, condition.min(), condition.max())
     else:
         limit = (sym, condition)
-    return UnionComprehension(FiniteSet(expr), limit)
+    return UnionComprehension({expr}, limit)
 
 
 def imageset(*args):

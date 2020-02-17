@@ -341,13 +341,13 @@ def real_root(arg, n=None, evaluate=None):
 
 
 class MinMaxBase(Expr, LatticeOp):
+
     def try_sub(self, other):
         if isinstance(other, self.func) and len(other.args) == len(self.args):
             diff = Add(*self.args) - Add(*other.args)
             diff /= len(self.args)
             if all(e + diff in self._argset for e in other.args):
                 return diff
-            
 
     def __new__(cls, *args, **assumptions):
         evaluate = assumptions.pop('evaluate', True)
@@ -576,32 +576,35 @@ class MinMaxBase(Expr, LatticeOp):
         """
         Check if x and y are connected somehow.
         """
-        from sympy.core.exprtools import factor_terms
 
         def hit(v, t, f):
             if not v.is_Relational:
                 return t if v else f
 #             if v.is_Relational:
 
-        for i in range(2):
-            if x == y:
-                return True
-            r = hit(x >= y, Max, Min)
-            if r is not None:
-                return r
-            r = hit(y <= x, Max, Min)
-            if r is not None:
-                return r
-            r = hit(x <= y, Min, Max)
-            if r is not None:
-                return r
-            r = hit(y >= x, Min, Max)
-            if r is not None:
-                return r
+#         for i in range(2):
+        if x == y:
+            return True
+        r = hit(x >= y, Max, Min)
+        if r is not None:
+            return r
+#         r = hit(y <= x, Max, Min)
+#         if r is not None:
+#             return r
+#         r = hit(x <= y, Min, Max)
+#         if r is not None:
+#             return r
+#         r = hit(y >= x, Min, Max)
+#         if r is not None:
+#             return r
             # simplification can be expensive, so be conservative
             # in what is attempted
-            x = factor_terms(x - y)
-            y = S.Zero
+#             from sympy.core.exprtools import factor_terms            
+#             x = factor_terms(x - y)
+#             if i:
+#                 break 
+#             x = x - y
+#             y = S.Zero
 
         return False
 
@@ -868,6 +871,7 @@ class Max(MinMaxBase, Application):
 
         return MinMaxBase.__mul__(self, other)
 
+
 class Min(MinMaxBase, Application):
     """
     Return, if possible, the minimum value of the list.
@@ -1002,5 +1006,4 @@ class Min(MinMaxBase, Application):
             return Max(*(arg * other for arg in self.args))
 
         return MinMaxBase.__mul__(self, other)
-
         

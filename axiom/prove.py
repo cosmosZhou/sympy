@@ -1,6 +1,6 @@
 import os
 import re
-import axiom  # @UnusedImport
+import axiom
 from sympy.utilities.misc import Text
 
 count = 0
@@ -10,6 +10,13 @@ unproven = []
 erroneous = []
 
 websites = []
+
+insurmountable = {axiom.advanced_math.integral.intermediate_value_theorem,
+                  axiom.discrete.Fermat.LastTheorem,
+                  axiom.discrete.Fermat.LastTheorem3,
+                  axiom.statistics.KullbackLeibler,
+                  axiom.trigonometry.cosine.theorem,
+                  } 
 
 
 def readFolder(rootdir, sufix='.py'):
@@ -29,6 +36,8 @@ def readFolder(rootdir, sufix='.py'):
             package = '.'.join(path[index:])
             try:
                 package = eval(package)
+                if package in insurmountable:
+                    continue                
             except AttributeError as e:
                 print(e)
                 s = str(e)
@@ -47,7 +56,7 @@ def readFolder(rootdir, sufix='.py'):
             count += 1
 
             ret = package.prove(package.__file__)
-            if ret is False:
+            if ret is False:                
                 unproven.append(package)
             elif ret is None:
                 erroneous.append(package)

@@ -101,7 +101,7 @@ class StrPrinter(Printer):
         return 'zoo'
 
     def _print_ConditionSet(self, s):
-        args = tuple([self._print(i) for i in (s.sym, s.condition)])
+        args = tuple([self._print(i) for i in (s.variable, s.condition)])
         if s.base_set is S.UniversalSet:
             return 'ConditionSet(%s, %s)' % args
         args += (self._print(s.base_set),)

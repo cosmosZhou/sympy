@@ -2010,7 +2010,7 @@ class LatexPrinter(Printer):
         return r"\mathbb{C}"
 
     def _print_ConditionSet(self, s):
-        vars_print = ', '.join([self._print(var) for var in Tuple(s.sym)])
+        vars_print = ', '.join([self._print(var) for var in Tuple(s.variable)])
         if s.base_set is S.UniversalSet:
             return r"\left\{%s \mid %s \right\}" % (vars_print, self._print(s.condition.as_expr()))
 

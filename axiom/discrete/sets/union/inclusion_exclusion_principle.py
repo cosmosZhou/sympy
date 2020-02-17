@@ -1,16 +1,15 @@
-from sympy.core.relational import Equality, LessThan
-from sympy.utility import plausible, Eq, Sum, identity
+from sympy.core.relational import Equality
+from sympy.utility import plausible, identity
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union, Intersection
 from axiom import discrete
 
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
+@plausible
 def apply(A, B):
-    return Equality(abs(A | B), abs(A) + abs(B) - abs(A & B),
-                    plausible=plausible())
+    return Equality(abs(A | B), abs(A) + abs(B) - abs(A & B))
 
 
 from sympy.utility import check

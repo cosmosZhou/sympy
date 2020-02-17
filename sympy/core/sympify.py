@@ -259,11 +259,6 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
     -2*(-(-x + 1/x)/(x*(x - 1/x)**2) - 1/(x*(x - 1/x))) - 1
 
     """
-    if evaluate is None:
-        if global_evaluate[0] is False:
-            evaluate = global_evaluate[0]
-        else:
-            evaluate = True
     try:
         if a in sympy_classes:
             return a
@@ -279,6 +274,12 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
             raise SympifyError(a)
         else:
             return a
+
+    if evaluate is None:
+        if global_evaluate[0] is False:
+            evaluate = global_evaluate[0]
+        else:
+            evaluate = True
 
     # Support for basic numpy datatypes
     # Note that this check exists to avoid importing NumPy when not necessary

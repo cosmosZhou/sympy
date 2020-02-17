@@ -13,7 +13,7 @@ from sympy.functions.elementary.piecewise import (piecewise_fold,
     Piecewise)
 from sympy.logic.boolalg import BooleanFunction, Boolean, And, Or
 from sympy.matrices import Matrix
-from sympy.tensor.indexed import Idx, IndexedBase
+from sympy.tensor.indexed import Idx, IndexedBase, Indexed, Slice
 from sympy.sets.sets import Interval, Set, FiniteSet, Union, Complement, \
     EmptySet, Intersection
 from sympy.sets.fancysets import Range
@@ -21,6 +21,7 @@ from sympy.utilities import flatten
 from sympy.utilities.iterables import sift, postorder_traversal
 from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.core.function import Derivative
+from builtins import isinstance
 
 
 def _common_new(cls, function, *symbols, **assumptions):
@@ -221,6 +222,7 @@ class ExprWithLimits(Expr):
         return self.function.dtype
 
     def __new__(cls, function, *symbols, **assumptions):
+        function = sympify(function)
         if cls in (Minimum, Maximum, Ref, UnionComprehension):
             if function.is_Boolean:
                 lhs = function.lhs
@@ -247,7 +249,7 @@ class ExprWithLimits(Expr):
                     limit = Tuple(*sym)
                 else:
                     limit = Tuple(sym,)
-                if len(limit) == 2 and limit[1] == S.BooleanTrue:
+                if len(limit) == 2 and limit[1].is_BooleanTrue:
                     return function.copy(**assumptions)
                 limits.append(limit)
         else:
@@ -795,16 +797,14 @@ class ExprWithLimits(Expr):
                                 return True
                     return False
 
-                if len(args) == 0:
-                    limits.append(limit)
-                elif len(args) == 1:
-                    limits.append(limit)
-                else:
-                    a, b = args
-                    _x = Symbol(x.name, integer=x.is_integer, domain=Interval(a, b, integer=True))
+                if len(args) == 2 and args[0].is_integer:
+                    assert args[1].is_integer or args[1].is_infinite
+                    _x = Symbol(x.name, integer=x.is_integer, domain=Interval(*args, integer=True))
                     function = function._subs(x, _x)
-                    limits.append(Tuple(_x, a, b))
-
+                    limits.append(Tuple(_x, *args))
+                else:
+                    limits.append(limit)
+                        
         boolean = function._has(pattern)
 
         return boolean or any(arg._has(pattern) for arg in limits)
@@ -3266,7 +3266,6 @@ class Ref(ExprWithLimits):
                 function = function._subs(x, indices)
                 assert not function._has(x)
         return function
-        
 
     @property
     def shape(self):
@@ -3466,6 +3465,56 @@ class UnionComprehension(Set, ExprWithLimits):
     is_UnionComprehension = True
     operator = Union
 
+    def as_image_set(self):
+        try:
+            if self.is_ConditionSet:
+                expr, variable, base_set = self.base_set.image_set()
+                from sympy import sets, Contains
+                from sympy.sets.conditionset import conditionset
+                condition = Contains(variable, base_set).simplifier() & self.condition._subs(self.variable, expr)
+                return sets.image_set(variable, expr, conditionset(variable, condition))
+        except:
+            ...
+
+    @property
+    def is_ConditionSet(self):
+        if len(self.limits) != 1:
+            return False
+        limit = self.limits[0]
+        x, *_ = limit
+        if not isinstance(x, (Symbol, IndexedBase, Indexed, Slice)):
+            return False
+        if not isinstance(self.function, FiniteSet) or len(self.function) != 1:
+            return False
+        element, *_ = self.function
+        if element != x:
+            return False
+        return len(limit) > 1
+
+    def intersection_sets(self, b):
+        if self.is_ConditionSet:
+            from sympy.sets.conditionset import conditionset
+            if b.is_ConditionSet and self.variable == b.variable:
+                return conditionset(self.variable, self.condition & b.condition, self.base_set & b.base_set)                
+            return conditionset(self.variable, self.condition, self.base_set & b)
+    
+    @property
+    def condition(self):
+        if self.is_ConditionSet:
+            return self.limits[0][1]
+        
+    def condition_set(self):
+        if self.is_ConditionSet:
+            return self
+        
+    @property
+    def base_set(self):
+        if self.is_ConditionSet:
+            limit = self.limits[0]
+            if len(limit) > 2:
+                return limit[2]
+            return S.UniversalSet
+
     def doit(self, **hints):
         if hints.get('deep', True):
             f = self.function.doit(**hints)
@@ -3584,6 +3633,10 @@ class UnionComprehension(Set, ExprWithLimits):
         from sympy import Wild
         if expr.func == self.func:
             if self.function == expr.function:
+                if self.is_ConditionSet and expr.is_ConditionSet:
+                    if self.variable == expr.variable and self.base_set == expr.base_set:
+                        from sympy.sets.conditionset import conditionset
+                        return conditionset(self.variable, self.condition | expr.condition, self.base_set)
                 limits = self.limits_union(expr)
                 return self.func(self.function, *limits)
             else:
@@ -3645,30 +3698,31 @@ class UnionComprehension(Set, ExprWithLimits):
                             return self.func(self.function, (i, A)).simplifier()
 
     def _sympystr(self, p):
-        limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])
+        if self.is_ConditionSet: 
+            return 'ConditionSet(%s)' % ', '.join(p.doprint(arg) for arg in self.limits[0])
+        
+        limits = ','.join([':'.join(p.doprint(arg) for arg in limit) for limit in self.limits])
         if limits:
             return 'Union[%s](%s)' % (limits, p.doprint(self.function))
         return 'Union(%s)' % p.doprint(self.function)
 
     def int_limit(self):
-        if len(self.limits) != 1:
-            return False
-        limit = self.limits[0]
-        if len(limit) == 3:
-            return limit
+        if len(self.limits) == 1:
+            limit = self.limits[0]
+            if len(limit) == 3:
+                return limit
 
     def condition_limit(self):
-        if len(self.limits) != 1:
-            return False
-        limit = self.limits[0]
-        if len(limit) == 2:
-            return limit
+        if len(self.limits) == 1:
+            limit = self.limits[0]
+            if len(limit) == 2:
+                return limit
 
     def image_set(self):
         function = self.function
         if isinstance(function, FiniteSet) and len(function) == 1:
             condition_limit = self.condition_limit()
-            if condition_limit  is not None:
+            if condition_limit is not None:
                 x, condition = condition_limit
                 expr, *_ = function
                 return expr, x, condition
@@ -3687,7 +3741,6 @@ class UnionComprehension(Set, ExprWithLimits):
 
     def finite_set(self):
         function = self.function
-        from sympy.tensor.indexed import Indexed
         limit = self.int_limit()
         if limit is None:
             return
@@ -3715,7 +3768,7 @@ class UnionComprehension(Set, ExprWithLimits):
         if image_set is not None:
             lamda_expr, lamda_variables, base_set = image_set
             from sympy.sets.conditionset import ConditionSet
-            if isinstance(base_set, ConditionSet) and lamda_variables == base_set.sym:
+            if isinstance(base_set, ConditionSet) and lamda_variables == base_set.variable:
                 return r"\left\{%s \left| %s \right. \right\}" % (p._print(lamda_expr), p._print(base_set.condition))
 
 #             from sympy.core.containers import Tuple
@@ -3729,6 +3782,13 @@ class UnionComprehension(Set, ExprWithLimits):
                 varsets = r"%s \in %s" % (p._print(lamda_variables), p._print(base_set))
             return r"\left\{\left. %s \right| %s \right\}" % (p._print(lamda_expr), varsets)
 
+        if self.is_ConditionSet:
+            vars_print = p._print(self.variable)
+            if self.base_set is S.UniversalSet:
+                return r"\left\{%s \mid %s \right\}" % (vars_print, p._print(self.condition.as_expr()))
+    
+            return r"\left\{%s \in %s \mid %s \right\}" % (vars_print, p._print(self.base_set), p._print(self.condition))
+            
         function = self.function
         limits = self.limits
 
@@ -3766,7 +3826,18 @@ class UnionComprehension(Set, ExprWithLimits):
 
     def _complement(self, universe):
         # DeMorgan's Law
-        return Intersection(s.complement(universe) for s in self.args)
+        if self.is_ConditionSet:
+            if self.base_set == universe:
+                return ~self            
+
+#         else:
+#             return Intersection(s.complement(universe) for s in self.args)
+    def __invert__(self):
+        assert self.is_ConditionSet
+        condition = ~self.condition
+        condition.counterpart = None
+        from sympy.sets.conditionset import conditionset
+        return conditionset(self.variable, condition, self.base_set)
 
     @property
     def _inf(self):
@@ -3905,6 +3976,10 @@ class UnionComprehension(Set, ExprWithLimits):
     @property
     def element_type(self):
         return self.function.element_type
+
+    def _eval_Abs(self):
+        if self.is_ConditionSet:
+            ...
 
 
 class ConditionalBoolean(Boolean):

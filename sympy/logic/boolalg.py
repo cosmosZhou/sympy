@@ -1574,8 +1574,8 @@ class And(LatticeOp, BooleanFunction):
         valuable = {*()}
         for arg in args:
             if arg:
-                continue
-            if arg == S.BooleanFalse:
+                continue            
+            if arg is False or arg.is_BooleanFalse:
                 return S.BooleanFalse
             valuable.add(arg)
 
@@ -1797,9 +1797,9 @@ class Or(LatticeOp, BooleanFunction):
     def __new__(cls, *args, **options):
         valuable = {*()}
         for arg in args:
-            if arg == S.BooleanFalse:
+            if arg.is_BooleanFalse:
                 continue
-            if arg == S.BooleanTrue:
+            if arg:
                 return S.BooleanTrue
             valuable.add(arg)
 

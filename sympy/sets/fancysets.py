@@ -285,7 +285,7 @@ class ImageSet(Set):
 
     def _latex(self, p):
         from sympy.sets.conditionset import ConditionSet
-        if isinstance(self.base_set, ConditionSet) and self.lamda.variables == self.base_set.sym:
+        if isinstance(self.base_set, ConditionSet) and self.lamda.variables == self.base_set.variable:
             return r"\left\{%s \left| %s \right. \right\}" % (p._print(self.lamda.expr), p._print(self.base_set.condition))
 
         from sympy.core.containers import Tuple

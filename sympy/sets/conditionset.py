@@ -14,6 +14,22 @@ from sympy.utilities.iterables import sift
 from sympy.utilities.misc import filldedent
 
 
+# by definition, we have
+# ConditionSet(variable, condition, base_set) == Union[variable:condition:base_set]({variable})
+def conditionset(*limit):
+    from sympy.concrete.expr_with_limits import UnionComprehension
+    if len(limit) > 2 and limit[2] in (S.UniversalSet, None):
+        limit = limit[:2]
+    variable, condition, *base_set = limit
+    if condition:
+        if base_set:
+            return base_set[0]
+        return S.UniversalSet
+    if condition.is_BooleanFalse:
+        return S.EmptySet
+    return UnionComprehension({variable}, limit) 
+
+
 class ConditionSet(Set):
     """
     Set of elements which satisfies a given condition.
@@ -105,9 +121,9 @@ class ConditionSet(Set):
     ConditionSet(lambda, (lambda < y) & (lambda + x < 2), Integers)
 
     The best way to do anything with the dummy symbol is to access
-    it with the sym property.
+    it with the variable property.
 
-    >>> _.subs(_.sym, Symbol('_x'))
+    >>> _.subs(_.variable, Symbol('_x'))
     ConditionSet(_x, (_x < y) & (_x + x < 2), Integers)
     """
     is_ConditionSet = True
@@ -117,28 +133,28 @@ class ConditionSet(Set):
             return ~self
 
     def intersection_sets(self, b):
-        return ConditionSet(self.sym, self.condition, self.base_set & b)
+        return ConditionSet(self.variable, self.condition, self.base_set & b)
 
     def as_image_set(self):
         try:
-            expr, sym, base_set = self.base_set.image_set()
+            expr, variable, base_set = self.base_set.image_set()
             from sympy import sets
-            condition = Contains(sym, base_set).simplifier() & self.condition._subs(self.sym, expr)
-            return sets.image_set(sym, expr, ConditionSet(sym, condition))
+            condition = Contains(variable, base_set).simplifier() & self.condition._subs(self.variable, expr)
+            return sets.image_set(variable, expr, ConditionSet(variable, condition))
         except:
-            return
+            ...
 
     def condition_set(self):
         return self
 
-    def __new__(cls, sym, condition, base_set=S.UniversalSet):
+    def __new__(cls, variable, condition, base_set=S.UniversalSet):
         # nonlinsolve uses ConditionSet to return an unsolved system
         # of equations (see _return_conditionset in solveset) so until
         # that is changed we do minimal checking of the args
-        if isinstance(sym, (Tuple, tuple)):  # unsolved eqns syntax
-            sym = Tuple(*sym)
+        if isinstance(variable, (Tuple, tuple)):  # unsolved eqns syntax
+            variable = Tuple(*variable)
             condition = FiniteSet(*condition)
-            return Basic.__new__(cls, sym, condition, base_set)
+            return Basic.__new__(cls, variable, condition, base_set)
         condition = as_Boolean(condition)
         if isinstance(base_set, set):
             base_set = FiniteSet(*base_set)
@@ -154,7 +170,7 @@ class ConditionSet(Set):
         if isinstance(base_set, FiniteSet):
             sifted = sift(
                 base_set, lambda _: fuzzy_bool(
-                    condition.subs(sym, _)))
+                    condition.subs(variable, _)))
             if sifted[None]:
                 know = FiniteSet(*sifted[True])
                 base_set = FiniteSet(*sifted[None])
@@ -162,39 +178,39 @@ class ConditionSet(Set):
                 return FiniteSet(*sifted[True])
         if isinstance(base_set, cls):
             s, c, base_set = base_set.args
-            if sym == s:
+            if variable == s:
                 condition = And(condition, c)
-            elif sym not in c.free_symbols:
-                condition = And(condition, c.xreplace({s: sym}))
+            elif variable not in c.free_symbols:
+                condition = And(condition, c.xreplace({s: variable}))
             elif s not in condition.free_symbols:
-                condition = And(condition.xreplace({sym: s}), c)
-                sym = s
+                condition = And(condition.xreplace({variable: s}), c)
+                variable = s
             else:
-                # user will have to use cls.sym to get symbol
+                # user will have to use cls.variable to get symbol
                 dum = Symbol('lambda')
                 if dum in condition.free_symbols or \
                         dum in c.free_symbols:
                     dum = Dummy(str(dum))
                 condition = And(
-                    condition.xreplace({sym: dum}),
+                    condition.xreplace({variable: dum}),
                     c.xreplace({s: dum}))
-                sym = dum
+                variable = dum
         from sympy.tensor.indexed import Slice, IndexedBase
-        assert isinstance(sym, (Symbol, Slice, IndexedBase))
+        assert isinstance(variable, (Symbol, Slice, IndexedBase))
 #             s = Dummy('lambda')
-#             if s not in condition.xreplace({sym: s}).free_symbols:
+#             if s not in condition.xreplace({variable: s}).free_symbols:
 #                 raise ValueError('non-symbol dummy not recognized in condition')
         if condition.is_BooleanFalse:
             return S.EmptySet
-        rv = Basic.__new__(cls, sym, condition, base_set)
+        rv = Basic.__new__(cls, variable, condition, base_set)
         return rv if know is None else Union(know, rv)
 
-    sym = property(lambda self: self.args[0])
+    variable = property(lambda self: self.args[0])
     condition = property(lambda self: self.args[1])
     base_set = property(lambda self: self.args[2])
 
 #     def __contains__(self, other):
-#         symb = self.contains(other)
+#         variableb = self.contains(other)
 #         if not (symb is S.true or symb is S.false):
 #             return False
 # #             raise TypeError('contains did not evaluate to a bool: %r' % symb)
@@ -202,20 +218,20 @@ class ConditionSet(Set):
 
     def assertion(self):
         from sympy.concrete.expr_with_limits import Forall
-        return Forall(self.condition, (self.sym, self))
+        return Forall(self.condition, (self.variable, self))
 
     def __invert__(self):
         condition = ~self.condition
         condition.counterpart = None
-        return self.func(self.sym, condition, self.base_set)
+        return self.func(self.variable, condition, self.base_set)
 
     @property
     def element_type(self):
         if self.base_set != S.UniversalSet:
             return self.base_set.element_type
-#         if self.sym.is_set:
-#             return self.sym.element_type() + 's'
-        return self.sym.dtype
+#         if self.variable.is_set:
+#             return self.variable.element_type() + 's'
+        return self.variable.dtype
 
     @property
     def free_symbols(self):
@@ -223,15 +239,15 @@ class ConditionSet(Set):
         return (c.free_symbols - s.free_symbols) | b.free_symbols
 
     def contains(self, other):
-        return And(Lambda(self.sym, self.condition)(other), self.base_set.contains(other))
+        return And(Lambda(self.variable, self.condition)(other), self.base_set.contains(other))
 
     def _eval_subs(self, old, new):
-        if not isinstance(self.sym, Expr):
+        if not isinstance(self.variable, Expr):
             # Don't do anything with the equation set syntax;
             # that should go away, eventually.
             return self
-        sym, cond, base = self.args
-        if old == sym:
+        variable, cond, base = self.args
+        if old == variable:
             # we try to be as lenient as possible to allow
             # the dummy symbol to be changed
             base = base.subs(old, new)
@@ -247,7 +263,7 @@ class ConditionSet(Set):
                         # the base set so if the base set is changed
                         # leave the dummy symbol alone -- a second
                         # subs will be needed to change the dummy
-                        return self.func(sym, cond, base)
+                        return self.func(variable, cond, base)
                     else:
                         return self.func(new, cond.subs(old, new), base)
                 raise ValueError(filldedent('''
@@ -259,17 +275,17 @@ class ConditionSet(Set):
             # don't target cond: it is there to tell how
             # the base set should be filtered and if new is not in
             # the base set then this substitution is ignored
-            return self.func(sym, cond, base)
+            return self.func(variable, cond, base)
         cond = self.condition.subs(old, new)
         base = self.base_set.subs(old, new)
         if cond is S.true:
             return ConditionSet(new, Contains(new, base), base)
-        return self.func(self.sym, cond, base)
+        return self.func(self.variable, cond, base)
 
     def _has(self, pattern):
         """Helper for .has()"""
-        x = self.sym
-        if self.sym == pattern:
+        x = self.variable
+        if self.variable == pattern:
             return self.base_set._has(pattern)
         if x.is_Slice and pattern.is_Slice and x.base == pattern.base:
             if pattern in x:
@@ -289,18 +305,18 @@ class ConditionSet(Set):
 #     def dummy_eq(self, other, symbol=None):
 #         if not isinstance(other, self.func):
 #             return False
-#         if isinstance(self.sym, Symbol) != isinstance(other.sym, Symbol):
+#         if isinstance(self.variable, Symbol) != isinstance(other.variable, Symbol):
 #             # this test won't be necessary when unsolved equations
 #             # syntax is removed
 #             return False
 #         if symbol:
 #             raise ValueError('symbol arg not supported for ConditionSet')
 #         o = other
-#         if isinstance(self.sym, Symbol) and isinstance(other.sym, Symbol):
+#         if isinstance(self.variable, Symbol) and isinstance(other.variable, Symbol):
 #             # this code will not need to be in an if-block when
 #             # the unsolved equations syntax is removed
-#             o = other.func(self.sym,
-#                 other.condition.subs(other.sym, self.sym),
+#             o = other.func(self.variable,
+#                 other.condition.subs(other.variable, self.variable),
 #                 other.base_set)
 #         return self == o
 
@@ -328,10 +344,10 @@ def image_set_definition(self, reverse=False):
         if not isinstance(base_set, ConditionSet):
             return
 
-    sym = base_set.sym
-    if isinstance(sym, Symbol):
+    variable = base_set.variable
+    if isinstance(variable, Symbol):
         ...
-    elif isinstance(sym, Slice):
+    elif isinstance(variable, Slice):
         condition = base_set.condition
         element_symbol = self.element_symbol()
         assert expr.dtype == element_symbol.dtype

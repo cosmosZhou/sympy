@@ -1929,7 +1929,7 @@ class PrettyPrinter(Printer):
             inn = 'in'
             _and = 'and'
 
-        variables = self._print_seq(Tuple(ts.sym))
+        variables = self._print_seq(Tuple(ts.variable))
         as_expr = getattr(ts.condition, 'as_expr', None)
         if as_expr is not None:
             cond = self._print(ts.condition.as_expr())

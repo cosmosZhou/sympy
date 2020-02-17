@@ -49,8 +49,8 @@ def test_CondSet():
     assert C(y, x < 1, C(x, y < x, I)
         ) == C(L, (x < 1) & (y < L), I)
     c = C(y, x < 1, C(x, L < y, I))
-    assert c == C(c.sym, (L < y) & (x < 1), I)
-    assert c.sym not in (x, y, L)
+    assert c == C(c.variable, (L < y) & (x < 1), I)
+    assert c.variable not in (x, y, L)
     c = C(y, x < 1, C(x, y < x, FiniteSet(L)))
     assert c == C(L, And(x < 1, y < L), FiniteSet(L))
 

@@ -30,7 +30,6 @@ from sympy.functions import cos, sin
 from sympy.matrices import eye
 from sympy.multipledispatch import dispatch
 from sympy.sets import Set
-from sympy.sets.handlers.intersection import intersection_sets
 from sympy.sets.handlers.union import union_sets
 from sympy.utilities.misc import func_name
 

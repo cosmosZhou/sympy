@@ -165,7 +165,8 @@ class Symbol(AtomicExpr):
 #         raise TypeError
     def intersection_sets(self, b):
         if b.is_ConditionSet:
-            return b.func(b.sym, b.condition, b.base_set & self)
+            from sympy.sets.conditionset import conditionset
+            return conditionset(b.variable, b.condition, b.base_set & self)
 
     def bisect(self, domain):
         from sympy import Union
@@ -496,10 +497,9 @@ class Symbol(AtomicExpr):
 
     def assertion(self, reverse=False):
         definition = self.definition
-        from sympy.sets.conditionset import ConditionSet
 
-        if isinstance(definition, ConditionSet):
-            sym = definition.sym
+        if definition.is_ConditionSet:
+            sym = definition.variable
             condition = definition.condition
             from sympy.concrete.expr_with_limits import Forall
             if not definition.base_set.is_UniversalSet:

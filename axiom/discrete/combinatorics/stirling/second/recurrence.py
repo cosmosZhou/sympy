@@ -8,15 +8,15 @@ from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.tensor.indexed import IndexedBase
 from axiom import discrete
-from sympy.sets.conditionset import ConditionSet
+from sympy.sets.conditionset import conditionset
 from sympy.concrete.expr_with_limits import UnionComprehension, Forall
 import axiom
 from sympy.core.numbers import oo
 
 
+@plausible
 def apply(n, k):
-    return Equality(Stirling(n + 1, k + 1), Stirling(n, k) + (k + 1) * Stirling(n, k + 1),
-                    plausible=plausible())
+    return Equality(Stirling(n + 1, k + 1), Stirling(n, k) + (k + 1) * Stirling(n, k + 1))
 
 
 from sympy.utility import check
@@ -57,7 +57,7 @@ def prove(Eq):
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
     e = Symbol('e', dtype=dtype.integer.set)
-    s0_ = image_set(e, Union(e, n.set.set), s0)
+    s0_ = image_set(e, Union(e, {n.set}), s0)
 
     plausible0 = Subset(s0_, s2, plausible=True)
     Eq << plausible0
@@ -81,7 +81,7 @@ def prove(Eq):
     i = Eq[-1].lhs.limits[0][0]
     x = Eq[-1].variable.base
 
-    Eq << Equality.define(x[k], n.set)
+    Eq << Equality.define(x[k], {n})
     x_k_definition = Eq[-1]
 
     Eq << Eq[-1].union(Eq[-2])
@@ -114,7 +114,7 @@ def prove(Eq):
     j = Symbol('j', integer=True, domain=Interval(0, k))
 
     x_quote = IndexedBase("x'", (k + 1,), dtype=dtype.integer,
-                     definition=Ref[i](Piecewise((Union(x_tuple[i], n.set) , Equality(i, j)), (x_tuple[i], True))))
+                     definition=Ref[i](Piecewise((Union(x_tuple[i], {n}) , Equality(i, j)), (x_tuple[i], True))))
 
     Eq.x_quote_definition = Equality.by_definition_of(x_quote)
 
@@ -187,15 +187,16 @@ def prove(Eq):
     Eq << plausible0.subs(Eq.B_definition.reversed)
 
     Eq << Eq[-3].union(Eq[-1])
-
-    Eq << identity(s2).bisect(ConditionSet(e, Contains(n.set, e), s2))
+    
+#     Eq << identity(s2).bisect(ConditionSet(e, Contains({n}, e), s2))
+    Eq << identity(s2).bisect(conditionset(e, Contains({n}, e), s2))
 
     Eq.subset_B = Subset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
     Eq.supset_B = Supset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
     Eq.subset_A = Subset(Eq[-1].rhs.args[1], Union[j](Eq[-2].lhs.args[1]), plausible=True)  # unproven
     Eq.supset_A = Supset(Eq[-1].rhs.args[1], Eq[-2].lhs.args[1], plausible=True)
 
-    assert discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].rhs.args)
+#     assert discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].rhs.args)
     Eq.s2_abs = Eq[-1].abs()
 
     assert len(Eq.plausibles_dict) == 5
@@ -249,11 +250,11 @@ def prove(Eq):
 
     Eq << Eq[-1].definition.definition
 
-    Eq.subset_B_definition = Eq[-1] - n.set.set
+    Eq.subset_B_definition = Eq[-1] - {n.set}
 
     num_plausibles = len(Eq.plausibles_dict)
 
-    Eq.plausible_notcontains = Forall(NotContains(n.set, e), (e, s0), plausible=True)
+    Eq.plausible_notcontains = Forall(NotContains({n}, e), (e, s0), plausible=True)
 
     Eq << Eq.plausible_notcontains.this.limits[0][1].subs(s0_definition)
 
@@ -341,7 +342,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq.x_j_definition)
 
     Eq << Eq[-1].subs(Eq.s2_n_assertion.reversed)
-
+#     assert Eq.x_tilde_set_in_s0.function.lhs == Eq[-1].function.function.function.lhs
     Eq << Eq.x_tilde_set_in_s0.subs(Eq[-1])
 
     Eq << Eq[-1].this.limits[0].subs(Eq.s2_n_definition)
@@ -387,7 +388,7 @@ def prove(Eq):
     Eq << Eq[-1].definition
 
     x_hat = IndexedBase(r"\hat{x}", (oo,), dtype=dtype.integer,
-                     definition=Ref[i](Piecewise((x_tuple[i] - n.set , Equality(i, j)), (x_tuple[i], True))))
+                     definition=Ref[i](Piecewise((x_tuple[i] - {n} , Equality(i, j)), (x_tuple[i], True))))
 
     Eq.x_hat_definition = Equality.by_definition_of(x_hat)
 
@@ -482,29 +483,29 @@ def prove(Eq):
 
     Eq.B_assertion = B.assertion()
 
-    Eq << Eq.B_assertion - n.set.set
+    Eq << Eq.B_assertion - {n.set}
 
     Eq << Eq[-1].subs(Eq.s0_complement_n).limits_subs(Eq[-1].variable, Eq[-1].function.variable)
 
-    Eq.s0_supset = Supset(s0, image_set(e, e - n.set.set, B), plausible=True)
+    Eq.s0_supset = Supset(s0, image_set(e, e - {n.set}, B), plausible=True)
 
     Eq << Eq.s0_supset.simplifier()
 
-    Eq.s0_subset = Subset(s0, image_set(e, e - n.set.set, B), plausible=True)
+    Eq.s0_subset = Subset(s0, image_set(e, e - {n.set}, B), plausible=True)
 
     Eq << Eq.s0_subset.definition.definition
 
-    Eq << Eq[-1].union(n.set.set)
+    Eq << Eq[-1].union({n.set})
 
     Eq << B.assertion(reverse=True)
 
-    Eq << Eq.B_assertion.intersect(n.set.set).limits_subs(Eq.B_assertion.variable, Eq.B_assertion.function.variable)
+    Eq << Eq.B_assertion.intersect({n.set}).limits_subs(Eq.B_assertion.variable, Eq.B_assertion.function.variable)
 
     Eq << Eq[-1].union(Eq[-1].variable)
 
     Eq << Eq[-4].subs(Eq[-1])
 
-    Eq << Eq[-4] - n.set.set
+    Eq << Eq[-4] - {n.set}
 
     Eq << Eq.s0_complement_n.limits_subs(Eq.s0_complement_n.variable, Eq[-1].variable)
 
@@ -564,7 +565,7 @@ def prove(Eq):
 
     Eq << Eq[-1].split()
 
-    Eq << Eq[-1].intersect(n.set)
+    Eq << Eq[-1].intersect({n})
 
     Eq << Eq[-1].subs(Eq.nonoverlapping_s1_quote)
 

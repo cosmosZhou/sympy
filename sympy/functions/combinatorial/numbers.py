@@ -885,7 +885,7 @@ class harmonic(Function):
                 if u.is_nonnegative and p.is_positive and q.is_positive and p < q:
                     k = Dummy("k")
                     t1 = q * Sum(1 / (q * k + p), (k, 0, u))
-                    t2 = 2 * Sum(cos((2 * pi * p * k) / S(q)) *
+                    t2 = 2 * Sum(cos((2 * pi * p * k) / S(q)) * 
                                    log(sin((pi * k) / S(q))),
                                    (k, 1, floor((q - 1) / S(2))))
                     t3 = (pi / 2) * cot((pi * p) / q) + log(2 * q)
@@ -1027,7 +1027,7 @@ class euler(Function):
             k = Dummy("k", integer=True)
             j = Dummy("j", integer=True)
             n = n / 2
-            Em = (S.ImaginaryUnit * Sum(Sum(binomial(k, j) * ((-1) ** j * (k - 2 * j) ** (2 * n + 1)) /
+            Em = (S.ImaginaryUnit * Sum(Sum(binomial(k, j) * ((-1) ** j * (k - 2 * j) ** (2 * n + 1)) / 
                   (2 ** k * S.ImaginaryUnit ** k * k), (j, 0, k)), (k, 1, 2 * n + 1)))
             return Em
         if x:
@@ -1241,7 +1241,7 @@ class genocchi(Function):
     def eval(cls, n):
         if n.is_Number:
             if (not n.is_Integer) or n.is_nonpositive:
-                raise ValueError("Genocchi numbers are defined only for " +
+                raise ValueError("Genocchi numbers are defined only for " + 
                                  "positive integers")
             return 2 * (1 - S(2) ** n) * bernoulli(n)
 
@@ -2040,7 +2040,6 @@ class Stirling(Function):
     @property
     def definition(self):
         from sympy.concrete.expr_with_limits import UnionComprehension, Forall
-        from sympy.sets.conditionset import ConditionSet
         from sympy.tensor.indexed import IndexedBase
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval, FiniteSet, image_set
@@ -2054,11 +2053,12 @@ class Stirling(Function):
         assert isinstance(x.dtype, DtypeVector)
         n, k = self.args
         i = Symbol('i', integer=True)
-
+        from sympy.sets.conditionset import conditionset
+        
         return abs(
             image_set(x[:k],
                      UnionComprehension(FiniteSet(x[i]), (i, 0, k - 1)),
-                     ConditionSet(x[:k],
+                     conditionset(x[:k],
                                 And(Equality(UnionComprehension(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
                                     Equality(Sum(abs(x[i]), (i, 0, k - 1)), n),
                                     Forall(StrictGreaterThan(abs(x[i]), 0), (i, 0, k - 1))

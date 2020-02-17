@@ -13,6 +13,7 @@ from sympy.utility import plausible
 # sys.setrecursionlimit(100000000)
 
 from sympy import Interval
+from sympy.functions.elementary.miscellaneous import Min, Max
 
 
 def apply(x0, x1):
@@ -39,6 +40,10 @@ def apply(x0, x1):
 def prove(Eq):
     n0 = Symbol("n0", integer=True, positive=True)
     n1 = Symbol("n1", integer=True, positive=True)
+    
+#     y = Symbol("y", integer=True, positive=True)    
+#     print(Min(Min(n1, y), Max(-1, -n0 + y - 1)))    
+#     print(Min(Max(-1, -n0 + y - 1), Min(n1, y)))
 
     p = Symbol("p", domain=Interval(0, 1))
 

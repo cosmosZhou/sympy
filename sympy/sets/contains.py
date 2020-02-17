@@ -145,9 +145,9 @@ class Contains(BooleanFunction):
             return Or(*(Equality(e, y) for y in s), equivalent=self)
 
         if s.is_ConditionSet:
-            if e == s.sym:
+            if e == s.variable:
                 return s.condition.copy(equivalent=self)
-            condition = s.condition._subs(s.sym, e)
+            condition = s.condition._subs(s.variable, e)
             condition.equivalent = self
             return condition
 
@@ -166,6 +166,10 @@ class Contains(BooleanFunction):
         e, S = self.args
 
         from sympy.concrete.expr_with_limits import Exists
+
+        condition_set = S.condition_set()
+        if condition_set:
+            return And(condition_set.condition._subs(condition_set.variable, e), self.func(e, condition_set.base_set), equivalent=self)
 
         image_set = S.image_set()
         if image_set is not None:
@@ -189,10 +193,6 @@ class Contains(BooleanFunction):
                 variables = _variables
             assert not e.has(variables)
             return Exists(Equality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
-
-        condition_set = S.condition_set()
-        if condition_set:
-            return And(condition_set.condition._subs(condition_set.sym, e), self.func(e, condition_set.base_set), equivalent=self)
 
         if S.is_UnionComprehension:
 #             from sympy.concrete.expr_with_limits import Exists
@@ -330,7 +330,7 @@ class NotContains(BooleanFunction):
 
         condition_set = S.condition_set()
         if condition_set:
-            return Or(~condition_set.condition._subs(condition_set.sym, e), ~self.func(e, condition_set.base_set), equivalent=self)
+            return Or(~condition_set.condition._subs(condition_set.variable, e), ~self.func(e, condition_set.base_set), equivalent=self)
 
         if S.is_UnionComprehension:
             contains = self.func(self.lhs, S.function).simplifier()
@@ -421,8 +421,8 @@ class Subset(BooleanFunction):
             return S.true
 
         if x.is_ConditionSet and s.is_ConditionSet:
-            sym, condition, base_set = x.args
-            _sym, _condition, _base_set = s.args
+            sym, condition, base_set = x.variable, x.condition, x.base_set
+            _sym, _condition, _base_set = s.variable, s.condition, s.base_set
             if sym.dtype == _sym.dtype and (base_set == _base_set or base_set in _base_set):
                 if sym != _sym:
                     _condition = _condition._subs(_sym, sym)

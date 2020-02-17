@@ -13,11 +13,11 @@ from axiom.discrete import difference
 from axiom import discrete
 
 
+@plausible
 def apply(n, k):
     free_symbols = n.free_symbols | k.free_symbols
     i = generate_free_symbol(free_symbols, integer=True)
-    return Equality(Stirling(n, k), Sum[i:0:k]((-1) ** (k - i) * binomial(k, i) * i ** n) / factorial(k),
-                    plausible=plausible())
+    return Equality(Stirling(n, k), Sum[i:0:k]((-1) ** (k - i) * binomial(k, i) * i ** n) / factorial(k))
 
 
 from sympy.utility import check
