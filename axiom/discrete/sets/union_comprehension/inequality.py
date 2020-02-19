@@ -1,17 +1,15 @@
-from sympy.core.relational import Equality, LessThan
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import LessThan
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
 from axiom import discrete
 from sympy.concrete.expr_with_limits import UnionComprehension
 from sympy.concrete import summations
 from sympy.tensor.indexed import IndexedBase
 
-
+@plausible
 def apply(expr, *limits):
     return LessThan(abs(UnionComprehension(expr, *limits)),
-                    summations.Sum(abs(expr), *limits).simplifier(),
-                    plausible=plausible())
+                    summations.Sum(abs(expr), *limits).simplifier())
 
 
 from sympy.utility import check

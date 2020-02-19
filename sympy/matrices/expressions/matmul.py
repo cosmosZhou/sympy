@@ -62,15 +62,32 @@ class MatMul(MatrixExpr, Mul):
 
     @property
     def shape(self):
-        return self.args[0].shape[:-1] + (self.args[-1].shape[-1],)
+        dimension = self.args[self.argmax_shape()].shape        
+        dimension = dimension[:-2]
+        for m in self.args:
+            if len(m.shape) >= 2:
+                dimension += (m.shape[-2],) 
+                break
+            if len(m.shape) == 1:
+                break
+        
+        last_shape = self.args[-1].shape
+        if len(last_shape) > 1:
+            dimension += (last_shape[-1],)
+        
+        return dimension
+
 #         matrices = [arg for arg in self.args if arg.is_Matrix]
 #         return (matrices[0].rows, matrices[-1].cols)
+    @property
+    def dtype(self):
+        return self.args[0].dtype[self.args[0].shape] * self.shape
 
     def _entry(self, i, j=None, expand=True, **kwargs):
         if j is None:
             return self.args[0][i] @ self.func(*self.args[1:])            
                 
-        from sympy import Dummy, Sum, Mul, ImmutableMatrix, Integer
+        from sympy import Dummy, Sum, ImmutableMatrix, Integer
 
         coeff, matrices = self.as_coeff_matrices()
 

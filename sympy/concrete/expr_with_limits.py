@@ -2398,8 +2398,6 @@ class Ref(ExprWithLimits):
             rhs = ExprWithLimits.__new__(cls, function.rhs, *symbols, **assumptions).simplifier()
             return function.func(lhs, rhs)
 
-        from sympy.core.symbol import Symbol
-
         symbols = list(symbols)
 
         for i, limit in enumerate(symbols):
@@ -2415,8 +2413,8 @@ class Ref(ExprWithLimits):
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
     @property
-    def dtype(self):
-        return self.function.dtype * self.shape
+    def dtype(self):        
+        return self.function.dtype * self.limit_shape()
 
     def _eval_is_zero(self):
         # a Sum is only zero if its function is zero or if all terms
@@ -3267,8 +3265,7 @@ class Ref(ExprWithLimits):
                 assert not function._has(x)
         return function
 
-    @property
-    def shape(self):
+    def limit_shape(self):
         shape = []
         for limit in self.limits:
             if len(limit) == 1:
@@ -3276,6 +3273,10 @@ class Ref(ExprWithLimits):
             else:
                 shape.append(limit[2] - limit[1] + 1)
         return tuple(shape)
+        
+    @property
+    def shape(self):
+        return self.limit_shape() + self.function.shape
 
     @property
     def cols(self):

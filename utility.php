@@ -128,7 +128,7 @@ function render($php)
                     $index = $match[2];
                     if (array_key_exists($index, $json)) {
 
-                        $statement = str_replace("$match[1]", "$json[$index]->$match[1]", $statement);
+                        $statement = str_replace("$match[1]", "$json[$index]=>$match[1]", $statement);
                     }
                 }
             }

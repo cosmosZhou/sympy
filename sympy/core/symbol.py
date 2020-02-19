@@ -451,6 +451,8 @@ class Symbol(AtomicExpr):
             _dtype = dtype.integer
         elif self.is_rational:
             _dtype = dtype.rational
+        elif self.is_real:
+            _dtype = dtype.real
         elif self.is_complex:
             _dtype = dtype.complex
         else:
@@ -488,12 +490,12 @@ class Symbol(AtomicExpr):
             return definition.element_type
         return None
 
-    def element_symbol(self, excludes=set()):
+    def element_symbol(self, excludes=set(), free_symbol=None):
         element_type = self.element_type
         if element_type is None:
             return
 
-        return self.generate_free_symbol(excludes=excludes, **element_type.dict)
+        return self.generate_free_symbol(excludes=excludes, free_symbol=free_symbol, **element_type.dict)
 
     def assertion(self, reverse=False):
         definition = self.definition
@@ -1290,11 +1292,15 @@ class DtypeMatrix(Dtype):
             shape = (stop - start,) + self.shape[1:]
             return Basic.__new__(DtypeMatrix, self.dtype, shape)
         else:
-            ...
+            diff = len(self.shape) - 1
+            if diff == 1:
+                return DtypeVector(self.dtype, self.shape[-1])
+            return DtypeMatrix(self.dtype, self.shape[-diff:])
 
     def __mul__(self, length):
         if isinstance(length, (tuple, Tuple, list)):
-            return Basic.__new__(DtypeMatrix, self.dtype, self.shape + length)
+            length = tuple(length)
+            return DtypeMatrix(self.dtype, self.shape + length)
         return Basic.__new__(DtypeMatrix, self, self.shape + (length,))
 
     @property

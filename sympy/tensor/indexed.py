@@ -141,6 +141,27 @@ class Indexed(Expr):
     def class_key(cls):
         return 3, 0, cls.__name__
 
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices, **kw_args):
+        if is_sequence(indices):
+            # Special case needed because M[*my_tuple] is a syntax error.
+#             if self.shape and len(self.shape) != len(indices):
+#                 raise IndexException("Rank mismatch.")
+            return Indexed(self, *indices, **kw_args)
+        elif isinstance(indices, slice):
+            start, stop = indices.start, indices.stop
+            if start is None:
+                start = 0
+            if start == stop - 1:
+                return Indexed(self, start, **kw_args)
+            if start == 0 and stop == self.shape[-1]:
+                return self
+            return Slice(self, indices, **kw_args)
+        else:
+            return Indexed(self.base, *self.indices + (indices,), **kw_args)
+
     def image_set(self):
         definition = self.base.definition
         if definition is None:

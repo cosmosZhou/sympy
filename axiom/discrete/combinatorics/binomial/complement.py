@@ -1,11 +1,11 @@
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Eq
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol
 
-
+@plausible
 def apply(n, k):
-    return Equality(binomial(n, k), binomial(n, n - k), plausible=plausible())
+    return Equality(binomial(n, k), binomial(n, n - k))
 
 
 from sympy.utility import check

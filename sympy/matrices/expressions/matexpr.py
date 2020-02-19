@@ -11,7 +11,7 @@ from sympy.functions import conjugate, adjoint
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices import ShapeError
 from sympy.simplify import simplify
-from sympy.utilities.misc import filldedent
+# from sympy.utilities.misc import filldedent
 
 
 def _sympifyit(arg, retval=None):
@@ -231,9 +231,8 @@ class MatrixExpr(Expr):
     def _accept_eval_derivative(self, s):
         return s._visit_eval_derivative_array(self)
 
-    def _entry(self, i, j, **kwargs):
-        raise NotImplementedError(
-            "Indexing not implemented for %s" % self.__class__.__name__)
+    def _entry(self, i, j=None, **kwargs):
+        raise NotImplementedError("Indexing not implemented for %s" % self.__class__.__name__)
 
     def adjoint(self):
         return adjoint(self)
@@ -271,13 +270,12 @@ class MatrixExpr(Expr):
                 (0 <= j) != False and (j < self.cols) != False)
 
     def __getitem__(self, key):
-        if not isinstance(key, tuple) and isinstance(key, slice):
-            from sympy.matrices.expressions.slice import MatrixSlice
+        from sympy.matrices.expressions.slice import MatrixSlice
+        if not isinstance(key, tuple) and isinstance(key, slice):            
             return MatrixSlice(self, key, (0, None, 1))
         if isinstance(key, tuple) and len(key) == 2:
             i, j = key
             if isinstance(i, slice) or isinstance(j, slice):
-                from sympy.matrices.expressions.slice import MatrixSlice
                 return MatrixSlice(self, i, j)
             i, j = _sympify(i), _sympify(j)
             if self.valid_index(i, j) != False:
@@ -1431,6 +1429,11 @@ class VConcatenate(Concatenate):
 class ElementaryTransformation(MatrixExpr):
 
     @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer * [self.n, self.n]
+
+    @property
     def is_nonzero(self):
         return True
 
@@ -1453,7 +1456,24 @@ class ElementaryTransformation(MatrixExpr):
 #         return 1, self
 
 
+# precondition: i > j or i < j
 class Swap(ElementaryTransformation):
+
+    def _entry(self, i, j=None, **_):
+        from sympy.concrete.expr_with_limits import Ref
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.core.relational import Equality
+        
+        if j is None:
+            return_reference = True
+            j = self.generate_free_symbol(integer=True)            
+        piecewise = Piecewise((KroneckerDelta(j, self.i), Equality(i, self.j)),
+                              (KroneckerDelta(j, self.j), Equality(i, self.i)),                              
+                              (KroneckerDelta(j, i), True))
+
+        if return_reference:
+            return Ref(piecewise, (j, 0, self.n - 1))
+        return piecewise            
 
     @property
     def is_nonzero(self):
@@ -1468,6 +1488,8 @@ class Swap(ElementaryTransformation):
         return self.args[2]
 
     def _eval_determinant(self):
+        if self.i == self.j:
+            return S.One
         return S.NegativeOne
 
 

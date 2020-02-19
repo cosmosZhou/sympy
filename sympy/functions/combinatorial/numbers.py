@@ -2017,6 +2017,11 @@ def nT(n, k=None):
 class Stirling(Function):
     r"""Implementation of the stirling coefficient.     """
 
+    @property
+    def shape(self):
+        return ()
+
+
     def _latex(self, printer):
         return r'\left\{\begin{matrix}%s\end{matrix}\right\}' % r'\\'.join('{%s}' % printer._print(arg) for arg in self.args)
 

@@ -40,7 +40,7 @@ class Expr(Basic, EvalfMixin):
     @property
     def shape(self):
         return ()
-
+        
     def as_Ref(self):
         from sympy import Interval
         from sympy.concrete.expr_with_limits import Ref
@@ -3985,6 +3985,12 @@ class Expr(Basic, EvalfMixin):
             return Union(self, exp)
         from sympy.logic import Or
         return Or(self, exp)
+
+    def set_comprehension(self):
+        from sympy.concrete.expr_with_limits import UnionComprehension
+
+        i = self.generate_free_symbol(integer=True)         
+        return UnionComprehension({self[i]}, (i, 0, self.shape[0] - 1))
 
 
 class AtomicExpr(Atom, Expr):

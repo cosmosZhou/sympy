@@ -62,7 +62,7 @@ def readFolder(rootdir, sufix='.py'):
                 erroneous.append(package)
             else:
                 continue
-            websites.append("http://localhost/sympy/axiom" + package.__file__[len(os.path.dirname(__file__)):-3] + ".php")
+            websites.append("http://localhost" + package.__file__[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php")
 
         elif os.path.isdir(path):
             readFolder(path, sufix)

@@ -886,7 +886,7 @@ class Equality(Relational):
             from sympy import Mul
             from sympy.concrete.expr_with_limits import Ref
             if isinstance(x.definition, Ref):
-                return Eq(x[tuple(var for var, *_ in x.definition.limits)], x.definition.function)
+                return Eq(x[tuple(var for var, *_ in x.definition.limits)], x.definition.function, evaluate=False)
             elif isinstance(x.definition, Mul):
                 args = []
                 ref = None
@@ -898,7 +898,7 @@ class Equality(Relational):
                         args.append(arg)
                 if ref is not None:
                     (var, *_), *_ = ref.limits
-                    return Eq(x[var], Mul(*args) * ref.function)
+                    return Eq(x[var], Mul(*args) * ref.function, evaluate=False)
         elif isinstance(x, Density):
             rvs = random_symbols(x.expr)
 
@@ -914,12 +914,12 @@ class Equality(Relational):
 
             pdf = x(y)
 
-            return Eq(pdf, pdf.doit(evaluate=False))
+            return Eq(pdf, pdf.doit(evaluate=False), evaluate=False)
 
         elif isinstance(x, PDF):
-            return Eq(x, x.doit(evaluate=False))
+            return Eq(x, x.doit(evaluate=False), evaluate=False)
 
-        return Eq(x, x.definition)
+        return Eq(x, x.definition, evaluate=False)
 
     @staticmethod
     def define(x, expr):

@@ -943,7 +943,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
     @property
     def arg(self):
-        assert len(self._args) == 1
+        assert len(self._args) == 1, "illegal arg for %s" % type(self)
         return self._args[0]
 
     @property

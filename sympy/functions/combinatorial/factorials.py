@@ -15,6 +15,9 @@ from math import sqrt as _sqrt
 
 class CombinatorialFunction(Function):
     """Base class for combinatorial functions. """
+    @property
+    def shape(self):
+        return ()
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
         from sympy.simplify.combsimp import combsimp

@@ -12,6 +12,7 @@ from axiom import discrete
 
 # r = Symbol('r')
 # n = Symbol('n', integer=True, positive=True)
+@plausible
 def apply(r, n):
     if not n >= 2:
         return None
@@ -25,8 +26,7 @@ def apply(r, n):
 # [R, A] = (R.T, A.T).T
 
     return Equality(Determinant([R, A]),
-                    (1 - r) ** n * Product[k:1:n - 1](factorial(k)),
-                    plausible=plausible())
+                    (1 - r) ** n * Product[k:1:n - 1](factorial(k)))
 
 
 from sympy.utility import check
@@ -92,7 +92,7 @@ def prove(Eq):
     Eq << identity(Eq[2].rhs.args[1].function).limits_subs(k, k - 1)
 
     Eq << Eq[-1].subs(Eq[-2])
-
+    
     Eq.equation = Eq[2].subs(Eq[-1])
 
     Eq << identity(Eq.equation.rhs.args[0].function).simplifier().limits_subs(k, k - 1)

@@ -245,3 +245,5 @@
 \(\left|{\bigcup_{j} {A}_{j}}\right| = \sum_{j} \left|{{A}_{j}}\right|\tag*{Eq[170]}\)
 \(\forall_{\substack{B \in \left[0; k\right] \setminus \left\{j\right\}}}{{A}_{B} \cap {A}_{j} = \emptyset}\tag*{Eq[169]}\)
 \(\sum_{j} \left|{{A}_{j}}\right| = \left(k + 1\right) \left|{s_{1}}\right|\tag*{Eq[171]}\)
+\(\left|{{A}_{j}}\right| = \left|{s_{1}}\right|\tag*{Eq[172]}\)
+\(\sum_{j} \left|{{A}_{j}}\right| = \left(k + 1\right) \left|{s_{1}}\right|\tag*{Eq[171]}\)

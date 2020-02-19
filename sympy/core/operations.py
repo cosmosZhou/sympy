@@ -7,7 +7,7 @@ from sympy.core.compatibility import ordered, range
 from sympy.core.logic import fuzzy_and
 from sympy.core.evaluate import global_evaluate
 from sympy.utilities.iterables import sift
-from functools import cmp_to_key
+# from functools import cmp_to_key
 
 
 class AssocOp(Basic):

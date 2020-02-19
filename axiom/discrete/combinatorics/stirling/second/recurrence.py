@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality, Unequality
+from sympy.core.relational import Equality
 from sympy.utility import plausible, Sum, Ref, Union, identity
 
 from sympy.functions.combinatorial.numbers import Stirling
@@ -584,29 +584,10 @@ def prove(Eq):
     Eq << Eq[-1].apply(discrete.sets.union_comprehension.nonoverlapping)
 
     Eq << Eq.A_union_abs.subs(Eq[-1])
-    return
-    e = A[j].element_symbol()
-    A_hat_j = Symbol("\hat{A}_{j}", definition=Union[e: A[j]](e.list_set))
-
-    Eq << identity(A_hat_j).definition
-
-    Eq << Eq.A_definition.rhs.assertion()
-
-    Eq << Eq[-1].subs(Eq.A_definition.reversed)
-
-    Eq << Eq[-1].abs()
-
-    i_quote = Symbol("i'", domain=Interval(0, k, integer=True))
-    Eq << Forall(Unequality(x_quote[i], x_quote[i_quote]), (i, Interval(0, k, integer=True) - {i_quote}), plausible=True)
-
-    Eq << ~Eq[-1]
-
-    Eq << Eq[-1].subs(Eq.x_quote_definition[i_quote], Eq.x_quote_definition[i])
-
-    Eq << Eq[-1].split()
-
-    Eq << Eq[-1].split()
-
+    
+    Eq << Equality(Eq[-1].lhs.function, Eq[-1].rhs.args[0])
+    
+    Eq << Eq[-1].summation(*Eq[-2].lhs.limits)
 
 if __name__ == '__main__':
     prove(__file__)

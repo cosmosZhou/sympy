@@ -6,15 +6,14 @@ from sympy.utility import Ref, Sum, plausible
 from sympy.core.relational import Equality
 import axiom
 
-
+@plausible
 def apply(x, m, n, d, delta):
     i = Symbol('i', domain=Interval(0, m - d, right_open=True, integer=True))
     j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
     h = Symbol('h', integer=True)
 
     return Equality(Ref[i, j:m](binomial(d, j - i) * (-1) ** (d + i - j)) @ Ref[i:m, j]((i + delta) ** j * x ** i),
-                    Ref[i, j]((i + delta) ** j * x ** i) @ Ref[i:n, j](binomial(j, i) * Sum[h:0:d](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))),
-                    plausible=plausible())
+                    Ref[i, j]((i + delta) ** j * x ** i) @ Ref[i:n, j](binomial(j, i) * Sum[h:0:d](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
 
 
 from sympy.utility import check
@@ -31,6 +30,7 @@ def prove(Eq):
     h = Symbol('h', integer=True)
 
     delta = Symbol('delta', real=True)
+    
     x = Symbol('x', real=True)
 
     Eq << apply(x, m, n, d, delta)
