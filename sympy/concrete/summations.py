@@ -1003,8 +1003,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if self.function.subs(i, a - 1) == expr:
                     return self.func(self.function, (i, a - 1 , b))
 
-        return AddWithLimits.__add__(self, expr)
-
+        return AddWithLimits.__add__(self, expr)        
+        
     def simplifier(self, deep=False):
         if deep:
             return ExprWithIntLimits.simplifier(self, deep=True)
@@ -1038,10 +1038,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     return A - B
 
             elif isinstance(domain, FiniteSet):
-                args = []
-                for k in domain:
-                    args.append(self.function.subs(x, k))
-                return Add(*args)
+                return self.finite_aggregate(x, domain)
 
             if not self.function.has(x):
                 if not domain.is_set:
@@ -1069,13 +1066,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self.operator(*self.as_multiple_terms(x, domain))
 
             if isinstance(domain, FiniteSet):
-                args = []
-                for k in domain:
-                    args.append(self.function.subs(x, k))
-                return self.operator(*args)
+                return self.finite_aggregate(x, domain)
             if isinstance(domain, EmptySet):
                 return S.Zero
 
+            if domain.is_Intersection:
+                for s in domain.args:
+                    if isinstance(s, FiniteSet):
+                        return self.finite_aggregate(x, s)
+                return self
+                
             a, b = domain.min(), domain.max()
             limit = x, a, b
         x = limit[0]

@@ -12,6 +12,7 @@ from .singleton import S
 
 from inspect import getmro
 
+
 def as_Basic(expr):
     """Return expr as a Basic instance using strict sympify
     or raise a TypeError; this is just a wrapper to _sympify,

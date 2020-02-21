@@ -265,12 +265,10 @@ class MatMul(MatrixExpr, Mul):
                 else:                    
                     A_limit = None
 
-                if A_limit:
-                    j, *_ = A_limit
-    
+                if A_limit and len(B.shape) > 1:
+                    j, *_ = A_limit    
                     return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)), A_limit)
-                else:
-                    return Sum(A[k] * B[k], (k, 0, n - 1))
+                return Sum(A[k] * B[k], (k, 0, n - 1)).simplifier()                
             else:
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]

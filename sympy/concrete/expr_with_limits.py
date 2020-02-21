@@ -167,6 +167,12 @@ class ExprWithLimits(Expr):
     __slots__ = ['is_commutative']
     is_ExprWithLimits = True
 
+    def finite_aggregate(self, x, s):
+        args = []
+        for k in s:
+            args.append(self.function._subs(x, k))
+        return self.operator(*args)                   
+
     def subs_limits_with_epitome(self, epitome):
         if epitome.func == self.func and len(epitome.limits) == len(self.limits):
             _self = self
@@ -682,6 +688,8 @@ class ExprWithLimits(Expr):
                 dic = {}
                 hit = False
                 for k, v in self.limits_dict.items():
+                    if v is None:
+                        continue
                     _v = v._subs(old, new)
                     if not _aresame(_v, v):
                         hit = True
@@ -2405,6 +2413,10 @@ class Ref(ExprWithLimits):
                 x, *domain = limit
                 if 'domain' in x._assumptions:
 #                     local variable
+                    if len(domain) == 2:
+                        if x.domain == Interval(*domain, integer=x.is_integer):
+                            symbols[i] = (x,)
+                            continue
                     _x = Symbol(x.name, integer=True)
                     symbols[i] = (_x, *domain)
 
@@ -3216,8 +3228,8 @@ class Ref(ExprWithLimits):
     def __getitem__(self, indices, **kwargs):
         function = self.function
         if isinstance(indices, (tuple, list)):            
-            for i, index in enumerate(indices):
-                x, *domain = self.limits[i]
+            for i, (x, *domain) in enumerate(self.limits):
+                index = indices[i]
                 if x != index:
                     function = function._subs(x, index)
                     if function._has(x):
@@ -3227,6 +3239,10 @@ class Ref(ExprWithLimits):
                         function = function._subs(var, var.definition)
                         function = function._subs(x, index)
                     assert not function._has(x)
+                    
+            if len(indices) > len(self.limits):
+                function = function[indices[len(self.limits):]]
+                
             return function
         if isinstance(indices, slice):
             start, stop = indices.start, indices.stop
@@ -3588,10 +3604,7 @@ class UnionComprehension(Set, ExprWithLimits):
             x, domain = limit
 
             if isinstance(domain, FiniteSet):
-                args = []
-                for k in domain:
-                    args.append(self.function.subs(x, k))
-                return Union(*args)
+                return self.finite_aggregate(x, domain)
 
             if isinstance(domain, EmptySet):
                 return S.EmptySet
@@ -4410,12 +4423,8 @@ class ConditionalBoolean(Boolean):
         for x, *domain in self.limits:
             if len(domain) == 1:
                 domain = domain[0]
-                if domain.is_FiniteSet:
-                    eqs = []
-                    for _x in domain:
-                        eqs.append(self.function._subs(x, _x))
-                    function = self.operator(*eqs)
-                    return self.func(function, *self.limits_delete(x), equivalent=self).simplifier()
+                if domain.is_FiniteSet: 
+                    return self.func(self.finite_aggregate(x, domain), *self.limits_delete(x), equivalent=self).simplifier()
 
         for limit in self.limits:
             if len(limit) == 2:
@@ -4622,6 +4631,20 @@ class Forall(ConditionalBoolean, ExprWithLimits):
                     exists = exists.func(forall, *exists.limits)
 
                     return self.func(exists, *self.limits_delete(dic), equivalent=self)
+
+        if self.function.is_Contains:
+            element = self.function.lhs
+            container = self.function.rhs
+            if element in forall:
+                if forall[element] == container:
+                    return S.BooleanTrue.copy(equivalent=self)
+                    
+        if self.function.is_NotContains:
+            element = self.function.lhs
+            container = self.function.rhs
+            if element in forall:
+                if forall[element] == container:
+                    return S.BooleanFalse.copy(equivalent=self)
 
         return ConditionalBoolean.simplifier(self, **kwargs)
 

@@ -745,9 +745,6 @@ class StrPrinter(Printer):
     _print_MatrixSymbol = _print_Symbol
     _print_RandomSymbol = _print_Symbol
 
-    def _print_Identity(self, expr):
-        return "I"
-
     def _print_ZeroMatrix(self, expr):
         return "0"
 

@@ -182,6 +182,10 @@ class Indexed(Expr):
         if self.base.definition is not None:
             return other in self.base.definition[self.indices]
 
+    @property
+    def is_integer(self):
+        return self.base.is_integer
+
     def _dummy_eq(self, other):
         return self == other
 

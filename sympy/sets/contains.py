@@ -40,7 +40,7 @@ class Contains(BooleanFunction):
             eq, *_ = args
             if isinstance(eq, Equality):
                 args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq]).simplifier()
+                return self.func(self.lhs._subs(*args, **kwargs).simplifier(), self.rhs._subs(*args, **kwargs).simplifier(), equivalent=[self, eq]).simplifier()
             if isinstance(eq, dict):
                 return self
             if eq.is_ConditionalBoolean:

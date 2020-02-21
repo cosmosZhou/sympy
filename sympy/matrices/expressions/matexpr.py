@@ -78,8 +78,8 @@ class MatrixExpr(Expr):
         return Basic.__new__(cls, *args, **kwargs)
 
     # The following is adapted from the core Expr object
-    def __neg__(self):
-        return MatMul(S.NegativeOne, self).doit()
+#     def __neg__(self):
+#         return MatMul(S.NegativeOne, self).doit()
 
     def __abs__(self):
         raise NotImplementedError
@@ -273,16 +273,20 @@ class MatrixExpr(Expr):
         from sympy.matrices.expressions.slice import MatrixSlice
         if not isinstance(key, tuple) and isinstance(key, slice):            
             return MatrixSlice(self, key, (0, None, 1))
-        if isinstance(key, tuple) and len(key) == 2:
-            i, j = key
-            if isinstance(i, slice) or isinstance(j, slice):
-                return MatrixSlice(self, i, j)
-            i, j = _sympify(i), _sympify(j)
-            if self.valid_index(i, j) != False:
-                return self._entry(i, j)
-            else:
-                raise IndexError("Invalid indices (%s, %s)" % (i, j))
-        elif isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
+        if isinstance(key, tuple): 
+            if len(key) == 1:
+                key = key[0]
+            elif len(key) == 2:
+                i, j = key
+                if isinstance(i, slice) or isinstance(j, slice):
+                    return MatrixSlice(self, i, j)
+                i, j = _sympify(i), _sympify(j)
+                if self.valid_index(i, j) != False:
+                    return self._entry(i, j)
+                else:
+                    raise IndexError("Invalid indices (%s, %s)" % (i, j))
+                
+        if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
             return self._entry(key)
 #             # row-wise decomposition of matrix
 #             rows, cols = self.shape
@@ -838,8 +842,27 @@ class Identity(MatrixExpr):
 
     is_Identity = True
 
-    def __new__(cls, n):
-        return super(Identity, cls).__new__(cls, _sympify(n))
+#     def __new__(cls, *args):
+#         return super(Identity, cls).__new__(cls, args)
+
+    def _latex(self, p):
+        return r"\mathbb{I}" if p._settings['mat_symbol_style'] == 'plain' else r"\mathbf{I}"
+
+    def _sympystr(self, _):
+        return "I"
+
+    @property
+    def n(self):
+        return self.args[0]
+
+    @property
+    def T(self):
+        return self
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer * [self.n, self.n]
 
     @property
     def rows(self):
@@ -869,13 +892,18 @@ class Identity(MatrixExpr):
     def conjugate(self):
         return self
 
-    def _entry(self, i, j, **kwargs):
-        eq = Eq(i, j)
-        if eq is S.true:
-            return S.One
-        elif eq is S.false:
-            return S.Zero
-        return KroneckerDelta(i, j)
+    def _entry(self, i, j=None, **kwargs):
+        if j is None:
+            from sympy.concrete.expr_with_limits import Ref
+            j = self.generate_free_symbol(integer=True)
+            return Ref(KroneckerDelta(i, j), (j, 0, self.n - 1))
+        else:
+            eq = Eq(i, j)
+            if eq is S.true:
+                return S.One
+            elif eq is S.false:
+                return S.Zero
+            return KroneckerDelta(i, j)
 
     def _eval_determinant(self):
         return S.One
@@ -1426,39 +1454,22 @@ class VConcatenate(Concatenate):
         return self[i, j] == 0
 
 
-class ElementaryTransformation(MatrixExpr):
-
-    @property
-    def dtype(self):
-        from sympy.core.symbol import dtype
-        return dtype.integer * [self.n, self.n]
-
-    @property
-    def is_nonzero(self):
-        return True
-
-    @property
-    def n(self):
-        return self.args[0]
-
-    def _eval_determinant(self):
-        return S.One
-
-    @property
-    def T(self):
-        return self
-
-    @property
-    def shape(self):
-        return (self.n, self.n)
-
-#     def as_coeff_mmul(self):
-#         return 1, self
-
-
 # precondition: i > j or i < j
-class Swap(ElementaryTransformation):
+class Swap(Identity):
 
+    def _latex(self, p):
+        return p._print_Basic(self)
+    
+    def _sympystr(self, p):
+        return p._print_Basic(self)
+
+    def __new__(cls, n, i, j):
+        if i == j:
+            return Identity(n)
+        return Identity.__new__(cls, n, i, j)
+    
+    is_Identity = False
+    
     def _entry(self, i, j=None, **_):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.functions.elementary.piecewise import Piecewise
@@ -1468,16 +1479,12 @@ class Swap(ElementaryTransformation):
             return_reference = True
             j = self.generate_free_symbol(integer=True)            
         piecewise = Piecewise((KroneckerDelta(j, self.i), Equality(i, self.j)),
-                              (KroneckerDelta(j, self.j), Equality(i, self.i)),                              
+                              (KroneckerDelta(j, self.j), Equality(i, self.i)),
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
             return Ref(piecewise, (j, 0, self.n - 1))
         return piecewise            
-
-    @property
-    def is_nonzero(self):
-        return True
 
     @property
     def i(self):
@@ -1493,12 +1500,16 @@ class Swap(ElementaryTransformation):
         return S.NegativeOne
 
 
-class Multiplication(ElementaryTransformation):
+class Multiplication(Identity):
 
-    @property
-    def is_nonzero(self):
-        return True
+    def _latex(self, p):
+        return p._print_Basic(self)
 
+    def _sympystr(self, p):
+        return p._print_Basic(self)
+
+    is_Identity = False
+    
     @property
     def multiplier(self):
         return self.args[1]
@@ -1518,10 +1529,6 @@ class Addition(Multiplication):
     '''
 
     @property
-    def is_nonzero(self):
-        return True
-
-    @property
     def j(self):
         return self.args[3]
 
@@ -1530,15 +1537,20 @@ class Addition(Multiplication):
         return Shift(self.n, self.multiplier, self.j, self.i)
 
 
-class Shift(ElementaryTransformation):
+class Shift(Identity):
     '''
     shift the ith row to the jth row
     or shift the jth column to the ith column
     '''
 
-#     def _latex_(self, printer):
-#         return RowTransformation._latex_(self)
-
+    def _latex(self, p):
+        return p._print_Basic(self)
+    
+    def _sympystr(self, p):
+        return p._print_Basic(self)
+    
+    is_Identity = False
+    
     @property
     def i(self):
         return self.args[1]

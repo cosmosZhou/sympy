@@ -169,6 +169,11 @@ class Piecewise(Function):
         else:
             return r
 
+    @property
+    def shape(self):
+        for e, _ in self.args:
+            return e.shape
+
     @classmethod
     def eval(cls, *_args):
         """Either return a modified version of the args or, if no
@@ -222,7 +227,7 @@ class Piecewise(Function):
                                     # new Relationals with +/-oo
                                     reps[i] = S.true
                                 elif ('=' not in ic.rel_op and
-                                        c.xreplace({x: i.rhs}) !=
+                                        c.xreplace({x: i.rhs}) != 
                                         _c.xreplace({x: i.rhs})):
                                     reps[i] = Relational(
                                         i.lhs, i.rhs, i.rel_op + '=')
@@ -267,7 +272,7 @@ class Piecewise(Function):
             #    then the And will be False and if the previous
             #    condition is True then then we wouldn't get to
             #    this point. In either case, we can skip this condition.
-            for i in ([cond] +
+            for i in ([cond] + 
                     (list(cond.args) if isinstance(cond, And) else
                     [])):
                 if i in current_cond:

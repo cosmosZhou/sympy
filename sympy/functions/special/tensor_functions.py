@@ -456,3 +456,6 @@ class KroneckerDelta(Function):
         
         return Interval(-oo, oo, integer=x.is_integer)
 
+    @property
+    def shape(self):
+        return ()

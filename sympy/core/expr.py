@@ -3805,7 +3805,7 @@ class Expr(Basic, EvalfMixin):
     def domain(self):
         from sympy import Interval
 
-        return Interval(S.NegativeInfinity, S.Infinity)
+        return Interval(S.NegativeInfinity, S.Infinity, integer=self.is_integer)
 
     def conditional_domain(self, condition):
         from sympy.core.numbers import oo
@@ -3824,6 +3824,8 @@ class Expr(Basic, EvalfMixin):
         if isinstance(condition, BooleanFalse):
             return S.EmptySet
 
+        if not condition.has(self):
+            return domain
         from sympy.sets.conditionset import ConditionSet
         if condition.is_Contains:
             if self == condition.lhs:

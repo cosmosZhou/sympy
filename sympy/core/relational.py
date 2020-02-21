@@ -715,6 +715,18 @@ class Equality(Relational):
                 return Eq(lhs @ self.lhs, lhs @ self.rhs, equivalent=self)
             return Eq(lhs @ self.lhs, lhs @ self.rhs, given=self)
 
+    def __matmul__(self, rhs):
+        from sympy.matrices.expressions.determinant import det
+        if isinstance(rhs, Equality):
+            if rhs.lhs.is_square and det(rhs.lhs).is_nonzero or rhs.rhs.is_square and det(rhs.rhs).is_nonzero:
+                return Eq(self.lhs @ rhs.lhs, self.rhs @ rhs.rhs, equivalent=[self, rhs])
+            return Eq(self.lhs @ rhs.lhs, self.rhs @ rhs.rhs, given=[self, rhs])
+
+        else:             
+            if rhs.is_square and det(rhs).is_nonzero:
+                return Eq(self.lhs @ rhs, self.rhs @ rhs, equivalent=self)
+            return Eq(self.lhs @ rhs, self.rhs @ rhs, given=self)
+
     def __rpow__(self, exp):
         return Eq(exp ** self.lhs, exp ** self.rhs, equivalent=self)
 

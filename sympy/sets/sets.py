@@ -1711,6 +1711,12 @@ class Intersection(Set, LatticeOp):
         for c in self.args:
             if c.is_subset(b):
                 return b
+            
+# (A & C) | (B & C) = (A | B) & C           
+        if b.is_Intersection:
+            C = self._argset & b._argset
+            if C:            
+                return (self.func(*self._argset - C, evaluate=False) | b.func(*b._argset - C, evaluate=False)) & self.func(*C)             
 
     @property
     def identity(self):
@@ -1782,8 +1788,7 @@ class Intersection(Set, LatticeOp):
         from sympy.core.logic import fuzzy_and, fuzzy_bool
         from sympy.core.compatibility import zip_longest
 
-        fs_args, other = sift(args, lambda x: x.is_FiniteSet,
-            binary=True)
+        fs_args, other = sift(args, lambda x: x.is_FiniteSet, binary=True)
         if not fs_args:
             return
         fs_args.sort(key=len)
@@ -1793,8 +1798,7 @@ class Intersection(Set, LatticeOp):
         res = []
         unk = []
         for x in s:
-            c = fuzzy_and(fuzzy_bool(o.contains(x))
-                for o in fs_args + other)
+            c = fuzzy_and(fuzzy_bool(o.contains(x)) for o in fs_args + other)
             if c:
                 res.append(x)
             elif c is None:
@@ -1802,17 +1806,13 @@ class Intersection(Set, LatticeOp):
             else:
                 pass  # drop arg
 
-        res = FiniteSet(
-            *res, evaluate=False) if res else S.EmptySet
+        res = FiniteSet(*res, evaluate=False) if res else S.EmptySet
         if unk:
             symbolic_s_list = [x for x in s if x.has(Symbol)]
-            non_symbolic_s = s - FiniteSet(
-                *symbolic_s_list, evaluate=False)
+            non_symbolic_s = s - FiniteSet(*symbolic_s_list, evaluate=False)
             while fs_args:
                 v = fs_args.pop()
-                if all(i == j for i, j in zip_longest(
-                        symbolic_s_list,
-                        (x for x in v if x.has(Symbol)))):
+                if all(i == j for i, j in zip_longest(symbolic_s_list, (x for x in v if x.has(Symbol)))):
                     # all the symbolic elements of `v` are the same
                     # as in `s` so remove the non-symbol containing
                     # expressions from `unk`, since they cannot be
@@ -1824,12 +1824,9 @@ class Intersection(Set, LatticeOp):
                     # if only a subset of elements in `s` are
                     # contained in `v` then remove them from `v`
                     # and add this as a new arg
-                    contained = [x for x in symbolic_s_list
-                        if sympify(v.contains(x)) is S.true]
+                    contained = [x for x in symbolic_s_list if sympify(v.contains(x)) is S.true]
                     if contained != symbolic_s_list:
-                        other.append(
-                            v - FiniteSet(
-                            *contained, evaluate=False))
+                        other.append(v - FiniteSet(*contained, evaluate=False))
                     else:
                         pass  # for coverage
 
@@ -1839,9 +1836,9 @@ class Intersection(Set, LatticeOp):
             elif other_sets == S.UniversalSet:
                 res += FiniteSet(*unk)
             else:
-                res += Intersection(
-                    FiniteSet(*unk),
-                    other_sets, evaluate=False)
+                unk = FiniteSet(*unk)
+                if not other_sets.is_Complement or unk not in other_sets.args[1]:
+                    res += Intersection(unk, other_sets, evaluate=False)
         return res
 
     def as_relational(self, symbol):
@@ -2148,7 +2145,8 @@ class Complement(Set, EvalfMixin):
                     i_match = dic[i_]
                     if i_match not in domain:
                         return A
-
+        if B.is_Intersection and A in B._argset:
+            B = B.func(*B._argset - {A}, evaluate=False)
         return Complement(A, B, evaluate=False)
 
     def _contains(self, other):

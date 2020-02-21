@@ -105,8 +105,6 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expand()
 
-    Eq << Eq[-1].this.rhs.simplifier()
-
     Eq << Eq[-4] + (Eq[-1] - Eq[-1].lhs)
 
     Eq << Eq[-1].this.rhs.simplifier()

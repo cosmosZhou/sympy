@@ -1650,10 +1650,6 @@ class LatexPrinter(Printer):
         return r"\mathbb{1}" if self._settings[
             'mat_symbol_style'] == 'plain' else r"\mathbf{1}"
 
-    def _print_Identity(self, I):
-        return r"\mathbb{I}" if self._settings[
-            'mat_symbol_style'] == 'plain' else r"\mathbf{I}"
-
     def _print_NDimArray(self, expr):
 
         if expr.rank() == 0:

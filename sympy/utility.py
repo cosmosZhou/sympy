@@ -482,12 +482,51 @@ def plausible(apply=None):
             return None        
         return True
 
+    def add_given_to_set(statement, given_set, given_list):
+
+        def add_given_to_set(given, given_set, given_list):
+            if given not in given_set:
+                given_list.append(given)
+                given_set.add(given)
+                        
+        if statement.given is not None:
+            if isinstance(statement.given, (tuple, list)):
+                for g in statement.given:
+                    add_given_to_set(g, given_set, given_list)
+            else:
+                add_given_to_set(statement.given, given_set, given_list)
+        
+    def add_given(statement):
+        given_set = set()
+        given_list = []
+        if isinstance(statement, tuple):            
+            
+            for s in statement:
+                add_given_to_set(s, given_set, given_list)
+                                
+            if given_list:
+                return tuple(given_list) + statement
+            return statement
+        
+        add_given_to_set(statement, given_set, given_list)
+        
+        if given_list:
+            return tuple(given_list) + (statement,)
+        return statement
+
     def process(s, dependency):
         s.definition_set(dependency)
                 
         assert 'plausible' not in s._assumptions
         s._assumptions['plausible'] = True
         
+        if s.given is not None:
+            if isinstance(s.given, (tuple, list)):
+                for g in s.given:
+                    g.definition_set(dependency)
+            else:
+                s.given.definition_set(dependency)
+
     def plausible(*args, **kwargs):
         statement = apply(*args, **kwargs)
         s = traceback.extract_stack()
@@ -503,12 +542,14 @@ def plausible(apply=None):
         G = topological_sort_depth_first(dependency)
         if G:
             definition = [Equality.by_definition_of(s) for s in G]
+            
+            statement = add_given(statement)
             if isinstance(statement, tuple):
                 return definition + [*statement]
             return definition + [statement]
             
         else:
-            return statement
+            return add_given(statement)
 
     return plausible
 
