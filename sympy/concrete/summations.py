@@ -1032,6 +1032,15 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             x, domain = limit
             domain &= self.function.nonzero_domain(x)
             
+            if domain.is_Intersection:
+                defined_domain = self.function.defined_domain(x)
+                undefined_domain = []
+                for s in domain.args:
+                    if s in defined_domain:
+                        continue
+                    undefined_domain.append(s)
+                domain = domain.func(*undefined_domain, evaluate=False)
+                
             if isinstance(domain, Complement):
                 A, B = domain.args
                 if isinstance(A, Interval) and A.is_integer and B in A:
@@ -1198,6 +1207,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             tex += p._print(self.function)
 
         return tex
+
 
 def summation(f, *symbols, **kwargs):
     r"""

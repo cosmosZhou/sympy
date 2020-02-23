@@ -612,6 +612,7 @@ class Set(Basic):
     def _eval_conjugate(self):
         return
 
+
 class ProductSet(Set):
     """
     Represents a Cartesian Product of Sets.
@@ -1835,12 +1836,12 @@ class Intersection(Set, LatticeOp):
                 res += FiniteSet(*unk)
             else:
                 unk = FiniteSet(*unk)
-                if other_sets.is_Complement and unk in other_sets.args[1]:
-                    ...
-#                 elif other_sets.is_Union:
-#                     ...
-                else:
-                    res += Intersection(unk, other_sets, evaluate=False) 
+                if other_sets.is_Complement :
+                    if unk in other_sets.args[1]:
+                        return res
+                    if unk in other_sets.args[0]:
+                        return res + other_sets.func(unk, other_sets.args[1], evaluate=False)
+                res += Intersection(unk, other_sets, evaluate=False) 
         return res
 
     def as_relational(self, symbol):
@@ -2359,8 +2360,16 @@ class FiniteSet(Set, EvalfMixin):
             return FiniteSet(*(self._elements | b._elements))
         # If `b` set contains one of my elements, remove it from `a`
         if any(b.contains(x) == True for x in self):
-            return set((
-                FiniteSet(*[x for x in self if not b.contains(x)]), b))
+            return set((FiniteSet(*[x for x in self if not b.contains(x)]), b))
+        
+        if b.is_Intersection:
+            for i, s in enumerate(b.args):
+                if s.is_FiniteSet:
+                    u = [*b.args]
+                    del u[i]
+                    u = b.func(*u, evaluate=False)
+                    if self in u:
+                        return b.func((self | s), u, evaluate=False)
         return None
 
     def __new__(cls, *args, **kwargs):

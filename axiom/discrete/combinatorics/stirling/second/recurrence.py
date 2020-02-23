@@ -136,7 +136,7 @@ def prove(Eq):
     Eq << Eq.x_quote_definition.abs()
     x_quote_abs = Eq[-1]
     
-    Eq << Sum[i:0:k](Eq[-1])
+    Eq << Eq[-1].summation((i, 0, k))
 
     Eq << discrete.sets.union.inequality.apply(*Eq[-1].rhs.args[1].arg.args)
 
@@ -311,7 +311,7 @@ def prove(Eq):
 
     Eq.x_tilde_abs = Eq.x_tilde_definition.abs()
 
-    Eq << Sum[i:0:k - 1](Eq.x_tilde_abs)
+    Eq << Eq.x_tilde_abs.summation((i, 0, k - 1))
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
 
@@ -426,7 +426,7 @@ def prove(Eq):
 
     Eq.x_hat_union = Eq[-1].subs(Eq.x_union_complement)
 
-    Eq << Sum[i:0:k](Eq.x_hat_abs).subs(Eq.x_abs_sum_s2_n)
+    Eq << Eq.x_hat_abs.summation((i, 0, k)).subs(Eq.x_abs_sum_s2_n)
 
     Eq << Eq.x_j_subset.apply(discrete.sets.subset.complement)
 
@@ -588,6 +588,7 @@ def prove(Eq):
     Eq << Equality(Eq[-1].lhs.function, Eq[-1].rhs.args[0])
     
     Eq << Eq[-1].summation(*Eq[-2].lhs.limits)
+
 
 if __name__ == '__main__':
     prove(__file__)

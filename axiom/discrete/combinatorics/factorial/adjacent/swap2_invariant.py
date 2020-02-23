@@ -29,22 +29,20 @@ def prove(Eq):
     Eq << apply(x)
     
     k = Eq[1].lhs.variable
-    i, j = Eq[0].lhs.indices
-    u = sets.Union({i, j}, Intersection({k}, Interval(0, n - 1, integer=True)))
-    print(u & {k})
-        
+    
+#     i, j = Eq[0].lhs.indices
+#     difference = Intersection(Interval(0, n - 1, integer=True) - {j}, {i})
+#     u = sets.Union({j}, difference)
+    
     Eq << Eq[0][k]
     
     Eq << Eq[0][k] @ x
     
     Eq << Eq[-1].this.rhs.expand()
     
+    Eq << Eq[-1].set
     
-    
-    
-    Eq << Eq[-1].subs(k, i)
-    
-    Eq << Eq[-2].subs(k, j)
+    Eq << Eq[-1].union_comprehension((k, 0, n - 1))
 
         
 if __name__ == '__main__':

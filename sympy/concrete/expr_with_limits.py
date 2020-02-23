@@ -29,10 +29,6 @@ def _common_new(cls, function, *symbols, **assumptions):
     (function, limits, orientation). This code is common to
     both ExprWithLimits and AddWithLimits."""
     function = sympify(function)
-    if hasattr(function, 'func') and isinstance(function, Relational):
-        lhs = function.lhs
-        rhs = function.rhs
-        return function.func(cls(lhs, *symbols, **assumptions).simplifier(), cls(rhs, *symbols, **assumptions).simplifier())
 
     if function is S.NaN:
         return S.NaN
@@ -3620,6 +3616,9 @@ class UnionComprehension(Set, ExprWithLimits):
         if len(limit) == 2:
             x, domain = limit
 
+            if not self.function.has(x):
+                return self.function
+            
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)
 
@@ -3718,15 +3717,20 @@ class UnionComprehension(Set, ExprWithLimits):
                     A, B = domain.args
                     if isinstance(B, FiniteSet):
                         deletes = set()
+                        expr_set = S.EmptySet
                         for b in B:
-                            if self.function.subs(i, b) == expr:
+                            s = self.function.subs(i, b)
+                            if s in expr:
                                 deletes.add(b)
+                                expr_set |= s
                         if deletes:
-                            B -= FiniteSet(*deletes)
+                            deletes = FiniteSet(*deletes)
+                            B -= deletes
+                            expr -= expr_set
                             if B:
                                 domain = Complement(A, B, evaluate=False)
-                                return self.func(self.function, (i, domain))
-                            return self.func(self.function, (i, A)).simplifier()
+                                return self.func(self.function, (i, domain)) | expr
+                            return self.func(self.function, (i, A)).simplifier() | expr
 
     def _sympystr(self, p):
         if self.is_ConditionSet: 
@@ -5333,6 +5337,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             return roundrobin(*(iter(arg) for arg in self.args))
         else:
             raise TypeError("Not all constituent sets are iterable")
+
 
 Forall.invert_type = Exists
 
