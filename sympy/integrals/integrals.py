@@ -1253,12 +1253,12 @@ class Integral(AddWithLimits):
                     _x, *_ = _x
 
                     if new != _x:
-                        defined_domain = _x.domain
+                        x_domain = _x.domain
                         a = solve(new - a, _x)
                         b = solve(new - b, _x)
 
-                        a = [e for e in a if e in defined_domain]
-                        b = [e for e in b if e in defined_domain]
+                        a = [e for e in a if e in x_domain]
+                        b = [e for e in b if e in x_domain]
                         if len(a) != 1 or len(b) != 1:
                             return self
                         a, b = a[0], b[0]

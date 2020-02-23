@@ -167,8 +167,24 @@ class ExprWithLimits(Expr):
     __slots__ = ['is_commutative']
     is_ExprWithLimits = True
 
+    @property
+    def is_integer(self):
+        return self.function.is_integer
+
     def finite_aggregate(self, x, s):
         args = []
+        if len(s) > 1:
+            s &= self.function.nonzero_domain(x)
+            if s.is_EmptySet:
+                return S.Zero
+            if s.is_Intersection:
+                finiteset = []
+                for e in s.args:
+                    if e.is_FiniteSet:
+                        finiteset.append(e)
+                if len(finiteset) == 1:
+                    s = finiteset[0]
+            assert s.is_FiniteSet, str(s) 
         for k in s:
             args.append(self.function._subs(x, k))
         return self.operator(*args)                   
@@ -489,7 +505,7 @@ class ExprWithLimits(Expr):
 
         return self.func(func, *limits)
 
-    def as_multiple_terms(self, x, domain):
+    def as_multiple_terms(self, x, domain):                
         univeralSet = Interval(S.NegativeInfinity, S.Infinity, integer=True)
         args = []
         union = S.EmptySet
@@ -3078,7 +3094,7 @@ class Ref(ExprWithLimits):
         if isinstance(self.function, Derivative):
             x, n = self.function.variable_count[0]
             order = 0
-            for i, (_i, *ab) in zip(x.indices[::-1], self.limits[::-1]):
+            for i, (_i, *_) in zip(x.indices[::-1], self.limits[::-1]):
                 if i == _i:
                     order += 1
                     continue
@@ -3232,13 +3248,14 @@ class Ref(ExprWithLimits):
                 index = indices[i]
                 if x != index:
                     function = function._subs(x, index)
-                    if function._has(x):
-                        for var in postorder_traversal(function):
-                            if var._has(x):
-                                break
-                        function = function._subs(var, var.definition)
-                        function = function._subs(x, index)
-                    assert not function._has(x)
+                    if not index._has(x):                        
+                        if function._has(x):
+                            for var in postorder_traversal(function):
+                                if var._has(x):
+                                    break
+                            function = function._subs(var, var.definition)
+                            function = function._subs(x, index)
+                        assert not function._has(x)
                     
             if len(indices) > len(self.limits):
                 function = function[indices[len(self.limits):]]
@@ -3977,17 +3994,6 @@ class UnionComprehension(Set, ExprWithLimits):
             raise TypeError("Not all constituent sets are iterable")
 
     @property
-    def is_integer(self):
-        for arg in self.args:
-            is_integer = arg.is_integer
-            if is_integer is True:
-                continue
-            if is_integer is False:
-                return False
-            return None
-        return True
-
-    @property
     def element_type(self):
         return self.function.element_type
 
@@ -4001,6 +4007,9 @@ class ConditionalBoolean(Boolean):
 
     is_ConditionalBoolean = True
     __slots__ = []
+
+    def __getitem__(self, rhs):
+        return self.this.function.__getitem__(rhs)
 
     def __mul__(self, rhs):
         return self.this.function.__mul__(rhs)
@@ -4848,17 +4857,6 @@ class Forall(ConditionalBoolean, ExprWithLimits):
         else:
             raise TypeError("Not all constituent sets are iterable")
 
-    @property
-    def is_integer(self):
-        for arg in self.args:
-            is_integer = arg.is_integer
-            if is_integer is True:
-                continue
-            if is_integer is False:
-                return False
-            return None
-        return True
-
     def combine_clauses(self, rhs):
         if rhs.is_Exists:
             func = []
@@ -5335,18 +5333,6 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             return roundrobin(*(iter(arg) for arg in self.args))
         else:
             raise TypeError("Not all constituent sets are iterable")
-
-    @property
-    def is_integer(self):
-        for arg in self.args:
-            is_integer = arg.is_integer
-            if is_integer is True:
-                continue
-            if is_integer is False:
-                return False
-            return None
-        return True
-
 
 Forall.invert_type = Exists
 

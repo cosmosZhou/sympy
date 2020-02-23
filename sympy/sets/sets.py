@@ -612,7 +612,6 @@ class Set(Basic):
     def _eval_conjugate(self):
         return
 
-
 class ProductSet(Set):
     """
     Represents a Cartesian Product of Sets.
@@ -935,12 +934,13 @@ class Interval(Set, EvalfMixin):
 
     def _union_sets(self, b, integer=False):
         if self.max() in b:
-            new_a = Interval(self.start, b.end, self.left_open, b.right_open, integer)
+            return Interval(self.start, b.end, self.left_open, b.right_open, integer)
         elif self.min() in b:
-            new_a = Interval(b.start, self.end, b.left_open, self.right_open, integer)
-        else:
-            return
-        return set((new_a, b))
+            return Interval(b.start, self.end, b.left_open, self.right_open, integer)
+        elif self in b:
+            return b
+        elif b in self:
+            return self
 
     def union_sets(self, b):
         if b.is_Interval:
@@ -971,6 +971,7 @@ class Interval(Set, EvalfMixin):
                             return Interval(self.start, b.end, left_open=self.left_open, right_open=b.right_open, integer=True) - FiniteSet(self.end)
                         if self.end == b.start:
                             return Interval(self.start, b.end, left_open=self.left_open, right_open=b.right_open, integer=True)
+                    
                 else:
                     if b.left_open:
                         if self.end == b.start:
@@ -986,7 +987,6 @@ class Interval(Set, EvalfMixin):
                 return self._union_sets(b, integer=True)
             elif not self.is_integer and not b.is_integer:
                 return self._union_sets(b, integer=False)
-
         if b.is_UniversalSet:
             return S.UniversalSet
 
@@ -1022,8 +1022,6 @@ class Interval(Set, EvalfMixin):
             if drapeau:
                 new_a = Interval(start, end, self.left_open, self.right_open, True)
                 return set((new_a, b))
-
-        return None
 
     def __new__(cls, start, end, left_open=False, right_open=False, integer=False, real=True):
 
@@ -1837,8 +1835,12 @@ class Intersection(Set, LatticeOp):
                 res += FiniteSet(*unk)
             else:
                 unk = FiniteSet(*unk)
-                if not other_sets.is_Complement or unk not in other_sets.args[1]:
-                    res += Intersection(unk, other_sets, evaluate=False)
+                if other_sets.is_Complement and unk in other_sets.args[1]:
+                    ...
+#                 elif other_sets.is_Union:
+#                     ...
+                else:
+                    res += Intersection(unk, other_sets, evaluate=False) 
         return res
 
     def as_relational(self, symbol):
@@ -2538,7 +2540,7 @@ class FiniteSet(Set, EvalfMixin):
 
     @property
     def is_integer(self):
-        for elem in self:
+        for elem in self.args:
             is_integer = elem.is_integer
             if is_integer:
                 continue

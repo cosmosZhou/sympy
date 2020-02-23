@@ -3,8 +3,7 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 
-from sympy.series.limits import Limit
-from sympy.concrete.expr_with_limits import Exists, Forall, Minimum, Maximum
+from sympy.concrete.expr_with_limits import Exists, Minimum, Maximum
 from sympy.integrals.integrals import Integral
 from sympy.sets.sets import Interval
 from sympy.core.function import Function

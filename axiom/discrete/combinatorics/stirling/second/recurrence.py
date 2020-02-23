@@ -135,7 +135,7 @@ def prove(Eq):
 
     Eq << Eq.x_quote_definition.abs()
     x_quote_abs = Eq[-1]
-
+    
     Eq << Sum[i:0:k](Eq[-1])
 
     Eq << discrete.sets.union.inequality.apply(*Eq[-1].rhs.args[1].arg.args)

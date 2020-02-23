@@ -403,6 +403,16 @@ class AssocOp(Basic):
     def as_expr(self):
         return self
 
+    def defined_domain(self, x):
+        from sympy import S, oo
+        from sympy.sets.sets import Interval
+        if x.is_set:
+            return S.UniversalSet
+        
+        domain = Interval(-oo, oo, integer=x.is_integer)
+        for arg in self.args:
+            domain &= arg.defined_domain(x)
+        return domain
 
 class ShortCircuit(Exception):
     pass

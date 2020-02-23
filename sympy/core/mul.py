@@ -1938,6 +1938,14 @@ class Mul(Expr, AssocOp):
 
         return self.func(*args)
 
+    @property
+    def is_integer(self):
+        for elem in self.args:
+            is_integer = elem.is_integer
+            if is_integer:
+                continue
+            return is_integer
+        return True
 
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

@@ -4,22 +4,23 @@ from sympy.core.symbol import Symbol
 from sympy.utility import Ref, Sum, Min, plausible
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
+from sympy.core.numbers import oo
 
 
 @plausible
 def apply(G, x, y):
-    n, d = x.shape
+    _, d = x.shape
     i = Symbol('i', integer=True)
     t = Symbol('t', integer=True)
 
-    s = IndexedBase('s', (n,),
+    s = IndexedBase('s', (oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
-    x_quote = IndexedBase("x'", (n, d),
+    x_quote = IndexedBase("x'", (oo, d),
                           definition=Ref[t](Ref[y[t]](Min[y[0:t]](s[t]))))
 
     return Equality(x_quote[t + 1], x[t + 1] + Min(x_quote[t] + G)), \
-        Equality(Min[y](s[n - 1]), Min(x_quote[n - 1]))
+        Equality(Min[y[:t + 1]](s[t]), Min(x_quote[t]))
 
 
 from sympy.utility import check
@@ -27,14 +28,13 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True)
     d = Symbol('d', integer=True)
 
-    # n is the length of the sequence
+    # oo is the length of the sequence
     # d is the number of output labels
     G = IndexedBase('G', (d, d))
-    x = IndexedBase('x', (n, d))
-    y = IndexedBase('y', (n,))
+    x = IndexedBase('x', (oo, d))
+    y = IndexedBase('y', (oo,))
 
     Eq.s_definition, Eq.x_quote_definition, Eq.recursion, Eq.aggregate = apply(G, x, y)
     
@@ -65,9 +65,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.as_Ref()
 
-    Eq << Eq.x_quote_definition.subs(t, n - 1)
-
-    Eq << Eq[-2].subs(Eq[-1].reversed)
+    Eq << Eq[-1].subs(Eq.x_quote_definition.reversed)
 
 
 if __name__ == '__main__':

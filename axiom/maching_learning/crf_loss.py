@@ -4,27 +4,28 @@ from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 import sympy
 from sympy import log, exp
+from sympy.core.numbers import oo
 
 
 @plausible
 def apply(G, x, y):
-    n, d = x.shape
+    _, d = x.shape
 
     i = Symbol('i', integer=True)
 
     t = Symbol('t', integer=True)
 
-    s = IndexedBase('s', (n,),
+    s = IndexedBase('s', (oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
-    z = IndexedBase('z', shape=(n, d),
+    z = IndexedBase('z', shape=(oo, d),
                     definition=Ref[t](Ref[y[t]](Sum[y[0:t]](sympy.E ** -s[t]))))
 
-    x_quote = IndexedBase("x'", shape=(n, d),
+    x_quote = IndexedBase("x'", shape=(oo, d),
                     definition=-Ref[t](sympy.log(z[t])))
 
     return Equality(x_quote[t + 1], -log(Sum(exp(-x_quote[t] - G))) + x[t + 1]), \
-        Equality(-log(exp(-s[n - 1]) / Sum[y](exp(-s[n - 1]))), log(Sum(exp(-x_quote[n - 1]))) + s[n - 1])
+        Equality(-log(exp(-s[t]) / Sum[y[:t + 1]](exp(-s[t]))), log(Sum(exp(-x_quote[t]))) + s[t])
 
 
 from sympy.utility import check
@@ -32,11 +33,10 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True)
     d = Symbol('d', integer=True)
     G = IndexedBase('G', (d, d))
-    x = IndexedBase('x', (n, d))
-    y = IndexedBase('y', (n,))
+    x = IndexedBase('x', (oo, d))
+    y = IndexedBase('y', (oo,))
 
     # n is the length of the sequence
     # d is the number of output labels
@@ -48,12 +48,13 @@ def prove(Eq):
 
     z = x_quote.definition.args[1].function.arg.base
     s = z.definition.function.function.function.arg.args[1].base
-
+    
     Eq << Eq.s_definition.subs(t, t + 1) - Eq.s_definition
 
     Eq << Eq[-1].this.rhs.simplifier() + s[t]
 
     Eq << Eq.z_definition.subs(t, t + 1)
+    
     Eq << Eq[-1].this.rhs.subs(Eq[-2])
 
     Eq << Eq[-1].this.rhs.function.simplifier()
@@ -84,11 +85,11 @@ def prove(Eq):
 
     Eq << Eq[-1].exp().reversed
 
-    Eq << Eq.z_definition.subs(t, n - 1).summation()
+    Eq << Eq.z_definition.summation()
 
     Eq << Eq[-1].this.rhs.as_Sum()
 
-    Eq << Eq[-1].subs(Eq.z_definition_by_x_quote.subs(t, n - 1))
+    Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
 
 
 # reference: Neural Architectures for Named Entity Recognition.pdf

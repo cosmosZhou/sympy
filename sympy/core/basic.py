@@ -2060,6 +2060,12 @@ class Basic(with_metaclass(ManagedProperties)):
 
         return self
 
+    def defined_domain(self, x):
+        from sympy.sets.sets import Interval
+        from sympy.core.numbers import oo
+        if not x.is_set:
+            return Interval(-oo, oo, integer=x.is_integer)
+        return S.UniversalSet
 
 class Atom(Basic):
     """

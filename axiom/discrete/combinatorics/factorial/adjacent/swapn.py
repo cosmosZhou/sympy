@@ -4,11 +4,13 @@ from sympy.utility import check, plausible, Ref
 from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval, Intersection
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import Forall, Exists
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
 from sympy.sets import sets
+import sympy
+from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
 @plausible
@@ -68,13 +70,6 @@ def prove(Eq):
     
     Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(given)
     
-    p = Eq.axiom.variable
-    
-    U = Interval(1, n - 1, integer=True)
-    A = {k, p[0]}
-    print((U - (A & U)) & A)
-#     Intersection(Interval.Ropen(1, n) \ Intersection({k, p[0]}, Interval.Ropen(1, n)), {k, p[0]})
-    
     Eq << Eq.swap.subs(j, i)
     
     Eq << Eq.w_definition.subs(j, i)[k] @ Ref[k](k)
@@ -85,13 +80,55 @@ def prove(Eq):
 
     p = Eq.P_definition.rhs.variable
     
-    Eq << Eq.swap.subs(i, p[0]).subs(j, 0)
+    Eq << Eq.swap.subs(i, p[0]).subs(j, 0)    
     
-    Eq << Eq.w_definition.subs(i, p[0]).subs(j, 0)[k] @ Ref[k](k)
+    y = IndexedBase('y', (n, n), integer=True)
+#     the changing indices of previous arrangement
+    r = IndexedBase('r', (n, n), integer=True)
     
-    Eq << Eq[-1].this.rhs.expand()
+    Eq.r0_definition = Equality.define(r[0], Ref[k](k))
     
+    d = IndexedBase('d', (n,), definition=Ref[j](Ref[k](KroneckerDelta(r[j, k], j)) @ Ref[k](k)))
     
+    Eq.d_definition = Equality.by_definition_of(d)
+    
+    Eq.r_definition = Equality.define(r[j + 1], w[p[j], d[j]] @ r[j], given=Eq.r0_definition)
+    
+    Eq.d_assertion = Equality(r[j, d[j]], j, plausible=True)
+    Eq.d0_assertion = Eq.d_assertion.subs(j, 0)
+    
+    Eq.d_definition_expand = Eq.d_definition.this.rhs.expand()
+    
+    Eq << Eq.d_definition_expand.subs(j, 0).subs(Eq.r0_definition[Eq.d_definition_expand.rhs.variable])    
+
+    Eq << (Eq.r0_definition[d[0]] - Eq.d0_assertion).reversed  
+    
+    Eq.d_assertion_induction = Eq.d_assertion.subs(j, j + 1)
+    Eq << Eq.d_definition_expand.subs(j, j + 1)
+    Eq << Eq.r_definition[Eq[-1].rhs.variable]
+    
+    Eq << Eq[-2].subs(Eq[-1])
+    return
+    Eq.y0_definition = Equality.define(y[0], x)
+    Eq.y_definition = Equality.define(y[j + 1], Ref[k](y[j][(w[p[j], d[j]] @ Ref[k](k))[k]]), given=Eq.y0_definition)
+    
+    Eq << Eq.y_definition.subs(j, 0)
+    
+    Eq.y1_definition = Eq[-1][0]
+
+    Eq << Eq.w_definition.subs(i, p[0]).subs(j, d[0])[k] @ Ref[k](k)
+
+    Eq << Eq[-1].this.rhs.expand().subs(k, 0)
+    
+    Eq << Eq.d_definition.subs(j, 0)
+    return
+    
+    Eq << Eq.y1_definition.subs(Eq[-1]).subs(Eq.y0_definition[p[0]])
+
+    t = Symbol('t', domain=Interval(1, n, integer=True))    
+    Eq << Forall(Exists(Equality(y[t, j], x[p[j]]), (y,)), (j, 0, t - 1), plausible=True)
+
+        
 if __name__ == '__main__':
     prove(__file__)
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

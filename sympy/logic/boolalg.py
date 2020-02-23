@@ -3821,7 +3821,10 @@ class Invoker:
             self.index.append(self.obj.args.index(obj))
             self.append()
         except:
-            self.index.append(self._args[-1].index(obj))
+            try:
+                self.index.append(self._args[-1].index(obj))
+            except:    
+                return self.result(obj)
         self.obj = obj
         return self
 

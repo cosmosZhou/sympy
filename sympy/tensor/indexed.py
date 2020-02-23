@@ -146,10 +146,7 @@ class Indexed(Expr):
 
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
-            # Special case needed because M[*my_tuple] is a syntax error.
-#             if self.shape and len(self.shape) != len(indices):
-#                 raise IndexException("Rank mismatch.")
-            return Indexed(self, *indices, **kw_args)
+            indices = self.indices + tuple(indices)
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
             if start is None:
@@ -160,7 +157,10 @@ class Indexed(Expr):
                 return self
             return Slice(self, indices, **kw_args)
         else:
-            return Indexed(self.base, *self.indices + (indices,), **kw_args)
+            indices = self.indices + (indices,)
+            
+        assert len(indices) <= len(self.base.shape)
+        return Indexed(self.base, *indices, **kw_args)
 
     def image_set(self):
         definition = self.base.definition
@@ -184,6 +184,8 @@ class Indexed(Expr):
 
     @property
     def is_integer(self):
+        if self.base.definition is not None:
+            return self.base.definition.is_integer 
         return self.base.is_integer
 
     def _dummy_eq(self, other):
@@ -477,6 +479,15 @@ class Indexed(Expr):
     @property
     def dtype(self):
         return self.base.dtype[self.indices]
+
+    def defined_domain(self, x):
+        from sympy.sets.sets import Interval
+        for i, index in enumerate(self.indices):
+            diff = x - index
+            if diff.free_symbols & index.free_symbols:
+                continue
+            return Interval(diff, self.base.shape[i] - 1 + diff, integer=True)
+        return Expr.defined_domain(self, x)
 
 #     def __iter__(self):
 #         raise TypeError

@@ -3892,12 +3892,7 @@ class Expr(Basic, EvalfMixin):
         from sympy.core.numbers import oo
         if self == x:
             return Interval(-oo, 0, right_open=True, integer=x.is_integer) | Interval(0, oo, left_open=True, integer=x.is_integer)
-        return Interval(-oo, oo, integer=x.is_integer)
-
-    def defined_domain(self, x):
-        from sympy.sets.sets import Interval
-        from sympy.core.numbers import oo
-        return Interval(-oo, oo, integer=x.is_integer)
+        return self.defined_domain(x)
 
     def generate_free_symbol(self, excludes=set(), shape=None, free_symbol=None, **kwargs):
         excludes = self.free_symbols | excludes

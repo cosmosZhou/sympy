@@ -290,6 +290,14 @@ class MatMul(MatrixExpr, Mul):
 
         return MatrixExpr.expand(self)
 
+    @property
+    def is_integer(self):
+        for elem in self.args:
+            is_integer = elem.is_integer
+            if is_integer:
+                continue
+            return is_integer
+        return True
 
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """

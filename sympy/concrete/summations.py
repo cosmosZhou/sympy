@@ -961,7 +961,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return self
 
-    def __sub__(self, autre):
+    def try_sub(self, autre):
         if isinstance(autre, Sum) and self.function == autre.function and len(self.limits) == len(autre.limits) == 1 and len(self.limits[0]) == len(autre.limits[0]) == 3:
             (x, a, b), *_ = self.limits
             (_x, _a, _b), *_ = autre.limits
@@ -988,7 +988,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         return Sum(self.function, (x, a, _a - 1)).doit(deep=False)
                 elif a_diff == 0:
                     ...
-
+        
+    def __sub__(self, autre):
+        sub = self.try_sub(autre)
+        if sub is not None:
+            return sub
         return super(type(self), self).__sub__(autre)
 
 #     @_sympifyit('other', NotImplemented)
@@ -1026,6 +1030,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         limit = self.limits[0]
         if len(limit) == 2:
             x, domain = limit
+            domain &= self.function.nonzero_domain(x)
+            
             if isinstance(domain, Complement):
                 A, B = domain.args
                 if isinstance(A, Interval) and A.is_integer and B in A:
@@ -1055,25 +1061,37 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         
         if len(limit) > 1:
             x, a, b = limit
+            universe = Interval(a, b, integer=True)
             domain = self.function.nonzero_domain(x)
 
-            domain &= Interval(a, b, integer=True)
+            domain &= universe
             if not domain:
                 return S.Zero
             assert domain.is_integer
 
+            if domain.is_Intersection :
+                finiteset = set()
+                for s in domain.args:
+                    if isinstance(s, FiniteSet):
+                        finiteset.add(s)
+                    elif s in universe:
+                        continue
+                    else:
+                        finiteset.clear()
+                        break
+                if finiteset:
+                    domain = domain.func(*finiteset, evaluate=False)
+
             if isinstance(self.function, Piecewise):
+                if not any(c.has(x) for _, c in self.function.args):
+                    return self.function.func(*((self.func(e, (x, domain)).simplifier(), c) for e, c in self.function.args))
+                
                 return self.operator(*self.as_multiple_terms(x, domain))
 
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)
-            if isinstance(domain, EmptySet):
-                return S.Zero
 
-            if domain.is_Intersection:
-                for s in domain.args:
-                    if isinstance(s, FiniteSet):
-                        return self.finite_aggregate(x, s)
+            if domain.is_Intersection :
                 return self
                 
             a, b = domain.min(), domain.max()
@@ -1120,8 +1138,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             function = function.function
 
         return self.func(function, *self.limits, limit).simplifier()
-        
-
 
     def swap(self):
 #         from sympy.core.mul import Mul
@@ -1153,6 +1169,35 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     def max(self):
         return self.func(self.function.max(), *self.limits).doit()
 
+    def _latex(self, p):
+        if len(self.limits) == 1:
+            limit = self.limits[0]
+            if len(limit) == 1:
+                tex = r"\sum_{%s} " % p._print(limit[0])
+            elif len(limit) == 2:
+#                 tex = r"\sum_{%s \in %s} " % tuple([p._print(i) for i in limit])
+                tex = r"\sum\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
+            else:
+                tex = r"\sum\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
+        else:
+
+            def _format_ineq(limit):
+                if len(limit) == 1:
+                    return p._print(limit[0])
+                elif len(limit) == 2:
+                    return r"%s \in %s" % tuple([p._print(i) for i in limit])
+                else:
+                    return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (limit[1], limit[0], limit[2])])
+
+            tex = r"\sum\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
+
+        from sympy.matrices.expressions.hadamard import HadamardProduct
+        if isinstance(self.function, (Add, HadamardProduct)):
+            tex += r"\left(%s\right)" % p._print(self.function)
+        else:
+            tex += p._print(self.function)
+
+        return tex
 
 def summation(f, *symbols, **kwargs):
     r"""

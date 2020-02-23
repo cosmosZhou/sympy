@@ -84,20 +84,20 @@ class MatrixExpr(Expr):
     def __abs__(self):
         raise NotImplementedError
 
-    @_sympifyit('other', NotImplemented)
-    @call_highest_priority('__radd__')
-    def __add__(self, other):
-        return MatAdd(self, other, check=True).doit()
+#     @_sympifyit('other', NotImplemented)
+#     @call_highest_priority('__radd__')
+#     def __add__(self, other):
+#         return MatAdd(self, other, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__add__')
     def __radd__(self, other):
         return MatAdd(other, self, check=True).doit()
 
-    @_sympifyit('other', NotImplemented)
-    @call_highest_priority('__rsub__')
-    def __sub__(self, other):
-        return MatAdd(self, -other, check=True).doit()
+#     @_sympifyit('other', NotImplemented)
+#     @call_highest_priority('__rsub__')
+#     def __sub__(self, other):
+#         return MatAdd(self, -other, check=True).doit()
 
 #     @_sympifyit('other', NotImplemented)
 #     @call_highest_priority('__sub__')
@@ -589,7 +589,7 @@ class MatrixExpr(Expr):
 #             return False
 #         if self.shape != other.shape:
 #             return False
-        if isinstance(other, MatrixExpr) and (self - other).is_ZeroMatrix:
+        if isinstance(other, MatrixExpr) and not self - other:
             return True
         return Eq(self, other, evaluate=False)
 
@@ -1477,7 +1477,7 @@ class Swap(Identity):
         
         if j is None:
             return_reference = True
-            j = self.generate_free_symbol(integer=True)            
+            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)            
         piecewise = Piecewise((KroneckerDelta(j, self.i), Equality(i, self.j)),
                               (KroneckerDelta(j, self.j), Equality(i, self.i)),
                               (KroneckerDelta(j, i), True))

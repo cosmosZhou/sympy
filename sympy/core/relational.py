@@ -11,6 +11,7 @@ from .evaluate import global_evaluate
 
 from sympy.logic.boolalg import Boolean, BooleanAtom
 from sympy.core.sympify import sympify
+from sympy.core.basic import preorder_traversal
 
 __all__ = (
     'Rel', 'Eq', 'Ne', 'Lt', 'Le', 'Gt', 'Ge',
@@ -884,8 +885,7 @@ class Equality(Relational):
             derivative[old][new] = eq
             return eq
         else:
-            return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs))
-#         return self
+            return self.func(self.lhs.subs(*args, **kwargs).simplifier(), self.rhs.subs(*args, **kwargs).simplifier())
 
     @staticmethod
     def by_definition_of(x):
@@ -934,11 +934,36 @@ class Equality(Relational):
         return Eq(x, x.definition, evaluate=False)
 
     @staticmethod
-    def define(x, expr):
+    def define(x, expr, given=None):
         from sympy.tensor.indexed import IndexedBase, Indexed, Slice
         from sympy.core.symbol import Symbol
         from sympy.concrete.expr_with_limits import Exists
-        if isinstance(x, (Symbol, Indexed, IndexedBase, Slice)):
+        if isinstance(x, (Symbol, IndexedBase, Slice)):
+            expr = sympify(expr)            
+            if not expr.has(x):
+                return Exists(Eq(x, expr), (x,))
+        elif isinstance(x, Indexed):
+            expr = sympify(expr)            
+            if expr.has(x.base):
+                indices = set()
+                for e in preorder_traversal(expr):
+                    if isinstance(e, Indexed) and e.base == x.base:
+                        if e.indices >= x.indices:
+                            return
+                        if len(x.indices) < len(e.indices):
+                            indices.add(e.indices[:len(x.indices)])
+                        else:
+                            indices.add(e.indices)
+                if given is None or not given.is_Exists or len(given.limits) != 1:
+                    return
+                limit = given.limits[0]
+                if len(limit) != 1:
+                    return
+                _x = limit[0]
+                if not isinstance(_x, Indexed) or _x.base != x.base or _x.indices >= x.indices: 
+                    return
+                
+                return Exists(Eq(x, expr), (x.base,))
             return Exists(Eq(x, expr), (x,))
 
     def __getitem__(self, indices):

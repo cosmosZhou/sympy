@@ -10,7 +10,7 @@ from sympy.core import S, Add, Symbol, Mod
 from sympy.core.alphabets import greeks
 from sympy.core.containers import Tuple
 from sympy.core.function import _coeff_isneg, AppliedUndef, Derivative
-from sympy.core.operations import AssocOp
+# from sympy.core.operations import AssocOp
 from sympy.core.sympify import SympifyError
 from sympy.logic.boolalg import true
 
@@ -578,36 +578,6 @@ class LatexPrinter(Printer):
 
     def _print_UnevaluatedExpr(self, expr):
         return self._print(expr.args[0])
-
-    def _print_Sum(self, expr):
-        if len(expr.limits) == 1:
-            limit = expr.limits[0]
-            if len(limit) == 1:
-                tex = r"\sum_{%s} " % self._print(limit[0])
-            elif len(limit) == 2:
-                tex = r"\sum_{%s \in %s} " % tuple([self._print(i) for i in limit])
-#                 tex = r"\sum\limits_{%s<%s}^{0} " % tuple([self._print(i) for i in limit])
-            else:
-                tex = r"\sum\limits_{%s=%s}^{%s} " % tuple([self._print(i) for i in limit])
-        else:
-
-            def _format_ineq(limit):
-                if len(limit) == 1:
-                    return self._print(limit[0])
-                elif len(limit) == 2:
-                    return r"%s \in %s" % tuple([self._print(i) for i in limit])
-                else:
-                    return r"%s \leq %s \leq %s" % tuple([self._print(s) for s in (limit[1], limit[0], limit[2])])
-
-            tex = r"\sum\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in expr.limits])
-
-        from sympy.matrices.expressions.hadamard import HadamardProduct
-        if isinstance(expr.function, (Add, HadamardProduct)):
-            tex += r"\left(%s\right)" % self._print(expr.function)
-        else:
-            tex += self._print(expr.function)
-
-        return tex
 
     def _print_Product(self, expr):
         if len(expr.limits) == 1:

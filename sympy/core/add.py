@@ -1149,10 +1149,12 @@ class Add(Expr, AssocOp):
                     if pos.function != neg.function:
                         neg = neg.func(pos.function, *neg.limits)
 
-                    positive[index] = pos - neg
-                    del negative[i]
-                    hit = True
-                    break
+                    try_sub = pos.try_sub(neg)
+                    if try_sub is not None:
+                        positive[index] = try_sub
+                        del negative[i]
+                        hit = True
+                        break
 
         for coeff in dic:
             if self.sum_result(dic[coeff]):

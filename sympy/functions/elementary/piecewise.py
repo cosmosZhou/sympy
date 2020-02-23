@@ -232,7 +232,8 @@ class Piecewise(Function):
                                     reps[i] = Relational(
                                         i.lhs, i.rhs, i.rel_op + '=')
                         c = c.xreplace(reps)
-            args.append((e, _canonical(c)))
+            args.append((e, c))
+#             args.append((e, _canonical(c)))
 
         for expr, cond in args:
             # Check here if expr is a Piecewise and collapse if one of
@@ -1086,6 +1087,18 @@ class Piecewise(Function):
             if dtype is None or dtype in _dtype and dtype != _dtype:
                 dtype = _dtype
         return dtype
+
+    def simplifier(self, *_, **__):        
+        if len(self.args) == 2:
+            e0, c0 = self.args[0]
+            if c0.is_Equality:
+                e1, _ = self.args[1]
+                old, new = c0.args
+                _e1 = e1._subs(old, new) 
+                _e0 = e0._subs(old, new)
+                if _e0 == _e1 or e0 == _e1 or _e0 == e1:
+                    return e1
+        return self
 
 
 def piecewise_fold(expr):
