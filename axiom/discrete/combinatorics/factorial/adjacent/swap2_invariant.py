@@ -1,15 +1,11 @@
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol, dtype
+from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible, Ref
 from sympy.tensor.indexed import IndexedBase
-from sympy.sets.sets import Interval, Intersection
+from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import Forall, Exists
-from sympy.sets.contains import Contains
-from sympy.matrices.expressions.matexpr import Swap
-from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.sets import sets
 
+from sympy.matrices.expressions.matexpr import Swap
 
 @plausible
 def apply(x):
@@ -29,10 +25,6 @@ def prove(Eq):
     Eq << apply(x)
     
     k = Eq[1].lhs.variable
-    
-#     i, j = Eq[0].lhs.indices
-#     difference = Intersection(Interval(0, n - 1, integer=True) - {j}, {i})
-#     u = sets.Union({j}, difference)
     
     Eq << Eq[0][k]
     

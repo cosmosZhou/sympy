@@ -412,6 +412,8 @@ class Relational(Boolean, Expr, EvalfMixin):
     def __iter__(self):
         raise TypeError
 
+    def defined_domain(self, x):
+        return self.lhs.defined_domain(x) & self.rhs.defined_domain(x)
 
 Rel = Relational
 
@@ -732,6 +734,7 @@ class Equality(Relational):
         return Eq(exp ** self.lhs, exp ** self.rhs, equivalent=self)
 
     def union(self, exp):
+        exp = sympify(exp)
         if isinstance(exp, Equality):
             return self.func(self.lhs | exp.lhs, self.rhs | exp.rhs, given=[self, exp])
         elif exp.is_ConditionalBoolean:
@@ -740,6 +743,7 @@ class Equality(Relational):
             return Eq(self.lhs | exp, self.rhs | exp, given=self)
 
     def intersect(self, exp):
+        exp = sympify(exp)
         if isinstance(exp, Equality):
             return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
         elif exp.is_ConditionalBoolean:

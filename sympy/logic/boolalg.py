@@ -1483,6 +1483,11 @@ class BooleanFunction(Application, Boolean):
                      +nonRel + nonRealRel))
         return rv
 
+    def defined_domain(self, x):
+        domain = Boolean.defined_domain(self, x)
+        for arg in self.args:
+            domain &= arg.defined_domain(x)
+        return domain
 
 class And(LatticeOp, BooleanFunction):
     """

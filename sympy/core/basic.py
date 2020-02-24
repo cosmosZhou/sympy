@@ -116,11 +116,6 @@ class Basic(with_metaclass(ManagedProperties)):
     is_BooleanTrue = None
     is_BooleanFalse = None
     
-    @property
-    def list(self):
-        from sympy.sets.sets import List
-        return List(self)
-
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
         from sympy.tensor.indexed import IndexedBase

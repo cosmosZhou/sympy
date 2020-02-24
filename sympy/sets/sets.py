@@ -27,7 +27,6 @@ from sympy.utilities.iterables import sift
 from sympy.utilities.misc import func_name, filldedent
 
 from mpmath import mpi, mpf
-from builtins import isinstance
 
 
 class Set(Basic):
@@ -54,6 +53,10 @@ class Set(Basic):
 
     is_Complement = None
     is_ComplexRegion = False
+    
+    @property
+    def list(self):
+        return List(self)
 
     def assertion(self):
         from sympy.concrete.expr_with_limits import Exists
@@ -1002,9 +1005,9 @@ class Interval(Set, EvalfMixin):
                                           self.end.is_finite)
         if open_left_in_b_and_finite or open_right_in_b_and_finite:
             # Fill in my end points and return
-            open_left = self.left_open and self.start not in b
-            open_right = self.right_open and self.end not in b
-            new_a = self.copy(open_left, open_right, self.is_integer)
+            left_open = self.left_open and self.start not in b
+            right_open = self.right_open and self.end not in b            
+            new_a = self.copy(left_open=left_open, right_open=right_open, integer=self.is_integer)
             return set((new_a, b))
         if self.is_integer:
             drapeau = False
@@ -1349,7 +1352,7 @@ class Interval(Set, EvalfMixin):
             end = self.end + other
             return self.func(start, end, self.left_open, self.right_open, self.is_integer)
 
-        return Set.__add__(other)
+        return Set.__add__(self, other)
 
     def __mul__(self, other):
         if isinstance(other, Expr):
@@ -1405,8 +1408,14 @@ class Interval(Set, EvalfMixin):
     def _has(self, pattern):
         return self.start._has(pattern) or self.end._has(pattern)
 
-    def copy(self, left_open=None, right_open=None, integer=None):
+    def copy(self, start=None, end=None, left_open=None, right_open=None, integer=None):
         args = [*self.args]
+        if start is not None:
+            args[0] = start
+
+        if end is not None:
+            args[1] = end
+            
         if left_open is not None:
             args[-3] = left_open
 
@@ -1841,6 +1850,9 @@ class Intersection(Set, LatticeOp):
                         return res
                     if unk in other_sets.args[0]:
                         return res + other_sets.func(unk, other_sets.args[1], evaluate=False)
+                if other_sets.is_ConditionSet:
+                    from sympy.sets.conditionset import conditionset
+                    return conditionset(other_sets.variable, other_sets.condition, other_sets.base_set & unk)
                 res += Intersection(unk, other_sets, evaluate=False) 
         return res
 
@@ -2138,6 +2150,13 @@ class Complement(Set, EvalfMixin):
                     A = A.func(*args)
                     return A - B
 
+        if A.is_ConditionSet:
+            if not B.is_ConditionSet:
+                from sympy.sets.conditionset import conditionset
+                base_set = B._complement(A.base_set)
+                if base_set is not None:
+                    return conditionset(A.variable, A.condition, base_set)
+                 
         if A.is_UnionComprehension:
             from sympy import Wild
             for i, domain in A.limits_dict.items():
@@ -2432,7 +2451,13 @@ class FiniteSet(Set, EvalfMixin):
                         return other.copy(left_open=True) - self.func(*args)
 
                 return None
-
+            
+            if other.is_integer:
+                if other.min() in self:               
+                    return other.copy(start=other.start + 1) - self.func(*{*self.args} - {other.min()})                
+                if other.max() in self:                
+                    return other.copy(end=other.end - 1) - self.func(*{*self.args} - {other.max()})
+            
         elif isinstance(other, FiniteSet):
             unk = []
             for i in self:

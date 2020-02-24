@@ -1032,6 +1032,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             x, domain = limit
             domain &= self.function.nonzero_domain(x)
             
+            if domain.is_EmptySet:
+                return S.Zero
+            
             if domain.is_Intersection:
                 defined_domain = self.function.defined_domain(x)
                 undefined_domain = []

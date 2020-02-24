@@ -754,12 +754,13 @@ class ExprWithLimits(Expr):
             x, z = x.bisect(front, back)
             return self.func(self.func(self.function, (x,)).simplifier(), (z,))
 
-        if domain is not None:
-            baseset = S.UniversalSet
+        if domain is not None:            
             if len(args) == 1:
                 baseset = args[0]
             elif len(args) == 2:
                 baseset = Interval(*args, integer=True)
+            else:
+                baseset = S.UniversalSet
 
             return self.func.operator(self.func(self.function, (x, baseset & domain)).simplifier(), self.func(self.function, (x, baseset - domain)), evaluate=False)
 #             return self.func.operator(self.func(self.function, (x, baseset & domain)).simplifier(), self.func(self.function, (x, baseset - domain)).simplifier(), evaluate=False)
@@ -3588,9 +3589,26 @@ class UnionComprehension(Set, ExprWithLimits):
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 #         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions).simplifier()
 
-    def assertion(self):
-        from sympy.sets.conditionset import image_set_definition
-        return image_set_definition(self)
+    def assertion(self, given=None):
+        if given is None:
+            from sympy.sets.conditionset import image_set_definition
+            return image_set_definition(self)
+        else:
+#             from sympy.sets.contains import Contains
+            if len(self.limits) > 1:
+                return
+            limit = self.limits[0]
+            if len(limit) > 2:
+                return
+            x, condition_set = limit
+            if not condition_set.is_ConditionSet:
+                return
+            assert given.is_Equality
+            assert given.lhs.is_Abs and given.lhs.arg == self
+            n = given.rhs
+            assert n.is_integer and n > 0
+            assert x == condition_set.variable
+            return Exists(condition_set.condition, (condition_set.variable, condition_set.base_set), given=given)
 
     def simplifier(self, deep=False):
         if deep:
@@ -3664,11 +3682,15 @@ class UnionComprehension(Set, ExprWithLimits):
         if expr.func == self.func:
             if self.function == expr.function:
                 if self.is_ConditionSet and expr.is_ConditionSet:
-                    if self.variable == expr.variable and self.base_set == expr.base_set:
-                        from sympy.sets.conditionset import conditionset
-                        return conditionset(self.variable, self.condition | expr.condition, self.base_set)
-                limits = self.limits_union(expr)
-                return self.func(self.function, *limits)
+                    from sympy.sets.conditionset import conditionset
+                    if self.variable == expr.variable :
+                        if self.base_set == expr.base_set:                            
+                            return conditionset(self.variable, self.condition | expr.condition, self.base_set)
+                        if self.condition == expr.condition:
+                            return conditionset(self.variable, self.condition, self.base_set | expr.base_set)
+                else:
+                    limits = self.limits_union(expr)
+                    return self.func(self.function, *limits)
             else:
                 finite_set = self.finite_set()
                 if finite_set and finite_set.is_Slice:
@@ -3682,19 +3704,10 @@ class UnionComprehension(Set, ExprWithLimits):
                             if stop == _start - 1:
                                 return UnionComprehension.construct_finite_set(finite_set.base, start, _stop, self.limits[0][0]) - finite_set.base[stop].set
 
-#                 s = self.variables_set & expr.variables_set
-#                 if s:
-#                     subs_dict = {x:Wild(x.name)for x in s}
-#                     function = self.function.subs(subs_dict)
-#                     dic = expr.function.match(function)
-#                     if dic:
-#                         for x, x_ in subs_dict.items():
-#                             x_ = dic[x_]
-#                             expr = expr.limits_subs(x_, x)
-#                         return self.union_sets(expr)
-
+        if self.is_ConditionSet:
+            return
+        
         if len(self.limits) == 1:
-
             i, *args = self.limits[0]
             if len(args) == 2:
                 a, b = args

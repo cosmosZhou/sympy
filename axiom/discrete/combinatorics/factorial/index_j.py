@@ -1,74 +1,60 @@
-from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref, Union
+from sympy.core.symbol import Symbol
+from sympy.utility import check, plausible, Ref, identity, Union
 from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import Forall
-from sympy.sets.contains import Contains
+
+from sympy.functions.special.tensor_functions import KroneckerDelta
+from sympy.concrete import expr_with_limits
+from sympy.sets.conditionset import conditionset
 
 
 @plausible
 def apply(given):
-    assert len(given) == 2
-    assert given[0].is_Forall and len(given[0].limits) == 2
-    j, a, n_munis_1 = given[0].limits[0]
-    assert a == 1
-    x, S = given[0].limits[1]
+    assert given.is_Equality
+    x_set_comprehension, interval = given.args
+    n = interval.max() + 1
+    assert interval.min() == 0
+    assert len(x_set_comprehension.limits) == 1
+    k, a, b = x_set_comprehension.limits[0]
+    assert b - a == n - 1
+    x = expr_with_limits.Ref(x_set_comprehension.function.arg, *x_set_comprehension.limits).simplifier()
     
-    contains = given[0].function
-    assert contains.is_Contains
-    ref, _S = contains.args
-    assert S == _S and ref.is_Ref and S.is_set
-    dtype = S.element_type
-    
-    assert len(ref.limits) == 1
-    i, a, _n_munis_1 = ref.limits[0]
-    assert _n_munis_1 == n_munis_1 and a == 0
-    
-    piecewise = ref.function
-    assert piecewise.is_Piecewise and len(piecewise.args) == 3
-    
-    x0, condition0 = piecewise.args[0]
-    assert condition0.is_Equality and {*condition0.args} == {i, j}
-    
-    xj, conditionj = piecewise.args[1]
-    assert conditionj.is_Equality and {*conditionj.args} == {i, 0}
-    
-    xi, conditioni = piecewise.args[2]
-    assert conditioni
-    
-    n = n_munis_1 + 1
-    
-    assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.dtype
-    
-    assert given[1].is_Forall and len(given[1].limits) == 1
-    _x, _S = given[1].limits[0]
-    assert x == _x and S == _S
-    
-    equality = given[1].function
-    assert equality.is_Equality and {*equality.args} == {abs(x.set_comprehension()), n}
-        
-    return Equality(abs(S), factorial(n) * abs(Union[x:S]({x.set_comprehension()})))
+    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
+    return Equality(x[Ref[k:n](KroneckerDelta(x[k], j)) @ Ref[k:n](k)], j, given=given)
 
 
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
-    S = Symbol('S', dtype=dtype.integer * n)    
     
-    x = IndexedBase('x', **S.element_symbol().dtype.dict)
+    x = IndexedBase('x', (n,), integer=True)    
     
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)    
-    
-    given = [Forall(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S)),
-             Forall(Equality(abs(x.set_comprehension()), n), (x, S))]
-    
-    Eq << given
+    k = Symbol('k', integer=True)    
+    given = Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True))    
+
     Eq << apply(given)
+    
+    Eq << identity(Eq[-1].lhs.indices[0]).expand()
+    
+    Eq << identity(Eq[-1].rhs.function.args[1]).definition
+    
+    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+    
+    Eq << identity(Eq[-1].rhs.subs(1, 0)).bisect(domain={0})
+    
+    Eq << Eq[-2].subs(Eq[-1].reversed)
+    return
+    j = Eq[1].rhs
+    Eq << Eq[0].intersect({j})
+    Eq << Equality(Union[k:conditionset(k, Equality(x[k], j), Interval(0, n - 1, integer=True))]({x[k]}), {j}, plausible=True)
+    
+    Eq << Eq[-1].this.lhs.function.subs(Eq[-1].lhs.limits[0][1].args[1][1])
+    
+    Eq << Eq[-1].abs()
+    
+    Eq << Eq[-2].lhs.assertion(given=Eq[-1])
 
 
 if __name__ == '__main__':

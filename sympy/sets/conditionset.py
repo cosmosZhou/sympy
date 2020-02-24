@@ -21,12 +21,18 @@ def conditionset(*limit):
     if len(limit) > 2 and limit[2] in (S.UniversalSet, None):
         limit = limit[:2]
     variable, condition, *base_set = limit
+    if base_set:
+        base_set = base_set[0]
+        if not base_set:
+            return base_set        
+    else:
+        base_set = S.UniversalSet
+       
     if condition:
-        if base_set:
-            return base_set[0]
-        return S.UniversalSet
+        return base_set        
     if condition.is_BooleanFalse:
         return S.EmptySet
+
     return UnionComprehension({variable}, limit) 
 
 

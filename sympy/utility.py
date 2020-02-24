@@ -40,10 +40,10 @@ class Operator:
         elif isinstance(key, slice):
             if key.step is not None:
                 limit = [(key.start, key.stop, key.step)]
-            elif key.stop.is_integer:
-                limit = [(key.start, 0, key.stop - 1)]
-            else:
+            elif key.stop.is_set:
                 limit = [(key.start, key.stop)]
+            else:
+                limit = [(key.start, 0, key.stop - 1)]
         else:
             limit = [(key,)]
         self.stack.append(limit)
@@ -398,14 +398,15 @@ def check(func):
 #                 continue
 #             statement = statement[4:]
 #             print(statement, file=py.file)
-
+        http = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
         try:
             func(eqs)
         except Exception as e:
             print(e)
             traceback.print_exc()
             if Operator.stack:
-                Operator.stack = [] 
+                Operator.stack = []
+            print(http) 
             return None
 
         jsonFile = py.replace('.py', '.json')
@@ -464,7 +465,7 @@ def check(func):
             with open(jsonFile, 'w', encoding='utf-8') as file:
                 json.dump(dependency, file, indent=4)
 
-            print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
+            print(http)
             return False
         else:
             if os.path.exists(jsonFile):

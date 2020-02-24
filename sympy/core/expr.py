@@ -3811,11 +3811,8 @@ class Expr(Basic, EvalfMixin):
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval
 
-        domain = self.domain
-#         if 'domain' in self._assumptions:
-#             domain = self._assumptions['domain']
-#         else:
-#             domain = Interval(-oo, oo, integer=self.is_integer)
+        domain = self.domain & condition.defined_domain(self)
+
         from sympy.logic.boolalg import BooleanTrue, BooleanFalse
 
         if isinstance(condition, BooleanTrue):
@@ -3826,11 +3823,11 @@ class Expr(Basic, EvalfMixin):
 
         if not condition.has(self):
             return domain
-        from sympy.sets.conditionset import ConditionSet
+        from sympy.sets.conditionset import conditionset
         if condition.is_Contains:
             if self == condition.lhs:
                 return condition.rhs
-            return ConditionSet(self, condition)
+            return conditionset(self, condition, domain)
 
         if condition.is_And:
             sol = domain
@@ -3839,13 +3836,14 @@ class Expr(Basic, EvalfMixin):
             return sol
 
         if condition.lhs.is_set:
-            return ConditionSet(self, condition)
+            return conditionset(self, condition, domain)
 
         from sympy import solve
         equation = condition.lhs - condition.rhs
         solution = solve(equation, self)
         if len(solution) != 1:
-            return domain
+            return conditionset(self, condition, domain)
+#             return domain
         solution = solution[0]
         from sympy.core.relational import LessThan, GreaterThan, StrictLessThan, StrictGreaterThan, Unequality, Equality
         from sympy.sets.sets import FiniteSet
@@ -3983,10 +3981,10 @@ class Expr(Basic, EvalfMixin):
         from sympy.logic import Or
         return Or(self, exp)
 
-    def set_comprehension(self):
+    def set_comprehension(self, free_symbol=None):
         from sympy.concrete.expr_with_limits import UnionComprehension
 
-        i = self.generate_free_symbol(integer=True)         
+        i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)         
         return UnionComprehension({self[i]}, (i, 0, self.shape[0] - 1))
 
 
