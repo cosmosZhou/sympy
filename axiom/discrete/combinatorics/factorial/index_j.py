@@ -45,9 +45,15 @@ def prove(Eq):
     Eq << identity(Eq[-1].rhs.subs(1, 0)).bisect(domain={0})
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
-    return
+
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
+    
+    Eq << Eq[-1].this.lhs.distribute()
+    
+    Eq << Eq[-1].this.lhs.function.subs(Eq[-1].lhs.limits[0][1].args[1][1])
+    return
+
     Eq << Equality(Union[k:conditionset(k, Equality(x[k], j), Interval(0, n - 1, integer=True))]({x[k]}), {j}, plausible=True)
     
     Eq << Eq[-1].this.lhs.function.subs(Eq[-1].lhs.limits[0][1].args[1][1])

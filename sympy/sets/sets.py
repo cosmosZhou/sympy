@@ -1844,21 +1844,35 @@ class Intersection(Set, LatticeOp):
             elif other_sets == S.UniversalSet:
                 res += FiniteSet(*unk)
             else:
+                from sympy.functions.elementary.piecewise import Piecewise
+                from sympy.sets.conditionset import conditionset
                 unk = FiniteSet(*unk)
                 if other_sets.is_Complement :
                     if unk in other_sets.args[1]:
                         return res
                     if unk in other_sets.args[0]:
                         return res + other_sets.func(unk, other_sets.args[1], evaluate=False)
-                if other_sets.is_ConditionSet:
-                    from sympy.sets.conditionset import conditionset
-                    return conditionset(other_sets.variable, other_sets.condition, other_sets.base_set & unk)
+                if other_sets.is_ConditionSet:                    
+                    return res + conditionset(other_sets.variable, other_sets.condition, other_sets.base_set & unk)
+                if other_sets.is_FiniteSet:
+                    if len(unk) == len(other_sets) == 1:
+                        return res + Piecewise((unk, Equality(unk.arg, other_sets.arg)), (S.EmptySet, True))
                 res += Intersection(unk, other_sets, evaluate=False) 
         return res
 
     def as_relational(self, symbol):
         """Rewrite an Intersection in terms of equalities and logic operators"""
-        return And(*[set.as_relational(symbol) for set in self.args])
+        return And(*[s.as_relational(symbol) for s in self.args])
+
+    def distribute(self):
+        for i, union in enumerate(self.args):
+            if union.is_UnionComprehension:
+                args = [*self.args]
+                del args[i]
+                this = self.func(*args)
+                function = union.function & this
+                return union.func(function, *union.limits).simplifier()
+        return self
 
 
 class IntersectionComprehension(Set):
@@ -2376,7 +2390,7 @@ class FiniteSet(Set, EvalfMixin):
 
     def union_sets(self, b):
         if b.is_FiniteSet:
-            return FiniteSet(*(self._elements | b._elements))
+            return FiniteSet(*(set(self.args) | set(b.args)))
         # If `b` set contains one of my elements, remove it from `a`
         if any(b.contains(x) == True for x in self):
             return set((FiniteSet(*[x for x in self if not b.contains(x)]), b))

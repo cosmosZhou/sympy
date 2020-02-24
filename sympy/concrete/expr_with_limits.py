@@ -3632,10 +3632,12 @@ class UnionComprehension(Set, ExprWithLimits):
         limit = self.limits[0]
 
         if len(limit) == 2:
+            from sympy.core.relational import Unequality
             x, domain = limit
 
             if not self.function.has(x):
-                return self.function
+                return Piecewise((self.function, Unequality(Intersection(*self.limits_dict.values()), S.EmptySet)), (S.EmptySet, True))
+#                 return self.function
             
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)

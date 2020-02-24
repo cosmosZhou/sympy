@@ -1,6 +1,6 @@
 from __future__ import print_function, division
 
-from sympy.core import Basic, S, Function, diff, Tuple, Dummy, Symbol
+from sympy.core import Basic, S, Function, diff, Tuple, Dummy
 from sympy.core.basic import as_Basic
 from sympy.core.compatibility import range
 from sympy.core.numbers import Rational, NumberSymbol
@@ -1099,6 +1099,23 @@ class Piecewise(Function):
                 if _e0 == _e1 or e0 == _e1 or _e0 == e1:
                     return e1
         return self
+
+    def __contains__(self, other):
+        for e, _ in self.args:
+            if other not in e:
+                return False
+        return True
+        
+    def union_sets(self, b):
+        if b.is_Piecewise:
+            return
+        tuples = []
+        for e, c in self.args:
+            _e = e.union_sets(b)
+            if _e is None:
+                return
+            tuples.append((_e, c))    
+        return self.func(*tuples)
 
 
 def piecewise_fold(expr):
