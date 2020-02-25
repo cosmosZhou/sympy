@@ -848,12 +848,7 @@ class Equality(Relational):
             return res
 
         old, new = args
-#         if old in self.forall:
-#             domain = self.forall[old]
-#
-#             forall[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
-#         else:
+        
         from sympy import Symbol
         if not isinstance(old, Symbol):
             lhs = self.lhs.subs(old, new)
@@ -863,14 +858,14 @@ class Equality(Relational):
                 return self
             g = self.lhs - self.rhs
             _g = lhs - rhs
-            if g > _g:
+            if _g < g:
                 return StrictLessThan(lhs, rhs, given=self)
-            if g >= _g:
+            if _g <= g:
                 return LessThan(lhs, rhs, given=self)
 
-            if g < _g:
+            if _g > g:
                 return StrictGreaterThan(lhs, rhs, given=self)
-            if g <= _g:
+            if _g >= g:
                 return GreaterThan(lhs, rhs, given=self)
 
         if self.plausible:
@@ -1031,19 +1026,15 @@ class Equality(Relational):
             if rhs.is_Piecewise:
                 ...
             else:
-                cond = []
-                for e, c in lhs.args:                    
-                    if Equality(e, rhs).is_BooleanFalse:
-                        continue
-                    cond.append(c)                               
-                return Or(*cond, equivalent=self)             
+                cond = lhs.select_cond(rhs)
+                if cond is not None:
+                    return cond.copy(equivalent=self)
+                
         elif rhs.is_Piecewise:
-            cond = []
-            for e, c in rhs.args:                    
-                if Equality(lhs, e).is_BooleanFalse:
-                    continue
-                cond.append(c)                               
-            return Or(*cond, equivalent=self)             
+            cond = rhs.select_cond(lhs)
+            if cond is not None:
+                return cond.copy(equivalent=self)
+             
         return self
 
     def as_two_terms(self):
@@ -1697,50 +1688,24 @@ class GreaterThan(_Greater):
 
             return self
         old, new = args
-#         if old in self.forall:
-#             domain = self.forall[old]
-#
-#             forall[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
-#         else:
+
         from sympy import Symbol
         if not isinstance(old, Symbol):
-            free_symbols = self.free_symbols
-            variables = [symbol for symbol in old.free_symbols if symbol in free_symbols]
-            if not variables:
-                return self
 
-            if len(variables) == 1:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
+            lhs = self.lhs.subs(old, new)
+            rhs = self.rhs.subs(old, new)
 
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
+            g = self.lhs - self.rhs
+            _g = lhs - rhs
+            if _g < g:
+                return StrictLessThan(lhs, rhs, given=self)
+            if _g <= g:
+                return LessThan(lhs, rhs, given=self)
 
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
-
-            else:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
-
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
+            if _g > g:
+                return GreaterThan(lhs, rhs, given=self)
+            if _g >= g:
+                return StrictGreaterThan(lhs, rhs, given=self)
 
         if self.plausible:
 
@@ -1796,6 +1761,8 @@ class LessThan(_Less):
         return _sympify(lhs.__le__(rhs))
 
     def subs(self, *args, **kwargs):
+        from sympy import diff
+        from sympy import Symbol        
         if len(args) == 1:
             eq, *_ = args
             if isinstance(eq, Equality):
@@ -1808,8 +1775,7 @@ class LessThan(_Less):
 #                     f = self.lhs - self.rhs > 0
                     lhs = self.lhs.subs(old, new).simplify()
                     rhs = self.rhs.subs(old, new).simplify()
-                    _f = lhs - rhs
-                    from sympy import diff
+                    _f = lhs - rhs                    
                     df = diff(f, old)
                     if df > 0:
                         return self
@@ -1835,8 +1801,6 @@ class LessThan(_Less):
 #                     f = self.lhs - self.rhs > 0
                     lhs = self.lhs.subs(old, new).simplify()
                     rhs = self.rhs.subs(old, new).simplify()
-#                     _f = lhs - rhs
-                    from sympy import diff
                     df = diff(f, old)
                     if df > 0:
                         return self
@@ -1866,8 +1830,6 @@ class LessThan(_Less):
 #                     f = self.lhs - self.rhs > 0
                     lhs = self.lhs.subs(old, new).simplify()
                     rhs = self.rhs.subs(old, new).simplify()
-#                     _f = lhs - rhs
-                    from sympy import diff
                     df = diff(f, old)
                     if df > 0:
                         return self
@@ -1898,7 +1860,6 @@ class LessThan(_Less):
                     lhs = self.lhs.subs(old, new).simplify()
                     rhs = self.rhs.subs(old, new).simplify()
 #                     _f = lhs - rhs
-                    from sympy import diff
                     df = diff(f, old)
                     if df > 0:
                         return self
@@ -1941,7 +1902,6 @@ class LessThan(_Less):
             return self
 
         if all(isinstance(arg, Relational) for arg in args):
-            from sympy import Symbol
             free_symbols = self.free_symbols
             f = self.lhs - self.rhs
             given = []
@@ -1963,50 +1923,23 @@ class LessThan(_Less):
             return self
 
         old, new = args
-#         if old in self.forall:
-#             domain = self.forall[old]
-#
-#             forall[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
-#         else:
-        from sympy import Symbol
+       
         if not isinstance(old, Symbol):
-            free_symbols = self.free_symbols
-            variables = [symbol for symbol in old.free_symbols if symbol in free_symbols]
-            if not variables:
-                return self
+            lhs = self.lhs.subs(old, new)
+            rhs = self.rhs.subs(old, new)
 
-            if len(variables) == 1:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
+            g = self.lhs - self.rhs
+            _g = lhs - rhs
+            if _g < g:
+                return StrictLessThan(lhs, rhs, given=self)
+            if _g <= g:
+                return LessThan(lhs, rhs, given=self)
 
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
+            if _g > g:
+                return GreaterThan(lhs, rhs, given=self)
+            if _g >= g:
+                return StrictGreaterThan(lhs, rhs, given=self)
 
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
-
-            else:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
-
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
 
         if self.plausible:
 
@@ -2120,50 +2053,17 @@ class StrictGreaterThan(_Greater):
 
             return self
         old, new = args
-#         if old in self.forall:
-#             domain = self.forall[old]
-#
-#             forall[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
-#         else:
         from sympy import Symbol
+        old = sympify(old)
         if not isinstance(old, Symbol):
-            free_symbols = self.free_symbols
-            variables = [symbol for symbol in old.free_symbols if symbol in free_symbols]
-            if not variables:
-                return self
+            lhs = self.lhs.subs(old, new)
+            rhs = self.rhs.subs(old, new)
 
-            if len(variables) == 1:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
-
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
-
-            else:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
-
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
+            g = self.lhs - self.rhs
+            _g = lhs - rhs
+            if _g >= g:
+                return StrictGreaterThan(lhs, rhs, given=self)
+            return self
 
         if self.plausible:
 
@@ -2252,50 +2152,23 @@ class StrictLessThan(_Less):
 
             return self
         old, new = args
-#         if old in self.forall:
-#             domain = self.forall[old]
-#
-#             forall[old] = domain.subs(old, new)
-#             return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), substituent=self, forall=forall)
-#         else:
+        
         from sympy import Symbol
         if not isinstance(old, Symbol):
-            free_symbols = self.free_symbols
-            variables = [symbol for symbol in old.free_symbols if symbol in free_symbols]
-            if not variables:
-                return self
+            lhs = self.lhs.subs(old, new)
+            rhs = self.rhs.subs(old, new)
 
-            if len(variables) == 1:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
+            g = self.lhs - self.rhs
+            _g = lhs - rhs
+            if _g < g:
+                return StrictLessThan(lhs, rhs, given=self)
+            if _g <= g:
+                return LessThan(lhs, rhs, given=self)
 
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
-
-            else:
-                lhs = self.lhs.subs(old, new)
-                rhs = self.rhs.subs(old, new)
-
-                g = self.lhs - self.rhs
-                _g = lhs - rhs
-                if g > _g:
-                    return StrictLessThan(lhs, rhs, given=self)
-                if g >= _g:
-                    return LessThan(lhs, rhs, given=self)
-
-                if g < _g:
-                    return GreaterThan(lhs, rhs, given=self)
-                if g <= _g:
-                    return StrictGreaterThan(lhs, rhs, given=self)
+            if _g > g:
+                return GreaterThan(lhs, rhs, given=self)
+            if _g >= g:
+                return StrictGreaterThan(lhs, rhs, given=self)
 
         if self.plausible:
 

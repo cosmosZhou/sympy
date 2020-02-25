@@ -1,5 +1,4 @@
-\(A \neq \emptyset\tag*{Eq[0]}\)
-\(\left|{A}\right| > 0\tag*{Eq[1]}\)
+\(A \neq \emptyset\tag*{Eq[0]}\)\(\left|{A}\right| > 0\tag*{Eq[1]}\)
 \(\left|{A}\right| \neq 0\tag*{Eq[2]}\)
 \(\left|{A}\right| \geq 0\tag*{Eq[3]}\)
 \(\left|{A}\right| > 0\tag*{Eq[1]}\)

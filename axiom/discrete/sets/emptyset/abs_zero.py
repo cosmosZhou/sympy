@@ -8,6 +8,7 @@ from sympy import S
 # A == {}
 
 
+@plausible
 def apply(provided):
     assert provided.is_Equality
     A, B = provided.args
@@ -17,8 +18,7 @@ def apply(provided):
     A = A.arg
 
     return Equality(A, S.EmptySet,
-                    equivalent=provided,
-                    plausible=plausible())
+                    equivalent=provided)
 
 
 from sympy.utility import check

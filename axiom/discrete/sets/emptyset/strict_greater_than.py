@@ -1,18 +1,12 @@
-from sympy.core.relational import Equality, LessThan, Unequality, \
-    StrictGreaterThan, GreaterThan
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Unequality, StrictGreaterThan, GreaterThan
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
-from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset
-from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
 
 # provided: A != {}
 # |A| > 0
 
-
+@plausible
 def apply(provided):
     assert provided.is_Unequality
     A, B = provided.args
@@ -20,9 +14,7 @@ def apply(provided):
         assert A == S.EmptySet
         A = B
 
-    return StrictGreaterThan(abs(A), 0,
-                    equivalent=provided,
-                    plausible=plausible())
+    return StrictGreaterThan(abs(A), 0, equivalent=provided)
 
 
 from sympy.utility import check
@@ -32,8 +24,6 @@ from sympy.utility import check
 def prove(Eq):
     A = Symbol('A', dtype=dtype.integer)
     inequality = Unequality(A, S.EmptySet, evaluate=False)
-
-    Eq << inequality
 
     Eq << apply(inequality)
 

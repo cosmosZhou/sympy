@@ -483,36 +483,38 @@ def plausible(apply=None):
             return None        
         return True
 
-    def add_given_to_set(statement, given_set, given_list):
+    def add_to_set(prerequisite, prerequisite_set, prerequisite_list):
 
-        def add_given_to_set(given, given_set, given_list):
-            if given not in given_set:
-                given_list.append(given)
-                given_set.add(given)
-                        
-        if statement.given is not None:
-            if isinstance(statement.given, (tuple, list)):
-                for g in statement.given:
-                    add_given_to_set(g, given_set, given_list)
+        def add_to_set(given, prerequisite_set, prerequisite_list):
+            if given not in prerequisite_set:
+                prerequisite_list.append(given)
+                prerequisite_set.add(given)
+                     
+        if prerequisite is not None:
+            if isinstance(prerequisite, (tuple, list)):
+                for g in prerequisite:
+                    add_to_set(g, prerequisite_set, prerequisite_list)
             else:
-                add_given_to_set(statement.given, given_set, given_list)
+                add_to_set(prerequisite, prerequisite_set, prerequisite_list)
         
-    def add_given(statement):
-        given_set = set()
-        given_list = []
+    def add(statement):
+        prerequisite_set = set()
+        prerequisite_list = []
         if isinstance(statement, tuple):            
             
             for s in statement:
-                add_given_to_set(s, given_set, given_list)
+                add_to_set(s.given, prerequisite_set, prerequisite_list)
+                add_to_set(s.equivalent, prerequisite_set, prerequisite_list)
                                 
-            if given_list:
-                return tuple(given_list) + statement
+            if prerequisite_list:
+                return tuple(prerequisite_list) + statement
             return statement
         
-        add_given_to_set(statement, given_set, given_list)
+        add_to_set(statement.given, prerequisite_set, prerequisite_list)
+        add_to_set(statement.equivalent, prerequisite_set, prerequisite_list)
         
-        if given_list:
-            return tuple(given_list) + (statement,)
+        if prerequisite_list:
+            return tuple(prerequisite_list) + (statement,)
         return statement
 
     def process(s, dependency):
@@ -544,13 +546,13 @@ def plausible(apply=None):
         if G:
             definition = [Equality.by_definition_of(s) for s in G]
             
-            statement = add_given(statement)
+            statement = add(statement)
             if isinstance(statement, tuple):
                 return definition + [*statement]
             return definition + [statement]
             
         else:
-            return add_given(statement)
+            return add(statement)
 
     return plausible
 

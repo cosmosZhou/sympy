@@ -52,15 +52,12 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.distribute()
     
     Eq << Eq[-1].this.lhs.function.subs(Eq[-1].lhs.limits[0][1].args[1][1])
-    return
-
-    Eq << Equality(Union[k:conditionset(k, Equality(x[k], j), Interval(0, n - 1, integer=True))]({x[k]}), {j}, plausible=True)
     
-    Eq << Eq[-1].this.lhs.function.subs(Eq[-1].lhs.limits[0][1].args[1][1])
+    
+    
+    Eq << Eq[-2].union_comprehension((j,))
     
     Eq << Eq[-1].abs()
-    
-    Eq << Eq[-2].lhs.assertion(given=Eq[-1])
 
 
 if __name__ == '__main__':

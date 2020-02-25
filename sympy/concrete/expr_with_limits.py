@@ -3683,6 +3683,14 @@ class UnionComprehension(Set, ExprWithLimits):
             if isinstance(self.function, Piecewise):
                 return Union(*self.as_multiple_terms(x, domain)).simplifier()
 
+        if len(limit) == 1:
+            x = limit[0]
+            if self.function.is_FiniteSet:
+                if len(self.function) == 1:
+                    element, *_ = self.function.args
+                    if element == x:
+                        return x.domain
+
         return self
 
     def union_sets(self, expr):

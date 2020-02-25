@@ -1124,7 +1124,12 @@ class Piecewise(Function):
                 return e
             U &= ~c
         return self 
-        
+    
+    def select_cond(self, expr):
+        for e, c in self.args:                     
+            if expr == e:
+                return c                               
+            
     def union_sets(self, b):
         tuples = []
         if b.is_Piecewise:

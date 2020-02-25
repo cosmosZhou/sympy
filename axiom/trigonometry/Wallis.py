@@ -8,15 +8,14 @@ from sympy.functions.special.beta_functions import beta
 from axiom.trigonometry import sine
 
 
+@plausible
 def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)
 
     x = Symbol("x")
     return Equality(Integral[x:0:pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
-                    beta(m / 2, n / 2) / 2,
-#                     gamma(m / 2) * gamma(n / 2) / (2 * gamma((m + n) / 2)),
-                    plausible=plausible())
+                    beta(m / 2, n / 2) / 2)
 
 
 from sympy.utility import check
