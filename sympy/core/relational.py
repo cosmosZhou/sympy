@@ -9,7 +9,7 @@ from .evalf import EvalfMixin
 from .sympify import _sympify
 from .evaluate import global_evaluate
 
-from sympy.logic.boolalg import Boolean, BooleanAtom
+from sympy.logic.boolalg import Boolean, BooleanAtom, And
 from sympy.core.sympify import sympify
 from sympy.core.basic import preorder_traversal
 
@@ -414,6 +414,7 @@ class Relational(Boolean, Expr, EvalfMixin):
 
     def defined_domain(self, x):
         return self.lhs.defined_domain(x) & self.rhs.defined_domain(x)
+
 
 Rel = Relational
 
@@ -1001,7 +1002,8 @@ class Equality(Relational):
         from sympy.core.mul import Mul
         from sympy.matrices.expressions.matmul import MatMul
         from sympy.core.function import _coeff_isneg
-
+        from sympy.logic.boolalg import Or
+        
         if type(lhs) == type(rhs):
             op = lhs.func
             if op == Mul or op == Add or op == MatMul:
@@ -1025,6 +1027,23 @@ class Equality(Relational):
             return self.func(0, -rhs, equivalent=self)
         elif rhs == 0 and _coeff_isneg(lhs):
             return self.func(-lhs, 0, equivalent=self)
+        elif lhs.is_Piecewise:
+            if rhs.is_Piecewise:
+                ...
+            else:
+                cond = []
+                for e, c in lhs.args:                    
+                    if Equality(e, rhs).is_BooleanFalse:
+                        continue
+                    cond.append(c)                               
+                return Or(*cond, equivalent=self)             
+        elif rhs.is_Piecewise:
+            cond = []
+            for e, c in rhs.args:                    
+                if Equality(lhs, e).is_BooleanFalse:
+                    continue
+                cond.append(c)                               
+            return Or(*cond, equivalent=self)             
         return self
 
     def as_two_terms(self):
