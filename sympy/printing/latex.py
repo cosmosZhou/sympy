@@ -1948,9 +1948,6 @@ class LatexPrinter(Printer):
 
         return r" \cup ".join(args)
 
-    def _print_Complement(self, u):
-        return r" \setminus ".join([self._print(i) for i in u.args])
-
     def _print_Intersection(self, u):
         return r" \cap ".join([self._print(i) for i in u.args])
 

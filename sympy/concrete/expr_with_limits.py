@@ -3667,6 +3667,12 @@ class UnionComprehension(Set, ExprWithLimits):
             if self.function.is_EmptySet:
                 return self.function
 
+            if domain.is_Piecewise:
+                tuples = []
+                for e, c in domain.args:                    
+                    tuples.append((self.func(self.function, (x, e)), c))    
+                return domain.func(*tuples)
+
             return self
 
         if len(limit) > 1:
@@ -3675,7 +3681,7 @@ class UnionComprehension(Set, ExprWithLimits):
                 return self.function._subs(x, a)
             domain = Interval(a, b, integer=True)
             if isinstance(self.function, Piecewise):
-                return Union(*self.as_multiple_terms(x, domain))
+                return Union(*self.as_multiple_terms(x, domain)).simplifier()
 
         return self
 
@@ -3743,8 +3749,7 @@ class UnionComprehension(Set, ExprWithLimits):
                             B -= deletes
                             expr -= expr_set
                             if B:
-                                domain = Complement(A, B, evaluate=False)
-                                return self.func(self.function, (i, domain)) | expr
+                                A -= B
                             return self.func(self.function, (i, A)).simplifier() | expr
 
     def _sympystr(self, p):

@@ -28,7 +28,6 @@ from sympy.utilities.misc import func_name, filldedent
 
 from mpmath import mpi, mpf
 
-
 class Set(Basic):
     """
     The base class for any kind of set.
@@ -1814,10 +1813,10 @@ class Intersection(Set, LatticeOp):
             else:
                 pass  # drop arg
 
-        res = FiniteSet(*res, evaluate=False) if res else S.EmptySet
+        res = FiniteSet(*res) if res else S.EmptySet
         if unk:
             symbolic_s_list = [x for x in s if x.has(Symbol)]
-            non_symbolic_s = s - FiniteSet(*symbolic_s_list, evaluate=False)
+            non_symbolic_s = s - FiniteSet(*symbolic_s_list)
             while fs_args:
                 v = fs_args.pop()
                 if all(i == j for i, j in zip_longest(symbolic_s_list, (x for x in v if x.has(Symbol)))):
@@ -1834,7 +1833,7 @@ class Intersection(Set, LatticeOp):
                     # and add this as a new arg
                     contained = [x for x in symbolic_s_list if sympify(v.contains(x)) is S.true]
                     if contained != symbolic_s_list:
-                        other.append(v - FiniteSet(*contained, evaluate=False))
+                        other.append(v - FiniteSet(*contained))
                     else:
                         pass  # for coverage
 
@@ -2064,7 +2063,7 @@ class IntersectionComprehension(Set):
 
     def as_relational(self, symbol):
         """Rewrite an Intersection in terms of equalities and logic operators"""
-        return And(*[set.as_relational(symbol) for set in self.args])
+        return And(*[s.as_relational(symbol) for s in self.args])
 
 
 class Complement(Set, EvalfMixin):
@@ -2093,6 +2092,15 @@ class Complement(Set, EvalfMixin):
     """
 
     is_Complement = True
+
+    def _latex(self, p):
+        A, B = self.args
+        if B.is_Complement:
+            B = r"\left(%s\right)" % p._print(B)
+        else:
+            B = p._print(B)
+            
+        return r"%s \setminus %s" % (p._print(A), B)
 
     def assertion(self):
         A, B = self.args
@@ -2473,20 +2481,28 @@ class FiniteSet(Set, EvalfMixin):
                     return other.copy(end=other.end - 1) - self.func(*{*self.args} - {other.max()})
             
         elif isinstance(other, FiniteSet):
+            s = set(self.args)
+            _s = set(other.args)
+            
+            assert s and _s
+            intersection = s & _s
+#             s -= intersection
+            _s -= intersection
+            
             unk = []
-            for i in self:
-                c = sympify(other.contains(i))
-                if c is not S.true and c is not S.false:
+            
+            for i in s:
+                if not all(Equality(e, i).is_BooleanFalse for e in _s):
                     unk.append(i)
-            unk = FiniteSet(*unk)
-            if unk == self:
-                return
-            not_true = []
-            for i in other:
-                c = sympify(self.contains(i))
-                if c is not S.true:
-                    not_true.append(i)
-            return Complement(FiniteSet(*not_true), unk)
+                    
+            if len(_s) == len(unk) == 1:
+                from sympy.functions.elementary.piecewise import Piecewise                
+                return Piecewise((FiniteSet(*_s), Unequality([*_s][0], unk[0])), (S.EmptySet, True))
+            
+            if len(unk) == len(s) and not intersection:
+                return            
+                
+            return Complement(FiniteSet(*_s), FiniteSet(*unk))
 
         return Set._complement(self, other)
 

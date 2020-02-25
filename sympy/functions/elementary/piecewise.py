@@ -1098,6 +1098,15 @@ class Piecewise(Function):
                 _e0 = e0._subs(old, new)
                 if _e0 == _e1 or e0 == _e1 or _e0 == e1:
                     return e1
+            if c0.is_Unequality:
+                c1 = ~c0
+                e1, _ = self.args[1]
+                old, new = c1.args
+                _e1 = e1._subs(old, new) 
+                _e0 = e0._subs(old, new)
+                if _e0 == _e1 or e0 == _e1 or _e0 == e1:
+                    return e0
+                
         return self
 
     def __contains__(self, other):
@@ -1105,16 +1114,59 @@ class Piecewise(Function):
             if other not in e:
                 return False
         return True
+
+    def sift(self, cond):
+        cond = ~cond
+        U = S.true
+        for e, c in self.args:
+            _c = c & U | cond
+            if _c.is_BooleanTrue:
+                return e
+            U &= ~c
+        return self 
         
     def union_sets(self, b):
+        tuples = []
+        if b.is_Piecewise:
+            if len(b.args) != len(self.args):
+                return
+            for (e, c), (_e, _c) in zip(self.args, b.args):
+                if c != _c:
+                    return
+                e |= _e
+                if e.is_Piecewise:
+                    e = e.sift(c) 
+                tuples.append((e, c))  
+        else:
+            for e, c in self.args:
+                tuples.append((e | b, c))    
+        return self.func(*tuples)
+
+    def intersection_sets(self, b):
         if b.is_Piecewise:
             return
         tuples = []
         for e, c in self.args:
-            _e = e.union_sets(b)
-            if _e is None:
-                return
-            tuples.append((_e, c))    
+            tuples.append((e & b, c))    
+        return self.func(*tuples)
+
+    @property
+    def is_integer(self):        
+        for e, _ in self.args:
+            if e is S.EmptySet:
+                continue
+            if e.is_integer:
+                continue            
+            return                
+        return True
+
+    def _complement(self, universe):
+        if universe.is_Piecewise:            
+            return
+        
+        tuples = []
+        for e, c in self.args:
+            tuples.append((universe - e, c))    
         return self.func(*tuples)
 
 
