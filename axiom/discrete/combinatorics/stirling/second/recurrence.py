@@ -114,7 +114,7 @@ def prove(Eq):
     j = Symbol('j', integer=True, domain=Interval(0, k))
 
     x_quote = IndexedBase("x'", (k + 1,), dtype=dtype.integer,
-                     definition=Ref[i](Piecewise((Union(x_tuple[i], {n}) , Equality(i, j)), (x_tuple[i], True))))
+                     definition=Ref[i:k + 1](Piecewise((Union(x_tuple[i], {n}) , Equality(i, j)), (x_tuple[i], True))))
 
     Eq.x_quote_definition = Equality.by_definition_of(x_quote)
 
@@ -170,7 +170,7 @@ def prove(Eq):
     Eq << (x_quote_union & SqueezeTheorem & Eq[-1])
 
     assert len(Eq.plausibles_dict) == 1
-    Eq.x_quote_definition = Ref[i](Eq.x_quote_definition)
+    Eq.x_quote_definition = Ref[i:k + 1](Eq.x_quote_definition)
 
     A = IndexedBase("A", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
 
@@ -229,7 +229,7 @@ def prove(Eq):
     Eq << discrete.sets.union_comprehension.inequality.apply(*Eq[-2].lhs.args[0].args)
 
     Eq << Eq[-2].subs(Eq[-1]) + Eq.set_size_inequality
-
+    
     Eq << Eq[-1].simplifier(deep=True)
 
     Eq << Eq[-1].subs(x_quote_union_abs)
@@ -299,7 +299,7 @@ def prove(Eq):
     Eq << Eq[-1].this.function.lhs.args[0].bisect(domain={j})
 
     x_tilde = IndexedBase(r"\tilde{x}", (k,), dtype=dtype.integer,
-                     definition=Ref[i](Piecewise((x[i], i < j), (x[i + 1], True))))
+                     definition=Ref[i:k](Piecewise((x[i], i < j), (x[i + 1], True))))
 
     Eq.x_tilde_definition = Equality.by_definition_of(x_tilde)
 

@@ -1,23 +1,16 @@
-from sympy.functions.combinatorial.factorials import binomial, factorial
+from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Eq, Sum, Difference
-from sympy.core.symbol import Symbol, generate_free_symbol
-from sympy.functions.special.gamma_functions import gamma
-from sympy.core.function import Function
-from sympy.tensor.indexed import IndexedBase
-from sympy.core.numbers import oo
-from axiom.discrete.combinatorics.binomial import Pascal
-from axiom import discrete
-import sympy
+from sympy.utility import plausible, Difference
+from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
+from axiom import discrete
 
 
+@plausible
 def apply(x, n):
     if not isinstance(x, Symbol):
         return
-    return Equality(Difference[x, n](x ** n),
-                    factorial(n),
-                    plausible=plausible())
+    return Equality(Difference[x, n](x ** n), factorial(n))
 
 
 from sympy.utility import check
@@ -47,17 +40,18 @@ def prove(Eq):
 
     Eq << discrete.combinatorics.factorial.expand.apply(n + 1)
 
-    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+    Eq.equation = Eq[-2].this.rhs.subs(Eq[-1])
 
-    k = Eq[-1].lhs.limits[0][0]
+    k = Eq.equation.lhs.limits[0][0]
     k = Symbol(k.name, integer=True, domain=Interval(0, n, right_open=True))
+    
     Eq << Eq[0].subs(n, k)
     Eq << Difference[x, n - k](Eq[-1])
-
-    Eq << Eq[-1].this.lhs.as_one_term()
-
-    Eq << Eq[-4].subs(Eq[-1])
-
+    Eq << Eq[-1].this.lhs.as_one_term()    
+    Eq << Eq[-1].forall(k)
+    
+    Eq << Eq.equation.subs(Eq[-1])
+    
 
 if __name__ == '__main__':
     prove(__file__)

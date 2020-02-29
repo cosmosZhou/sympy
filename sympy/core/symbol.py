@@ -359,6 +359,9 @@ class Symbol(AtomicExpr):
                 return domain.copy(integer=True)
             return domain
 
+        if self.is_set:
+            return S.UniversalSet
+        
         from sympy.core.numbers import oo
 
         if self.is_integer:
@@ -440,28 +443,23 @@ class Symbol(AtomicExpr):
         return False
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         definition = self.definition
         if definition is not None:
-            return definition.dtype
+            return definition.atomic_dtype
 
         if 'dtype' in self._assumptions:
-            _dtype = self._assumptions['dtype'].set
+            return self._assumptions['dtype'].set
         elif self.is_integer:
-            _dtype = dtype.integer
+            return dtype.integer
         elif self.is_rational:
-            _dtype = dtype.rational
+            return dtype.rational
         elif self.is_real:
-            _dtype = dtype.real
+            return dtype.real
         elif self.is_complex:
-            _dtype = dtype.complex
+            return dtype.complex
         else:
-            _dtype = dtype.real
-
-        shape = self.shape
-        if shape:
-            return _dtype * shape
-        return _dtype
+            return dtype.real
 
     def _has(self, pattern):
         """Helper for .has()"""
@@ -512,6 +510,11 @@ class Symbol(AtomicExpr):
         from sympy.sets.conditionset import image_set_definition
         return image_set_definition(self, reverse=reverse)
 
+    @property
+    def shape(self):
+        if 'shape' in self._assumptions:
+            return self._assumptions['shape']
+        return ()
 
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
@@ -1066,10 +1069,6 @@ class Dtype:
         return hash(type(self).__name__)
 
     @property
-    def natural(self):
-        return DtypeNatural()
-
-    @property
     def integer(self):
         return DtypeInteger()
 
@@ -1095,6 +1094,8 @@ class Dtype:
 
     def __mul__(self, length):
         if isinstance(length, (tuple, Tuple, list)):
+            if not length:
+                return self
             if len(length) == 1:
                 return DtypeVector(self, length[0])
             return DtypeMatrix(self, length)
@@ -1122,6 +1123,32 @@ class DtypeComplex(Dtype):
 
     def __eq__(self, other):
         return isinstance(other, DtypeComplex)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeComplexConditional(**kwargs)
+
+
+class DtypeComplexConditional(DtypeComplex):
+
+    def __init__(self, **assumptions):
+        self.assumptions = assumptions
+    
+    def __str__(self):
+        return 'complex%s' % str(self.assumptions)
+
+    @property
+    def dict(self):
+        assumptions = {**self.assumptions}
+        assumptions['rational'] = True        
+        return assumptions
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeComplexConditional)
 
     def __hash__(self):
         return hash(type(self).__name__)
@@ -1158,6 +1185,32 @@ class DtypeReal(DtypeComplex):
     def __hash__(self):
         return hash(type(self).__name__)
 
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeRealConditional(**kwargs)
+
+
+class DtypeRealConditional(DtypeReal):
+
+    def __init__(self, **assumptions):
+        self.assumptions = assumptions
+    
+    def __str__(self):
+        return 'real%s' % str(self.assumptions)
+
+    @property
+    def dict(self):
+        assumptions = {**self.assumptions}
+        assumptions['real'] = True        
+        return assumptions
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeRealConditional)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
 
 class DtypeRational(DtypeReal):
 
@@ -1170,6 +1223,32 @@ class DtypeRational(DtypeReal):
 
     def __eq__(self, other):
         return isinstance(other, DtypeRational)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeRationalConditional(**kwargs)
+
+
+class DtypeRationalConditional(DtypeRational):
+
+    def __init__(self, **assumptions):
+        self.assumptions = assumptions
+    
+    def __str__(self):
+        return 'rational%s' % str(self.assumptions)
+
+    @property
+    def dict(self):
+        assumptions = {**self.assumptions}
+        assumptions['rational'] = True        
+        return assumptions
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeRationalConditional)
 
     def __hash__(self):
         return hash(type(self).__name__)
@@ -1190,18 +1269,28 @@ class DtypeInteger(DtypeRational):
     def __hash__(self):
         return hash(type(self).__name__)
 
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeIntegerConditional(**kwargs)
+        
 
-class DtypeNatural(DtypeInteger):
+class DtypeIntegerConditional(DtypeInteger):
 
+    def __init__(self, **assumptions):
+        self.assumptions = assumptions
+    
     def __str__(self):
-        return 'natural'
+        return 'integer%s' % str(self.assumptions)
 
     @property
     def dict(self):
-        return {'integer' : True, 'positive': True}
+        assumptions = {**self.assumptions}
+        assumptions['integer'] = True        
+        return assumptions
 
     def __eq__(self, other):
-        return isinstance(other, DtypeNatural)
+        return isinstance(other, DtypeIntegerConditional)
 
     def __hash__(self):
         return hash(type(self).__name__)
@@ -1310,7 +1399,7 @@ class DtypeMatrix(Dtype):
         return dic
 
     def __eq__(self, other):
-        return isinstance(other, DtypeVector) and self.shape == other.shape and self.dtype == other.dtype
+        return isinstance(other, DtypeMatrix) and self.shape == other.shape and self.dtype == other.dtype
 
     def __hash__(self):
         return hash((type(self).__name__, self.dtype, self.shape))

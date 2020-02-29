@@ -28,7 +28,6 @@ from sympy.utilities.memoization import recurrence_memo
 from mpmath import bernfrac, workprec
 from mpmath.libmp import ifib as _ifib
 
-
 def _product(a, b):
     p = 1
     for k in range(a, b + 1):
@@ -2021,6 +2020,10 @@ class Stirling(Function):
     def shape(self):
         return ()
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
 
     def _latex(self, printer):
         return r'\left\{\begin{matrix}%s\end{matrix}\right\}' % r'\\'.join('{%s}' % printer._print(arg) for arg in self.args)
@@ -2076,6 +2079,283 @@ class Stirling(Function):
     def _eval(self, n, k):
         # n.is_Number and k.is_Integer and k != 1 and n != k
 
+        if k.is_Integer:
+            if n.is_Integer and n >= 0:
+                n, k = int(n), int(k)
+
+                if k > n:
+                    return S.Zero
+                elif k > n // 2:
+                    k = n - k
+
+                if HAS_GMPY:
+                    from sympy.core.compatibility import gmpy
+                    return Integer(gmpy.bincoef(n, k))
+
+                d, result = n - k, 1
+                for i in range(1, k + 1):
+                    d += 1
+                    result = result * d // i
+                return Integer(result)
+            else:
+                d, result = n - k, 1
+                for i in range(1, k + 1):
+                    d += 1
+                    result *= d
+                    result /= i
+                return result
+
+    @classmethod
+    def eval(cls, n, k):
+        from sympy.core.sympify import sympify
+        n, k = map(sympify, (n, k))
+        d = n - k
+        if k == 0:
+            if n > 0:
+                return S.Zero
+            if n == 0:
+                return S.One
+            if n >= 0:
+                return S.Zero ** n
+        if k == 1:
+            return S.One
+        if k == 2:
+            if n > 0 :
+                return 2 ** (n - 1) - 1
+        if k == 3:
+            if n > 0:
+                return (3 ** (n - 1) + 1) / 2 - 2 ** (n - 1)
+
+        if d == 0:
+            return S.One
+
+        if d == 1:
+            return binomial(n, 2)
+
+        if d == 2:
+            return 3 * binomial(n, 4) + binomial(n, 3)
+
+        if d == 3:
+            return 15 * binomial(n, 6) + 10 * binomial(n, 5) + binomial(n, 4)
+
+        if d < 0:
+            return S.Zero
+
+    def _eval_Mod(self, q):
+        n, k = self.args
+
+        if any(x.is_integer is False for x in (n, k, q)):
+            raise ValueError("Integers expected for binomial Mod")
+
+        if all(x.is_Integer for x in (n, k, q)):
+            n, k = map(int, (n, k))
+            aq, res = abs(q), 1
+
+            # handle negative integers k or n
+            if k < 0:
+                return 0
+            if n < 0:
+                n = -n + k - 1
+                res = -1 if k % 2 else 1
+
+            # non negative integers k and n
+            if k > n:
+                return 0
+
+            isprime = aq.is_prime
+            aq = int(aq)
+            if isprime:
+                if aq < n:
+                    # use Lucas Theorem
+                    N, K = n, k
+                    while N or K:
+                        res = res * binomial(N % aq, K % aq) % aq
+                        N, K = N // aq, K // aq
+
+                else:
+                    # use Factorial Modulo
+                    d = n - k
+                    if k > d:
+                        k, d = d, k
+                    kf = 1
+                    for i in range(2, k + 1):
+                        kf = kf * i % aq
+                    df = kf
+                    for i in range(k + 1, d + 1):
+                        df = df * i % aq
+                    res *= df
+                    for i in range(d + 1, n + 1):
+                        res = res * i % aq
+
+                    res *= pow(kf * df % aq, aq - 2, aq)
+                    res %= aq
+
+            else:
+                # Binomial Factorization is performed by calculating the
+                # exponents of primes <= n in `n! /(k! (n - k)!)`,
+                # for non-negative integers n and k. As the exponent of
+                # prime in n! is e_p(n) = [n/p] + [n/p**2] + ...
+                # the exponent of prime in binomial(n, k) would be
+                # e_p(n) - e_p(k) - e_p(n - k)
+                M = int(_sqrt(n))
+                for prime in sieve.primerange(2, n + 1):
+                    if prime > n - k:
+                        res = res * prime % aq
+                    elif prime > n // 2:
+                        continue
+                    elif prime > M:
+                        if n % prime < k % prime:
+                            res = res * prime % aq
+                    else:
+                        N, K = n, k
+                        exp = a = 0
+
+                        while N > 0:
+                            a = int((N % prime) < (K % prime + a))
+                            N, K = N // prime, K // prime
+                            exp += a
+
+                        if exp > 0:
+                            res *= pow(prime, exp, aq)
+                            res %= aq
+
+            return Integer(res % q)
+
+    def _eval_expand_func(self, **hints):
+        """
+        Function to expand binomial(n, k) when m is positive integer
+        Also,
+        n is self.args[0] and k is self.args[1] while using binomial(n, k)
+        """
+        n = self.args[0]
+        if n.is_Number:
+            return binomial(*self.args)
+
+        k = self.args[1]
+        if k.is_Add and n in k.args:
+            k = n - k
+
+        if k.is_Integer:
+            if k == S.Zero:
+                return S.One
+            elif k < 0:
+                return S.Zero
+            else:
+                n, result = self.args[0], 1
+                for i in range(1, k + 1):
+                    result *= n - k + i
+                    result /= i
+                return result
+        else:
+            return binomial(*self.args)
+
+    def _eval_rewrite_as_factorial(self, n, k, **kwargs):
+        return factorial(n) / (factorial(k) * factorial(n - k))
+
+    def _eval_rewrite_as_gamma(self, n, k, **kwargs):
+        from sympy import gamma
+        return gamma(n + 1) / (gamma(k + 1) * gamma(n - k + 1))
+
+    def _eval_rewrite_as_tractable(self, n, k, **kwargs):
+        return self._eval_rewrite_as_gamma(n, k).rewrite('tractable')
+
+    def _eval_rewrite_as_FallingFactorial(self, n, k, **kwargs):
+        if k.is_integer:
+            return ff(n, k) / factorial(k)
+
+    def _eval_is_integer(self):
+        n, k = self.args
+        if n.is_integer and k.is_integer:
+            return True
+        elif k.is_integer is False:
+            return False
+
+    def _eval_is_nonnegative(self):
+        n, k = self.args
+        if n.is_integer and k.is_integer:
+            if n.is_nonnegative or k.is_negative or k.is_even:
+                return True
+            elif k.is_even is False:
+                return  False
+
+    def nonzero_domain(self, x):
+        from sympy.sets.sets import Interval
+        from sympy.core.numbers import oo
+        n, k = self.args
+
+        p = k.as_poly(x)
+        if p.degree() == 1:
+            alpha = p.coeff_monomial(x)
+            beta = p.coeff_monomial(S.One)
+            if alpha.is_number:
+                if alpha == S.One:
+                    return Interval(-beta, n - beta, integer=True)
+                elif alpha == S.NegativeOne:
+                    return Interval(beta - n, beta, integer=True)
+        return Interval(-oo, oo, integer=True)
+
+class Stirling1(Function):
+    r"""Implementation of the stirling coefficient.     """
+
+    @property
+    def shape(self):
+        return ()
+
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+
+    def _latex(self, printer):
+        return r'\left[\begin{matrix}%s\end{matrix}\right]' % r'\\'.join('{%s}' % printer._print(arg) for arg in self.args)
+
+    def fdiff(self, argindex=1):
+        from sympy import polygamma
+        if argindex == 1:
+            # http://functions.wolfram.com/GammaBetaErf/Binomial/20/01/01/
+            n, k = self.args
+            return binomial(n, k) * (polygamma(0, n + 1) - \
+                polygamma(0, n - k + 1))
+        elif argindex == 2:
+            # http://functions.wolfram.com/GammaBetaErf/Binomial/20/01/02/
+            n, k = self.args
+            return binomial(n, k) * (polygamma(0, n - k + 1) - \
+                polygamma(0, k + 1))
+        else:
+            raise ArgumentIndexError(self, argindex)
+
+    @property
+    def definition(self):
+        from sympy.concrete.expr_with_limits import UnionComprehension, Forall
+        from sympy.tensor.indexed import IndexedBase
+        from sympy.core.numbers import oo
+        from sympy.sets.sets import Interval, FiniteSet, image_set
+        from sympy.core.relational import Equality
+        from sympy.logic.boolalg import And
+        from sympy import Sum
+        from sympy.core.symbol import dtype, DtypeVector
+        x = IndexedBase('x', (oo,), dtype=dtype.integer)
+        assert x.dtype[0] == dtype.integer.set
+        assert not x.is_set
+        assert isinstance(x.dtype, DtypeVector)
+        n, k = self.args
+        i = Symbol('i', integer=True)
+        from sympy.sets.conditionset import conditionset
+        
+        return abs(
+            image_set(x[:k],
+                     UnionComprehension(FiniteSet(x[i]), (i, 0, k - 1)),
+                     conditionset(x[:k],
+                                And(Equality(UnionComprehension(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
+                                    Equality(Sum(abs(x[i]), (i, 0, k - 1)), n),
+                                    Forall(StrictGreaterThan(abs(x[i]), 0), (i, 0, k - 1))
+                                    )
+                                )
+            )
+        )
+
+    @classmethod
+    def _eval(self, n, k):
         if k.is_Integer:
             if n.is_Integer and n >= 0:
                 n, k = int(n), int(k)

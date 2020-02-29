@@ -442,10 +442,10 @@ class Function(Application, Expr):
     """
 
     @property
-    def dtype(self):
-        return self.args[0].dtype
+    def atomic_dtype(self):
+        return self.arg.atomic_dtype
 
-#it is highly dangerous to write the following codes below: this pitfall will disable the function sympy.solvers.recurr.rsolve
+# it is highly dangerous to write the following codes below: this pitfall will disable the function sympy.solvers.recurr.rsolve
 #     def __iter__(self):
 #         raise TypeError
 #     def __getitem__(self, index):
@@ -1947,6 +1947,18 @@ class Derivative(Expr):
          
         return Expr.__new__(self.func, dependent, *self.variable_count) * independent
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.real
+
+    @property
+    def shape(self):
+        shape = ()
+        for x, _ in self.variable_count:
+            shape += x.shape
+        return shape
+
 
 class Difference(Expr):
     """
@@ -2752,6 +2764,17 @@ class Difference(Expr):
 
         return self
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        if self.expr.is_integer:
+            return dtype.integer
+        return dtype.real
+
+    @property
+    def shape(self):
+        x, _ = self.variable_count
+        return x.shape
 
 class Lambda(Expr):
     """

@@ -1,13 +1,8 @@
-from sympy.core.relational import Equality, LessThan, Unequality, \
-    StrictGreaterThan, GreaterThan
-from sympy.utility import plausible, Eq, Sum, Union, identity
+from sympy.core.relational import Equality
+from sympy.utility import plausible, Sum, Union, identity
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Interval
-from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset
-from sympy.concrete.expr_with_limits import Exists, Forall
-from sympy.logic.boolalg import plausibles
+from sympy.concrete.expr_with_limits import Forall
 from sympy.tensor.indexed import IndexedBase
 from axiom import discrete
 
@@ -15,6 +10,7 @@ from axiom import discrete
 # x[i] & x[j] = {}
 
 
+@plausible
 def apply(provided):
     assert provided.is_Equality
     x_union_abs, x_abs_sum = provided.args
@@ -44,8 +40,7 @@ def apply(provided):
     limits = [(j, i_domain - {i})] + [*x_union.limits]
     return Forall(Equality(xi & xj, S.EmptySet),
                   *limits,
-                  equivalent=provided,
-                  plausible=plausible()).simplifier()
+                  equivalent=provided).simplifier()
 
 
 from sympy.utility import check
@@ -57,9 +52,9 @@ def prove(Eq):
     k = Symbol('k', integer=True, positive=True)
     x = IndexedBase('x', shape=(k + 1,), dtype=dtype.integer)
 
-    Eq << Equality(abs(Union[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))
+    given = Equality(abs(Union[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))
 
-    Eq << apply(Eq[0])
+    Eq << apply(given)
 
     j = Eq[-1].variables[0]
 

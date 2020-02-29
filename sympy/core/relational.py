@@ -9,9 +9,10 @@ from .evalf import EvalfMixin
 from .sympify import _sympify
 from .evaluate import global_evaluate
 
-from sympy.logic.boolalg import Boolean, BooleanAtom, And
+from sympy.logic.boolalg import Boolean, BooleanAtom
 from sympy.core.sympify import sympify
 from sympy.core.basic import preorder_traversal
+
 
 __all__ = (
     'Rel', 'Eq', 'Ne', 'Lt', 'Le', 'Gt', 'Ge',
@@ -89,7 +90,7 @@ class Relational(Boolean, Expr, EvalfMixin):
         return self.lhs.free_symbols
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.condition
 
@@ -415,6 +416,20 @@ class Relational(Boolean, Expr, EvalfMixin):
     def defined_domain(self, x):
         return self.lhs.defined_domain(x) & self.rhs.defined_domain(x)
 
+    def solve(self, x):
+        from sympy.sets.contains import Contains
+        if not x.is_Symbol:
+            _x = self.generate_free_symbol(x.free_symbols, **x.dtype.dict)
+            this = self._subs(x, _x)
+            domain = _x.conditional_domain(this)            
+            domain = domain._subs(_x, x)
+        else:
+            domain = x.conditional_domain(self)
+            
+        if domain.is_ConditionSet:
+            self
+            
+        return Contains(x, domain, equivalent=self).simplifier()
 
 Rel = Relational
 
@@ -507,20 +522,6 @@ class Equality(Relational):
         return Relational.__sub__(self, exp)
 
     def __new__(cls, lhs, rhs=None, **options):
-#         from sympy.core.add import Add
-#         from sympy.core.logic import fuzzy_bool
-#         from sympy.core.expr import _n2
-#         from sympy.simplify.simplify import clear_coefficients
-
-        if rhs is None:
-            SymPyDeprecationWarning(
-                feature="Eq(expr) with rhs default to 0",
-                useinstead="Eq(expr, 0)",
-                issue=16587,
-                deprecated_since_version="1.5"
-            ).warn()
-            rhs = 0
-
         lhs = _sympify(lhs)
         rhs = _sympify(rhs)
 
@@ -545,18 +546,15 @@ class Equality(Relational):
                     isinstance(lhs, Boolean) != 
                     isinstance(rhs, Boolean)):
                 return S.false  # only Booleans can equal Booleans
-
-            # check finiteness
-#             fin = L, R = [i.is_finite for i in (lhs, rhs)]
-#             if None not in fin:
-#                 if L != R:
-#                     return S.false
-#                 if L is False:
-#                     if lhs == -rhs:  # Eq(oo, -oo)
-#                         return S.false
-#                     return S.true
-#             elif None in fin and False in fin:
-#                 return Relational.__new__(cls, lhs, rhs, **options)
+            from sympy import Contains
+            try:
+                if Contains(rhs, lhs.domain).is_BooleanFalse or Contains(lhs, rhs.domain).is_BooleanFalse:
+#                 print(lhs.domain)
+#                 print(rhs.domain)
+                    return S.false.copy(**options)
+            except:
+                Contains(rhs, lhs.domain).is_BooleanFalse
+                Contains(lhs, rhs.domain).is_BooleanFalse                
 
             if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.is_set and not rhs.is_set:
                 # see if the difference evaluates
@@ -567,35 +565,6 @@ class Equality(Relational):
                         return S.false.copy(**options)
                     if z:
                         return S.true.copy(**options)
-                # evaluate numerically if possible
-#                 n2 = _n2(lhs, rhs)
-#                 if n2 is not None:
-#                     return _sympify(n2 == 0)
-                # see if the ratio evaluates
-#                 n, d = dif.as_numer_denom()
-#                 rv = None
-#                 if n.is_zero:
-#                     rv = d.is_nonzero
-#                 elif n.is_finite:
-#                     if d.is_infinite:
-#                         rv = S.true
-#                     elif n.is_zero is False:
-#                         rv = d.is_infinite
-#                         if rv is None:
-#                             # if the condition that makes the denominator
-#                             # infinite does not make the original expression
-#                             # True then False can be returned
-#                             l, r = clear_coefficients(d, S.Infinity)
-#                             args = [_.subs(l, r) for _ in (lhs, rhs)]
-#                             if args != [lhs, rhs]:
-#                                 rv = fuzzy_bool(Eq(*args))
-#                                 if rv is True:
-#                                     rv = None
-#                 elif any(a.is_infinite for a in Add.make_args(n)):
-#                     # (inf or nan)/x != 0
-#                     rv = S.false
-#                 if rv is not None:
-#                     return _sympify(rv)
 
         return Relational.__new__(cls, lhs, rhs, **options)
 
@@ -792,18 +761,6 @@ class Equality(Relational):
             x_sol, *_ = res
             return Eq(x, x_sol, equivalent=self)
         if len(res) > 1:
-#             if x == exists or x in exists:
-#                 x_sol = [x_sol for x_sol in res if x_sol.domain & x.domain]
-#
-#                 if len(x_sol) == 1:
-#                     x_sol = x_sol[0]
-#                     from sympy.sets.contains import Contains
-#
-#                     return Contains(x_sol, x.domain, equivalent=self)
-#                 if not x_sol:
-#                     self.plausible = False
-#                     return self
-
             from sympy.logic.boolalg import Or
             return Or(*(Equality(x, x_sol, equivalent=self) for x_sol in res))
 
@@ -2083,7 +2040,7 @@ class StrictGreaterThan(_Greater):
             return eq
         else:
             return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs))
-
+            
 
 Gt = StrictGreaterThan
 LessThan.invert_type = StrictGreaterThan

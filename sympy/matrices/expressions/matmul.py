@@ -13,6 +13,7 @@ from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
 
 
+
 # XXX: MatMul should perhaps not subclass directly from Mul
 class MatMul(MatrixExpr, Mul):
     precedence = 45
@@ -79,9 +80,6 @@ class MatMul(MatrixExpr, Mul):
 
 #         matrices = [arg for arg in self.args if arg.is_Matrix]
 #         return (matrices[0].rows, matrices[-1].cols)
-    @property
-    def dtype(self):
-        return self.args[0].dtype[self.args[0].shape] * self.shape
 
     def _entry(self, i, j=None, expand=True, **kwargs):
         if j is None:
@@ -298,6 +296,16 @@ class MatMul(MatrixExpr, Mul):
                 continue
             return is_integer
         return True
+
+    @property
+    def domain(self):
+        from sympy import Interval,oo
+        from sympy.sets.sets import CartesianSpace
+        shape = self.shape
+        interval = Interval(-oo,oo,integer = self.is_integer)
+        if shape:            
+            return CartesianSpace(interval, *shape)
+        return interval
 
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """

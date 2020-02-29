@@ -8,9 +8,9 @@ from sympy import pi, Symbol
 from sympy.stats import Normal
 from sympy.tensor.indexed import IndexedBase
 from axiom.trigonometry import Wallis
-from builtins import isinstance
 
 
+@plausible
 def apply(X, Y):
     i = Symbol('i', integer=True)
 
@@ -19,8 +19,7 @@ def apply(X, Y):
     assert isinstance(Y.pspace.distribution, ChiSquaredDistribution)
     k = Y.pspace.distribution.k
 
-    return Equality(Density(Sum[i:k](X[i] * X[i]))(y), Density(Y)(y).doit(),
-                    plausible=plausible())
+    return Equality(Density(Sum[i:k](X[i] * X[i]))(y), Density(Y)(y).doit())
 
 
 from sympy.utility import check

@@ -36,11 +36,7 @@ class Expr(Basic, EvalfMixin):
     is_square = False
     is_infinitesimal = None
     is_FiniteSet = False
-
-    @property
-    def shape(self):
-        return ()
-        
+      
     def as_Ref(self):
         from sympy import Interval
         from sympy.concrete.expr_with_limits import Ref
@@ -3804,8 +3800,14 @@ class Expr(Basic, EvalfMixin):
     @property
     def domain(self):
         from sympy import Interval
-
-        return Interval(S.NegativeInfinity, S.Infinity, integer=self.is_integer)
+        if self.is_set:
+            return S.UniversalSet
+        shape = self.shape
+        interval = Interval(S.NegativeInfinity, S.Infinity, integer=self.is_integer) 
+        if not shape:
+            return interval
+        from sympy.sets.sets import CartesianSpace
+        return CartesianSpace(interval, *shape)
 
     def conditional_domain(self, condition):
         from sympy.core.numbers import oo

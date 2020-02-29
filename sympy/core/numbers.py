@@ -595,7 +595,7 @@ class Number(AtomicExpr):
     _prec = -1
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
 
@@ -1625,7 +1625,7 @@ class Rational(Number):
     is_Rational = True
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.rational
 
@@ -2125,7 +2125,7 @@ class Integer(Rational):
     __slots__ = ['p']
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
 
@@ -3525,9 +3525,13 @@ class NumberSymbol(AtomicExpr):
     is_NumberSymbol = True
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
+
+    @property
+    def shape(self):
+        return ()
 
     def __new__(cls):
         return AtomicExpr.__new__(cls)

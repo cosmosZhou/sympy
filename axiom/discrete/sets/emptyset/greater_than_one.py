@@ -31,7 +31,10 @@ def prove(Eq):
 
     Eq << strict_greater_than.apply(inequality)
     
-    Eq << Eq[-1].subs(0, 1)
+    Eq << ~Eq[1]
+    Eq << Eq[-1].solve(Eq[-1].lhs)
+    
+    Eq << Eq[2].subs(Eq[-1])
 
     
 if __name__ == '__main__':

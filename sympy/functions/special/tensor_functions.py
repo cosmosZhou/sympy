@@ -462,6 +462,11 @@ class KroneckerDelta(Function):
         return ()
 
     @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+
+    @property
     def definition(self):
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equality    

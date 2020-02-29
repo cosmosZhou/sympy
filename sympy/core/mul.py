@@ -99,14 +99,6 @@ class Mul(Expr, AssocOp):
         import numpy as np
         return np.argmax([len(arg.shape) for arg in self.args])
 
-    @property
-    def dtype(self):
-        return self.args[self.argmax_shape()].dtype
-
-    @property
-    def shape(self):
-        return self.args[self.argmax_shape()].shape
-
     @classmethod
     def flatten(cls, seq):
         """Return commutative, noncommutative and order arguments by
@@ -1888,9 +1880,8 @@ class Mul(Expr, AssocOp):
 
     @property
     def domain(self):
-#         from sympy.sets.sets import EmptySet
         domain = S.EmptySet
-
+        from sympy import Interval, oo
         coeff = []
         for arg in self.args:
             if arg.is_number:
@@ -1898,7 +1889,9 @@ class Mul(Expr, AssocOp):
                 continue
             domain |= arg.domain
         if coeff:
-            return domain * Mul(*coeff)
+            if domain:
+                return domain * Mul(*coeff)
+            return Interval(-oo, oo, integer=self.is_integer)
         return domain
 
     @property
@@ -1946,6 +1939,7 @@ class Mul(Expr, AssocOp):
                 continue
             return is_integer
         return True
+
 
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

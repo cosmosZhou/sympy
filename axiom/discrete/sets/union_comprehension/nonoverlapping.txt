@@ -1,5 +1,4 @@
-\(\left|{\bigcup\limits_{i=0}^{k} {x}_{i}}\right| = \sum\limits_{i=0}^{k} \left|{{x}_{i}}\right|\tag*{Eq[0]}\)
-\(\forall_{\substack{j \in \left[0; k\right] \setminus \left\{i\right\}\\0 \le i \le k}}{{x}_{i} \cap {x}_{j} = \emptyset}\tag*{Eq[1]}\)
+\(\left|{\bigcup\limits_{i=0}^{k} {x}_{i}}\right| = \sum\limits_{i=0}^{k} \left|{{x}_{i}}\right|\tag*{Eq[0]}\)\(\forall_{\substack{j \in \left[0; k\right] \setminus \left\{i\right\}\\0 \le i \le k}}{{x}_{i} \cap {x}_{j} = \emptyset}\tag*{Eq[1]}\)
 \(\exists_{\substack{j \in \left[0; k\right] \setminus \left\{i\right\}\\0 \le i \le k}}{{x}_{i} \cap {x}_{j} \neq \emptyset}\tag*{Eq[2]}\)
 \(\exists_{\substack{j \in \left[0; k\right] \setminus \left\{i\right\}\\0 \le i \le k}}{\left|{{x}_{i} \cap {x}_{j}}\right| > 0}\tag*{Eq[3]}\)
 \(\left|{{x}_{i} \cup {x}_{j}}\right| = \left|{{x}_{i}}\right| + \left|{{x}_{j}}\right| - \left|{{x}_{i} \cap {x}_{j}}\right|\tag*{Eq[4]}\)

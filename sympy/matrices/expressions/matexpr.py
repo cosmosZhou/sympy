@@ -860,9 +860,9 @@ class Identity(MatrixExpr):
         return self
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
-        return dtype.integer * [self.n, self.n]
+        return dtype.integer
 
     @property
     def rows(self):
@@ -1236,10 +1236,16 @@ def _make_matrix(x):
 
 
 class Concatenate(MatrixExpr):
-    ...
-
-#     def __init__(self):
-#         ...
+    
+    @property
+    def atomic_dtype(self):
+        dtype = None
+        for arg in self.args:
+            _dtype = arg.atomic_dtype
+            if dtype is None or dtype in _dtype:
+                dtype = _dtype
+        return dtype
+    
     @staticmethod
     def broadcast(shapes):
         dimension = max(len(s) for s in shapes)
@@ -1261,9 +1267,9 @@ class HConcatenate(Concatenate):
         self.broadcast(shapes)
         return shapes[0][0], sum(s[1] for s in shapes)
 
-
+#vertical Concatenation
 class VConcatenate(Concatenate):
-
+    
     @property
     def shape(self):
         shapes = [arg.shape for arg in self.args]

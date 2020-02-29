@@ -787,6 +787,14 @@ class Boolean(Basic):
         if 'imply' in self._assumptions:
             del self._assumptions['imply']
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.condition
+
+    @property
+    def shape(self):        
+        return ()
 
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
@@ -1272,7 +1280,7 @@ class BooleanFunction(Application, Boolean):
         return False
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.condition
 

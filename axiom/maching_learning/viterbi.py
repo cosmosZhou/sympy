@@ -11,7 +11,7 @@ from sympy.core.numbers import oo
 def apply(G, x, y):
     _, d = x.shape
     i = Symbol('i', integer=True)
-    t = Symbol('t', integer=True)
+    t = Symbol('t', integer=True, nonnegative=True)
 
     s = IndexedBase('s', (oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))

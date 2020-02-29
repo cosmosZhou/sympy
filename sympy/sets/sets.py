@@ -28,6 +28,7 @@ from sympy.utilities.misc import func_name, filldedent
 
 from mpmath import mpi, mpf
 
+
 class Set(Basic):
     """
     The base class for any kind of set.
@@ -54,6 +55,14 @@ class Set(Basic):
     is_ComplexRegion = False
     
     @property
+    def domain(self):
+        return S.UniversalSet        
+    
+    @property
+    def shape(self):
+        return ()
+    
+    @property
     def list(self):
         return List(self)
 
@@ -76,7 +85,7 @@ class Set(Basic):
         return generate_free_symbol(self.free_symbols | excludes, **element_type.dict)
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         return self.element_type.set
 
     def could_extract_minus_sign(self):
@@ -203,12 +212,13 @@ class Set(Basic):
             # dimensionality than A
             switch_sets = ProductSet(FiniteSet(o, o - s) for s, o in
                                      zip(self.sets, other.sets))
-            product_sets = (ProductSet(*set) for set in switch_sets)
+            product_sets = (ProductSet(*s) for s in switch_sets)
             # Union of all combinations but this one
             return Union(*(p for p in product_sets if p != other))
 
         elif isinstance(other, Interval):
-            if isinstance(self, Interval) or isinstance(self, FiniteSet):
+#             if isinstance(self, Interval) or isinstance(self, FiniteSet):
+            if isinstance(self, Interval) :
                 if other.is_integer:
                     return Intersection(other, self.complement(S.Integers))
                 return Intersection(other, self.complement(S.Reals))
@@ -738,8 +748,7 @@ class ProductSet(Set):
                 return false
         except TypeError:  # maybe element isn't an iterable
             return false
-        return And(*
-            [set.contains(item) for set, item in zip(self.sets, element)])
+        return And(*[s.contains(item) for s, item in zip(self.sets, element)])
 
     @property
     def sets(self):
@@ -769,7 +778,7 @@ class ProductSet(Set):
         True
 
         """
-        return all(set.is_iterable for set in self.sets)
+        return all(s.is_iterable for s in self.sets)
 
     def __iter__(self):
         """
@@ -785,8 +794,8 @@ class ProductSet(Set):
     @property
     def _measure(self):
         measure = 1
-        for set in self.sets:
-            measure *= set.measure
+        for s in self.sets:
+            measure *= s.measure
         return measure
 
     def __len__(self):
@@ -798,6 +807,43 @@ class ProductSet(Set):
     __nonzero__ = __bool__
 
 
+class CartesianSpace(Set):
+    is_CartesianSpace = True
+    
+    @property
+    def domain(self):
+        return S.UniversalSet
+    
+    @property
+    def space(self):
+        return self.args[0]
+
+    @property
+    def shape(self):
+        return ()
+    
+    @property
+    def element_type(self):
+        return self.space.element_type * self.space_shape
+
+    @property
+    def space_shape(self):
+        return self.args[1:]
+
+    @property
+    def is_integer(self):
+        return self.space.is_integer
+
+    def _contains(self, other):
+        if tuple(self.element_type.shape) != tuple(other.shape):
+            assert tuple(self.element_type.shape) == tuple(other.shape)
+        assert tuple(self.element_type.shape) == tuple(other.shape)        
+
+    def __mul__(self, other):
+        assert not other.is_set
+        return self
+    
+    
 class Interval(Set, EvalfMixin):
     """
     Represents a real interval as a Set.
@@ -1076,17 +1122,32 @@ class Interval(Set, EvalfMixin):
             assert real
             if integer is None:
                 integer = False
-
-        if integer and not right_open and end.is_Add:
-            try:
-                index = end.args.index(S.NegativeOne)
-                args = [*end.args]
-                del args[index]
-                end = end.func(*args)
-                right_open = True
-            except:
-                ...
-
+        else:
+            if right_open:
+                if left_open:
+                    if start == end - 2:
+                        return FiniteSet(start + 1)
+                else:
+                    if start == end - 1:
+                        return FiniteSet(start)
+            else:
+                if left_open:
+                    if start == end - 1:
+                        return FiniteSet(end)
+                else:
+                    if start == end:
+                        return FiniteSet(end)
+                
+                if end.is_Add:
+                    try:
+                        index = end.args.index(S.NegativeOne)
+                        args = [*end.args]
+                        del args[index]
+                        end = end.func(*args)
+                        right_open = True
+                    except:
+                        ...
+    
         return Basic.__new__(cls, start, end, left_open, right_open, integer)
 
     def element_symbol(self, excludes=set()):
@@ -1431,6 +1492,11 @@ class Interval(Set, EvalfMixin):
         if self.is_integer:
             return dtype.integer
         return dtype.real
+
+    def _sympystr(self, _): 
+        return '{left_open}{start}{sep} {end}{right_open}'.format(**{'start': self.start, 'end': self.end, 'sep': ';' if self.is_integer else ',',
+                             'left_open': '(' if self.left_open else '[',
+                             'right_open': ')' if self.right_open else ']'})
 
 
 class Union(Set, LatticeOp, EvalfMixin):
@@ -2668,7 +2734,7 @@ class FiniteList(Expr):
         return True
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         dtype = None
         for e in self.args:
             _dtype = e.dtype
@@ -2682,7 +2748,7 @@ class FiniteList(Expr):
                     ...
                 else:
                     raise Exception('inconsistent dtype detected: %s != %s' % (dtype, _dtype))
-        return dtype * len(self.args)
+        return dtype.set
 
 
 converter[set] = lambda x: FiniteSet(*x)
@@ -3080,8 +3146,8 @@ class List(Function):
     is_List = True
 
     @property
-    def dtype(self):
-        return self.arg.element_type * abs(self.arg)
+    def atomic_dtype(self):
+        return self.arg.atomic_dtype
 
     def _latex(self, p):
         return "[*%s]" % p._print(self.arg)
@@ -3110,5 +3176,5 @@ class List(Function):
 
     @property
     def shape(self):
-        return (abs(self.arg),)
+        return (abs(self.arg),) + self.arg.shape
 

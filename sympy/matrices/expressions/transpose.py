@@ -34,8 +34,8 @@ class Transpose(MatrixExpr):
     is_Transpose = True
 
     @property
-    def dtype(self):
-        return self.arg.dtype.transpose()
+    def atomic_dtype(self):
+        return self.arg.atomic_dtype
 
 #     def _sympystr(self, p):
 #         return p.parenthesize(self.arg, 0) + ".T"

@@ -113,7 +113,7 @@ class StrPrinter(Printer):
         return 'Derivative(%s)' % ", ".join(map(lambda arg: self._print(arg), [dexpr] + dvars))
 
     def _print_Difference(self, expr):
-        expr,x, n = expr.args
+        expr, x, n = expr.args
         if n == 1:
             return 'Difference[%s](%s)' % (self._print(x), self._print(expr))
         return 'Difference[%s, %s](%s)' % (self._print(x), self._print(n), self._print(expr))
@@ -135,7 +135,7 @@ class StrPrinter(Printer):
         if hasattr(d, 'as_boolean'):
             return 'Domain: ' + self._print(d.as_boolean())
         elif hasattr(d, 'set'):
-            return ('Domain: ' + self._print(d.symbols) + ' in ' +
+            return ('Domain: ' + self._print(d.symbols) + ' in ' + 
                     self._print(d.set))
         else:
             return 'Domain on ' + self._print(d.symbols)
@@ -192,25 +192,6 @@ class StrPrinter(Printer):
 
         L = ', '.join([_xab_tostr(l) for l in expr.limits])
         return 'Integral(%s, %s)' % (self._print(expr.function), L)
-
-    def _print_Interval(self, i):
-        fin = 'Interval{m}({a}, {b})'
-        a, b, l, r, integer = i.args
-        if a.is_infinite and b.is_infinite:
-            m = ''
-        elif a.is_infinite and not r:
-            m = ''
-        elif b.is_infinite and not l:
-            m = ''
-        elif not l and not r:
-            m = ''
-        elif l and r:
-            m = '.open'
-        elif l:
-            m = '.Lopen'
-        else:
-            m = '.Ropen'
-        return fin.format(**{'a': a, 'b': b, 'm': m})
 
     def _print_AccumulationBounds(self, i):
         return "AccumBounds(%s, %s)" % (self._print(i.min),
@@ -280,8 +261,8 @@ class StrPrinter(Printer):
                 x[0] = ''
             return ':'.join(map(lambda arg: self._print(arg), x))
 
-        return (self._print(expr.parent) + '[' +
-                strslice(expr.rowslice) + ', ' +
+        return (self._print(expr.parent) + '[' + 
+                strslice(expr.rowslice) + ', ' + 
                 strslice(expr.colslice) + ']')
 
     def _print_DeferredVector(self, expr):

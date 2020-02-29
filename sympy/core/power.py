@@ -241,8 +241,15 @@ class Pow(Expr):
     __slots__ = ['is_commutative']
 
     @property
-    def dtype(self):
-        return self.base.dtype
+    def shape(self):
+        return ()
+    
+    @property
+    def atomic_dtype(self):
+        if self.exp.is_integer:
+            return self.base.atomic_dtype
+        from sympy.core.symbol import dtype
+        return dtype.real
 
     @cacheit
     def __new__(cls, b, e, evaluate=None):

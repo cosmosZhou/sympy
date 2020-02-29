@@ -12,8 +12,7 @@ def apply(G, x, y):
     _, d = x.shape
 
     i = Symbol('i', integer=True)
-
-    t = Symbol('t', integer=True)
+    t = Symbol('t', integer=True, nonnegative=True)
 
     s = IndexedBase('s', (oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
@@ -36,7 +35,7 @@ def prove(Eq):
     d = Symbol('d', integer=True)
     G = IndexedBase('G', (d, d))
     x = IndexedBase('x', (oo, d))
-    y = IndexedBase('y', (oo,))
+    y = IndexedBase('y', (oo,), integer=True)
 
     # n is the length of the sequence
     # d is the number of output labels

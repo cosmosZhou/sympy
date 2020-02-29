@@ -8,6 +8,8 @@ from sympy.core.numbers import oo
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete import expr_with_limits
 from sympy.sets.conditionset import conditionset
+from axiom.discrete.sets.emptyset import greater_than_one
+from axiom.discrete.sets import union_comprehension
 
 
 @plausible
@@ -49,15 +51,22 @@ def prove(Eq):
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
     
-    Eq << Eq[-1].this.lhs.distribute()
+    Eq.distribute = Eq[-1].this.lhs.distribute()
     
-    Eq << Eq[-1].this.lhs.function.subs(Eq[-1].lhs.limits[0][1].args[1][1])
+    Eq << Eq.distribute.this.lhs.function.subs(Eq.distribute.lhs.limits[0][1].args[1][1])
     
+    Eq << greater_than_one.apply(Eq[-1])
     
-    
-    Eq << Eq[-2].union_comprehension((j,))
+    Eq << Eq.distribute.union_comprehension((j,))
     
     Eq << Eq[-1].abs()
+    
+    Eq << union_comprehension.inequality.apply(*Eq[-1].lhs.arg.args).subs(Eq[-1])
+    
+    i = Symbol('i', domain=Interval(0, n - 1, integer=True) - {j}) 
+    Eq.distribute_i = Eq.distribute.subs(j, i)
+    
+    Eq << Eq.distribute_i.intersect(Eq.distribute)
 
 
 if __name__ == '__main__':

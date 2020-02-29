@@ -852,17 +852,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             p = old.as_poly(x)
 
             if p is None or p.degree() != 1:
-                function = None
-                equivalent_x = [_x for _x in old.free_symbols if x.name == _x.name]
-                if len(equivalent_x) == 1:
-                    _x, *_ = equivalent_x
-                    if a == _x.domain.min() and b == _x.domain.max():
-                        function = self.function.subs(x, _x)
-                        function = function.subs(old, new)
-                        function = function.subs(_x, x)
-
-                if function is None:
-                    function = self.function._subs(old, new)
+                function = self.function._subs(old, new)
 
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplifier()
@@ -1134,7 +1124,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     def as_Ref(self):
         from sympy.concrete.expr_with_limits import Ref
-        return self.func(Ref(self.function, self.limits[0]).simplifier(), *self.limits[1:])
+        limits = self.limits[1:]
+        sigmar = self.func(Ref(self.function, self.limits[0]).simplifier())
+        if not limits:
+            return sigmar
+        return self.func(sigmar, *limits)
 
     def as_Sum(self):
         from sympy.concrete.expr_with_limits import Ref
@@ -1210,8 +1204,49 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             tex += p._print(self.function)
 
         return tex
+    
+    @property
+    def shape(self):
+        if self.limits:
+            return self.function.shape
+        return self.function.shape[:-1]
+        
+    
+    def defined_domain(self, x):
+        from sympy.core.numbers import oo
+        if x.is_set:
+            return S.UniversalSet                    
 
+        domain = Interval(-oo, oo, integer=x.is_integer)
+        limits_dict = self.limits_dict
+        if x in limits_dict:
+            return domain
+                    
+        for expr in limits_dict.values():
+            if expr is None:
+                continue
+            domain &= expr.defined_domain(x)
+        
+        if self.function._has(x):
+            domain &= self.function.defined_domain(x)
+            if x not in self.function.free_symbols:
+                v = self.variable
+                v_domain = self.limits_dict[v]
+                for free_symbol in self.function.free_symbols:
+                    if not free_symbol._has(v) or not free_symbol.is_Indexed:
+                        continue
+                    pattern = free_symbol.subs(v, Wild(v.name, **v.assumptions0))
+                    res = x.match(pattern)
+                    if res:    
+                        t_, *_ = res.values()
+                        if v_domain is None or t_ in v_domain:
+                            function = self.function._subs(v, t_)
+                            domain &= function.defined_domain(x)
+                            break
+            
+        return domain
 
+    
 def summation(f, *symbols, **kwargs):
     r"""
     Compute the summation of f with respect to symbols.

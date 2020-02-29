@@ -10,6 +10,7 @@ from sympy.core.function import Function
 import axiom
 
 
+@plausible
 def apply(given):
     assert given.is_Forall
     assert given.function.is_Equality
@@ -23,9 +24,7 @@ def apply(given):
     _f = f._subs(z, xi)
     assert given.function.rhs == _f
 
-    return Exists(Equality(Integral(f, (z, a, b)), (b - a) * _f), limit,
-                  given=given,
-                  plausible=plausible())
+    return Exists(Equality(Integral(f, (z, a, b)), (b - a) * _f), limit, given=given)
 
 
 from sympy.utility import check

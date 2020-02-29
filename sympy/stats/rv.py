@@ -247,8 +247,12 @@ class RandomSymbol(Expr):
     """
 
     @property
-    def dtype(self):
-        return self.symbol.dtype
+    def atomic_dtype(self):
+        return self.symbol.atomic_dtype
+
+    @property
+    def shape(self):
+        return self.symbol.shape
 
     def __new__(cls, symbol, pspace=None):
         from sympy.stats.joint_rv import JointRandomSymbol
@@ -889,7 +893,15 @@ class PDF(Expr):
     def doit(self, evaluate=True, **kwargs):
         result = self.density.doit(evaluate)
         return result(*self.args[1:])
+    
+    @property
+    def shape(self):
+        return ()
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.real
 
 def density(expr, condition=None, evaluate=True, numsamples=None, **kwargs):
     """

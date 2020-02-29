@@ -276,3 +276,12 @@ class Limit(Expr):
         except NotImplementedError:
             return self
         return r
+
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.real
+
+    @property
+    def shape(self):         
+        return self.args[0].shape

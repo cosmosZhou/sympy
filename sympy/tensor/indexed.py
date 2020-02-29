@@ -477,8 +477,8 @@ class Indexed(Expr):
         return False
 
     @property
-    def dtype(self):
-        return self.base.dtype[self.indices]
+    def atomic_dtype(self):
+        return self.base.atomic_dtype
 
     def defined_domain(self, x):
         from sympy.sets.sets import Interval
@@ -487,6 +487,9 @@ class Indexed(Expr):
             if diff.free_symbols & index.free_symbols:
                 continue
             return Interval(diff, self.base.shape[i] - 1 + diff, integer=True)
+        if self.base.definition is not None:
+            return self.base.definition[self.indices].defined_domain(x)
+            
         return Expr.defined_domain(self, x)
 
 #     def __iter__(self):
@@ -588,6 +591,11 @@ class IndexedBase(Expr, NotIterable):
     def __new__(cls, label, shape, **kw_args):
         from sympy import MatrixBase, NDimArray
 
+        if shape is None:
+            shape = kw_args['definition'].shape
+        else:
+            if 'definition' in kw_args:
+                assert shape == kw_args['definition'].shape
         assert shape is not None
 
         if isinstance(label, string_types):
@@ -763,26 +771,24 @@ class IndexedBase(Expr, NotIterable):
                 return domain._has(pattern)
 
         return False
-
+        
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         if 'dtype' in self._assumptions:
-            return self._assumptions['dtype'].set * self.shape
+            return self._assumptions['dtype'].set
         definition = self.definition
         if definition is not None:
-            return definition.dtype
+            return definition.atomic_dtype
+        
         from sympy.core.symbol import dtype
         if self.is_integer:
-            return dtype.integer * self.shape
+            return dtype.integer
         if self.is_rational:
-            return dtype.rational * self.shape
-
+            return dtype.rational
         if self.is_complex:
-            return dtype.complex * self.shape
-#         if self.is_real:
-        return dtype.real * self.shape
-
-
+            return dtype.complex
+        return dtype.real
+        
 class Slice(Expr):
     """Represents a mathematical object with Slices.
 
@@ -1085,9 +1091,8 @@ class Slice(Expr):
         return self.match
 
     @property
-    def dtype(self):
-        start, stop = self.indices
-        return self.base.dtype[start : stop]
+    def atomic_dtype(self):
+        return self.base.atomic_dtype
 
 
 class Idx(Expr):

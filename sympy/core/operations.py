@@ -55,9 +55,13 @@ class AssocOp(Basic):
         return obj
 
     @property
-    def dtype(self):
-#         from sympy.core.symbol import dtype
-        return self.args[0].dtype
+    def atomic_dtype(self):
+        dtype = None
+        for arg in self.args:
+            _dtype = arg.atomic_dtype
+            if dtype is None or dtype in _dtype:
+                dtype = _dtype
+        return dtype
 
     @classmethod
     def _from_args(cls, args, is_commutative=None):

@@ -1204,7 +1204,7 @@ class Add(Expr, AssocOp):
 
     @property
     def domain(self):
-#         from sympy.sets.sets import EmptySet
+
         domain = S.EmptySet
         coeff = []
         for arg in self.args:
@@ -1313,7 +1313,6 @@ class Add(Expr, AssocOp):
         if non_integer_count >= 2:
             return None
         return True
-
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

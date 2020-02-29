@@ -444,11 +444,11 @@ class Abs(Function):
     is_Abs = True
 
     @property
-    def dtype(self):
+    def atomic_dtype(self):
         from sympy.core.symbol import dtype
         if self.arg.is_set:
-            return dtype.natural
-        return dtype.real
+            return dtype.integer(nonnegative=True)
+        return dtype.real(nonnegative=True)
 
     def fdiff(self, argindex=1):
         """
@@ -628,7 +628,15 @@ class Abs(Function):
     def _eval_rewrite_as_sign(self, arg, **kwargs):
         return arg / sign(arg)
 
-
+    def min(self):
+        x = self.arg
+        if not x.is_set:
+            if x >= 0:
+                return x.min()
+            if x <= 0:
+                return abs(x.max())
+        return S.Zero
+    
 class arg(Function):
     """
     Returns the argument (in radians) of a complex number. For a positive
@@ -752,8 +760,8 @@ class transpose(Function):
             return obj
 
     @property
-    def dtype(self):
-        return self.arg.dtype.transpose()
+    def atomic_dtype(self):
+        return self.arg.atomic_dtype
 
     def _sympystr(self, p):
         return p.parenthesize(self.arg, 0) + ".T"

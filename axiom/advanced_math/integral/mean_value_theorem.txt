@@ -1,5 +1,5 @@
 \(\forall_{\substack{a \le \xi \le b}}{\lim\limits_{z \to \xi} f{\left(z \right)} = f{\left(\xi \right)}}\tag*{Eq[0]}\)
-\(\exists_{\substack{a \le \xi \le b}}{\int\limits_{a}^{b} f{\left(z \right)}\, dz = \left(- a + b\right) f{\left(\xi \right)}}\tag*{Eq[1]}\)
+\(\forall_{\substack{a \le \xi \le b}}{\lim\limits_{z \to \xi} f{\left(z \right)} = f{\left(\xi \right)}}\tag*{Eq[0]}\)\(\exists_{\substack{a \le \xi \le b}}{\int\limits_{a}^{b} f{\left(z \right)}\, dz = \left(- a + b\right) f{\left(\xi \right)}}\tag*{Eq[1]}\)
 \(m = \min\limits_{a \leq z \leq b} f{\left(z \right)}\tag*{Eq.min}\)
 \(M = \max\limits_{a \leq z \leq b} f{\left(z \right)}\tag*{Eq.max}\)
 \(\forall_{\substack{\min\limits_{a \leq z \leq b} f{\left(z \right)} \le y \le \max\limits_{a \leq z \leq b} f{\left(z \right)}}}{\exists_{\substack{a \le z \le b}}{f{\left(z \right)} = y}}\tag*{Eq[2]}\)

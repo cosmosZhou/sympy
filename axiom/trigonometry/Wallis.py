@@ -26,9 +26,6 @@ def prove(Eq):
     m = Symbol("m", integer=True, positive=True)
     n = Symbol("n", integer=True, positive=True)
 
-#     x = Symbol("x")
-
-#     Integral[x](sin(x) ** 2 * cos(x), x)
     Eq << apply(m, n)
 
     (x, *_), *_ = Eq[0].lhs.limits

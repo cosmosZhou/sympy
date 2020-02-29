@@ -51,6 +51,13 @@ class Determinant(Expr):
             self.arg._eval_determinant()
             return self
 
+    @property
+    def shape(self):
+        return ()
+
+    @property
+    def atomic_dtype(self):
+        return self.arg.atomic_dtype
 
 def det(matexpr):
     """ Matrix Determinant

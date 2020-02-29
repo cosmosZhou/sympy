@@ -1079,11 +1079,10 @@ class Piecewise(Function):
         return Union(*domain)
 
     @property
-    def dtype(self):
-#         from sympy.core.symbol import dtype
+    def atomic_dtype(self):
         dtype = None
         for function, _ in self.args:
-            _dtype = function.dtype
+            _dtype = function.atomic_dtype
             if dtype is None or dtype in _dtype and dtype != _dtype:
                 dtype = _dtype
         return dtype
