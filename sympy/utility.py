@@ -200,11 +200,9 @@ render(__FILE__);
     def process(self, rhs, index=None, end_of_line='\n'):
         if isinstance(rhs, identity):
             rhs = rhs.equation
-
         try:
             latex = rhs.latex
         except:
-#             print(e)
             traceback.print_exc()
             latex = ''
 
@@ -279,6 +277,7 @@ render(__FILE__);
                             if eq != rhs_equivalent:
                                 rhs_equivalent.equivalent = eq
                                 hypothesis = rhs_equivalent.hypothesis
+                                                                        
                                 for h in hypothesis:
                                     h.derivative = None
             if isinstance(old_index, int):
@@ -483,38 +482,38 @@ def plausible(apply=None):
             return None        
         return True
 
-    def add_to_set(prerequisite, prerequisite_set, prerequisite_list):
+    def add_to_set(given, given_set, given_list):
 
-        def add_to_set(given, prerequisite_set, prerequisite_list):
-            if given not in prerequisite_set:
-                prerequisite_list.append(given)
-                prerequisite_set.add(given)
+        def add_to_set(given, given_set, given_list):
+            if given not in given_set:
+                given_list.append(given)
+                given_set.add(given)
                      
-        if prerequisite is not None:
-            if isinstance(prerequisite, (tuple, list)):
-                for g in prerequisite:
-                    add_to_set(g, prerequisite_set, prerequisite_list)
+        if given is not None:
+            if isinstance(given, (tuple, list)):
+                for g in given:
+                    add_to_set(g, given_set, given_list)
             else:
-                add_to_set(prerequisite, prerequisite_set, prerequisite_list)
+                add_to_set(given, given_set, given_list)
         
     def add(statement):
-        prerequisite_set = set()
-        prerequisite_list = []
+        given_set = set()
+        given_list = []
         if isinstance(statement, tuple):            
             
             for s in statement:
-                add_to_set(s.given, prerequisite_set, prerequisite_list)
-                add_to_set(s.equivalent, prerequisite_set, prerequisite_list)
+                add_to_set(s.given, given_set, given_list)
+                assert s.equivalent is None
                                 
-            if prerequisite_list:
-                return tuple(prerequisite_list) + statement
+            if given_list:
+                return tuple(given_list) + statement
             return statement
         
-        add_to_set(statement.given, prerequisite_set, prerequisite_list)
-        add_to_set(statement.equivalent, prerequisite_set, prerequisite_list)
+        add_to_set(statement.given, given_set, given_list)
+        assert statement.equivalent is None
         
-        if prerequisite_list:
-            return tuple(prerequisite_list) + (statement,)
+        if given_list:
+            return tuple(given_list) + (statement,)
         return statement
 
     def process(s, dependency):
@@ -534,7 +533,9 @@ def plausible(apply=None):
         statement = apply(*args, **kwargs)
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]:
-            return statement
+            if isinstance(statement, tuple):
+                return [*(s.simplifier() for s in statement)]
+            return statement.simplifier()
         
         dependency = {}
         if isinstance(statement, tuple):

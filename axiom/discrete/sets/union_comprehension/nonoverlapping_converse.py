@@ -1,13 +1,14 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Sum, Union, identity
-from sympy.core.symbol import Symbol, dtype
-from sympy import S
-from sympy.concrete.expr_with_limits import Forall
-from sympy.tensor.indexed import IndexedBase
+from sympy.utility import plausible, Sum, Union, Ref
+from sympy.core.symbol import Symbol, dtype 
+from sympy.abc import *
+from sympy.concrete.expr_with_limits import Forall, UnionComprehension
 
-from sympy.sets.sets import Interval
+from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
-from axiom.discrete.sets import union
+from axiom.discrete.sets.union_comprehension import nonoverlapping_converse_utility
+from sympy.functions.elementary.piecewise import Piecewise
+from sympy.concrete.summations import summation
 
 # given: x[i] & x[j] = {}
 # |Union x[i]| = Sum |x[i]|
@@ -19,23 +20,21 @@ def apply(given):
     eq = given.function
     assert eq.is_Equality
     limits = given.limits
-    assert len(limits) == 1
-    (j, j_domain), *_ = limits
+    assert len(limits) == 2
+    (j, j_domain), i_limit = limits
     assert j_domain.is_Complement
     
     n_interval, i = j_domain.args
     n = n_interval.end
     i, *_ = i.args
-    
     intersection, emptyset = eq.args
     assert emptyset.is_EmptySet
-    
     xi, xj = intersection.args
     if not xi.has(i):
         xi = xj
         assert xj.has(i)
         
-    return Equality(abs(Union[i:0:n - 1](xi)), Sum[i:0:n - 1](abs(xi)), given=given)
+    return Equality(abs(UnionComprehension(xi, i_limit).simplifier()), summation(abs(xi), i_limit), given=given)
 
 
 from sympy.utility import check
@@ -43,31 +42,37 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)
-    n = Symbol('n', domain=Interval(2, oo, integer=True))
-    x = IndexedBase('x', shape=(oo,), dtype=dtype.integer)
-
-    i_domain = Interval(0, n - 1, integer=True)
-    
-    given = Forall(Equality(x[i] & x[j], S.EmptySet), (j, i_domain - {i}))
+    i in dtype.integer
+    j in dtype.integer
+    n in dtype.natural + 2
+    x in dtype.integer.set * (oo,)
+   
+    j_domain = Interval(0, n - 1, integer=True) - {i}
+    given = Forall(Equality(x[i] & x[j], EmptySet()), (j, j_domain), (i, 0, n - 1))
     Eq << apply(given)
-    
-    Eq << Eq[-1].subs(n, 2).doit()
-    
-    Eq << Eq[0].subs(i, 1)
-    
-    Eq << Eq[-1].subs(j, 0)
-    
-    Eq << union.inclusion_exclusion_principle.apply(*Eq[-1].lhs.args).subs(Eq[-1])
-    
-    Eq << Eq[1].subs(n, n + 1)
-    
-    Eq << identity(Eq[-1].lhs.arg).bisect(domain={n})
-    
-    Eq << union.inclusion_exclusion_principle.apply(*Eq[-1].rhs.args)
 
+    y in (dtype.integer.set * (oo,))(definition=Ref[i](Piecewise((x[i], i < n), (EmptySet(), True))))
+    Eq << Equality.by_definition_of(y)
+    
+    Eq.y_definition = Eq[-1][i]
+    
+    Eq.yi_definition = Eq.y_definition.forall(i, 0, n - 1)
+    
+    Eq << Eq.yi_definition.reversed
+    
+    Eq << Eq[0].subs(Eq[-1]).subs(Eq[-1].limits_subs(i, j))
+    
+    Eq << Eq.y_definition.forall(i, n, oo)
+    
+    Eq << Eq[-1].intersect(y[j]).forall(j, j_domain)
+    
+    Eq << (Eq[-1] & Eq[-3])
 
+    Eq << nonoverlapping_converse_utility.apply(Eq[-1])    
+    
+    Eq << Eq[-1].subs(Eq.yi_definition)
+
+    
 if __name__ == '__main__':
     prove(__file__)
 

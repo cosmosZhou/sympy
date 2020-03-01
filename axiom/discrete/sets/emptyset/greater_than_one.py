@@ -4,19 +4,19 @@ from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from axiom.discrete.sets.emptyset import strict_greater_than
 
-# provided: A != {}
+# given: A != {}
 # |A| >= 1
 
 
 @plausible
-def apply(provided):
-    assert provided.is_Unequality
-    A, B = provided.args
+def apply(given):
+    assert given.is_Unequality
+    A, B = given.args
     if B != S.EmptySet:
         assert A == S.EmptySet
         A = B
 
-    return GreaterThan(abs(A), 1, equivalent=provided)
+    return GreaterThan(abs(A), 1, given=given)
 
 
 from sympy.utility import check

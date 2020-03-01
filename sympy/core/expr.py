@@ -3800,7 +3800,7 @@ class Expr(Basic, EvalfMixin):
     @property
     def domain(self):
         from sympy import Interval
-        if self.is_set:
+        if self.atomic_dtype.is_set:
             return S.UniversalSet
         shape = self.shape
         interval = Interval(S.NegativeInfinity, S.Infinity, integer=self.is_integer) 
@@ -3893,40 +3893,6 @@ class Expr(Basic, EvalfMixin):
         if self == x:
             return Interval(-oo, 0, right_open=True, integer=x.is_integer) | Interval(0, oo, left_open=True, integer=x.is_integer)
         return self.defined_domain(x)
-
-    def generate_free_symbol(self, excludes=set(), shape=None, free_symbol=None, **kwargs):
-        excludes = self.free_symbols | excludes
-        if free_symbol is not None and free_symbol not in excludes:
-            return free_symbol.copy(shape=shape, **kwargs)
-            
-        free_symbols = [*set(symbol.name for symbol in excludes)]
-        free_symbols.sort()
-        name = None
-
-        for name in free_symbols:
-            if len(name) == 1:
-                break
-
-        from sympy import Symbol
-
-        if name is not None:
-            if len(name) > 1:
-                name = name[0]
-            
-            for _ in range(52):
-                name = chr(ord(name) + 1)
-                if name == '{':
-                    name = 'A'
-                elif name == '[':
-                    name = 'a'
-
-                if name not in free_symbols:
-                    if shape:
-                        from sympy.tensor.indexed import IndexedBase
-                        return IndexedBase(name, shape=shape, **kwargs)
-                    else:
-                        return Symbol(name, **kwargs)
-        return None
 
     def contains(self, other):
         from sympy import Contains

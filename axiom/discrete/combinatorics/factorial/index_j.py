@@ -10,6 +10,7 @@ from sympy.concrete import expr_with_limits
 from sympy.sets.conditionset import conditionset
 from axiom.discrete.sets.emptyset import greater_than_one
 from axiom.discrete.sets import union_comprehension
+from axiom.discrete.sets.union_comprehension import nonoverlapping_converse
 
 
 @plausible
@@ -59,14 +60,21 @@ def prove(Eq):
     
     Eq << Eq.distribute.union_comprehension((j,))
     
-    Eq << Eq[-1].abs()
+    Eq.union_abs = Eq[-1].abs()
     
-    Eq << union_comprehension.inequality.apply(*Eq[-1].lhs.arg.args).subs(Eq[-1])
+#     Eq << union_comprehension.inequality.apply(*Eq.union_abs.lhs.arg.args).subs(Eq.union_abs)
     
     i = Symbol('i', domain=Interval(0, n - 1, integer=True) - {j}) 
     Eq.distribute_i = Eq.distribute.subs(j, i)
     
-    Eq << Eq.distribute_i.intersect(Eq.distribute)
+    Eq << Eq.distribute_i.intersect(Eq.distribute).forall(i).forall(j)
+    
+    Eq << nonoverlapping_converse.apply(Eq[-1])
+    
+    Eq << Eq[-1].this.lhs.arg.limits_subs(Eq[-1].lhs.arg.variable, j).subs(Eq.union_abs).reversed
+    
+    Eq << union_comprehension.nonoverlapping.apply(Eq[0].abs())
+#     union_comprehension.less_than.apply()
 
 
 if __name__ == '__main__':

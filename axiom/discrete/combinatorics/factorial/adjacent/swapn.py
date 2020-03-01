@@ -2,14 +2,12 @@ from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible, Ref
 from sympy.tensor.indexed import IndexedBase
-from sympy.sets.sets import Interval, Intersection
+from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.concrete.expr_with_limits import Forall, Exists
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
-from sympy.sets import sets
-import sympy
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 

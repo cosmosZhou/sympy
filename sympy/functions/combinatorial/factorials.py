@@ -1048,3 +1048,17 @@ class binomial(CombinatorialFunction):
                 elif alpha == S.NegativeOne:
                     return Interval(beta - n, beta, integer=True)
         return Interval(-oo, oo, integer=True)
+
+    @property
+    def atomic_dtype(self):        
+        from sympy.core.symbol import dtype
+        n, _ = self.args
+        if n.is_integer:
+            return dtype.integer
+        return n.dtype
+        
+    
+    @property
+    def shape(self):
+        return ()
+    

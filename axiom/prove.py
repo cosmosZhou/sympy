@@ -13,7 +13,6 @@ websites = []
 
 insurmountable = {axiom.advanced_math.integral.intermediate_value_theorem,
                   axiom.discrete.Fermat.LastTheorem,
-                  axiom.discrete.Fermat.LastTheorem3,
                   axiom.statistics.KullbackLeibler,
                   axiom.trigonometry.cosine.theorem,
                   } 

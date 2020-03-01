@@ -127,7 +127,8 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq.s2_definition)
 
     Eq << Eq[-1].definition.definition
-
+    Eq << Eq[-1].this.function.args[0].simplifier()
+    
     Eq << Union[i:0:k](Eq.x_quote_definition)
 
     x_quote_union = Eq[-1].subs(Eq.x_union_s1)
@@ -148,7 +149,7 @@ def prove(Eq):
     x_quote_union_abs = Eq[-1]
 
     u = Eq[-1].lhs.arg
-    Eq << discrete.sets.union_comprehension.inequality.apply(u.function, *u.limits)
+    Eq << discrete.sets.union_comprehension.less_than.apply(u.function, *u.limits)
 
     Eq << Eq[-2].subs(Eq[-1])
 
@@ -226,7 +227,7 @@ def prove(Eq):
 
     Eq << discrete.sets.union.inequality.apply(*Eq[-1].lhs.args)
 
-    Eq << discrete.sets.union_comprehension.inequality.apply(*Eq[-2].lhs.args[0].args)
+    Eq << discrete.sets.union_comprehension.less_than.apply(*Eq[-2].lhs.args[0].args)
 
     Eq << Eq[-2].subs(Eq[-1]) + Eq.set_size_inequality
     
@@ -330,8 +331,9 @@ def prove(Eq):
     Eq << Eq[-1].func(Contains(x_tilde, s0_quote), *Eq[-1].limits, plausible=True)
 
     Eq << Eq[-1].definition
-
-    Eq.x_tilde_set_in_s0 = Eq[-2].func(Contains(UnionComprehension.construct_finite_set(x_tilde), s0), *Eq[-2].limits, plausible=True)
+    Eq << Eq[-1].this.function.args[0].simplifier()
+    
+    Eq.x_tilde_set_in_s0 = Eq[-3].func(Contains(UnionComprehension.construct_finite_set(x_tilde), s0), *Eq[-3].limits, plausible=True)
 
     Eq << Eq.x_tilde_set_in_s0.subs(s0_definition)
 
@@ -467,7 +469,7 @@ def prove(Eq):
 
     Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[-1].function.variable)
 
-    Eq << Eq[-1].this.function.function.reference(*Eq[-1].function.function.limits)
+    Eq << Eq[-1].this.function.function.reference((i, 0, k))
 
     assert len(Eq.plausibles_dict) == 1
 
@@ -513,11 +515,11 @@ def prove(Eq):
 
     Eq << Eq.s0_supset.subs(Eq.s0_subset)
 
-    Eq << discrete.sets.union_comprehension.inequality.apply(*Eq[-1].rhs.args)
+    Eq << discrete.sets.union_comprehension.less_than.apply(*Eq[-1].rhs.args)
 
     Eq << Eq[-1].subs(Eq[-2].reversed)
 
-    Eq << discrete.sets.union_comprehension.inequality.apply(*Eq.B_definition.rhs.args)
+    Eq << discrete.sets.union_comprehension.less_than.apply(*Eq.B_definition.rhs.args)
 
     Eq << Eq[-1].subs(Eq.B_definition.reversed)
 
@@ -585,8 +587,8 @@ def prove(Eq):
 
     Eq << Eq.A_union_abs.subs(Eq[-1])
     
-    Eq << Equality(Eq[-1].lhs.function, Eq[-1].rhs.args[0])
-    
+    Eq << Equality(Eq[-1].lhs.function, Eq[-1].rhs.args[0], plausible=True)
+     
     Eq << Eq[-1].summation(*Eq[-2].lhs.limits)
 
 

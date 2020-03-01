@@ -408,12 +408,11 @@ class AssocOp(Basic):
         return self
 
     def defined_domain(self, x):
-        from sympy import S, oo
-        from sympy.sets.sets import Interval
-        if x.is_set:
+        from sympy import S
+        if x.atomic_dtype.is_set:
             return S.UniversalSet
         
-        domain = Interval(-oo, oo, integer=x.is_integer)
+        domain = x.domain
         for arg in self.args:
             domain &= arg.defined_domain(x)
         return domain

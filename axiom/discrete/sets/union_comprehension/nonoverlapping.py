@@ -6,14 +6,14 @@ from sympy.concrete.expr_with_limits import Forall
 from sympy.tensor.indexed import IndexedBase
 from axiom import discrete
 
-# provided: |Union x[i]| = Sum |x[i]|
+# given: |Union x[i]| = Sum |x[i]|
 # x[i] & x[j] = {}
 
-
+from sympy.concrete.summations import summation
 @plausible
-def apply(provided):
-    assert provided.is_Equality
-    x_union_abs, x_abs_sum = provided.args
+def apply(given):
+    assert given.is_Equality
+    x_union_abs, x_abs_sum = given.args
     if not x_union_abs.is_Abs:
         tmp = x_union_abs
         x_union_abs = x_abs_sum
@@ -22,9 +22,12 @@ def apply(provided):
 
     x_union = x_union_abs.arg
     assert x_union.is_UnionComprehension
-    assert x_abs_sum.is_Sum
-    assert x_abs_sum.function.is_Abs
-    assert x_abs_sum.function.arg == x_union.function
+    if x_abs_sum.is_Sum:
+        assert x_abs_sum.function.is_Abs
+        assert x_abs_sum.function.arg == x_union.function        
+    else:        
+        assert x_abs_sum == summation(abs(x_union.function), *x_union.limits)
+
     limits_dict = x_union.limits_dict
     i, *_ = limits_dict.keys()
     xi = x_union.function
@@ -38,9 +41,7 @@ def apply(provided):
     i_domain = limits_dict[i] or i.domain
 
     limits = [(j, i_domain - {i})] + [*x_union.limits]
-    return Forall(Equality(xi & xj, S.EmptySet),
-                  *limits,
-                  equivalent=provided).simplifier()
+    return Forall(Equality(xi & xj, S.EmptySet).simplifier(), *limits, given=given)
 
 
 from sympy.utility import check
@@ -70,7 +71,7 @@ def prove(Eq):
 
     Eq << identity(Eq[0].lhs.arg).bisect(domain={i, j})
 
-    Eq.union_less_than = discrete.sets.union_comprehension.inequality.apply(x[i], *Eq[-1].rhs.args[0].limits)
+    Eq.union_less_than = discrete.sets.union_comprehension.less_than.apply(x[i], *Eq[-1].rhs.args[0].limits)
 
     Eq << discrete.sets.union.inequality.apply(*Eq[-1].rhs.args)
 

@@ -110,7 +110,7 @@ class Poly(Expr):
             raise NotImplementedError("'order' keyword is not implemented yet")
 
         from sympy.tensor.indexed import IndexedBase
-        if iterable(rep, exclude=(str, IndexedBase)):
+        if iterable(rep, exclude=(str, IndexedBase, Symbol)):
             if isinstance(rep, dict):
                 return cls._from_dict(rep, opt)
             else:
@@ -5259,7 +5259,7 @@ def gcd(f, g=None, *gens, **args):
     x - 1
 
     """
-    if hasattr(f, '__iter__'):
+    if hasattr(f, '__iter__') and not f.is_Symbol:
         if g is not None:
             gens = (g,) + gens
 
@@ -5388,7 +5388,7 @@ def lcm(f, g=None, *gens, **args):
     x**3 - 2*x**2 - x + 2
 
     """
-    if hasattr(f, '__iter__'):
+    if hasattr(f, '__iter__') and not f.is_Symbol:
         if g is not None:
             gens = (g,) + gens
 

@@ -1,23 +1,20 @@
 from sympy.core.relational import Equality, LessThan, Unequality, \
     StrictGreaterThan, GreaterThan
-from sympy.utility import plausible, Eq, Sum, Union, identity
+from sympy.utility import plausible, Union, identity
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy import S
-from sympy.concrete.expr_with_limits import Exists, Forall
-from sympy.logic.boolalg import plausibles, And
+from sympy.concrete.expr_with_limits import Forall
 from sympy.tensor.indexed import IndexedBase
-from axiom.discrete.sets.union import inclusion_exclusion_principle
-from axiom.discrete.sets.emptyset import strict_greater_than
 
-# provided: A & Union[i](x[i]) = {}
+# given: A & Union[i](x[i]) = {}
 # A & x[i] = {}
 
 
-def apply(provided):
-    assert provided.is_Equality
-    x_union_intersect_A, emptyset = provided.args
+@plausible
+def apply(given):
+    assert given.is_Equality
+    x_union_intersect_A, emptyset = given.args
     if emptyset != S.EmptySet:
         tmp = emptyset
         emptyset = x_union_intersect_A
@@ -35,8 +32,7 @@ def apply(provided):
 
     return Forall(Equality(x_union.function & A, S.EmptySet),
                   *x_union.limits,
-                  equivalent=provided,
-                  plausible=plausible())
+                  given=given)
 
 
 from sympy.utility import check
@@ -51,9 +47,9 @@ def prove(Eq):
 
     equality = Equality(Union[i:0:k](x[i]) & A, S.EmptySet)
 
-    Eq << equality
-
-    Eq << apply(equality)
+    Eq << apply(equality)    
+    
+    Eq << Eq[-1].simplifier()
 
     Eq << identity(Union[i:0:k](x[i] & A)).simplifier()
 

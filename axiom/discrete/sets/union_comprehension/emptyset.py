@@ -4,17 +4,18 @@ from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy import S
-from sympy.concrete.expr_with_limits import Exists, Forall
+from sympy.concrete.expr_with_limits import Forall
 
 from sympy.tensor.indexed import IndexedBase
 
-# provided: Union[i](x[i]) = {}
+# given: Union[i](x[i]) = {}
 # x[i] = {}
 
 
-def apply(provided):
-    assert provided.is_Equality
-    x_union, emptyset = provided.args
+@plausible
+def apply(given):
+    assert given.is_Equality
+    x_union, emptyset = given.args
     if emptyset != S.EmptySet:
         tmp = emptyset
         emptyset = x_union
@@ -22,10 +23,7 @@ def apply(provided):
         assert emptyset == S.EmptySet
 
     assert x_union.is_UnionComprehension
-    return Forall(Equality(x_union.function, S.EmptySet),
-                  *x_union.limits,
-                  equivalent=provided,
-                  plausible=plausible())
+    return Forall(Equality(x_union.function, S.EmptySet), *x_union.limits, given=given)
 
 
 from sympy.utility import check
@@ -38,8 +36,6 @@ def prove(Eq):
     x = IndexedBase('x', shape=(k + 1,), dtype=dtype.integer)
 
     equality = Equality(Union[i:0:k](x[i]), S.EmptySet)
-
-    Eq << equality
 
     Eq << apply(equality)
 

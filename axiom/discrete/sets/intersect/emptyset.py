@@ -1,21 +1,16 @@
-from sympy.core.relational import Equality, LessThan
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Equality
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
-from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains
-from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
+from sympy.sets.contains import NotContains
 
 
 # given e not in S
-def apply(provided):
+@plausible
+def apply(given):
 
-    e, s = provided.args
-    return Equality(e.set & s, S.EmptySet,
-                    equivalent=provided,
-                    plausible=plausible())
+    e, s = given.args
+    return Equality(e.set & s, S.EmptySet, given=given)
 
 
 from sympy.utility import check
@@ -26,9 +21,8 @@ def prove(Eq):
     s = Symbol('s', dtype=dtype.integer)
     e = Symbol('e', integer=True)
 
-    provided = NotContains(e, s)
-    Eq << provided
-    Eq << apply(provided)
+    given = NotContains(e, s)
+    Eq << apply(given)
 
     Eq << Eq[-1].lhs.assertion()
 

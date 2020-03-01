@@ -13,7 +13,6 @@ from sympy.logic.boolalg import Boolean, BooleanAtom
 from sympy.core.sympify import sympify
 from sympy.core.basic import preorder_traversal
 
-
 __all__ = (
     'Rel', 'Eq', 'Ne', 'Lt', 'Le', 'Gt', 'Ge',
     'Relational', 'Equality', 'Unequality', 'StrictLessThan', 'LessThan',
@@ -158,7 +157,7 @@ class Relational(Boolean, Expr, EvalfMixin):
         1 > x
         """
         a, b = self.args
-        return self.reversed_type(b, a, equivalent=self)
+        return self.reversed_type(b, a, equivalent=self, evaluate=False)
 
     def __neg__(self):
         """Return the relationship with signs reversed.
@@ -430,6 +429,7 @@ class Relational(Boolean, Expr, EvalfMixin):
             self
             
         return Contains(x, domain, equivalent=self).simplifier()
+
 
 Rel = Relational
 
@@ -1037,7 +1037,7 @@ class Equality(Relational):
         from sympy.core.function import Derivative
         return self.func(Derivative(self.lhs, *symbols), Derivative(self.rhs, *symbols), given=self)
 
-
+    
 Eq = Equality
 
 
@@ -1896,7 +1896,6 @@ class LessThan(_Less):
                 return GreaterThan(lhs, rhs, given=self)
             if _g >= g:
                 return StrictGreaterThan(lhs, rhs, given=self)
-
 
         if self.plausible:
 

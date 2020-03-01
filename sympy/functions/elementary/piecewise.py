@@ -1125,9 +1125,17 @@ class Piecewise(Function):
         return self 
     
     def select_cond(self, expr):
-        for e, c in self.args:                     
-            if expr == e:
-                return c                               
+        u = S.true
+        for e, c in self.args:              
+            eq = Equality(expr, e)                   
+            if eq.is_BooleanFalse:
+                ...
+            elif eq.is_BooleanTrue:
+                return u & c
+            else:
+                return
+            u &= ~c
+                                          
             
     def union_sets(self, b):
         tuples = []

@@ -3,18 +3,18 @@ from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
 
-# provided: A != {}
+# given: A != {}
 # |A| > 0
 
 @plausible
-def apply(provided):
-    assert provided.is_Unequality
-    A, B = provided.args
+def apply(given):
+    assert given.is_Unequality
+    A, B = given.args
     if B != S.EmptySet:
         assert A == S.EmptySet
         A = B
 
-    return StrictGreaterThan(abs(A), 0, equivalent=provided)
+    return StrictGreaterThan(abs(A), 0, given=given)
 
 
 from sympy.utility import check

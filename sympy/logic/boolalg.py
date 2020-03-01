@@ -149,12 +149,28 @@ class Boolean(Basic):
             return Forall(self._subs(x, _x), (_x, x.domain), equivalent=self).simplifier()
 
         if domain in x.domain and x.domain not in domain:
-            function = self.copy()
-            _x = self.generate_free_symbol(domain=domain)
-            # _x = x.copy(domain=domain)
-            function = function._subs(x, _x)
-            function = function._subs(_x, x)
-            return Forall(function, (x, *args), given=self).simplifier()
+            if self.is_Forall:
+                function = self.function.copy()
+                _x = self.generate_free_symbol(domain=domain)                
+                function = function._subs(x, _x)
+                function = function._subs(_x, x)
+                index = -1
+                for i, (v, *_) in enumerate(self.limits):
+                    if domain.has(v):
+                        index = i
+                        break
+                limits = [*self.limits]
+                if index >= 0:
+                    limits.insert(index, (x, *args))
+                else:
+                    limits.append((x, *args))
+                return Forall(function, *limits, given=self).simplifier()
+            else:
+                function = self.copy()
+                _x = self.generate_free_symbol(domain=domain)
+                function = function._subs(x, _x)
+                function = function._subs(_x, x) 
+                return Forall(function, (x, *args), given=self).simplifier()
 
         return self
 
@@ -597,8 +613,13 @@ class Boolean(Basic):
         self_equivalent = equivalent_ancestor(self)
         if len(self_equivalent) > 1:
             return
+        
         self_equivalent, *_ = self_equivalent
-
+        if self_equivalent.substituent == self:
+            self_equivalent.equivalent = self
+            self.equivalent = None
+            self_equivalent = self
+            
         for var, replacement in derivative.items():
             initial = []
             step = None
@@ -656,6 +677,8 @@ class Boolean(Basic):
                                 if not found:
                                     step = None
                         else:
+                            if given == self_equivalent:
+                                continue
                             given = given_ancestor(given)
                             if len(given) != 1:
                                 step = None
@@ -795,6 +818,7 @@ class Boolean(Basic):
     @property
     def shape(self):        
         return ()
+
 
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
@@ -1496,6 +1520,7 @@ class BooleanFunction(Application, Boolean):
         for arg in self.args:
             domain &= arg.defined_domain(x)
         return domain
+
 
 class And(LatticeOp, BooleanFunction):
     """
@@ -3782,6 +3807,9 @@ class Invoker:
                 obj = self.func[i](*self._args[i])
 
             obj = obj.simplifier()
+            
+        if obj.equivalent == self.expr and obj == self.expr:
+            return self.expr
         return obj
 
     def __call__(self, *args, **kwargs):

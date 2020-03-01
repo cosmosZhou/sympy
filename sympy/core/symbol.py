@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 from sympy.core.assumptions import StdFactKB
 from sympy.core.compatibility import (string_types, range, is_sequence,
-    ordered)
+    ordered, NotIterable)
 from .basic import Basic
 from .sympify import sympify
 from .singleton import S
@@ -137,7 +137,7 @@ def generate_free_symbol(excludes, shape=(), free_symbol=None, **kwargs):
     return None
 
 
-class Symbol(AtomicExpr):
+class Symbol(AtomicExpr, NotIterable):
 # class Symbol(AtomicExpr, Boolean):
     """
     Assumptions:
@@ -267,7 +267,8 @@ class Symbol(AtomicExpr):
 
         """
         cls._sanitize(assumptions, cls)
-        return Symbol.__xnew_cached_(cls, name, **assumptions)
+        return Symbol.__xnew__(cls, name, **assumptions)
+#         return Symbol.__xnew_cached_(cls, name, **assumptions)
 
     def __new_stage2__(cls, name, **assumptions):
         if not isinstance(name, string_types):
@@ -515,6 +516,38 @@ class Symbol(AtomicExpr):
         if 'shape' in self._assumptions:
             return self._assumptions['shape']
         return ()
+
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices, **kw_args):
+        from sympy.tensor.indexed import Indexed, Slice
+        if is_sequence(indices):
+            # Special case needed because M[*my_tuple] is a syntax error.
+#             if self.shape and len(self.shape) != len(indices):
+#                 raise IndexException("Rank mismatch.")
+            return Indexed(self, *indices, **kw_args)
+        elif isinstance(indices, slice):
+            start, stop = indices.start, indices.stop
+            if start is None:
+                start = 0
+            if start == stop - 1:
+                return Indexed(self, start, **kw_args)
+            if start == 0 and stop == self.shape[-1]:
+                return self
+            return Slice(self, indices, **kw_args)
+        else:
+#             if self.shape and len(self.shape) != 1:
+#                 raise IndexException("Rank mismatch.")
+            if self.definition is not None:
+                from sympy.concrete.expr_with_limits import Ref
+                if isinstance(self.definition, Ref):
+                    ref = self.definition
+                    from sympy.stats.rv import RandomSymbol
+                    if len(ref.limits) == 1 and isinstance(ref.function, RandomSymbol):
+                        return ref[indices]
+            return Indexed(self, indices, **kw_args)
+
 
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
@@ -1073,6 +1106,10 @@ class Dtype:
         return DtypeInteger()
 
     @property
+    def natural(self):
+        return self.integer(nonnegative=True)
+
+    @property
     def real(self):
         return DtypeReal()
 
@@ -1102,6 +1139,10 @@ class Dtype:
         return DtypeVector(self, length)
 
     def __contains__(self, x):
+        if isinstance(x, Symbol):
+            for key, value in self.dict.items():
+                x._assumptions[key] = value
+            return True
         return isinstance(x, type(self))
 
     @property
@@ -1273,8 +1314,8 @@ class DtypeInteger(DtypeRational):
         if not kwargs:
             return self
         return DtypeIntegerConditional(**kwargs)
-        
 
+        
 class DtypeIntegerConditional(DtypeInteger):
 
     def __init__(self, **assumptions):
@@ -1294,6 +1335,14 @@ class DtypeIntegerConditional(DtypeInteger):
 
     def __hash__(self):
         return hash(type(self).__name__)
+
+    def __add__(self, start):
+        from sympy import Interval, oo
+        if 'nonnegative' in self.assumptions:
+            if start != 0:
+                return self.integer(domain=Interval(start, oo, integer=True)) 
+            return self
+        return self.integer
 
 
 class DtypeSet(Dtype):
@@ -1319,11 +1368,14 @@ class DtypeSet(Dtype):
 
 class DtypeVector(Dtype):
 
-    def __init__(self, dtype, length):
+    def __init__(self, dtype, length, **kwargs):
         self.dtype = dtype
         self.length = length
+        self.assumptions = kwargs
 
     def __str__(self):
+        if self.assumptions:
+            return '%s[%s]%s' % (self.dtype, self.length, str(self.assumptions))
         return '%s[%s]' % (self.dtype, self.length)
 
     def __getitem__(self, indices):
@@ -1346,6 +1398,7 @@ class DtypeVector(Dtype):
     def dict(self):
         dic = self.dtype.dict
         dic['shape'] = (self.length,)
+        dic.update(self.assumptions)
         return dic
 
     def __eq__(self, other):
@@ -1353,6 +1406,11 @@ class DtypeVector(Dtype):
 
     def __hash__(self):
         return hash((type(self).__name__, self.dtype, self.length))
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeVector(self.dtype, self.length, **kwargs)
 
 
 class DtypeMatrix(Dtype):

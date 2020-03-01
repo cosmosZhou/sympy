@@ -602,7 +602,13 @@ class Set(Basic):
         other = sympify(other)
         if isinstance(self, EmptySet) or isinstance(other, EmptySet):
             return
-
+        
+        if isinstance(self, UniversalSet):
+            return True
+        else:
+            if isinstance(other, UniversalSet):
+                return False            
+        
         try:
             if other.dtype == self.dtype:
                 return other.is_subset(self)
@@ -623,7 +629,6 @@ class Set(Basic):
 
     def _eval_conjugate(self):
         return
-
 
 class ProductSet(Set):
     """
@@ -2297,6 +2302,9 @@ class Complement(Set, EvalfMixin):
     def is_integer(self):
         return self.args[0].is_integer
 
+    def defined_domain(self, x):
+        A, B = self.args
+        return A.defined_domain(x) & B.defined_domain(x)
 
 class EmptySet(with_metaclass(Singleton, Set)):
     """
@@ -2325,6 +2333,10 @@ class EmptySet(with_metaclass(Singleton, Set)):
     """
     is_EmptySet = True
     is_FiniteSet = True
+
+    @property
+    def atomic_dtype(self):
+        return dtype.set
 
     def _eval_Abs(self):
         return 0
@@ -2527,7 +2539,7 @@ class FiniteSet(Set, EvalfMixin):
                             FiniteSet(*syms), evaluate=False)
                 else:
                     return Union(*intervals, evaluate=False)
-            elif nums == []:
+            elif not nums:
                 for i, e in enumerate(self.args):
                     if not other.right_open and e == other.end:
                         args = [*self.args]
@@ -2537,8 +2549,11 @@ class FiniteSet(Set, EvalfMixin):
                         args = [*self.args]
                         del args[i]
                         return other.copy(left_open=True) - self.func(*args)
-
-                return None
+                    if e > other.max() or e < other.min():
+                        args = [*self.args]
+                        del args[i]
+                        return other - self.func(*args)
+                return
             
             if other.is_integer:
                 if other.min() in self:               

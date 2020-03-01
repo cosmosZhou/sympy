@@ -4,21 +4,20 @@ from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
 from sympy import S
 
-# provided: |A| = 0
+# given: |A| = 0
 # A == {}
 
 
 @plausible
-def apply(provided):
-    assert provided.is_Equality
-    A, B = provided.args
+def apply(given):
+    assert given.is_Equality
+    A, B = given.args
     if B != 0:
         A = B
     assert A.is_Abs
     A = A.arg
 
-    return Equality(A, S.EmptySet,
-                    equivalent=provided)
+    return Equality(A, S.EmptySet, given=given)
 
 
 from sympy.utility import check

@@ -2058,13 +2058,50 @@ class Basic(with_metaclass(ManagedProperties)):
     def defined_domain(self, x):
 #         from sympy.sets.sets import Interval
 #         from sympy.core.numbers import oo
-        if not x.is_set:
-            return x.domain            
-        return S.UniversalSet
+        if x.atomic_dtype.is_set:
+            return S.UniversalSet
+        return x.domain            
     
     @property
     def dtype(self):
         return self.atomic_dtype * self.shape
+    
+    def generate_free_symbol(self, excludes=None, shape=None, free_symbol=None, **kwargs):
+        if excludes is None:
+            excludes = self.free_symbols
+        else:
+            excludes |= self.free_symbols
+            
+        if free_symbol is not None and free_symbol not in excludes:
+            return free_symbol.copy(shape=shape, **kwargs)
+            
+        free_symbols = [*set(symbol.name for symbol in excludes)]
+        free_symbols.sort()
+        name = None
+
+        for name in free_symbols:
+            if len(name) == 1:
+                break
+
+        if name is not None:
+            if len(name) > 1:
+                name = name[0]
+            
+            for _ in range(52):
+                name = chr(ord(name) + 1)
+                if name == '{':
+                    name = 'A'
+                elif name == '[':
+                    name = 'a'
+
+                if name not in free_symbols:
+                    if shape:
+                        from sympy.tensor.indexed import IndexedBase
+                        return IndexedBase(name, shape=shape, **kwargs)
+                    else:
+                        from sympy import Symbol
+                        return Symbol(name, **kwargs)
+
 
 class Atom(Basic):
     """

@@ -21,7 +21,6 @@ from sympy.utilities import flatten
 from sympy.utilities.iterables import sift, postorder_traversal
 from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.core.function import Derivative
-from builtins import isinstance
 
 
 def _common_new(cls, function, *symbols, **assumptions):
@@ -113,7 +112,7 @@ def _process_limits(*symbols):
                 newsymbol = V[0]
                 if len(V) == 2 and isinstance(V[1], Interval):  # 2 -> 3
                     # Interval
-                    V[1:] = [V[1].start, V[1].end]
+                    V[1:] = [V[1].min(), V[1].max()]
                 elif len(V) == 3:
                     # general case
                     if V[2] is None and not V[1] is None:
@@ -531,9 +530,25 @@ class ExprWithLimits(Expr):
 
     # if x == old:
     def _subs_limits(self, x, domain, new):
+        from sympy import preorder_traversal
 
         def subs(function, x, domain, new):
-            function = function._subs(x, new)
+            if x.is_Slice:
+                indices = set(index for indexed in preorder_traversal(function) if indexed.is_Indexed and indexed.base == x.base for index in indexed.indices)
+                reps = {}
+                for i in indices:
+                    if isinstance(i, (Symbol, Indexed)): 
+                        i_domain = function.defined_domain(i)
+                        if i.domain != i_domain:
+                            _i = i.copy(domain=i_domain)
+                            function = function.subs(i, _i)                            
+                            reps[i] = _i
+                
+            _function = function._subs(x, new)
+            if _function == function:
+                return self
+            function = _function
+            
             kwargs = {}
             if self.is_Boolean:
                 kwargs['equivalent'] = self
@@ -556,12 +571,18 @@ class ExprWithLimits(Expr):
                 domain = [dom._subs(x, new) for dom in domain]
                 limits[i] = (v, *domain)
 
+            if x.is_Slice:
+                for i, _i in reps.items():
+                    function = function.subs(_i, i)                            
+                
             return self.func(function, *limits, **kwargs).simplifier()
 
         if self.function.is_ExprWithLimits and new in self.function.variables_set:
             y = self.function.generate_free_symbol(self.function.variables_set, **new.dtype.dict)
             assert new != y
             function = self.function.limits_subs(new, y)
+            if function == self.function:
+                return self
             this = subs(function, x, domain, new)
 
             if this.function.is_ExprWithLimits and y in this.function.variables_set:
@@ -842,6 +863,40 @@ class ExprWithLimits(Expr):
     @property
     def shape(self):
         return self.function.shape
+
+    def defined_domain(self, x):
+        from sympy.core.symbol import Wild
+        if x.atomic_dtype.is_set:
+            return S.UniversalSet            
+        
+        domain = x.domain
+        limits_dict = self.limits_dict
+        if x in limits_dict:
+            return domain
+                    
+        for expr in limits_dict.values():
+            if expr is None:
+                continue
+            domain &= expr.defined_domain(x)
+        
+        if self.function._has(x):
+            domain &= self.function.defined_domain(x)
+            if x not in self.function.free_symbols:
+                v = self.variable
+                v_domain = self.limits_dict[v]
+                for free_symbol in self.function.free_symbols:
+                    if not free_symbol._has(v) or not free_symbol.is_Indexed:
+                        continue
+                    pattern = free_symbol.subs(v, Wild(v.name, **v.assumptions0))
+                    res = x.match(pattern)
+                    if res:    
+                        t_, *_ = res.values()
+                        if v_domain is None or t_ in v_domain:
+                            function = self.function._subs(v, t_)
+                            domain &= function.defined_domain(x)
+                            break
+            
+        return domain
 
 
 class AddWithLimits(ExprWithLimits):
@@ -1704,41 +1759,6 @@ class Minimum(ExprWithLimits):
     def assertion(self):
         from sympy.core.relational import LessThan
         return Forall(LessThan(self, self.function), *self.limits)
-
-    def defined_domain(self, x):
-        from sympy.core.numbers import oo
-        from sympy.core.symbol import Wild
-        if x.is_set:
-            return S.UniversalSet            
-        
-        domain = Interval(-oo, oo, integer=x.is_integer)
-        limits_dict = self.limits_dict
-        if x in limits_dict:
-            return domain
-                    
-        for expr in limits_dict.values():
-            if expr is None:
-                continue
-            domain &= expr.defined_domain(x)
-        
-        if self.function._has(x):
-            domain &= self.function.defined_domain(x)
-            if x not in self.function.free_symbols:
-                v = self.variable
-                v_domain = self.limits_dict[v]
-                for free_symbol in self.function.free_symbols:
-                    if not free_symbol._has(v) or not free_symbol.is_Indexed:
-                        continue
-                    pattern = free_symbol.subs(v, Wild(v.name, **v.assumptions0))
-                    res = x.match(pattern)
-                    if res:    
-                        t_, *_ = res.values()
-                        if v_domain is None or t_ in v_domain:
-                            function = self.function._subs(v, t_)
-                            domain &= function.defined_domain(x)
-                            break
-            
-        return domain
 
     @property
     def shape(self):
@@ -3533,41 +3553,6 @@ class Ref(ExprWithLimits):
 
         return tex
 
-    def defined_domain(self, x):
-        from sympy.core.numbers import oo
-        from sympy.core.symbol import Wild
-        if x.is_set:
-            return S.UniversalSet            
-        
-        domain = Interval(-oo, oo, integer=x.is_integer)
-        limits_dict = self.limits_dict
-        if x in limits_dict:
-            return domain
-                    
-        for expr in limits_dict.values():
-            if expr is None:
-                continue
-            domain &= expr.defined_domain(x)
-        
-        if self.function._has(x):
-            domain &= self.function.defined_domain(x)
-            if x not in self.function.free_symbols:
-                v = self.variable
-                v_domain = self.limits_dict[v]
-                for free_symbol in self.function.free_symbols:
-                    if not free_symbol._has(v) or not free_symbol.is_Indexed:
-                        continue
-                    pattern = free_symbol.subs(v, Wild(v.name, **v.assumptions0))
-                    res = x.match(pattern)
-                    if res:    
-                        t_, *_ = res.values()
-                        if v_domain is None or t_ in v_domain:
-                            function = self.function._subs(v, t_)
-                            domain &= function.defined_domain(x)
-                            break
-            
-        return domain
-
 
 class UnionComprehension(Set, ExprWithLimits):
     """
@@ -3731,6 +3716,10 @@ class UnionComprehension(Set, ExprWithLimits):
 
         if len(self.limits) != 1:
             return self
+        
+        if self.function.is_EmptySet:
+            return self.function
+        
         limit = self.limits[0]
 
         if len(limit) == 2:
@@ -3765,9 +3754,6 @@ class UnionComprehension(Set, ExprWithLimits):
                 A, B = self.function.args
                 if not B.has(*self.variables):
                     return self.func(A, *self.limits) - B
-
-            if self.function.is_EmptySet:
-                return self.function
 
             if domain.is_Piecewise:
                 tuples = []
@@ -4263,7 +4249,7 @@ class ConditionalBoolean(Boolean):
         """Overloading for & operator"""
         if self.is_Forall and eq.is_Forall and self.function == eq.function:
             limits = self.limits_union(eq)
-            return self.func(self.function, *limits, equivalent=[self, eq])
+            return self.func(self.function, *limits, equivalent=[self, eq]).simplifier()
 
         clue, funcs, lhs, rhs = self.combine_clauses(eq)
         function = lhs & rhs
@@ -4469,6 +4455,11 @@ class ConditionalBoolean(Boolean):
 
                 if needsToDelete:
                     deletes.add(x)
+#             else:
+#                 domain = limits_dict[x]                
+#                 if self.is_Forall and domain.is_set and self.function.defined_domain(x) in domain:
+#                     deletes.add(x)
+                    
         if deletes:
             limits = self.limits_delete(deletes)
             if limits:
@@ -4711,9 +4702,13 @@ class Forall(ConditionalBoolean, ExprWithLimits):
         forall = self.limits_dict
 
         deletes = []
-        for k, v in forall.items():
+        for x, v in forall.items():
             if v is None:
-                deletes.append(k)
+                deletes.append(x)
+            elif self.function.has(x):
+                domain = forall[x]                
+                if domain.is_set and self.function.defined_domain(x) in domain:
+                    deletes.append(x)
 
         if deletes:
             limits = self.limits_delete(deletes)
@@ -5481,6 +5476,7 @@ Forall.invert_type = Exists
 
 
 def limits_dict(limits):
+#     from sympy.sets.conditionset import conditionset
     dic = {}
     for x, *domain in limits:
         if len(domain) == 0:
@@ -5488,7 +5484,11 @@ def limits_dict(limits):
         elif len(domain) == 1:
             dic[x] = domain[0]
         else:
-            dic[x] = Interval(*domain, integer=x.is_integer)
+            if domain[1].is_set:
+                dic[x] = None
+#                 dic[x] = conditionset(x, *domain)
+            else:
+                dic[x] = Interval(*domain, integer=x.is_integer)
     return dic
 
 

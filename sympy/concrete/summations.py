@@ -1214,7 +1214,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     
     def defined_domain(self, x):
         from sympy.core.numbers import oo
-        if x.is_set:
+        if x.atomic_dtype.is_set:
             return S.UniversalSet                    
 
         domain = Interval(-oo, oo, integer=x.is_integer)
