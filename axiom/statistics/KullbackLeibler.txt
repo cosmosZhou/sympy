@@ -1,1 +1,0 @@
-\(\sum\limits_{\substack{x\\y}} p{\left(x,y \right)} \log{\left(\frac{p{\left(x,y \right)}}{q{\left(x,y \right)}} \right)} \geq \sum_{x} p{\left(x \right)} \log{\left(\frac{p{\left(x \right)}}{q{\left(x \right)}} \right)}\tag*{Eq[0]}\)

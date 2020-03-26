@@ -1,3 +1,3 @@
 from . import complement
-# from . import subset
-
+from . import equality
+from . import union

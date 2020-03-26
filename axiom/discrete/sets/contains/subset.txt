@@ -1,3 +1,0 @@
-\(e \in s\tag*{Eq[0]}\)
-\(\left\{e\right\} \subset s\tag*{Eq[1]}\)
-\(e \in s\tag*{Eq[0]}\)

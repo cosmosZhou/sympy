@@ -27,17 +27,17 @@ function quote($param)
 }
 
 // input is a php file
-function render($php)
+function render($php, $txt)
 {
     // error_log("php file = $php");
-    $txt = str_replace('.php', '.txt', $php);
+//    $txt = str_replace('.php', '.txt', $php);
     // error_log("txt file = $txt");
 
     $py = str_replace('.php', '.py', $php);
-//     $py = str_replace('latex', 'sympy', $py);
+    // $py = str_replace('latex', 'sympy', $py);
     // error_log("python file = $py");
 
-    assert(file_exists($txt), "file_exists($txt)");
+//     assert(file_exists($txt), "file_exists($txt)");
     assert(file_exists($py), "file_exists($py)");
 
     $inputs = [];
@@ -94,7 +94,7 @@ function render($php)
     $p = [];
     $i = 0;
     $statements = '';
-    foreach (file($txt) as &$statement) {
+    foreach ($txt as &$statement) {
         $statements .= $statement;
         if ($lengths[$i] == 1) {
             $p[] = ":<p>$statements</p>";
@@ -105,44 +105,24 @@ function render($php)
         }
     }
 
-    $json = str_replace('.php', '.json', $php);
-
-    if (file_exists($json)) {
-        $json = json_decode(file_get_contents($json), true);
-        foreach ($json as $key => &$value) {
-            $value = reference($value);
-        }
-    } else {
-        $json = null;
-    }
-
     $size = min(count($inputs), count($p));
     for ($i = 0; $i < $size; ++ $i) {
         echo $inputs[$i];
         $statement = $p[$i];
-        if ($json) {
-            // https://www.php.net/manual/en/function.preg-match-all.php
-            if (preg_match_all('/\\\tag\*\{(Eq\[(\d+)\])\}/', $statement, $matches, PREG_SET_ORDER) || preg_match_all('/\\\tag\*\{(Eq\.(\w+))\}/', $statement, $matches, PREG_SET_ORDER)) {
+//         if ($json) {
+//             // https://www.php.net/manual/en/function.preg-match-all.php
+//             if (preg_match_all('/\\\tag\*\{(Eq\[(\d+)\])\}/', $statement, $matches, PREG_SET_ORDER) || preg_match_all('/\\\tag\*\{(Eq\.(\w+))\}/', $statement, $matches, PREG_SET_ORDER)) {
 
-                foreach ($matches as &$match) {
-                    $index = $match[2];
-                    if (array_key_exists($index, $json)) {
+//                 foreach ($matches as &$match) {
+//                     $index = $match[2];
+//                     if (array_key_exists($index, $json)) {
 
-                        $statement = str_replace("$match[1]", "$json[$index]=>$match[1]", $statement);
-                    }
-                }
-            }
-        }
+//                         $statement = str_replace("$match[1]", "$json[$index]=>$match[1]", $statement);
+//                     }
+//                 }
+//             }
+//         }
         echo $statement;
-    }
-
-    if ($json) {
-//         println("plausibles: " . json_encode($json));
-        $json = array_keys($json);
-        foreach ($json as &$key) {
-            $key = reference($key);
-        }
-        println("plausibles: " . json_encode($json));
     }
 }
 

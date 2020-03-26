@@ -1,14 +1,14 @@
 from sympy.core.numbers import oo
-from sympy.utility import Eq, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy import sqrt, pi, exp, Symbol
 from sympy.integrals.integrals import Integral
 
 
+@plausible
 def apply():
     x = Symbol("x", real=True)
-    return Equality(1 / sqrt(2 * pi) * Integral(exp(-x * x / 2), (x, -oo, oo)), 1, evaluate=False,
-                    plausible=plausible())
+    return Equality(1 / sqrt(2 * pi) * Integral(exp(-x * x / 2), (x, -oo, oo)), 1, evaluate=False)
 
 
 from sympy.utility import check

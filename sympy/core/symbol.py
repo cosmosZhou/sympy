@@ -415,10 +415,8 @@ class Symbol(AtomicExpr, NotIterable):
         return None
 
     def nonzero_domain(self, x):
-        from sympy.sets.sets import Interval
-        from sympy.core.numbers import oo
         if self == x:
-            return Interval(-oo, 0, right_open=True, integer=x.is_integer) | Interval(0, oo, left_open=True, integer=x.is_integer)
+            return x.domain - {0}
         return Expr.nonzero_domain(self, x)
 
     @property
@@ -498,7 +496,10 @@ class Symbol(AtomicExpr, NotIterable):
 
     def assertion(self, reverse=False):
         definition = self.definition
-
+        from sympy.sets import sets
+        if definition is None:
+            return sets.Set.static_assertion(self)
+        
         if definition.is_ConditionSet:
             sym = definition.variable
             condition = definition.condition
@@ -548,6 +549,26 @@ class Symbol(AtomicExpr, NotIterable):
                         return ref[indices]
             return Indexed(self, indices, **kw_args)
 
+    def has_match(self, exp):
+        if exp == self:
+            return True 
+        
+        from sympy.matrices.expressions.matexpr import MatrixElement
+        if isinstance(exp, MatrixElement) and exp.parent == self:
+            return True
+        
+        if exp.is_Indexed and exp.base == self:
+            if exp.is_Slice:
+                index_start, index_stop = exp.indices
+                start, stop = 0, self.shape[-1]
+    
+                if index_stop <= start:
+                    return False  # index < start
+                if index_start >= stop:
+                    return False  # index >= stop
+    # it is possible for them to be equal!
+            return True
+        return False
 
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:

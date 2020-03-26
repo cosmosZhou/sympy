@@ -6,4 +6,5 @@ from . import complement
 from . import emptyset
 from . import subset
 from . import equality
-
+from . import inequality
+from . import strict_greater_than

@@ -1,2 +1,0 @@
-\({\binom{n}{k}} = {\binom{n - 1}{k}} + {\binom{n - 1}{k - 1}}\tag*{Eq[0]}\)
-\(\text{True}\)

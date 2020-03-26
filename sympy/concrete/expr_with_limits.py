@@ -530,19 +530,19 @@ class ExprWithLimits(Expr):
 
     # if x == old:
     def _subs_limits(self, x, domain, new):
-        from sympy import preorder_traversal
+#         from sympy import preorder_traversal
 
         def subs(function, x, domain, new):
-            if x.is_Slice:
-                indices = set(index for indexed in preorder_traversal(function) if indexed.is_Indexed and indexed.base == x.base for index in indexed.indices)
-                reps = {}
-                for i in indices:
-                    if isinstance(i, (Symbol, Indexed)): 
-                        i_domain = function.defined_domain(i)
-                        if i.domain != i_domain:
-                            _i = i.copy(domain=i_domain)
-                            function = function.subs(i, _i)                            
-                            reps[i] = _i
+#             if x.is_Slice:
+#                 indices = set(index for indexed in preorder_traversal(function) if indexed.is_Indexed and indexed.base == x.base for index in indexed.indices)
+#                 reps = {}
+#                 for i in indices:
+#                     if isinstance(i, (Symbol, Indexed)): 
+#                         i_domain = function.defined_domain(i)
+#                         if i.domain != i_domain:
+#                             _i = i.copy(domain=i_domain)
+#                             function = function.subs(i, _i)                            
+#                             reps[i] = _i
                 
             _function = function._subs(x, new)
             if _function == function:
@@ -571,29 +571,30 @@ class ExprWithLimits(Expr):
                 domain = [dom._subs(x, new) for dom in domain]
                 limits[i] = (v, *domain)
 
-            if x.is_Slice:
-                for i, _i in reps.items():
-                    function = function.subs(_i, i)                            
+#             if x.is_Slice:
+#                 for i, _i in reps.items():
+#                     function = function.subs(_i, i)                            
                 
             return self.func(function, *limits, **kwargs).simplifier()
 
         if self.function.is_ExprWithLimits and new in self.function.variables_set:
-            y = self.function.generate_free_symbol(self.function.variables_set, **new.dtype.dict)
-            assert new != y
-            function = self.function.limits_subs(new, y)
-            if function == self.function:
-                return self
-            this = subs(function, x, domain, new)
-
-            if this.function.is_ExprWithLimits and y in this.function.variables_set:
-                function = this.function.limits_subs(y, x)
-            else:
-                function = this.function
-
-            this = this.func(function, *this.limits)
-            if this.is_Boolean:
-                this.equivalent = self
-            return this
+            return self
+#             y = self.function.generate_free_symbol(self.function.variables_set, **new.dtype.dict)
+#             assert new != y
+#             function = self.function.limits_subs(new, y)
+#             if function == self.function:
+#                 return self
+#             this = subs(function, x, domain, new)
+# 
+#             if this.function.is_ExprWithLimits and y in this.function.variables_set:
+#                 function = this.function.limits_subs(y, x)
+#             else:
+#                 function = this.function
+# 
+#             this = this.func(function, *this.limits)
+#             if this.is_Boolean:
+#                 this.equivalent = self
+#             return this
 
         return subs(self.function, x, domain, new)
 
@@ -1707,6 +1708,8 @@ class Minimum(ExprWithLimits):
         return "Min[%s](%s)" % ", ".join(l)
 
     def simplifier(self):
+        if not self.limits:
+            return self
         (x, *_), *_ = self.limits
         independent, dependent = self.function.as_independent(x, as_Add=True)
 
@@ -3765,11 +3768,12 @@ class UnionComprehension(Set, ExprWithLimits):
 
         if len(limit) > 1:
             x, a, b = limit
-            if a == b:
-                return self.function._subs(x, a)
-            domain = Interval(a, b, integer=True)
-            if isinstance(self.function, Piecewise):
-                return Union(*self.as_multiple_terms(x, domain)).simplifier()
+            if not b.is_set:
+                if a == b:
+                    return self.function._subs(x, a)
+                domain = Interval(a, b, integer=True)
+                if isinstance(self.function, Piecewise):
+                    return Union(*self.as_multiple_terms(x, domain)).simplifier()
 
         if len(limit) == 1:
             x = limit[0]
@@ -3985,8 +3989,13 @@ class UnionComprehension(Set, ExprWithLimits):
 #             return Intersection(s.complement(universe) for s in self.args)
     def __invert__(self):
         assert self.is_ConditionSet
-        condition = ~self.condition
-        condition.counterpart = None
+        condition = self.condition.invert()
+        from sympy.sets.conditionset import conditionset
+        return conditionset(self.variable, condition, self.base_set)
+
+    def invert(self):
+        assert self.is_ConditionSet
+        condition = self.condition.invert()
         from sympy.sets.conditionset import conditionset
         return conditionset(self.variable, condition, self.base_set)
 
@@ -4002,10 +4011,12 @@ class UnionComprehension(Set, ExprWithLimits):
         # We use Max so that sup is meaningful in combination with symbolic
         # end points.
         from sympy.functions.elementary.miscellaneous import Max
-        return Max(*[set.sup for set in self.args])
+        return Max(*[s.sup for s in self.args])
 
     def _contains(self, other):
         from sympy.sets.contains import Contains
+        if other.has(*self.variables):
+            return
         return Exists(Contains(other, self.function), *self.limits)
 
     @property
@@ -4128,6 +4139,12 @@ class ConditionalBoolean(Boolean):
     is_ConditionalBoolean = True
     __slots__ = []
 
+    # this will change the default new operator!
+    def __new__(cls, function, *symbols, **assumptions):
+        if function.is_BooleanAtom:
+            return function.copy(**assumptions)
+        return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
+
     def __getitem__(self, rhs):
         return self.this.function.__getitem__(rhs)
 
@@ -4241,9 +4258,12 @@ class ConditionalBoolean(Boolean):
         return not _variables
 
     def __invert__(self):
-        function = ~self.function
-        function.counterpart = None
+        function = self.function.invert()
         return self.invert_type(function, *self.limits, counterpart=self)
+
+    def invert(self):
+        function = self.function.invert()
+        return self.invert_type(function, *self.limits)
 
     def __and__(self, eq):
         """Overloading for & operator"""
@@ -4356,7 +4376,8 @@ class ConditionalBoolean(Boolean):
         return False
 
     def subs(self, *args, **kwargs):
-
+        args = tuple(map(sympify, args))
+        
         def _subs_with_Equality(limits, old, new):
             _limits = []
             for x, *domain in limits:
@@ -4385,10 +4406,19 @@ class ConditionalBoolean(Boolean):
 #             limits = self.limits
             limits = []          
             for x, *ab in self.limits:
-                limits.append((x, *(e.subs(*args, **kwargs) for e in ab)))   
+                limits.append((x, *(e._subs(*args, **kwargs) for e in ab)))   
             
-            function = self.function.subs(*args, **kwargs)
-            clue = function.clue
+            if self.function.is_ConditionalBoolean or all(arg.is_Boolean for arg in args):
+                function = self.function.subs(*args, **kwargs)
+                clue = function.clue
+            else:
+                i, j = args
+                if i.is_symbol and j in i.domain:
+                    function = self.function._subs(i, j, **kwargs)
+                    clue = 'given'
+                else:
+                    function = self.function.subs(i, j, **kwargs)
+                    clue = function.clue
 
         kwargs = {}
 
@@ -4660,10 +4690,6 @@ class Forall(ConditionalBoolean, ExprWithLimits):
 
         return self
 
-    # this will change the default new operator!
-    def __new__(cls, function, *symbols, **assumptions):
-        return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
-
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
             return ConditionalBoolean.subs(self, *args, **kwargs)
@@ -4678,7 +4704,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
                 domain = old.conditional_domain(domain)
 
             from sympy.sets.contains import Contains
-            eqs.append(~Contains(new, domain).simplifier())
+            eqs.append(Contains(new, domain).invert().simplifier())
 
             if self.function.is_Or:
                 for equation in self.function.args:
@@ -5124,10 +5150,6 @@ class Exists(ConditionalBoolean, ExprWithLimits):
 
         return ConditionalBoolean.combine_clauses(self, rhs)
 
-    # this will change the default new operator!
-    def __new__(cls, function, *symbols, **assumptions):
-        return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
-
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
             if 'var' in kwargs:
@@ -5157,8 +5179,14 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                 eqs.append(self.function._subs(old, new))
             limits = self.limits_delete(old)
             if limits:
-                return self.func(And(*eqs), *limits, imply=self)
+                if new.is_symbol:
+                    return self.func(And(*eqs), (new,), *limits, imply=self).simplifier()
+                else:
+                    return self.func(And(*eqs), *limits, imply=self)
             else:
+                if new.is_symbol:
+                    return self.func(And(*eqs), (new,), imply=self).simplifier()
+                    
                 return And(*eqs, imply=self)
 
         return ConditionalBoolean.subs(self, *args, **kwargs)
@@ -5256,7 +5284,14 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                         return self.func(function, *limits, equivalent=self)
                     function.equivalent = self
                     return function
-
+        if self.function.is_And:
+            limits_dict = self.limits_dict
+            for i, eq in enumerate(self.function.args):
+                if eq.is_Contains and eq.lhs in limits_dict and limits_dict[eq.lhs] is None:
+                    eqs = [*self.function.args]
+                    del eqs[i]                    
+                    return self.func(And(*eqs), *self.limits_update(eq.lhs, eq.rhs), equivalent=self)
+                
         return ConditionalBoolean.simplifier(self, **kwargs)
 
     def union_sets(self, expr):
@@ -5470,8 +5505,11 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             return roundrobin(*(iter(arg) for arg in self.args))
         else:
             raise TypeError("Not all constituent sets are iterable")
+        
+    def limits_subs(self, old, new):
+        ...
 
-
+        
 Forall.invert_type = Exists
 
 

@@ -1,2 +1,0 @@
-\({\binom{n}{k}} = {\binom{n}{- k + n}}\tag*{Eq[0]}\)
-\(\text{True}\)

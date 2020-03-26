@@ -67,7 +67,7 @@ def prove(Eq):
 
     Eq.factorial_expand = axiom.discrete.combinatorics.factorial.expand.apply(k + 1)
 
-    Eq << Eq.exist_C0.subs(Eq[-1], Eq.factorial_expand)
+    Eq << Eq.exist_C0.subs(Eq.factorial_expand, Eq[-1])
 
     Eq << Eq[-1].this.function.rhs.expand(deep=False)
 

@@ -231,6 +231,11 @@ class ConditionSet(Set):
         condition.counterpart = None
         return self.func(self.variable, condition, self.base_set)
 
+    def invert(self):
+        condition = ~self.condition
+        condition.counterpart = None
+        return self.func(self.variable, condition, self.base_set)
+
     @property
     def element_type(self):
         if self.base_set != S.UniversalSet:

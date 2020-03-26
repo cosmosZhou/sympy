@@ -98,7 +98,7 @@ def prove(Eq):
     Eq << x_k_definition.abs()
 
     Eq << Eq[-1].subs(1, 0)
-
+    
     Eq << x_abs_sum + Eq[-2]
 
     Eq << (x_abs_positive & Eq[-2])
@@ -218,11 +218,11 @@ def prove(Eq):
     Eq << Eq[-1].intersect(Eq[-2].reversed)
 
     Eq << discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].lhs.args)
-
+  
     Eq << Eq[-1].subs(Eq[-2])
-
+    
     Eq.set_size_inequality = Eq[-1].subs(1, 0)
-
+    
     Eq << x_quote_union.this.function.lhs.bisect(domain={i, j})
 
     Eq << discrete.sets.union.inequality.apply(*Eq[-1].lhs.args)
@@ -291,7 +291,7 @@ def prove(Eq):
 
     Eq << Eq[-1].definition
 
-    Eq.x_j_definition = Eq[-1].limits_subs(Eq[-1].variable, j).reversed
+    Eq.x_j_definition = Eq[-1].subs(Eq[-1].variable, j).reversed
 
     Eq.x_abs_positive_s2, Eq.x_abs_sum_s2, Eq.x_union_s2 = Eq.s2_quote_definition.split()
 
@@ -344,11 +344,11 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq.x_j_definition)
 
     Eq << Eq[-1].subs(Eq.s2_n_assertion.reversed)
-#     assert Eq.x_tilde_set_in_s0.function.lhs == Eq[-1].function.function.function.lhs
+
     Eq << Eq.x_tilde_set_in_s0.subs(Eq[-1])
 
     Eq << Eq[-1].this.limits[0].subs(Eq.s2_n_definition)
-
+    
     assert len(Eq.plausibles_dict) == 2
 
     Eq << Eq.subset_A.subs(Eq.A_definition)
@@ -373,11 +373,10 @@ def prove(Eq):
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
     Eq.s2_hat_n_hypothesis = Eq.s2_hat_n_assertion.this.limits[0].subs(Eq[-1])
-#     Eq.s2_hat_n_hypothesis = Eq.s2_hat_n_assertion.this.limits[0].subs(Eq[-1])
 
     Eq << s2_quote_n.assertion()
 
-    Eq.x_abs_positive_s2_n, Eq.n_not_in_x, Eq.x_abs_sum_s2_n, Eq.x_union_s2_n = Eq[-1].split()
+    Eq.x_abs_positive_s2_n, Eq.x_abs_sum_s2_n, Eq.x_union_s2_n, Eq.n_not_in_x = Eq[-1].split()
 
     Eq << Eq.n_not_in_x.definition
 
@@ -394,13 +393,13 @@ def prove(Eq):
 
     Eq.x_hat_definition = Equality.by_definition_of(x_hat)
 
-    Eq << Eq[-1].this.function.limits_subs(i, j)
+    Eq << Eq[-1].this.function.subs(i, j)
 
-    Eq.x_j_subset = Eq[-1].apply(discrete.sets.contains.subset)
+    Eq.x_j_subset = Eq[-1].this.function.function.asSubset()
 
     Eq << Eq.x_j_subset.apply(discrete.sets.complement.emptyset, Eq.x_j_inequality)
 
-    Eq << Eq[-1].apply(discrete.sets.emptyset.strict_greater_than)  # -4
+    Eq << Eq[-1].apply(discrete.sets.inequality.strict_greater_than)  # -4
 
     Eq.x_hat_abs = Eq.x_hat_definition.abs()
 
@@ -467,10 +466,17 @@ def prove(Eq):
 
     Eq << Eq.equation.subs(Eq[-1])
 
-    Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[-1].function.variable)
-
+    a = Eq[-1].variable
+    b = Symbol('b', **a.dtype.dict)
+    
+    Eq << Eq[-1].limits_subs(a, b)
+    
+    Eq << Eq[-1].this.function.subs(x[:k + 1], a)
+    
+    Eq << Eq[-1].limits_subs(b, x[:k + 1])
+    
     Eq << Eq[-1].this.function.function.reference((i, 0, k))
-
+    
     assert len(Eq.plausibles_dict) == 1
 
     Eq.s2_abs_plausible = Eq[0].subs(Eq.stirling2, Eq.stirling0, Eq.stirling1)

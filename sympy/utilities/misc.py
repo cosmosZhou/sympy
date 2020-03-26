@@ -673,3 +673,5 @@ class Text:
 
         self.write(arr)
 
+    def read(self):
+        return self.file.read()

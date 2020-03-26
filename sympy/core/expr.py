@@ -3844,6 +3844,7 @@ class Expr(Basic, EvalfMixin):
         equation = condition.lhs - condition.rhs
         solution = solve(equation, self)
         if len(solution) != 1:
+#             solution = solve(equation, self)
             return conditionset(self, condition, domain)
 #             return domain
         solution = solution[0]

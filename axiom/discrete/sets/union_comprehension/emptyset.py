@@ -39,12 +39,13 @@ def prove(Eq):
 
     Eq << apply(equality)
 
-    Eq << ~Eq[-1]
-
     j = Symbol('j', domain=Interval(0, k, integer=True))
-    Eq.paradox = Eq[-1].limits_subs(i, j)
+    
+    Eq << Eq[-1].limits_subs(i, j)
+    
+    Eq.paradox = ~Eq[-1]
 
-    Eq.positive = Eq.paradox.apply(discrete.sets.emptyset.strict_greater_than)
+    Eq.positive = Eq.paradox.apply(discrete.sets.inequality.strict_greater_than)
 
     Eq.union_empty = Eq[0].abs()
 

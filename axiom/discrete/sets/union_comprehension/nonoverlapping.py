@@ -61,7 +61,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(discrete.sets.emptyset.strict_greater_than)
+    Eq << Eq[-1].apply(discrete.sets.inequality.strict_greater_than)
 
     Eq << discrete.sets.union.inclusion_exclusion_principle.apply(x[i], x[j])
 

@@ -1,7 +1,0 @@
-\(A \cap B \neq \emptyset\tag*{Eq[0]}\)
-\(\exists_{\substack{a \in B}}{a \in A}\tag*{Eq[1]}\)
-\(\exists_{a}{a \in A \cap B} \vee A \cap B = \emptyset\tag*{Eq[2]}\)
-\(\exists_{a}{a \in A \cap B}\wedge A \cap B \neq \emptyset\tag*{Eq[3]}\)
-\(\exists_{a}{a \in A \cap B}\tag*{Eq[4]}\)\(A \cap B \neq \emptyset\tag*{Eq[0]}\)
-\(\exists_{a}{a \in A}\tag*{Eq[5]}\)\(\exists_{a}{a \in B}\tag*{Eq[6]}\)
-\(\text{False}\)

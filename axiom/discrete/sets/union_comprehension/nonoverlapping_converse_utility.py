@@ -79,8 +79,6 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
-
-    
 if __name__ == '__main__':
     prove(__file__)
 

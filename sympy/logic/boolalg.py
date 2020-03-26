@@ -174,6 +174,23 @@ class Boolean(Basic):
 
         return self
 
+    def limits_exists(self):
+        from sympy.tensor.indexed import Indexed, Slice
+        from sympy.stats.rv import RandomSymbol
+        free_symbols = {*self.free_symbols}
+        for symbol in self.free_symbols:
+            if isinstance(symbol, (RandomSymbol, Indexed, Slice)):
+                free_symbols -= symbol.free_symbols
+                free_symbols.add(symbol)
+
+        deletes = set()
+        for y in free_symbols:
+            deletes |= y.domain.free_symbols
+            
+        free_symbols -= deletes
+        if free_symbols:
+            return [(s,) for s in free_symbols]        
+        
     def __invert__(self):
         """Return the negated relationship.
 
@@ -199,14 +216,17 @@ class Boolean(Basic):
         Hence, this is useful in code when checking for e.g. negated relations
         to exisiting ones as it will not be affected by the `evaluate` flag.
         """
+        invert = self.invert()
+        limits_exists = self.limits_exists()
+        if limits_exists:
+            from sympy.concrete.expr_with_limits import Exists
+            return Exists(invert, *limits_exists, counterpart=self).simplifier()
+        
+        invert.counterpart = self
+        return invert
 
-        return Boolean.__new__(self.invert_type, *self.args, counterpart=self)
-#         ops = {Eq: Ne, Ge: Lt, Gt: Le, Le: Gt, Lt: Ge, Ne: Eq}
-        # If there ever will be new Relational subclasses, the following line
-        # will work until it is properly sorted out
-        # return ops.get(self.func, lambda a, b, evaluate=False: ~(self.func(a,
-        #      b, evaluate=evaluate)))(*self.args, evaluate=False)
-#         return Relational.__new__(ops.get(self.func), *self.args, plausible=plausible)
+    def invert(self):
+        return Boolean.__new__(self.invert_type, *self.args)
 
     def __new__(cls, *args, **kwargs):
         for name, value in [*kwargs.items()]:
@@ -320,10 +340,6 @@ class Boolean(Basic):
             if not isinstance(forall, dict):
                 forall = set(forall)
         return forall
-
-#     def __invert__(self):
-#         """Overloading for ~"""
-#         return Not(self)
 
     def __rshift__(self, other):
         """Overloading for >>"""
@@ -453,41 +469,46 @@ class Boolean(Basic):
             return False
 
         equivalent = self.equivalent
-        if equivalent is None:
-            given = self.given
-            if given is not None:
-                if isinstance(given, (tuple, list)):
-                    for parent in given:
-                        if parent.plausible:
-                            return True
+        if equivalent is not None:
+            if isinstance(equivalent, (tuple, list)):
+                for parent in equivalent:
+                    if parent.plausible:
+                        return True
+    
+                return
+            return equivalent.plausible
+    
+        given = self.given
+        if given is not None:
+            if isinstance(given, (tuple, list)):
+                for parent in given:
+                    if parent.plausible:
+                        return True
 
-                    return None
-                return given.plausible
+                return
+            return given.plausible
 
-            substituent = self.substituent
-            if substituent is not None:
-                return substituent.plausible
+        substituent = self.substituent
+        if substituent is not None:
+            return substituent.plausible
 
-            imply = self.imply
-            if imply is not None:
-#                 return True
-                return imply.plausible
-            counterpart = self.counterpart
-            if counterpart is not None:
-                plausible = counterpart.plausible
-                if plausible is True:
-                    return True
-                if plausible is False:
-                    return None
-                return False
-            return None
-        if isinstance(equivalent, (tuple, list)):
-            for parent in equivalent:
-                if parent.plausible:
-                    return True
-
-            return None
-        return equivalent.plausible
+        imply = self.imply
+        if imply is not None:
+            return imply.plausible
+        
+        counterpart = self.counterpart
+        if counterpart is not None:
+            plausible = counterpart.plausible
+            if plausible is True:
+                return True
+            if plausible is False:
+                return
+            return False
+        
+        parent = self.parent
+        if parent is not None:
+            if parent.is_Or:
+                return True                
 
     @plausible.setter
     def plausible(self, value):
@@ -531,12 +552,52 @@ class Boolean(Basic):
                     counterpart.plausible = True
                 else:
                     assert plausible is None
+                    
+        parent = self.parent
+        if parent is not None:
+            if parent.is_Or:
+                self.parent = None
+                plausible = parent.plausible
+                if value:
+                    if plausible:
+                        ...
+                    else:
+                        ...
+                else:
+                    if plausible:
+                        ...
+                    else:
+                        sumOfPlausible = sum(eq.plausible == True for eq in parent.args)
+                        sumOfFalsity = sum(eq.plausible == False for eq in parent.args)
+                        if sumOfFalsity + sumOfPlausible == len(parent.args):
+                            if sumOfPlausible == 1:
+                                for eq in parent.args:
+                                    if eq.plausible:
+                                        eq.plausible = True
+                                        break 
 
     @property
     def substituent(self):
         if 'substituent' in self._assumptions:
             return self._assumptions['substituent']
         return None
+
+    @property
+    def parent(self):
+        if 'parent' in self._assumptions:
+            return self._assumptions['parent']
+        return None
+
+    @parent.setter
+    def parent(self, eq):
+        if eq is not None:
+            assert 'parent' not in self._assumptions
+            self._assumptions['parent'] = eq
+            assert 'plausible' not in self._assumptions
+            return            
+
+        if 'parent' in self._assumptions:
+            del self._assumptions['parent']
 
     @property
     def hypothesis(self):
@@ -818,6 +879,13 @@ class Boolean(Basic):
     @property
     def shape(self):        
         return ()
+
+    def overwrite(self, origin, **assumptions):
+        if origin != self:
+            for k, v in assumptions.items():
+                self._assumptions[k] = v
+            return self
+        return origin
 
 
 def plausibles(parent):
@@ -1145,7 +1213,7 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
     def __hash__(self):
         return hash(True)
 
-    def __invert__(self):
+    def invert(self):
         return S.false
 
     def as_set(self):
@@ -1218,7 +1286,7 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     def __hash__(self):
         return hash(False)
 
-    def __invert__(self):
+    def invert(self):
         return S.true
 
     def as_set(self):
@@ -1578,8 +1646,8 @@ class And(LatticeOp, BooleanFunction):
 
         return r"\wedge ".join(args)
 
-    def __invert__(self):
-        return self.invert_type(*(~arg for arg in self.args), counterpart=self)
+    def invert(self):
+        return self.invert_type(*(arg.invert() for arg in self.args))
 
     def apply(self, axiom, **kwargs):
         from sympy.concrete.expr_with_limits import ConditionalBoolean
@@ -1624,7 +1692,7 @@ class And(LatticeOp, BooleanFunction):
             eq, *_ = args
             return eq.func(*eq.args, **options)
 
-        if set(~v for v in args) & args:
+        if set(v.invert() for v in args) & args:
             return S.BooleanFalse.copy(**options)
 
         return LatticeOp.__new__(cls, *args, **options)
@@ -1721,7 +1789,7 @@ class And(LatticeOp, BooleanFunction):
                 c = x.canonical
                 if c in rel:
                     continue
-                nc = ~c
+                nc = c.invert()
                 nc = nc.canonical
                 if any(r == nc for r in rel):
                     return [S.false]
@@ -1796,6 +1864,18 @@ class And(LatticeOp, BooleanFunction):
     def split(self):
         return [eq.func(*eq.args, given=self) for eq in self.args]
 
+    def distribute(self):
+        for i, logic_or in enumerate(self.args):
+            if logic_or.is_Or:
+                args = [*self.args]
+                del args[i]
+                this = self.func(*args)
+                return logic_or.func(*((arg & this).simplifier() for arg in logic_or.args), equivalent=self)
+        return self
+
+    def simplifier(self, deep=False):
+        return self
+
 
 class Or(LatticeOp, BooleanFunction):
     """
@@ -1846,13 +1926,13 @@ class Or(LatticeOp, BooleanFunction):
             eq, *_ = args
             return eq.func(*eq.args, **options)
 
-        if set(~v for v in args) & args:
+        if set(v.invert() for v in args) & args:
             return S.BooleanTrue.copy(**options)
 
         return LatticeOp.__new__(cls, *args, **options)
 
-    def __invert__(self):
-        return self.invert_type(*(~arg for arg in self.args), counterpart=self)
+    def invert(self):
+        return self.invert_type(*(arg.invert() for arg in self.args))
 
     @classmethod
     def _new_args_filter(cls, args):
@@ -1864,7 +1944,7 @@ class Or(LatticeOp, BooleanFunction):
                 c = x.canonical
                 if c in rel:
                     continue
-                nc = (~c).canonical
+                nc = c.invert().canonical
                 if any(r == nc for r in rel):
                     return [S.true]
                 rel.append(c)
@@ -1995,10 +2075,18 @@ class Or(LatticeOp, BooleanFunction):
                                                        measure, S.true)
 
     def split(self):
-        plausible = self.plausible
-        if plausible is None:
-            plausible = True
-        return [eq.func(*eq.args, imply=self, plausible=plausible) for eq in self.args]
+        for arg in self.args:
+            arg.parent = self
+
+        return self.args
+
+#     def subs(self, *args, **kwargs):
+#         result = LatticeOp.subs(self, *args, **kwargs)
+#         if all(isinstance(arg, Boolean) for arg in args):
+#             result.equivalent = [self, *args]
+#         else:
+#             result.equivalent = self
+#         return result
 
 
 And.invert_type = Or

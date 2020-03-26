@@ -777,13 +777,16 @@ class Equality(Relational):
             elif isinstance(arg, Equality):
                 eq = arg
                 args = eq.args
-                return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), equivalent=[self, eq]).simplifier()
+                return self.func(self.lhs._subs(*args, **kwargs).simplifier(), self.rhs._subs(*args, **kwargs).simplifier()).simplifier().overwrite(self, equivalent=[self, eq])
             elif isinstance(arg, Relational):
                 eq = arg
                 old, new = eq.args
                 lhs = self.lhs.subs(old, new)
                 rhs = self.rhs.subs(old, new)
-
+                if lhs.is_set:
+                    if lhs == rhs:
+                        return S.false.copy(equivalent=[self, eq])
+                    return self
                 delta = (lhs - rhs) - (self.lhs - self.rhs)
                 match = eq.lhs - eq.rhs
 
@@ -1010,7 +1013,7 @@ class Equality(Relational):
 
             for expr, condition in self.rhs.args:
                 condition = condition & univeralSet
-                univeralSet = ~condition & univeralSet
+                univeralSet = condition.invert() & univeralSet
 
                 args.append(Forall(self.func(self.lhs, expr), (variable, condition), given=self).simplifier())
 
@@ -1026,7 +1029,7 @@ class Equality(Relational):
 
             for expr, condition in self.lhs.args:
                 condition = condition & univeralSet
-                univeralSet = ~condition & univeralSet
+                univeralSet = condition.invert() & univeralSet
                 args.append(Forall(self.func(expr, self.rhs), (variable, condition), given=self).simplifier())
 
             return args
@@ -1095,7 +1098,7 @@ class Unequality(Relational):
         if evaluate:
             is_equal = Equality(lhs, rhs)
             if isinstance(is_equal, BooleanAtom):
-                return ~is_equal
+                return is_equal.invert().copy(**options)
 
         return Relational.__new__(cls, lhs, rhs, **options)
 
@@ -1121,6 +1124,17 @@ class Unequality(Relational):
             return self.func(*eq.args)
         return ~eq  # result of Ne is the negated Eq
 
+    def subs(self, *args, **kwargs):
+        if len(args) == 1:
+            arg = args[0]
+            if isinstance(arg, Equality):
+                eq = arg
+                args = eq.args
+                return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs)).simplifier().overwrite(self, equivalent=[self, eq])
+            else:
+                return self
+
+        return self
 
 Ne = Unequality
 Equality.invert_type = Unequality
@@ -2006,6 +2020,8 @@ class StrictGreaterThan(_Greater):
                     return subs
                 else:
                     return self
+            elif eq.is_ConditionalBoolean:
+                return self.bfn(self.subs, eq)
 
             return self
         old, new = args

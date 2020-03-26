@@ -1,8 +1,8 @@
-from sympy.core.relational import Unequality, StrictGreaterThan, GreaterThan
+from sympy.core.relational import Unequality, GreaterThan
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy import S
-from axiom.discrete.sets.emptyset import strict_greater_than
+from sympy import S 
+from axiom.discrete import sets
 
 # given: A != {}
 # |A| >= 1
@@ -25,14 +25,14 @@ from sympy.utility import check
 @check
 def prove(Eq):
     A = Symbol('A', dtype=dtype.integer)
-    inequality = Unequality(A, S.EmptySet, evaluate=False)
+    inequality = Unequality(A, S.EmptySet)
 
     Eq << apply(inequality)
 
-    Eq << strict_greater_than.apply(inequality)
+    Eq << sets.inequality.strict_greater_than.apply(inequality)
     
     Eq << ~Eq[1]
-    Eq << Eq[-1].solve(Eq[-1].lhs)
+    Eq << Eq[-1].this.function.solve(Eq[-1].lhs)
     
     Eq << Eq[2].subs(Eq[-1])
 

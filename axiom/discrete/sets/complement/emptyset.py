@@ -1,22 +1,19 @@
-from sympy.core.relational import Equality, LessThan, Unequality
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Unequality
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
-from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset
-from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
+from sympy.sets.contains import Subset
 
 
-# provided0: A != B 
-# provided1: A in B
+# given0: A != B 
+# given1: A in B
 # B - A != {}
-def apply(*provided):
-    assert len(provided) == 2
+@plausible
+def apply(*given):
+    assert len(given) == 2
     A = None
     B = None    
-    for p in provided:
+    for p in given:
         if p.is_Subset:
             A, B = p.args
         elif p.is_Unequality:
@@ -25,9 +22,7 @@ def apply(*provided):
             return
                          
     assert A == _A and B == _B or A == _B and B == _A
-    return Unequality(B - A, S.EmptySet,
-                    given=provided,
-                    plausible=plausible())
+    return Unequality(B - A, S.EmptySet, given=given)
 
 
 from sympy.utility import check
@@ -37,12 +32,8 @@ from sympy.utility import check
 def prove(Eq):
     A = Symbol('A', dtype=dtype.integer)
     B = Symbol('B', dtype=dtype.integer)
-    inequality = Unequality(A, B, evaluate = False)
-    subset = Subset(A, B, evaluate = False) 
-    
-    Eq << inequality
-    
-    Eq << subset
+    inequality = Unequality(A, B)
+    subset = Subset(A, B, evaluate=False) 
     
     Eq << apply(inequality, subset)
     
@@ -50,14 +41,13 @@ def prove(Eq):
     
     Eq << Eq[-1].union(A)
     
-    Eq << Subset(B, A, plausible = True)
+    Eq << Subset(B, A, plausible=True)
     
     Eq << Eq[-1].subs(Eq[-2].reversed)
     
-    Eq << Eq[-1].subs(subset)
+    Eq << Eq[-1].subs(subset).reversed
     
-    Eq << ~Eq[-1].reversed
-
+    Eq << Eq[-1].subs(Eq[0])
     
 
 if __name__ == '__main__':

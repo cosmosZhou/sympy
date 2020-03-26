@@ -10,15 +10,15 @@ from sympy.concrete.expr_with_limits import Exists, Forall
 from sympy.logic.boolalg import plausibles
 from sympy.tensor.indexed import IndexedBase
 from axiom.discrete.sets.union import inequality, inclusion_exclusion_principle
-from axiom.discrete.sets.emptyset import strict_greater_than
 
-# provided: |A | B| = |A| + |B|
+# given: |A | B| = |A| + |B|
 # A & B = {}
 
 
-def apply(provided):
-    assert provided.is_Equality
-    x_union_abs, x_abs_sum = provided.args
+@plausible
+def apply(given):
+    assert given.is_Equality
+    x_union_abs, x_abs_sum = given.args
     if not x_union_abs.is_Abs:
         tmp = x_union_abs
         x_union_abs = x_abs_sum
@@ -38,9 +38,7 @@ def apply(provided):
 
     assert {A, B} == {_A, _B}
 
-    return Equality(A & B, S.EmptySet,
-                  equivalent=provided,
-                  plausible=plausible())
+    return Equality(A & B, S.EmptySet, given=given)
 
 
 from sympy.utility import check
@@ -61,7 +59,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << Eq[-1].apply(discrete.sets.emptyset.abs_zero)
+    Eq << Eq[-1].apply(discrete.sets.equality.equality)
 
 
 if __name__ == '__main__':

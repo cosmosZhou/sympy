@@ -168,7 +168,7 @@ class Basic(with_metaclass(ManagedProperties)):
         if isinstance(self, And):
             lhs = tuple(self._argset)
         elif self.is_Or and not other.is_Or:
-            _other = ~other
+            _other = other.invert()
             if _other in self._argset:
                 args = set(self._argset)
                 args.remove(_other)
@@ -199,7 +199,7 @@ class Basic(with_metaclass(ManagedProperties)):
         if isinstance(other, And):
             rhs = tuple(other._argset)
         elif other.is_Or and not self.is_Or:
-            _self = ~self
+            _self = self.invert()
             if _self in other._argset:
                 args = set(other._argset)
                 args.remove(_self)
@@ -1259,7 +1259,29 @@ class Basic(with_metaclass(ManagedProperties)):
               routine uses this strategy when a substitution is attempted
               on any of its summation variables.
         """
-
+        
+        assert old != new
+#         if old.dtype != new.dtype:            
+#             print("inconsistent dtype: old.dtype = %s, new.dtype = %s" % (old.dtype, new.dtype))
+            
+        if old.is_Slice:
+            indices = set(index for indexed in preorder_traversal(self) if isinstance(indexed, Basic) and indexed.is_Indexed and indexed.base == old.base for index in indexed.indices)
+            if indices:
+                reps = {}            
+                this = self
+                for i in indices:
+                    if i.is_symbol: 
+                        i_domain = self.defined_domain(i)
+                        if i.domain != i_domain:
+                            _i = i.copy(domain=i_domain)
+                            this = this._subs(i, _i)                            
+                            reps[i] = _i
+                if this != self:
+                    this = this._subs(old, new, **hints)
+                    for i, _i in reps.items():
+                        this = this._subs(_i, i)                            
+                    return this
+        
         def fallback(self, old, new):
             """
             Try to replace old with new in any of self's arguments.

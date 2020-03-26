@@ -1,5 +1,4 @@
-from sympy.core.relational import Equality, LessThan, Unequality, \
-    StrictGreaterThan, GreaterThan
+from sympy.core.relational import Equality
 from sympy.utility import plausible, Union, identity
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
@@ -53,8 +52,8 @@ def prove(Eq):
 
     Eq << identity(Union[i:0:k](x[i] & A)).simplifier()
 
-    Eq << Eq[-1].subs(Eq[0])
-
+    Eq << Eq[-1].this.rhs.subs(Eq[0])
+    
     Eq << Eq[-1].apply(discrete.sets.union_comprehension.emptyset)
 
 

@@ -1,23 +1,18 @@
-from sympy.core.relational import Equality, LessThan, Unequality
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Equality
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
 from axiom import discrete
-from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset, Supset
-from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
+from sympy.sets.contains import Subset, Supset
 
 
-# provided: A in B
+# given: A in B
 # |B - A| = |B| - |A|
-def apply(provided):
-    assert provided.is_Subset
-    A, B = provided.args
+@plausible
+def apply(given):
+    assert given.is_Subset
+    A, B = given.args
 
-    return Equality(abs(B - A), abs(B) - abs(A),
-                    equivalent=provided,
-                    plausible=plausible())
+    return Equality(abs(B - A), abs(B) - abs(A), given=given)
 
 
 from sympy.utility import check
@@ -29,8 +24,6 @@ def prove(Eq):
     B = Symbol('B', dtype=dtype.integer)
 
     subset = Subset(A, B, evaluate=False)
-
-    Eq << subset
 
     Eq << apply(subset)
 

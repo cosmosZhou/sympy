@@ -11,7 +11,7 @@ erroneous = []
 
 websites = []
 
-insurmountable = {axiom.advanced_math.integral.intermediate_value_theorem,
+insurmountable = {axiom.calculus.integral.intermediate_value_theorem,
                   axiom.discrete.Fermat.LastTheorem,
                   axiom.statistics.KullbackLeibler,
                   axiom.trigonometry.cosine.theorem,

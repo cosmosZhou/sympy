@@ -50,6 +50,9 @@ class Contains(BooleanFunction):
     def _latex(self, p):
         return r"%s \in %s" % tuple(p._print(a) for a in self.args)
 
+    def _sympystr(self, p):
+        return r"%s in %s" % tuple(p._print(a) for a in self.args)
+
     @classmethod
     def eval(cls, x, s):
         if not s.is_set:
@@ -169,7 +172,10 @@ class Contains(BooleanFunction):
 
         condition_set = S.condition_set()
         if condition_set:
-            return And(condition_set.condition._subs(condition_set.variable, e), self.func(e, condition_set.base_set), equivalent=self)
+            condition = condition_set.condition
+            if condition_set.variable != e:
+                condition = condition._subs(condition_set.variable, e)
+            return And(condition, self.func(e, condition_set.base_set), equivalent=self)
 
         image_set = S.image_set()
         if image_set is not None:
@@ -207,7 +213,10 @@ class Contains(BooleanFunction):
 
         return self
 
+    def asSubset(self):
+        return Subset(self.lhs.set, self.rhs, equivalent=self)
 
+        
 class NotContains(BooleanFunction):
     """
     Asserts that x is not an element of the set S
@@ -252,6 +261,9 @@ class NotContains(BooleanFunction):
 
     def _latex(self, p):
         return r"%s \not\in %s" % tuple(p._print(a) for a in self.args)
+
+    def _sympystr(self, p):
+        return r"%s not in %s" % tuple(p._print(a) for a in self.args)
 
     @classmethod
     def eval(cls, x, s):
@@ -339,7 +351,21 @@ class NotContains(BooleanFunction):
 
         return self
 
+    def __and__(self, other):
+        if other.is_Unequality:
+            x, X = self.args
+            if x == other.rhs:
+                X |= {other.lhs}
+            elif x == other.lhs:
+                X |= {other.rhs}
+            else:
+                X = None
+            if X is not None:
+                return self.func(x, X, equivalent=[self, other])      
+            
+        return BooleanFunction.__and__(self, other)
 
+    
 Contains.invert_type = NotContains
 
 
@@ -497,16 +523,18 @@ class Subset(BooleanFunction):
             if isinstance(eq, Equality):
                 args = eq.args
                 return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            if isinstance(eq, Subset):
+            elif isinstance(eq, Subset):
                 A, B = self.args
                 _B, _A = eq.args
                 if A == _A and _A == A:
                     return Equality(A, B, equivalent=[self, eq])
-            if isinstance(eq, Supset):
+            elif isinstance(eq, Supset):
                 A, B = self.args
                 _A, _B = eq.args
                 if A == _A and _A == A:
                     return Equality(A, B, equivalent=[self, eq])
+            elif eq.is_ConditionalBoolean:
+                return self.bfn(self.subs, eq)
 
         return self
 
@@ -565,7 +593,7 @@ class NotSubset(BooleanFunction):
             s = s.definition
         b = cls.invert_type.eval(x, s)
         if b is not None:
-            return ~b
+            return b.invert()
 
     @property
     def definition(self):

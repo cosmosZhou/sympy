@@ -1,8 +1,0 @@
-\(\left|{\bigcup\limits_{k=0}^{n} {A}_{k}}\right| \leq \sum\limits_{k=0}^{n} \left|{{A}_{k}}\right|\tag*{Eq[0]}\)
-\(\left|{{A}_{0} \cup {A}_{1}}\right| \leq \left|{{A}_{0}}\right| + \left|{{A}_{1}}\right|\tag*{Eq[1]}\)
-\(\left|{{A}_{0} \cup {A}_{1}}\right| \leq \left|{{A}_{0}}\right| + \left|{{A}_{1}}\right|\tag*{Eq[1]}\)
-\(\left|{\bigcup\limits_{k=0}^{n + 1} {A}_{k}}\right| \leq \sum\limits_{k=0}^{n + 1} \left|{{A}_{k}}\right|\tag*{Eq[2]}\)
-\(\left|{{A}_{n + 1} \cup \bigcup\limits_{k=0}^{n} {A}_{k}}\right| \leq \sum\limits_{k=0}^{n + 1} \left|{{A}_{k}}\right|\tag*{Eq[3]}\)
-\(\left|{\bigcup\limits_{k=0}^{n + 1} {A}_{k}}\right| \leq \left|{{A}_{n + 1}}\right| + \left|{\bigcup\limits_{k=0}^{n} {A}_{k}}\right|\tag*{Eq[4]}\)
-\(\left|{\bigcup\limits_{k=0}^{n + 1} {A}_{k}}\right| \leq \left|{{A}_{n + 1}}\right| + \sum\limits_{k=0}^{n} \left|{{A}_{k}}\right|\tag*{Eq[5]}\)
-\(\left|{\bigcup\limits_{k=0}^{n + 1} {A}_{k}}\right| \leq \left|{{A}_{n + 1}}\right| + \sum\limits_{k=0}^{n} \left|{{A}_{k}}\right|\tag*{Eq[5]}\)

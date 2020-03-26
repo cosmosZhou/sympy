@@ -1,3 +1,0 @@
-\(A \cap B = \emptyset\tag*{Eq[0]}\)
-\(A \setminus B = A\tag*{Eq[1]}\)
-\(A \setminus B = A\tag*{Eq[1]}\)

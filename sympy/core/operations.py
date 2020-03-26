@@ -201,9 +201,7 @@ class AssocOp(Basic):
         # eliminate exact part from pattern: (2+a+w1+w2).matches(expr) -> (w1+w2).matches(expr-a-2)
         from .function import WildFunction
         from .symbol import Wild
-        wild_part, exact_part = sift(self.args, lambda p:
-            p.has(Wild, WildFunction) and not expr.has(p),
-            binary=True)
+        wild_part, exact_part = sift(self.args, lambda p: p.has(Wild, WildFunction) and not expr.has(p), binary=True)
         if not exact_part:
             wild_part = list(ordered(wild_part))
         else:
@@ -416,6 +414,14 @@ class AssocOp(Basic):
         for arg in self.args:
             domain &= arg.defined_domain(x)
         return domain
+
+    @property
+    def is_extended_real(self):
+        for arg in self.args:
+            if arg.is_extended_real is False:
+                return False
+        return True
+
 
 class ShortCircuit(Exception):
     pass

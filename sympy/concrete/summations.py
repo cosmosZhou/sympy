@@ -815,8 +815,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return Ref(first, *self.limits) @ Ref(second, *self.limits)
 
     def _subs(self, old, new):
-        if self == old:
-            return new
+        from sympy.core.basic import _aresame
+        if self == old or _aresame(self, old) or self.dummy_eq(old):
+            return new        
 
         from sympy.tensor.indexed import Slice
         if len(self.limits) == 1:
@@ -842,7 +843,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 a, b = ab
 
             if isinstance(old, Slice) and len(ab) == 2:
-                _x = Symbol(x.name, domain=Interval(*ab))
+                _x = x.copy(domain=Interval(*ab, integer=x.is_integer))
                 function = self.function.subs(x, _x)
                 _function = function.subs(old, new)
                 if _function != function:
@@ -1020,7 +1021,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         limit = self.limits[0]
         if len(limit) == 2:
             x, domain = limit
-            domain &= self.function.nonzero_domain(x)
+            nonzero_domain = self.function.nonzero_domain(x)
+            domain &= nonzero_domain
             
             if domain.is_EmptySet:
                 return S.Zero
@@ -1044,8 +1046,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         return self
 #                         B = self.func(self.function, (x, B))
                     return A - B
-
-            elif isinstance(domain, FiniteSet):
+                if B & nonzero_domain == S.EmptySet:
+                    domain = A
+                    
+            if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)
 
             if not self.function.has(x):

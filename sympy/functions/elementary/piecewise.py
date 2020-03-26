@@ -204,11 +204,8 @@ class Piecewise(Function):
             if not c.is_Atom and not isinstance(c, Relational):
                 free = c.free_symbols
                 if len(free) == 1:
-                    funcs = [i for i in c.atoms(Function)
-                        if not isinstance(i, Boolean)]
-                    if len(funcs) == 1 and len(
-                            c.xreplace({list(funcs)[0]: Dummy()}
-                            ).free_symbols) == 1:
+                    funcs = [i for i in c.atoms(Function) if not isinstance(i, Boolean)]
+                    if len(funcs) == 1 and len(c.xreplace({list(funcs)[0]: Dummy()}).free_symbols) == 1:
                         # we can treat function like a symbol
                         free = funcs
                     _c = c
@@ -226,11 +223,8 @@ class Piecewise(Function):
                                     # don't accept introduction of
                                     # new Relationals with +/-oo
                                     reps[i] = S.true
-                                elif ('=' not in ic.rel_op and
-                                        c.xreplace({x: i.rhs}) != 
-                                        _c.xreplace({x: i.rhs})):
-                                    reps[i] = Relational(
-                                        i.lhs, i.rhs, i.rel_op + '=')
+                                elif ('=' not in ic.rel_op and c.xreplace({x: i.rhs}) != _c.xreplace({x: i.rhs})):
+                                    reps[i] = Relational(i.lhs, i.rhs, i.rel_op + '=')
                         c = c.xreplace(reps)
             args.append((e, c))
 #             args.append((e, _canonical(c)))
@@ -257,8 +251,7 @@ class Piecewise(Function):
                             # that didn't match a previous condition
                             # could possibly trigger
                             if unmatching:
-                                expr = Piecewise(*(
-                                    unmatching + [(e, c)]))
+                                expr = Piecewise(*(unmatching + [(e, c)]))
                             else:
                                 expr = e
                         break
@@ -273,9 +266,7 @@ class Piecewise(Function):
             #    then the And will be False and if the previous
             #    condition is True then then we wouldn't get to
             #    this point. In either case, we can skip this condition.
-            for i in ([cond] + 
-                    (list(cond.args) if isinstance(cond, And) else
-                    [])):
+            for i in ([cond] + (list(cond.args) if isinstance(cond, And) else [])):
                 if i in current_cond:
                     got = True
                     break
@@ -291,13 +282,12 @@ class Piecewise(Function):
             if isinstance(cond, And):
                 nonredundant = []
                 for c in cond.args:
-                    if (isinstance(c, Relational) and
-                            (~c).canonical in current_cond):
+                    if (isinstance(c, Relational) and c.invert().canonical in current_cond):
                         continue
                     nonredundant.append(c)
                 cond = cond.func(*nonredundant)
             elif isinstance(cond, Relational):
-                if (~cond).canonical in current_cond:
+                if cond.invert().canonical in current_cond:
                     cond = S.true
 
             current_cond.add(cond)
@@ -314,7 +304,7 @@ class Piecewise(Function):
                     orexpr = Or(expr, newargs[-1].expr)
                     if isinstance(orexpr, (And, Or)):
                         orexpr = distribute_and_over_or(orexpr)
-                    newargs[-1] == ExprCondPair(orexpr, cond)
+                    newargs[-1] = ExprCondPair(orexpr, cond)
                     continue
 
             newargs.append(ExprCondPair(expr, cond))
@@ -1098,7 +1088,7 @@ class Piecewise(Function):
                 if _e0 == _e1 or e0 == _e1 or _e0 == e1:
                     return e1
             if c0.is_Unequality:
-                c1 = ~c0
+                c1 = c0.invert()
                 e1, _ = self.args[1]
                 old, new = c1.args
                 _e1 = e1._subs(old, new) 
@@ -1115,13 +1105,13 @@ class Piecewise(Function):
         return True
 
     def sift(self, cond):
-        cond = ~cond
+        cond = cond.invert()
         U = S.true
         for e, c in self.args:
             _c = c & U | cond
             if _c.is_BooleanTrue:
                 return e
-            U &= ~c
+            U &= c.invert()
         return self 
     
     def select_cond(self, expr):
@@ -1134,8 +1124,7 @@ class Piecewise(Function):
                 return u & c
             else:
                 return
-            u &= ~c
-                                          
+            u &= c.invert()
             
     def union_sets(self, b):
         tuples = []

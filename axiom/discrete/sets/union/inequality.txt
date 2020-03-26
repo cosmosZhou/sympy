@@ -1,3 +1,0 @@
-\(\left|{A \cup B}\right| \leq \left|{A}\right| + \left|{B}\right|\tag*{Eq[0]}\)
-\(\left|{A}\right| + \left|{B}\right| - \left|{A \cap B}\right| = \left|{A \cup B}\right|\tag*{Eq[1]}\)
-\(\text{True}\)

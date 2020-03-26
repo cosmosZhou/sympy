@@ -1,23 +1,19 @@
-from sympy.core.relational import Equality, LessThan, Unequality, \
-    StrictGreaterThan, GreaterThan
-from sympy.utility import plausible, Eq, Sum, Union, identity
+from sympy.core.relational import Equality
+
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy import S
-from sympy.concrete.expr_with_limits import Exists, Forall
-from sympy.logic.boolalg import plausibles, And
-from sympy.tensor.indexed import IndexedBase
-from axiom.discrete.sets.union import inclusion_exclusion_principle
-from axiom.discrete.sets.emptyset import strict_greater_than
+from sympy.logic.boolalg import And
 
-# provided: A | B = {}
+# given: A | B = {}
 # A = {} and B = {}
 
 
-def apply(provided):
-    assert provided.is_Equality
-    AB, emptyset = provided.args
+@plausible
+def apply(given):
+    assert given.is_Equality
+    AB, emptyset = given.args
     if emptyset != S.EmptySet:
         tmp = emptyset
         emptyset = AB
@@ -26,10 +22,7 @@ def apply(provided):
 
     assert AB.is_Union
     A, B = AB.args
-    return And(Equality(A, S.EmptySet),
-               Equality(B, S.EmptySet),
-                  equivalent=provided,
-                  plausible=plausible())
+    return And(Equality(A, S.EmptySet), Equality(B, S.EmptySet), given=given)
 
 
 from sympy.utility import check
@@ -42,17 +35,15 @@ def prove(Eq):
 
     equality = Equality(A | B, S.EmptySet)
 
-    Eq << equality
-
     Eq << apply(equality)
 
     Eq << ~Eq[-1]
 
     Eq.A_nonempty, Eq.B_nonempty = Eq[-1].split()
 
-    Eq.A_positive = Eq.A_nonempty.apply(discrete.sets.emptyset.strict_greater_than)
+    Eq.A_positive = Eq.A_nonempty.apply(discrete.sets.inequality.strict_greater_than)
 
-    Eq.B_positive = Eq.B_nonempty.apply(discrete.sets.emptyset.strict_greater_than)
+    Eq.B_positive = Eq.B_nonempty.apply(discrete.sets.inequality.strict_greater_than)
 
     Eq.AB_union_empty = Eq[0].abs()
 

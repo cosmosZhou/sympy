@@ -147,31 +147,125 @@ class Eq:
 
     def __init__(self, txt):
         self.__dict__['list'] = []
-
+        
         from sympy.utilities.misc import Text
 
         self.__dict__['file'] = Text(txt)
         self.file.clear()
-        php = txt.replace('.txt', '.php')
-        if not os.path.exists(php):
-            print('writing .php :', php)
-            utility_php = re.compile(r'\\\w+').sub(r'\\utility', re.compile(r'\w+\\').sub(r'..\\', php[php.index('axiom'):]))
-            php = Text(php)
 
-            php_code = """\
+    def __del__(self):
+#         print('calling destructor')
+        self.file.home()
+        lines = []        
+#         print('writing .php :', self.file.file.name)
+        php = self.file.file.name
+        utility_php = re.compile(r'\\\w+').sub(r'\\utility', re.compile(r'\w+\\').sub(r'..\\', php[php.index('axiom'):]))
+        
+        php_code = """\
 <?php
 require_once '%s';
-render(__FILE__);
+$i = 0;""" % utility_php
+        lines.append(php_code)
+        
+        for line in self.file:            
+            i = 0  
+            res = []   
+            for m in re.finditer(r"\\tag\*{(Eq(?:\[(\d+)\]|\.(\w+)))}", line):
+                expr, index, attr = m.group(1), m.group(2), m.group(3)
+    
+                if i < m.start():
+                    res.append(line[i:m.start()])
+                    
+                assert line[m.start():m.end()] == m.group(0)
+                assert line[m.start(1):m.end(1)] == m.group(1)
+                
+                if index:
+                    assert line[m.start(2):m.end(2)] == m.group(2)
+                if attr:
+                    assert line[m.start(3):m.end(3)] == m.group(3)
+    
+                if index:
+                    index = int(index)
+                    eq = self[index]                
+                else:  
+                    index = attr
+                    eq = getattr(self, attr)                             
+                
+                res.append(line[m.start():m.start(1)])
+                    
+                if eq.plausible:                    
+                    _expr = Eq.reference(self.get_index(Eq.get_equivalent(eq)))
+                    print("%s=>%s : %s" % (_expr, expr, eq))
+                    res.append(_expr)                
+                    res.append('=>')
+                elif eq.plausible == False:
+                    res.append('~')
+                                    
+                res.append(expr)                
+                res.append(line[m.end(1):m.end()])
+                i = m.end()
+                
+            res.append(line[i:])
+            
+            lines.append('$txt[$i++] = "%s";' % ''.join(res).replace('\\', '\\\\'))
+        
+        php_code = """\
+render(__FILE__, $txt);
 ?>        
-            """ % utility_php
-            php.write(php_code)
+"""
+        lines.append(php_code)
+        
+        self.file.write(lines)
 
+    @staticmethod   
+    def reference(index):
+        if isinstance(index, list):
+            return ', '.join(Eq.reference(d) for d in index)
+        elif isinstance(index, int):
+            if index < 0:
+                return "?"
+            else:
+                return "Eq[%d]" % index
+        else:
+            return "Eq.%s" % index
+
+    @staticmethod        
+    def get_equivalent(eq):
+        if eq.equivalent is not None:
+            return eq.equivalent
+        elif eq.given is not None:
+            return eq.given
+        elif eq.imply is not None:
+            return eq.imply
+        elif eq.substituent is not None:
+            return eq.substituent
+        
+    def get_index(self, equivalent):
+        if equivalent is None:
+            return -1
+        if isinstance(equivalent, (list, tuple)):
+            _index = []
+            for eq in equivalent:
+                if eq.plausible:
+                    _index.append(self.get_index(eq))
+
+            if len(_index) == 1:
+                _index = _index[0]
+            if not _index:
+                return -1
+        else:
+            _index = self.index(equivalent, False)
+            if _index == -1:
+                equivalent = Eq.get_equivalent(equivalent)
+                return self.get_index(equivalent)
+        return _index
+        
     @property
     def plausibles_dict(self):
         plausibles = {i : eq for i, eq in enumerate(self) if eq.plausible}
 
         for k, v in self.__dict__.items():
-            if k == 'list' or k == 'file':
+            if k in ('list', 'file'):
                 continue
             if v.plausible:
                 plausibles[k] = v
@@ -182,7 +276,7 @@ render(__FILE__);
             if _eq == eq or (dummy_eq and eq.dummy_eq(_eq)):
                 return i
         for k, v in self.__dict__.items():
-            if k == 'list' or k == 'file':
+            if k in ('list', 'file'):
                 continue
             if eq == v or (dummy_eq and eq.dummy_eq(v)):
                 return k
@@ -210,6 +304,7 @@ render(__FILE__);
         if isinstance(rhs, Boolean):
             index = self.add_to_list(rhs, index)
             if index != -1:
+                
                 if isinstance(index, int):
                     index = 'Eq[%d]' % index
                 else:
@@ -218,8 +313,7 @@ render(__FILE__);
                 tag = r'\tag*{%s}' % index
 
                 latex += tag
-                infix = '%s : %s' % (index, infix)
-
+                infix = '%s : %s' % (index, infix)            
 #         self.file.append(r'\[%s\]' % latex)
         self.file.append(r'\(%s\)' % latex, end_of_line)
 
@@ -231,16 +325,24 @@ render(__FILE__);
             eq = self.__dict__[index]
             if eq.plausible:
                 equivalent = rhs.equivalent
-                while True:
+                if isinstance(equivalent, list):
+                    equivalent = [e for e in equivalent if e.plausible]
+                    assert len(equivalent) == 1
+                    equivalent, *_ = equivalent                        
+                
+                while equivalent != eq:
                     if isinstance(equivalent.equivalent, list):
-                        equivalent = [e for e in equivalent.equivalent if e.plausible]
-                        assert len(equivalent) == 1
-                        equivalent, *_ = equivalent
+                        equivalent = [e for e in equivalent.equivalent if e.plausible]                         
+                        if len(equivalent) == 1:
+                            equivalent, *_ = equivalent
+                        else:
+                            assert eq in equivalent
+                            break                            
                     else:
                         equivalent = equivalent.equivalent
 
-                    if equivalent == eq:
-                        break
+#                     if equivalent == eq:
+#                         break
 
         self.process(rhs, index)
 
@@ -268,8 +370,11 @@ render(__FILE__);
                 else:
                     if isinstance(rhs.equivalent, (list, tuple)):
                         if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
-#                             self[index] = rhs
                             return old_index
+                    if isinstance(rhs.given, (list, tuple)):
+                        if any(id(eq) == id(_eq) for _eq in rhs.given):
+                            return old_index 
+                        
                     if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
@@ -277,9 +382,11 @@ render(__FILE__);
                             if eq != rhs_equivalent:
                                 rhs_equivalent.equivalent = eq
                                 hypothesis = rhs_equivalent.hypothesis
-                                                                        
-                                for h in hypothesis:
-                                    h.derivative = None
+                                if hypothesis:
+                                    for h in hypothesis:
+                                        h.derivative = None
+                                else:
+                                    rhs_equivalent.equivalent = None
             if isinstance(old_index, int):
                 self.list[old_index] = rhs
             else:
@@ -381,22 +488,9 @@ class identity(boolalg.Invoker):
 def check(func):
 
     def _func(py):
-#         py = py.replace('sympy\sympy', 'latex')
-        txt = py.replace('.py', '.txt')
-#         py = Text(py)
+        txt = py.replace('.py', '.php')
 
         eqs = Eq(txt)
-#         for statement in inspect.getsourcelines(func)[0][2:]:
-#             statement = statement.rstrip()
-#             if re.compile('\s*').fullmatch(statement):
-#                 continue
-#             if re.compile('\s*#.*').fullmatch(statement):
-#                 continue
-#             if statement[:4] != ' ' * 4:
-#                 print(statement)
-#                 continue
-#             statement = statement[4:]
-#             print(statement, file=py.file)
         http = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
         try:
             func(eqs)
@@ -408,67 +502,10 @@ def check(func):
             print(http) 
             return None
 
-        jsonFile = py.replace('.py', '.json')
         plausibles = eqs.plausibles_dict
         if plausibles:
-            print('plausibles_dict:')
-            dependency = {}
-
-            def get_equivalent(eq):
-                if eq.equivalent is not None:
-                    return eq.equivalent
-                elif eq.given is not None:
-                    return eq.given
-                elif eq.imply is not None:
-                    return eq.imply
-                elif eq.substituent is not None:
-                    return eq.substituent
-
-            def get_index(equivalent):
-                if equivalent is None:
-                    return -1
-                if isinstance(equivalent, list):
-                    _index = []
-                    for eq in equivalent:
-                        if eq.plausible:
-                            _index.append(get_index(eq))
-
-                    if len(_index) == 1:
-                        _index = _index[0]
-                else:
-                    _index = eqs.index(equivalent, False)
-                    if _index == -1:
-                        equivalent = get_equivalent(equivalent)
-                        return get_index(equivalent)
-                return _index
-
-            for index, eq in plausibles.items():
-                equivalent = get_equivalent(eq)
-                _index = get_index(equivalent)
-
-                dependency[index] = _index
-
-                def reference(index):
-                    if isinstance(index, list):
-                        return ', '.join(reference(d) for d in index)
-                    elif isinstance(index, int):
-                        if index < 0:
-                            return "plausible"
-                        else:
-                            return "Eq[%d]" % index
-                    else:
-                        return "Eq.%s" % index
-
-                print("%s->%s : %s" % (reference(dependency[index]), reference(index), eq))
-
-            with open(jsonFile, 'w', encoding='utf-8') as file:
-                json.dump(dependency, file, indent=4)
-
             print(http)
             return False
-        else:
-            if os.path.exists(jsonFile):
-                os.remove(jsonFile)
 
         return True
 

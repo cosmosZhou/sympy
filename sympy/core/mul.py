@@ -1895,13 +1895,6 @@ class Mul(Expr, AssocOp):
         return domain
 
     @property
-    def is_extended_real(self):
-        for arg in self.args:
-            if arg.is_extended_real is False:
-                return False
-        return True
-
-    @property
     def is_odd(self):
         if self.is_integer is True:
             odd = True

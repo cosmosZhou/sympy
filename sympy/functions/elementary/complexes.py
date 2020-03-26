@@ -637,6 +637,19 @@ class Abs(Function):
                 return abs(x.max())
         return S.Zero
     
+    def assertion(self):
+        from sympy.concrete.expr_with_limits import Exists
+        from sympy import Unequality
+        s = self.arg
+        if not s.is_set:
+            return
+        x = s.element_symbol()
+        y = s.element_symbol({x})
+        return (self <= 1) | Exists(Unequality(x, y), (x, s), (y, s))
+
+    def _sympystr(self, p):
+        return "|%s|" % p._print(self.arg)
+
 class arg(Function):
     """
     Returns the argument (in radians) of a complex number. For a positive

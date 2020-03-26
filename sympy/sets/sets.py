@@ -20,7 +20,7 @@ from sympy.core.singleton import Singleton, S
 from sympy.core.symbol import Symbol, Dummy, _uniquely_named_symbol, \
     generate_free_symbol, dtype
 from sympy.core.sympify import _sympify, sympify, converter
-from sympy.logic.boolalg import And, Or, Not, true, false
+from sympy.logic.boolalg import And, Or
 from sympy.sets.contains import Contains
 from sympy.utilities import subsets
 from sympy.utilities.iterables import sift
@@ -66,10 +66,14 @@ class Set(Basic):
     def list(self):
         return List(self)
 
-    def assertion(self):
+    @staticmethod
+    def static_assertion(self):
         from sympy.concrete.expr_with_limits import Exists
         e = self.element_symbol()
         return Exists(Contains(e, self), (e,)) | Equality(self, S.EmptySet)
+    
+    def assertion(self):
+        return Set.static_assertion(self)        
 
     def bisect(self, domain=None, **kwargs):
         if self.is_ExprWithLimits:
@@ -630,6 +634,7 @@ class Set(Basic):
     def _eval_conjugate(self):
         return
 
+
 class ProductSet(Set):
     """
     Represents a Cartesian Product of Sets.
@@ -728,7 +733,7 @@ class ProductSet(Set):
             return
 
         if len(self.args) != len(other.args):
-            return false
+            return S.false
 
         return And(*(Eq(x, y) for x, y in zip(self.args, other.args)))
 
@@ -750,9 +755,9 @@ class ProductSet(Set):
         """
         try:
             if len(element) != len(self.args):
-                return false
+                return S.false
         except TypeError:  # maybe element isn't an iterable
-            return false
+            return S.false
         return And(*[s.contains(item) for s, item in zip(self.sets, element)])
 
     @property
@@ -920,7 +925,10 @@ class Interval(Set, EvalfMixin):
                 args[i] = _arg
             if hit:
                 return self.func(*args).simplifier()
-
+        
+        if self.is_integer:
+            if self.left_open:
+                return self.copy(start=self.start + 1, left_open=False)
         return self
 
     def intersection_sets(self, b):
@@ -1084,7 +1092,7 @@ class Interval(Set, EvalfMixin):
         left_open = _sympify(left_open)
         right_open = _sympify(right_open)
 
-        if not all(isinstance(self, (type(true), type(false)))
+        if not all(isinstance(self, (type(S.true), type(S.false)))
             for self in [left_open, right_open]):
             raise NotImplementedError(
                 "left_open and right_open can have only true/false values, "
@@ -1109,19 +1117,19 @@ class Interval(Set, EvalfMixin):
 
         # Make sure infinite interval end points are open.
         if start == S.NegativeInfinity:
-            left_open = true
+            left_open = S.true
         if end == S.Infinity:
-            right_open = true
+            right_open = S.true
 
         infinitesimal = start.is_infinitesimal
         if infinitesimal is True:
             start = start.clear_infinitesimal()
-            left_open = true
+            left_open = S.true
 
         infinitesimal = end.is_infinitesimal
         if infinitesimal is False:
             end = end.clear_infinitesimal()
-            right_open = true
+            right_open = S.true
 
         if not integer:
             assert real
@@ -1149,10 +1157,10 @@ class Interval(Set, EvalfMixin):
                         args = [*end.args]
                         del args[index]
                         end = end.func(*args)
-                        right_open = True
+                        right_open = S.true
                     except:
                         ...
-    
+#         integer = _sympify(integer)
         return Basic.__new__(cls, start, end, left_open, right_open, integer)
 
     def element_symbol(self, excludes=set()):
@@ -1308,7 +1316,7 @@ class Interval(Set, EvalfMixin):
                 other is S.NegativeInfinity or
                 other is S.NaN or
                 other is S.ComplexInfinity) or other.is_extended_real is False:
-            return false
+            return S.false
 
         if self.start is S.NegativeInfinity and self.end is S.Infinity:
             if not other.is_extended_real is None:
@@ -1373,10 +1381,10 @@ class Interval(Set, EvalfMixin):
     def _eval_Eq(self, other):
         if not isinstance(other, Interval):
             if isinstance(other, FiniteSet):
-                return false
+                return S.false
             elif other.is_set:
                 return None
-            return false
+            return S.false
 
         return And(Eq(self.left, other.left),
                    Eq(self.right, other.right),
@@ -2242,24 +2250,26 @@ class Complement(Set, EvalfMixin):
                     del args[i]
                     A = A.func(*args)
                     return A - B
-
-        if A.is_ConditionSet:
-            if not B.is_ConditionSet:
-                from sympy.sets.conditionset import conditionset
-                base_set = B._complement(A.base_set)
-                if base_set is not None:
-                    return conditionset(A.variable, A.condition, base_set)
                  
         if A.is_UnionComprehension:
-            from sympy import Wild
-            for i, domain in A.limits_dict.items():
-                i_ = Wild(i.name)
-
-                dic = B.match(A.function.subs(i, i_))
-                if dic:
-                    i_match = dic[i_]
-                    if i_match not in domain:
-                        return A
+            if A.is_ConditionSet:
+                if not B.is_ConditionSet:
+                    from sympy.sets.conditionset import conditionset
+                    base_set = B._complement(A.base_set)
+                    if base_set is not None:
+                        if A.base_set == base_set:
+                            return A
+                        return conditionset(A.variable, A.condition, base_set)
+            else:
+                from sympy import Wild
+                for i, domain in A.limits_dict.items():
+                    i_ = Wild(i.name)
+    
+                    dic = B.match(A.function.subs(i, i_))
+                    if dic:
+                        i_match = dic[i_]
+                        if i_match not in domain:
+                            return A
         if B.is_Intersection and A in B._argset:
             B = B.func(*B._argset - {A}, evaluate=False)
         return Complement(A, B, evaluate=False)
@@ -2267,7 +2277,7 @@ class Complement(Set, EvalfMixin):
     def _contains(self, other):
         A = self.args[0]
         B = self.args[1]
-        return And(A.contains(other), ~B.contains(other))
+        return And(A.contains(other), B.contains(other).invert())
 
     def union_sets(self, C):
         A, B = self.args
@@ -2305,6 +2315,7 @@ class Complement(Set, EvalfMixin):
     def defined_domain(self, x):
         A, B = self.args
         return A.defined_domain(x) & B.defined_domain(x)
+
 
 class EmptySet(with_metaclass(Singleton, Set)):
     """
@@ -2352,10 +2363,10 @@ class EmptySet(with_metaclass(Singleton, Set)):
         return 0
 
     def _contains(self, other):
-        return false
+        return S.false
 
     def as_relational(self, symbol):
-        return false
+        return S.false
 
     def __len__(self):
         return 0
@@ -2422,10 +2433,10 @@ class UniversalSet(with_metaclass(Singleton, Set)):
         return S.Infinity
 
     def _contains(self, other):
-        return true
+        return S.true
 
     def as_relational(self, symbol):
-        return true
+        return S.true
 
     @property
     def _boundary(self):
@@ -2508,13 +2519,13 @@ class FiniteSet(Set, EvalfMixin):
     def _eval_Eq(self, other):
         if not isinstance(other, FiniteSet):
             if isinstance(other, (Interval, EmptySet)):
-                return false
+                return S.false
             elif other.is_set:
                 return None
-            return false
+            return S.false
 
         if len(self) != len(other):
-            return false
+            return S.false
         return None
 #         return And(*(Eq(x, y) for x, y in zip(self.args, other.args)))
 
@@ -2539,7 +2550,8 @@ class FiniteSet(Set, EvalfMixin):
                             FiniteSet(*syms), evaluate=False)
                 else:
                     return Union(*intervals, evaluate=False)
-            elif not nums:
+            else:
+#             elif not nums:
                 for i, e in enumerate(self.args):
                     if not other.right_open and e == other.end:
                         args = [*self.args]
@@ -2548,7 +2560,7 @@ class FiniteSet(Set, EvalfMixin):
                     if not other.left_open and e == other.start:
                         args = [*self.args]
                         del args[i]
-                        return other.copy(left_open=True) - self.func(*args)
+                        return other.copy(left_open=True).simplifier() - self.func(*args)
                     if e > other.max() or e < other.min():
                         args = [*self.args]
                         del args[i]
@@ -2604,15 +2616,15 @@ class FiniteSet(Set, EvalfMixin):
         False
 
         """
-#         r = false
+#         r = S.false
         args = []
         for e in self.args:
             # override global evaluation so we can use Eq to do
             # do the evaluation
             t = Eq(e, other, evaluate=True)
-            if t is true:
+            if t is S.true:
                 return t
-            elif t is not false:
+            elif t is not S.false:
                 args.append(t)
 #                 r = None
         return Or(*args)

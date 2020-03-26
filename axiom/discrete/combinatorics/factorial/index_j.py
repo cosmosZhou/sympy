@@ -1,16 +1,17 @@
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible, Ref, identity, Union
+from sympy.utility import check, plausible, Ref, identity
 from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete import expr_with_limits
-from sympy.sets.conditionset import conditionset
 from axiom.discrete.sets.emptyset import greater_than_one
 from axiom.discrete.sets import union_comprehension
-from axiom.discrete.sets.union_comprehension import nonoverlapping_converse
+from sympy.abc import *
+from axiom.discrete import sets
+from sympy.core.basic import preorder_traversal
+from sympy.core.symbol import Symbol
 
 
 @plausible
@@ -28,6 +29,10 @@ def apply(given):
     return Equality(x[Ref[k:n](KroneckerDelta(x[k], j)) @ Ref[k:n](k)], j, given=given)
 
 
+def bool_finder(expr):
+    return any(type(e) == bool for e in preorder_traversal(expr))
+
+
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
@@ -37,9 +42,9 @@ def prove(Eq):
     k = Symbol('k', integer=True)    
     given = Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True))    
 
-    Eq << apply(given)
+    Eq << apply(given)    
     
-    Eq << identity(Eq[-1].lhs.indices[0]).expand()
+    Eq << identity(Eq[-1].lhs.indices[0]).expand()    
     
     Eq << identity(Eq[-1].rhs.function.args[1]).definition
     
@@ -48,35 +53,62 @@ def prove(Eq):
     Eq << identity(Eq[-1].rhs.subs(1, 0)).bisect(domain={0})
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
+    
+    sj = Symbol('s_j', definition=Eq[-1].rhs.limits[0][1])
+    
+    Eq.sj_definition = Equality.by_definition_of(sj)
+    Eq.sigmar = Eq[-1].subs(Eq.sj_definition.reversed)
+    
+    Eq.sj_definition_reversed = Eq.sj_definition.this.rhs.limits[0][1].reversed
+    
+    Eq.sj_definition_reversed = Eq.sj_definition_reversed.reversed
 
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
     
-    Eq.distribute = Eq[-1].this.lhs.distribute()
+    Eq.distribute = Eq[-1].this.lhs.distribute()        
     
     Eq << Eq.distribute.this.lhs.function.subs(Eq.distribute.lhs.limits[0][1].args[1][1])
     
-    Eq << greater_than_one.apply(Eq[-1])
+    Eq << Eq[-1].subs(Eq.sj_definition_reversed)
     
-    Eq << Eq.distribute.union_comprehension((j,))
+    Eq.sj_greater_than_1 = greater_than_one.apply(Eq[-1])
     
-    Eq.union_abs = Eq[-1].abs()
+    Eq.distribute = Eq.distribute.subs(Eq.sj_definition_reversed)
     
-#     Eq << union_comprehension.inequality.apply(*Eq.union_abs.lhs.arg.args).subs(Eq.union_abs)
+    Eq << Eq.sj_greater_than_1.lhs.assertion()
     
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True) - {j}) 
-    Eq.distribute_i = Eq.distribute.subs(j, i)
+    Eq.inequality_ab, Eq.sj_less_than_1 = Eq[-1].split()
     
-    Eq << Eq.distribute_i.intersect(Eq.distribute).forall(i).forall(j)
-    
-    Eq << nonoverlapping_converse.apply(Eq[-1])
-    
-    Eq << Eq[-1].this.lhs.arg.limits_subs(Eq[-1].lhs.arg.variable, j).subs(Eq.union_abs).reversed
+    (a, *_), (b, *_) = Eq.inequality_ab.limits
     
     Eq << union_comprehension.nonoverlapping.apply(Eq[0].abs())
-#     union_comprehension.less_than.apply()
+    
+    Eq << Eq[-1].subs(k, a)
+    
+    Eq << Eq[-1].subs(Eq[-1].variable, b)
+    
+    Eq << (Eq.inequality_ab & Eq[-1])
+    
+    Eq.distribute_ab = Eq[-1].this.function.distribute()
 
+    Eq.j_equality, Eq.k_domain = sj.assertion().split()
+    
+    Eq << Eq.k_domain.limits_subs(k, a).apply(sets.contains.union)
+    
+    Eq << Eq.distribute_ab.subs(Eq[-1])
+    
+    Eq << (Eq[-1] & Eq.k_domain.limits_subs(k, b))
+    
+    Eq << Eq[-1].subs(Eq.j_equality.limits_subs(k, a).reversed).subs(Eq.j_equality.limits_subs(k, b).reversed)
 
+    Eq << Eq.sj_less_than_1.subs(Eq.sj_greater_than_1)
+    
+    Eq << sets.equality.exists.apply(Eq[-1]).reversed
+    
+    Eq << Eq.sigmar.subs(Eq[-1])
+    
 if __name__ == '__main__':
     prove(__file__)
+    
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

@@ -434,16 +434,38 @@ class Indexed(Expr):
                     return False
                 # it is possible for them to be equal!
                 return True
+            
+        if isinstance(exp, IndexedBase) and exp == self.base:
+            if len(self.indices) == 1:
+                start, stop = 0, exp.shape[-1]
+                index_fixed, *_ = self.indices
+
+                if isinstance(index_fixed, Wild):
+                    return False
+
+                if stop <= index_fixed:
+                    return False
+                if start > index_fixed:
+                    return False
+                # it is possible for them to be equal!
+                return True
+            
         return False
 
     def _has(self, pattern):
         """Helper for .has()"""
-        if Expr._has(self, pattern):
+        if any(arg._has(pattern) for arg in self.indices):
             return True
-        from sympy.core.function import FunctionClass
         from sympy.core.assumptions import ManagedProperties
+        
+        if not isinstance(pattern, ManagedProperties) and hasattr(pattern, 'has_match') and pattern.has_match(self):
+            return True
+            
+        from sympy.core.function import FunctionClass
+        
         if not isinstance(pattern, (FunctionClass, ManagedProperties)) and self.base.definition is not None:
             return self.base.definition[self.indices]._has(pattern)
+        
         return False
 
     def _subs(self, old, new):
@@ -769,7 +791,7 @@ class IndexedBase(Expr, NotIterable):
             if 'domain' in self._assumptions:
                 domain = self._assumptions['domain']
                 return domain._has(pattern)
-
+             
         return False
         
     @property
@@ -788,6 +810,27 @@ class IndexedBase(Expr, NotIterable):
         if self.is_complex:
             return dtype.complex
         return dtype.real
+    
+    def has_match(self, exp):
+        if exp == self:
+            return True
+        
+        from sympy.matrices.expressions.matexpr import MatrixElement
+        if isinstance(exp, MatrixElement) and exp.parent == self:
+            return True
+        
+        if exp.is_Indexed and exp.base == self:
+            if exp.is_Slice:
+                index_start, index_stop = exp.indices
+                start, stop = 0, self.shape[-1]
+    
+                if index_stop <= start:
+                    return False  # index < start
+                if index_start >= stop:
+                    return False  # index >= stop
+    # it is possible for them to be equal!
+            return True
+        return False
         
 class Slice(Expr):
     """Represents a mathematical object with Slices.
@@ -1087,8 +1130,32 @@ class Slice(Expr):
 
     def _has_matcher(self):
         """Helper for .has()"""
-
         return self.match
+
+    def _has(self, pattern):
+        """Helper for .has()"""
+        from sympy.core.function import UndefinedFunction, Function
+        if isinstance(pattern, UndefinedFunction):
+            return any(f.func == pattern or f == pattern for f in self.atoms(Function, UndefinedFunction))
+
+        pattern = sympify(pattern)
+        from sympy.core.core import BasicMeta
+        from sympy import preorder_traversal
+        
+        if isinstance(pattern, BasicMeta):
+            return any(isinstance(arg, pattern) for arg in preorder_traversal(self))
+
+        has_match = getattr(pattern, 'has_match', None)
+        if has_match is not None:            
+            if has_match(self):
+                return True
+            args = self.args[1:]
+        else:
+            if self == pattern:
+                return True
+            args = self.args
+
+        return any(arg._has(pattern) for arg in args)
 
     @property
     def atomic_dtype(self):
