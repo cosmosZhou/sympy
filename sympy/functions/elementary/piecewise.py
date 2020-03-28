@@ -212,7 +212,7 @@ class Piecewise(Function):
                     x = free.pop()
                     try:
                         c = c.as_set().as_relational(x)
-                    except NotImplementedError:
+                    except:
                         pass
                     else:
                         reps = {}
@@ -1087,6 +1087,10 @@ class Piecewise(Function):
                 _e0 = e0._subs(old, new)
                 if _e0 == _e1 or e0 == _e1 or _e0 == e1:
                     return e1
+                if not e0.is_set and old.is_integer and new.is_integer:
+                    from sympy.functions.special.tensor_functions import KroneckerDelta
+#                     e0 * KroneckerDelta(old, new) + e1 * (1 - KroneckerDelta(old, new)) 
+                    return e1 + (e0 - e1)._subs(old, new) * KroneckerDelta(old, new)                    
             if c0.is_Unequality:
                 c1 = c0.invert()
                 e1, _ = self.args[1]

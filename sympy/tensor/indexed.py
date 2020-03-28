@@ -217,7 +217,11 @@ class Indexed(Expr):
                 return base[args[0]]
             else:
                 return base[args]
-
+            
+        if len(args) == 1 and args[0].is_Piecewise:
+            piecewise = args[0]
+            return piecewise.func(*((Indexed(base, e), c) for e, c in piecewise.args))
+            
         return Expr.__new__(cls, base, *args, **kw_args)
 
     @property
@@ -831,6 +835,7 @@ class IndexedBase(Expr, NotIterable):
     # it is possible for them to be equal!
             return True
         return False
+
         
 class Slice(Expr):
     """Represents a mathematical object with Slices.

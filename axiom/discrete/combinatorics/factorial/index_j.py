@@ -57,7 +57,7 @@ def prove(Eq):
     sj = Symbol('s_j', definition=Eq[-1].rhs.limits[0][1])
     
     Eq.sj_definition = Equality.by_definition_of(sj)
-    Eq.sigmar = Eq[-1].subs(Eq.sj_definition.reversed)
+    Eq.crossproduct = Eq[-1].subs(Eq.sj_definition.reversed)
     
     Eq.sj_definition_reversed = Eq.sj_definition.this.rhs.limits[0][1].reversed
     
@@ -104,9 +104,18 @@ def prove(Eq):
 
     Eq << Eq.sj_less_than_1.subs(Eq.sj_greater_than_1)
     
-    Eq << sets.equality.exists.apply(Eq[-1]).reversed
+    Eq.a_relation = sets.equality.exists.apply(Eq[-1]).reversed
     
-    Eq << Eq.sigmar.subs(Eq[-1])
+    Eq.crossproduct = Eq.crossproduct.subs(Eq.a_relation).reversed
+    
+    Eq << Eq.j_equality.subs(k, a)
+    
+    Eq << Eq.a_relation.intersect(Eq.a_relation.rhs).apply(sets.equality.contains)
+    
+    Eq << (Eq[-1] & Eq[-2]).reversed
+    
+    Eq << Eq[-1].subs(Eq.crossproduct)    
+
     
 if __name__ == '__main__':
     prove(__file__)

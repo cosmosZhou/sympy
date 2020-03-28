@@ -269,7 +269,7 @@ def prove(Eq):
 
     assert num_plausibles == len(Eq.plausibles_dict)
 
-    Eq << Eq.plausible_notcontains.apply(axiom.discrete.sets.intersect.emptyset)
+    Eq << Eq.plausible_notcontains.apply(axiom.discrete.sets.notcontains.nonoverlapping)
 
     Eq.s0_complement_n = Eq[-1].apply(axiom.discrete.sets.intersect.complement)
 

@@ -10,6 +10,9 @@ from axiom import discrete
 # x[i] & x[j] = {}
 
 from sympy.concrete.summations import summation
+from sympy.sets.sets import Interval
+
+
 @plausible
 def apply(given):
     assert given.is_Equality
@@ -51,6 +54,11 @@ from sympy.utility import check
 def prove(Eq):
     i = Symbol('i', integer=True)
     k = Symbol('k', integer=True, positive=True)
+    
+    j = Symbol('j', integer=True, domain=Interval(0, k, integer=True) - {i})
+    
+    assert j <= k
+
     x = IndexedBase('x', shape=(k + 1,), dtype=dtype.integer)
 
     given = Equality(abs(Union[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))

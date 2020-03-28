@@ -19,7 +19,7 @@ from sympy.sets.sets import Interval, Set, FiniteSet, Union, Complement, \
 from sympy.sets.fancysets import Range
 from sympy.utilities import flatten
 from sympy.utilities.iterables import sift, postorder_traversal
-from sympy.functions.elementary.miscellaneous import Min, Max
+from sympy.functions.elementary.miscellaneous import Min, Max, MinMaxBase
 from sympy.core.function import Derivative
 
 
@@ -1107,11 +1107,9 @@ class Minimum(ExprWithLimits):
 
             elif p.degree() <= 0:
                 return self.function
-        elif type(self.function) == Min:
-            args = []
-            for arg in self.function.args:
-                args.append(self.func(arg, *self.limits).doit())
-            return Min(*args)
+        elif isinstance(self.function, MinMaxBase):
+            return self.function.func(*(self.func(arg, *self.limits).doit() for arg in self.function.args))
+
         return self
 
     def eval_zeta_function(self, f, limits):
@@ -1824,12 +1822,9 @@ class Maximum(ExprWithLimits):
                         return self
             elif p.degree() <= 0:
                 return self.function
-        elif type(self.function) == Max:
-            args = []
-            for arg in self.function.args:
-                args.append(self.func(arg, *self.limits).doit())
-            return Max(*args)
-
+        elif isinstance(self.function, MinMaxBase):
+            return self.function.func(*(self.func(arg, *self.limits).doit() for arg in self.function.args))
+                
         return self
 
     def eval_zeta_function(self, f, limits):
@@ -4131,6 +4126,158 @@ class UnionComprehension(Set, ExprWithLimits):
     def _eval_Abs(self):
         if self.is_ConditionSet:
             ...
+
+    def min(self):                        
+        return Minimum(self.function.min(), *self.limits)        
+
+    def max(self):
+        return Maximum(self.function.max(), *self.limits)
+
+
+class IntersectionComprehension(Set, ExprWithLimits):
+    """
+    Represents an intersection of sets as a :class:`Set`.
+
+    """
+    
+    is_IntersectionComprehension = True
+
+    def _latex(self, printer):
+        function = self.function
+        limits = self.limits
+
+        if len(limits) == 1:
+            limit = limits[0]
+            if len(limit) == 1:
+                tex = r"\bigcap_{%s} " % printer._print(limit[0])
+            else:
+                tex = r"\bigcap\limits_{%s=%s}^{%s} " % tuple([printer._print(i) for i in limit])
+        else:
+
+            def _format_ineq(l):
+                return r"%s \leq %s \leq %s" % \
+                    tuple([printer._print(s) for s in (l[1], l[0], l[2])])
+
+            tex = r"\bigcap\limits_{\substack{%s}} " % \
+                str.join('\\\\', [_format_ineq(l) for l in limits])
+
+        if isinstance(function, Add):
+            tex += r"\left(%s\right)" % printer._print(function)
+        else:
+            tex += printer._print(function)
+
+        return tex
+
+    @property
+    def is_iterable(self):
+        return any(arg.is_iterable for arg in self.args)
+
+    def _contains(self, other):
+        return And(*[s.contains(other) for s in self.args])
+
+    def __iter__(self):
+        no_iter = True
+        for s in self.args:
+            if s.is_iterable:
+                no_iter = False
+                other_sets = set(self.args) - set((s,))
+                other = Intersection(*other_sets, evaluate=False)
+                for x in s:
+                    c = sympify(other.contains(x))
+                    if c is S.true:
+                        yield x
+                    elif c is S.false:
+                        pass
+                    else:
+                        yield c
+
+        if no_iter:
+            raise ValueError("None of the constituent sets are iterable")
+
+    @staticmethod
+    def _handle_finite_sets(args):
+        from sympy.core.logic import fuzzy_and, fuzzy_bool
+        from sympy.core.compatibility import zip_longest
+
+        fs_args, other = sift(args, lambda x: x.is_FiniteSet,
+            binary=True)
+        if not fs_args:
+            return
+        fs_args.sort(key=len)
+        s = fs_args[0]
+        fs_args = fs_args[1:]
+
+        res = []
+        unk = []
+        for x in s:
+            c = fuzzy_and(fuzzy_bool(o.contains(x))
+                for o in fs_args + other)
+            if c:
+                res.append(x)
+            elif c is None:
+                unk.append(x)
+            else:
+                pass  # drop arg
+
+        res = FiniteSet(
+            *res, evaluate=False) if res else S.EmptySet
+        if unk:
+            symbolic_s_list = [x for x in s if x.has(Symbol)]
+            non_symbolic_s = s - FiniteSet(
+                *symbolic_s_list, evaluate=False)
+            while fs_args:
+                v = fs_args.pop()
+                if all(i == j for i, j in zip_longest(
+                        symbolic_s_list,
+                        (x for x in v if x.has(Symbol)))):
+                    # all the symbolic elements of `v` are the same
+                    # as in `s` so remove the non-symbol containing
+                    # expressions from `unk`, since they cannot be
+                    # contained
+                    for x in non_symbolic_s:
+                        if x in unk:
+                            unk.remove(x)
+                else:
+                    # if only a subset of elements in `s` are
+                    # contained in `v` then remove them from `v`
+                    # and add this as a new arg
+                    contained = [x for x in symbolic_s_list
+                        if sympify(v.contains(x)) is S.true]
+                    if contained != symbolic_s_list:
+                        other.append(
+                            v - FiniteSet(
+                            *contained, evaluate=False))
+                    else:
+                        pass  # for coverage
+
+            other_sets = Intersection(*other)
+            if not other_sets:
+                return S.EmptySet  # b/c we use evaluate=False below
+            elif other_sets == S.UniversalSet:
+                res += FiniteSet(*unk)
+            else:
+                res += Intersection(
+                    FiniteSet(*unk),
+                    other_sets, evaluate=False)
+        return res
+
+    def as_relational(self, symbol):
+        """Rewrite an Intersection in terms of equalities and logic operators"""
+        return And(*[s.as_relational(symbol) for s in self.args])
+
+    """
+    precondition: this set should not be empty!
+    """
+
+    def min(self):                        
+        return Maximum(self.function.min(), *self.limits)        
+
+    """
+    precondition: this set should not be empty!
+    """
+
+    def max(self):
+        return Minimum(self.function.max(), *self.limits)
 
 
 class ConditionalBoolean(Boolean):

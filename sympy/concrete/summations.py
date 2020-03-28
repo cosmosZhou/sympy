@@ -18,7 +18,7 @@ from sympy.logic.boolalg import And
 from sympy.polys import apart, PolynomialError, together
 from sympy.series.limitseq import limit_seq
 from sympy.series.order import O
-from sympy.sets.sets import FiniteSet, EmptySet, Complement, Interval
+from sympy.sets.sets import FiniteSet, EmptySet, Complement, Interval, Union
 from sympy.simplify import denom
 from sympy.simplify.combsimp import combsimp
 from sympy.simplify.powsimp import powsimp
@@ -1068,13 +1068,22 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if len(limit) > 1:
             x, a, b = limit
             universe = Interval(a, b, integer=True)
+            if isinstance(self.function, Piecewise):
+                if not any(c.has(x) for _, c in self.function.args):
+                    return self.function.func(*((self.func(e, (x, universe)).simplifier(), c) for e, c in self.function.args))
+                
+                return self.operator(*self.as_multiple_terms(x, universe))
+            
             domain = self.function.nonzero_domain(x)
 
             domain &= universe
             if not domain:
                 return S.Zero
             assert domain.is_integer
-
+            
+            if domain.is_Piecewise:
+                domain = Union(*(e for e, _ in domain.args)) & universe
+                                    
             if domain.is_Intersection :
                 finiteset = set()
                 for s in domain.args:
@@ -1088,11 +1097,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if finiteset:
                     domain = domain.func(*finiteset, evaluate=False)
 
-            if isinstance(self.function, Piecewise):
-                if not any(c.has(x) for _, c in self.function.args):
-                    return self.function.func(*((self.func(e, (x, domain)).simplifier(), c) for e, c in self.function.args))
-                
-                return self.operator(*self.as_multiple_terms(x, domain))
+#             if isinstance(self.function, Piecewise):
+#                 if not any(c.has(x) for _, c in self.function.args):
+#                     return self.function.func(*((self.func(e, (x, domain)).simplifier(), c) for e, c in self.function.args))
+#                 
+#                 return self.operator(*self.as_multiple_terms(x, domain))
 
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)
@@ -1250,7 +1259,18 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             
         return domain
 
+    @property
+    def is_real(self):
+        return self.function.is_real
     
+    @property
+    def is_extended_nonnegative(self):
+        return self.function.is_extended_nonnegative
+    
+    @property
+    def is_extended_nonpositive(self):
+        return self.function.is_extended_nonpositive
+
 def summation(f, *symbols, **kwargs):
     r"""
     Compute the summation of f with respect to symbols.

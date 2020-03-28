@@ -46,6 +46,12 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)
     n = Symbol('n', domain=Interval(2, oo, integer=True))
+    
+    baseset = Interval(0, n, integer=True)
+    domain = n.set
+    assert n in baseset
+    assert baseset & domain == domain
+
     x = IndexedBase('x', shape=(oo,), dtype=dtype.integer)
 
     i_domain = Interval(0, n - 1, integer=True)
@@ -78,6 +84,7 @@ def prove(Eq):
     Eq << identity(Eq.plausible.rhs).bisect(domain={n})
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
+
     
 if __name__ == '__main__':
     prove(__file__)

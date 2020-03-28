@@ -85,8 +85,11 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Piecewise = False
     is_Poly = False
     is_AlgebraicNumber = False
+    
     is_Relational = False
     is_Equality = False
+    is_StrictGreaterThan = False
+    
     is_Boolean = False
     is_BooleanFunction = False
     is_Not = False

@@ -430,7 +430,9 @@ class Relational(Boolean, Expr, EvalfMixin):
             
         return Contains(x, domain, equivalent=self).simplifier()
 
-
+    def is_positive_relationship(self):
+        ...
+            
 Rel = Relational
 
 
@@ -1935,6 +1937,7 @@ Le = LessThan
 
 
 class StrictGreaterThan(_Greater):
+    is_StrictGreaterThan = True
     __doc__ = GreaterThan.__doc__
     __slots__ = ()
 
@@ -2056,6 +2059,9 @@ class StrictGreaterThan(_Greater):
         else:
             return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs))
             
+    def is_positive_relationship(self):
+        if self.rhs.is_zero:
+            return self.lhs
 
 Gt = StrictGreaterThan
 LessThan.invert_type = StrictGreaterThan
@@ -2161,6 +2167,9 @@ class StrictLessThan(_Less):
         else:
             return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs))
 
+    def is_positive_relationship(self):
+        if self.lhs.is_zero:
+            return self.rhs
 
 Lt = StrictLessThan
 GreaterThan.invert_type = StrictLessThan

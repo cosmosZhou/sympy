@@ -1,6 +1,6 @@
 "use strict";
 
-function byte_length(s) {
+function strlen(s) {
 	var length = 0;
 	for (let i = 0; i < s.length; i++) {
 		var code = s.charCodeAt(i)
@@ -16,7 +16,7 @@ function changeInputlength(input) {
 	var val = input.val();
 	console.log(val);
 
-	var text_length = byte_length(val);
+	var text_length = strlen(val);
 	console.log(text_length);
 
 	// text_length = Math.max(text_length, input.attr('placeholder').length);

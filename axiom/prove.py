@@ -67,14 +67,13 @@ def readFolder(rootdir, sufix='.py'):
             readFolder(path, sufix)
 
 
-if __name__ == '__main__':
+def prove():
     rootdir = os.path.dirname(__file__)
     for name in os.listdir(rootdir):
         path = os.path.join(rootdir, name)
-        arr = []
-
+        
         if os.path.isdir(path):
-            arr = readFolder(path)
+            readFolder(path)
 
     print('in all %d axioms' % count)
 
@@ -92,3 +91,6 @@ if __name__ == '__main__':
         print('.php websites')
         for p in websites:
             print(p)
+
+if __name__ == '__main__':
+    prove()

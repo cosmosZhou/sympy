@@ -1,15 +1,9 @@
-from sympy.core.relational import Equality, LessThan, Unequality, \
-    StrictGreaterThan, GreaterThan
-from sympy.utility import plausible, Eq, Sum, Union, identity
+from sympy.core.relational import Equality
+
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset
-from sympy.concrete.expr_with_limits import Exists, Forall
-from sympy.logic.boolalg import plausibles
-from sympy.tensor.indexed import IndexedBase
-from axiom.discrete.sets.union import inequality, inclusion_exclusion_principle
 
 # given: |A | B| = |A| + |B|
 # A & B = {}
@@ -59,7 +53,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << Eq[-1].apply(discrete.sets.equality.equality)
+    Eq << Eq[-1].apply(discrete.sets.zero.equality)
 
 
 if __name__ == '__main__':

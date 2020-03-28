@@ -96,7 +96,7 @@ class DiracDelta(Function):
 
     .. [1] http://mathworld.wolfram.com/DeltaFunction.html
     """
-
+    is_extended_nonnegative = True
     is_real = True
 
     def fdiff(self, argindex=1):

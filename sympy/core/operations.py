@@ -26,7 +26,7 @@ class AssocOp(Basic):
     # and keep it right here
     __slots__ = ['is_commutative']
 
-    @cacheit
+#     @cacheit
     def __new__(cls, *args, **options):
         from sympy import Order
         args = list(map(_sympify, args))

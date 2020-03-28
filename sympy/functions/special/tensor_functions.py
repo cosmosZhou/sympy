@@ -130,7 +130,7 @@ class KroneckerDelta(Function):
 
     .. [1] https://en.wikipedia.org/wiki/Kronecker_delta
     """
-
+    is_extended_nonnegative = True
     is_integer = True
 
     @classmethod

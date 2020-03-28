@@ -1,7 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from axiom import discrete
 from sympy.sets.contains import Subset
 from axiom.discrete import sets
 
@@ -45,7 +44,7 @@ def prove(Eq):
     
     Eq << Eq.union_AB.subs(Eq[-1]).reversed
     
-    Eq << sets.equality.equality.apply(Eq[-1])
+    Eq << sets.zero.equality.apply(Eq[-1])
     
     Eq << sets.equality.complement.subset.apply(Eq[-1])
     

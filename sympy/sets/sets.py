@@ -621,6 +621,7 @@ class Set(Basic):
 
         except Exception as e:
             print(e)
+            raise e
         raise RuntimeError('%s is inconsistent with %s' % (other.dtype, self.dtype))
 
     def __abs__(self):
@@ -1750,6 +1751,14 @@ class Union(Set, LatticeOp, EvalfMixin):
         if non_intersect:
             return  Add(*[abs(A) for A in non_intersect]) + abs(self.func(*args))
 
+    def min(self):
+        from sympy.functions.elementary.miscellaneous import Min        
+        return Min(*(arg.min() for arg in self.args))        
+
+    def max(self):
+        from sympy.functions.elementary.miscellaneous import Max        
+        return Max(*(arg.max() for arg in self.args))        
+
 
 class Intersection(Set, LatticeOp):
     """
@@ -1952,199 +1961,23 @@ class Intersection(Set, LatticeOp):
                 return union.func(function, *union.limits).simplifier()
         return self
 
-
-class IntersectionComprehension(Set):
     """
-    Represents an intersection of sets as a :class:`Set`.
-
-    Examples
-    ========
-
-    >>> from sympy import Intersection, Interval
-    >>> Intersection(Interval(1, 3), Interval(2, 4))
-    Interval(2, 3)
-
-    We often use the .intersect method
-
-    >>> Interval(1,3).intersect(Interval(2,4))
-    Interval(2, 3)
-
-    See Also
-    ========
-
-    Union
-
-    References
-    ==========
-
-    .. [1] https://en.wikipedia.org/wiki/Intersection_%28set_theory%29
+    precondition: this set should not be empty!
     """
-    is_IntersectionComprehension = True
 
-    def _latex(self, printer):
-        function = self.function
-        limits = self.limits
+    def min(self):
+        from sympy.functions.elementary.miscellaneous import Max        
+        return Max(*(arg.min() for arg in self.args))        
 
-        if len(limits) == 1:
-            limit = limits[0]
-            if len(limit) == 1:
-                tex = r"\bigcap_{%s} " % printer._print(limit[0])
-            else:
-                tex = r"\bigcap\limits_{%s=%s}^{%s} " % tuple([printer._print(i) for i in limit])
-        else:
+    """
+    precondition: this set should not be empty!
+    """
 
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([printer._print(s) for s in (l[1], l[0], l[2])])
+    def max(self):
+        from sympy.functions.elementary.miscellaneous import Min        
+        return Min(*(arg.max() for arg in self.args))
 
-            tex = r"\bigcap\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in limits])
-
-        from sympy import Add
-        if isinstance(function, Add):
-            tex += r"\left(%s\right)" % printer._print(function)
-        else:
-            tex += printer._print(function)
-
-        return tex
-
-    @property
-    def identity(self):
-        return S.UniversalSet
-
-    @property
-    def zero(self):
-        return S.EmptySet
-
-    def __new__(cls, *args, **kwargs):
-        # flatten inputs to merge intersections and iterables
-        args = _sympify(args)
-
-        args = list(ordered(args, Set._infimum_key))
-
-        obj = Basic.__new__(cls, *args)
-        obj._argset = frozenset(args)
-        return obj
-
-    @property
-    def function(self):
-        return self.args[0]
-
-    @property
-    def limits(self):
-        return self.args[1:]
-
-    @property
-    @cacheit
-    def args(self):
-        return self._args
-
-    @property
-    def is_iterable(self):
-        return any(arg.is_iterable for arg in self.args)
-
-    @property
-    def _inf(self):
-        raise NotImplementedError()
-
-    @property
-    def _sup(self):
-        raise NotImplementedError()
-
-    def _contains(self, other):
-        return And(*[set.contains(other) for set in self.args])
-
-    def __iter__(self):
-        no_iter = True
-        for s in self.args:
-            if s.is_iterable:
-                no_iter = False
-                other_sets = set(self.args) - set((s,))
-                other = Intersection(*other_sets, evaluate=False)
-                for x in s:
-                    c = sympify(other.contains(x))
-                    if c is S.true:
-                        yield x
-                    elif c is S.false:
-                        pass
-                    else:
-                        yield c
-
-        if no_iter:
-            raise ValueError("None of the constituent sets are iterable")
-
-    @staticmethod
-    def _handle_finite_sets(args):
-        from sympy.core.logic import fuzzy_and, fuzzy_bool
-        from sympy.core.compatibility import zip_longest
-
-        fs_args, other = sift(args, lambda x: x.is_FiniteSet,
-            binary=True)
-        if not fs_args:
-            return
-        fs_args.sort(key=len)
-        s = fs_args[0]
-        fs_args = fs_args[1:]
-
-        res = []
-        unk = []
-        for x in s:
-            c = fuzzy_and(fuzzy_bool(o.contains(x))
-                for o in fs_args + other)
-            if c:
-                res.append(x)
-            elif c is None:
-                unk.append(x)
-            else:
-                pass  # drop arg
-
-        res = FiniteSet(
-            *res, evaluate=False) if res else S.EmptySet
-        if unk:
-            symbolic_s_list = [x for x in s if x.has(Symbol)]
-            non_symbolic_s = s - FiniteSet(
-                *symbolic_s_list, evaluate=False)
-            while fs_args:
-                v = fs_args.pop()
-                if all(i == j for i, j in zip_longest(
-                        symbolic_s_list,
-                        (x for x in v if x.has(Symbol)))):
-                    # all the symbolic elements of `v` are the same
-                    # as in `s` so remove the non-symbol containing
-                    # expressions from `unk`, since they cannot be
-                    # contained
-                    for x in non_symbolic_s:
-                        if x in unk:
-                            unk.remove(x)
-                else:
-                    # if only a subset of elements in `s` are
-                    # contained in `v` then remove them from `v`
-                    # and add this as a new arg
-                    contained = [x for x in symbolic_s_list
-                        if sympify(v.contains(x)) is S.true]
-                    if contained != symbolic_s_list:
-                        other.append(
-                            v - FiniteSet(
-                            *contained, evaluate=False))
-                    else:
-                        pass  # for coverage
-
-            other_sets = Intersection(*other)
-            if not other_sets:
-                return S.EmptySet  # b/c we use evaluate=False below
-            elif other_sets == S.UniversalSet:
-                res += FiniteSet(*unk)
-            else:
-                res += Intersection(
-                    FiniteSet(*unk),
-                    other_sets, evaluate=False)
-        return res
-
-    def as_relational(self, symbol):
-        """Rewrite an Intersection in terms of equalities and logic operators"""
-        return And(*[s.as_relational(symbol) for s in self.args])
-
-
+            
 class Complement(Set, EvalfMixin):
     r"""Represents the set difference or relative complement of a set with
     another set.
@@ -2184,12 +2017,64 @@ class Complement(Set, EvalfMixin):
     def assertion(self):
         A, B = self.args
         return Equality(abs(Union(A, B)), abs(self) + abs(B))
-
-    def min(self):
-        return self.args[0].min()
+    
+    def is_connected_interval(self):        
+        A, B = self.args
+        
+        if not A.is_Interval:
+            return False
+        
+        if B.is_Interval:
+            return True
+            
+        if not B.is_FiniteSet:
+            return False
+        
+        if len(B) == 1:
+            return True
+        
+        if not A.is_integer:
+            return False
+        
+        return B.is_integer and B.max() - B.min() == len(B) - 1
+        
+    def min(self):        
+        from sympy.core.numbers import epsilon
+        from sympy import floor
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.concrete.expr_with_limits import Minimum        
+        if not self.is_connected_interval():
+            return Minimum(self)
+                    
+        A, B = self.args
+        x = A.min()
+        
+        M = B.max()        
+        if A.is_integer:            
+            M = floor(M) + 1
+        else:
+            M += epsilon
+            
+        return Piecewise((M, Contains(x, B).simplifier()), (x, True)).simplifier()
 
     def max(self):
-        return self.args[0].max()
+        from sympy.core.numbers import epsilon
+        from sympy import ceiling
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.concrete.expr_with_limits import Minimum        
+        if not self.is_connected_interval():
+            return Minimum(self)
+                    
+        A, B = self.args
+        x = A.max()
+        
+        m = B.min()        
+        if A.is_integer:                         
+            m = ceiling(m) - 1
+        else:
+            m -= epsilon
+            
+        return Piecewise((m, Contains(x, B).simplifier()), (x, True)).simplifier()  
 
     @property
     def element_type(self):
@@ -2720,6 +2605,14 @@ class FiniteSet(Set, EvalfMixin):
                 else:
                     raise Exception('inconsistent dtype detected: %s != %s' % (dtype, _dtype))
         return dtype
+
+    def min(self):
+        from sympy.functions.elementary.miscellaneous import Min
+        return Min(*self.args)        
+
+    def max(self):
+        from sympy.functions.elementary.miscellaneous import Max
+        return Max(*self.args)        
 
 
 class FiniteList(Expr):

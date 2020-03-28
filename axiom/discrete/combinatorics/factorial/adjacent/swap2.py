@@ -47,7 +47,7 @@ def apply(given):
     w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
     
     k = Symbol('k', integer=True)
-    return Forall(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1))
+    return Forall(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), given=given)
 
 
 @check
@@ -62,7 +62,6 @@ def prove(Eq):
     
     given = Forall(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S))
     
-    Eq << given
     Eq << apply(given)
 
 

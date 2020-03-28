@@ -31,7 +31,7 @@ def prove(Eq):
     
     Eq << Eq[0].subs(1, 0)
     
-    Eq << sets.strict_greater_than.inequality.apply(Eq[-1])
+    Eq << sets.positive.inequality.apply(Eq[-1])
     
     Eq << sets.inequality.contains.apply(Eq[-1])
     

@@ -144,6 +144,9 @@ class Contains(BooleanFunction):
         if s.is_FiniteSet:
             if len(s) == 1:
                 y, *_ = s
+                from sympy import Symbol
+                if not e._has(Symbol) and y._has(Symbol):
+                    return Equality(y, e, equivalent=self)
                 return Equality(e, y, equivalent=self)
             return Or(*(Equality(e, y) for y in s), equivalent=self)
 

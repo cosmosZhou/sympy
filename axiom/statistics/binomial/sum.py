@@ -12,9 +12,6 @@ from sympy.utility import plausible
 # print('sys.getrecursionlimit() =', sys.getrecursionlimit())
 # sys.setrecursionlimit(100000000)
 
-from sympy import Interval
-from sympy.functions.elementary.miscellaneous import Min, Max
-
 
 def apply(x0, x1):
     if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):
@@ -41,9 +38,29 @@ def prove(Eq):
     n0 = Symbol("n0", integer=True, positive=True)
     n1 = Symbol("n1", integer=True, positive=True)
     
-#     y = Symbol("y", integer=True, positive=True)    
+    y = Symbol("y", integer=True, positive=True)    
 #     print(Min(Min(n1, y), Max(-1, -n0 + y - 1)))    
 #     print(Min(Max(-1, -n0 + y - 1), Min(n1, y)))
+    from sympy import Interval
+    from sympy.functions.elementary.miscellaneous import Min, Max
+    from sympy.core.numbers import oo
+    lhs = y + 1
+    rhs = Max(-1, -n0 + y - 1)
+    assert lhs > rhs
+    
+    lhs = Min(n1 + 1, y + 1)
+    rhs = Min(n1, Max(-1, -n0 + y - 1))    
+    assert lhs > rhs
+    
+    mini = Min(n1, Max(-1, -n0 + y - 1))
+    print(mini < 0)    
+    union = Interval(Max(0, -n0 + y), Min(n1, y), integer=True)
+    univeralSet = Interval(-oo, oo, integer=True)
+    domain = Interval(0, n1, integer=True)
+
+    complement = univeralSet - union
+    print(complement)
+    print(complement & domain)
 
     p = Symbol("p", domain=Interval(0, 1))
 

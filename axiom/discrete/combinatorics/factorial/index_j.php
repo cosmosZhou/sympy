@@ -1,14 +1,14 @@
 <?php
 require_once '..\..\..\..\utility.php';
 $i = 0;
-$txt[$i++] = "\\(\\left\\{*x\\right\\}  = \\left[0; n\\right)\\tag*{Eq[0]}\\)\\({x}_{[k:n]\\delta_{j {x}_{k}} \\times [k:n]k} = j\\tag*{Eq[0]=>Eq[1]}\\)";
+$txt[$i++] = "\\(\\left\\{*x\\right\\}  = \\left[0; n\\right)\\tag*{Eq[0]}\\)\\({x}_{[k:n]\\delta_{j {x}_{k}} \\times [k:n]k} = j\\tag*{Eq[1]}\\)";
 $txt[$i++] = "\\([k:n]\\delta_{j {x}_{k}} \\times [k:n]k = \\sum\\limits_{k=1}^{n - 1} k \\delta_{j {x}_{k}}\\tag*{Eq[2]}\\)";
 $txt[$i++] = "\\(\\delta_{j {x}_{k}} = \\begin{cases} 1 & \\text{if}\\: j = {x}_{k} \\\\0 & \\text{else} \\end{cases}\\tag*{Eq[3]}\\)";
 $txt[$i++] = "\\([k:n]\\delta_{j {x}_{k}} \\times [k:n]k = \\sum\\limits_{\\substack{k \\in \\left\\{k \\in \\left[1; n\\right) \\mid j = {x}_{k} \\right\\}}} k\\tag*{Eq[4]}\\)";
 $txt[$i++] = "\\(\\sum\\limits_{\\substack{k \\in \\left\\{k \\in \\left[0; n\\right) \\mid j = {x}_{k} \\right\\}}} k = \\sum\\limits_{\\substack{k \\in \\left\\{k \\in \\left[1; n\\right) \\mid j = {x}_{k} \\right\\}}} k\\tag*{Eq[5]}\\)";
 $txt[$i++] = "\\([k:n]\\delta_{j {x}_{k}} \\times [k:n]k = \\sum\\limits_{\\substack{k \\in \\left\\{k \\in \\left[0; n\\right) \\mid j = {x}_{k} \\right\\}}} k\\tag*{Eq[6]}\\)";
 $txt[$i++] = "\\(s_{j} = \\left\\{k \\in \\left[0; n\\right) \\mid j = {x}_{k} \\right\\}\\tag*{Eq.sj_definition}\\)";
-$txt[$i++] = "\\([k:n]\\delta_{j {x}_{k}} \\times [k:n]k = \\sum\\limits_{\\substack{k \\in s_{j}}} k\\tag*{Eq.sigmar}\\)";
+$txt[$i++] = "\\([k:n]\\delta_{j {x}_{k}} \\times [k:n]k = \\sum\\limits_{\\substack{k \\in s_{j}}} k\\tag*{Eq.crossproduct}\\)";
 $txt[$i++] = "\\(s_{j} = \\left\\{k \\in \\left[0; n\\right) \\mid {x}_{k} = j \\right\\}\\tag*{Eq.sj_definition_reversed}\\)";
 $txt[$i++] = "\\(\\left\\{k \\in \\left[0; n\\right) \\mid {x}_{k} = j \\right\\} = s_{j}\\tag*{Eq.sj_definition_reversed}\\)";
 $txt[$i++] = "\\(\\left\\{j\\right\\} \\cap \\left\\{*x\\right\\}  = \\left\\{j\\right\\}\\tag*{Eq[7]}\\)";
@@ -32,8 +32,12 @@ $txt[$i++] = "\\(\\exists_{\\substack{b \\in s_{j}}}{\\exists_{\\substack{a \\in
 $txt[$i++] = "\\(\\exists_{\\substack{b \\in s_{j}}}{\\exists_{\\substack{a \\in s_{j}}}{a \\neq b\\wedge {x}_{a} \\neq {x}_{b}}\\wedge b \\in \\left[0; n\\right)}\\tag*{~Eq[17]}\\)";
 $txt[$i++] = "\\(\\text{False}\\)";
 $txt[$i++] = "\\(\\left|{s_{j}}\\right| = 1\\tag*{Eq[18]}\\)";
-$txt[$i++] = "\\(\\exists_{a}{s_{j} = \\left\\{a\\right\\}}\\tag*{Eq[19]}\\)";
-$txt[$i++] = "\\(\\exists_{a}{[k:n]\\delta_{j {x}_{k}} \\times [k:n]k = a}\\tag*{Eq[20]}\\)";
+$txt[$i++] = "\\(\\exists_{a}{s_{j} = \\left\\{a\\right\\}}\\tag*{Eq.a_relation}\\)";
+$txt[$i++] = "\\(\\exists_{a}{a = [k:n]\\delta_{j {x}_{k}} \\times [k:n]k}\\tag*{Eq.crossproduct}\\)";
+$txt[$i++] = "\\(a \\not\\in s_{j} \\vee j = {x}_{a}\\tag*{Eq[19]}\\)";
+$txt[$i++] = "\\(\\exists_{a}{a \\in s_{j}}\\tag*{Eq[20]}\\)";
+$txt[$i++] = "\\(\\exists_{\\substack{a \\in s_{j}}}{{x}_{a} = j}\\tag*{Eq[21]}\\)";
+$txt[$i++] = "\\({x}_{[k:n]\\delta_{j {x}_{k}} \\times [k:n]k} = j\\tag*{Eq[1]}\\)";
 render(__FILE__, $txt);
 ?>        
 
