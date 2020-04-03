@@ -509,19 +509,29 @@ class Indexed(Expr):
     def defined_domain(self, x):
         from sympy.sets.sets import Interval
         for i, index in enumerate(self.indices):
-            diff = x - index
-            if diff.free_symbols & index.free_symbols:
-                continue
-            return Interval(diff, self.base.shape[i] - 1 + diff, integer=True)
+            if not x.shape:
+                diff = x - index
+                if diff.free_symbols & index.free_symbols:
+                    continue
+                return Interval(diff, self.base.shape[i] - 1 + diff, integer=True)
         if self.base.definition is not None:
             return self.base.definition[self.indices].defined_domain(x)
-            
-        return Expr.defined_domain(self, x)
+        
+        if x.atomic_dtype.is_set:
+            return S.UniversalSet
+        domain = x.domain          
+         
+        for index in self.indices:
+            domain &= index.defined_domain(x)
+        return domain
 
 #     def __iter__(self):
 #         raise TypeError
 
-
+    @property
+    def definition(self):
+        return self.base.definition[self.indices]
+    
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object
 

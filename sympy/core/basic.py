@@ -85,6 +85,8 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Piecewise = False
     is_Poly = False
     is_AlgebraicNumber = False
+    is_Min = False
+    is_Max = False
     
     is_Relational = False
     is_Equality = False
@@ -118,6 +120,9 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Limit = False
     is_BooleanTrue = None
     is_BooleanFalse = None
+    
+    is_Swap = False
+    is_KroneckerDelta = False
     
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
@@ -2081,8 +2086,6 @@ class Basic(with_metaclass(ManagedProperties)):
         return self
 
     def defined_domain(self, x):
-#         from sympy.sets.sets import Interval
-#         from sympy.core.numbers import oo
         if x.atomic_dtype.is_set:
             return S.UniversalSet
         return x.domain            
@@ -2127,6 +2130,21 @@ class Basic(with_metaclass(ManagedProperties)):
                         from sympy import Symbol
                         return Symbol(name, **kwargs)
 
+    # performing other in self
+    def contains_with_subset(self, other):
+        other = sympify(other)
+        if other.is_EmptySet:
+            return True
+        if self.is_EmptySet:
+            return
+        
+        if self.is_UniversalSet:
+            return True
+        if other.is_UniversalSet:
+            return             
+            
+        if other.dtype == self.dtype:
+            return other.is_subset(self)
 
 class Atom(Basic):
     """

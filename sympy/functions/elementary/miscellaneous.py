@@ -768,7 +768,7 @@ class Max(MinMaxBase, Application):
     """
     zero = S.Infinity
     identity = S.NegativeInfinity
-
+    is_Max = True
     def fdiff(self, argindex):
         from sympy import Heaviside
         n = len(self.args)
@@ -904,7 +904,8 @@ class Min(MinMaxBase, Application):
     """
     zero = S.NegativeInfinity
     identity = S.Infinity
-
+    is_Min = True
+    
     def fdiff(self, argindex):
         from sympy import Heaviside
         n = len(self.args)

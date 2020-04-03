@@ -22,26 +22,18 @@ def extract(recurrence):
     g = gt.base
     return m, g, beta, t
 
-
-def apply(*given):
-    if given:
-        initial_condition, recurrence = given
-
-        m, g, beta, t = extract(recurrence)
-    else:
-        m = IndexedBase('m', shape=(oo,))
-        g = IndexedBase('g', shape=(oo,))
-        t = Symbol('t', integer=True, positive=True)
-        beta = Symbol('beta', nonzero=True)
-        recurrence = Equality(m[t], beta * m[t - 1] + (1 - beta) * g[t])
-        initial_condition = Equality(m[0], 0)
-        given = [initial_condition, recurrence]
+@plausible
+def apply(*given):    
+    initial_condition, recurrence = given
+    m, g, beta, t = extract(recurrence)
+    assert initial_condition.is_Equality
+    m0, _0 = initial_condition.args
+    assert m0 == m[0] and _0.is_zero
 
     k = Symbol('k', integer=True, nonnegative=True)
 
     return Equality(m[k], beta ** k * (1 - beta) * Sum[t:1:k](beta ** (-t) * g[t]),
-                    given=given,
-                    plausible=plausible())
+                    given=given)
 
 
 from sympy.utility import check
@@ -49,13 +41,16 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    Eq << apply()
+    m = IndexedBase('m', shape=(oo,))
+    g = IndexedBase('g', shape=(oo,))
+    t = Symbol('t', integer=True, positive=True)
+    beta = Symbol('beta', nonzero=True)
+    recurrence = Equality(m[t], beta * m[t - 1] + (1 - beta) * g[t])
+    initial_condition = Equality(m[0], 0)
+    
+    Eq << apply(initial_condition, recurrence)
 
-    Eq << Eq[-1].given
-
-    m, g, beta, t = extract(Eq[-1])
-
-    Eq << Eq[-1] / beta ** t
+    Eq << Eq[1] / beta ** t
 
     Eq << Eq[-1].expand()
 
@@ -63,7 +58,7 @@ def prove(Eq):
 
     Eq << Eq[-1].collect(g[t])
 
-    k = Eq[0].lhs.indices[0]
+    k = Eq[2].lhs.indices[0]
 
     Eq << Eq[-1].summation((t, 1, k))
 
@@ -73,12 +68,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.simplifier()
 
-    Eq << Eq[-1].subs(Eq[1])
+    Eq << Eq[-1].subs(Eq[0])
 
     Eq << Eq[-1].solve(m[k])
-
-#     Eq << Eq[-1].subs(Eq[0])
-
 
 if __name__ == '__main__':
     prove(__file__)

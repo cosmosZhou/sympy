@@ -2,7 +2,7 @@ from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, plausible, Product, identity
+from sympy.utility import Ref, plausible, Product, identity, Sum
 from sympy.core.relational import Equality
 from sympy.matrices.expressions.determinant import Determinant
 
@@ -72,7 +72,7 @@ def prove(Eq):
     Eq << apply(r, n)
 
     (i, *iab), (j, *_) = Eq[0].lhs.arg.args[1].limits
-    i = i.copy(domain=Interval(*iab, integer=True))
+#     i = i.copy(domain=Interval(*iab, integer=True))
     E = Ref[i:n, j]((-1) ** (j - i) * binomial(j + 1, i + 1))
 
     Eq << identity(Eq[0].lhs.arg @ E).expand()
@@ -80,63 +80,70 @@ def prove(Eq):
 
     (k, *_), *_ = Eq[-1].rhs.args[1].function.limits
 
-    Eq << discrete.combinatorics.stirling.second.definition.apply(i + 1, j + 1)
+    _i = i.copy(domain=Interval(*iab, integer=True))
+    Eq << discrete.combinatorics.stirling.second.definition.apply(_i + 1, j + 1)
 
     Eq << Eq[-1] * factorial(j + 1)
     Eq << Eq[-1].reversed
 
     Eq << Eq[-1].this.lhs.simplifier()
 
-    Eq << Eq[-1].forall(i)
+    Eq << Eq[-1].forall(_i)
 
     Eq << identity(Eq[2].rhs.args[1].function).limits_subs(k, k - 1)
 
     Eq << Eq[-1].subs(Eq[-2])
     
     Eq.equation = Eq[2].subs(Eq[-1])
-
+    
     Eq << identity(Eq.equation.rhs.args[0].function).simplifier().limits_subs(k, k - 1)
-
+    
     Eq << Eq[-1].this.rhs.expand()
-
+    
     Eq << Eq[-1].this.rhs.args[1].simplifier()
-
-    Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, j + 1)
-
+    
+    Eq << Eq[-1].subs(i, _i)
+    
+    Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, _i + 1)
+    
     Eq << Eq[-1].this.rhs.expand()
-
+    
+    Eq << Eq[-1].this.rhs.args[1].simplifier()
+    
     Eq << Eq[-4] + (Eq[-1] - Eq[-1].lhs)
-
+    
     Eq << Eq[-1].this.rhs.simplifier()
-
-    Eq << Eq[-1].this.rhs.args[2].args[1].simplifier()
-
-    Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, j + 1)
-
+    
+    Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, _i + 1)
+    
     Eq << Eq[-1].this.rhs.expand()
 
     Eq << Eq[-1].this.rhs.simplifier()
-
+    
     Eq << Eq[-4] + Eq[-1]
-
+    
     Eq << Eq[-1].this.rhs.simplifier()
+    
+    Eq << identity(Sum[k:0:n - 1](Eq.equation.rhs.args[0].function.function._subs(i, _i))).simplifier()
+    
+    Eq << (Eq[-2].forall(_i), Eq[-1].forall(_i))
+    
+    Eq << Eq[-1].subs(Eq[-2]) 
 
-    Eq << Eq.equation.this.rhs.subs(Eq[-1])
+    Eq << Eq.equation.subs(Eq[-1])
+#     Eq << Eq.equation.this.rhs.subs(Eq[-1])
 
     Eq << Shift(n, 0, n - 1) @ Eq[-1]
 
     Eq << Eq[-1].det()
 
-    Eq << Eq[-1].this.rhs.simplifier()  # 27
+    Eq << Eq[-1].this.rhs.simplifier() 
 
-    Eq << Eq[-1] * (-1) ** (n - 1)  # 28
+    Eq << Eq[-1] * (-1) ** (n - 1) 
 
-    Eq << Eq[-1].this.rhs.powsimp()  # 29
+    Eq << Eq[-1].this.rhs.powsimp()
 
-#     s = Eq[-1].rhs.args[1].limits[0][0]
     Eq << Eq[-1].this.rhs.args[1].limits_subs(k, k - 1)
 
-
-#     Eq << Eq[-1].rhs.args
 if __name__ == '__main__':
     prove(__file__)

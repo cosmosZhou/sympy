@@ -231,6 +231,8 @@ class Set(Basic):
             return Union(*(o - self for o in other.args))
 
         elif isinstance(other, Complement):
+            if other.args[0] in self:
+                return S.EmptySet
             return Complement(other.args[0], Union(other.args[1], self), evaluate=False)
 
         elif isinstance(other, EmptySet):
@@ -603,26 +605,11 @@ class Set(Basic):
 
     # performing other in self
     def __contains__(self, other):
-        other = sympify(other)
-        if isinstance(self, EmptySet) or isinstance(other, EmptySet):
-            return
+        contains = self.contains_with_subset(other)
+        if contains is not None:
+            return contains
         
-        if isinstance(self, UniversalSet):
-            return True
-        else:
-            if isinstance(other, UniversalSet):
-                return False            
-        
-        try:
-            if other.dtype == self.dtype:
-                return other.is_subset(self)
-            elif other.dtype == self.element_type or self.element_type in other.dtype or other.dtype in self.element_type:
-                return sympify(self.contains(other))
-
-        except Exception as e:
-            print(e)
-            raise e
-        raise RuntimeError('%s is inconsistent with %s' % (other.dtype, self.dtype))
+        return sympify(self.contains(other))
 
     def __abs__(self):
         from sympy.functions.elementary.complexes import Abs
@@ -851,7 +838,8 @@ class CartesianSpace(Set):
         assert tuple(self.element_type.shape) == tuple(other.shape)        
 
     def __mul__(self, other):
-        assert not other.is_set
+        if other.is_set:
+            assert len(other.element_type.shape) < len(self.element_type.shape)
         return self
     
     
@@ -1912,9 +1900,10 @@ class Intersection(Set, LatticeOp):
                     # as in `s` so remove the non-symbol containing
                     # expressions from `unk`, since they cannot be
                     # contained
-                    for x in non_symbolic_s:
-                        if x in unk:
-                            unk.remove(x)
+                    if non_symbolic_s.is_FiniteSet:
+                        for x in non_symbolic_s:
+                            if x in unk:
+                                unk.remove(x)
                 else:
                     # if only a subset of elements in `s` are
                     # contained in `v` then remove them from `v`
@@ -1923,7 +1912,8 @@ class Intersection(Set, LatticeOp):
                     if contained != symbolic_s_list:
                         other.append(v - FiniteSet(*contained))
                     else:
-                        pass  # for coverage
+                        other.append(v)
+#                         pass  # for coverage
 
             other_sets = Intersection(*other)
             if not other_sets:
@@ -1943,7 +1933,7 @@ class Intersection(Set, LatticeOp):
                     return res + conditionset(other_sets.variable, other_sets.condition, other_sets.base_set & unk)
                 if other_sets.is_FiniteSet:
                     if len(unk) == len(other_sets) == 1:
-                        return res + Piecewise((unk, Equality(unk.arg, other_sets.arg)), (S.EmptySet, True))
+                        return res + Piecewise((unk, Equality(unk.arg, other_sets.arg)), (S.EmptySet, True)).simplifier()
                 res += Intersection(unk, other_sets, evaluate=False) 
         return res
 
@@ -2157,6 +2147,18 @@ class Complement(Set, EvalfMixin):
                             return A
         if B.is_Intersection and A in B._argset:
             B = B.func(*B._argset - {A}, evaluate=False)
+            
+        if A.is_Piecewise:
+            return A.func(*((e - B, c) for e, c in A.args)).simplifier()
+        
+        if A.is_Intersection:
+            for i, arg in enumerate(A.args):
+                if arg.is_Complement and arg.args[1] in B: 
+                    args = [*A.args]
+                    args[i] = arg.args[0]
+                    A = A.func(*args, evaluate=False)
+                    return A - B
+                     
         return Complement(A, B, evaluate=False)
 
     def _contains(self, other):
@@ -2475,7 +2477,7 @@ class FiniteSet(Set, EvalfMixin):
                     
             if len(_s) == len(unk) == 1:
                 from sympy.functions.elementary.piecewise import Piecewise                
-                return Piecewise((FiniteSet(*_s), Unequality([*_s][0], unk[0])), (S.EmptySet, True))
+                return Piecewise((FiniteSet(*_s), Unequality([*_s][0], unk[0]).simplifier()), (S.EmptySet, True))
             
             if len(unk) == len(s) and not intersection:
                 return            

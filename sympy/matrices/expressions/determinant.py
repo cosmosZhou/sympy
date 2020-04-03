@@ -29,11 +29,10 @@ class Determinant(Expr):
             mat = HConcatenate(*mat)
 
         mat = sympify(mat)
-        if not mat.is_Matrix:
-            raise TypeError("Input to Determinant, %s, not a matrix" % str(mat))
+#         if not mat.is_Matrix:
+#             raise TypeError("Input to Determinant, %s, not a matrix" % str(mat))
 
-        if not mat.is_square:
-            raise ShapeError("Det of a non-square matrix")
+        assert mat.is_square, "Det of a non-square matrix"
 
         return Basic.__new__(cls, mat)
 

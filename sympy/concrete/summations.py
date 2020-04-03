@@ -815,6 +815,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return Ref(first, *self.limits) @ Ref(second, *self.limits)
 
     def _subs(self, old, new):
+        if new in self.variables and not old._has(new):
+            return self.limits_subs(new, self.generate_free_symbol(self.variables_set))._subs(old, new)
+        
         from sympy.core.basic import _aresame
         if self == old or _aresame(self, old) or self.dummy_eq(old):
             return new        
@@ -1021,8 +1024,18 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         limit = self.limits[0]
         if len(limit) == 2:
             x, domain = limit
+            if domain.is_Piecewise:
+                return domain.func(*((self.func(self.function, (x, e)).simplifier(), c) for e, c in domain.args)).simplifier()
+            
+            if isinstance(domain, FiniteSet):
+                return self.finite_aggregate(x, domain)
+
             nonzero_domain = self.function.nonzero_domain(x)
             domain &= nonzero_domain
+            
+            if domain not in limit[1]:
+                print(domain in limit[1])
+            assert domain in limit[1]
             
             if domain.is_EmptySet:
                 return S.Zero
@@ -1048,9 +1061,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     return A - B
                 if B & nonzero_domain == S.EmptySet:
                     domain = A
-                    
-            if isinstance(domain, FiniteSet):
-                return self.finite_aggregate(x, domain)
 
             if not self.function.has(x):
                 if not domain.is_set:
@@ -1074,6 +1084,25 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 
                 return self.operator(*self.as_multiple_terms(x, universe))
             
+            if self.function._has(Piecewise):
+                if self.function.is_Mul and all(arg.is_Piecewise for arg in self.function.args):
+                    if len(self.function.args) > 2:
+                        return self
+                    piecewise0 = self.function.args[0]
+                    piecewise1 = self.function.args[1]
+                     
+                    if not any(c.has(x) for _, c in piecewise0.args):
+                        ...
+                    elif not any(c.has(x) for _, c in piecewise1.args):
+                        tmp = piecewise0
+                        piecewise0 = piecewise1
+                        piecewise1 = tmp                        
+                    else:
+                        return self
+                    piecewise = piecewise0.func(*((piecewise1.func(*((e * _e, _c) for _e, _c in piecewise1.args)), c) for e, c in piecewise0.args))
+                    return self.func(piecewise, *self.limits).simplifier()
+                else:
+                    return self 
             domain = self.function.nonzero_domain(x)
 
             domain &= universe
@@ -1083,7 +1112,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             
             if domain.is_Piecewise:
                 domain = Union(*(e for e, _ in domain.args)) & universe
-                                    
+                     
+            if domain.is_Complement:
+                if domain.args[0] in universe:
+                    domain = domain.args[0]
+                else:
+                    return self
+                
             if domain.is_Intersection :
                 finiteset = set()
                 for s in domain.args:
@@ -1109,7 +1144,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if domain.is_Intersection :
                 return self
                 
-            a, b = domain.min(), domain.max()
+            _a, _b = domain.min(), domain.max()
+            if not _b.is_Min:
+                b = _b
+            if not _a.is_Max:
+                a = _a                
             limit = x, a, b
         x = limit[0]
 
@@ -1223,7 +1262,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if self.limits:
             return self.function.shape
         return self.function.shape[:-1]
-        
     
     def defined_domain(self, x):
         from sympy.core.numbers import oo
@@ -1270,6 +1308,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     @property
     def is_extended_nonpositive(self):
         return self.function.is_extended_nonpositive
+
 
 def summation(f, *symbols, **kwargs):
     r"""

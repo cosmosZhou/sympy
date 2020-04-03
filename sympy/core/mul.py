@@ -1774,6 +1774,11 @@ class Mul(Expr, AssocOp):
             elif coeff < 0:
                 return S.NegativeInfinity if positive else S.Infinity
 
+        for arg in self.args:
+            if arg.is_KroneckerDelta:
+                i, j = arg.args
+                if i == 0 and j in self.args or j == 0 and i in self.args:
+                    return S.Zero                     
         return self
 
     def as_multiple_limits(self):
@@ -1883,15 +1888,28 @@ class Mul(Expr, AssocOp):
         domain = S.EmptySet
         from sympy import Interval, oo
         coeff = []
-        for arg in self.args:
-            if arg.is_number:
-                coeff.append(arg)
-                continue
-            domain |= arg.domain
-        if coeff:
-            if domain:
-                return domain * Mul(*coeff)
-            return Interval(-oo, oo, integer=self.is_integer)
+        
+        max_shape_len = max(len(arg.shape) for arg in self.args)
+        if all(len(arg.shape) == max_shape_len for arg in self.args):
+            for arg in self.args:
+                if arg.is_number:
+                    coeff.append(arg)
+                    continue
+                domain |= arg.domain
+            if coeff:
+                if domain:
+                    return domain * Mul(*coeff)
+                return Interval(-oo, oo, integer=self.is_integer)                
+        else:
+            for arg in self.args:
+                if len(arg.shape) < max_shape_len:
+                    coeff.append(arg)
+                    continue
+                domain |= arg.domain
+            
+            if coeff: 
+                return domain * Mul(*coeff).domain
+
         return domain
 
     @property

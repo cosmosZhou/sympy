@@ -181,7 +181,7 @@ class ExprWithLimits(Expr):
                     s = finiteset[0]
             assert s.is_FiniteSet, str(s) 
         for k in s:
-            args.append(self.function._subs(x, k))
+            args.append(self.function._subs(x, k).simplifier())
         return self.operator(*args)                   
 
     def subs_limits_with_epitome(self, epitome):
@@ -578,23 +578,26 @@ class ExprWithLimits(Expr):
             return self.func(function, *limits, **kwargs).simplifier()
 
         if self.function.is_ExprWithLimits and new in self.function.variables_set:
-            return self
-#             y = self.function.generate_free_symbol(self.function.variables_set, **new.dtype.dict)
-#             assert new != y
-#             function = self.function.limits_subs(new, y)
-#             if function == self.function:
-#                 return self
-#             this = subs(function, x, domain, new)
-# 
-#             if this.function.is_ExprWithLimits and y in this.function.variables_set:
-#                 function = this.function.limits_subs(y, x)
-#             else:
-#                 function = this.function
-# 
-#             this = this.func(function, *this.limits)
-#             if this.is_Boolean:
-#                 this.equivalent = self
-#             return this
+            if self.function.is_Exists:
+                return self
+            y = self.function.generate_free_symbol(self.function.variables_set, **new.dtype.dict)
+            assert new != y
+            function = self.function.limits_subs(new, y)
+            if function == self.function:
+                return self
+            this = subs(function, x, domain, new)
+ 
+            if this.is_ExprWithLimits:
+                if this.function.is_ExprWithLimits and y in this.function.variables_set:
+                    function = this.function.limits_subs(y, x)
+                else:
+                    function = this.function
+     
+                this = this.func(function, *this.limits)
+                
+            if this.is_Boolean:
+                this.equivalent = self
+            return this
 
         return subs(self.function, x, domain, new)
 
@@ -604,8 +607,13 @@ class ExprWithLimits(Expr):
             limit = self.limits[0]
             x, *domain = limit
 
-            if old == x and not new.has(x):
-                return self._subs_limits(x, domain, new)
+            if old == x:
+                if not domain:
+                    assert 'domain' not in new._assumptions
+                    return self.func(self.function._subs(old, new), (new, x.domain)).simplifier()
+            
+                if not new.has(x):
+                    return self._subs_limits(x, domain, new)
 
             if len(domain) == 2:
                 a, b = domain
@@ -616,7 +624,7 @@ class ExprWithLimits(Expr):
                 function = self.function.subs(old, new)
                 if len(domain) == 2:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplifier()
-                from sympy.tensor.indexed import Slice
+#                 from sympy.tensor.indexed import Slice
                 if isinstance(x, Slice):
                     x = x.subs(old, new)
                 return self.func(function, (x,)).simplifier()
@@ -629,8 +637,11 @@ class ExprWithLimits(Expr):
 
                     alpha = p.coeff_monomial(x)
                     diff /= alpha
-
-                function = self.function.subs(x, x - diff)
+                    
+                if diff.is_zero:
+                    return self
+                
+                function = self.function._subs(x, x - diff)
                 if len(domain) == 2:
                     return self.func(function, (x, a + diff, b + diff)).simplifier()
                 else:
@@ -2489,11 +2500,6 @@ class Ref(ExprWithLimits):
     __slots__ = ['is_commutative']
 
     def __new__(cls, function, *symbols, **assumptions):
-        if isinstance(function, Relational):
-            lhs = ExprWithLimits.__new__(cls, function.lhs, *symbols, **assumptions).simplifier()
-            rhs = ExprWithLimits.__new__(cls, function.rhs, *symbols, **assumptions).simplifier()
-            return function.func(lhs, rhs)
-
         symbols = list(symbols)
 
         for i, limit in enumerate(symbols):
@@ -3201,6 +3207,8 @@ class Ref(ExprWithLimits):
         from sympy.tensor.indexed import Indexed
         x = tuple(x for x, *_ in self.limits)
         if isinstance(exp, Atom):
+            if exp in x:
+                return None, exp
             return exp, None
 
         if isinstance(exp, Indexed):
@@ -3269,6 +3277,8 @@ class Ref(ExprWithLimits):
 #         from sympy.matrices.expressions.matexpr import MatrixElement
         from sympy.core.basic import Atom
         if isinstance(exp, Atom):
+            if exp in self.variables_set:
+                return None, exp
             return exp, None
 
         from sympy.tensor.indexed import Indexed

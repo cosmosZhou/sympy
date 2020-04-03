@@ -3979,7 +3979,17 @@ class Expr(Basic, EvalfMixin):
         i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)         
         return UnionComprehension({self[i]}, (i, 0, self.shape[0] - 1))
 
-
+    @property
+    def is_square(self):
+        shape = self.shape        
+        return len(shape) >= 2 and shape[0] == shape[1]
+    
+#     def inverse(self):
+#         if not self.is_square:
+#             return 
+#         from sympy.matrices.expressions.inverse import Inverse
+#         return Inverse(self)
+    
 class AtomicExpr(Atom, Expr):
     """
     A parent class for object which are both atoms and Exprs.

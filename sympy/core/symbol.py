@@ -175,9 +175,11 @@ class Symbol(AtomicExpr, NotIterable):
         return self
 
     # performing other in self
-    def __contains__(self, other):
-        if other == self:
-            return True
+    def __contains__(self, other):        
+        contains = self.contains_with_subset(other)
+        if contains is not None:
+            return contains
+        
         if self.definition is not None:
             return other in self.definition
 

@@ -38,10 +38,10 @@ class Inverse(MatPow):
         # exp is there to make it consistent with
         # inverse.func(*inverse.args) == inverse
         mat = _sympify(mat)
-        if not mat.is_Matrix:
-            raise TypeError("mat should be a matrix")
-        if not mat.is_square:
-            raise ShapeError("Inverse of non-square matrix %s" % mat)
+#         if not mat.is_Matrix:
+#             raise TypeError("mat should be a matrix")
+        assert mat.is_square, "Inverse of non-square matrix %s" % mat
+        
         return Basic.__new__(cls, mat, exp)
 
     @property

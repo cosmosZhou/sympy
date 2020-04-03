@@ -1144,7 +1144,7 @@ class Add(Expr, AssocOp):
                         continue
 
                     t_, *_ = res.values()
-                    neg = neg.subs(t_, t)
+                    neg = neg.limits_subs(t_, t)
 
                     if pos.function != neg.function:
                         neg = neg.func(pos.function, *neg.limits)

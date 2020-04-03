@@ -7,7 +7,6 @@ from sympy.core.logic import fuzzy_not
 from sympy.core.mul import prod
 from sympy.utilities.iterables import (has_dups, default_sort_key)
 
-
 ###############################################################################
 ###################### Kronecker Delta, Levi-Civita etc. ######################
 ###############################################################################
@@ -132,6 +131,7 @@ class KroneckerDelta(Function):
     """
     is_extended_nonnegative = True
     is_integer = True
+    is_KroneckerDelta = True
 
     @classmethod
     def eval(cls, i, j):

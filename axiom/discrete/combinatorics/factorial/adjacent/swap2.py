@@ -9,6 +9,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.concrete.expr_with_limits import Forall
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
+from axiom.discrete.combinatorics.factorial.adjacent import swap1, swap1_utility
 
 
 @plausible
@@ -63,7 +64,17 @@ def prove(Eq):
     given = Forall(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S))
     
     Eq << apply(given)
-
+    
+    w = Eq[0].lhs.base
+    
+    Eq << swap1_utility.apply(x, w[0])
+    
+    Eq << Eq[1].subs(Eq[-1].reversed)
+    
+    k = Eq[2].function.lhs.variable
+    Eq << Eq[-1].this.function.lhs.limits_subs(i, k)
+    
+    Eq << Eq[-1].this.function.lhs.function.args[1].args[1].limits_subs(i, k)    
 
 if __name__ == '__main__':
     prove(__file__)

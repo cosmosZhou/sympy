@@ -1,22 +1,19 @@
-from sympy.core.relational import Equality, LessThan, Unequality
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Equality
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
-from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset, Supset
-from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
+from sympy.sets.contains import Subset, Supset
 
 
-# provided0: A in B
-# provided1: B & C = {}
+# given0: A in B
+# given1: B & C = {}
 # and C & A = {}
-def apply(*provided):
-    assert len(provided) == 2
+@plausible
+def apply(*given):
+    assert len(given) == 2
     A = None
     B = None
-    for p in provided:
+    for p in given:
         if p.is_Subset:
             A, B = p.args
         elif p.is_Equality:
@@ -34,9 +31,7 @@ def apply(*provided):
         assert B == C
         C = _B
 
-    return Equality(C & A, S.EmptySet,
-                    given=provided,
-                    plausible=plausible())
+    return Equality(C & A, S.EmptySet, given=given)
 
 
 from sympy.utility import check
@@ -49,12 +44,7 @@ def prove(Eq):
     C = Symbol('C', dtype=dtype.integer)
 
     subset = Subset(A, B, evaluate=False)
-
     equality = Equality(B & C, S.EmptySet, evaluate=False)
-
-    Eq << equality
-
-    Eq << subset
 
     Eq << apply(equality, subset)
 

@@ -166,10 +166,6 @@ class MatrixExpr(Expr):
     def cols(self):
         return self.shape[1]
 
-    @property
-    def is_square(self):
-        return self.rows == self.cols
-
     def _eval_conjugate(self):
         from sympy.matrices.expressions.adjoint import Adjoint
         from sympy.matrices.expressions.transpose import Transpose
@@ -839,7 +835,6 @@ class Identity(MatrixExpr):
     >>> I*A
     A
     """
-
     is_Identity = True
 
 #     def __new__(cls, *args):
@@ -1267,7 +1262,8 @@ class HConcatenate(Concatenate):
         self.broadcast(shapes)
         return shapes[0][0], sum(s[1] for s in shapes)
 
-#vertical Concatenation
+
+# vertical Concatenation
 class VConcatenate(Concatenate):
     
     @property
@@ -1462,7 +1458,9 @@ class VConcatenate(Concatenate):
 
 # precondition: i > j or i < j
 class Swap(Identity):
-
+    is_Swap = True
+    is_Identity = False
+    
     def _latex(self, p):
         return p._print_Basic(self)
     
@@ -1474,8 +1472,6 @@ class Swap(Identity):
             return Identity(n)
         return Identity.__new__(cls, n, i, j)
     
-    is_Identity = False
-    
     def _entry(self, i, j=None, **_):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.functions.elementary.piecewise import Piecewise
@@ -1483,7 +1479,9 @@ class Swap(Identity):
         
         if j is None:
             return_reference = True
-            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)            
+            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+        else:
+            return_reference = False                        
         piecewise = Piecewise((KroneckerDelta(j, self.i), Equality(i, self.j)),
                               (KroneckerDelta(j, self.j), Equality(i, self.i)),
                               (KroneckerDelta(j, i), True))
@@ -1527,7 +1525,7 @@ class Multiplication(Identity):
     def _eval_determinant(self):
         return self.multiplier
 
-
+        
 class Addition(Multiplication):
     '''
     multiply the ith row and add it to the jth row

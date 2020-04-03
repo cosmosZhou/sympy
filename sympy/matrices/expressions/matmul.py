@@ -13,7 +13,6 @@ from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
 
 
-
 # XXX: MatMul should perhaps not subclass directly from Mul
 class MatMul(MatrixExpr, Mul):
     precedence = 45
@@ -256,35 +255,43 @@ class MatMul(MatrixExpr, Mul):
             if len(A.shape) < 2:
                 n = A.shape[0]
                 
-                if isinstance(A, Ref):
-                    A_limit = A.limits[0]
-                elif hasattr(A, "definition") and A.definition is not None:
-                    A_limit = A.definition.limits[0]
-                else:                    
-                    A_limit = None
+                if len(B.shape) > 1:
+                    if isinstance(B, Ref):
+                        B_limit = B.limits[0]
+                    elif hasattr(A, "definition") and B.definition is not None:
+                        B_limit = B.definition.limits[0]
+                    else:                    
+                        j = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
+                        B_limit = (j, 0, B.shape[1] - 1)
 
-                if A_limit and len(B.shape) > 1:
-                    j, *_ = A_limit    
-                    return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)), A_limit)
+                    j, *_ = B_limit
+    
+                    return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)).simplifier(), B_limit).simplifier()
                 return Sum(A[k] * B[k], (k, 0, n - 1)).simplifier()                
             else:
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]
-                else:
+                elif A.is_Swap:
+                    i = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
+                    i_limit = (i, 0, A.shape[0] - 1)
+                else:                    
                     i_limit = A.definition.limits[0]
 
                 n = A.shape[1]
 
                 i, *_ = i_limit
 
-                if isinstance(B, Ref):
-                    j_limit = B.limits[1]
+                if len(B.shape) > 1:
+                    if isinstance(B, Ref):
+                        j_limit = B.limits[1]
+                    else:
+                        j_limit = B.definition.limits[1]
+    
+                    j, *_ = j_limit
+    
+                    return Ref(Sum(A[i, k] * B[k, j], (k, 0, n - 1)), i_limit, j_limit)
                 else:
-                    j_limit = B.definition.limits[1]
-
-                j, *_ = j_limit
-
-                return Ref(Sum(A[i, k] * B[k, j], (k, 0, n - 1)), i_limit, j_limit)
+                    return Ref(Sum(A[i, k] * B[k], (k, 0, n - 1)).simplifier(), i_limit)
 
         return MatrixExpr.expand(self)
 
@@ -299,13 +306,14 @@ class MatMul(MatrixExpr, Mul):
 
     @property
     def domain(self):
-        from sympy import Interval,oo
+        from sympy import Interval, oo
         from sympy.sets.sets import CartesianSpace
         shape = self.shape
-        interval = Interval(-oo,oo,integer = self.is_integer)
+        interval = Interval(-oo, oo, integer=self.is_integer)
         if shape:            
             return CartesianSpace(interval, *shape)
         return interval
+
 
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """
@@ -393,7 +401,7 @@ def xxinv(mul):
                     else:
                         I = _Y ** (y_exp - x_exp)
                     return newmul(factor, *(matrices[:i] + [I] + matrices[i + 2:]))
-        except ValueError:  # Y might not be invertible
+        except (ValueError, AttributeError):  # Y might not be invertible
             pass
     return mul
 

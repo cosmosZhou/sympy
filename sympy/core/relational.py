@@ -354,6 +354,10 @@ class Relational(Boolean, Expr, EvalfMixin):
             if rhs in lhs_args:
                 lhs_args.remove(rhs)
                 return self.func(lhs_func(*lhs_args), 0, equivalent=self).simplifier()
+            
+        from sympy import Symbol
+        if not lhs._has(Symbol) and rhs._has(Symbol):
+            return self.reversed
         return self
 
     def expand(self, *args, **kwargs):
@@ -1137,7 +1141,7 @@ class Unequality(Relational):
                 return self
 
         return self
-
+    
 Ne = Unequality
 Equality.invert_type = Unequality
 

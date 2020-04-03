@@ -171,7 +171,7 @@ def prove(Eq):
     Eq << (x_quote_union & SqueezeTheorem & Eq[-1])
 
     assert len(Eq.plausibles_dict) == 1
-    Eq.x_quote_definition = Ref[i:k + 1](Eq.x_quote_definition)
+    Eq.x_quote_definition = Eq.x_quote_definition.reference((i, 0, k))
 
     A = IndexedBase("A", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
 

@@ -343,6 +343,16 @@ class Piecewise(Function):
             newargs.append((e - other, c))
         return self.func(*newargs)
 
+#     def __mul__(self, other):
+#         if other.is_Piecewise:
+#             args = []
+#             for e, c in self.args:
+#                 for _e, _c in self.args:
+#                     args.append((e * _e, c & _c))
+#             return self.func(*args)
+# 
+#         return super(Piecewise, self).__mul__(self, other)
+
     def _eval_simplify(self, ratio, measure, rational, inverse):
         args = [a._eval_simplify(ratio, measure, rational, inverse)
             for a in self.args]
@@ -1081,16 +1091,17 @@ class Piecewise(Function):
         if len(self.args) == 2:
             e0, c0 = self.args[0]
             if c0.is_Equality:
-                e1, _ = self.args[1]
-                old, new = c0.args
-                _e1 = e1._subs(old, new) 
-                _e0 = e0._subs(old, new)
+                e1, c1 = self.args[1]
+                lhs, rhs = c0.args
+                _e1 = e1._subs(lhs, rhs) 
+                _e0 = e0._subs(lhs, rhs)
                 if _e0 == _e1 or e0 == _e1 or _e0 == e1:
                     return e1
-                if not e0.is_set and old.is_integer and new.is_integer:
+                if not e0.is_set and lhs.is_integer and rhs.is_integer:
                     from sympy.functions.special.tensor_functions import KroneckerDelta
 #                     e0 * KroneckerDelta(old, new) + e1 * (1 - KroneckerDelta(old, new)) 
-                    return e1 + (e0 - e1)._subs(old, new) * KroneckerDelta(old, new)                    
+                    return e1 + (e0 - e1)._subs(lhs, rhs) * KroneckerDelta(lhs, rhs)
+                                         
             if c0.is_Unequality:
                 c1 = c0.invert()
                 e1, _ = self.args[1]
@@ -1099,6 +1110,11 @@ class Piecewise(Function):
                 _e0 = e0._subs(old, new)
                 if _e0 == _e1 or e0 == _e1 or _e0 == e1:
                     return e0
+            if c0.is_Relational:
+                from sympy import Symbol
+                if not lhs._has(Symbol) and rhs._has(Symbol):
+                    c0 = c0.reversed
+                    return self.func((e0, c0), (e1, c1))
                 
         return self
 
@@ -1210,11 +1226,11 @@ def piecewise_fold(expr):
             if isinstance(c, ITE):
                 c = c.to_nnf()
                 c = simplify_logic(c, form='cnf')
-            if isinstance(e, Piecewise):
-                new_args.extend([(piecewise_fold(ei), And(ci, c))
-                    for ei, ci in e.args])
-            else:
-                new_args.append((e, c))
+            new_args.append((e, c))
+#             if isinstance(e, Piecewise):
+#                 new_args.extend([(piecewise_fold(ei), And(ci, c)) for ei, ci in e.args])
+#             else:
+#                 new_args.append((e, c))
     else:
         from sympy.utilities.iterables import cartes, sift, common_prefix
         # Given
@@ -1232,6 +1248,8 @@ def piecewise_fold(expr):
         # (and the expression is commutative).
         if expr.is_Add or expr.is_Mul and expr.is_commutative:
             p, args = sift(expr.args, lambda x: x.is_Piecewise, binary=True)
+            if len(p) > 1:
+                return expr
             pc = sift(p, lambda x: tuple([c for e, c in x.args]))
             for c in list(ordered(pc)):
                 if len(pc[c]) > 1:
