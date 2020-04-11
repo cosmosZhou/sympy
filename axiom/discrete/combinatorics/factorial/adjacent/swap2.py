@@ -1,7 +1,6 @@
-from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref, Union
+from sympy.utility import check, plausible, Ref
 from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo

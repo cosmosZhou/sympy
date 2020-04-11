@@ -31,7 +31,7 @@ def prove(Eq):
     k = Symbol('k', domain=Interval(0, n - 1, integer=True))    
     l = Symbol('l', domain=Interval(0, n - 1, integer=True))
     
-    lhs = Interval(1, n-1, integer = True) - {i}
+    lhs = Interval(1, n - 1, integer=True) - {i}
     rhs = i.set - Zero().set
     print(lhs & rhs)
     
@@ -67,6 +67,8 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.subs(Eq[0].subs(i, 0).subs(j, i))
     
     Eq << Eq[-1].this.rhs.expand()
+    
+    Eq << Eq[-1].this.rhs.simplifier(deep=True)
     
 
 if __name__ == '__main__':

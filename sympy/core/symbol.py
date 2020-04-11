@@ -366,29 +366,33 @@ class Symbol(AtomicExpr, NotIterable):
             return S.UniversalSet
         
         from sympy.core.numbers import oo
-
+        shape = self.shape
         if self.is_integer:
             if self.is_positive:
-                return Interval(1, oo, integer=True)
-            if self.is_nonnegative:
-                return Interval(0, oo, integer=True)
-            if self.is_negative:
-                return Interval(-oo, -1, integer=True)
-            if self.is_nonpositive:
-                return Interval(-oo, 0, integer=True)
-
-            return Interval(-oo, oo, integer=True)
+                interval = Interval(1, oo, integer=True)
+            elif self.is_nonnegative:
+                interval = Interval(0, oo, integer=True)
+            elif self.is_negative:
+                interval = Interval(-oo, -1, integer=True)
+            elif self.is_nonpositive:
+                interval = Interval(-oo, 0, integer=True)
+            else:
+                interval = Interval(-oo, oo, integer=True)
         else:
             if self.is_positive:
-                return Interval(0, oo, left_open=True)
-            if self.is_nonnegative:
-                return Interval(0, oo)
-            if self.is_negative:
-                return Interval(-oo, 0, right_open=True)
-            if self.is_nonpositive:
-                return Interval(-oo, 0)
-
-            return Interval(-oo, oo)
+                interval = Interval(0, oo, left_open=True)
+            elif self.is_nonnegative:
+                interval = Interval(0, oo)
+            elif self.is_negative:
+                interval = Interval(-oo, 0, right_open=True)
+            elif self.is_nonpositive:
+                interval = Interval(-oo, 0)
+            else:
+                interval = Interval(-oo, oo)
+        if not shape:
+            return interval
+        from sympy.sets.sets import CartesianSpace
+        return CartesianSpace(interval, *shape)        
 
     @property
     def definition(self):
@@ -475,6 +479,9 @@ class Symbol(AtomicExpr, NotIterable):
                 return definition._has(pattern)
 
             if 'domain' in self._assumptions:
+                from sympy.core.numbers import Infinity, NegativeInfinity
+                if isinstance(pattern, (Infinity, NegativeInfinity)): #excludes oo, -oo, because these are not variables;
+                    return False
                 domain = self._assumptions['domain']
                 return domain._has(pattern)
 

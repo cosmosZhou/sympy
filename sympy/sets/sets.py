@@ -1921,20 +1921,11 @@ class Intersection(Set, LatticeOp):
             elif other_sets == S.UniversalSet:
                 res += FiniteSet(*unk)
             else:
-                from sympy.functions.elementary.piecewise import Piecewise
-                from sympy.sets.conditionset import conditionset
                 unk = FiniteSet(*unk)
-                if other_sets.is_Complement :
-                    if unk in other_sets.args[1]:
-                        return res
-                    if unk in other_sets.args[0]:
-                        return res + other_sets.func(unk, other_sets.args[1], evaluate=False)
-                if other_sets.is_ConditionSet:                    
-                    return res + conditionset(other_sets.variable, other_sets.condition, other_sets.base_set & unk)
-                if other_sets.is_FiniteSet:
-                    if len(unk) == len(other_sets) == 1:
-                        return res + Piecewise((unk, Equality(unk.arg, other_sets.arg)), (S.EmptySet, True)).simplifier()
-                res += Intersection(unk, other_sets, evaluate=False) 
+                result = other_sets.handle_finite_sets(unk)
+                if result is not None:
+                    return res + result
+                return res + Intersection(unk, other_sets, evaluate=False) 
         return res
 
     def as_relational(self, symbol):
@@ -2004,6 +1995,15 @@ class Complement(Set, EvalfMixin):
             
         return r"%s \setminus %s" % (p._print(A), B)
 
+    def _sympystr(self, p): 
+        A, B = self.args
+        if B.is_Complement:
+            B = r"(%s)" % p._print(B)
+        else:
+            B = p._print(B)
+            
+        return r"%s \ %s" % (p._print(A), B)
+
     def assertion(self):
         A, B = self.args
         return Equality(abs(Union(A, B)), abs(self) + abs(B))
@@ -2051,9 +2051,9 @@ class Complement(Set, EvalfMixin):
         from sympy.core.numbers import epsilon
         from sympy import ceiling
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.concrete.expr_with_limits import Minimum        
+        from sympy.concrete.expr_with_limits import Maximum        
         if not self.is_connected_interval():
-            return Minimum(self)
+            return Maximum(self)
                     
         A, B = self.args
         x = A.max()
@@ -2101,6 +2101,10 @@ class Complement(Set, EvalfMixin):
                     return self.func(A, B, evaluate=False)
             except:
                 return
+        if A in B | C:
+            return A & C
+        if A & C == S.EmptySet:
+            return A - B
 
     @staticmethod
     def reduce(A, B):
@@ -2159,6 +2163,10 @@ class Complement(Set, EvalfMixin):
                     A = A.func(*args, evaluate=False)
                     return A - B
                      
+        if A.is_Complement:
+            _, _B = A.args
+            if B in _B:
+                return A
         return Complement(A, B, evaluate=False)
 
     def _contains(self, other):
@@ -2191,6 +2199,8 @@ class Complement(Set, EvalfMixin):
             _A, _B = C.args
             if B == _B:
                 return (A | _A) - B
+            if _B in self:
+                return _A | self
 
 # if B => C, (A - B) | C = A | C
 # if A => C, (A - B) | C = C
@@ -2203,7 +2213,19 @@ class Complement(Set, EvalfMixin):
         A, B = self.args
         return A.defined_domain(x) & B.defined_domain(x)
 
+    def supremum(self):
+        return self.args[0].max()
 
+    def infimum(self):
+        return self.args[0].min()
+    
+    def handle_finite_sets(self, unk):
+        if unk in self.args[1]:
+            return S.EmptySet
+        if unk in self.args[0]:
+            return self.func(unk, self.args[1], evaluate=False)
+            
+        
 class EmptySet(with_metaclass(Singleton, Set)):
     """
     Represents the empty set. The empty set is available as a singleton
@@ -2234,7 +2256,7 @@ class EmptySet(with_metaclass(Singleton, Set)):
 
     @property
     def atomic_dtype(self):
-        return dtype.set
+        return None
 
     def _eval_Abs(self):
         return 0
@@ -2387,7 +2409,11 @@ class FiniteSet(Set, EvalfMixin):
                     u = b.func(*u, evaluate=False)
                     if self in u:
                         return b.func((self | s), u, evaluate=False)
-        return None
+        if b.is_Complement:
+            A, B = b.args
+            if B in self:
+                return A | self
+#         return None
 
     def __new__(cls, *args, **kwargs):
         evaluate = kwargs.get('evaluate', global_evaluate[0])
@@ -2475,10 +2501,6 @@ class FiniteSet(Set, EvalfMixin):
                 if not all(Equality(e, i).is_BooleanFalse for e in _s):
                     unk.append(i)
                     
-            if len(_s) == len(unk) == 1:
-                from sympy.functions.elementary.piecewise import Piecewise                
-                return Piecewise((FiniteSet(*_s), Unequality([*_s][0], unk[0]).simplifier()), (S.EmptySet, True))
-            
             if len(unk) == len(s) and not intersection:
                 return            
                 
@@ -2616,6 +2638,10 @@ class FiniteSet(Set, EvalfMixin):
         from sympy.functions.elementary.miscellaneous import Max
         return Max(*self.args)        
 
+    def handle_finite_sets(self, unk):
+        if len(unk) == len(self) == 1:
+            from sympy import Piecewise
+            return Piecewise((unk, Equality(unk.arg, self.arg)), (S.EmptySet, True)).simplifier()
 
 class FiniteList(Expr):
     """

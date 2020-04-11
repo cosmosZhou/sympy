@@ -11,6 +11,7 @@ from sympy.logic.boolalg import (And, Boolean, distribute_and_over_or,
     true, false, Or, ITE, simplify_logic)
 from sympy.utilities.iterables import uniq, ordered, product, sift
 from sympy.utilities.misc import filldedent, func_name
+from _functools import reduce
 
 Undefined = S.NaN  # Piecewise()
 
@@ -127,10 +128,7 @@ class Piecewise(Function):
 
     @property
     def scope_variables(self):
-        variables = {*()}
-        for _, c in self.args:
-            variables |= c.scope_variables
-        return variables 
+        return reduce(lambda x, y: x & y, (c.free_symbols for _, c in self.args[:-1])) 
         
     @property
     def set(self):
@@ -1083,11 +1081,41 @@ class Piecewise(Function):
         dtype = None
         for function, _ in self.args:
             _dtype = function.atomic_dtype
+            if _dtype is None:
+                continue
             if dtype is None or dtype in _dtype and dtype != _dtype:
                 dtype = _dtype
         return dtype
 
-    def simplifier(self, *_, **__):        
+    def simplifier(self, deep=False):
+        if deep:
+            scope_variables = self.scope_variables
+            if len(scope_variables) == 1:
+                x, *_ = scope_variables 
+                univeralSet = x.domain
+                args = []
+                union = S.EmptySet
+                for i, (f, cond) in enumerate(self.args):
+                    domain = (univeralSet - union) & x.conditional_domain(cond)
+                    union |= domain
+                    
+                    if f._has(x):
+                        _x = x.copy(domain=domain)
+                        _f = f._subs(x, _x).simplifier(deep=True)._subs(_x, x)
+                        if _f != f:
+                            args = [*self.args]
+                            args[i] = (_f, cond)
+                            return self.func(*args).simplifier(deep=True)
+                                
+        expr, _ = self.args[-1]
+        e, c = self.args[-2]
+        if e == expr or c.is_Equality and (e == expr._subs(*c.args) or e._subs(*c.args) == expr):                
+            args = [*self.args]
+            del args[-2]
+            if len(args) == 1:
+                return expr
+            return self.func(*args).simplifier()
+                         
         if len(self.args) == 2:
             e0, c0 = self.args[0]
             if c0.is_Equality:
@@ -1101,21 +1129,34 @@ class Piecewise(Function):
                     from sympy.functions.special.tensor_functions import KroneckerDelta
 #                     e0 * KroneckerDelta(old, new) + e1 * (1 - KroneckerDelta(old, new)) 
                     return e1 + (e0 - e1)._subs(lhs, rhs) * KroneckerDelta(lhs, rhs)
+                if e1.is_Complement:
+                    _A, B = e1.args
+                    if _e0 == e0:
+                        has_lhs, has_rhs = B._has(c0.lhs), B._has(c0.rhs)
+                        if has_lhs and not has_rhs:
+                            return e0 - (B - B._subs(c0.lhs, c0.rhs))
+                        if not has_lhs and has_rhs:
+                            return e0 - (B - B._subs(c0.rhs, c0.lhs))
+#                     elif e0 == _A:#Piecewise(({x[j]}, j == i), ({x[j]} \ {x[i]}, True))
+#                         if B == e0._subs(c0.lhs, c0.rhs) or B == e0._subs(c0.rhs, c0.lhs):
+#                             e1 = S.EmptySet
+#                             return self.func((e0, c0), (e1, c1))
+                        
                                          
             if c0.is_Unequality:
-                c1 = c0.invert()
+                _c0 = c0.invert()
                 e1, _ = self.args[1]
-                old, new = c1.args
+                old, new = _c0.args
                 _e1 = e1._subs(old, new) 
                 _e0 = e0._subs(old, new)
                 if _e0 == _e1 or e0 == _e1 or _e0 == e1:
                     return e0
-            if c0.is_Relational:
-                from sympy import Symbol
-                if not lhs._has(Symbol) and rhs._has(Symbol):
-                    c0 = c0.reversed
-                    return self.func((e0, c0), (e1, c1))
-                
+                if e1.is_EmptySet:
+                    has_lhs, has_rhs = e0._has(c0.lhs), e0._has(c0.rhs)
+                    if not has_lhs and has_rhs:
+                        return e0 - e0._subs(c0.rhs, c0.lhs)
+                    if has_lhs and not has_rhs:
+                        return e0 - e0._subs(c0.lhs, c0.rhs)
         return self
 
     def __contains__(self, other):
@@ -1161,7 +1202,7 @@ class Piecewise(Function):
         else:
             for e, c in self.args:
                 tuples.append((e | b, c))    
-        return self.func(*tuples)
+        return self.func(*tuples).simplifier()
 
     def intersection_sets(self, b):
         if b.is_Piecewise:

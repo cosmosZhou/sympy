@@ -570,6 +570,8 @@ def plausible(apply=None):
         statement = apply(*args, **kwargs)
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]:
+            if not kwargs.get('evaluate', True):
+                return statement
             if isinstance(statement, tuple):
                 return [*(s.simplifier() for s in statement)]
             return statement.simplifier()

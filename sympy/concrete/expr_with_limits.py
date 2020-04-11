@@ -21,6 +21,7 @@ from sympy.utilities import flatten
 from sympy.utilities.iterables import sift, postorder_traversal
 from sympy.functions.elementary.miscellaneous import Min, Max, MinMaxBase
 from sympy.core.function import Derivative
+from _functools import reduce
 
 
 def _common_new(cls, function, *symbols, **assumptions):
@@ -508,7 +509,8 @@ class ExprWithLimits(Expr):
     def as_multiple_terms(self, x, domain):                
         univeralSet = Interval(S.NegativeInfinity, S.Infinity, integer=True)
         args = []
-        union = S.EmptySet
+        union = S.EmptySet 
+        assert x in self.function.scope_variables            
         for f, condition in self.function.args:
             _domain = (univeralSet - union) & x.conditional_domain(condition) & domain
             assert not _domain or _domain.is_integer
@@ -613,6 +615,9 @@ class ExprWithLimits(Expr):
                     return self.func(self.function._subs(old, new), (new, x.domain)).simplifier()
             
                 if not new.has(x):
+                    if self.function.has(new):
+                        return self
+                    
                     return self._subs_limits(x, domain, new)
 
             if len(domain) == 2:
@@ -772,8 +777,20 @@ class ExprWithLimits(Expr):
         for i, arg in enumerate(args):
             if not hasattr(arg, '_eval_subs'):
                 continue
-            arg = arg._subs(old, new)
-
+#             if i > 0:
+#                 arg = [*arg]
+#                 for j, a in enumerate(arg):
+#                     if j == 0:
+#                         continue
+#                     
+#                     a = a._subs(old, new)
+#                     if not _aresame(a, arg[j]):
+#                         hit = True
+#                         arg[j] = a
+#                 if hit:
+#                     args[i] = Tuple(*arg) 
+#             else:
+            arg = arg._subs(old, new)    
             if not _aresame(arg, args[i]):
                 hit = True
                 args[i] = arg
@@ -910,6 +927,16 @@ class ExprWithLimits(Expr):
             
         return domain
 
+    def match_index(self, expr):
+        if len(self.limits) != 1:
+            return
+        from sympy import Wild
+        i, *_ = self.limits[0]
+        i_ = Wild(i.name)
+
+        dic = expr.match(self.function.subs(i, i_))
+        if dic:
+            return dic[i_]
 
 class AddWithLimits(ExprWithLimits):
     r"""Represents unevaluated oriented additions.
@@ -1065,7 +1092,7 @@ def bounds(function, x, domain):
 class Minimum(ExprWithLimits):
     r"""Represents unevaluated Minimum operator.
     """
-
+    is_Minimum = True
     __slots__ = ['is_commutative']
     operator = Min
 
@@ -1778,11 +1805,29 @@ class Minimum(ExprWithLimits):
             return self.function.shape
         return self.function.shape[:-1]
 
+    @property
+    def is_extended_nonnegative(self):
+        if not self.limits and self.function.is_set:
+            if self.function.infimum() >= 0:
+                return True
 
+    @property
+    def is_extended_positive(self):
+        if not self.limits and self.function.is_set:
+            if self.function.infimum() > 0:
+                return True
+            
+    # infimum returns the value which is bound to be below (<=) the minimum!
+    def infimum(self):
+        if not self.limits and self.function.is_set:
+            return self.function.infimum()
+        return self
+            
+                
 class Maximum(ExprWithLimits):
     r"""Represents unevaluated Minimum operator.
     """
-
+    is_Maximum = True
     __slots__ = ['is_commutative']
     operator = Max
 
@@ -2492,6 +2537,24 @@ class Maximum(ExprWithLimits):
             return self.function.shape
         return self.function.shape[:-1]
 
+    # supremum returns the value which is bound to be above (>=) the minimum!
+    def supremum(self):
+        if not self.limits and self.function.is_set:
+            return self.function.supremum()
+        return self
+
+    @property
+    def is_extended_nonpositive(self):
+        if not self.limits and self.function.is_set:
+            if self.function.supremum() <= 0:
+                return True
+
+    @property
+    def is_extended_negative(self):
+        if not self.limits and self.function.is_set:
+            if self.function.supremum() < 0:
+                return True
+
 
 class Ref(ExprWithLimits):
     r"""Represents unevaluated reference operator.
@@ -3131,7 +3194,22 @@ class Ref(ExprWithLimits):
 #             from sympy.matrices.expressions.hadamard import HadamardProduct
             return first * second
 
-    def simplifier(self):
+    def simplifier(self, deep=False):
+        if deep:
+            limits_dict = self.limits_dict
+            function = self.function
+            reps = {}
+            for x, domain in limits_dict.items():
+                if domain.is_set and domain.is_integer:
+                    _x = x.copy(domain=domain)                    
+                    function = function._subs(x, _x).simplifier(deep=True)
+                    reps[_x] = x
+            if reps:
+                for _x, x in reps.items():
+                    function = function._subs(_x, x)
+                if function != self.function:
+                    return self.func(function, *self.limits, equivalent=self).simplifier()
+            
         from sympy import Transpose
         from sympy.matrices.expressions.matmul import MatMul
         
@@ -3618,6 +3696,16 @@ class UnionComprehension(Set, ExprWithLimits):
             return False
         return len(limit) > 1
 
+    def handle_finite_sets(self, unk):
+        if self.is_ConditionSet:
+            from sympy.sets.conditionset import conditionset                    
+            return conditionset(self.variable, self.condition, self.base_set & unk)            
+        else:
+            match_index = self.match_index(unk)
+            if match_index is not None:
+                if match_index in self.limits_dict[self.variable]:
+                    return unk            
+            
     def intersection_sets(self, b):
         if self.is_ConditionSet:
             from sympy.sets.conditionset import conditionset
@@ -3735,7 +3823,7 @@ class UnionComprehension(Set, ExprWithLimits):
             x, domain = limit
 
             if not self.function.has(x):
-                return Piecewise((self.function, Unequality(Intersection(*self.limits_dict.values()), S.EmptySet)), (S.EmptySet, True))
+                return Piecewise((self.function, Unequality(Intersection(*self.limits_dict.values()), S.EmptySet).simplifier()), (S.EmptySet, True)).simplifier()
 #                 return self.function
             
             if isinstance(domain, FiniteSet):
@@ -3766,7 +3854,7 @@ class UnionComprehension(Set, ExprWithLimits):
             if domain.is_Piecewise:
                 tuples = []
                 for e, c in domain.args:                    
-                    tuples.append((self.func(self.function, (x, e)), c))    
+                    tuples.append((self.func(self.function, (x, e)).simplifier(), c))    
                 return domain.func(*tuples)
 
             return self
@@ -3778,6 +3866,9 @@ class UnionComprehension(Set, ExprWithLimits):
                     return self.function._subs(x, a)
                 domain = Interval(a, b, integer=True)
                 if isinstance(self.function, Piecewise):
+                    arr = self.as_multiple_terms(x, domain)
+                    arr = [arr[-1]] + arr[0:-1]
+                    return reduce(lambda x, y: x | y, arr).simplifier()                
                     return Union(*self.as_multiple_terms(x, domain)).simplifier()
 
         if len(limit) == 1:
@@ -3791,6 +3882,11 @@ class UnionComprehension(Set, ExprWithLimits):
         return self
 
     def union_sets(self, expr):
+        if expr.is_Complement:
+            A, B = expr.args
+            if B in self:
+                return self | A
+        
         from sympy import Wild
         if expr.func == self.func:
             if self.function == expr.function:
@@ -3855,7 +3951,18 @@ class UnionComprehension(Set, ExprWithLimits):
                             expr -= expr_set
                             if B:
                                 A -= B
-                            return self.func(self.function, (i, A)).simplifier() | expr
+                            this = self.func(self.function, (i, A)).simplifier()
+                            if expr.is_EmptySet:
+                                return this
+                            return this | expr
+                    elif B.is_Complement:
+# apply: A \ (B \ C) = (A \ B) | (A & B & C)
+                        b, c = B.args
+                        domain = A - b                        
+#                         print(A & b & c)
+                        assert A - (b - c) == (A - b) | (A & b & c)
+                        expr |= self.func(self.function, (i, A & b & c)).simplifier()
+                        return expr | self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
         if self.is_ConditionSet: 
@@ -4586,8 +4693,8 @@ class ConditionalBoolean(Boolean):
 
         return func(function, *limits, **kwargs).simplifier()
 
-    def split(self):
-        arr = self.function.split()
+    def split(self, *args, **kwargs):
+        arr = self.function.split(*args, **kwargs)
         if isinstance(arr, list):
             for eq in arr:
                 if eq.given is None:

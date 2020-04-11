@@ -159,9 +159,14 @@ class KroneckerDelta(Function):
         diff = i - j
         if diff.is_zero:
             return S.One
-        elif fuzzy_not(diff.is_zero):
+        if fuzzy_not(diff.is_zero):
             return S.Zero
-
+        if abs(diff) > 0:
+            return S.Zero
+        from sympy import Contains
+        if Contains(i, j.domain).is_BooleanFalse or Contains(j, i.domain).is_BooleanFalse:
+            return S.Zero
+        
         if i.assumptions0.get("below_fermi") and \
                 j.assumptions0.get("above_fermi"):
             return S.Zero

@@ -154,10 +154,6 @@ class Basic(with_metaclass(ManagedProperties)):
         domain = Interval(0, n, right_open=True, integer=True)
         return image_set(a, Ref(l[a[i]], (i, 0, n - 1)), Equality(image_set(i, a[i], domain), domain))
 
-    @property
-    def scope_variables(self):
-        return {*()}
-
     def condition_set(self):
         ...
 
@@ -2146,6 +2142,15 @@ class Basic(with_metaclass(ManagedProperties)):
         if other.dtype == self.dtype:
             return other.is_subset(self)
 
+    def infimum(self):
+        return self
+    
+    def supremum(self):
+        return self
+        
+    def handle_finite_sets(self, _):
+        ...
+    
 class Atom(Basic):
     """
     A parent class for atomic things. An atom is an expression with no subexpressions.

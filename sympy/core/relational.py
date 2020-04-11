@@ -85,10 +85,6 @@ class Relational(Boolean, Expr, EvalfMixin):
         return this
 
     @property
-    def scope_variables(self):
-        return self.lhs.free_symbols
-
-    @property
     def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.condition
@@ -436,6 +432,7 @@ class Relational(Boolean, Expr, EvalfMixin):
 
     def is_positive_relationship(self):
         ...
+
             
 Rel = Relational
 
@@ -1006,14 +1003,15 @@ class Equality(Relational):
     def as_two_terms(self):
         return self.func(self.lhs.as_two_terms(), self.rhs.as_two_terms(), equivalent=self).simplifier()
 
-    def split(self):
+    def split(self, variable=None):
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.concrete.expr_with_limits import Forall
         if isinstance(self.rhs, Piecewise):
-            variables = self.rhs.scope_variables
-            if len(variables) > 1:
-                return self
-            variable, *_ = variables
+            if variable is None:
+                variables = self.lhs.free_symbols & self.rhs.scope_variables
+                if len(variables) > 1:
+                    return self
+                variable, *_ = variables
             univeralSet = S.BooleanTrue
             args = []
 
@@ -1026,10 +1024,11 @@ class Equality(Relational):
             return args
 
         if isinstance(self.lhs, Piecewise):
-            variables = self.lhs.scope_variables
-            if len(variables) > 1:
-                return self
-            variable, *_ = variables
+            if variable is None:
+                variables = self.rhs.free_symbols & self.lhs.scope_variables
+                if len(variables) > 1:
+                    return self
+                variable, *_ = variables
             univeralSet = S.BooleanTrue
             args = []
 
@@ -1141,6 +1140,19 @@ class Unequality(Relational):
                 return self
 
         return self
+
+    def simplifier(self, deep=False):
+        if deep:
+            return Boolean.simplifier(self, deep=True)
+
+        from sympy.sets.contains import NotSubset
+        lhs, rhs = self.args
+        if lhs.is_Complement and rhs.is_EmptySet:
+            A, B = lhs.args
+            return NotSubset(A, B, equivalent=self).simplifier()
+             
+        return super(Unequality, self).simplifier()
+
     
 Ne = Unequality
 Equality.invert_type = Unequality
@@ -2067,6 +2079,7 @@ class StrictGreaterThan(_Greater):
         if self.rhs.is_zero:
             return self.lhs
 
+
 Gt = StrictGreaterThan
 LessThan.invert_type = StrictGreaterThan
 
@@ -2174,6 +2187,7 @@ class StrictLessThan(_Less):
     def is_positive_relationship(self):
         if self.lhs.is_zero:
             return self.rhs
+
 
 Lt = StrictLessThan
 GreaterThan.invert_type = StrictLessThan

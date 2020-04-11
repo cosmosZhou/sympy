@@ -33,10 +33,13 @@ class Expr(Basic, EvalfMixin):
 
     is_scalar = True  # self derivative is 1
     is_Identity = False
+    is_ElementaryMatrix = False
     is_square = False
     is_infinitesimal = None
     is_FiniteSet = False
-      
+    is_Minimum = None
+    is_Maximum = None
+    
     def as_Ref(self):
         from sympy import Interval
         from sympy.concrete.expr_with_limits import Ref
@@ -3778,9 +3781,9 @@ class Expr(Basic, EvalfMixin):
         for x in G:
             if x not in free_symbols:
                 continue
-            
-            _f = Minimum(f, (x,)).doit()
-            if isinstance(_f, Minimum):
+            m = Minimum(f, (x,))
+            _f = m.doit()
+            if _f is m:
                 return f
             f = _f
 
@@ -3812,9 +3815,9 @@ class Expr(Basic, EvalfMixin):
         for x in G:
             if x not in free_symbols:
                 continue
-
-            _f = Maximum(f, (x,)).doit()
-            if isinstance(_f, Maximum):
+            M = Maximum(f, (x,))
+            _f = M.doit()
+            if _f is M:
                 return f
             f = _f
 

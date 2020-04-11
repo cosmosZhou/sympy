@@ -1,1 +1,1 @@
-from . import lineaire
+from . import matrix

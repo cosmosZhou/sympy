@@ -27,7 +27,6 @@ from sympy.solvers.solveset import solveset
 import itertools
 from builtins import isinstance
 
-
 class Sum(AddWithLimits, ExprWithIntLimits):
     r"""Represents unevaluated summation.
 
@@ -1002,10 +1001,24 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     return self.func(self.function, (i, a - 1 , b))
 
         return AddWithLimits.__add__(self, expr)        
+
+#precondition: domain.is_Complement        
+    def simplifier_complement_domain(self, domain):        
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        if domain.is_Complement:                
+            A, B = domain.args
+            if A.is_FiniteSet and B.is_FiniteSet and len(A) == len(B) == 1:                    
+                a, *_ = A
+                b, *_ = B
+                if a.is_integer and b.is_integer:
+                    return (1 - KroneckerDelta(a, b)) * self.function._subs(self.variable, a)                
+                
         
     def simplifier(self, deep=False):
         if deep:
-            return ExprWithIntLimits.simplifier(self, deep=True)
+            this = ExprWithIntLimits.simplifier(self, deep=True)
+            if this is not self:
+                return this
         if len(self.limits) == 2:
             from sympy.tensor.indexed import Indexed, Slice
             limit0, limit1 = self.limits
@@ -1030,15 +1043,23 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)
 
+            this = self.simplifier_complement_domain(domain)
+            if this is not None:
+                return this
+                
             nonzero_domain = self.function.nonzero_domain(x)
             domain &= nonzero_domain
             
-            if domain not in limit[1]:
-                print(domain in limit[1])
+#             if domain not in limit[1]:
+#                 print(domain in limit[1])
             assert domain in limit[1]
             
             if domain.is_EmptySet:
                 return S.Zero
+            
+            this = self.simplifier_complement_domain(domain)
+            if this is not None:
+                return this
             
             if domain.is_Intersection:
                 defined_domain = self.function.defined_domain(x)
@@ -1066,7 +1087,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if not domain.is_set:
                     domain = x.conditional_domain(domain)
                 return self.function * abs(domain)
-
+            
+            if nonzero_domain.is_Complement and nonzero_domain.args[0].is_FiniteSet:
+                if len(nonzero_domain.args[0]) == 1:
+                    from sympy import Contains
+                    e, *_ = nonzero_domain.args[0].args 
+                    return Piecewise((self.finite_aggregate(x, nonzero_domain.args[0]), Contains(e, limit[1])), (0, True))
+               
+            if isinstance(domain, FiniteSet):
+                return self.finite_aggregate(x, domain)
+                
             return self
 
         if len(limit) == 1:
@@ -1079,10 +1109,48 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             x, a, b = limit
             universe = Interval(a, b, integer=True)
             if isinstance(self.function, Piecewise):
-                if not any(c.has(x) for _, c in self.function.args):
+                has_x = [c._has(x) for _, c in self.function.args[:-1]]                                
+                if not any(has_x):
                     return self.function.func(*((self.func(e, (x, universe)).simplifier(), c) for e, c in self.function.args))
                 
-                return self.operator(*self.as_multiple_terms(x, universe))
+                if all(has_x):
+                    return self.operator(*self.as_multiple_terms(x, universe)).simplifier()
+
+                if has_x[0]:
+                    index = has_x.index(False)
+                    
+#                     if any(has_x[index:]):
+#                         return self
+                    
+                    independent_of_x = []
+                    for arg in self.function.args[index:]:                        
+                        independent_of_x.append(arg)
+                    independent_of_x = self.function.func(*independent_of_x)
+                    
+                    dependent_on_x = []
+                    for arg in self.function.args[:index]:                        
+                        dependent_on_x.append(arg)
+                                            
+                    dependent_on_x.append((independent_of_x, True))
+                    dependent_on_x = self.function.func(*dependent_on_x)
+                    
+                    return self.func(dependent_on_x, *self.limits).simplifier()                    
+                else:                    
+                    index = has_x.index(True)
+                    dependent_on_x = []
+                    for arg in self.function.args[index:]:                        
+                        dependent_on_x.append(arg)
+
+                    dependent_on_x = self.function.func(*dependent_on_x)                    
+                    independent_of_x = []
+                    for arg in self.function.args[:index]:                        
+                        independent_of_x.append(arg)                        
+                                            
+                    independent_of_x.append((dependent_on_x, True))
+                    independent_of_x = self.function.func(*independent_of_x)
+                    
+                    return self.func(independent_of_x, *self.limits).simplifier()                    
+                return self
             
             if self.function._has(Piecewise):
                 if self.function.is_Mul and all(arg.is_Piecewise for arg in self.function.args):
@@ -1099,7 +1167,22 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         piecewise1 = tmp                        
                     else:
                         return self
-                    piecewise = piecewise0.func(*((piecewise1.func(*((e * _e, _c) for _e, _c in piecewise1.args)), c) for e, c in piecewise0.args))
+                    args = []
+                    for e, c in piecewise0.args:
+                        _args = []
+                        exact_match = False
+                        for _e, _c in piecewise1.args:
+                            if not _c and c == _c:
+                                exact_match = True
+                                break
+                            _args.append((e * _e, _c))
+                        
+                        if exact_match:
+                            args.append((e * _e, c))
+                        else:
+                            args.append((piecewise1.func(*_args), c))
+                    piecewise = piecewise0.func(*args)
+                    
                     return self.func(piecewise, *self.limits).simplifier()
                 else:
                     return self 

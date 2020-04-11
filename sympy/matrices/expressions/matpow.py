@@ -38,7 +38,7 @@ class MatPow(MatrixExpr):
                 raise ShapeError("Power of non-square matrix %s" % A.base)
             elif A.exp.is_Integer and A.exp.is_positive:
                 A = MatMul(*[A.base for k in range(A.exp)])
-            #elif A.exp.is_Integer and self.exp.is_negative:
+            # elif A.exp.is_Integer and self.exp.is_negative:
             # Note: possible future improvement: in principle we can take
             # positive powers of the inverse, but carefully avoid recursion,
             # perhaps by adding `_entry` to Inverse (as it is our subclass).
@@ -61,7 +61,7 @@ class MatPow(MatrixExpr):
         base, exp = args
         # combine all powers, e.g. (A**2)**3 = A**6
         while isinstance(base, MatPow):
-            exp = exp*base.args[1]
+            exp = exp * base.args[1]
             base = base.args[0]
 
         if exp.is_zero and base.is_square:
@@ -75,7 +75,7 @@ class MatPow(MatrixExpr):
         elif isinstance(base, MatrixBase) and exp.is_number:
             if exp is S.One:
                 return base
-            return base**exp
+            return base ** exp
         # Note: just evaluate cases we know, return unevaluated on others.
         # E.g., MatrixSymbol('x', n, m) to power 0 is not an error.
         elif exp is S(-1) and base.is_square:
@@ -105,7 +105,7 @@ class MatPow(MatrixExpr):
                             [
                                 Identity(1),
                                 i._lines[0],
-                                exp*self.base**(exp-1),
+                                exp * self.base ** (exp - 1),
                                 i._lines[1],
                                 Identity(1),
                             ]
@@ -131,3 +131,7 @@ class MatPow(MatrixExpr):
         else:
             raise NotImplementedError("cannot evaluate %s derived by %s" % (self, x))
         return newexpr._eval_derivative_matrix_lines(x)
+
+    @property
+    def atomic_dtype(self):
+        return self.base.atomic_dtype

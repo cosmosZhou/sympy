@@ -31,10 +31,6 @@ class Contains(BooleanFunction):
     """
     is_Contains = True
 
-    @property
-    def scope_variables(self):
-        return self.lhs.free_symbols
-
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
@@ -245,10 +241,6 @@ class NotContains(BooleanFunction):
     invert_type = Contains
     is_NotContains = True
 
-    @property
-    def scope_variables(self):
-        return self.lhs.free_symbols
-
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
@@ -378,10 +370,6 @@ class Subset(BooleanFunction):
 
     """
     is_Subset = True
-
-    @property
-    def scope_variables(self):
-        return self.lhs.free_symbols
 
     def union_comprehension(self, *limits):
         from sympy.concrete.expr_with_limits import UnionComprehension
@@ -551,10 +539,6 @@ class NotSubset(BooleanFunction):
     invert_type = Subset
 
     @property
-    def scope_variables(self):
-        return self.lhs.free_symbols
-
-    @property
     def reversed(self):
         return NotSupset(self.rhs, self.lhs, equivalent=self)
 
@@ -563,6 +547,9 @@ class NotSubset(BooleanFunction):
             from sympy.concrete.expr_with_limits import Exists
             return Exists(self.func(self.lhs.function, self.rhs), *self.lhs.limits, equivalent=self)
 
+        if self.lhs.is_FiniteSet and len(self.lhs) == 1:
+            return NotContains(self.lhs.arg, self.rhs, equivalent=self).simplifier()            
+             
         return self
 
     @property
@@ -678,10 +665,6 @@ class Supset(BooleanFunction):
 
     """
     is_Supset = True
-
-    @property
-    def scope_variables(self):
-        return self.lhs.free_symbols
 
     def subs(self, *args, **kwargs):
         if len(args) == 1:
@@ -805,10 +788,6 @@ class NotSupset(BooleanFunction):
     """
     is_Supset = True
     invert_type = Supset
-
-    @property
-    def scope_variables(self):
-        return self.lhs.free_symbols
 
     def subs(self, *args, **kwargs):
         if len(args) == 1:

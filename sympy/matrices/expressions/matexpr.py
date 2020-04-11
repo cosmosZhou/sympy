@@ -836,7 +836,7 @@ class Identity(MatrixExpr):
     A
     """
     is_Identity = True
-
+    is_ElementaryMatrix = True
 #     def __new__(cls, *args):
 #         return super(Identity, cls).__new__(cls, args)
 
@@ -1457,7 +1457,7 @@ class VConcatenate(Concatenate):
 
 
 # precondition: i > j or i < j
-class Swap(Identity):
+class Swap(Identity):    
     is_Swap = True
     is_Identity = False
     
@@ -1503,6 +1503,13 @@ class Swap(Identity):
             return S.One
         return S.NegativeOne
 
+    @property
+    def T(self):
+        return self
+
+    def _eval_inverse(self):
+        return self
+
 
 class Multiplication(Identity):
 
@@ -1519,6 +1526,13 @@ class Multiplication(Identity):
         return self.args[1]
 
     @property
+    def T(self):
+        return self
+
+    def _eval_inverse(self):
+        return self.func(self.n, 1 / self.multiplier, self.i)
+
+    @property
     def i(self):
         return self.args[2]
 
@@ -1529,16 +1543,54 @@ class Multiplication(Identity):
 class Addition(Multiplication):
     '''
     multiply the ith row and add it to the jth row
-    or multiply the ith row and add it to the jth row
+    or multiply the ith column and add it to the jth column
     '''
-
+#     is_Identity = False
+    
     @property
     def j(self):
         return self.args[3]
 
     @property
     def T(self):
-        return Shift(self.n, self.multiplier, self.j, self.i)
+        return self.func(self.n, self.multiplier, self.j, self.i)
+
+    def _eval_inverse(self):
+        return self.func(self.n, -self.multiplier, self.i, self.j)
+
+    def _entry(self, i, j=None, **_):
+        from sympy.concrete.expr_with_limits import Ref
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.core.relational import Equality
+        
+#     1   0   0   0   0   0
+#     0   1   0   0   0   0    
+#     0   0   1   0   0   0    <-----self.i    th row
+#     0   0   0   1   0   0            
+#     0   0   k   0   1   0    <-----self.j th row                    
+#     0   0   0   0   0   1  
+#             ^       ^
+#             |       |
+#            i col    j col      
+        
+        if j is None:
+            return_reference = True
+            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+        else:
+            return_reference = False                        
+            
+        piecewise = Piecewise((KroneckerDelta(j, i), Equality(self.i, self.j)),
+                              (Piecewise((self.multiplier, Equality(j, self.i)),
+                                         (KroneckerDelta(j, self.j), True)),
+                                         Equality(i, self.j)),
+                              (KroneckerDelta(j, i), True))
+
+        if return_reference:
+            return Ref(piecewise, (j, 0, self.n - 1))
+        return piecewise            
+
+    def _eval_determinant(self):
+        return S.One
 
 
 class Shift(Identity):
@@ -1569,6 +1621,9 @@ class Shift(Identity):
     @property
     def T(self):
         return Shift(self.n, self.j, self.i)
+
+    def _eval_inverse(self):
+        return self.T
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmatmul__')

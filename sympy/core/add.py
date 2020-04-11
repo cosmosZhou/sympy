@@ -11,6 +11,7 @@ from .operations import AssocOp
 from .cache import cacheit
 from .numbers import ilcm, igcd
 from .expr import Expr
+from sympy.core.basic import preorder_traversal
 
 # Key for sorting commutative args in canonical order
 _args_sortkey = cmp_to_key(Basic.compare)
@@ -688,10 +689,12 @@ class Add(Expr, AssocOp):
                         if v is not None and v != self and v.is_extended_nonpositive:
                             return True
 
-    def _eval_is_extended_negative(self):
+    @property
+    def is_extended_negative(self):
         from sympy.core.exprtools import _monotonic_sign
         if self.is_number:
-            return super(Add, self)._eval_is_extended_negative()
+            return super(Add, self).is_extended_negative
+#             return super(Add, self)._eval_is_extended_negative()
         c, a = self.as_coeff_Add()
         if not c.is_zero:
             v = _monotonic_sign(a)
@@ -708,39 +711,63 @@ class Add(Expr, AssocOp):
         args = [a for a in self.args if not a.is_zero]
         if not args:
             return False
-        for a in args:
+        
+        saw_supremum = False
+        saw_finite = False
+        for i, a in enumerate(args):
             isneg = a.is_extended_negative
             infinite = a.is_infinite
             if infinite:
                 saw_INF.add(fuzzy_or((isneg, a.is_extended_nonpositive)))
                 if True in saw_INF and False in saw_INF:
                     return
+                
             if isneg:
                 neg = True
                 continue
-            elif a.is_extended_nonpositive:
+            
+            if a.is_extended_nonpositive:
                 nonpos = True
                 continue
-            elif a.is_extended_nonnegative:
+            
+            if a.is_extended_nonnegative:
                 nonneg = True
                 continue
-
+            
+            supremum = a.supremum()
+            if supremum is not a:
+                args[i] = supremum
+                saw_supremum = True
+                continue
+                
             if infinite is None:
-                return
+                saw_finite = True
+                continue
+                
             unknown_sign = True
 
         if saw_INF:
             if len(saw_INF) > 1:
                 return
             return saw_INF.pop()
-        elif unknown_sign:
+        
+        if saw_supremum: 
+            return Add(*args).is_extended_negative            
+            
+        if saw_finite:
             return
-        elif not nonneg and not nonpos and neg:
+        
+        if unknown_sign:
+            return
+        
+        if not nonneg and not nonpos and neg:
             return True
-        elif not nonneg and neg:
+        
+        if not nonneg and neg:
             return True
-        elif not neg and not nonpos:
-            return False
+        
+        if not neg and not nonpos:
+            return False        
 
     def _eval_subs(self, old, new):
         if not old.is_Add:
@@ -1079,6 +1106,46 @@ class Add(Expr, AssocOp):
     def simplifier(self, deep=False):
         if deep:
             return Expr.simplifier(self, deep=True)
+        this = self.simplifierKroneckerDelta()
+        if this is not self:
+            return this         
+        return self.simplifierSummations()
+        
+    def simplifierKroneckerDelta(self):        
+        dic = {}
+        from sympy import KroneckerDelta
+        for expr in preorder_traversal(self):
+            if isinstance(expr, KroneckerDelta):
+                if expr not in dic:
+                    dic[expr] = 0    
+                dic[expr] += 1
+        dic = {key: value for key, value in dic.items() if value > 1}
+        if not dic:
+            return self
+        
+        this = self
+        for delta in dic:
+            p = this.as_poly(delta)
+            if p is None:
+                continue
+            degree = p.degree()
+            if degree == 0:
+                this = p.nth(0)
+                continue
+                
+            coefficent = p.nth(1)
+            for d in range(2, degree + 1):
+                coefficent += p.nth(d)
+
+            i, j = delta.args
+            if coefficent._subs(j, i) == 0:                    
+                this = p.nth(0)
+                continue
+            if degree >= 2:
+                this = coefficent * delta + p.nth(0)
+        return this
+            
+    def simplifierSummations(self):
         from sympy.concrete import summations
         from sympy import Wild
         dic = {}
@@ -1200,7 +1267,6 @@ class Add(Expr, AssocOp):
 #                 positive[j] = pos - neg
 #                 del positive[i]
 #                 return True
-                
 
     @property
     def domain(self):
@@ -1313,6 +1379,7 @@ class Add(Expr, AssocOp):
         if non_integer_count >= 2:
             return None
         return True
+
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

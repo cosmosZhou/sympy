@@ -269,13 +269,16 @@ class MatMul(MatrixExpr, Mul):
                     return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)).simplifier(), B_limit).simplifier()
                 return Sum(A[k] * B[k], (k, 0, n - 1)).simplifier()                
             else:
+                if not isinstance(A, Ref) and not A.is_ElementaryMatrix:
+                    A = A.definition
+                    
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]
-                elif A.is_Swap:
+                elif A.is_ElementaryMatrix:
                     i = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
                     i_limit = (i, 0, A.shape[0] - 1)
-                else:                    
-                    i_limit = A.definition.limits[0]
+                else:
+                    raise Exception('impossible')
 
                 n = A.shape[1]
 

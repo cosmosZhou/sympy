@@ -397,7 +397,7 @@ def prove(Eq):
 
     Eq.x_j_subset = Eq[-1].this.function.function.asSubset()
 
-    Eq << Eq.x_j_subset.apply(discrete.sets.complement.emptyset, Eq.x_j_inequality)
+    Eq << Eq.x_j_subset.apply(discrete.sets.subset.nonemptyset, Eq.x_j_inequality, evaluate=False)
 
     Eq << Eq[-1].apply(discrete.sets.inequality.strict_greater_than)  # -4
 
@@ -419,7 +419,7 @@ def prove(Eq):
 
     Eq << Eq[-1].limits_subs(Eq[-1].variables[1], j).limits_subs(Eq[-1].variable, i)
 
-    Eq.x_complement_n = Eq[-1].apply(discrete.sets.complement.subset, Eq.x_j_subset)
+    Eq.x_complement_n = Eq[-1].apply(discrete.sets.subset.nonoverlapping.equality, Eq.x_j_subset)
 
     Eq << Eq.x_complement_n.this.function.function.union_comprehension(*Eq.x_complement_n.function.function.limits)
 
@@ -571,7 +571,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.x_quote_definition)
 
-    Eq << Eq[-1].split()
+    Eq << Eq[-1].split(variable=Eq[-1].rhs.args[0][1].lhs)
 
     Eq << Eq[-1].intersect({n})
 
