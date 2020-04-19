@@ -515,8 +515,9 @@ class Dyadic(object):
     def simplify(self):
         """Returns a simplified Dyadic."""
         out = Dyadic(0)
+        from sympy import simplify
         for v in self.args:
-            out += Dyadic([(v[0].simplify(), v[1], v[2])])
+            out += Dyadic([(simplify(v[0]), v[1], v[2])])
         return out
 
     def subs(self, *args, **kwargs):

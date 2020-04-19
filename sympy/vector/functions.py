@@ -235,7 +235,7 @@ def is_conservative(field):
         raise TypeError("field should be a Vector")
     if field == Vector.zero:
         return True
-    return curl(field).simplify() == Vector.zero
+    return simplify(curl(field)) == Vector.zero
 
 
 def is_solenoidal(field):
@@ -268,7 +268,7 @@ def is_solenoidal(field):
         raise TypeError("field should be a Vector")
     if field == Vector.zero:
         return True
-    return divergence(field).simplify() == S(0)
+    return simplify(divergence(field)) == S(0)
 
 
 def scalar_potential(field, coord_sys):

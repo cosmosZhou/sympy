@@ -376,8 +376,8 @@ class Integral(AddWithLimits):
         else:
             ...
 
-        f = (u * v)._eval_interval(x, a, b) - self.func(du * v, *self.limits).simplifier()
-        return f.simplifier()
+        f = (u * v)._eval_interval(x, a, b) - self.func(du * v, *self.limits).simplify()
+        return f.simplify()
 
     def doit(self, **hints):
         """
@@ -1134,7 +1134,7 @@ class Integral(AddWithLimits):
             return expr.func(*[simplify(i, **kwargs) for i in expr.args])
         return expr.simplify(**kwargs)
 
-    def simplifier(self):
+    def simplify(self):
         if len(self.limits) != 1:
             return self
         limit = self.limits[0]
@@ -1150,7 +1150,7 @@ class Integral(AddWithLimits):
                     if f == 0:
                         continue
                     _domain = x.conditional_domain(condition) & domain
-                    sgm.append(self.func(f, (x, domain.start, domain.end)).simplifier())
+                    sgm.append(self.func(f, (x, domain.start, domain.end)).simplify())
 
                 return Add(*sgm)
             try:
@@ -1200,7 +1200,7 @@ class Integral(AddWithLimits):
 
             if len(limit) == 3:
                 x, a, b = limit
-                return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplifier()
+                return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
 
             else:
                 x = limit[0]
@@ -1228,7 +1228,7 @@ class Integral(AddWithLimits):
             if len(limit) == 3:
                 x, a, b = limit
                 if not old.has(x):
-                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplifier()
+                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
 
                 if old != x:
 
@@ -1239,7 +1239,7 @@ class Integral(AddWithLimits):
                         res = []
 
                     if not res:
-                        return self.func(function, *self.limits).simplifier()
+                        return self.func(function, *self.limits).simplify()
                     if len(res) != 1:
                         return self
 
@@ -1276,9 +1276,9 @@ class Integral(AddWithLimits):
                             function = function.subs(_x, __x)
                             _x = __x
 
-                    return self.func(function, (_x, a, b)).simplifier()
+                    return self.func(function, (_x, a, b)).simplify()
 
-                return self.func(dg * function, (x, new.subs(x, a).simplifier(), new.subs(x, b).simplifier())).simplifier()
+                return self.func(dg * function, (x, new.subs(x, a).simplify(), new.subs(x, b).simplify())).simplify()
 
             else:
                 x = limit[0]

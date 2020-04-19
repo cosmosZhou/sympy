@@ -2061,13 +2061,13 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.printing.latex import latex
         return latex(self)
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if deep:
             hit = False
             args = []
             for arg in self.args:
                 try:
-                    _arg = arg.simplifier(deep=True)
+                    _arg = arg.simplify(deep=True, **kwargs)
                 except Exception as e:
                     print(type(arg))
                     print(arg)
@@ -2077,7 +2077,7 @@ class Basic(with_metaclass(ManagedProperties)):
                     hit = True
                 args.append(_arg)
             if hit:
-                return self.func(*args).simplifier()
+                return self.func(*args).simplify()
 
         return self
 

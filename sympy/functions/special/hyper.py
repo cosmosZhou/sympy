@@ -503,6 +503,7 @@ class meijerg(TupleParametersBase):
         # (There is a similar equation for -n instead of +n).
 
         # We first figure out how to pair the parameters.
+        from sympy import simplify
         an = list(self.an)
         ap = list(self.aother)
         bm = list(self.bm)
@@ -526,7 +527,7 @@ class meijerg(TupleParametersBase):
                 x = l1.pop()
                 found = None
                 for i, y in enumerate(l2):
-                    if not Mod((x - y).simplify(), 1):
+                    if not Mod(simplify(x - y), 1):
                         found = i
                         break
                 if found is None:
@@ -585,13 +586,14 @@ class meijerg(TupleParametersBase):
         12*pi
         """
         # This follows from slater's theorem.
+        from sympy import simplify
         def compute(l):
             # first check that no two differ by an integer
             for i, b in enumerate(l):
                 if not b.is_Rational:
                     return oo
                 for j in range(i + 1, len(l)):
-                    if not Mod((b - l[j]).simplify(), 1):
+                    if not Mod(simplify(b - l[j]), 1):
                         return oo
             return reduce(ilcm, (x.q for x in l), 1)
         beta = compute(self.bm)

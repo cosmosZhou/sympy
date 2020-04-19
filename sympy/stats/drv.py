@@ -184,12 +184,9 @@ class SingleDiscreteDistribution(DiscreteDistribution, NamedArgsMixin):
                 return result
 
             except PolynomialError:
-                return summation(expr * self.pdf(var),
-                                 (var, self.set.inf, self.set.sup), **kwargs)
-
+                return summation(expr * self.pdf(var), (var, self.set.inf, self.set.sup), **kwargs)
         else:
-            return Sum(expr * self.pdf(var),
-                         (var, self.set.inf, self.set.sup), **kwargs)
+            return Sum(expr * self.pdf(var), (var, self.set.inf, self.set.sup), **kwargs)
 
     def __call__(self, *args):
         return self.pdf(*args)
@@ -340,11 +337,9 @@ class SingleDiscretePSpace(DiscretePSpace, SinglePSpace):
 
         x = self.value.symbol
         try:
-            return self.distribution.expectation(expr, x, evaluate=evaluate,
-                    **kwargs)
+            return self.distribution.expectation(expr, x, evaluate=evaluate, **kwargs)
         except NotImplementedError:
-            return Sum(expr * self.pdf, (x, self.set.inf, self.set.sup),
-                    **kwargs)
+            return Sum(expr * self.pdf, (x, self.set.inf, self.set.sup), **kwargs)
 
     def compute_cdf(self, expr, **kwargs):
         if expr == self.value:

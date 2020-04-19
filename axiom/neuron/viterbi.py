@@ -45,13 +45,13 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq.s_definition
 
-    Eq << Eq[-1].this.rhs.simplifier() + s[t]
+    Eq << Eq[-1].this.rhs.simplify() + s[t]
 
     Eq << Eq.x_quote_definition.subs(t, t + 1)
 
     Eq << Eq[-1].this.rhs.subs(Eq[-2])
 
-    Eq << Eq[-1].this.rhs.function.simplifier()
+    Eq << Eq[-1].this.rhs.function.simplify()
 
     Eq << Eq[-1].this.rhs.args[1].function.bisect(back=1)
 

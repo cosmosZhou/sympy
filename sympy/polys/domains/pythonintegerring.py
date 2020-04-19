@@ -38,7 +38,7 @@ class PythonIntegerRing(IntegerRing):
             return PythonInteger(int(a))
         else:
             from sympy.core.numbers import Infinitesimal, NegativeInfinitesimal
-            if isinstance(a, (Infinitesimal, NegativeInfinitesimal)):
+            if a.has(Infinitesimal, NegativeInfinitesimal):
                 return a
             raise CoercionFailed("expected an integer, got %s" % a)
 

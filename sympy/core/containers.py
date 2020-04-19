@@ -143,6 +143,12 @@ class Tuple(Basic):
         else:
             return self.args.index(value, start, stop)
 
+    def defined_domain(self, x):
+        domain = Basic.defined_domain(self, x)
+        for arg in self.args:
+            domain &= arg.defined_domain(x)
+        return domain
+
 converter[tuple] = lambda tup: Tuple(*tup)
 
 

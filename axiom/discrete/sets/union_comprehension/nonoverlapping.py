@@ -44,7 +44,7 @@ def apply(given):
     i_domain = limits_dict[i] or i.domain
 
     limits = [(j, i_domain - {i})] + [*x_union.limits]
-    return Forall(Equality(xi & xj, S.EmptySet).simplifier(), *limits, given=given)
+    return Forall(Equality(xi & xj, S.EmptySet).simplify(), *limits, given=given)
 
 
 from sympy.utility import check
@@ -85,11 +85,11 @@ def prove(Eq):
 
     Eq << Eq.strict_greater_than.subs(Eq[-1])
 
-    Eq << Eq[-1].simplifier(deep=True)
+    Eq << Eq[-1].simplify(deep=True)
 
     Eq << Eq[-1].subs(Eq.union_less_than)
 
-    Eq << Eq[-1].simplifier(deep=True)
+    Eq << Eq[-1].simplify(deep=True)
 
 
 if __name__ == '__main__':

@@ -1539,6 +1539,30 @@ class Multiplication(Identity):
     def _eval_determinant(self):
         return self.multiplier
 
+    def _entry(self, i, j=None, **_):
+        from sympy.concrete.expr_with_limits import Ref
+#     1   0   0   0   0   0
+#     0   1   0   0   0   0    
+#     0   0   k   0   0   0    <-----self.i    th row
+#     0   0   0   1   0   0            
+#     0   0   0   0   1   0                        
+#     0   0   0   0   0   1  
+#             ^       
+#             |       
+#            i col          
+        
+        if j is None:
+            return_reference = True
+            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+        else:
+            return_reference = False                        
+            
+        piecewise = (1 + (self.multiplier - 1) * KroneckerDelta(i, self.i)) * KroneckerDelta(i, j)
+        
+        if return_reference:
+            return Ref(piecewise, (j, 0, self.n - 1))
+        return piecewise
+
         
 class Addition(Multiplication):
     '''
@@ -1624,6 +1648,54 @@ class Shift(Identity):
 
     def _eval_inverse(self):
         return self.T
+
+    def _entry(self, i, j=None, **_):
+        from sympy.concrete.expr_with_limits import Ref
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.core.relational import Equality, StrictLessThan 
+        
+        if j is None:
+            return_reference = True
+            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+        else:
+            return_reference = False                        
+#     1   0   0   0   0   0
+#     0   1   0   0   0   0
+#     0   0   0   1   0   0    <-----self.i    th row        
+#     0   0   0   0   1   0    
+#     0   0   1   0   0   0    <-----self.j th row                    
+#     0   0   0   0   0   1  
+#             ^       ^
+#             |       |
+#            i col    j col      
+# delete i th row insert into after j th row        
+        piecewise_ij = Piecewise((KroneckerDelta(i, j), StrictLessThan(i, self.i)),
+                                 (KroneckerDelta(i + 1, j), StrictLessThan(i, self.j)),
+                                 (KroneckerDelta(self.i, j), Equality(i, self.j)),
+                                 (KroneckerDelta(i, j), True))
+        
+#     1   0   0   0   0   0
+#     0   1   0   0   0   0
+#     0   0   0   0   1   0    <-----self.j th row
+#     0   0   1   0   0   0    
+#     0   0   0   1   0   0    <-----self.i th row
+#     0   0   0   0   0   1  
+#             ^       ^
+#             |       |
+#            j col    i col      
+# delete i th row insert into before j th row        
+        piecewise_ji = Piecewise((KroneckerDelta(i, j), StrictLessThan(j, self.j)),
+                                 (KroneckerDelta(i, j + 1), StrictLessThan(j, self.i)),                                 
+                                 (KroneckerDelta(i, self.j), Equality(j, self.i)),
+                                 (KroneckerDelta(i, j), True))
+        
+        piecewise = Piecewise((KroneckerDelta(i, j), Equality(self.i, self.j)),
+                              (piecewise_ij, StrictLessThan(self.i, self.j)),
+                              (piecewise_ji, True))
+
+        if return_reference:
+            return Ref(piecewise, (j, 0, self.n - 1))
+        return piecewise            
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmatmul__')

@@ -48,9 +48,9 @@ def prove(Eq):
 
     Eq << apply(equality)    
     
-    Eq << Eq[-1].simplifier()
+    Eq << Eq[-1].simplify()
 
-    Eq << identity(Union[i:0:k](x[i] & A)).simplifier()
+    Eq << identity(Union[i:0:k](x[i] & A)).simplify()
 
     Eq << Eq[-1].this.rhs.subs(Eq[0])
     

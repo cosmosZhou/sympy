@@ -377,6 +377,7 @@ class Linearizer(object):
 
         # kwarg A_and_B indicates to return  A, B for forming the equation
         # dx = [A]x + [B]r, where x = [q_indnd, u_indnd]^T,
+        import sympy
         if A_and_B:
             A_cont = self.perm_mat.T * M_eq.LUsolve(Amat_eq)
             if Bmat_eq:
@@ -384,17 +385,17 @@ class Linearizer(object):
             else:
                 # Bmat = Matrix([]), so no need to sub
                 B_cont = Bmat_eq
-            if simplify:
-                A_cont.simplify()
-                B_cont.simplify()
+            if simplify:                
+                sympy.simplify(A_cont)
+                sympy.simplify(B_cont)
             return A_cont, B_cont
         # Otherwise return M, A, B for forming the equation
         # [M]dx = [A]x + [B]r, where x = [q, u]^T
         else:
             if simplify:
-                M_eq.simplify()
-                Amat_eq.simplify()
-                Bmat_eq.simplify()
+                sympy.simplify(M_eq)
+                sympy.simplify(Amat_eq)
+                sympy.simplify(Bmat_eq)
             return M_eq, Amat_eq, Bmat_eq
 
 

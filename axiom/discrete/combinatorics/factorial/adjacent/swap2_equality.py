@@ -68,7 +68,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplifier(deep=True)
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
     
 
 if __name__ == '__main__':

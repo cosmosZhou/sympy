@@ -674,8 +674,9 @@ class Vector(object):
     def simplify(self):
         """Returns a simplified Vector."""
         d = {}
+        from sympy import simplify
         for v in self.args:
-            d[v[1]] = v[0].simplify()
+            d[v[1]] = simplify(v[0])
         return Vector(d)
 
     def subs(self, *args, **kwargs):

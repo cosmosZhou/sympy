@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].split()
 
-    Eq << Eq[-1].this.function.simplifier()
+    Eq << Eq[-1].this.function.simplify()
 
     Eq << Eq[-1].subs(Eq[-1].limits[0][0], e)
 

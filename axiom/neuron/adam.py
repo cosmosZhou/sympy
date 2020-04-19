@@ -66,7 +66,7 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-1].rhs.args[0]
 
-    Eq << Eq[-1].this.lhs.simplifier()
+    Eq << Eq[-1].this.lhs.simplify()
 
     Eq << Eq[-1].subs(Eq[0])
 

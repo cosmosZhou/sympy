@@ -12,7 +12,7 @@ from sympy.utility import plausible
 # print('sys.getrecursionlimit() =', sys.getrecursionlimit())
 # sys.setrecursionlimit(100000000)
 
-
+@plausible
 def apply(x0, x1):
     if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):
         return None
@@ -30,7 +30,7 @@ def apply(x0, x1):
     Y = Binomial('y', distribution0.n + distribution1.n, distribution0.p)
     y = Y.symbol
 
-    return Equality(Density(x0 + x1)(y), Density(Y)(y).doit(), plausible=plausible())
+    return Equality(Density(x0 + x1)(y), Density(Y)(y).doit())
 
 
 @check
@@ -71,7 +71,7 @@ def prove(Eq):
 
     Eq << Equality.by_definition_of(Density(x0 + x1))
 
-    Eq << Eq[-1].this.rhs.function.args[3].doit(deep=False)
+#     Eq << Eq[-1].this.rhs.function.args[3].doit(deep=False)
 
     Eq << Eq[-1].this.rhs.function.powsimp()
 
@@ -92,9 +92,9 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.as_separate_limits()
 
     Eq << Eq[-1].as_two_terms()
-
-    y = Eq[0].lhs.symbol
-    Eq << Eq[-1][y].subs(Eq[4])
+ 
+    Eq << Eq[-1][Eq[0].lhs.symbol].subs(Eq[3])
+    
 
 
 if __name__ == '__main__':

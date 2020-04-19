@@ -231,7 +231,7 @@ class MatMul(MatrixExpr, Mul):
 
         return lines
 
-    def simplifier(self):
+    def simplify(self):
         from sympy import exp
         if len(self.args) == 2 and all(isinstance(arg, exp) for arg in self.args):
             if len(self.args[0].shape) < len(self.args[1].shape):
@@ -256,29 +256,28 @@ class MatMul(MatrixExpr, Mul):
                 n = A.shape[0]
                 
                 if len(B.shape) > 1:
+                    if hasattr(B, "definition") and B.definition is not None:
+                        B = B.definition
+                        
                     if isinstance(B, Ref):
                         B_limit = B.limits[0]
-                    elif hasattr(A, "definition") and B.definition is not None:
-                        B_limit = B.definition.limits[0]
                     else:                    
                         j = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
                         B_limit = (j, 0, B.shape[1] - 1)
 
                     j, *_ = B_limit
     
-                    return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)).simplifier(), B_limit).simplifier()
-                return Sum(A[k] * B[k], (k, 0, n - 1)).simplifier()                
+                    return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)).simplify(), B_limit).simplify()
+                return Sum(A[k] * B[k], (k, 0, n - 1)).simplify()                
             else:
-                if not isinstance(A, Ref) and not A.is_ElementaryMatrix:
+                if hasattr(A, "definition") and A.definition is not None:
                     A = A.definition
                     
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]
-                elif A.is_ElementaryMatrix:
+                else:
                     i = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
                     i_limit = (i, 0, A.shape[0] - 1)
-                else:
-                    raise Exception('impossible')
 
                 n = A.shape[1]
 
@@ -292,9 +291,9 @@ class MatMul(MatrixExpr, Mul):
     
                     j, *_ = j_limit
     
-                    return Ref(Sum(A[i, k] * B[k, j], (k, 0, n - 1)), i_limit, j_limit)
+                    return Ref(Sum(A[i, k] * B[k, j], (k, 0, n - 1)).simplify(), i_limit, j_limit).simplify()
                 else:
-                    return Ref(Sum(A[i, k] * B[k], (k, 0, n - 1)).simplifier(), i_limit)
+                    return Ref(Sum(A[i, k] * B[k], (k, 0, n - 1)).simplify(), i_limit).simplify()
 
         return MatrixExpr.expand(self)
 

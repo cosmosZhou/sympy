@@ -11,7 +11,7 @@ from sympy.core.numbers import oo
 @plausible
 def apply(expr, *limits):
     return LessThan(abs(UnionComprehension(expr, *limits)),
-                    summations.Sum(abs(expr), *limits).simplifier())
+                    summations.Sum(abs(expr), *limits).simplify())
 
 
 from sympy.utility import check

@@ -466,8 +466,8 @@ def calculate_series(e, x, logx=None):
 
         if t.has(exp) and t.has(log):
             t = powdenest(t)
-
-        if t.simplify():
+        from sympy.simplify import simplify
+        if simplify(t):
             break
 
     return t

@@ -41,13 +41,14 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplifier(deep=True)
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
     
     Eq << w_quote[i, j] @ Eq[-1]    
 
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplifier(deep=True)
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
+#     Eq << Eq[-1].this.rhs.function.args[-1][0].simplify(deep=True)
     
 if __name__ == '__main__':
     prove(__file__)

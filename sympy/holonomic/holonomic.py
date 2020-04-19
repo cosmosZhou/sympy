@@ -2066,8 +2066,8 @@ class HolonomicFunction(object):
         x*log(x + 1) + log(x + 1) + 1
 
         """
-
-        return hyperexpand(self.to_hyper()).simplify()
+        from sympy import simplify
+        return simplify(hyperexpand(self.to_hyper()))
 
     def change_ics(self, b, lenics=None):
         """

@@ -23,7 +23,7 @@ def apply(given):
     assert len(x_set_comprehension.limits) == 1
     k, a, b = x_set_comprehension.limits[0]
     assert b - a == n - 1
-    x = expr_with_limits.Ref(x_set_comprehension.function.arg, *x_set_comprehension.limits).simplifier()
+    x = expr_with_limits.Ref(x_set_comprehension.function.arg, *x_set_comprehension.limits).simplify()
     
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     return Equality(x[Ref[k:n](KroneckerDelta(x[k], j)) @ Ref[k:n](k)], j, given=given)

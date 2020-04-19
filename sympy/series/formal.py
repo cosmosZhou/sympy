@@ -1031,8 +1031,9 @@ class FormalPowerSeries(SeriesBase):
 
     def _eval_term(self, pt):
         try:
+            from sympy import simplify
             pt_xk = self.xk.coeff(pt)
-            pt_ak = self.ak.coeff(pt).simplify()  # Simplify the coefficients
+            pt_ak = simplify(self.ak.coeff(pt))  # Simplify the coefficients
         except IndexError:
             term = S.Zero
         else:

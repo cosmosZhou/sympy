@@ -1412,7 +1412,8 @@ class Pow(Expr):
                 elif l.is_number and l > 0:
                     l = l.evalf()
                 elif l == 0:
-                    k = k.simplify()
+                    from sympy.simplify import simplify
+                    k = simplify(k)
                     if k == 0:
                         # if prefactor == w**4 + x**2*w**4 + 2*x*w**4, we need to
                         # factor the w**4 out using collect:
@@ -1683,7 +1684,8 @@ class Pow(Expr):
     def is_constant(self, *wrt, **flags):
         expr = self
         if flags.get('simplify', True):
-            expr = expr.simplify()
+            from sympy.simplify import simplify
+            expr = simplify(expr)
         b, e = expr.as_base_exp()
         bz = b.equals(0)
         if bz:  # recalculate with assumptions in case it's unevaluated

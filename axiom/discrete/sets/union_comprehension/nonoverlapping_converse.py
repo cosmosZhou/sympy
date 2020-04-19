@@ -34,7 +34,7 @@ def apply(given):
         xi = xj
         assert xj.has(i)
         
-    return Equality(abs(UnionComprehension(xi, i_limit).simplifier()), summation(abs(xi), i_limit), given=given)
+    return Equality(abs(UnionComprehension(xi, i_limit).simplify()), summation(abs(xi), i_limit), given=given)
 
 
 from sympy.utility import check

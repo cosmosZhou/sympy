@@ -19,6 +19,7 @@ from sympy.utilities.iterables import sift, ibin
 from sympy.utilities.misc import filldedent
 
 
+
 def as_Boolean(e):
     """Like bool, return the Boolean value of an expression, e,
     which can be any instance of Boolean or bool.
@@ -72,20 +73,38 @@ class Boolean(Basic):
     __slots__ = []
 
     def reference(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
         from sympy.concrete import expr_with_limits
         this = self.comprehension(expr_with_limits.Ref, *limits)
         if this != self:                    
             this.equivalent = self
         return this
 
+    def sanctity_check(self, *limits):
+        from sympy.concrete.expr_with_limits import limits_dict        
+        for x, domain in limits_dict(limits).items():
+            if domain is None:
+                continue
+            if domain not in self.defined_domain(x):
+                return False
+        return True
+        
     def union_comprehension(self, *limits):
         from sympy.concrete import expr_with_limits
+        if not self.sanctity_check(*limits):
+            return self
+        
         this = self.comprehension(expr_with_limits.UnionComprehension, *limits)
         if this != self:
             this.given = self
         return this
 
     def summation(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
         from sympy.concrete import summations
         this = self.comprehension(summations.Sum, *limits)
         if this != self:
@@ -93,19 +112,22 @@ class Boolean(Basic):
         return this
 
     def integral(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
         from sympy.integrals.integrals import Integral
         this = self.comprehension(Integral, *limits)
         if this != self:
             this.given = self
         return this
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         if deep:
             hit = False
             args = []
             for arg in self.args:
                 try:
-                    _arg = arg.simplifier(deep=True)
+                    _arg = arg.simplify(deep=True)
                 except Exception as e:
                     print(type(arg))
                     print(arg)
@@ -115,7 +137,7 @@ class Boolean(Basic):
                     hit = True
                 args.append(_arg)
             if hit:
-                return self.func(*args, equivalent=self).simplifier()
+                return self.func(*args, equivalent=self).simplify()
         return self
 
     def apply(self, axiom, *args, **kwargs):
@@ -132,7 +154,7 @@ class Boolean(Basic):
             kwargs['given'] = [bfn.__self__, eq]
             function.given = None
 
-        return eq.func(function, *eq.limits, **kwargs).simplifier()
+        return eq.func(function, *eq.limits, **kwargs).simplify()
 
     def forall(self, x, *args):
         if not self.has(x):
@@ -146,7 +168,7 @@ class Boolean(Basic):
             domain = args[0]
         else:
             _x = x.copy(integer=x.is_integer)
-            return Forall(self._subs(x, _x), (_x, x.domain), equivalent=self).simplifier()
+            return Forall(self._subs(x, _x), (_x, x.domain), equivalent=self).simplify()
 
         if domain in x.domain and x.domain not in domain:
             if self.is_Forall:
@@ -164,13 +186,13 @@ class Boolean(Basic):
                     limits.insert(index, (x, *args))
                 else:
                     limits.append((x, *args))
-                return Forall(function, *limits, given=self).simplifier()
+                return Forall(function, *limits, given=self).simplify()
             else:
                 function = self.copy()
                 _x = self.generate_free_symbol(domain=domain)
                 function = function._subs(x, _x)
                 function = function._subs(_x, x) 
-                return Forall(function, (x, *args), given=self).simplifier()
+                return Forall(function, (x, *args), given=self).simplify()
 
         return self
 
@@ -220,7 +242,7 @@ class Boolean(Basic):
         limits_exists = self.limits_exists()
         if limits_exists:
             from sympy.concrete.expr_with_limits import Exists
-            return Exists(invert, *limits_exists, counterpart=self).simplifier()
+            return Exists(invert, *limits_exists, counterpart=self).simplify()
         
         invert.counterpart = self
         return invert
@@ -1382,9 +1404,9 @@ class BooleanFunction(Application, Boolean):
                          for a in self.args])
         return simplify_logic(rv)
 
-    def simplify(self, ratio=1.7, measure=count_ops, rational=False,
-                 inverse=False):
-        return self._eval_simplify(ratio, measure, rational, inverse)
+#     def simplify(self, ratio=1.7, measure=count_ops, rational=False,
+#                  inverse=False):
+#         return self._eval_simplify(ratio, measure, rational, inverse)
 
     # /// drop when Py2 is no longer supported
     def __lt__(self, other):
@@ -1870,10 +1892,10 @@ class And(LatticeOp, BooleanFunction):
                 args = [*self.args]
                 del args[i]
                 this = self.func(*args)
-                return logic_or.func(*((arg & this).simplifier() for arg in logic_or.args), equivalent=self)
+                return logic_or.func(*((arg & this).simplify() for arg in logic_or.args), equivalent=self)
         return self
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         return self
 
 
@@ -3894,7 +3916,7 @@ class Invoker:
             else:
                 obj = self.func[i](*self._args[i])
 
-            obj = obj.simplifier()
+            obj = obj.simplify()
             
         if obj.equivalent == self.expr and obj == self.expr:
             return self.expr

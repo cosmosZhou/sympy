@@ -421,7 +421,7 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 >= 0)
-        dif = (self - other).simplifier()
+        dif = (self - other).simplify()
 
 #         if self.is_extended_real or other.is_extended_real:
         if dif.is_extended_nonnegative is not None and dif.is_extended_nonnegative is not dif.is_extended_negative:
@@ -467,7 +467,7 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 <= 0)
-        dif = (self - other).simplifier()
+        dif = (self - other).simplify()
 
 #         if self.is_extended_real or other.is_extended_real:
         if dif.is_extended_nonpositive is not None and dif.is_extended_nonpositive is not dif.is_extended_positive:
@@ -514,7 +514,7 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 > 0)
-        dif = (self - other).simplifier()
+        dif = (self - other).simplify()
 
 #         if self.is_extended_real or other.is_extended_real:
         if dif.is_extended_positive is not None and dif.is_extended_positive is not dif.is_extended_nonpositive:
@@ -560,7 +560,7 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 < 0)
-        dif = (self - other).simplifier()
+        dif = (self - other).simplify()
 
 #         if self.is_extended_real or other.is_extended_real:
         if dif.is_extended_negative is not None and dif.is_extended_negative is not dif.is_extended_nonnegative:
@@ -810,7 +810,8 @@ class Expr(Basic, EvalfMixin):
         # simplify unless this has already been done
         expr = self
         if simplify:
-            expr = expr.simplify()
+            import sympy
+            expr = sympy.simplify(expr)
 
         # is_zero should be a quick assumptions check; it can be wrong for
         # numbers (see test_is_not_constant test), giving False when it
@@ -859,7 +860,8 @@ class Expr(Basic, EvalfMixin):
         for w in wrt:
             deriv = expr.diff(w)
             if simplify:
-                deriv = deriv.simplify()
+                import sympy
+                deriv = sympy.simplify(deriv)
             if deriv != 0:
                 if not (pure_complex(deriv, or_real=True)):
                     if flags.get('failing_number', False):
@@ -3491,12 +3493,12 @@ class Expr(Basic, EvalfMixin):
         from sympy.integrals import integrate
         return integrate(self, *args, **kwargs)
 
-    def simplify(self, ratio=1.7, measure=None, rational=False, inverse=False):
-        """See the simplify function in sympy.simplify"""
-        from sympy.simplify import simplify
-        from sympy.core.function import count_ops
-        measure = measure or count_ops
-        return simplify(self, ratio, measure)
+#     def simplify(self, ratio=1.7, measure=None, rational=False, inverse=False):
+#         """See the simplify function in sympy.simplify"""
+#         from sympy.simplify import simplify
+#         from sympy.core.function import count_ops
+#         measure = measure or count_ops
+#         return simplify(self, ratio, measure)
 
     def nsimplify(self, constants=[], tolerance=None, full=False):
         """See the nsimplify function in sympy.simplify"""
@@ -3759,37 +3761,14 @@ class Expr(Basic, EvalfMixin):
         return [_LeftRightArgs([S.One, S.One], higher=self._eval_derivative(x))]
 
     def min(self):
-#         from sympy import Indexed
-        from sympy.stats.rv import RandomSymbol
-        free_symbols = self.free_symbols
-        for symbol in [symbol for symbol in free_symbols if isinstance(symbol, RandomSymbol)]:
-            free_symbols -= symbol.free_symbols
-            free_symbols.add(symbol)
-
-        graph = {x: set() for x in free_symbols }
-        for y in graph:
-            for x in y.domain.free_symbols:
-                # y is dependent on x, so x is a parent of y
-                if x in graph:
-                    graph[x].add(y)
-
-        from sympy.utilities.iterables import topological_sort_depth_first
         from sympy.concrete.expr_with_limits import Minimum
-        G = topological_sort_depth_first(graph)
-
-        f = self
-        for x in G:
-            if x not in free_symbols:
-                continue
-            m = Minimum(f, (x,))
-            _f = m.doit()
-            if _f is m:
-                return f
-            f = _f
-
-        return f
+        return self.aggregate(Minimum)
 
     def max(self):
+        from sympy.concrete.expr_with_limits import Maximum
+        return self.aggregate(Maximum)
+
+    def aggregate(self, aggregate):
         from sympy.stats.rv import RandomSymbol
         free_symbols = self.free_symbols
         for symbol in [symbol for symbol in free_symbols if isinstance(symbol, RandomSymbol)]:
@@ -3802,27 +3781,30 @@ class Expr(Basic, EvalfMixin):
                 # y is dependent on x, so x is a parent of y
                 if x in graph:
                     graph[x].add(y)
-
-#                 if x not in graph:
-#                     graph[x] = set()
-#                 graph[x].add(y)
+                    continue
+                
+                intersection = x.domain.free_symbols & graph.keys()
+                if intersection:
+                    graph[x] = set()
+                    graph[x].add(y)
+                    for n in intersection:
+                        graph[n].add(x)
 
         from sympy.utilities.iterables import topological_sort_depth_first
-        from sympy.concrete.expr_with_limits import Maximum
         G = topological_sort_depth_first(graph)
 
         f = self
         for x in G:
-            if x not in free_symbols:
+            if x not in f.free_symbols:
                 continue
-            M = Maximum(f, (x,))
+            M = aggregate(f, (x,))
             _f = M.doit()
             if _f is M:
                 return f
             f = _f
 
         return f
-
+    
     @property
     def domain(self):
         from sympy import Interval
@@ -3855,6 +3837,27 @@ class Expr(Basic, EvalfMixin):
         if condition.is_Contains:
             if self == condition.lhs:
                 return condition.rhs
+            interval = condition.rhs
+            if interval.is_Interval:                
+                poly = condition.lhs.as_poly(self)
+                if poly.degree() == 1:
+                    c1 = poly.nth(1)
+                    c0 = poly.nth(0)
+                    if interval.is_integer:
+                        if c1 == 1:
+                            interval = interval.copy(start=interval.start - c0, end=interval.end - c0)
+                            return domain & interval
+                        elif c1 == -1:
+                            interval = interval.copy(start=c0 - interval.end, end=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
+                            return domain & interval                            
+                    else:
+                        if c1 > 0:
+                            interval.func(start=(interval.start - c0) / c1, end=(interval.end - c0) / c1)
+                            return domain & interval
+                        elif c1 < 0:
+                            interval.func(end=(interval.start - c0) / c1, start=(interval.end - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
+                            return domain & interval
+                        
             return conditionset(self, condition, domain)
 
         if condition.is_And:
@@ -3992,6 +3995,7 @@ class Expr(Basic, EvalfMixin):
 #             return 
 #         from sympy.matrices.expressions.inverse import Inverse
 #         return Inverse(self)
+
     
 class AtomicExpr(Atom, Expr):
     """

@@ -44,13 +44,13 @@ def prove(Eq):
 
     Eq << Eq[-1].expand()
 
-    Eq << Eq[-1].this.lhs.args[0].args[1].simplifier()
+    Eq << Eq[-1].this.lhs.args[0].args[1].simplify()
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].simplifier()
+    Eq << Eq[-1].this.rhs.args[1].args[1].simplify()
     
     Eq << Eq[-1].this.lhs.args[1].limits_subs(k, k + 1)
     
-    Eq << Eq[-1].this.rhs.simplifier()
+    Eq << Eq[-1].this.rhs.simplify()
     
     Eq << Eq[-1].this.lhs.expand()
 

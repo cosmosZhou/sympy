@@ -130,7 +130,8 @@ def heuristics(e, z, z0, dir):
                         e2.append(e.args[ii])
 
                 if len(e2) > 0:
-                    e3 = Mul(*e2).simplify()
+                    from sympy import simplify
+                    e3 = simplify(Mul(*e2))
                     l = limit(e3, z, z0, dir)
                     rv = l * Mul(*r2)
 

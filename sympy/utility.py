@@ -466,7 +466,7 @@ class identity(boolalg.Invoker):
         for i in range(-1, -len(self.func) - 1, -1):
             self._args[i][self.index[i]] = obj
             obj = self.func[i](*self._args[i])
-            obj = obj.simplifier()
+            obj = obj.simplify()
         self.obj = obj
         return self
 
@@ -573,8 +573,8 @@ def plausible(apply=None):
             if not kwargs.get('evaluate', True):
                 return statement
             if isinstance(statement, tuple):
-                return [*(s.simplifier() for s in statement)]
-            return statement.simplifier()
+                return [*(s.simplify() for s in statement)]
+            return statement.simplify()
         
         dependency = {}
         if isinstance(statement, tuple):

@@ -162,7 +162,8 @@ def is_conservative(field):
     if field == Vector(0):
         return True
     frame = list(field.separate())[0]
-    return curl(field, frame).simplify() == Vector(0)
+    from sympy import simplify
+    return simplify(curl(field, frame)) == Vector(0)
 
 
 def is_solenoidal(field):
@@ -193,8 +194,9 @@ def is_solenoidal(field):
     #separate method in Vector
     if field == Vector(0):
         return True
-    frame = list(field.separate())[0]
-    return divergence(field, frame).simplify() == S(0)
+    frame = list(field.separate())[0]    
+    from sympy import simplify
+    return simplify(divergence(field, frame)) == S(0)
 
 
 def scalar_potential(field, frame):

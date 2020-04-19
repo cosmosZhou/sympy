@@ -509,7 +509,7 @@ class Indexed(Expr):
     def defined_domain(self, x):
         from sympy.sets.sets import Interval
         for i, index in enumerate(self.indices):
-            if not x.shape:
+            if not x.shape and index._has(x):
                 diff = x - index
                 if diff.free_symbols & index.free_symbols:
                     continue

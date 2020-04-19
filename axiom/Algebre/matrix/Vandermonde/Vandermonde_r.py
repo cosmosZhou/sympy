@@ -72,11 +72,9 @@ def prove(Eq):
     Eq << apply(r, n)
 
     (i, *iab), (j, *_) = Eq[0].lhs.arg.args[1].limits
-#     i = i.copy(domain=Interval(*iab, integer=True))
     E = Ref[i:n, j]((-1) ** (j - i) * binomial(j + 1, i + 1))
 
     Eq << identity(Eq[0].lhs.arg @ E).expand()
-    Eq << Eq[-1].this.rhs.args[1].function.simplifier()
 
     (k, *_), *_ = Eq[-1].rhs.args[1].function.limits
 
@@ -86,21 +84,21 @@ def prove(Eq):
     Eq << Eq[-1] * factorial(j + 1)
     Eq << Eq[-1].reversed
 
-    Eq << Eq[-1].this.lhs.simplifier()
+    Eq << Eq[-1].this.lhs.simplify()
 
     Eq << Eq[-1].forall(_i)
 
-    Eq << identity(Eq[2].rhs.args[1].function).limits_subs(k, k - 1)
+    Eq << identity(Eq[1].rhs.args[1].function).limits_subs(k, k - 1)
 
     Eq << Eq[-1].subs(Eq[-2])
     
-    Eq.equation = Eq[2].subs(Eq[-1])
+    Eq.equation = Eq[1].subs(Eq[-1])
     
-    Eq << identity(Eq.equation.rhs.args[0].function).simplifier().limits_subs(k, k - 1)
+    Eq << identity(Eq.equation.rhs.args[0].function).simplify().limits_subs(k, k - 1)
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.args[1].simplifier()
+    Eq << Eq[-1].this.rhs.args[1].simplify()
     
     Eq << Eq[-1].subs(i, _i)
     
@@ -108,23 +106,23 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.args[1].simplifier()
+    Eq << Eq[-1].this.rhs.args[1].simplify()
     
     Eq << Eq[-4] + (Eq[-1] - Eq[-1].lhs)
     
-    Eq << Eq[-1].this.rhs.simplifier()
+    Eq << Eq[-1].this.rhs.simplify()
     
     Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, _i + 1)
     
     Eq << Eq[-1].this.rhs.expand()
 
-    Eq << Eq[-1].this.rhs.simplifier()
+    Eq << Eq[-1].this.rhs.simplify()
     
     Eq << Eq[-4] + Eq[-1]
     
-    Eq << Eq[-1].this.rhs.simplifier()
+    Eq << Eq[-1].this.rhs.simplify()
     
-    Eq << identity(Sum[k:0:n - 1](Eq.equation.rhs.args[0].function.function._subs(i, _i))).simplifier()
+    Eq << identity(Sum[k:0:n - 1](Eq.equation.rhs.args[0].function.function._subs(i, _i))).simplify()
     
     Eq << (Eq[-2].forall(_i), Eq[-1].forall(_i))
     
@@ -137,7 +135,7 @@ def prove(Eq):
 
     Eq << Eq[-1].det()
 
-    Eq << Eq[-1].this.rhs.simplifier() 
+    Eq << Eq[-1].this.rhs.simplify() 
 
     Eq << Eq[-1] * (-1) ** (n - 1) 
 

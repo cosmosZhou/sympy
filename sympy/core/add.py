@@ -899,7 +899,8 @@ class Add(Expr, AssocOp):
         else:
             plain = expr.func(*[s for s, _ in expr.extract_leading_order(x)])
             rv = factor_terms(plain, fraction=False)
-            rv_simplify = rv.simplify()
+            from sympy.simplify import simplify
+            rv_simplify = simplify(rv)
             # if it simplifies to an x-free expression, return that;
             # tests don't fail if we don't but it seems nicer to do this
             if x not in rv_simplify.free_symbols:
@@ -1103,15 +1104,23 @@ class Add(Expr, AssocOp):
 
         return (Float(re_part)._mpf_, Float(im_part)._mpf_)
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if deep:
-            return Expr.simplifier(self, deep=True)
-        this = self.simplifierKroneckerDelta()
+            return Expr.simplify(self, deep=True, **kwargs)
+        this = self.simplifyPiecewise()
         if this is not self:
             return this         
-        return self.simplifierSummations()
+
+        this = self.simplifyKroneckerDelta()
+        if this is not self:
+            return this
+
+        this = self.simplifySummations()
+        if this is not self:
+            return this
+        return self             
         
-    def simplifierKroneckerDelta(self):        
+    def simplifyKroneckerDelta(self):        
         dic = {}
         from sympy import KroneckerDelta
         for expr in preorder_traversal(self):
@@ -1141,11 +1150,23 @@ class Add(Expr, AssocOp):
             if coefficent._subs(j, i) == 0:                    
                 this = p.nth(0)
                 continue
-            if degree >= 2:
+                
+            if degree >= 1:
                 this = coefficent * delta + p.nth(0)
         return this
             
-    def simplifierSummations(self):
+    def simplifyPiecewise(self):     
+        piecewise = [arg for arg in self.args if arg.is_Piecewise]
+        if len(piecewise) == 1:
+            piecewise, *_ = piecewise
+            args = [*self.args]
+            args.remove(piecewise)
+            this = self.func(*args, evaluate=False)
+            return piecewise.func(*((e + this, c) for e, c in piecewise.args))
+        
+        return self
+    
+    def simplifySummations(self):
         from sympy.concrete import summations
         from sympy import Wild
         dic = {}
@@ -1180,7 +1201,7 @@ class Add(Expr, AssocOp):
 
             if negativeInfinity :
                 if positiveInfinity:
-                    return self
+                    return self 
                 return S.NegativeInfinity
             if positiveInfinity:
                 return S.Infinity
@@ -1231,8 +1252,8 @@ class Add(Expr, AssocOp):
             arr = []
             for coeff, expr in dic.items():
                 arr += [n * coeff for n in expr]
-            return Add(*arr + ceoffs).simplifier()
-
+            return Add(*arr + ceoffs).simplify()
+        
         return self
 
     def sum_result(self, positive):
@@ -1379,6 +1400,22 @@ class Add(Expr, AssocOp):
         if non_integer_count >= 2:
             return None
         return True
+
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, index, **kwargs):
+        args = []
+        for arg in self.args:
+            shape_length = len(arg.shape)
+            if shape_length == 0:
+                args.append(arg)
+            elif hasattr(index, "__len__"):
+                args.append(arg[index[:shape_length]])
+            else:
+                args.append(arg[index])
+
+        return self.func(*args)
 
 
 from .mul import Mul, _keep_coeff, prod

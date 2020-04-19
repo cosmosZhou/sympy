@@ -1744,9 +1744,9 @@ class Mul(Expr, AssocOp):
     def as_coeff_mmul(self):
         return 1, self
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         if deep:
-            return Expr.simplifier(self, deep=True)
+            return Expr.simplify(self, deep=True, **kwargs)
 
         a = self.args[0]
         b = self.args[1]
@@ -1842,13 +1842,13 @@ class Mul(Expr, AssocOp):
 
         args.append(sgm.function)
 
-        return sgm.func(Mul(*args).simplifier(), *sgm.limits)
+        return sgm.func(Mul(*args).simplify(), *sgm.limits)
 
 #     def as_Sum(self):
 #         from sympy import Sum
 
 #         if isinstance(self.expr, Sum):
-#             return self.expr.func(self.func(self.expr.function, *self.variable_count).simplifier(), *self.expr.limits)
+#             return self.expr.func(self.func(self.expr.function, *self.variable_count).simplify(), *self.expr.limits)
 #         return self
 
     def as_coeff_Sum(self):
@@ -1951,6 +1951,15 @@ class Mul(Expr, AssocOp):
             return is_integer
         return True
 
+    def distribute(self):
+        for i, arg in enumerate(self.args):
+            if arg.is_Sum:
+                args = [*self.args]
+                del args[i]
+                this = self.func(*args)
+                function = (arg.function * this).powsimp()
+                return arg.func(function, *arg.limits).simplify()
+        return self
 
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

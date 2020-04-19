@@ -1,6 +1,5 @@
 from __future__ import print_function, division
 
-from sympy.utilities.exceptions import SymPyDeprecationWarning
 from .add import _unevaluated_Add, Add
 from .basic import S
 from .compatibility import ordered
@@ -63,8 +62,8 @@ class Relational(Boolean, Expr, EvalfMixin):
     #   have not yet been defined
 
     def comprehension(self, operator, *limits, func=None):
-        lhs = operator(self.lhs, *limits).simplifier()
-        rhs = operator(self.rhs, *limits).simplifier()
+        lhs = operator(self.lhs, *limits).simplify()
+        rhs = operator(self.rhs, *limits).simplify()
         this = self.func(lhs, rhs)
 
         if func:
@@ -80,7 +79,7 @@ class Relational(Boolean, Expr, EvalfMixin):
                     limits = expr_with_limits.limits_delete(limits, keys)
                     if not limits:
                         continue
-                this = f(this, *limits).simplifier()
+                this = f(this, *limits).simplify()
 
         return this
 
@@ -272,10 +271,9 @@ class Relational(Boolean, Expr, EvalfMixin):
                 return left
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
+        from sympy.simplify import simplify
         r = self
-        r = r.func(*[i.simplify(ratio=ratio, measure=measure,
-                                rational=rational, inverse=inverse)
-                     for i in r.args])
+        r = r.func(*[simplify(i, ratio=ratio, measure=measure, rational=rational, inverse=inverse) for i in r.args])
         if r.is_Relational:
             dif = r.lhs - r.rhs
             # replace dif with a valid Number that will
@@ -323,9 +321,9 @@ class Relational(Boolean, Expr, EvalfMixin):
             return self._assumptions['definition']
         return None
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         if deep:
-            return Boolean.simplifier(self, deep=True)
+            return Boolean.simplify(self, deep=True)
 
         lhs, rhs = self.args
         from sympy.core.mul import Mul
@@ -339,17 +337,17 @@ class Relational(Boolean, Expr, EvalfMixin):
                 for arg in intersect:
                     lhs_args.remove(arg)
                     rhs_args.remove(arg)
-                return self.func(lhs_func(*lhs_args), rhs_func(*rhs_args), equivalent=self).simplifier()
+                return self.func(lhs_func(*lhs_args), rhs_func(*rhs_args), equivalent=self).simplify()
         elif rhs_func == Add:
             rhs_args = [*rhs.args]
             if lhs in rhs_args:
                 rhs_args.remove(lhs)
-                return self.func(0, rhs_func(*rhs_args), equivalent=self).simplifier()
+                return self.func(0, rhs_func(*rhs_args), equivalent=self).simplify()
         elif lhs_func == Add:
             lhs_args = [*lhs.args]
             if rhs in lhs_args:
                 lhs_args.remove(rhs)
-                return self.func(lhs_func(*lhs_args), 0, equivalent=self).simplifier()
+                return self.func(lhs_func(*lhs_args), 0, equivalent=self).simplify()
             
         from sympy import Symbol
         if not lhs._has(Symbol) and rhs._has(Symbol):
@@ -428,7 +426,7 @@ class Relational(Boolean, Expr, EvalfMixin):
         if domain.is_ConditionSet:
             self
             
-        return Contains(x, domain, equivalent=self).simplifier()
+        return Contains(x, domain, equivalent=self).simplify()
 
     def is_positive_relationship(self):
         ...
@@ -561,7 +559,7 @@ class Equality(Relational):
 
             if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.is_set and not rhs.is_set:
                 # see if the difference evaluates
-                dif = (lhs - rhs).simplifier()
+                dif = (lhs - rhs).simplify()
                 z = dif.is_zero
                 if z is not None:
                     if z is False and dif.is_commutative:  # issue 10728
@@ -780,7 +778,7 @@ class Equality(Relational):
             elif isinstance(arg, Equality):
                 eq = arg
                 args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs).simplifier(), self.rhs._subs(*args, **kwargs).simplifier()).simplifier().overwrite(self, equivalent=[self, eq])
+                return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify()).simplify().overwrite(self, equivalent=[self, eq])
             elif isinstance(arg, Relational):
                 eq = arg
                 old, new = eq.args
@@ -848,7 +846,7 @@ class Equality(Relational):
             derivative[old][new] = eq
             return eq
         else:
-            return self.func(self.lhs.subs(*args, **kwargs).simplifier(), self.rhs.subs(*args, **kwargs).simplifier())
+            return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
 
     @staticmethod
     def by_definition_of(x):
@@ -952,9 +950,9 @@ class Equality(Relational):
         from sympy import det
         return self.func(det(self.lhs), det(self.rhs), given=self)
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         if deep:
-            return Boolean.simplifier(self, deep=True)
+            return Boolean.simplify(self, deep=True)
 
         lhs, rhs = self.args
         from sympy.core.mul import Mul
@@ -972,15 +970,15 @@ class Equality(Relational):
                     for arg in intersect:
                         lhs_args.remove(arg)
                         rhs_args.remove(arg)
-                    return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplifier()
+                    return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()
         elif type(lhs) == Add and rhs in lhs.args:
             args = [*lhs.args]
             args.remove(rhs)
-            return self.func(Add(*args), 0, equivalent=self).simplifier()
+            return self.func(Add(*args), 0, equivalent=self).simplify()
         elif type(rhs) == Add and lhs in rhs.args:
             args = [*rhs.args]
             args.remove(lhs)
-            return self.func(0, Add(*args), equivalent=self).simplifier()
+            return self.func(0, Add(*args), equivalent=self).simplify()
         elif lhs == 0 and _coeff_isneg(rhs):
             return self.func(0, -rhs, equivalent=self)
         elif rhs == 0 and _coeff_isneg(lhs):
@@ -1001,7 +999,7 @@ class Equality(Relational):
         return self
 
     def as_two_terms(self):
-        return self.func(self.lhs.as_two_terms(), self.rhs.as_two_terms(), equivalent=self).simplifier()
+        return self.func(self.lhs.as_two_terms(), self.rhs.as_two_terms(), equivalent=self).simplify()
 
     def split(self, variable=None):
         from sympy.functions.elementary.piecewise import Piecewise
@@ -1019,7 +1017,7 @@ class Equality(Relational):
                 condition = condition & univeralSet
                 univeralSet = condition.invert() & univeralSet
 
-                args.append(Forall(self.func(self.lhs, expr), (variable, condition), given=self).simplifier())
+                args.append(Forall(self.func(self.lhs, expr), (variable, condition), given=self).simplify())
 
             return args
 
@@ -1035,7 +1033,7 @@ class Equality(Relational):
             for expr, condition in self.lhs.args:
                 condition = condition & univeralSet
                 univeralSet = condition.invert() & univeralSet
-                args.append(Forall(self.func(expr, self.rhs), (variable, condition), given=self).simplifier())
+                args.append(Forall(self.func(expr, self.rhs), (variable, condition), given=self).simplify())
 
             return args
 
@@ -1044,6 +1042,11 @@ class Equality(Relational):
     def diff(self, *symbols):
         from sympy.core.function import Derivative
         return self.func(Derivative(self.lhs, *symbols), Derivative(self.rhs, *symbols), given=self)
+
+    def transpose(self):
+        return self.func(self.lhs.T, self.rhs.T, equivalent=self)
+    
+    T = property(transpose, None, None, 'Matrix transposition.')
 
     
 Eq = Equality
@@ -1135,23 +1138,23 @@ class Unequality(Relational):
             if isinstance(arg, Equality):
                 eq = arg
                 args = eq.args
-                return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs)).simplifier().overwrite(self, equivalent=[self, eq])
+                return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs)).simplify().overwrite(self, equivalent=[self, eq])
             else:
                 return self
 
         return self
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         if deep:
-            return Boolean.simplifier(self, deep=True)
+            return Boolean.simplify(self, deep=True)
 
         from sympy.sets.contains import NotSubset
         lhs, rhs = self.args
         if lhs.is_Complement and rhs.is_EmptySet:
             A, B = lhs.args
-            return NotSubset(A, B, equivalent=self).simplifier()
+            return NotSubset(A, B, equivalent=self).simplify()
              
-        return super(Unequality, self).simplifier()
+        return super(Unequality, self).simplify()
 
     
 Ne = Unequality
@@ -1584,6 +1587,7 @@ class GreaterThan(_Greater):
         return self
 
     def subs(self, *args, **kwargs):
+        from sympy.simplify import simplify
         if len(args) == 1:
             eq, *_ = args
             if isinstance(eq, Equality):
@@ -1597,8 +1601,8 @@ class GreaterThan(_Greater):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
                     _f = lhs - rhs
                     from sympy import diff
                     df = diff(f, old)
@@ -1621,8 +1625,8 @@ class GreaterThan(_Greater):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
                     _f = lhs - rhs
                     from sympy import diff
                     df = diff(f, old)
@@ -1750,6 +1754,7 @@ class LessThan(_Less):
         return _sympify(lhs.__le__(rhs))
 
     def subs(self, *args, **kwargs):
+        from sympy.simplify import simplify
         from sympy import diff
         from sympy import Symbol        
         if len(args) == 1:
@@ -1762,8 +1767,8 @@ class LessThan(_Less):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
                     _f = lhs - rhs                    
                     df = diff(f, old)
                     if df > 0:
@@ -1788,8 +1793,8 @@ class LessThan(_Less):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
                     df = diff(f, old)
                     if df > 0:
                         return self
@@ -1805,7 +1810,7 @@ class LessThan(_Less):
                 if self.lhs == eq.rhs and self.rhs == eq.lhs:
                     return Eq(self.lhs, self.rhs, given=[self, eq])
 
-                rhs = self.rhs.subs(old, new).simplifier()
+                rhs = self.rhs.subs(old, new).simplify()
                 if rhs != self.rhs:
                     return self.func(self.lhs, rhs, given=[self, eq])
                 return self
@@ -1817,8 +1822,8 @@ class LessThan(_Less):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
                     df = diff(f, old)
                     if df > 0:
                         return self
@@ -1836,7 +1841,7 @@ class LessThan(_Less):
 
                 lhs = self.lhs.subs(old, new)
                 if lhs != self.lhs:
-                    return self.func(lhs, self.rhs, given=[self, eq]).simplifier()
+                    return self.func(lhs, self.rhs, given=[self, eq]).simplify()
                 return self
             elif isinstance(eq, StrictGreaterThan):
                 old, new = eq.args
@@ -1846,8 +1851,8 @@ class LessThan(_Less):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
 #                     _f = lhs - rhs
                     df = diff(f, old)
                     if df > 0:
@@ -1975,6 +1980,7 @@ class StrictGreaterThan(_Greater):
             return self.func(self.lhs + exp, self.rhs + exp, equivalent=self)
 
     def subs(self, *args, **kwargs):
+        from sympy.simplify import simplify
         if len(args) == 1:
             eq, *_ = args
             if isinstance(eq, Equality):
@@ -1988,8 +1994,8 @@ class StrictGreaterThan(_Greater):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
                     _f = lhs - rhs
                     from sympy import diff
                     df = diff(f, old)
@@ -2010,9 +2016,9 @@ class StrictGreaterThan(_Greater):
                 match = eq.lhs - eq.rhs
 
                 if delta == match:
-                    return eq.func(lhs, rhs, given=[self, eq]).simplifier()
+                    return eq.func(lhs, rhs, given=[self, eq]).simplify()
                 elif delta == -match:
-                    return self.func(lhs, rhs, given=[self, eq]).simplifier()
+                    return self.func(lhs, rhs, given=[self, eq]).simplify()
                 else:
                     return self
 
@@ -2026,7 +2032,7 @@ class StrictGreaterThan(_Greater):
                 match = eq.lhs - eq.rhs
 
                 if delta == match:
-                    return eq.func(lhs, rhs, given=[self, eq]).simplifier()
+                    return eq.func(lhs, rhs, given=[self, eq]).simplify()
                 elif delta == -match:
                     return StrictLessThan(lhs, rhs, given=[self, eq])
                 else:
@@ -2105,6 +2111,7 @@ class StrictLessThan(_Less):
             return self.func(self.lhs + exp, self.rhs + exp, equivalent=self)
 
     def subs(self, *args, **kwargs):
+        from sympy.simplify import simplify
         if len(args) == 1:
             eq, *_ = args
             if isinstance(eq, Equality):
@@ -2118,8 +2125,8 @@ class StrictLessThan(_Less):
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs
 #                     f = self.lhs - self.rhs > 0
-                    lhs = self.lhs.subs(old, new).simplify()
-                    rhs = self.rhs.subs(old, new).simplify()
+                    lhs = simplify(self.lhs.subs(old, new))
+                    rhs = simplify(self.rhs.subs(old, new))
                     _f = lhs - rhs
                     from sympy import diff
                     df = diff(f, old)

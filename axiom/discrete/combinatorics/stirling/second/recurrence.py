@@ -127,9 +127,9 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq.s2_definition)
 
     Eq << Eq[-1].definition.definition
-    Eq << Eq[-1].this.function.args[0].simplifier()
+    Eq << Eq[-1].this.function.args[0].simplify()
     
-    Eq << Union[i:0:k](Eq.x_quote_definition)
+    Eq << Eq.x_quote_definition.union_comprehension((i, 0, k))
 
     x_quote_union = Eq[-1].subs(Eq.x_union_s1)
     Eq << x_quote_union
@@ -179,7 +179,7 @@ def prove(Eq):
 
     Eq << Eq.x_quote_set_in_s2.subs(Eq.A_definition.reversed)
 
-    Eq << Union[j](Eq[-1])
+    Eq << Eq[-1].union_comprehension((j,))
 
     B = Symbol("B", dtype=dtype.integer.set.set, definition=plausible0.args[0])
 
@@ -231,7 +231,7 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1]) + Eq.set_size_inequality
     
-    Eq << Eq[-1].simplifier(deep=True)
+    Eq << Eq[-1].simplify(deep=True)
 
     Eq << Eq[-1].subs(x_quote_union_abs)
 
@@ -263,7 +263,7 @@ def prove(Eq):
 
     Eq << Eq[-1].definition
 
-    Eq << x_union_s0.union(Eq[-1].reversed).simplifier(deep=True)
+    Eq << x_union_s0.union(Eq[-1].reversed).simplify(deep=True)
 
     Eq << Eq[-1].subs(x_union_s0)
 
@@ -304,7 +304,7 @@ def prove(Eq):
 
     Eq.x_tilde_definition = Equality.by_definition_of(x_tilde)
 
-    Eq << Union[i:0:k - 1](Eq.x_tilde_definition)
+    Eq << Eq.x_tilde_definition.union_comprehension((i, 0, k - 1))
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
 
@@ -331,7 +331,7 @@ def prove(Eq):
     Eq << Eq[-1].func(Contains(x_tilde, s0_quote), *Eq[-1].limits, plausible=True)
 
     Eq << Eq[-1].definition
-    Eq << Eq[-1].this.function.args[0].simplifier()
+    Eq << Eq[-1].this.function.args[0].simplify()
     
     Eq.x_tilde_set_in_s0 = Eq[-3].func(Contains(UnionComprehension.construct_finite_set(x_tilde), s0), *Eq[-3].limits, plausible=True)
 
@@ -339,7 +339,7 @@ def prove(Eq):
 
     Eq << Eq[-1].definition
 
-    Eq << Union[i:0:k - 1](Eq.x_tilde_definition.set)
+    Eq << Eq.x_tilde_definition.set.union_comprehension((i, 0, k - 1))
 
     Eq << Eq[-1].subs(Eq.x_j_definition)
 
@@ -411,8 +411,7 @@ def prove(Eq):
 
     Eq.x_hat_abs_positive = Eq[-1] & Eq[-2]
 
-    Eq.x_hat_union = Union[i:0:k](Eq.x_hat_definition)
-
+    Eq.x_hat_union = Eq.x_hat_definition.union_comprehension((i, 0, k))
     Eq.x_union_complement = Eq.x_union_s2_n - {n}
 
     Eq << Eq.x_union_s2_n.abs().subs(Eq.x_abs_sum_s2_n.reversed).apply(discrete.sets.union_comprehension.nonoverlapping)
@@ -497,7 +496,7 @@ def prove(Eq):
 
     Eq.s0_supset = Supset(s0, image_set(e, e - {n.set}, B), plausible=True)
 
-    Eq << Eq.s0_supset.simplifier()
+    Eq << Eq.s0_supset.simplify()
 
     Eq.s0_subset = Subset(s0, image_set(e, e - {n.set}, B), plausible=True)
 

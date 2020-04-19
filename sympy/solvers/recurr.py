@@ -577,7 +577,7 @@ def rsolve_hyper(coeffs, f, n, **hints):
                 return None
 
         if isinstance(f, Sum):
-            result = f.func(Add(*inhomogeneous), *f.limits).simplifier()
+            result = f.func(Add(*inhomogeneous), *f.limits).simplify()
         else:
             result = Add(*inhomogeneous)
     else:

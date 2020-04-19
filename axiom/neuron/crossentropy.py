@@ -20,7 +20,7 @@ def apply(given):
     j, a, b = limit
     n = b - a + 1
     
-    t = Ref[j:0:n - 1](lhs.function).simplifier()    
+    t = Ref[j:0:n - 1](lhs.function).simplify()    
     
     assert n >= 2
     
@@ -61,13 +61,13 @@ def prove(Eq):
 
     Eq.loss = Eq.loss.subs(Eq[-1]).expand()
     
-    Eq.loss = Eq.loss.this.rhs.args[0].simplifier()
+    Eq.loss = Eq.loss.this.rhs.args[0].simplify()
     
-    Eq.loss = Eq.loss.this.rhs.args[1].args[1].simplifier()
+    Eq.loss = Eq.loss.this.rhs.args[1].args[1].simplify()
     
     Eq.loss = Eq.loss.subs(given)
     
-    Eq.loss = Eq.loss.reference(i)
+    Eq.loss = Eq.loss.reference((i,))
 
     
 if __name__ == '__main__':

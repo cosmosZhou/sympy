@@ -9,7 +9,7 @@ from axiom.statistics.guassion import std
 
 
 def coefficient(y, x):
-    quadratic = -log(y.powsimp()).simplifier()
+    quadratic = -log(y.powsimp()).simplify()
     quadratic = quadratic.as_poly(x)
     if quadratic.degree() != 2:
         return None

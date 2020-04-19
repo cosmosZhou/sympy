@@ -877,7 +877,7 @@ class Number(AtomicExpr):
     def T(self):
         return self
 
-    def simplifier(self, deep=False):
+    def simplify(self, *_, **__):
         return self
 
 

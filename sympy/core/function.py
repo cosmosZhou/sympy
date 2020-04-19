@@ -1920,12 +1920,12 @@ class Derivative(Expr):
             if evaluate:
                 derivative = derivative.doit(deep=False)
             else:
-                derivative = derivative.simplifier()
-            return Sum(derivative, *self.expr.limits).simplifier()
+                derivative = derivative.simplify()
+            return Sum(derivative, *self.expr.limits).simplify()
 
         return self
 
-    def simplifier(self):        
+    def simplify(self):        
         if len(self.variable_count) > 1:
             return self
         x, n = self.variable_count[0]
@@ -2250,7 +2250,7 @@ class Difference(Expr):
                 # that have defined is_scalar=True but have no
                 # _eval_derivative defined
                 return S.One
-            return Expr.__new__(cls, expr, *variable_count).simplifier()
+            return Expr.__new__(cls, expr, *variable_count).simplify()
 
         # evaluate the derivative by calling _eval_derivative method
         # of expr for each variable
@@ -2724,9 +2724,9 @@ class Difference(Expr):
         else:
             front = 1
             back = n - 1
-        return self.func(self.func(self.expr, x, back).simplifier(), x, front)
+        return self.func(self.func(self.expr, x, back).simplify(), x, front)
 
-    def simplifier(self):
+    def simplify(self):
         x, n = self.variable_count
 
         import sympy
@@ -2749,12 +2749,12 @@ class Difference(Expr):
     def as_Sum(self):
         from sympy import Sum
         if isinstance(self.expr, Sum):
-            return self.expr.func(self.func(self.expr.function, *self.variable_count).simplifier(), *self.expr.limits)
+            return self.expr.func(self.func(self.expr.function, *self.variable_count).simplify(), *self.expr.limits)
         return self
 
     def as_Add(self):
         if isinstance(self.expr, Add):
-            return self.expr.func(*(self.func(arg, *self.variable_count).simplifier() for arg in self.expr.args))
+            return self.expr.func(*(self.func(arg, *self.variable_count).simplify() for arg in self.expr.args))
         return self
 
     def as_one_term(self):

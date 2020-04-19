@@ -842,6 +842,11 @@ class CartesianSpace(Set):
             assert len(other.element_type.shape) < len(self.element_type.shape)
         return self
     
+    def __add__(self, other):
+        if other.is_set:
+            assert len(other.element_type.shape) < len(self.element_type.shape)
+        return self
+    
     
 class Interval(Set, EvalfMixin):
     """
@@ -897,13 +902,13 @@ class Interval(Set, EvalfMixin):
                 return False
         return True
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         if deep:
             hit = False
             args = [*self.args]
             for i, arg in enumerate(self.args[:2]):
                 try:
-                    _arg = arg.simplifier(deep=True)
+                    _arg = arg.simplify(deep=True)
                 except Exception as e:
                     print(type(arg))
                     print(arg)
@@ -913,7 +918,7 @@ class Interval(Set, EvalfMixin):
                     hit = True
                 args[i] = _arg
             if hit:
-                return self.func(*args).simplifier()
+                return self.func(*args).simplify()
         
         if self.is_integer:
             if self.left_open:
@@ -1149,6 +1154,15 @@ class Interval(Set, EvalfMixin):
                         right_open = S.true
                     except:
                         ...
+            if not left_open and start.is_Add:
+                try:
+                    index = start.args.index(S.One)
+                    args = [*start.args]
+                    del args[index]
+                    start = start.func(*args)
+                    left_open = S.true
+                except:
+                    ...
 #         integer = _sympify(integer)
         return Basic.__new__(cls, start, end, left_open, right_open, integer)
 
@@ -1939,7 +1953,7 @@ class Intersection(Set, LatticeOp):
                 del args[i]
                 this = self.func(*args)
                 function = union.function & this
-                return union.func(function, *union.limits).simplifier()
+                return union.func(function, *union.limits).simplify()
         return self
 
     """
@@ -2045,7 +2059,7 @@ class Complement(Set, EvalfMixin):
         else:
             M += epsilon
             
-        return Piecewise((M, Contains(x, B).simplifier()), (x, True)).simplifier()
+        return Piecewise((M, Contains(x, B).simplify()), (x, True)).simplify()
 
     def max(self):
         from sympy.core.numbers import epsilon
@@ -2064,7 +2078,7 @@ class Complement(Set, EvalfMixin):
         else:
             m -= epsilon
             
-        return Piecewise((m, Contains(x, B).simplifier()), (x, True)).simplifier()  
+        return Piecewise((m, Contains(x, B).simplify()), (x, True)).simplify()  
 
     @property
     def element_type(self):
@@ -2153,7 +2167,7 @@ class Complement(Set, EvalfMixin):
             B = B.func(*B._argset - {A}, evaluate=False)
             
         if A.is_Piecewise:
-            return A.func(*((e - B, c) for e, c in A.args)).simplifier()
+            return A.func(*((e - B, c) for e, c in A.args)).simplify()
         
         if A.is_Intersection:
             for i, arg in enumerate(A.args):
@@ -2473,7 +2487,7 @@ class FiniteSet(Set, EvalfMixin):
                     if not other.left_open and e == other.start:
                         args = [*self.args]
                         del args[i]
-                        return other.copy(left_open=True).simplifier() - self.func(*args)
+                        return other.copy(left_open=True).simplify() - self.func(*args)
                     if e > other.max() or e < other.min():
                         args = [*self.args]
                         del args[i]
@@ -2641,7 +2655,7 @@ class FiniteSet(Set, EvalfMixin):
     def handle_finite_sets(self, unk):
         if len(unk) == len(self) == 1:
             from sympy import Piecewise
-            return Piecewise((unk, Equality(unk.arg, self.arg)), (S.EmptySet, True)).simplifier()
+            return Piecewise((unk, Equality(unk.arg, self.arg)), (S.EmptySet, True)).simplify()
 
 class FiniteList(Expr):
     """

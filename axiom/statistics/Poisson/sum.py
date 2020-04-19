@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << Equality.by_definition_of(Density(x0 + x1))
 
-    Eq << Eq[-1].this.rhs.args[-1].function.args[-1].doit(deep=False)
+#     Eq << Eq[-1].this.rhs.args[-1].function.args[-1].doit(deep=False)
 
     Eq << Eq[-1].subs(Eq[0])
 

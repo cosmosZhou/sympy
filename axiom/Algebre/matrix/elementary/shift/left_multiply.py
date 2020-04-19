@@ -6,18 +6,21 @@ from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
-from sympy.matrices.expressions.matexpr import Swap
+from sympy.matrices.expressions.matexpr import Shift
 
 
 @plausible
-def apply(x):
+def apply(x, w=None):
     n = x.shape[0]
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    if w is None:
+        w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Shift(n, i, j)))
+    else:
+        assert w[i, j] == Shift(n, i, j)
     
-    return Equality(w[i, j] @ w[i, j] @ x, x)
+    return Equality(w[i, j].T @ w[i, j] @ x, x)
 
 
 @check
@@ -26,6 +29,8 @@ def prove(Eq):
     x = Symbol('x', shape=(n,), real=True)
     Eq << apply(x)
     
+    Eq << Eq[0].T
+    
     i, j = Eq[0].lhs.indices    
 
     w = Eq[0].lhs.base
@@ -33,13 +38,13 @@ def prove(Eq):
     Eq << identity(w[i, j] @ x).subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << w[i, j] @ Eq[-1]
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
     
-    Eq << Eq[-1].this.rhs.subs(Eq[0])
+    Eq << w[i, j].T @ Eq[-1]
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplifier(deep=True)
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
         
 
 if __name__ == '__main__':

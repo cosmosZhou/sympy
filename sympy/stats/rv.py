@@ -428,8 +428,7 @@ class IndependentProductPSpace(ProductPSpace):
             result = space.probability(condition.__class__(space.value, 0))
         return result if not cond_inv else S.One - result
 
-    def compute_density(self, expr, **kwargs):
-        z = Dummy('z', real=True, finite=True)
+    def compute_density(self, expr, **kwargs):        
         rvs = random_symbols(expr)
 #         dic = {}
         for var in rvs:
@@ -442,8 +441,10 @@ class IndependentProductPSpace(ProductPSpace):
         assert not random_symbols(expr)
 
         if any(pspace(rv).is_Continuous for rv in rvs):
+            z = Dummy('z', real=True, finite=True)
             expr = self.compute_expectation(DiracDelta(expr - z), **kwargs)
         else:
+            z = Dummy('z', integer=True, finite=True)
             expr = self.compute_expectation(KroneckerDelta(expr, z), **kwargs)
         return Lambda(z, expr)
 

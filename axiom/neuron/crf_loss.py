@@ -50,13 +50,13 @@ def prove(Eq):
     
     Eq << Eq.s_definition.subs(t, t + 1) - Eq.s_definition
 
-    Eq << Eq[-1].this.rhs.simplifier() + s[t]
+    Eq << Eq[-1].this.rhs.simplify() + s[t]
 
     Eq << Eq.z_definition.subs(t, t + 1)
     
     Eq << Eq[-1].this.rhs.subs(Eq[-2])
 
-    Eq << Eq[-1].this.rhs.function.simplifier()
+    Eq << Eq[-1].this.rhs.function.simplify()
 
     Eq << Eq[-1].this.rhs.as_two_terms()
 
@@ -78,7 +78,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].arg.simplifier()
+    Eq << Eq[-1].this.rhs.args[1].args[1].arg.simplify()
 
     Eq << Eq.plausible1.this.lhs.args[1].as_Add()
 

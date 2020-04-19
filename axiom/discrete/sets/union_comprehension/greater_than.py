@@ -1,13 +1,12 @@
-from sympy.core.relational import Equality, LessThan, GreaterThan
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import GreaterThan
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Union
-from axiom import discrete
 
 
+@plausible
 def apply(A, B):
-    return GreaterThan(abs(Union(A, B)), abs(A),
-                    plausible=plausible())
+    return GreaterThan(abs(Union(A, B)), abs(A))
 
 
 from sympy.utility import check, identity

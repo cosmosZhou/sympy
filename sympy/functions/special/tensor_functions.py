@@ -452,15 +452,11 @@ class KroneckerDelta(Function):
         return sage.kronecker_delta(self.args[0]._sage_(), self.args[1]._sage_())
 
     def nonzero_domain(self, x):
-        from sympy.sets.sets import FiniteSet, Interval
-        from sympy import oo
-        i, j = self.args
-        if x == j:
-            return FiniteSet(i)
-        elif x == i:
-            return FiniteSet(j)
-        
-        return Interval(-oo, oo, integer=x.is_integer)
+        from sympy import Equality
+        domain = x.conditional_domain(Equality(*self.args, evaluate=False))
+        if domain.is_ConditionSet:
+            return x.domain
+        return domain
 
     @property
     def shape(self):

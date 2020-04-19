@@ -94,18 +94,23 @@ class Transpose(MatrixExpr):
         lines = self.args[0]._eval_derivative_matrix_lines(x)
         return [i.transpose() for i in lines]
 
-    def simplifier(self):
+    def simplify(self):
         from sympy.core.function import Function
         from sympy.core.mul import Mul
         f = self.arg
         if isinstance(f, Function):
-            return f.func(self.func(f.arg).simplifier())
+            return f.func(self.func(f.arg).simplify())
         if isinstance(f, Mul):
             if len(f.args[0].shape) == 0:
-                return f.func(f.args[0], self.func(f.func(*f.args[1:])).simplifier())
+                return f.func(f.args[0], self.func(f.func(*f.args[1:])).simplify())
 
         return self
 
+    @property
+    def definition(self):
+        definition = self.arg.definition
+        if definition is not None:
+            return definition.T
 
 def transpose(expr):
     """Matrix transpose"""

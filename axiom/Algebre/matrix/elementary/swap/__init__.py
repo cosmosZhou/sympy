@@ -1,2 +1,2 @@
-from . import square
-from . import identity
+from . import left_multiply
+from . import right_multiply

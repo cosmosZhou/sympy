@@ -246,7 +246,8 @@ def centroid(*args):
                 A += a
             den = A
         c /= den
-        return c.func(*[i.simplify() for i in c.args])
+        from sympy import simplify
+        return c.func(*[simplify(i) for i in c.args])
 
 
 def closest_points(*args):

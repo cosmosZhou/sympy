@@ -45,7 +45,7 @@ def _common_new(cls, function, *symbols, **assumptions):
 # added here by cosmos to remove the domain of this variable!
                 if isinstance(oldsymbol, Symbol) and {'domain', 'positive', 'negative', 'nonpositive', 'nonnegative'} & oldsymbol.assumptions0.keys():
                     newsymbol = oldsymbol.copy(integer=oldsymbol.is_integer)
-                    function = function.subs(oldsymbol, newsymbol)
+                    function = function._subs(oldsymbol, newsymbol)
                     limits[i] = Tuple(newsymbol, *li[1:])
  
     else:
@@ -182,7 +182,7 @@ class ExprWithLimits(Expr):
                     s = finiteset[0]
             assert s.is_FiniteSet, str(s) 
         for k in s:
-            args.append(self.function._subs(x, k).simplifier())
+            args.append(self.function._subs(x, k).simplify())
         return self.operator(*args)                   
 
     def subs_limits_with_epitome(self, epitome):
@@ -242,10 +242,7 @@ class ExprWithLimits(Expr):
     def __new__(cls, function, *symbols, **assumptions):
         function = sympify(function)
         if cls in (Minimum, Maximum, Ref, UnionComprehension):
-            if function.is_Boolean:
-                lhs = function.lhs
-                rhs = function.rhs
-                return function.func(cls(lhs, *symbols, **assumptions).simplifier(), cls(rhs, *symbols, **assumptions).simplifier())
+            assert not function.is_Boolean
 
             limits = [None] * len(symbols)
             for i, sym in enumerate(symbols):
@@ -255,7 +252,13 @@ class ExprWithLimits(Expr):
                     if len(sym) == 2:
                         x, domain = sym
                         if domain.is_Interval and domain.is_integer:
-                            sym = (x, domain.min(), domain.max()) 
+                            sym = (x, domain.min(), domain.max())
+                    elif len(sym) == 3: 
+                        x, *ab = sym
+                        if 'domain' in x._assumptions:
+                            _x = x.copy(integer=x.is_integer)
+                            function = function._subs(x, _x)
+                            sym = (_x, *ab)
                             
                     limits[i] = Tuple(*sym)
                 else:
@@ -524,9 +527,9 @@ class ExprWithLimits(Expr):
             elif _domain != S.EmptySet:
                 assert _domain.is_integer
                 if _domain.is_Interval:
-                    args.append(self.func(f, (x, _domain.min(), _domain.max())).simplifier())
+                    args.append(self.func(f, (x, _domain.min(), _domain.max())).simplify())
                 else:
-                    args.append(self.func(f, (x, _domain)).simplifier())
+                    args.append(self.func(f, (x, _domain)).simplify())
 
         return args
 
@@ -577,7 +580,7 @@ class ExprWithLimits(Expr):
 #                 for i, _i in reps.items():
 #                     function = function.subs(_i, i)                            
                 
-            return self.func(function, *limits, **kwargs).simplifier()
+            return self.func(function, *limits, **kwargs).simplify()
 
         if self.function.is_ExprWithLimits and new in self.function.variables_set:
             if self.function.is_Exists:
@@ -612,7 +615,7 @@ class ExprWithLimits(Expr):
             if old == x:
                 if not domain:
                     assert 'domain' not in new._assumptions
-                    return self.func(self.function._subs(old, new), (new, x.domain)).simplifier()
+                    return self.func(self.function._subs(old, new), (new, x.domain)).simplify()
             
                 if not new.has(x):
                     if self.function.has(new):
@@ -628,11 +631,11 @@ class ExprWithLimits(Expr):
             if p is None or p.degree() != 1:
                 function = self.function.subs(old, new)
                 if len(domain) == 2:
-                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplifier()
+                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
 #                 from sympy.tensor.indexed import Slice
                 if isinstance(x, Slice):
                     x = x.subs(old, new)
-                return self.func(function, (x,)).simplifier()
+                return self.func(function, (x,)).simplify()
 
             if new.has(x):
                 diff = old - new
@@ -648,9 +651,9 @@ class ExprWithLimits(Expr):
                 
                 function = self.function._subs(x, x - diff)
                 if len(domain) == 2:
-                    return self.func(function, (x, a + diff, b + diff)).simplifier()
+                    return self.func(function, (x, a + diff, b + diff)).simplify()
                 else:
-                    return self.func(function, (x,)).simplifier()
+                    return self.func(function, (x,)).simplify()
 
             if old != x:
                 sol = solve(old - new, x)
@@ -676,13 +679,13 @@ class ExprWithLimits(Expr):
                 p = new.as_poly(_x)
                 alpha = p.coeff_monomial(_x)
                 if alpha > 0:
-                    return self.func(function, (_x, a, b)).simplifier()
+                    return self.func(function, (_x, a, b)).simplify()
                 elif alpha < 0:
-                    return self.func(function, (_x, b, a)).simplifier()
+                    return self.func(function, (_x, b, a)).simplify()
                 else:
                     return self
 
-            return self.func(function, (_x)).simplifier()
+            return self.func(function, (_x)).simplify()
 
         elif len(self.limits) == 0:
             function = self.function.subs(old, new)
@@ -807,7 +810,7 @@ class ExprWithLimits(Expr):
         from sympy.tensor.indexed import Slice
         if isinstance(x, (Slice, IndexedBase)):
             x, z = x.bisect(front, back)
-            return self.func(self.func(self.function, (x,)).simplifier(), (z,))
+            return self.func(self.func(self.function, (x,)).simplify(), (z,))
 
         if domain is not None:            
             if len(args) == 1:
@@ -817,7 +820,7 @@ class ExprWithLimits(Expr):
             else:
                 baseset = S.UniversalSet
 
-            return self.func.operator(self.func(self.function, (x, baseset & domain)).simplifier(), self.func(self.function, (x, baseset - domain)), evaluate=False)
+            return self.func.operator(self.func(self.function, (x, baseset & domain)).simplify(), self.func(self.function, (x, baseset - domain)), evaluate=False)
 
         if len(args) == 2:
             a, b = args
@@ -826,8 +829,8 @@ class ExprWithLimits(Expr):
             else:
                 mid = b + 1 - back
 
-#             return self.func(self.function, (x, a, mid - 1)).simplifier() + self.func(self.function, (x, mid, b)).simplifier()
-            return self.func.operator(self.func(self.function, (x, a, mid - 1)).simplifier(), self.func(self.function, (x, mid, b)).simplifier(), evaluate=False)
+#             return self.func(self.function, (x, a, mid - 1)).simplify() + self.func(self.function, (x, mid, b)).simplify()
+            return self.func.operator(self.func(self.function, (x, a, mid - 1)).simplify(), self.func(self.function, (x, mid, b)).simplify(), evaluate=False)
 
         return self
 
@@ -938,6 +941,7 @@ class ExprWithLimits(Expr):
         if dic:
             return dic[i_]
 
+
 class AddWithLimits(ExprWithLimits):
     r"""Represents unevaluated oriented additions.
         Parent class for Integral and Sum.
@@ -1036,7 +1040,7 @@ class AddWithLimits(ExprWithLimits):
             return self
         limit = self.limits[0]
         if len(limit) == 1:
-            function = self.func(self.function, *self.limits[1:]).as_separate_limits().simplifier()
+            function = self.func(self.function, *self.limits[1:]).as_separate_limits().simplify()
             return self.func(function, limit)
         x, a, b = limit
 
@@ -1057,7 +1061,7 @@ class AddWithLimits(ExprWithLimits):
 
             limits.append((t, domain.start, domain.end))
 
-        function = self.func(self.function, *limits).as_separate_limits().simplifier()
+        function = self.func(self.function, *limits).as_separate_limits().simplify()
         return self.func(function, (x, a, b))
 
 
@@ -1743,23 +1747,22 @@ class Minimum(ExprWithLimits):
         l = [self._print(o) for o in expr.args]
         return "Min[%s](%s)" % ", ".join(l)
 
-    def simplifier(self):
+    def simplify(self):
         if not self.limits:
             return self
         (x, *_), *_ = self.limits
         independent, dependent = self.function.as_independent(x, as_Add=True)
-
         return self.func(dependent, *self.limits) + independent
 
     def as_Ref(self):
-        return self.func(Ref(self.function, *self.limits).simplifier())
+        return self.func(Ref(self.function, *self.limits).simplify())
 
 #     def bisect(self, front=None, back=None):
 #         (x, *_), *_ = self.limits
 #         from sympy.tensor.indexed import Slice
 #         if isinstance(x, Slice):
 #             z, x = x.bisect(front, back)
-#             return self.func(self.func(self.function, (z,)).simplifier(), (x,))
+#             return self.func(self.func(self.function, (z,)).simplify(), (x,))
 #         return self
     def _latex(self, p):
         if len(self.limits) == 1:
@@ -2476,21 +2479,22 @@ class Maximum(ExprWithLimits):
         l = [self._print(o) for o in expr.args]
         return "Max[%s](%s)" % ", ".join(l)
 
-    def simplifier(self):
+    def simplify(self):
+        if not self.limits:
+            return self
         (x, *_), *_ = self.limits
         independent, dependent = self.function.as_independent(x, as_Add=True)
-
         return self.func(dependent, *self.limits) + independent
 
     def as_Ref(self):
-        return self.func(Ref(self.function, *self.limits).simplifier())
+        return self.func(Ref(self.function, *self.limits).simplify())
 
     def separate(self):
         (x, *_), *_ = self.limits
         from sympy.tensor.indexed import Slice
         if isinstance(x, Slice):
             z, x = x.pop()
-            return self.func(self.func(self.function, (x,)).simplifier(), (z,))
+            return self.func(self.func(self.function, (x,)).simplify(), (z,))
         return self
 
     def _latex(self, p):
@@ -3186,35 +3190,52 @@ class Ref(ExprWithLimits):
 
     def as_two_terms(self):
         first, second = self.function.as_two_terms()
-        first = self.func(first, *self.limits).simplifier()
-        second = self.func(second, *self.limits).simplifier()
+        first = self.func(first, *self.limits).simplify()
+        second = self.func(second, *self.limits).simplify()
         if isinstance(self.function, Add):
             return first + second
         else:
 #             from sympy.matrices.expressions.hadamard import HadamardProduct
             return first * second
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
+        from sympy import Contains
+        limits_dict = self.limits_dict
         if deep:
-            limits_dict = self.limits_dict
             function = self.function
             reps = {}
             for x, domain in limits_dict.items():
                 if domain.is_set and domain.is_integer:
                     _x = x.copy(domain=domain)                    
-                    function = function._subs(x, _x).simplifier(deep=True)
+                    function = function._subs(x, _x).simplify(deep=True, wrt=_x)
                     reps[_x] = x
             if reps:
                 for _x, x in reps.items():
                     function = function._subs(_x, x)
                 if function != self.function:
-                    return self.func(function, *self.limits, equivalent=self).simplifier()
+                    return self.func(function, *self.limits, equivalent=self).simplify()
             
+        if len(limits_dict) == 1 and self.function.is_Piecewise:
+            if len(self.function.args) == 2:
+                e0, c0 = self.function.args[0]
+                if c0.is_Contains:
+                    e, s = c0.args
+                    if e in limits_dict.keys():
+                        if s.is_Complement:
+                            U, A = s.args
+                            domain, *_ = limits_dict.values()
+                            if domain in U:
+                                e1, c1 = self.function.args[1]
+                                function = self.function.func((e1, Contains(e, A)), (e0, True)).simplify()
+                                return self.func(function, *self.limits).simplify()
+                        elif s.is_Interval:
+                            if limits_dict[e] in s:
+                                return self.func(e0, *self.limits).simplify()
         from sympy import Transpose
         from sympy.matrices.expressions.matmul import MatMul
         
         if self.function.is_set:
-            independent, dependent = self.simplifier_set(self.function)
+            independent, dependent = self.simplify_set(self.function)
             if independent is not None:
                 return independent
             return self
@@ -3236,9 +3257,9 @@ class Ref(ExprWithLimits):
 
             dependent = Mul(*dependent)
             dependent = self.func(dependent, *self.limits)
-            dependent = dependent.simplifier()
+            dependent = dependent.simplify()
             dependent = Transpose(dependent)
-            dependent = dependent.simplifier()
+            dependent = dependent.simplify()
 
             independent = Mul(*independent)
             return MatMul(independent, dependent)
@@ -3260,13 +3281,13 @@ class Ref(ExprWithLimits):
                 return self.func(function, *limits)
             return function
         
-        first, second = self.simplifier_add(self.function)
+        first, second = self.simplify_add(self.function)
         if first is None:
-            first, second = self.simplifier_mul(self.function)
+            first, second = self.simplify_mul(self.function)
             if first is None:
                 from sympy import exp
                 if isinstance(self.function, exp):
-                    simplified = self.func(self.function.args[0], *self.limits).simplifier()
+                    simplified = self.func(self.function.args[0], *self.limits).simplify()
                     if not isinstance(simplified, Ref):
                         return exp(simplified)
                 return self
@@ -3274,13 +3295,13 @@ class Ref(ExprWithLimits):
             if second is None:
                 return first
 
-            return Mul(first, self.func(second, *self.limits).simplifier())
+            return Mul(first, self.func(second, *self.limits).simplify())
 
         if second is None:
             return first
-        return first + self.func(second, *self.limits).simplifier()
+        return first + self.func(second, *self.limits).simplify()
 
-    def simplifier_add(self, exp):
+    def simplify_add(self, exp):
         from sympy.core.basic import Atom
         from sympy.tensor.indexed import Indexed
         x = tuple(x for x, *_ in self.limits)
@@ -3299,7 +3320,7 @@ class Ref(ExprWithLimits):
             argsNonSimplified = []
             argsSimplified = []
             for arg in exp.args:
-                simplified, nonSimplified = self.simplifier_add(arg)
+                simplified, nonSimplified = self.simplify_add(arg)
                 if simplified is not None:
                     argsSimplified.append(simplified)
                 if nonSimplified is not None:
@@ -3328,7 +3349,7 @@ class Ref(ExprWithLimits):
             dependent = None
         return independent, dependent
 
-    def simplifier_set(self, exp):
+    def simplify_set(self, exp):
         from sympy.core.basic import Atom
         from sympy.tensor.indexed import Indexed
         x = tuple(x for x, *_ in self.limits)
@@ -3350,7 +3371,7 @@ class Ref(ExprWithLimits):
 
         return None, exp
 
-    def simplifier_mul(self, exp):
+    def simplify_mul(self, exp):
         (x, *_), *_ = self.limits
 #         from sympy.matrices.expressions.matexpr import MatrixElement
         from sympy.core.basic import Atom
@@ -3369,7 +3390,7 @@ class Ref(ExprWithLimits):
             argsNonSimplified = []
             argsSimplified = []
             for arg in exp.args:
-                simplified, nonSimplified = self.simplifier_mul(arg)
+                simplified, nonSimplified = self.simplify_mul(arg)
                 if simplified is not None:
                     argsSimplified.append(simplified)
                 if nonSimplified is not None:
@@ -3403,7 +3424,7 @@ class Ref(ExprWithLimits):
         if isinstance(self.function, Minimum) and len(self.function.limits) == 0:
             minimum = self.function
             function = minimum.function
-            return minimum.func(self.func(function, *self.limits).simplifier())
+            return minimum.func(self.func(function, *self.limits).simplify())
         return self
 
     def __getitem__(self, indices, **kwargs):
@@ -3676,7 +3697,7 @@ class UnionComprehension(Set, ExprWithLimits):
                 expr, variable, base_set = self.base_set.image_set()
                 from sympy import sets, Contains
                 from sympy.sets.conditionset import conditionset
-                condition = Contains(variable, base_set).simplifier() & self.condition._subs(self.variable, expr)
+                condition = Contains(variable, base_set).simplify() & self.condition._subs(self.variable, expr)
                 return sets.image_set(variable, expr, conditionset(variable, condition))
         except:
             ...
@@ -3766,7 +3787,7 @@ class UnionComprehension(Set, ExprWithLimits):
             return self
         U = self.function
 
-        return U.func(self.func(U.function, *self.limits).simplifier(), *U.limits)
+        return U.func(self.func(U.function, *self.limits).simplify(), *U.limits)
 
     # this will change the default new operator!
     def __new__(cls, function, *symbols, **assumptions):
@@ -3793,9 +3814,9 @@ class UnionComprehension(Set, ExprWithLimits):
             assert x == condition_set.variable
             return Exists(condition_set.condition, (condition_set.variable, condition_set.base_set), given=given)
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         if deep:
-            _self = ExprWithLimits.simplifier(self, deep=True)
+            _self = ExprWithLimits.simplify(self, deep=True)
             if _self != self:
                 return _self
 
@@ -3823,7 +3844,7 @@ class UnionComprehension(Set, ExprWithLimits):
             x, domain = limit
 
             if not self.function.has(x):
-                return Piecewise((self.function, Unequality(Intersection(*self.limits_dict.values()), S.EmptySet).simplifier()), (S.EmptySet, True)).simplifier()
+                return Piecewise((self.function, Unequality(Intersection(*self.limits_dict.values()), S.EmptySet).simplify()), (S.EmptySet, True)).simplify()
 #                 return self.function
             
             if isinstance(domain, FiniteSet):
@@ -3836,7 +3857,7 @@ class UnionComprehension(Set, ExprWithLimits):
                 args = []
                 success = False
                 for dom in domain.args:
-                    arg = self.func(self.function, (x, dom)).simplifier()
+                    arg = self.func(self.function, (x, dom)).simplify()
                     args.append(arg)
                     if not arg.is_UnionComprehension or arg.function != self.function:
                         success = True
@@ -3854,7 +3875,7 @@ class UnionComprehension(Set, ExprWithLimits):
             if domain.is_Piecewise:
                 tuples = []
                 for e, c in domain.args:                    
-                    tuples.append((self.func(self.function, (x, e)).simplifier(), c))    
+                    tuples.append((self.func(self.function, (x, e)).simplify(), c))    
                 return domain.func(*tuples)
 
             return self
@@ -3868,8 +3889,8 @@ class UnionComprehension(Set, ExprWithLimits):
                 if isinstance(self.function, Piecewise):
                     arr = self.as_multiple_terms(x, domain)
                     arr = [arr[-1]] + arr[0:-1]
-                    return reduce(lambda x, y: x | y, arr).simplifier()                
-                    return Union(*self.as_multiple_terms(x, domain)).simplifier()
+                    return reduce(lambda x, y: x | y, arr).simplify()                
+                    return Union(*self.as_multiple_terms(x, domain)).simplify()
 
         if len(limit) == 1:
             x = limit[0]
@@ -3951,7 +3972,7 @@ class UnionComprehension(Set, ExprWithLimits):
                             expr -= expr_set
                             if B:
                                 A -= B
-                            this = self.func(self.function, (i, A)).simplifier()
+                            this = self.func(self.function, (i, A)).simplify()
                             if expr.is_EmptySet:
                                 return this
                             return this | expr
@@ -3961,7 +3982,7 @@ class UnionComprehension(Set, ExprWithLimits):
                         domain = A - b                        
 #                         print(A & b & c)
                         assert A - (b - c) == (A - b) | (A & b & c)
-                        expr |= self.func(self.function, (i, A & b & c)).simplifier()
+                        expr |= self.func(self.function, (i, A & b & c)).simplify()
                         return expr | self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
@@ -4533,7 +4554,7 @@ class ConditionalBoolean(Boolean):
         """Overloading for & operator"""
         if self.is_Forall and eq.is_Forall and self.function == eq.function:
             limits = self.limits_union(eq)
-            return self.func(self.function, *limits, equivalent=[self, eq]).simplifier()
+            return self.func(self.function, *limits, equivalent=[self, eq]).simplify()
 
         clue, funcs, lhs, rhs = self.combine_clauses(eq)
         function = lhs & rhs
@@ -4541,7 +4562,7 @@ class ConditionalBoolean(Boolean):
             clue = function.clue
 
         for func, limits in funcs[:-1]:
-            function = func(function, *limits).simplifier()
+            function = func(function, *limits).simplify()
         func, limits = funcs[-1]
 
         if not clue:
@@ -4554,7 +4575,7 @@ class ConditionalBoolean(Boolean):
         if clue:
             kwargs[clue] = [self, eq]
 
-        return func(function, *limits, **kwargs).simplifier()
+        return func(function, *limits, **kwargs).simplify()
 
     def bfn(self, bfn, eq):
         if self.is_Exists:
@@ -4606,7 +4627,7 @@ class ConditionalBoolean(Boolean):
         elif result.given is not None:
             kwargs['given'] = equivalent
 
-        return func(result, *limits, **kwargs).simplifier()
+        return func(result, *limits, **kwargs).simplify()
 
     @property
     def element_type(self):
@@ -4661,7 +4682,7 @@ class ConditionalBoolean(Boolean):
             for func, limits in funcs[:-1]:
                 if rhs.is_Equality:
                     limits = _subs_with_Equality(limits, *rhs.args)
-                function = func(function, *limits).simplifier()
+                function = func(function, *limits).simplify()
             func, limits = funcs[-1]
             if rhs.is_Equality:
                 limits = _subs_with_Equality(limits, *rhs.args)
@@ -4691,7 +4712,7 @@ class ConditionalBoolean(Boolean):
         if function.is_BooleanAtom:
             return function.copy(**kwargs)
 
-        return func(function, *limits, **kwargs).simplifier()
+        return func(function, *limits, **kwargs).simplify()
 
     def split(self, *args, **kwargs):
         arr = self.function.split(*args, **kwargs)
@@ -4707,7 +4728,7 @@ class ConditionalBoolean(Boolean):
                     eq.given = None
                 assert eq.equivalent is None
 
-            return [self.func(eq, *self.limits, given=self).simplifier() for eq in arr]
+            return [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
         return self
 
     @property
@@ -4717,7 +4738,7 @@ class ConditionalBoolean(Boolean):
     def abs(self):
         return self.func(self.function.abs(), *self.limits, equivalent=self)
 
-    def simplifier(self, deep=False):
+    def simplify(self, deep=False):
         from sympy.sets.contains import Contains
         if self.function.equivalent is not None:
             self.function.equivalent = None
@@ -4731,7 +4752,7 @@ class ConditionalBoolean(Boolean):
 #         assert self.function.equivalent is None and self.function.given is None and self.function.imply is None
         if self.function.func == self.func:
             exists = self.function
-            return self.func(exists.function, *exists.limits + self.limits, equivalent=self).simplifier()
+            return self.func(exists.function, *exists.limits + self.limits, equivalent=self).simplify()
 
         limits_dict = self.limits_dict
         variables = self.variables
@@ -4772,10 +4793,10 @@ class ConditionalBoolean(Boolean):
                     index = index[0]
                     eqs = [*function.args]
 
-                    eqs[index] = self.func(eqs[index], (x, *domain)).simplifier()
+                    eqs[index] = self.func(eqs[index], (x, *domain)).simplify()
                     function = function.func(*eqs)
                     limits = self.limits_delete(x)
-                    return self.func(function, *limits, equivalent=self).simplifier()
+                    return self.func(function, *limits, equivalent=self).simplify()
             limits_condition = self.limits_condition
             for i, eq in enumerate(self.function.args):
                 eq &= limits_condition
@@ -4798,7 +4819,7 @@ class ConditionalBoolean(Boolean):
                     args = [*self.function.args]
                     del args[i]
                     function = self.function.func(*args)
-                    return self.func(function, *self.limits, equivalent=self).simplifier()
+                    return self.func(function, *self.limits, equivalent=self).simplify()
 
         limits = [*self.limits]
         dic = {x : domain for x, *domain in limits}
@@ -4841,7 +4862,7 @@ class ConditionalBoolean(Boolean):
                 if domain.is_set and domain.is_integer:
                     _x = x.copy(domain=domain)
                     try:
-                        function = function._subs(x, _x).simplifier(deep=True)
+                        function = function._subs(x, _x).simplify(deep=True)
                     except Exception as e:
                         print(function._subs(x, _x))
                         raise e
@@ -4850,13 +4871,13 @@ class ConditionalBoolean(Boolean):
                 for _x, x in reps.items():
                     function = function._subs(_x, x)
                 if function != self.function:
-                    return self.func(function, *limits, equivalent=self).simplifier()
+                    return self.func(function, *limits, equivalent=self).simplify()
 
         for x, *domain in self.limits:
             if len(domain) == 1:
                 domain = domain[0]
                 if domain.is_FiniteSet: 
-                    return self.func(self.finite_aggregate(x, domain), *self.limits_delete(x), equivalent=self).simplifier()
+                    return self.func(self.finite_aggregate(x, domain), *self.limits_delete(x), equivalent=self).simplify()
 
         for limit in self.limits:
             if len(limit) == 2:
@@ -4885,7 +4906,7 @@ class ConditionalBoolean(Boolean):
                             assert sym not in self.function.bound_symbols
 
                         limits = self.limits_update({e : (sym, base_set)})
-                        return self.func(self.function._subs(e, expr), *limits, equivalent=self).simplifier()
+                        return self.func(self.function._subs(e, expr), *limits, equivalent=self).simplify()
                 elif s.is_Equality:
                     if e == s.lhs:
                         y = s.rhs
@@ -4950,7 +4971,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
             _x = x.copy(domain=domain)
             function = function._subs(x, _x)
             function = function._subs(_x, x)
-            return self.func(function, *limits, given=self).simplifier()
+            return self.func(function, *limits, given=self).simplify()
 
         return self
 
@@ -4968,7 +4989,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
                 domain = old.conditional_domain(domain)
 
             from sympy.sets.contains import Contains
-            eqs.append(Contains(new, domain).invert().simplifier())
+            eqs.append(Contains(new, domain).invert().simplify())
 
             if self.function.is_Or:
                 for equation in self.function.args:
@@ -4988,7 +5009,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
 
         return ConditionalBoolean.subs(self, *args, **kwargs)
 
-    def simplifier(self, **kwargs):
+    def simplify(self, **kwargs):
         forall = self.limits_dict
 
         deletes = []
@@ -5082,7 +5103,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
                 if forall[element] == container:
                     return S.BooleanFalse.copy(equivalent=self)
 
-        return ConditionalBoolean.simplifier(self, **kwargs)
+        return ConditionalBoolean.simplify(self, **kwargs)
 
     def union_sets(self, expr):
         if len(self.limits) == 1:
@@ -5444,12 +5465,12 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             limits = self.limits_delete(old)
             if limits:
                 if new.is_symbol:
-                    return self.func(And(*eqs), (new,), *limits, imply=self).simplifier()
+                    return self.func(And(*eqs), (new,), *limits, imply=self).simplify()
                 else:
                     return self.func(And(*eqs), *limits, imply=self)
             else:
                 if new.is_symbol:
-                    return self.func(And(*eqs), (new,), imply=self).simplifier()
+                    return self.func(And(*eqs), (new,), imply=self).simplify()
                     
                 return And(*eqs, imply=self)
 
@@ -5518,16 +5539,16 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                 limits.append((x,))
 
         and_expr.append(self.function)
-        return self.func(And(*and_expr), *limits, equivalent=self).simplifier()
+        return self.func(And(*and_expr), *limits, equivalent=self).simplify()
 
     def swap(self):
         if not self.function.is_Forall:
             return self
         forall = self.function
 
-        return forall.func(self.func(forall.function, *self.limits).simplifier(), *forall.limits, given=self)
+        return forall.func(self.func(forall.function, *self.limits).simplify(), *forall.limits, given=self)
 
-    def simplifier(self, **kwargs):
+    def simplify(self, **kwargs):
         from sympy.sets.contains import Contains
         if self.function.is_Equality:
             limits_dict = self.limits_dict
@@ -5556,7 +5577,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                     del eqs[i]                    
                     return self.func(And(*eqs), *self.limits_update(eq.lhs, eq.rhs), equivalent=self)
                 
-        return ConditionalBoolean.simplifier(self, **kwargs)
+        return ConditionalBoolean.simplify(self, **kwargs)
 
     def union_sets(self, expr):
         if len(self.limits) == 1:
@@ -5788,7 +5809,6 @@ def limits_dict(limits):
         else:
             if domain[1].is_set:
                 dic[x] = None
-#                 dic[x] = conditionset(x, *domain)
             else:
                 dic[x] = Interval(*domain, integer=x.is_integer)
     return dic

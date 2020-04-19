@@ -4426,7 +4426,7 @@ def TrigReduce(i):
     if ProductQ(i):
         if any(PowerQ(k) for k in i.args):
             if (i.rewrite((sin, sinh), sym_exp).rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, sin)).has(I, cosh, sinh):
-                return i.rewrite((sin, sinh), sym_exp).rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, sin).simplify()
+                return simplify(i.rewrite((sin, sinh), sym_exp).rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, sin))
             else:
                 return i.rewrite((sin, sinh), sym_exp).rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, sin)
         else:
@@ -4473,12 +4473,12 @@ def TrigReduce(i):
     if PowerQ(i):
         if i.has(sin, sinh):
             if (i.rewrite((sin, sinh), sym_exp).expand().rewrite(sym_exp, sin)).has(I, cosh, sinh):
-                return i.rewrite((sin, sinh), sym_exp).expand().rewrite(sym_exp, sin).simplify()
+                return simplify(i.rewrite((sin, sinh), sym_exp).expand().rewrite(sym_exp, sin))
             else:
                 return i.rewrite((sin, sinh), sym_exp).expand().rewrite(sym_exp, sin)
         if i.has(cos, cosh):
             if (i.rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, cos)).has(I, cosh, sinh):
-                return i.rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, cos).simplify()
+                return simplify(i.rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, cos))
             else:
                 return i.rewrite((cos, cosh), sym_exp).expand().rewrite(sym_exp, cos)
     return i

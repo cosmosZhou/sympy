@@ -4874,7 +4874,7 @@ class MatrixBase(MatrixDeprecated,
         if c != self.rows:
             raise ShapeError("Matrix must be square")
         if check_symmetry:
-            self.simplify()
+            _simplify(self)
             if self != self.transpose():
                 raise ValueError(
                     "Matrix appears to be asymmetric; consider check_symmetry=False")
