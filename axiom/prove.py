@@ -69,6 +69,7 @@ def readFolder(rootdir, sufix='.py'):
 
 
 def prove():
+    start = time.time()
     rootdir = os.path.dirname(__file__)
     for name in os.listdir(rootdir):
         path = os.path.join(rootdir, name)
@@ -92,9 +93,8 @@ def prove():
         print('.php websites')
         for p in websites:
             print(p)
-
-
-if __name__ == '__main__':
-    start = time.time()
-    prove()
     print('cost time =', (time.time() - start) / 60, 'minutes')
+
+if __name__ == '__main__':    
+    prove()
+    
