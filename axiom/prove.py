@@ -28,7 +28,7 @@ def readFolder(rootdir, sufix='.py'):
             if name == '__init__':
                 continue
 
-            if 'factorial' not in name:
+            if 'factorial' not in path:
                 continue 
             print('testing', path)
             path = re.compile(r'[\\/]+').split(path[:-len(sufix)])
