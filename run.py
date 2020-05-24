@@ -8,6 +8,8 @@ if __name__ == '__main__':
         prove()
     else:        
         package = sys.argv[1]
+        if package.startswith('axiom'):
+            package = 'sympy.' + package
         package = eval(package)
         ret = package.prove(package.__file__)
         if ret is False:
