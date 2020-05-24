@@ -28,8 +28,9 @@ def readFolder(rootdir, sufix='.py'):
             if name == '__init__':
                 continue
 
-            if 'factorial' not in path:
-                continue 
+            if 'index_j' == name:
+                print('processing:', name)
+                 
             print('testing', path)
             path = re.compile(r'[\\/]+').split(path[:-len(sufix)])
 #             print(path)
@@ -96,6 +97,7 @@ def prove():
         for p in websites:
             print(p)
     print('cost time =', (time.time() - start) / 60, 'minutes')
+
 
 if __name__ == '__main__':    
     prove()
