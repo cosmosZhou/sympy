@@ -19,7 +19,6 @@ from sympy.utilities.iterables import sift, ibin
 from sympy.utilities.misc import filldedent
 
 
-
 def as_Boolean(e):
     """Like bool, return the Boolean value of an expression, e,
     which can be any instance of Boolean or bool.
@@ -651,6 +650,7 @@ class Boolean(Basic):
     def equivalent(self, eq):
         if eq is not None:
             assert 'equivalent' not in self._assumptions
+            assert not self.is_BooleanFalse and not self.is_BooleanTrue 
             self._assumptions['equivalent'] = eq
             if 'plausible' in self._assumptions:
                 del self._assumptions['plausible']
@@ -1129,9 +1129,9 @@ class BooleanAtom(Boolean):
     __le__ = __lt__
     __gt__ = __lt__
     __ge__ = __lt__
+
+
     # \\\
-
-
 
 class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
     """
@@ -1256,6 +1256,9 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
             return BooleanTrueAssumption(**kwargs)
         return self
 
+    def overwrite(self, _, **assumptions):
+        return self.copy(**assumptions)        
+
 
 class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     """
@@ -1325,9 +1328,13 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
         return S.EmptySet
 
     def copy(self, **kwargs):
+        assert self.equivalent is None
         if kwargs:
             return BooleanFalseAssumption(**kwargs)
         return self
+
+    def overwrite(self, _, **assumptions):
+        return self.copy(**assumptions)        
 
 
 class BooleanFalseAssumption(BooleanAtom):
@@ -1339,8 +1346,9 @@ class BooleanFalseAssumption(BooleanAtom):
     __bool__ = __nonzero__
 
     def __new__(cls, **kwargs):
+#         assert S.BooleanFalse.equivalent is None
         if kwargs:
-            return Boolean.__new__(cls, **kwargs)
+            return Boolean.__new__(cls, **kwargs)        
         return S.BooleanFalse
 
     def _latex(self, _):
@@ -1693,9 +1701,17 @@ class And(LatticeOp, BooleanFunction):
     def subs(self, *args, **kwargs):
         result = LatticeOp.subs(self, *args, **kwargs)
         if all(isinstance(arg, Boolean) for arg in args):
-            result.equivalent = [self, *args]
+            if result.is_BooleanAtom:
+                result = result.copy(equivalent=[self, *args])
+            else:
+                result.equivalent = [self, *args]
         else:
-            result.equivalent = self
+            if result.is_BooleanAtom:
+                result = result.copy(equivalent = self)
+            else:
+                result.equivalent = self
+            
+            
         return result
 
     def __new__(cls, *args, **options):
@@ -1704,6 +1720,7 @@ class And(LatticeOp, BooleanFunction):
             if arg:
                 continue            
             if arg is False or arg.is_BooleanFalse:
+#                 assert S.BooleanFalse.equivalent is None
                 return S.BooleanFalse
             valuable.add(arg)
 
@@ -1715,6 +1732,7 @@ class And(LatticeOp, BooleanFunction):
             return eq.func(*eq.args, **options)
 
         if set(v.invert() for v in args) & args:
+#             assert S.BooleanFalse.equivalent is None
             return S.BooleanFalse.copy(**options)
 
         return LatticeOp.__new__(cls, *args, **options)

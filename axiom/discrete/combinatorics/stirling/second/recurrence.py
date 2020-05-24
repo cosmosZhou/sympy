@@ -264,7 +264,7 @@ def prove(Eq):
     Eq << Eq[-1].definition
 
     Eq << x_union_s0.union(Eq[-1].reversed).simplify(deep=True)
-
+    
     Eq << Eq[-1].subs(x_union_s0)
 
     assert num_plausibles == len(Eq.plausibles_dict)
@@ -595,7 +595,6 @@ def prove(Eq):
     Eq << Equality(Eq[-1].lhs.function, Eq[-1].rhs.args[0], plausible=True)
      
     Eq << Eq[-1].summation(*Eq[-2].lhs.limits)
-
 
 if __name__ == '__main__':
     prove(__file__)

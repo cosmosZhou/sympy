@@ -30,6 +30,7 @@ def apply(given):
 
 @check
 def prove(Eq): 
+    
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     
     x = IndexedBase('x', (n,), integer=True)    
@@ -57,7 +58,7 @@ def prove(Eq):
     Eq.sj_definition_reversed = Eq.sj_definition.this.rhs.limits[0][1].reversed
     
     Eq.sj_definition_reversed = Eq.sj_definition_reversed.reversed
-
+    
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
     
@@ -99,8 +100,9 @@ def prove(Eq):
     Eq << Eq[-2].subs(Eq[-1])
     
     Eq << Eq.j_equality.limits_subs(k, b).reversed
+    
     Eq << Eq[-1].subs(Eq[-2])
-
+    
     Eq << Eq.sj_less_than_1.subs(Eq.sj_greater_than_1)
     
     Eq.a_relation = sets.equality.exists.apply(Eq[-1]).reversed

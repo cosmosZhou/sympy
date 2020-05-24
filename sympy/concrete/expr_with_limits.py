@@ -5149,6 +5149,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
             container = self.function.rhs
             if element in forall:
                 if forall[element] == container:
+#                     assert S.BooleanFalse.equivalent is None
                     return S.BooleanFalse.copy(equivalent=self)
 
         return ConditionalBoolean.simplify(self, **kwargs)
