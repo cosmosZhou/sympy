@@ -5,7 +5,7 @@ import sys
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        axiom.prove()
+        axiom.prove.prove()
     else:        
         package = sys.argv[1]
         package = eval(package)
