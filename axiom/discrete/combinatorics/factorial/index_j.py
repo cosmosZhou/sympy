@@ -99,7 +99,11 @@ def prove(Eq):
     
     Eq << (Eq[-1] & Eq.k_domain.limits_subs(k, b))
     
-    Eq << Eq[-1].subs(Eq.j_equality.limits_subs(k, a).reversed).subs(Eq.j_equality.limits_subs(k, b).reversed)
+    Eq << Eq.j_equality.limits_subs(k, a).reversed
+    Eq << Eq[-2].subs(Eq[-1])
+    
+    Eq << Eq.j_equality.limits_subs(k, b).reversed
+    Eq << Eq[-1].subs(Eq[-2])
 
     Eq << Eq.sj_less_than_1.subs(Eq.sj_greater_than_1)
     
