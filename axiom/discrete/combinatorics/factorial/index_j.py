@@ -28,10 +28,6 @@ def apply(given):
     return Equality(x[Ref[k:n](KroneckerDelta(x[k], j)) @ Ref[k:n](k)], j, given=given)
 
 
-def bool_finder(expr):
-    return any(type(e) == bool for e in preorder_traversal(expr))
-
-
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))

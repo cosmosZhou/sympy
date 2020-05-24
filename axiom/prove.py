@@ -28,6 +28,8 @@ def readFolder(rootdir, sufix='.py'):
             if name == '__init__':
                 continue
 
+            if 'index_j' not in name:
+                continue 
             print('testing', path)
             path = re.compile(r'[\\/]+').split(path[:-len(sufix)])
 #             print(path)
