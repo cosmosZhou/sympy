@@ -1,10 +1,8 @@
 from sympy.core.relational import Equality 
 from sympy.utility import plausible
-from sympy.core.symbol import dtype
-
+from sympy.core.symbol import dtype, Symbol
 
 from sympy.concrete.expr_with_limits import Exists, Forall
-from sympy.abc import *
 from axiom.discrete import sets
 # given: |S| = 1
 # Exists[x:S] ({x}) = S
@@ -26,7 +24,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    S in dtype.integer.set
+    S = Symbol('S', dtype=dtype.integer)
+
     Eq << apply(Equality(abs(S), 1))
     
     Eq << Eq[0].subs(1, 0)

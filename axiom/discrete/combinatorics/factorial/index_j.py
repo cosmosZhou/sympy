@@ -8,7 +8,6 @@ from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete import expr_with_limits
 from axiom.discrete.sets.emptyset import greater_than_one
 from axiom.discrete.sets import union_comprehension
-from sympy.abc import *
 from axiom.discrete import sets
 from sympy.core.basic import preorder_traversal
 from sympy.core.symbol import Symbol

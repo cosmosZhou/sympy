@@ -1,7 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.utility import plausible, Sum, Union, Ref
-from sympy.core.symbol import Symbol, dtype 
-from sympy.abc import *
+from sympy.core.symbol import Symbol, dtype
 from sympy.concrete.expr_with_limits import Forall, UnionComprehension
 
 from sympy.sets.sets import Interval, EmptySet
@@ -42,16 +41,17 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    i in dtype.integer
-    j in dtype.integer
-    n in dtype.natural + 2
-    x in dtype.integer.set * (oo,)
+    i = Symbol('i', integer=True)
+    j = Symbol('j', integer=True)
+    n = Symbol('n', domain=Interval(2, oo, integer=True))
+    x = Symbol('x', shape=(oo,), dtype=dtype.integer)
    
     j_domain = Interval(0, n - 1, integer=True) - {i}
     given = Forall(Equality(x[i] & x[j], EmptySet()), (j, j_domain), (i, 0, n - 1))
     Eq << apply(given)
 
-    y in (dtype.integer.set * (oo,))(definition=Ref[i](Piecewise((x[i], i < n), (EmptySet(), True))))
+    y = Symbol('y', shape=(oo,), dtype=dtype.integer, definition=Ref[i](Piecewise((x[i], i < n), (EmptySet(), True))))
+
     Eq << Equality.by_definition_of(y)
     
     Eq.y_definition = Eq[-1][i]

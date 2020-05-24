@@ -1,7 +1,6 @@
 from sympy.core.relational import Unequality, StrictGreaterThan, GreaterThan
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.abc import *
 from sympy.sets.sets import EmptySet
 
 # given: |A| > 0
@@ -23,7 +22,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A in dtype.integer.set
+    A = Symbol('A', dtype=dtype.integer)
     
     Eq << apply(abs(A) > 0)
     
