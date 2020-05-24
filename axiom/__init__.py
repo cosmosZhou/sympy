@@ -4,3 +4,4 @@ from . import trigonometry
 from . import statistics
 from . import Algebre
 from . import calculus
+from . import prove
