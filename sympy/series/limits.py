@@ -286,3 +286,11 @@ class Limit(Expr):
     @property
     def shape(self):         
         return self.args[0].shape
+
+    def _sympystr(self, p):
+        e, z, z0, dir = self.args
+        if str(dir) == "+":
+            return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
+        else:
+            return "lim[%s:%s%s](%s)" % tuple(map(p._print, (z, dir, z0, e)))
+

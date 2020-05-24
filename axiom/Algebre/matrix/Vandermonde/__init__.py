@@ -1,2 +1,2 @@
-from . import Vandermonde
-from . import Vandermonde_r
+from . import matmul_equality
+from . import VerticalConcatenate

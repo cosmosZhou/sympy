@@ -6,16 +6,19 @@ from sympy.utility import plausible, Eq
 from sympy.utility import Sum
 from axiom.discrete.combinatorics.binomial import Pascal
 
-
-def apply(x, y, n=None):
-    k = Symbol('k', integer=True)
+@plausible
+def apply(x, y, n=None, free_symbol=None):
+    if free_symbol is None:
+        k = Symbol('k', integer=True)
+    else:
+        k = free_symbol
     if n is None:
         n = Symbol('n', integer=True, nonnegative=True)
-        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)), plausible=plausible(), forall=n)
+        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)))
     elif n < 0:
         return None
     else:
-        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)), plausible=plausible())
+        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)))
 
 
 from sympy.utility import check

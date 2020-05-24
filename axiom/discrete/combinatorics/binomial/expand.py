@@ -4,22 +4,9 @@ from sympy.utility import plausible, Eq
 from sympy.core.symbol import Symbol
 
 
-def apply(n=None, k=None):
-    forall = None
-    if n is None:
-        n = Symbol('n', integer=True)
-        forall = n
-
-    if k is None:
-        k = Symbol('k', integer=True)
-        if forall is None:
-            forall = k
-        else:
-            forall = [n, k]
-
-    return Equality(binomial(n, k), n / k * binomial(n - 1, k - 1),
-                    plausible=plausible(),
-                    forall=forall)
+@plausible
+def apply(n, k):
+    return Equality(binomial(n, k), n / k * binomial(n - 1, k - 1))
 
 
 from sympy.utility import check
@@ -27,7 +14,11 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    Eq << apply()
+    n = Symbol('n', integer=True)
+    
+    k = Symbol('k', integer=True)
+    
+    Eq << apply(n, k)
     Eq << Eq[-1].combsimp()
 
 

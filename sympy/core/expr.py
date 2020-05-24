@@ -1206,6 +1206,8 @@ class Expr(Basic, EvalfMixin):
             return -conjugate(self)
 
     def transpose(self):
+        if len(self.shape) < 2:
+            return self
 #         from sympy.functions.elementary.complexes import transpose
         from sympy.matrices.expressions.transpose import Transpose
         if isinstance(self, Transpose):
@@ -3817,11 +3819,11 @@ class Expr(Basic, EvalfMixin):
         from sympy.sets.sets import CartesianSpace
         return CartesianSpace(interval, *shape)
 
-    def conditional_domain(self, condition):
+    def domain_conditioned(self, condition):
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval
 
-        domain = self.domain & condition.defined_domain(self)
+        domain = self.domain & condition.domain_defined(self)
 
         from sympy.logic.boolalg import BooleanTrue, BooleanFalse
 
@@ -3863,8 +3865,14 @@ class Expr(Basic, EvalfMixin):
         if condition.is_And:
             sol = domain
             for eq in condition.args:
-                sol &= self.conditional_domain(eq)
+                sol &= self.domain_conditioned(eq)
             return sol
+
+        if condition.is_Or:
+            sol = S.EmptySet
+            for eq in condition.args:
+                sol |= self.domain_conditioned(eq)
+            return domain & sol
 
         if condition.lhs.is_set:
             return conditionset(self, condition, domain)
@@ -3917,12 +3925,12 @@ class Expr(Basic, EvalfMixin):
 
         return domain
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
         if self == x:
             return Interval(-oo, 0, right_open=True, integer=x.is_integer) | Interval(0, oo, left_open=True, integer=x.is_integer)
-        return self.defined_domain(x)
+        return self.domain_defined(x)
 
     def contains(self, other):
         from sympy import Contains

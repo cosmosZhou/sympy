@@ -26,6 +26,7 @@ def doit(a, b, c):
     return sqrt(pi) * exp(delta) / sqrt(a)
 
 
+@plausible
 def apply(y, x=None):
     if x is None:
         if not isinstance(y, Integral):
@@ -48,8 +49,7 @@ def apply(y, x=None):
 
     if a <= 0:
         return None
-    return Equality(Integral(y, (x, -oo, oo)), doit(a, b, c),
-                    plausible=plausible())
+    return Equality(Integral(y, (x, -oo, oo)), doit(a, b, c))
 
 
 from sympy.utility import check

@@ -8,7 +8,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.concrete.expr_with_limits import Forall
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
-from axiom.discrete.combinatorics.factorial.adjacent import swap1, swap1_utility
+from axiom.discrete.combinatorics.factorial.adjacent import swap1_utility
 
 
 @plausible
@@ -67,6 +67,8 @@ def prove(Eq):
     w = Eq[0].lhs.base
     
     Eq << swap1_utility.apply(x, w[0])
+    
+    Eq << Eq[-1].reference(*Eq[-1].limits)
     
     Eq << Eq[1].subs(Eq[-1].reversed)
     

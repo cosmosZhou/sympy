@@ -472,7 +472,7 @@ class Indexed(Expr):
         
         return False
 
-    def _subs(self, old, new):
+    def _subs(self, old, new, **_):
         if self.base == old:
             return new[self.indices]
         if isinstance(old, Slice) and old.base == self.base and len(self.indices) == 1:
@@ -506,7 +506,7 @@ class Indexed(Expr):
     def atomic_dtype(self):
         return self.base.atomic_dtype
 
-    def defined_domain(self, x):
+    def domain_defined(self, x):
         from sympy.sets.sets import Interval
         for i, index in enumerate(self.indices):
             if not x.shape and index._has(x):
@@ -515,14 +515,14 @@ class Indexed(Expr):
                     continue
                 return Interval(diff, self.base.shape[i] - 1 + diff, integer=True)
         if self.base.definition is not None:
-            return self.base.definition[self.indices].defined_domain(x)
+            return self.base.definition[self.indices].domain_defined(x)
         
         if x.atomic_dtype.is_set:
             return S.UniversalSet
         domain = x.domain          
          
         for index in self.indices:
-            domain &= index.defined_domain(x)
+            domain &= index.domain_defined(x)
         return domain
 
 #     def __iter__(self):

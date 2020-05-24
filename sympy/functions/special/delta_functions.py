@@ -371,6 +371,9 @@ class DiracDelta(Function):
         return sage.dirac_delta(self.args[0]._sage_())
 
 
+    def _sympystr(self, p):
+        return 'δ(%s)' % ', '.join(p._print(arg) for arg in self.args)
+
 ###############################################################################
 ############################## HEAVISIDE FUNCTION #############################
 ###############################################################################

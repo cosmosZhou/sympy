@@ -17,6 +17,7 @@ from sympy.utilities.iterables import sift
 from mpmath.libmp import sqrtrem as mpmath_sqrtrem
 
 from math import sqrt as _sqrt
+import re
 
 
 def isqrt(n):
@@ -398,7 +399,7 @@ class Pow(Expr):
                 #     _half(other) with constant floor or
                 #     floor(S.Half - im(e*log(b))/2/pi) == 0
                 try:
-                    s = exp(2 * S.ImaginaryUnit * S.Pi * other *
+                    s = exp(2 * S.ImaginaryUnit * S.Pi * other * 
                         floor(S.Half - im(e * log(b)) / 2 / S.Pi))
                     # be careful to test that s is -1 or 1 b/c sign(I) == I:
                     # so check that s is real
@@ -1718,20 +1719,20 @@ class Pow(Expr):
         if self.exp < 0:
             return True
 
-    def nonzero_domain(self, x):
-        domain = self.base.nonzero_domain(x)
+    def domain_nonzero(self, x):
+        domain = self.base.domain_nonzero(x)
         if self.exp > 0:
-            return domain & self.defined_domain(x)
+            return domain & self.domain_defined(x)
         if self.exp < 0:
-            return domain & self.defined_domain(x)
-        return self.defined_domain(x)
+            return domain & self.domain_defined(x)
+        return self.domain_defined(x)
 
-    def defined_domain(self, x):
-        domain = self.base.defined_domain(x) & self.exp.defined_domain(x)
+    def domain_defined(self, x):
+        domain = self.base.domain_defined(x) & self.exp.domain_defined(x)
         if self.exp < 0:
-            domain &= self.base.nonzero_domain(x)
+            domain &= self.base.domain_nonzero(x)
         if self.exp.is_integer is False:
-            domain &= x.conditional_domain(self.base >= 0)
+            domain &= x.domain_conditioned(self.base >= 0)
         return domain
 
     def _eval_Abs(self):
@@ -1770,6 +1771,38 @@ class Pow(Expr):
 #                 return self.func(base._eval_Abs(), exp, evaluate=False)
 #             return None
 #         return self
+
+    def _sympystr(self, p, rational=False):
+        from sympy.printing.precedence import precedence
+        PREC = precedence(self)
+
+        if self.exp is S.Half and not rational:
+            arg = p._print(self.base)
+            if re.compile('\w+').fullmatch(arg):
+                return "√" + arg
+            return "√(%s)" % arg
+
+        if self.is_commutative:
+            if -self.exp is S.Half and not rational:
+                # Note: Don't test "expr.exp == -S.Half" here, because that will
+                # match -0.5, which we don't want.
+                arg = p._print(self.base)
+                if re.compile('\w+').fullmatch(arg):
+                    return "1/√" + arg
+                return "1/√(%s)" % arg
+            
+            if self.exp is -S.One:
+                # Similarly to the S.Half case, don't test with "==" here.
+                return '%s/%s' % (p._print(S.One),
+                                  p.parenthesize(self.base, PREC, strict=False))
+
+        e = p.parenthesize(self.exp, PREC, strict=False)
+        if p.printmethod == '_sympyrepr' and self.exp.is_Rational and self.exp.q != 1:
+            # the parenthesized exp should be '(Rational(a, b))' so strip parens,
+            # but just check to be sure.
+            if e.startswith('(Rational'):
+                return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
+        return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e)
 
 
 from .add import Add

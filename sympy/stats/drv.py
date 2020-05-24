@@ -248,10 +248,10 @@ class DiscretePSpace(PSpace):
         if len(rvs) > 1:
             raise NotImplementedError(filldedent('''Multivariate discrete
             random variables are not yet supported.'''))
-        conditional_domain = reduce_rational_inequalities_wrap(condition,
+        domain_conditioned = reduce_rational_inequalities_wrap(condition,
             rvs[0])
-        conditional_domain = conditional_domain.intersect(self.domain.set)
-        return SingleDiscreteDomain(rvs[0].symbol, conditional_domain)
+        domain_conditioned = domain_conditioned.intersect(self.domain.set)
+        return SingleDiscreteDomain(rvs[0].symbol, domain_conditioned)
 
     def probability(self, condition):
         complement = isinstance(condition, Ne)

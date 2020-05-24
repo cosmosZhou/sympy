@@ -2,6 +2,7 @@ import os
 import re
 import axiom
 from sympy.utilities.misc import Text
+import time
 
 count = 0
 
@@ -92,5 +93,8 @@ def prove():
         for p in websites:
             print(p)
 
+
 if __name__ == '__main__':
+    start = time.time()
     prove()
+    print('cost time =', (time.time() - start) / 60, 'minutes')

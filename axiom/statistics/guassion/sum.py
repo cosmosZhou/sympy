@@ -1,19 +1,15 @@
-from sympy.functions.combinatorial.factorials import binomial
-from sympy.core.symbol import Symbol
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, Eq, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Equality
-from sympy.core.function import Function
-from sympy.stats.crv_types import Arcsin, NormalDistribution
-from sympy.stats.rv import density, cdf, Density, RandomSymbol
-from sympy.stats.drv_types import Poisson
-from sympy import sqrt, pi, exp, Symbol, log
-from sympy.stats import P, E, Normal, density, variance
+
+from sympy.stats.crv_types import NormalDistribution, Normal
+from sympy.stats.rv import Density, RandomSymbol
+from sympy import sqrt
 from sympy.stats.crv import SingleContinuousPSpace
 from axiom.statistics.guassion import quadratic
+from sympy.core.symbol import Symbol
 
 
+@plausible
 def apply(x0, x1):
     if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):
         return None
@@ -28,8 +24,7 @@ def apply(x0, x1):
     Y = Normal('y', distribution0.mean + distribution1.mean, sqrt(distribution0.std * distribution0.std + distribution1.std * distribution1.std))
     y = Y.symbol
 
-    return Equality(Density(x0 + x1)(y), Density(Y)(y).doit(),
-                    plausible=plausible())
+    return Equality(Density(x0 + x1)(y), Density(Y)(y).doit())
 
 
 from sympy.utility import check

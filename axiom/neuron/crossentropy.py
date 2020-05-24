@@ -39,11 +39,9 @@ def prove(Eq):
     j = Symbol('j', integer=True)
     given = Equality(Sum[j:0:n - 1](t[j]), 1)
     
-    Eq << given
-    
     Eq << apply(given)
         
-    Eq << Eq[-2].expand(free_symbol=j)
+    Eq << Eq[1].expand(free_symbol=j)
     
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     xi = Eq[-2].lhs._wrt_variables[0][i]
@@ -53,8 +51,8 @@ def prove(Eq):
     Eq.loss = Eq[-1].this.rhs.doit(deep=False)            
     
     i = xi.indices[0]
-    Eq << Eq[1][i]
-    Eq << Eq[1][j]
+    Eq << Eq[0][i]
+    Eq << Eq[0][j]
     Eq << Eq[-1].diff(xi).this.rhs.doit(deep=False)
     
     Eq << Eq[-1].subs(Eq[-2].reversed).subs(Eq[-3].reversed) / Eq[-1].lhs.expr

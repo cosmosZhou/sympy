@@ -38,13 +38,13 @@ def prove(Eq):
     Eq << identity(w[i, j] @ x).subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
     
     Eq << w[i, j].T @ Eq[-1]
-    
+     
     Eq << Eq[-1].this.rhs.expand()
-    
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+     
+#     Eq << Eq[-1].this.rhs.simplify(deep=True)
         
 
 if __name__ == '__main__':

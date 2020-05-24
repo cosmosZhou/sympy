@@ -58,9 +58,9 @@ class Transpose(MatrixExpr):
         _eval_transpose = getattr(arg, '_eval_transpose', None)
         if _eval_transpose is not None:
             result = _eval_transpose()
-            return result if result is not None else Transpose(arg)
+            return result if result is not None else self
         else:
-            return Transpose(arg)
+            return self
 
     @property
     def arg(self):
@@ -71,7 +71,10 @@ class Transpose(MatrixExpr):
         return self.arg.shape[::-1]
 
     def _entry(self, i, j, expand=False, **kwargs):
-        return self.arg._entry(j, i, expand=expand, **kwargs)
+        if hasattr(self.arg, '_entry'):
+            return self.arg._entry(j, i, expand=expand, **kwargs)
+        else:
+            return self.arg[j, i]
 
     def _eval_adjoint(self):
         return conjugate(self.arg)

@@ -1172,17 +1172,18 @@ class Basic(with_metaclass(ManagedProperties)):
             reps = {}
             rv = self
             kwargs['hack2'] = True
-            m = Dummy()
+#             m = Dummy()
             for old, new in sequence:
-                d = Dummy(commutative=new.is_commutative)
+                d = Dummy(commutative=new.is_commutative, **new.dtype.dict)
                 # using d*m so Subs will be used on dummy variables
                 # in things like Derivative(f(x, y), x) in which x
                 # is both free and bound
-                rv = rv._subs(old, d * m, **kwargs)
+#                 rv = rv._subs(old, d * m, **kwargs)
+                rv = rv._subs(old, d, **kwargs)
                 if not isinstance(rv, Basic):
                     break
                 reps[d] = new
-            reps[m] = S.One  # get rid of m
+#             reps[m] = S.One  # get rid of m
             return rv.xreplace(reps)
         else:
             rv = self
@@ -1275,7 +1276,7 @@ class Basic(with_metaclass(ManagedProperties)):
                 this = self
                 for i in indices:
                     if i.is_symbol: 
-                        i_domain = self.defined_domain(i)
+                        i_domain = self.domain_defined(i)
                         if i.domain != i_domain:
                             _i = i.copy(domain=i_domain)
                             this = this._subs(i, _i)                            
@@ -2065,14 +2066,8 @@ class Basic(with_metaclass(ManagedProperties)):
         if deep:
             hit = False
             args = []
-            for arg in self.args:
-                try:
-                    _arg = arg.simplify(deep=True, **kwargs)
-                except Exception as e:
-                    print(type(arg))
-                    print(arg)
-                    raise e
-
+            for arg in self.args:                
+                _arg = arg.simplify(deep=True, **kwargs)
                 if _arg != arg:
                     hit = True
                 args.append(_arg)
@@ -2081,7 +2076,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
         return self
 
-    def defined_domain(self, x):
+    def domain_defined(self, x):
         if x.atomic_dtype.is_set:
             return S.UniversalSet
         return x.domain            
@@ -2097,7 +2092,15 @@ class Basic(with_metaclass(ManagedProperties)):
             excludes |= self.free_symbols
             
         if free_symbol is not None and free_symbol not in excludes:
-            return free_symbol.copy(shape=shape, **kwargs)
+            if isinstance(free_symbol, set):
+                free_symbol = free_symbol - excludes
+            else:
+                free_symbol = {free_symbol} - excludes
+                
+            if free_symbol:
+                free_symbol, *_ = free_symbol
+                return free_symbol
+#                 return free_symbol.copy(shape=shape, **kwargs)
             
         free_symbols = [*set(symbol.name for symbol in excludes)]
         free_symbols.sort()

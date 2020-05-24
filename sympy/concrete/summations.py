@@ -814,7 +814,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return Ref(first, *self.limits) @ Ref(second, *self.limits)
 
-    def _subs(self, old, new):
+    def _subs(self, old, new, **_):
         if new in self.variables and not old._has(new):
             return self.limits_subs(new, self.generate_free_symbol(self.variables_set))._subs(old, new)
         
@@ -929,7 +929,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if p is None:
                     continue
                 if p.degree() != 1:
-                    return self
+                    continue
                 index = i
 
                 if new.has(x):
@@ -947,7 +947,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 break
 
             if index < 0:
-                return self.func(self.function.subs(old, new), *self.limits)
+                return self.func(self.function._subs(old, new), *self.limits)
 
             limits = [*self.limits]
             limits[index] = limit
@@ -1050,8 +1050,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if this is not None:
                 return this
                 
-            nonzero_domain = self.function.nonzero_domain(x)
-            domain &= nonzero_domain
+            domain_nonzero = self.function.domain_nonzero(x)
+            domain &= domain_nonzero
             
 #             if domain not in limit[1]:
 #                 print(domain in limit[1])
@@ -1083,18 +1083,18 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         return self
 #                         B = self.func(self.function, (x, B))
                     return A - B
-                if B & nonzero_domain == S.EmptySet:
+                if B & domain_nonzero == S.EmptySet:
                     domain = A
 
             if not self.function.has(x):
                 if not domain.is_set:
-                    domain = x.conditional_domain(domain)
+                    domain = x.domain_conditioned(domain)
                 return self.function * abs(domain)
             
-            if nonzero_domain.is_Complement and nonzero_domain.args[0].is_FiniteSet:
-                if len(nonzero_domain.args[0]) == 1:
-                    e, *_ = nonzero_domain.args[0].args 
-                    return Piecewise((self.finite_aggregate(x, nonzero_domain.args[0]), Contains(e, limit[1])), (0, True))
+            if domain_nonzero.is_Complement and domain_nonzero.args[0].is_FiniteSet:
+                if len(domain_nonzero.args[0]) == 1:
+                    e, *_ = domain_nonzero.args[0].args 
+                    return Piecewise((self.finite_aggregate(x, domain_nonzero.args[0]), Contains(e, limit[1])), (0, True))
                
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)
@@ -1173,6 +1173,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                             return self
                         function = piecewise0.mul(piecewise1)                        
                         return self.func(function, *self.limits).simplify()
+                    function = piecewise0.mul(piecewise1)
+                    return self.func(function, *self.limits).simplify()
                     args = []
                     for e, c in piecewise0.args:
                         _args = []
@@ -1192,7 +1194,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     return self.func(piecewise, *self.limits).simplify()
                 else:
                     return self 
-            domain = self.function.nonzero_domain(x)
+            domain = self.function.domain_nonzero(x)
 
             domain &= universe
             if not domain:
@@ -1275,7 +1277,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return self.func(function, *self.limits, limit).simplify()
 
-    def swap(self):
+    def limits_swap(self):
 #         from sympy.core.mul import Mul
         if isinstance(self.function, Mul):
             index = -1
@@ -1283,20 +1285,24 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if isinstance(self.function.args[i], Sum):
                     index = i
                     break
-            if index < 0:
-                return self
-            args = [*self.function.args]
-            sgm = args.pop(index)
-            if isinstance(sgm.function, Mul):
-                args.extend(sgm.function.args)
-            else:
-                args.append(sgm.function)
-            function = Mul(*args).powsimp()
-            independent, dependent = function.as_independent(*(x for x, *_ in self.limits), as_Add=False)
-            if independent == S.One:
-                return sgm.func(self.func(function, *self.limits), *sgm.limits)
-            return sgm.func(independent * self.func(dependent, *self.limits), *sgm.limits)
+            if index >= 0:                
+                args = [*self.function.args]
+                sgm = args.pop(index)
+                if isinstance(sgm.function, Mul):
+                    args.extend(sgm.function.args)
+                else:
+                    args.append(sgm.function)
+                function = Mul(*args).powsimp()
+                independent, dependent = function.as_independent(*(x for x, *_ in self.limits), as_Add=False)
+                if independent == S.One:
+                    return sgm.func(self.func(function, *self.limits), *sgm.limits)
+                return sgm.func(independent * self.func(dependent, *self.limits), *sgm.limits)
 
+        if len(self.limits) == 2:
+            i_limit, j_limit = self.limits
+            j, *_ = j_limit
+            if not i_limit._has(j):
+                return self.func(self.function, j_limit, i_limit)
         return self
 
     def min(self):
@@ -1324,8 +1330,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     return r"%s \in %s" % tuple([p._print(i) for i in limit])
                 else:
                     return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (limit[1], limit[0], limit[2])])
-
-            tex = r"\sum\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
+                
+            if all(len(limit) == 1 for limit in self.limits):
+                tex = r"\sum_{%s} " % str.join(', ', [p._print(l[0]) for l in self.limits])
+            else:
+                tex = r"\sum\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
 
         from sympy.matrices.expressions.hadamard import HadamardProduct
         if isinstance(self.function, (Add, HadamardProduct)):
@@ -1341,7 +1350,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             return self.function.shape
         return self.function.shape[:-1]
     
-    def defined_domain(self, x):
+    def domain_defined(self, x):
         from sympy.core.numbers import oo
         if x.atomic_dtype.is_set:
             return S.UniversalSet                    
@@ -1354,10 +1363,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         for expr in limits_dict.values():
             if expr is None:
                 continue
-            domain &= expr.defined_domain(x)
+            domain &= expr.domain_defined(x)
         
         if self.function._has(x):
-            domain &= self.function.defined_domain(x)
+            domain &= self.function.domain_defined(x)
             if x not in self.function.free_symbols:
                 v = self.variable
                 v_domain = self.limits_dict[v]
@@ -1370,7 +1379,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         t_, *_ = res.values()
                         if v_domain is None or t_ in v_domain:
                             function = self.function._subs(v, t_)
-                            domain &= function.defined_domain(x)
+                            domain &= function.domain_defined(x)
                             break
             
         return domain
@@ -1386,6 +1395,12 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     @property
     def is_extended_nonpositive(self):
         return self.function.is_extended_nonpositive
+
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return '∑[%s](%s)' % (limits, p._print(self.function))
+        return '∑(%s)' % p._print(self.function)
 
 
 def summation(f, *symbols, **kwargs):

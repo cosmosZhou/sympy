@@ -405,14 +405,14 @@ class AssocOp(Basic):
     def as_expr(self):
         return self
 
-    def defined_domain(self, x):
+    def domain_defined(self, x):
         from sympy import S
         if x.atomic_dtype.is_set:
             return S.UniversalSet
         
         domain = x.domain
         for arg in self.args:
-            domain &= arg.defined_domain(x)
+            domain &= arg.domain_defined(x)
         return domain
 
     @property

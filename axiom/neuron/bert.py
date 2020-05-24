@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible
+from sympy.utility import plausible, identity
 from sympy.core.relational import Equality
 from sympy.tensor.indexed import IndexedBase
 import sympy
@@ -27,7 +27,18 @@ def prove(Eq):
 
     Eq << apply(n, d)
     
-    Eq << Eq[0][0]
+    M = Symbol('M', shape=(n, n), definition=Eq[0].rhs.args[0].arg)
+    Eq << identity(M).definition
+    
+    Eq << Eq[0].subs(Eq[-1].reversed)
+    
+    Eq << Eq[-1][0]
+    
+    Eq << Eq[2][0]
+    
+    Eq << Eq[-2].subs(Eq[-1])
+#     Eq << Eq[-1] * Eq[0].rhs.args[0].arg.args[0]
+    
 
 
 if __name__ == '__main__':

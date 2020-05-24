@@ -6,11 +6,11 @@ from sympy.core.function import Difference, Function
 from axiom.discrete.combinatorics.binomial import Pascal
 
 
+@plausible
 def apply(fx, x, n):
     k = generate_free_symbol(fx.free_symbols | x.free_symbols | n.free_symbols, integer=True)
     return Equality(Difference(fx, x, n),
-                    Sum[k:0:n]((-1) ** (n - k) * binomial(n, k) * fx.subs(x, x + k)),
-                    plausible=plausible())
+                    Sum[k:0:n]((-1) ** (n - k) * binomial(n, k) * fx.subs(x, x + k)))
 
 
 from sympy.utility import check

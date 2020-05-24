@@ -484,7 +484,7 @@ class exp(ExpBase):
             return Mul(*(exp(arg) for arg in self.args[0].args))
         return self
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
         integer = False

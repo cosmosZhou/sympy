@@ -250,9 +250,20 @@ class MatMul(MatrixExpr, Mul):
                 if deep:
                     args = [arg.expand(deep=True) for arg in args]
                 return A.func(*args)
-
-            k = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
+            
             if len(A.shape) < 2:
+                if isinstance(A, Ref):
+                    i_limit = A.limits[0]
+                    i, *_ = i_limit 
+                else:
+                    i = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
+                    if 'domain' in i._assumptions:
+                        i_domain = i._assumptions['domain']
+                        assert i_domain.is_Interval and i_domain.is_integer and i_domain.min() == 0 and i_domain.max() == A.shape[0] - 1
+                        i_limit = (i,)
+                    else:
+                        i_limit = (i, 0, A.shape[0] - 1)
+                
                 n = A.shape[0]
                 
                 if len(B.shape) > 1:
@@ -260,16 +271,23 @@ class MatMul(MatrixExpr, Mul):
                         B = B.definition
                         
                     if isinstance(B, Ref):
-                        B_limit = B.limits[0]
+                        j_limit = B.limits[0]
                     else:                    
-                        j = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
-                        B_limit = (j, 0, B.shape[1] - 1)
+                        j = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
+                        
+                        if 'domain' in j._assumptions:
+                            j_domain = j._assumptions['domain']
+                            assert j_domain.is_Interval and j_domain.is_integer and j_domain.min() == 0 and j_domain.max() == B.shape[1] - 1
+                            j_limit = (j,)
+                        else:                        
+                            j_limit = (j, 0, B.shape[1] - 1)
 
-                    j, *_ = B_limit
+                    j, *_ = j_limit
     
-                    return Ref(Sum(A[k] * B[k, j], (k, 0, n - 1)).simplify(), B_limit).simplify()
-                return Sum(A[k] * B[k], (k, 0, n - 1)).simplify()                
+                    return Ref(Sum(A[i] * B[i, j], i_limit).simplify(), j_limit).simplify()
+                return Sum(A[i] * B[i], i_limit).simplify()                
             else:
+                k = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
                 if hasattr(A, "definition") and A.definition is not None:
                     A = A.definition
                     
@@ -316,7 +334,29 @@ class MatMul(MatrixExpr, Mul):
             return CartesianSpace(interval, *shape)
         return interval
 
+    def _sympystr(self, p):
+        from sympy.core.mul import _keep_coeff
+        from sympy.printing.precedence import precedence
+        c, m = self.as_coeff_mmul()
+        if c.is_number and c < 0:
+            expr = _keep_coeff(-c, m)
+            sign = "-"
+            level = precedence(expr)
+        else:
+            sign = ""
+            level = precedence(self)
 
+        return sign + ' @ '.join(p.parenthesize(arg, level) for arg in self.args)
+
+    def as_ordered_factors(self, **_):
+        return [self]
+
+    @property
+    def is_extended_real(self):
+        if self.shape:
+            return False
+        return True
+    
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """
     for i in range(len(matrices) - 1):

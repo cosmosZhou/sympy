@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << Eq[-1][i, j]
 
-    Eq << Eq[-1].this.rhs.args[1].swap()
+    Eq << Eq[-1].this.rhs.args[1].limits_swap()
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(h, h - i)
     

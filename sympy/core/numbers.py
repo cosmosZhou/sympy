@@ -2701,7 +2701,7 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         """Efficiently extract the coefficient of a summation. """
         return S.One, self
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import EmptySet
         return EmptySet()
     
@@ -3725,6 +3725,9 @@ class Pi(with_metaclass(Singleton, NumberSymbol)):
 
     def as_coeff_mmul(self):
         return 1, self
+
+    def _sympystr(self, _):
+        return 'π'
 
 
 pi = S.Pi

@@ -376,7 +376,7 @@ def prove(Eq):
 
     Eq << s2_quote_n.assertion()
 
-    Eq.x_abs_positive_s2_n, Eq.x_abs_sum_s2_n, Eq.x_union_s2_n, Eq.n_not_in_x = Eq[-1].split()
+    Eq.x_abs_positive_s2_n, Eq.n_not_in_x, Eq.x_abs_sum_s2_n, Eq.x_union_s2_n = Eq[-1].split()
 
     Eq << Eq.n_not_in_x.definition
 

@@ -1,18 +1,14 @@
-from sympy.core.relational import Equality, LessThan
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Equality
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
-from axiom import discrete
 from sympy import S
-from sympy.sets.contains import NotContains, Contains, Subset
-from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
 
 
 # given A & B = {} => A - B = A
-def apply(provided, reverse=False):
-    assert provided.is_Equality
-    AB, emptyset = provided.args
+@plausible
+def apply(given, reverse=False):
+    assert given.is_Equality
+    AB, emptyset = given.args
     if emptyset != S.EmptySet:
         tmp = emptyset
         emptyset = AB
@@ -23,13 +19,9 @@ def apply(provided, reverse=False):
     A, B = AB.args
 
     if reverse:
-        return Equality(B - A, B,
-                    equivalent=provided,
-                    plausible=plausible())
+        return Equality(B - A, B, given=given)
 
-    return Equality(A - B, A,
-                    equivalent=provided,
-                    plausible=plausible())
+    return Equality(A - B, A, given=given)
 
 
 from sympy.utility import check
@@ -40,11 +32,9 @@ def prove(Eq):
     A = Symbol('A', dtype=dtype.integer)
     B = Symbol('B', dtype=dtype.integer)
 
-    provided = Equality(A & B, S.EmptySet)
-    Eq << provided
-    Eq << apply(provided)
+    Eq << apply(Equality(A & B, S.EmptySet))
 
-    Eq << provided.union(A - B).reversed
+    Eq << Eq[0].union(A - B).reversed
 
 
 if __name__ == '__main__':

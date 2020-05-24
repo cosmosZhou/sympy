@@ -1,8 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy import S
-
 
 @plausible
 def apply(A, B, C):

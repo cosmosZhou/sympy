@@ -822,6 +822,8 @@ class MatrixSymbol(MatrixExpr):
                 [first, second],
             )]
 
+    def _sympystr(self, _):   
+        return Symbol.sympystr(self.name)
 
 class Identity(MatrixExpr):
     """The Matrix Identity I - multiplicative identity
@@ -1653,7 +1655,7 @@ class Shift(Identity):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equality, StrictLessThan 
-        
+        from sympy.sets import Contains, Interval
         if j is None:
             return_reference = True
             j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
@@ -1669,9 +1671,8 @@ class Shift(Identity):
 #             |       |
 #            i col    j col      
 # delete i th row insert into after j th row        
-        piecewise_ij = Piecewise((KroneckerDelta(i, j), StrictLessThan(i, self.i)),
-                                 (KroneckerDelta(i + 1, j), StrictLessThan(i, self.j)),
-                                 (KroneckerDelta(self.i, j), Equality(i, self.j)),
+        piecewise_ij = Piecewise((KroneckerDelta(self.i, j), Equality(i, self.j)),
+                                 (KroneckerDelta(i + 1, j), Contains(i, Interval(self.i, self.j, right_open=True, integer=True))),
                                  (KroneckerDelta(i, j), True))
         
 #     1   0   0   0   0   0
@@ -1684,9 +1685,8 @@ class Shift(Identity):
 #             |       |
 #            j col    i col      
 # delete i th row insert into before j th row        
-        piecewise_ji = Piecewise((KroneckerDelta(i, j), StrictLessThan(j, self.j)),
-                                 (KroneckerDelta(i, j + 1), StrictLessThan(j, self.i)),                                 
-                                 (KroneckerDelta(i, self.j), Equality(j, self.i)),
+        piecewise_ji = Piecewise((KroneckerDelta(i, self.j), Equality(j, self.i)),
+                                 (KroneckerDelta(i, j + 1), Contains(j, Interval(self.j, self.i, right_open=True, integer=True))),
                                  (KroneckerDelta(i, j), True))
         
         piecewise = Piecewise((KroneckerDelta(i, j), Equality(self.i, self.j)),

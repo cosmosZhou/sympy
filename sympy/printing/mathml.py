@@ -891,7 +891,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
     def _print_factorial2(self, expr):
         return self._print_operator_after('!!', expr.args[0])
 
-    def _print_binomial(self, expr):
+    def _print_binom(self, expr):
         brac = self.dom.createElement('mfenced')
         frac = self.dom.createElement('mfrac')
         frac.setAttribute('linethickness', '0')

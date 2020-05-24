@@ -6,6 +6,7 @@ from sympy import Symbol
 
 from sympy import cos, pi
 from sympy.sets.sets import Interval
+from sympy.concrete.expr_with_limits import Exists
 
 
 def extract(x_constraint, y_constraint, z_constraint):
@@ -45,26 +46,12 @@ def extract(x_constraint, y_constraint, z_constraint):
     return None
 
 
+@plausible
 def apply(*given):
+    x, y, z = extract(*given)
 
-    if given :
-        x, y, z = extract(*given)
-    else:
-        x = Symbol("x", positive=True)
-        y = Symbol("y", positive=True)
-        z = Symbol("z", positive=True)
-
-        x_constraint = x <= z
-        y_constraint = y <= z
-        z_constraint = z < x + y
-
-        given = [x_constraint, y_constraint, z_constraint]
-
-#     given.clauses()
-    theta = Symbol("theta", domain=Interval(pi / 3, pi, right_open=True))
-    return Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta),
-                    given=given,
-                    plausible=plausible())
+    theta = Symbol("theta")
+    return Exists(Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)), (theta, Interval(pi / 3, pi, right_open=True)), given=given)
 
 
 from sympy.utility import check
@@ -72,13 +59,18 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    Eq << apply()
-    x_constraint, y_constraint, z_constraint = Eq[-1].given
-    x, y, z = extract(x_constraint, y_constraint, z_constraint)
+    x = Symbol("x", positive=True)
+    y = Symbol("y", positive=True)
+    z = Symbol("z", positive=True)
+    x_constraint = x <= z
+    y_constraint = y <= z
+    z_constraint = z < x + y
+    
+    Eq << apply(x_constraint, y_constraint, z_constraint)
 
-    theta, *_ = Eq[-1].free_symbols - {x, y, z}
+    theta, *_ = Eq[-1].function.free_symbols - {x, y, z}
 
-    Eq << Eq[-1].solve(cos(theta))
+    Eq << Eq[-1].function.solve(cos(theta))
 
     Eq << Eq[-1].subs(z_constraint)
     Eq << Eq[-1] * (2 * x * y) - x * y + z ** 2

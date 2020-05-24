@@ -853,12 +853,14 @@ class Function(Application, Expr):
     def T(self):
         return self.func(self.arg.T)
 
-    def defined_domain(self, x):
-        domain = Expr.defined_domain(self, x)
+    def domain_defined(self, x):
+        domain = Expr.domain_defined(self, x)
         for arg in self.args:
-            domain &= arg.defined_domain(x)
+            domain &= arg.domain_defined(x)
         return domain
 
+    def _sympystr(self, p):
+        return self.func.__name__ + "(%s)" % p.stringify(self.args, ", ")
 
 class AppliedUndef(Function):
     """
@@ -1959,7 +1961,13 @@ class Derivative(Expr):
             shape += x.shape
         return shape
 
+    def _sympystr(self, p):
+        # ∇▼▽
+        dexpr = self.expr
+        dvars = [i[0] if i[1] == 1 else i for i in self.variable_count]
+        return '▽[%s](%s)' % (", ".join(map(lambda arg: p._print(arg), dvars)), p._print(dexpr))
 
+             
 class Difference(Expr):
     """
     Carries out difference of the given expression with respect to symbols.
@@ -2775,6 +2783,13 @@ class Difference(Expr):
     def shape(self):
         x, _ = self.variable_count
         return x.shape
+
+    def _sympystr(self, p):
+        expr, x, n = self.args
+        if n == 1:  # Δ = delta， ∆ ▲ △
+            return '∆[%s](%s)' % (p._print(x), p._print(expr))
+        return '∆[%s, %s](%s)' % (p._print(x), p._print(n), p._print(expr))
+
 
 class Lambda(Expr):
     """

@@ -2278,7 +2278,7 @@ class Stirling(Function):
             elif k.is_even is False:
                 return  False
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
         n, k = self.args
@@ -2555,7 +2555,7 @@ class Stirling1(Function):
             elif k.is_even is False:
                 return  False
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
         n, k = self.args

@@ -9,6 +9,7 @@ from sympy.sets.sets import Interval
 from sympy.core.function import Function
 
 
+@plausible
 def apply(given):
     assert given.is_Forall
     assert given.function.is_Equality
@@ -25,8 +26,7 @@ def apply(given):
     y = Symbol('y', real=True)
     return Forall(Exists(Equality(f, y), (z, a, b)),
             (y, Minimum(f, (z, a, b)), Maximum(f, (z, a, b))),
-            given=given,
-            plausible=plausible())               
+            given=given)               
 
 
 from sympy.utility import check
@@ -38,11 +38,7 @@ def prove(Eq):
     a = Symbol('a', real=True)
     b = Symbol('b', real=True, domain=Interval(a, oo, left_open=True))
 
-    given = Equality.continuity(Function('f'), a, b)
-
-    Eq << given
-
-    Eq << apply(given)
+    Eq << apply(Equality.continuity(Function('f'), a, b))
 
 
 if __name__ == '__main__':

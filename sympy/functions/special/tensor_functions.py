@@ -451,9 +451,9 @@ class KroneckerDelta(Function):
         import sage.all as sage
         return sage.kronecker_delta(self.args[0]._sage_(), self.args[1]._sage_())
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy import Equality
-        domain = x.conditional_domain(Equality(*self.args, evaluate=False))
+        domain = x.domain_conditioned(Equality(*self.args, evaluate=False))
         if domain.is_ConditionSet:
             return x.domain
         return domain
@@ -472,3 +472,7 @@ class KroneckerDelta(Function):
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equality    
         return Piecewise((1, Equality(self.args[0], self.args[1])), (0, True))
+
+    def _sympystr(self, p):
+        return 'δ[%s]' % ', '.join(p._print(arg) for arg in self.args)
+        

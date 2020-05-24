@@ -1104,11 +1104,11 @@ class Add(Expr, AssocOp):
 
         return (Float(re_part)._mpf_, Float(im_part)._mpf_)
 
-    def simplify(self, deep=False, **kwargs):
-        if deep:
-            return Expr.simplify(self, deep=True, **kwargs)
+    def simplify(self, deep=False, **kwargs):                    
         this = self.simplifyPiecewise()
         if this is not self:
+            if deep:
+                return this.simplify(deep=True)
             return this         
 
         this = self.simplifyKroneckerDelta()
@@ -1118,6 +1118,12 @@ class Add(Expr, AssocOp):
         this = self.simplifySummations()
         if this is not self:
             return this
+        
+        if deep:
+            this = Expr.simplify(self, deep=True, **kwargs)
+            if this is not self:
+                return this
+            
         return self             
         
     def simplifyKroneckerDelta(self):        
@@ -1157,12 +1163,24 @@ class Add(Expr, AssocOp):
             
     def simplifyPiecewise(self):     
         piecewise = [arg for arg in self.args if arg.is_Piecewise]
+        if not piecewise:
+            return self
+        
         if len(piecewise) == 1:
             piecewise, *_ = piecewise
             args = [*self.args]
             args.remove(piecewise)
             this = self.func(*args, evaluate=False)
             return piecewise.func(*((e + this, c) for e, c in piecewise.args))
+                 
+        for i in range(1, len(piecewise)):
+            new = piecewise[i - 1].try_add(piecewise[i])
+            if new is not None:
+                args = [*self.args]
+                args.remove(piecewise[i - 1])
+                args.remove(piecewise[i])
+                args.append(new)
+                return self.func(*args, evaluate=False).simplify()
         
         return self
     

@@ -107,17 +107,6 @@ class StrPrinter(Printer):
         args += (self._print(s.base_set),)
         return 'ConditionSet(%s, %s, %s)' % args
 
-    def _print_Derivative(self, expr):
-        dexpr = expr.expr
-        dvars = [i[0] if i[1] == 1 else i for i in expr.variable_count]
-        return 'Derivative(%s)' % ", ".join(map(lambda arg: self._print(arg), [dexpr] + dvars))
-
-    def _print_Difference(self, expr):
-        expr, x, n = expr.args
-        if n == 1:
-            return 'Difference[%s](%s)' % (self._print(x), self._print(expr))
-        return 'Difference[%s, %s](%s)' % (self._print(x), self._print(n), self._print(expr))
-
     def _print_dict(self, d):
         keys = sorted(d.keys(), key=default_sort_key)
         items = []
@@ -160,9 +149,6 @@ class StrPrinter(Printer):
             printset = s
         return '{' + ', '.join(self._print(el) for el in printset) + '}'
 
-    def _print_Function(self, expr):
-        return expr.func.__name__ + "(%s)" % self.stringify(expr.args, ", ")
-
     def _print_GeometryEntity(self, expr):
         # GeometryEntity is special -- it's base is tuple
         return str(expr)
@@ -183,15 +169,15 @@ class StrPrinter(Printer):
         return "epsilon"
 
     def _print_Integral(self, expr):
+        limits = ','.join([':'.join([self._print(arg) for arg in limit]) for limit in expr.limits])
+#         def _xab_tostr(xab):
+#             if len(xab) == 1:
+#                 return self._print(xab[0])
+#             else:
+#                 return self._print((xab[0],) + tuple(xab[1:]))
 
-        def _xab_tostr(xab):
-            if len(xab) == 1:
-                return self._print(xab[0])
-            else:
-                return self._print((xab[0],) + tuple(xab[1:]))
-
-        L = ', '.join([_xab_tostr(l) for l in expr.limits])
-        return 'Integral(%s, %s)' % (self._print(expr.function), L)
+#         limits = ', '.join([_xab_tostr(l) for l in expr.limits])
+        return '∫[%s](%s)' % (limits, self._print(expr.function))
 
     def _print_AccumulationBounds(self, i):
         return "AccumBounds(%s, %s)" % (self._print(i.min),
@@ -212,14 +198,6 @@ class StrPrinter(Printer):
     def _print_LatticeOp(self, expr):
         args = sorted(expr.args, key=default_sort_key)
         return expr.func.__name__ + "(%s)" % ", ".join(self._print(arg) for arg in args)
-
-    def _print_Limit(self, expr):
-        e, z, z0, dir = expr.args
-        if str(dir) == "+":
-            return "Limit(%s, %s, %s)" % tuple(map(self._print, (e, z, z0)))
-        else:
-            return "Limit(%s, %s, %s, dir='%s')" % tuple(map(self._print,
-                                                            (e, z, z0, dir)))
 
     def _print_list(self, expr):
         return "[%s]" % self.stringify(expr, ", ")
@@ -324,16 +302,6 @@ class StrPrinter(Printer):
         else:
             return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
 
-    def _print_MatMul(self, expr):
-        c, m = expr.as_coeff_mmul()
-        if c.is_number and c < 0:
-            expr = _keep_coeff(-c, m)
-            sign = "-"
-        else:
-            sign = ""
-
-        return sign + '@'.join(self.parenthesize(arg, precedence(expr)) for arg in expr.args)
-
     def _print_HadamardProduct(self, expr):
         return '.*'.join([self.parenthesize(arg, precedence(expr)) for arg in expr.args])
 
@@ -429,9 +397,6 @@ class StrPrinter(Printer):
     def _print_PermutationGroup(self, expr):
         p = ['    %s' % self._print(a) for a in expr.args]
         return 'PermutationGroup([\n%s])' % ',\n'.join(p)
-
-    def _print_Pi(self, expr):
-        return 'pi'
 
     def _print_PolyRing(self, ring):
         return "Polynomial ring in %s over %s with %s order" % \
@@ -534,30 +499,6 @@ class StrPrinter(Printer):
             return self._print(expr.as_poly().as_expr())
         else:
             return self._print(expr.as_expr())
-
-    def _print_Pow(self, expr, rational=False):
-        PREC = precedence(expr)
-
-        if expr.exp is S.Half and not rational:
-            return "sqrt(%s)" % self._print(expr.base)
-
-        if expr.is_commutative:
-            if -expr.exp is S.Half and not rational:
-                # Note: Don't test "expr.exp == -S.Half" here, because that will
-                # match -0.5, which we don't want.
-                return "%s/sqrt(%s)" % tuple(map(lambda arg: self._print(arg), (S.One, expr.base)))
-            if expr.exp is -S.One:
-                # Similarly to the S.Half case, don't test with "==" here.
-                return '%s/%s' % (self._print(S.One),
-                                  self.parenthesize(expr.base, PREC, strict=False))
-
-        e = self.parenthesize(expr.exp, PREC, strict=False)
-        if self.printmethod == '_sympyrepr' and expr.exp.is_Rational and expr.exp.q != 1:
-            # the parenthesized exp should be '(Rational(a, b))' so strip parens,
-            # but just check to be sure.
-            if e.startswith('(Rational'):
-                return '%s**%s' % (self.parenthesize(expr.base, PREC, strict=False), e[1:-1])
-        return '%s**%s' % (self.parenthesize(expr.base, PREC, strict=False), e)
 
     def _print_UnevaluatedExpr(self, expr):
         return self._print(expr.args[0])
@@ -707,24 +648,9 @@ class StrPrinter(Printer):
     def _print_SparseMatrix(self, expr):
         from sympy.matrices import Matrix
         return self._print(Matrix(expr))
-
-    def _print_Sum(self, expr):
-        limits = ','.join([':'.join([self._print(arg) for arg in limit]) for limit in expr.limits])
-        if limits:
-            return 'Sum[%s](%s)' % (limits, self._print(expr.function))
-        return 'Sum(%s)' % self._print(expr.function)
-
+    
     def _print_Equality(self, expr):
         return '%s == %s' % tuple(self._print(arg) for arg in expr.args)
-
-    def _print_Ref(self, expr):
-        return 'Ref[%s](%s)' % (','.join([':'.join([self._print(arg) for arg in limit]) for limit in expr.limits]), self._print(expr.function))
-
-    def _print_Symbol(self, expr):
-        return expr.name
-
-    _print_MatrixSymbol = _print_Symbol
-    _print_RandomSymbol = _print_Symbol
 
     def _print_ZeroMatrix(self, expr):
         return "0"
@@ -749,9 +675,6 @@ class StrPrinter(Printer):
 
     def _print_Uniform(self, expr):
         return "Uniform(%s, %s)" % (self._print(expr.a), self._print(expr.b))
-
-    def _print_Union(self, expr):
-        return 'Union(%s)' % (', '.join([self._print(a) for a in expr.args]))
 
     def _print_Complement(self, expr):
         return r' \ '.join(self._print(set_) for set_ in expr.args)

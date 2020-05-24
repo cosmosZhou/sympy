@@ -410,18 +410,18 @@ class Relational(Boolean, Expr, EvalfMixin):
     def __iter__(self):
         raise TypeError
 
-    def defined_domain(self, x):
-        return self.lhs.defined_domain(x) & self.rhs.defined_domain(x)
+    def domain_defined(self, x):
+        return self.lhs.domain_defined(x) & self.rhs.domain_defined(x)
 
     def solve(self, x):
         from sympy.sets.contains import Contains
         if not x.is_Symbol:
             _x = self.generate_free_symbol(x.free_symbols, **x.dtype.dict)
             this = self._subs(x, _x)
-            domain = _x.conditional_domain(this)            
+            domain = _x.domain_conditioned(this)            
             domain = domain._subs(_x, x)
         else:
-            domain = x.conditional_domain(self)
+            domain = x.domain_conditioned(self)
             
         if domain.is_ConditionSet:
             self
@@ -648,6 +648,7 @@ class Equality(Relational):
             return self
 
     def __mul__(self, exp):
+        exp = sympify(exp)
         if isinstance(exp, Equality):
             if exp.lhs.is_nonzero or exp.rhs.is_nonzero:
                 return Eq(self.lhs * exp.lhs, self.rhs * exp.rhs, equivalent=[self, exp])
@@ -771,10 +772,15 @@ class Equality(Relational):
         if len(args) == 1:
             arg = args[0]
             if isinstance(arg, dict):
-                subs = self
-                for key, value in arg.items():
-                    subs = subs.subs(key, value)
-                return subs
+                if 'simultaneous' in kwargs:
+                    if self.plausible:
+                        return self
+                    return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify()).simplify()
+                else:
+                    subs = self
+                    for key, value in arg.items():
+                        subs = subs.subs(key, value)
+                    return subs
             elif isinstance(arg, Equality):
                 eq = arg
                 args = eq.args
@@ -846,7 +852,14 @@ class Equality(Relational):
             derivative[old][new] = eq
             return eq
         else:
-            return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
+            if isinstance(new, Symbol) and self._has(new):
+                from sympy.core.symbol import Dummy
+                d = Dummy(**new.dtype.dict)
+                this = self.subs(old, d)
+                this = this.subs(new, old)
+                return this.subs(d, new)
+            else:
+                return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
 
     @staticmethod
     def by_definition_of(x):
@@ -956,13 +969,12 @@ class Equality(Relational):
 
         lhs, rhs = self.args
         from sympy.core.mul import Mul
-        from sympy.matrices.expressions.matmul import MatMul
+        from sympy.concrete.expr_with_limits import Ref, Forall
         from sympy.core.function import _coeff_isneg
-        from sympy.logic.boolalg import Or
         
         if type(lhs) == type(rhs):
             op = lhs.func
-            if op == Mul or op == Add or op == MatMul:
+            if op == Mul or op == Add:
                 lhs_args = [*lhs.args]
                 rhs_args = [*rhs.args]
                 intersect = set(lhs_args) & set(rhs_args)
@@ -971,6 +983,9 @@ class Equality(Relational):
                         lhs_args.remove(arg)
                         rhs_args.remove(arg)
                     return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()
+            if op == Ref:
+                if lhs.limits == rhs.limits:
+                    return Forall(self.func(lhs.function, rhs.function), *lhs.limits, equivalent=self)                     
         elif type(lhs) == Add and rhs in lhs.args:
             args = [*lhs.args]
             args.remove(rhs)
@@ -1904,7 +1919,7 @@ class LessThan(_Less):
                     given.append(eq)
                 old, new = eq.args
                 if old in free_symbols:
-                    domain = old.domain & old.conditional_domain(eq)
+                    domain = old.domain & old.domain_conditioned(eq)
                     if domain != old.domain:
                         _old = Symbol(old.name, domain=domain)
                         f = f.subs(old, _old)

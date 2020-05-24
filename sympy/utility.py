@@ -9,7 +9,6 @@ from sympy import concrete
 from sympy.sets import sets
 from sympy.concrete.expr_with_limits import UnionComprehension
 from sympy.logic import boolalg
-import json
 from sympy.utilities.iterables import topological_sort_depth_first
 from builtins import isinstance
 
@@ -159,12 +158,15 @@ class Eq:
         lines = []        
 #         print('writing .php :', self.file.file.name)
         php = self.file.file.name
-        utility_php = re.compile(r'\\\w+').sub(r'\\utility', re.compile(r'\w+\\').sub(r'..\\', php[php.index('axiom'):]))
+#         sep = os.sep
+        php = php.replace('\\', '/')        
+#         utility_php = re.compile(r'\\\w+').sub(r'\\utility', re.compile(r'\w+\\').sub(r'..\\', php[php.index('axiom'):]))        
+        utility_php = re.compile(r'/\w+').sub('/utility', re.compile(r'\w+/').sub('../', php[php.index('axiom'):]))
         
         php_code = """\
 <?php
 require_once '%s';
-$i = 0;""" % utility_php
+""" % utility_php
         lines.append(php_code)
         
         for line in self.file:            
@@ -207,10 +209,10 @@ $i = 0;""" % utility_php
                 
             res.append(line[i:])
             
-            lines.append('$txt[$i++] = "%s";' % ''.join(res).replace('\\', '\\\\'))
+            lines.append('$text[] = "%s";' % ''.join(res).replace('\\', '\\\\'))
         
         php_code = """\
-render(__FILE__, $txt);
+render(__FILE__, $text);
 ?>        
 """
         lines.append(php_code)
@@ -471,6 +473,8 @@ class identity(boolalg.Invoker):
         return self
 
     def __getattr__(self, method):
+        if method == "T":
+            assert len(self.obj.shape) < 2
         obj = getattr(self.obj, method)
         if not callable(obj):
             if isinstance(obj, tuple):

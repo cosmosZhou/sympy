@@ -9,10 +9,10 @@ from axiom import discrete
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
-
-def apply(provided):
-    assert provided.is_Equality
-    lhs, rhs = provided.args
+@plausible
+def apply(given):
+    assert given.is_Equality
+    lhs, rhs = given.args
     if rhs == S.EmptySet:
         assert lhs.is_Intersection
         A, B = lhs.args
@@ -21,9 +21,7 @@ def apply(provided):
         assert rhs.is_Intersection
         A, B = rhs.args
 
-    return Equality(abs(Union(A, B)), abs(A) + abs(B),
-                    plausible=plausible())
-
+    return Equality(abs(Union(A, B)), abs(A) + abs(B), given=given)
 
 from sympy.utility import check
 
@@ -32,9 +30,8 @@ from sympy.utility import check
 def prove(Eq):
     A = Symbol('A', dtype=dtype.integer)
     B = Symbol('B', dtype=dtype.integer)
-    equality = Equality(Intersection(A, B), S.EmptySet)
-    Eq << equality
-    Eq << apply(equality)
+
+    Eq << apply(Equality(Intersection(A, B), S.EmptySet))
 
     C = Symbol('C', dtype=dtype.integer, definition=A | B)
 
@@ -48,7 +45,7 @@ def prove(Eq):
 
     Eq << Eq[-2].union(B)
 
-    Eq << discrete.sets.intersect.complement.apply(equality)
+    Eq << discrete.sets.intersect.complement.apply(Eq[0])
 
     Eq << Eq[-1].abs()
 

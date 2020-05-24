@@ -7,6 +7,7 @@ from sympy.functions.special.gamma_functions import gamma, digamma
 ############################ COMPLETE BETA  FUNCTION ##########################
 ###############################################################################
 
+
 class beta(Function):
     r"""
     The beta integral is called the Eulerian integral of the first kind by
@@ -89,10 +90,10 @@ class beta(Function):
         x, y = self.args
         if argindex == 1:
             # Diff wrt x
-            return beta(x, y)*(digamma(x) - digamma(x + y))
+            return beta(x, y) * (digamma(x) - digamma(x + y))
         elif argindex == 2:
             # Diff wrt y
-            return beta(x, y)*(digamma(y) - digamma(x + y))
+            return beta(x, y) * (digamma(y) - digamma(x + y))
         else:
             raise ArgumentIndexError(self, argindex)
 
@@ -102,7 +103,7 @@ class beta(Function):
 
     def _eval_expand_func(self, **hints):
         x, y = self.args
-        return gamma(x)*gamma(y) / gamma(x + y)
+        return gamma(x) * gamma(y) / gamma(x + y)
 
     def _eval_is_real(self):
         return self.args[0].is_real and self.args[1].is_real
@@ -118,3 +119,7 @@ class beta(Function):
     def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
+    
+    def _sympystr(self, p):
+        return 'Β(%s, %s)' % (p._print(self.args[0]), p._print(self.args[1]))
+    

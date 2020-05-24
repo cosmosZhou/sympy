@@ -94,7 +94,9 @@ def prove(Eq):
     
     Eq.equation = Eq[1].subs(Eq[-1])
     
-    Eq << identity(Eq.equation.rhs.args[0].function).simplify().limits_subs(k, k - 1)
+    Eq << identity(Eq.equation.rhs.args[0].function).limits_subs(j, j - 1)
+    
+    _j = Eq[-1].rhs.variable
     
     Eq << Eq[-1].this.rhs.expand()
     
@@ -102,7 +104,9 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(i, _i)
     
-    Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, _i + 1)
+    Eq << Eq[-1].this.lhs.limits_subs(j, _j)
+    
+    Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, _i + 1, _j)
     
     Eq << Eq[-1].this.rhs.expand()
     
@@ -112,7 +116,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.simplify()
     
-    Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, _i + 1)
+    Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, _i + 1, _j)
     
     Eq << Eq[-1].this.rhs.expand()
 
@@ -122,7 +126,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.simplify()
     
-    Eq << identity(Sum[k:0:n - 1](Eq.equation.rhs.args[0].function.function._subs(i, _i))).simplify()
+    Eq << identity(Sum[j](Eq.equation.rhs.args[0].function.function._subs(i, _i))).limits_subs(j, _j)
     
     Eq << (Eq[-2].forall(_i), Eq[-1].forall(_i))
     

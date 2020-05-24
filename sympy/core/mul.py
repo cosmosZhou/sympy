@@ -1815,14 +1815,14 @@ class Mul(Expr, AssocOp):
 
     @property
     def T(self):
-        return self.func(*(arg.T for arg in self.args))
+        return self.func(*(arg.T for arg in self.args[::-1]))
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
         domain = Interval(-oo, oo, integer=x.is_integer)
         for arg in self.args:
-            domain &= arg.nonzero_domain(x)
+            domain &= arg.domain_nonzero(x)
         return domain
 
     def as_one_term(self):
@@ -1884,18 +1884,23 @@ class Mul(Expr, AssocOp):
         return self.func(*args), summation
 
     @property
-    def domain(self):
-        domain = S.EmptySet
+    def domain(self):        
         from sympy import Interval, oo
+        domain = Interval(-oo, oo, integer=self.is_integer)
         coeff = []
         
         max_shape_len = max(len(arg.shape) for arg in self.args)
+        if max_shape_len:
+            from sympy.sets.sets import CartesianSpace
+            domain = CartesianSpace(domain, *self.shape)
+            return domain
+    
         if all(len(arg.shape) == max_shape_len for arg in self.args):
             for arg in self.args:
                 if arg.is_number:
                     coeff.append(arg)
                     continue
-                domain |= arg.domain
+#                 domain *= arg.domain
             if coeff:
                 if domain:
                     return domain * Mul(*coeff)
@@ -1905,7 +1910,7 @@ class Mul(Expr, AssocOp):
                 if len(arg.shape) < max_shape_len:
                     coeff.append(arg)
                     continue
-                domain |= arg.domain
+#                 domain *= arg.domain
             
             if coeff: 
                 return domain * Mul(*coeff).domain
@@ -1960,6 +1965,7 @@ class Mul(Expr, AssocOp):
                 function = (arg.function * this).powsimp()
                 return arg.func(function, *arg.limits).simplify()
         return self
+
 
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

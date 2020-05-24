@@ -307,6 +307,8 @@ class RandomSymbol(Expr):
     def domain(self):
         return self.symbol.domain
 
+    def _sympystr(self, _):   
+        return Symbol.sympystr(self.name)
 
 class ProductPSpace(PSpace):
     """

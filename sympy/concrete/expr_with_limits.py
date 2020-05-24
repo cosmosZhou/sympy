@@ -170,7 +170,7 @@ class ExprWithLimits(Expr):
     def finite_aggregate(self, x, s):
         args = []
         if len(s) > 1:
-            s &= self.function.nonzero_domain(x)
+            s &= self.function.domain_nonzero(x)
             if s.is_EmptySet:
                 return S.Zero
             if s.is_Intersection:
@@ -515,7 +515,7 @@ class ExprWithLimits(Expr):
         union = S.EmptySet 
         assert x in self.function.scope_variables            
         for f, condition in self.function.args:
-            _domain = (univeralSet - union) & x.conditional_domain(condition) & domain
+            _domain = (univeralSet - union) & x.domain_conditioned(condition) & domain
             assert not _domain or _domain.is_integer
 
             union |= _domain
@@ -543,7 +543,7 @@ class ExprWithLimits(Expr):
 #                 reps = {}
 #                 for i in indices:
 #                     if isinstance(i, (Symbol, Indexed)): 
-#                         i_domain = function.defined_domain(i)
+#                         i_domain = function.domain_defined(i)
 #                         if i.domain != i_domain:
 #                             _i = i.copy(domain=i_domain)
 #                             function = function.subs(i, _i)                            
@@ -563,11 +563,12 @@ class ExprWithLimits(Expr):
             if 'domain' in new._assumptions:
                 if len(domain) == 2:
                     dom = Interval(*domain, integer=True)
-                else:
+                    assert new.domain == dom
+                elif domain:
                     dom = domain[0]
                     if not dom.is_set:
-                        dom = new.conditional_domain(dom)
-                assert new.domain == dom
+                        dom = new.domain_conditioned(dom)
+                    assert new.domain == dom
                 limits[index] = (new,)
             else:
                 limits[index] = (new, *domain)
@@ -603,7 +604,6 @@ class ExprWithLimits(Expr):
             if this.is_Boolean:
                 this.equivalent = self
             return this
-
         return subs(self.function, x, domain, new)
 
     def limits_subs(self, old, new):
@@ -615,8 +615,22 @@ class ExprWithLimits(Expr):
             if old == x:
                 if not domain:
                     assert 'domain' not in new._assumptions
-                    return self.func(self.function._subs(old, new), (new, x.domain)).simplify()
-            
+                    if new.has(x):
+                        p = new.as_poly(x)
+                        if p is None or p.degree() != 1:
+                            return self
+                        alpha = p.coeff_monomial(x)
+                        if alpha == 1:
+                            diff = new - x
+                            a, b = x.domain.min() - diff, x.domain.max() - diff
+                            return self.func(self.function._subs(old, new), (x, a, b)).simplify()     
+                        elif alpha == -1:
+                            return self
+                        else:
+                            return self                       
+                        
+                    else:
+                        return self.func(self.function._subs(old, new), (new, x.domain)).simplify()
                 if not new.has(x):
                     if self.function.has(new):
                         return self
@@ -693,6 +707,12 @@ class ExprWithLimits(Expr):
             return self.func(function, *self.limits)
         else:
 #             len(self.limits) > 1
+            if new in self.variables_set:
+                d = Dummy(**new.dtype.dict)
+                this = self.limits_subs(old, d)
+                this = this.limits_subs(new, old)                
+                return this.limits_subs(d, new)
+
             index = -1
             for i, limit in enumerate(self.limits):
                 x, *domain = limit
@@ -732,7 +752,7 @@ class ExprWithLimits(Expr):
 
         return self
 
-    def _subs(self, old, new):
+    def _subs(self, old, new, **_):
         """Override this stub if you want to do anything more than
         attempt a replacement of old with new in the arguments of self.
         """
@@ -896,7 +916,7 @@ class ExprWithLimits(Expr):
     def shape(self):
         return self.function.shape
 
-    def defined_domain(self, x):
+    def domain_defined(self, x):
         from sympy.core.symbol import Wild
         if x.atomic_dtype.is_set:
             return S.UniversalSet            
@@ -909,10 +929,10 @@ class ExprWithLimits(Expr):
         for expr in limits_dict.values():
             if expr is None:
                 continue
-            domain &= expr.defined_domain(x)
+            domain &= expr.domain_defined(x)
         
         if self.function._has(x):
-            domain &= self.function.defined_domain(x)
+            domain &= self.function.domain_defined(x)
             if x not in self.function.free_symbols:
                 v = self.variable
                 v_domain = self.limits_dict[v]
@@ -925,7 +945,7 @@ class ExprWithLimits(Expr):
                         t_, *_ = res.values()
                         if v_domain is None or t_ in v_domain:
                             function = self.function._subs(v, t_)
-                            domain &= function.defined_domain(x)
+                            domain &= function.domain_defined(x)
                             break
             
         return domain
@@ -1053,10 +1073,10 @@ class AddWithLimits(ExprWithLimits):
                 domain = Interval(-S.oo, S.oo, integer=True)
 
             if a.has(t):
-                domain &= t.conditional_domain(a <= x)
+                domain &= t.domain_conditioned(a <= x)
                 a = Minimum(a, self.limits[i]).doit()
             if b.has(t):
-                domain &= t.conditional_domain(x <= b)
+                domain &= t.domain_conditioned(x <= b)
                 b = Maximum(b, self.limits[i]).doit()
 
             limits.append((t, domain.start, domain.end))
@@ -3198,7 +3218,7 @@ class Ref(ExprWithLimits):
 #             from sympy.matrices.expressions.hadamard import HadamardProduct
             return first * second
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, **kwargs):
         from sympy import Contains
         limits_dict = self.limits_dict
         if deep:
@@ -3206,8 +3226,13 @@ class Ref(ExprWithLimits):
             reps = {}
             for x, domain in limits_dict.items():
                 if domain.is_set and domain.is_integer:
-                    _x = x.copy(domain=domain)                    
-                    function = function._subs(x, _x).simplify(deep=True, wrt=_x)
+                    _x = x.copy(domain=domain)
+                    function = function._subs(x, _x)                  
+                    if 'wrt' in kwargs:
+                        function = function.simplify(deep=True, **kwargs)                        
+                    else:
+                        function = function.simplify(deep=True, wrt=_x, **kwargs)
+                    
                     reps[_x] = x
             if reps:
                 for _x, x in reps.items():
@@ -3429,19 +3454,39 @@ class Ref(ExprWithLimits):
 
     def __getitem__(self, indices, **kwargs):
         function = self.function
-        if isinstance(indices, (tuple, list)):            
-            for i, (x, *domain) in enumerate(self.limits):
-                index = indices[i]
-                if x != index:
-                    function = function._subs(x, index)
-                    if not index._has(x):                        
-                        if function._has(x):
-                            for var in postorder_traversal(function):
-                                if var._has(x):
-                                    break
-                            function = function._subs(var, var.definition)
-                            function = function._subs(x, index)
-                        assert not function._has(x)
+        if isinstance(indices, (tuple, list)):
+            variables_set = self.variables_set
+            reps = {}            
+            for (x, *domain), index in zip(self.limits, indices):
+                variables_set.remove(x)
+                if x == index:
+                    continue
+
+                for v in variables_set:
+                    if not index._has(v):
+                        continue
+                    _v = Dummy(domain=v.domain_assumed, **v.dtype.dict)
+                    _index = index._subs(v, _v)
+                    if _index == index:
+#if the substitution fails, it means that index has v only in its domain, not in its definition or explicit expression, 
+#like i = Symbol('i', domain = Interval(j, oo)), where i has j, but only in its domain, not in its definition                        
+                        continue
+                    index = _index
+                    reps[_v] = v
+                    assert not index._has(v)
+                    
+                function = function._subs(x, index)
+                if not index._has(x):                        
+                    if function._has(x):
+                        for var in postorder_traversal(function):
+                            if var._has(x):
+                                break
+                        function = function._subs(var, var.definition)
+                        function = function._subs(x, index)
+                    assert not function._has(x)
+
+            for k, v in reps.items():
+                function = function._subs(k, v)
                     
             if len(indices) > len(self.limits):
                 function = function[indices[len(self.limits):]]
@@ -3492,7 +3537,7 @@ class Ref(ExprWithLimits):
         shape = []
         for x, *ab in self.limits:
             if not ab:
-                domain = self.function.defined_domain(x)
+                domain = self.function.domain_defined(x)
                 shape.append(domain.size)
             else:
                 a, b = ab
@@ -3659,6 +3704,9 @@ class Ref(ExprWithLimits):
             tex += p._print(self.function)
 
         return tex
+
+    def _sympystr(self, p):
+        return '[%s](%s)' % (','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits]), p._print(self.function))
 
 
 class UnionComprehension(Set, ExprWithLimits):
@@ -3991,8 +4039,8 @@ class UnionComprehension(Set, ExprWithLimits):
         
         limits = ','.join([':'.join(p.doprint(arg) for arg in limit) for limit in self.limits])
         if limits:
-            return 'Union[%s](%s)' % (limits, p.doprint(self.function))
-        return 'Union(%s)' % p.doprint(self.function)
+            return '∪[%s](%s)' % (limits, p.doprint(self.function))
+        return '∪(%s)' % p.doprint(self.function)
 
     def int_limit(self):
         if len(self.limits) == 1:
@@ -4772,7 +4820,7 @@ class ConditionalBoolean(Boolean):
                     deletes.add(x)
 #             else:
 #                 domain = limits_dict[x]                
-#                 if self.is_Forall and domain.is_set and self.function.defined_domain(x) in domain:
+#                 if self.is_Forall and domain.is_set and self.function.domain_defined(x) in domain:
 #                     deletes.add(x)
                     
         if deletes:
@@ -4963,7 +5011,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
         else:
             domain = args[0]
             if not domain.is_set:
-                domain = x.conditional_domain(domain)
+                domain = x.domain_conditioned(domain)
 
         if x_domain is None and domain is not None or domain in x_domain and x_domain not in domain:
             limits = self.limits_update({x : domain})
@@ -4986,7 +5034,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
             domain = forall[old]
             eqs = []
             if not domain.is_set:
-                domain = old.conditional_domain(domain)
+                domain = old.domain_conditioned(domain)
 
             from sympy.sets.contains import Contains
             eqs.append(Contains(new, domain).invert().simplify())
@@ -5018,7 +5066,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
                 deletes.append(x)
             elif self.function.has(x):
                 domain = forall[x]                
-                if domain.is_set and self.function.defined_domain(x) in domain:
+                if domain.is_set and self.function.domain_defined(x) in domain:
                     deletes.append(x)
 
         if deletes:
@@ -5453,7 +5501,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
 
             if domain is not None:
                 if not domain.is_set:
-                    domain = old.conditional_domain(domain)
+                    domain = old.domain_conditioned(domain)
                 from sympy.sets.contains import Contains
                 eqs.append(Contains(new, domain))
 
@@ -5491,7 +5539,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             for k, v in exists.items():
                 if v is None and condition.has(k):
                     if condition.is_Boolean:
-                        domain = k.conditional_domain(condition)
+                        domain = k.domain_conditioned(condition)
                         if not domain.is_ConditionSet:
                             condition = domain
 
@@ -5883,10 +5931,10 @@ def limits_common(limits, _limits, is_or=False, clue=None):
                 continue
             if _domain.is_set:
                 if not domain.is_set:
-                    domain = x.conditional_domain(domain)
+                    domain = x.domain_conditioned(domain)
             else:
                 if domain.is_set:
-                    _domain = x.conditional_domain(_domain)
+                    _domain = x.domain_conditioned(_domain)
 
             if is_or:
                 dic[x] = domain | _domain

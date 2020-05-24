@@ -809,6 +809,8 @@ class Max(MinMaxBase, Application):
                 if not found:
                     return MinMaxBase.__lt__(self, other)
             return S.true
+        elif all(arg < other for arg in self.args):
+            return S.true
 
         return MinMaxBase.__lt__(self, other)
 
@@ -822,6 +824,8 @@ class Max(MinMaxBase, Application):
                         break
                 if not found:
                     return MinMaxBase.__le__(self, other)
+            return S.true
+        elif all(arg <= other for arg in self.args):
             return S.true
 
         return MinMaxBase.__le__(self, other)
@@ -947,6 +951,9 @@ class Min(MinMaxBase, Application):
                     return MinMaxBase.__gt__(self, other)
             return S.true
 
+        elif all(arg >= other for arg in self.args):
+            return S.true
+        
         return MinMaxBase.__gt__(self, other)
 
     def __ge__(self, other):
@@ -961,6 +968,9 @@ class Min(MinMaxBase, Application):
                     return MinMaxBase.__ge__(self, other)
             return S.true
 
+        elif all(arg >= other for arg in self.args):
+            return S.true
+        
         return MinMaxBase.__ge__(self, other)
 
     def __lt__(self, other):

@@ -153,6 +153,24 @@ class Contains(BooleanFunction):
             condition.equivalent = self
             return condition
 
+        if s.is_Interval and s.is_integer and e.is_Add:
+            if not s.left_open or s.right_open:
+                try:
+                    index = e.args.index(S.NegativeOne)
+                    s += S.One
+                    e += S.One
+                    return self.func(e, s, evaluate=False)
+                except:
+                    ...
+                    
+            if s.left_open or not s.right_open:
+                try:
+                    index = e.args.index(S.One)
+                    s += S.NegativeOne
+                    e += S.NegativeOne
+                    return self.func(e, s, evaluate=False)
+                except:
+                    ...
         return self
 
 # this assertion is useless!
@@ -215,6 +233,14 @@ class Contains(BooleanFunction):
     def asSubset(self):
         return Subset(self.lhs.set, self.rhs, equivalent=self)
 
+    def __or__(self, other):
+        if other.is_Contains:
+            x, X = self.args
+            y, Y = other.args
+            if x == y:                
+                return self.func(x, X | Y)
+            
+        return BooleanFunction.__or__(self, other)
         
 class NotContains(BooleanFunction):
     """
@@ -360,6 +386,14 @@ class NotContains(BooleanFunction):
             
         return BooleanFunction.__and__(self, other)
 
+    def __or__(self, other):
+        if other.is_NotContains:
+            x, X = self.args
+            y, Y = other.args
+            if x == y:                
+                return self.func(x, X & Y)
+            
+        return BooleanFunction.__or__(self, other)
     
 Contains.invert_type = NotContains
 

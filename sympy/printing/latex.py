@@ -1139,15 +1139,6 @@ class LatexPrinter(Printer):
         else:
             return tex
 
-    def _print_binomial(self, expr, exp=None):
-        tex = r"{\binom{%s}{%s}}" % (self._print(expr.args[0]),
-                                     self._print(expr.args[1]))
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
-        else:
-            return tex
-
     def _print_RisingFactorial(self, expr, exp=None):
         n, k = expr.args
         base = r"%s" % self.parenthesize(n, PRECEDENCE['Func'])

@@ -26,14 +26,15 @@ class ExprCondPair(Tuple):
         elif cond == False:
             return Tuple.__new__(cls, expr, false)
         elif isinstance(cond, Basic) and cond.has(Piecewise):
-            cond = piecewise_fold(cond)
-            if isinstance(cond, Piecewise):
-                cond = cond.rewrite(ITE)
+            ...
+#             cond = piecewise_fold(cond)
+#             if isinstance(cond, Piecewise):
+#                 cond = cond.rewrite(ITE)
 
-        if not isinstance(cond, Boolean):
-            raise TypeError(filldedent('''
-                Second argument must be a Boolean,
-                not `%s`''' % func_name(cond)))
+#         if not isinstance(cond, Boolean):
+#             raise TypeError(filldedent('''
+#                 Second argument must be a Boolean,
+#                 not `%s`''' % func_name(cond)))
         return Tuple.__new__(cls, expr, cond)
 
     @property
@@ -65,10 +66,10 @@ class ExprCondPair(Tuple):
             rational=rational,
             inverse=inverse) for a in self.args])
 
-#     def defined_domain(self, x):
-#         domain = Tuple.defined_domain(self, x)
+#     def domain_defined(self, x):
+#         domain = Tuple.domain_defined(self, x)
 #         for arg in self.args:
-#             domain &= arg.defined_domain(x)
+#             domain &= arg.domain_defined(x)
 #         return domain
 
 
@@ -134,7 +135,17 @@ class Piecewise(Function):
 
     @property
     def scope_variables(self):
-        return reduce(lambda x, y: x & y, (c.free_symbols for _, c in self.args[:-1])) 
+        s = None
+        for _, c in self.args[:-1]:
+            if c.is_Contains: 
+                free_symbols = c.lhs.free_symbols
+            else:
+                free_symbols = c.free_symbols
+            if s is None:
+                s = free_symbols
+            else:
+                s &= free_symbols
+        return s 
         
     @property
     def set(self):
@@ -1086,11 +1097,11 @@ class Piecewise(Function):
             last = ITE(c, a, last)
         return _canonical(last)
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import Union
         domain = []
         for function, condition in self.args:
-            domain.append(x.conditional_domain(condition) & function.nonzero_domain(x))
+            domain.append(x.domain_conditioned(condition) & function.domain_nonzero(x))
         return Union(*domain)
 
     @property
@@ -1120,19 +1131,37 @@ class Piecewise(Function):
                             
             if wrt is not None:                 
                 univeralSet = wrt.domain
-                args = []
+                args = [*self.args]
                 union = S.EmptySet
+                hit = False
+                need_swap = False
                 for i, (f, cond) in enumerate(self.args):
-                    domain = (univeralSet - union) & wrt.conditional_domain(cond)
+                    domain = (univeralSet - union) & wrt.domain_conditioned(cond)
                     union |= domain
                     
+                    
                     if f._has(wrt):
-                        _x = wrt.copy(domain=domain)
+                        if domain.is_FiniteSet and len(domain) == 1:
+                            if cond:
+                                need_swap = True
+                                hit = True
+                            _x, *_ = domain.args
+                        else:
+                            _x = wrt.copy(domain=domain)
+                            
                         _f = f._subs(wrt, _x).simplify(deep=deep)._subs(_x, wrt)
                         if _f != f:
-                            args = [*self.args]
+                            hit = True                            
                             args[i] = (_f, cond)
-                            return self.func(*args).simplify(deep=deep, wrt=wrt)
+                            
+                if need_swap:
+                    e_last, _ = args[-1]
+                    e_second_last, _ = args[-2]
+                    args[-2] = (e_last, Equality(wrt, _x))
+                    args[-1] = (e_second_last, True)
+                    
+                if hit:                    
+                    return self.func(*args).simplify(deep=True)
                         
             args = []
             hit = False
@@ -1211,7 +1240,7 @@ class Piecewise(Function):
                     return self.func(*args, (e1, True)).simplify()
                 if A.is_Complement:
                     U, C = A.args
-                    domain = self.defined_domain(x)
+                    domain = self.domain_defined(x)
                     if domain in U:                        
                         return self.func((e0, NotContains(x, C)), (e1, True)).simplify(deep=deep)
             if c0.is_NotContains:                
@@ -1292,7 +1321,6 @@ class Piecewise(Function):
         return self.func(*tuples)
 
     def mul(self, other):
-#         other = other.detailed_expr()
         piece = []
         u = S.true
         for e, c in self.args:
@@ -1314,13 +1342,16 @@ class Piecewise(Function):
             u &= c.invert()
         return self.func(*piece).simplify()
         
-    def detailed_expr(self):        
+    def default_condition(self):
         u = S.true
-        args = []
-        for e, c in self.args:     
-            args.append((e, c & u))
+        for _, c in self.args[:-1]:     
             u &= c.invert()    
-        return self.func(*args)
+        return u
+        
+    def try_add(self, other):        
+        if self.default_condition() | other.default_condition():
+            _ = self.args[-1][0]
+            return self.func(*self.args[:-1], *((e + _, c) for e, c in other.args))
 
             
 def piecewise_fold(expr):

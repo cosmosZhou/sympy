@@ -87,7 +87,7 @@ class Boolean(Basic):
         for x, domain in limits_dict(limits).items():
             if domain is None:
                 continue
-            if domain not in self.defined_domain(x):
+            if domain not in self.domain_defined(x):
                 return False
         return True
         
@@ -1605,10 +1605,10 @@ class BooleanFunction(Application, Boolean):
                      +nonRel + nonRealRel))
         return rv
 
-    def defined_domain(self, x):
-        domain = Boolean.defined_domain(self, x)
+    def domain_defined(self, x):
+        domain = Boolean.domain_defined(self, x)
         for arg in self.args:
-            domain &= arg.defined_domain(x)
+            domain &= arg.domain_defined(x)
         return domain
 
 

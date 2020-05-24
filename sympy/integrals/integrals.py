@@ -1140,7 +1140,7 @@ class Integral(AddWithLimits):
         limit = self.limits[0]
         if len(limit) > 1:
             x, a, b = limit
-            domain = self.function.nonzero_domain(x)
+            domain = self.function.domain_nonzero(x)
             from sympy.sets.sets import Interval
             domain &= Interval(a, b)
 
@@ -1149,7 +1149,7 @@ class Integral(AddWithLimits):
                 for f, condition in self.function.args:
                     if f == 0:
                         continue
-                    _domain = x.conditional_domain(condition) & domain
+                    _domain = x.domain_conditioned(condition) & domain
                     sgm.append(self.func(f, (x, domain.start, domain.end)).simplify())
 
                 return Add(*sgm)
@@ -1179,7 +1179,7 @@ class Integral(AddWithLimits):
                 return self.function * var.dimension
         return self.func(dependent, limit) * independent
 
-    def _subs(self, old, new):
+    def _subs(self, old, new, **_):
         if self == old:
             return new
 
@@ -1189,7 +1189,7 @@ class Integral(AddWithLimits):
             if len(limit) == 1:
                 # deal with indefinite integrals
                 x = limit[0]
-                domain = self.function.nonzero_domain(x)
+                domain = self.function.domain_nonzero(x)
                 return self.func(self.function, (x, domain.start, new))
 
             function = self.function.subs(old, new)

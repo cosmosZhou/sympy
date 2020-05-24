@@ -15,6 +15,7 @@ from math import sqrt as _sqrt
 
 class CombinatorialFunction(Function):
     """Base class for combinatorial functions. """
+
     @property
     def shape(self):
         return ()
@@ -267,7 +268,10 @@ class factorial(CombinatorialFunction):
         if x.is_nonnegative or x.is_noninteger:
             return True
 
+    def _sympystr(self, p):
+        return '(%s)!' % p._print(self.arg)
 
+    
 class MultiFactorial(CombinatorialFunction):
     pass
 
@@ -744,7 +748,7 @@ ff = FallingFactorial
 ###############################################################################
 
 
-class binomial(CombinatorialFunction):
+class binom(CombinatorialFunction):
     r"""Implementation of the binomial coefficient. It can be defined
     in two ways depending on its desired interpretation:
 
@@ -1033,7 +1037,7 @@ class binomial(CombinatorialFunction):
             elif k.is_even is False:
                 return  False
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
         n, k = self.args
@@ -1056,9 +1060,17 @@ class binomial(CombinatorialFunction):
         if n.is_integer:
             return dtype.integer
         return n.dtype
-        
     
     @property
     def shape(self):
         return ()
     
+    def _latex(self, p, exp=None):
+        tex = r"{\binom{%s}{%s}}" % (p._print(self.args[0]), p._print(self.args[1]))
+
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+    
+binomial = binom

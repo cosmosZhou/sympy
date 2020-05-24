@@ -1,15 +1,10 @@
-from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref, Union, identity
+from sympy.core.symbol import Symbol
+from sympy.utility import check, plausible, Ref, identity
 from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo, Zero
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import Forall
-from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
-from axiom.discrete.combinatorics.factorial.adjacent import swap1, swap1_utility
 
 
 @plausible

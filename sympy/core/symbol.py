@@ -16,6 +16,7 @@ from sympy.core.containers import Tuple
 import string
 import re as _re
 import random
+import re
 
 
 def _symbol(s, matching_symbol=None, **assumptions):
@@ -353,6 +354,11 @@ class Symbol(AtomicExpr, NotIterable):
         return S.UniversalSet
 
     @property
+    def domain_assumed(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain']
+        
+    @property
     def domain(self):
         from sympy.sets.sets import Interval
 
@@ -420,10 +426,10 @@ class Symbol(AtomicExpr, NotIterable):
 
         return None
 
-    def nonzero_domain(self, x):
+    def domain_nonzero(self, x):
         if self == x:
             return x.domain - {0}
-        return Expr.nonzero_domain(self, x)
+        return Expr.domain_nonzero(self, x)
 
     @property
     def is_integer(self):
@@ -480,7 +486,7 @@ class Symbol(AtomicExpr, NotIterable):
 
             if 'domain' in self._assumptions:
                 from sympy.core.numbers import Infinity, NegativeInfinity
-                if isinstance(pattern, (Infinity, NegativeInfinity)): #excludes oo, -oo, because these are not variables;
+                if isinstance(pattern, (Infinity, NegativeInfinity)):  # excludes oo, -oo, because these are not variables;
                     return False
                 domain = self._assumptions['domain']
                 return domain._has(pattern)
@@ -578,7 +584,108 @@ class Symbol(AtomicExpr, NotIterable):
     # it is possible for them to be equal!
             return True
         return False
+    
+    def _eval_transpose(self):
+        ...
 
+    greek_letters = {'Alpha': 'Α',
+                     'ALPHA': 'Α',
+                     'alpha': 'α',
+                     'Beta': 'Β',
+                     'BETA': 'Β',
+                     'beta': 'β',
+                     'Gamma': 'Γ',
+                     'GAMMA': 'Γ',
+                     'gamma': 'γ',
+                     'Delta': 'Δ',
+                     'DELTA': 'Δ',
+                     'delta': 'δ',
+                     'Epsilon': 'Ε',
+                     'EPSILON': 'Ε',
+                     'epsilon': 'ε',
+                     'Zeta': 'Ζ',
+                     'ZETA': 'Ζ',
+                     'zeta': 'ζ',
+                     'Eta': 'Η',
+                     'ETA': 'Η',
+                     'eta': 'η',
+                     'Theta': 'Θ',
+                     'THETA': 'Θ',
+                     'theta': 'θ',
+                     'Iota': 'Ι',
+                     'IOTA': 'Ι',
+                     'iota': 'ι',
+                     'Kappa': 'Κ',
+                     'KAPPA': 'Κ',
+                     'kappa': 'κ',
+                     'Lambda': 'Λ',
+                     'LAMBDA': 'Λ',
+                     'lamda': 'λ',
+                     'lambda': 'λ',
+                     'Mu': 'Μ',
+                     'MU': 'Μ',
+                     'mu': 'μ',
+                     'Nu': 'Ν',
+                     'NU': 'Ν',
+                     'nu': 'ν',
+                     'Xi': 'Ξ',
+                     'XI': 'Ξ',
+                     'xi': 'ξ',
+                     'Omicron': 'Ο',
+                     'OMICRON': 'Ο',
+                     'omicron': 'ο',
+                     'Pi': 'Π',
+                     'PI': 'Π',
+                     'pi': 'π',
+                     'Rho': 'Ρ',
+                     'RHO': 'Ρ',
+                     'rho': 'ρ',
+                     'Sigma': 'Σ',
+                     'SIGMA': 'Σ',
+                     'sigma': 'σ',
+                     'Tau': 'Τ',
+                     'TAU': 'Τ',
+                     'tau': 'τ',
+                     'Upsilon': 'Υ',
+                     'UPSILON': 'Υ',
+                     'upsilon': 'υ',
+                     'Phi': 'Φ',
+                     'PHI': 'Φ',
+                     'phi': 'φ',
+                     'Chi': 'Χ',
+                     'CHI': 'Χ',
+                     'chi': 'χ',
+                     'Psi': 'Ψ',
+                     'PSI': 'Ψ',
+                     'psi': 'ψ',
+                     'Omega': 'Ω',
+                     'OMEGA': 'Ω',
+                     'omega': 'ω'}
+            
+    @staticmethod
+    def sympystr(name):
+        m = re.compile("([a-zA-Z]+)(?:(\d+)|_(\w+))?").fullmatch(name)
+        if m: 
+            x = m.group(1)
+            if x in Symbol.greek_letters:
+                x = Symbol.greek_letters[x]
+            d = m.group(2)
+            if d is not None:
+                x += d
+            else:
+                a = m.group(3)
+                if a is not None:
+                    if a in Symbol.greek_letters:
+                        a = Symbol.greek_letters[a]
+                    x += '_' + a                    
+                
+            return x
+        return name  
+        
+    def _sympystr(self, _):   
+        return Symbol.sympystr(self.name)     
+
+    
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
 
