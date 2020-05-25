@@ -43,7 +43,7 @@ def prove(Eq):
     Eq.equation = Eq[-2].this.rhs.subs(Eq[-1])
 
     k = Eq.equation.lhs.limits[0][0]
-    k = Symbol(k.name, integer=True, domain=Interval(0, n, right_open=True))
+    k = Symbol(k.name, domain=Interval(0, n, right_open=True, integer=True))
     
     Eq << Eq[0].subs(n, k)
     Eq << Difference[x, n - k](Eq[-1])

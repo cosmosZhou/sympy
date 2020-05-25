@@ -334,6 +334,17 @@ class Set(Basic):
         """
         other = sympify(other, strict=True)
         ret = sympify(self._contains(other))
+        if ret is not None and ret.is_BooleanAtom:
+            return ret
+            
+        domain_assumed = other.domain_assumed
+        if domain_assumed :
+            intersect = domain_assumed & self
+            if not intersect:
+                return S.false
+            if intersect == domain_assumed:
+                return S.true        
+        
         if ret is None:
             ret = Contains(other, self, evaluate=False)
         return ret
@@ -1071,20 +1082,30 @@ class Interval(Set, EvalfMixin):
             return set((new_a, b))
         if self.is_integer:
             drapeau = False
-            end = self.end + 1
-            if not self.right_open and sympify(b.contains(end)) is S.true:
-                drapeau = True
-            else:
-                end = self.end
+            end = self.end
+            right_open = self.right_open
+            if right_open:
+                if end in b:
+                    drapeau = True
+                    right_open = False
+            else:                
+                if end + 1 in b:
+                    drapeau = True
+                    end += 1                                   
 
-            start = self.start - 1
-            if not self.left_open and sympify(b.contains(start)) is S.true:
-                drapeau = True
-            else:
-                start = self.start
+            start = self.start
+            left_open = self.left_open
+            if left_open:
+                if start in b:
+                    drapeau = True
+                    left_open = False
+            else:                
+                if start - 1 in b:
+                    drapeau = True
+                    start -= 1                                    
 
             if drapeau:
-                new_a = Interval(start, end, self.left_open, self.right_open, True)
+                new_a = Interval(start, end, left_open, right_open, True)
                 return set((new_a, b))
 
     def __new__(cls, start, end, left_open=False, right_open=False, integer=False, real=True):
@@ -1536,6 +1557,7 @@ class Interval(Set, EvalfMixin):
     def handle_finite_sets(self, unk):
         if all(arg.domain in self for arg in unk.args):
             return unk
+
 
 class Union(Set, LatticeOp, EvalfMixin):
     """
@@ -2344,6 +2366,7 @@ class EmptySet(with_metaclass(Singleton, Set)):
 
     def _sympystr(self, _):
         return 'Ø'
+
 
 class UniversalSet(with_metaclass(Singleton, Set)):
     """

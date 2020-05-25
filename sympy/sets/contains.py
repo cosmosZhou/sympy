@@ -159,7 +159,7 @@ class Contains(BooleanFunction):
                     index = e.args.index(S.NegativeOne)
                     s += S.One
                     e += S.One
-                    return self.func(e, s, evaluate=False)
+                    return self.func(e, s, evaluate=False, equivalent=self)
                 except:
                     ...
                     
@@ -168,9 +168,17 @@ class Contains(BooleanFunction):
                     index = e.args.index(S.One)
                     s += S.NegativeOne
                     e += S.NegativeOne
-                    return self.func(e, s, evaluate=False)
+                    return self.func(e, s, evaluate=False, equivalent=self)
                 except:
                     ...
+        
+        if s.is_Complement and s.args[1].is_FiniteSet and len(s.args[1]) == 1:
+            domain_assumed = e.domain_assumed
+            if domain_assumed and domain_assumed == s.args[0]:
+                _e, *_ = s.args[1].args
+                return Unequality(e, _e, equivalent=self)
+                    
+            
         return self
 
 # this assertion is useless!
@@ -238,9 +246,10 @@ class Contains(BooleanFunction):
             x, X = self.args
             y, Y = other.args
             if x == y:                
-                return self.func(x, X | Y)
+                return self.func(x, X | Y, given=[self, other]).simplify()
             
         return BooleanFunction.__or__(self, other)
+
         
 class NotContains(BooleanFunction):
     """
@@ -391,9 +400,10 @@ class NotContains(BooleanFunction):
             x, X = self.args
             y, Y = other.args
             if x == y:                
-                return self.func(x, X & Y)
+                return self.func(x, X & Y, given=[self, other])
             
         return BooleanFunction.__or__(self, other)
+
     
 Contains.invert_type = NotContains
 

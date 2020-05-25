@@ -20,7 +20,7 @@ def apply(x, w=None):
     else:
         assert w[i, j] == Shift(n, i, j)
     
-    return Equality(x @ w[i, j] @ w[i, j], x)
+    return Equality(x @ w[i, j] @ w[i, j].T, x)
 
 
 @check
@@ -36,9 +36,13 @@ def prove(Eq):
     Eq << identity(x @ w[i, j]).subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1] @ w[i, j]
+    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
+    
+    Eq << Eq[-1] @ w[i, j].T
     
     Eq << Eq[-1].this.rhs.expand()    
+    
+    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
 
 
 if __name__ == '__main__':

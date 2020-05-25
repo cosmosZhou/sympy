@@ -1063,6 +1063,14 @@ class Equality(Relational):
     
     T = property(transpose, None, None, 'Matrix transposition.')
 
+    def __and__(self, other):
+        """Overloading for & operator"""
+        if isinstance(other, (StrictLessThan, StrictGreaterThan)):
+            if set(self.args) == set(other.args):
+                return S.false.copy(given=[self, other])
+
+        return Relational.__and__(self, other)
+
     
 Eq = Equality
 
@@ -1170,6 +1178,22 @@ class Unequality(Relational):
             return NotSubset(A, B, equivalent=self).simplify()
              
         return super(Unequality, self).simplify()
+
+    def __and__(self, other):
+        """Overloading for & operator"""
+        if isinstance(other, LessThan):
+            if set(self.args) == set(other.args):
+                return StrictLessThan(other.lhs, other.rhs, given=[self, other])
+
+        if isinstance(other, GreaterThan):
+            if set(self.args) == set(other.args):
+                return StrictGreaterThan(other.lhs, other.rhs, given=[self, other])
+
+        if isinstance(other, (StrictLessThan, StrictGreaterThan)):
+            if set(self.args) == set(other.args):
+                return other
+
+        return Relational.__and__(self, other)
 
     
 Ne = Unequality
@@ -2100,6 +2124,26 @@ class StrictGreaterThan(_Greater):
         if self.rhs.is_zero:
             return self.lhs
 
+    def __and__(self, other):
+        if isinstance(other, Unequality) :
+            if set(self.args) == set(other.args):
+                return self
+        if isinstance(other, Equality) :
+            if set(self.args) == set(other.args):
+                return S.false.copy(given=[self, other])
+            
+        return _Greater.__and__(self, other)
+
+    def __or__(self, other):
+        if isinstance(other, Unequality) :
+            if set(self.args) == set(other.args):
+                return other
+        if isinstance(other, Equality) :
+            if set(self.args) == set(other.args):
+                return GreaterThan(self.lhs, self.rhs, given=[self, other])
+            
+        return _Greater.__or__(self, other)
+
 
 Gt = StrictGreaterThan
 LessThan.invert_type = StrictGreaterThan
@@ -2209,6 +2253,26 @@ class StrictLessThan(_Less):
     def is_positive_relationship(self):
         if self.lhs.is_zero:
             return self.rhs
+
+    def __and__(self, other):
+        if isinstance(other, Unequality) :
+            if set(self.args) == set(other.args):
+                return self
+        if isinstance(other, Equality) :
+            if set(self.args) == set(other.args):
+                return S.false.copy(given=[self, other])
+            
+        return _Less.__and__(self, other)
+
+    def __or__(self, other):
+        if isinstance(other, Unequality) :
+            if set(self.args) == set(other.args):
+                return other
+        if isinstance(other, Equality) :
+            if set(self.args) == set(other.args):
+                return LessThan(self.lhs, self.rhs, given=[self, other])
+            
+        return _Less.__or__(self, other)
 
 
 Lt = StrictLessThan

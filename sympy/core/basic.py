@@ -2153,6 +2153,10 @@ class Basic(with_metaclass(ManagedProperties)):
         
     def handle_finite_sets(self, _):
         ...
+        
+    @property
+    def domain_assumed(self):
+        ...
     
 class Atom(Basic):
     """

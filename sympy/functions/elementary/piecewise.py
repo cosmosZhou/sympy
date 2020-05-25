@@ -310,7 +310,7 @@ class Piecewise(Function):
             # collect successive e,c pairs when exprs or cond match
             if newargs:
                 if newargs[-1].expr == expr:
-                    orcond = Or(cond, newargs[-1].cond)
+                    orcond = cond | newargs[-1].cond
                     if isinstance(orcond, (And, Or)):
                         orcond = distribute_and_over_or(orcond)
                     newargs[-1] = ExprCondPair(expr, orcond)
@@ -928,6 +928,7 @@ class Piecewise(Function):
         from sympy.core.basic import _aresame
         
         for e, c in self.args:
+            #l in (j; i], old = l in [0; n), new = l in [0; j)∪(i; n)
             _c = c._subs(old, new)
             if _c.is_BooleanFalse:
                 hit = True
@@ -1115,6 +1116,37 @@ class Piecewise(Function):
                 dtype = _dtype
         return dtype
 
+    @staticmethod
+    def simplify_Equality(e0, e1, lhs, rhs):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        if lhs.is_integer and rhs.is_integer:
+            eq = KroneckerDelta(lhs, rhs)
+            e1 = e1._subs(eq, S.Zero)
+            e0 = e0._subs(eq, S.One)
+
+        _e0 = e0._subs(lhs, rhs)
+        if {e1, e1._subs(lhs, rhs), e1._subs(rhs, lhs)} & {e0, _e0, e0._subs(rhs, lhs)}:
+            return e1
+        
+        if not e0.is_set and lhs.is_integer and rhs.is_integer:                    
+#                     e0 * KroneckerDelta(old, new) + e1 * (1 - KroneckerDelta(old, new)) 
+            return (e1 + (e0 - e1)._subs(lhs, rhs) * KroneckerDelta(lhs, rhs)).simplify()
+        if e1.is_Complement:
+            _A, B = e1.args
+            if _e0 == e0:
+                has_lhs, has_rhs = B._has(lhs), B._has(rhs)
+                if has_lhs and not has_rhs:
+                    return e0 - (B - B._subs(lhs, rhs))
+                if not has_lhs and has_rhs:
+                    return e0 - (B - B._subs(rhs, lhs))
+                
+        if e0.is_EmptySet:
+            has_lhs, has_rhs = e1._has(lhs), e1._has(rhs)
+            if not has_lhs and has_rhs:
+                return e1 - e1._subs(rhs, lhs)
+            if has_lhs and not has_rhs:
+                return e1 - e1._subs(lhs, rhs)        
+        
     def simplify(self, deep=False, wrt=None):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         if deep:
@@ -1137,8 +1169,7 @@ class Piecewise(Function):
                 need_swap = False
                 for i, (f, cond) in enumerate(self.args):
                     domain = (univeralSet - union) & wrt.domain_conditioned(cond)
-                    union |= domain
-                    
+                    union |= domain                    
                     
                     if f._has(wrt):
                         if domain.is_FiniteSet and len(domain) == 1:
@@ -1194,41 +1225,16 @@ class Piecewise(Function):
             if deep:
                 e0 = e0.simplify(deep=deep)
                 e1 = e1.simplify(deep=deep)
-            if c0.is_Equality:                
-                lhs, rhs = c0.args
-                _e1 = e1._subs(lhs, rhs) 
-                _e0 = e0._subs(lhs, rhs)
-                if _e0 == _e1 or e0 == _e1 or _e0 == e1:
-                    return e1
-                if not e0.is_set and lhs.is_integer and rhs.is_integer:                    
-#                     e0 * KroneckerDelta(old, new) + e1 * (1 - KroneckerDelta(old, new)) 
-                    return (e1 + (e0 - e1)._subs(lhs, rhs) * KroneckerDelta(lhs, rhs)).simplify()
-                if e1.is_Complement:
-                    _A, B = e1.args
-                    if _e0 == e0:
-                        has_lhs, has_rhs = B._has(c0.lhs), B._has(c0.rhs)
-                        if has_lhs and not has_rhs:
-                            return e0 - (B - B._subs(c0.lhs, c0.rhs))
-                        if not has_lhs and has_rhs:
-                            return e0 - (B - B._subs(c0.rhs, c0.lhs))
-#                     elif e0 == _A:#Piecewise(({x[j]}, j == i), ({x[j]} \ {x[i]}, True))
-#                         if B == e0._subs(c0.lhs, c0.rhs) or B == e0._subs(c0.rhs, c0.lhs):
-#                             e1 = S.EmptySet
-#                             return self.func((e0, c0), (e1, c1))
+            if c0.is_Equality:
+                res = Piecewise.simplify_Equality(e0, e1, *c0.args)
+                if res is not None:
+                    return res                
                                          
             if c0.is_Unequality:
-                _c0 = c0.invert()
-                old, new = _c0.args
-                _e1 = e1._subs(old, new) 
-                _e0 = e0._subs(old, new)
-                if _e0 == _e1 or e0 == _e1 or _e0 == e1:
-                    return e0
-                if e1.is_EmptySet:
-                    has_lhs, has_rhs = e0._has(c0.lhs), e0._has(c0.rhs)
-                    if not has_lhs and has_rhs:
-                        return e0 - e0._subs(c0.rhs, c0.lhs)
-                    if has_lhs and not has_rhs:
-                        return e0 - e0._subs(c0.lhs, c0.rhs)
+                res = Piecewise.simplify_Equality(e1, e0, *c0.args)
+                if res is not None:
+                    return res     
+                
             from sympy.sets.contains import NotContains
             if c0.is_Contains:
                 x, A = c0.args

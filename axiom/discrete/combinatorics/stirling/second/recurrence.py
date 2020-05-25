@@ -111,7 +111,7 @@ def prove(Eq):
 
     Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = s1_quote_definition.split()
 
-    j = Symbol('j', integer=True, domain=Interval(0, k))
+    j = Symbol('j', domain=Interval(0, k, integer=True))
 
     x_quote = IndexedBase("x'", (k + 1,), dtype=dtype.integer,
                      definition=Ref[i:k + 1](Piecewise((Union(x_tuple[i], {n}) , Equality(i, j)), (x_tuple[i], True))))
@@ -595,6 +595,7 @@ def prove(Eq):
     Eq << Equality(Eq[-1].lhs.function, Eq[-1].rhs.args[0], plausible=True)
      
     Eq << Eq[-1].summation(*Eq[-2].lhs.limits)
+
 
 if __name__ == '__main__':
     prove(__file__)

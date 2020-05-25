@@ -897,7 +897,7 @@ class ExprWithLimits(Expr):
 
                 if len(args) == 2 and args[0].is_integer:
                     assert args[1].is_integer or args[1].is_infinite
-                    _x = Symbol(x.name, integer=x.is_integer, domain=Interval(*args, integer=True))
+                    _x = Symbol(x.name, domain=Interval(*args, integer=True))
                     function = function._subs(x, _x)
                     limits.append(Tuple(_x, *args))
                 else:

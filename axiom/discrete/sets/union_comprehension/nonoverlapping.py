@@ -55,7 +55,7 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     k = Symbol('k', integer=True, positive=True)
     
-    j = Symbol('j', integer=True, domain=Interval(0, k, integer=True) - {i})
+    j = Symbol('j', domain=Interval(0, k, integer=True) - {i})
     
     assert j <= k
 

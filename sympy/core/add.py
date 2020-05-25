@@ -1171,7 +1171,7 @@ class Add(Expr, AssocOp):
             args = [*self.args]
             args.remove(piecewise)
             this = self.func(*args, evaluate=False)
-            return piecewise.func(*((e + this, c) for e, c in piecewise.args))
+            return piecewise.func(*((e + this, c) for e, c in piecewise.args)).simplify()
                  
         for i in range(1, len(piecewise)):
             new = piecewise[i - 1].try_add(piecewise[i])
