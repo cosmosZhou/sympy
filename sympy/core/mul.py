@@ -1744,6 +1744,32 @@ class Mul(Expr, AssocOp):
     def as_coeff_mmul(self):
         return 1, self
 
+    def simplifyKroneckerDelta(self):
+        for arg in self.args:
+            if arg.is_KroneckerDelta:
+                i, j = arg.args
+                if i == 0 and j in self.args or j == 0 and i in self.args:
+                    return S.Zero                     
+                
+        this = self.expand()
+        if this.is_Add:
+            args = [*this.args]
+            hit = False
+            for i, arg in enumerate(this.args):
+                if arg.is_Mul:
+                    _arg = arg.simplifyKroneckerDelta()
+                    if arg != _arg:
+                        args[i] = _arg
+                        hit = True
+            if hit:
+                this = this.func(*args)
+            if this.is_Add:
+                this = this.simplifyKroneckerDelta()
+            if this != self:
+                return this
+            
+        return self
+    
     def simplify(self, deep=False, **kwargs):
         if deep:
             return Expr.simplify(self, deep=True, **kwargs)
@@ -1774,11 +1800,12 @@ class Mul(Expr, AssocOp):
             elif coeff < 0:
                 return S.NegativeInfinity if positive else S.Infinity
 
-        for arg in self.args:
-            if arg.is_KroneckerDelta:
-                i, j = arg.args
-                if i == 0 and j in self.args or j == 0 and i in self.args:
-                    return S.Zero                     
+        from sympy import KroneckerDelta
+        if self._has(KroneckerDelta):
+            this = self.simplifyKroneckerDelta()
+            if this != self:
+                return this
+            
         return self
 
     def as_multiple_limits(self):

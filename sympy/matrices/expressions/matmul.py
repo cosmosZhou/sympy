@@ -82,6 +82,8 @@ class MatMul(MatrixExpr, Mul):
 
     def _entry(self, i, j=None, expand=True, **kwargs):
         if j is None:
+            if len(self.args[0].shape) == 1:
+                return self.args[0] @ self.func(*self.args[1:]).T[i]
             return self.args[0][i] @ self.func(*self.args[1:])            
                 
         from sympy import Dummy, Sum, ImmutableMatrix, Integer
@@ -231,7 +233,7 @@ class MatMul(MatrixExpr, Mul):
 
         return lines
 
-    def simplify(self):
+    def simplify(self, **_):
         from sympy import exp
         if len(self.args) == 2 and all(isinstance(arg, exp) for arg in self.args):
             if len(self.args[0].shape) < len(self.args[1].shape):

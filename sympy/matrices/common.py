@@ -1941,7 +1941,7 @@ class MatrixOperations(MatrixRequired):
         """
         return self.applyfunc(lambda x: x.replace(F, G, map))
 
-    def simplify(self, ratio=1.7, measure=count_ops, rational=False, inverse=False):
+    def simplify(self, ratio=1.7, measure=count_ops, rational=False, inverse=False, **_):
         """Apply simplify to each element of the matrix.
 
         Examples

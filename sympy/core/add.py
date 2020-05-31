@@ -11,7 +11,6 @@ from .operations import AssocOp
 from .cache import cacheit
 from .numbers import ilcm, igcd
 from .expr import Expr
-from sympy.core.basic import preorder_traversal
 
 # Key for sorting commutative args in canonical order
 _args_sortkey = cmp_to_key(Basic.compare)
@@ -1104,37 +1103,18 @@ class Add(Expr, AssocOp):
 
         return (Float(re_part)._mpf_, Float(im_part)._mpf_)
 
-    def simplify(self, deep=False, **kwargs):                    
-        this = self.simplifyPiecewise()
-        if this is not self:
-            if deep:
-                return this.simplify(deep=True)
-            return this         
-
-        this = self.simplifyKroneckerDelta()
-        if this is not self:
-            return this
-
-        this = self.simplifySummations()
-        if this is not self:
-            return this
-        
-        if deep:
-            this = Expr.simplify(self, deep=True, **kwargs)
-            if this is not self:
-                return this
-            
-        return self             
-        
     def simplifyKroneckerDelta(self):        
         dic = {}
         from sympy import KroneckerDelta
+        from sympy.core.basic import preorder_traversal
         for expr in preorder_traversal(self):
             if isinstance(expr, KroneckerDelta):
                 if expr not in dic:
                     dic[expr] = 0    
                 dic[expr] += 1
+        
         dic = {key: value for key, value in dic.items() if value > 1}
+            
         if not dic:
             return self
         
@@ -1153,13 +1133,43 @@ class Add(Expr, AssocOp):
                 coefficent += p.nth(d)
 
             i, j = delta.args
-            if coefficent._subs(j, i) == 0:                    
-                this = p.nth(0)
-                continue
+            _coefficent = coefficent._subs(j, i)
                 
-            if degree >= 1:
-                this = coefficent * delta + p.nth(0)
+            if _coefficent == coefficent:
+                if degree == 1:
+                    continue
+            else:
+                coefficent = _coefficent
+                if coefficent.is_Add:
+                    coefficent = coefficent.simplifyKroneckerDelta()     
+                        
+            this = coefficent * delta + p.nth(0)
+            if this.is_Add:
+                this = this.simplifyKroneckerDelta()
+            
         return this
+
+    def simplify(self, deep=False, **kwargs):                    
+        this = self.simplifyPiecewise()
+        if this is not self:
+            if deep:
+                return this.simplify(deep=True)
+            return this         
+
+        this = self.simplifyKroneckerDelta()
+        if this != self:
+            return this
+
+        this = self.simplifySummations()
+        if this is not self:
+            return this
+        
+        if deep:
+            this = Expr.simplify(self, deep=True, **kwargs)
+            if this is not self:
+                return this
+            
+        return self             
             
     def simplifyPiecewise(self):     
         piecewise = [arg for arg in self.args if arg.is_Piecewise]

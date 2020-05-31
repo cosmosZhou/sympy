@@ -1117,6 +1117,51 @@ class Piecewise(Function):
         return dtype
 
     @staticmethod
+    def logic_and(x, domain):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        eq = 1
+        for arg in domain.args:
+            eq *= 1 - KroneckerDelta(x, arg)
+        return eq        
+    
+    def asKroneckerDelta(self):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        e, c = self.args[0]
+        if c.is_Equality:
+            eq = KroneckerDelta(*c.args)
+        elif c.is_Unequality:
+            eq = 1 - KroneckerDelta(*c.args)
+        elif c.is_Contains:
+            x, domain = c.args 
+            if not domain.is_FiniteSet:
+                domain = x.domain - domain
+                if not domain.is_FiniteSet:
+                    return self
+                eq = self.logic_and(x, domain)
+            else:
+                eq = 1 - self.logic_and(x, domain)
+        elif c.is_NotContains:
+            x, domain = c.args 
+            if not domain.is_FiniteSet:
+                domain = x.domain - domain
+                if not domain.is_FiniteSet:
+                    return self
+                eq = 1 - self.logic_and(x, domain)
+            else:
+                eq = self.logic_and(x, domain)
+        else:
+            return self
+        if len(self.args) == 2:
+            rest, _ = self.args[1]
+            if rest.is_Piecewise:
+                rest = rest.asKroneckerDelta()
+        else:
+            rest = self.func(*self.args[1:]).asKroneckerDelta()
+        if e.is_Piecewise:
+            e = e.asKroneckerDelta()
+        return (e * eq + rest * (1 - eq)).simplify()
+                 
+    @staticmethod
     def simplify_Equality(e0, e1, lhs, rhs):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         if lhs.is_integer and rhs.is_integer:

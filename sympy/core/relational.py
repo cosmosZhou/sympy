@@ -57,7 +57,7 @@ class Relational(Boolean, Expr, EvalfMixin):
 
     is_Relational = True
 
-    _op_priority = 12
+    _op_priority = 12 #higher than Expr
     # ValidRelationOperator - Defined below, because the necessary classes
     #   have not yet been defined
 
@@ -941,6 +941,24 @@ class Equality(Relational):
             return Exists(Eq(x, expr), (x,))
 
     def __getitem__(self, indices):
+        from sympy.concrete.expr_with_limits import Forall
+        if isinstance(indices, slice):
+            x, *args = indices.start, indices.stop, indices.step
+            if x.domain_assumed is not None:
+                x = x.copy(integer = x.is_integer)
+            m = self.lhs.shape[0]
+            is_equivalent = False
+            if len(args) == 2:
+                if args[0] == 0 and args[1] == m:
+                    is_equivalent = True
+            else:
+                assert len(args) == 1
+                if args[0] == m:
+                    is_equivalent = True
+            if is_equivalent :
+                return self.func(self.lhs[x], self.rhs[x], equivalent=self)
+            else:
+                Forall(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
         return self.func(self.lhs[indices], self.rhs[indices], given=self)
 
     @property

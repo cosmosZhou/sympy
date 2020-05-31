@@ -70,7 +70,10 @@ class Transpose(MatrixExpr):
     def shape(self):
         return self.arg.shape[::-1]
 
-    def _entry(self, i, j, expand=False, **kwargs):
+    def _entry(self, i, j=None, expand=False, **kwargs):
+        if j is None:
+            from sympy import Indexed
+            return Indexed(self, i)
         if hasattr(self.arg, '_entry'):
             return self.arg._entry(j, i, expand=expand, **kwargs)
         else:
@@ -97,7 +100,7 @@ class Transpose(MatrixExpr):
         lines = self.args[0]._eval_derivative_matrix_lines(x)
         return [i.transpose() for i in lines]
 
-    def simplify(self):
+    def simplify(self, **_):
         from sympy.core.function import Function
         from sympy.core.mul import Mul
         f = self.arg

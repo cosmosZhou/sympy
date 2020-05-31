@@ -3,18 +3,20 @@ from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible, Ref, identity
 from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
-from sympy.core.numbers import oo, Zero
+from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
+from sympy.concrete.expr_with_limits import Forall
+from axiom import Algebre
 
 
 @plausible
 def apply(n):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
-    
+    assert n >= 2
     w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
-    return Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j])
+    return Forall(Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) - i.set))
 
 
 @check
@@ -23,48 +25,41 @@ def prove(Eq):
     Eq << apply(n)
     
     i, j = Eq[-1].rhs.indices
-    k = Symbol('k', domain=Interval(0, n - 1, integer=True))    
-    l = Symbol('l', domain=Interval(0, n - 1, integer=True))
     
-    lhs = Interval(1, n - 1, integer=True) - {i}
-    rhs = i.set - Zero().set
-    print(lhs & rhs)
-    
-#     Eq << Eq[-1][k]
-#     
-#     Eq << Eq[0][k]
-#      
-#     Eq << Eq[-1].subs(i, 0).subs(j, i)
-#      
-#     Eq << Eq[0].subs(i, 0)
-#      
-#     Eq << Eq[-2] @ Eq[-1]
-#     
-# #     Eq << Eq[-1].subs(k, i)
-#     
-#     Eq << Eq[-1].this.rhs.expand()
-#     
-#     Eq << Eq[0].subs(i, 0).subs(j, i)
-#     
-#     Eq << Eq[-2] @ Eq[-1]    
-#     
-#     Eq << Eq[-1].this.rhs.expand()
-# 
-# #     Eq << Eq[2].subs(Eq[-1]).subs(Eq[3])[l]
-
     w = Eq[0].lhs.base
-    I = Ref[i:n](i)
-    Eq << identity(w[0, i] @ I).subs(Eq[0].subs(i, 0).subs(j, i))
+    
+    p = Symbol('p')
+    
+    x = Ref[i:n](p ** i)
+    Eq << identity(w[0, i] @ x).subs(Eq[0].subs(i, 0).subs(j, i))
+    Eq << Eq[-1].this.rhs.expand().simplify(deep=True)
+    
+    Eq << w[0, j] @ Eq[-1]
+    
     Eq << Eq[-1].this.rhs.expand()
+    
+    Eq << Eq[-1].forall(j, Interval(1, n - 1, integer=True) - i.set)
+    
+    Eq << Eq[-1].this.function.rhs.simplify(deep=True)
     
     Eq << w[0, i] @ Eq[-1]
     
-    Eq << Eq[-1].this.rhs.subs(Eq[0].subs(i, 0).subs(j, i))
+    Eq << Eq[-1].this.function.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.simplify(deep=True)
+
+    Eq << Eq[-1].this.function.rhs.function.asKroneckerDelta()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    Eq.www_expansion = Eq[-1].this.simplify(deep=True)
     
+    Eq << identity(w[i, j] @ x).expand().simplify(deep=True)
+    
+    Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
+    Eq << Eq[-1].this.rhs.function.expand()
+
+    Eq << Eq.www_expansion.subs(Eq[-1].reversed)
+
+    Eq << Eq[-1].apply(Algebre.matrix.independence.rmatmul_equality)
 
 if __name__ == '__main__':
     prove(__file__)

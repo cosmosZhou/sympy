@@ -1134,7 +1134,7 @@ class Integral(AddWithLimits):
             return expr.func(*[simplify(i, **kwargs) for i in expr.args])
         return expr.simplify(**kwargs)
 
-    def simplify(self):
+    def simplify(self, **_):
         if len(self.limits) != 1:
             return self
         limit = self.limits[0]

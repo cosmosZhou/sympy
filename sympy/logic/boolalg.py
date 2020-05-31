@@ -124,14 +124,9 @@ class Boolean(Basic):
         if deep:
             hit = False
             args = []
-            for arg in self.args:
-                try:
-                    _arg = arg.simplify(deep=True)
-                except Exception as e:
-                    print(type(arg))
-                    print(arg)
-                    raise e
-
+            for arg in self.args:                
+                _arg = arg.simplify(deep=True)
+                
                 if _arg != arg:
                     hit = True
                 args.append(_arg)
@@ -165,10 +160,13 @@ class Boolean(Basic):
             domain = Interval(*args, integer=x.is_integer)
         elif len(args) == 1:
             domain = args[0]
+            if not domain.is_set:
+                domain = x.domain_conditioned(domain)
         else:
             _x = x.copy(integer=x.is_integer)
             return Forall(self._subs(x, _x), (_x, x.domain), equivalent=self).simplify()
 
+        
         if domain in x.domain and x.domain not in domain:
             if self.is_Forall:
                 function = self.function.copy()

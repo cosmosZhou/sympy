@@ -752,7 +752,7 @@ class MutableDenseMatrix(DenseMatrix, MatrixBase):
         for k in range(0, self.cols):
             self[i, k], self[j, k] = self[j, k], self[i, k]
 
-    def simplify(self, ratio=1.7, measure=count_ops, rational=False, inverse=False):
+    def simplify(self, ratio=1.7, measure=count_ops, rational=False, inverse=False, **_):
         """Applies simplify to the elements of a matrix in place.
 
         This is a shortcut for M.applyfunc(lambda x: simplify(x, ratio, measure))

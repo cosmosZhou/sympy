@@ -1927,7 +1927,7 @@ class Derivative(Expr):
 
         return self
 
-    def simplify(self):        
+    def simplify(self, **_):        
         if len(self.variable_count) > 1:
             return self
         x, n = self.variable_count[0]
@@ -2734,7 +2734,7 @@ class Difference(Expr):
             back = n - 1
         return self.func(self.func(self.expr, x, back).simplify(), x, front)
 
-    def simplify(self):
+    def simplify(self, **_):
         x, n = self.variable_count
 
         import sympy

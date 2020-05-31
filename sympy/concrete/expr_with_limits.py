@@ -1767,7 +1767,7 @@ class Minimum(ExprWithLimits):
         l = [self._print(o) for o in expr.args]
         return "Min[%s](%s)" % ", ".join(l)
 
-    def simplify(self):
+    def simplify(self, **_):
         if not self.limits:
             return self
         (x, *_), *_ = self.limits
@@ -2499,7 +2499,7 @@ class Maximum(ExprWithLimits):
         l = [self._print(o) for o in expr.args]
         return "Max[%s](%s)" % ", ".join(l)
 
-    def simplify(self):
+    def simplify(self, **_):
         if not self.limits:
             return self
         (x, *_), *_ = self.limits
@@ -4472,6 +4472,7 @@ class ConditionalBoolean(Boolean):
     is_ConditionalBoolean = True
     __slots__ = []
 
+    _op_priority = 12.1 #higher than Relational
     # this will change the default new operator!
     def __new__(cls, function, *symbols, **assumptions):
         if function.is_BooleanAtom:
@@ -4484,6 +4485,17 @@ class ConditionalBoolean(Boolean):
     def __mul__(self, rhs):
         return self.this.function.__mul__(rhs)
         
+    def __matmul__(self, rhs):
+        return self.this.function.__matmul__(rhs)
+    
+    def __rmatmul__(self, rhs):
+        return self.this.function.__rmatmul__(rhs)
+    
+    def transpose(self):
+        return self.this.function.transpose()
+    
+    T = property(transpose, None, None, 'Matrix transposition.')
+    
     def inverse(self):
         return self.this.function.inverse()
 
@@ -4909,11 +4921,7 @@ class ConditionalBoolean(Boolean):
             for x, domain in limits_dict.items():
                 if domain.is_set and domain.is_integer:
                     _x = x.copy(domain=domain)
-                    try:
-                        function = function._subs(x, _x).simplify(deep=True)
-                    except Exception as e:
-                        print(function._subs(x, _x))
-                        raise e
+                    function = function._subs(x, _x).simplify(deep=True)
                     reps[_x] = x
             if reps:
                 for _x, x in reps.items():

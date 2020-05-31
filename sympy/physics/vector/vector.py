@@ -671,7 +671,7 @@ class Vector(object):
         from sympy.physics.vector import time_derivative
         return time_derivative(self, otherframe)
 
-    def simplify(self):
+    def simplify(self, **_):
         """Returns a simplified Vector."""
         d = {}
         from sympy import simplify

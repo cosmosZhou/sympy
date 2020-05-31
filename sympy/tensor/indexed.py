@@ -467,8 +467,11 @@ class Indexed(Expr):
             
         from sympy.core.function import FunctionClass
         
-        if not isinstance(pattern, (FunctionClass, ManagedProperties)) and self.base.definition is not None:
-            return self.base.definition[self.indices]._has(pattern)
+        if not isinstance(pattern, (FunctionClass, ManagedProperties)):
+            if self.base.definition is not None:
+                return self.base.definition[self.indices]._has(pattern)
+            if self.base._has(pattern):
+                return True
         
         return False
 

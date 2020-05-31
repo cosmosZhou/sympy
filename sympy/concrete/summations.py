@@ -1014,7 +1014,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 a, *_ = A
                 b, *_ = B
                 if a.is_integer and b.is_integer:
-                    return (1 - KroneckerDelta(a, b)) * self.function._subs(self.variable, a)                
+#                     f(a)*(1 - δ[a, b]) = f(a) - f(b)*δ[a, b], if f(b) = 0, then f(a) - f(a)*δ[a, b] = f(a)
+                    return ((1 - KroneckerDelta(a, b)) * self.function._subs(self.variable, a)).simplify()
         
     def simplify(self, deep=False, **kwargs):
         from sympy import Contains

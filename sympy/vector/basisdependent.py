@@ -72,7 +72,7 @@ class BasisDependent(Expr):
 
     n = evalf
 
-    def simplify(self, ratio=1.7, measure=count_ops, rational=False, inverse=False):
+    def simplify(self, ratio=1.7, measure=count_ops, rational=False, inverse=False, **_):
         """
         Implements the SymPy simplify routine for this quantity.
 

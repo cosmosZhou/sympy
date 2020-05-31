@@ -804,7 +804,7 @@ class log(Function):
             return Add(*(self.func(arg).simplify() for arg in self.arg.args))
         return self
 
-    def simplify(self):
+    def simplify(self, **_):
         from sympy import exp
         arg = self.arg
         if isinstance(arg, exp):
@@ -964,7 +964,7 @@ class softmax(Function):
     def eval(cls, arg):
         ...
 
-    def simplify(self):
+    def simplify(self, **_):
         return self
 
     def __getitem__(self, index):

@@ -512,7 +512,7 @@ class Dyadic(object):
         from sympy.physics.vector.functions import time_derivative
         return time_derivative(self, frame)
 
-    def simplify(self):
+    def simplify(self, **_):
         """Returns a simplified Dyadic."""
         out = Dyadic(0)
         from sympy import simplify

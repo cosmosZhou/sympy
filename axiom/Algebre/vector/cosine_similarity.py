@@ -6,6 +6,8 @@ from sympy.sets.sets import Interval
 
 @plausible
 def apply(x, y):
+    assert x.shape == y.shape
+    assert len(x.shape) == 1
     return Equality(x @ y, y @ x)
 
 

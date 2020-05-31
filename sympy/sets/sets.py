@@ -1558,6 +1558,17 @@ class Interval(Set, EvalfMixin):
         if all(arg.domain in self for arg in unk.args):
             return unk
 
+    def _hashable_content(self):
+        """Return a tuple of information about self that can be used to
+        compute the hash. If a class defines additional attributes,
+        like ``name`` in Symbol, then this method should be updated
+        accordingly to return such relevant attributes.
+
+        Defining more than _hashable_content is necessary if __eq__ has
+        been defined by a class. See note about this in Basic.__eq__."""
+        if self.is_integer:
+            return (self.min(), self.max(), S.false, S.false, True)
+        return self._args
 
 class Union(Set, LatticeOp, EvalfMixin):
     """
@@ -2170,7 +2181,9 @@ class Complement(Set, EvalfMixin):
         if not A & C:
             return A - B
         if B in A:
-            if C in B:
+#             if C in B:
+#                 return (A - B) | C
+            if C in A: #C in B => C in A
                 return (A - B) | C
 #             return (A - B) | (B & C)
 

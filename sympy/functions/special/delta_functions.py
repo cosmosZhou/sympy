@@ -10,7 +10,6 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.polys.polyerrors import PolynomialError
 from sympy.utilities import filldedent
 
-
 ###############################################################################
 ################################ DELTA FUNCTION ###############################
 ###############################################################################
@@ -130,7 +129,7 @@ class DiracDelta(Function):
 
         """
         if argindex == 1:
-            #I didn't know if there is a better way to handle default arguments
+            # I didn't know if there is a better way to handle default arguments
             k = 0
             if len(self.args) > 1:
                 k = self.args[1]
@@ -211,8 +210,8 @@ class DiracDelta(Function):
                 return cls(-arg, k) if k else cls(-arg)
 
     @deprecated(useinstead="expand(diracdelta=True, wrt=x)", issue=12859, deprecated_since_version="1.1")
-    def simplify(self, x):
-        return self.expand(diracdelta=True, wrt=x)
+    def simplify(self, wrt=None, **_):
+        return self.expand(diracdelta=True, wrt=wrt)
 
     def _eval_expand_diracdelta(self, **hints):
         """Compute a simplified representation of the function using
@@ -257,7 +256,7 @@ class DiracDelta(Function):
             the 'wrt' keyword is required as a hint to expand when using the
             DiracDelta hint.'''))
 
-        if not self.args[0].has(wrt) or (len(self.args) > 1 and self.args[1] != 0 ):
+        if not self.args[0].has(wrt) or (len(self.args) > 1 and self.args[1] != 0):
             return self
         try:
             argroots = roots(self.args[0], wrt)
@@ -266,7 +265,7 @@ class DiracDelta(Function):
             darg = abs(diff(self.args[0], wrt))
             for r, m in argroots.items():
                 if r.is_real is not False and m == 1:
-                    result += self.func(wrt - r)/darg.subs(wrt, r)
+                    result += self.func(wrt - r) / darg.subs(wrt, r)
                 else:
                     # don't handle non-real and if m != 1 then
                     # a polynomial will have a zero in the derivative (darg)
@@ -369,7 +368,6 @@ class DiracDelta(Function):
     def _sage_(self):
         import sage.all as sage
         return sage.dirac_delta(self.args[0]._sage_())
-
 
     def _sympystr(self, p):
         return 'δ(%s)' % ', '.join(p._print(arg) for arg in self.args)
@@ -516,7 +514,7 @@ class Heaviside(Function):
         elif arg is S.NaN:
             return S.NaN
         elif fuzzy_not(im(arg).is_zero):
-            raise ValueError("Function defined only for Real Values. Complex part: %s  found in %s ." % (repr(im(arg)), repr(arg)) )
+            raise ValueError("Function defined only for Real Values. Complex part: %s  found in %s ." % (repr(im(arg)), repr(arg)))
 
     def _eval_rewrite_as_Piecewise(self, arg, H0=None, **kwargs):
         """Represents Heaviside in a Piecewise form
@@ -585,7 +583,7 @@ class Heaviside(Function):
         """
         if arg.is_extended_real:
             if H0 is None or H0 == S.Half:
-                return (sign(arg)+1)/2
+                return (sign(arg) + 1) / 2
 
     def _eval_rewrite_as_SingularityFunction(self, args, **kwargs):
         """

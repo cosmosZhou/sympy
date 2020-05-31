@@ -469,7 +469,7 @@ class Product(ExprWithIntLimits):
 
         return Product(expr.function ** e, *limits)
 
-    def simplify(self):
+    def simplify(self, **_):
         if len(self.limits) != 1:
             return self
         limit = self.limits[0]
