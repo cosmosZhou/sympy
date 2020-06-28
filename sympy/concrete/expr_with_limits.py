@@ -238,7 +238,7 @@ class ExprWithLimits(Expr):
     @property
     def atomic_dtype(self):
         return self.function.atomic_dtype
-
+        
     def __new__(cls, function, *symbols, **assumptions):
         function = sympify(function)
         if cls in (Minimum, Maximum, Ref, UnionComprehension):
@@ -255,7 +255,7 @@ class ExprWithLimits(Expr):
                             sym = (x, domain.min(), domain.max())
                     elif len(sym) == 3: 
                         x, *ab = sym
-                        if 'domain' in x._assumptions:
+                        if x.domain_assumed:
                             _x = x.copy(integer=x.is_integer)
                             function = function._subs(x, _x)
                             sym = (_x, *ab)
@@ -277,6 +277,13 @@ class ExprWithLimits(Expr):
                     limit = Tuple(sym,)
                 if len(limit) == 2 and limit[1].is_BooleanTrue:
                     return function.copy(**assumptions)
+                if len(limit) == 2:
+                    sym, cond = limit
+                    if cond.is_set and sym.domain_assumed:
+                        cond &= sym.domain_assumed
+                        _sym = sym.copy(integer=sym.is_integer)
+                        limit = Tuple(_sym, cond)
+                        function = function._subs(sym, _sym)
                 limits.append(limit)
         else:
             pre = _common_new(cls, function, *symbols, **assumptions)
@@ -822,8 +829,20 @@ class ExprWithLimits(Expr):
             return rv
         return self
 
-    def bisect(self, front=None, back=None, domain=None):
+    def bisect(self, front=None, back=None, domain=None, wrt=None):
         if len(self.limits) != 1:
+            for i, limit in enumerate(self.limits):
+                x, *ab = limit 
+                if x != wrt:
+                    continue
+                universe, *_ = ab
+                limits1 = [*self.limits]
+                limits1[i] = (x, universe & domain)
+                
+                limits2 = [*self.limits]
+                limits2[i] = (x, universe - domain)
+
+                return self.func.operator(self.func(self.function, *limits1).simplify(), self.func(self.function, *limits2), evaluate=False, equivalent=self)
             return self
 
         (x, *args), *_ = self.limits
@@ -834,13 +853,13 @@ class ExprWithLimits(Expr):
 
         if domain is not None:            
             if len(args) == 1:
-                baseset = args[0]
+                universe = args[0]
             elif len(args) == 2:
-                baseset = Interval(*args, integer=True)
+                universe = Interval(*args, integer=True)
             else:
-                baseset = S.UniversalSet
+                universe = S.UniversalSet
 
-            return self.func.operator(self.func(self.function, (x, baseset & domain)).simplify(), self.func(self.function, (x, baseset - domain)), evaluate=False)
+            return self.func.operator(self.func(self.function, (x, universe & domain)).simplify(), self.func(self.function, (x, universe - domain)), evaluate=False)
 
         if len(args) == 2:
             a, b = args
@@ -3426,14 +3445,14 @@ class Ref(ExprWithLimits):
             elif len(argsSimplified) == 1:
                 argsSimplified = argsSimplified[0]
             else:
-                argsSimplified = Mul(*argsSimplified)
+                argsSimplified = exp.func(*argsSimplified)
 
             if not argsNonSimplified:
                 argsNonSimplified = None
             elif len(argsNonSimplified) == 1:
                 argsNonSimplified = argsNonSimplified[0]
             else:
-                argsNonSimplified = Mul(*argsNonSimplified)
+                argsNonSimplified = exp.func(*argsNonSimplified)
 
             return argsSimplified, argsNonSimplified
 
@@ -3468,8 +3487,8 @@ class Ref(ExprWithLimits):
                     _v = Dummy(domain=v.domain_assumed, **v.dtype.dict)
                     _index = index._subs(v, _v)
                     if _index == index:
-#if the substitution fails, it means that index has v only in its domain, not in its definition or explicit expression, 
-#like i = Symbol('i', domain = Interval(j, oo)), where i has j, but only in its domain, not in its definition                        
+# if the substitution fails, it means that index has v only in its domain, not in its definition or explicit expression, 
+# like i = Symbol('i', domain = Interval(j, oo)), where i has j, but only in its domain, not in its definition                        
                         continue
                     index = _index
                     reps[_v] = v
@@ -4472,7 +4491,8 @@ class ConditionalBoolean(Boolean):
     is_ConditionalBoolean = True
     __slots__ = []
 
-    _op_priority = 12.1 #higher than Relational
+    _op_priority = 12.1  # higher than Relational
+
     # this will change the default new operator!
     def __new__(cls, function, *symbols, **assumptions):
         if function.is_BooleanAtom:

@@ -470,8 +470,9 @@ class Indexed(Expr):
         if not isinstance(pattern, (FunctionClass, ManagedProperties)):
             if self.base.definition is not None:
                 return self.base.definition[self.indices]._has(pattern)
-            if self.base._has(pattern):
-                return True
+            if self.base.is_Transpose:
+                if self.base.arg == pattern:
+                    return True
         
         return False
 

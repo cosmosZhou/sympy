@@ -103,6 +103,23 @@ function render($php, $txt)
             $prefix = $matches[1];
             $namespaces = $matches[2];
             $namespaces = preg_split("/[\s,]+/", $namespaces, - 1, PREG_SPLIT_NO_EMPTY);
+
+//             error_log("end(namespaces) = " . end($namespaces));
+            if (!strcmp(end($namespaces), '\\')) {
+//                 error_log("strcmp = " . strcmp(end($namespaces), '\\'));
+                array_pop($namespaces);
+
+                $statement = $py[++ $i];
+//                 error_log("$statement");
+
+                $namespaces_addition = preg_split("/[\s,]+/", $statement, - 1, PREG_SPLIT_NO_EMPTY);
+//                 error_log("namespaces_addition = " . json_encode($namespaces_addition, JSON_UNESCAPED_UNICODE));
+
+                $namespaces = array_merge($namespaces, $namespaces_addition);
+
+//                 error_log("namespaces = " . json_encode($namespaces, JSON_UNESCAPED_UNICODE));
+            }
+
             $prefix_path = str_replace(".", "/", $prefix);
 
             foreach ($namespaces as $namespace) {

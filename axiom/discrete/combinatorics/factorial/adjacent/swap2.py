@@ -8,46 +8,24 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.concrete.expr_with_limits import Forall
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
-from axiom.discrete.combinatorics.factorial.adjacent import swap1_utility
+from axiom.discrete.combinatorics.factorial.adjacent import swap1_utility, \
+    swap2_equality
+import axiom
 
 
 @plausible
 def apply(given):
-    assert given.is_Forall and len(given.limits) == 2
-    j, a, n_munis_1 = given.limits[0]
-    assert a == 1
-    x, S = given.limits[1]
+    assert given.is_Forall and len(given.limits) == 1
+    x, S = given.limits[0]
     
     contains = given.function
     assert contains.is_Contains
-    ref, _S = contains.args
-    assert S == _S and ref.is_Ref and S.is_set
-    dtype = S.element_type
     
-    assert len(ref.limits) == 1
-    i, a, _n_munis_1 = ref.limits[0]
-    assert _n_munis_1 == n_munis_1 and a == 0
+    w = contains.lhs.args[0].base
+    _, j = contains.lhs.args[0].indices
+    i = Symbol('i', integer=True)
     
-    piecewise = ref.function
-    assert piecewise.is_Piecewise and len(piecewise.args) == 3
-    
-    x0, condition0 = piecewise.args[0]
-    assert condition0.is_Equality and {*condition0.args} == {i, j}
-    
-    xj, conditionj = piecewise.args[1]
-    assert conditionj.is_Equality and {*conditionj.args} == {i, 0}
-    
-    xi, conditioni = piecewise.args[2]
-    assert conditioni
-    
-    n = n_munis_1 + 1
-    
-    assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.dtype    
-    
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
-    
-    k = Symbol('k', integer=True)
-    return Forall(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), given=given)
+    return Forall(Contains(w[i, j] @ x, S), (x, S), given=given)
 
 
 @check
@@ -60,22 +38,39 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    
     
-    given = Forall(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S))
+    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
+    
+    given = Forall(Contains(w[0, j] @ x, S), (x, S))
     
     Eq << apply(given)
     
-    w = Eq[0].lhs.base
+    Eq.given_i = given.subs(j, i)    
     
-    Eq << swap1_utility.apply(x, w[0])
+    Eq << given.subs(x, Eq.given_i.function.lhs)
     
-    Eq << Eq[-1].reference(*Eq[-1].limits)
+    Eq << (Eq.given_i & Eq[-1]).split()[-1]
     
-    Eq << Eq[1].subs(Eq[-1].reversed)
+    Eq << Eq.given_i.subs(x, Eq[-1].function.lhs)
     
-    k = Eq[2].function.lhs.variable
-    Eq << Eq[-1].this.function.lhs.limits_subs(i, k)
+    Eq.final_statement = (Eq[-2] & Eq[-1]).split()[0]
     
-    Eq << Eq[-1].this.function.lhs.function.args[1].args[1].limits_subs(i, k)    
+    Eq << swap2_equality.apply(n, w)
+    
+    Eq << Eq[-1] @ x
+    
+    Eq << Eq[-1].forall(Eq[-1].limits[0].args[1].args[1].arg)
+    
+    Eq << Eq.final_statement.subs(Eq[-1])
+    
+    plausible = Forall(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)
+    Eq << plausible
+    
+    Eq << plausible.bisect(wrt=j, domain=i.set)
+    
+    Eq << Eq[-1].split()
+    
+    as_Piecewise
+
 
 if __name__ == '__main__':
     prove(__file__)

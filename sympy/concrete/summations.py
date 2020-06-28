@@ -1007,15 +1007,24 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
 # precondition: domain.is_Complement        
     def simplify_complement_domain(self, domain):        
-        from sympy.functions.special.tensor_functions import KroneckerDelta
-        if domain.is_Complement:                
-            A, B = domain.args
-            if A.is_FiniteSet and B.is_FiniteSet and len(A) == len(B) == 1:                    
-                a, *_ = A
-                b, *_ = B
-                if a.is_integer and b.is_integer:
+        from sympy import Unequality, KroneckerDelta
+        from sympy.sets.contains import NotContains
+        if not domain.is_Complement:
+            return
+        A, B = domain.args
+        if not A.is_FiniteSet or len(A) != 1:
+            return
+        
+        a, *_ = A
+        if B.is_FiniteSet and len(B) == 1:
+            b, *_ = B
+            if a.is_integer and b.is_integer:
 #                     f(a)*(1 - δ[a, b]) = f(a) - f(b)*δ[a, b], if f(b) = 0, then f(a) - f(a)*δ[a, b] = f(a)
-                    return ((1 - KroneckerDelta(a, b)) * self.function._subs(self.variable, a)).simplify()
+                return ((1 - KroneckerDelta(a, b)) * self.function._subs(self.variable, a)).simplify()
+            else:
+                return Piecewise((self.function._subs(self.variable, a), Unequality(a, b)), (0, True))
+        else:
+            return Piecewise((self.function._subs(self.variable, a), NotContains(a, B)), (0, True))
         
     def simplify(self, deep=False, **kwargs):
         from sympy import Contains
@@ -1054,8 +1063,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             domain_nonzero = self.function.domain_nonzero(x)
             domain &= domain_nonzero
             
-#             if domain not in limit[1]:
-#                 print(domain in limit[1])
+            if domain not in limit[1]:
+                print('domain =', domain)
+                print('limit[1] =', limit[1])
+                print(domain in limit[1])
             assert domain in limit[1]
             
             if domain.is_EmptySet:

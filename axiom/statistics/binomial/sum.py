@@ -7,8 +7,9 @@ from sympy.stats.drv_types import BinomialDistribution, Binomial
 from sympy.stats.rv import Density, RandomSymbol
 from sympy.utility import check
 from sympy.utility import plausible
-from axiom.Algebre.matrix import independence
+
 from sympy import Interval
+from axiom import Algebre
 # sys.getrecursionlimit()
 # print('sys.getrecursionlimit() =', sys.getrecursionlimit())
 # sys.setrecursionlimit(100000000)
@@ -94,7 +95,7 @@ def prove(Eq):
 
     Eq << Eq[-1].as_two_terms()
     
-    Eq << independence.matmul_equality.apply(Eq[-1])
+    Eq << Algebre.vector.independence.matmul_equality.apply(Eq[-1])
 
     Eq << Eq[-1].limits_subs(k, y)
     

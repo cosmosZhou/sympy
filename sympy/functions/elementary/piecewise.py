@@ -918,6 +918,8 @@ class Piecewise(Function):
         return self.func(*[(e ** s, c) for e, c in self.args])
 
     def _subs(self, old, new, **_):
+        if self == old:
+            return new
         # this is strictly not necessary, but we can keep track
         # of whether True or False conditions arise and be
         # somewhat more efficient by avoiding other substitutions
@@ -928,7 +930,7 @@ class Piecewise(Function):
         from sympy.core.basic import _aresame
         
         for e, c in self.args:
-            #l in (j; i], old = l in [0; n), new = l in [0; j)∪(i; n)
+            # l in (j; i], old = l in [0; n), new = l in [0; j)∪(i; n)
             _c = c._subs(old, new)
             if _c.is_BooleanFalse:
                 hit = True
@@ -1383,7 +1385,7 @@ class Piecewise(Function):
                 _c_ = c_ & _c_
                 if _c_.is_BooleanFalse:
                     continue
-                args.append([e * _e, _c])
+                args.append([(e * _e).simplify(), _c])
                 _u &= _c.invert()
             if len(args) == 1:
                 piece.append((args[-1][0], c))

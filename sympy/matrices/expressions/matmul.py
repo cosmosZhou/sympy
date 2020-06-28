@@ -49,6 +49,17 @@ class MatMul(MatrixExpr, Mul):
         # TypeErrors from GenericIdentity().shape
         args = filter(lambda i: cls.identity != i, args)
         args = list(map(sympify, args))
+        
+        if any(arg.is_MatMul for arg in args):
+            def generator():
+                for arg in args:
+                    if arg.is_MatMul:
+                        yield from arg.args
+                    else:
+                        yield arg
+                        
+            args = [*generator()]
+        
         obj = Basic.__new__(cls, *args)
         factor, matrices = obj.as_coeff_matrices()
         if check:

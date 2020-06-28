@@ -123,6 +123,7 @@ class Basic(with_metaclass(ManagedProperties)):
     
     is_Swap = False
     is_KroneckerDelta = False
+    is_Transpose = False
     
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol

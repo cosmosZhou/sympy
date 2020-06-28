@@ -10,11 +10,15 @@ from axiom import Algebre
 
 
 @plausible
-def apply(n):
+def apply(n, w=None):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
+    
     assert n >= 2
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    if w is None:
+        w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    else:
+        assert len(w.shape) == 4 and all(s == n for s in w.shape)
     
     return Forall(Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) - i.set))
 
@@ -24,7 +28,9 @@ def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     Eq << apply(n)
     
-    i, j = Eq[-1].rhs.indices
+    i, _ = Eq[-1].rhs.indices
+    
+    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
     w = Eq[0].lhs.base
     
@@ -60,6 +66,7 @@ def prove(Eq):
     Eq << Eq.www_expansion.subs(Eq[-1].reversed)
 
     Eq << Eq[-1].apply(Algebre.matrix.independence.rmatmul_equality)
+
 
 if __name__ == '__main__':
     prove(__file__)

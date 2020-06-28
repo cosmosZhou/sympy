@@ -492,7 +492,11 @@ class Subset(BooleanFunction):
                 if condition.is_And:
                     if _condition.is_And and all(eq in condition._argset for eq in _condition.args) or _condition in condition._argset:
                         return S.true
-
+        if x.is_Piecewise and not s.is_Piecewise:
+            return x.func(*((cls(e, s), c) for e, c in x.args))
+#         if not x.is_Piecewise and s.is_Piecewise:
+#             return s.func(*((cls(x, e), c) for e, c in s.args))
+                
 #     @property
 #     def binary_symbols(self):
 #         binary_symbols = [i.binary_symbols for i in self.args[1].args if hasattr(i, 'binary_symbols') and (i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne)))]

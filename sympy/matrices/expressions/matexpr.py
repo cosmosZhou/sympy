@@ -63,7 +63,7 @@ class MatrixExpr(Expr):
     is_MatrixExpr = True
     is_Identity = None
     is_Inverse = False
-    is_Transpose = False
+    
     is_ZeroMatrix = False
     is_MatAdd = False
     is_MatMul = False
