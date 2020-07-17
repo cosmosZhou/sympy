@@ -1,8 +1,8 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref
+from sympy.utility import check, plausible, Ref, identity
 from sympy.tensor.indexed import IndexedBase
-from sympy.sets.sets import Interval
+from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.concrete.expr_with_limits import Forall
@@ -60,18 +60,29 @@ def prove(Eq):
     
     Eq << Eq[-1].forall(Eq[-1].limits[0].args[1].args[1].arg)
     
-    Eq << Eq.final_statement.subs(Eq[-1])
+    Eq.i_complement = Eq.final_statement.subs(Eq[-1])
     
     plausible = Forall(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)
     Eq << plausible
     
     Eq << plausible.bisect(wrt=j, domain=i.set)
     
-    Eq << Eq[-1].split()
+    Eq.i_complement, Eq.i_intersection = Eq[-1].split()
     
-    as_Piecewise
-
-
+    Eq << axiom.discrete.sets.equality.intersection.apply(i, Interval(1, n - 1, integer=True))
+    
+    Eq << Eq.i_intersection.this.limits[1].subs(Eq[-1])
+    
+    Eq << Eq[-1].subs(Equality.by_definition_of(w[i, i]))
+    
+    Eq << (Eq.i_complement & Eq.i_intersection)
+    
+    Eq << Eq[2].subs(j, 0)
+    
+    Eq << Equality.by_definition_of(w[i, j])
+    
+    Eq << Equality.by_definition_of(w[j, i])
+    
 if __name__ == '__main__':
     prove(__file__)
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

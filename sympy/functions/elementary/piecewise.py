@@ -1296,6 +1296,9 @@ class Piecewise(Function):
                     domain = self.domain_defined(x)
                     if domain in U:                        
                         return self.func((e0, NotContains(x, C)), (e1, True)).simplify(deep=deep)
+                if e1.is_EmptySet:
+                    if e0 == x.set:
+                        return A & e0
             if c0.is_NotContains:                
                 return self.func((e1, c0.invert()), (e0, True)).simplify(deep=deep)
                         

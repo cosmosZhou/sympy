@@ -47,7 +47,7 @@ class MatMul(MatrixExpr, Mul):
 
         # This must be removed aggressively in the constructor to avoid
         # TypeErrors from GenericIdentity().shape
-        args = filter(lambda i: cls.identity != i, args)
+        args = filter(lambda X: not X.is_Identity, args)
         args = list(map(sympify, args))
         
         if any(arg.is_MatMul for arg in args):
@@ -59,6 +59,9 @@ class MatMul(MatrixExpr, Mul):
                         yield arg
                         
             args = [*generator()]
+        
+        if len(args) == 1:
+            return args.pop()
         
         obj = Basic.__new__(cls, *args)
         factor, matrices = obj.as_coeff_matrices()
@@ -318,7 +321,11 @@ class MatMul(MatrixExpr, Mul):
                     if isinstance(B, Ref):
                         j_limit = B.limits[1]
                     else:
-                        j_limit = B.definition.limits[1]
+                        if hasattr(B, "definition") and B.definition is not None:
+                            j_limit = B.definition.limits[1]
+                        else:
+                            j = self.generate_free_symbol({k, i}, free_symbol=free_symbol, integer=True)
+                            j_limit = (j, 0, B.shape[1] - 1)
     
                     j, *_ = j_limit
     

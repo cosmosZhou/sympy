@@ -2004,16 +2004,6 @@ class Intersection(Set, LatticeOp):
         """Rewrite an Intersection in terms of equalities and logic operators"""
         return And(*[s.as_relational(symbol) for s in self.args])
 
-    def as_Piecewise(self):
-        from sympy import Piecewise
-        for i, arg in enumerate(self.args):
-            if arg.is_FiniteSet and len(arg) == 1:
-                args = [*self.args]
-                del args[i]
-                universe = self.func(*args, evaluate=False)
-                return Piecewise((arg, Contains(arg, universe)), (EmptySet, True))
-        return self
-        
     def distribute(self):
         for i, union in enumerate(self.args):
             if union.is_UnionComprehension:
