@@ -57,7 +57,7 @@ class Relational(Boolean, Expr, EvalfMixin):
 
     is_Relational = True
 
-    _op_priority = 12 #higher than Expr
+    _op_priority = 12  # higher than Expr
     # ValidRelationOperator - Defined below, because the necessary classes
     #   have not yet been defined
 
@@ -321,9 +321,9 @@ class Relational(Boolean, Expr, EvalfMixin):
             return self._assumptions['definition']
         return None
 
-    def simplify(self, deep=False):
-        if deep:
-            return Boolean.simplify(self, deep=True)
+    def simplify(self, deep=False, wrt=None):
+        if deep or wrt is not None:
+            return Boolean.simplify(self, deep=True, wrt=wrt)        
 
         lhs, rhs = self.args
         from sympy.core.mul import Mul
@@ -945,7 +945,7 @@ class Equality(Relational):
         if isinstance(indices, slice):
             x, *args = indices.start, indices.stop, indices.step
             if x.domain_assumed is not None:
-                x = x.copy(integer = x.is_integer)
+                x = x.copy(integer=x.is_integer)
             m = self.lhs.shape[0]
             is_equivalent = False
             if len(args) == 2:
@@ -981,9 +981,9 @@ class Equality(Relational):
         from sympy import det
         return self.func(det(self.lhs), det(self.rhs), given=self)
 
-    def simplify(self, deep=False):
-        if deep:
-            return Boolean.simplify(self, deep=True)
+    def simplify(self, deep=False, wrt=None):
+        if deep or wrt is not None:
+            return Boolean.simplify(self, deep=True, wrt=wrt)        
 
         lhs, rhs = self.args
         from sympy.core.mul import Mul
@@ -1185,9 +1185,9 @@ class Unequality(Relational):
 
         return self
 
-    def simplify(self, deep=False):
-        if deep:
-            return Boolean.simplify(self, deep=True)
+    def simplify(self, deep=False, wrt=None):
+        if deep or wrt is not None:
+            return Boolean.simplify(self, deep=True, wrt=wrt)
 
         from sympy.sets.contains import NotSubset
         lhs, rhs = self.args

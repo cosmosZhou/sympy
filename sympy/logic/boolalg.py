@@ -120,7 +120,17 @@ class Boolean(Basic):
             this.given = self
         return this
 
-    def simplify(self, deep=False):
+    def simplify(self, deep=False, wrt=None):
+        if wrt is not None:
+            domain_defined = self.domain_defined(wrt)
+            if domain_defined != wrt.domain:
+                _wrt = wrt.copy(domain=domain_defined, **wrt._assumptions)
+                this = self._subs(wrt, _wrt).simplify(deep=True)._subs(_wrt, wrt)
+                if this != self:                    
+                    this.equivalent = self
+                    return this
+            return self
+        
         if deep:
             hit = False
             args = []
@@ -163,9 +173,8 @@ class Boolean(Basic):
             if not domain.is_set:
                 domain = x.domain_conditioned(domain)
         else:
-            _x = x.copy(integer=x.is_integer)
+            _x = x.unbounded
             return Forall(self._subs(x, _x), (_x, x.domain), equivalent=self).simplify()
-
         
         if domain in x.domain and x.domain not in domain:
             if self.is_Forall:
@@ -1705,10 +1714,9 @@ class And(LatticeOp, BooleanFunction):
                 result.equivalent = [self, *args]
         else:
             if result.is_BooleanAtom:
-                result = result.copy(equivalent = self)
+                result = result.copy(equivalent=self)
             else:
                 result.equivalent = self
-            
             
         return result
 

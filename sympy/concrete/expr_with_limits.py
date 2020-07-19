@@ -44,7 +44,7 @@ def _common_new(cls, function, *symbols, **assumptions):
                 oldsymbol = li[0] 
 # added here by cosmos to remove the domain of this variable!
                 if isinstance(oldsymbol, Symbol) and {'domain', 'positive', 'negative', 'nonpositive', 'nonnegative'} & oldsymbol.assumptions0.keys():
-                    newsymbol = oldsymbol.copy(integer=oldsymbol.is_integer)
+                    newsymbol = oldsymbol.unbounded
                     function = function._subs(oldsymbol, newsymbol)
                     limits[i] = Tuple(newsymbol, *li[1:])
  
@@ -256,7 +256,7 @@ class ExprWithLimits(Expr):
                     elif len(sym) == 3: 
                         x, *ab = sym
                         if x.domain_assumed:
-                            _x = x.copy(integer=x.is_integer)
+                            _x = x.unbounded
                             function = function._subs(x, _x)
                             sym = (_x, *ab)
                             
@@ -281,7 +281,7 @@ class ExprWithLimits(Expr):
                     sym, cond = limit
                     if cond.is_set and sym.domain_assumed:
                         cond &= sym.domain_assumed
-                        _sym = sym.copy(integer=sym.is_integer)
+                        _sym = sym.unbounded
                         limit = Tuple(_sym, cond)
                         function = function._subs(sym, _sym)
                 limits.append(limit)

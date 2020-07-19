@@ -57,8 +57,10 @@ def prove(Eq):
     Eq << Eq[-1].this.function.rhs.function.asKroneckerDelta()
     
     Eq.www_expansion = Eq[-1].this.simplify(deep=True)
+
+    Eq << identity(w[i, j.unbounded] @ x).expand().simplify(deep=True)
     
-    Eq << identity(w[i, j] @ x).expand().simplify(deep=True)
+    Eq << Eq[-1].simplify(wrt=j.unbounded)
     
     Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
     Eq << Eq[-1].this.rhs.function.expand()

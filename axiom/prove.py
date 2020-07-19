@@ -60,8 +60,11 @@ def readFolder(rootdir, sufix='.py'):
 
 
 def process(package):
-    print('testing', package)    
-    package = eval(package)
+    print('testing', package)
+    try:    
+        package = eval(package)
+    except :
+        return package.replace('.', '/'), None
     file = package.__file__
     return file, package.prove(file)
 

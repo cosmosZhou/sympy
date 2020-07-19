@@ -38,7 +38,7 @@ def prove(Eq):
     i, j = Eq[-1].rhs.args[0][1].args
     Eq << Eq[-1].forall(i).forall(j)
     
-    _i = i.copy(integer=True)
+    _i = i.unbounded
     Eq << Eq[-1].this.lhs.args[1].args[1].limits_subs(i, _i)
     
     Eq << Eq[-1].reference((_i, 0, n - 1))

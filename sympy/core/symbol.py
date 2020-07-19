@@ -198,6 +198,12 @@ class Symbol(AtomicExpr, NotIterable):
         return self.func(self.name, **kwargs)
 
     @property
+    def unbounded(self):
+        if self.domain_assumed:
+            return self.func(self.name, integer=self.is_integer)
+        return self
+
+    @property
     def _diff_wrt(self):
         """Allow derivatives wrt Symbols.
 

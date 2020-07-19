@@ -26,8 +26,8 @@ def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     Eq << apply(n)
     
-    i, j = Eq[-1].rhs.indices
-    
+    i, _ = Eq[-1].rhs.indices
+    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     w = Eq[0].lhs.base
     
     t = Eq[1].function.lhs.args[0].indices[0]
@@ -35,6 +35,7 @@ def prove(Eq):
     p = Symbol('p')
     
     x = Ref[i:n](p ** i)
+    
     Eq << identity(w[t, i] @ x).subs(Eq[0].subs(i, t).subs(j, i))
     Eq << Eq[-1].this.rhs.expand().simplify(deep=True)
     

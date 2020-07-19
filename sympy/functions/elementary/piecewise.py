@@ -1288,8 +1288,10 @@ class Piecewise(Function):
                 if A.is_FiniteSet:
                     args = []
                     for y in A.args:
-                        args.append((e0._subs(x, y).simplify(), Equality(x, y)))
-                        e1 = e1._subs(KroneckerDelta(x, y), S.Zero)
+                        delta = KroneckerDelta(x, y)
+                        if delta != S.Zero:
+                            args.append((e0._subs(x, y).simplify(), Equality(x, y)))
+                            e1 = e1._subs(delta, S.Zero)
                     return self.func(*args, (e1, True)).simplify()
                 if A.is_Complement:
                     U, C = A.args
