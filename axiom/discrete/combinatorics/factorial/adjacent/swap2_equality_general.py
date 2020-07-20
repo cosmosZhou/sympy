@@ -43,6 +43,8 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
+    Eq << Eq[-1].forall(j)
+    
     Eq << Eq[-1].forall(*Eq[1].limits[0])
     
     Eq << Eq[-1].this.function.rhs.simplify(deep=True)
@@ -57,7 +59,9 @@ def prove(Eq):
     
     Eq.www_expansion = Eq[-1].this.simplify(deep=True)
     
-    Eq << identity(w[i, j] @ x).expand().simplify(deep=True)
+    Eq << identity(w[i, j.unbounded] @ x).expand().simplify(deep=True)
+    
+    Eq << Eq[-1].simplify(wrt=j.unbounded)
     
     Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
     Eq << Eq[-1].this.rhs.function.expand()

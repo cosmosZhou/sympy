@@ -199,7 +199,7 @@ class Symbol(AtomicExpr, NotIterable):
 
     @property
     def unbounded(self):
-        if self.domain_assumed:
+        if self.is_bounded:
             return self.func(self.name, integer=self.is_integer)
         return self
 
@@ -324,8 +324,7 @@ class Symbol(AtomicExpr, NotIterable):
 
     @property
     def assumptions0(self):
-        return dict((key, value) for key, value
-                in self._assumptions.items() if value is not None)
+        return dict((key, value) for key, value in self._assumptions.items() if value is not None)
 
     @cacheit
     def sort_key(self, order=None):
@@ -360,9 +359,31 @@ class Symbol(AtomicExpr, NotIterable):
         return S.UniversalSet
 
     @property
+    def is_unbounded(self):
+        return not self.is_bounded
+        
+    @property
+    def is_bounded(self):
+        return {'domain', 'positive', 'negative', 'nonpositive', 'nonnegative'} & self.assumptions0.keys()
+
+    @property
     def domain_assumed(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain']
+        
+    @property
+    def domain_bounded(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain']
+        from sympy import Interval, oo
+        if 'positive' in self._assumptions:
+            return Interval(0, oo, left_open=True, integer=self.is_integer)
+        if 'negative' in self._assumptions:
+            return Interval(-oo, 0, right_open=True, integer=self.is_integer)
+        if 'nonpositive' in self._assumptions:
+            return Interval(-oo, 0, integer=self.is_integer)
+        if 'nonnegative' in self._assumptions:
+            return Interval(0, oo, integer=self.is_integer)
         
     @property
     def domain(self):

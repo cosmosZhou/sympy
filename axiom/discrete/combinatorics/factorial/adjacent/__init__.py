@@ -5,3 +5,4 @@ from . import swap2_invariant
 from . import swap1_utility
 from . import swap2_equality
 from . import swap2_equality_general
+from . import swap2_general

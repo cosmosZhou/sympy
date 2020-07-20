@@ -944,8 +944,8 @@ class Equality(Relational):
         from sympy.concrete.expr_with_limits import Forall
         if isinstance(indices, slice):
             x, *args = indices.start, indices.stop, indices.step
-            if x.domain_assumed is not None:
-                x = x.copy(integer=x.is_integer)
+            if x.is_bounded:
+                x = x.unbounded
             m = self.lhs.shape[0]
             is_equivalent = False
             if len(args) == 2:

@@ -135,7 +135,7 @@ class Contains(BooleanFunction):
         from sympy import acos
         return self.func(acos(x), s.acos(), equivalent=self)
 
-    def simplify(self, deep=False):
+    def simplify(self, *_, **__):
         e, s = self.args
         if s.is_FiniteSet:
             if len(s) == 1:
@@ -177,7 +177,6 @@ class Contains(BooleanFunction):
             if domain_assumed and domain_assumed == s.args[0]:
                 _e, *_ = s.args[1].args
                 return Unequality(e, _e, equivalent=self)
-                    
             
         return self
 

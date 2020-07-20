@@ -33,23 +33,8 @@ def readFolder(rootdir, sufix='.py'):
             index = path.index('axiom')
 
             package = '.'.join(path[index:])
-            try:
-#                 package = eval(package)
-                if package in insurmountable:
-                    continue                
-            except AttributeError as e:
-                print(e)
-                s = str(e)
-
-                m = re.compile("module '([\w\.]+)' has no attribute '(\w+)'").fullmatch(s)
-                assert m
-                package, module = m.groups()
-
-                __init__ = '/'.join(path[:index]) + '/' + package.replace('.', '/') + '/__init__.py'
-                print('editing', __init__)
-
-                Text(__init__).append('from . import %s' % module)
-                continue
+            if package in insurmountable:
+                continue                
 
             global count
             count += 1
@@ -63,8 +48,23 @@ def process(package):
     print('testing', package)
     try:    
         package = eval(package)
-    except :
-        return package.replace('.', '/'), None
+    except AttributeError as e:   
+        print(e)
+        s = str(e)
+
+        m = re.compile("module '([\w\.]+)' has no attribute '(\w+)'").fullmatch(s)
+        assert m
+        apply_package = package
+        package, module = m.groups()
+
+        sep = os.path.sep
+        dirname = os.path.dirname(os.path.dirname(__file__))
+        __init__ = dirname + sep + package.replace('.', sep) + sep + '__init__.py'
+        print('editing', __init__)
+
+        Text(__init__).append('from . import %s' % module)
+
+        return dirname + sep + apply_package.replace('.', sep) + '.py', None
     file = package.__file__
     return file, package.prove(file)
 
