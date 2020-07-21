@@ -53,6 +53,15 @@ def prove(Eq):
     Eq.expand = Eq.expand.this.rhs.function.collect(KroneckerDelta(l, m))
     
     Eq << Equality(Eq.expand.rhs.function.args[1], 1, plausible=True)
+    
+    Eq << Equality(KroneckerDelta(i, j) * KroneckerDelta(i, l), KroneckerDelta(j, l) * KroneckerDelta(i, l), plausible=True).equivalent
+    
+#     Eq << Eq[-2].subs(Eq[-1])
+    Eq << (Eq[-2] + Eq[-1]).reversed
+    Eq << Eq[-1] - Eq[-1].rhs
+    
+    Eq << Eq[-1].factor()
+    
 
 
 if __name__ == '__main__':
