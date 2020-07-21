@@ -565,6 +565,8 @@ class Equality(Relational):
                     if z is False and dif.is_commutative:  # issue 10728
                         return S.false.copy(**options)
                     if z:
+                        if 'plausible' in options:
+                            options['equivalent'] = Equality(lhs, rhs, evaluate=False)
                         return S.true.copy(**options)
 
         return Relational.__new__(cls, lhs, rhs, **options)
@@ -992,7 +994,7 @@ class Equality(Relational):
         
         if type(lhs) == type(rhs):
             op = lhs.func
-            if op == Mul or op == Add:
+            if op == Add:
                 lhs_args = [*lhs.args]
                 rhs_args = [*rhs.args]
                 intersect = set(lhs_args) & set(rhs_args)
@@ -1001,6 +1003,19 @@ class Equality(Relational):
                         lhs_args.remove(arg)
                         rhs_args.remove(arg)
                     return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()
+            if op == Mul:
+                lhs_args = [*lhs.args]
+                rhs_args = [*rhs.args]
+                intersect = set(lhs_args) & set(rhs_args)
+                if intersect:
+                    hit = False
+                    for arg in intersect:
+                        if Equality(arg, 0).is_BooleanFalse:
+                            lhs_args.remove(arg)
+                            rhs_args.remove(arg)
+                            hit = True
+                    if hit:
+                        return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()
             if op == Ref:
                 if lhs.limits == rhs.limits:
                     return Forall(self.func(lhs.function, rhs.function), *lhs.limits, equivalent=self)                     

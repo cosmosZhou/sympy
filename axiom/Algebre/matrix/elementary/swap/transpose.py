@@ -7,6 +7,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Swap
+from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
 @plausible
@@ -39,7 +40,20 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
     
+    Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
     
+    Eq.expand = Eq[-1].this.rhs.function.expand()
+    
+    (l, *_), (m, *_) = Eq[-1].rhs.limits     
+    Eq << Equality(KroneckerDelta(i, l) * KroneckerDelta(i, m), KroneckerDelta(i, l) * KroneckerDelta(l, m), plausible=True).equivalent
+    Eq << Equality(KroneckerDelta(j, l) * KroneckerDelta(j, m), KroneckerDelta(j, l) * KroneckerDelta(l, m), plausible=True).equivalent
+    Eq << Equality(KroneckerDelta(i, j) * KroneckerDelta(j, l), KroneckerDelta(i, j) * KroneckerDelta(i, l), plausible=True).equivalent    
+    Eq.expand = Eq.expand.subs(Eq[-1], Eq[-2], Eq[-3])
+
+    Eq.expand = Eq.expand.this.rhs.function.collect(KroneckerDelta(l, m))
+    
+    Eq << Equality(Eq.expand.rhs.function.args[1], 1, plausible=True)
+
 
 if __name__ == '__main__':
     prove(__file__)
