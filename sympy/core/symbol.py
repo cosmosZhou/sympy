@@ -1261,6 +1261,7 @@ def disambiguate(*iter):
 
 class Dtype:
     is_set = False
+    is_condition = False
 
     def __hash__(self):
         return hash(type(self).__name__)
@@ -1360,7 +1361,8 @@ class DtypeComplexConditional(DtypeComplex):
 
 
 class DtypeCondition(Dtype):
-
+    is_condition = True
+    
     def __str__(self):
         return 'condition'
 

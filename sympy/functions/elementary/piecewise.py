@@ -1411,6 +1411,10 @@ class Piecewise(Function):
             _ = self.args[-1][0]
             return self.func(*self.args[:-1], *((e + _, c) for e, c in other.args))
 
+    def __bool__(self):
+        if self.dtype.is_condition:
+            return False
+        return True
             
 def piecewise_fold(expr):
     """

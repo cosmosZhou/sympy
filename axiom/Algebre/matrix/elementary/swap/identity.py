@@ -1,4 +1,3 @@
-
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible, Ref, identity

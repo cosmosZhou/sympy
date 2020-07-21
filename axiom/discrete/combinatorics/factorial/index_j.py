@@ -62,6 +62,7 @@ def prove(Eq):
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
     
+    #todo here
     Eq.distribute = Eq[-1].this.lhs.distribute()        
     
     Eq << Eq.distribute.this.lhs.function.subs(Eq.distribute.lhs.limits[0][1].args[1][1])

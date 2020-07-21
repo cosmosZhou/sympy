@@ -2033,6 +2033,15 @@ class Intersection(Set, LatticeOp):
     def _sympystr(self, p):
         return '∩'.join([p._print(a) for a in self.args])
 
+    def handle_finite_sets(self, unk):
+        if len(unk) == 1:
+            e, *_ = unk.args
+            for i, s in enumerate(self.args):
+                if e in s:
+                    args = [*self.args]
+                    args[i] = unk
+                    return self.func(*args, evaluate=False)
+            
             
 class Complement(Set, EvalfMixin):
     r"""Represents the set difference or relative complement of a set with
@@ -2724,8 +2733,9 @@ class FiniteSet(Set, EvalfMixin):
 
     def handle_finite_sets(self, unk):
         if len(unk) == len(self) == 1:
-            from sympy import Piecewise
-            return Piecewise((unk, Equality(unk.arg, self.arg)), (S.EmptySet, True)).simplify()
+            return Intersection(unk, self, evaluate=False)
+#             from sympy import Piecewise
+#             return Piecewise((unk, Equality(unk.arg, self.arg)), (S.EmptySet, True)).simplify()
 
 
 class FiniteList(Expr):

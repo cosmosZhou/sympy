@@ -31,7 +31,15 @@ def prove(Eq):
     w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     Eq << apply(w)
+    return
+    Eq << Equality.by_definition_of(w[0, i])
     
+    Eq << Equality.by_definition_of(w[i, 0])
+    
+    Eq << Eq[-2] @ Eq[-1]
+    
+    Eq << Eq[-1].this.rhs.expand()
+    return
     Eq << Equality.by_definition_of(w[j, i])
     
     Eq << Eq[0] @ Eq[-1]

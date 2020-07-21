@@ -11,9 +11,10 @@ from sympy.logic.boolalg import plausibles
 
 # given A & B != emptyset
 # then Exists[e:B] e in A
-def apply(provided):
-    assert provided.is_Unequality
-    AB, emptyset = provided.args
+@plausible
+def apply(given):
+    assert given.is_Unequality
+    AB, emptyset = given.args
     if emptyset != S.EmptySet:
         tmp = AB
         AB = emptyset
@@ -21,9 +22,7 @@ def apply(provided):
     assert AB.is_Intersection
     A, B = AB.args
     e = B.element_symbol(A.free_symbols)
-    return Exists(Contains(e, A), (e, B),
-                    equivalent=provided,
-                    plausible=plausible())
+    return Exists(Contains(e, A), (e, B), given=given)
 
 
 from sympy.utility import check
