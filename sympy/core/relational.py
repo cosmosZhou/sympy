@@ -566,8 +566,9 @@ class Equality(Relational):
                         return S.false.copy(**options)
                     if z:
                         if 'plausible' in options:
-                            options['equivalent'] = Equality(lhs, rhs, evaluate=False)
-                        return S.true.copy(**options)
+                            del options['plausible']
+                        else:
+                            return S.true.copy(**options)
 
         return Relational.__new__(cls, lhs, rhs, **options)
 
@@ -1043,9 +1044,24 @@ class Equality(Relational):
             cond = rhs.select_cond(lhs)
             if cond is not None:
                 return cond.copy(equivalent=self)
-             
+        elif lhs.is_Intersection and rhs.is_EmptySet:
+            this = self.simplify_Intersection(lhs)
+            if this is not None:
+                return this
+        elif rhs.is_Intersection and lhs.is_EmptySet:
+            this = self.simplify_Intersection(rhs)
+            if this is not None:
+                return this
+            
         return self
 
+    def simplify_Intersection(self, lhs):
+        if len(lhs.args) == 2:
+            A, B = lhs.args
+            if A.is_FiniteSet and B.is_FiniteSet:
+                if len(A) == len(B) == 1:
+                    return Unequality(A.arg, B.arg, equivalent=self)
+        
     def as_two_terms(self):
         return self.func(self.lhs.as_two_terms(), self.rhs.as_two_terms(), equivalent=self).simplify()
 

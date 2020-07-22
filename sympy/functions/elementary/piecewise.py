@@ -1172,7 +1172,8 @@ class Piecewise(Function):
             e0 = e0._subs(eq, S.One)
 
         _e0 = e0._subs(lhs, rhs)
-        if {e1, e1._subs(lhs, rhs), e1._subs(rhs, lhs)} & {e0, _e0, e0._subs(rhs, lhs)}:
+        __e0 = e0._subs(rhs, lhs)
+        if {e1, e1._subs(lhs, rhs), e1._subs(rhs, lhs)} & {e0, _e0, __e0}:
             return e1
         
         if not e0.is_set and lhs.is_integer and rhs.is_integer:                    
@@ -1192,7 +1193,22 @@ class Piecewise(Function):
             if not has_lhs and has_rhs:
                 return e1 - e1._subs(rhs, lhs)
             if has_lhs and not has_rhs:
-                return e1 - e1._subs(lhs, rhs)        
+                return e1 - e1._subs(lhs, rhs)
+            
+        hit = False
+        if len(_e0.free_symbols) < len(e0.free_symbols):
+            e0 = _e0
+            hit = True
+        elif len(__e0.free_symbols) < len(e0.free_symbols):
+            e0 = __e0
+            hit = True
+            
+        if e1.is_EmptySet and e0 in {lhs.set, rhs.set}:
+            return lhs.set & rhs.set
+        
+        if hit:
+            return Piecewise((e0, Equality(lhs, rhs)), (e1, True))
+               
         
     def simplify(self, deep=False, wrt=None):
         from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -1259,7 +1275,7 @@ class Piecewise(Function):
             
         expr, _ = self.args[-1]
         e, c = self.args[-2]
-        if e == expr or c.is_Equality and (e == expr._subs(*c.args) or e._subs(*c.args) == expr):                
+        if e == expr or c.is_Equality and (e == expr._subs(*c.args) or e._subs(*c.args) == expr):
             args = [*self.args]
             del args[-2]
             if len(args) == 1:
@@ -1416,6 +1432,9 @@ class Piecewise(Function):
             return False
         return True
             
+    def handle_finite_sets(self, unk):
+        return self.func(*((e & unk, c) for e, c in self.args)).simplify()
+
 def piecewise_fold(expr):
     """
     Takes an expression containing a piecewise function and returns the

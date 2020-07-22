@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.utility import check, plausible, Ref, identity
 from sympy.tensor.indexed import IndexedBase
-from sympy.sets.sets import Interval
+from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
 
 from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -11,6 +11,7 @@ from axiom.discrete.sets import union_comprehension
 from axiom.discrete import sets
 from sympy.core.basic import preorder_traversal
 from sympy.core.symbol import Symbol
+from sympy.functions.elementary.piecewise import Piecewise
 
 
 @plausible
@@ -62,8 +63,11 @@ def prove(Eq):
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
     
-    #todo here
-    Eq.distribute = Eq[-1].this.lhs.distribute()        
+    Eq << Equality(j.set & x[k].set, Piecewise((x[k].set, Equality(x[k], j)), (EmptySet(), True)), plausible=True)
+    
+    Eq << Eq[-1].union_comprehension((k, 0, n - 1))
+    
+    Eq.distribute = Eq[-1].subs(Eq[-3]).reversed
     
     Eq << Eq.distribute.this.lhs.function.subs(Eq.distribute.lhs.limits[0][1].args[1][1])
     

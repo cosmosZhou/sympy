@@ -564,8 +564,11 @@ class Subset(BooleanFunction):
             elif isinstance(eq, Subset):
                 A, B = self.args
                 _B, _A = eq.args
-                if A == _A and _A == A:
-                    return Equality(A, B, equivalent=[self, eq])
+                if _B == B:
+                    if A == _A: 
+                        return Equality(A, B, equivalent=[self, eq])
+                    else:
+                        return self.func(A, _A, given=[self, eq])
             elif isinstance(eq, Supset):
                 A, B = self.args
                 _A, _B = eq.args

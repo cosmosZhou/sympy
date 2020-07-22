@@ -3957,7 +3957,7 @@ class UnionComprehension(Set, ExprWithLimits):
                     arr = self.as_multiple_terms(x, domain)
                     arr = [arr[-1]] + arr[0:-1]
                     return reduce(lambda x, y: x | y, arr).simplify()                
-                    return Union(*self.as_multiple_terms(x, domain)).simplify()
+#                     return Union(*self.as_multiple_terms(x, domain)).simplify()
 
         if len(limit) == 1:
             x = limit[0]
