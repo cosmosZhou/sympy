@@ -642,11 +642,11 @@ class Equality(Relational):
 
     def __truediv__(self, exp):
         if isinstance(exp, Equality):
-            if exp.lhs != 0 or exp.rhs != 0:
+            if exp.lhs.is_nonzero or exp.rhs.is_nonzero:
                 return self.func((self.lhs / exp.lhs).ratsimp(), (self.rhs / exp.rhs).ratsimp(), equivalent=[self, exp])
             return self
         else:
-            if exp != 0:
+            if exp.is_nonzero:
                 return self.func((self.lhs / exp).ratsimp(), (self.rhs / exp).ratsimp(), equivalent=self)
             return self
 
@@ -1011,7 +1011,7 @@ class Equality(Relational):
                 if intersect:
                     hit = False
                     for arg in intersect:
-                        if Equality(arg, 0).is_BooleanFalse:
+                        if arg.is_nonzero:
                             lhs_args.remove(arg)
                             rhs_args.remove(arg)
                             hit = True
@@ -1905,7 +1905,7 @@ class LessThan(_Less):
             elif isinstance(eq, GreaterThan):
                 old, new = eq.args
                 if eq.plausible:
-                    return Eq(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs), equivalent=[self, eq])
+                    return self
 
                 if old in self.free_symbols:
                     f = self.lhs - self.rhs

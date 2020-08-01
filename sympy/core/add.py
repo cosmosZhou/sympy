@@ -604,10 +604,11 @@ class Add(Expr, AssocOp):
                 return
         return False
 
-    def _eval_is_extended_positive(self):
+    @property
+    def is_extended_positive(self):
         from sympy.core.exprtools import _monotonic_sign
         if self.is_number:
-            return super(Add, self)._eval_is_extended_positive()
+            return super(Add, self).is_extended_positive()
         c, a = self.as_coeff_Add()
         if not c.is_zero:
             v = _monotonic_sign(a)
@@ -658,7 +659,8 @@ class Add(Expr, AssocOp):
         elif not pos and not nonneg:
             return False
 
-    def _eval_is_extended_nonnegative(self):
+    @property
+    def is_extended_nonnegative(self):
         from sympy.core.exprtools import _monotonic_sign
         if not self.is_number:
             c, a = self.as_coeff_Add()
@@ -673,7 +675,8 @@ class Add(Expr, AssocOp):
                         if v is not None and v != self and v.is_extended_nonnegative:
                             return True
 
-    def _eval_is_extended_nonpositive(self):
+    @property
+    def is_extended_nonpositive(self):
         from sympy.core.exprtools import _monotonic_sign
         if not self.is_number:
             c, a = self.as_coeff_Add()
@@ -687,13 +690,12 @@ class Add(Expr, AssocOp):
                         v = _monotonic_sign(self)
                         if v is not None and v != self and v.is_extended_nonpositive:
                             return True
-
+     
     @property
     def is_extended_negative(self):
         from sympy.core.exprtools import _monotonic_sign
         if self.is_number:
             return super(Add, self).is_extended_negative
-#             return super(Add, self)._eval_is_extended_negative()
         c, a = self.as_coeff_Add()
         if not c.is_zero:
             v = _monotonic_sign(a)
@@ -1445,6 +1447,18 @@ class Add(Expr, AssocOp):
 
         return self.func(*args)
 
+    @property
+    def is_nonzero(self):
+        if 'nonzero' in self._assumptions:
+            return self._assumptions['nonzero']
+        value = None
+        if len(self.args) == 2:
+            if self.min() > 0:
+                value = True
+            elif self.max() < 0:
+                value = True    
+        self._assumptions['nonzero'] = value
+        return value
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

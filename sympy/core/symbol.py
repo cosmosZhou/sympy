@@ -712,7 +712,75 @@ class Symbol(AtomicExpr, NotIterable):
     def _sympystr(self, _):   
         return Symbol.sympystr(self.name)     
 
+    @property
+    def is_complex(self):
+        if 'complex' in self._assumptions:
+            return self._assumptions['complex']
+        self._assumptions['complex'] = None
+        
+    @property         
+    def is_extended_real(self):
+        if 'extended_real' in self._assumptions:
+            return self._assumptions['extended_real']
+        self._assumptions['extended_real'] = True
+        return True        
     
+    @property
+    def is_extended_nonpositive(self):
+        if 'extended_nonpositive' in self._assumptions:
+            return self._assumptions['extended_nonpositive']
+        value = None
+                
+        if 'negative' in self._assumptions:
+            value = True
+        elif 'extended_negative' in self._assumptions:
+            value = True
+        elif 'domain' in self._assumptions:
+            value = self._assumptions['domain'].is_extended_nonpositive
+
+        self._assumptions['extended_nonpositive'] = value
+        return value   
+                 
+    @property
+    def is_extended_nonnegative(self):
+        if 'extended_nonnegative' in self._assumptions:
+            return self._assumptions['extended_nonnegative']
+        value = None
+                
+        if 'positive' in self._assumptions:
+            value = True
+        elif 'extended_positive' in self._assumptions:
+            value = True
+        elif 'domain' in self._assumptions:
+            value = self._assumptions['domain'].extended_nonnegative
+
+        self._assumptions['extended_nonnegative'] = value
+        return value   
+
+    @property
+    def is_nonzero(self):
+        if 'nonzero' in self._assumptions:
+            return self._assumptions['nonzero']
+        
+        value = None
+        if 'positive' in self._assumptions:
+            if self._assumptions['positive']:
+                value = True            
+        elif 'extended_positive' in self._assumptions:
+            if self._assumptions['extended_positive']:
+                value = True        
+        elif 'negative' in self._assumptions:
+            if self._assumptions['negative']:
+                value = True            
+        elif 'extended_negative' in self._assumptions:
+            if self._assumptions['extended_negative']:
+                value = True         
+        elif 'domain' in self._assumptions:
+            value = self._assumptions['domain'].is_nonzero
+        
+        self._assumptions['nonzero'] = value
+        return value
+
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
 

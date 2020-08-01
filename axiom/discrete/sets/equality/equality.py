@@ -1,11 +1,7 @@
-from sympy.core.relational import Equality, Unequality, StrictGreaterThan
+from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy import S
-from sympy.sets.contains import Contains, Subset
-from axiom.discrete import sets
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.sets.sets import EmptySet
+from sympy.sets.contains import Subset
 
 # given : A & B = A | B => A = B
 

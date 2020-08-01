@@ -1570,6 +1570,12 @@ class Interval(Set, EvalfMixin):
             return (self.min(), self.max(), S.false, S.false, True)
         return self._args
 
+    def _eval_is_nonzero(self):
+        if self.min() > 0:
+            return True
+        if self.max() < 0:
+            return True
+
 class Union(Set, LatticeOp, EvalfMixin):
     """
     Represents a union of sets as a :class:`Set`.
@@ -1817,7 +1823,7 @@ class Union(Set, LatticeOp, EvalfMixin):
         return Max(*(arg.max() for arg in self.args))        
 
     def _sympystr(self, p):
-        return '∪'.join([p._print(a) for a in self.args])
+        return ' ∪ '.join([p._print(a) for a in self.args])
 
 
 class Intersection(Set, LatticeOp):
@@ -2031,7 +2037,7 @@ class Intersection(Set, LatticeOp):
         return Min(*(arg.max() for arg in self.args))
 
     def _sympystr(self, p):
-        return '∩'.join([p._print(a) for a in self.args])
+        return ' ∩ '.join([p._print(a) for a in self.args])
 
     def handle_finite_sets(self, unk):
         if len(unk) == 1:

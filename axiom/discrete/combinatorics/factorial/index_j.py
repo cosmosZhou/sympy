@@ -63,9 +63,9 @@ def prove(Eq):
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
     
-    Eq << Equality(j.set & x[k].set, Piecewise((x[k].set, Equality(x[k], j)), (EmptySet(), True)), plausible=True)
+    Eq << identity(Piecewise((x[k].set, Equality(x[k], j)), (EmptySet(), True))).simplify()
     
-    Eq << Eq[-1].union_comprehension((k, 0, n - 1))
+    Eq << Eq[-1].reversed.union_comprehension((k, 0, n - 1))
     
     Eq.distribute = Eq[-1].subs(Eq[-3]).reversed
     

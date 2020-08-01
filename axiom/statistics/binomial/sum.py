@@ -18,17 +18,17 @@ from axiom import Algebre
 @plausible
 def apply(x0, x1):
     if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):
-        return None
+        return
     pspace0 = x0.pspace
     pspace1 = x1.pspace
     if not isinstance(pspace0, SingleDiscretePSpace) or not isinstance(pspace1, SingleDiscretePSpace):
-        return None
+        return
     distribution0 = pspace0.distribution
     distribution1 = pspace1.distribution
     if not isinstance(distribution0, BinomialDistribution) or not isinstance(distribution1, BinomialDistribution):
-        return None
+        return
     if distribution0.p != distribution1.p:
-        return None
+        return
 
     Y = Binomial('y', distribution0.n + distribution1.n, distribution0.p)
     y = Y.symbol
@@ -63,8 +63,8 @@ def prove(Eq):
     complement = univeralSet - union
     print(complement)
     print(complement & domain)
-
-    p = Symbol("p", domain=Interval(0, 1))
+*******
+    p = Symbol("p", domain=Interval(0, 1, left_open=True, right_open=True))
 
     x0 = Binomial('x0', n0, p)
     x1 = Binomial('x1', n1, p)
@@ -73,12 +73,10 @@ def prove(Eq):
 
     Eq << Equality.by_definition_of(Density(x0 + x1))
 
-#     Eq << Eq[-1].this.rhs.function.args[3].doit(deep=False)
-
     Eq << Eq[-1].this.rhs.function.powsimp()
 
     Eq.convolution = Eq[-1].subs(Eq[0])
-
+        
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0)
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n1)
 

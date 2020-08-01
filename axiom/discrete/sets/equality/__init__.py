@@ -4,3 +4,4 @@ from . import complement
 from . import intersection
 from . import exists
 from . import contains
+from . import equality
