@@ -231,11 +231,8 @@ class Logic(object):
             b = other.args
         return (a > b) - (a < b)
 
-    def __str__(self):
-        return '%s(%s)' % (self.__class__.__name__,
-                           ', '.join(str(a) for a in self.args))
-
-    __repr__ = __str__
+    def __repr__(self):
+        return str(self)
 
     @staticmethod
     def fromstring(text):
@@ -296,7 +293,7 @@ class AndOr_Base(Logic):
             if a == cls.op_x_notx:
                 return a
             elif a == (not cls.op_x_notx):
-                continue    # skip this argument
+                continue  # skip this argument
             bargs.append(a)
 
         args = sorted(set(cls.flatten(bargs)), key=hash)
@@ -359,6 +356,9 @@ class And(AndOr_Base):
 
         return self
 
+    def __str__(self):
+        return ' & '.join(str(a) for a in self.args)
+
 
 class Or(AndOr_Base):
     op_x_notx = True
@@ -366,6 +366,9 @@ class Or(AndOr_Base):
     def _eval_propagate_not(self):
         # !(a|b|c ...) == !a & !b & !c ...
         return And(*[Not(a) for a in self.args])
+
+    def __str__(self):
+        return ' | '.join(str(a) for a in self.args)
 
 
 class Not(Logic):
@@ -390,6 +393,11 @@ class Not(Logic):
     @property
     def arg(self):
         return self.args[0]
+
+    def __str__(self):
+        if isinstance(self.arg, AndOr_Base):
+            return '!(%s)' % str(self.arg) 
+        return '!' + str(self.arg)
 
 
 Logic.op_2class['&'] = And

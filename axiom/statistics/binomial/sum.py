@@ -63,7 +63,7 @@ def prove(Eq):
     complement = univeralSet - union
     print(complement)
     print(complement & domain)
-*******
+
     p = Symbol("p", domain=Interval(0, 1, left_open=True, right_open=True))
 
     x0 = Binomial('x0', n0, p)

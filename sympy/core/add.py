@@ -604,8 +604,7 @@ class Add(Expr, AssocOp):
                 return
         return False
 
-    @property
-    def is_extended_positive(self):
+    def _eval_is_extended_positive(self):
         from sympy.core.exprtools import _monotonic_sign
         if self.is_number:
             return super(Add, self).is_extended_positive()
@@ -659,8 +658,7 @@ class Add(Expr, AssocOp):
         elif not pos and not nonneg:
             return False
 
-    @property
-    def is_extended_nonnegative(self):
+    def _eval_is_extended_nonnegative(self):
         from sympy.core.exprtools import _monotonic_sign
         if not self.is_number:
             c, a = self.as_coeff_Add()
@@ -675,8 +673,7 @@ class Add(Expr, AssocOp):
                         if v is not None and v != self and v.is_extended_nonnegative:
                             return True
 
-    @property
-    def is_extended_nonpositive(self):
+    def _eval_is_extended_nonpositive(self):
         from sympy.core.exprtools import _monotonic_sign
         if not self.is_number:
             c, a = self.as_coeff_Add()
@@ -691,8 +688,7 @@ class Add(Expr, AssocOp):
                         if v is not None and v != self and v.is_extended_nonpositive:
                             return True
      
-    @property
-    def is_extended_negative(self):
+    def _eval_is_extended_negative(self):
         from sympy.core.exprtools import _monotonic_sign
         if self.is_number:
             return super(Add, self).is_extended_negative
@@ -1380,10 +1376,6 @@ class Add(Expr, AssocOp):
             return self.func(*self.args[:-1])
         return self
 
-    @property
-    def is_zero(self):
-        return None
-
     def as_one_term(self):
         from sympy import Integral
         function = []
@@ -1447,17 +1439,13 @@ class Add(Expr, AssocOp):
 
         return self.func(*args)
 
-    @property
-    def is_nonzero(self):
-        if 'nonzero' in self._assumptions:
-            return self._assumptions['nonzero']
+    def _eval_is_nonzero(self):
         value = None
         if len(self.args) == 2:
             if self.min() > 0:
                 value = True
             elif self.max() < 0:
                 value = True    
-        self._assumptions['nonzero'] = value
         return value
 
 from .mul import Mul, _keep_coeff, prod

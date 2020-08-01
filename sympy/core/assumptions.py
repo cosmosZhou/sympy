@@ -308,7 +308,8 @@ def _ask(fact, obj):
     else:
         a = evaluate(obj)
         if a is not None:
-            assumptions.deduce_all_facts(((fact, a),))
+#             assumptions.deduce_all_facts(((fact, a),))
+            assumptions[fact] = a
             return a
 
     # Try assumption's prerequisites
