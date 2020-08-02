@@ -259,6 +259,8 @@ def make_property(fact):
 
     def getit(self):
         try:
+            if fact == 'negative':
+                return self._assumptions[fact]
             return self._assumptions[fact]
         except KeyError:
             if self._assumptions is self.default_assumptions:

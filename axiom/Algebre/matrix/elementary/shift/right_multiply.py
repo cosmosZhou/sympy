@@ -7,6 +7,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Shift
+from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
 @plausible
@@ -26,10 +27,18 @@ def apply(x, w=None):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
+    
+    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
+    i = Symbol('i', domain=Interval(0, j - 1, integer=True))    
+    k = Symbol('k', domain=Interval(0, n - 1, integer=True) - Interval(i, j, integer=True))
+    
+    assert KroneckerDelta(i, k) == 0
+            
     x = Symbol('x', shape=(n,), real=True)
     Eq << apply(x)
     
     i, j = Eq[0].lhs.indices    
+    
 
     w = Eq[0].lhs.base
     

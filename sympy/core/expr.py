@@ -405,8 +405,13 @@ class Expr(Basic, EvalfMixin):
 
             return GreaterThan(self, other, evaluate=False)
         if isinstance(other, Max):
-            if all(self >= arg for arg in other.args):
+            bools = [self >= arg for arg in other.args]
+            if all(bools):
                 return S.true
+            bools = [b.invert() for b in bools]
+            if any(bools):
+                return S.false            
+            
             return GreaterThan(self, other, evaluate=False)
 
         try:
@@ -443,8 +448,12 @@ class Expr(Basic, EvalfMixin):
 
             return LessThan(self, other, evaluate=False)
         if isinstance(other, Min):
-            if all(self <= arg for arg in other.args):
+            bools = [self <= arg for arg in other.args] 
+            if all(bools):
                 return S.true
+            bools = [b.invert() for b in bools]
+            if any(bools):
+                return S.false            
             return LessThan(self, other, evaluate=False)
 
         try:
@@ -481,8 +490,12 @@ class Expr(Basic, EvalfMixin):
             return StrictGreaterThan(self, other, evaluate=False)
 
         if isinstance(other, Max):
-            if all(self > arg for arg in other.args):
+            bools = [self > arg for arg in other.args]
+            if all(bools):
                 return S.true
+            bools = [b.invert() for b in bools]
+            if any(bools):
+                return S.false            
 
             return StrictGreaterThan(self, other, evaluate=False)
 
@@ -520,8 +533,13 @@ class Expr(Basic, EvalfMixin):
             return StrictLessThan(self, other, evaluate=False)
         
         if isinstance(other, Min):
-            if all(self < arg for arg in other.args):
+            bools = [self < arg for arg in other.args]
+            if all(bools):
                 return S.true
+            bools = [b.invert() for b in bools]
+            if any(bools):
+                return S.false            
+            
             return StrictLessThan(self, other, evaluate=False)
 
         try:
