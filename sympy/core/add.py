@@ -304,7 +304,7 @@ class Add(Expr, AssocOp):
         """Nice order of classes"""
         return 3, 1, cls.__name__
 
-    def as_coefficients_dict(a):
+    def as_coefficients_dict(self):
         """Return a dictionary mapping terms to their Rational coefficient.
         Since the dictionary is a defaultdict, inquiries about terms which
         were not present will return a coefficient of 0. If an expression is
@@ -323,7 +323,7 @@ class Add(Expr, AssocOp):
         """
 
         d = defaultdict(list)
-        for ai in a.args:
+        for ai in self.args:
             c, m = ai.as_coeff_Mul()
             d[m].append(c)
         for k, v in d.items():
@@ -506,8 +506,7 @@ class Add(Expr, AssocOp):
     # assumption methods
     _eval_is_real = lambda self: _fuzzy_group(
         (a.is_real for a in self.args), quick_exit=True)
-    _eval_is_extended_real = lambda self: _fuzzy_group(
-        (a.is_extended_real for a in self.args), quick_exit=True)
+#     _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)
     _eval_is_complex = lambda self: _fuzzy_group(
         (a.is_complex for a in self.args), quick_exit=True)
     _eval_is_antihermitian = lambda self: _fuzzy_group(
@@ -524,6 +523,8 @@ class Add(Expr, AssocOp):
         (a.is_algebraic for a in self.args), quick_exit=True)
     _eval_is_commutative = lambda self: _fuzzy_group(
         a.is_commutative for a in self.args)
+
+    _eval_is_extended_real = _eval_is_real
 
     def _eval_is_imaginary(self):
         nz = []
@@ -584,13 +585,6 @@ class Add(Expr, AssocOp):
         if b.is_zero is False:
             return False
 
-    def _eval_is_odd(self):
-        l = [f for f in self.args if not (f.is_even is True)]
-        if not l:
-            return False
-        if l[0].is_odd:
-            return self._new_rawargs(*l[1:]).is_even
-
     def _eval_is_irrational(self):
         for t in self.args:
             a = t.is_irrational
@@ -603,105 +597,98 @@ class Add(Expr, AssocOp):
             if a is None:
                 return
         return False
-
-    def _eval_is_extended_positive(self):
-        from sympy.core.exprtools import _monotonic_sign
+    
+    def _eval_is_positive(self):
+        is_infinitesimal = self.is_infinitesimal
+        if is_infinitesimal is True:
+            self.clear_infinitesimal().is_nonnegative
+        elif is_infinitesimal is False:
+            return self.clear_infinitesimal().is_positive
+        
         if self.is_number:
-            return super(Add, self).is_extended_positive()
+            return super(Add, self)._eval_is_positive()
+        
+        f = self.min()
+        if f is not self and f.is_positive:
+            return True
+        f = self.max()
+        if f is not self and f.is_nonpositive:
+            return False
+    
+    def _eval_is_nonnegative(self):
+        is_infinitesimal = self.is_infinitesimal
+        if is_infinitesimal is True:
+            self.clear_infinitesimal().is_nonnegative
+        elif is_infinitesimal is False:
+            return self.clear_infinitesimal().is_positive
+        
+        from sympy.core.exprtools import _monotonic_sign
+        if not self.is_number:
+            c, a = self.as_coeff_Add()
+            if not c.is_zero and a.is_nonnegative:
+                v = _monotonic_sign(a)
+                if v is not None:
+                    s = v + c
+                    if s != self and s.is_nonnegative:
+                        return True
+                    if len(self.free_symbols) == 1:
+                        v = _monotonic_sign(self)
+                        if v is not None and v != self and v.is_nonnegative:
+                            return True
+        f = self.min()
+        if f is not self and f.is_nonnegative:
+            return True
+        f = self.max()
+        if f is not self and f.is_negative:
+            return False
+    
+    def _eval_is_nonpositive(self):
+        is_infinitesimal = self.is_infinitesimal
+        if is_infinitesimal is True:
+            self.clear_infinitesimal().is_negative
+        elif is_infinitesimal is False:
+            return self.clear_infinitesimal().is_nonpositive
+        
+        from sympy.core.exprtools import _monotonic_sign
+        if not self.is_number:
+            c, a = self.as_coeff_Add()
+            if not c.is_zero and a.is_nonpositive:
+                v = _monotonic_sign(a)
+                if v is not None:
+                    s = v + c
+                    if s != self and s.is_nonpositive:
+                        return True
+                    if len(self.free_symbols) == 1:
+                        v = _monotonic_sign(self)
+                        if v is not None and v != self and v.is_nonpositive:
+                            return True
+        f = self.max()
+        if f is not self and f.is_nonpositive:
+            return True
+        f = self.min()
+        if f is not self and f.is_positive:
+            return False
+    
+    def _eval_is_negative(self):
+        is_infinitesimal = self.is_infinitesimal
+        if is_infinitesimal is True:
+            self.clear_infinitesimal().is_negative
+        elif is_infinitesimal is False:
+            return self.clear_infinitesimal().is_nonpositive
+            
+        from sympy.core.exprtools import _monotonic_sign
+        if self.is_number:            
+            return super(Add, self).is_negative
         c, a = self.as_coeff_Add()
         if not c.is_zero:
             v = _monotonic_sign(a)
             if v is not None:
                 s = v + c
-                if s != self and s.is_extended_positive and a.is_extended_nonnegative:
+                if s != self and s.is_negative and a.is_nonpositive:
                     return True
                 if len(self.free_symbols) == 1:
                     v = _monotonic_sign(self)
-                    if v is not None and v != self and v.is_extended_positive:
-                        return True
-        pos = nonneg = nonpos = unknown_sign = False
-        saw_INF = set()
-        args = [a for a in self.args if not a.is_zero]
-        if not args:
-            return False
-        for a in args:
-            ispos = a.is_extended_positive
-            infinite = a.is_infinite
-            if infinite:
-                saw_INF.add(fuzzy_or((ispos, a.is_extended_nonnegative)))
-                if True in saw_INF and False in saw_INF:
-                    return
-            if ispos:
-                pos = True
-                continue
-            elif a.is_extended_nonnegative:
-                nonneg = True
-                continue
-            elif a.is_extended_nonpositive:
-                nonpos = True
-                continue
-
-            if infinite is None:
-                return
-            unknown_sign = True
-
-        if saw_INF:
-            if len(saw_INF) > 1:
-                return
-            return saw_INF.pop()
-        elif unknown_sign:
-            return
-        elif not nonpos and not nonneg and pos:
-            return True
-        elif not nonpos and pos:
-            return True
-        elif not pos and not nonneg:
-            return False
-
-    def _eval_is_extended_nonnegative(self):
-        from sympy.core.exprtools import _monotonic_sign
-        if not self.is_number:
-            c, a = self.as_coeff_Add()
-            if not c.is_zero and a.is_extended_nonnegative:
-                v = _monotonic_sign(a)
-                if v is not None:
-                    s = v + c
-                    if s != self and s.is_extended_nonnegative:
-                        return True
-                    if len(self.free_symbols) == 1:
-                        v = _monotonic_sign(self)
-                        if v is not None and v != self and v.is_extended_nonnegative:
-                            return True
-
-    def _eval_is_extended_nonpositive(self):
-        from sympy.core.exprtools import _monotonic_sign
-        if not self.is_number:
-            c, a = self.as_coeff_Add()
-            if not c.is_zero and a.is_extended_nonpositive:
-                v = _monotonic_sign(a)
-                if v is not None:
-                    s = v + c
-                    if s != self and s.is_extended_nonpositive:
-                        return True
-                    if len(self.free_symbols) == 1:
-                        v = _monotonic_sign(self)
-                        if v is not None and v != self and v.is_extended_nonpositive:
-                            return True
-     
-    def _eval_is_extended_negative(self):
-        from sympy.core.exprtools import _monotonic_sign
-        if self.is_number:
-            return super(Add, self).is_extended_negative
-        c, a = self.as_coeff_Add()
-        if not c.is_zero:
-            v = _monotonic_sign(a)
-            if v is not None:
-                s = v + c
-                if s != self and s.is_extended_negative and a.is_extended_nonpositive:
-                    return True
-                if len(self.free_symbols) == 1:
-                    v = _monotonic_sign(self)
-                    if v is not None and v != self and v.is_extended_negative:
+                    if v is not None and v != self and v.is_negative:
                         return True
         neg = nonpos = nonneg = unknown_sign = False
         saw_INF = set()
@@ -712,10 +699,10 @@ class Add(Expr, AssocOp):
         saw_supremum = False
         saw_finite = False
         for i, a in enumerate(args):
-            isneg = a.is_extended_negative
+            isneg = a.is_negative
             infinite = a.is_infinite
             if infinite:
-                saw_INF.add(fuzzy_or((isneg, a.is_extended_nonpositive)))
+                saw_INF.add(fuzzy_or((isneg, a.is_nonpositive)))
                 if True in saw_INF and False in saw_INF:
                     return
                 
@@ -723,11 +710,11 @@ class Add(Expr, AssocOp):
                 neg = True
                 continue
             
-            if a.is_extended_nonpositive:
+            if a.is_nonpositive:
                 nonpos = True
                 continue
             
-            if a.is_extended_nonnegative:
+            if a.is_nonnegative:
                 nonneg = True
                 continue
             
@@ -749,7 +736,7 @@ class Add(Expr, AssocOp):
             return saw_INF.pop()
         
         if saw_supremum: 
-            return Add(*args).is_extended_negative            
+            return Add(*args).is_negative            
             
         if saw_finite:
             return
@@ -764,7 +751,19 @@ class Add(Expr, AssocOp):
             return True
         
         if not neg and not nonpos:
-            return False        
+            return False
+        
+        f = self.max()
+        if f is not self and f.is_negative:
+            return True
+        f = self.min()
+        if f is not self and f.is_nonnegative:
+            return False
+
+    _eval_is_extended_positive = _eval_is_positive
+    _eval_is_extended_nonnegative = _eval_is_nonnegative    
+    _eval_is_extended_nonpositive = _eval_is_nonpositive    
+    _eval_is_extended_negative = _eval_is_negative
 
     def _eval_subs(self, old, new):
         if not old.is_Add:
@@ -850,7 +849,7 @@ class Add(Expr, AssocOp):
             lst = new_lst
         return tuple(lst)
 
-    def as_real_imag(self, deep=True, **hints):
+    def as_real_imag(self, deep=True, **_):
         """
         returns a tuple representing a complex number
 
@@ -1346,12 +1345,10 @@ class Add(Expr, AssocOp):
 
         return Expr.__mul__(self, other)
 
-    @property
-    def is_finite(self):
+    def _eval_is_finite(self):
         return True
 
-    @property
-    def is_odd(self):
+    def _eval_is_odd(self):
         odd = False
         for arg in self.args:
             if arg.is_even:
@@ -1405,8 +1402,7 @@ class Add(Expr, AssocOp):
 
         return Integral(self.func(*function), *limits)
 
-    @property
-    def is_integer(self):
+    def _eval_is_integer(self):
         non_integer_count = 0
         for arg in self.args:
             is_integer = arg.is_integer
@@ -1426,7 +1422,7 @@ class Add(Expr, AssocOp):
     def __iter__(self):
         raise TypeError
 
-    def __getitem__(self, index, **kwargs):
+    def __getitem__(self, index, **_):
         args = []
         for arg in self.args:
             shape_length = len(arg.shape)
@@ -1447,6 +1443,7 @@ class Add(Expr, AssocOp):
             elif self.max() < 0:
                 value = True    
         return value
+
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

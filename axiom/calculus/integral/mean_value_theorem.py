@@ -80,7 +80,7 @@ def prove(Eq):
     
     Eq << Eq[1].subs(Eq[1].variable, z)
     
-    Eq << Eq[-1].rewrite(index=1)
+#     Eq << Eq[-1].rewrite(index=1)
 
     
 if __name__ == '__main__':

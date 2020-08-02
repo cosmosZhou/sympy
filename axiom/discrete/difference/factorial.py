@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.as_Sum()
 
-    Eq << Eq[-1].this.lhs.bisect(back=1)
+    Eq << Eq[-1].this.lhs.bisect(domain=n.set)
 
     Eq << Eq[-1].subs(Eq[0])
 

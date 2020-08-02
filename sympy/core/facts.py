@@ -118,7 +118,7 @@ def deduce_alpha_implications(implications):
     full_implications = transitive_closure(implications)
     for a, b in full_implications:
         if a == b:
-            continue    # skip a->a cyclic input
+            continue  # skip a->a cyclic input
 
         res[a].add(b)
 
@@ -145,14 +145,14 @@ def apply_beta_to_alpha_route(alpha_implications, beta_rules):
 
        e.g.
 
-       alpha_implications:
+       alpha_implications, a one-to-many mapping:
 
        a  ->  [b, !c, d]
        b  ->  [d]
        ...
 
 
-       beta_rules:
+       beta_rules, a many-to-one mapping:
 
        &(b,d) -> e
 
@@ -290,8 +290,8 @@ class Prover(object):
 
     def split_alpha_beta(self):
         """split proved rules into alpha and beta chains"""
-        rules_alpha = []    # a      -> b
-        rules_beta = []     # &(...) -> b
+        rules_alpha = []  # a      -> b
+        rules_beta = []  # &(...) -> b
         for a, b in self.proved_rules:
             if isinstance(a, And):
                 rules_beta.append((a, b))
@@ -308,7 +308,7 @@ class Prover(object):
         return self.split_alpha_beta()[1]
 
     def process_rule(self, a, b):
-        """process a -> b rule"""   # TODO write more?
+        """process a -> b rule"""  # TODO write more?
         if (not a) or isinstance(b, bool):
             return
         if isinstance(a, bool):
@@ -338,7 +338,7 @@ class Prover(object):
         #               -->   a & !c -> b
         elif isinstance(b, Or):
             # detect tautology first
-            if not isinstance(a, Logic):    # Atom
+            if not isinstance(a, Logic):  # Atom
                 # tautology:  a -> a|c|...
                 if a in b.args:
                     raise TautologyDetected(a, b, 'a -> a|c|...')
@@ -367,8 +367,8 @@ class Prover(object):
 
         else:
             # both `a` and `b` are atoms
-            self.proved_rules.append((a, b))             # a  -> b
-            self.proved_rules.append((Not(b), Not(a)))   # !b -> !a
+            self.proved_rules.append((a, b))  # a  -> b
+            self.proved_rules.append((Not(b), Not(a)))  # !b -> !a
 
 ########################################
 
@@ -454,7 +454,9 @@ class FactRules(object):
             beta_triggers[_as_pair(k)] = betaidxs
 
         self.full_implications = full_implications
+        # for (k, truth), v in self.full_implications.items(): print(k if truth else '!'+k, '=>', ' & '.join(v if truth else '!' + v for v, truth in v))
         self.beta_triggers = beta_triggers
+        # !composite : ['positive & !composite & !prime => !even', '!composite & !prime & even => !positive', 'positive & !composite & even => prime']
 
         # build prereq (backward chains)
         prereq = defaultdict(set)
@@ -462,9 +464,17 @@ class FactRules(object):
         for k, pitems in rel_prereq.items():
             prereq[k] |= pitems
         self.prereq = prereq
+        
+        self.sufficient_conditions = defaultdict(set)
+        for k, implications in self.full_implications.items():            
+            for v in implications: 
+                self.sufficient_conditions[v].add(k)
+                
+#         for (v, v_truth), implications in self.sufficient_conditions.items(): print(' | '.join(k if k_truth else '!' + k for k, k_truth in implications), '=>', v if v_truth else '!' + v) 
 
 
 class InconsistentAssumptions(ValueError):
+
     def __str__(self):
         kb, fact, value = self.args
         return "%s, %s=%s" % (kb, fact, value)
@@ -474,6 +484,7 @@ class FactKB(dict):
     """
     A simple propositional knowledge base relying on compiled inference rules.
     """
+
     def __str__(self):
         return '{\n%s}' % ',\n'.join(
             ["\t%s: %s" % i for i in sorted(self.items())])

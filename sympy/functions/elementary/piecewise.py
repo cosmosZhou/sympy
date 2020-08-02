@@ -51,8 +51,7 @@ class ExprCondPair(Tuple):
         """
         return self.args[1]
 
-    @property
-    def is_commutative(self):
+    def _eval_is_commutative(self):
         return self.expr.is_commutative
 
     def __iter__(self):
@@ -1375,8 +1374,7 @@ class Piecewise(Function):
             tuples.append((e & b, c))    
         return self.func(*tuples)
 
-    @property
-    def is_integer(self):        
+    def _eval_is_integer(self):        
         for e, _ in self.args:
             if e is S.EmptySet:
                 continue

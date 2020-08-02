@@ -1396,16 +1396,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             
         return domain
 
-    @property
-    def is_real(self):
+    def _eval_is_real(self):
         return self.function.is_real
     
-    @property
-    def is_extended_nonnegative(self):
+    def _eval_is_extended_nonnegative(self):
         return self.function.is_extended_nonnegative
     
-    @property
-    def is_extended_nonpositive(self):
+    def _eval_is_extended_nonpositive(self):
         return self.function.is_extended_nonpositive
 
     def _sympystr(self, p):

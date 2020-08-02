@@ -24,8 +24,10 @@ def apply(n, w=None):
 
 
 @check
-def prove(Eq): 
+def prove(Eq):    
     n = Symbol('n', domain=Interval(2, oo, integer=True))
+    assert 0 in Interval(0, n - 1, integer=True)
+    
     Eq << apply(n)
     
     i, _ = Eq[-1].rhs.indices

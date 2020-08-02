@@ -58,6 +58,9 @@ def prove(Eq):
     j = Symbol('j', domain=Interval(0, k, integer=True) - {i})
     
     assert j <= k
+    assert k >= j
+    assert (j - k).is_nonpositive
+    assert (k - j).is_nonnegative
 
     x = IndexedBase('x', shape=(k + 1,), dtype=dtype.integer)
 

@@ -33,7 +33,7 @@ from sympy.utilities.misc import filldedent
 
 class Integral(AddWithLimits):
     """Represents unevaluated integral."""
-
+    is_Integral = True
     __slots__ = ['is_commutative']
 
     def __new__(cls, function, *symbols, **assumptions):

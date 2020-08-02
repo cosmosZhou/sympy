@@ -113,7 +113,10 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Slice = False
     is_UniversalSet = None
     is_Abs = False
+    
     is_Sum = False
+    is_Integral = False
+    
     is_ConditionSet = False
     is_ExprWithLimits = False
     is_Ref = False
@@ -2158,6 +2161,51 @@ class Basic(with_metaclass(ManagedProperties)):
     @property
     def domain_assumed(self):
         ...
+    
+    def _ask(self, fact):
+        """
+        Find the truth value for a property of an object.
+    
+        This function is called when a request is made to see what a fact
+        value is.
+    
+        For this we use several techniques:
+    
+        First, the fact-evaluation function is tried, if it exists (for
+        example _eval_is_integer). Then we try related facts. For example
+    
+            rational   -->   integer
+    
+        another example is joined rule:
+    
+            integer & !odd  --> even
+    
+        so in the latter case if we are looking at what 'even' value is,
+        'integer' and 'odd' facts will be asked.
+    
+        In all cases, when we settle on some fact value, its implications are
+        deduced, and the result is cached in ._assumptions.
+        """
+        assumptions = self._assumptions
+        
+        from sympy.core.assumptions import _assume_rules
+        a = None
+        for sufficient_fact, truth in _assume_rules.sufficient_conditions[(fact, True)]:
+            if assumptions.get(sufficient_fact) == truth:
+                a = True
+                break
+            
+        for sufficient_fact, truth in _assume_rules.sufficient_conditions[(fact, False)]:
+            if assumptions.get(sufficient_fact) == truth:
+                a = False
+                break
+        
+        if a is None:
+            evaluate = self._prop_handler.get(fact)
+            if evaluate is not None:
+                a = evaluate(self)    
+        assumptions[fact] = a
+        return a
     
 class Atom(Basic):
     """

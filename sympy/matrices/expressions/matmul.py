@@ -335,8 +335,7 @@ class MatMul(MatrixExpr, Mul):
 
         return MatrixExpr.expand(self)
 
-    @property
-    def is_integer(self):
+    def _eval_is_integer(self):
         for elem in self.args:
             is_integer = elem.is_integer
             if is_integer:
@@ -371,8 +370,7 @@ class MatMul(MatrixExpr, Mul):
     def as_ordered_factors(self, **_):
         return [self]
 
-    @property
-    def is_extended_real(self):
+    def _eval_is_extended_real(self):
         if self.shape:
             return False
         return True

@@ -1712,8 +1712,7 @@ class Pow(Expr):
             new_e = e.subs(n, n + step)
             return (b ** (new_e - e) - 1) * self
 
-    @property
-    def is_nonzero(self):
+    def _eval_is_nonzero(self):
         if self.base.is_nonzero:
             return True
         if self.exp < 0:

@@ -458,16 +458,10 @@ class Symbol(AtomicExpr, NotIterable):
             return x.domain - {0}
         return Expr.domain_nonzero(self, x)
 
-    @property
-    def is_integer(self):
-        if 'integer' in self._assumptions:
-            integer = self._assumptions['integer']
-            if integer is not None:
-                return integer
+    def _eval_is_integer(self):
         if 'domain' in self._assumptions:
             domain = self._assumptions['domain']
             return domain.is_integer
-        return None
 
     @property
     def is_set(self):
@@ -712,74 +706,63 @@ class Symbol(AtomicExpr, NotIterable):
     def _sympystr(self, _):   
         return Symbol.sympystr(self.name)     
 
-    @property
-    def is_complex(self):
-        if 'complex' in self._assumptions:
-            return self._assumptions['complex']
-        self._assumptions['complex'] = None
-        
-    @property         
-    def is_extended_real(self):
-        if 'extended_real' in self._assumptions:
-            return self._assumptions['extended_real']
-        self._assumptions['extended_real'] = True
-        return True        
-    
-    @property
-    def is_extended_nonpositive(self):
-        if 'extended_nonpositive' in self._assumptions:
-            return self._assumptions['extended_nonpositive']
-        value = None
-                
-        if 'negative' in self._assumptions:
-            value = True
-        elif 'extended_negative' in self._assumptions:
-            value = True
-        elif 'domain' in self._assumptions:
-            value = self._assumptions['domain'].is_extended_nonpositive
-
-        self._assumptions['extended_nonpositive'] = value
-        return value   
+    def _eval_is_nonpositive(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_nonpositive
                  
-    @property
-    def is_extended_nonnegative(self):
-        if 'extended_nonnegative' in self._assumptions:
-            return self._assumptions['extended_nonnegative']
-        value = None
-                
-        if 'positive' in self._assumptions:
-            value = True
-        elif 'extended_positive' in self._assumptions:
-            value = True
-        elif 'domain' in self._assumptions:
-            value = self._assumptions['domain'].extended_nonnegative
+    def _eval_is_nonnegative(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_nonnegative
 
-        self._assumptions['extended_nonnegative'] = value
-        return value   
+    def _eval_is_positive(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_positive
+                 
+    def _eval_is_negative(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_negative
 
-    @property
-    def is_nonzero(self):
-        if 'nonzero' in self._assumptions:
-            return self._assumptions['nonzero']
+
+    def _eval_is_nonzero(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_nonzero
         
-        value = None
-        if 'positive' in self._assumptions:
-            if self._assumptions['positive']:
-                value = True            
-        elif 'extended_positive' in self._assumptions:
-            if self._assumptions['extended_positive']:
-                value = True        
-        elif 'negative' in self._assumptions:
-            if self._assumptions['negative']:
-                value = True            
-        elif 'extended_negative' in self._assumptions:
-            if self._assumptions['extended_negative']:
-                value = True         
-        elif 'domain' in self._assumptions:
-            value = self._assumptions['domain'].is_nonzero
+    _eval_is_extended_nonpositive = _eval_is_nonpositive
+    _eval_is_extended_nonnegative = _eval_is_nonnegative
+    _eval_is_extended_positive = _eval_is_positive
+    _eval_is_extended_negative = _eval_is_negative
+    
+    def __hash__(self):
+        return super(Symbol, self).__hash__()        
+
+    def __eq__(self, other):
+        try:
+            other = sympify(other)
+            if type(other) != type(self):
+                return False
+        except :
+            return False
         
-        self._assumptions['nonzero'] = value
-        return value
+        if self.name != other.name:
+            return False
+        
+        if ('domain' in self._assumptions) != ('domain' in other._assumptions):
+            return False
+        
+        for fact in self._assumptions.keys() & other._assumptions.keys():
+            if self._assumptions[fact] != other._assumptions[fact]:
+                return False
+
+        for fact in self._assumptions.keys() - other._assumptions.keys() - {'domain'}:            
+            if other._ask(fact) != self._assumptions[fact]:
+                return False
+            
+        for fact in other._assumptions.keys() - self._assumptions.keys() - {'domain'}:
+            if self._ask(fact) != other._assumptions[fact]:
+                return False
+
+        return True
+
 
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:

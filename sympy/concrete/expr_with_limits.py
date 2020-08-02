@@ -163,8 +163,7 @@ class ExprWithLimits(Expr):
     __slots__ = ['is_commutative']
     is_ExprWithLimits = True
 
-    @property
-    def is_integer(self):
+    def _eval_is_integer(self):
         return self.function.is_integer
 
     def finite_aggregate(self, x, s):
@@ -1167,25 +1166,21 @@ class Minimum(ExprWithLimits):
         if p is not None:
             if p.degree() == 1:
                 a = p.coeff_monomial(x)
-    #             beta = p.coeff_monomial(S.One)
-                if a.is_number:
-                    if a > 0:
-                        return self.function.subs(x, domain.min())
-                    else:
-                        return self.function.subs(x, domain.max())
+                if a.is_positive:
+                    return self.function.subs(x, domain.min())
+                elif a.is_negative:
+                    return self.function.subs(x, domain.max())
             elif p.degree() == 2:
                 a = p.coeff_monomial(x * x)
-                if a.is_number:
-                    if a < 0:
-                        return Min(*bounds(self.function, x, domain))
-                    elif a > 0:
-                        b = p.coeff_monomial(x)
-                        zero_point = -b / (2 * a)
-                        if zero_point in domain:
-                            c = p.coeff_monomial(x)
-                            return (4 * a * c - b * b) / (4 * a)
-                        return Min(*bounds(self.function, x, domain))
-
+                if a.is_negative:
+                    return Min(*bounds(self.function, x, domain))
+                elif a.is_positive:
+                    b = p.coeff_monomial(x)
+                    zero_point = -b / (2 * a)
+                    if zero_point in domain:
+                        c = p.coeff_monomial(x)
+                        return (4 * a * c - b * b) / (4 * a)
+                    return Min(*bounds(self.function, x, domain))
             elif p.degree() <= 0:
                 return self.function
         elif isinstance(self.function, MinMaxBase):
@@ -1847,14 +1842,12 @@ class Minimum(ExprWithLimits):
             return self.function.shape
         return self.function.shape[:-1]
 
-    @property
-    def is_extended_nonnegative(self):
+    def _eval_is_extended_nonnegative(self):
         if not self.limits and self.function.is_set:
             if self.function.infimum() >= 0:
                 return True
 
-    @property
-    def is_extended_positive(self):
+    def _eval_is_extended_positive(self):
         if not self.limits and self.function.is_set:
             if self.function.infimum() > 0:
                 return True
@@ -1899,25 +1892,21 @@ class Maximum(ExprWithLimits):
         if p is not None:
             if p.degree() == 1:
                 a = p.coeff_monomial(x)
-                if a.is_number:
-                    if a > 0:
-                        return self.function.subs(x, domain.max())
-                    else:
-                        return self.function.subs(x, domain.min())
+                if a.is_positive:
+                    return self.function.subs(x, domain.max())
+                elif a.is_negative:
+                    return self.function.subs(x, domain.min())
             elif p.degree() == 2:
                 a = p.coeff_monomial(x * x)
-                if a.is_number:
-                    if a > 0:
-                        return Max(*bounds(self.function, x, domain))
-                    elif a > 0:
-                        b = p.coeff_monomial(x)
-                        zero_point = -b / (2 * a)
-                        if zero_point in domain:
-                            c = p.coeff_monomial(x)
-                            return (4 * a * c - b * b) / (4 * a)
-                        return Max(*bounds(self.function, x, domain))
-                    else:
-                        return self
+                if a.is_positive:
+                    return Max(*bounds(self.function, x, domain))
+                elif a.is_negative:
+                    b = p.coeff_monomial(x)
+                    zero_point = -b / (2 * a)
+                    if zero_point in domain:
+                        c = p.coeff_monomial(x)
+                        return (4 * a * c - b * b) / (4 * a)
+                    return Max(*bounds(self.function, x, domain))
             elif p.degree() <= 0:
                 return self.function
         elif isinstance(self.function, MinMaxBase):
@@ -2586,14 +2575,12 @@ class Maximum(ExprWithLimits):
             return self.function.supremum()
         return self
 
-    @property
-    def is_extended_nonpositive(self):
+    def _eval_is_extended_nonpositive(self):
         if not self.limits and self.function.is_set:
             if self.function.supremum() <= 0:
                 return True
 
-    @property
-    def is_extended_negative(self):
+    def _eval_is_extended_negative(self):
         if not self.limits and self.function.is_set:
             if self.function.supremum() < 0:
                 return True

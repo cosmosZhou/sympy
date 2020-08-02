@@ -1209,16 +1209,34 @@ class Interval(Set, EvalfMixin):
     def element_symbol(self, excludes=set()):
         return generate_free_symbol(self.free_symbols | excludes, integer=self.is_integer)
 
-    @property
-    def is_nonnegative(self):
-        return self.min() >= 0
+    def _eval_is_extended_nonpositive(self):
+        if self.min().is_extended_positive:
+            return False
+        if self.max().is_extended_nonpositive:
+            return True
+        
+    def _eval_is_extended_negative(self):
+        if self.min().is_extended_nonnegative:
+            return False
+        if self.max().is_extended_negative:
+            return True
 
-    @property
-    def is_integer(self):
+    def _eval_is_extended_nonnegative(self):
+        if self.max().is_extended_negative:
+            return False
+        if self.min().is_extended_nonnegative:
+            return True
+
+    def _eval_is_extended_positive(self):
+        if self.max().is_extended_nonpositive:
+            return False
+        if self.min().is_extended_positive:
+            return True
+
+    def _eval_is_integer(self):
         return self.args[4]
 
-    @property
-    def is_real(self):
+    def _eval_is_real(self):
         return not self.args[4]
 
     @property
@@ -1645,17 +1663,17 @@ class Union(Set, LatticeOp, EvalfMixin):
         # We use Min so that sup is meaningful in combination with symbolic
         # interval end points.
         from sympy.functions.elementary.miscellaneous import Min
-        return Min(*[set.inf for set in self.args])
+        return Min(*[s.inf for s in self.args])
 
     @property
     def _sup(self):
         # We use Max so that sup is meaningful in combination with symbolic
         # end points.
         from sympy.functions.elementary.miscellaneous import Max
-        return Max(*[set.sup for set in self.args])
+        return Max(*[s.sup for s in self.args])
 
     def _contains(self, other):
-        return Or(*[set.contains(other) for set in self.args])
+        return Or(*[s.contains(other) for s in self.args])
 
     @property
     def _measure(self):
@@ -1689,12 +1707,12 @@ class Union(Set, LatticeOp, EvalfMixin):
             # Clear out duplicates
             sos_list = []
             sets_list = []
-            for set in sets:
-                if set[0] in sos_list:
+            for s in sets:
+                if s[0] in sos_list:
                     continue
                 else:
-                    sos_list.append(set[0])
-                    sets_list.append(set)
+                    sos_list.append(s[0])
+                    sets_list.append(s)
             sets = sets_list
 
             # Flip Parity - next time subtract/add if we added/subtracted here
@@ -1721,7 +1739,7 @@ class Union(Set, LatticeOp, EvalfMixin):
             if (a.sup == b.inf and a.inf is S.NegativeInfinity
                     and b.sup is S.Infinity):
                 return And(Ne(symbol, a.sup), symbol < b.sup, symbol > a.inf)
-        return Or(*[set.as_relational(symbol) for set in self.args])
+        return Or(*[s.as_relational(symbol) for s in self.args])
 
     @property
     def is_iterable(self):
@@ -1729,7 +1747,7 @@ class Union(Set, LatticeOp, EvalfMixin):
 
     def _eval_evalf(self, prec):
         try:
-            return Union(*(set._eval_evalf(prec) for set in self.args))
+            return Union(*(s._eval_evalf(prec) for s in self.args))
         except (TypeError, ValueError, NotImplementedError):
             import sys
             raise (TypeError("Not all sets are evalf-able"),
@@ -1757,7 +1775,7 @@ class Union(Set, LatticeOp, EvalfMixin):
                     pending -= 1
                     nexts = itertools.cycle(itertools.islice(nexts, pending))
 
-        if all(set.is_iterable for set in self.args):
+        if all(s.is_iterable for s in self.args):
             return roundrobin(*(iter(arg) for arg in self.args))
         else:
             raise TypeError("Not all constituent sets are iterable")
@@ -1923,7 +1941,7 @@ class Intersection(Set, LatticeOp):
         raise NotImplementedError()
 
     def _contains(self, other):
-        return And(*[set.contains(other) for set in self.args])
+        return And(*[s.contains(other) for s in self.args])
 
     def __iter__(self):
         no_iter = True

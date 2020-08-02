@@ -2758,7 +2758,9 @@ class One(with_metaclass(Singleton, IntegerConstant)):
         else:
             return {}
 
-
+    is_nonnegative = True
+    is_positive = True
+        
 class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     """The number negative one.
 
@@ -2783,7 +2785,9 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
 
     """
     is_number = True
-
+    is_nonpositive = True
+    is_negative = True
+    
     p = -1
     q = 1
 

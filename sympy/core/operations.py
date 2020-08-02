@@ -387,16 +387,14 @@ class AssocOp(Basic):
                 shape = _shape
         return shape
 
-    @property
-    def is_integer(self):
+    def _eval_is_integer(self):
         for arg in self.args:
             if arg.is_integer:
                 continue
             return None
         return True
 
-    @property
-    def is_even(self):
+    def _eval_is_even(self):
         odd = self.is_odd
         if odd is None:
             return odd
@@ -415,8 +413,7 @@ class AssocOp(Basic):
             domain &= arg.domain_defined(x)
         return domain
 
-    @property
-    def is_extended_real(self):
+    def _eval_is_extended_real(self):
         for arg in self.args:
             if arg.is_extended_real is False:
                 return False

@@ -1304,36 +1304,21 @@ class Mul(Expr, AssocOp):
                 return
         return False
 
-    def _eval_is_extended_positive(self):
-        """Return True if self is positive, False if not, and None if it
-        cannot be determined.
-
-        This algorithm is non-recursive and works by keeping track of the
-        sign which changes when a negative or nonpositive is encountered.
-        Whether a nonpositive or nonnegative is seen is also tracked since
-        the presence of these makes it impossible to return True, but
-        possible to return False if the end result is nonpositive. e.g.
-
-            pos * neg * nonpositive -> pos or zero -> None is returned
-            pos * neg * nonnegative -> neg or zero -> False is returned
-        """
-        return self._eval_pos_neg(1)
-
     def _eval_pos_neg(self, sign):
         saw_NON = saw_NOT = False
         for t in self.args:
-            if t.is_extended_positive:
+            if t.is_positive:
                 continue
-            elif t.is_extended_negative:
+            elif t.is_negative:
                 sign = -sign
             elif t.is_zero:
                 if all(a.is_finite for a in self.args):
                     return False
                 return
-            elif t.is_extended_nonpositive:
+            elif t.is_nonpositive:
                 sign = -sign
                 saw_NON = True
-            elif t.is_extended_nonnegative:
+            elif t.is_nonnegative:
                 saw_NON = True
             elif t.is_positive is False:
                 sign = -sign
@@ -1350,9 +1335,6 @@ class Mul(Expr, AssocOp):
             return True
         if sign < 0:
             return False
-
-    def _eval_is_extended_negative(self):
-        return self._eval_pos_neg(-1)
 
     def _eval_is_odd(self):
         is_integer = self.is_integer
@@ -1852,32 +1834,6 @@ class Mul(Expr, AssocOp):
             domain &= arg.domain_nonzero(x)
         return domain
 
-    def as_one_term(self):
-        from sympy.concrete.summations import Sum
-        from sympy.integrals.integrals import Integral
-        sgm = None
-        index = -1
-        for i, arg in enumerate(self.args):
-            if isinstance(arg, (Sum, Integral)):
-                sgm = arg
-                index = i
-        if index < 0 :
-            return self
-
-        args = [*self.args]
-        del args[index]
-
-        args.append(sgm.function)
-
-        return sgm.func(Mul(*args).simplify(), *sgm.limits)
-
-#     def as_Sum(self):
-#         from sympy import Sum
-
-#         if isinstance(self.expr, Sum):
-#             return self.expr.func(self.func(self.expr.function, *self.variable_count).simplify(), *self.expr.limits)
-#         return self
-
     def as_coeff_Sum(self):
         from sympy.concrete import summations
 
@@ -1944,8 +1900,7 @@ class Mul(Expr, AssocOp):
 
         return domain
 
-    @property
-    def is_odd(self):
+    def _eval_is_odd(self):
         if self.is_integer is True:
             odd = True
             for arg in self.args:
@@ -1974,8 +1929,7 @@ class Mul(Expr, AssocOp):
 
         return self.func(*args)
 
-    @property
-    def is_integer(self):
+    def _eval_is_integer(self):
         for elem in self.args:
             is_integer = elem.is_integer
             if is_integer:
@@ -1985,14 +1939,62 @@ class Mul(Expr, AssocOp):
 
     def distribute(self):
         for i, arg in enumerate(self.args):
-            if arg.is_Sum:
+            if arg.is_Sum or arg.is_Integral:
                 args = [*self.args]
-                del args[i]
-                this = self.func(*args)
-                function = (arg.function * this).powsimp()
-                return arg.func(function, *arg.limits).simplify()
+                args[i] = arg.function 
+                function = self.func(*args).powsimp()
+                return arg.func(function, *arg.limits)
         return self
 
+    def _eval_is_nonnegative(self):
+        negative_cnt = 0
+        nonnegatives = []
+        for arg in self.args:
+            if arg.is_negative:
+                negative_cnt += 1
+            else:
+                nonnegatives.append(arg)
+        if negative_cnt & 1:
+            return self.func(*nonnegatives).is_nonpositive
+        if len(nonnegatives) == 1:
+            return nonnegatives[0].is_nonnegative
+
+    def _eval_is_nonpositive(self):
+        negative_cnt = 0
+        nonnegatives = []
+        for arg in self.args:
+            if arg.is_negative:
+                negative_cnt += 1
+            else:
+                nonnegatives.append(arg)
+        if negative_cnt & 1:
+            return self.func(*nonnegatives).is_nonnegative
+        if len(nonnegatives) == 1:
+            return nonnegatives[0].is_nonpositive
+        
+    def _eval_is_negative(self):
+        return self._eval_pos_neg(-1)
+
+    def _eval_is_positive(self):
+        """Return True if self is positive, False if not, and None if it
+        cannot be determined.
+
+        This algorithm is non-recursive and works by keeping track of the
+        sign which changes when a negative or nonpositive is encountered.
+        Whether a nonpositive or nonnegative is seen is also tracked since
+        the presence of these makes it impossible to return True, but
+        possible to return False if the end result is nonpositive. e.g.
+
+            pos * neg * nonpositive -> pos or zero -> None is returned
+            pos * neg * nonnegative -> neg or zero -> False is returned
+        """
+        return self._eval_pos_neg(1)
+        
+    _eval_is_extended_negative = _eval_is_negative
+    _eval_is_extended_positive = _eval_is_positive
+    _eval_is_extended_nonnegative = _eval_is_nonnegative
+    _eval_is_extended_nonpositive = _eval_is_nonpositive
+    
 
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

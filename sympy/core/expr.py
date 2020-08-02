@@ -421,19 +421,11 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 >= 0)
+        
         dif = (self - other).simplify()
-
-#         if self.is_extended_real or other.is_extended_real:
-        if dif.is_extended_nonnegative is not None and dif.is_extended_nonnegative is not dif.is_extended_negative:
+        if dif.is_extended_nonnegative is not None:
             return sympify(dif.is_extended_nonnegative)
         
-        f = dif.min()
-        if f is not dif and f >= 0:
-            return sympify(True)
-        f = dif.max()
-        if f is not dif and f < 0:
-            return sympify(False)
-
         return GreaterThan(self, other, evaluate=False)
 
     def __le__(self, other):
@@ -467,19 +459,11 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 <= 0)
+        
         dif = (self - other).simplify()
-
-#         if self.is_extended_real or other.is_extended_real:
-        if dif.is_extended_nonpositive is not None and dif.is_extended_nonpositive is not dif.is_extended_positive:
+        if dif.is_extended_nonpositive is not None:
             return sympify(dif.is_extended_nonpositive)
         
-        f = dif.max()
-        if f is not dif and f <= 0:
-            return sympify(True)
-        f = dif.min()
-        if f is not dif and f > 0:
-            return sympify(False)
-
         return LessThan(self, other, evaluate=False)
 
     def __gt__(self, other):
@@ -514,18 +498,10 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 > 0)
+        
         dif = (self - other).simplify()
-
-#         if self.is_extended_real or other.is_extended_real:
-        if dif.is_extended_positive is not None and dif.is_extended_positive is not dif.is_extended_nonpositive:
+        if dif.is_extended_positive is not None:
             return sympify(dif.is_extended_positive)
-
-        f = dif.min()
-        if f is not dif and f > 0:
-            return sympify(True)
-        f = dif.max()
-        if f is not dif and f <= 0:
-            return sympify(False)
 
         return StrictGreaterThan(self, other, evaluate=False)
 
@@ -560,18 +536,10 @@ class Expr(Basic, EvalfMixin):
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 < 0)
+        
         dif = (self - other).simplify()
-
-#         if self.is_extended_real or other.is_extended_real:
-        if dif.is_extended_negative is not None and dif.is_extended_negative is not dif.is_extended_nonnegative:
+        if dif.is_extended_negative is not None:
             return sympify(dif.is_extended_negative)
-
-        f = dif.max()
-        if f is not dif and f < 0:
-            return sympify(True)
-        f = dif.min()
-        if f is not dif and f >= 0:
-            return sympify(False)
 
         return StrictLessThan(self, other, evaluate=False)
 

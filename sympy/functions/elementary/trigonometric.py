@@ -90,8 +90,7 @@ class TrigonometricFunction(Function):
 
         raise NotImplementedError("Use the periodicity function instead.")
 
-    @property
-    def is_extended_real(self):
+    def _eval_is_extended_real(self):
         is_extended_real = self.arg.is_extended_real
         if is_extended_real is None:
             return True
@@ -508,8 +507,7 @@ class sin(TrigonometricFunction):
             return -self
         return None
 
-    @property
-    def is_extended_nonnegative(self):
+    def _eval_is_extended_nonnegative(self):
         from sympy import Interval
         domain = self.arg.domain
         if not isinstance(domain, Interval):
@@ -995,8 +993,7 @@ class cos(TrigonometricFunction):
             return -self
         return None
 
-    @property
-    def is_extended_nonnegative(self):
+    def _eval_is_extended_nonnegative(self):
 
         from sympy import Interval
         domain = self.arg.domain

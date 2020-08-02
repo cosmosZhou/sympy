@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Eq
+from sympy.utility import plausible
 
 from sympy.utility import Sum
 from axiom.discrete.combinatorics.binomial import Pascal
@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2])
 
-    Eq << Eq[-1].this.rhs.as_one_term()
+    Eq << Eq[-1].this.rhs.distribute()
 
     Eq << Eq[-1].this.rhs.function.expand()
 
