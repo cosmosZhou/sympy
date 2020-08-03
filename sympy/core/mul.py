@@ -1196,7 +1196,7 @@ class Mul(Expr, AssocOp):
         return has_polar and \
             all(arg.is_polar or arg.is_positive for arg in self.args)
 
-    def _eval_is_extended_real(self):
+    def _eval_is_real(self):
         return self._eval_real_imag(True)
 
     def _eval_real_imag(self, real):
@@ -1989,7 +1989,8 @@ class Mul(Expr, AssocOp):
             pos * neg * nonnegative -> neg or zero -> False is returned
         """
         return self._eval_pos_neg(1)
-        
+    
+    _eval_is_extended_real = _eval_is_real
     _eval_is_extended_negative = _eval_is_negative
     _eval_is_extended_positive = _eval_is_positive
     _eval_is_extended_nonnegative = _eval_is_nonnegative

@@ -2442,6 +2442,14 @@ class Difference(Expr):
     def _eval_is_commutative(self):
         return self.expr.is_commutative
 
+    def _eval_is_real(self):
+        return self.expr.is_real
+
+    def _eval_is_complex(self):
+        return self.expr.is_complex
+
+    _eval_is_extended_real = _eval_is_real
+    
     def _eval_difference(self, v):
         # If v (the variable of differentiation) is not in
         # self.variables, we might be able to take the derivative.

@@ -1029,6 +1029,13 @@ class binom(CombinatorialFunction):
         elif k.is_integer is False:
             return False
 
+    def _eval_is_real(self):
+        n, k = self.args
+        if n.is_real and k.is_real:
+            return True
+        
+    _eval_is_extended_real = _eval_is_real
+    
     def _eval_is_nonnegative(self):
         n, k = self.args
         if n.is_integer and k.is_integer:

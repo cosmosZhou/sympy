@@ -18,7 +18,13 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    x = Symbol('x')
+    x = Symbol('x', real=True)
+    
+    k = Symbol('k', integer=True, nonnegative=True)
+    t = x ** k
+    assert t.is_complex
+    assert t.is_extended_real
+    
     n = Symbol('n', integer=True, nonnegative=True)
     Eq << apply(x, n)
     Eq << Eq[0].subs(n, 0).doit()

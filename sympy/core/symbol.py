@@ -722,7 +722,6 @@ class Symbol(AtomicExpr, NotIterable):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_negative
 
-
     def _eval_is_nonzero(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_nonzero
