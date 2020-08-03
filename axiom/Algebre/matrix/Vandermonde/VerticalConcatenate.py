@@ -66,12 +66,15 @@ def numeric_prove():
 
 @check
 def prove(Eq):
-    r = Symbol('r')
-    n = Symbol('n', domain=Interval(2, oo, integer=True))
+    r = Symbol('r', real=True)
+    n = Symbol('n', domain=Interval(2, oo, integer=True))    
 
     Eq << apply(r, n)
 
     (i, *iab), (j, *_) = Eq[0].lhs.arg.args[1].limits
+    
+    assert (2*i).is_even
+    
     E = Ref[i:n, j]((-1) ** (j - i) * binomial(j + 1, i + 1))
 
     Eq << identity(Eq[0].lhs.arg @ E).expand()

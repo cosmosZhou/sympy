@@ -2356,6 +2356,9 @@ class Integer(Rational):
     def _eval_is_odd(self):
         return bool(self.p % 2)
 
+    def _eval_is_even(self):
+        return not self.is_odd
+
     def _eval_power(self, expt):
         """
         Tries to do some simplifications on self**expt

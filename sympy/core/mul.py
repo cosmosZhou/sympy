@@ -1900,19 +1900,6 @@ class Mul(Expr, AssocOp):
 
         return domain
 
-    def _eval_is_odd(self):
-        if self.is_integer is True:
-            odd = True
-            for arg in self.args:
-                if arg.is_even:
-                    return False
-                if arg.is_odd:
-                    continue
-
-                odd = None
-            return odd
-        return None
-
     def __iter__(self):
         raise TypeError
 

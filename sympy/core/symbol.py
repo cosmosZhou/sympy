@@ -726,10 +726,15 @@ class Symbol(AtomicExpr, NotIterable):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_nonzero
         
+    def _eval_is_real(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_real
+
     _eval_is_extended_nonpositive = _eval_is_nonpositive
     _eval_is_extended_nonnegative = _eval_is_nonnegative
     _eval_is_extended_positive = _eval_is_positive
     _eval_is_extended_negative = _eval_is_negative
+    _eval_is_extended_real = _eval_is_real
     
     def __hash__(self):
         return super(Symbol, self).__hash__()        

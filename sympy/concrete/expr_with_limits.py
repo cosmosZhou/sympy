@@ -3641,6 +3641,7 @@ class Ref(ExprWithLimits):
         """
         (i, *_), *_ = self.limits
         j = i.generate_free_symbol(domain=Interval(i + 1, self.cols, right_open=True, integer=True))
+        assert j > i
         return self[i, j] == 0
 
     @property
@@ -3687,6 +3688,7 @@ class Ref(ExprWithLimits):
         """
         * _ , (j, *_) = self.limits
         i = j.generate_free_symbol(domain=Interval(j + 1, self.rows, right_open=True, integer=True))
+        assert i > j
         return self[i, j] == 0
 
     def _latex(self, p):

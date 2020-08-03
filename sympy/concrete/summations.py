@@ -1397,12 +1397,15 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return domain
 
     def _eval_is_real(self):
-        function = self.function
-        ****
-        for x, *ab in self.limits:
-            _x = x.copy()
-            function._subs(x, _x)
-        return self.function.is_real
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain = domain)
+                function = function._subs(x, _x)
+                
+        return function.is_real
+    
+    _eval_is_extended_real = _eval_is_real
     
     def _eval_is_extended_nonnegative(self):
         return self.function.is_extended_nonnegative

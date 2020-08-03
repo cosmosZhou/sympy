@@ -536,6 +536,9 @@ class Indexed(Expr):
     def definition(self):
         return self.base.definition[self.indices]
     
+    def _eval_is_real(self):
+        return self.base.is_real
+    
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object
 

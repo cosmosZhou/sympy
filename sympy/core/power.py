@@ -540,7 +540,7 @@ class Pow(Expr):
             check = self.func(*self.args)
             return check.is_Integer
 
-    def _eval_is_extended_real(self):
+    def _eval_is_real(self):
         from sympy import arg, exp, log, Mul
         real_b = self.base.is_extended_real
         if real_b is None:
@@ -595,6 +595,8 @@ class Pow(Expr):
             i = arg(self.base) * self.exp / S.Pi
             return i.is_integer
 
+    _eval_is_extended_real = _eval_is_real
+    
     def _eval_is_complex(self):
         if all(a.is_complex for a in self.args):
             return True

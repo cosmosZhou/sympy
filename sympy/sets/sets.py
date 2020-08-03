@@ -1236,9 +1236,8 @@ class Interval(Set, EvalfMixin):
     def _eval_is_integer(self):
         return self.args[4]
 
-    def _eval_is_real(self):
-        return not self.args[4]
-
+    is_extended_real = True
+    
     @property
     def size(self):
         if self.is_integer:

@@ -268,6 +268,8 @@ class factorial(CombinatorialFunction):
         if x.is_nonnegative or x.is_noninteger:
             return True
 
+    _eval_is_extended_real = _eval_is_real
+    
     def _sympystr(self, p):
         return '(%s)!' % p._print(self.arg)
 

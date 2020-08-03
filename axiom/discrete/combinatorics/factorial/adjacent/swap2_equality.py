@@ -36,7 +36,7 @@ def prove(Eq):
     
     w = Eq[0].lhs.base
     
-    p = Symbol('p')
+    p = Symbol('p', real=True)
     
     x = Ref[i:n](p ** i)
     Eq << identity(w[0, i] @ x).subs(Eq[0].subs(i, 0).subs(j, i))
