@@ -66,7 +66,8 @@ def process(package):
 
         return dirname + sep + apply_package.replace('.', sep) + '.py', None
     file = package.__file__
-    return file, package.prove(file)
+    ret = package.prove(file)
+    return file, ret
 
     
 def prove():

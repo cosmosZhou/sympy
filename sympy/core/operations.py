@@ -3,7 +3,7 @@ from __future__ import print_function, division
 from sympy.core.sympify import _sympify, sympify
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
-from sympy.core.compatibility import ordered, range
+from sympy.core.compatibility import ordered, range, default_sort_key
 from sympy.core.logic import fuzzy_and
 from sympy.core.evaluate import global_evaluate
 from sympy.utilities.iterables import sift
@@ -71,7 +71,7 @@ class AssocOp(Basic):
         elif len(args) == 1:
             return args[0]
 
-        args = tuple(ordered(args))
+        args = tuple(ordered(args, default_sort_key))
 #         args = tuple(sorted(args, key=lambda x: str(x)))
 
         obj = super(AssocOp, cls).__new__(cls, *args)

@@ -601,7 +601,7 @@ class Add(Expr, AssocOp):
     def _eval_is_positive(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            self.clear_infinitesimal().is_nonnegative
+            return self.clear_infinitesimal().is_nonnegative
         elif is_infinitesimal is False:
             return self.clear_infinitesimal().is_positive
         
@@ -618,7 +618,7 @@ class Add(Expr, AssocOp):
     def _eval_is_nonnegative(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            self.clear_infinitesimal().is_nonnegative
+            return self.clear_infinitesimal().is_nonnegative
         elif is_infinitesimal is False:
             return self.clear_infinitesimal().is_positive
         
@@ -645,7 +645,7 @@ class Add(Expr, AssocOp):
     def _eval_is_nonpositive(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            self.clear_infinitesimal().is_negative
+            return self.clear_infinitesimal().is_negative
         elif is_infinitesimal is False:
             return self.clear_infinitesimal().is_nonpositive
         
@@ -672,7 +672,7 @@ class Add(Expr, AssocOp):
     def _eval_is_negative(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            self.clear_infinitesimal().is_negative
+            return self.clear_infinitesimal().is_negative
         elif is_infinitesimal is False:
             return self.clear_infinitesimal().is_nonpositive
             

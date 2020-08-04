@@ -48,7 +48,6 @@ def apply(given):
     
     w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
     
-    k = Symbol('k', integer=True)
 #     return Forall(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
     return Forall(Contains(w[i, j] @ x, S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
 
@@ -91,6 +90,7 @@ def prove(Eq):
     
     Eq << Eq[-1] @ x
         
+    ***
 
 
 if __name__ == '__main__':
