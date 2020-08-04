@@ -569,9 +569,8 @@ class Abs(Function):
         if is_z is not None:
             return not is_z
 
-    def _eval_is_rational(self):
-        if self.args[0].is_extended_real:
-            return self.args[0].is_rational
+    def _eval_is_rational(self):        
+        return self.args[0].is_rational
 
     def _eval_is_even(self):
         if self.args[0].is_extended_real:

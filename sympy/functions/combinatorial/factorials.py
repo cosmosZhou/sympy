@@ -83,6 +83,8 @@ class factorial(CombinatorialFunction):
        factorial2, RisingFactorial, FallingFactorial
     """
 
+    is_nonzero = True
+    
     def fdiff(self, argindex=1):
         from sympy import gamma, polygamma
         if argindex == 1:
@@ -266,6 +268,10 @@ class factorial(CombinatorialFunction):
     def _eval_is_real(self):
         x = self.args[0]
         if x.is_nonnegative or x.is_noninteger:
+            return True
+
+    def _eval_is_rational(self):
+        if self.args[0].is_integer and self.args[0].is_nonnegative:
             return True
 
     _eval_is_extended_real = _eval_is_real

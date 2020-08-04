@@ -9,7 +9,6 @@ from sympy.concrete import expr_with_limits
 from axiom.discrete.sets.emptyset import greater_than_one
 from axiom.discrete.sets import union_comprehension
 from axiom.discrete import sets
-from sympy.core.basic import preorder_traversal
 from sympy.core.symbol import Symbol
 from sympy.functions.elementary.piecewise import Piecewise
 

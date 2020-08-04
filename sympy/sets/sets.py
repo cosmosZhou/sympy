@@ -2729,6 +2729,15 @@ class FiniteSet(Set, EvalfMixin):
             return is_integer
         return True
 
+    def _eval_is_extended_real(self):                        
+        for arg in self.args:
+            if arg.is_extended_real:
+                continue
+            if arg.is_extended_real is False:
+                return False
+            return 
+        return True
+
     @property
     def element_type(self):
         dtype = None

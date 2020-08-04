@@ -90,8 +90,6 @@ def prove(Eq):
     
     Eq << Eq[-1] @ x
         
-    ***
-
 
 if __name__ == '__main__':
     prove(__file__)

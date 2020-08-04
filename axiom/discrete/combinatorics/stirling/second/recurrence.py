@@ -28,7 +28,7 @@ def prove(Eq):
 
     n = Symbol('n', integer=True, nonnegative=True)
     Eq << apply(n, k)
-
+    ***
     Eq.stirling2 = identity(Eq[0].lhs).definition
     Eq.stirling0 = identity(Eq[0].rhs.args[0]).definition
     Eq.stirling1 = identity(Eq[0].rhs.args[1].args[1]).definition

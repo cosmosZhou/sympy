@@ -4327,7 +4327,14 @@ class UnionComprehension(Set, ExprWithLimits):
     def max(self):
         return Maximum(self.function.max(), *self.limits)
 
-
+    def _eval_is_extended_real(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain = domain)
+                function = function._subs(x, _x)
+        return function.is_extended_real
+    
 class IntersectionComprehension(Set, ExprWithLimits):
     """
     Represents an intersection of sets as a :class:`Set`.

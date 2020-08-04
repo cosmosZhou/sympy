@@ -709,32 +709,49 @@ class Symbol(AtomicExpr, NotIterable):
     def _eval_is_nonpositive(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_nonpositive
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_nonpositive
                  
     def _eval_is_nonnegative(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_nonnegative
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_nonnegative
 
     def _eval_is_positive(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_positive
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_positive        
                  
     def _eval_is_negative(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_negative
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_negative        
 
     def _eval_is_nonzero(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_nonzero
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_nonzero
         
     def _eval_is_real(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_real
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_real
+
+    def _eval_is_extended_real(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_real
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_extended_real
 
     _eval_is_extended_nonpositive = _eval_is_nonpositive
     _eval_is_extended_nonnegative = _eval_is_nonnegative
     _eval_is_extended_positive = _eval_is_positive
     _eval_is_extended_negative = _eval_is_negative
-    _eval_is_extended_real = _eval_is_real
     
     def __hash__(self):
         return super(Symbol, self).__hash__()        

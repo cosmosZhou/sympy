@@ -1193,8 +1193,7 @@ class Mul(Expr, AssocOp):
 
     def _eval_is_polar(self):
         has_polar = any(arg.is_polar for arg in self.args)
-        return has_polar and \
-            all(arg.is_polar or arg.is_positive for arg in self.args)
+        return has_polar and all(arg.is_polar or arg.is_positive for arg in self.args)
 
     def _eval_is_real(self):
         return self._eval_real_imag(True)
@@ -1915,14 +1914,6 @@ class Mul(Expr, AssocOp):
                 args.append(arg[index])
 
         return self.func(*args)
-
-    def _eval_is_integer(self):
-        for elem in self.args:
-            is_integer = elem.is_integer
-            if is_integer:
-                continue
-            return is_integer
-        return True
 
     def distribute(self):
         for i, arg in enumerate(self.args):

@@ -75,7 +75,7 @@ def prove(Eq):
     
     Eq.exist_C0 = Eq.exist_C0.subs(Eq.factorial_expand_kl.reversed)        
 
-    x = Symbol('x')
+    x = Symbol('x', real=True)
 
     Eq << difference.definition.apply(x ** (k + 1), x, k + 1)
 
@@ -87,9 +87,7 @@ def prove(Eq):
 
     Eq << Eq[-1] * (-1) ** (k + 1)
 
-    Eq << Eq[-1].this.rhs.as_one_term()
-
-    Eq << Eq[-1].this.rhs.function.powsimp(combine='exp')
+    Eq << Eq[-1].this.rhs.distribute()
 
     Eq << Eq[-1].this.rhs.bisect(back=1)
 
@@ -124,9 +122,7 @@ def prove(Eq):
     Eq << Eq[-1] * factorial(k + 1)
     Eq << Eq[-1].expand()
 
-    Eq << Eq[-1].this.rhs.args[1].as_one_term()
-
-    Eq << Eq[-1].this.rhs.args[1].function.powsimp()
+    Eq << Eq[-1].this.rhs.args[0].distribute()
 
     Eq << Eq[0].subs(k, k + 1) * factorial(k + 1)
 
