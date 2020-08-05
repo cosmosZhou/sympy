@@ -54,6 +54,9 @@ class Set(Basic):
     is_Complement = None
     is_ComplexRegion = False
     
+    def _eval_is_finite(self):
+        return False
+    
     @property
     def domain(self):
         return S.UniversalSet        
@@ -1842,6 +1845,8 @@ class Union(Set, LatticeOp, EvalfMixin):
     def _sympystr(self, p):
         return ' ∪ '.join([p._print(a) for a in self.args])
 
+    def _eval_is_finite(self):
+        return all(a.is_finite for a in self.args)
 
 class Intersection(Set, LatticeOp):
     """
@@ -2064,6 +2069,9 @@ class Intersection(Set, LatticeOp):
                     args = [*self.args]
                     args[i] = unk
                     return self.func(*args, evaluate=False)
+                
+    def _eval_is_finite(self):
+        return any(a.is_finite for a in self.args)
             
             
 class Complement(Set, EvalfMixin):
@@ -2338,6 +2346,8 @@ class Complement(Set, EvalfMixin):
         if unk in self.args[0]:
             return self.func(unk, self.args[1], evaluate=False)
             
+    def _eval_is_finite(self):
+        return self.args[0].is_finite
         
 class EmptySet(with_metaclass(Singleton, Set)):
     """
@@ -2366,6 +2376,8 @@ class EmptySet(with_metaclass(Singleton, Set)):
     """
     is_EmptySet = True
     is_FiniteSet = True
+    def _eval_is_finite(self):
+        return True
 
     @property
     def atomic_dtype(self):
@@ -2497,6 +2509,8 @@ class FiniteSet(Set, EvalfMixin):
     """
     is_FiniteSet = True
     is_iterable = True
+    def _eval_is_finite(self):
+        return True
 
 #     def _subs(self, old, new, **hints):
 #         return Set._subs(self, old, new, **hints)

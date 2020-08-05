@@ -551,7 +551,7 @@ class Abs(Function):
                 return sqrt(expand_mul(arg * conj))
 
     def _eval_is_real(self):
-        if self.args[0].is_finite:
+        if self.arg.is_finite:
             return True
 
     def _eval_is_integer(self):

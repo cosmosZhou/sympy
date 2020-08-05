@@ -8,6 +8,7 @@ if __name__ == '__main__':
         axiom.prove.prove()
     else:        
         for package in sys.argv[1:]:
+            package = package.replace('/', '.').replace('\\', '.')
             package = eval(package)
             ret = package.prove(package.__file__)
             if ret is False:

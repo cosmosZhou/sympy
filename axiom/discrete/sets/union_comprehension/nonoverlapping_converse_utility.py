@@ -52,7 +52,7 @@ def prove(Eq):
     assert n in baseset
     assert baseset & domain == domain
 
-    x = IndexedBase('x', shape=(oo,), dtype=dtype.integer)
+    x = IndexedBase('x', shape=(oo,), dtype=dtype.integer, finite=True)
 
     i_domain = Interval(0, n - 1, integer=True)
     

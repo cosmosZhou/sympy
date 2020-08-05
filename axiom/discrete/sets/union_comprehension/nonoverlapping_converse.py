@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Sum, Union, Ref
+from sympy.utility import plausible, Ref
 from sympy.core.symbol import Symbol, dtype
 from sympy.concrete.expr_with_limits import Forall, UnionComprehension
 
@@ -44,7 +44,7 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)
     n = Symbol('n', domain=Interval(2, oo, integer=True))
-    x = Symbol('x', shape=(oo,), dtype=dtype.integer)
+    x = Symbol('x', shape=(oo,), dtype=dtype.integer, finite=True)
    
     j_domain = Interval(0, n - 1, integer=True) - {i}
     given = Forall(Equality(x[i] & x[j], EmptySet()), (j, j_domain), (i, 0, n - 1))

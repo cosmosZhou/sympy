@@ -748,6 +748,12 @@ class Symbol(AtomicExpr, NotIterable):
         if 'definition' in self._assumptions:
             return self._assumptions['definition'].is_extended_real
 
+    def _eval_is_finite(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_finite
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_finite
+
     _eval_is_extended_nonpositive = _eval_is_nonpositive
     _eval_is_extended_nonnegative = _eval_is_nonnegative
     _eval_is_extended_positive = _eval_is_positive

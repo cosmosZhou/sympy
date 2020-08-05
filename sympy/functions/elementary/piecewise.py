@@ -1433,6 +1433,9 @@ class Piecewise(Function):
     def handle_finite_sets(self, unk):
         return self.func(*((e & unk, c) for e, c in self.args)).simplify()
 
+    def _eval_is_finite(self):
+        return all(e.is_finite for e, _ in self.args)
+
 def piecewise_fold(expr):
     """
     Takes an expression containing a piecewise function and returns the

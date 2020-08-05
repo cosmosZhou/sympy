@@ -871,7 +871,7 @@ class Equality(Relational):
         from sympy.core.symbol import Symbol
         from sympy.stats.rv import random_symbols, pspace
 
-        if isinstance(x, IndexedBase):
+        if isinstance(x, Symbol):
             from sympy import Mul
             from sympy.concrete.expr_with_limits import Ref
             if isinstance(x.definition, Ref):

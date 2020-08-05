@@ -3716,6 +3716,14 @@ class Ref(ExprWithLimits):
     def _sympystr(self, p):
         return '[%s](%s)' % (','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits]), p._print(self.function))
 
+    def _eval_is_finite(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_finite
+
 
 class UnionComprehension(Set, ExprWithLimits):
     """
@@ -4331,9 +4339,22 @@ class UnionComprehension(Set, ExprWithLimits):
         function = self.function                
         for x, domain in self.limits_dict.items():
             if domain is not None:
-                _x = x.copy(domain = domain)
+                _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_extended_real
+    
+    def _eval_is_finite(self):
+        if self.function.is_finite is not None:
+            return self.function.is_finite
+
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain, **x.assumptions0)
+                assert _x.dtype == x.dtype
+                function = function._subs(x, _x)
+        return function.is_finite
+
     
 class IntersectionComprehension(Set, ExprWithLimits):
     """
@@ -4479,6 +4500,15 @@ class IntersectionComprehension(Set, ExprWithLimits):
 
     def max(self):
         return Minimum(self.function.max(), *self.limits)
+
+    # finiteness of intersection set is hard to evaluate
+    def _eval_is_finite(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_finite
 
 
 class ConditionalBoolean(Boolean):

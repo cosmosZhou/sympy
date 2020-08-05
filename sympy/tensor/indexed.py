@@ -911,8 +911,11 @@ class Slice(Expr):
                 start = 0
             args = [sympify(start), sympify(stop)]
 
-        if isinstance(base, (string_types, Symbol)):
-            base = IndexedBase(base)
+        if isinstance(base, Symbol):
+            assert base.shape
+        elif isinstance(base, string_types):
+            from sympy import oo
+            base = Symbol(base, shape=(oo,))
         elif not hasattr(base, '__getitem__') and not isinstance(base, IndexedBase):
             raise TypeError(filldedent("""
                 Indexed expects string, Symbol, or IndexedBase as base."""))

@@ -6,7 +6,6 @@ from sympy.functions.combinatorial.numbers import Stirling
 from sympy.sets.sets import image_set, Interval
 from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.tensor.indexed import IndexedBase
 from axiom import discrete
 from sympy.sets.conditionset import conditionset
 from sympy.concrete.expr_with_limits import UnionComprehension, Forall
@@ -113,7 +112,7 @@ def prove(Eq):
 
     j = Symbol('j', domain=Interval(0, k, integer=True))
 
-    x_quote = IndexedBase("x'", (k + 1,), dtype=dtype.integer,
+    x_quote = Symbol("x'", shape=(k + 1,), dtype=dtype.integer,
                      definition=Ref[i:k + 1](Piecewise((Union(x_tuple[i], {n}) , Equality(i, j)), (x_tuple[i], True))))
 
     Eq.x_quote_definition = Equality.by_definition_of(x_quote)
@@ -173,9 +172,7 @@ def prove(Eq):
     assert len(Eq.plausibles_dict) == 1
     Eq.x_quote_definition = Eq.x_quote_definition.reference((i, 0, k))
 
-    A = IndexedBase("A", (k + 1,), 
-                    finite=True, 
-                    dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
+    A = Symbol("A", shape=(k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
 
     Eq.A_definition = Equality.by_definition_of(A)
 
@@ -301,7 +298,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.lhs.args[0].bisect(domain={j})
 
-    x_tilde = IndexedBase(r"\tilde{x}", (k,), dtype=dtype.integer,
+    x_tilde = Symbol(r"\tilde{x}", shape=(k,), dtype=dtype.integer,
                      definition=Ref[i:k](Piecewise((x[i], i < j), (x[i + 1], True))))
 
     Eq.x_tilde_definition = Equality.by_definition_of(x_tilde)
@@ -390,7 +387,7 @@ def prove(Eq):
 
     Eq << Eq[-1].definition
 
-    x_hat = IndexedBase(r"\hat{x}", (oo,), dtype=dtype.integer,
+    x_hat = Symbol(r"\hat{x}", shape=(oo,), dtype=dtype.integer,
                      definition=Ref[i](Piecewise((x_tuple[i] - {n} , Equality(i, j)), (x_tuple[i], True))))
 
     Eq.x_hat_definition = Equality.by_definition_of(x_hat)
@@ -542,7 +539,7 @@ def prove(Eq):
 
 #     Eq << identity(Eq[-1].lhs.arg).subs(Eq.A_definition)
 
-    A_quote = IndexedBase("A'", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.A_definition.rhs.function))
+    A_quote = Symbol("A'", shape=(k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.A_definition.rhs.function))
 
     Eq.A_quote_definition = identity(A_quote).definition
 
