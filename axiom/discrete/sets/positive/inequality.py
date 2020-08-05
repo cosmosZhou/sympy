@@ -1,4 +1,4 @@
-from sympy.core.relational import Unequality, StrictGreaterThan, GreaterThan
+from sympy.core.relational import Unequality, StrictGreaterThan
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import EmptySet

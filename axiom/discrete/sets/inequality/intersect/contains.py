@@ -1,8 +1,8 @@
-from sympy.core.relational import Equality, Unequality
+from sympy.core.relational import  Unequality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
-from sympy.sets.contains import NotContains, Contains
+from sympy.sets.contains import Contains
 from axiom.discrete import sets
 
 

@@ -376,13 +376,13 @@ class Symbol(AtomicExpr, NotIterable):
         if 'domain' in self._assumptions:
             return self._assumptions['domain']
         from sympy import Interval, oo
-        if 'positive' in self._assumptions:
+        if self.is_positive:
             return Interval(0, oo, left_open=True, integer=self.is_integer)
-        if 'negative' in self._assumptions:
+        if self.is_negative:
             return Interval(-oo, 0, right_open=True, integer=self.is_integer)
-        if 'nonpositive' in self._assumptions:
+        if self.is_nonpositive:
             return Interval(-oo, 0, integer=self.is_integer)
-        if 'nonnegative' in self._assumptions:
+        if self.is_nonnegative:
             return Interval(0, oo, integer=self.is_integer)
         
     @property

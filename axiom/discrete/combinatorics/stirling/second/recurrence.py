@@ -28,10 +28,10 @@ def prove(Eq):
 
     n = Symbol('n', integer=True, nonnegative=True)
     Eq << apply(n, k)
-    ***
+
     Eq.stirling2 = identity(Eq[0].lhs).definition
-    Eq.stirling0 = identity(Eq[0].rhs.args[0]).definition
-    Eq.stirling1 = identity(Eq[0].rhs.args[1].args[1]).definition
+    Eq.stirling0 = identity(Eq[0].rhs.args[1]).definition
+    Eq.stirling1 = identity(Eq[0].rhs.args[0].args[1]).definition
 
     s2 = Symbol('s2', definition=Eq.stirling2.rhs.arg)
     Eq << identity(s2).definition
@@ -173,7 +173,9 @@ def prove(Eq):
     assert len(Eq.plausibles_dict) == 1
     Eq.x_quote_definition = Eq.x_quote_definition.reference((i, 0, k))
 
-    A = IndexedBase("A", (k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
+    A = IndexedBase("A", (k + 1,), 
+                    finite=True, 
+                    dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
 
     Eq.A_definition = Equality.by_definition_of(A)
 
@@ -314,7 +316,7 @@ def prove(Eq):
 
     Eq << Eq.x_tilde_abs.summation((i, 0, k - 1))
 
-    Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
+    Eq << Eq[-1].this.rhs.args[0].limits_subs(i, i - 1)
 
     Eq.x_tilde_abs_sum = Eq[-1].subs(Eq.x_abs_sum_s2, Eq.x_j_definition.abs())
 

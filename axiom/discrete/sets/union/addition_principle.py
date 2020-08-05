@@ -1,5 +1,5 @@
-from sympy.core.relational import Equality, LessThan
-from sympy.utility import plausible, Eq, Sum, identity
+from sympy.core.relational import Equality
+from sympy.utility import plausible, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Union, Intersection
 

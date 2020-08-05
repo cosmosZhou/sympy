@@ -539,6 +539,9 @@ class Indexed(Expr):
     def _eval_is_real(self):
         return self.base.is_real
     
+    def _eval_is_finite(self):
+        return self.base.is_finite
+
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object
 

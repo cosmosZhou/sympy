@@ -2055,7 +2055,7 @@ class Stirling(Function):
         from sympy.logic.boolalg import And
         from sympy import Sum
         from sympy.core.symbol import dtype, DtypeVector
-        x = IndexedBase('x', (oo,), dtype=dtype.integer)
+        x = IndexedBase('x', (oo,), dtype=dtype.integer, finite=True)
         assert x.dtype[0] == dtype.integer.set
         assert not x.is_set
         assert isinstance(x.dtype, DtypeVector)

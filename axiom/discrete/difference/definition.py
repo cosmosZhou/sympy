@@ -18,9 +18,10 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    f = Function('f')
-    x = Symbol('x')
+    f = Function('f', real=True)
+    x = Symbol('x', real=True)
     fx = f(x)
+    assert fx.is_real
     n = Symbol('n', integer=True, nonnegative=True)
     Eq << apply(fx, x, n)
 
@@ -46,7 +47,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.args[0].args[1].simplify()
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].simplify()
+    Eq << Eq[-1].this.rhs.args[0].args[1].simplify()
     
     Eq << Eq[-1].this.lhs.args[1].limits_subs(k, k + 1)
     

@@ -1,12 +1,10 @@
-from sympy.core.relational import Equality, LessThan, Unequality
-from sympy.utility import plausible, Eq, Sum
+from sympy.core.relational import Unequality
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.sets.sets import Union
-from axiom import discrete
+
 from sympy import S
-from sympy.sets.contains import NotContains, Contains
+from sympy.sets.contains import Contains
 from sympy.concrete.expr_with_limits import Exists
-from sympy.logic.boolalg import plausibles
 
 
 # given A & B != emptyset
