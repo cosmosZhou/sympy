@@ -30,7 +30,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq.expansion = Eq[-1].this.rhs.function.as_one_term()
+    Eq.expansion = Eq[-1].this.rhs.function.distribute()
     
     Eq << Eq.expansion.subs(W, W.T)
     

@@ -1,7 +1,6 @@
 from sympy.core.symbol import Symbol
 from sympy.utility import Ref, Sum, plausible
 from sympy.core.relational import Equality
-from sympy.tensor.indexed import IndexedBase
 import sympy
 from sympy import log, exp
 from sympy.core.numbers import oo
@@ -14,15 +13,17 @@ def apply(G, x, y):
     i = Symbol('i', integer=True)
     t = Symbol('t', integer=True, nonnegative=True)
 
-    s = IndexedBase('s', (oo,),
+    s = Symbol('s', shape=(oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
-    z = IndexedBase('z', shape=(oo, d),
+    z = Symbol('z', shape=(oo, d),
                     definition=Ref[t](Ref[y[t]](Sum[y[0:t]](sympy.E ** -s[t]))))
 
-    x_quote = IndexedBase("x'", shape=(oo, d),
+    x_quote = Symbol("x'", shape=(oo, d),
                     definition=-Ref[t](sympy.log(z[t])))
 
+    assert x_quote.is_real
+    
     return Equality(x_quote[t + 1], -log(Sum(exp(-x_quote[t] - G))) + x[t + 1]), \
         Equality(-log(exp(-s[t]) / Sum[y[:t + 1]](exp(-s[t]))), log(Sum(exp(-x_quote[t]))) + s[t])
 
@@ -33,9 +34,9 @@ from sympy.utility import check
 @check
 def prove(Eq):
     d = Symbol('d', integer=True)
-    G = IndexedBase('G', (d, d))
-    x = IndexedBase('x', (oo, d))
-    y = IndexedBase('y', (oo,), integer=True)
+    G = Symbol('G', shape=(d, d), real=True)
+    x = Symbol('x', shape=(oo, d), real=True)
+    y = Symbol('y', shape=(oo,), integer=True)
 
     # n is the length of the sequence
     # d is the number of output labels

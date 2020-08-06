@@ -1,6 +1,5 @@
 from sympy.core.symbol import Symbol
 from sympy.core.relational import Equality
-from sympy.tensor.indexed import IndexedBase
 import sympy
 from sympy.functions.elementary.exponential import softmax
 from sympy.core.function import Derivative
@@ -24,18 +23,18 @@ def apply(given):
     
     assert n >= 2
     
-    x = IndexedBase('x', (n,))    
-    y = IndexedBase('y', (n,), definition=softmax(x))
+    x = Symbol('x', shape=(n,), real=True)    
+    y = Symbol('y', shape=(n,), definition=softmax(x))
     
     L = Symbol('L', definition=-t @ sympy.log(y))
-
+    
     return Equality(Derivative(L, x), y - t, given=given)
 
 
 @check
 def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))    
-    t = IndexedBase('t', (n,))
+    t = Symbol('t', shape=(n,), real=True)
     j = Symbol('j', integer=True)
     given = Equality(Sum[j:0:n - 1](t[j]), 1)
     
@@ -46,6 +45,8 @@ def prove(Eq):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     xi = Eq[-2].lhs._wrt_variables[0][i]
 
+    assert Eq[1].lhs.has(xi)
+    
     Eq << Eq[-1].diff(xi)
     
     Eq.loss = Eq[-1].this.rhs.doit(deep=False)            

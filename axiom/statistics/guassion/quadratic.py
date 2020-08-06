@@ -1,10 +1,9 @@
 from sympy.core.numbers import oo
-from sympy.utility import Eq, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy import sqrt, pi, exp, Symbol, log
 from sympy.integrals.integrals import Integral
 
-from sympy.core.mul import Mul
 from axiom.statistics.guassion import std
 
 

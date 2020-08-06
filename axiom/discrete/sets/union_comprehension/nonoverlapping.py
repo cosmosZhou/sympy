@@ -62,7 +62,7 @@ def prove(Eq):
     assert (j - k).is_nonpositive
     assert (k - j).is_nonnegative
 
-    x = IndexedBase('x', shape=(k + 1,), dtype=dtype.integer)
+    x = Symbol('x', shape=(k + 1,), dtype=dtype.integer, finite=True)
 
     given = Equality(abs(Union[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))
 

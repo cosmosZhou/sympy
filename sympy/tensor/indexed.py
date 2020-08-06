@@ -439,7 +439,7 @@ class Indexed(Expr):
                 # it is possible for them to be equal!
                 return True
             
-        if isinstance(exp, IndexedBase) and exp == self.base:
+        if isinstance(exp, Symbol) and exp == self.base:
             if len(self.indices) == 1:
                 start, stop = 0, exp.shape[-1]
                 index_fixed, *_ = self.indices
@@ -539,8 +539,35 @@ class Indexed(Expr):
     def _eval_is_real(self):
         return self.base.is_real
     
+    def _eval_is_extended_real(self):
+        return self.base.is_extended_real
+
+    def _eval_is_negative(self):
+        return self.base.is_negative
+
+    def _eval_is_extended_negative(self):
+        return self.base.is_extended_negative
+
+    def _eval_is_positive(self):
+        return self.base.is_positive
+
+    def _eval_is_extended_positive(self):
+        return self.base.is_extended_positive
+
+    def _eval_is_nonnegative(self):
+        return self.base.is_nonnegative
+
+    def _eval_is_extended_nonnegative(self):
+        return self.base._eval_is_extended_nonnegative
+
+    def _eval_is_nonpositive(self):
+        return self.base.is_nonpositive
+
     def _eval_is_finite(self):
         return self.base.is_finite
+
+    def _eval_is_nonzero(self):
+        return self.base.is_nonzero
 
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object

@@ -3724,6 +3724,58 @@ class Ref(ExprWithLimits):
                 function = function._subs(x, _x)
         return function.is_finite
 
+    def _eval_is_extended_real(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_extended_real
+
+    def _eval_is_real(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_real
+
+    def _eval_is_positive(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_positive
+
+    def _eval_is_negative(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_negative
+    
+    def _eval_is_nonpositive(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_nonpositive
+
+    def _eval_is_nonnegative(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_nonnegative
+
+    _eval_is_extended_positive = _eval_is_positive
+    _eval_is_extended_negative = _eval_is_negative
+    _eval_is_extended_nonpositive = _eval_is_nonpositive
+    _eval_is_extended_nonnegative = _eval_is_nonnegative
 
 class UnionComprehension(Set, ExprWithLimits):
     """

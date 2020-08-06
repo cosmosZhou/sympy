@@ -862,6 +862,7 @@ class Function(Application, Expr):
     def _sympystr(self, p):
         return self.func.__name__ + "(%s)" % p.stringify(self.args, ", ")
 
+
 class AppliedUndef(Function):
     """
     Base class for expressions resulting from the application of an undefined
@@ -1479,9 +1480,8 @@ class Derivative(Expr):
         return expr
 
     @property
-    def canonical(cls):
-        return cls.func(cls.expr,
-            *Derivative._sort_variable_count(cls.variable_count))
+    def canonical(self):
+        return self.func(self.expr, *Derivative._sort_variable_count(self.variable_count))
 
     @classmethod
     def _sort_variable_count(cls, vc):
@@ -1585,6 +1585,11 @@ class Derivative(Expr):
     def _eval_is_commutative(self):
         return self.expr.is_commutative
 
+    def _eval_is_real(self):
+        return self.expr.is_real
+
+    _eval_is_extended_real = _eval_is_real
+    
     def _eval_derivative(self, v):
         # If v (the variable of differentiation) is not in
         # self.variables, we might be able to take the derivative.

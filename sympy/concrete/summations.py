@@ -1406,7 +1406,45 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return function.is_real
     
     _eval_is_extended_real = _eval_is_real
+
+    def _eval_is_positive(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain = domain)
+                function = function._subs(x, _x)
+        return self.function.is_positive
+
+    def _eval_is_negative(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain = domain)
+                function = function._subs(x, _x)
+        return self.function.is_negative
+
+    def _eval_is_nonpositive(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain = domain)
+                function = function._subs(x, _x)
+        return self.function.is_nonpositive
+
+    def _eval_is_nonnegative(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain = domain)
+                function = function._subs(x, _x)
+        return self.function.is_nonnegative
     
+    def _eval_is_extended_negative(self):
+        return self.function.is_extended_negative
+    
+    def _eval_is_extended_positive(self):
+        return self.function.is_extended_positive
+
     def _eval_is_extended_nonnegative(self):
         return self.function.is_extended_nonnegative
     

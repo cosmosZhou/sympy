@@ -385,6 +385,13 @@ class exp(ExpBase):
             return new ** self.exp._subs(old, new)
         return Function._eval_subs(self, old, new)
 
+    def _eval_is_real(self):
+        if self.arg.is_real:
+            return True
+        elif self.args[0].is_imaginary:
+            arg2 = -S(2) * S.ImaginaryUnit * self.args[0] / S.Pi
+            return arg2.is_even
+
     def _eval_is_extended_real(self):
         if self.args[0].is_extended_real:
             return True
@@ -743,8 +750,11 @@ class log(Function):
         else:
             return s.is_algebraic
 
+    def _eval_is_real(self):
+        return self.arg.is_positive
+
     def _eval_is_extended_real(self):
-        return self.args[0].is_extended_positive
+        return self.arg.is_extended_positive
 
     def _eval_is_finite(self):
         arg = self.args[0]
@@ -950,7 +960,8 @@ class softmax(Function):
     softmax(x) = exp(x) / Sum(exp(x))
     Sum(softmax(x)) = 1
     """
-
+    is_positive = True
+    
     def fdiff(self, argindex=1):
         """
         Returns the first derivative of the function.

@@ -2,7 +2,6 @@ from sympy.core.symbol import Symbol
 from sympy.core.numbers import oo
 from sympy.utility import Sum, plausible
 from sympy.core.relational import Equality
-from sympy.tensor.indexed import IndexedBase
 
 
 def extract(recurrence):
@@ -41,10 +40,10 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    m = IndexedBase('m', shape=(oo,))
-    g = IndexedBase('g', shape=(oo,))
+    m = Symbol('m', shape=(oo,), real=True)
+    g = Symbol('g', shape=(oo,), real=True)
     t = Symbol('t', integer=True, positive=True)
-    beta = Symbol('beta', nonzero=True)
+    beta = Symbol('beta', real=True, nonzero=True)
     recurrence = Equality(m[t], beta * m[t - 1] + (1 - beta) * g[t])
     initial_condition = Equality(m[0], 0)
     

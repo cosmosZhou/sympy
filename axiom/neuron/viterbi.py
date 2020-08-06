@@ -3,7 +3,7 @@ from sympy.core.symbol import Symbol
 
 from sympy.utility import Ref, Sum, Min, plausible
 from sympy.core.relational import Equality
-from sympy.tensor.indexed import IndexedBase
+
 from sympy.core.numbers import oo
 
 
@@ -13,10 +13,10 @@ def apply(G, x, y):
     i = Symbol('i', integer=True)
     t = Symbol('t', integer=True, nonnegative=True)
 
-    s = IndexedBase('s', (oo,),
+    s = Symbol('s', shape=(oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
-    x_quote = IndexedBase("x'", (oo, d),
+    x_quote = Symbol("x'", shape=(oo, d),
                           definition=Ref[t](Ref[y[t]](Min[y[0:t]](s[t]))))
 
     return Equality(x_quote[t + 1], x[t + 1] + Min(x_quote[t] + G)), \
@@ -32,9 +32,9 @@ def prove(Eq):
 
     # oo is the length of the sequence
     # d is the number of output labels
-    G = IndexedBase('G', (d, d))
-    x = IndexedBase('x', (oo, d))
-    y = IndexedBase('y', (oo,))
+    G = Symbol('G', shape=(d, d), real=True)
+    x = Symbol('x', shape=(oo, d), real=True)
+    y = Symbol('y', shape=(oo,), real=True)
 
     Eq.s_definition, Eq.x_quote_definition, Eq.recursion, Eq.aggregate = apply(G, x, y)
     

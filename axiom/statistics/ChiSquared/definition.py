@@ -6,7 +6,6 @@ from sympy.stats.crv_types import ChiSquared, ChiSquaredDistribution
 from sympy.stats.rv import Density, RandomSymbol
 from sympy import pi, Symbol
 from sympy.stats import Normal
-from sympy.tensor.indexed import IndexedBase
 from axiom.trigonometry import Wallis
 
 
@@ -27,9 +26,9 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    x = IndexedBase('x', (oo,))
+    x = Symbol('x', shape=(oo,), real=True)
     i = Symbol('i', integer=True)
-    X = IndexedBase('X', (oo,), definition=Ref[i](Normal(x[i], 0, 1)))
+    X = Symbol('X', shape=(oo,), definition=Ref[i](Normal(x[i], 0, 1)))
 
     k = Symbol('k', integer=True, positive=True)
     Y = ChiSquared('y', k)
@@ -37,7 +36,7 @@ def prove(Eq):
     Eq << apply(X, Y)
     y = Y.symbol
 
-    Y = IndexedBase('Y', (oo,), definition=Ref[k](Sum[i:k](X[i] * X[i])))
+    Y = Symbol('Y', shape=(oo,), definition=Ref[k](Sum[i:k](X[i] * X[i])))
 
     Eq << Equality.by_definition_of(Y)  # 1
     Eq << Eq[0].subs(Eq[-1].reversed)  # 2
