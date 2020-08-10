@@ -192,7 +192,7 @@ class Indexed(Expr):
         return self == other
 
     def structure_eq(self, other):
-        if isinstance(other, (Symbol, Indexed, IndexedBase, Slice)):
+        if isinstance(other, (Symbol, Indexed, Slice)):
             return self.shape == other.shape
         return False
 
@@ -493,8 +493,8 @@ class Indexed(Expr):
         from sympy.stats.rv import RandomSymbol
         definition = self.base.definition[self.indices]
         if isinstance(definition, RandomSymbol):
-            return definition.pspace
-        return SingleContinuousPSpace(self.base.func(self.base.name, self.base.shape)[self.indices], AbstractDistribution(definition))
+            return definition.pspace        
+        return SingleContinuousPSpace(self.base.copy(shape=self.base.shape, real=self.base.is_real, integer=self.base.is_integer)[self.indices], AbstractDistribution(definition))
 
     def is_random_symbol(self):
         from sympy.stats.rv import RandomSymbol
@@ -536,38 +536,21 @@ class Indexed(Expr):
     def definition(self):
         return self.base.definition[self.indices]
     
-    def _eval_is_real(self):
-        return self.base.is_real
-    
     def _eval_is_extended_real(self):
         return self.base.is_extended_real
-
-    def _eval_is_negative(self):
-        return self.base.is_negative
 
     def _eval_is_extended_negative(self):
         return self.base.is_extended_negative
 
-    def _eval_is_positive(self):
-        return self.base.is_positive
-
     def _eval_is_extended_positive(self):
         return self.base.is_extended_positive
-
-    def _eval_is_nonnegative(self):
-        return self.base.is_nonnegative
-
-    def _eval_is_extended_nonnegative(self):
-        return self.base._eval_is_extended_nonnegative
-
-    def _eval_is_nonpositive(self):
-        return self.base.is_nonpositive
 
     def _eval_is_finite(self):
         return self.base.is_finite
 
-    def _eval_is_nonzero(self):
-        return self.base.is_nonzero
+    def _eval_is_zero(self):
+        return self.base.is_zero
+
 
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object

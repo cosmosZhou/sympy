@@ -66,6 +66,8 @@ def prove(Eq):
 
     p = Symbol("p", domain=Interval(0, 1, left_open=True, right_open=True))
 
+    assert p.is_nonzero
+    
     x0 = Binomial('x0', n0, p)
     x1 = Binomial('x1', n1, p)
 

@@ -1212,22 +1212,10 @@ class Interval(Set, EvalfMixin):
     def element_symbol(self, excludes=set()):
         return generate_free_symbol(self.free_symbols | excludes, integer=self.is_integer)
 
-    def _eval_is_extended_nonpositive(self):
-        if self.min().is_extended_positive:
-            return False
-        if self.max().is_extended_nonpositive:
-            return True
-        
     def _eval_is_extended_negative(self):
         if self.min().is_extended_nonnegative:
             return False
         if self.max().is_extended_negative:
-            return True
-
-    def _eval_is_extended_nonnegative(self):
-        if self.max().is_extended_negative:
-            return False
-        if self.min().is_extended_nonnegative:
             return True
 
     def _eval_is_extended_positive(self):
@@ -1501,7 +1489,7 @@ class Interval(Set, EvalfMixin):
                 return self.func(end, start, self.right_open, self.left_open, is_integer)
             if other == 0:
                 return FiniteSet(0)
-            return self.func(-S.oo, S.oo)
+            return self.func(S.NegativeInfinity, S.Infinity)
 
         return Set.__mul__(self, other)
 
@@ -1590,12 +1578,19 @@ class Interval(Set, EvalfMixin):
             return (self.min(), self.max(), S.false, S.false, True)
         return self._args
 
-    def _eval_is_nonzero(self):
-        if self.min() > 0:
-            return True
-        if self.max() < 0:
-            return True
+    def _eval_is_zero(self):
+        if self.min().is_extended_positive:
+            return False
+        if self.max().is_extended_negative:
+            return False
 
+    def _eval_is_finite(self):
+        if self.is_integer:
+            if self.start.is_finite:
+                return self.end.is_finite
+            return self.start.is_finite
+        return False
+            
 class Union(Set, LatticeOp, EvalfMixin):
     """
     Represents a union of sets as a :class:`Set`.

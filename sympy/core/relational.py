@@ -548,14 +548,8 @@ class Equality(Relational):
                     isinstance(rhs, Boolean)):
                 return S.false  # only Booleans can equal Booleans
             from sympy import Contains
-            try:
-                if Contains(rhs, lhs.domain).is_BooleanFalse or Contains(lhs, rhs.domain).is_BooleanFalse:
-#                 print(lhs.domain)
-#                 print(rhs.domain)
-                    return S.false.copy(**options)
-            except:
-                Contains(rhs, lhs.domain).is_BooleanFalse
-                Contains(lhs, rhs.domain).is_BooleanFalse                
+            if Contains(rhs, lhs.domain).is_BooleanFalse or Contains(lhs, rhs.domain).is_BooleanFalse:
+                return S.false.copy(**options)
 
             if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.is_set and not rhs.is_set:
                 # see if the difference evaluates
@@ -865,8 +859,7 @@ class Equality(Relational):
                 return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
 
     @staticmethod
-    def by_definition_of(x):
-        from sympy.tensor.indexed import IndexedBase
+    def by_definition_of(x):        
         from sympy.stats.rv import Density, PDF
         from sympy.core.symbol import Symbol
         from sympy.stats.rv import random_symbols, pspace
@@ -893,14 +886,9 @@ class Equality(Relational):
 
             if any(pspace(rv).is_Continuous for rv in rvs):
                 y = Symbol("y", real=True)
-            else:
-                nonnegative = x.expr.domain.is_nonnegative
-
-                if nonnegative:
-                    y = Symbol("y", integer=True, nonnegative=True)
-                else:
-                    y = Symbol("y", integer=True)
-
+            else: 
+                y = Symbol("y", integer=True, nonnegative=x.expr.domain.is_extended_nonnegative)
+                
             pdf = x(y)
 
             return Eq(pdf, pdf.doit(evaluate=False), evaluate=False)

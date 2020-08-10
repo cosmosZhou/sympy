@@ -585,6 +585,12 @@ class Add(Expr, AssocOp):
         if b.is_zero is False:
             return False
 
+        if len(self.args) == 2:
+            if self.min().is_extended_positive:
+                return False
+            if self.max().is_extended_negative:
+                return False    
+
     def _eval_is_irrational(self):
         for t in self.args:
             a = t.is_irrational
@@ -598,93 +604,39 @@ class Add(Expr, AssocOp):
                 return
         return False
     
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            return self.clear_infinitesimal().is_nonnegative
+            return self.clear_infinitesimal().is_extended_nonnegative
         elif is_infinitesimal is False:
-            return self.clear_infinitesimal().is_positive
+            return self.clear_infinitesimal().is_extended_positive
         
         if self.is_number:
-            return super(Add, self)._eval_is_positive()
+            return super(Add, self).is_extended_positive
         
         f = self.min()
-        if f is not self and f.is_positive:
+        if f is not self and f.is_extended_positive:
             return True
         f = self.max()
-        if f is not self and f.is_nonpositive:
+        if f is not self and f.is_extended_nonpositive:
             return False
     
-    def _eval_is_nonnegative(self):
+    def _eval_is_extended_negative(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            return self.clear_infinitesimal().is_nonnegative
+            return self.clear_infinitesimal().is_extended_negative
         elif is_infinitesimal is False:
-            return self.clear_infinitesimal().is_positive
-        
-        from sympy.core.exprtools import _monotonic_sign
-        if not self.is_number:
-            c, a = self.as_coeff_Add()
-            if not c.is_zero and a.is_nonnegative:
-                v = _monotonic_sign(a)
-                if v is not None:
-                    s = v + c
-                    if s != self and s.is_nonnegative:
-                        return True
-                    if len(self.free_symbols) == 1:
-                        v = _monotonic_sign(self)
-                        if v is not None and v != self and v.is_nonnegative:
-                            return True
-        f = self.min()
-        if f is not self and f.is_nonnegative:
-            return True
-        f = self.max()
-        if f is not self and f.is_negative:
-            return False
-    
-    def _eval_is_nonpositive(self):
-        is_infinitesimal = self.is_infinitesimal
-        if is_infinitesimal is True:
-            return self.clear_infinitesimal().is_negative
-        elif is_infinitesimal is False:
-            return self.clear_infinitesimal().is_nonpositive
-        
-        from sympy.core.exprtools import _monotonic_sign
-        if not self.is_number:
-            c, a = self.as_coeff_Add()
-            if not c.is_zero and a.is_nonpositive:
-                v = _monotonic_sign(a)
-                if v is not None:
-                    s = v + c
-                    if s != self and s.is_nonpositive:
-                        return True
-                    if len(self.free_symbols) == 1:
-                        v = _monotonic_sign(self)
-                        if v is not None and v != self and v.is_nonpositive:
-                            return True
-        f = self.max()
-        if f is not self and f.is_nonpositive:
-            return True
-        f = self.min()
-        if f is not self and f.is_positive:
-            return False
-    
-    def _eval_is_negative(self):
-        is_infinitesimal = self.is_infinitesimal
-        if is_infinitesimal is True:
-            return self.clear_infinitesimal().is_negative
-        elif is_infinitesimal is False:
-            return self.clear_infinitesimal().is_nonpositive
+            return self.clear_infinitesimal().is_extended_nonpositive
             
         from sympy.core.exprtools import _monotonic_sign
         if self.is_number:            
-            return super(Add, self).is_negative
+            return super(Add, self).is_extended_negative
         c, a = self.as_coeff_Add()
         if not c.is_zero:
             v = _monotonic_sign(a)
             if v is not None:
                 s = v + c
-                if s != self and s.is_negative and a.is_nonpositive:
+                if s != self and s.is_extended_negative and a.is_extended_nonpositive:
                     return True
                 if len(self.free_symbols) == 1:
                     v = _monotonic_sign(self)
@@ -754,16 +706,11 @@ class Add(Expr, AssocOp):
             return False
         
         f = self.max()
-        if f is not self and f.is_negative:
+        if f is not self and f.is_extended_negative:
             return True
         f = self.min()
-        if f is not self and f.is_nonnegative:
+        if f is not self and f.is_extended_nonnegative:
             return False
-
-    _eval_is_extended_positive = _eval_is_positive
-    _eval_is_extended_nonnegative = _eval_is_nonnegative    
-    _eval_is_extended_nonpositive = _eval_is_nonpositive    
-    _eval_is_extended_negative = _eval_is_negative
 
     def _eval_subs(self, old, new):
         if not old.is_Add:
@@ -1348,16 +1295,16 @@ class Add(Expr, AssocOp):
     def _eval_is_finite(self):
         return True
 
-    def _eval_is_odd(self):
-        odd = False
+    def _eval_is_even(self):
+        even = True
         for arg in self.args:
-            if arg.is_even:
+            is_even = arg.is_even
+            if is_even:
                 continue
-            if arg.is_odd:
-                odd = not odd
-
+            if is_even is False:
+                even = not even
             return None
-        return odd
+        return even
 
     @property
     def is_infinitesimal(self):
@@ -1435,14 +1382,6 @@ class Add(Expr, AssocOp):
 
         return self.func(*args)
 
-    def _eval_is_nonzero(self):
-        value = None
-        if len(self.args) == 2:
-            if self.min() > 0:
-                value = True
-            elif self.max() < 0:
-                value = True    
-        return value
 
 
 from .mul import Mul, _keep_coeff, prod

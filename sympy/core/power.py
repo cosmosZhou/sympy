@@ -437,20 +437,13 @@ class Pow(Expr):
                     return pow(b, e, m)
 
     def _eval_is_even(self):
-        if self.exp.is_integer and self.exp.is_positive:
-            return self.base.is_even
-
-    def _eval_is_negative(self):
-        ext_neg = Pow._eval_is_extended_negative(self)
-        if ext_neg is True:
-            return self.is_finite
-        return ext_neg
-
-    def _eval_is_positive(self):
-        ext_pos = Pow._eval_is_extended_positive(self)
-        if ext_pos is True:
-            return self.is_finite
-        return ext_pos
+        if self.exp.is_integer:
+            if self.exp.is_positive:
+                return self.base.is_even
+            if self.exp.is_nonnegative and self.base.is_odd:
+                return False
+            if self.base is S.NegativeOne:
+                return False
 
     def _eval_is_extended_positive(self):
         from sympy import log
@@ -520,8 +513,10 @@ class Pow(Expr):
                 elif (1 - abs(self.base)).is_extended_negative:
                     return self.exp.is_extended_negative
         else:
-            # when self.base.is_zero is None
-            return None
+            if self.base.is_nonzero:
+                return False
+            if self.exp.is_extended_negative:
+                return False
 
     def _eval_is_integer(self):
         b, e = self.args
@@ -540,7 +535,7 @@ class Pow(Expr):
             check = self.func(*self.args)
             return check.is_Integer
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         from sympy import arg, exp, log, Mul
         real_b = self.base.is_extended_real
         if real_b is None:
@@ -594,8 +589,6 @@ class Pow(Expr):
         if real_b is False:  # we already know it's not imag
             i = arg(self.base) * self.exp / S.Pi
             return i.is_integer
-
-    _eval_is_extended_real = _eval_is_real
     
     def _eval_is_complex(self):
         if all(a.is_complex for a in self.args):
@@ -638,15 +631,6 @@ class Pow(Expr):
 
         if self.exp.is_negative:
             return (1 / self).is_imaginary
-
-    def _eval_is_odd(self):
-        if self.exp.is_integer:
-            if self.exp.is_positive:
-                return self.base.is_odd
-            elif self.exp.is_nonnegative and self.base.is_odd:
-                return True
-            elif self.base is S.NegativeOne:
-                return True
 
     def _eval_is_finite(self):
         if self.exp.is_negative:
@@ -1713,12 +1697,6 @@ class Pow(Expr):
         if e.has(n) and not b.has(n):
             new_e = e.subs(n, n + step)
             return (b ** (new_e - e) - 1) * self
-
-    def _eval_is_nonzero(self):
-        if self.base.is_nonzero:
-            return True
-        if self.exp < 0:
-            return True
 
     def domain_nonzero(self, x):
         domain = self.base.domain_nonzero(x)

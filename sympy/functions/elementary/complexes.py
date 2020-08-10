@@ -357,12 +357,12 @@ class sign(Function):
             return 2 * Derivative(self.args[0], x, evaluate=True) \
                 * DiracDelta(-S.ImaginaryUnit * self.args[0])
 
-    def _eval_is_nonnegative(self):
-        if self.args[0].is_nonnegative:
+    def _eval_is_extended_negative(self):
+        if self.args[0].is_extended_negative:
             return True
 
-    def _eval_is_nonpositive(self):
-        if self.args[0].is_nonpositive:
+    def _eval_is_extended_positive(self):
+        if self.args[0].is_extended_positive:
             return True
 
     def _eval_is_imaginary(self):
@@ -550,19 +550,12 @@ class Abs(Function):
             if not unk or not all(conj.has(conjugate(u)) for u in unk):
                 return sqrt(expand_mul(arg * conj))
 
-    def _eval_is_real(self):
-        if self.arg.is_finite:
-            return True
-
     def _eval_is_integer(self):
         if self.arg.is_set:
             return True
         
         if self.args[0].is_extended_real:
             return self.args[0].is_integer
-
-    def _eval_is_extended_nonzero(self):
-        return fuzzy_not(self._args[0].is_zero)
 
     def _eval_is_zero(self):
         return self._args[0].is_zero
@@ -580,10 +573,6 @@ class Abs(Function):
     def _eval_is_even(self):
         if self.args[0].is_extended_real:
             return self.args[0].is_even
-
-    def _eval_is_odd(self):
-        if self.args[0].is_extended_real:
-            return self.args[0].is_odd
 
     def _eval_is_algebraic(self):
         return self.args[0].is_algebraic

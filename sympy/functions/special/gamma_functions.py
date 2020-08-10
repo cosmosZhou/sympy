@@ -165,14 +165,14 @@ class gamma(Function):
     def _eval_conjugate(self):
         return self.func(self.args[0].conjugate())
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         x = self.args[0]
-        if x.is_positive or x.is_noninteger:
+        if x.is_extended_positive or x.is_noninteger:
             return True
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         x = self.args[0]
-        if x.is_positive:
+        if x.is_extended_positive:
             return True
         elif x.is_noninteger:
             return floor(x).is_even
@@ -587,16 +587,16 @@ class polygamma(Function):
         else:
             raise ArgumentIndexError(self, argindex)
 
-    def _eval_is_positive(self):
-        if self.args[1].is_positive and (self.args[0] > 0) == True:
+    def _eval_is_extended_positive(self):
+        if self.args[1].is_extended_positive and (self.args[0] > 0) == True:
             return self.args[0].is_odd
 
-    def _eval_is_negative(self):
-        if self.args[1].is_positive and (self.args[0] > 0) == True:
+    def _eval_is_extended_negative(self):
+        if self.args[1].is_extended_positive and (self.args[0] > 0) == True:
             return self.args[0].is_even
 
-    def _eval_is_real(self):
-        return self.args[0].is_real
+    def _eval_is_extended_real(self):
+        return self.args[0].is_extended_real
 
     def _eval_aseries(self, n, args0, x, logx):
         from sympy import Order
@@ -939,8 +939,8 @@ class loggamma(Function):
     def _eval_rewrite_as_intractable(self, z, **kwargs):
         return log(gamma(z))
 
-    def _eval_is_real(self):
-        return self.args[0].is_real
+    def _eval_is_extended_real(self):
+        return self.args[0].is_extended_real
 
     def _eval_conjugate(self):
         z = self.args[0]

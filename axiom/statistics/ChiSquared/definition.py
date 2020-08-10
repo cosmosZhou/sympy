@@ -38,6 +38,8 @@ def prove(Eq):
 
     Y = Symbol('Y', shape=(oo,), definition=Ref[k](Sum[i:k](X[i] * X[i])))
 
+    assert Y.is_finite and Y.is_nonnegative
+    
     Eq << Equality.by_definition_of(Y)  # 1
     Eq << Eq[0].subs(Eq[-1].reversed)  # 2
 

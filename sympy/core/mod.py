@@ -214,13 +214,13 @@ class Mod(Function):
         if fuzzy_and([p.is_integer, q.is_integer, fuzzy_not(q.is_zero)]):
             return True
 
-    def _eval_is_nonnegative(self):
-        if self.args[1].is_positive:
-            return True
+    def _eval_is_extended_negative(self):
+        if self.args[1].is_extended_positive:
+            return False
 
-    def _eval_is_nonpositive(self):
-        if self.args[1].is_negative:
-            return True
+    def _eval_is_extended_positive(self):
+        if self.args[1].is_extended_negative:
+            return False
 
     def _eval_rewrite_as_floor(self, a, b, **kwargs):
         from sympy.functions.elementary.integers import floor

@@ -229,13 +229,13 @@ class sinh(HyperbolicFunction):
         if self.args[0].is_extended_real:
             return True
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_positive
+            return self.args[0].is_extended_positive
 
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_negative
+            return self.args[0].is_extended_negative
 
     def _eval_is_finite(self):
         arg = self.args[0]
@@ -386,7 +386,7 @@ class cosh(HyperbolicFunction):
         else:
             return self.func(arg)
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         if self.args[0].is_extended_real:
             return True
 
@@ -537,13 +537,13 @@ class tanh(HyperbolicFunction):
         if self.args[0].is_extended_real:
             return True
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_positive
+            return self.args[0].is_extended_positive
 
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_negative
+            return self.args[0].is_extended_negative
 
     def _eval_is_finite(self):
         arg = self.args[0]
@@ -674,13 +674,13 @@ class coth(HyperbolicFunction):
     def _eval_rewrite_as_tanh(self, arg, **kwargs):
         return 1/tanh(arg)
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_positive
+            return self.args[0].is_extended_positive
 
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_negative
+            return self.args[0].is_extended_negative
 
     def _eval_as_leading_term(self, x):
         from sympy import Order
@@ -809,13 +809,13 @@ class csch(ReciprocalHyperbolicFunction):
     def _eval_rewrite_as_cosh(self, arg, **kwargs):
         return S.ImaginaryUnit / cosh(arg + S.ImaginaryUnit * S.Pi / 2)
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_positive
+            return self.args[0].is_extended_positive
 
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         if self.args[0].is_extended_real:
-            return self.args[0].is_negative
+            return self.args[0].is_extended_negative
 
     def _sage_(self):
         import sage.all as sage
@@ -856,7 +856,7 @@ class sech(ReciprocalHyperbolicFunction):
     def _eval_rewrite_as_sinh(self, arg, **kwargs):
         return S.ImaginaryUnit / sinh(arg + S.ImaginaryUnit * S.Pi /2)
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         if self.args[0].is_extended_real:
             return True
 

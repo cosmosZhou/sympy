@@ -1842,14 +1842,14 @@ class Minimum(ExprWithLimits):
             return self.function.shape
         return self.function.shape[:-1]
 
-    def _eval_is_extended_nonnegative(self):
+    def _eval_is_extended_negative(self):
         if not self.limits and self.function.is_set:
-            if self.function.infimum() >= 0:
+            if self.function.infimum().is_extended_negative:
                 return True
 
     def _eval_is_extended_positive(self):
         if not self.limits and self.function.is_set:
-            if self.function.infimum() > 0:
+            if self.function.infimum().is_extended_positive:
                 return True
             
     # infimum returns the value which is bound to be below (<=) the minimum!
@@ -2575,14 +2575,14 @@ class Maximum(ExprWithLimits):
             return self.function.supremum()
         return self
 
-    def _eval_is_extended_nonpositive(self):
+    def _eval_is_extended_positive(self):
         if not self.limits and self.function.is_set:
-            if self.function.supremum() <= 0:
+            if self.function.supremum().is_extended_positive:
                 return True
 
     def _eval_is_extended_negative(self):
         if not self.limits and self.function.is_set:
-            if self.function.supremum() < 0:
+            if self.function.supremum().is_extended_negative:
                 return True
 
 
@@ -3732,51 +3732,23 @@ class Ref(ExprWithLimits):
                 function = function._subs(x, _x)
         return function.is_extended_real
 
-    def _eval_is_real(self):
+    def _eval_is_extended_positive(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
             if domain is not None:
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
-        return function.is_real
+        return function.is_extended_positive
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_negative(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
             if domain is not None:
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
-        return function.is_positive
-
-    def _eval_is_negative(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_negative
+        return function.is_extended_negative
     
-    def _eval_is_nonpositive(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_nonpositive
-
-    def _eval_is_nonnegative(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_nonnegative
-
-    _eval_is_extended_positive = _eval_is_positive
-    _eval_is_extended_negative = _eval_is_negative
-    _eval_is_extended_nonpositive = _eval_is_nonpositive
-    _eval_is_extended_nonnegative = _eval_is_nonnegative
-
+    
 class UnionComprehension(Set, ExprWithLimits):
     """
     Represents a union of sets as a :class:`Set`.

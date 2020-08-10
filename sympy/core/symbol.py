@@ -446,8 +446,7 @@ class Symbol(AtomicExpr, NotIterable):
         while True:
             if name not in excludes:
                 if len(shape) > 0:
-                    from sympy.tensor.indexed import IndexedBase
-                    return IndexedBase(name, shape, **kwargs)
+                    kwargs['shape'] = shape
                 return self.func(name, **kwargs)
             name = chr(ord(name) + 1)
 
@@ -706,42 +705,24 @@ class Symbol(AtomicExpr, NotIterable):
     def _sympystr(self, _):   
         return Symbol.sympystr(self.name)     
 
-    def _eval_is_nonpositive(self):
-        if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_extended_nonpositive
-        if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_nonpositive
-                 
-    def _eval_is_nonnegative(self):
-        if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_extended_nonnegative
-        if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_nonnegative
-
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_positive
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_positive        
+            return self._assumptions['definition'].is_extended_positive        
                  
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_negative
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_negative        
+            return self._assumptions['definition'].is_extended_negative
 
-    def _eval_is_nonzero(self):
+    def _eval_is_zero(self):
         if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_nonzero
+            return self._assumptions['domain'].is_zero
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_nonzero
+            return self._assumptions['definition'].is_zero
         
-    def _eval_is_real(self):
-        if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_extended_real
-        if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_real
-
     def _eval_is_extended_real(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_real
@@ -754,11 +735,6 @@ class Symbol(AtomicExpr, NotIterable):
         if 'definition' in self._assumptions:
             return self._assumptions['definition'].is_finite
 
-    _eval_is_extended_nonpositive = _eval_is_nonpositive
-    _eval_is_extended_nonnegative = _eval_is_nonnegative
-    _eval_is_extended_positive = _eval_is_positive
-    _eval_is_extended_negative = _eval_is_negative
-    
     def __hash__(self):
         return super(Symbol, self).__hash__()        
 
@@ -776,15 +752,18 @@ class Symbol(AtomicExpr, NotIterable):
         if ('domain' in self._assumptions) != ('domain' in other._assumptions):
             return False
         
+        if ('definition' in self._assumptions) != ('definition' in other._assumptions):
+            return False
+        
         for fact in self._assumptions.keys() & other._assumptions.keys():
             if self._assumptions[fact] != other._assumptions[fact]:
                 return False
 
-        for fact in self._assumptions.keys() - other._assumptions.keys() - {'domain'}:            
+        for fact in self._assumptions.keys() - other._assumptions.keys() - {'domain', 'definition'}:            
             if other._ask(fact) != self._assumptions[fact]:
                 return False
             
-        for fact in other._assumptions.keys() - self._assumptions.keys() - {'domain'}:
+        for fact in other._assumptions.keys() - self._assumptions.keys() - {'domain', 'definition'}:
             if self._ask(fact) != other._assumptions[fact]:
                 return False
 

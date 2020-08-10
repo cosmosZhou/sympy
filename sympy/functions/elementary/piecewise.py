@@ -965,40 +965,20 @@ class Piecewise(Function):
                 return
         return b
 
-    _eval_is_finite = lambda self: self._eval_template_is_attr(
-        'is_finite')
+    _eval_is_finite = lambda self: self._eval_template_is_attr('is_finite')
     _eval_is_complex = lambda self: self._eval_template_is_attr('is_complex')
     _eval_is_even = lambda self: self._eval_template_is_attr('is_even')
-    _eval_is_imaginary = lambda self: self._eval_template_is_attr(
-        'is_imaginary')
+    _eval_is_imaginary = lambda self: self._eval_template_is_attr('is_imaginary')
     _eval_is_integer = lambda self: self._eval_template_is_attr('is_integer')
-    _eval_is_irrational = lambda self: self._eval_template_is_attr(
-        'is_irrational')
+    _eval_is_irrational = lambda self: self._eval_template_is_attr('is_irrational')
     _eval_is_negative = lambda self: self._eval_template_is_attr('is_negative')
-    _eval_is_nonnegative = lambda self: self._eval_template_is_attr(
-        'is_nonnegative')
-    _eval_is_nonpositive = lambda self: self._eval_template_is_attr(
-        'is_nonpositive')
-    _eval_is_nonzero = lambda self: self._eval_template_is_attr(
-        'is_nonzero')
-    _eval_is_odd = lambda self: self._eval_template_is_attr('is_odd')
     _eval_is_polar = lambda self: self._eval_template_is_attr('is_polar')
     _eval_is_positive = lambda self: self._eval_template_is_attr('is_positive')
-    _eval_is_extended_real = lambda self: self._eval_template_is_attr(
-            'is_extended_real')
-    _eval_is_extended_positive = lambda self: self._eval_template_is_attr(
-            'is_extended_positive')
-    _eval_is_extended_negative = lambda self: self._eval_template_is_attr(
-            'is_extended_negative')
-    _eval_is_extended_nonzero = lambda self: self._eval_template_is_attr(
-            'is_extended_nonzero')
-    _eval_is_extended_nonpositive = lambda self: self._eval_template_is_attr(
-            'is_extended_nonpositive')
-    _eval_is_extended_nonnegative = lambda self: self._eval_template_is_attr(
-            'is_extended_nonnegative')
+    _eval_is_extended_real = lambda self: self._eval_template_is_attr('is_extended_real')
+    _eval_is_extended_positive = lambda self: self._eval_template_is_attr('is_extended_positive')
+    _eval_is_extended_negative = lambda self: self._eval_template_is_attr('is_extended_negative')
     _eval_is_real = lambda self: self._eval_template_is_attr('is_real')
-    _eval_is_zero = lambda self: self._eval_template_is_attr(
-        'is_zero')
+    _eval_is_zero = lambda self: self._eval_template_is_attr('is_zero')
 
     @classmethod
     def __eval_cond(cls, cond):
@@ -1207,7 +1187,6 @@ class Piecewise(Function):
         
         if hit:
             return Piecewise((e0, Equality(lhs, rhs)), (e1, True))
-               
         
     def simplify(self, deep=False, wrt=None):
         from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -1435,6 +1414,7 @@ class Piecewise(Function):
 
     def _eval_is_finite(self):
         return all(e.is_finite for e, _ in self.args)
+
 
 def piecewise_fold(expr):
     """

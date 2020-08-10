@@ -248,11 +248,11 @@ class factorial(CombinatorialFunction):
             return Product(i, (i, 1, n))
 
     def _eval_is_integer(self):
-        if self.args[0].is_integer and self.args[0].is_nonnegative:
+        if self.args[0].is_integer and self.args[0].is_extended_nonnegative:
             return True
 
-    def _eval_is_positive(self):
-        if self.args[0].is_integer and self.args[0].is_nonnegative:
+    def _eval_is_extended_positive(self):
+        if self.args[0].is_integer and self.args[0].is_extended_nonnegative:
             return True
 
     def _eval_is_even(self):
@@ -265,17 +265,15 @@ class factorial(CombinatorialFunction):
         if x.is_integer and x.is_nonnegative:
             return (x - 3).is_nonnegative
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         x = self.args[0]
-        if x.is_nonnegative or x.is_noninteger:
+        if x.is_extended_nonnegative or x.is_noninteger:
             return True
 
     def _eval_is_rational(self):
         if self.args[0].is_integer and self.args[0].is_nonnegative:
             return True
 
-    _eval_is_extended_real = _eval_is_real
-    
     def _sympystr(self, p):
         return '(%s)!' % p._print(self.arg)
 
@@ -358,14 +356,9 @@ class subfactorial(CombinatorialFunction):
         from sympy import uppergamma
         return uppergamma(arg + 1, -1) / S.Exp1
 
-    def _eval_is_nonnegative(self):
-        if self.args[0].is_integer and self.args[0].is_nonnegative:
+    def _eval_is_extended_negative(self):
+        if self.args[0].is_integer and self.args[0].is_extended_negative:
             return True
-
-    def _eval_is_odd(self):
-        if self.args[0].is_even and self.args[0].is_nonnegative:
-            return True
-
 
 class factorial2(CombinatorialFunction):
     r"""The double factorial `n!!`, not to be confused with `(n!)!`
@@ -428,6 +421,9 @@ class factorial2(CombinatorialFunction):
 
     def _eval_is_even(self):
         # Double factorial is even for every positive even input
+        # Double factorial is odd for every odd input not smaller than -3, and
+        # for 0
+        
         n = self.args[0]
         if n.is_integer:
             if n.is_odd:
@@ -443,30 +439,18 @@ class factorial2(CombinatorialFunction):
         # -1 and -3
         n = self.args[0]
         if n.is_integer:
-            if (n + 1).is_nonnegative:
+            if (n + 1).is_extended_nonnegative:
                 return True
             if n.is_odd:
-                return (n + 3).is_nonnegative
+                return (n + 3).is_extended_nonnegative
 
-    def _eval_is_odd(self):
-        # Double factorial is odd for every odd input not smaller than -3, and
-        # for 0
-        n = self.args[0]
-        if n.is_odd:
-            return (n + 3).is_nonnegative
-        if n.is_even:
-            if n.is_positive:
-                return False
-            if n.is_zero:
-                return True
-
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         # Double factorial is positive for every nonnegative input, and for
         # every odd negative input which is of the form -1-4k for an
         # nonnegative integer k
         n = self.args[0]
         if n.is_integer:
-            if (n + 1).is_nonnegative:
+            if (n + 1).is_extended_nonnegative:
                 return True
             if n.is_odd:
                 return ((n + 1) / 2).is_even
@@ -1037,20 +1021,18 @@ class binom(CombinatorialFunction):
         elif k.is_integer is False:
             return False
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         n, k = self.args
-        if n.is_real and k.is_real:
+        if n.is_extended_real and k.is_extended_real:
             return True
-        
-    _eval_is_extended_real = _eval_is_real
     
-    def _eval_is_nonnegative(self):
+    def _eval_is_extended_negative(self):
         n, k = self.args
         if n.is_integer and k.is_integer:
-            if n.is_nonnegative or k.is_negative or k.is_even:
-                return True
+            if n.is_extended_nonnegative or k.is_extended_negative or k.is_even:
+                return False
             elif k.is_even is False:
-                return  False
+                return True
 
     def domain_nonzero(self, x):
         from sympy.sets.sets import Interval

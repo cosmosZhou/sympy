@@ -140,8 +140,8 @@ class Quantity(AtomicExpr):
         """
         return Quantity.SI_quantity_scale_factors.get(self, S.One)
 
-    def _eval_is_positive(self):
-        return self.scale_factor.is_positive
+    def _eval_is_extended_positive(self):
+        return self.scale_factor.is_extended_positive
 
     def _eval_is_constant(self):
         return self.scale_factor.is_constant()

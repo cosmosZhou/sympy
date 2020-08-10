@@ -1276,23 +1276,8 @@ class Float(Number):
             return False
         return True
 
-    def _eval_is_infinite(self):
-        if self._mpf_ in (_mpf_inf, _mpf_ninf):
-            return True
-        return False
-
     def _eval_is_integer(self):
         return self._mpf_ == fzero
-
-    def _eval_is_negative(self):
-        if self._mpf_ == _mpf_ninf or self._mpf_ == _mpf_inf:
-            return False
-        return self.num < 0
-
-    def _eval_is_positive(self):
-        if self._mpf_ == _mpf_ninf or self._mpf_ == _mpf_inf:
-            return False
-        return self.num > 0
 
     def _eval_is_extended_negative(self):
         if self._mpf_ == _mpf_ninf:
@@ -1723,25 +1708,14 @@ class Rational(Number):
     def _hashable_content(self):
         return (self.p, self.q)
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         return self.p > 0
 
     def _eval_is_zero(self):
         return self.p == 0
 
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         return self.p < 0 
-
-    def _eval_is_nonnegative(self):
-        return self.p >= 0 
-
-    def _eval_is_nonpositive(self):
-        return self.p <= 0
-
-    _eval_is_extended_negative = _eval_is_negative
-    _eval_is_extended_positive = _eval_is_positive
-    _eval_is_extended_nonnegative = _eval_is_nonnegative
-    _eval_is_extended_nonpositive = _eval_is_nonpositive
 
     def __neg__(self):
         return Rational(-self.p, self.q)
@@ -2367,11 +2341,8 @@ class Integer(Rational):
 
     ########################################
 
-    def _eval_is_odd(self):
-        return bool(self.p % 2)
-
     def _eval_is_even(self):
-        return not self.is_odd
+        return not (self.p & 1)
 
     def _eval_power(self, expt):
         """

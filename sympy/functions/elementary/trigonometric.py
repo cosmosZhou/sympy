@@ -453,7 +453,7 @@ class sin(TrigonometricFunction):
                 if n.is_odd:
                     return (-1) ** ((n - 1) / 2) * chebyshevt(n, sin(x))
                 else:
-                    return expand_mul((-1) ** (n / 2 - 1) * cos(x) * chebyshevu(n -
+                    return expand_mul((-1) ** (n / 2 - 1) * cos(x) * chebyshevu(n - 
                         1, sin(x)), deep=False)
             pi_coeff = _pi_coeff(arg)
             if pi_coeff is not None:
@@ -507,16 +507,16 @@ class sin(TrigonometricFunction):
             return -self
         return None
 
-    def _eval_is_extended_nonnegative(self):
+    def _eval_is_extended_negative(self):
         from sympy import Interval
         domain = self.arg.domain
         if not isinstance(domain, Interval):
-            return None
+            return
         domain /= pi
 #         (0,1) * pi + 2 k pi
 #         (1,2) * pi + 2 k pi
         if domain.size > 1:
-            return None
+            return
         a, b, *_ = domain.args
         if b > 2:
             diff = floor(b / 2) * 2
@@ -528,12 +528,11 @@ class sin(TrigonometricFunction):
             b += diff
             a += diff
 
-            return None
+            return
         if b <= 1 and a >= 0:
-            return True
-        if b < 2 and a > 1:
             return False
-        return None
+        if b < 2 and a > 1:
+            return True
 
 
 class cos(TrigonometricFunction):
@@ -863,7 +862,7 @@ class cos(TrigonometricFunction):
         cst_table_some = {
             3: S.Half,
             5: (sqrt(5) + 1) / 4,
-            17: sqrt((15 + sqrt(17)) / 32 + sqrt(2) * (sqrt(17 - sqrt(17)) +
+            17: sqrt((15 + sqrt(17)) / 32 + sqrt(2) * (sqrt(17 - sqrt(17)) + 
                 sqrt(sqrt(2) * (-8 * sqrt(17 + sqrt(17)) - (1 - sqrt(17))
                 * sqrt(17 - sqrt(17))) + 6 * sqrt(17) + 34)) / 32),
             257: _cospi257()
@@ -993,17 +992,17 @@ class cos(TrigonometricFunction):
             return -self
         return None
 
-    def _eval_is_extended_nonnegative(self):
+    def _eval_is_extended_negative(self):
 
         from sympy import Interval
         domain = self.arg.domain
         if not isinstance(domain, Interval):
-            return None
+            return
         domain /= pi / 2
 #         (-1,1 ) * pi/2 + 4 k pi/2
 #         (1,3) * pi/2 + 4 k pi/2
         if domain.size > 2:
-            return None
+            return
 #         (3, 5) => (-1, 1)
         a, b, *_ = domain.args
         if b >= 4:
@@ -1016,12 +1015,11 @@ class cos(TrigonometricFunction):
             b += diff
             a += diff
 
-            return None
+            return
         if b <= 1 and a >= -1:
-            return True
-        if b < 3 and a > 1:
             return False
-        return None
+        if b < 3 and a > 1:
+            return True
 
 
 class tan(TrigonometricFunction):
@@ -1313,18 +1311,15 @@ class tan(TrigonometricFunction):
             return self.func(arg)
 
     def _eval_is_extended_real(self):
-        return self.args[0].is_extended_real
-
-    def _eval_is_real(self):
         arg = self.args[0]
-        if arg.is_real and (arg / pi - S.Half).is_integer is False:
-            return True
+        return arg.is_extended_real
 
     def _eval_is_finite(self):
         arg = self.args[0]
 
         if arg.is_imaginary:
             return True
+        return fuzzy_not((arg / pi - S.Half).is_integer)
 
 
 class cot(TrigonometricFunction):
@@ -1893,7 +1888,7 @@ class csc(ReciprocalTrigonometricFunction):
         else:
             x = sympify(x)
             k = n // 2 + 1
-            return ((-1) ** (k - 1) * 2 * (2 ** (2 * k - 1) - 1) *
+            return ((-1) ** (k - 1) * 2 * (2 ** (2 * k - 1) - 1) * 
                     bernoulli(2 * k) * x ** (2 * k - 1) / factorial(2 * k))
 
 
@@ -2040,11 +2035,11 @@ class asin(InverseTrigonometricFunction):
         else:
             return s.is_rational
 
-    def _eval_is_positive(self):
-        return self._eval_is_extended_real() and self.args[0].is_positive
+    def _eval_is_extended_positive(self):
+        return self.is_extended_real and self.args[0].is_extended_positive
 
-    def _eval_is_negative(self):
-        return self._eval_is_extended_real() and self.args[0].is_negative
+    def _eval_is_extended_negative(self):
+        return self.is_extended_real and self.args[0].is_extended_negative
 
     @classmethod
     def eval(cls, arg):
@@ -2302,10 +2297,11 @@ class acos(InverseTrigonometricFunction):
 
     def _eval_is_extended_real(self):
         x = self.args[0]
-        return x.is_extended_real and (1 - abs(x)).is_nonnegative
+        return x.is_extended_real and (1 - abs(x)).is_extended_nonnegative
 
-    def _eval_is_nonnegative(self):
-        return self._eval_is_extended_real()
+    def _eval_is_extended_negative(self):
+        if self.is_extended_real:
+            return False
 
     def _eval_nseries(self, x, n, logx):
         return self._eval_rewrite_as_log(self.args[0])._eval_nseries(x, n, logx)
@@ -2400,16 +2396,16 @@ class atan(InverseTrigonometricFunction):
         else:
             return s.is_rational
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         return self.args[0].is_extended_positive
 
-    def _eval_is_nonnegative(self):
-        return self.args[0].is_extended_nonnegative
+    def _eval_is_extended_negative(self):
+        return self.args[0].is_extended_negative
 
     def _eval_is_zero(self):
         return self.args[0].is_zero
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         return self.args[0].is_extended_real
 
     @classmethod
@@ -2563,11 +2559,11 @@ class acot(InverseTrigonometricFunction):
         else:
             return s.is_rational
 
-    def _eval_is_positive(self):
-        return self.args[0].is_nonnegative
+    def _eval_is_extended_positive(self):
+        return self.args[0].is_extended_nonnegative
 
-    def _eval_is_negative(self):
-        return self.args[0].is_negative
+    def _eval_is_extended_negative(self):
+        return self.args[0].is_extended_negative
 
     def _eval_is_extended_real(self):
         return self.args[0].is_extended_real
@@ -2676,7 +2672,7 @@ class acot(InverseTrigonometricFunction):
         return cot
 
     def _eval_rewrite_as_asin(self, arg, **kwargs):
-        return (arg * sqrt(1 / arg ** 2) *
+        return (arg * sqrt(1 / arg ** 2) * 
                 (S.Pi / 2 - asin(sqrt(-arg ** 2) / sqrt(-arg ** 2 - 1))))
 
     def _eval_rewrite_as_acos(self, arg, **kwargs):

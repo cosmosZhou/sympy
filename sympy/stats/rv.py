@@ -278,14 +278,14 @@ class RandomSymbol(Expr):
     symbol = property(lambda self: self.args[0])
     name = property(lambda self: self.symbol.name)
 
-    def _eval_is_positive(self):
-        return self.symbol.is_positive
+    def _eval_is_extended_positive(self):
+        return self.symbol.is_extended_positive
 
     def _eval_is_integer(self):
         return self.symbol.is_integer
 
-    def _eval_is_real(self):
-        return self.symbol.is_real or self.pspace.is_real
+    def _eval_is_extended_real(self):
+        return self.symbol.is_extended_real or self.pspace.is_extended_real
 
     @property
     def is_commutative(self):
@@ -432,14 +432,9 @@ class IndependentProductPSpace(ProductPSpace):
 
     def compute_density(self, expr, **kwargs):        
         rvs = random_symbols(expr)
-#         dic = {}
         for var in rvs:
-#             if not isinstance(var, RandomSymbol):
-#                 dic[var] = var.pspace.value.symbol
             expr = expr._subs(var, var.pspace.value.symbol)
 
-#         if dic:
-#             expr = expr.xreplace(dic)
         assert not random_symbols(expr)
 
         if any(pspace(rv).is_Continuous for rv in rvs):

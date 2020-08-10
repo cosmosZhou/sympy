@@ -12,6 +12,7 @@ from mpmath.libmp import mpf_log, prec_to_dps
 
 from collections import defaultdict
 from builtins import isinstance
+from sympy.core.logic import fuzzy_not
 
 
 class Expr(Basic, EvalfMixin):
@@ -991,6 +992,27 @@ class Expr(Basic, EvalfMixin):
             return diff
         return None
 
+    def _eval_is_infinite(self):
+        return fuzzy_not(self.is_finite)
+        
+    def _eval_is_nonzero(self):
+        zero = self.is_zero
+        if zero:
+            return False
+        if zero is False:
+            return self.is_real
+        
+    def _eval_is_extended_nonzero(self):
+        zero = self.is_zero
+        if zero:
+            return False
+        if zero is False:
+            return self.is_extended_real
+        
+    def _eval_is_real(self):
+        if self.is_finite:
+            return self.is_extended_real
+
     def _eval_is_positive(self):
         finite = self.is_finite
         if finite is False:
@@ -1010,6 +1032,34 @@ class Expr(Basic, EvalfMixin):
             return extended_negative
         if extended_negative is False:
             return False
+
+    def _eval_is_nonnegative(self):
+        negative = self.is_negative        
+        if negative:
+            return False
+        if negative is False:
+            return self.is_real
+
+    def _eval_is_nonpositive(self):
+        positive = self.is_positive        
+        if positive:
+            return False
+        if positive is False:
+            return self.is_real
+
+    def _eval_is_extended_nonpositive(self):
+        extended_positive = self.is_extended_positive        
+        if extended_positive:
+            return False
+        if extended_positive is False:
+            return self.is_extended_real
+
+    def _eval_is_extended_nonnegative(self):
+        extended_negative = self.is_extended_negative        
+        if extended_negative:
+            return False
+        if extended_negative is False:
+            return self.is_extended_real
 
     def _eval_is_extended_positive(self):
         from sympy.polys.numberfields import minimal_polynomial
@@ -3984,12 +4034,12 @@ class Expr(Basic, EvalfMixin):
         shape = self.shape        
         return len(shape) >= 2 and shape[0] == shape[1]
     
-#     def inverse(self):
-#         if not self.is_square:
-#             return 
-#         from sympy.matrices.expressions.inverse import Inverse
-#         return Inverse(self)
-
+    def _eval_is_odd(self):
+        is_even = self.is_even
+        if is_even:
+            return False
+        if is_even is False:
+            return self.is_integer
     
 class AtomicExpr(Atom, Expr):
     """

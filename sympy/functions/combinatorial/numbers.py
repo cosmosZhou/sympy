@@ -1180,11 +1180,11 @@ class catalan(Function):
         return Product((n + k) / k, (k, 2, n))
 
     def _eval_is_integer(self):
-        if self.args[0].is_integer and self.args[0].is_nonnegative:
+        if self.args[0].is_integer and self.args[0].is_extended_nonnegative:
             return True
 
-    def _eval_is_positive(self):
-        if self.args[0].is_nonnegative:
+    def _eval_is_extended_positive(self):
+        if self.args[0].is_extended_nonnegative:
             return True
 
     def _eval_is_composite(self):
@@ -1258,16 +1258,16 @@ class genocchi(Function):
         if self.args[0].is_integer and self.args[0].is_positive:
             return True
 
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         n = self.args[0]
-        if n.is_integer and n.is_positive:
+        if n.is_integer and n.is_extended_positive:
             if n.is_odd:
                 return False
             return (n / 2).is_odd
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         n = self.args[0]
-        if n.is_integer and n.is_positive:
+        if n.is_integer and n.is_extended_positive:
             if n.is_odd:
                 return fuzzy_not((n - 1).is_positive)
             return (n / 2).is_even
@@ -1278,13 +1278,6 @@ class genocchi(Function):
             if n.is_even:
                 return False
             return (n - 1).is_positive
-
-    def _eval_is_odd(self):
-        n = self.args[0]
-        if n.is_integer and n.is_positive:
-            if n.is_even:
-                return True
-            return fuzzy_not((n - 1).is_positive)
 
     def _eval_is_prime(self):
         n = self.args[0]
@@ -1381,13 +1374,13 @@ class partition(Function):
         if self.args[0].is_integer:
             return True
 
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         if self.args[0].is_integer:
             return False
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         n = self.args[0]
-        if n.is_nonnegative and n.is_integer:
+        if n.is_extended_nonnegative and n.is_integer:
             return True
 
 #######################################################################
@@ -2270,13 +2263,13 @@ class Stirling(Function):
         elif k.is_integer is False:
             return False
 
-    def _eval_is_nonnegative(self):
+    def _eval_is_extended_negative(self):
         n, k = self.args
         if n.is_integer and k.is_integer:
-            if n.is_nonnegative or k.is_negative or k.is_even:
-                return True
+            if n.is_extended_nonnegative or k.is_negative or k.is_even:
+                return False
             elif k.is_even is False:
-                return  False
+                return True
 
     def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
@@ -2547,13 +2540,13 @@ class Stirling1(Function):
         elif k.is_integer is False:
             return False
 
-    def _eval_is_nonnegative(self):
+    def _eval_is_extended_negative(self):
         n, k = self.args
         if n.is_integer and k.is_integer:
-            if n.is_nonnegative or k.is_negative or k.is_even:
-                return True
+            if n.is_extended_nonnegative or k.is_extended_negative or k.is_even:
+                return False
             elif k.is_even is False:
-                return  False
+                return True
 
     def domain_nonzero(self, x):
         from sympy.sets.sets import Interval

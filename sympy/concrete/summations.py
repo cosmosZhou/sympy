@@ -1396,60 +1396,41 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             
         return domain
 
-    def _eval_is_real(self):
+    def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
             if domain is not None:
-                _x = x.copy(domain = domain)
+                if domain.is_infinite:
+                    return None
+                    
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_finite
+    
+    def _eval_is_extended_real(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
                 
-        return function.is_real
-    
-    _eval_is_extended_real = _eval_is_real
-
-    def _eval_is_positive(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain = domain)
-                function = function._subs(x, _x)
-        return self.function.is_positive
-
-    def _eval_is_negative(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain = domain)
-                function = function._subs(x, _x)
-        return self.function.is_negative
-
-    def _eval_is_nonpositive(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain = domain)
-                function = function._subs(x, _x)
-        return self.function.is_nonpositive
-
-    def _eval_is_nonnegative(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain = domain)
-                function = function._subs(x, _x)
-        return self.function.is_nonnegative
-    
-    def _eval_is_extended_negative(self):
-        return self.function.is_extended_negative
+        return function.is_extended_real
     
     def _eval_is_extended_positive(self):
-        return self.function.is_extended_positive
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_extended_positive
 
-    def _eval_is_extended_nonnegative(self):
-        return self.function.is_extended_nonnegative
-    
-    def _eval_is_extended_nonpositive(self):
-        return self.function.is_extended_nonpositive
+    def _eval_is_extended_negative(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_extended_negative
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])

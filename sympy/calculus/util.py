@@ -1020,9 +1020,10 @@ class AccumulationBounds(AtomicExpr):
     # setting the operation priority
     _op_priority = 11.0
 
-    def _eval_is_real(self):
-        if self.min.is_real and self.max.is_real:
-            return True
+    def _eval_is_finite(self):
+        if self.min.is_finite:
+            return self.max.is_real
+        return self.min.is_finite
 
     @property
     def min(self):

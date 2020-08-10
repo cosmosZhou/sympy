@@ -69,8 +69,8 @@ class expm1(Function):
         if exp_arg is not None:
             return exp_arg - S.One
 
-    def _eval_is_real(self):
-        return self.args[0].is_real
+    def _eval_is_extended_real(self):
+        return self.args[0].is_extended_real
 
     def _eval_is_finite(self):
         return self.args[0].is_finite
@@ -137,22 +137,19 @@ class log1p(Function):
         elif arg.is_number:
             return log(Rational(arg) + S.One)
 
-    def _eval_is_real(self):
-        return (self.args[0] + S.One).is_nonnegative
+    def _eval_is_extended_real(self):
+        return (self.args[0] + S.One).is_extended_nonnegative
 
     def _eval_is_finite(self):
         if (self.args[0] + S.One).is_zero:
             return False
         return self.args[0].is_finite
 
-    def _eval_is_positive(self):
-        return self.args[0].is_positive
+    def _eval_is_extended_positive(self):
+        return self.args[0].is_extended_positive
 
     def _eval_is_zero(self):
         return self.args[0].is_zero
-
-    def _eval_is_nonnegative(self):
-        return self.args[0].is_nonnegative
 
 _Two = S(2)
 

@@ -1128,10 +1128,8 @@ class Mul(Expr, AssocOp):
     def _eval_is_algebraic_expr(self, syms):
         return all(term._eval_is_algebraic_expr(syms) for term in self.args)
 
-    _eval_is_commutative = lambda self: _fuzzy_group(
-        a.is_commutative for a in self.args)
-    _eval_is_complex = lambda self: _fuzzy_group(
-        (a.is_complex for a in self.args), quick_exit=True)
+    _eval_is_commutative = lambda self: _fuzzy_group(a.is_commutative for a in self.args)
+    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
 
     def _eval_is_finite(self):
         if all(a.is_finite for a in self.args):
@@ -1140,13 +1138,13 @@ class Mul(Expr, AssocOp):
             if all(a.is_zero is False for a in self.args):
                 return False
 
-    def _eval_is_infinite(self):
-        if any(a.is_infinite for a in self.args):
-            if any(a.is_zero for a in self.args):
-                return S.NaN.is_infinite
-            if any(a.is_zero is None for a in self.args):
-                return None
-            return True
+#     def _eval_is_infinite(self):
+#         if any(a.is_infinite for a in self.args):
+#             if any(a.is_zero for a in self.args):
+#                 return S.NaN.is_infinite
+#             if any(a.is_zero is None for a in self.args):
+#                 return None
+#             return True
 
     def _eval_is_rational(self):
         r = _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
@@ -1195,7 +1193,7 @@ class Mul(Expr, AssocOp):
         has_polar = any(arg.is_polar for arg in self.args)
         return has_polar and all(arg.is_polar or arg.is_positive for arg in self.args)
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         return self._eval_real_imag(True)
 
     def _eval_real_imag(self, real):
@@ -1335,37 +1333,18 @@ class Mul(Expr, AssocOp):
         if sign < 0:
             return False
 
-    def _eval_is_odd(self):
-        is_integer = self.is_integer
-
-        if is_integer:
-            r, acc = True, 1
-            for t in self.args:
-                if not t.is_integer:
-                    return None
-                elif t.is_even:
-                    r = False
-                elif t.is_integer:
-                    if r is False:
-                        pass
-                    elif acc != 1 and (acc + t).is_odd:
-                        r = False
-                    elif t.is_odd is None:
-                        r = None
-                acc = t
-            return r
-
-        # !integer -> !odd
-        elif is_integer is False:
-            return False
-
     def _eval_is_even(self):
         is_integer = self.is_integer
 
         if is_integer:
-            return fuzzy_not(self.is_odd)
-
-        elif is_integer is False:
+            is_even = [t.is_even for t in self.args]
+            if any(is_even):
+                return True
+            if all(b is False for b in is_even):
+                return False
+            return 
+        # !integer -> !odd
+        if is_integer is False:
             return False
 
     def _eval_is_composite(self):
@@ -1810,7 +1789,7 @@ class Mul(Expr, AssocOp):
                 for limit in it.limits:
                     x = limit[0]
                     if x in var_list:
-                        _x = x.generate_free_symbol(free_symbols)
+                        _x = x.generate_free_symbol(free_symbols, integer=x.is_integer)
                         it = it.subs(x, _x)
 
                 limits += it.limits
@@ -1923,37 +1902,11 @@ class Mul(Expr, AssocOp):
                 function = self.func(*args).powsimp()
                 return arg.func(function, *arg.limits)
         return self
-
-    def _eval_is_nonnegative(self):
-        negative_cnt = 0
-        nonnegatives = []
-        for arg in self.args:
-            if arg.is_negative:
-                negative_cnt += 1
-            else:
-                nonnegatives.append(arg)
-        if negative_cnt & 1:
-            return self.func(*nonnegatives).is_nonpositive
-        if len(nonnegatives) == 1:
-            return nonnegatives[0].is_nonnegative
-
-    def _eval_is_nonpositive(self):
-        negative_cnt = 0
-        nonnegatives = []
-        for arg in self.args:
-            if arg.is_negative:
-                negative_cnt += 1
-            else:
-                nonnegatives.append(arg)
-        if negative_cnt & 1:
-            return self.func(*nonnegatives).is_nonnegative
-        if len(nonnegatives) == 1:
-            return nonnegatives[0].is_nonpositive
         
-    def _eval_is_negative(self):
+    def _eval_is_extended_negative(self):
         return self._eval_pos_neg(-1)
 
-    def _eval_is_positive(self):
+    def _eval_is_extended_positive(self):
         """Return True if self is positive, False if not, and None if it
         cannot be determined.
 
@@ -1967,14 +1920,8 @@ class Mul(Expr, AssocOp):
             pos * neg * nonnegative -> neg or zero -> False is returned
         """
         return self._eval_pos_neg(1)
-    
-    _eval_is_extended_real = _eval_is_real
-    _eval_is_extended_negative = _eval_is_negative
-    _eval_is_extended_positive = _eval_is_positive
-    _eval_is_extended_nonnegative = _eval_is_nonnegative
-    _eval_is_extended_nonpositive = _eval_is_nonpositive
-    
 
+    
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only
        ints are included then an int result is returned.
