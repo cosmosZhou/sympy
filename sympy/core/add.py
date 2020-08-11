@@ -550,6 +550,12 @@ class Add(Expr, AssocOp):
             return False
 
     def _eval_is_zero(self):
+        if len(self.args) == 2:
+            if self.min().is_extended_positive:
+                return False
+            if self.max().is_extended_negative:
+                return False    
+        
         if self.is_commutative is False:
             # issue 10528: there is no way to know if a nc symbol
             # is zero or not
@@ -584,12 +590,6 @@ class Add(Expr, AssocOp):
                 return False
         if b.is_zero is False:
             return False
-
-        if len(self.args) == 2:
-            if self.min().is_extended_positive:
-                return False
-            if self.max().is_extended_negative:
-                return False    
 
     def _eval_is_irrational(self):
         for t in self.args:

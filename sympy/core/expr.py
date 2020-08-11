@@ -1047,20 +1047,6 @@ class Expr(Basic, EvalfMixin):
         if positive is False:
             return self.is_real
 
-    def _eval_is_extended_nonpositive(self):
-        extended_positive = self.is_extended_positive        
-        if extended_positive:
-            return False
-        if extended_positive is False:
-            return self.is_extended_real
-
-    def _eval_is_extended_nonnegative(self):
-        extended_negative = self.is_extended_negative        
-        if extended_negative:
-            return False
-        if extended_negative is False:
-            return self.is_extended_real
-
     def _eval_is_extended_positive(self):
         from sympy.polys.numberfields import minimal_polynomial
         from sympy.polys.polyerrors import NotAlgebraic

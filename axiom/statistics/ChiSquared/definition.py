@@ -7,6 +7,7 @@ from sympy.stats.rv import Density, RandomSymbol
 from sympy import pi, Symbol
 from sympy.stats import Normal
 from axiom.trigonometry import Wallis
+from sympy.functions.elementary.miscellaneous import sqrt
 
 
 @plausible
@@ -38,7 +39,10 @@ def prove(Eq):
 
     Y = Symbol('Y', shape=(oo,), definition=Ref[k](Sum[i:k](X[i] * X[i])))
 
-    assert Y.is_finite and Y.is_nonnegative
+    assert y.is_nonnegative and Y.is_finite and Y.is_nonnegative
+    
+#     assert sqrt(y - Y[k]).is_extended_real
+#     assert (-sqrt(y - Y[k])).is_real and (-sqrt(y - Y[k])).is_extended_nonpositive
     
     Eq << Equality.by_definition_of(Y)  # 1
     Eq << Eq[0].subs(Eq[-1].reversed)  # 2
@@ -62,6 +66,8 @@ def prove(Eq):
 
     from sympy import sin
     t = Symbol('t', domain=Interval(0, pi / 2))
+    assert t.is_zero is None
+    
     Eq << Eq[-1].this.rhs.args[-1].limits_subs(_y, y * sin(t) ** 2)
 
     Eq << Eq[-1].this.rhs.args[-1].function.powsimp()

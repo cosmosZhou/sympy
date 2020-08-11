@@ -2207,6 +2207,20 @@ class Basic(with_metaclass(ManagedProperties)):
         assumptions[fact] = a
         return a
     
+    def _eval_is_extended_nonpositive(self):
+        extended_positive = self.is_extended_positive        
+        if extended_positive:
+            return False
+        if extended_positive is False:
+            return self.is_extended_real
+
+    def _eval_is_extended_nonnegative(self):
+        extended_negative = self.is_extended_negative        
+        if extended_negative:
+            return False
+        if extended_negative is False:
+            return self.is_extended_real
+    
 class Atom(Basic):
     """
     A parent class for atomic things. An atom is an expression with no subexpressions.

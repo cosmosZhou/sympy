@@ -487,7 +487,7 @@ class exp(ExpBase):
     def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
-        integer = False
+        integer = None
         if x.is_integer:
             integer = True
         return Interval(-oo, oo, integer=integer)

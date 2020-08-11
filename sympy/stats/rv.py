@@ -194,7 +194,7 @@ class SinglePSpace(PSpace):
                 s = Symbol(s, integer=True, nonnegative=True)
             elif distribution.set == S.Integers:
                 s = Symbol(s, integer=True)
-            elif distribution.set.is_nonnegative:
+            elif distribution.set.is_extended_nonnegative:
                 s = Symbol(s, real=True, nonnegative=True)
             else:
                 s = Symbol(s, real=True)

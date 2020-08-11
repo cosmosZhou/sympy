@@ -1111,7 +1111,7 @@ class Interval(Set, EvalfMixin):
                 new_a = Interval(start, end, left_open, right_open, True)
                 return set((new_a, b))
 
-    def __new__(cls, start, end, left_open=False, right_open=False, integer=False, real=True):
+    def __new__(cls, start, end, left_open=False, right_open=False, integer=None):
 
         start = _sympify(start)
         end = _sympify(end)
@@ -1157,11 +1157,7 @@ class Interval(Set, EvalfMixin):
             end = end.clear_infinitesimal()
             right_open = S.true
 
-        if not integer:
-            assert real
-            if integer is None:
-                integer = False
-        else:
+        if integer:
             if right_open:
                 if left_open:
                     if start == end - 2:
@@ -1206,8 +1202,8 @@ class Interval(Set, EvalfMixin):
                     left_open = S.true
                 except:
                     ...
-#         integer = _sympify(integer)
-        return Basic.__new__(cls, start, end, left_open, right_open, integer)
+        assert integer in (True, None)
+        return Basic.__new__(cls, start, end, left_open, right_open, integer=integer)
 
     def element_symbol(self, excludes=set()):
         return generate_free_symbol(self.free_symbols | excludes, integer=self.is_integer)
@@ -1223,9 +1219,6 @@ class Interval(Set, EvalfMixin):
             return False
         if self.min().is_extended_positive:
             return True
-
-    def _eval_is_integer(self):
-        return self.args[4]
 
     is_extended_real = True
     

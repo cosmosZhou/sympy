@@ -731,7 +731,15 @@ class Symbol(AtomicExpr, NotIterable):
 
     def _eval_is_finite(self):
         if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_finite
+            domain_assumed = self.domain_assumed
+            if domain_assumed.is_Interval:                
+                return True
+            if domain_assumed.is_FiniteSet:
+                if all(arg.is_finite for arg in domain_assumed.args):
+                    return True
+                if all(arg.is_infinite for arg in domain_assumed.args):
+                    return False
+            return
         if 'definition' in self._assumptions:
             return self._assumptions['definition'].is_finite
 

@@ -487,9 +487,9 @@ class Integral(AddWithLimits):
                 (len(xab) == 3 and all(x.is_extended_real and not x.is_infinite for
                  x in xab[1:]))):
                     # some improper integrals are better off with Abs
-                    xr = Dummy("xr", real=True)
-                    function = (function.xreplace({xab[0]: xr})
-                        .rewrite(Piecewise).xreplace({xr: xab[0]}))
+#                     xr = Dummy("xr", real=True)
+#                     function = (function.xreplace({xab[0]: xr}).rewrite(Piecewise).xreplace({xr: xab[0]}))
+                    ...
             elif function.has(Min, Max):
                 function = function.rewrite(Piecewise)
             if (function.has(Piecewise) and

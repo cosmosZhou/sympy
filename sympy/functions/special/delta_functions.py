@@ -515,6 +515,13 @@ class Heaviside(Function):
             return S.NaN
         elif fuzzy_not(im(arg).is_zero):
             raise ValueError("Function defined only for Real Values. Complex part: %s  found in %s ." % (repr(im(arg)), repr(arg)))
+        else:
+            if arg.is_Add:    
+                for arg in arg.args:            
+                    if arg is S.Infinity:
+                        return S.One
+                    if arg is S.NegativeInfinity:
+                        return S.Zero
 
     def _eval_rewrite_as_Piecewise(self, arg, H0=None, **kwargs):
         """Represents Heaviside in a Piecewise form
