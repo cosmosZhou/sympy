@@ -17,21 +17,29 @@ from sympy.utility import check
 @check
 def prove(Eq):
     Eq << apply()
+    
+    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[0] * sqrt(2 * pi)
 
     x, *_ = Eq[-1].this.lhs.limits[0]
     y = Symbol("y", real=True)
 
+    assert Eq[-1].lhs.is_extended_real    
     Eq << Eq[-1].this.lhs.limits_subs(x, y) * Eq[-1]
 
+    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[-1].this.lhs.as_multiple_limits()
 
+    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[-1].this.lhs.as_polar_coordinate()
-
+    
+    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[-1].this.lhs.doit()
-
+    
+    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[-3].this.lhs.args[1].limits_subs(y, x)
-
+    
+    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[-1].sqrt()
 
 

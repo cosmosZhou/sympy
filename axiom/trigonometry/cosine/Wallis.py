@@ -13,7 +13,7 @@ from sympy import S
 @plausible
 def apply(n):
     n = sympify(n)
-    x = Symbol("x")
+    x = Symbol("x", real=True)
     return Equality(Integral[x:0:pi / 2](cos(x) ** (n - 1)),
                     sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
 

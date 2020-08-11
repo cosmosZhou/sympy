@@ -74,7 +74,7 @@ def prove(Eq):
 
     Eq << apply(x0, x1)
 
-    Eq << Equality.by_definition_of(Density(x0 + x1))
+    Eq << Density(x0 + x1).equality_defined()
 
     Eq << Eq[-1].this.rhs.function.powsimp()
 
@@ -101,7 +101,6 @@ def prove(Eq):
     Eq << Eq[-1].limits_subs(k, y)
     
     Eq << Eq[-1].subs(Eq.convolution)
-#     Eq << Eq[-1][Eq[0].lhs.symbol].subs(Eq[3])
 
 
 if __name__ == '__main__':

@@ -13,7 +13,7 @@ def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)
 
-    x = Symbol("x")
+    x = Symbol("x", real=True)
     return Equality(Integral[x:0:pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
                     beta(m / 2, n / 2) / 2)
 

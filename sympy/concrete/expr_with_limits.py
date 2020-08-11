@@ -1102,36 +1102,63 @@ class AddWithLimits(ExprWithLimits):
         function = self.func(self.function, *limits).as_separate_limits().simplify()
         return self.func(function, (x, a, b))
 
+    def _eval_is_extended_real(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+                
+        return function.is_extended_real
+    
+    def _eval_is_extended_positive(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+        return function.is_extended_positive
 
-def bounds(function, x, domain):
-    from sympy import limit
-    maxi = domain.max()
-    if maxi.is_infinite:
-        maxi = limit(function, x, maxi)
-    else:
-        is_infinitesimal = maxi.is_infinitesimal
-        if is_infinitesimal is True:
-            maxi = limit(function, x, maxi.clear_infinitesimal(), '+')
-        elif is_infinitesimal is False:
-            maxi = limit(function, x, maxi.clear_infinitesimal(), '-')
+    def _eval_is_extended_negative(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+                    
+        return function.is_extended_negative
+
+class MinMaxBase(ExprWithLimits):
+    
+    def bounds(self, x, domain):
+        function = self.function        
+        from sympy import limit
+        maxi = domain.max()
+        if maxi.is_infinite:
+            if self.function.is_infinitesimal is not None:
+                function = function.clear_infinitesimal()
+            maxi = limit(function, x, maxi)
+            if self.function.is_infinitesimal is not None:
+                maxi += self.function.args[-1]    
         else:
             maxi = function.subs(x, maxi)
-
-    mini = domain.min()
-    if mini.is_infinite:
-        mini = limit(function, x, mini)
-    else:
-        is_infinitesimal = mini.is_infinitesimal
-        if is_infinitesimal is True:
-            mini = limit(function, x, mini.clear_infinitesimal(), '+')
-        elif is_infinitesimal is False:
-            mini = limit(function, x, mini.clear_infinitesimal(), '-')
-        else:
+    
+        mini = domain.min()
+        if mini.is_infinite:
+            if self.function.is_infinitesimal is not None:
+                function = function.clear_infinitesimal()
+            mini = limit(function, x, mini)
+            if self.function.is_infinitesimal is not None:
+                maxi += self.function.args[-1]    
+        else:            
             mini = function.subs(x, mini)
-    return maxi, mini
+        return maxi, mini
+    
 
-
-class Minimum(ExprWithLimits):
+class Minimum(MinMaxBase):
     r"""Represents unevaluated Minimum operator.
     """
     is_Minimum = True
@@ -1173,14 +1200,14 @@ class Minimum(ExprWithLimits):
             elif p.degree() == 2:
                 a = p.coeff_monomial(x * x)
                 if a.is_negative:
-                    return Min(*bounds(self.function, x, domain))
+                    return Min(*self.bounds(x, domain))
                 elif a.is_positive:
                     b = p.coeff_monomial(x)
                     zero_point = -b / (2 * a)
                     if zero_point in domain:
                         c = p.coeff_monomial(x)
                         return (4 * a * c - b * b) / (4 * a)
-                    return Min(*bounds(self.function, x, domain))
+                    return Min(*self.bounds(x, domain))
             elif p.degree() <= 0:
                 return self.function
         elif isinstance(self.function, MinMaxBase):
@@ -1859,7 +1886,7 @@ class Minimum(ExprWithLimits):
         return self
             
                 
-class Maximum(ExprWithLimits):
+class Maximum(MinMaxBase):
     r"""Represents unevaluated Minimum operator.
     """
     is_Maximum = True
@@ -1899,14 +1926,14 @@ class Maximum(ExprWithLimits):
             elif p.degree() == 2:
                 a = p.coeff_monomial(x * x)
                 if a.is_positive:
-                    return Max(*bounds(self.function, x, domain))
+                    return Max(*self.bounds(x, domain))
                 elif a.is_negative:
                     b = p.coeff_monomial(x)
                     zero_point = -b / (2 * a)
                     if zero_point in domain:
                         c = p.coeff_monomial(x)
                         return (4 * a * c - b * b) / (4 * a)
-                    return Max(*bounds(self.function, x, domain))
+                    return Max(*self.bounds(x, domain))
             elif p.degree() <= 0:
                 return self.function
         elif isinstance(self.function, MinMaxBase):

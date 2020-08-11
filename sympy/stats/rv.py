@@ -24,9 +24,6 @@ from sympy.logic.boolalg import Boolean
 from sympy.sets.sets import FiniteSet, ProductSet, Intersection
 from sympy.solvers.solveset import solveset
 
-x = Symbol('x')
-
-
 class RandomDomain(Basic):
     """
     Represents a set of variables and the values which they can take
@@ -862,6 +859,7 @@ class Density(Basic):
             isinstance(expr.pspace, JointPSpace):
             return expr.pspace.distribution
         if not random_symbols(expr):
+            x = Symbol('x', real=True)
             return Lambda(x, DiracDelta(x - expr))
         if (isinstance(expr, RandomSymbol) and
             hasattr(expr.pspace, 'distribution') and
@@ -877,6 +875,15 @@ class Density(Basic):
     def __call__(self, *args):
         return PDF(self, *args)
 
+    def equality_defined(self):
+        rvs = random_symbols(self.expr)
+        if any(pspace(rv).is_Continuous for rv in rvs):
+            y = Symbol("y", real=True)
+        else: 
+            y = Symbol("y", integer=True, nonnegative=self.expr.domain.is_extended_nonnegative)
+            
+        pdf = self(y)
+        return Equality(pdf, pdf.doit(evaluate=False), evaluate=False)
 
 class PDF(Expr):
 
@@ -900,6 +907,9 @@ class PDF(Expr):
     def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
+
+    def equality_defined(self):
+        return Equality(self, self.doit(evaluate=False), evaluate=False)
 
 def density(expr, condition=None, evaluate=True, numsamples=None, **kwargs):
     """

@@ -992,9 +992,6 @@ class Expr(Basic, EvalfMixin):
             return diff
         return None
 
-    def _eval_is_infinite(self):
-        return fuzzy_not(self.is_finite)
-        
     def _eval_is_nonzero(self):
         zero = self.is_zero
         if zero:
@@ -2025,7 +2022,7 @@ class Expr(Basic, EvalfMixin):
         from .mul import _unevaluated_Mul
         from sympy.utilities.iterables import sift
 
-        if self.is_zero:
+        if self.is_Zero:
             return S.Zero, S.Zero
 
         func = self.func
@@ -4026,6 +4023,10 @@ class Expr(Basic, EvalfMixin):
             return False
         if is_even is False:
             return self.is_integer
+    
+    def equality_defined(self):        
+        from sympy import Equality
+        return Equality(self, self.definition, evaluate=False)
     
 class AtomicExpr(Atom, Expr):
     """

@@ -1396,6 +1396,12 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             
         return domain
 
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return '∑[%s](%s)' % (limits, p._print(self.function))
+        return '∑(%s)' % p._print(self.function)
+
     def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
@@ -1406,38 +1412,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_finite
-    
-    def _eval_is_extended_real(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-                
-        return function.is_extended_real
-    
-    def _eval_is_extended_positive(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_positive
-
-    def _eval_is_extended_negative(self):
-        function = self.function                
-        for x, domain in self.limits_dict.items():
-            if domain is not None:
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_extended_negative
-
-    def _sympystr(self, p):
-        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        if limits:
-            return '∑[%s](%s)' % (limits, p._print(self.function))
-        return '∑(%s)' % p._print(self.function)
-
 
 def summation(f, *symbols, **kwargs):
     r"""

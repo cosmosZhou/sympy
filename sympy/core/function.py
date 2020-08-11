@@ -2891,8 +2891,8 @@ class Lambda(Expr):
         n = len(args)
         if n == 1:
             args = args[0]
-            from sympy.tensor.indexed import IndexedBase, Slice
-            if isinstance(args, (IndexedBase, Slice)):
+            from sympy.tensor.indexed import Slice
+            if isinstance(args, Slice):
                 n = args.shape
                 if len(n) > 1:
                     raise TypeError('lambda only allows 1 dimentional args')

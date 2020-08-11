@@ -195,6 +195,30 @@ class Symbol(AtomicExpr, NotIterable):
         return False
 
     def copy(self, **kwargs):
+        if 'domain' in kwargs:
+            domain = kwargs['domain']
+            if domain.is_Interval:
+                if domain.start is S.NegativeInfinity:
+                    if domain.end is S.Infinity:
+                        kwargs.pop('domain')
+                        kwargs['real'] = True
+                        kwargs['integer'] = domain.is_integer
+                    elif domain.end is S.Zero:
+                        kwargs.pop('domain')
+                        if domain.right_open:
+                            kwargs['negative'] = True
+                        else:
+                            kwargs['nonpositive'] = True
+                        kwargs['integer'] = domain.is_integer
+                elif domain.start is S.Zero:
+                    if domain.end is S.Infinity:
+                        kwargs.pop('domain')
+                        if domain.left_open:
+                            kwargs['positive'] = True
+                        else:
+                            kwargs['nonnegative'] = True
+                        kwargs['integer'] = domain.is_integer                    
+            
         return self.func(self.name, **kwargs)
 
     @property
@@ -547,6 +571,24 @@ class Symbol(AtomicExpr, NotIterable):
         from sympy.sets.conditionset import image_set_definition
         return image_set_definition(self, reverse=reverse)
 
+    def equality_defined(self):
+        from sympy import Mul, Equality
+        from sympy.concrete.expr_with_limits import Ref
+        if isinstance(self.definition, Ref):
+            return Equality(self[tuple(var for var, *_ in self.definition.limits)], self.definition.function, evaluate=False)
+        elif isinstance(self.definition, Mul):
+            args = []
+            ref = None
+            for arg in self.definition.args:
+                if isinstance(arg, Ref):
+                    assert ref is None
+                    ref = arg
+                else:
+                    args.append(arg)
+            if ref is not None:
+                (var, *_), *_ = ref.limits
+                return Equality(self[var], Mul(*args) * ref.function, evaluate=False)
+        
     @property
     def shape(self):
         if 'shape' in self._assumptions:

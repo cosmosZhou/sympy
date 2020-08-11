@@ -41,10 +41,7 @@ def prove(Eq):
 
     assert y.is_nonnegative and Y.is_finite and Y.is_nonnegative
     
-#     assert sqrt(y - Y[k]).is_extended_real
-#     assert (-sqrt(y - Y[k])).is_real and (-sqrt(y - Y[k])).is_extended_nonpositive
-    
-    Eq << Equality.by_definition_of(Y)  # 1
+    Eq << Y.equality_defined()  # 1
     Eq << Eq[0].subs(Eq[-1].reversed)  # 2
 
     Eq << Eq[-1].subs(k, k + 1)  # 3
@@ -52,7 +49,7 @@ def prove(Eq):
     Eq << Eq[1].subs(k, k + 1) - Eq[1] + Y[k]
 
     Eq << Eq[-2].subs(Eq[-1])
-    Eq << Equality.by_definition_of(Eq[-1].lhs)
+    Eq << Eq[-1].lhs.equality_defined()
 
     Eq << Eq[-1].this.rhs.args[3].function.args[-1].doit(deep=False)
 
@@ -87,7 +84,7 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1])
 
-    Eq << Equality.by_definition_of(Eq[-1].lhs)
+    Eq << Eq[-1].lhs.equality_defined()
 
 
 # https://www.asmeurer.com/blog/

@@ -1518,6 +1518,16 @@ class Integral(AddWithLimits):
         limits = [(rho, 0, oo), (theta, -pi, pi)]
         return self.func(J * function, *limits)
 
+    def _eval_is_finite(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                if domain.is_infinite:
+                    return None
+                    
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_finite
 
 def integrate(*args, **kwargs):
     """integrate(f, var, ...)

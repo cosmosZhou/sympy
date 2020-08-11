@@ -123,6 +123,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Limit = False
     is_BooleanTrue = None
     is_BooleanFalse = None
+    is_Zero = None
     
     is_Swap = False
     is_KroneckerDelta = False
@@ -2220,6 +2221,11 @@ class Basic(with_metaclass(ManagedProperties)):
             return False
         if extended_negative is False:
             return self.is_extended_real
+    
+    def _eval_is_infinite(self):
+        from sympy.core.logic import fuzzy_not
+        return fuzzy_not(self.is_finite)
+        
     
 class Atom(Basic):
     """

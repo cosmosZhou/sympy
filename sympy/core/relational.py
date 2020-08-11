@@ -859,51 +859,11 @@ class Equality(Relational):
                 return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
 
     @staticmethod
-    def by_definition_of(x):        
-        from sympy.stats.rv import Density, PDF
-        from sympy.core.symbol import Symbol
-        from sympy.stats.rv import random_symbols, pspace
-
-        if isinstance(x, Symbol):
-            from sympy import Mul
-            from sympy.concrete.expr_with_limits import Ref
-            if isinstance(x.definition, Ref):
-                return Eq(x[tuple(var for var, *_ in x.definition.limits)], x.definition.function, evaluate=False)
-            elif isinstance(x.definition, Mul):
-                args = []
-                ref = None
-                for arg in x.definition.args:
-                    if isinstance(arg, Ref):
-                        assert ref is None
-                        ref = arg
-                    else:
-                        args.append(arg)
-                if ref is not None:
-                    (var, *_), *_ = ref.limits
-                    return Eq(x[var], Mul(*args) * ref.function, evaluate=False)
-        elif isinstance(x, Density):
-            rvs = random_symbols(x.expr)
-
-            if any(pspace(rv).is_Continuous for rv in rvs):
-                y = Symbol("y", real=True)
-            else: 
-                y = Symbol("y", integer=True, nonnegative=x.expr.domain.is_extended_nonnegative)
-                
-            pdf = x(y)
-
-            return Eq(pdf, pdf.doit(evaluate=False), evaluate=False)
-
-        elif isinstance(x, PDF):
-            return Eq(x, x.doit(evaluate=False), evaluate=False)
-
-        return Eq(x, x.definition, evaluate=False)
-
-    @staticmethod
     def define(x, expr, given=None):
-        from sympy.tensor.indexed import IndexedBase, Indexed, Slice
+        from sympy.tensor.indexed import Indexed, Slice
         from sympy.core.symbol import Symbol
         from sympy.concrete.expr_with_limits import Exists
-        if isinstance(x, (Symbol, IndexedBase, Slice)):
+        if isinstance(x, (Symbol, Slice)):
             expr = sympify(expr)            
             if not expr.has(x):
                 return Exists(Eq(x, expr), (x,))

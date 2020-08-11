@@ -551,7 +551,10 @@ class Indexed(Expr):
     def _eval_is_zero(self):
         return self.base.is_zero
 
+    def copy(self, **kwargs):
+        return self.base.copy(shape=self.base.shape, **kwargs)[self.indices]
 
+    
 class IndexedBase(Expr, NotIterable):
     """Represent the base or stem of an indexed object
 

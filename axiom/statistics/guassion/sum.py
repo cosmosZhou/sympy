@@ -41,10 +41,10 @@ def prove(Eq):
 
     x0 = Normal('x0', mu0, sigma0)
     x1 = Normal('x1', mu1, sigma1)
-
+    assert sqrt(sigma0 * sigma0 + sigma1 * sigma1) > 0
     Eq << apply(x0, x1)
 
-    Eq << Equality.by_definition_of(Density(x0 + x1))
+    Eq << Density(x0 + x1).equality_defined()
 
     Eq << Eq[-1].this.rhs.args[-1].args[0].doit()
 
@@ -54,6 +54,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.subs(Eq[-1])
 
+    assert Eq[-1].rhs.is_nonzero
     Eq << Eq[-1] / Eq[-1].rhs
 
     Eq << Eq[-1].log()

@@ -612,7 +612,7 @@ class Add(Expr, AssocOp):
             return self.clear_infinitesimal().is_extended_positive
         
         if self.is_number:
-            return super(Add, self).is_extended_positive
+            return Expr._eval_is_extended_positive(self)
         
         f = self.min()
         if f is not self and f.is_extended_positive:
@@ -630,7 +630,7 @@ class Add(Expr, AssocOp):
             
         from sympy.core.exprtools import _monotonic_sign
         if self.is_number:            
-            return super(Add, self).is_extended_negative
+            return Expr._eval_is_extended_negative(self)
         c, a = self.as_coeff_Add()
         if not c.is_zero:
             v = _monotonic_sign(a)

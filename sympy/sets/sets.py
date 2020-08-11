@@ -1202,7 +1202,6 @@ class Interval(Set, EvalfMixin):
                     left_open = S.true
                 except:
                     ...
-        assert integer in (True, None)
         return Basic.__new__(cls, start, end, left_open, right_open, integer=integer)
 
     def element_symbol(self, excludes=set()):
@@ -1534,15 +1533,12 @@ class Interval(Set, EvalfMixin):
             args[1] = end
             
         if left_open is not None:
-            args[-3] = left_open
+            args[2] = left_open
 
         if right_open is not None:
-            args[-2] = right_open
+            args[3] = right_open
 
-        if integer is not None:
-            args[-1] = integer
-
-        return self.func(*args)
+        return self.func(*args, integer=integer)
 
     @property
     def element_type(self):
@@ -1583,6 +1579,7 @@ class Interval(Set, EvalfMixin):
                 return self.end.is_finite
             return self.start.is_finite
         return False
+
             
 class Union(Set, LatticeOp, EvalfMixin):
     """
@@ -1835,6 +1832,7 @@ class Union(Set, LatticeOp, EvalfMixin):
 
     def _eval_is_finite(self):
         return all(a.is_finite for a in self.args)
+
 
 class Intersection(Set, LatticeOp):
     """
@@ -2211,7 +2209,7 @@ class Complement(Set, EvalfMixin):
         if B in A:
 #             if C in B:
 #                 return (A - B) | C
-            if C in A: #C in B => C in A
+            if C in A:  # C in B => C in A
                 return (A - B) | C
 #             return (A - B) | (B & C)
 
@@ -2336,6 +2334,7 @@ class Complement(Set, EvalfMixin):
             
     def _eval_is_finite(self):
         return self.args[0].is_finite
+
         
 class EmptySet(with_metaclass(Singleton, Set)):
     """
@@ -2364,6 +2363,7 @@ class EmptySet(with_metaclass(Singleton, Set)):
     """
     is_EmptySet = True
     is_FiniteSet = True
+
     def _eval_is_finite(self):
         return True
 
@@ -2497,6 +2497,7 @@ class FiniteSet(Set, EvalfMixin):
     """
     is_FiniteSet = True
     is_iterable = True
+
     def _eval_is_finite(self):
         return True
 
