@@ -419,7 +419,6 @@ class LatexPrinter(Printer):
 
     def _print_Mul(self, expr):
         from sympy.core.power import Pow
-        from sympy.physics.units import Quantity
         include_parens = False
         if _coeff_isneg(expr):
             expr = -expr
@@ -447,9 +446,7 @@ class LatexPrinter(Printer):
                     args = list(expr.args)
 
                 # If quantities are present append them at the back
-                args = sorted(args, key=lambda x: isinstance(x, Quantity) or
-                              (isinstance(x, Pow) and
-                               isinstance(x.base, Quantity)))
+                args = sorted(args, key=lambda x: x.is_Quantity or (isinstance(x, Pow) and x.base.is_Quantity))
 
                 for i, term in enumerate(args):
                     term_tex = self._print(term)

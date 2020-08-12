@@ -2,6 +2,7 @@ from sympy.core.symbol import Symbol
 from sympy.core.numbers import oo
 from sympy.utility import Sum, plausible
 from sympy.core.relational import Equality
+from sympy.sets.sets import Interval
 
 
 def extract(recurrence):

@@ -1002,7 +1002,7 @@ class Interval(Set, EvalfMixin):
 
         return Interval(start, end, left_open, right_open, self.is_integer or b.is_integer)
 
-    def _union_sets(self, b, integer=False):
+    def _union_sets(self, b, integer=None):
         if self.max() in b:
             from sympy import Min
             return b.copy(start=Min(self.min(), b.min()), integer=integer)
@@ -1081,7 +1081,7 @@ class Interval(Set, EvalfMixin):
             # Fill in my end points and return
             left_open = self.left_open and self.start not in b
             right_open = self.right_open and self.end not in b            
-            new_a = self.copy(left_open=left_open, right_open=right_open, integer=self.is_integer)
+            new_a = self.copy(left_open=left_open, right_open=right_open)
             return set((new_a, b))
         if self.is_integer:
             drapeau = False
@@ -1365,6 +1365,12 @@ class Interval(Set, EvalfMixin):
             if not other.is_extended_real is None:
                 return other.is_extended_real
 
+        if other.is_extended_real is False:
+            return S.false
+        
+        if other.is_extended_real is None:
+            return
+        
         if self.left_open:
             expr = other > self.start
         else:
@@ -1524,21 +1530,41 @@ class Interval(Set, EvalfMixin):
     def _has(self, pattern):
         return self.start._has(pattern) or self.end._has(pattern)
 
-    def copy(self, start=None, end=None, left_open=None, right_open=None, integer=None):
-        args = [*self.args]
-        if start is not None:
-            args[0] = start
+    def copy(self, **kwargs):
+        if 'start' not in kwargs:
+            kwargs['start'] = self.start
 
-        if end is not None:
-            args[1] = end
+        if 'end' not in kwargs:
+            kwargs['end'] = self.end
             
-        if left_open is not None:
-            args[2] = left_open
+        if 'left_open' not in kwargs:
+            kwargs['left_open'] = self.left_open
 
-        if right_open is not None:
-            args[3] = right_open
+        if 'right_open' not in kwargs:
+            kwargs['right_open'] = self.right_open
+            
+        if 'integer' not in kwargs:
+            kwargs['integer'] = self.is_integer        
 
-        return self.func(*args, integer=integer)
+        return self.func(**kwargs)
+
+    def _subs(self, old, new, **hints):
+        assert old != new
+        if self == old:
+            return new
+        
+        hit = False
+        args = list(self.args)
+        for i, arg in enumerate(args):
+            if not hasattr(arg, '_eval_subs'):
+                continue
+            arg = arg._subs(old, new, **hints)
+            if arg != args[i]:
+                hit = True
+                args[i] = arg
+        if hit:
+            return self.func(*args, integer=self.is_integer)
+        return self
 
     @property
     def element_type(self):
@@ -1572,6 +1598,10 @@ class Interval(Set, EvalfMixin):
             return False
         if self.max().is_extended_negative:
             return False
+
+    def _eval_is_rational(self):
+        if self.is_integer:
+            return True        
 
     def _eval_is_finite(self):
         if self.is_integer:

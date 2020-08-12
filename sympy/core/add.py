@@ -504,27 +504,15 @@ class Add(Expr, AssocOp):
         return all(term._eval_is_algebraic_expr(syms) for term in self.args)
 
     # assumption methods
-    _eval_is_real = lambda self: _fuzzy_group(
-        (a.is_real for a in self.args), quick_exit=True)
-#     _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)
-    _eval_is_complex = lambda self: _fuzzy_group(
-        (a.is_complex for a in self.args), quick_exit=True)
-    _eval_is_antihermitian = lambda self: _fuzzy_group(
-        (a.is_antihermitian for a in self.args), quick_exit=True)
-    _eval_is_finite = lambda self: _fuzzy_group(
-        (a.is_finite for a in self.args), quick_exit=True)
-    _eval_is_hermitian = lambda self: _fuzzy_group(
-        (a.is_hermitian for a in self.args), quick_exit=True)
-    _eval_is_integer = lambda self: _fuzzy_group(
-        (a.is_integer for a in self.args), quick_exit=True)
-    _eval_is_rational = lambda self: _fuzzy_group(
-        (a.is_rational for a in self.args), quick_exit=True)
-    _eval_is_algebraic = lambda self: _fuzzy_group(
-        (a.is_algebraic for a in self.args), quick_exit=True)
-    _eval_is_commutative = lambda self: _fuzzy_group(
-        a.is_commutative for a in self.args)
-
-    _eval_is_extended_real = _eval_is_real
+    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)
+    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
+    _eval_is_antihermitian = lambda self: _fuzzy_group((a.is_antihermitian for a in self.args), quick_exit=True)
+    _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self.args), quick_exit=True)
+    _eval_is_hermitian = lambda self: _fuzzy_group((a.is_hermitian for a in self.args), quick_exit=True)
+    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self.args), quick_exit=True)
+    _eval_is_rational = lambda self: _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
+    _eval_is_algebraic = lambda self: _fuzzy_group((a.is_algebraic for a in self.args), quick_exit=True)
+    _eval_is_commutative = lambda self: _fuzzy_group(a.is_commutative for a in self.args)
 
     def _eval_is_imaginary(self):
         nz = []
@@ -550,6 +538,9 @@ class Add(Expr, AssocOp):
             return False
 
     def _eval_is_zero(self):
+        if self.shape:
+            return None
+        
         if len(self.args) == 2:
             if self.min().is_extended_positive:
                 return False
@@ -1349,23 +1340,6 @@ class Add(Expr, AssocOp):
 
         return Integral(self.func(*function), *limits)
 
-    def _eval_is_integer(self):
-        non_integer_count = 0
-        for arg in self.args:
-            is_integer = arg.is_integer
-            if is_integer:
-                continue
-            if is_integer is None:
-                return None
-            non_integer_count += 1
-
-        if non_integer_count == 1:
-            return False
-
-        if non_integer_count >= 2:
-            return None
-        return True
-
     def __iter__(self):
         raise TypeError
 
@@ -1381,7 +1355,6 @@ class Add(Expr, AssocOp):
                 args.append(arg[index])
 
         return self.func(*args)
-
 
 
 from .mul import Mul, _keep_coeff, prod

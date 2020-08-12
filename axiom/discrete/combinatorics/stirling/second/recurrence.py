@@ -115,7 +115,7 @@ def prove(Eq):
     x_quote = Symbol("x'", shape=(k + 1,), dtype=dtype.integer,
                      definition=Ref[i:k + 1](Piecewise((Union(x_tuple[i], {n}) , Equality(i, j)), (x_tuple[i], True))))
 
-    Eq.x_quote_definition = Equality.by_definition_of(x_quote)
+    Eq.x_quote_definition = x_quote.equality_defined()
 
     Eq.x_quote_set_in_s2 = Subset(image_set(x_tuple, Union[i:0:k](x_quote[i].set), s1_quote), s2, plausible=True)
 
@@ -174,7 +174,7 @@ def prove(Eq):
 
     A = Symbol("A", shape=(k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
 
-    Eq.A_definition = Equality.by_definition_of(A)
+    Eq.A_definition = A.equality_defined()
 
     Eq << Eq.x_quote_set_in_s2.subs(Eq.A_definition.reversed)
 

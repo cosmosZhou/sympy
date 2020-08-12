@@ -189,8 +189,8 @@ def rsolve_poly(coeffs, f, n, **hints):
         C = []
         y = E = S.Zero
 
-        for i in range(N + 1):
-            C.append(Symbol('C' + str(i)))
+        for i in range(N + 1): 
+            C.append(Symbol('C' + str(i), complex=True))
             y += C[i] * n ** i
 
         for i in range(r + 1):
@@ -657,7 +657,7 @@ def rsolve_hyper(coeffs, f, n, **hints):
                     kernel.append(K)
 
     kernel.sort(key=default_sort_key)
-    sk = list(zip(numbered_symbols('C'), kernel))
+    sk = list(zip(numbered_symbols('C', complex=True), kernel))
 
     if sk:
         for C, ker in sk:

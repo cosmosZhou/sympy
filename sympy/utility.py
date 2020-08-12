@@ -588,7 +588,7 @@ def plausible(apply=None):
             process(statement, dependency)
         G = topological_sort_depth_first(dependency)
         if G:
-            definition = [Equality.by_definition_of(s) for s in G]
+            definition = [s.equality_defined() for s in G]
             
             statement = add(statement)
             if isinstance(statement, tuple):

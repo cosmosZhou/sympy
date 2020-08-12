@@ -40,6 +40,7 @@ class Expr(Basic, EvalfMixin):
     is_FiniteSet = False
     is_Minimum = None
     is_Maximum = None
+    is_Quantity = False
     
     def as_Ref(self):
         from sympy import Interval
@@ -4023,10 +4024,6 @@ class Expr(Basic, EvalfMixin):
             return False
         if is_even is False:
             return self.is_integer
-    
-    def equality_defined(self):        
-        from sympy import Equality
-        return Equality(self, self.definition, evaluate=False)
     
 class AtomicExpr(Atom, Expr):
     """

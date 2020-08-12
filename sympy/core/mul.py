@@ -1138,20 +1138,8 @@ class Mul(Expr, AssocOp):
             if all(a.is_zero is False for a in self.args):
                 return False
 
-#     def _eval_is_infinite(self):
-#         if any(a.is_infinite for a in self.args):
-#             if any(a.is_zero for a in self.args):
-#                 return S.NaN.is_infinite
-#             if any(a.is_zero is None for a in self.args):
-#                 return None
-#             return True
-
     def _eval_is_rational(self):
-        r = _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
-        if r:
-            return r
-        elif r is False:
-            return self.is_zero
+        return _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
 
     def _eval_is_algebraic(self):
         r = _fuzzy_group((a.is_algebraic for a in self.args), quick_exit=True)
@@ -1161,6 +1149,8 @@ class Mul(Expr, AssocOp):
             return self.is_zero
 
     def _eval_is_zero(self):
+        if self.shape:
+            return
         zero = infinite = False
         for a in self.args:
             z = a.is_zero
@@ -1178,6 +1168,9 @@ class Mul(Expr, AssocOp):
         return zero
 
     def _eval_is_integer(self):
+        if all(arg.is_integer for arg in self.args):
+            return True
+        
         is_rational = self.is_rational
 
         if is_rational:

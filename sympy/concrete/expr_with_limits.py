@@ -806,19 +806,6 @@ class ExprWithLimits(Expr):
         for i, arg in enumerate(args):
             if not hasattr(arg, '_eval_subs'):
                 continue
-#             if i > 0:
-#                 arg = [*arg]
-#                 for j, a in enumerate(arg):
-#                     if j == 0:
-#                         continue
-#                     
-#                     a = a._subs(old, new)
-#                     if not _aresame(a, arg[j]):
-#                         hit = True
-#                         arg[j] = a
-#                 if hit:
-#                     args[i] = Tuple(*arg) 
-#             else:
             arg = arg._subs(old, new)    
             if not _aresame(arg, args[i]):
                 hit = True
@@ -985,6 +972,8 @@ class AddWithLimits(ExprWithLimits):
         Parent class for Integral and Sum.
     """
 
+    is_complex = True
+    
     def __new__(cls, function, *symbols, **assumptions):
         pre = _common_new(cls, function, *symbols, **assumptions)
         if type(pre) is tuple:

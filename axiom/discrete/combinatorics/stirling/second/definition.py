@@ -7,7 +7,6 @@ from sympy.utility import Sum
 
 from sympy.functions.combinatorial.numbers import Stirling
 from axiom.discrete.combinatorics import stirling
-from sympy.tensor.indexed import IndexedBase
 import axiom
 from axiom.discrete import difference
 from axiom import discrete
@@ -36,9 +35,9 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0])
 
     from sympy import oo
-    y = IndexedBase('y', (oo,), definition=Ref[n](Stirling(n, k + 1)))
+    y = Symbol('y', shape=(oo,), definition=Ref[n](Stirling(n, k + 1)))
 
-    Eq << Equality.by_definition_of(y)
+    Eq << y.equality_defined()
 
     Eq << Eq[-1].subs(n, n + 1)
 

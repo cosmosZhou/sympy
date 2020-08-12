@@ -743,6 +743,7 @@ class Equality(Relational):
         if solution is None:
             return self
         solution, limits = solution
+        
         eq = self.func(y, solution)
         if len(limits) == 0:
             eq.equivalent = self

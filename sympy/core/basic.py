@@ -131,11 +131,10 @@ class Basic(with_metaclass(ManagedProperties)):
     
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
-        from sympy.tensor.indexed import IndexedBase
 
         hashset = set()
         for arg in preorder_traversal(self):
-            if isinstance(arg, (Symbol, IndexedBase)) and arg.definition is not None:
+            if isinstance(arg, Symbol) and arg.definition is not None:
                 if arg not in hashset:
                     hashset.add(arg)   
                     if arg not in dependency:                 
@@ -2226,6 +2225,9 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.core.logic import fuzzy_not
         return fuzzy_not(self.is_finite)
         
+#     @property
+#     def shape(self):
+#         return ()
     
 class Atom(Basic):
     """

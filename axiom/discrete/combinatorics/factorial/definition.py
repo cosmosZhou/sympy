@@ -1,17 +1,15 @@
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Union
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol
-from sympy.functions.special.gamma_functions import gamma
-from sympy.tensor.indexed import IndexedBase
-from sympy.sets.sets import Interval, FiniteSet
 from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
+from sympy.sets.sets import Interval
 
 
 @plausible
 def apply(n):
-    x = IndexedBase('x', (oo,), integer=True, nonnegative=True)
+    x = Symbol('x', shape=(oo,), integer=True, nonnegative=True)
     
     return Equality(abs(conditionset(x[:n], Equality(x[:n].set, Interval(0, n - 1, integer=True)))), factorial(n))
 

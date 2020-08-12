@@ -1,6 +1,5 @@
 from sympy.core.relational import Equality
 from sympy.utility import check, plausible, Ref, identity
-from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
 
@@ -33,7 +32,7 @@ def prove(Eq):
     
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     
-    x = IndexedBase('x', (n,), integer=True)    
+    x = Symbol('x', shape=(n,), integer=True)    
     
     k = Symbol('k', integer=True)    
     given = Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True))    
@@ -52,7 +51,7 @@ def prove(Eq):
     
     sj = Symbol('s_j', definition=Eq[-1].rhs.limits[0][1])
     
-    Eq.sj_definition = Equality.by_definition_of(sj)
+    Eq.sj_definition = sj.equality_defined()
     Eq.crossproduct = Eq[-1].subs(Eq.sj_definition.reversed)
     
     Eq.sj_definition_reversed = Eq.sj_definition.this.rhs.limits[0][1].reversed

@@ -759,6 +759,9 @@ class polygamma(Function):
         else:
             return self.func(n, z)
 
+    @property
+    def shape(self):
+        return ()
 
 class loggamma(Function):
     r"""

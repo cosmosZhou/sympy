@@ -263,7 +263,6 @@ def make_property(fact):
         except KeyError:
             if self._assumptions is self.default_assumptions:
                 self._assumptions = self.default_assumptions.copy()
-#             return _ask(fact, self)
             return self._ask(fact)
 
     getit.func_name = as_property(fact)

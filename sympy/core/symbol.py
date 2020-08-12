@@ -457,7 +457,7 @@ class Symbol(AtomicExpr, NotIterable):
             return self._assumptions['definition']
         return None
 
-    def generate_free_symbol(self, excludes=set(), shape=(), free_symbol=None, **kwargs):
+    def generate_free_symbol(self, excludes=set(), shape=None, free_symbol=None, **kwargs):
         excludes = self.free_symbols | excludes
         if free_symbol is not None and free_symbol not in excludes:
             return free_symbol.copy(shape=shape, **kwargs)
@@ -469,7 +469,7 @@ class Symbol(AtomicExpr, NotIterable):
 
         while True:
             if name not in excludes:
-                if len(shape) > 0:
+                if shape:
                     kwargs['shape'] = shape
                 return self.func(name, **kwargs)
             name = chr(ord(name) + 1)
@@ -480,11 +480,6 @@ class Symbol(AtomicExpr, NotIterable):
         if self == x:
             return x.domain - {0}
         return Expr.domain_nonzero(self, x)
-
-    def _eval_is_integer(self):
-        if 'domain' in self._assumptions:
-            domain = self._assumptions['domain']
-            return domain.is_integer
 
     @property
     def is_set(self):
@@ -588,6 +583,9 @@ class Symbol(AtomicExpr, NotIterable):
             if ref is not None:
                 (var, *_), *_ = ref.limits
                 return Equality(self[var], Mul(*args) * ref.function, evaluate=False)
+        
+        return Equality(self, self.definition, evaluate=False)
+        
         
     @property
     def shape(self):
@@ -784,6 +782,18 @@ class Symbol(AtomicExpr, NotIterable):
             return
         if 'definition' in self._assumptions:
             return self._assumptions['definition'].is_finite
+
+    def _eval_is_integer(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_integer
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_integer        
+
+    def _eval_is_rational(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_rational
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_rational        
 
     def __hash__(self):
         return super(Symbol, self).__hash__()        

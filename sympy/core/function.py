@@ -273,9 +273,6 @@ class Application(with_metaclass(FunctionClass, Basic)):
         # and we throw that value away here
         options.pop('nargs', None)
 
-#         if options:
-#             raise ValueError("Unknown options: %s" % options)
-
         if evaluate:
             evaluated = cls.eval(*args)
             if evaluated is not None:

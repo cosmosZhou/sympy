@@ -600,11 +600,10 @@ def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False):
     if expr.has(Product):
         expr = product_simplify(expr)
 
-    from sympy.physics.units import Quantity
-    from sympy.physics.units.util import quantity_simplify
-
-    if expr.has(Quantity):
-        expr = quantity_simplify(expr)
+#     from sympy.physics.units import Quantity
+#     from sympy.physics.units.util import quantity_simplify
+#     if expr.has(Quantity):
+#         expr = quantity_simplify(expr)
 
     short = shorter(powsimp(expr, combine='exp', deep=True), powsimp(expr), expr)
     short = shorter(short, cancel(short))

@@ -2008,7 +2008,8 @@ def nT(n, k=None):
 
 class Stirling(Function):
     r"""Implementation of the stirling coefficient.     """
-
+    is_extended_real = True
+    
     @property
     def shape(self):
         return ()
@@ -2243,11 +2244,10 @@ class Stirling(Function):
             return binomial(*self.args)
 
     def _eval_rewrite_as_factorial(self, n, k, **kwargs):
-        return factorial(n) / (factorial(k) * factorial(n - k))
+        ...
 
     def _eval_rewrite_as_gamma(self, n, k, **kwargs):
-        from sympy import gamma
-        return gamma(n + 1) / (gamma(k + 1) * gamma(n - k + 1))
+        ...
 
     def _eval_rewrite_as_tractable(self, n, k, **kwargs):
         return self._eval_rewrite_as_gamma(n, k).rewrite('tractable')
