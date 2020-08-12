@@ -2,7 +2,6 @@ from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible, Ref, Union
-from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
@@ -59,7 +58,7 @@ def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     S = Symbol('S', dtype=dtype.integer * n)    
     
-    x = IndexedBase('x', **S.element_symbol().dtype.dict)
+    x = Symbol('x', **S.element_symbol().dtype.dict)
     
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    

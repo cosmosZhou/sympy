@@ -6,8 +6,6 @@ from axiom import discrete
 from sympy import S
 from sympy.concrete.expr_with_limits import Forall
 
-from sympy.tensor.indexed import IndexedBase
-
 # given: Union[i](x[i]) = {}
 # x[i] = {}
 
@@ -33,7 +31,7 @@ from sympy.utility import check
 def prove(Eq):
     i = Symbol('i', integer=True)
     k = Symbol('k', integer=True, positive=True)
-    x = IndexedBase('x', shape=(k + 1,), dtype=dtype.integer)
+    x = Symbol('x', shape=(k + 1,), dtype=dtype.integer)
 
     equality = Equality(Union[i:0:k](x[i]), S.EmptySet)
 

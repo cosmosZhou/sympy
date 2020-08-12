@@ -1,7 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible, Ref
-from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.concrete.expr_with_limits import Forall, Exists
@@ -43,7 +42,7 @@ def apply(given):
     _k, *_ = index.args[1].limits[0]
     assert _k == k
     
-    p = IndexedBase('p', (n,), integer=True, nonnegative=True)
+    p = Symbol('p', shape=(n,), integer=True, nonnegative=True)
     
     P = Symbol('P', dtype=dtype.integer * n, definition=conditionset(p, Equality(p.set_comprehension(), Interval(0, n - 1, integer=True))))
     
@@ -55,12 +54,12 @@ def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     S = Symbol('S', dtype=dtype.integer * n)    
     
-    x = IndexedBase('x', **S.element_symbol().dtype.dict)
+    x = Symbol('x', **S.element_symbol().dtype.dict)
     
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))    
     
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     k = Symbol('k', domain=Interval(0, n - 1, integer=True))
     
@@ -80,15 +79,15 @@ def prove(Eq):
     
     Eq << Eq.swap.subs(i, p[0]).subs(j, 0)    
     
-    y = IndexedBase('y', (n, n), integer=True)
+    y = Symbol('y', shape=(n, n), integer=True)
 #     the changing indices of previous arrangement
-    r = IndexedBase('r', (n, n), integer=True)
+    r = Symbol('r', shape=(n, n), integer=True)
     
     Eq.r0_definition = Equality.define(r[0], Ref[k](k))
     
-    d = IndexedBase('d', (n,), definition=Ref[j](Ref[k](KroneckerDelta(r[j, k], j)) @ Ref[k](k)))
+    d = Symbol('d', shape=(n,), definition=Ref[j](Ref[k](KroneckerDelta(r[j, k], j)) @ Ref[k](k)))
     
-    Eq.d_definition = Equality.by_definition_of(d)
+    Eq.d_definition = d.equality_defined()
     
     Eq.r_definition = Equality.define(r[j + 1], w[p[j], d[j]] @ r[j], given=Eq.r0_definition)
     

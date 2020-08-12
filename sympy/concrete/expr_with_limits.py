@@ -13,7 +13,7 @@ from sympy.functions.elementary.piecewise import (piecewise_fold,
     Piecewise)
 from sympy.logic.boolalg import BooleanFunction, Boolean, And, Or
 from sympy.matrices import Matrix
-from sympy.tensor.indexed import Idx, IndexedBase, Indexed, Slice
+from sympy.tensor.indexed import Idx, Indexed, Slice
 from sympy.sets.sets import Interval, Set, FiniteSet, Union, Complement, \
     EmptySet, Intersection
 from sympy.sets.fancysets import Range
@@ -109,7 +109,7 @@ def _process_limits(*symbols):
                 dx = abs(V[1].step)
                 V = [V[0]] + [0, (hi - lo) // dx, dx * V[0] + lo]
             V = sympify(flatten(V))  # a list of sympified elements
-            if isinstance(V[0], (Symbol, IndexedBase, Idx)) or getattr(V[0], '_diff_wrt', False):
+            if isinstance(V[0], (Symbol, Idx)) or getattr(V[0], '_diff_wrt', False):
                 newsymbol = V[0]
                 if len(V) == 2 and isinstance(V[1], Interval):  # 2 -> 3
                     # Interval
@@ -832,8 +832,7 @@ class ExprWithLimits(Expr):
             return self
 
         (x, *args), *_ = self.limits
-        from sympy.tensor.indexed import Slice
-        if isinstance(x, (Slice, IndexedBase)):
+        if x.is_Slice:
             x, z = x.bisect(front, back)
             return self.func(self.func(self.function, (x,)).simplify(), (z,))
 
@@ -3812,7 +3811,7 @@ class UnionComprehension(Set, ExprWithLimits):
             return False
         limit = self.limits[0]
         x, *_ = limit
-        if not isinstance(x, (Symbol, IndexedBase, Indexed, Slice)):
+        if not isinstance(x, (Symbol, Indexed, Slice)):
             return False
         if not isinstance(self.function, FiniteSet) or len(self.function) != 1:
             return False

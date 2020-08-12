@@ -3233,11 +3233,11 @@ class Expr(Basic, EvalfMixin):
                      nseries calls it.""" % self.func)
                      )
 
-    def limit(self, x, xlim, dir='+'):
+    def limit(self, x, xlim, direction='+'):
         """ Compute limit x->xlim.
         """
         from sympy.series.limits import limit
-        return limit(self, x, xlim, dir)
+        return limit(self, x, xlim, direction)
 
     def compute_leading_term(self, x, logx=None):
         """

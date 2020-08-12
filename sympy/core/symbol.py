@@ -189,8 +189,8 @@ class Symbol(AtomicExpr, NotIterable):
         return self == other
 
     def structure_eq(self, other):
-        from sympy.tensor.indexed import Slice, Indexed, IndexedBase
-        if isinstance(other, (Symbol, Indexed, IndexedBase, Slice)):
+        from sympy.tensor.indexed import Slice, Indexed
+        if isinstance(other, (Symbol, Indexed, Slice)):
             return self.shape == other.shape
         return False
 

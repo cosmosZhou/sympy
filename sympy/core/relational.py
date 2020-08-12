@@ -1371,10 +1371,10 @@ class _Less(_Inequality):
     
         return Relational.__and__(self, other)
 
-    def limit(self, x, xlim, dir='+'):
+    def limit(self, x, xlim, direction='+'):
         """ Compute limit x->xlim.
         """
-        return LessThan(self.lhs.limit(x, xlim, dir), self.rhs.limit(x, xlim, dir), given=self, evaluate=False)
+        return LessThan(self.lhs.limit(x, xlim, direction), self.rhs.limit(x, xlim, direction), given=self, evaluate=False)
 
 
 class GreaterThan(_Greater):

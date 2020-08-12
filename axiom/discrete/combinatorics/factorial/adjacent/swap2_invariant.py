@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible, Ref
-from sympy.tensor.indexed import IndexedBase
+
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
@@ -13,7 +13,7 @@ def apply(x):
     n = x.shape[0]
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))    
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     lhs = (w[i, j] @ x).set_comprehension()
     return Equality(lhs, x.set_comprehension(free_symbol=lhs.variable))
@@ -22,7 +22,7 @@ def apply(x):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))    
-    x = IndexedBase('x', (n,), integer=True)    
+    x = Symbol('x', shape=(n,), integer=True)    
     
     Eq << apply(x)
     

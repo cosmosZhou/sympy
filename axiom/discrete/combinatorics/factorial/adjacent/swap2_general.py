@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible, Ref
-from sympy.tensor.indexed import IndexedBase
+
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
@@ -46,7 +46,7 @@ def apply(given):
     
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.dtype    
     
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
     
 #     return Forall(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
     return Forall(Contains(w[i, j] @ x, S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
@@ -57,7 +57,7 @@ def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     S = Symbol('S', dtype=dtype.integer * n)    
     
-    x = IndexedBase('x', **S.element_symbol().dtype.dict)
+    x = Symbol('x', **S.element_symbol().dtype.dict)
     
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    

@@ -15,7 +15,7 @@ from sympy.simplify.simplify import together
 from .gruntz import gruntz
 
 
-def limit(e, z, z0, dir="+"):
+def limit(e, z, z0, direction="+"):
     """Computes the limit of ``e(z)`` at the point ``z0``.
 
     Parameters
@@ -30,12 +30,12 @@ def limit(e, z, z0, dir="+"):
     z0 : the value toward which ``z`` tends. Can be any expression,
         including ``oo`` and ``-oo``.
 
-    dir : string, optional (default: "+")
-        The limit is bi-directional if ``dir="+-"``, from the right
-        (z->z0+) if ``dir="+"``, and from the left (z->z0-) if
-        ``dir="-"``. For infinite ``z0`` (``oo`` or ``-oo``), the ``dir``
+    direction : string, optional (default: "+")
+        The limit is bi-directional if ``direction="+-"``, from the right
+        (z->z0+) if ``direction="+"``, and from the left (z->z0-) if
+        ``direction="-"``. For infinite ``z0`` (``oo`` or ``-oo``), the ``direction``
         argument is determined from the direction of the infinity
-        (i.e., ``dir="-"`` for ``oo``).
+        (i.e., ``direction="-"`` for ``oo``).
 
     Examples
     ========
@@ -44,11 +44,11 @@ def limit(e, z, z0, dir="+"):
     >>> from sympy.abc import x
     >>> limit(sin(x)/x, x, 0)
     1
-    >>> limit(1/x, x, 0) # default dir='+'
+    >>> limit(1/x, x, 0) # default direction='+'
     oo
-    >>> limit(1/x, x, 0, dir="-")
+    >>> limit(1/x, x, 0, direction="-")
     -oo
-    >>> limit(1/x, x, 0, dir='+-')
+    >>> limit(1/x, x, 0, direction='+-')
     Traceback (most recent call last):
         ...
     ValueError: The limit does not exist since left hand limit = -oo and right hand limit = oo
@@ -69,9 +69,9 @@ def limit(e, z, z0, dir="+"):
      limit_seq : returns the limit of a sequence.
     """
 
-    if dir == "+-":
-        llim = Limit(e, z, z0, dir="-").doit(deep=False)
-        rlim = Limit(e, z, z0, dir="+").doit(deep=False)
+    if direction == "+-":
+        llim = Limit(e, z, z0, direction="-").doit(deep=False)
+        rlim = Limit(e, z, z0, direction="+").doit(deep=False)
         if llim == rlim:
             return rlim
         else:
@@ -80,10 +80,10 @@ def limit(e, z, z0, dir="+"):
                     "left hand limit = %s and right hand limit = %s"
                     % (llim, rlim))
     else:
-        return Limit(e, z, z0, dir).doit(deep=False)
+        return Limit(e, z, z0, direction).doit(deep=False)
 
 
-def heuristics(e, z, z0, dir):
+def heuristics(e, z, z0, direction):
     """Computes the limit of an expression term-wise.
     Parameters are the same as for the ``limit`` function.
     Works with the arguments of expression ``e`` one by one, computing
@@ -100,7 +100,7 @@ def heuristics(e, z, z0, dir):
     elif e.is_Mul or e.is_Add or e.is_Pow or e.is_Function:
         r = []
         for a in e.args:
-            l = limit(a, z, z0, dir)
+            l = limit(a, z, z0, direction)
             if l.has(S.Infinity) and l.is_finite is None:
                 if isinstance(e, Add):
                     m = factor_terms(e)
@@ -109,7 +109,7 @@ def heuristics(e, z, z0, dir):
                     if not isinstance(m, Mul):  # try factor if the previous methods failed
                         m = factor(e)
                     if isinstance(m, Mul):
-                        return heuristics(m, z, z0, dir)
+                        return heuristics(m, z, z0, direction)
                     return
                 return
             elif isinstance(l, Limit):
@@ -132,7 +132,7 @@ def heuristics(e, z, z0, dir):
                 if len(e2) > 0:
                     from sympy import simplify
                     e3 = simplify(Mul(*e2))
-                    l = limit(e3, z, z0, dir)
+                    l = limit(e3, z, z0, direction)
                     rv = l * Mul(*r2)
 
             if rv is S.NaN:
@@ -142,7 +142,7 @@ def heuristics(e, z, z0, dir):
                     return
                 if rat_e is S.NaN or rat_e == e:
                     return
-                return limit(rat_e, z, z0, dir)
+                return limit(rat_e, z, z0, direction)
     return rv
 
 
@@ -156,33 +156,33 @@ class Limit(Expr):
     >>> from sympy.abc import x
     >>> Limit(sin(x)/x, x, 0)
     Limit(sin(x)/x, x, 0)
-    >>> Limit(1/x, x, 0, dir="-")
-    Limit(1/x, x, 0, dir='-')
+    >>> Limit(1/x, x, 0, direction="-")
+    Limit(1/x, x, 0, direction='-')
 
     """
     is_Limit = True
 
-    def __new__(cls, e, z, z0, dir="+"):
+    def __new__(cls, e, z, z0, direction="+"):
         e = sympify(e)
         z = sympify(z)
         z0 = sympify(z0)
 
         if z0 is S.Infinity:
-            dir = "-"
+            direction = "-"
         elif z0 is S.NegativeInfinity:
-            dir = "+"
+            direction = "+"
 
-        if isinstance(dir, string_types):
-            dir = Symbol(dir)
-        elif not isinstance(dir, Symbol):
+        if isinstance(direction, string_types):
+            direction = Symbol(direction)
+        elif not isinstance(direction, Symbol):
             raise TypeError("direction must be of type basestring or "
-                    "Symbol, not %s" % type(dir))
-        if str(dir) not in ('+', '-', '+-'):
+                    "Symbol, not %s" % type(direction))
+        if str(direction) not in ('+', '-', '+-'):
             raise ValueError("direction must be one of '+', '-' "
-                    "or '+-', not %s" % dir)
+                    "or '+-', not %s" % direction)
 
         obj = Expr.__new__(cls)
-        obj._args = (e, z, z0, dir)
+        obj._args = (e, z, z0, direction)
         return obj
 
     @property
@@ -209,7 +209,7 @@ class Limit(Expr):
         from sympy.series.limitseq import limit_seq
         from sympy.functions import RisingFactorial
 
-        e, z, z0, dir = self.args
+        e, z, z0, direction = self.args
 
         if z0 is S.ComplexInfinity:
             raise NotImplementedError("Limits at complex "
@@ -261,17 +261,17 @@ class Limit(Expr):
             return Order(limit(e.expr, z, z0), *e.args[1:])
 
         try:
-            if str(dir) == '+-':
+            if str(direction) == '+-':
                 r = gruntz(e, z, z0, '+')
                 _r = gruntz(e, z, z0, '-')
                 if r != _r:
                     raise PoleError()
             else:
-                r = gruntz(e, z, z0, dir)
+                r = gruntz(e, z, z0, direction)
                 if r is S.NaN:
                     raise PoleError()
         except (PoleError, ValueError):
-            r = heuristics(e, z, z0, dir)
+            r = heuristics(e, z, z0, direction)
             if r is None:
                 return self
         except NotImplementedError:
@@ -288,9 +288,9 @@ class Limit(Expr):
         return self.args[0].shape
 
     def _sympystr(self, p):
-        e, z, z0, dir = self.args
-        if str(dir) == "+":
+        e, z, z0, direction = self.args
+        if str(direction) == "+":
             return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
         else:
-            return "lim[%s:%s%s](%s)" % tuple(map(p._print, (z, dir, z0, e)))
+            return "lim[%s:%s%s](%s)" % tuple(map(p._print, (z, direction, z0, e)))
 

@@ -49,7 +49,7 @@ def prove(Eq):
     m = Symbol('m', definition=Minimum(f(z), (z, a, b)))
     M = Symbol('M', definition=Maximum(f(z), (z, a, b)))
     
-    Eq.min, Eq.max = Equality.by_definition_of(m), Equality.by_definition_of(M)
+    Eq.min, Eq.max = m.equality_defined(), M.equality_defined()
     
     Eq << axiom.calculus.integral.intermediate_value_theorem.apply(given)
     

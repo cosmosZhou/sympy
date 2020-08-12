@@ -2,7 +2,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible, Ref, identity
-from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
@@ -16,8 +15,8 @@ def apply(x, lamda, w=None):
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Addition(n, lamda, i, j)))
-        w_quote = IndexedBase("w'", integer=True, shape=(n, n, n, n), definition=Ref[i, j](Addition(n, -lamda, i, j)))
+        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Addition(n, lamda, i, j)))
+        w_quote = Symbol("w'", integer=True, shape=(n, n, n, n), definition=Ref[i, j](Addition(n, -lamda, i, j)))
     else:
         assert w[i, j] == Addition(n, lamda, i, j)
         assert w_quote[i, j] == Addition(n, -lamda, i, j)

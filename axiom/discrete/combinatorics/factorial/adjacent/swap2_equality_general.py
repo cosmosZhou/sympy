@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible, Ref, identity
-from sympy.tensor.indexed import IndexedBase
+
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
@@ -16,7 +16,7 @@ def apply(n):
     i = Symbol('i', domain=domain)
     j = Symbol('j', domain=domain)
     assert n >= 2
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     return Forall(Equality(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
 

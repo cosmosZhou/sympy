@@ -2851,8 +2851,7 @@ class Lambda(Expr):
 
         obj = Expr.__new__(cls, v, sympify(expr))
 
-        from sympy.tensor.indexed import IndexedBase
-        if isinstance(v, IndexedBase):
+        if v.is_Symbol and v.shape:
             obj.nargs = FiniteSet(nargs, v.shape[0])
         else:
             obj.nargs = FiniteSet(nargs)

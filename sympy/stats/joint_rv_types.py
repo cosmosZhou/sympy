@@ -1,7 +1,7 @@
-from sympy import (sympify, S, pi, sqrt, exp, Lambda, Indexed, Gt, IndexedBase,
+from sympy import (sympify, S, pi, sqrt, exp, Lambda, Indexed, Gt, 
                     besselk, gamma, Interval, Range, factorial, Mul, Integer,
                     Add, rf, Eq, Piecewise, ones, Symbol, Pow, Rational, Sum,
-                  imageset, Intersection, Matrix, symbols, Product, IndexedBase)
+                  imageset, Intersection, Matrix, symbols, Product)
 from sympy.matrices import ImmutableMatrix
 from sympy.matrices.expressions.determinant import det
 from sympy.stats.joint_rv import (JointDistribution, JointPSpace,

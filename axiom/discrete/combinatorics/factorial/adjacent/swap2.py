@@ -1,15 +1,12 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref, identity
-from sympy.tensor.indexed import IndexedBase
-from sympy.sets.sets import Interval, EmptySet
+from sympy.utility import check, plausible, Ref
+from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.functions.elementary.piecewise import Piecewise
 from sympy.concrete.expr_with_limits import Forall
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
-from axiom.discrete.combinatorics.factorial.adjacent import swap1_utility, \
-    swap2_equality
+from axiom.discrete.combinatorics.factorial.adjacent import swap2_equality
 import axiom
 
 
@@ -33,12 +30,12 @@ def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     S = Symbol('S', dtype=dtype.integer * n)    
     
-    x = IndexedBase('x', **S.element_symbol().dtype.dict)
+    x = Symbol('x', **S.element_symbol().dtype.dict)
     
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    
     
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
     
     given = Forall(Contains(w[0, j] @ x, S), (x, S))
     
@@ -73,15 +70,15 @@ def prove(Eq):
     
     Eq << Eq.i_intersection.this.limits[1].subs(Eq[-1])
     
-    Eq << Eq[-1].subs(Equality.by_definition_of(w[i, i]))
+    Eq << Eq[-1].subs(w[i, i].equality_defined())
     
     Eq << (Eq.i_complement & Eq.i_intersection)
     
     Eq << Eq[2].subs(j, 0)
     
-    Eq << Equality.by_definition_of(w[i, j])
+    Eq << w[i, j].equality_defined()
     
-    Eq << Equality.by_definition_of(w[j, i])
+    Eq << w[j, i].equality_defined()
     
 if __name__ == '__main__':
     prove(__file__)

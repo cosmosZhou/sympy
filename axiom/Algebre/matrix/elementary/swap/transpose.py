@@ -1,8 +1,7 @@
 
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible, Ref, identity
-from sympy.tensor.indexed import IndexedBase
+from sympy.utility import check, plausible, Ref
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
@@ -28,19 +27,19 @@ def prove(Eq):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     Eq << apply(w)
     return
-    Eq << Equality.by_definition_of(w[0, i])
+    Eq << w[0, i].equality_defined()
     
-    Eq << Equality.by_definition_of(w[i, 0])
+    Eq << w[i, 0].equality_defined()
     
     Eq << Eq[-2] @ Eq[-1]
     
     Eq << Eq[-1].this.rhs.expand()
     return
-    Eq << Equality.by_definition_of(w[j, i])
+    Eq << w[j, i].equality_defined()
     
     Eq << Eq[0] @ Eq[-1]
     

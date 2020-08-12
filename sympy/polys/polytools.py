@@ -109,8 +109,7 @@ class Poly(Expr):
         if 'order' in opt:
             raise NotImplementedError("'order' keyword is not implemented yet")
 
-        from sympy.tensor.indexed import IndexedBase
-        if iterable(rep, exclude=(str, IndexedBase, Symbol)):
+        if iterable(rep, exclude=(str, Symbol)):
             if isinstance(rep, dict):
                 return cls._from_dict(rep, opt)
             else:

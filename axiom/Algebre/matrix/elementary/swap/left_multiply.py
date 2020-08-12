@@ -2,7 +2,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible, Ref, identity
-from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
@@ -15,7 +14,7 @@ def apply(x):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
-    w = IndexedBase('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     return Equality(w[i, j] @ w[i, j] @ x, x)
 

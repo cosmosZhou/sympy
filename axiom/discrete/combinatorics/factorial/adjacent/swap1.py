@@ -1,7 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible, Ref, identity
-from sympy.tensor.indexed import IndexedBase
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
@@ -15,7 +14,7 @@ def apply(x, w=None):
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = IndexedBase('w', shape=(n, n, n), definition=Ref[j](Swap(n, 0, j)))
+        w = Symbol('w', shape=(n, n, n), definition=Ref[j](Swap(n, 0, j)))
 #     else:
     assert w.shape == (n, n, n)
     assert w[j].definition == Swap(n, 0, j)
@@ -26,7 +25,7 @@ def apply(x, w=None):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))    
-    x = IndexedBase('x', dtype=dtype.integer, shape=(n,))    
+    x = Symbol('x', dtype=dtype.integer, shape=(n,))    
     
     Eq << apply(x)
     
