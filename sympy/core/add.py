@@ -633,7 +633,7 @@ class Add(Expr, AssocOp):
                     v = _monotonic_sign(self)
                     if v is not None and v != self and v.is_negative:
                         return True
-        neg = nonpos = nonneg = unknown_sign = False
+        neg = nonpos = False
         saw_INF = set()
         args = [a for a in self.args if not a.is_zero]
         if not args:
@@ -658,7 +658,6 @@ class Add(Expr, AssocOp):
                 continue
             
             if a.is_nonnegative:
-                nonneg = True
                 continue
             
             supremum = a.supremum()
@@ -670,9 +669,7 @@ class Add(Expr, AssocOp):
             if infinite is None:
                 saw_finite = True
                 continue
-                
-            unknown_sign = True
-
+            
         if saw_INF:
             if len(saw_INF) > 1:
                 return
@@ -682,15 +679,6 @@ class Add(Expr, AssocOp):
             
         if saw_finite:
             return
-        
-        if unknown_sign:
-            return
-        
-        if not nonneg and not nonpos and neg:
-            return True
-        
-        if not nonneg and neg:
-            return True
         
         if not neg and not nonpos:
             return False

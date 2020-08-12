@@ -567,7 +567,7 @@ class Slice(Expr):
         return self == other
 
     def structure_eq(self, other):
-        if isinstance(other, (Symbol, Indexed, IndexedBase, Slice)):
+        if isinstance(other, (Symbol, Indexed, Slice)):
             return self.shape == other.shape
         return False
 

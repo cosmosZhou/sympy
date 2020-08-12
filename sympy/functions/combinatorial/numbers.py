@@ -2042,14 +2042,13 @@ class Stirling(Function):
     @property
     def definition(self):
         from sympy.concrete.expr_with_limits import UnionComprehension, Forall
-        from sympy.tensor.indexed import IndexedBase
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval, FiniteSet, image_set
         from sympy.core.relational import Equality
         from sympy.logic.boolalg import And
         from sympy import Sum
         from sympy.core.symbol import dtype, DtypeVector
-        x = IndexedBase('x', (oo,), dtype=dtype.integer, finite=True)
+        x = Symbol('x', shape=(oo,), dtype=dtype.integer, finite=True)
         assert x.dtype[0] == dtype.integer.set
         assert not x.is_set
         assert isinstance(x.dtype, DtypeVector)
