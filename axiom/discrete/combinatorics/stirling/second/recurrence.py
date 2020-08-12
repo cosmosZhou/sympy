@@ -301,7 +301,7 @@ def prove(Eq):
     x_tilde = Symbol(r"\tilde{x}", shape=(k,), dtype=dtype.integer,
                      definition=Ref[i:k](Piecewise((x[i], i < j), (x[i + 1], True))))
 
-    Eq.x_tilde_definition = Equality.by_definition_of(x_tilde)
+    Eq.x_tilde_definition = x_tilde.equality_defined()
 
     Eq << Eq.x_tilde_definition.union_comprehension((i, 0, k - 1))
 
@@ -390,7 +390,7 @@ def prove(Eq):
     x_hat = Symbol(r"\hat{x}", shape=(oo,), dtype=dtype.integer,
                      definition=Ref[i](Piecewise((x_tuple[i] - {n} , Equality(i, j)), (x_tuple[i], True))))
 
-    Eq.x_hat_definition = Equality.by_definition_of(x_hat)
+    Eq.x_hat_definition = x_hat.equality_defined()
 
     Eq << Eq[-1].this.function.subs(i, j)
 

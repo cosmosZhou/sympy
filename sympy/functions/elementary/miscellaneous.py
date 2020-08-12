@@ -361,9 +361,6 @@ class MinMaxBase(Expr, LatticeOp):
                 args = frozenset(cls._new_args_filter(args))
             except ShortCircuit:
                 return cls.zero
-            except ValueError:
-                print(args)
-                return cls.zero
         else:
             args = frozenset(args)
 

@@ -570,6 +570,9 @@ class Abs(Function):
             return True                
         return self.args[0].is_rational
 
+    def _eval_is_finite(self):
+        return self.arg.is_finite
+
     def _eval_is_even(self):
         if self.args[0].is_extended_real:
             return self.args[0].is_even
