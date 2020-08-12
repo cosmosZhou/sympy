@@ -3,7 +3,6 @@ from sympy.utility import plausible, Sum, Union, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.concrete.expr_with_limits import Forall
-from sympy.tensor.indexed import IndexedBase
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -52,7 +51,7 @@ def prove(Eq):
     assert n in baseset
     assert baseset & domain == domain
 
-    x = IndexedBase('x', shape=(oo,), dtype=dtype.integer, finite=True)
+    x = Symbol('x', shape=(oo,), dtype=dtype.integer, finite=True)
 
     i_domain = Interval(0, n - 1, integer=True)
     

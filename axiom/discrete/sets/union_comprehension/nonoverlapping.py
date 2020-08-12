@@ -3,7 +3,6 @@ from sympy.utility import plausible, Sum, Union, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.concrete.expr_with_limits import Forall
-from sympy.tensor.indexed import IndexedBase
 from axiom import discrete
 
 # given: |Union x[i]| = Sum |x[i]|

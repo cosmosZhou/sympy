@@ -52,7 +52,7 @@ def prove(Eq):
 
     y = Symbol('y', shape=(oo,), dtype=dtype.integer, definition=Ref[i](Piecewise((x[i], i < n), (EmptySet(), True))))
 
-    Eq.y_definition = Equality.by_definition_of(y)
+    Eq.y_definition = y.equality_defined()
     
     Eq.yi_definition = Eq.y_definition.forall(i, 0, n - 1)
     

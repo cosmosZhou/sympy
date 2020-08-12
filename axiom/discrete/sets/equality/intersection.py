@@ -1,9 +1,7 @@
-from sympy.core.relational import Equality, Unequality, StrictGreaterThan
+from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy import S
 from sympy.sets.contains import Contains
-from axiom.discrete import sets
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.sets.sets import EmptySet
 

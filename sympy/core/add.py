@@ -676,7 +676,6 @@ class Add(Expr, AssocOp):
         if saw_INF:
             if len(saw_INF) > 1:
                 return
-            return saw_INF.pop()
         
         if saw_supremum: 
             return Add(*args).is_negative            
