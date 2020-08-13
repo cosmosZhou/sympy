@@ -7,7 +7,6 @@ from sympy.stats.rv import Density, RandomSymbol
 from sympy import pi, Symbol
 from sympy.stats import Normal
 from axiom.trigonometry import Wallis
-from sympy.functions.elementary.miscellaneous import sqrt
 
 
 @plausible

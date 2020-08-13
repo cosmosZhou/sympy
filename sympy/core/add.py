@@ -680,8 +680,8 @@ class Add(Expr, AssocOp):
         if saw_finite:
             return
         
-        if not neg and not nonpos:
-            return False
+#         if not neg and not nonpos:
+#             return False
         
         f = self.max()
         if f is not self and f.is_extended_negative:
