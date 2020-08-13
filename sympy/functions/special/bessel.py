@@ -83,6 +83,9 @@ class BesselBase(Function):
         from sympy.simplify.simplify import besselsimp
         return besselsimp(self)
 
+    @property    
+    def shape(self):
+        return ()
 
 class besselj(BesselBase):
     r"""
@@ -209,7 +212,7 @@ class besselj(BesselBase):
         import sage.all as sage
         return sage.bessel_J(self.args[0]._sage_(), self.args[1]._sage_())
 
-
+    
 class bessely(BesselBase):
     r"""
     Bessel function of the second kind.

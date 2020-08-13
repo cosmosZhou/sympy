@@ -4050,6 +4050,9 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
     def _mpc_(self):
         return (Float(0)._mpf_, Float(1)._mpf_)
 
+    @property
+    def shape(self):
+        return ()
 
 I = S.ImaginaryUnit
 

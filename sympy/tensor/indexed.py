@@ -553,6 +553,10 @@ class Indexed(Expr):
     def copy(self, **kwargs):
         return self.base.copy(shape=self.base.shape, **kwargs)[self.indices]
 
+    def equality_defined(self):
+        from sympy import Equality
+        return Equality(self, self.definition, evaluate=False)
+
 class Slice(Expr):
     """Represents a mathematical object with Slices.
 

@@ -281,6 +281,7 @@ class ExprWithLimits(Expr):
                     if cond.is_set and sym.is_Symbol and sym.is_bounded:
                         cond &= sym.domain_bounded
                         _sym = sym.unbounded
+                        assert sym.dtype == _sym.dtype
                         limit = Tuple(_sym, cond)
                         function = function._subs(sym, _sym)
                 limits.append(limit)

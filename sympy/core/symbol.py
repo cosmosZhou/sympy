@@ -224,7 +224,11 @@ class Symbol(AtomicExpr, NotIterable):
     @property
     def unbounded(self):
         if self.is_bounded:
-            return self.func(self.name, integer=self.is_integer)
+            return self.func(self.name, 
+                             integer=self.is_integer, 
+                             real=self.is_real, 
+                             complex=self.is_complex, 
+                             shape=self.shape if self.shape else None)
         return self
 
     @property
@@ -585,7 +589,6 @@ class Symbol(AtomicExpr, NotIterable):
                 return Equality(self[var], Mul(*args) * ref.function, evaluate=False)
         
         return Equality(self, self.definition, evaluate=False)
-        
         
     @property
     def shape(self):
