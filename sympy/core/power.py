@@ -512,6 +512,8 @@ class Pow(Expr):
                     return self.exp.is_extended_positive
                 elif (1 - abs(self.base)).is_extended_negative:
                     return self.exp.is_extended_negative
+            if self.base.is_extended_positive:
+                return False
         else:
             if self.base.is_nonzero:
                 return False

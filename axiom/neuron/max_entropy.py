@@ -82,7 +82,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].args[1].arg.simplify()
 
-    Eq << Eq.plausible1.this.lhs.args[1].as_Add()
+    try:
+        Eq << Eq.plausible1.this.lhs.args[1].as_Add()
+    except:
+        print('Eq.plausible1.lhs.args[1]:', Eq.plausible1.lhs.args[1])
+        exit()
 
     Eq << Eq[-1].exp().reversed
 

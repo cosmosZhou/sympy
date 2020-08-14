@@ -74,6 +74,9 @@ def prove(Eq):
 
     Eq << apply(x0, x1)
 
+    assert Eq[0].rhs.args[0].is_nonzero
+    assert Eq[0].rhs.args[1].is_nonzero
+    
     Eq << Density(x0 + x1).equality_defined()
 
     Eq << Eq[-1].this.rhs.function.powsimp()

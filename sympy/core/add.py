@@ -619,69 +619,8 @@ class Add(Expr, AssocOp):
         elif is_infinitesimal is False:
             return self.clear_infinitesimal().is_extended_nonpositive
             
-        from sympy.core.exprtools import _monotonic_sign
         if self.is_number:            
             return Expr._eval_is_extended_negative(self)
-        c, a = self.as_coeff_Add()
-        if not c.is_zero:
-            v = _monotonic_sign(a)
-            if v is not None:
-                s = v + c
-                if s != self and s.is_extended_negative and a.is_extended_nonpositive:
-                    return True
-                if len(self.free_symbols) == 1:
-                    v = _monotonic_sign(self)
-                    if v is not None and v != self and v.is_negative:
-                        return True
-        neg = nonpos = False
-        saw_INF = set()
-        args = [a for a in self.args if not a.is_zero]
-        if not args:
-            return False
-        
-        saw_supremum = False
-        saw_finite = False
-        for i, a in enumerate(args):
-            isneg = a.is_negative
-            infinite = a.is_infinite
-            if infinite:
-                saw_INF.add(fuzzy_or((isneg, a.is_nonpositive)))
-                if True in saw_INF and False in saw_INF:
-                    return
-                
-            if isneg:
-                neg = True
-                continue
-            
-            if a.is_nonpositive:
-                nonpos = True
-                continue
-            
-            if a.is_nonnegative:
-                continue
-            
-            supremum = a.supremum()
-            if supremum is not a:
-                args[i] = supremum
-                saw_supremum = True
-                continue
-                
-            if infinite is None:
-                saw_finite = True
-                continue
-            
-        if saw_INF:
-            if len(saw_INF) > 1:
-                return
-        
-        if saw_supremum: 
-            return Add(*args).is_negative            
-            
-        if saw_finite:
-            return
-        
-#         if not neg and not nonpos:
-#             return False
         
         f = self.max()
         if f is not self and f.is_extended_negative:
