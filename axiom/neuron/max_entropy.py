@@ -1,3 +1,4 @@
+# coding=utf-8
 from sympy.core.symbol import Symbol
 from sympy.utility import Ref, Sum, plausible
 from sympy.core.relational import Equality

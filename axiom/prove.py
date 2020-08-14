@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import re
 import axiom
@@ -108,6 +109,8 @@ def prove():
         for p in websites:
             print(p)
     print('cost time =', (time.time() - start) / 60, 'minutes')
+    print('total unprovable =', len(unproven))
+    print('total erroneous =', len(erroneous))
 
 
 def parellel_process(process, items):
@@ -123,3 +126,4 @@ def parellel_process(process, items):
 if __name__ == '__main__':    
     prove()
     
+# https://www.wolfram.com/language/elementary-introduction/2nd-ed/preface.html

@@ -1,3 +1,4 @@
+# coding=utf-8
 import axiom
 import sys
 # to run this script, please install:
@@ -6,7 +7,7 @@ import sys
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         axiom.prove.prove()
-    else:        
+    else:
         for package in sys.argv[1:]:
             package = package.replace('/', '.').replace('\\', '.')
             package = eval(package)

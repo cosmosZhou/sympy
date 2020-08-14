@@ -3799,7 +3799,10 @@ class Expr(Basic, EvalfMixin):
 
         graph = {x: set() for x in free_symbols }
         for y in free_symbols:
-            for x in y.domain.free_symbols:
+            domain_assumed = y.domain_assumed
+            if domain_assumed is None:
+                continue
+            for x in domain_assumed.free_symbols:
                 # y is dependent on x, so x is a parent of y
                 if x in graph:
                     graph[x].add(y)

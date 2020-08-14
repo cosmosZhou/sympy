@@ -392,7 +392,18 @@ class Symbol(AtomicExpr, NotIterable):
         
     @property
     def is_bounded(self):
-        return {'domain', 'positive', 'negative', 'nonpositive', 'nonnegative'} & self.assumptions0.keys()
+        if 'domain' in self._assumptions:
+            return True
+        if 'shape' in self._assumptions:
+            return False
+        if  'positive' in self._assumptions and self.is_positive is not None:
+            return True
+        if  'negative' in self._assumptions and self.is_negative is not None:
+            return True
+        if  'nonpositive' in self._assumptions and self.is_nonpositive is not None:
+            return True
+        if  'nonnegative' in self._assumptions and self.is_nonnegative is not None:
+            return True
 
     @property
     def domain_assumed(self):
@@ -487,6 +498,8 @@ class Symbol(AtomicExpr, NotIterable):
 
     @property
     def is_set(self):
+        if self.shape:
+            return False
         if 'dtype' in self._assumptions:
             dtype = self._assumptions['dtype']
             if dtype is not None:
@@ -797,6 +810,30 @@ class Symbol(AtomicExpr, NotIterable):
             return self._assumptions['domain'].is_rational
         if 'definition' in self._assumptions:
             return self._assumptions['definition'].is_rational        
+
+    def _eval_is_complex(self):
+        if 'domain' in self._assumptions:
+            return True
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_complex
+
+    def _eval_is_algebraic(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_algebraic
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_algebraic
+    
+    def _eval_is_hermitian(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_hermitian
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_hermitian
+    
+    def _eval_is_imaginary(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_imaginary
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_imaginary
 
     def __hash__(self):
         return super(Symbol, self).__hash__()        

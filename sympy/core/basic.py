@@ -542,30 +542,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
         """
         return self.structure_eq(other) and self._dummy_eq(other)
-
-        s = self.as_dummy()
-        o = _sympify(other)
-        o = o.as_dummy()
-
-        dummy_symbols = [i for i in s.free_symbols if i.is_Dummy]
-
-        if len(dummy_symbols) == 1:
-            dummy = dummy_symbols.pop()
-        else:
-            return s == o
-
-        if symbol is None:
-            symbols = o.free_symbols
-
-            if len(symbols) == 1:
-                symbol = symbols.pop()
-            else:
-                return s == o
-
-        tmp = dummy.__class__()
-
-        return s.subs(dummy, tmp) == o.subs(symbol, tmp)
-
+    
     # Note, we always use the default ordering (lex) in __str__ and __repr__,
     # regardless of the global setting.  See issue 5487.
     def __repr__(self):
@@ -2225,9 +2202,32 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.core.logic import fuzzy_not
         return fuzzy_not(self.is_finite)
         
-#     @property
-#     def shape(self):
-#         return ()
+    def _eval_is_transcendental(self):
+        algebraic = self.is_algebraic
+        if algebraic:
+            return False
+        if algebraic is False:
+            if self.is_complex:
+                return self.is_finite
+            return self.is_complex
+        
+    def _eval_is_irrational(self):
+        rational = self.is_rational
+        if rational:
+            return False
+        if rational is False:
+            return self.is_real
+
+    def _eval_is_noninteger(self):
+        integer = self.is_integer
+        if integer:
+            return False
+        if integer is False:
+            return self.is_extended_real
+    
+    @property
+    def shape(self):
+        return ()
     
 class Atom(Basic):
     """

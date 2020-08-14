@@ -104,6 +104,7 @@ def prove(Eq):
     Eq << Eq.d_definition_expand.subs(j, j + 1)
     Eq << Eq.r_definition[Eq[-1].rhs.variable]
     
+    return
     Eq << Eq[-2].subs(Eq[-1])
     return
     Eq.y0_definition = Equality.define(y[0], x)

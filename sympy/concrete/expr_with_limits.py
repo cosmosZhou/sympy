@@ -542,20 +542,7 @@ class ExprWithLimits(Expr):
 
     # if x == old:
     def _subs_limits(self, x, domain, new):
-#         from sympy import preorder_traversal
-
         def subs(function, x, domain, new):
-#             if x.is_Slice:
-#                 indices = set(index for indexed in preorder_traversal(function) if indexed.is_Indexed and indexed.base == x.base for index in indexed.indices)
-#                 reps = {}
-#                 for i in indices:
-#                     if isinstance(i, (Symbol, Indexed)): 
-#                         i_domain = function.domain_defined(i)
-#                         if i.domain != i_domain:
-#                             _i = i.copy(domain=i_domain)
-#                             function = function.subs(i, _i)                            
-#                             reps[i] = _i
-                
             _function = function._subs(x, new)
             if _function == function:
                 return self
@@ -584,10 +571,6 @@ class ExprWithLimits(Expr):
                 domain = [dom._subs(x, new) for dom in domain]
                 limits[i] = (v, *domain)
 
-#             if x.is_Slice:
-#                 for i, _i in reps.items():
-#                     function = function.subs(_i, i)                            
-                
             return self.func(function, *limits, **kwargs).simplify()
 
         if self.function.is_ExprWithLimits and new in self.function.variables_set:

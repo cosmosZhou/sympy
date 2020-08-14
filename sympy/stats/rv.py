@@ -900,10 +900,6 @@ class PDF(Expr):
         return result(*self.args[1:])
     
     @property
-    def shape(self):
-        return ()
-
-    @property
     def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real

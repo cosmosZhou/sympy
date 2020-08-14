@@ -1207,20 +1207,6 @@ class Interval(Set, EvalfMixin):
     def element_symbol(self, excludes=set()):
         return generate_free_symbol(self.free_symbols | excludes, integer=self.is_integer)
 
-    def _eval_is_extended_negative(self):
-        if self.min().is_extended_nonnegative:
-            return False
-        if self.max().is_extended_negative:
-            return True
-
-    def _eval_is_extended_positive(self):
-        if self.max().is_extended_nonpositive:
-            return False
-        if self.min().is_extended_positive:
-            return True
-
-    is_extended_real = True
-    
     @property
     def size(self):
         if self.is_integer:
@@ -1593,6 +1579,20 @@ class Interval(Set, EvalfMixin):
             return (self.min(), self.max(), S.false, S.false, True)
         return self._args
 
+    is_extended_real = True    
+    
+    def _eval_is_extended_negative(self):
+        if self.min().is_extended_nonnegative:
+            return False
+        if self.max().is_extended_negative:
+            return True
+
+    def _eval_is_extended_positive(self):
+        if self.max().is_extended_nonpositive:
+            return False
+        if self.min().is_extended_positive:
+            return True
+
     def _eval_is_zero(self):
         if self.min().is_extended_positive:
             return False
@@ -1600,6 +1600,10 @@ class Interval(Set, EvalfMixin):
             return False
 
     def _eval_is_rational(self):
+        if self.is_integer:
+            return True        
+
+    def _eval_is_algebraic(self):
         if self.is_integer:
             return True        
 
@@ -2342,9 +2346,29 @@ class Complement(Set, EvalfMixin):
 # if B => C, (A - B) | C = A | C
 # if A => C, (A - B) | C = C
 
-    @property
-    def is_integer(self):
+    def _eval_is_integer(self):
         return self.args[0].is_integer
+
+    def _eval_is_extended_real(self):
+        return self.args[0].is_extended_real
+    
+    def _eval_is_extended_negative(self):
+        return self.args[0].is_extended_negative
+
+    def _eval_is_extended_positive(self):
+        return self.args[0].is_extended_positive
+
+    def _eval_is_zero(self):
+        return self.args[0].is_zero
+
+    def _eval_is_rational(self):
+        return self.args[0].is_rational
+
+    def _eval_is_finite(self):
+        return self.args[0].is_finite
+
+    def _eval_is_complex(self):
+        return self.args[0].is_complex
 
     def domain_defined(self, x):
         A, B = self.args

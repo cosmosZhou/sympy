@@ -43,15 +43,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(h, h - i)
     
-    Eq << Eq[-1].this.rhs.distribute()
+    Eq.distribute = Eq[-1].this.rhs.distribute()
    
-    Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, h)
+    Eq << Eq.distribute.this.lhs.limits_subs(Eq.distribute.lhs.variable, h)
 
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(delta + i, h - i, j).reversed
 
-    Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, Eq[-2].rhs.function.args[-1].variable)
+    Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, Eq.distribute.rhs.function.args[-1].variable)
 
-    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+    Eq << Eq.distribute.this.rhs.subs(Eq[-1])
 
     Eq << Eq[2].reference((i,), (j,))
 
