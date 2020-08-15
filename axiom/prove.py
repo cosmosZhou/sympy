@@ -122,8 +122,7 @@ def parellel_process(process, items):
     pool.join()
     return results
 
-    
+       
 if __name__ == '__main__':    
     prove()
     
-# https://www.wolfram.com/language/elementary-introduction/2nd-ed/preface.html

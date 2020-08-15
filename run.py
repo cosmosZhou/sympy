@@ -27,3 +27,9 @@ if __name__ == '__main__':
             elif ret is None:
                 print(package, 'is erroneous')
 
+# https://reference.wolfram.com/language/WolframClientForPython/
+# https://reference.wolfram.com/workbench/index.jsp
+# https://www.wolfram.com/language/fast-introduction-for-programmers/en/
+# https://www.wolfram.com/language/fast-introduction-for-programmers/en/procedures/
+# https://www.wolfram.com/language/fast-introduction-for-math-students/en/
+# https://www.wolfram.com/language/elementary-introduction/2nd-ed/preface.html
