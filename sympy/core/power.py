@@ -1785,7 +1785,8 @@ class Pow(Expr):
                 return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
         return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e)
 
-
+    wolfram_name = 'Power'
+    
 from .add import Add
 from .numbers import Integer
 from .mul import Mul, _keep_coeff

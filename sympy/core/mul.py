@@ -1914,6 +1914,7 @@ class Mul(Expr, AssocOp):
         """
         return self._eval_pos_neg(1)
 
+    wolfram_name = 'Times'
     
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

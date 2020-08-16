@@ -4,8 +4,15 @@ from itertools import chain
 
 from wolframclient.utils import six
 from wolframclient.utils.encoding import force_text
+import re
 
 __all__ = ["WLSymbol", "WLFunction", "WLSymbolFactory", "WLInputExpression"]
+
+
+def sympify(expr, **kwargs):
+    if isinstance(expr, int):
+        return expr
+    return expr.sympify(**kwargs)
 
 
 class WLExpressionMeta(object):
@@ -54,6 +61,26 @@ class WLSymbol(WLExpressionMeta):
     def __str__(self):
         return self.name
 
+    def sympifyConditionalExpression(self, *args, **kwargs):
+        return args[0].sympify(**kwargs)    
+
+    def sympifyPower(self, *args, **kwargs):
+        base, exp = args        
+        return sympify(base, **kwargs) ** sympify(exp, **kwargs)    
+
+    def sympify(self, *args, **kwargs):
+        name = self.name
+        if args:
+            return getattr(self, 'sympify' + name)(*args, **kwargs)
+        else:
+            m = re.compile("Global`(\w+)").match(name)
+            if m:
+                global_variables = kwargs['global_variables']                
+                symbol = m.group(1)
+                for variable in global_variables:
+                    if variable.name == symbol:
+                        return variable
+            
 
 class WLFunction(WLExpressionMeta):
     """Represent a Wolfram Language function with its head and arguments.
@@ -101,6 +128,9 @@ class WLFunction(WLExpressionMeta):
             )
         else:
             return "%s[%s]" % (repr(self.head), ", ".join(repr(x) for x in self.args))
+
+    def sympify(self, global_variables):
+        return self.head.sympify(*self.args, global_variables=global_variables)
 
 
 class WLSymbolFactory(WLSymbol):

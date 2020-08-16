@@ -2700,6 +2700,10 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
 #     def __eq__(self, other):
 #         return isinstance(other, Zero) or other == 0
 
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('0')
+    
 
 class One(with_metaclass(Singleton, IntegerConstant)):
     """The number one.
@@ -2749,6 +2753,10 @@ class One(with_metaclass(Singleton, IntegerConstant)):
 
     is_nonnegative = True
     is_positive = True
+        
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('1')
         
 class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     """The number negative one.
@@ -2848,6 +2856,9 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     def as_coeff_mmul(self):
         return 1, self
 
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('-1')
 
 class Half(with_metaclass(Singleton, RationalConstant)):
     """The rational number 1/2.
@@ -2877,6 +2888,9 @@ class Half(with_metaclass(Singleton, RationalConstant)):
     def __abs__():
         return S.Half
 
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('1/2')
 
 class Infinity(with_metaclass(Singleton, Number)):
     r"""Positive infinite quantity.
@@ -3102,6 +3116,9 @@ class Infinity(with_metaclass(Singleton, Number)):
     def ceiling(self):
         return self
 
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('oo')
 
 oo = S.Infinity
 
@@ -3304,6 +3321,9 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
     def as_powers_dict(self):
         return {S.NegativeOne: 1, S.Infinity: 1}
 
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('-oo')
 
 class NaN(with_metaclass(Singleton, Number)):
     """
@@ -3722,6 +3742,10 @@ class Pi(with_metaclass(Singleton, NumberSymbol)):
     def _sympystr(self, _):
         return 'π'
 
+
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('Pi')
 
 pi = S.Pi
 

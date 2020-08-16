@@ -48,8 +48,8 @@ def prove(Eq):
 
     Eq << Eq[1].subs(m, 2)
 
-    "Assuming[Element[n, PositiveIntegers] && n > 0, Integrate[Sin[x] ^ (n - 1) Cos[x], {x, 0, Pi /2}]]"
-    Eq << Eq[-1].this.lhs.doit(manul=True)
+    "Assuming[Element[n, PositiveIntegers], Integrate[Sin[x] ^ (n - 1) Cos[x], {x, 0, Pi /2}]]"
+    Eq << Eq[-1].this.lhs.doit(manul=True, wolfram=True)
 
     Eq << Eq[-1].this.rhs.expand(func=True)
 

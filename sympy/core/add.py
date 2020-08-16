@@ -1282,9 +1282,7 @@ class Add(Expr, AssocOp):
 
         return self.func(*args)
 
-    def to_wolfram(self):
-        from wolframclient.language import wl
-        return wl.Plus(*[arg.to_wolfram() for arg in self.args])
+    wolfram_name = 'Plus'
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

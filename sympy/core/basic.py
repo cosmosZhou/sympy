@@ -2229,15 +2229,20 @@ class Basic(with_metaclass(ManagedProperties)):
     def shape(self):
         return ()
     
+    def to_wolfram(self, global_variables):
+        from wolframclient.language import wl        
+        return getattr(wl, self.wolfram_name)(*[arg.to_wolfram(global_variables) for arg in self.args])
+
     def _eval_wolfram(self, session=None):
-        wlexpr = self.to_wolfram()                
+        global_variables = set()
+        wlexpr = self.to_wolfram(global_variables)                
         if session is None:
             from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
             with WolframLanguageSession() as session: 
                 wlexpr = session.evaluate(wlexpr)
         else:
             wlexpr = session.evaluate(wlexpr)
-        return wlexpr.sympyify()
+        return wlexpr.sympify(global_variables=global_variables)
         
 class Atom(Basic):
     """

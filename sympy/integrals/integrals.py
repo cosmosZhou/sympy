@@ -409,6 +409,10 @@ class Integral(AddWithLimits):
         risch = hints.get('risch', None)
         heurisch = hints.get('heurisch', None)
         manual = hints.get('manual', None)
+        wolfram = hints.get('wolfram', None)
+        if wolfram:
+            return self._eval_wolfram()
+        
         if len(list(filter(None, (manual, meijerg, risch, heurisch)))) > 1:
             raise ValueError("At most one of manual, meijerg, risch, heurisch can be True")
         elif manual:
@@ -1528,6 +1532,50 @@ class Integral(AddWithLimits):
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_finite
+
+    def to_wolfram(self, global_variables):        
+        from wolframclient.language import wl, wlexpr
+        limit = self.limits[0]
+        local_variables = set()
+        
+        limit = [e.to_wolfram(local_variables) for e in limit]        
+        
+        function = self.function.to_wolfram(local_variables)
+        local_variables -= self.variables_set
+        
+        conditions = []
+        for variable in local_variables:
+            if variable.is_integer:
+                domain= 'Integers'            
+            elif variable.is_rational:
+                domain= 'Rationals'
+            elif variable.is_real:
+                domain= 'Reals'
+            else:
+                domain= 'Complexes'
+                
+            if variable.is_positive:
+                domain = 'Positive' + domain
+            elif variable.is_negative:
+                domain = 'Negative' + domain
+            elif variable.is_nonpositive:
+                domain = 'NonPositive' + domain
+            elif variable.is_nonnegative:
+                domain = 'NonNegative' + domain
+                
+            domain = wlexpr(domain)
+            variable = variable.to_wolfram(global_variables)
+            conditions.append(wl.Element(variable, domain))
+            
+        if len(conditions) == 0:
+            return wl.Integrate(function, limit)
+        
+        if len(conditions) == 1:
+            conditions = conditions[0]
+        else: 
+            conditions = wl.And(*conditions)
+            
+        return wl.Integrate(function, limit, wl.Rule(wlexpr('Assumptions'), conditions))
 
 def integrate(*args, **kwargs):
     """integrate(f, var, ...)

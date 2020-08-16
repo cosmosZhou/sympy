@@ -869,6 +869,10 @@ class Symbol(AtomicExpr, NotIterable):
 
         return True
 
+    def to_wolfram(self, global_variables):
+        from wolframclient.language import wlexpr
+        global_variables.add(self)
+        return wlexpr(self.name)
 
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
