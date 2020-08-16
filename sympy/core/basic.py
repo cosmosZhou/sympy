@@ -2229,6 +2229,16 @@ class Basic(with_metaclass(ManagedProperties)):
     def shape(self):
         return ()
     
+    def _eval_wolfram(self, session=None):
+        wlexpr = self.to_wolfram()                
+        if session is None:
+            from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
+            with WolframLanguageSession() as session: 
+                wlexpr = session.evaluate(wlexpr)
+        else:
+            wlexpr = session.evaluate(wlexpr)
+        return wlexpr.sympyify()
+        
 class Atom(Basic):
     """
     A parent class for atomic things. An atom is an expression with no subexpressions.

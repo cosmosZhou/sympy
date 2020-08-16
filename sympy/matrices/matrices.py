@@ -2222,10 +2222,12 @@ class MatrixBase(MatrixDeprecated,
     def __repr__(self):
         return sstr(self)
 
-    def __str__(self):
+    def _sympystr(self, p):
         if self.rows == 0 or self.cols == 0:
-            return 'Matrix(%s, %s, [])' % (self.rows, self.cols)
-        return "Matrix(%s)" % str(self.tolist())
+            return '(%s, %s, [])' % (self.rows, self.cols)
+        if self.rows == 1:
+            return str(self.tolist()[0])
+        return str(self.tolist())
 
     def _diagonalize_clear_subproducts(self):
         del self._is_symbolic
@@ -2400,8 +2402,13 @@ class MatrixBase(MatrixDeprecated,
                 elif not any(raw(i) or ismat(i) for i in dat):
                     # a column as a list of values
                     flat_list = [cls._sympify(i) for i in dat]
-                    rows = len(flat_list)
-                    cols = 1 if rows else 0
+                    
+#                     rows = len(flat_list)
+#                     cols = 1 if rows else 0
+                    
+                    cols = len(flat_list)
+                    rows = 1 if cols else 0
+                    
                 elif evaluate and all(ismat(i) for i in dat):
                     # a column as a list of matrices
                     ncol = set(i.cols for i in dat if any(i.shape))
