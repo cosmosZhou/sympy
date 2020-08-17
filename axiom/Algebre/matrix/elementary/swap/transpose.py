@@ -30,15 +30,19 @@ def prove(Eq):
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     Eq << apply(w)
-    return
-    Eq << w[0, i].equality_defined()
-    
-    Eq << w[i, 0].equality_defined()
-    
-    Eq << Eq[-2] @ Eq[-1]
-    
-    Eq << Eq[-1].this.rhs.expand()
-    return
+
+#     Eq << w[0, i].equality_defined()
+#     
+#     Eq << w[i, 0].equality_defined()
+#     
+#     Eq << Eq[-2] @ Eq[-1]
+#     
+#     Eq << Eq[-1].this.rhs.expand()
+#     
+#     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
+#     
+#     Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
+#     return
     Eq << w[j, i].equality_defined()
     
     Eq << Eq[0] @ Eq[-1]
@@ -49,6 +53,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
     
+    return
     Eq.expand = Eq[-1].this.rhs.function.expand()
     
     (l, *_), (m, *_) = Eq[-1].rhs.limits     

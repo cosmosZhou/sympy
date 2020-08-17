@@ -32,7 +32,7 @@ def prove(Eq):
     i, _ = Eq[-1].rhs.indices
     
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
-    
+     
     w = Eq[0].lhs.base
     
     p = Symbol('p', real=True)

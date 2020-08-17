@@ -1862,7 +1862,17 @@ class Union(Set, LatticeOp, EvalfMixin):
         return Max(*(arg.max() for arg in self.args))        
 
     def _sympystr(self, p):
-        return ' ∪ '.join([p._print(a) for a in self.args])
+        return ' ∪ '.join(["(%s)" % p._print(a) if a.is_Complement else p._print(a) for a in self.args])
+
+    def _latex(self, p):
+        args = []
+        for i in self.args:
+            latex = p._print(i)
+            if i.is_Complement or i.is_Union:
+                latex = r'\left(%s\right)' % latex
+            args.append(latex)
+
+        return r" \cup ".join(args)
 
     def _eval_is_finite(self):
         return all(a.is_finite for a in self.args)
@@ -1920,7 +1930,7 @@ class Intersection(Set, LatticeOp):
             C = self._argset & b._argset
             if C:            
                 return (self.func(*self._argset - C, evaluate=False) | b.func(*b._argset - C, evaluate=False)) & self.func(*C)             
-
+        
     @property
     def identity(self):
         return S.UniversalSet
@@ -2079,7 +2089,17 @@ class Intersection(Set, LatticeOp):
         return Min(*(arg.max() for arg in self.args))
 
     def _sympystr(self, p):
-        return ' ∩ '.join([p._print(a) for a in self.args])
+        return ' ∩ '.join(["(%s)" % p._print(a) if a.is_Complement else p._print(a) for a in self.args])
+
+    def _latex(self, p):
+        args = []
+        for i in self.args:
+            latex = p._print(i)
+            if i.is_Complement or i.is_Union:
+                latex = r'\left(%s\right)' % latex
+            args.append(latex)
+
+        return r" \cap ".join(args)
 
     def handle_finite_sets(self, unk):
         if len(unk) == 1:
@@ -2322,6 +2342,8 @@ class Complement(Set, EvalfMixin):
         if A in C:
             return C
         if C.is_Intersection:
+            if A & B in C:
+                return A | C
             try:
                 # A & B | (A-B) = A
                 # A & B | (A-(B+C)) = A - C
@@ -2381,15 +2403,21 @@ class Complement(Set, EvalfMixin):
         return self.args[0].min()
     
     def handle_finite_sets(self, unk):
-        if unk in self.args[1]:
+        A, B = self.args
+        if unk in B:
             return S.EmptySet
-        if unk in self.args[0]:
-            return self.func(unk, self.args[1], evaluate=False)
+        if unk in A:
+            if B.is_Intersection:
+                args = []
+                for s in B.args:
+                    if unk in s:
+                        continue
+                    args.append(s)
+                if len(args) != len(B.args):
+                    B = B.func(*args)
+                        
+            return self.func(unk, B, evaluate=False)
             
-    def _eval_is_finite(self):
-        return self.args[0].is_finite
-
-        
 class EmptySet(with_metaclass(Singleton, Set)):
     """
     Represents the empty set. The empty set is available as a singleton

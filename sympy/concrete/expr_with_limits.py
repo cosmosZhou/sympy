@@ -517,12 +517,12 @@ class ExprWithLimits(Expr):
         return self.func(func, *limits)
 
     def as_multiple_terms(self, x, domain):                
-        univeralSet = Interval(S.NegativeInfinity, S.Infinity, integer=True)
+        universalSat = Interval(S.NegativeInfinity, S.Infinity, integer=True)
         args = []
         union = S.EmptySet 
         assert x in self.function.scope_variables            
         for f, condition in self.function.args:
-            _domain = (univeralSet - union) & x.domain_conditioned(condition) & domain
+            _domain = (universalSat - union) & x.domain_conditioned(condition) & domain
             assert not _domain or _domain.is_integer
 
             union |= _domain
@@ -542,6 +542,7 @@ class ExprWithLimits(Expr):
 
     # if x == old:
     def _subs_limits(self, x, domain, new):
+
         def subs(function, x, domain, new):
             _function = function._subs(x, new)
             if _function == function:
@@ -1102,6 +1103,7 @@ class AddWithLimits(ExprWithLimits):
                     function = function._subs(x, _x)
                     
         return function.is_extended_negative
+
 
 class MinMaxBase(ExprWithLimits):
     
@@ -3320,6 +3322,13 @@ class Ref(ExprWithLimits):
                     simplified = self.func(self.function.args[0], *self.limits).simplify()
                     if not isinstance(simplified, Ref):
                         return exp(simplified)
+                    
+                if second.is_KroneckerDelta:
+                    if set(second.args) == self.variables_set:
+                        (x, _, len_x), (x, _, len_y) = self.limits
+                        if len_x == len_y:
+                            from sympy import Identity
+                            return Identity(len_y + 1)
                 return self
 
             if second is None:

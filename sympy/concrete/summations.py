@@ -1125,7 +1125,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if isinstance(self.function, Piecewise):
                 has_x = [c._has(x) for _, c in self.function.args[:-1]]                                
                 if not any(has_x):
-                    return self.function.func(*((self.func(e, (x, universe)).simplify(), c) for e, c in self.function.args))
+                    return self.function.func(*((self.func(e, (x, universe)).simplify(), c) for e, c in self.function.args)).simplify()
                 
                 if all(has_x):
                     return self.operator(*self.as_multiple_terms(x, universe)).simplify()

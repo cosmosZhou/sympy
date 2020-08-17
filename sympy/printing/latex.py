@@ -1926,19 +1926,6 @@ class LatexPrinter(Printer):
         return r"\left\langle %s, %s\right\rangle" % \
                 (self._print(i.min), self._print(i.max))
 
-    def _print_Union(self, u):
-        args = []
-        for i in u.args:
-            latex = self._print(i)
-            if i.is_Complement or i.is_Union:
-                latex = r'\left(%s\right)' % latex
-            args.append(latex)
-
-        return r" \cup ".join(args)
-
-    def _print_Intersection(self, u):
-        return r" \cap ".join([self._print(i) for i in u.args])
-
     def _print_SymmetricDifference(self, u):
         return r" \triangle ".join([self._print(i) for i in u.args])
 

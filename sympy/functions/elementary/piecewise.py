@@ -1143,7 +1143,7 @@ class Piecewise(Function):
         return (e * eq + rest * (1 - eq)).simplify()
                  
     @staticmethod
-    def simplify_Equality(e0, e1, lhs, rhs):
+    def simplifyEquality(e0, e1, lhs, rhs):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         if lhs.is_integer and rhs.is_integer:
             eq = KroneckerDelta(lhs, rhs)
@@ -1188,6 +1188,63 @@ class Piecewise(Function):
         if hit:
             return Piecewise((e0, Equality(lhs, rhs)), (e1, True))
         
+    def simplifyComplement(self, i):
+        if not i:
+            return self
+        ei, ci = self.args[i]
+        x, domain = ci.args        
+        
+        union = self.union_domain(i) 
+
+        A, B = domain.args
+        if B in union:
+            domain = A
+            args = [*self.args]
+            args[i] = (ei, ci.func(x, domain))
+            return self.func(*args).simplify()
+            
+        return self
+        
+    def union_domain(self, i):
+        _, ci = self.args[i]
+        x, _ = ci.args        
+        
+        union = S.EmptySet 
+        for j in range(i):
+            _, condition = self.args[j]
+            union |= x.domain_conditioned(condition)
+        return union
+        
+    def simplifyIntersection(self, i):
+        if not i:
+            return self
+        ei, ci = self.args[i]
+        x, domain = ci.args        
+        
+        universe = x.domain        
+        union = self.union_domain(i)
+        
+        for j, s in enumerate(domain.args):
+            hit = False
+            if universe in s | union:
+                args = [*domain.args]
+                del args[j]                
+                hit = True
+            elif s.is_Complement:
+                A, B = s.args
+                if B in union:
+                    args = [*domain.args]
+                    args[j] = A
+                    hit = True
+                
+            if hit:
+                domain = domain.func(*args)
+                args = [*self.args]
+                args[i] = (ei, ci.func(x, domain))
+                return self.func(*args).simplify()
+            
+        return self
+        
     def simplify(self, deep=False, wrt=None):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         if deep:
@@ -1218,6 +1275,11 @@ class Piecewise(Function):
                                 need_swap = True
                                 hit = True
                             _x, *_ = domain.args
+#                         elif domain.is_Complement and domain.args[0].is_FiniteSet and len(domain.args[0]) == 1:
+#                             if cond:
+#                                 need_swap = True
+#                                 hit = True
+#                             _x, *_ = domain.args[0]                             
                         else:
                             _x = wrt.copy(domain=domain)
                             
@@ -1267,16 +1329,16 @@ class Piecewise(Function):
                 e0 = e0.simplify(deep=deep)
                 e1 = e1.simplify(deep=deep)
             if c0.is_Equality:
-                res = Piecewise.simplify_Equality(e0, e1, *c0.args)
+                res = Piecewise.simplifyEquality(e0, e1, *c0.args)
                 if res is not None:
                     return res                
                                          
             if c0.is_Unequality:
-                res = Piecewise.simplify_Equality(e1, e0, *c0.args)
+                res = Piecewise.simplifyEquality(e1, e0, *c0.args)
                 if res is not None:
                     return res     
                 
-            from sympy.sets.contains import NotContains
+            from sympy.sets.contains import NotContains, Contains
             if c0.is_Contains:
                 x, A = c0.args
                 if A.is_FiniteSet:
@@ -1292,11 +1354,31 @@ class Piecewise(Function):
                     domain = self.domain_defined(x)
                     if domain in U:                        
                         return self.func((e0, NotContains(x, C)), (e1, True)).simplify(deep=deep)
+                    complement = domain - A
+                    if complement.is_FiniteSet:
+                        return self.func((e1, Contains(x, complement)), (e0, True)).simplify(deep=deep)
+                        
                 if e1.is_EmptySet:
                     if e0 == x.set:
                         return A & e0
             if c0.is_NotContains:                
                 return self.func((e1, c0.invert()), (e0, True)).simplify(deep=deep)
+                
+        if expr.is_Piecewise:
+            if self.scope_variables == expr.scope_variables:
+                args = [*self.args]
+                args.pop()
+                return self.func(*args, *expr.args).simplify(deep=deep)
+        
+        if len(self.scope_variables) == 1:
+            for i, (e, c) in enumerate(self.args):
+                if c.is_Contains:
+                    x, domain = c.args
+                    if x in self.scope_variables:
+                        if domain.is_Intersection:
+                            return self.simplifyIntersection(i)
+                        elif domain.is_Complement:
+                            return self.simplifyComplement(i)
                         
         return self
 
