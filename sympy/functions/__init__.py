@@ -16,6 +16,9 @@ from sympy.functions.elementary.complexes import (re, im, sign, Abs,
         principal_branch, transpose, adjoint, polarify, unpolarify)
 from sympy.functions.elementary.trigonometric import (sin, cos, tan,
         sec, csc, cot, sinc, asin, acos, atan, asec, acsc, acot, atan2)
+
+from sympy.functions.elementary.trigonometric import Sin, Cos#, Tan, Sec, Csc, Cot, Sinc, Asin, Acos, Atan, Asec, Acsc, Acot, Atan2
+
 from sympy.functions.elementary.exponential import (exp_polar, exp, log,
         LambertW)
 from sympy.functions.elementary.hyperbolic import (sinh, cosh, tanh, coth,

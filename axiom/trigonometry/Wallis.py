@@ -1,6 +1,6 @@
 from sympy.core.symbol import Symbol
 from sympy.core.relational import Equality
-from sympy.core.numbers import pi
+from sympy.core.singleton import S
 from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.utility import plausible, Integral
 from sympy.core.sympify import sympify
@@ -14,7 +14,7 @@ def apply(m, n=1):
     n = sympify(n)
 
     x = Symbol("x", real=True)
-    return Equality(Integral[x:0:pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
+    return Equality(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
                     beta(m / 2, n / 2) / 2)
 
 
@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << Eq[1].subs(m, m + 2)
 
-    Eq << Eq[-1].this.lhs.by_parts(u=cos(x) ** m)
+    Eq << Eq[-1].this.lhs.by_parts(u=cos(x) ** m, wolfram=True)
 
     Eq << Eq[-1] / (m / n)
 

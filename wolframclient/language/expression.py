@@ -4,7 +4,6 @@ from itertools import chain
 
 from wolframclient.utils import six
 from wolframclient.utils.encoding import force_text
-import re
 
 __all__ = ["WLSymbol", "WLFunction", "WLSymbolFactory", "WLInputExpression"]
 
@@ -61,26 +60,13 @@ class WLSymbol(WLExpressionMeta):
     def __str__(self):
         return self.name
 
-    def sympifyConditionalExpression(self, *args, **kwargs):
-        return args[0].sympify(**kwargs)    
-
-    def sympifyPower(self, *args, **kwargs):
-        base, exp = args        
-        return sympify(base, **kwargs) ** sympify(exp, **kwargs)    
-
-    def sympify(self, *args, **kwargs):
+    def sympify(self, *args, **global_variables):
         name = self.name
         if args:
-            return getattr(self, 'sympify' + name)(*args, **kwargs)
+            import sympy  # @UnusedImport
+            return eval("sympy." + name)(*(sympify(arg, **global_variables) for arg in args))
         else:
-            m = re.compile("Global`(\w+)").match(name)
-            if m:
-                global_variables = kwargs['global_variables']                
-                symbol = m.group(1)
-                for variable in global_variables:
-                    if variable.name == symbol:
-                        return variable
-            
+            return global_variables[name]
 
 class WLFunction(WLExpressionMeta):
     """Represent a Wolfram Language function with its head and arguments.
@@ -129,8 +115,8 @@ class WLFunction(WLExpressionMeta):
         else:
             return "%s[%s]" % (repr(self.head), ", ".join(repr(x) for x in self.args))
 
-    def sympify(self, global_variables):
-        return self.head.sympify(*self.args, global_variables=global_variables)
+    def sympify(self, **global_variables):
+        return self.head.sympify(*self.args, **global_variables)
 
 
 class WLSymbolFactory(WLSymbol):
@@ -166,14 +152,16 @@ class WLSymbolFactory(WLSymbol):
 class WLInputExpression(WLExpressionMeta):
     """ Represent a string input form expression. """
 
-    def __init__(self, input):
-        if isinstance(input, (six.binary_type, six.text_type)):
-            self.input = input
+    def __init__(self, inputs):
+        if isinstance(inputs, (six.binary_type, six.text_type)):
+            self.input = inputs
         else:
             raise ValueError("input must be string or bytes")
 
     def __repr__(self):
-        return "(%s)" % self.input
+        return self.input
+#         return "(%s)" % self.input
 
     def __str__(self):
-        return "(%s)" % self.input
+        return self.input
+#         return "(%s)" % self.input

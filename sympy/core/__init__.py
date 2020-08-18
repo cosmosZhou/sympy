@@ -10,9 +10,9 @@ from .symbol import Symbol, Wild, Dummy, symbols, var
 from .numbers import Number, Float, Rational, Integer, NumberSymbol, \
     RealNumber, igcd, ilcm, seterr, E, I, nan, oo, pi, zoo, \
     AlgebraicNumber, comp, mod_inverse
-from .power import Pow, integer_nthroot, integer_log
-from .mul import Mul, prod
-from .add import Add
+from .power import Pow, integer_nthroot, integer_log, Power
+from .mul import Mul, prod, Times
+from .add import Add, Plus
 from .mod import Mod
 from .relational import ( Rel, Eq, Ne, Lt, Le, Gt, Ge,
     Equality, GreaterThan, LessThan, Unequality, StrictGreaterThan,

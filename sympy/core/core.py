@@ -70,12 +70,12 @@ class BasicMeta(type):
     def __init__(cls, *args, **kws):
         all_classes.add(cls)
 
-    def __cmp__(cls, other):
+    def __cmp__(self, other):
         # If the other object is not a Basic subclass, then we are not equal to
         # it.
         if not isinstance(other, BasicMeta):
             return -1
-        n1 = cls.__name__
+        n1 = self.__name__
         n2 = other.__name__
         if n1 == n2:
             return 0
@@ -93,12 +93,12 @@ class BasicMeta(type):
             return (n1 > n2) - (n1 < n2)
         return (i1 > i2) - (i1 < i2)
 
-    def __lt__(cls, other):
-        if cls.__cmp__(other) == -1:
+    def __lt__(self, other):
+        if self.__cmp__(other) == -1:
             return True
         return False
 
-    def __gt__(cls, other):
-        if cls.__cmp__(other) == 1:
+    def __gt__(self, other):
+        if self.__cmp__(other) == 1:
             return True
         return False

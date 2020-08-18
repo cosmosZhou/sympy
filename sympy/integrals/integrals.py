@@ -361,21 +361,21 @@ class Integrate(AddWithLimits):
 
         return self.func(newfunc, *newlimits)
 
-    def by_parts(self, u=None, dv=None):
+    def by_parts(self, u=None, dv=None, wolfram=False):
         if len(self.limits) != 1:
             return
         (x, a, b), *_ = self.limits
         if u is not None:
             dv = self.function / u
-            v = self.func(dv, x).doit()
+            v = self.func(dv, x).doit(wolfram=wolfram)
             du = diff(u, x)
         elif dv is not None:
             u = self.function / dv
-            v = self.func(dv, x).doit()
+            v = self.func(dv, x).doit(wolfram=wolfram)
             du = diff(u, x)
         else:
             ...
-
+# u * dv = d(u v) - du * v
         f = (u * v)._eval_interval(x, a, b) - self.func(du * v, *self.limits).simplify()
         return f.simplify()
 
@@ -1533,12 +1533,51 @@ class Integrate(AddWithLimits):
                 function = function._subs(x, _x)
         return function.is_finite
 
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        return '∫[%s](%s)' % (limits, p._print(self.function))
+
+    def _latex(self, p):
+        tex, symbols = "", []
+
+        # Only up to \iiiint exists
+        if len(self.limits) <= 4 and all(len(lim) == 1 for lim in self.limits):
+            # Use len(self.limits)-1 so that syntax highlighters don't think
+            # \" is an escaped quote
+            tex = r"\i" + "i"*(len(self.limits) - 1) + "nt"
+            symbols = [r"\, d%s" % p._print(symbol[0])
+                       for symbol in self.limits]
+
+        else:
+            for lim in reversed(self.limits):
+                symbol = lim[0]
+                tex += r"\int"
+
+                if len(lim) > 1:
+                    if p._settings['mode'] != 'inline' \
+                            and not p._settings['itex']:
+                        tex += r"\limits"
+
+                    if len(lim) == 3:
+                        tex += "_{%s}^{%s}" % (p._print(lim[1]),
+                                               p._print(lim[2]))
+                    if len(lim) == 2:
+                        tex += "^{%s}" % (p._print(lim[1]))
+
+                symbols.insert(0, r"\, d%s" % p._print(symbol))
+
+        from sympy.printing.precedence import PRECEDENCE
+        return r"%s %s%s" % (tex, p.parenthesize(self.function, PRECEDENCE["Times"], strict=True), "".join(symbols))
+
     def to_wolfram(self, global_variables):        
         from wolframclient.language import wl, wlexpr
         limit = self.limits[0]
         local_variables = set()
         
-        limit = [e.to_wolfram(local_variables) for e in limit]        
+        limit = [e.to_wolfram(local_variables) for e in limit]
+        if len(limit) == 1:
+            limit, *_ = limit
+            global_variables.add(self.variable)
         
         function = self.function.to_wolfram(local_variables)
         local_variables -= self.variables_set
@@ -1546,13 +1585,13 @@ class Integrate(AddWithLimits):
         conditions = []
         for variable in local_variables:
             if variable.is_integer:
-                domain= 'Integers'            
+                domain = 'Integers'            
             elif variable.is_rational:
-                domain= 'Rationals'
+                domain = 'Rationals'
             elif variable.is_real:
-                domain= 'Reals'
+                domain = 'Reals'
             else:
-                domain= 'Complexes'
+                domain = 'Complexes'
                 
             if variable.is_positive:
                 domain = 'Positive' + domain
@@ -1577,7 +1616,9 @@ class Integrate(AddWithLimits):
             
         return wl.Integrate(function, limit, wl.Rule(wlexpr('Assumptions'), conditions))
 
+
 Integral = Integrate
+
 
 def integrate(*args, **kwargs):
     """integrate(f, var, ...)

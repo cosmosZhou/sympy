@@ -3,17 +3,11 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.utility import Ref, plausible
 from sympy.core.relational import Equality
-from sympy.concrete.expr_with_limits import Exists
-
 
 @plausible
 def apply(given):
-    if given.is_Exists:
-        lhs, rhs = given.function.args        
-    elif given.is_Equality:
-        lhs, rhs = given.lhs, given.rhs
-    else:
-        return
+    assert given.is_Equality
+    lhs, rhs = given.args        
     
     assert lhs.is_MatMul
     p_polynomial, x = lhs.args
@@ -35,10 +29,7 @@ def apply(given):
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
     
-    if given.is_Exists:
-        return Exists(Equality(x, y), *given.limits, given=given)
-    else:
-        return Equality(x, y, given=given)
+    return Equality(x, y, given=given)
 
 
 from sympy.utility import check
@@ -48,11 +39,13 @@ from sympy.utility import check
 def prove(Eq):
     p = Symbol("p", complex=True)    
     n = Symbol('n', domain=Interval(1, oo, integer=True))
-    x = Symbol("x", shape=(n,), complex=True)
-    y = Symbol("y", shape=(n,), complex=True)
+    x = Symbol("x", shape=(n,), complex=True, given=True)
+    y = Symbol("y", shape=(n,), complex=True, given=True)
     k = Symbol('k', domain=Interval(1, oo, integer=True))
     
-    given = Exists(Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y), (x,), (y,))
+    assert x.is_given and y.is_given
+    
+    given = Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y)
     
     Eq << apply(given)
     
@@ -60,6 +53,8 @@ def prove(Eq):
     Eq << given.subs(p, i)
     
     Eq << Eq[-1].forall(i)
+    
+    Eq << Eq[-1].as_Equal()
 
 
 if __name__ == '__main__':

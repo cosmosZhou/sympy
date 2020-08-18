@@ -1160,8 +1160,10 @@ class Minimum(MinMaxBase):
         if domain:
             domain = Interval(*domain)
         else:
-            domain = x.domain
-        
+            domain = x.domain        
+            if domain.is_CartesianSpace:
+                return self
+            
         p = self.function.as_poly(x)
 
         if p is not None:
@@ -1887,6 +1889,8 @@ class Maximum(MinMaxBase):
             domain = Interval(*domain)
         else:
             domain = x.domain
+            if domain.is_CartesianSpace:
+                return self
 
         p = self.function.as_poly(x)
 
@@ -2609,6 +2613,13 @@ class Ref(ExprWithLimits):
                     symbols[i] = (_x, *domain)
 
                     function = function.subs(x, _x)
+                if len(domain) == 1:
+                    domain, *_ = domain
+                    assert domain.is_Interval and domain.is_integer
+                    mini = domain.min()
+                    symbols[i] = (x, 0, domain.max() - mini)
+                    if mini != S.Zero:
+                        function = function._subs(x, x + mini)
 
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
@@ -3246,6 +3257,9 @@ class Ref(ExprWithLimits):
                 if function != self.function:
                     return self.func(function, *self.limits, equivalent=self).simplify()
             
+        if self.function.is_Ref:
+            return self.func(self.function.function, *self.limits + self.function.limits).simplify()
+        
         if len(limits_dict) == 1 and self.function.is_Piecewise:
             if len(self.function.args) == 2:
                 e0, c0 = self.function.args[0]
@@ -3418,12 +3432,38 @@ class Ref(ExprWithLimits):
                 return None, exp
             return exp, None
 
-        from sympy.tensor.indexed import Indexed
         if isinstance(exp, Indexed):
             if exp.args[-1] == x:
                 return exp.base[exp.indices[:-1]], None
 
             return None, exp
+        
+        if exp.is_MatMul:
+            argsNonSimplified = []
+            argsSimplified = []
+            for arg in exp.args:
+                simplified, nonSimplified = self.simplify_mul(arg)
+                if simplified is not None:
+                    argsSimplified.append(simplified)
+                if nonSimplified is not None:
+                    argsNonSimplified.append(nonSimplified)
+
+            if not argsSimplified:
+                argsSimplified = None
+            elif len(argsSimplified) == 1:
+                argsSimplified = argsSimplified[0]
+            else:
+                argsSimplified = exp.func(*argsSimplified)
+
+            if not argsNonSimplified:
+                argsNonSimplified = None
+            elif len(argsNonSimplified) == 1:
+                argsNonSimplified = argsNonSimplified[0]
+            else:
+                argsNonSimplified = exp.func(*argsNonSimplified)
+
+            return argsSimplified, argsNonSimplified
+        
         if isinstance(exp, Mul):
             argsNonSimplified = []
             argsSimplified = []
@@ -5445,7 +5485,7 @@ class ForAll(ConditionalBoolean, ExprWithLimits):
                     pending -= 1
                     nexts = itertools.cycle(itertools.islice(nexts, pending))
 
-        if all(set.is_iterable for set in self.args):
+        if all(s.is_iterable for s in self.args):
             return roundrobin(*(iter(arg) for arg in self.args))
         else:
             raise TypeError("Not all constituent sets are iterable")
@@ -5511,7 +5551,16 @@ class ForAll(ConditionalBoolean, ExprWithLimits):
 
         return ConditionalBoolean.combine_clauses(self, rhs)
 
-
+    def as_Equal(self):
+        if self.function.is_Equality:
+            dic = self.limits_dict
+            if len(dic) == 1:
+                (x, domain), *_ = dic.items()
+                if domain.is_integer and domain.is_Interval:
+                    return self.function.reference((x, domain))
+        return self
+            
+            
 class Exists(ConditionalBoolean, ExprWithLimits):
     """
     Exists[p] q <=> p & q

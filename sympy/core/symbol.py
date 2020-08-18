@@ -835,6 +835,10 @@ class Symbol(AtomicExpr, NotIterable):
         if 'definition' in self._assumptions:
             return self._assumptions['definition'].is_imaginary
 
+    @property
+    def is_given(self):
+        return self._assumptions.get('given')
+    
     def __hash__(self):
         return super(Symbol, self).__hash__()        
 

@@ -144,17 +144,6 @@ class StrPrinter(Printer):
     def _print_Infinitesimal(self, expr):
         return "epsilon"
 
-    def _print_Integral(self, expr):
-        limits = ','.join([':'.join([self._print(arg) for arg in limit]) for limit in expr.limits])
-#         def _xab_tostr(xab):
-#             if len(xab) == 1:
-#                 return self._print(xab[0])
-#             else:
-#                 return self._print((xab[0],) + tuple(xab[1:]))
-
-#         limits = ', '.join([_xab_tostr(l) for l in expr.limits])
-        return '∫[%s](%s)' % (limits, self._print(expr.function))
-
     def _print_AccumulationBounds(self, i):
         return "AccumBounds(%s, %s)" % (self._print(i.min),
                                         self._print(i.max))

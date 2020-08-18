@@ -129,6 +129,8 @@ class Basic(with_metaclass(ManagedProperties)):
     is_KroneckerDelta = False
     is_Transpose = False
     
+    is_CartesianSpace = False
+    
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
 
@@ -2242,7 +2244,9 @@ class Basic(with_metaclass(ManagedProperties)):
                 wlexpr = session.evaluate(wlexpr)
         else:
             wlexpr = session.evaluate(wlexpr)
-        return wlexpr.sympify(global_variables=global_variables)
+        global_variables = {'Global`' + x.name : x for x in global_variables}
+        return wlexpr.sympify(**global_variables)
+
         
 class Atom(Basic):
     """

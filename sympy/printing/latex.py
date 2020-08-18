@@ -515,40 +515,6 @@ class LatexPrinter(Printer):
         return r'\left. %s \right|_{\substack{ %s }}' % (latex_expr,
                                                          latex_subs)
 
-    def _print_Integral(self, expr):
-        tex, symbols = "", []
-
-        # Only up to \iiiint exists
-        if len(expr.limits) <= 4 and all(len(lim) == 1 for lim in expr.limits):
-            # Use len(expr.limits)-1 so that syntax highlighters don't think
-            # \" is an escaped quote
-            tex = r"\i" + "i"*(len(expr.limits) - 1) + "nt"
-            symbols = [r"\, d%s" % self._print(symbol[0])
-                       for symbol in expr.limits]
-
-        else:
-            for lim in reversed(expr.limits):
-                symbol = lim[0]
-                tex += r"\int"
-
-                if len(lim) > 1:
-                    if self._settings['mode'] != 'inline' \
-                            and not self._settings['itex']:
-                        tex += r"\limits"
-
-                    if len(lim) == 3:
-                        tex += "_{%s}^{%s}" % (self._print(lim[1]),
-                                               self._print(lim[2]))
-                    if len(lim) == 2:
-                        tex += "^{%s}" % (self._print(lim[1]))
-
-                symbols.insert(0, r"\, d%s" % self._print(symbol))
-
-        return r"%s %s%s" % (tex, self.parenthesize(expr.function,
-                                                    PRECEDENCE["Times"],
-                                                    strict=True),
-                             "".join(symbols))
-
     def _print_Limit(self, expr):
         e, z, z0, dir = expr.args
 
