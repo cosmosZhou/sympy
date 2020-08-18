@@ -5,14 +5,14 @@ from sympy.utility import check, plausible, Ref, Union
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 from sympy.sets.contains import Contains
 
 
 @plausible
 def apply(given):
     assert len(given) == 2
-    assert given[0].is_Forall and len(given[0].limits) == 2
+    assert given[0].is_ForAll and len(given[0].limits) == 2
     j, a, n_munis_1 = given[0].limits[0]
     assert a == 1
     x, S = given[0].limits[1]
@@ -43,7 +43,7 @@ def apply(given):
     
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.dtype
     
-    assert given[1].is_Forall and len(given[1].limits) == 1
+    assert given[1].is_ForAll and len(given[1].limits) == 1
     _x, _S = given[1].limits[0]
     assert x == _x and S == _S
     
@@ -63,8 +63,8 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    
     
-    given = [Forall(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S)),
-             Forall(Equality(abs(x.set_comprehension()), n), (x, S))]
+    given = [ForAll(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S)),
+             ForAll(Equality(abs(x.set_comprehension()), n), (x, S))]
     
     Eq << given
     Eq << apply(given)

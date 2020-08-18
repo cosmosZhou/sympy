@@ -344,7 +344,7 @@ class NotContains(BooleanFunction):
     def definition(self):
         e, S = self.args
 
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
 
         image_set = S.image_set()
         if image_set is not None:
@@ -367,7 +367,7 @@ class NotContains(BooleanFunction):
                 expr = expr._subs(variables, _variables)
                 variables = _variables
             assert not e.has(variables)
-            return Forall(Unequality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
+            return ForAll(Unequality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
 
         condition_set = S.condition_set()
         if condition_set:
@@ -376,7 +376,7 @@ class NotContains(BooleanFunction):
         if S.is_UnionComprehension:
             contains = self.func(self.lhs, S.function).simplify()
             contains.equivalent = None
-            return Forall(contains, *S.limits, equivalent=self).simplify()
+            return ForAll(contains, *S.limits, equivalent=self).simplify()
 
         return self
 
@@ -424,9 +424,9 @@ class Subset(BooleanFunction):
         return Supset(self.rhs, self.lhs, equivalent=self)
 
     def simplify(self, deep=False):
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         if self.lhs.is_UnionComprehension:
-            return Forall(self.func(self.lhs.function, self.rhs).simplify(), *self.lhs.limits, equivalent=self).simplify()
+            return ForAll(self.func(self.lhs.function, self.rhs).simplify(), *self.lhs.limits, equivalent=self).simplify()
         if self.lhs.is_FiniteSet:
             eqs = []
             for e in self.lhs.args:
@@ -507,9 +507,9 @@ class Subset(BooleanFunction):
     @property
     def definition(self):
         A, B = self.args
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         e = B.element_symbol(A.free_symbols)
-        return Forall(Contains(e, B), (e, A), equivalent=self).simplify()
+        return ForAll(Contains(e, B), (e, A), equivalent=self).simplify()
 
     def as_set(self):
         return self
@@ -745,9 +745,9 @@ class Supset(BooleanFunction):
         return self.func(self.lhs, rhs, equivalent=self)
 
     def simplify(self, deep=False):
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         if self.rhs.is_UnionComprehension:
-            return Forall(self.func(self.lhs, self.rhs.function).simplify(), *self.rhs.limits, equivalent=self).simplify()
+            return ForAll(self.func(self.lhs, self.rhs.function).simplify(), *self.rhs.limits, equivalent=self).simplify()
         if self.rhs.is_FiniteSet:
             eqs = []
             for e in self.rhs.args:
@@ -827,8 +827,8 @@ class Supset(BooleanFunction):
     def definition(self):
         A, B = self.args
         e = A.element_symbol(B.free_symbols)
-        from sympy.concrete.expr_with_limits import Forall
-        return Forall(Contains(e, A), (e, B), equivalent=self).simplify()
+        from sympy.concrete.expr_with_limits import ForAll
+        return ForAll(Contains(e, A), (e, B), equivalent=self).simplify()
 
 
 class NotSupset(BooleanFunction):

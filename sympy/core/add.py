@@ -985,32 +985,41 @@ class Add(Expr, AssocOp):
             if p is None:
                 continue
             degree = p.degree()
+            if degree < 0:
+                continue
+            
             if degree == 0:
+#                 for simplification purposes only
                 this = p.nth(0)
                 continue
                 
-            coefficent = p.nth(1)
+            coefficient = p.nth(1)
             for d in range(2, degree + 1):
-                coefficent += p.nth(d)
+                coefficient += p.nth(d)
 
             i, j = delta.args
-            _coefficent = coefficent._subs(j, i)
+            _coefficient = coefficient._subs(j, i)
                 
-            if _coefficent == coefficent:
+            if _coefficient == coefficient:
                 if degree == 1:
                     continue
             else:
-                coefficent = _coefficent
-                if coefficent.is_Add:
-                    coefficent = coefficent.simplifyKroneckerDelta()     
+                coefficient = _coefficient
+                if coefficient.is_Add:
+                    coefficient = coefficient.simplifyKroneckerDelta()     
                         
-            this = coefficent * delta + p.nth(0)
+            this = coefficient * delta + p.nth(0)
             if this.is_Add:
                 this = this.simplifyKroneckerDelta()
             
         return this
 
-    def simplify(self, deep=False, **kwargs):                    
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            this = Expr.simplify(self, deep=True, **kwargs)
+            if this is not self:
+                return this
+
         this = self.simplifyPiecewise()
         if this is not self:
             if deep:
@@ -1025,11 +1034,6 @@ class Add(Expr, AssocOp):
         if this is not self:
             return this
         
-        if deep:
-            this = Expr.simplify(self, deep=True, **kwargs)
-            if this is not self:
-                return this
-            
         return self             
             
     def simplifyPiecewise(self):     

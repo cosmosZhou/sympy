@@ -3,7 +3,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible, Ref
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import Forall, Exists
+from sympy.concrete.expr_with_limits import ForAll, Exists
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
@@ -12,7 +12,7 @@ from sympy.functions.special.tensor_functions import KroneckerDelta
 
 @plausible
 def apply(given):
-    assert given.is_Forall
+    assert given.is_ForAll
     S = given.rhs
     n = S.element_type.shape[0]
     
@@ -46,7 +46,7 @@ def apply(given):
     
     P = Symbol('P', dtype=dtype.integer * n, definition=conditionset(p, Equality(p.set_comprehension(), Interval(0, n - 1, integer=True))))
     
-    return Forall(Contains(Ref[k:n](x[p[k]]), S), (p, P), given=given)
+    return ForAll(Contains(Ref[k:n](x[p[k]]), S), (p, P), given=given)
 
 
 @check
@@ -63,7 +63,7 @@ def prove(Eq):
     
     k = Symbol('k', domain=Interval(0, n - 1, integer=True))
     
-    given = Forall(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (x, S))
+    given = ForAll(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (x, S))
     
     Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(given)
     
@@ -124,7 +124,7 @@ def prove(Eq):
     Eq << Eq.y1_definition.subs(Eq[-1]).subs(Eq.y0_definition[p[0]])
 
     t = Symbol('t', domain=Interval(1, n, integer=True))    
-    Eq << Forall(Exists(Equality(y[t, j], x[p[j]]), (y,)), (j, 0, t - 1), plausible=True)
+    Eq << ForAll(Exists(Equality(y[t, j], x[p[j]]), (y,)), (j, 0, t - 1), plausible=True)
 
         
 if __name__ == '__main__':

@@ -574,11 +574,11 @@ class Symbol(AtomicExpr, NotIterable):
         if definition.is_ConditionSet:
             sym = definition.variable
             condition = definition.condition
-            from sympy.concrete.expr_with_limits import Forall
+            from sympy.concrete.expr_with_limits import ForAll
             if not definition.base_set.is_UniversalSet:
                 from sympy.sets.contains import Contains
                 condition &= Contains(sym, definition.base_set)
-            return Forall(condition, (sym, self))
+            return ForAll(condition, (sym, self))
 
         from sympy.sets.conditionset import image_set_definition
         return image_set_definition(self, reverse=reverse)

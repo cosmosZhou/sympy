@@ -3,7 +3,7 @@ from sympy.utility import plausible, Union, identity
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
 from sympy import S
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 
 # given: A & Union[i](x[i]) = {}
 # A & x[i] = {}
@@ -28,7 +28,7 @@ def apply(given):
         A = tmp
     assert x_union.is_UnionComprehension
 
-    return Forall(Equality(x_union.function & A, S.EmptySet),
+    return ForAll(Equality(x_union.function & A, S.EmptySet),
                   *x_union.limits,
                   given=given)
 

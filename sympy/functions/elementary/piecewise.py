@@ -1349,15 +1349,16 @@ class Piecewise(Function):
                             args.append((e0._subs(x, y).simplify(), Equality(x, y)))
                             e1 = e1._subs(delta, S.Zero)
                     return self.func(*args, (e1, True)).simplify()
+                domain = self.domain_defined(x)
                 if A.is_Complement:
                     U, C = A.args
-                    domain = self.domain_defined(x)
                     if domain in U:                        
                         return self.func((e0, NotContains(x, C)), (e1, True)).simplify(deep=deep)
                     complement = domain - A
                     if complement.is_FiniteSet:
                         return self.func((e1, Contains(x, complement)), (e0, True)).simplify(deep=deep)
-                        
+                if domain in A:
+                    return e0     
                 if e1.is_EmptySet:
                     if e0 == x.set:
                         return A & e0

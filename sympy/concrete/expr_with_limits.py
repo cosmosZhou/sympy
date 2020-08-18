@@ -262,7 +262,7 @@ class ExprWithLimits(Expr):
                     limits[i] = Tuple(*sym)
                 else:
                     limits[i] = Tuple(sym,)
-        elif cls in (Forall, Exists):
+        elif cls in (ForAll, Exists):
             if len(symbols) == 0:
                 return function.copy(**assumptions)
 
@@ -1835,7 +1835,7 @@ class Minimum(MinMaxBase):
 
     def assertion(self):
         from sympy.core.relational import LessThan
-        return Forall(LessThan(self, self.function), *self.limits)
+        return ForAll(LessThan(self, self.function), *self.limits)
 
     @property
     def shape(self):
@@ -2562,7 +2562,7 @@ class Maximum(MinMaxBase):
 
     def assertion(self):
         from sympy.core.relational import GreaterThan
-        return Forall(GreaterThan(self, self.function), *self.limits)
+        return ForAll(GreaterThan(self, self.function), *self.limits)
 
     @property
     def shape(self):
@@ -4606,14 +4606,14 @@ class ConditionalBoolean(Boolean):
             func, limits = funcs[i]
             _func, _limits = _funcs[j]
             if func.is_Exists:
-                if _func.is_Forall:
+                if _func.is_ForAll:
                     array.append(funcs[i])
                 else:
                     array.append((func, limits + _limits))
                     j -= 1
                 i -= 1
             else:
-                if _func.is_Forall:
+                if _func.is_ForAll:
                     array.append(funcs[i])
                     array.append(_funcs[j])
                     i -= 1
@@ -4662,7 +4662,7 @@ class ConditionalBoolean(Boolean):
         return self.this.function.as_two_terms()
 
     def limits_assertion(self):
-        return Forall(self.limits_condition, *self.limits)
+        return ForAll(self.limits_condition, *self.limits)
 
     def limits_include(self, eq):
         variables = self.variables_set
@@ -4690,7 +4690,7 @@ class ConditionalBoolean(Boolean):
 
     def __and__(self, eq):
         """Overloading for & operator"""
-        if self.is_Forall and eq.is_Forall and self.function == eq.function:
+        if self.is_ForAll and eq.is_ForAll and self.function == eq.function:
             limits = self.limits_union(eq)
             return self.func(self.function, *limits, equivalent=[self, eq]).simplify()
 
@@ -4746,7 +4746,7 @@ class ConditionalBoolean(Boolean):
                         result.given = True
                     else:
                         result = self.bfn(bfn, eq.function)
-            elif eq.is_Forall:
+            elif eq.is_ForAll:
                 func = self.func
                 if self.limits == eq.limits:
                     limits = self.limits
@@ -4910,7 +4910,7 @@ class ConditionalBoolean(Boolean):
                     deletes.add(x)
 #             else:
 #                 domain = limits_dict[x]                
-#                 if self.is_Forall and domain.is_set and self.function.domain_defined(x) in domain:
+#                 if self.is_ForAll and domain.is_set and self.function.domain_defined(x) in domain:
 #                     deletes.add(x)
                     
         if deletes:
@@ -5090,11 +5090,11 @@ class ConditionalBoolean(Boolean):
         return self
 
 
-class Forall(ConditionalBoolean, ExprWithLimits):
+class ForAll(ConditionalBoolean, ExprWithLimits):
     """
-    Forall[p] q <=> !p | q
+    ForAll[p] q <=> !p | q
     """
-    is_Forall = True
+    is_ForAll = True
     operator = And
 
     def forall(self, x, *args):
@@ -5225,7 +5225,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
 
         if self.function.is_Exists:
             exists = self.function
-            if exists.function.is_Forall:
+            if exists.function.is_ForAll:
                 forall = exists.function
                 dic = self.limits_common(forall)
                 if dic:
@@ -5281,7 +5281,7 @@ class Forall(ConditionalBoolean, ExprWithLimits):
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])
-        return 'Forall[%s](%s)' % (limits, p.doprint(self.function))
+        return 'ForAll[%s](%s)' % (limits, p.doprint(self.function))
 
     def int_limit(self):
         if len(self.limits) != 1:
@@ -5466,44 +5466,44 @@ class Forall(ConditionalBoolean, ExprWithLimits):
             if dic:
                 limits = self.limits_delete(dic)
                 if limits:
-                    func.append([Forall, limits])
+                    func.append([ForAll, limits])
                 func.append([Exists, rhs.limits_update(dic)])
                 return 'given', func, self.function, rhs.function
 
-            func.append([Forall, self.limits])
+            func.append([ForAll, self.limits])
             func.append([Exists, rhs.limits])
             return None, func, self.function, rhs.function
 
-        if rhs.is_Forall:
+        if rhs.is_ForAll:
             func = []
 
             if self.function.is_Exists:
                 dic = self.function.limits_common(rhs)
                 if dic:
                     func.append([Exists, self.function.limits])
-                    func.append([Forall, limits_intersect(self.limits, rhs.limits_delete(dic))])
+                    func.append([ForAll, limits_intersect(self.limits, rhs.limits_delete(dic))])
                     return None, func, self.function.function, rhs.function
                 dic = self.limits_common(rhs)
                 if dic:
                     rhs_limits = rhs.limits_delete(dic)
                     if rhs_limits:
-                        func.append([Forall, rhs_limits])
+                        func.append([ForAll, rhs_limits])
                     else:
-                        func.append([Forall, self.limits])
+                        func.append([ForAll, self.limits])
                         return None, func, self.function, rhs.function
                     func.append([Exists, self.function.limits])
-                    func.append([Forall, self.limits])
+                    func.append([ForAll, self.limits])
                     return None, func, self.function.function, rhs.function
 
             if rhs.function.is_Exists:
                 dic = self.limits_common(rhs.function)
                 if dic:
                     func.append([Exists, rhs.function.limits])
-                    func.append([Forall, limits_intersect(self.limits_delete(dic), rhs.limits)])
+                    func.append([ForAll, limits_intersect(self.limits_delete(dic), rhs.limits)])
                     return 'given', func, self.function, rhs.function.function
             clue = {}
             limits = self.limits_intersect(rhs, clue=clue)
-            func.append([Forall, limits])
+            func.append([ForAll, limits])
             if 'given' in clue:
                 clue = 'given'
             else:
@@ -5518,33 +5518,33 @@ class Exists(ConditionalBoolean, ExprWithLimits):
     Exists[p] q <=> p & q
     """
     is_Exists = True
-    invert_type = Forall
+    invert_type = ForAll
     operator = Or
 
     def combine_clauses(self, rhs):
         if rhs.is_Exists:
             func = []
-            if rhs.function.is_Forall:
+            if rhs.function.is_ForAll:
                 if rhs.function.function.is_Exists:
                     dic = self.limits_common(rhs.function.function)
                     if dic:
                         limits = self.limits_delete(dic)
                         limits = limits_intersect(rhs.limits, limits)
                         func.append([Exists, rhs.function.function.limits])
-                        func.append([Forall, rhs.function.limits])
+                        func.append([ForAll, rhs.function.limits])
                         func.append([Exists, limits])
 
                         return None, func, self.function, rhs.function.function.function
                 dic = self.limits_common(rhs.function)
                 if dic:
-                    func.append([Forall, rhs.function.limits])
+                    func.append([ForAll, rhs.function.limits])
                     limits = self.limits_delete(dic)
                     func.append([Exists, rhs.limits_intersect(limits)])
                     return 'given', func, self.function, rhs.function.function
             func.append([Exists, self.limits_intersect(rhs)])
             return None, func, self.function, rhs.function
 
-        if rhs.is_Forall:
+        if rhs.is_ForAll:
             func = []
             if rhs.function.is_Exists:
                 dic = self.limits_common(rhs.function)
@@ -5558,9 +5558,9 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                         clue = 'given'
                         rhs_limits = rhs.limits_delete(dic)
                         if rhs_limits:
-                            func.append([Forall, rhs_limits])
+                            func.append([ForAll, rhs_limits])
                     else:
-                        func.append([Forall, rhs.limits])
+                        func.append([ForAll, rhs.limits])
 
                     if limits:
                         func.append([Exists, limits])
@@ -5571,11 +5571,11 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             if dic:
                 rhs_limits = rhs.limits_delete(dic)
                 if rhs_limits:
-                    func.append([Forall, rhs_limits])
+                    func.append([ForAll, rhs_limits])
                 func.append([Exists, self.limits])
                 return 'given', func, self.function, rhs.function
 
-            func.append([Forall, rhs.limits])
+            func.append([ForAll, rhs.limits])
             func.append([Exists, self.limits])
             return None, func, self.function, rhs.function
 
@@ -5688,7 +5688,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
         return self.func(And(*and_expr), *limits, equivalent=self).simplify()
 
     def swap(self):
-        if not self.function.is_Forall:
+        if not self.function.is_ForAll:
             return self
         forall = self.function
 
@@ -5941,7 +5941,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
         ...
 
         
-Forall.invert_type = Exists
+ForAll.invert_type = Exists
 
 
 def limits_dict(limits):
@@ -6126,7 +6126,7 @@ x = !!x
 11:
 Exists[p] f = p & f
 12:
-Forall[p] f = !q | f
+ForAll[p] f = !q | f
 13:
 x & !x = false  
 14:
@@ -6150,17 +6150,17 @@ hence:
 x = y & x
 
 3:
-!(Exists[p] f) = Forall[p] !f
+!(Exists[p] f) = ForAll[p] !f
 from definition
 4:
-!(Forall[p] f) = Exists[p] !f
+!(ForAll[p] f) = Exists[p] !f
 from definition
 5:
-Exists[p] Forall[q] f => Forall[q] Exists[p] f
+Exists[p] ForAll[q] f => ForAll[q] Exists[p] f
 
 prove:
-Exists[p] Forall[q] f = (!q | f) & p = = !q & p | f & p = (!q | f & p) & (p | f & p)
-Forall[q] Exists[p] f = !q | (f & p)
+Exists[p] ForAll[q] f = (!q | f) & p = = !q & p | f & p = (!q | f & p) & (p | f & p)
+ForAll[q] Exists[p] f = !q | (f & p)
 and 
 (!q | f & p) & (p | f & p) => !q | (f & p)
 

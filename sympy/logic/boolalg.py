@@ -163,7 +163,7 @@ class Boolean(Basic):
     def forall(self, x, *args):
         if not self.has(x):
             return self
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         if len(args) == 2:
             from sympy.sets.sets import Interval
 
@@ -174,10 +174,10 @@ class Boolean(Basic):
                 domain = x.domain_conditioned(domain)
         else:
             _x = x.unbounded
-            return Forall(self._subs(x, _x), (_x, x.domain), equivalent=self).simplify()
+            return ForAll(self._subs(x, _x), (_x, x.domain), equivalent=self).simplify()
         
         if domain in x.domain and x.domain not in domain:
-            if self.is_Forall:
+            if self.is_ForAll:
                 function = self.function.copy()
                 _x = self.generate_free_symbol(domain=domain)                
                 function = function._subs(x, _x)
@@ -192,13 +192,13 @@ class Boolean(Basic):
                     limits.insert(index, (x, *args))
                 else:
                     limits.append((x, *args))
-                return Forall(function, *limits, given=self).simplify()
+                return ForAll(function, *limits, given=self).simplify()
             else:
                 function = self.copy()
                 _x = self.generate_free_symbol(domain=domain)
                 function = function._subs(x, _x)
                 function = function._subs(_x, x) 
-                return Forall(function, (x, *args), given=self).simplify()
+                return ForAll(function, (x, *args), given=self).simplify()
 
         return self
 

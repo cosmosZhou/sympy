@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible, Sum, Union, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 from axiom import discrete
 
 # given: |Union x[i]| = Sum |x[i]|
@@ -43,7 +43,7 @@ def apply(given):
     i_domain = limits_dict[i] or i.domain
 
     limits = [(j, i_domain - {i})] + [*x_union.limits]
-    return Forall(Equality(xi & xj, S.EmptySet).simplify(), *limits, given=given)
+    return ForAll(Equality(xi & xj, S.EmptySet).simplify(), *limits, given=given)
 
 
 from sympy.utility import check

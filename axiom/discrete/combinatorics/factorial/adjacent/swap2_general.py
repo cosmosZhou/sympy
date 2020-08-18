@@ -5,7 +5,7 @@ from sympy.utility import check, plausible, Ref
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.factorial.adjacent import swap1_utility, \
@@ -15,7 +15,7 @@ import axiom
 
 @plausible
 def apply(given):
-    assert given.is_Forall and len(given.limits) == 2
+    assert given.is_ForAll and len(given.limits) == 2
     j, a, n_munis_1 = given.limits[0]
     assert a == 1
     x, S = given.limits[1]
@@ -48,8 +48,8 @@ def apply(given):
     
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
     
-#     return Forall(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
-    return Forall(Contains(w[i, j] @ x, S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
+#     return ForAll(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
+    return ForAll(Contains(w[i, j] @ x, S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
 
 
 @check
@@ -62,7 +62,7 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    
     
-    given = Forall(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S))
+    given = ForAll(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S))
     
     Eq << apply(given)
     

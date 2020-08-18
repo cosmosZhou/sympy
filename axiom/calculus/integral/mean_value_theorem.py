@@ -12,7 +12,7 @@ import axiom
 
 @plausible
 def apply(given):
-    assert given.is_Forall
+    assert given.is_ForAll
     assert given.function.is_Equality
     assert given.function.lhs.is_Limit
     f, z, xi, direction = given.function.lhs.args

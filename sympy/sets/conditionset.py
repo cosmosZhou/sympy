@@ -223,8 +223,8 @@ class ConditionSet(Set):
 #         return bool(symb)
 
     def assertion(self):
-        from sympy.concrete.expr_with_limits import Forall
-        return Forall(self.condition, (self.variable, self))
+        from sympy.concrete.expr_with_limits import ForAll
+        return ForAll(self.condition, (self.variable, self))
 
     def __invert__(self):
         condition = ~self.condition
@@ -340,16 +340,16 @@ def image_set_definition(self, reverse=False):
     expr, variables, base_set = image_set
     from sympy.tensor.indexed import Slice
     from sympy.core.relational import Equality
-    from sympy.concrete.expr_with_limits import Forall, Exists
+    from sympy.concrete.expr_with_limits import ForAll, Exists
 
     if isinstance(base_set, Symbol):
         if reverse:
-            return Forall(Contains(expr, self), (variables, base_set))
+            return ForAll(Contains(expr, self), (variables, base_set))
 
         element_symbol = self.element_symbol()
         assert expr.dtype == element_symbol.dtype
         condition = Equality(expr, element_symbol)
-        return Forall(Exists(condition, (variables, base_set)), (element_symbol, self))
+        return ForAll(Exists(condition, (variables, base_set)), (element_symbol, self))
 
     else:
         if not isinstance(base_set, ConditionSet):
@@ -364,5 +364,5 @@ def image_set_definition(self, reverse=False):
         assert expr.dtype == element_symbol.dtype
 
         exists = Exists(condition.func(*condition.args), (variables, Equality(expr, element_symbol)))
-        return Forall(exists, (element_symbol, self))
+        return ForAll(exists, (element_symbol, self))
 

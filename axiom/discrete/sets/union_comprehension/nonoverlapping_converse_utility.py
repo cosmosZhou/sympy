@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible, Sum, Union, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -14,7 +14,7 @@ from axiom.discrete.sets import union
 
 @plausible
 def apply(given):
-    assert given.is_Forall
+    assert given.is_ForAll
     eq = given.function
     assert eq.is_Equality
     limits = given.limits
@@ -55,7 +55,7 @@ def prove(Eq):
 
     i_domain = Interval(0, n - 1, integer=True)
     
-    given = Forall(Equality(x[i] & x[j], S.EmptySet), (j, i_domain - {i}))
+    given = ForAll(Equality(x[i] & x[j], S.EmptySet), (j, i_domain - {i}))
     Eq << apply(given)
     
     Eq << Eq[-1].subs(n, 2).doit()

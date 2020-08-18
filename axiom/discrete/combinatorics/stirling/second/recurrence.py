@@ -8,7 +8,7 @@ from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
 from axiom import discrete
 from sympy.sets.conditionset import conditionset
-from sympy.concrete.expr_with_limits import UnionComprehension, Forall
+from sympy.concrete.expr_with_limits import UnionComprehension, ForAll
 import axiom
 from sympy.core.numbers import oo
 
@@ -254,7 +254,7 @@ def prove(Eq):
 
     num_plausibles = len(Eq.plausibles_dict)
 
-    Eq.plausible_notcontains = Forall(NotContains({n}, e), (e, s0), plausible=True)
+    Eq.plausible_notcontains = ForAll(NotContains({n}, e), (e, s0), plausible=True)
 
     Eq << Eq.plausible_notcontains.this.limits[0][1].subs(s0_definition)
 
@@ -549,7 +549,7 @@ def prove(Eq):
 
     j_quote = Symbol("j'", integer=True)
 
-    Eq.nonoverlapping = Forall(Equality(A_quote[j_quote] & A_quote[j], S.EmptySet), *((j_quote, Interval(0, k, integer=True) - {j}),) + Eq.A_definition_simplified.rhs.limits, plausible=True)
+    Eq.nonoverlapping = ForAll(Equality(A_quote[j_quote] & A_quote[j], S.EmptySet), *((j_quote, Interval(0, k, integer=True) - {j}),) + Eq.A_definition_simplified.rhs.limits, plausible=True)
 
     assert len(Eq.plausibles_dict) == 4
 

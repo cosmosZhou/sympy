@@ -3,7 +3,7 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 
-from sympy.concrete.expr_with_limits import Exists, Forall, Maximum, Minimum
+from sympy.concrete.expr_with_limits import Exists, ForAll, Maximum, Minimum
 
 from sympy.sets.sets import Interval
 from sympy.core.function import Function
@@ -11,7 +11,7 @@ from sympy.core.function import Function
 
 @plausible
 def apply(given):
-    assert given.is_Forall
+    assert given.is_ForAll
     assert given.function.is_Equality
     assert given.function.lhs.is_Limit
     f, z, xi, direction = given.function.lhs.args
@@ -24,7 +24,7 @@ def apply(given):
     assert given.function.rhs == _f
 
     y = Symbol('y', real=True)
-    return Forall(Exists(Equality(f, y), (z, a, b)),
+    return ForAll(Exists(Equality(f, y), (z, a, b)),
             (y, Minimum(f, (z, a, b)), Maximum(f, (z, a, b))),
             given=given)               
 

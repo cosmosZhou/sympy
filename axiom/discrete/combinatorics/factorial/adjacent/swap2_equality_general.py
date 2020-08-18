@@ -5,7 +5,7 @@ from sympy.utility import check, plausible, Ref, identity
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 from axiom import Algebre
 
 
@@ -18,7 +18,7 @@ def apply(n):
     assert n >= 2
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
-    return Forall(Equality(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
+    return ForAll(Equality(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
 
 
 @check

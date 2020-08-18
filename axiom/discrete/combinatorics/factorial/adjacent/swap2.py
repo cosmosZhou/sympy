@@ -3,7 +3,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible, Ref
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.factorial.adjacent import swap2_equality
@@ -12,7 +12,7 @@ import axiom
 
 @plausible
 def apply(given):
-    assert given.is_Forall and len(given.limits) == 1
+    assert given.is_ForAll and len(given.limits) == 1
     x, S = given.limits[0]
     
     contains = given.function
@@ -22,7 +22,7 @@ def apply(given):
     _, j = contains.lhs.args[0].indices
     i = Symbol('i', integer=True)
     
-    return Forall(Contains(w[i, j] @ x, S), (x, S), given=given)
+    return ForAll(Contains(w[i, j] @ x, S), (x, S), given=given)
 
 
 @check
@@ -37,7 +37,7 @@ def prove(Eq):
     
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
     
-    given = Forall(Contains(w[0, j] @ x, S), (x, S))
+    given = ForAll(Contains(w[0, j] @ x, S), (x, S))
     
     Eq << apply(given)
     
@@ -59,7 +59,7 @@ def prove(Eq):
     
     Eq.i_complement = Eq.final_statement.subs(Eq[-1])
     
-    plausible = Forall(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)
+    plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)
     Eq << plausible
     
     Eq << plausible.bisect(wrt=j, domain=i.set)

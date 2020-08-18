@@ -4,7 +4,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy import S
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 
 # given: Union[i](x[i]) = {}
 # x[i] = {}
@@ -21,7 +21,7 @@ def apply(given):
         assert emptyset == S.EmptySet
 
     assert x_union.is_UnionComprehension
-    return Forall(Equality(x_union.function, S.EmptySet), *x_union.limits, given=given)
+    return ForAll(Equality(x_union.function, S.EmptySet), *x_union.limits, given=given)
 
 
 from sympy.utility import check

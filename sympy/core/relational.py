@@ -496,14 +496,14 @@ class Equality(Relational):
 
     @staticmethod
     def continuity(f, a, b):
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         from sympy import Symbol, Limit
         xi = Symbol('xi', real=True)
         z = Symbol('z', real=True)
-        return Forall(Equality(Limit(f(z), z, xi, '+-'), f(xi)), (xi, a, b))
+        return ForAll(Equality(Limit(f(z), z, xi, '+-'), f(xi)), (xi, a, b))
         
     def strip(self):
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         if self.lhs.func == self.rhs.func:
             if len(self.lhs.args) == 1:
                 condition = self.func(self.lhs.arg, self.rhs.arg)
@@ -513,7 +513,7 @@ class Equality(Relational):
                     condition.imply = self
                 return condition
             if self.lhs.is_ExprWithLimits:
-                return Forall(self.func(self.lhs.function, self.rhs.function), *self.lhs.limits, imply=self)
+                return ForAll(self.func(self.lhs.function, self.rhs.function), *self.lhs.limits, imply=self)
 
         return self
 
@@ -893,7 +893,7 @@ class Equality(Relational):
             return Exists(Eq(x, expr), (x,))
 
     def __getitem__(self, indices):
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         if isinstance(indices, slice):
             x, *args = indices.start, indices.stop, indices.step
             if x.is_bounded:
@@ -910,7 +910,7 @@ class Equality(Relational):
             if is_equivalent :
                 return self.func(self.lhs[x], self.rhs[x], equivalent=self)
             else:
-                Forall(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
+                ForAll(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
         return self.func(self.lhs[indices], self.rhs[indices], given=self)
 
     @property
@@ -939,7 +939,7 @@ class Equality(Relational):
 
         lhs, rhs = self.args
         from sympy.core.mul import Mul
-        from sympy.concrete.expr_with_limits import Ref, Forall
+        from sympy.concrete.expr_with_limits import Ref, ForAll
         from sympy.core.function import _coeff_isneg
         
         if type(lhs) == type(rhs):
@@ -968,7 +968,7 @@ class Equality(Relational):
                         return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()
             if op == Ref:
                 if lhs.limits == rhs.limits:
-                    return Forall(self.func(lhs.function, rhs.function), *lhs.limits, equivalent=self)                     
+                    return ForAll(self.func(lhs.function, rhs.function), *lhs.limits, equivalent=self)                     
         elif type(lhs) == Add and rhs in lhs.args:
             args = [*lhs.args]
             args.remove(rhs)
@@ -1016,7 +1016,7 @@ class Equality(Relational):
 
     def split(self, variable=None):
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.concrete.expr_with_limits import Forall
+        from sympy.concrete.expr_with_limits import ForAll
         if isinstance(self.rhs, Piecewise):
             if variable is None:
                 variables = self.lhs.free_symbols & self.rhs.scope_variables
@@ -1030,7 +1030,7 @@ class Equality(Relational):
                 condition = condition & univeralSet
                 univeralSet = condition.invert() & univeralSet
 
-                args.append(Forall(self.func(self.lhs, expr), (variable, condition), given=self).simplify())
+                args.append(ForAll(self.func(self.lhs, expr), (variable, condition), given=self).simplify())
 
             return args
 
@@ -1046,7 +1046,7 @@ class Equality(Relational):
             for expr, condition in self.lhs.args:
                 condition = condition & univeralSet
                 univeralSet = condition.invert() & univeralSet
-                args.append(Forall(self.func(expr, self.rhs), (variable, condition), given=self).simplify())
+                args.append(ForAll(self.func(expr, self.rhs), (variable, condition), given=self).simplify())
 
             return args
 

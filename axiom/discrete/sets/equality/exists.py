@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import dtype, Symbol
 
-from sympy.concrete.expr_with_limits import Exists, Forall
+from sympy.concrete.expr_with_limits import Exists, ForAll
 from axiom.discrete import sets
 # given: |S| = 1
 # Exists[x:S] ({x}) = S

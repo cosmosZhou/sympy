@@ -4,7 +4,7 @@ from sympy.utility import check, plausible, Ref, identity
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.concrete.expr_with_limits import Forall
+from sympy.concrete.expr_with_limits import ForAll
 from axiom import Algebre
 
 
@@ -19,7 +19,7 @@ def apply(n, w=None):
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     
-    return Forall(Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) - i.set))
+    return ForAll(Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) - i.set))
 
 
 @check

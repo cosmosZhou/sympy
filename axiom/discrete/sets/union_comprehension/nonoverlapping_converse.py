@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.utility import plausible, Ref
 from sympy.core.symbol import Symbol, dtype
-from sympy.concrete.expr_with_limits import Forall, UnionComprehension
+from sympy.concrete.expr_with_limits import ForAll, UnionComprehension
 
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
@@ -15,7 +15,7 @@ from sympy.concrete.summations import summation
 
 @plausible
 def apply(given):
-    assert given.is_Forall
+    assert given.is_ForAll
     eq = given.function
     assert eq.is_Equality
     limits = given.limits
@@ -47,7 +47,7 @@ def prove(Eq):
     x = Symbol('x', shape=(oo,), dtype=dtype.integer, finite=True)
    
     j_domain = Interval(0, n - 1, integer=True) - {i}
-    given = Forall(Equality(x[i] & x[j], EmptySet()), (j, j_domain), (i, 0, n - 1))
+    given = ForAll(Equality(x[i] & x[j], EmptySet()), (j, j_domain), (i, 0, n - 1))
     Eq << apply(given)
 
     y = Symbol('y', shape=(oo,), dtype=dtype.integer, definition=Ref[i](Piecewise((x[i], i < n), (EmptySet(), True))))

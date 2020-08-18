@@ -107,7 +107,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Intersection = False
     is_Complement = False
     is_UnionComprehension = False
-    is_Forall = False
+    is_ForAll = False
     is_Exists = False
     is_ConditionalBoolean = False
     is_Slice = False
