@@ -1261,13 +1261,17 @@ class Piecewise(Function):
                             
             if wrt is not None:                 
                 univeralSet = wrt.domain
-                args = [*self.args]
+                args = []
                 union = S.EmptySet
                 hit = False
                 need_swap = False
-                for i, (f, cond) in enumerate(self.args):
+                for f, cond in self.args:
                     domain = (univeralSet - union) & wrt.domain_conditioned(cond)
-                    union |= domain                    
+                    union |= domain
+                                        
+                    if domain.is_EmptySet:
+                        hit = True
+                        continue
                     
                     if f._has(wrt):
                         if domain.is_FiniteSet and len(domain) == 1:
@@ -1275,18 +1279,14 @@ class Piecewise(Function):
                                 need_swap = True
                                 hit = True
                             _x, *_ = domain.args
-#                         elif domain.is_Complement and domain.args[0].is_FiniteSet and len(domain.args[0]) == 1:
-#                             if cond:
-#                                 need_swap = True
-#                                 hit = True
-#                             _x, *_ = domain.args[0]                             
                         else:
                             _x = wrt.copy(domain=domain)
                             
                         _f = f._subs(wrt, _x).simplify(deep=deep)._subs(_x, wrt)
                         if _f != f:
-                            hit = True                            
-                            args[i] = (_f, cond)
+                            hit = True 
+                            f = _f
+                    args.append((f, cond))
                             
                 if need_swap:
                     e_last, _ = args[-1]

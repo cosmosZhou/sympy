@@ -226,7 +226,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
         rat_expo, sym_expo = S.One, None
         sexpr, deriv = expr, None
 
-        if expr.is_Pow:
+        if expr.is_Power:
             if isinstance(expr.base, Derivative):
                 sexpr, deriv = parse_derivative(expr.base)
             else:
@@ -335,7 +335,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
             return expr.func(*[
                 collect(term, syms, func, True, exact, distribute_order_term)
                 for term in expr.args])
-        elif expr.is_Pow:
+        elif expr.is_Power:
             b = collect(
                 expr.base, syms, func, True, exact, distribute_order_term)
             return Pow(b, expr.exp)
@@ -503,7 +503,7 @@ def collect_sqrt(expr, evaluate=None):
     for a in Add.make_args(expr):
         for m in a.args_cnc()[0]:
             if m.is_number and (
-                    m.is_Pow and m.exp.is_Rational and m.exp.q == 2 or
+                    m.is_Power and m.exp.is_Rational and m.exp.q == 2 or
                     m is S.ImaginaryUnit):
                 vars.add(m)
 
@@ -520,7 +520,7 @@ def collect_sqrt(expr, evaluate=None):
             c, nc = m.args_cnc()
             for ci in c:
                 # XXX should this be restricted to ci.is_number as above?
-                if ci.is_Pow and ci.exp.is_Rational and ci.exp.q == 2 or \
+                if ci.is_Power and ci.exp.is_Rational and ci.exp.q == 2 or \
                         ci is S.ImaginaryUnit:
                     nrad += 1
                     break
@@ -772,7 +772,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             raise NotImplementedError
 
     def ispow2(d, log2=False):
-        if not d.is_Pow:
+        if not d.is_Power:
             return False
         e = d.exp
         if e.is_Rational and e.q == 2 or symbolic and denom(e) == 2:
@@ -815,7 +815,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             d2 = sqrtdenest(sqrt(d.base))**numer(d.exp)
             if d2 != d:
                 return handle(1/d2)
-        elif d.is_Pow and (d.exp.is_integer or d.base.is_positive):
+        elif d.is_Power and (d.exp.is_integer or d.base.is_positive):
             # (1/d**i) = (1/d)**i
             return handle(1/d.base)**d.exp
 
@@ -1000,7 +1000,7 @@ def fraction(expr, exact=False):
     numer, denom = [], []
 
     for term in Mul.make_args(expr):
-        if term.is_commutative and (term.is_Pow or isinstance(term, exp)):
+        if term.is_commutative and (term.is_Power or isinstance(term, exp)):
             b, ex = term.as_base_exp()
             if ex.is_negative:
                 if ex is S.NegativeOne:
@@ -1075,7 +1075,7 @@ def split_surds(expr):
     """
     args = sorted(expr.args, key=default_sort_key)
     coeff_muls = [x.as_coeff_Mul() for x in args]
-    surds = [x[1]**2 for x in coeff_muls if x[1].is_Pow]
+    surds = [x[1]**2 for x in coeff_muls if x[1].is_Power]
     surds.sort(key=default_sort_key)
     g, b1, b2 = _split_gcd(*surds)
     g2 = g
@@ -1087,7 +1087,7 @@ def split_surds(expr):
         g2 = g*g1
     a1v, a2v = [], []
     for c, s in coeff_muls:
-        if s.is_Pow and s.exp == S.Half:
+        if s.is_Power and s.exp == S.Half:
             s1 = s.base
             if s1 in b1:
                 a1v.append(c*sqrt(s1/g2))

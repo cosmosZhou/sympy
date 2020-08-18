@@ -73,7 +73,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Function = False
     is_Add = False
     is_Mul = False
-    is_Pow = False
+    is_Power = False
     is_Number = False
     is_Float = False
     is_Rational = False
@@ -1637,7 +1637,7 @@ class Basic(with_metaclass(ManagedProperties)):
         that describes the target expression more precisely:
 
         >>> (1 + x**(1 + y)).replace(
-        ... lambda x: x.is_Pow and x.exp.is_Add and x.exp.args[0] == 1,
+        ... lambda x: x.is_Power and x.exp.is_Add and x.exp.args[0] == 1,
         ... lambda x: x.base**(1 - (x.exp - 1)))
         ...
         x**(1 - y) + 1

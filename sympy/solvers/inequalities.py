@@ -331,7 +331,7 @@ def reduce_abs_inequality(expr, rel, gen):
                             args.append((op(expr, _expr), conds + _conds))
 
                     exprs = args
-        elif expr.is_Pow:
+        elif expr.is_Power:
             n = expr.exp
             if not n.is_Integer:
                 raise ValueError("Only Integer Powers are allowed on Abs.")
@@ -918,7 +918,7 @@ def _reduce_inequalities(inequalities, symbols):
         else:
             components = expr.find(lambda u:
                 u.has(gen) and (
-                u.is_Function or u.is_Pow and not u.exp.is_Integer))
+                u.is_Function or u.is_Power and not u.exp.is_Integer))
             if components and all(isinstance(i, Abs) for i in components):
                 abs_part.setdefault(gen, []).append((expr, rel))
             else:

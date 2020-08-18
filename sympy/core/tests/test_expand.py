@@ -137,11 +137,11 @@ def test_issue_6121():
 
 def test_expand_power_base():
     assert expand_power_base((x*y*z)**4) == x**4*y**4*z**4
-    assert expand_power_base((x*y*z)**x).is_Pow
+    assert expand_power_base((x*y*z)**x).is_Power
     assert expand_power_base((x*y*z)**x, force=True) == x**x*y**x*z**x
     assert expand_power_base((x*(y*z)**2)**3) == x**3*y**6*z**6
 
-    assert expand_power_base((sin((x*y)**2)*y)**z).is_Pow
+    assert expand_power_base((sin((x*y)**2)*y)**z).is_Power
     assert expand_power_base(
         (sin((x*y)**2)*y)**z, force=True) == sin((x*y)**2)**z*y**z
     assert expand_power_base(
@@ -155,7 +155,7 @@ def test_expand_power_base():
     assert expand_power_base((exp((x*y)**z)*exp(
         y))**2, deep=True, force=True) == exp(2*x**z*y**z)*exp(2*y)
 
-    assert expand_power_base((exp(x)*exp(y))**z).is_Pow
+    assert expand_power_base((exp(x)*exp(y))**z).is_Power
     assert expand_power_base(
         (exp(x)*exp(y))**z, force=True) == exp(x)**z*exp(y)**z
 
@@ -202,7 +202,7 @@ def test_expand_arit():
                     z)**z, (x*y + x*z)**z]
     assert ((2*y)**z).expand() == 2**z*y**z
     p = Symbol('p', positive=True)
-    assert sqrt(-x).expand().is_Pow
+    assert sqrt(-x).expand().is_Power
     assert sqrt(-x).expand(force=True) == I*sqrt(x)
     assert ((2*y*p)**z).expand() == 2**z*p**z*y**z
     assert ((2*y*p*x)**z).expand() == 2**z*p**z*(x*y)**z

@@ -4003,12 +4003,12 @@ def count_ops(expr, visual=False):
                 elif _coeff_isneg(aargs[0]):  # -x + y = SUB, but already recorded ADD
                     ops.append(SUB - ADD)
                 continue
-            if a.is_Pow and a.exp is S.NegativeOne:
+            if a.is_Power and a.exp is S.NegativeOne:
                 ops.append(DIV)
                 args.append(a.base)  # won't be -Mul but could be Add
                 continue
             if (a.is_Mul or
-                a.is_Pow or
+                a.is_Power or
                 a.is_Function or
                 isinstance(a, Derivative) or
                     isinstance(a, Integral)):
@@ -4140,7 +4140,7 @@ def nfloat(expr, n=15, exponent=False, dkeys=False):
         # exponent is suppose to be handled we have to do so here
         rv = rv.xreplace(Transform(
             lambda x: Pow(x.base, Float(x.exp, n)),
-            lambda x: x.is_Pow and x.exp.is_Integer))
+            lambda x: x.is_Power and x.exp.is_Integer))
 
     return rv.xreplace(Transform(
         lambda x: x.func(*nfloat(x.args, n, exponent)),

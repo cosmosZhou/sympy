@@ -118,7 +118,7 @@ class Expr(Basic, EvalfMixin):
 
         coeff, expr = self.as_coeff_Mul()
 
-        if expr.is_Pow:
+        if expr.is_Power:
             expr, exp = expr.args
         else:
             expr, exp = expr, S.One
@@ -1439,13 +1439,13 @@ class Expr(Basic, EvalfMixin):
                 return S.Zero
             if o.is_Symbol:
                 return S.One
-            if o.is_Pow:
+            if o.is_Power:
                 return o.args[1]
             if o.is_Mul:  # x**n*log(x)**n or x**n/log(x)**n
                 for oi in o.args:
                     if oi.is_Symbol:
                         return S.One
-                    if oi.is_Pow:
+                    if oi.is_Power:
                         syms = oi.atoms(Symbol)
                         if len(syms) == 1:
                             x = syms.pop()
@@ -2451,8 +2451,8 @@ class Expr(Basic, EvalfMixin):
                 if newarg is not None:
                     args[i] = newarg
                     return Mul(*args)
-        elif self.is_Pow:
-            if c.is_Pow and c.base == self.base:
+        elif self.is_Power:
+            if c.is_Power and c.base == self.base:
                 new_exp = self.exp.extract_additively(c.exp)
                 if new_exp is not None:
                     return self.base ** (new_exp)

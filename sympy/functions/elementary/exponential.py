@@ -372,13 +372,13 @@ class exp(ExpBase):
 
     def _eval_subs(self, old, new):
         # keep processing of power-like args centralized in Pow
-        if old.is_Pow:  # handle (exp(3*log(x))).subs(x**2, z) -> z**(3/2)
+        if old.is_Power:  # handle (exp(3*log(x))).subs(x**2, z) -> z**(3/2)
             old = exp(old.exp * log(old.base))
         elif old is S.Exp1 and new.is_Function:
             old = exp
         if isinstance(old, exp) or old is S.Exp1:
             f = lambda a: Pow(*a.as_base_exp(), evaluate=False) if (
-                a.is_Pow or isinstance(a, exp)) else a
+                a.is_Power or isinstance(a, exp)) else a
             return Pow._eval_subs(f(self), f(old), new)
 
         if old is exp and not new.is_Function:
@@ -661,7 +661,7 @@ class log(Function):
                 else:
                     nonpos.append(x)
             return Add(*expr) + log(Mul(*nonpos))
-        elif arg.is_Pow or isinstance(arg, exp):
+        elif arg.is_Power or isinstance(arg, exp):
             if force or (arg.exp.is_extended_real and (arg.base.is_positive or ((arg.exp + 1)
                 .is_positive and (arg.exp - 1).is_nonpositive))) or arg.base.is_polar:
                 b = arg.base

@@ -1735,7 +1735,7 @@ def _eval_sum_hyper(f, i, a):
     for k in range(2):
         for fac in factors[k]:
             mul = 1
-            if fac.is_Pow:
+            if fac.is_Power:
                 mul = fac.exp
                 fac = fac.base
                 if not mul.is_Integer:

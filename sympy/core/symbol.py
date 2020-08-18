@@ -347,7 +347,7 @@ class Symbol(AtomicExpr, NotIterable):
 
     def _eval_subs(self, old, new):
         from sympy.core.power import Pow
-        if old.is_Pow:
+        if old.is_Power:
             return Pow(self, S.One, evaluate=False)._eval_subs(old, new)
 
     @property

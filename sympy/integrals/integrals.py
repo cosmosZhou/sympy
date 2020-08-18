@@ -960,7 +960,7 @@ class Integral(AddWithLimits):
 
             #               c
             # g(x) = (a*x+b)
-            if g.is_Pow and not g.exp.has(x) and not meijerg:
+            if g.is_Power and not g.exp.has(x) and not meijerg:
                 a = Wild('a', exclude=[x])
                 b = Wild('b', exclude=[x])
 

@@ -52,7 +52,7 @@ def change_mul(node, x):
     sorted_args.extend(nc)
 
     for arg in sorted_args:
-        if arg.is_Pow and isinstance(arg.base, DiracDelta):
+        if arg.is_Power and isinstance(arg.base, DiracDelta):
             new_args.append(arg.func(arg.base, arg.exp - 1))
             arg = arg.base
         if dirac is None and (isinstance(arg, DiracDelta) and arg.is_simple(x)):
@@ -64,7 +64,7 @@ def change_mul(node, x):
         for arg in sorted_args:
             if isinstance(arg, DiracDelta):
                 new_args.append(arg.expand(diracdelta=True, wrt=x))
-            elif arg.is_Pow and isinstance(arg.base, DiracDelta):
+            elif arg.is_Power and isinstance(arg.base, DiracDelta):
                 new_args.append(arg.func(arg.base.expand(diracdelta=True, wrt=x), arg.exp))
             else:
                 new_args.append(arg)
@@ -150,7 +150,7 @@ def deltaintegrate(f, x):
         else:  # let's try to integrate the simplified expression
             fh = integrate(h, x)
             return fh
-    elif f.is_Mul or f.is_Pow:  # g(x) = a*b*c*f(DiracDelta(h(x)))*d*e
+    elif f.is_Mul or f.is_Power:  # g(x) = a*b*c*f(DiracDelta(h(x)))*d*e
         g = f.expand()
         if f != g:  # the expansion worked
             fh = integrate(g, x)

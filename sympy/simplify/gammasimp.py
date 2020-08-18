@@ -131,7 +131,7 @@ def _gammasimp(expr, as_comb):
                 return True
             if x.is_Add or x.is_Mul:
                 return any(gamma_factor(xi) for xi in x.args)
-            if x.is_Pow and (x.exp.is_integer or x.base.is_positive):
+            if x.is_Power and (x.exp.is_integer or x.base.is_positive):
                 return gamma_factor(x.base)
             return False
 

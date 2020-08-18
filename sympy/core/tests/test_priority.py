@@ -123,8 +123,8 @@ def test_sub():
 def test_pow():
     assert h**l == h**x == 1
     assert l**h == x**h == 2
-    assert (x**l).args == (1/x).args and (x**l).is_Pow
-    assert (l**x).args == ((-1)**x).args and (l**x).is_Pow
+    assert (x**l).args == (1/x).args and (x**l).is_Power
+    assert (l**x).args == ((-1)**x).args and (l**x).is_Power
 
 
 def test_div():

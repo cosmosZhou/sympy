@@ -209,7 +209,7 @@ def _invert_real(f, g_ys, symbol):
         if g is not S.One:
             return _invert_real(h, imageset(Lambda(n, n/g), g_ys), symbol)
 
-    if f.is_Pow:
+    if f.is_Power:
         base, expo = f.args
         base_has_sym = base.has(symbol)
         expo_has_sym = expo.has(symbol)
@@ -476,7 +476,7 @@ def _is_function_class_equation(func_class, f, symbol):
         return all(_is_function_class_equation(func_class, arg, symbol)
                    for arg in f.args)
 
-    if f.is_Pow:
+    if f.is_Power:
         if not f.exp.has(symbol):
             return _is_function_class_equation(func_class, f.base, symbol)
         else:

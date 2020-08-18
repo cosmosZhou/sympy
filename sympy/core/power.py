@@ -154,7 +154,7 @@ def integer_log(y, x):
     return e, r == 0 and y == 1
 
 
-class Pow(Expr):
+class Power(Expr):
     """
     Defines the expression x**y as "x raised to a power y"
 
@@ -237,7 +237,7 @@ class Pow(Expr):
     .. [3] https://en.wikipedia.org/wiki/Indeterminate_forms
 
     """
-    is_Pow = True
+    is_Power = True
 
     __slots__ = ['is_commutative']
 
@@ -995,7 +995,7 @@ class Pow(Expr):
                     radical, result = self.func(base, exp - n), []
 
                     expanded_base_n = self.func(base, n)
-                    if expanded_base_n.is_Pow:
+                    if expanded_base_n.is_Power:
                         expanded_base_n = \
                             expanded_base_n._eval_expand_multinomial()
                     for term in Add.make_args(expanded_base_n):
@@ -1209,7 +1209,7 @@ class Pow(Expr):
                 and fuzzy_not(fuzzy_and([self.exp.is_negative, self.base.is_zero]))):
             return True
         p = self.func(*self.as_base_exp())  # in case it's unevaluated
-        if not p.is_Pow:
+        if not p.is_Power:
             return p.is_rational
         b, e = p.as_base_exp()
         if e.is_Rational and b.is_Rational:
@@ -1427,7 +1427,7 @@ class Pow(Expr):
                 terms = [1 / prefactor]
                 for m in range(1, ceiling((n - dn + 1) / l * cf)):
                     new_term = terms[-1] * (-rest)
-                    if new_term.is_Pow:
+                    if new_term.is_Power:
                         new_term = new_term._eval_expand_multinomial(
                             deep=False)
                     else:
@@ -1454,7 +1454,7 @@ class Pow(Expr):
 
         # see if the base is as simple as possible
         bx = b
-        while bx.is_Pow and bx.exp.is_Rational:
+        while bx.is_Power and bx.exp.is_Rational:
             bx = bx.base
         if bx == x:
             return self
@@ -1787,6 +1787,7 @@ class Pow(Expr):
 
     wolfram_name = 'Power'
     
+Pow = Power    
 from .add import Add
 from .numbers import Integer
 from .mul import Mul, _keep_coeff

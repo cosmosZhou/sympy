@@ -246,7 +246,7 @@ class LatexPrinter(Printer):
             if expr.is_Mul and not self._mul_is_clean(expr):
                 return True
             # Pows which don't need brackets can be folded
-            elif expr.is_Pow and not self._pow_is_clean(expr):
+            elif expr.is_Power and not self._pow_is_clean(expr):
                 return True
             # Add and Function always need brackets
             elif expr.is_Add or expr.is_Function:

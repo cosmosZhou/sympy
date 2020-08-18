@@ -103,7 +103,7 @@ def recast_to_symbols(eqs, symbols):
 
 def _ispow(e):
     """Return True if e is a Pow or is exp."""
-    return isinstance(e, Expr) and (e.is_Pow or isinstance(e, exp))
+    return isinstance(e, Expr) and (e.is_Power or isinstance(e, exp))
 
 
 def _simple_dens(f, symbols):
@@ -113,7 +113,7 @@ def _simple_dens(f, symbols):
     # limit simplification to exponents that are Numbers
     dens = set()
     for d in denoms(f, symbols):
-        if d.is_Pow and d.exp.is_Number:
+        if d.is_Power and d.exp.is_Number:
             if d.exp.is_zero:
                 continue  # foo**0 is never 0
             d = d.base
@@ -319,7 +319,7 @@ def checksol(f, symbol, sol=None, **flags):
                 if p in seen:
                     continue
                 seen.add(p)
-                if p.is_Pow and not p.exp.is_Integer:
+                if p.is_Power and not p.exp.is_Integer:
                     saw_pow_func = True
                 elif p.is_Function:
                     saw_pow_func = True
@@ -1125,7 +1125,7 @@ def solve(f, *symbols, **flags):
                     not p.args or
                     p in symset or
                     p.is_Add or p.is_Mul or
-                    p.is_Pow and not implicit or
+                    p.is_Power and not implicit or
                     p.is_Function and not implicit) and p.func not in (re, im):
                 continue
             elif not p in seen:
@@ -1630,7 +1630,7 @@ def _solve(f, *symbols, **flags):
                         return expand_power_exp(b ** e)
 
                     ftry = f_num.replace(
-                        lambda w: w.is_Pow or isinstance(w, exp),
+                        lambda w: w.is_Power or isinstance(w, exp),
                         _expand).subs(u, t)
                     if not ftry.has(symbol):
                         soln = _solve(ftry, t, **flags)
@@ -2663,7 +2663,7 @@ def _tsolve(eq, sym, **flags):
                         return _solve(f.args[0] - exp(rhs), sym, **flags)
                     return _tsolve(f - rhs, sym, **flags)
 
-        elif lhs.is_Pow:
+        elif lhs.is_Power:
             if lhs.exp.is_Integer:
                 if lhs - rhs != eq:
                     return _solve(lhs - rhs, sym, **flags)
@@ -2780,9 +2780,9 @@ def _tsolve(eq, sym, **flags):
         for gi in g:
             if isinstance(gi, exp) or isinstance(gi, log):
                 up_or_log.add(gi)
-            elif gi.is_Pow:
+            elif gi.is_Power:
                 gisimp = powdenest(expand_power_exp(gi))
-                if gisimp.is_Pow and sym in gisimp.exp.free_symbols:
+                if gisimp.is_Power and sym in gisimp.exp.free_symbols:
                     up_or_log.add(gi)
         down = g.difference(up_or_log)
         eq_down = expand_log(expand_power_exp(eq)).subs(
@@ -3199,7 +3199,7 @@ def _invert(eq, *symbols, **kwargs):
                     raise ValueError(
                         'function with different numbers of args')
 
-        if rhs and lhs.is_Pow and lhs.exp.is_Integer and lhs.exp < 0:
+        if rhs and lhs.is_Power and lhs.exp.is_Integer and lhs.exp < 0:
             lhs = 1 / lhs
             rhs = 1 / rhs
 
@@ -3211,7 +3211,7 @@ def _invert(eq, *symbols, **kwargs):
         # doesn't try to resolve generators to see, for example, if the whole
         # system is written in terms of sqrt(x + y) so it will just fail, so we
         # do that step here.
-        if lhs.is_Pow and (
+        if lhs.is_Power and (
             lhs.exp.is_Integer and dointpow or not lhs.exp.is_Integer and
                 len(symbols) > 1 and len(lhs.base.free_symbols & set(symbols)) > 1):
             rhs = rhs ** (1 / lhs.exp)
@@ -3315,7 +3315,7 @@ def unrad(eq, *syms, **flags):
             for f in eq.args:
                 if f.is_number:
                     continue
-                if f.is_Pow and _take(f, True):
+                if f.is_Power and _take(f, True):
                     args.append(f.base)
                 else:
                     args.append(f)
@@ -3342,7 +3342,7 @@ def unrad(eq, *syms, **flags):
     def _take(d, take_int_pow):
         # return True if coefficient of any factor's exponent's den is not 1
         for pow in Mul.make_args(d):
-            if not (pow.is_Symbol or pow.is_Pow):
+            if not (pow.is_Symbol or pow.is_Power):
                 continue
             b, e = pow.as_base_exp()
             if not b.has(*syms):

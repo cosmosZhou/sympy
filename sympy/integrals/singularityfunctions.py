@@ -56,7 +56,7 @@ def singularityintegrate(f, x):
         elif n == -1 or n == -2:
             return SingularityFunction(x, a, n + 1)
 
-    if f.is_Mul or f.is_Pow:
+    if f.is_Mul or f.is_Power:
 
         expr = f.rewrite(DiracDelta)
         expr = integrate(expr, x)

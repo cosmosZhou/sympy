@@ -425,7 +425,7 @@ class DimensionSystem(Basic):
                     ret[k] += v
             return {k: v for (k, v) in ret.items() if v != 0}
 
-        if name.is_Pow:
+        if name.is_Power:
             dim = get_for_name(name.base)
             return {k: v*name.exp for (k, v) in dim.items()}
 

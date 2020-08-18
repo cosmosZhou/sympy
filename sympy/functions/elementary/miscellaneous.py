@@ -329,7 +329,7 @@ def real_root(arg, n=None, evaluate=None):
     rv = sympify(arg)
     n1pow = Transform(lambda x:-(-x.base) ** x.exp,
                       lambda x:
-                      x.is_Pow and
+                      x.is_Power and
                       x.base.is_negative and
                       x.exp.is_Rational and
                       x.exp.p == 1 and x.exp.q % 2)

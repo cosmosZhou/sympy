@@ -330,7 +330,7 @@ class sign(Function):
             if isinstance(arg, sign):
                 return arg
         if arg.is_imaginary:
-            if arg.is_Pow and arg.exp is S.Half:
+            if arg.is_Power and arg.exp is S.Half:
                 # we catch this because non-trivial sqrt args are not expanded
                 # e.g. sqrt(1-sqrt(2)) --x-->  to I*sqrt(sqrt(2) - 1)
                 return S.ImaginaryUnit
@@ -496,7 +496,7 @@ class Abs(Function):
             return S.NaN
         if arg is S.ComplexInfinity:
             return S.Infinity
-#         if arg.is_Pow:
+#         if arg.is_Power:
 #             base, exponent = arg.as_base_exp()
 #             if base.is_extended_real:
 #                 if exponent.is_integer:
@@ -945,7 +945,7 @@ class periodic_argument(Function):
                 unbranched += arg(a)
             elif isinstance(a, exp_polar):
                 unbranched += a.exp.as_real_imag()[1]
-            elif a.is_Pow:
+            elif a.is_Power:
                 re, im = a.exp.as_real_imag()
                 unbranched += re * unbranched_argument(
                     a.base) + im * log(abs(a.base))
@@ -1186,7 +1186,7 @@ def _unpolarify(eq, exponents_only, pause=False):
         if isinstance(eq, polar_lift):
             return _unpolarify(eq.args[0], exponents_only)
 
-    if eq.is_Pow:
+    if eq.is_Power:
         expo = _unpolarify(eq.exp, exponents_only)
         base = _unpolarify(eq.base, exponents_only,
             not (expo.is_integer and not pause))

@@ -210,7 +210,7 @@ class FracField(DefaultPrinting):
     def _rebuild_expr(self, expr, mapping):
         domain = self.domain
         powers = tuple((gen, gen.as_base_exp()) for gen in mapping.keys()
-            if gen.is_Pow or isinstance(gen, ExpBase))
+            if gen.is_Power or isinstance(gen, ExpBase))
 
         def _rebuild(expr):
             generator = mapping.get(expr)
@@ -221,7 +221,7 @@ class FracField(DefaultPrinting):
                 return reduce(add, list(map(_rebuild, expr.args)))
             elif expr.is_Mul:
                 return reduce(mul, list(map(_rebuild, expr.args)))
-            elif expr.is_Pow or isinstance(expr, (ExpBase, Exp1)):
+            elif expr.is_Power or isinstance(expr, (ExpBase, Exp1)):
                 b, e = expr.as_base_exp()
                 # look for bg**eg whose integer power may be b**e
                 for gen, (bg, eg) in powers:

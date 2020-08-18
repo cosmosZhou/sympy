@@ -119,7 +119,7 @@ def _separatevars(expr, force):
         return expr
 
     # get a Pow ready for expansion
-    if expr.is_Pow:
+    if expr.is_Power:
         expr = Pow(separatevars(expr.base, force=force), expr.exp)
 
     # First try other expansion methods
@@ -1215,7 +1215,7 @@ def nthroot(expr, n, max_len=4, prec=15):
             return p
         if y is S.One:
             continue
-        if not (y.is_Pow and y.exp == S.Half and y.base.is_integer):
+        if not (y.is_Power and y.exp == S.Half and y.base.is_integer):
             return p
         surds.append(y)
     surds.sort()

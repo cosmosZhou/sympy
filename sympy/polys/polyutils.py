@@ -349,7 +349,7 @@ def _dict_from_expr(expr, opt):
         raise PolynomialError('non-commutative expressions are not supported')
 
     def _is_expandable_pow(expr):
-        return (expr.is_Pow and expr.exp.is_positive and expr.exp.is_Integer
+        return (expr.is_Power and expr.exp.is_positive and expr.exp.is_Integer
                 and expr.base.is_Add)
 
     if opt.expand is not False:

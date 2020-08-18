@@ -299,7 +299,7 @@ class Product(ExprWithIntLimits):
                 B = self.func(arg, (k, a, n)).doit()
                 return A * B
 
-        elif term.is_Pow:
+        elif term.is_Power:
             if not term.base.has(k):
                 s = summation(term.exp, (k, a, n))
 

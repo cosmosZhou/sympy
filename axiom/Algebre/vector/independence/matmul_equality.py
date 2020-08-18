@@ -29,7 +29,7 @@ def apply(given):
 #     n = p_polynomial.shape[0]
     k = p_polynomial.variable
     polynomial = p_polynomial.function
-    assert polynomial.is_Pow
+    assert polynomial.is_Power
     
     b, e = polynomial.as_base_exp()    
     assert not b.has(k)

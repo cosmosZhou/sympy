@@ -1415,7 +1415,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
                 if coeff.has(f(x)):
                     return False
                 return x**order in coeff.args
-            elif coeff.is_Pow:
+            elif coeff.is_Power:
                 return coeff.as_base_exp() == (x, order)
             elif order == 1:
                 return x == coeff
@@ -2974,7 +2974,7 @@ def constant_renumber(expr, variables=None, newconstants=None):
                 constants_found[newstartnumber] = expr
                 newstartnumber += 1
             return expr
-        elif expr.is_Function or expr.is_Pow or isinstance(expr, Tuple):
+        elif expr.is_Function or expr.is_Power or isinstance(expr, Tuple):
             return expr.func(
                 *[_constant_renumber(x) for x in expr.args])
         else:
@@ -5358,10 +5358,10 @@ def _undetermined_coefficients_match(expr, x):
                     return False
             else:
                 return False
-        elif expr.is_Pow and expr.base.is_Symbol and expr.exp.is_Integer and \
+        elif expr.is_Power and expr.base.is_Symbol and expr.exp.is_Integer and \
                 expr.exp >= 0:
             return True
-        elif expr.is_Pow and expr.base.is_number:
+        elif expr.is_Power and expr.base.is_number:
             if expr.exp.match(a*x + b):
                 return True
             else:
@@ -5913,7 +5913,7 @@ def _lie_group_remove(coords):
             for func in subfunc:
                 coords = coords.subs(func, 0)
         return coords
-    elif coords.is_Pow:
+    elif coords.is_Power:
         base, expr = coords.as_base_exp()
         base = _lie_group_remove(base)
         expr = _lie_group_remove(expr)

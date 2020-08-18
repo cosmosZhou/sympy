@@ -117,7 +117,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
     if deep or expr.is_Add or expr.is_Mul and _y not in expr.args:
         expr = expr.func(*[recurse(w) for w in expr.args])
 
-    if expr.is_Pow:
+    if expr.is_Power:
         return recurse(expr*_y, deep=False)/_y
 
     if not expr.is_Mul:
@@ -135,13 +135,13 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
             if term.is_Rational:
                 coeff *= term
                 continue
-            if term.is_Pow:
+            if term.is_Power:
                 term = _denest_pow(term)
             if term.is_commutative:
                 b, e = term.as_base_exp()
                 if deep:
                     b, e = [recurse(i) for i in [b, e]]
-                if b.is_Pow or isinstance(b, exp):
+                if b.is_Power or isinstance(b, exp):
                     # don't let smthg like sqrt(x**a) split into x**a, 1/2
                     # or else it will be joined as x**(a/2) later
                     b, e = b**e, S.One
@@ -350,7 +350,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
         # there may be terms still in common_b that were bases that were
         # identified as needing processing, so remove those, too
         for (b, q), e in common_b.items():
-            if (b.is_Pow or isinstance(b, exp)) and \
+            if (b.is_Power or isinstance(b, exp)) and \
                     q is not S.One and not b.exp.is_Rational:
                 b, be = b.as_base_exp()
                 b = b**(be/q)
@@ -582,7 +582,7 @@ def powdenest(eq, force=False, polar=False):
 
     new = powsimp(sympify(eq))
     return new.xreplace(Transform(
-        _denest_pow, filter=lambda m: m.is_Pow or isinstance(m, exp)))
+        _denest_pow, filter=lambda m: m.is_Power or isinstance(m, exp)))
 
 _y = Dummy('y')
 
@@ -597,7 +597,7 @@ def _denest_pow(eq):
     from sympy.simplify.simplify import logcombine
 
     b, e = eq.as_base_exp()
-    if b.is_Pow or isinstance(b.func, exp) and e != 1:
+    if b.is_Power or isinstance(b.func, exp) and e != 1:
         new = b._eval_power(e)
         if new is not None:
             eq = new
@@ -674,7 +674,7 @@ def _denest_pow(eq):
 
     # now put the log back together again
     if isinstance(glogb, log) or not glogb.is_Mul:
-        if glogb.args[0].is_Pow or isinstance(glogb.args[0], exp):
+        if glogb.args[0].is_Power or isinstance(glogb.args[0], exp):
             glogb = _denest_pow(glogb.args[0])
             if (abs(glogb.exp) < 1) == True:
                 return Pow(glogb.base, glogb.exp*e)

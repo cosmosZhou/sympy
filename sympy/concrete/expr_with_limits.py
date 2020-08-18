@@ -3222,7 +3222,6 @@ class Ref(ExprWithLimits):
         if isinstance(self.function, Add):
             return first + second
         else:
-#             from sympy.matrices.expressions.hadamard import HadamardProduct
             return first * second
 
     def simplify(self, deep=False, **kwargs):

@@ -253,7 +253,7 @@ def test_separatevars():
     assert separatevars(x*y**2*sin(x) + x*sin(x)*sin(y)) == \
         x*(sin(y) + y**2)*sin(x)
     assert separatevars(x*exp(x + y) + x*exp(x)) == x*(1 + exp(y))*exp(x)
-    assert separatevars((x*(y + 1))**z).is_Pow  # != x**z*(1 + y)**z
+    assert separatevars((x*(y + 1))**z).is_Power  # != x**z*(1 + y)**z
     assert separatevars(1 + x + y + x*y) == (x + 1)*(y + 1)
     assert separatevars(y/pi*exp(-(z - x)/cos(n))) == \
         y*exp(x/cos(n))*exp(-z/cos(n))/pi
@@ -265,7 +265,7 @@ def test_separatevars():
     assert separatevars(sqrt(y*(p**2 + x*p**2)), force=True) == \
         p*sqrt(y)*sqrt(1 + x)
     # issue 4865
-    assert separatevars(sqrt(x*y)).is_Pow
+    assert separatevars(sqrt(x*y)).is_Power
     assert separatevars(sqrt(x*y), force=True) == sqrt(x)*sqrt(y)
     # issue 4957
     # any type sequence for symbols is fine
@@ -369,7 +369,7 @@ def test_nsimplify():
     assert not nsimplify(
         factor(-3.0*z**2*(z**2)**(-2.5) + 3*(z**2)**(-1.5))).atoms(Float)
     e = x**0.0
-    assert e.is_Pow and nsimplify(x**0.0) == 1
+    assert e.is_Power and nsimplify(x**0.0) == 1
     assert nsimplify(3.333333, tolerance=0.1, rational=True) == Rational(10, 3)
     assert nsimplify(3.333333, tolerance=0.01, rational=True) == Rational(10, 3)
     assert nsimplify(3.666666, tolerance=0.1, rational=True) == Rational(11, 3)

@@ -236,7 +236,7 @@ class AssocOp(Basic):
             if i == 0:
                 if self.is_Mul:
                     # make e**i look like Mul
-                    if expr.is_Pow and expr.exp.is_Integer:
+                    if expr.is_Power and expr.exp.is_Integer:
                         if expr.exp > 0:
                             expr = Mul(*[expr.base, expr.base ** (expr.exp - 1)], evaluate=False)
                         else:

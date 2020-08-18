@@ -587,8 +587,8 @@ def _rewrite_gamma(f, s, a, b):
         if not fact.has(s):
             ufacs += [fact]
         # exponentials
-        elif fact.is_Pow or isinstance(fact, exp_):
-            if fact.is_Pow:
+        elif fact.is_Power or isinstance(fact, exp_):
+            if fact.is_Power:
                 base = fact.base
                 exp = fact.exp
             else:
@@ -917,7 +917,7 @@ def _simplifyconds(expr, s, a):
     def power(ex):
         if ex == s:
             return 1
-        if ex.is_Pow and ex.base == s:
+        if ex.is_Power and ex.base == s:
             return ex.exp
         return None
 

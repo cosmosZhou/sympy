@@ -299,7 +299,7 @@ class Mul(Expr, AssocOp):
 
                 #  y
                 # 3
-                if o.is_Pow:
+                if o.is_Power:
                     if b.is_Number:
 
                         # get all the factors with numeric base so they can be
@@ -437,7 +437,7 @@ class Mul(Expr, AssocOp):
                     # check to make sure that the base doesn't change
                     # after exponentiation; to allow for unevaluated
                     # Pow, we only do so if b is not already a Pow
-                    if p.is_Pow and not b.is_Pow:
+                    if p.is_Power and not b.is_Power:
                         bi = b
                         b, e = p.as_base_exp()
                         if b != bi:
@@ -524,7 +524,7 @@ class Mul(Expr, AssocOp):
                         if obj.is_Number:
                             coeff *= obj
                         else:
-                            assert obj.is_Pow
+                            assert obj.is_Power
                             bi, ei = obj.args
                             pnew[ei].append(bi)
 
@@ -1071,7 +1071,7 @@ class Mul(Expr, AssocOp):
 
         if check(lhs, rhs) or check(rhs, lhs):
             return S.One
-        if any(i.is_Pow or i.is_Mul for i in (lhs, rhs)):
+        if any(i.is_Power or i.is_Mul for i in (lhs, rhs)):
             # gruntz and limit wants a literal I to not combine
             # with a power of -1
             d = Dummy('I')
@@ -1378,7 +1378,7 @@ class Mul(Expr, AssocOp):
             # a -1 base (see issue 6421); all we want here are the
             # true Pow or exp separated into base and exponent
             from sympy import exp
-            if a.is_Pow or isinstance(a, exp):
+            if a.is_Power or isinstance(a, exp):
                 return a.as_base_exp()
             return a, S.One
 

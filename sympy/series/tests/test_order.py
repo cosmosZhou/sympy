@@ -285,7 +285,7 @@ def test_eval():
     assert Order(x).subs(x, y) == Order(y)
     assert Order(x).subs(y, x) == Order(x)
     assert Order(x).subs(x, x + y) == Order(x + y, (x, -y))
-    assert (O(1)**x).is_Pow
+    assert (O(1)**x).is_Power
 
 
 def test_issue_4279():

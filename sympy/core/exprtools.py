@@ -176,9 +176,9 @@ def _monotonic_sign(self):
         if not (n.is_number or d.is_number):
             return
         if (
-                a.is_Mul or a.is_Pow) and \
+                a.is_Mul or a.is_Power) and \
                 a.is_rational and \
-                all(p.exp.is_Integer for p in a.atoms(Pow) if p.is_Pow) and \
+                all(p.exp.is_Integer for p in a.atoms(Pow) if p.is_Power) and \
                 (a.is_positive or a.is_negative):
             v = S(1)
             for ai in Mul.make_args(a):
@@ -385,7 +385,7 @@ class Factors(object):
                             factors[a] = S.One
                         elif a is I:
                             factors[I] = S.One
-                        elif a.is_Pow:
+                        elif a.is_Power:
                             if S.NegativeOne not in factors:
                                 factors[S.NegativeOne] = S.Zero
                             factors[S.NegativeOne] += a.exp
@@ -1216,7 +1216,7 @@ def factor_terms(expr, radical=False, clear=False, fraction=False, sign=True):
                 return type(expr)([do(i) for i in expr])
             return expr
 
-        if expr.is_Pow or expr.is_Function or \
+        if expr.is_Power or expr.is_Function or \
                 is_iterable or not hasattr(expr, 'args_cnc'):
             args = expr.args
             newargs = tuple([do(i) for i in args])
@@ -1366,7 +1366,7 @@ def _mask_nc(eq, name=None):
             if a.is_symbol:
                 nc_syms.add(a)
                 pot.skip()
-            elif not (a.is_Add or a.is_Mul or a.is_Pow):
+            elif not (a.is_Add or a.is_Mul or a.is_Power):
                 nc_obj.add(a)
                 pot.skip()
 
@@ -1537,7 +1537,7 @@ def factor_nc(expr):
 
         new_mid = new_mid.subs(r2).subs(unrep1)
 
-        if new_mid.is_Pow:
+        if new_mid.is_Power:
             return _keep_coeff(c, g * l * new_mid * r)
 
         if new_mid.is_Mul:

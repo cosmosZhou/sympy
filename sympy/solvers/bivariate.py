@@ -201,7 +201,7 @@ def _solve_lambert(f, symbol, gens):
 
     lamcheck = [tmp for tmp in gens
                 if (tmp.func in [exp, log] or
-                (tmp.is_Pow and symbol in tmp.exp.free_symbols))]
+                (tmp.is_Power and symbol in tmp.exp.free_symbols))]
     if not lamcheck:
         raise NotImplementedError()
 

@@ -445,7 +445,7 @@ def diop_solve(eq, param=symbols("t", integer=True)):
 
     elif eq_type == "general_sum_of_even_powers":
         for k in coeff.keys():
-            if k.is_Pow and coeff[k]:
+            if k.is_Power and coeff[k]:
                 p = k.exp
         return _diop_general_sum_of_even_powers(var, p, -int(coeff[1]), limit=S.Infinity)
 
@@ -520,7 +520,7 @@ def classify_diop(eq, _dict=True):
         diop_type = "cubic_thue"
 
     elif (total_degree > 3 and total_degree % 2 == 0 and
-            all(k.is_Pow and k.exp == total_degree for k in coeff if k != 1)):
+            all(k.is_Power and k.exp == total_degree for k in coeff if k != 1)):
         if all(coeff[k] == 1 for k in coeff if k != 1):
             diop_type = 'general_sum_of_even_powers'
 
@@ -2832,7 +2832,7 @@ def diop_general_sum_of_even_powers(eq, limit=1):
 
     if diop_type == "general_sum_of_even_powers":
         for k in coeff.keys():
-            if k.is_Pow and coeff[k]:
+            if k.is_Power and coeff[k]:
                 p = k.exp
         return _diop_general_sum_of_even_powers(var, p, -coeff[1], limit)
 

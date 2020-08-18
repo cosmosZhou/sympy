@@ -173,7 +173,7 @@ def manual_subs(expr, *args):
             # before subs turns them into `exp(y)**a`, but
             # do not replace x itself yet, to avoid `log(exp(y))`.
             x0 = old.args[0]
-            expr = expr.replace(lambda x: x.is_Pow and x.base == x0,
+            expr = expr.replace(lambda x: x.is_Power and x.base == x0,
                 lambda x: sympy.exp(x.exp * new))
             new_subs.append((x0, sympy.exp(new)))
 
@@ -247,7 +247,7 @@ def find_substitutions(integrand, symbol, u_var):
                     if 1 < d < abs(term.args[1])])
                 if term.args[0].is_Add:
                     r.extend([t for t in possible_subterms(term.args[0])
-                        if t.is_Pow])
+                        if t.is_Power])
             return r
         elif isinstance(term, sympy.Add):
             r = []
@@ -1147,7 +1147,7 @@ cancel_rule = rewriter(
 
 distribute_expand_rule = rewriter(
     lambda integrand, symbol: (
-        all(arg.is_Pow or arg.is_polynomial(symbol) for arg in integrand.args)
+        all(arg.is_Power or arg.is_polynomial(symbol) for arg in integrand.args)
         or isinstance(integrand, sympy.Pow)
         or isinstance(integrand, sympy.Mul)),
     lambda integrand, symbol: integrand.expand())
@@ -1354,7 +1354,7 @@ def eval_add(substeps, integrand, symbol):
 @evaluates(URule)
 def eval_u(u_var, u_func, constant, substep, integrand, symbol):
     result = _manualintegrate(substep)
-    if u_func.is_Pow and u_func.exp == -1:
+    if u_func.is_Power and u_func.exp == -1:
         # avoid needless -log(1/x) from substitution
         result = result.subs(sympy.log(u_var), -sympy.log(u_func.base))
     return result.subs(u_var, u_func)

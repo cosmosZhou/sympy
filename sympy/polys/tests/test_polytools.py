@@ -2366,7 +2366,7 @@ def test_factor():
     i = Symbol('i', integer=True)
     r = Symbol('r', real=True)
 
-    assert factor(sqrt(x*y)).is_Pow is True
+    assert factor(sqrt(x*y)).is_Power is True
 
     assert factor(sqrt(3*x**2 - 3)) == sqrt(3)*sqrt((x - 1)*(x + 1))
     assert factor(sqrt(3*x**2 + 3)) == sqrt(3)*sqrt(x**2 + 1)

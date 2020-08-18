@@ -183,7 +183,7 @@ class Add(Expr, AssocOp):
                 c, s = o.as_coeff_Mul()
 
             # check for unevaluated Pow, e.g. 2**3 or 2**(-1/2)
-            elif o.is_Pow:
+            elif o.is_Power:
                 b, e = o.as_base_exp()
                 if b.is_Number and (e.is_Integer or
                                    (e.is_Rational and e.is_negative)):
@@ -436,7 +436,7 @@ class Add(Expr, AssocOp):
             eq = expand_mul(lhs.xreplace(reps) - rhs.xreplace(reps))
             if eq.has(oo):
                 eq = eq.replace(
-                    lambda x: x.is_Pow and x.base == oo,
+                    lambda x: x.is_Power and x.base == oo,
                     lambda x: x.base)
             return eq.xreplace(ireps)
         else:
@@ -904,7 +904,7 @@ class Add(Expr, AssocOp):
             for m in args:
                 term_rads = defaultdict(list)
                 for ai in Mul.make_args(m):
-                    if ai.is_Pow:
+                    if ai.is_Power:
                         b, e = ai.as_base_exp()
                         if e.is_Rational and b.is_Integer:
                             term_rads[e.q].append(abs(int(b)) ** e.p)

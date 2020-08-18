@@ -64,7 +64,7 @@ def components(f, x):
                 result |= components(g, x)
 
             result.add(f)
-        elif f.is_Pow:
+        elif f.is_Power:
             result |= components(f.base, x)
 
             if not f.exp.is_Integer:
@@ -413,7 +413,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
                             if M[a].is_negative:
                                 terms.add(erf(sqrt(-M[a])*log(x) - 1/(2*sqrt(-M[a]))))
 
-                elif g.is_Pow:
+                elif g.is_Power:
                     if g.exp.is_Rational and g.exp.q == 2:
                         M = g.base.match(a*x**2 + b)
 
@@ -548,7 +548,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
     poly_denom = (s * v_split[0] * _deflation(v_split[1])).as_expr()
 
     def _exponent(g):
-        if g.is_Pow:
+        if g.is_Power:
             if g.exp.is_Rational and g.exp.q != 1:
                 if g.exp.p > 0:
                     return g.exp.p + g.exp.q - 1
@@ -588,7 +588,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
                 factors = (factorization, )
 
             for fact in factors:
-                if fact.is_Pow:
+                if fact.is_Power:
                     reducibles.add(fact.base)
                 else:
                     reducibles.add(fact)
@@ -670,7 +670,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
                 pass # ignore variables
             elif not expr.has(*syms):
                 non_syms.add(expr)
-            elif expr.is_Add or expr.is_Mul or expr.is_Pow:
+            elif expr.is_Add or expr.is_Mul or expr.is_Power:
                 list(map(find_non_syms, expr.args))
             else:
                 # TODO: Non-polynomial expression. This should have been

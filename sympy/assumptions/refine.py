@@ -167,7 +167,7 @@ def refine_Pow(expr, assumptions):
                         e2 *= expr.base
                 if e2.is_Add:
                     i, p = e2.as_two_terms()
-                    if p.is_Pow and p.base is S.NegativeOne:
+                    if p.is_Power and p.base is S.NegativeOne:
                         if ask(Q.integer(p.exp), assumptions):
                             i = (i + 1)/2
                             if ask(Q.even(i), assumptions):

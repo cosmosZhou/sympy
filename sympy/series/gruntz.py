@@ -258,7 +258,7 @@ def mrv(e, x):
         s1, e1 = mrv(a, x)
         s2, e2 = mrv(b, x)
         return mrv_max1(s1, s2, e.func(i, e1, e2), x)
-    elif e.is_Pow:
+    elif e.is_Power:
         b, e = e.as_base_exp()
         if b == 1:
             return SubsSet(), b
@@ -390,7 +390,7 @@ def sign(e, x):
         return sa * sign(b, x)
     elif isinstance(e, exp):
         return 1
-    elif e.is_Pow:
+    elif e.is_Power:
         s = sign(e.base, x)
         if s == 1:
             return 1

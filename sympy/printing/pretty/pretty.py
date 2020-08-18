@@ -1674,7 +1674,7 @@ class PrettyPrinter(Printer):
 
         # Gather terms for numerator/denominator
         for item in args:
-            if item.is_commutative and item.is_Pow and item.exp.is_Rational and item.exp.is_negative:
+            if item.is_commutative and item.is_Power and item.exp.is_Rational and item.exp.is_negative:
                 if item.exp != -1:
                     b.append(Pow(item.base, -item.exp, evaluate=False))
                 else:

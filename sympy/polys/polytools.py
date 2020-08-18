@@ -5914,7 +5914,7 @@ def _symbolic_factor_list(expr, opt, method):
         if arg.is_Mul:
             args.extend(arg.args)
             continue
-        if arg.is_Pow:
+        if arg.is_Power:
             base, exp = arg.args
             if base.is_Number and exp.is_Number:
                 coeff *= arg
@@ -6334,7 +6334,7 @@ def factor(f, *gens, **args):
             Factor, but avoid changing the expression when unable to.
             """
             fac = factor(expr, *gens, **args)
-            if fac.is_Mul or fac.is_Pow:
+            if fac.is_Mul or fac.is_Power:
                 return fac
             return expr
 
@@ -6345,7 +6345,7 @@ def factor(f, *gens, **args):
         muladd = f.atoms(Mul, Add)
         for p in muladd:
             fac = factor(p, *gens, **args)
-            if (fac.is_Mul or fac.is_Pow) and fac != p:
+            if (fac.is_Mul or fac.is_Power) and fac != p:
                 partials[p] = fac
         return f.xreplace(partials)
 
@@ -7091,7 +7091,7 @@ def poly(expr, *gens, **args):
             for factor in Mul.make_args(term):
                 if factor.is_Add:
                     poly_factors.append(_poly(factor, opt))
-                elif factor.is_Pow and factor.base.is_Add and \
+                elif factor.is_Power and factor.base.is_Add and \
                         factor.exp.is_Integer and factor.exp >= 0:
                     poly_factors.append(
                         _poly(factor.base, opt).pow(factor.exp))
