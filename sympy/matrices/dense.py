@@ -413,6 +413,14 @@ class DenseMatrix(MatrixBase):
                     rv = ans
         return rv
 
+    @property
+    def atomic_dtype(self):
+        dtype = None
+        for arg in self._mat:
+            _dtype = arg.atomic_dtype
+            if dtype is None or dtype in _dtype:
+                dtype = _dtype
+        return dtype
 
 def _force_mutable(x):
     """Return a matrix as a Matrix, otherwise return x."""

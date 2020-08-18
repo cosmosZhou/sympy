@@ -8,7 +8,8 @@ from sympy.matrices.expressions.transpose import transpose
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
 from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError,
-        Identity, ZeroMatrix, GenericIdentity, VConcatenate, HConcatenate)
+        Identity, ZeroMatrix, GenericIdentity, VConcatenate, HConcatenate,
+    Addition)
 from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
 
@@ -268,6 +269,11 @@ class MatMul(MatrixExpr, Mul):
                     args = [arg.expand(deep=True) for arg in args]
                 return A.func(*args)
             
+            if isinstance(A, Addition):
+                if B.is_Plus:
+                    return B.func(*[A @ b for b in B.args])
+                return self
+                
             if len(A.shape) < 2:
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]

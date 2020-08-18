@@ -72,7 +72,11 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Wild = False
     is_Function = False
     is_Add = False
+    is_Plus = False
+    
     is_Mul = False
+    is_Times = False
+    
     is_Power = False
     is_Number = False
     is_Float = False

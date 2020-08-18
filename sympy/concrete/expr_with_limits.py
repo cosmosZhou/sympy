@@ -3342,8 +3342,16 @@ class Ref(ExprWithLimits):
                         if len_x == len_y:
                             from sympy import Identity
                             return Identity(len_y + 1)
-                return self
-
+                        
+                first, second = self.simplify_matmul(self.function)
+                if first is None:                    
+                    return second
+                
+                if second is None:
+                    return self
+                
+                return MatMul(self.func(first, *self.limits).simplify(), second)
+            
             if second is None:
                 return first
 
@@ -3393,7 +3401,7 @@ class Ref(ExprWithLimits):
                 argsNonSimplified = Add(*argsNonSimplified)
 
             return argsSimplified, argsNonSimplified
-#             from sympy import S
+
         independent, dependent = exp.as_independent(*x, as_Add=True)
         if independent == S.Zero:
             return None, dependent
@@ -3425,7 +3433,7 @@ class Ref(ExprWithLimits):
 
     def simplify_mul(self, exp):
         (x, *_), *_ = self.limits
-#         from sympy.matrices.expressions.matexpr import MatrixElement
+
         from sympy.core.basic import Atom
         if isinstance(exp, Atom):
             if exp in self.variables_set:
@@ -3438,33 +3446,7 @@ class Ref(ExprWithLimits):
 
             return None, exp
         
-        if exp.is_MatMul:
-            argsNonSimplified = []
-            argsSimplified = []
-            for arg in exp.args:
-                simplified, nonSimplified = self.simplify_mul(arg)
-                if simplified is not None:
-                    argsSimplified.append(simplified)
-                if nonSimplified is not None:
-                    argsNonSimplified.append(nonSimplified)
-
-            if not argsSimplified:
-                argsSimplified = None
-            elif len(argsSimplified) == 1:
-                argsSimplified = argsSimplified[0]
-            else:
-                argsSimplified = exp.func(*argsSimplified)
-
-            if not argsNonSimplified:
-                argsNonSimplified = None
-            elif len(argsNonSimplified) == 1:
-                argsNonSimplified = argsNonSimplified[0]
-            else:
-                argsNonSimplified = exp.func(*argsNonSimplified)
-
-            return argsSimplified, argsNonSimplified
-        
-        if isinstance(exp, Mul):
+        if exp.is_Mul:
             argsNonSimplified = []
             argsSimplified = []
             for arg in exp.args:
@@ -3490,13 +3472,37 @@ class Ref(ExprWithLimits):
 
             return argsSimplified, argsNonSimplified
 
-#             from sympy import S
         independent, dependent = exp.as_independent(x, as_Add=False)
         if independent == S.One:
             return None, dependent
         if dependent == S.One:
             dependent = None
         return independent, dependent
+
+    def simplify_matmul(self, exp):
+        (x, *_), *_ = self.limits
+
+        if exp.is_MatMul:
+            index_simplified = None
+            for i, arg in enumerate(exp.args):
+                _, simplified = self.simplify_matmul(arg)                
+                if simplified is not None:
+                    index_simplified = i 
+                    break
+
+            if index_simplified is None:
+                return exp, None
+            if index_simplified == 0:
+                return None, exp
+            
+            return exp.func(*exp.args[:index_simplified]), exp.func(*exp.args[index_simplified:])
+        
+        independent, dependent = exp.as_independent(x, as_Add=False)
+        if independent == S.One:
+            return dependent, None 
+        if dependent == S.One:
+            dependent = None
+        return dependent, independent 
 
     def as_Min(self):
         if isinstance(self.function, Minimum) and len(self.function.limits) == 0:
@@ -3761,7 +3767,13 @@ class Ref(ExprWithLimits):
         return tex
 
     def _sympystr(self, p):
-        return '[%s](%s)' % (','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits]), p._print(self.function))
+        def print_limit(limit):
+            if len(limit) == 1:
+                return p._print(limit[0])
+            if limit[1] == 0:
+                return p._print(limit[0]) + ":" + p._print(limit[2] + 1)
+            return ':'.join([p._print(arg) for arg in limit])
+        return '[%s](%s)' % (','.join([print_limit(limit) for limit in self.limits]), p._print(self.function))
 
     def _eval_is_finite(self):
         function = self.function                

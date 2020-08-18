@@ -1244,7 +1244,11 @@ class Concatenate(MatrixExpr):
             if dtype is None or dtype in _dtype:
                 dtype = _dtype
         return dtype
+
     
+# horizontal Concatenation
+class HConcatenate(Concatenate):
+
     @staticmethod
     def broadcast(shapes):
         dimension = max(len(s) for s in shapes)
@@ -1253,12 +1257,6 @@ class Concatenate(MatrixExpr):
             if len(shape) < dimension:
                 shapes[i] = (1,) * (dimension - len(shape)) + shape
         return shapes
-
-#     def as_coeff_mmul(self):
-#         return 1, self
-
-
-class HConcatenate(Concatenate):
 
     @property
     def shape(self):
@@ -1270,6 +1268,32 @@ class HConcatenate(Concatenate):
 # vertical Concatenation
 class VConcatenate(Concatenate):
     
+    def __new__(cls, *args, **kwargs):
+        _args = []
+        for arg in args:
+            if isinstance(arg, VConcatenate):
+                _args += arg.args
+            else:
+                _args.append(arg)
+            
+        return Basic.__new__(cls, *_args, **kwargs)
+    
+    @staticmethod
+    def broadcast(shapes):
+        length = 2
+        cols = 0
+        for shape in shapes:
+            if shape[-1] > cols:
+                cols = shape[-1]
+
+        for i, shape in enumerate(shapes):
+            if shape[-1] < cols:
+                shape = shape[:-1] + (cols,)
+            if len(shape) < length:
+                shape = (1,) * (length - len(shape)) + shape
+            shapes[i] = shape
+        return shapes
+    
     @property
     def shape(self):
         shapes = [arg.shape for arg in self.args]
@@ -1279,10 +1303,16 @@ class VConcatenate(Concatenate):
     def __getitem__(self, key):
         if not isinstance(key, tuple) and isinstance(key, slice):
             start, stop = key.start, key.stop
-
+            if start is None:
+                start = 0
+            if stop is None:
+                stop = self.shape[0]
+                
             rows = 0
             args = []
             for arg in self.args:
+                if start >= stop:
+                    break
                 index = rows
                 if len(arg.shape) == 1:
                     rows += 1
@@ -1459,6 +1489,13 @@ class VConcatenate(Concatenate):
         assert i > j
         return self[i, j] == 0
 
+    def __add__(self, other):
+        if isinstance(other, VConcatenate):
+            if len(self.args) == len(other.args):
+                if all(x.shape == y.shape for x, y in zip(self.args, other.args)):
+                    return self.func(*[x + y for x, y in zip(self.args, other.args)])
+        return Expr.__add__(self, other)
+
 
 # precondition: i > j or i < j
 class Swap(Identity):    
@@ -1526,18 +1563,18 @@ class Multiplication(Identity):
     
     @property
     def multiplier(self):
-        return self.args[1]
+        return self.args[-1]
 
     @property
     def T(self):
         return self
 
     def _eval_inverse(self):
-        return self.func(self.n, 1 / self.multiplier, self.i)
+        return self.func(self.n, self.i, 1 / self.multiplier)
 
     @property
     def i(self):
-        return self.args[2]
+        return self.args[1]
 
     def _eval_determinant(self):
         return self.multiplier
@@ -1566,24 +1603,64 @@ class Multiplication(Identity):
             return Ref(piecewise, (j, 0, self.n - 1))
         return piecewise
 
-        
+    def __matmul__(self, rhs):
+        from sympy.matrices.dense import DenseMatrix        
+        if isinstance(rhs, VConcatenate):
+            other_i = rhs[self.i]
+            if not other_i.is_Indexed:
+                args = []
+                if self.i != 0:
+                    args.append(rhs[:self.i])
+                args.append(other_i * self.multiplier)
+                if self.i + 1 != self.shape[0]:
+                    args.append(rhs[self.i + 1:])
+                
+                return VConcatenate(*args)  
+        elif isinstance(rhs, DenseMatrix):
+            d = rhs.shape[0]
+            _mat = [*rhs._mat]
+            for i in range(self.i * d, self.i * d + d):
+                _mat[i] *= self.multiplier
+            return rhs.func(*rhs.args[:2], _mat)
+
+        return MatrixExpr.__matmul__(self, rhs)
+
+    @_sympifyit('lhs', NotImplemented)
+    @call_highest_priority('__matmul__')
+    def __rmatmul__(self, lhs):
+        from sympy.matrices.dense import DenseMatrix                
+        if isinstance(lhs, DenseMatrix):
+            d = lhs.shape[0]
+            _mat = [*lhs._mat]
+            for i in range(self.i, self.i + d * d, d):
+                _mat[i] *= self.multiplier
+            return lhs.func(*lhs.args[:2], _mat)
+            
+        return MatrixExpr.__rmatmul__(self, lhs)
+
+    
 class Addition(Multiplication):
     '''
     multiply the ith row and add it to the jth row
     or multiply the ith column and add it to the jth column
     '''
+
 #     is_Identity = False
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 3:
+            args += (1,)
+        return MatrixExpr.__new__(cls, *args, **kwargs)
     
     @property
     def j(self):
-        return self.args[3]
+        return self.args[2]
 
     @property
     def T(self):
-        return self.func(self.n, self.multiplier, self.j, self.i)
+        return self.func(self.n, self.j, self.i, self.multiplier)
 
     def _eval_inverse(self):
-        return self.func(self.n, -self.multiplier, self.i, self.j)
+        return self.func(self.n, self.i, self.j, -self.multiplier)
 
     def _entry(self, i, j=None, **_):
         from sympy.concrete.expr_with_limits import Ref
@@ -1619,7 +1696,32 @@ class Addition(Multiplication):
     def _eval_determinant(self):
         return S.One
 
+    @_sympifyit('other', NotImplemented)
+    @call_highest_priority('__rmatmul__')
+    def __matmul__(self, other):
+        if isinstance(other, VConcatenate):
+            other_i = other[self.i]
+            other_j = other[self.j]
+            if not other_i.is_Indexed and not other_j.is_Indexed:
+                args = []
+                if self.i < self.j:
+                    if self.i != 0:
+                        args.append(other[:self.i])
+                    args.append(other_i + other_j * self.multiplier)
+                    if self.i + 1 != self.shape[0]:
+                        args.append(other[self.i + 1:])
+                elif self.i > self.j:                    
+                    args.append(other[:self.i])
+                    args.append(other_i + other_j * self.multiplier)
+                    if self.i + 1 != self.shape[0]:
+                        args.append(other[self.i + 1:])                    
+                else:
+                    return MatrixExpr.__matmul__(self, other)
+                return VConcatenate(*args)  
+            
+        return MatrixExpr.__matmul__(self, other)
 
+    
 class Shift(Identity):
     '''
     shift the ith row to the jth row

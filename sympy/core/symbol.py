@@ -609,6 +609,20 @@ class Symbol(AtomicExpr, NotIterable):
             return self._assumptions['shape']
         return ()
 
+    @property
+    def cols(self):
+        if self.shape:
+            return self.shape[-1]
+        return 1
+
+    @property
+    def rows(self):
+        if len(self.shape) == 1:
+            return 1
+        if len(self.shape) > 1:
+            return self.shape[-2]
+        return 1
+
     def __iter__(self):
         raise TypeError
 
@@ -638,6 +652,7 @@ class Symbol(AtomicExpr, NotIterable):
                     from sympy.stats.rv import RandomSymbol
                     if len(ref.limits) == 1 and isinstance(ref.function, RandomSymbol):
                         return ref[indices]
+            assert indices < self.shape[0]
             return Indexed(self, indices, **kw_args)
 
     def has_match(self, exp):

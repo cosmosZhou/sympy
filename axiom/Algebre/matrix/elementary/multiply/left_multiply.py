@@ -14,11 +14,11 @@ def apply(x, lamda, w=None):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol('w', integer=True, shape=(n, n, n), definition=Ref[i](Multiplication(n, lamda, i)))
-        w_quote = Symbol("w'", integer=True, shape=(n, n, n), definition=Ref[i](Multiplication(n, 1 / lamda, i)))
+        w = Symbol('w', integer=True, shape=(n, n, n), definition=Ref[i](Multiplication(n, i, lamda)))
+        w_quote = Symbol("w'", integer=True, shape=(n, n, n), definition=Ref[i](Multiplication(n, i, 1 / lamda)))
     else:
-        assert w[i] == Multiplication(n, lamda, i)
-        assert w_quote[i] == Multiplication(n, 1 / lamda, i)
+        assert w[i] == Multiplication(n, i, lamda)
+        assert w_quote[i] == Multiplication(n, i, 1 / lamda)
     
     return Equality(w_quote[i] @ w[i] @ x, x)
 

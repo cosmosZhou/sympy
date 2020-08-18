@@ -2050,8 +2050,7 @@ class Expr(Basic, EvalfMixin):
                 return has_other
             return has_other or e.has(*(e.free_symbols & sym))
 
-        if (want is not func or
-                func is not Add and func is not Mul):
+        if (want is not func or func is not Add and func is not Mul):
             if has(self):
                 return (want.identity, self)
             else:
