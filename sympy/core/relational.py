@@ -681,7 +681,6 @@ class Equality(Relational):
             if det(lhs.lhs).is_nonzero or det(lhs.rhs).is_nonzero:
                 return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, equivalent=[self, lhs])
             return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, given=[self, lhs])
-
         else:
             if det(lhs).is_nonzero:
                 return Eq(lhs @ self.lhs, lhs @ self.rhs, equivalent=self)
@@ -691,17 +690,29 @@ class Equality(Relational):
         from sympy.matrices.expressions.determinant import det
         if isinstance(rhs, Equality):
             if rhs.lhs.is_square and det(rhs.lhs).is_nonzero or rhs.rhs.is_square and det(rhs.rhs).is_nonzero:
-                return Eq(self.lhs @ rhs.lhs, self.rhs @ rhs.rhs, equivalent=[self, rhs])
-            return Eq(self.lhs @ rhs.lhs, self.rhs @ rhs.rhs, given=[self, rhs])
+                return self.func(self.lhs @ rhs.lhs, self.rhs @ rhs.rhs, equivalent=[self, rhs])
+            return self.func(self.lhs @ rhs.lhs, self.rhs @ rhs.rhs, given=[self, rhs])
 
         else:             
             if rhs.is_square and det(rhs).is_nonzero:
-                return Eq(self.lhs @ rhs, self.rhs @ rhs, equivalent=self)
-            return Eq(self.lhs @ rhs, self.rhs @ rhs, given=self)
+                return self.func(self.lhs @ rhs, self.rhs @ rhs, equivalent=self)
+            return self.func(self.lhs @ rhs, self.rhs @ rhs, given=self)
 
     def __rpow__(self, exp):
-        return Eq(exp ** self.lhs, exp ** self.rhs, equivalent=self)
+        if exp.is_positive:
+            return self.func(exp ** self.lhs, exp ** self.rhs, equivalent=self)
+        
+        if self.lhs.is_positive or self.rhs.is_positive:
+            return self.func(exp ** self.lhs, exp ** self.rhs, given=self)
+        
+        return self    
 
+    def __pow__(self, exp):
+        exp = sympify(exp)
+        if exp.is_positive:
+            return self.func(self.lhs ** exp, self.rhs ** exp, given=self)
+        return self
+        
     def union(self, exp):
         exp = sympify(exp)
         if isinstance(exp, Equality):

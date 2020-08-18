@@ -508,3 +508,7 @@ class _rf(Function):
                         return _rf(_a, b)*_rf(_a + b, c)/_rf(_a, c)
                     elif c < 0:
                         return _rf(_a, b)*_rf(_a + c, -c)/_rf(_a + b + c, -c)
+                    
+    @property
+    def shape(self):
+        return ()

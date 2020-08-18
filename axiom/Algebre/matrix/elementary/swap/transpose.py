@@ -31,18 +31,6 @@ def prove(Eq):
     
     Eq << apply(w)
 
-#     Eq << w[0, i].equality_defined()
-#     
-#     Eq << w[i, 0].equality_defined()
-#     
-#     Eq << Eq[-2] @ Eq[-1]
-#     
-#     Eq << Eq[-1].this.rhs.expand()
-#     
-#     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
-#     
-#     Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
-#     return
     Eq << w[j, i].equality_defined()
     
     Eq << Eq[0] @ Eq[-1]
@@ -53,28 +41,11 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
     
-    return
-    Eq.expand = Eq[-1].this.rhs.function.expand()
+    Eq << Eq[0] @ Eq[0]
     
-    (l, *_), (m, *_) = Eq[-1].rhs.limits     
-    Eq << Equality(KroneckerDelta(i, l) * KroneckerDelta(i, m), KroneckerDelta(i, l) * KroneckerDelta(l, m), plausible=True).equivalent
-    Eq << Equality(KroneckerDelta(j, l) * KroneckerDelta(j, m), KroneckerDelta(j, l) * KroneckerDelta(l, m), plausible=True).equivalent
-    Eq << Equality(KroneckerDelta(i, j) * KroneckerDelta(j, l), KroneckerDelta(i, j) * KroneckerDelta(i, l), plausible=True).equivalent    
-    Eq.expand = Eq.expand.subs(Eq[-1], Eq[-2], Eq[-3])
-
-    Eq.expand = Eq.expand.this.rhs.function.collect(KroneckerDelta(l, m))
+    Eq << Eq[-1].subs(Eq[-2].reversed)
     
-    Eq << Equality(Eq.expand.rhs.function.args[1], 1, plausible=True)
-    
-    Eq << Equality(KroneckerDelta(i, j) * KroneckerDelta(i, l), KroneckerDelta(j, l) * KroneckerDelta(i, l), plausible=True).equivalent
-    
-#     Eq << Eq[-2].subs(Eq[-1])
-    Eq << (Eq[-2] + Eq[-1]).reversed
-    Eq << Eq[-1] - Eq[-1].rhs
-    
-    Eq << Eq[-1].factor()
-    
-
+    Eq << w[i, j].inverse() @ Eq[-1] 
 
 if __name__ == '__main__':
     prove(__file__)

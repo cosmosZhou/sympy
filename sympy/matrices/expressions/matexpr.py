@@ -825,6 +825,7 @@ class MatrixSymbol(MatrixExpr):
     def _sympystr(self, _):   
         return Symbol.sympystr(self.name)
 
+
 class Identity(MatrixExpr):
     """The Matrix Identity I - multiplicative identity
 
@@ -839,6 +840,7 @@ class Identity(MatrixExpr):
     """
     is_Identity = True
     is_ElementaryMatrix = True
+#     is_zero = False
 #     def __new__(cls, *args):
 #         return super(Identity, cls).__new__(cls, args)
 
@@ -1501,9 +1503,8 @@ class Swap(Identity):
         return self.args[2]
 
     def _eval_determinant(self):
-        if self.i == self.j:
-            return S.One
-        return S.NegativeOne
+        from sympy import KroneckerDelta
+        return 2 * KroneckerDelta(self.i, self.j) - 1
 
     @property
     def T(self):

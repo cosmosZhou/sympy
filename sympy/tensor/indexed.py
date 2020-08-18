@@ -557,6 +557,22 @@ class Indexed(Expr):
         from sympy import Equality
         return Equality(self, self.definition, evaluate=False)
 
+    def inverse(self):
+        from sympy.matrices.expressions.inverse import Inverse
+        return Inverse(self)        
+    
+    def _eval_determinant(self):
+        from sympy.matrices.expressions.determinant import det
+        from sympy import Determinant
+        definition = self.definition
+        if definition is not None:
+            res = det(definition)
+            if not isinstance(res, Determinant):
+                return res
+        return Determinant(self)
+        
+                
+        
 class Slice(Expr):
     """Represents a mathematical object with Slices.
 

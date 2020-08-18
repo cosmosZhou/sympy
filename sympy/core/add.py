@@ -539,7 +539,7 @@ class Add(Expr, AssocOp):
 
     def _eval_is_zero(self):
         if self.shape:
-            return None
+            return 
         
         if len(self.args) == 2:
             if self.min().is_extended_positive:
@@ -548,9 +548,23 @@ class Add(Expr, AssocOp):
                 return False    
         
         if self.is_commutative is False:
-            # issue 10528: there is no way to know if a nc symbol
-            # is zero or not
             return
+        
+        from sympy import preorder_traversal, KroneckerDelta 
+        delta = None
+        for arg in preorder_traversal(self):
+            if isinstance(arg, KroneckerDelta):
+                delta = arg
+                break
+            
+        if delta is not None:
+            delta0 = self._subs(delta, S.Zero).is_zero
+            delta1 = self._subs(delta, S.One).is_zero
+            if delta0 and delta1:
+                return True
+            if delta0 is False and delta1 is False:
+                return False
+                
         nz = []
         z = 0
         im_or_z = False
@@ -572,7 +586,7 @@ class Add(Expr, AssocOp):
         if z == len(self.args):
             return True
         if len(nz) == 0 or len(nz) == len(self.args):
-            return None
+            return 
         b = self.func(*nz)
         if b.is_zero:
             if not im_or_z and not im:

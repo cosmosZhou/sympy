@@ -243,7 +243,7 @@ class Power(Expr):
 
     @property
     def shape(self):
-        return ()
+        return self.args[0].shape
     
     @property
     def atomic_dtype(self):

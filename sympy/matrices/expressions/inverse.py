@@ -57,7 +57,7 @@ class Inverse(MatPow):
 
     def _eval_determinant(self):
         from sympy.matrices.expressions.determinant import det
-        return 1/det(self.arg)
+        return 1 / det(self.arg)
 
     def doit(self, **hints):
         if 'inv_expand' in hints and hints['inv_expand'] == False:

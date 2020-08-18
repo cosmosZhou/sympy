@@ -37,17 +37,8 @@ def prove(Eq):
     x = Ref[i:n](p ** i)
     
     eq = Eq[0].subs(i, t)
-    print('Eq[0].subs(i, t) :', eq)
     
-    if eq.lhs.args[-1] != j:
-        print(eq.lhs.args[-1]._assumptions)
-        print(j._assumptions)
-        
     assert eq.lhs.args[-1] == j
-    
-    if eq.rhs.args[-1] != j:
-        print(eq.rhs.args[-1]._assumptions)
-        print(j._assumptions)
     
     assert eq.rhs.args[-1] == j
     
