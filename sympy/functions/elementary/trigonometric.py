@@ -96,11 +96,6 @@ class TrigonometricFunction(Function):
             return True
         return is_extended_real
 
-    @property
-    def wolfram_name(self):
-        name = self.__class__.__name__
-        return name[0].upper() + name[1:]
-
 def _peeloff_pi(arg):
     """
     Split ARG into two parts, a "rest" and a multiple of pi/2.
@@ -206,7 +201,7 @@ def _pi_coeff(arg, cycles=1):
             return cx
 
 
-class sin(TrigonometricFunction):
+class Sin(TrigonometricFunction):
     """
     The sine function.
 
@@ -537,8 +532,9 @@ class sin(TrigonometricFunction):
             return False
         if b < 2 and a > 1:
             return True
+sin = Sin
         
-class cos(TrigonometricFunction):
+class Cos(TrigonometricFunction):
     """
     The cosine function.
 
@@ -1023,6 +1019,8 @@ class cos(TrigonometricFunction):
             return False
         if b < 3 and a > 1:
             return True
+
+cos = Cos
 
 class tan(TrigonometricFunction):
     """

@@ -269,7 +269,7 @@ class LatexPrinter(Printer):
         if expr.is_Mul:
             if not first and _coeff_isneg(expr):
                 return True
-        elif precedence_traditional(expr) < PRECEDENCE["Mul"]:
+        elif precedence_traditional(expr) < PRECEDENCE["Times"]:
             return True
         elif expr.is_Relational:
             return True
@@ -326,28 +326,6 @@ class LatexPrinter(Printer):
     def _print_NoneType(self, e):
         return r"\text{%s}" % e
 
-    def _print_Add(self, expr, order=None):
-        if self.order == 'none':
-            terms = list(expr.args)
-        else:
-            terms = self._as_ordered_terms(expr, order=order)
-
-        tex = ""
-        for i, term in enumerate(terms):
-            if i == 0:
-                pass
-            elif _coeff_isneg(term):
-                tex += " - "
-                term = -term
-            else:
-                tex += " + "
-            term_tex = self._print(term)
-            if self._needs_add_brackets(term):
-                term_tex = r"\left(%s\right)" % term_tex
-            tex += term_tex
-
-        return tex
-
     def _print_Cycle(self, expr):
         from sympy.combinatorics.permutations import Permutation
         if expr.size == 0:
@@ -392,177 +370,36 @@ class LatexPrinter(Printer):
     def _print_Cross(self, expr):
         vec1 = expr._expr1
         vec2 = expr._expr2
-        return r"%s \times %s" % (self.parenthesize(vec1, PRECEDENCE['Mul']),
-                                  self.parenthesize(vec2, PRECEDENCE['Mul']))
+        return r"%s \times %s" % (self.parenthesize(vec1, PRECEDENCE['Times']),
+                                  self.parenthesize(vec2, PRECEDENCE['Times']))
 
     def _print_Curl(self, expr):
         vec = expr._expr
-        return r"\nabla\times %s" % self.parenthesize(vec, PRECEDENCE['Mul'])
+        return r"\nabla\times %s" % self.parenthesize(vec, PRECEDENCE['Times'])
 
     def _print_Divergence(self, expr):
         vec = expr._expr
-        return r"\nabla\cdot %s" % self.parenthesize(vec, PRECEDENCE['Mul'])
+        return r"\nabla\cdot %s" % self.parenthesize(vec, PRECEDENCE['Times'])
 
     def _print_Dot(self, expr):
         vec1 = expr._expr1
         vec2 = expr._expr2
-        return r"%s \cdot %s" % (self.parenthesize(vec1, PRECEDENCE['Mul']),
-                                 self.parenthesize(vec2, PRECEDENCE['Mul']))
+        return r"%s \cdot %s" % (self.parenthesize(vec1, PRECEDENCE['Times']),
+                                 self.parenthesize(vec2, PRECEDENCE['Times']))
 
     def _print_Gradient(self, expr):
         func = expr._expr
-        return r"\nabla %s" % self.parenthesize(func, PRECEDENCE['Mul'])
+        return r"\nabla %s" % self.parenthesize(func, PRECEDENCE['Times'])
 
     def _print_Laplacian(self, expr):
         func = expr._expr
-        return r"\triangle %s" % self.parenthesize(func, PRECEDENCE['Mul'])
-
-    def _print_Mul(self, expr):
-        from sympy.core.power import Pow
-        include_parens = False
-        if _coeff_isneg(expr):
-            expr = -expr
-            tex = "- "
-            if expr.is_Add:
-                tex += "("
-                include_parens = True
-        else:
-            tex = ""
-
-        from sympy.simplify import fraction
-        numer, denom = fraction(expr, exact=True)
-        separator = self._settings['mul_symbol_latex']
-        numbersep = self._settings['mul_symbol_latex_numbers']
-
-        def convert(expr):
-            if not expr.is_Mul:
-                return str(self._print(expr))
-            else:
-                _tex = last_term_tex = ""
-
-                if self.order not in ('old', 'none'):
-                    args = expr.as_ordered_factors()
-                else:
-                    args = list(expr.args)
-
-                # If quantities are present append them at the back
-                args = sorted(args, key=lambda x: x.is_Quantity or (isinstance(x, Pow) and x.base.is_Quantity))
-
-                for i, term in enumerate(args):
-                    term_tex = self._print(term)
-
-                    if self._needs_mul_brackets(term, first=(i == 0),
-                                                last=(i == len(args) - 1)):
-                        term_tex = r"\left(%s\right)" % term_tex
-
-                    if _between_two_numbers_p[0].search(last_term_tex) and \
-                            _between_two_numbers_p[1].match(term_tex):
-                        # between two numbers
-                        _tex += numbersep
-                    elif _tex:
-                        _tex += separator
-
-                    _tex += term_tex
-                    last_term_tex = term_tex
-                return _tex
-
-        if denom is S.One and Pow(1, -1, evaluate=False) not in expr.args:
-            # use the original expression here, since fraction() may have
-            # altered it when producing numer and denom
-            tex += convert(expr)
-
-        else:
-            snumer = convert(numer)
-            sdenom = convert(denom)
-            ldenom = len(sdenom.split())
-            ratio = self._settings['long_frac_ratio']
-            if self._settings['fold_short_frac'] and ldenom <= 2 and \
-                    "^" not in sdenom:
-                # handle short fractions
-                if self._needs_mul_brackets(numer, last=False):
-                    tex += r"\left(%s\right) / %s" % (snumer, sdenom)
-                else:
-                    tex += r"%s / %s" % (snumer, sdenom)
-            elif ratio is not None and \
-                    len(snumer.split()) > ratio * ldenom:
-                # handle long fractions
-                if self._needs_mul_brackets(numer, last=True):
-                    tex += r"\frac{1}{%s}%s\left(%s\right)" \
-                        % (sdenom, separator, snumer)
-                elif numer.is_Mul:
-                    # split a long numerator
-                    a = S.One
-                    b = S.One
-                    for x in numer.args:
-                        if self._needs_mul_brackets(x, last=False) or \
-                                len(convert(a * x).split()) > ratio * ldenom or \
-                                (b.is_commutative is x.is_commutative is False):
-                            b *= x
-                        else:
-                            a *= x
-                    if self._needs_mul_brackets(b, last=True):
-                        tex += r"\frac{%s}{%s}%s\left(%s\right)" \
-                            % (convert(a), sdenom, separator, convert(b))
-                    else:
-                        tex += r"\frac{%s}{%s}%s%s" \
-                            % (convert(a), sdenom, separator, convert(b))
-                else:
-                    tex += r"\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
-            else:
-                tex += r"\frac{%s}{%s}" % (snumer, sdenom)
-
-        if include_parens:
-            tex += ")"
-        return tex
-
-    def _print_Pow(self, expr):
-        # Treat x**Rational(1,n) as special case
-        if expr.exp.is_Rational and abs(expr.exp.p) == 1 and expr.exp.q != 1 \
-                and self._settings['root_notation']:
-            base = self._print(expr.base)
-            expq = expr.exp.q
-
-            if expq == 2:
-                tex = r"\sqrt{%s}" % base
-            elif self._settings['itex']:
-                tex = r"\root{%d}{%s}" % (expq, base)
-            else:
-                tex = r"\sqrt[%d]{%s}" % (expq, base)
-
-            if expr.exp.is_negative:
-                return r"\frac{1}{%s}" % tex
-            else:
-                return tex
-        elif self._settings['fold_frac_powers'] \
-            and expr.exp.is_Rational \
-                and expr.exp.q != 1:
-            base = self.parenthesize(expr.base, PRECEDENCE['Pow'])
-            p, q = expr.exp.p, expr.exp.q
-            # issue #12886: add parentheses for superscripts raised to powers
-            if '^' in base and expr.base.is_Symbol:
-                base = r"\left(%s\right)" % base
-            if expr.base.is_Function:
-                return self._print(expr.base, exp="%s/%s" % (p, q))
-            return r"%s^{%s/%s}" % (base, p, q)
-        elif expr.exp.is_Rational and expr.exp.is_negative and \
-                expr.base.is_commutative:
-            # special case for 1^(-x), issue 9216
-            if expr.base == 1:
-                return r"%s^{%s}" % (expr.base, expr.exp)
-            # things like 1/x
-            return self._print_Mul(expr)
-        else:
-            if expr.base.is_Function:
-                return self._print(expr.base, exp=self._print(expr.exp))
-            else:
-                tex = r"%s^{%s}"
-                return self._helper_print_standard_power(expr, tex)
+        return r"\triangle %s" % self.parenthesize(func, PRECEDENCE['Times'])
 
     def _helper_print_standard_power(self, expr, template):
         exp = self._print(expr.exp)
         # issue #12886: add parentheses around superscripts raised
         # to powers
-        base = self.parenthesize(expr.base, PRECEDENCE['Pow'])
+        base = self.parenthesize(expr.base, PRECEDENCE['Power'])
         if '^' in base and expr.base.is_Symbol:
             base = r"\left(%s\right)" % base
         elif (isinstance(expr.base, Derivative)
@@ -665,7 +502,7 @@ class LatexPrinter(Printer):
             tex = r"\frac{%s^{%s}}{%s}" % (diff_symbol, dim, tex)
 
         return r"%s %s" % (tex, self.parenthesize(expr.expr,
-                                                  PRECEDENCE["Mul"],
+                                                  PRECEDENCE["Times"],
                                                   strict=True))
 
     def _print_Subs(self, subs):
@@ -708,7 +545,7 @@ class LatexPrinter(Printer):
                 symbols.insert(0, r"\, d%s" % self._print(symbol))
 
         return r"%s %s%s" % (tex, self.parenthesize(expr.function,
-                                                    PRECEDENCE["Mul"],
+                                                    PRECEDENCE["Times"],
                                                     strict=True),
                              "".join(symbols))
 
@@ -1528,35 +1365,14 @@ class LatexPrinter(Printer):
         else:
             return r"%s^{\dagger}" % self._print(mat)
 
-    def _print_MatMul(self, expr):
-        from sympy import MatMul
-
-        parens = lambda x: self.parenthesize(x, precedence_traditional(expr),
-                                             False)
-
-        args = expr.args
-#         if isinstance(args[0], Mul):
-#             args = args[0].as_ordered_factors() + list(args[1:])
-#         else:
-        args = list(args)
-
-        if isinstance(expr, MatMul) and _coeff_isneg(expr):
-            if args[0] == -1:
-                args = args[1:]
-            else:
-                args[0] = -args[0]
-            return '- ' + r' \times '.join(map(parens, args))
-        else:
-            return r' \times '.join(map(parens, args))
-
     def _print_Mod(self, expr, exp=None):
         if exp is not None:
             return r'\left(%s\bmod{%s}\right)^{%s}' % \
-                (self.parenthesize(expr.args[0], PRECEDENCE['Mul'],
+                (self.parenthesize(expr.args[0], PRECEDENCE['Times'],
                                    strict=True), self._print(expr.args[1]),
                  self._print(exp))
         return r'%s\bmod{%s}' % (self.parenthesize(expr.args[0],
-                                 PRECEDENCE['Mul'], strict=True),
+                                 PRECEDENCE['Times'], strict=True),
                                  self._print(expr.args[1]))
 
     def _print_HadamardProduct(self, expr):
@@ -2235,7 +2051,7 @@ class LatexPrinter(Printer):
     def _print_Quaternion(self, expr):
         # TODO: This expression is potentially confusing,
         # shall we print it as `Quaternion( ... )`?
-        s = [self.parenthesize(i, PRECEDENCE["Mul"], strict=True)
+        s = [self.parenthesize(i, PRECEDENCE["Times"], strict=True)
              for i in expr.args]
         a = [s[0]] + [i + " " + j for i, j in zip(s[1:], "ijk")]
         return " + ".join(a)

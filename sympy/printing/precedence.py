@@ -11,9 +11,9 @@ PRECEDENCE = {
     "Or": 20,
     "And": 30,
     "Relational": 35,
-    "Add": 40,
-    "Mul": 50,
-    "Pow": 60,
+    "Plus": 40,
+    "Times": 50,
+    "Power": 60,
     "Func": 70,
     "Not": 100,
     "Atom": 1000,
@@ -31,23 +31,23 @@ PRECEDENCE_VALUES = {
     "Implies": PRECEDENCE["Xor"],
     "Or": PRECEDENCE["Or"],
     "And": PRECEDENCE["And"],
-    "Add": PRECEDENCE["Add"],
-    "Pow": PRECEDENCE["Pow"],
+    "Plus": PRECEDENCE["Plus"],
+    "Power": PRECEDENCE["Power"],
     "Relational": PRECEDENCE["Relational"],
-    "Sub": PRECEDENCE["Add"],
+    "Sub": PRECEDENCE["Plus"],
     "Not": PRECEDENCE["Not"],
     "Function" : PRECEDENCE["Func"],
-    "NegativeInfinity": PRECEDENCE["Add"],
-    "MatAdd": PRECEDENCE["Add"],
-    "MatPow": PRECEDENCE["Pow"],
-    "TensAdd": PRECEDENCE["Add"],
+    "NegativeInfinity": PRECEDENCE["Plus"],
+    "MatAdd": PRECEDENCE["Plus"],
+    "MatPow": PRECEDENCE["Power"],
+    "TensAdd": PRECEDENCE["Plus"],
     # As soon as `TensMul` is a subclass of `Mul`, remove this:
-    "TensMul": PRECEDENCE["Mul"],
-    "HadamardProduct": PRECEDENCE["Mul"],
-    "HadamardPower": PRECEDENCE["Pow"],
-    "KroneckerProduct": PRECEDENCE["Mul"],
-    "Equality": PRECEDENCE["Mul"],
-    "Unequality": PRECEDENCE["Mul"],
+    "TensMul": PRECEDENCE["Times"],
+    "HadamardProduct": PRECEDENCE["Times"],
+    "HadamardPower": PRECEDENCE["Power"],
+    "KroneckerProduct": PRECEDENCE["Times"],
+    "Equality": PRECEDENCE["Times"],
+    "Unequality": PRECEDENCE["Times"],
 }
 
 # Sometimes it's not enough to assign a fixed precedence value to a
@@ -58,27 +58,27 @@ PRECEDENCE_VALUES = {
 # Precedence functions
 
 
-def precedence_Mul(item):
+def precedence_Times(item):
     if _coeff_isneg(item):
-        return PRECEDENCE["Add"]
-    return PRECEDENCE["Mul"]
+        return PRECEDENCE["Plus"]
+    return PRECEDENCE["Times"]
 
 
 def precedence_Rational(item):
     if item.p < 0:
-        return PRECEDENCE["Add"]
-    return PRECEDENCE["Mul"]
+        return PRECEDENCE["Plus"]
+    return PRECEDENCE["Times"]
 
 
 def precedence_Integer(item):
     if item.p < 0:
-        return PRECEDENCE["Add"]
+        return PRECEDENCE["Plus"]
     return PRECEDENCE["Atom"]
 
 
 def precedence_Float(item):
     if item < 0:
-        return PRECEDENCE["Add"]
+        return PRECEDENCE["Plus"]
     return PRECEDENCE["Atom"]
 
 
@@ -88,16 +88,16 @@ def precedence_PolyElement(item):
     elif item.is_ground:
         return precedence(item.coeff(1))
     elif item.is_term:
-        return PRECEDENCE["Mul"]
+        return PRECEDENCE["Times"]
     else:
-        return PRECEDENCE["Add"]
+        return PRECEDENCE["Plus"]
 
 
 def precedence_FracElement(item):
     if item.denom == 1:
         return precedence_PolyElement(item.numer)
     else:
-        return PRECEDENCE["Mul"]
+        return PRECEDENCE["Times"]
 
 
 def precedence_UnevaluatedExpr(item):
@@ -106,7 +106,7 @@ def precedence_UnevaluatedExpr(item):
 
 PRECEDENCE_FUNCTIONS = {
     "Integer": precedence_Integer,
-    "Mul": precedence_Mul,
+    "Times": precedence_Times,
     "Rational": precedence_Rational,
     "Float": precedence_Float,
     "PolyElement": precedence_PolyElement,
@@ -148,12 +148,12 @@ def precedence_traditional(item):
     from sympy.tensor.functions import TensorProduct
 
     if isinstance(item, (Integral, Sum, Product, Limit, Derivative, TensorProduct)):
-        return PRECEDENCE["Mul"]
+        return PRECEDENCE["Times"]
     elif isinstance(item, (Transpose, Adjoint)):
-        return PRECEDENCE["Pow"]
+        return PRECEDENCE["Power"]
     elif (item.__class__.__name__ in ("Dot", "Cross", "Gradient", "Divergence",
                                     "Curl", "Laplacian")):
-        return PRECEDENCE["Mul"] - 1
+        return PRECEDENCE["Times"] - 1
     elif isinstance(item, UnevaluatedExpr):
         return precedence_traditional(item.args[0])
     else:

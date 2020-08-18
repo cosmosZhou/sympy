@@ -2231,7 +2231,7 @@ class Basic(with_metaclass(ManagedProperties)):
     
     def to_wolfram(self, global_variables):
         from wolframclient.language import wl        
-        return getattr(wl, self.wolfram_name)(*[arg.to_wolfram(global_variables) for arg in self.args])
+        return getattr(wl, self.__class__.__name__)(*[arg.to_wolfram(global_variables) for arg in self.args])
 
     def _eval_wolfram(self, session=None):
         global_variables = set()

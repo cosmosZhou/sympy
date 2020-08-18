@@ -43,30 +43,6 @@ class StrPrinter(Printer):
         else:
             return str(expr)
 
-    def _print_Add(self, expr, order=None):
-        if self.order == 'none':
-            terms = list(expr.args)
-        else:
-            terms = self._as_ordered_terms(expr, order=order)
-
-        PREC = precedence(expr)
-        l = []
-        for term in terms:
-            t = self._print(term)
-            if t.startswith('-'):
-                sign = "-"
-                t = t[1:]
-            else:
-                sign = "+"
-            if precedence(term) < PREC:
-                l.extend([sign, "(%s)" % t])
-            else:
-                l.extend([sign, t])
-        sign = l.pop(0)
-        if sign == '+':
-            sign = ""
-        return sign + ' '.join(l)
-
     def _print_BooleanTrue(self, expr):
         return "True"
 
@@ -245,62 +221,6 @@ class StrPrinter(Printer):
 
     def _print_DeferredVector(self, expr):
         return expr.name
-
-    def _print_Mul(self, expr):
-
-        prec = precedence(expr)
-
-        c, e = expr.as_coeff_Mul()
-        if c < 0:
-            expr = _keep_coeff(-c, e)
-            sign = "-"
-        else:
-            sign = ""
-
-        a = []  # items in the numerator
-        b = []  # items that are in the denominator (if any)
-
-        pow_paren = []  # Will collect all pow with more than one base element and exp = -1
-
-        if self.order not in ('old', 'none'):
-            args = expr.as_ordered_factors()
-        else:
-            # use make_args in case expr was something like -x -> x
-            args = Mul.make_args(expr)
-
-        # Gather args for numerator/denominator
-        for item in args:
-            if item.is_commutative and item.is_Power and item.exp.is_Rational and item.exp.is_negative:
-                if item.exp != -1:
-                    b.append(Pow(item.base, -item.exp, evaluate=False))
-                else:
-                    if len(item.args[0].args) != 1 and isinstance(item.base, Mul):  # To avoid situations like #14160
-                        pow_paren.append(item)
-                    b.append(Pow(item.base, -item.exp))
-            elif item.is_Rational and item is not S.Infinity:
-                if item.p != 1:
-                    a.append(Rational(item.p))
-                if item.q != 1:
-                    b.append(Rational(item.q))
-            else:
-                a.append(item)
-
-        a = a or [S.One]
-
-        a_str = [self.parenthesize(x, prec, strict=False) for x in a]
-        b_str = [self.parenthesize(x, prec, strict=False) for x in b]
-
-        # To parenthesize Pow with exp = -1 and having more than one Symbol
-        for item in pow_paren:
-            if item.base in b:
-                b_str[b.index(item.base)] = "(%s)" % b_str[b.index(item.base)]
-
-        if not b:
-            return sign + '*'.join(a_str)
-        elif len(b) == 1:
-            return sign + '*'.join(a_str) + "/" + b_str[0]
-        else:
-            return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
 
     def _print_HadamardProduct(self, expr):
         return '.*'.join([self.parenthesize(arg, precedence(expr)) for arg in expr.args])

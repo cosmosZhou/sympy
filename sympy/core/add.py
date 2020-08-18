@@ -72,11 +72,12 @@ def _unevaluated_Add(*args):
 from .decorators import _sympifyit, call_highest_priority
 
 
-class Add(Expr, AssocOp):
+class Plus(Expr, AssocOp):
 
     __slots__ = []
 
     is_Add = True
+    is_Plus = True
 
     @classmethod
     def flatten(cls, seq):
@@ -565,36 +566,36 @@ class Add(Expr, AssocOp):
             if delta0 is False and delta1 is False:
                 return False
                 
-        nz = []
-        z = 0
-        im_or_z = False
-        im = False
-        for a in self.args:
-            if a.is_extended_real:
-                if a.is_zero:
-                    z += 1
-                elif a.is_zero is False:
-                    nz.append(a)
-                else:
-                    return
-            elif a.is_imaginary:
-                im = True
-            elif (S.ImaginaryUnit * a).is_extended_real:
-                im_or_z = True
-            else:
-                return
-        if z == len(self.args):
-            return True
-        if len(nz) == 0 or len(nz) == len(self.args):
-            return 
-        b = self.func(*nz)
-        if b.is_zero:
-            if not im_or_z and not im:
-                return True
-            if im and not im_or_z:
-                return False
-        if b.is_zero is False:
-            return False
+#         nz = []
+#         z = 0
+#         im_or_z = False
+#         im = False
+#         for a in self.args:
+#             if a.is_extended_real:
+#                 if a.is_zero:
+#                     z += 1
+#                 elif a.is_zero is False:
+#                     nz.append(a)
+#                 else:
+#                     return
+#             elif a.is_imaginary:
+#                 im = True
+#             elif (S.ImaginaryUnit * a).is_extended_real:
+#                 im_or_z = True
+#             else:
+#                 return
+#         if z == len(self.args):
+#             return True
+#         if len(nz) == 0 or len(nz) == len(self.args):
+#             return 
+#         b = self.func(*nz)
+#         if b.is_zero:
+#             if not im_or_z and not im:
+#                 return True
+#             if im and not im_or_z:
+#                 return False
+#         if b.is_zero is False:
+#             return False
 
     def _eval_is_irrational(self):
         for t in self.args:
@@ -1300,7 +1301,54 @@ class Add(Expr, AssocOp):
 
         return self.func(*args)
 
-    wolfram_name = 'Plus'
+    def _latex(self, p, order=None):
+        if p.order == 'none':
+            terms = list(self.args)
+        else:
+            terms = p._as_ordered_terms(self, order=order)
 
+        tex = ""
+        from sympy.core.function import _coeff_isneg 
+        for i, term in enumerate(terms):
+            if i == 0:
+                pass
+            elif _coeff_isneg(term):
+                tex += " - "
+                term = -term
+            else:
+                tex += " + "
+            term_tex = p._print(term)
+            if p._needs_add_brackets(term):
+                term_tex = r"\left(%s\right)" % term_tex
+            tex += term_tex
+
+        return tex
+
+    def _sympystr(self, p, order=None):
+        if p.order == 'none':
+            terms = list(self.args)
+        else:
+            terms = p._as_ordered_terms(self, order=order)
+
+        from sympy.printing.precedence import precedence 
+        PREC = precedence(self)
+        l = []
+        for term in terms:
+            t = p._print(term)
+            if t.startswith('-'):
+                sign = "-"
+                t = t[1:]
+            else:
+                sign = "+"
+            if precedence(term) < PREC:
+                l.extend([sign, "(%s)" % t])
+            else:
+                l.extend([sign, t])
+        sign = l.pop(0)
+        if sign == '+':
+            sign = ""
+        return sign + ' '.join(l)
+
+Add = Plus
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

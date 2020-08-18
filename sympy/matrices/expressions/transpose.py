@@ -42,7 +42,7 @@ class Transpose(MatrixExpr):
     
     def _sympystr(self, p):
         from sympy.printing.precedence import PRECEDENCE
-        return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Pow"])
+        return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Power"])
 
     def _latex(self, p): 
         from sympy.printing.precedence import precedence_traditional

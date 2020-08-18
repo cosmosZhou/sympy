@@ -46,10 +46,10 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    p = Symbol("p")    
+    p = Symbol("p", complex=True)    
     n = Symbol('n', domain=Interval(1, oo, integer=True))
-    x = Symbol("x", shape=(n,))
-    y = Symbol("y", shape=(n,))
+    x = Symbol("x", shape=(n,), complex=True)
+    y = Symbol("y", shape=(n,), complex=True)
     k = Symbol('k', domain=Interval(1, oo, integer=True))
     
     given = Exists(Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y), (x,), (y,))

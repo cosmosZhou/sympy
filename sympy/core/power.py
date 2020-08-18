@@ -1742,16 +1742,51 @@ class Power(Expr):
             return exp(re(exponent * z))
         elif not self.is_complex and not exponent.is_integer:
             return self
-#         base, exp = self.args
-#         if base.is_complex or exp.is_complex :
-#             return None
-#         if exp.is_integer:
-#             if exp.is_even():
-#                 return self
-#             if exp.is_odd():
-#                 return self.func(base._eval_Abs(), exp, evaluate=False)
-#             return None
-#         return self
+
+    def _latex(self, p):
+        # Treat x**Rational(1,n) as special case
+        if self.exp.is_Rational and abs(self.exp.p) == 1 and self.exp.q != 1 \
+                and p._settings['root_notation']:
+            base = p._print(self.base)
+            expq = self.exp.q
+
+            if expq == 2:
+                tex = r"\sqrt{%s}" % base
+            elif p._settings['itex']:
+                tex = r"\root{%d}{%s}" % (expq, base)
+            else:
+                tex = r"\sqrt[%d]{%s}" % (expq, base)
+
+            if self.exp.is_negative:
+                return r"\frac{1}{%s}" % tex
+            else:
+                return tex
+        elif p._settings['fold_frac_powers'] \
+            and self.exp.is_Rational \
+                and self.exp.q != 1:
+            from sympy.printing.precedence import PRECEDENCE
+            base = p.parenthesize(self.base, PRECEDENCE['Pow'])
+            p, q = self.exp.p, self.exp.q
+            # issue #12886: add parentheses for superscripts raised to powers
+            if '^' in base and self.base.is_Symbol:
+                base = r"\left(%s\right)" % base
+            if self.base.is_Function:
+                return p._print(self.base, exp="%s/%s" % (p, q))
+            return r"%s^{%s/%s}" % (base, p, q)
+        elif self.exp.is_Rational and self.exp.is_negative and \
+                self.base.is_commutative:
+            # special case for 1^(-x), issue 9216
+            if self.base == 1:
+                return r"%s^{%s}" % (self.base, self.exp)
+            # things like 1/x
+            from sympy.core.mul import Times
+            return Times._latex(self, p)
+        else:
+            if self.base.is_Function:
+                return p._print(self.base, exp=p._print(self.exp))
+            else:
+                tex = r"%s^{%s}"
+                return p._helper_print_standard_power(self, tex)
 
     def _sympystr(self, p, rational=False):
         from sympy.printing.precedence import precedence
@@ -1765,7 +1800,7 @@ class Power(Expr):
 
         if self.is_commutative:
             if -self.exp is S.Half and not rational:
-                # Note: Don't test "expr.exp == -S.Half" here, because that will
+                # Note: Don't test "self.exp == -S.Half" here, because that will
                 # match -0.5, which we don't want.
                 arg = p._print(self.base)
                 if re.compile('\w+').fullmatch(arg):
@@ -1784,8 +1819,6 @@ class Power(Expr):
             if e.startswith('(Rational'):
                 return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
         return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e)
-
-    wolfram_name = 'Power'
     
 Pow = Power    
 from .add import Add

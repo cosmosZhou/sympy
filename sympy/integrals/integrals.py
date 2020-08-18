@@ -31,7 +31,7 @@ from sympy.simplify.fu import sincos_to_sum
 from sympy.utilities.misc import filldedent
 
 
-class Integral(AddWithLimits):
+class Integrate(AddWithLimits):
     """Represents unevaluated integral."""
     is_Integral = True
     __slots__ = ['is_commutative']
@@ -1576,6 +1576,8 @@ class Integral(AddWithLimits):
             conditions = wl.And(*conditions)
             
         return wl.Integrate(function, limit, wl.Rule(wlexpr('Assumptions'), conditions))
+
+Integral = Integrate
 
 def integrate(*args, **kwargs):
     """integrate(f, var, ...)

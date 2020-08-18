@@ -89,11 +89,12 @@ def _unevaluated_Mul(*args):
     return Mul._from_args(newargs)
 
 
-class Mul(Expr, AssocOp):
+class Times(Expr, AssocOp):
 
     __slots__ = []
 
     is_Mul = True
+    is_Times = True
 
     def argmax_shape(self):
         import numpy as np
@@ -1914,7 +1915,164 @@ class Mul(Expr, AssocOp):
         """
         return self._eval_pos_neg(1)
 
-    wolfram_name = 'Times'
+    def _latex(self, p):
+        from sympy.core.power import Pow
+        from sympy.core.function import _coeff_isneg
+        include_parens = False
+        if _coeff_isneg(self):
+            self = -self
+            tex = "- "
+            if self.is_Add:
+                tex += "("
+                include_parens = True
+        else:
+            tex = ""
+
+        from sympy.simplify import fraction
+        numer, denom = fraction(self, exact=True)
+        separator = p._settings['mul_symbol_latex']
+        numbersep = p._settings['mul_symbol_latex_numbers']
+
+        def convert(expr):
+            from sympy.printing.latex import _between_two_numbers_p
+            if not expr.is_Mul:
+                return str(p._print(expr))
+            else:
+                _tex = last_term_tex = ""
+
+                if p.order not in ('old', 'none'):
+                    args = expr.as_ordered_factors()
+                else:
+                    args = list(expr.args)
+
+                # If quantities are present append them at the back
+                args = sorted(args, key=lambda x: x.is_Quantity or (isinstance(x, Pow) and x.base.is_Quantity))
+
+                for i, term in enumerate(args):
+                    term_tex = p._print(term)
+
+                    if p._needs_mul_brackets(term, first=(i == 0),
+                                                last=(i == len(args) - 1)):
+                        term_tex = r"\left(%s\right)" % term_tex
+
+                    if _between_two_numbers_p[0].search(last_term_tex) and \
+                            _between_two_numbers_p[1].match(term_tex):
+                        # between two numbers
+                        _tex += numbersep
+                    elif _tex:
+                        _tex += separator
+
+                    _tex += term_tex
+                    last_term_tex = term_tex
+                return _tex
+
+        if denom is S.One and Pow(1, -1, evaluate=False) not in self.args:
+            # use the original expression here, since fraction() may have
+            # altered it when producing numer and denom
+            tex += convert(self)
+
+        else:
+            snumer = convert(numer)
+            sdenom = convert(denom)
+            ldenom = len(sdenom.split())
+            ratio = p._settings['long_frac_ratio']
+            if p._settings['fold_short_frac'] and ldenom <= 2 and \
+                    "^" not in sdenom:
+                # handle short fractions
+                if p._needs_mul_brackets(numer, last=False):
+                    tex += r"\left(%s\right) / %s" % (snumer, sdenom)
+                else:
+                    tex += r"%s / %s" % (snumer, sdenom)
+            elif ratio is not None and \
+                    len(snumer.split()) > ratio * ldenom:
+                # handle long fractions
+                if p._needs_mul_brackets(numer, last=True):
+                    tex += r"\frac{1}{%s}%s\left(%s\right)" \
+                        % (sdenom, separator, snumer)
+                elif numer.is_Mul:
+                    # split a long numerator
+                    a = S.One
+                    b = S.One
+                    for x in numer.args:
+                        if p._needs_mul_brackets(x, last=False) or \
+                                len(convert(a * x).split()) > ratio * ldenom or \
+                                (b.is_commutative is x.is_commutative is False):
+                            b *= x
+                        else:
+                            a *= x
+                    if p._needs_mul_brackets(b, last=True):
+                        tex += r"\frac{%s}{%s}%s\left(%s\right)" \
+                            % (convert(a), sdenom, separator, convert(b))
+                    else:
+                        tex += r"\frac{%s}{%s}%s%s" \
+                            % (convert(a), sdenom, separator, convert(b))
+                else:
+                    tex += r"\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
+            else:
+                tex += r"\frac{%s}{%s}" % (snumer, sdenom)
+
+        if include_parens:
+            tex += ")"
+        return tex
+    
+    
+    def _sympystr(self, p):
+        from sympy.printing.precedence import precedence
+        prec = precedence(self)
+
+        c, e = self.as_coeff_Mul()
+        if c < 0:
+            self = _keep_coeff(-c, e)
+            sign = "-"
+        else:
+            sign = ""
+
+        a = []  # items in the numerator
+        b = []  # items that are in the denominator (if any)
+
+        pow_paren = []  # Will collect all pow with more than one base element and exp = -1
+
+        if p.order not in ('old', 'none'):
+            args = self.as_ordered_factors()
+        else:
+            # use make_args in case self was something like -x -> x
+            args = Mul.make_args(self)
+
+        # Gather args for numerator/denominator
+        for item in args:
+            if item.is_commutative and item.is_Power and item.exp.is_Rational and item.exp.is_negative:
+                if item.exp != -1:
+                    b.append(Pow(item.base, -item.exp, evaluate=False))
+                else:
+                    if len(item.args[0].args) != 1 and isinstance(item.base, Mul):  # To avoid situations like #14160
+                        pow_paren.append(item)
+                    b.append(Pow(item.base, -item.exp))
+            elif item.is_Rational and item is not S.Infinity:
+                if item.p != 1:
+                    a.append(Rational(item.p))
+                if item.q != 1:
+                    b.append(Rational(item.q))
+            else:
+                a.append(item)
+
+        a = a or [S.One]
+
+        a_str = [p.parenthesize(x, prec, strict=False) for x in a]
+        b_str = [p.parenthesize(x, prec, strict=False) for x in b]
+
+        # To parenthesize Pow with exp = -1 and having more than one Symbol
+        for item in pow_paren:
+            if item.base in b:
+                b_str[b.index(item.base)] = "(%s)" % b_str[b.index(item.base)]
+
+        if not b:
+            return sign + '*'.join(a_str)
+        elif len(b) == 1:
+            return sign + '*'.join(a_str) + "/" + b_str[0]
+        else:
+            return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
+    
+Mul = Times
     
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only

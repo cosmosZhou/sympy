@@ -51,6 +51,7 @@ class MatMul(MatrixExpr, Mul):
         args = list(map(sympify, args))
         
         if any(arg.is_MatMul for arg in args):
+
             def generator():
                 for arg in args:
                     if arg.is_MatMul:
@@ -367,6 +368,25 @@ class MatMul(MatrixExpr, Mul):
 
         return sign + ' @ '.join(p.parenthesize(arg, level) for arg in self.args)
 
+    def _latex(self, p):
+        from sympy import MatMul
+
+        from sympy.printing.precedence import precedence_traditional
+        from sympy.core.function import _coeff_isneg
+        parens = lambda x: p.parenthesize(x, precedence_traditional(self), False)
+
+        args = self.args
+        args = list(args)
+
+        if isinstance(self, MatMul) and _coeff_isneg(self):
+            if args[0] == -1:
+                args = args[1:]
+            else:
+                args[0] = -args[0]
+            return '- ' + r' \times '.join(map(parens, args))
+        else:
+            return r' \times '.join(map(parens, args))
+
     def as_ordered_factors(self, **_):
         return [self]
 
@@ -374,6 +394,7 @@ class MatMul(MatrixExpr, Mul):
         if self.shape:
             return False
         return True
+
     
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """
