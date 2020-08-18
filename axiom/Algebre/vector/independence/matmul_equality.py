@@ -55,6 +55,11 @@ def prove(Eq):
     given = Exists(Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y), (x,), (y,))
     
     Eq << apply(given)
+    
+    i = Symbol('i', domain=Interval(1, n, integer=True))
+    Eq << given.subs(p, i)
+    
+    Eq << Eq[-1].forall(i)
 
 
 if __name__ == '__main__':
