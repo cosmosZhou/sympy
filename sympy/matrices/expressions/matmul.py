@@ -269,11 +269,6 @@ class MatMul(MatrixExpr, Mul):
                     args = [arg.expand(deep=True) for arg in args]
                 return A.func(*args)
             
-            if isinstance(A, Addition):
-                if B.is_Plus:
-                    return B.func(*[A @ b for b in B.args])
-                return self
-                
             if len(A.shape) < 2:
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]

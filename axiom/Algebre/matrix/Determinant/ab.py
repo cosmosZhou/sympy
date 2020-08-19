@@ -34,7 +34,13 @@ def prove(Eq):
     
     L = Symbol('L', shape=(4, 4), definition=Eq[0].lhs.arg)
     Eq << identity(L).definition
-    
+
+    d = det(Multiplication(4, 0, 1 / a[0]))
+    assert d.base.is_complex
+    assert d.is_complex
+    assert not d.base.is_infinite
+    assert d.is_nonzero
+        
     Eq << Eq[-1] @ Multiplication(4, 0, 1 / a[0])
     
     Eq << Eq[-1] @ Multiplication(4, 3, 1 / b[3])
@@ -44,6 +50,12 @@ def prove(Eq):
     Eq << Multiplication(4, 3, b[2]) @ Eq[-1] 
     
     Eq << Eq[-1].det()
+    
+    Eq << Eq[-1].subs(Eq[1])
+    
+    Eq << Eq[-1].subs(Eq[0])
+    
+    Eq << Eq[-1].this.lhs.expand()
 
 
 if __name__ == '__main__':

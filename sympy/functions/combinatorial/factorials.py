@@ -740,7 +740,7 @@ ff = FallingFactorial
 ###############################################################################
 
 
-class binom(CombinatorialFunction):
+class Binomial(CombinatorialFunction):
     r"""Implementation of the binomial coefficient. It can be defined
     in two ways depending on its desired interpretation:
 
@@ -1070,4 +1070,4 @@ class binom(CombinatorialFunction):
         else:
             return tex
     
-binomial = binom
+binomial = binom = Binomial

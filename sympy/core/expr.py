@@ -998,7 +998,7 @@ class Expr(Basic, EvalfMixin):
         if zero:
             return False
         if zero is False:
-            return self.is_real
+            return self.is_complex
         
     def _eval_is_extended_nonzero(self):
         zero = self.is_zero

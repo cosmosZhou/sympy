@@ -9,12 +9,8 @@ from sympy.matrices.expressions.matmul import MatMul
 
 @plausible
 def apply(given):
-    if given.is_Exists:
-        lhs, rhs = given.function.args        
-    elif given.is_Equality:
-        lhs, rhs = given.lhs, given.rhs
-    else:
-        return
+    assert given.is_Equality
+    lhs, rhs = given.args
     
     assert lhs.is_MatMul
     *x, p_polynomial = lhs.args
@@ -60,7 +56,7 @@ def prove(Eq):
     y = Symbol("y", shape=(m, n))
     k = Symbol('k', domain=Interval(1, oo, integer=True))
     
-    given = Exists(Equality(x @ Ref[k:n](p ** k), y @ Ref[k:n](p ** k)), (x,), (y,))
+    given = Equality(x @ Ref[k:n](p ** k), y @ Ref[k:n](p ** k))
     
     Eq << apply(given)
     

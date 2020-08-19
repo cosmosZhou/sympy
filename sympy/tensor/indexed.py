@@ -538,6 +538,9 @@ class Indexed(Expr):
     def _eval_is_extended_real(self):
         return self.base.is_extended_real
 
+    def _eval_is_complex(self):
+        return self.base.is_complex
+
     def _eval_is_extended_negative(self):
         return self.base.is_extended_negative
 

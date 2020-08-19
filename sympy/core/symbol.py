@@ -643,8 +643,6 @@ class Symbol(AtomicExpr, NotIterable):
                 return self
             return Slice(self, indices, **kw_args)
         else:
-#             if self.shape and len(self.shape) != 1:
-#                 raise IndexException("Rank mismatch.")
             if self.definition is not None:
                 from sympy.concrete.expr_with_limits import Ref
                 if isinstance(self.definition, Ref):
@@ -652,7 +650,8 @@ class Symbol(AtomicExpr, NotIterable):
                     from sympy.stats.rv import RandomSymbol
                     if len(ref.limits) == 1 and isinstance(ref.function, RandomSymbol):
                         return ref[indices]
-            assert indices < self.shape[0]
+            boolean = indices < self.shape[0]
+            assert boolean is True or not boolean.is_BooleanFalse
             return Indexed(self, indices, **kw_args)
 
     def has_match(self, exp):
@@ -813,6 +812,7 @@ class Symbol(AtomicExpr, NotIterable):
             return
         if 'definition' in self._assumptions:
             return self._assumptions['definition'].is_finite
+        return True
 
     def _eval_is_integer(self):
         if 'domain' in self._assumptions:
