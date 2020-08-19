@@ -257,12 +257,13 @@ class MatMul(MatrixExpr, Mul):
                 return summations.Sum(exp(self.args[0].arg + self.args[1].arg.T))
         return self
 
-    def expand(self, free_symbol=None, deep=True):
+    def expand(self, free_symbol=None, deep=True, **_):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.concrete.summations import Sum
         if len(self.args) == 2:
             A, B = self.args
-
+            if A.is_MatPow:
+                return self
             if isinstance(A, (VConcatenate, HConcatenate)):
                 args = [self.func(arg, B) for arg in A.args]
                 if deep:

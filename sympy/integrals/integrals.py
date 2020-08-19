@@ -411,7 +411,10 @@ class Integrate(AddWithLimits):
         manual = hints.get('manual', None)
         wolfram = hints.get('wolfram', None)
         if wolfram:
-            return self._eval_wolfram()
+            try:
+                return self._eval_wolfram()
+            except :
+                ...
         
         if len(list(filter(None, (manual, meijerg, risch, heurisch)))) > 1:
             raise ValueError("At most one of manual, meijerg, risch, heurisch can be True")

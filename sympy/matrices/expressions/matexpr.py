@@ -77,38 +77,13 @@ class MatrixExpr(Expr):
         args = map(_sympify, args)
         return Basic.__new__(cls, *args, **kwargs)
 
-    # The following is adapted from the core Expr object
-#     def __neg__(self):
-#         return MatMul(S.NegativeOne, self).doit()
-
     def __abs__(self):
         raise NotImplementedError
-
-#     @_sympifyit('other', NotImplemented)
-#     @call_highest_priority('__radd__')
-#     def __add__(self, other):
-#         return MatAdd(self, other, check=True).doit()
-
-    @_sympifyit('other', NotImplemented)
-    @call_highest_priority('__add__')
-    def __radd__(self, other):
-        return MatAdd(other, self, check=True).doit()
-
-#     @_sympifyit('other', NotImplemented)
-#     @call_highest_priority('__rsub__')
-#     def __sub__(self, other):
-#         return MatAdd(self, -other, check=True).doit()
-
-#     @_sympifyit('other', NotImplemented)
-#     @call_highest_priority('__sub__')
-#     def __rsub__(self, other):
-#         return MatAdd(other, -self, check=True).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmul__')
     def __mul__(self, other):
         return Mul(self, other)
-#         return MatMul(self, other).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmatmul__')
@@ -119,7 +94,6 @@ class MatrixExpr(Expr):
     @call_highest_priority('__mul__')
     def __rmul__(self, other):
         return Mul(other, self)
-#         return MatMul(other, self).doit()
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__matmul__')
@@ -1496,6 +1470,25 @@ class VConcatenate(Concatenate):
                     return self.func(*[x + y for x, y in zip(self.args, other.args)])
         return Expr.__add__(self, other)
 
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            return MatrixExpr.simplify(self, deep=deep, **kwargs)
+        if self.shape[0] == len(self.args):
+            from sympy import Indexed
+            start = None
+            for i, arg in enumerate(self.args):
+                if not isinstance(arg, Indexed):
+                    return self
+                diff = arg.indices[-1] - i
+                if start is None:
+                    start = diff
+                else:
+                    if start != diff:
+                        return self
+                
+            return arg.base[start:len(self.args)]
+        return self
+
 
 # precondition: i > j or i < j
 class Swap(Identity):    
@@ -1702,22 +1695,21 @@ class Addition(Multiplication):
         if isinstance(other, VConcatenate):
             other_i = other[self.i]
             other_j = other[self.j]
-            if not other_i.is_Indexed and not other_j.is_Indexed:
-                args = []
-                if self.i < self.j:
-                    if self.i != 0:
-                        args.append(other[:self.i])
-                    args.append(other_i + other_j * self.multiplier)
-                    if self.i + 1 != self.shape[0]:
-                        args.append(other[self.i + 1:])
-                elif self.i > self.j:                    
+            args = []
+            if self.i < self.j:
+                if self.i != 0:
                     args.append(other[:self.i])
-                    args.append(other_i + other_j * self.multiplier)
-                    if self.i + 1 != self.shape[0]:
-                        args.append(other[self.i + 1:])                    
-                else:
-                    return MatrixExpr.__matmul__(self, other)
-                return VConcatenate(*args)  
+                args.append(other_i + other_j * self.multiplier)
+                if self.i + 1 != self.shape[0]:
+                    args.append(other[self.i + 1:])
+            elif self.i > self.j:                    
+                args.append(other[:self.i])
+                args.append(other_i + other_j * self.multiplier)
+                if self.i + 1 != self.shape[0]:
+                    args.append(other[self.i + 1:])                    
+            else:
+                return MatrixExpr.__matmul__(self, other)
+            return VConcatenate(*args).simplify()  
             
         return MatrixExpr.__matmul__(self, other)
 
@@ -1768,7 +1760,7 @@ class Shift(Identity):
 #     0   1   0   0   0   0
 #     0   0   0   1   0   0    <-----self.i    th row        
 #     0   0   0   0   1   0    
-#     0   0   1   0   0   0    <-----self.j th row                    
+#     0   0   1   0   0   0    <-----self.j    th row                    
 #     0   0   0   0   0   1  
 #             ^       ^
 #             |       |

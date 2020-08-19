@@ -1016,9 +1016,8 @@ class AddWithLimits(ExprWithLimits):
                     args.append(self.func(arg, *self.limits))
             return Add(*args)
 #             return Add(*[self.func(i, *self.limits) for i in summand.args])
-        elif summand.is_Matrix:
-            return Matrix._new(summand.rows, summand.cols,
-                [self.func(i, *self.limits) for i in summand._mat])
+        elif summand.is_DenseMatrix:
+            return Matrix._new(summand.rows, summand.cols, [self.func(i, *self.limits) for i in summand._mat])
         elif summand != self.function:
             if _coeff_isneg(summand):
                 return -self.func(-summand, *self.limits)
@@ -2631,8 +2630,24 @@ class Ref(ExprWithLimits):
         if self.function.is_zero:
             return True
 
-    def doit(self, **hints):
-        return self
+    def as_VConcatenate(self):
+        if len(self.limits) > 1:
+            return self
+        limit, *_ = self.limits
+        
+        if len(limit) != 3:
+            return self
+        x, a, b = limit
+        assert a == 0
+        diff = b - a
+        if not diff.is_Number:
+            return self
+        
+        array = []
+        for i in range(diff + 1):
+            array.append(self.function._subs(x, i))
+        from sympy.matrices.expressions.matexpr import VConcatenate
+        return VConcatenate(*array)
 
     def as_coeff_mmul(self):
         return 1, self
@@ -3260,22 +3275,47 @@ class Ref(ExprWithLimits):
         if self.function.is_Ref:
             return self.func(self.function.function, *self.limits + self.function.limits).simplify()
         
-        if len(limits_dict) == 1 and self.function.is_Piecewise:
-            if len(self.function.args) == 2:
-                e0, c0 = self.function.args[0]
-                if c0.is_Contains:
-                    e, s = c0.args
-                    if e in limits_dict.keys():
-                        if s.is_Complement:
-                            U, A = s.args
-                            domain, *_ = limits_dict.values()
-                            if domain in U:
-                                e1, c1 = self.function.args[1]
-                                function = self.function.func((e1, Contains(e, A)), (e0, True)).simplify()
-                                return self.func(function, *self.limits).simplify()
-                        elif s.is_Interval:
-                            if limits_dict[e] in s:
-                                return self.func(e0, *self.limits).simplify()
+        if self.function.is_Piecewise:
+            if len(limits_dict) > 1:
+                function = self.func(self.function, self.limits[-1]).simplify()
+                if not function.is_Ref:
+                    return self.func(function, *self.limits[:-1]).simplify()
+            else:
+                if len(self.function.args) == 2:
+                    e0, c0 = self.function.args[0]
+                    if c0.is_Contains:
+                        e, s = c0.args
+                        if e in limits_dict.keys():
+                            if s.is_Complement:
+                                U, A = s.args
+                                domain, *_ = limits_dict.values()
+                                if domain in U:
+                                    e1, c1 = self.function.args[1]
+                                    function = self.function.func((e1, Contains(e, A)), (e0, True)).simplify()
+                                    return self.func(function, *self.limits).simplify()
+                            elif s.is_Interval:
+                                if limits_dict[e] in s:
+                                    return self.func(e0, *self.limits).simplify()
+                if self.function.is_set:
+                    return self
+                
+                constant = None
+                args = []
+                for e, c in self.function.args:
+                    first, second = self.simplify_add(e)
+                    if first is None:
+                        return self
+                    if constant is None:
+                        constant = second
+                    else:
+                        if constant != second:
+                            return self
+                    args.append((first, c))
+                this = self.function.func(*args)
+                if second is not None:
+                    this += self.func(second, *self.limits).simplify()
+                return this
+                    
         from sympy import Transpose
         from sympy.matrices.expressions.matmul import MatMul
         
@@ -3363,7 +3403,6 @@ class Ref(ExprWithLimits):
 
     def simplify_add(self, exp):
         from sympy.core.basic import Atom
-        from sympy.tensor.indexed import Indexed
         x = tuple(x for x, *_ in self.limits)
         if isinstance(exp, Atom):
             if exp in x:

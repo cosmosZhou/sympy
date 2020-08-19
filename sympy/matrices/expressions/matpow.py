@@ -8,7 +8,7 @@ from sympy.matrices import MatrixBase
 
 
 class MatPow(MatrixExpr):
-
+    is_MatPow = True
     def __new__(cls, base, exp):
         base = _sympify(base)
         assert base.is_square, str(base)        
@@ -70,7 +70,7 @@ class MatPow(MatrixExpr):
             return Identity(base.shape[0])
         elif isinstance(base, ZeroMatrix) and exp.is_negative:
             raise ValueError("Matrix determinant is 0, not invertible.")
-        elif isinstance(base, (Identity, ZeroMatrix)):
+        elif base.is_Identity or isinstance(base, ZeroMatrix):
             return base
         elif isinstance(base, MatrixBase) and exp.is_number:
             if exp is S.One:

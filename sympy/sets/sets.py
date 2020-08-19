@@ -224,14 +224,19 @@ class Set(Basic):
             return Union(*(p for p in product_sets if p != other))
 
         elif isinstance(other, Interval):
-#             if isinstance(self, Interval) or isinstance(self, FiniteSet):
             if isinstance(self, Interval) :
                 if other.is_integer:
                     return Intersection(other, self.complement(S.Integers))
                 return Intersection(other, self.complement(S.Reals))
 
         elif isinstance(other, Union):
-            return Union(*(o - self for o in other.args))
+            args = []
+            for arg in other.args:
+                diff = arg - self
+                if diff.is_Complement and diff.args[1] == self:
+                    return 
+                args.append(diff)    
+            return Union(*args)
 
         elif isinstance(other, Complement):
             if other.args[0] in self:

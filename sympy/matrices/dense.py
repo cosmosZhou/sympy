@@ -38,7 +38,8 @@ def _compare_sequence(a, b):
 class DenseMatrix(MatrixBase):
 
     is_MatrixExpr = False
-
+    is_DenseMatrix = True
+    
     _op_priority = 10.01
     _class_priority = 4
 

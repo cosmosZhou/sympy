@@ -102,8 +102,12 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Matrix = False
     is_Vector = False
     is_Point = False
+    
     is_MatAdd = False
     is_MatMul = False
+    is_MatPow = False
+    is_DenseMatrix = False
+    
     is_set = False
     is_EmptySet = None
     is_Union = False
@@ -2109,12 +2113,11 @@ class Basic(with_metaclass(ManagedProperties)):
                     name = 'a'
 
                 if name not in free_symbols:
+                    from sympy import Symbol
                     if shape:
-                        from sympy.tensor.indexed import IndexedBase
-                        return IndexedBase(name, shape=shape, **kwargs)
-                    else:
-                        from sympy import Symbol
-                        return Symbol(name, **kwargs)
+                        kwargs['shape'] = shape
+                                            
+                    return Symbol(name, **kwargs)
 
     # performing other in self
     def contains_with_subset(self, other):

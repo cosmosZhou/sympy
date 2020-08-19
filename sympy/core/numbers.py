@@ -880,7 +880,9 @@ class Number(AtomicExpr):
     def simplify(self, *_, **__):
         return self
 
-
+    def _dummy_eq(self, other):
+        return self == other
+    
 class Float(Number):
     """Represent a floating-point number of arbitrary precision.
 

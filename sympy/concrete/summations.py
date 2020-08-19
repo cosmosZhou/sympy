@@ -184,8 +184,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         else:
             f = self.function
 
-        if self.function.is_Matrix:
-            return self.expand().doit()
+#         if self.function.is_Matrix:
+#             return self.expand().doit()
 
         for n, limit in enumerate(self.limits):
             if len(limit) != 3:

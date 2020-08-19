@@ -1,19 +1,16 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity
+from sympy.utility import plausible, identity, Sum
 from sympy.core.relational import Equality
 from sympy import S
-from sympy.matrices.expressions.matexpr import HConcatenate, VConcatenate, \
-    Addition, Multiplication
+from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
 from sympy.matrices.expressions.determinant import det
 
 
 @plausible
-def apply(a, b, c):
-    assert VConcatenate(b, c, a).shape == (3, 3)
-    assert VConcatenate(c, a, b).shape == (3, 3)
-    assert VConcatenate(a, b, c).shape == (3, 3)
-    
-    return Equality(det(VConcatenate(b, c, a) + VConcatenate(c, a, b)), det(VConcatenate(a, b, c)) * 2)
+def apply(A):
+    n = A.shape[0]
+    k = Symbol('k', integer=True)    
+    return Equality(det(Sum[k:1:n-1]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
 
 
 from sympy.utility import check
@@ -21,31 +18,50 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    a = Symbol('a', shape=(3,), complex=True)
-    b = Symbol('b', shape=(3,), complex=True)
-    c = Symbol('c', shape=(3,), complex=True)
+    n = 6
+    A = Symbol('A', shape=(n, n), complex=True)
     
-    Eq << apply(a, b, c)
+    Eq << apply(A)
     
-    L = Symbol('L', shape=(3, 3), definition=Eq[0].lhs.arg)
+    L = Symbol('L', shape=(n, n), definition=Eq[0].lhs.arg)
     Eq << identity(L).definition
+    shift = Eq[-1].rhs.function.args[0].base
     
-    Eq << Addition(3, 0, 1) @ Eq[-1]    
-    Eq << Addition(3, 0, 2) @ Eq[-1]
-    Eq << Multiplication(3, 0, S.One / 2) @ Eq[-1]
+    Eq.L_definition = Eq[-1].this.rhs.doit()
     
-    Eq << Addition(3, 1, 0, -1) @ Eq[-1]
-    Eq << Multiplication(3, 1, -1) @ Eq[-1]
+    Eq << identity(shift @ A).expand()
+    Eq << Eq[-1].this.rhs.as_VConcatenate()
     
-    Eq << Addition(3, 2, 0, -1) @ Eq[-1]
-    Eq << Multiplication(3, 2, -1) @ Eq[-1]
+    Eq << shift @ Eq[-1]    
+    Eq << shift @ Eq[-1]
+    Eq << shift @ Eq[-1]
+    Eq << shift @ Eq[-1]
     
-    Eq << Addition(3, 0, 1, -1) @ Eq[-1]    
-    Eq << Addition(3, 0, 2, -1) @ Eq[-1]
+    Eq << Eq[-1] + Eq[-2] + Eq[-3] + Eq[-4] + Eq[-5]
+    Eq << Eq.L_definition.subs(Eq[-1])
+
+    Eq << Addition(n, 0, 1) @ Eq[-1]        
+    Eq << Addition(n, 0, 2) @ Eq[-1]
+    Eq << Addition(n, 0, 3) @ Eq[-1]
+    Eq << Addition(n, 0, 4) @ Eq[-1]
+    Eq << Addition(n, 0, 5) @ Eq[-1]
+
+    Eq << Multiplication(n, 0, S.One / (n-1)) @ Eq[-1]
+
+    Eq << Multiplication(n, 1, -1) @ (Addition(n, 1, 0, -1) @ Eq[-1])    
+    Eq << Multiplication(n, 2, -1) @ (Addition(n, 2, 0, -1) @ Eq[-1])    
+    Eq << Multiplication(n, 3, -1) @ (Addition(n, 3, 0, -1) @ Eq[-1])
+    Eq << Multiplication(n, 4, -1) @ (Addition(n, 4, 0, -1) @ Eq[-1])
+    Eq << Multiplication(n, 5, -1) @ (Addition(n, 5, 0, -1) @ Eq[-1])
     
-    Eq << Eq[-1].det() * 2
+    Eq << Addition(n, 0, 1, -1) @ Eq[-1]    
+    Eq << Addition(n, 0, 2, -1) @ Eq[-1]
+    Eq << Addition(n, 0, 3, -1) @ Eq[-1]
+    Eq << Addition(n, 0, 4, -1) @ Eq[-1]
+    Eq << Addition(n, 0, 5, -1) @ Eq[-1]
     
-    Eq << Eq[-1].subs(Eq[1])
+    Eq << Eq[-1].det() * (n - 1)
+    Eq << -Eq[-1].subs(Eq[1])
 
 
 if __name__ == '__main__':
