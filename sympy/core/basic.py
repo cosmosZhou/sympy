@@ -772,13 +772,13 @@ class Basic(with_metaclass(ManagedProperties)):
                 while v.name == d.name or d.name in free:
                     d = next(dums)
 
-            from sympy.tensor.indexed import IndexedBase
 #             print('v.dtype =', v.dtype)
 #             print('d.dtype =', d.dtype)
-            if len(v.shape) > 0:
-                d = IndexedBase(d.name, shape=v.shape, **v.dtype.dict)
-            else:
-                d = Symbol(d.name, **v.dtype.dict)
+            kwargs = v.dtype.dict
+            if v.shape:
+                kwargs['shape'] = v.shape
+            
+            d = Symbol(d.name, **kwargs)
             assert v.dtype == d.dtype
 
             reps[v] = d

@@ -36,7 +36,8 @@ def _compare_sequence(a, b):
     return tuple(a) == tuple(b)
 
 class DenseMatrix(MatrixBase):
-
+    __slots__ = []
+    
     is_MatrixExpr = False
     is_DenseMatrix = True
     
@@ -423,6 +424,39 @@ class DenseMatrix(MatrixBase):
                 dtype = _dtype
         return dtype
 
+    @property
+    def domain(self):
+        from sympy.sets.sets import Interval
+
+        from sympy.core.numbers import oo
+        shape = self.shape
+        if self.is_integer:
+            if self.is_positive:
+                interval = Interval(1, oo, integer=True)
+            elif self.is_nonnegative:
+                interval = Interval(0, oo, integer=True)
+            elif self.is_negative:
+                interval = Interval(-oo, -1, integer=True)
+            elif self.is_nonpositive:
+                interval = Interval(-oo, 0, integer=True)
+            else:
+                interval = S.Integers
+        elif self.is_extended_real:
+            if self.is_positive:
+                interval = Interval(0, oo, left_open=True)
+            elif self.is_nonnegative:
+                interval = Interval(0, oo)
+            elif self.is_negative:
+                interval = Interval(-oo, 0, right_open=True)
+            elif self.is_nonpositive:
+                interval = Interval(-oo, 0)
+            else:
+                interval = S.Reals
+        else:
+            interval = S.Complexes
+        from sympy.sets.sets import CartesianSpace
+        return CartesianSpace(interval, *shape)        
+
 def _force_mutable(x):
     """Return a matrix as a Matrix, otherwise return x."""
     if getattr(x, 'is_Matrix', False):
@@ -437,7 +471,9 @@ def _force_mutable(x):
     return x
 
 
-class MutableDenseMatrix(DenseMatrix, MatrixBase):
+class MutableDenseMatrix(DenseMatrix):
+    __slots__ = 'rows', 'cols', '_mat'
+    
     def __new__(cls, *args, **kwargs):
         return cls._new(*args, **kwargs)
 
@@ -453,7 +489,7 @@ class MutableDenseMatrix(DenseMatrix, MatrixBase):
         else:
             rows, cols, flat_list = cls._handle_creation_inputs(*args, **kwargs)
             flat_list = list(flat_list) # create a shallow copy
-        self = object.__new__(cls)
+        self = Basic.__new__(cls)
         self.rows = rows
         self.cols = cols
         self._mat = flat_list

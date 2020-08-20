@@ -2649,6 +2649,30 @@ class Ref(ExprWithLimits):
         from sympy.matrices.expressions.matexpr import VConcatenate
         return VConcatenate(*array)
 
+    def as_Matrix(self):
+        if len(self.limits) != 2:
+            return self
+        limit_i, limit_j = self.limits
+        
+        if len(limit_i) != 3 or len(limit_j) != 3:
+            return self
+        i, i_a, i_b = limit_i
+        j, j_a, j_b = limit_j
+        
+        diff_i = i_b - i_a + 1
+        if not diff_i.is_Number:
+            return self
+        
+        diff_j = j_b - j_a + 1
+        if not diff_j.is_Number:
+            return self
+
+        array = []
+        for _i in range(diff_i):
+            for _j in range(diff_j):
+                array.append(self.function._subs(i, _i)._subs(j, _j))
+        return Matrix(diff_i, diff_j, array)
+
     def as_coeff_mmul(self):
         return 1, self
 
@@ -3806,12 +3830,14 @@ class Ref(ExprWithLimits):
         return tex
 
     def _sympystr(self, p):
+
         def print_limit(limit):
             if len(limit) == 1:
                 return p._print(limit[0])
             if limit[1] == 0:
                 return p._print(limit[0]) + ":" + p._print(limit[2] + 1)
             return ':'.join([p._print(arg) for arg in limit])
+
         return '[%s](%s)' % (','.join([print_limit(limit) for limit in self.limits]), p._print(self.function))
 
     def _eval_is_finite(self):

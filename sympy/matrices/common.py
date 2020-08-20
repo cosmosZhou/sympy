@@ -10,7 +10,7 @@ from collections import defaultdict
 from inspect import isfunction
 
 from sympy.assumptions.refine import refine
-from sympy.core.basic import Atom
+from sympy.core.basic import Atom, Basic
 from sympy.core.compatibility import (
     Iterable, as_int, is_sequence, range, reduce)
 from sympy.core.decorators import call_highest_priority
@@ -39,9 +39,10 @@ class NonSquareMatrixError(ShapeError):
     pass
 
 
-class MatrixRequired(object):
+class MatrixRequired(Expr):
     """All subclasses of matrix objects must implement the
     required matrix properties listed here."""
+    __slots__ = []
     rows = None
     cols = None
     shape = None
@@ -71,7 +72,7 @@ class MatrixRequired(object):
 
 class MatrixShaping(MatrixRequired):
     """Provides basic matrix shaping and extracting of submatrices"""
-
+    __slots__ = []
     def _eval_col_del(self, col):
         def entry(i, j):
             return self[i, j] if j < col else self[i, j + 1]
@@ -657,7 +658,7 @@ class MatrixShaping(MatrixRequired):
 
 class MatrixSpecial(MatrixRequired):
     """Construction of special matrices"""
-
+    __slots__ = []
     @classmethod
     def _eval_diag(cls, rows, cols, diag_dict):
         """diag_dict is a defaultdict containing
@@ -1070,7 +1071,7 @@ class MatrixSpecial(MatrixRequired):
 
 class MatrixProperties(MatrixRequired):
     """Provides basic properties of a matrix."""
-
+    __slots__ = []
     def _eval_atoms(self, *types):
         result = set()
         for i in self:
@@ -1650,7 +1651,8 @@ class MatrixProperties(MatrixRequired):
 class MatrixOperations(MatrixRequired):
     """Provides basic matrix shape and elementwise
     operations.  Should not be instantiated directly."""
-
+    __slots__ = []
+    
     def _eval_adjoint(self):
         return self.transpose().conjugate()
 
@@ -2061,7 +2063,7 @@ class MatrixOperations(MatrixRequired):
 class MatrixArithmetic(MatrixRequired):
     """Provides basic matrix arithmetic operations.
     Should not be instantiated directly."""
-
+    __slots__ = []
     _op_priority = 10.01
 
     def _eval_Abs(self):
@@ -2122,6 +2124,8 @@ class MatrixArithmetic(MatrixRequired):
     @call_highest_priority('__radd__')
     def __add__(self, other):
         """Return self + other, raising ShapeError if shapes don't match."""
+        if not other.is_DenseMatrix:
+            return Expr.__add__(self, other)
         other = _matrixify(other)
         # matrix-like objects can have shapes.  This is
         # our first sanity check.
@@ -2326,6 +2330,7 @@ class MatrixCommon(MatrixArithmetic, MatrixOperations, MatrixProperties,
                   MatrixSpecial, MatrixShaping):
     """All common matrix operations including basic arithmetic, shaping,
     and special matrices like `zeros`, and `eye`."""
+    __slots__ = []
     _diff_wrt = True
 
 

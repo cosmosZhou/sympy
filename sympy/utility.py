@@ -494,8 +494,8 @@ def check(func):
     def _func(py):
         txt = py.replace('.py', '.php')
 
-        eqs = Eq(txt)
-        http = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
+        eqs = Eq(txt) 
+        print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
         try:
             func(eqs)
         except Exception as e:
@@ -503,12 +503,10 @@ def check(func):
             traceback.print_exc()
             if Operator.stack:
                 Operator.stack = []
-            print(http) 
             return None
 
         plausibles = eqs.plausibles_dict
         if plausibles:
-            print(http)
             return False
 
         return True

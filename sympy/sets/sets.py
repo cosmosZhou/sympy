@@ -230,13 +230,21 @@ class Set(Basic):
                 return Intersection(other, self.complement(S.Reals))
 
         elif isinstance(other, Union):
-            args = []
+            simplified = []
+            unsimplified = []
+            hit = False
             for arg in other.args:
                 diff = arg - self
                 if diff.is_Complement and diff.args[1] == self:
-                    return 
-                args.append(diff)    
-            return Union(*args)
+                    hit = diff.args[0] != arg
+                    unsimplified.append(diff.args[0])
+                else: 
+                    hit = True
+                    simplified.append(diff)
+            if hit:
+                simplified = Union(*simplified, evaluate=False) if simplified else S.EmptySet                
+                unsimplified = Complement(Union(*unsimplified, evaluate=False), self, evaluate=False) if unsimplified else S.EmptySet
+                return simplified | unsimplified
 
         elif isinstance(other, Complement):
             if other.args[0] in self:
