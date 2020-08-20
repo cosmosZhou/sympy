@@ -44,19 +44,6 @@ class DenseMatrix(MatrixBase):
     _op_priority = 10.01
     _class_priority = 4
 
-    def __eq__(self, other):
-        other = sympify(other)
-        self_shape = getattr(self, 'shape', None)
-        other_shape = getattr(other, 'shape', None)
-        if None in (self_shape, other_shape):
-            return False
-        if self_shape != other_shape:
-            return False
-        if isinstance(other, Matrix):
-            return _compare_sequence(self._mat,  other._mat)
-        elif isinstance(other, MatrixBase):
-            return _compare_sequence(self._mat, Matrix(other)._mat)
-
     def __getitem__(self, key):
         """Return portion of self defined by key. If the key involves a slice
         then a list will be returned (if key is a single slice) or a matrix
@@ -97,7 +84,7 @@ class DenseMatrix(MatrixBase):
             i, j = key
             try:
                 i, j = self.key2ij(key)
-                return self._mat[i*self.cols + j]
+                return self._mat[i * self.cols + j]
             except (TypeError, IndexError):
                 if (isinstance(i, Expr) and not i.is_number) or (isinstance(j, Expr) and not j.is_number):
                     if ((j < 0) is True) or ((j >= self.shape[1]) is True) or\
@@ -142,20 +129,20 @@ class DenseMatrix(MatrixBase):
         if hermitian:
             for i in range(self.rows):
                 for j in range(i):
-                    L[i, j] = (1 / L[j, j])*expand_mul(self[i, j] -
-                        sum(L[i, k]*L[j, k].conjugate() for k in range(j)))
-                Lii2 = expand_mul(self[i, i] -
-                    sum(L[i, k]*L[i, k].conjugate() for k in range(i)))
+                    L[i, j] = (1 / L[j, j]) * expand_mul(self[i, j] - 
+                        sum(L[i, k] * L[j, k].conjugate() for k in range(j)))
+                Lii2 = expand_mul(self[i, i] - 
+                    sum(L[i, k] * L[i, k].conjugate() for k in range(i)))
                 if Lii2.is_positive is False:
                     raise ValueError("Matrix must be positive-definite")
                 L[i, i] = sqrt(Lii2)
         else:
             for i in range(self.rows):
                 for j in range(i):
-                    L[i, j] = (1 / L[j, j])*(self[i, j] -
-                        sum(L[i, k]*L[j, k] for k in range(j)))
-                L[i, i] = sqrt(self[i, i] -
-                    sum(L[i, k]**2 for k in range(i)))
+                    L[i, j] = (1 / L[j, j]) * (self[i, j] - 
+                        sum(L[i, k] * L[j, k] for k in range(j)))
+                L[i, i] = sqrt(self[i, i] - 
+                    sum(L[i, k] ** 2 for k in range(i)))
         return self._new(L)
 
     def _diagonal_solve(self, rhs):
@@ -167,7 +154,7 @@ class DenseMatrix(MatrixBase):
     def _eval_add(self, other):
         # we assume both arguments are dense matrices since
         # sparse matrices have a higher priority
-        mat = [a + b for a,b in zip(self._mat, other._mat)]
+        mat = [a + b for a, b in zip(self._mat, other._mat)]
         return classof(self, other)._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_extract(self, rowsList, colsList):
@@ -187,7 +174,7 @@ class DenseMatrix(MatrixBase):
         new_mat_cols = other.cols
 
         # preallocate the array
-        new_mat = [self.zero]*new_mat_rows*new_mat_cols
+        new_mat = [self.zero] * new_mat_rows * new_mat_cols
 
         # if we multiply an n x 0 with a 0 x m, the
         # expected behavior is to produce an n x m matrix of zeros
@@ -197,9 +184,9 @@ class DenseMatrix(MatrixBase):
             other_mat = other._mat
             for i in range(len(new_mat)):
                 row, col = i // new_mat_cols, i % new_mat_cols
-                row_indices = range(self_cols*row, self_cols*(row+1))
+                row_indices = range(self_cols * row, self_cols * (row + 1))
                 col_indices = range(col, other_len, other_cols)
-                vec = (mat[a]*other_mat[b] for a,b in zip(row_indices, col_indices))
+                vec = (mat[a] * other_mat[b] for a, b in zip(row_indices, col_indices))
                 try:
                     new_mat[i] = Add(*vec)
                 except (TypeError, SympifyError):
@@ -208,12 +195,12 @@ class DenseMatrix(MatrixBase):
                     # initially, and for a matrix, that is a mix of a scalar and
                     # a matrix, which raises a TypeError. Fall back to a
                     # block-matrix-safe way to multiply if the `sum` fails.
-                    vec = (mat[a]*other_mat[b] for a,b in zip(row_indices, col_indices))
-                    new_mat[i] = reduce(lambda a,b: a + b, vec)
+                    vec = (mat[a] * other_mat[b] for a, b in zip(row_indices, col_indices))
+                    new_mat[i] = reduce(lambda a, b: a + b, vec)
         return classof(self, other)._new(new_mat_rows, new_mat_cols, new_mat, copy=False)
 
     def _eval_matrix_mul_elementwise(self, other):
-        mat = [a*b for a,b in zip(self._mat, other._mat)]
+        mat = [a * b for a, b in zip(self._mat, other._mat)]
         return classof(self, other)._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_inverse(self, **kwargs):
@@ -280,17 +267,17 @@ class DenseMatrix(MatrixBase):
         return self._new(rv)
 
     def _eval_scalar_mul(self, other):
-        mat = [other*a for a in self._mat]
+        mat = tuple(other * a for a in self._mat)
         return self._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_scalar_rmul(self, other):
-        mat = [a*other for a in self._mat]
+        mat = tuple(a * other for a in self._mat)
         return self._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_tolist(self):
         mat = list(self._mat)
         cols = self.cols
-        return [mat[i*cols:(i + 1)*cols] for i in range(self.rows)]
+        return [mat[i * cols:(i + 1) * cols] for i in range(self.rows)]
 
     def _LDLdecomposition(self, hermitian=True):
         """Helper function of LDLdecomposition.
@@ -305,18 +292,18 @@ class DenseMatrix(MatrixBase):
         if hermitian:
             for i in range(self.rows):
                 for j in range(i):
-                    L[i, j] = (1 / D[j, j])*expand_mul(self[i, j] - sum(
-                        L[i, k]*L[j, k].conjugate()*D[k, k] for k in range(j)))
-                D[i, i] = expand_mul(self[i, i] -
-                    sum(L[i, k]*L[i, k].conjugate()*D[k, k] for k in range(i)))
+                    L[i, j] = (1 / D[j, j]) * expand_mul(self[i, j] - sum(
+                        L[i, k] * L[j, k].conjugate() * D[k, k] for k in range(j)))
+                D[i, i] = expand_mul(self[i, i] - 
+                    sum(L[i, k] * L[i, k].conjugate() * D[k, k] for k in range(i)))
                 if D[i, i].is_positive is False:
                     raise ValueError("Matrix must be positive-definite")
         else:
             for i in range(self.rows):
                 for j in range(i):
-                    L[i, j] = (1 / D[j, j])*(self[i, j] - sum(
-                        L[i, k]*L[j, k]*D[k, k] for k in range(j)))
-                D[i, i] = self[i, i] - sum(L[i, k]**2*D[k, k] for k in range(i))
+                    L[i, j] = (1 / D[j, j]) * (self[i, j] - sum(
+                        L[i, k] * L[j, k] * D[k, k] for k in range(j)))
+                D[i, i] = self[i, i] - sum(L[i, k] ** 2 * D[k, k] for k in range(i))
         return self._new(L), self._new(D)
 
     def _lower_triangular_solve(self, rhs):
@@ -329,7 +316,7 @@ class DenseMatrix(MatrixBase):
             for i in range(self.rows):
                 if self[i, i] == 0:
                     raise TypeError("Matrix must be non-singular.")
-                X[i, j] = (rhs[i, j] - sum(self[i, k]*X[k, j]
+                X[i, j] = (rhs[i, j] - sum(self[i, k] * X[k, j]
                                            for k in range(i))) / self[i, i]
         return self._new(X)
 
@@ -341,7 +328,7 @@ class DenseMatrix(MatrixBase):
             for i in reversed(range(self.rows)):
                 if self[i, i] == 0:
                     raise ValueError("Matrix must be non-singular.")
-                X[i, j] = (rhs[i, j] - sum(self[i, k]*X[k, j]
+                X[i, j] = (rhs[i, j] - sum(self[i, k] * X[k, j]
                                            for k in range(i + 1, self.rows))) / self[i, i]
         return self._new(X)
 
@@ -457,6 +444,7 @@ class DenseMatrix(MatrixBase):
         from sympy.sets.sets import CartesianSpace
         return CartesianSpace(interval, *shape)        
 
+
 def _force_mutable(x):
     """Return a matrix as a Matrix, otherwise return x."""
     if getattr(x, 'is_Matrix', False):
@@ -472,7 +460,7 @@ def _force_mutable(x):
 
 
 class MutableDenseMatrix(DenseMatrix):
-    __slots__ = 'rows', 'cols', '_mat'
+    __slots__ = []
     
     def __new__(cls, *args, **kwargs):
         return cls._new(*args, **kwargs)
@@ -488,12 +476,21 @@ class MutableDenseMatrix(DenseMatrix):
             rows, cols, flat_list = args
         else:
             rows, cols, flat_list = cls._handle_creation_inputs(*args, **kwargs)
-            flat_list = list(flat_list) # create a shallow copy
         self = Basic.__new__(cls)
-        self.rows = rows
-        self.cols = cols
-        self._mat = flat_list
+        self._args = (rows, cols, flat_list)
         return self
+
+    @property
+    def rows(self):
+        return self.args[0]
+    
+    @property
+    def cols(self):
+        return self.args[1]
+    
+    @property
+    def _mat(self):
+        return self.args[2]
 
     def __setitem__(self, key, value):
         """
@@ -538,7 +535,7 @@ class MutableDenseMatrix(DenseMatrix):
         rv = self._setitem(key, value)
         if rv is not None:
             i, j, value = rv
-            self._mat[i*self.cols + j] = value
+            self._mat[i * self.cols + j] = value
 
     def as_mutable(self):
         return self.copy()
@@ -568,7 +565,7 @@ class MutableDenseMatrix(DenseMatrix):
             raise IndexError("Index out of range: 'i=%s', valid -%s <= i < %s"
                              % (i, self.cols, self.cols))
         for j in range(self.rows - 1, -1, -1):
-            del self._mat[i + j*self.cols]
+            del self._mat[i + j * self.cols]
         self.cols -= 1
 
     def col_op(self, j, f):
@@ -714,7 +711,7 @@ class MutableDenseMatrix(DenseMatrix):
         zeros
         ones
         """
-        self._mat = [value]*len(self)
+        self._mat = [value] * len(self)
 
     def row_del(self, i):
         """Delete the given row.
@@ -741,7 +738,7 @@ class MutableDenseMatrix(DenseMatrix):
                              " < %s" % (i, self.rows, self.rows))
         if i < 0:
             i += self.rows
-        del self._mat[i*self.cols:(i+1)*self.cols]
+        del self._mat[i * self.cols:(i + 1) * self.cols]
         self.rows -= 1
 
     def row_op(self, i, f):
@@ -766,7 +763,7 @@ class MutableDenseMatrix(DenseMatrix):
         col_op
 
         """
-        i0 = i*self.cols
+        i0 = i * self.cols
         ri = self._mat[i0: i0 + self.cols]
         self._mat[i0: i0 + self.cols] = [f(x, j) for x, j in zip(ri, list(range(self.cols)))]
 
@@ -833,8 +830,8 @@ class MutableDenseMatrix(DenseMatrix):
         col_op
 
         """
-        i0 = i*self.cols
-        k0 = k*self.cols
+        i0 = i * self.cols
+        k0 = k * self.cols
 
         ri = self._mat[i0: i0 + self.cols]
         rk = self._mat[k0: k0 + self.cols]
@@ -842,6 +839,7 @@ class MutableDenseMatrix(DenseMatrix):
         self._mat[i0: i0 + self.cols] = [f(x, y) for x, y in zip(ri, rk)]
 
     # Utility functions
+
 
 MutableMatrix = Matrix = MutableDenseMatrix
 
@@ -1083,10 +1081,10 @@ def symarray(prefix, shape, **kwargs):  # pragma: no cover
                             **kwargs)
     return arr
 
-
 ###############
 # Functions
 ###############
+
 
 def casoratian(seqs, n, zero=True):
     """Given linear difference operator L of order 'k' and homogeneous
@@ -1420,8 +1418,8 @@ def randMatrix(r, c=None, min=0, max=99, seed=None, symmetric=False,
         m = Matrix._new(r, c, lambda i, j: prng.randint(min, max))
         if percent == 100:
             return m
-        z = int(r*c*(100 - percent) // 100)
-        m._mat[:z] = [S.Zero]*z
+        z = int(r * c * (100 - percent) // 100)
+        m._mat[:z] = [S.Zero] * z
         prng.shuffle(m._mat)
 
         return m
@@ -1432,7 +1430,7 @@ def randMatrix(r, c=None, min=0, max=99, seed=None, symmetric=False,
     m = zeros(r)
     ij = [(i, j) for i in range(r) for j in range(i, r)]
     if percent != 100:
-        ij = prng.sample(ij, int(len(ij)*percent // 100))
+        ij = prng.sample(ij, int(len(ij) * percent // 100))
 
     for i, j in ij:
         value = prng.randint(min, max)

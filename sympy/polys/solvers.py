@@ -57,7 +57,7 @@ def solve_lin_sys(eqs, ring, _raw=True):
         _g = [[-i] for i in g]
         for i, p in enumerate(pivots):
             vect = RawMatrix(_g[p + 1:] + [[ring.one]])
-            v = (echelon[i, p + 1:]*vect)[0]
+            v = (echelon[i, p + 1:] @ vect)[0]
             if as_expr:
                 v = v.as_expr()
             sols[keys[p]] = v

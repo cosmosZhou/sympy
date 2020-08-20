@@ -55,9 +55,6 @@ class MatrixRequired(Expr):
         elements of the matrix."""
         raise NotImplementedError("Subclasses must implement this.")
 
-    def __eq__(self, other):
-        raise NotImplementedError("Subclasses must implement this.")
-
     def __getitem__(self, key):
         """Implementations of __getitem__ should accept ints, in which
         case the matrix is indexed as a flat list, tuples (i,j) in which
@@ -2153,11 +2150,55 @@ class MatrixArithmetic(MatrixRequired):
 
     @call_highest_priority('__rmatmul__')
     def __matmul__(self, other):
-        other = _matrixify(other)
-        if not getattr(other, 'is_Matrix', False) and not getattr(other, 'is_MatrixLike', False):
-            return NotImplemented
+        """Return self*other where other is either a scalar or a matrix
+        of compatible dimensions.
 
-        return self.__mul__(other)
+        Examples
+        ========
+
+        >>> from sympy.matrices import Matrix
+        >>> A = Matrix([[1, 2, 3], [4, 5, 6]])
+        >>> 2*A == A*2 == Matrix([[2, 4, 6], [8, 10, 12]])
+        True
+        >>> B = Matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        >>> A*B
+        Matrix([
+        [30, 36, 42],
+        [66, 81, 96]])
+        >>> B*A
+        Traceback (most recent call last):
+        ...
+        ShapeError: Matrices size mismatch.
+        >>>
+
+        See Also
+        ========
+
+        matrix_multiply_elementwise
+        """
+        other = _matrixify(other)
+        # matrix-like objects can have shapes.  This is
+        # our first sanity check.
+        if hasattr(other, 'shape') and len(other.shape) == 2:
+            if self.shape[1] != other.shape[0]:
+                raise ShapeError("Matrix size mismatch: %s * %s." % (
+                    self.shape, other.shape))
+
+        # honest sympy matrices defer to their class's routine
+        if getattr(other, 'is_Matrix', False):
+            return self._eval_matrix_mul(other)
+        # Matrix-like objects can be passed to CommonMatrix routines directly.
+        if getattr(other, 'is_MatrixLike', False):
+            return MatrixArithmetic._eval_matrix_mul(self, other)
+
+        # if 'other' is not iterable then scalar multiplication.
+        if not isinstance(other, Iterable):
+            try:
+                return self._eval_scalar_mul(other)
+            except TypeError:
+                pass
+
+        return NotImplemented
 
     def __mod__(self, other):
         return self.applyfunc(lambda x: x % other)

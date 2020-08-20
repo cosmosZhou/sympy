@@ -270,7 +270,7 @@ class MatrixBase(MatrixCommon):
     zero = S.Zero
     one = S.One
 
-    __hash__ = None  # Mutable
+#     __hash__ = None  # Mutable
 
     def _eval_berkowitz_toeplitz_matrix(self):
         """Return (A,T) where T the Toeplitz matrix used in the Berkowitz algorithm
@@ -1639,18 +1639,14 @@ class MatrixBase(MatrixCommon):
                 op = args[2]
                 flat_list = []
                 for i in range(rows):
-                    flat_list.extend(
-                        [cls._sympify(op(cls._sympify(i), cls._sympify(j)))
-                         for j in range(cols)])
+                    flat_list.extend([cls._sympify(op(cls._sympify(i), cls._sympify(j))) for j in range(cols)])
 
             # Matrix(2, 2, [1, 2, 3, 4])
             elif len(args) == 3 and is_sequence(args[2]):
                 flat_list = args[2]
                 if len(flat_list) != rows * cols:
-                    raise ValueError(
-                        'List length should be equal to rows*columns')
-                flat_list = [cls._sympify(i) for i in flat_list]
-
+                    raise ValueError('List length should be equal to rows*columns')
+                flat_list = type(flat_list)(cls._sympify(i) for i in flat_list)
 
         # Matrix()
         elif len(args) == 0:

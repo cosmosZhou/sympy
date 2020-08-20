@@ -2671,7 +2671,7 @@ class Ref(ExprWithLimits):
         for _i in range(diff_i):
             for _j in range(diff_j):
                 array.append(self.function._subs(i, _i)._subs(j, _j))
-        return Matrix(diff_i, diff_j, array)
+        return Matrix(diff_i, diff_j, tuple(array))
 
     def as_coeff_mmul(self):
         return 1, self
