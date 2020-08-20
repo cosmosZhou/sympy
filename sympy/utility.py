@@ -1,13 +1,9 @@
 
-from sympy.concrete import summations, products
 from sympy.core.relational import Equality, Relational
 import sympy
 import os
 from sympy.logic.boolalg import equivalent_ancestor, Boolean
 import traceback
-from sympy import concrete
-from sympy.sets import sets
-from sympy.concrete.expr_with_limits import UnionComprehension
 from sympy.logic import boolalg
 from sympy.utilities.iterables import topological_sort_depth_first
 from builtins import isinstance
@@ -21,124 +17,7 @@ def init(func):
 
     return _func
 
-
-class Operator:
-    stack = []
-
-    def __getitem__(self, key):
-        if isinstance(key, tuple):
-            limit = []
-            for t in key:
-                if isinstance(t, slice):
-                    if t.step:
-                        limit.append((t.start, t.stop, t.step))
-                    else:
-                        limit.append((t.start, 0, t.stop - 1))
-                else:
-                    limit.append(t)
-        elif isinstance(key, slice):
-            if key.step is not None:
-                limit = [(key.start, key.stop, key.step)]
-            elif key.stop.is_set:
-                limit = [(key.start, key.stop)]
-            else:
-                limit = [(key.start, 0, key.stop - 1)]
-        else:
-            limit = [(key,)]
-        self.stack.append(limit)
-
-        return self
-
-
-class Sum(Operator):
-
-    def __call__(self, hk):
-        if self.stack:
-            limits = self.stack.pop()
-            for i, limit in enumerate(limits):
-                if len(limit) == 2:
-                    x, n = limit
-                    limits[i] = (x, 0, n - 1)
-            return summations.Sum(hk, *limits)
-        return summations.Sum(hk)
-
-
-Sum = Sum()
-
-
-class Union(Operator):
-
-    def __call__(self, *args):
-        if len(args) > 1:
-            return sets.Union(*args)
-
-        assert self.stack
-        limits = self.stack.pop()
-        return UnionComprehension(args[0], *limits)
-
-
-Union = Union()
-
-
-class Integral(Operator):
-
-    def __call__(self, hk):
-        from sympy.integrals import integrals
-
-        limits = self.stack.pop()
-        return integrals.Integral(hk, *limits)
-
-
-Integral = Integral()
-
-
-class Product(Operator):
-
-    def __call__(self, hk):
-        limit = self.stack.pop()
-        return products.Product(hk, limit)
-
-
-Product = Product()
-
-
-class Min(Operator):
-
-    def __call__(self, hk):
-        from sympy.concrete.expr_with_limits import Minimum
-        if self.stack:
-            limit = self.stack.pop()
-            return Minimum(hk, *limit)
-        return Minimum(hk)
-
-
-Min = Min()
-
-
-# Reference operator &, or [x]f[x]
-class Ref(Operator):
-
-    def __call__(self, hk):
-        limit = self.stack.pop()
-
-        return concrete.expr_with_limits.Ref(hk, *limit)
-
-
-Ref = Ref()
-
-
-class Difference(Operator):
-
-    def __call__(self, hk):
-        limit = self.stack.pop()
-        from sympy.core import function
-        return function.Difference(hk, *limit)
-
-
-Difference = Difference()
-
 sympy.init_printing()
-
 # https://www.programiz.com/python-programming/operator-overloading
 
 
@@ -501,8 +380,6 @@ def check(func):
         except Exception as e:
             print(e)
             traceback.print_exc()
-            if Operator.stack:
-                Operator.stack = []
             return None
 
         plausibles = eqs.plausibles_dict

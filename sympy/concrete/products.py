@@ -503,6 +503,11 @@ class Product(ExprWithIntLimits):
         else:
             return self.func(dependent, limit).doit() * independent ** var.dimension
 
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return '∏[%s](%s)' % (limits, p._print(self.function))
+        return '∏(%s)' % p._print(self.function)
 
 def product(*args, **kwargs):
     r"""

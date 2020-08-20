@@ -1,11 +1,12 @@
 
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible, Ref, identity
+from sympy.utility import check, plausible, identity
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Addition
+from sympy.concrete.expr_with_limits import Ref
 
 
 @plausible

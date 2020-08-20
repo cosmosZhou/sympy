@@ -1,9 +1,9 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Union, identity
+from sympy.utility import plausible, identity
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
 from sympy import S
-from sympy.concrete.expr_with_limits import ForAll
+from sympy.concrete.expr_with_limits import ForAll, UnionComprehension
 
 # given: A & Union[i](x[i]) = {}
 # A & x[i] = {}
@@ -43,13 +43,13 @@ def prove(Eq):
     k = Symbol('k', integer=True, positive=True)
     x = Symbol('x', shape=(k + 1,), dtype=dtype.integer)
 
-    equality = Equality(Union[i:0:k](x[i]) & A, S.EmptySet)
+    equality = Equality(UnionComprehension[i:0:k](x[i]) & A, S.EmptySet)
 
     Eq << apply(equality)    
     
     Eq << Eq[-1].simplify()
 
-    Eq << identity(Union[i:0:k](x[i] & A)).simplify()
+    Eq << identity(UnionComprehension[i:0:k](x[i] & A)).simplify()
 
     Eq << Eq[-1].this.rhs.subs(Eq[0])
     

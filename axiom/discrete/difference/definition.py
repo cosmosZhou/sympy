@@ -1,9 +1,10 @@
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Sum
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, generate_free_symbol
 from sympy.core.function import Difference, Function
 from axiom.discrete.combinatorics.binomial import Pascal
+from sympy.concrete.summations import Sum
 
 
 @plausible

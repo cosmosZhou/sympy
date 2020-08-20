@@ -1,9 +1,9 @@
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Equality
-from sympy.concrete.expr_with_limits import Exists
+from sympy.concrete.expr_with_limits import Exists, Ref
 from axiom import Algebre
 from sympy.matrices.expressions.matmul import MatMul
 

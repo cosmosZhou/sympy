@@ -156,9 +156,7 @@ from sympy.core.facts import FactRules, FactKB
 from sympy.core.core import BasicMeta
 from sympy.core.compatibility import integer_types
 
-
 from random import shuffle
-
 
 _assume_rules = FactRules([
 
@@ -229,6 +227,7 @@ class StdFactKB(FactKB):
 
     This is the only kind of FactKB that Basic objects should use.
     """
+
     def __init__(self, facts=None):
         super(StdFactKB, self).__init__(_assume_rules)
         # save a copy of the facts dict
@@ -332,6 +331,7 @@ def _ask(fact, obj):
 
 class ManagedProperties(BasicMeta):
     """Metaclass for classes with old-style assumptions"""
+
     def __init__(cls, *args, **kws):
         BasicMeta.__init__(cls, *args, **kws)
 
@@ -382,3 +382,37 @@ class ManagedProperties(BasicMeta):
             pname = as_property(fact)
             if not hasattr(cls, pname):
                 setattr(cls, pname, make_property(fact))
+
+    def __getitem__(self, limits):
+        from sympy.core.symbol import dtype
+        if isinstance(limits, tuple):
+            limits = [*limits]
+            for i, limit in enumerate(limits):
+                if isinstance(limit, slice):                    
+                    x, a, b = limit.start, limit.stop, limit.step
+                    if b is not None:
+                        limits[i] = (x, a, b)
+                    elif isinstance(a, int) or a.dtype == dtype.integer:
+                        limits[i] = (x, 0, a - 1)
+                    else:
+                        limits[i] = (x, a)
+                else:
+                    limits[i] = limit
+        elif isinstance(limits, slice):
+            x, a, b = limits.start, limits.stop, limits.step
+            if limits.step is not None:
+                limits = [(x, a, b)]
+            elif isinstance(a, int) or a.dtype == dtype.integer:
+                limits = [(x, 0, a - 1)]
+            else:
+                limits = [(x, a)]
+        else:
+            limits = [(limits,)]            
+                    
+        def operator(*args, **kwargs):
+            return self(*args, *limits, **kwargs)
+
+        return operator
+
+    def __iter__(self):
+        raise TypeError

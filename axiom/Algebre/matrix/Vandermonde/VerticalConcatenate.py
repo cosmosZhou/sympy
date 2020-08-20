@@ -2,12 +2,15 @@ from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, plausible, Product, identity, Sum
+from sympy.utility import plausible, identity
 from sympy.core.relational import Equality
 from sympy.matrices.expressions.determinant import Determinant
 
 from sympy.matrices.expressions.matexpr import Shift
 from axiom import discrete
+from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.products import Product
+from sympy.concrete.summations import Sum
 
 
 # r = Symbol('r')

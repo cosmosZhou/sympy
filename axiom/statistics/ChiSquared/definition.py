@@ -1,12 +1,14 @@
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, Sum, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.stats.crv_types import ChiSquared, ChiSquaredDistribution
 from sympy.stats.rv import Density, RandomSymbol
 from sympy import pi, Symbol
 from sympy.stats import Normal
 from axiom.trigonometry import Wallis
+from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.summations import Sum
 
 
 @plausible
@@ -17,8 +19,8 @@ def apply(X, Y):
     y = Y.symbol
     assert isinstance(Y.pspace.distribution, ChiSquaredDistribution)
     k = Y.pspace.distribution.k
-
     return Equality(Density(Sum[i:k](X[i] * X[i]))(y), Density(Y)(y).doit())
+
 
 
 from sympy.utility import check

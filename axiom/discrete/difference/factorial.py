@@ -1,9 +1,10 @@
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Difference
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from axiom import discrete
+from sympy.core.function import Difference
 
 
 @plausible

@@ -1,11 +1,11 @@
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref, Union
+from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import ForAll
+from sympy.concrete.expr_with_limits import ForAll, Ref, UnionComprehension
 from sympy.sets.contains import Contains
 
 
@@ -50,7 +50,8 @@ def apply(given):
     equality = given[1].function
     assert equality.is_Equality and {*equality.args} == {abs(x.set_comprehension()), n}
         
-    return Equality(abs(S), factorial(n) * abs(Union[x:S]({x.set_comprehension()})))
+    return Equality(abs(S), factorial(n) * abs(UnionComprehension[x:S]({x.set_comprehension()})),
+                    given=given)
 
 
 @check
@@ -63,10 +64,9 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    
     
-    given = [ForAll(Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n - 1), (x, S)),
-             ForAll(Equality(abs(x.set_comprehension()), n), (x, S))]
+    given = [ForAll[j:1:n - 1, x:S](Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
+             ForAll[x:S](Equality(abs(x.set_comprehension()), n))]
     
-    Eq << given
     Eq << apply(given)
 
 

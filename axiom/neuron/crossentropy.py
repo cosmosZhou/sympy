@@ -4,9 +4,11 @@ import sympy
 from sympy.functions.elementary.exponential import softmax
 from sympy.core.function import Derivative
 from sympy.sets.sets import Interval
-from sympy.utility import check, plausible, Sum, Ref
+from sympy.utility import check, plausible
 from sympy.core.numbers import oo
 from sympy.concrete import summations
+from sympy.concrete.summations import Sum
+from sympy.concrete.expr_with_limits import Ref
 
 
 @plausible

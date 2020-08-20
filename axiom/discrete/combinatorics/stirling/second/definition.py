@@ -1,15 +1,15 @@
 from sympy.core.symbol import Symbol, generate_free_symbol
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Ref, identity
-
-from sympy.utility import Sum
+from sympy.utility import plausible, identity
 
 from sympy.functions.combinatorial.numbers import Stirling
 from axiom.discrete.combinatorics import stirling
 import axiom
 from axiom.discrete import difference
 from axiom import discrete
+from sympy.concrete.summations import Sum
+from sympy.concrete.expr_with_limits import Ref
 
 
 @plausible

@@ -1,10 +1,12 @@
 # coding=utf-8
 from sympy.core.symbol import Symbol
-from sympy.utility import Ref, Sum, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 import sympy
 from sympy import log, exp
 from sympy.core.numbers import oo
+from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.summations import Sum
 
 
 @plausible

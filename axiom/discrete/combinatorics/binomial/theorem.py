@@ -3,8 +3,8 @@ from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
 from sympy.utility import plausible
 
-from sympy.utility import Sum
 from axiom.discrete.combinatorics.binomial import Pascal
+from sympy.concrete.summations import Sum
 
 @plausible
 def apply(x, y, n=None, free_symbol=None):

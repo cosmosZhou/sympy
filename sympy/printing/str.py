@@ -398,7 +398,7 @@ class StrPrinter(Printer):
         return format % (' '.join(terms), ', '.join(gens))
 
     def _print_ProductSet(self, p):
-        return ' x '.join(self._print(set) for set in p.sets)
+        return ' x '.join(self._print(s) for s in p.sets)
 
     def _print_UniversalSet(self, p):
         return 'UniversalSet'

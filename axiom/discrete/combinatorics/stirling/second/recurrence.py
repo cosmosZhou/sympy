@@ -1,16 +1,17 @@
 from sympy.core.symbol import Symbol, dtype
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Sum, Ref, Union, identity
+from sympy.utility import plausible, identity
 
 from sympy.functions.combinatorial.numbers import Stirling
-from sympy.sets.sets import image_set, Interval
+from sympy.sets.sets import image_set, Interval, Union
 from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
 from axiom import discrete
 from sympy.sets.conditionset import conditionset
-from sympy.concrete.expr_with_limits import UnionComprehension, ForAll
+from sympy.concrete.expr_with_limits import UnionComprehension, ForAll, Ref
 import axiom
 from sympy.core.numbers import oo
+from sympy.concrete.summations import Sum
 
 
 @plausible
@@ -117,7 +118,7 @@ def prove(Eq):
 
     Eq.x_quote_definition = x_quote.equality_defined()
 
-    Eq.x_quote_set_in_s2 = Subset(image_set(x_tuple, Union[i:0:k](x_quote[i].set), s1_quote), s2, plausible=True)
+    Eq.x_quote_set_in_s2 = Subset(image_set(x_tuple, UnionComprehension[i:0:k](x_quote[i].set), s1_quote), s2, plausible=True)
 
     Eq << Eq.x_quote_set_in_s2.definition
 
@@ -193,7 +194,7 @@ def prove(Eq):
 
     Eq.subset_B = Subset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
     Eq.supset_B = Supset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
-    Eq.subset_A = Subset(Eq[-1].rhs.args[1], Union[j](Eq[-2].lhs.args[1]), plausible=True)  # unproven
+    Eq.subset_A = Subset(Eq[-1].rhs.args[1], UnionComprehension[j](Eq[-2].lhs.args[1]), plausible=True)  # unproven
     Eq.supset_A = Supset(Eq[-1].rhs.args[1], Eq[-2].lhs.args[1], plausible=True)
 
 #     assert discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].rhs.args)

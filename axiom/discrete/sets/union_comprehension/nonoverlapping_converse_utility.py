@@ -1,12 +1,13 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Sum, Union, identity
+from sympy.utility import plausible, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
-from sympy.concrete.expr_with_limits import ForAll
+from sympy.concrete.expr_with_limits import ForAll, UnionComprehension
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from axiom.discrete.sets import union
+from sympy.concrete.summations import Sum
 
 # given: x[i] & x[j] = {}
 # |Union x[i]| = Sum |x[i]|
@@ -34,7 +35,7 @@ def apply(given):
         xi = xj
         assert xj.has(i)
         
-    return Equality(abs(Union[i:0:n - 1](xi)), Sum[i:0:n - 1](abs(xi)), given=given)
+    return Equality(abs(UnionComprehension[i:0:n - 1](xi)), Sum[i:0:n - 1](abs(xi)), given=given)
 
 
 from sympy.utility import check

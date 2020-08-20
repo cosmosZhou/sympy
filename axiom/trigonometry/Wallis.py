@@ -2,10 +2,11 @@ from sympy.core.symbol import Symbol
 from sympy.core.relational import Equality
 from sympy.core.singleton import S
 from sympy.functions.elementary.trigonometric import cos, sin
-from sympy.utility import plausible, Integral
+from sympy.utility import plausible
 from sympy.core.sympify import sympify
 from sympy.functions.special.beta_functions import beta
 from axiom.trigonometry import sine
+from sympy.integrals.integrals import Integral
 
 
 @plausible

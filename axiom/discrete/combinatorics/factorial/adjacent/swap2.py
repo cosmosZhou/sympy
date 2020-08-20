@@ -1,9 +1,8 @@
-from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref
+from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import ForAll
+from sympy.concrete.expr_with_limits import ForAll, Ref
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.factorial.adjacent import swap2_equality
@@ -22,7 +21,7 @@ def apply(given):
     _, j = contains.lhs.args[0].indices
     i = Symbol('i', integer=True)
     
-    return ForAll(Contains(w[i, j] @ x, S), (x, S), given=given)
+    return ForAll[x:S](Contains(w[i, j] @ x, S), given=given)
 
 
 @check
@@ -37,7 +36,7 @@ def prove(Eq):
     
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
     
-    given = ForAll(Contains(w[0, j] @ x, S), (x, S))
+    given = ForAll[x:S](Contains(w[0, j] @ x, S))
     
     Eq << apply(given)
     

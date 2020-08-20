@@ -1,9 +1,10 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity, Sum
+from sympy.utility import plausible, identity
 from sympy.core.relational import Equality
 from sympy import S
 from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
 from sympy.matrices.expressions.determinant import det
+from sympy.concrete.summations import Sum
 
 
 @plausible

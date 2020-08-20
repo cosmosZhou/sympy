@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import check, plausible, Ref, identity
+from sympy.utility import check, plausible, identity
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
 
@@ -10,6 +10,7 @@ from axiom.discrete.sets import union_comprehension
 from axiom.discrete import sets
 from sympy.core.symbol import Symbol
 from sympy.functions.elementary.piecewise import Piecewise
+from sympy.concrete.expr_with_limits import Ref
 
 
 @plausible

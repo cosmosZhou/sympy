@@ -1,12 +1,13 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, Ref, identity
+from sympy.utility import check, plausible, identity
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.factorial.adjacent import swap1
+from sympy.concrete.expr_with_limits import Ref
 
 
 @plausible

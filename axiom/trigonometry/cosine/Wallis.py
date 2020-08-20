@@ -3,11 +3,12 @@ from sympy.core.relational import Equality
 from sympy.core.numbers import pi
 from sympy.functions.elementary.trigonometric import cos
 from sympy.functions.special.gamma_functions import gamma
-from sympy.utility import plausible, Integral
+from sympy.utility import plausible
 from sympy.core.sympify import sympify
 from sympy.functions.elementary.miscellaneous import sqrt
 
 from sympy import S
+from sympy.integrals.integrals import Integral
 
 
 @plausible

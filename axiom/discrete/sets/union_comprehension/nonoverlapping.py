@@ -1,14 +1,14 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, Sum, Union, identity
+from sympy.utility import plausible, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
-from sympy.concrete.expr_with_limits import ForAll
+from sympy.concrete.expr_with_limits import ForAll, UnionComprehension
 from axiom import discrete
 
 # given: |Union x[i]| = Sum |x[i]|
 # x[i] & x[j] = {}
 
-from sympy.concrete.summations import summation
+from sympy.concrete.summations import summation, Sum
 from sympy.sets.sets import Interval
 
 
@@ -63,7 +63,7 @@ def prove(Eq):
 
     x = Symbol('x', shape=(k + 1,), dtype=dtype.integer, finite=True)
 
-    given = Equality(abs(Union[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))
+    given = Equality(abs(UnionComprehension[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))
 
     Eq << apply(given)
 

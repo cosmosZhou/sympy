@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import Ref, plausible
+from sympy.utility import plausible
 from sympy.core.relational import Unequality
 
 

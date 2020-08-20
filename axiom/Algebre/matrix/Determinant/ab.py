@@ -1,11 +1,12 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, Ref, identity
+from sympy.utility import plausible, identity
 from sympy.core.relational import Equality
 
 from sympy.matrices.expressions.determinant import Determinant
 from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.concrete.products import Product
 from sympy.matrices.expressions.matexpr import Multiplication
+from sympy.concrete.expr_with_limits import Ref
 
 
 @plausible
