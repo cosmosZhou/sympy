@@ -3873,7 +3873,7 @@ class Ref(ExprWithLimits):
         return function.is_extended_negative
     
     def minor(self, i, j):
-        
+        ...
     
 class UnionComprehension(Set, ExprWithLimits):
     """
