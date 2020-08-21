@@ -361,7 +361,7 @@ class Integrate(AddWithLimits):
 
         return self.func(newfunc, *newlimits)
 
-    def by_parts(self, u=None, dv=None, wolfram=False):
+    def by_parts(self, u=None, dv=None, wolfram=None):
         if len(self.limits) != 1:
             return
         (x, a, b), *_ = self.limits
@@ -410,11 +410,8 @@ class Integrate(AddWithLimits):
         heurisch = hints.get('heurisch', None)
         manual = hints.get('manual', None)
         wolfram = hints.get('wolfram', None)
-        if wolfram:
-            try:
-                return self._eval_wolfram()
-            except :
-                ...
+        if wolfram is not None:
+            return self._eval_wolfram(wolfram)
         
         if len(list(filter(None, (manual, meijerg, risch, heurisch)))) > 1:
             raise ValueError("At most one of manual, meijerg, risch, heurisch can be True")

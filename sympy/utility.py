@@ -17,6 +17,7 @@ def init(func):
 
     return _func
 
+
 sympy.init_printing()
 # https://www.programiz.com/python-programming/operator-overloading
 
@@ -368,27 +369,48 @@ class identity(boolalg.Invoker):
         return self
 
 
-def check(func):
+def wolfram_decorator(py, func, **kwargs):
+    txt = py.replace('.py', '.php')
 
-    def _func(py):
-        txt = py.replace('.py', '.php')
-
-        eqs = Eq(txt) 
-        print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
-        try:
+    eqs = Eq(txt) 
+    print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
+    try: 
+        if 'wolfram' in kwargs:
+            wolfram = kwargs['wolfram']
+            if wolfram is not None:
+                with wolfram:
+                    func(eqs, wolfram)
+            else:
+                func(eqs, wolfram)
+        else:
             func(eqs)
-        except Exception as e:
-            print(e)
-            traceback.print_exc()
-            return None
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        return None
 
-        plausibles = eqs.plausibles_dict
-        if plausibles:
-            return False
+    plausibles = eqs.plausibles_dict
+    if plausibles:
+        return False
 
-        return True
+    return True
 
-    return _func
+
+def check(func=None, wolfram=None):
+    if func is not None:
+        return lambda py: wolfram_decorator(py, func)
+        
+    elif wolfram:
+        def decorator(func):
+            try:
+                from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
+                wolfram = WolframLanguageSession()
+            except:
+                wolfram = None
+            
+            return lambda py: wolfram_decorator(py, func, wolfram=wolfram)
+
+        return decorator
 
 
 def plausible(apply=None):

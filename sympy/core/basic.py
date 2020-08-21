@@ -2242,15 +2242,10 @@ class Basic(with_metaclass(ManagedProperties)):
         from wolframclient.language import wl        
         return getattr(wl, self.__class__.__name__)(*[arg.to_wolfram(global_variables) for arg in self.args])
 
-    def _eval_wolfram(self, session=None):
+    def _eval_wolfram(self, session):
         global_variables = set()
         wlexpr = self.to_wolfram(global_variables)                
-        if session is None:
-            from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
-            with WolframLanguageSession() as session: 
-                wlexpr = session.evaluate(wlexpr)
-        else:
-            wlexpr = session.evaluate(wlexpr)
+        wlexpr = session.evaluate(wlexpr)
         global_variables = {'Global`' + x.name : x for x in global_variables}
         return wlexpr.sympify(**global_variables)
 

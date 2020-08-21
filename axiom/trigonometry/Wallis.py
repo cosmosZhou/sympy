@@ -22,8 +22,8 @@ def apply(m, n=1):
 from sympy.utility import check
 
 
-@check
-def prove(Eq):
+@check(wolfram=True)
+def prove(Eq, wolfram):
     m = Symbol("m", integer=True, positive=True)
     n = Symbol("n", integer=True, positive=True)
 
@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << Eq[1].subs(m, m + 2)
 
-    Eq << Eq[-1].this.lhs.by_parts(u=cos(x) ** m, wolfram=True)
+    Eq << Eq[-1].this.lhs.by_parts(u=cos(x) ** m, wolfram=wolfram)
 
     Eq << Eq[-1] / (m / n)
 
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq[1].subs(m, 2)
 
-    Eq << Eq[-1].this.lhs.doit(manul=True, wolfram=True)
+    Eq << Eq[-1].this.lhs.doit(manul=True, wolfram=wolfram)
 
     Eq << Eq[-1].this.rhs.expand(func=True)
 
