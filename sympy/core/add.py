@@ -1049,6 +1049,10 @@ class Plus(Expr, AssocOp):
         if this is not self:
             return this
         
+        this = self.simplifyMatrix()
+        if this is not self:
+            return this
+
         return self             
             
     def simplifyPiecewise(self):     
@@ -1074,6 +1078,14 @@ class Plus(Expr, AssocOp):
         
         return self
     
+    def simplifyMatrix(self):     
+        matrix = [arg for arg in self.args if arg.is_DenseMatrix]
+        scalar = [arg for arg in self.args if not arg.shape]
+        if not matrix or not scalar:
+            return self
+        
+        return self.func(*matrix) + self.func(*scalar)
+
     def simplifySummations(self):
         from sympy.concrete import summations
         from sympy import Wild

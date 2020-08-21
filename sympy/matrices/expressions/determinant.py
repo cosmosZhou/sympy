@@ -58,6 +58,19 @@ class Determinant(Expr):
     def atomic_dtype(self):
         return self.arg.atomic_dtype
 
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            this = Expr.simplify(self, deep=True, **kwargs)
+            if this is not self:
+                return this
+
+        matrix = self.arg
+        if matrix.is_DenseMatrix:
+            if len(matrix._mat) == 1:
+                return matrix._mat[0]
+            
+        return self
+
 def det(matexpr):
     """ Matrix Determinant
 

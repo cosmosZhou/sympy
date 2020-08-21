@@ -2670,7 +2670,7 @@ class Ref(ExprWithLimits):
         array = []
         for _i in range(diff_i):
             for _j in range(diff_j):
-                array.append(self.function._subs(i, _i)._subs(j, _j))
+                array.append(self.function._subs(i, _i)._subs(j, _j)) 
         return Matrix(diff_i, diff_j, tuple(array))
 
     def as_coeff_mmul(self):
@@ -3872,6 +3872,8 @@ class Ref(ExprWithLimits):
                 function = function._subs(x, _x)
         return function.is_extended_negative
     
+    def minor(self, i, j):
+        
     
 class UnionComprehension(Set, ExprWithLimits):
     """

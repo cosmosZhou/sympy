@@ -126,3 +126,6 @@ def parellel_process(process, items):
 if __name__ == '__main__':    
     prove()
     
+# Reverse[Reverse[Minors[mat], 1], 2] == Map[Reverse, Minors[mat], {0, 1}]
+
+# adj[m_] := Map[Reverse, Minors[Transpose[m], Length[m] - 1], {0, 1}] Table[(-1)^(i + j), {i, Length[m]}, {j, Length[m]}]

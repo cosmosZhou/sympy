@@ -2122,6 +2122,8 @@ class MatrixArithmetic(MatrixRequired):
     def __add__(self, other):
         """Return self + other, raising ShapeError if shapes don't match."""
         if not other.is_DenseMatrix:
+            if not other.shape:
+                return self.func(*self.args[:2], tuple(e + other for e in self._mat))
             return Expr.__add__(self, other)
         other = _matrixify(other)
         # matrix-like objects can have shapes.  This is

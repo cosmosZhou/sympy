@@ -492,6 +492,10 @@ class MutableDenseMatrix(DenseMatrix):
     def _mat(self):
         return self.args[2]
 
+    @property
+    def is_number(self):
+        return all(a.is_number for a in self._mat)
+
     def __setitem__(self, key, value):
         """
 
