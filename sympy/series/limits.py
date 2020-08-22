@@ -161,6 +161,7 @@ class Limit(Expr):
 
     """
     is_Limit = True
+    is_complex = True
 
     def __new__(cls, e, z, z0, direction="+"):
         e = sympify(e)

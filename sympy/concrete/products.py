@@ -186,6 +186,7 @@ class Product(ExprWithIntLimits):
     """
 
     __slots__ = ['is_commutative']
+    is_complex = True
     operator = Mul
     
     def __new__(cls, function, *symbols, **assumptions):

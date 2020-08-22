@@ -2171,7 +2171,7 @@ class Complement(Set, EvalfMixin):
         else:
             B = p._print(B)
             
-        return r"%s \ %s" % (p._print(A), B)
+        return r"%s / %s" % (p._print(A), B)
 
     def assertion(self):
         A, B = self.args

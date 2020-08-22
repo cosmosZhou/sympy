@@ -109,9 +109,9 @@ class Plus(Expr, AssocOp):
                 if b.is_Mul:
                     rv = [a, b], [], None
             if rv:
-                if all(s.is_commutative for s in rv[0]):
-                    return rv
-                return [], rv[0], None
+#                 if all(s.is_commutative for s in rv[0]):
+                return rv
+#                 return [], rv[0], None
 
         terms = {}  # term -> coeff
                         # e.g. x**2 -> 5   for ... + 5*x**2 + ...
@@ -237,7 +237,7 @@ class Plus(Expr, AssocOp):
                     # alternatively we have to call all Mul's machinery (slow)
                     newseq.append(Mul(c, s))
 
-            noncommutative = noncommutative or not s.is_commutative
+#             noncommutative = noncommutative or not s.is_commutative
 
         # oo, -oo
         if coeff is S.Infinity:
@@ -549,8 +549,6 @@ class Plus(Expr, AssocOp):
                 if self.max().is_extended_negative:
                     return False    
         
-        if self.is_commutative is False:
-            return
         
         from sympy import preorder_traversal, KroneckerDelta 
         delta = None

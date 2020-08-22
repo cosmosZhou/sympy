@@ -293,8 +293,8 @@ class Gens(with_metaclass(OptionType, Option)):
             gens = ()
         elif has_dups(gens):
             raise GeneratorsError("duplicated generators: %s" % str(gens))
-        elif any(gen.is_commutative is False for gen in gens):
-            raise GeneratorsError("non-commutative generators: %s" % str(gens))
+#         elif any(gen.is_commutative is False for gen in gens):
+#             raise GeneratorsError("non-commutative generators: %s" % str(gens))
 
         return tuple(gens)
 

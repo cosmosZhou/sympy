@@ -543,9 +543,7 @@ class Equality(Relational):
                 return S.true.copy(**options)  # e.g. True == True
             elif all(isinstance(i, BooleanAtom) for i in (rhs, lhs)):
                 return S.false  # True != False
-            elif not (lhs.is_Symbol or rhs.is_Symbol) and (
-                    isinstance(lhs, Boolean) != 
-                    isinstance(rhs, Boolean)):
+            elif not (lhs.is_Symbol or rhs.is_Symbol) and (isinstance(lhs, Boolean) != isinstance(rhs, Boolean)):
                 return S.false  # only Booleans can equal Booleans
             from sympy import Contains
             if Contains(rhs, lhs.domain).is_BooleanFalse or Contains(lhs, rhs.domain).is_BooleanFalse:
@@ -556,7 +554,8 @@ class Equality(Relational):
                 dif = (lhs - rhs).simplify()
                 z = dif.is_zero
                 if z is not None:
-                    if z is False and dif.is_commutative:  # issue 10728
+#                     if z is False and dif.is_commutative:  # issue 10728
+                    if z is False:  # issue 10728
                         return S.false.copy(**options)
                     if z:
                         if 'plausible' in options:

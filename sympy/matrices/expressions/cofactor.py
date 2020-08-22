@@ -43,10 +43,18 @@ class Cofactors(MatrixExpr):
         except:
             return self
 
-
     @property
     def atomic_dtype(self):
         return self.arg.atomic_dtype
+
+    def _entry(self, i, j=None, **_):
+        from sympy.matrices.expressions.minors import Minors
+        from sympy.concrete.expr_with_limits import Ref
+        m, n = self.rows, self.cols
+        if j is None:
+            j = self.generate_free_symbol(integer=True)
+            return Ref[j:n]((-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j])
+        return (-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j]
 
 # Needs["Combinatorica`"]
 # mat = Array[Subscript[A, ##] &, {5, 5}, 0]

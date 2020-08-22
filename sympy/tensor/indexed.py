@@ -183,12 +183,9 @@ class Subscript(Expr):
             return other in self.base.definition[self.indices]
 
     @property
-    def is_integer(self):
-        try:
-            if self.base.definition is not None:
-                return self.base.definition.is_integer
-        except:
-            ... 
+    def is_integer(self):        
+        if self.base.definition is not None:
+            return self.base.definition.is_integer
         return self.base.is_integer
 
     def _dummy_eq(self, other):
@@ -379,7 +376,6 @@ class Subscript(Expr):
             return r'{\color{red} {%s}}' % tex
         return tex
 
-
     @property
     def free_symbols(self):
         base_free_symbols = self.base.free_symbols
@@ -563,8 +559,10 @@ class Subscript(Expr):
             if not isinstance(res, Det):
                 return res
         return Det(self)
+
         
 Indexed = Subscript                
+
         
 class Slice(Expr):
     """Represents a mathematical object with Slices.
@@ -898,6 +896,23 @@ class Slice(Expr):
     def atomic_dtype(self):
         return self.base.atomic_dtype
 
+    def _eval_is_extended_real(self):
+        return self.base.is_extended_real
+
+    def _eval_is_complex(self):
+        return self.base.is_complex
+
+    def _eval_is_extended_negative(self):
+        return self.base.is_extended_negative
+
+    def _eval_is_extended_positive(self):
+        return self.base.is_extended_positive
+
+    def _eval_is_finite(self):
+        return self.base.is_finite
+
+    def _eval_is_zero(self):
+        return self.base.is_zero
 
 class Idx(Expr):
     """Represents an integer index as an ``Integer`` or integer expression.

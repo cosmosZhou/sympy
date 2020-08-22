@@ -1372,13 +1372,13 @@ class Expr(Basic, EvalfMixin):
                         else:
                             continue
 
-                    if factor.is_commutative:
-                        base, exp = decompose_power(factor)
+#                     if factor.is_commutative:
+                    base, exp = decompose_power(factor)
 
-                        cpart[base] = exp
-                        gens.add(base)
-                    else:
-                        ncpart.append(factor)
+                    cpart[base] = exp
+                    gens.add(base)
+#                     else:
+#                         ncpart.append(factor)
 
             coeff = coeff.real, coeff.imag
             ncpart = tuple(ncpart)
@@ -1498,10 +1498,11 @@ class Expr(Basic, EvalfMixin):
         else:
             args = [self]
         for i, mi in enumerate(args):
-            if not mi.is_commutative:
-                c = args[:i]
-                nc = args[i:]
-                break
+            ...
+#             if not mi.is_commutative:
+#                 c = args[:i]
+#                 nc = args[i:]
+#                 break
         else:
             c = args
             nc = []
@@ -1707,8 +1708,11 @@ class Expr(Basic, EvalfMixin):
 
         co = []
         args = Add.make_args(self)
-        self_c = self.is_commutative
-        x_c = x.is_commutative
+#         self_c = self.is_commutative
+        self_c = True
+#         x_c = x.is_commutative
+        x_c = True
+        
         if self_c and not x_c:
             return S.Zero
 
@@ -3835,12 +3839,15 @@ class Expr(Basic, EvalfMixin):
             return S.UniversalSet
         shape = self.shape
         
-        if self.is_extended_real:
-            if self.is_integer:
-                interval = S.Integers
-            else:
-                interval = S.Reals
+        if self.is_integer:
+            interval = S.Integers
+        elif self.is_extended_real:
+            interval = S.Reals
         else:
+            if not self.is_complex:
+                print(self)
+                print(type(self))
+            assert self.is_complex
             interval = S.Complexes
 
         if not shape:
@@ -4033,6 +4040,18 @@ class Expr(Basic, EvalfMixin):
             return False
         if is_even is False:
             return self.is_integer
+    
+    def drop(self, I, J):
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.concrete.expr_with_limits import Ref
+        excludes = I.free_symbols | J.free_symbols
+        i = self.generate_free_symbol(excludes=excludes, integer=True)
+        j = self.generate_free_symbol(excludes=excludes | {i}, integer=True)
+        m, n = self.shape
+        
+        return Ref[i:m - 1, j:n - 1](Piecewise(
+            (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
+        (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1],True)), True)))
     
 class AtomicExpr(Atom, Expr):
     """

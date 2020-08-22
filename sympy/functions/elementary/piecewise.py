@@ -51,8 +51,8 @@ class ExprCondPair(Tuple):
         """
         return self.args[1]
 
-    def _eval_is_commutative(self):
-        return self.expr.is_commutative
+#     def _eval_is_commutative(self):
+#         return self.expr.is_commutative
 
     def __iter__(self):
         yield self.expr
@@ -1522,7 +1522,7 @@ def piecewise_fold(expr):
 
     Piecewise
     """
-    if not isinstance(expr, Basic) or not expr.has(Piecewise):
+    if not isinstance(expr, Basic) or not expr.has(Piecewise) or expr.is_Ref:
         return expr
 
     new_args = []
@@ -1557,7 +1557,8 @@ def piecewise_fold(expr):
         # we do that grouping before the more generic folding.
         # The following applies this idea when f = Add or f = Mul
         # (and the expression is commutative).
-        if expr.is_Add or expr.is_Mul and expr.is_commutative:
+#         if expr.is_Add or expr.is_Mul and expr.is_commutative:
+        if expr.is_Add or expr.is_Mul:
             p, args = sift(expr.args, lambda x: x.is_Piecewise, binary=True)
             if len(p) > 1:
                 return expr

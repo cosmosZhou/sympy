@@ -303,7 +303,7 @@ class Power(Expr):
         obj = cls._exec_constructor_postprocessors(obj)
         if not isinstance(obj, Pow):
             return obj
-        obj.is_commutative = (b.is_commutative and e.is_commutative)
+#         obj.is_commutative = (b.is_commutative and e.is_commutative)
         return obj
 
     @property
@@ -851,7 +851,8 @@ class Power(Expr):
         """a**(n + m) -> a**n*a**m"""
         b = self.base
         e = self.exp
-        if e.is_Add and e.is_commutative:
+#         if e.is_Add and e.is_commutative:
+        if e.is_Add:
             expr = []
             for x in e.args:
                 expr.append(self.func(self.base, x))
@@ -1005,84 +1006,84 @@ class Power(Expr):
 
             n = int(exp)
 
-            if base.is_commutative:
-                order_terms, other_terms = [], []
+#             if base.is_commutative:
+            order_terms, other_terms = [], []
 
-                for b in base.args:
-                    if b.is_Order:
-                        order_terms.append(b)
-                    else:
-                        other_terms.append(b)
-
-                if order_terms:
-                    # (f(x) + O(x^n))^m -> f(x)^m + m*f(x)^{m-1} *O(x^n)
-                    f = Add(*other_terms)
-                    o = Add(*order_terms)
-
-                    if n == 2:
-                        return expand_multinomial(f ** n, deep=False) + n * f * o
-                    else:
-                        g = expand_multinomial(f ** (n - 1), deep=False)
-                        return expand_mul(f * g, deep=False) + n * g * o
-
-                if base.is_number:
-                    # Efficiently expand expressions of the form (a + b*I)**n
-                    # where 'a' and 'b' are real numbers and 'n' is integer.
-                    a, b = base.as_real_imag()
-
-                    if a.is_Rational and b.is_Rational:
-                        if not a.is_Integer:
-                            if not b.is_Integer:
-                                k = self.func(a.q * b.q, n)
-                                a, b = a.p * b.q, a.q * b.p
-                            else:
-                                k = self.func(a.q, n)
-                                a, b = a.p, a.q * b
-                        elif not b.is_Integer:
-                            k = self.func(b.q, n)
-                            a, b = a * b.q, b.p
-                        else:
-                            k = 1
-
-                        a, b, c, d = int(a), int(b), 1, 0
-
-                        while n:
-                            if n & 1:
-                                c, d = a * c - b * d, b * c + a * d
-                                n -= 1
-                            a, b = a * a - b * b, 2 * a * b
-                            n //= 2
-
-                        I = S.ImaginaryUnit
-
-                        if k == 1:
-                            return c + I * d
-                        else:
-                            return Integer(c) / k + I * d / k
-
-                p = other_terms
-                # (x + y)**3 -> x**3 + 3*x**2*y + 3*x*y**2 + y**3
-                # in this particular example:
-                # p = [x,y]; n = 3
-                # so now it's easy to get the correct result -- we get the
-                # coefficients first:
-                from sympy import multinomial_coefficients
-                from sympy.polys.polyutils import basic_from_dict
-                expansion_dict = multinomial_coefficients(len(p), n)
-                # in our example: {(3, 0): 1, (1, 2): 3, (0, 3): 1, (2, 1): 3}
-                # and now construct the expression.
-                return basic_from_dict(expansion_dict, *p)
-            else:
-                if n == 2:
-                    return Add(*[f * g for f in base.args for g in base.args])
+            for b in base.args:
+                if b.is_Order:
+                    order_terms.append(b)
                 else:
-                    multi = (base ** (n - 1))._eval_expand_multinomial()
-                    if multi.is_Add:
-                        return Add(*[f * g for f in base.args
-                            for g in multi.args])
+                    other_terms.append(b)
+
+            if order_terms:
+                # (f(x) + O(x^n))^m -> f(x)^m + m*f(x)^{m-1} *O(x^n)
+                f = Add(*other_terms)
+                o = Add(*order_terms)
+
+                if n == 2:
+                    return expand_multinomial(f ** n, deep=False) + n * f * o
+                else:
+                    g = expand_multinomial(f ** (n - 1), deep=False)
+                    return expand_mul(f * g, deep=False) + n * g * o
+
+            if base.is_number:
+                # Efficiently expand expressions of the form (a + b*I)**n
+                # where 'a' and 'b' are real numbers and 'n' is integer.
+                a, b = base.as_real_imag()
+
+                if a.is_Rational and b.is_Rational:
+                    if not a.is_Integer:
+                        if not b.is_Integer:
+                            k = self.func(a.q * b.q, n)
+                            a, b = a.p * b.q, a.q * b.p
+                        else:
+                            k = self.func(a.q, n)
+                            a, b = a.p, a.q * b
+                    elif not b.is_Integer:
+                        k = self.func(b.q, n)
+                        a, b = a * b.q, b.p
                     else:
-                        # XXX can this ever happen if base was an Add?
-                        return Add(*[f * multi for f in base.args])
+                        k = 1
+
+                    a, b, c, d = int(a), int(b), 1, 0
+
+                    while n:
+                        if n & 1:
+                            c, d = a * c - b * d, b * c + a * d
+                            n -= 1
+                        a, b = a * a - b * b, 2 * a * b
+                        n //= 2
+
+                    I = S.ImaginaryUnit
+
+                    if k == 1:
+                        return c + I * d
+                    else:
+                        return Integer(c) / k + I * d / k
+
+            p = other_terms
+            # (x + y)**3 -> x**3 + 3*x**2*y + 3*x*y**2 + y**3
+            # in this particular example:
+            # p = [x,y]; n = 3
+            # so now it's easy to get the correct result -- we get the
+            # coefficients first:
+            from sympy import multinomial_coefficients
+            from sympy.polys.polyutils import basic_from_dict
+            expansion_dict = multinomial_coefficients(len(p), n)
+            # in our example: {(3, 0): 1, (1, 2): 3, (0, 3): 1, (2, 1): 3}
+            # and now construct the expression.
+            return basic_from_dict(expansion_dict, *p)
+#             else:
+#                 if n == 2:
+#                     return Add(*[f * g for f in base.args for g in base.args])
+#                 else:
+#                     multi = (base ** (n - 1))._eval_expand_multinomial()
+#                     if multi.is_Add:
+#                         return Add(*[f * g for f in base.args
+#                             for g in multi.args])
+#                     else:
+#                         # XXX can this ever happen if base was an Add?
+#                         return Add(*[f * multi for f in base.args])
         elif (exp.is_Rational and exp.p < 0 and base.is_Add and
                 abs(exp.p) > exp.q):
             return 1 / self.func(base, -exp)._eval_expand_multinomial()
@@ -1282,8 +1283,8 @@ class Power(Expr):
             return exp((log(abs(base)) + I * arg(base)) * expo)
 
     def as_numer_denom(self):
-        if not self.is_commutative:
-            return self, S.One
+#         if not self.is_commutative:
+#             return self, S.One
         base, exp = self.as_base_exp()
         n, d = base.as_numer_denom()
         # this should be the same as ExpBase.as_numer_denom wrt
@@ -1773,8 +1774,7 @@ class Power(Expr):
             if self.base.is_Function:
                 return p._print(self.base, exp="%s/%s" % (p, q))
             return r"%s^{%s/%s}" % (base, p, q)
-        elif self.exp.is_Rational and self.exp.is_negative and \
-                self.base.is_commutative:
+        elif self.exp.is_Rational and self.exp.is_negative:
             # special case for 1^(-x), issue 9216
             if self.base == 1:
                 return r"%s^{%s}" % (self.base, self.exp)
@@ -1798,19 +1798,19 @@ class Power(Expr):
                 return "√" + arg
             return "√(%s)" % arg
 
-        if self.is_commutative:
-            if -self.exp is S.Half and not rational:
-                # Note: Don't test "self.exp == -S.Half" here, because that will
-                # match -0.5, which we don't want.
-                arg = p._print(self.base)
-                if re.compile('\w+').fullmatch(arg):
-                    return "1/√" + arg
-                return "1/√(%s)" % arg
-            
-            if self.exp is -S.One:
-                # Similarly to the S.Half case, don't test with "==" here.
-                return '%s/%s' % (p._print(S.One),
-                                  p.parenthesize(self.base, PREC, strict=False))
+#         if self.is_commutative:
+        if -self.exp is S.Half and not rational:
+            # Note: Don't test "self.exp == -S.Half" here, because that will
+            # match -0.5, which we don't want.
+            arg = p._print(self.base)
+            if re.compile('\w+').fullmatch(arg):
+                return "1/√" + arg
+            return "1/√(%s)" % arg
+        
+        if self.exp is -S.One:
+            # Similarly to the S.Half case, don't test with "==" here.
+            return '%s/%s' % (p._print(S.One),
+                              p.parenthesize(self.base, PREC, strict=False))
 
         e = p.parenthesize(self.exp, PREC, strict=False)
         if p.printmethod == '_sympyrepr' and self.exp.is_Rational and self.exp.q != 1:

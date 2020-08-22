@@ -229,7 +229,7 @@ def _invert_real(f, g_ys, symbol):
                 elif numer % 2 == 0:
                         n = Dummy('n')
                         neg_res = imageset(Lambda(n, -n), res)
-                        return _invert_real(base, res + neg_res, symbol)
+                        return _invert_real(base, res | neg_res, symbol)
 
                 else:
                     return _invert_real(base, res, symbol)

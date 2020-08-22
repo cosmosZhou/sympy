@@ -1533,6 +1533,9 @@ class Integrate(AddWithLimits):
                 function = function._subs(x, _x)
         return function.is_finite
 
+    def _eval_is_integer(self):
+        ...
+
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
         return '∫[%s](%s)' % (limits, p._print(self.function))

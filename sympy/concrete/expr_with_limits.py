@@ -304,7 +304,7 @@ class ExprWithLimits(Expr):
         arglist = [function]
         arglist.extend(limits)
         obj._args = tuple(arglist)
-        obj.is_commutative = function.is_commutative  # limits already checked
+#         obj.is_commutative = function.is_commutative  # limits already checked
 
         return obj
 
@@ -969,7 +969,7 @@ class AddWithLimits(ExprWithLimits):
         arglist = [orientation * function]  # orientation not used in ExprWithLimits
         arglist.extend(limits)
         obj._args = tuple(arglist)
-        obj.is_commutative = function.is_commutative  # limits already checked
+#         obj.is_commutative = function.is_commutative  # limits already checked
 
         return obj
 
@@ -992,10 +992,8 @@ class AddWithLimits(ExprWithLimits):
         if 1 == len(self.limits):
             summand = self.function.factor(**hints)
             if summand.is_Mul:
-                out = sift(summand.args, lambda w: w.is_commutative \
-                    and not set(self.variables) & w.free_symbols)
-                return Mul(*out[True]) * self.func(Mul(*out[False]), \
-                    *self.limits)
+                out = sift(summand.args, lambda w: not set(self.variables) & w.free_symbols)
+                return Mul(*out[True]) * self.func(Mul(*out[False]), *self.limits)
         else:
             summand = self.func(self.function, *self.limits[0:-1]).factor()
             if not summand.has(self.variables[-1]):
@@ -1007,7 +1005,8 @@ class AddWithLimits(ExprWithLimits):
     def _eval_expand_basic(self, **hints):
         from sympy.core.function import _coeff_isneg
         summand = self.function.expand(**hints)
-        if summand.is_Add and summand.is_commutative:
+#         if summand.is_Add and summand.is_commutative:
+        if summand.is_Add:
             args = []
             for arg in summand.args:
                 if _coeff_isneg(arg):
@@ -1105,6 +1104,8 @@ class AddWithLimits(ExprWithLimits):
 
 
 class MinMaxBase(ExprWithLimits):
+    
+    is_extended_real = True
     
     def bounds(self, x, domain):
         function = self.function        
@@ -3855,6 +3856,9 @@ class Ref(ExprWithLimits):
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_extended_real
+
+    def _eval_is_complex(self):
+        return self.function.is_complex
 
     def _eval_is_extended_positive(self):
         function = self.function                

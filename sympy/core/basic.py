@@ -1165,7 +1165,8 @@ class Basic(with_metaclass(ManagedProperties)):
             kwargs['hack2'] = True
 #             m = Dummy()
             for old, new in sequence:
-                d = Dummy(commutative=new.is_commutative, **new.dtype.dict)
+#                 d = Dummy(commutative=new.is_commutative, **new.dtype.dict)
+                d = Dummy(**new.dtype.dict)
                 # using d*m so Subs will be used on dummy variables
                 # in things like Derivative(f(x, y), x) in which x
                 # is both free and bound

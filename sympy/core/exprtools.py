@@ -820,9 +820,8 @@ class Term(object):
 
     def __init__(self, term, numer=None, denom=None):  # Term
         if numer is None and denom is None:
-            if not term.is_commutative:
-                raise NonCommutativeExpression(
-                    'commutative expression expected')
+#             if not term.is_commutative:
+#                 raise NonCommutativeExpression('commutative expression expected')
 
             coeff, factors = term.as_coeff_mul()
             numer, denom = defaultdict(int), defaultdict(int)
@@ -1042,7 +1041,8 @@ def gcd_terms(terms, isprimitive=False, clear=True, fraction=True):
     def mask(terms):
         """replace nc portions of each term with a unique Dummy symbols
         and return the replacements to restore them"""
-        args = [(a, []) if a.is_commutative else a.args_cnc() for a in terms]
+#         args = [(a, []) if a.is_commutative else a.args_cnc() for a in terms]
+        args = [(a, []) for a in terms]
         reps = []
         for i, (c, nc) in enumerate(args):
             if nc:

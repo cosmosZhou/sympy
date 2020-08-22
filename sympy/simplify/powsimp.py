@@ -137,7 +137,8 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                 continue
             if term.is_Power:
                 term = _denest_pow(term)
-            if term.is_commutative:
+#             if term.is_commutative:
+            if True:
                 b, e = term.as_base_exp()
                 if deep:
                     b, e = [recurse(i) for i in [b, e]]
@@ -146,17 +147,17 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                     # or else it will be joined as x**(a/2) later
                     b, e = b**e, S.One
                 c_powers[b].append(e)
-            else:
-                # This is the logic that combines exponents for equal,
-                # but non-commutative bases: A**x*A**y == A**(x+y).
-                if nc_part:
-                    b1, e1 = nc_part[-1].as_base_exp()
-                    b2, e2 = term.as_base_exp()
-                    if (b1 == b2 and
-                            e1.is_commutative and e2.is_commutative):
-                        nc_part[-1] = Pow(b1, Add(e1, e2))
-                        continue
-                nc_part.append(term)
+#             else:
+#                 # This is the logic that combines exponents for equal,
+#                 # but non-commutative bases: A**x*A**y == A**(x+y).
+#                 if nc_part:
+#                     b1, e1 = nc_part[-1].as_base_exp()
+#                     b2, e2 = term.as_base_exp()
+#                     if (b1 == b2 and
+#                             e1.is_commutative and e2.is_commutative):
+#                         nc_part[-1] = Pow(b1, Add(e1, e2))
+#                         continue
+#                 nc_part.append(term)
 
         # add up exponents of common bases
         for b, e in ordered(iter(c_powers.items())):
@@ -377,10 +378,10 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
         c_powers = []
         nc_part = []
         for term in expr.args:
-            if term.is_commutative:
-                c_powers.append(list(term.as_base_exp()))
-            else:
-                nc_part.append(term)
+#             if term.is_commutative:
+            c_powers.append(list(term.as_base_exp()))
+#             else:
+#                 nc_part.append(term)
 
         # Pull out numerical coefficients from exponent if assumptions allow
         # e.g., 2**(2*x) => 4**x

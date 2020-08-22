@@ -75,9 +75,9 @@ class AssocOp(Basic):
 #         args = tuple(sorted(args, key=lambda x: str(x)))
 
         obj = super(AssocOp, cls).__new__(cls, *args)
-        if is_commutative is None:
-            is_commutative = fuzzy_and(a.is_commutative for a in args)
-        obj.is_commutative = is_commutative
+#         if is_commutative is None:
+#             is_commutative = fuzzy_and(a.is_commutative for a in args)
+#         obj.is_commutative = is_commutative
         return obj
 
     def _new_rawargs(self, *args, **kwargs):
@@ -122,11 +122,11 @@ class AssocOp(Basic):
            self is non-commutative and kwarg `reeval=False` has not been
            passed.
         """
-        if kwargs.pop('reeval', True) and self.is_commutative is False:
-            is_commutative = None
-        else:
-            is_commutative = self.is_commutative
-        return self._from_args(args, is_commutative)
+#         if kwargs.pop('reeval', True) and self.is_commutative is False:
+#             is_commutative = None
+#         else:
+#             is_commutative = self.is_commutative
+        return self._from_args(args, is_commutative=True)
 
     @classmethod
     def flatten(cls, seq):

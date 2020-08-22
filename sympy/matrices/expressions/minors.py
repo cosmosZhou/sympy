@@ -1,7 +1,7 @@
 from __future__ import print_function, division
 
 from sympy.core.sympify import _sympify
-from sympy.core import S, Basic
+from sympy.core import Basic
 from sympy.matrices.expressions.matexpr import MatrixExpr
 
 
@@ -37,6 +37,15 @@ class Minors(MatrixExpr):
             return self.arg._eval_minors()
         except:
             return self
+    
+    def _entry(self, i, j=None, **_):
+        from sympy.concrete.expr_with_limits import Ref
+        from sympy.matrices.expressions.determinant import Det
+        m, n = self.rows, self.cols
+        if j is None:
+            j = self.generate_free_symbol(integer=True)
+            return Ref[j:n](Det(self.arg.drop(m - 1 - i, n - 1 - j)))
+        return Det(self.arg.drop(m - 1 - i, n - 1 - j))
 
 # Needs["Combinatorica`"]
 # mat = Array[Subscript[A, ##] &, {10, 10}, 0]

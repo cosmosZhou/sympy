@@ -177,6 +177,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         # terms cancel out.
         if self.function.is_zero:
             return True
+        
+        if self.function.is_extended_positive or self.function.is_extended_negative:
+            return False
 
     def doit(self, **hints):
         if hints.get('deep', True):
@@ -1412,6 +1415,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_finite
+
 
 def summation(f, *symbols, **kwargs):
     r"""

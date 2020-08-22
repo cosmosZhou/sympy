@@ -194,7 +194,8 @@ class Times(Expr, AssocOp):
                     if r is not S.One:  # 2-arg hack
                         # leave the Mul as a Mul
                         rv = [cls(a * r, b, evaluate=False)], [], None
-                    elif global_distribute[0] and b.is_commutative:
+#                     elif global_distribute[0] and b.is_commutative:
+                    elif global_distribute[0]:
                         r, b = b.as_coeff_Add()
                         bargs = [_keep_coeff(a, bi) for bi in Add.make_args(b)]
                         _addsort(bargs)
@@ -246,20 +247,20 @@ class Times(Expr, AssocOp):
 
             # Mul([...])
             if o.is_Mul:
-                if o.is_commutative:
-                    seq.extend(o.args)  # XXX zerocopy?
+#                 if o.is_commutative:
+                seq.extend(o.args)  # XXX zerocopy?
 
-                else:
-                    # NCMul can have commutative parts as well
-                    for q in o.args:
-                        if q.is_commutative:
-                            seq.append(q)
-                        else:
-                            nc_seq.append(q)
-
-                    # append non-commutative marker, so we don't forget to
-                    # process scheduled non-commutative objects
-                    seq.append(NC_Marker)
+#                 else:
+#                     # NCMul can have commutative parts as well
+#                     for q in o.args:
+#                         if q.is_commutative:
+#                             seq.append(q)
+#                         else:
+#                             nc_seq.append(q)
+# 
+#                     # append non-commutative marker, so we don't forget to
+#                     # process scheduled non-commutative objects
+#                     seq.append(NC_Marker)
 
                 continue
 
@@ -293,7 +294,7 @@ class Times(Expr, AssocOp):
                 neg1e += S.Half
                 continue
 
-            elif o.is_commutative:
+            else:
                 #      e
                 # o = b
                 b, e = o.as_base_exp()
@@ -327,40 +328,40 @@ class Times(Expr, AssocOp):
 
             # NON-COMMUTATIVE
             # TODO: Make non-commutative exponents not combine automatically
-            else:
-                if o is not NC_Marker:
-                    nc_seq.append(o)
-
-                # process nc_seq (if any)
-                while nc_seq:
-                    o = nc_seq.pop(0)
-                    if not nc_part:
-                        nc_part.append(o)
-                        continue
-
-                    #                             b    c       b+c
-                    # try to combine last terms: a  * a   ->  a
-                    o1 = nc_part.pop()
-                    b1, e1 = o1.as_base_exp()
-                    b2, e2 = o.as_base_exp()
-                    new_exp = e1 + e2
-                    # Only allow powers to combine if the new exponent is
-                    # not an Add. This allow things like a**2*b**3 == a**5
-                    # if a.is_commutative == False, but prohibits
-                    # a**x*a**y and x**a*x**b from combining (x,y commute).
-                    if b1 == b2 and (not new_exp.is_Add):
-                        o12 = b1 ** new_exp
-
-                        # now o12 could be a commutative object
-                        if o12.is_commutative:
-                            seq.append(o12)
-                            continue
-                        else:
-                            nc_seq.insert(0, o12)
-
-                    else:
-                        nc_part.append(o1)
-                        nc_part.append(o)
+#             else:
+#                 if o is not NC_Marker:
+#                     nc_seq.append(o)
+# 
+#                 # process nc_seq (if any)
+#                 while nc_seq:
+#                     o = nc_seq.pop(0)
+#                     if not nc_part:
+#                         nc_part.append(o)
+#                         continue
+# 
+#                     #                             b    c       b+c
+#                     # try to combine last terms: a  * a   ->  a
+#                     o1 = nc_part.pop()
+#                     b1, e1 = o1.as_base_exp()
+#                     b2, e2 = o.as_base_exp()
+#                     new_exp = e1 + e2
+#                     # Only allow powers to combine if the new exponent is
+#                     # not an Add. This allow things like a**2*b**3 == a**5
+#                     # if a.is_commutative == False, but prohibits
+#                     # a**x*a**y and x**a*x**b from combining (x,y commute).
+#                     if b1 == b2 and (not new_exp.is_Add):
+#                         o12 = b1 ** new_exp
+# 
+#                         # now o12 could be a commutative object
+#                         if o12.is_commutative:
+#                             seq.append(o12)
+#                             continue
+#                         else:
+#                             nc_seq.insert(0, o12)
+# 
+#                     else:
+#                         nc_part.append(o1)
+#                         nc_part.append(o)
 
         # We do want a combined exponent if it would not be an Add, such as
         #  y    2y     3y
@@ -810,7 +811,8 @@ class Times(Expr, AssocOp):
                 coeffr.append(r)
             elif r.is_zero:
                 coeffi.append(i * S.ImaginaryUnit)
-            elif a.is_commutative:
+#             elif a.is_commutative:
+            else:
                 # search for complex conjugate pairs:
                 for i, x in enumerate(other):
                     if x == a.conjugate():
@@ -822,8 +824,8 @@ class Times(Expr, AssocOp):
                         addterms *= a
                     else:
                         other.append(a)
-            else:
-                other.append(a)
+#             else:
+#                 other.append(a)
         m = self.func(*other)
         if hints.get('ignore') == m:
             return
@@ -890,10 +892,10 @@ class Times(Expr, AssocOp):
                 sums.append(factor)
                 rewrite = True
             else:
-                if factor.is_commutative:
-                    plain.append(factor)
-                else:
-                    sums.append(Basic(factor))  # Wrapper
+#                 if factor.is_commutative:
+                plain.append(factor)
+#                 else:
+#                     sums.append(Basic(factor))  # Wrapper
 
         if not rewrite:
             return expr
@@ -971,10 +973,10 @@ class Times(Expr, AssocOp):
 
     def matches(self, expr, repl_dict={}, old=False):
         expr = sympify(expr)
-        if self.is_commutative and expr.is_commutative:
-            return AssocOp._matches_commutative(self, expr, repl_dict, old)
-        elif self.is_commutative is not expr.is_commutative:
-            return None
+#         if self.is_commutative and expr.is_commutative:
+        return AssocOp._matches_commutative(self, expr, repl_dict, old)
+#         elif self.is_commutative is not expr.is_commutative:
+#             return None
         c1, nc1 = self.args_cnc()
         c2, nc2 = expr.args_cnc()
         repl_dict = repl_dict.copy()
@@ -1111,8 +1113,8 @@ class Times(Expr, AssocOp):
         nc = 0
         for m in self.args:
             b, e = m.as_base_exp()
-            if not b.is_commutative:
-                nc += 1
+#             if not b.is_commutative:
+#                 nc += 1
             if e1 is None:
                 e1 = e
             elif e != e1 or nc > 1:
@@ -1398,10 +1400,10 @@ class Times(Expr, AssocOp):
                     (co, _) = e.as_coeff_mul()
                     b = Pow(b, e / co)
                     e = co
-                if a.is_commutative:
-                    c[b] += e
-                else:
-                    nc.append([b, e])
+#                 if a.is_commutative:
+                c[b] += e
+#                 else:
+#                     nc.append([b, e])
             return (c, nc)
 
         def rejoin(b, co):
@@ -1841,7 +1843,14 @@ class Times(Expr, AssocOp):
     @property
     def domain(self):        
         from sympy import Interval, oo
-        domain = Interval(-oo, oo, integer=self.is_integer)
+        if self.is_integer:
+            domain = S.Integers
+        elif self.is_extended_real:
+            domain = S.Reals
+        else:
+            assert self.is_complex
+            domain = S.Complexes
+            
         coeff = []
         
         max_shape_len = max(len(arg.shape) for arg in self.args)
@@ -1859,7 +1868,7 @@ class Times(Expr, AssocOp):
             if coeff:
                 if domain:
                     return domain * Mul(*coeff)
-                return Interval(-oo, oo, integer=self.is_integer)                
+                return domain                
         else:
             for arg in self.args:
                 if len(arg.shape) < max_shape_len:
@@ -2040,7 +2049,8 @@ class Times(Expr, AssocOp):
 
         # Gather args for numerator/denominator
         for item in args:
-            if item.is_commutative and item.is_Power and item.exp.is_Rational and item.exp.is_negative:
+#             if item.is_commutative and item.is_Power and item.exp.is_Rational and item.exp.is_negative:
+            if item.is_Power and item.exp.is_Rational and item.exp.is_negative:
                 if item.exp != -1:
                     b.append(Pow(item.base, -item.exp, evaluate=False))
                 else:

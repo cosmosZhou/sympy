@@ -19,6 +19,7 @@ class Det(Expr):
     1
     """
     is_commutative = True
+    is_extended_real = True
 
     def __new__(cls, mat):
         from sympy.matrices.expressions.matexpr import VConcatenate, HConcatenate
@@ -40,6 +41,8 @@ class Det(Expr):
         try:
             return self.arg._eval_determinant()
         except (AttributeError, NotImplementedError):
+#             import traceback
+#             traceback.print_exc()
             return self
 
     @property

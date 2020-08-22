@@ -536,8 +536,8 @@ def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False):
     if not isinstance(expr, (Add, Mul, Pow, ExpBase)):
         return expr.func(*[simplify(x, **kwargs) for x in expr.args])
 
-    if not expr.is_commutative:
-        expr = nc_simplify(expr)
+#     if not expr.is_commutative:
+#         expr = nc_simplify(expr)
 
     # TODO: Apply different strategies, considering expression pattern:
     # is it a purely rational function? Is there any trigonometric function?...
@@ -618,8 +618,7 @@ def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False):
         x.is_Mul and
         len(x.args) == 2 and
         x.args[0].is_Number and
-        x.args[1].is_Add and
-        x.is_commutative)
+        x.args[1].is_Add)
     expr = short.xreplace(hollow_mul)
 
     numer, denom = expr.as_numer_denom()

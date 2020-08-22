@@ -830,7 +830,8 @@ class Symbol(AtomicExpr, NotIterable):
         if 'domain' in self._assumptions:
             return True
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_complex
+            return self._assumptions['definition'].is_complex        
+        return True
 
     def _eval_is_algebraic(self):
         if 'domain' in self._assumptions:

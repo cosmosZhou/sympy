@@ -113,7 +113,8 @@ class ExpBase(Function):
 
     def _eval_expand_power_exp(self, **hints):
         arg = self.args[0]
-        if arg.is_Add and arg.is_commutative:
+#         if arg.is_Add and arg.is_commutative:
+        if arg.is_Add:
             expr = 1
             for x in arg.args:
                 expr *= self.func(x)
@@ -505,7 +506,9 @@ class log(Function):
 
     exp
     """
-
+    
+    is_complex = True
+    
     def fdiff(self, argindex=1):
         """
         Returns the first derivative of the function.

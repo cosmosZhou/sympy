@@ -326,8 +326,8 @@ def _parallel_dict_from_expr(exprs, opt):
     if opt.expand is not False:
         exprs = [ expr.expand() for expr in exprs ]
 
-    if any(expr.is_commutative is False for expr in exprs):
-        raise PolynomialError('non-commutative expressions are not supported')
+#     if any(expr.is_commutative is False for expr in exprs):
+#         raise PolynomialError('non-commutative expressions are not supported')
 
     if opt.gens:
         reps, gens = _parallel_dict_from_expr_if_gens(exprs, opt)
@@ -345,8 +345,8 @@ def dict_from_expr(expr, **args):
 
 def _dict_from_expr(expr, opt):
     """Transform an expression into a multinomial form. """
-    if expr.is_commutative is False:
-        raise PolynomialError('non-commutative expressions are not supported')
+#     if expr.is_commutative is False:
+#         raise PolynomialError('non-commutative expressions are not supported')
 
     def _is_expandable_pow(expr):
         return (expr.is_Power and expr.exp.is_positive and expr.exp.is_Integer
