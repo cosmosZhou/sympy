@@ -2200,9 +2200,9 @@ class Complement(Set, EvalfMixin):
         from sympy.core.numbers import epsilon
         from sympy import floor
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.concrete.expr_with_limits import Minimum        
+        from sympy.concrete.expr_with_limits import MIN        
         if not self.is_connected_interval():
-            return Minimum(self)
+            return MIN(self)
                     
         A, B = self.args
         x = A.min()
@@ -2219,9 +2219,9 @@ class Complement(Set, EvalfMixin):
         from sympy.core.numbers import epsilon
         from sympy import ceiling
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.concrete.expr_with_limits import Maximum        
+        from sympy.concrete.expr_with_limits import MAX        
         if not self.is_connected_interval():
-            return Maximum(self)
+            return MAX(self)
                     
         A, B = self.args
         x = A.max()
@@ -2969,12 +2969,12 @@ class SymmetricDifference(Set):
 
 # image_set is to be substituted for imageset
 def image_set(sym, expr, condition):
-    from sympy.concrete.expr_with_limits import UnionComprehension
+    from sympy.concrete.expr_with_limits import UNION
     if condition.is_Interval and condition.is_integer:
         limit = (sym, condition.min(), condition.max())
     else:
         limit = (sym, condition)
-    return UnionComprehension({expr}, limit)
+    return UNION({expr}, limit)
 
 
 def imageset(*args):

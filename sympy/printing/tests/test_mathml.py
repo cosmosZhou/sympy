@@ -21,7 +21,7 @@ from sympy.functions.special.gamma_functions import gamma, lowergamma, uppergamm
 from sympy.functions.special.singularity_functions import SingularityFunction
 from sympy.functions.special.zeta_functions import polylog, lerchphi, zeta, dirichlet_eta
 from sympy.logic.boolalg import And, Or, Implies, Equivalent, Xor, Not
-from sympy.matrices.expressions.determinant import Determinant
+from sympy.matrices.expressions.determinant import Det
 from sympy.printing.mathml import mathml, MathMLContentPrinter, \
     MathMLPresentationPrinter, MathMLPrinter
 from sympy.sets.sets import FiniteSet, Union, Intersection, Complement, \

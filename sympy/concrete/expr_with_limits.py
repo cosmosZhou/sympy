@@ -240,7 +240,7 @@ class ExprWithLimits(Expr):
         
     def __new__(cls, function, *symbols, **assumptions):
         function = sympify(function)
-        if cls in (Minimum, Maximum, Ref, UnionComprehension):
+        if cls in (MIN, MAX, Ref, UNION):
             assert not function.is_Boolean
 
             limits = [None] * len(symbols)
@@ -1064,10 +1064,10 @@ class AddWithLimits(ExprWithLimits):
 
             if a.has(t):
                 domain &= t.domain_conditioned(a <= x)
-                a = Minimum(a, self.limits[i]).doit()
+                a = MIN(a, self.limits[i]).doit()
             if b.has(t):
                 domain &= t.domain_conditioned(x <= b)
-                b = Maximum(b, self.limits[i]).doit()
+                b = MAX(b, self.limits[i]).doit()
 
             limits.append((t, domain.start, domain.end))
 
@@ -1131,8 +1131,8 @@ class MinMaxBase(ExprWithLimits):
         return maxi, mini
     
 
-class Minimum(MinMaxBase):
-    r"""Represents unevaluated Minimum operator.
+class MIN(MinMaxBase):
+    r"""Represents unevaluated MIN operator.
     """
     is_Minimum = True
     __slots__ = ['is_commutative']
@@ -1861,8 +1861,8 @@ class Minimum(MinMaxBase):
         return self
             
                 
-class Maximum(MinMaxBase):
-    r"""Represents unevaluated Minimum operator.
+class MAX(MinMaxBase):
+    r"""Represents unevaluated MIN operator.
     """
     is_Maximum = True
     __slots__ = ['is_commutative']
@@ -3568,7 +3568,7 @@ class Ref(ExprWithLimits):
         return dependent, independent 
 
     def as_Min(self):
-        if isinstance(self.function, Minimum) and len(self.function.limits) == 0:
+        if isinstance(self.function, MIN) and len(self.function.limits) == 0:
             minimum = self.function
             function = minimum.function
             return minimum.func(self.func(function, *self.limits).simplify())
@@ -3697,7 +3697,7 @@ class Ref(ExprWithLimits):
         return Inverse(self)
 
     def _eval_determinant(self):
-        from sympy.matrices.expressions.determinant import Determinant
+        from sympy.matrices.expressions.determinant import Det
         from sympy.concrete.products import Product
         if not self.is_square:
             return None
@@ -3875,7 +3875,7 @@ class Ref(ExprWithLimits):
     def minor(self, i, j):
         ...
     
-class UnionComprehension(Set, ExprWithLimits):
+class UNION(Set, ExprWithLimits):
     """
     Represents a union of sets as a :class:`Set`.
 
@@ -4144,9 +4144,9 @@ class UnionComprehension(Set, ExprWithLimits):
                             start, stop = finite_set.indices
                             _start, _stop = _finite_set.indices
                             if _start == stop:
-                                return UnionComprehension.construct_finite_set(finite_set.base, start, _stop, self.limits[0][0])
+                                return UNION.construct_finite_set(finite_set.base, start, _stop, self.limits[0][0])
                             if stop == _start - 1:
-                                return UnionComprehension.construct_finite_set(finite_set.base, start, _stop, self.limits[0][0]) - finite_set.base[stop].set
+                                return UNION.construct_finite_set(finite_set.base, start, _stop, self.limits[0][0]) - finite_set.base[stop].set
 
         if self.is_ConditionSet:
             return
@@ -4480,10 +4480,10 @@ class UnionComprehension(Set, ExprWithLimits):
             ...
 
     def min(self):                        
-        return Minimum(self.function.min(), *self.limits)        
+        return MIN(self.function.min(), *self.limits)        
 
     def max(self):
-        return Maximum(self.function.max(), *self.limits)
+        return MAX(self.function.max(), *self.limits)
 
     def _eval_is_extended_real(self):
         function = self.function                
@@ -4506,7 +4506,7 @@ class UnionComprehension(Set, ExprWithLimits):
         return function.is_finite
 
     
-class IntersectionComprehension(Set, ExprWithLimits):
+class INTERSECTION(Set, ExprWithLimits):
     """
     Represents an intersection of sets as a :class:`Set`.
 
@@ -4642,14 +4642,14 @@ class IntersectionComprehension(Set, ExprWithLimits):
     """
 
     def min(self):                        
-        return Maximum(self.function.min(), *self.limits)        
+        return MAX(self.function.min(), *self.limits)        
 
     """
     precondition: this set should not be empty!
     """
 
     def max(self):
-        return Minimum(self.function.max(), *self.limits)
+        return MIN(self.function.max(), *self.limits)
 
     # finiteness of intersection set is hard to evaluate
     def _eval_is_finite(self):

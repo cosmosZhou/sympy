@@ -3,7 +3,7 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 
-from sympy.concrete.expr_with_limits import Exists, ForAll, Maximum, Minimum
+from sympy.concrete.expr_with_limits import Exists, ForAll, MAX, MIN
 
 from sympy.sets.sets import Interval
 from sympy.core.function import Function
@@ -25,7 +25,7 @@ def apply(given):
 
     y = Symbol('y', real=True)
     return ForAll(Exists(Equality(f, y), (z, a, b)),
-            (y, Minimum(f, (z, a, b)), Maximum(f, (z, a, b))),
+            (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))),
             given=given)               
 
 

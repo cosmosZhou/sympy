@@ -5,7 +5,7 @@ from sympy.utility import plausible
 from sympy.core.relational import Equality
 
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import Ref, Minimum
+from sympy.concrete.expr_with_limits import Ref, MIN
 from sympy.concrete.summations import Sum
 
 
@@ -19,10 +19,10 @@ def apply(G, x, y):
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
     x_quote = Symbol("x'", shape=(oo, d),
-                          definition=Ref[t](Ref[y[t]](Minimum[y[0:t]](s[t]))))
+                          definition=Ref[t](Ref[y[t]](MIN[y[0:t]](s[t]))))
 
-    return Equality(x_quote[t + 1], x[t + 1] + Minimum(x_quote[t] + G)), \
-        Equality(Minimum[y[:t + 1]](s[t]), Minimum(x_quote[t]))
+    return Equality(x_quote[t + 1], x[t + 1] + MIN(x_quote[t] + G)), \
+        Equality(MIN[y[:t + 1]](s[t]), MIN(x_quote[t]))
 
 
 from sympy.utility import check

@@ -172,7 +172,10 @@ class Piecewise(Function):
             newargs.append(pair)
             if cond is true:
                 break
-
+            
+#         if newargs[-1][-1] is not True:
+#             newargs[-1] = (newargs[-1][0], True)
+            
         if options.pop('evaluate', True):
             r = cls.eval(*newargs)
         else:

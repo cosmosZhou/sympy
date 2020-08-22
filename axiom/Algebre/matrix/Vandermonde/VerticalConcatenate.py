@@ -4,7 +4,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.utility import plausible, identity
 from sympy.core.relational import Equality
-from sympy.matrices.expressions.determinant import Determinant
+from sympy.matrices.expressions.determinant import Det
 
 from sympy.matrices.expressions.matexpr import Shift
 from axiom import discrete
@@ -28,7 +28,7 @@ def apply(r, n):
 # note : [A, B].T = (A.T, B.T)
 # [R, A] = (R.T, A.T).T
 
-    return Equality(Determinant([R, A]),
+    return Equality(Det([R, A]),
                     (1 - r) ** n * Product[k:1:n - 1](factorial(k)))
 
 

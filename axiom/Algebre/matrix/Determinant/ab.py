@@ -2,7 +2,7 @@ from sympy.core.symbol import Symbol
 from sympy.utility import plausible, identity
 from sympy.core.relational import Equality
 
-from sympy.matrices.expressions.determinant import Determinant
+from sympy.matrices.expressions.determinant import Det
 from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.concrete.products import Product
 from sympy.matrices.expressions.matexpr import Multiplication
@@ -16,7 +16,7 @@ def apply(a, b):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)
     
-    return Equality(Determinant(Ref[i:n, j:n](a[Min(i, j)] * b[Max(i, j)])),
+    return Equality(Det(Ref[i:n, j:n](a[Min(i, j)] * b[Max(i, j)])),
                     a[0] * b[n - 1] * Product(a[i] * b[i - 1] - a[i - 1] * b[i], (i, 1, n - 1)))
 
 

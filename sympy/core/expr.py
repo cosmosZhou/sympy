@@ -3782,12 +3782,12 @@ class Expr(Basic, EvalfMixin):
         return [_LeftRightArgs([S.One, S.One], higher=self._eval_derivative(x))]
 
     def min(self):
-        from sympy.concrete.expr_with_limits import Minimum
-        return self.aggregate(Minimum)
+        from sympy.concrete.expr_with_limits import MIN
+        return self.aggregate(MIN)
 
     def max(self):
-        from sympy.concrete.expr_with_limits import Maximum
-        return self.aggregate(Maximum)
+        from sympy.concrete.expr_with_limits import MAX
+        return self.aggregate(MAX)
 
     def aggregate(self, aggregate):
         from sympy.stats.rv import RandomSymbol
@@ -4010,10 +4010,10 @@ class Expr(Basic, EvalfMixin):
         return Or(self, exp)
 
     def set_comprehension(self, free_symbol=None):
-        from sympy.concrete.expr_with_limits import UnionComprehension
+        from sympy.concrete.expr_with_limits import UNION
 
         i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)         
-        return UnionComprehension({self[i]}, (i, 0, self.shape[0] - 1))
+        return UNION({self[i]}, (i, 0, self.shape[0] - 1))
 
     @property
     def is_square(self):

@@ -192,7 +192,7 @@ class MatMul(MatrixExpr, Mul):
             raise NotImplementedError("Can't simplify any further")
 
     def _eval_determinant(self):
-#         from sympy.matrices.expressions.determinant import Determinant
+#         from sympy.matrices.expressions.determinant import Det
         from sympy import det
         factor, matrices = self.as_coeff_matrices()
         square_matrices = only_squares(*matrices)

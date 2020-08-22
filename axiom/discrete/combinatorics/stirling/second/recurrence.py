@@ -8,7 +8,7 @@ from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
 from axiom import discrete
 from sympy.sets.conditionset import conditionset
-from sympy.concrete.expr_with_limits import UnionComprehension, ForAll, Ref
+from sympy.concrete.expr_with_limits import UNION, ForAll, Ref
 import axiom
 from sympy.core.numbers import oo
 from sympy.concrete.summations import Sum
@@ -118,7 +118,7 @@ def prove(Eq):
 
     Eq.x_quote_definition = x_quote.equality_defined()
 
-    Eq.x_quote_set_in_s2 = Subset(image_set(x_tuple, UnionComprehension[i:0:k](x_quote[i].set), s1_quote), s2, plausible=True)
+    Eq.x_quote_set_in_s2 = Subset(image_set(x_tuple, UNION[i:0:k](x_quote[i].set), s1_quote), s2, plausible=True)
 
     Eq << Eq.x_quote_set_in_s2.definition
 
@@ -194,7 +194,7 @@ def prove(Eq):
 
     Eq.subset_B = Subset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
     Eq.supset_B = Supset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
-    Eq.subset_A = Subset(Eq[-1].rhs.args[1], UnionComprehension[j](Eq[-2].lhs.args[1]), plausible=True)  # unproven
+    Eq.subset_A = Subset(Eq[-1].rhs.args[1], UNION[j](Eq[-2].lhs.args[1]), plausible=True)  # unproven
     Eq.supset_A = Supset(Eq[-1].rhs.args[1], Eq[-2].lhs.args[1], plausible=True)
 
 #     assert discrete.sets.union.inclusion_exclusion_principle.apply(*Eq[-1].rhs.args)
@@ -333,7 +333,7 @@ def prove(Eq):
     Eq << Eq[-1].definition
     Eq << Eq[-1].this.function.args[0].simplify()
     
-    Eq.x_tilde_set_in_s0 = Eq[-3].func(Contains(UnionComprehension.construct_finite_set(x_tilde), s0), *Eq[-3].limits, plausible=True)
+    Eq.x_tilde_set_in_s0 = Eq[-3].func(Contains(UNION.construct_finite_set(x_tilde), s0), *Eq[-3].limits, plausible=True)
 
     Eq << Eq.x_tilde_set_in_s0.subs(s0_definition)
 

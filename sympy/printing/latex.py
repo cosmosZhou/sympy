@@ -719,16 +719,6 @@ class LatexPrinter(Printer):
         else:
             return tex
 
-    _print_Determinant = _print_Abs
-#     def _print_Determinant(self, expr, exp=None):
-#         tex = r"\left|{%s}\right|" % self._print(expr.args[0])
-#         tex = r"{\color{blue} {\left|}}{%s}{\color{blue} {\right|}}" % self._print(expr.args[0])
-#
-#         if exp is not None:
-#             return r"%s^{%s}" % (tex, exp)
-#         else:
-#             return tex
-
     def _print_re(self, expr, exp=None):
         if self._settings['gothic_re_im']:
             tex = r"\Re{%s}" % self.parenthesize(expr.args[0], PRECEDENCE['Atom'])

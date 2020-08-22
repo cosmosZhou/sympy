@@ -2,14 +2,14 @@ from sympy.core.relational import LessThan
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
-from sympy.concrete.expr_with_limits import UnionComprehension
+from sympy.concrete.expr_with_limits import UNION
 from sympy.concrete import summations
 from sympy.core.numbers import oo
 
 
 @plausible
 def apply(expr, *limits):
-    return LessThan(abs(UnionComprehension(expr, *limits)),
+    return LessThan(abs(UNION(expr, *limits)),
                     summations.Sum(abs(expr), *limits).simplify())
 
 

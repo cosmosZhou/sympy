@@ -4,7 +4,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy import S
-from sympy.concrete.expr_with_limits import ForAll, UnionComprehension
+from sympy.concrete.expr_with_limits import ForAll, UNION
 
 # given: Union[i](x[i]) = {}
 # x[i] = {}
@@ -33,7 +33,7 @@ def prove(Eq):
     k = Symbol('k', integer=True, positive=True)
     x = Symbol('x', shape=(k + 1,), dtype=dtype.integer)
 
-    equality = Equality(UnionComprehension[i:0:k](x[i]), S.EmptySet)
+    equality = Equality(UNION[i:0:k](x[i]), S.EmptySet)
 
     Eq << apply(equality)
 

@@ -25,6 +25,6 @@ from .expressions import (
     MatrixSlice, BlockDiagMatrix, BlockMatrix, FunctionMatrix, Identity,
     Inverse, MatAdd, MatMul, MatPow, MatrixExpr, MatrixSymbol, Trace,
     Transpose, ZeroMatrix, OneMatrix, blockcut, block_collapse, matrix_symbols, Adjoint,
-    hadamard_product, HadamardProduct, HadamardPower, Determinant, det,
+    hadamard_product, HadamardProduct, HadamardPower, Det, det,
     diagonalize_vector, DiagonalizeVector, DiagonalMatrix, DiagonalOf, trace,
     DotProduct, kronecker_product, KroneckerProduct, OneMatrix)

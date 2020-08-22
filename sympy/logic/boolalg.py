@@ -95,7 +95,7 @@ class Boolean(Basic):
         if not self.sanctity_check(*limits):
             return self
         
-        this = self.comprehension(expr_with_limits.UnionComprehension, *limits)
+        this = self.comprehension(expr_with_limits.UNION, *limits)
         if this != self:
             this.given = self
         return this

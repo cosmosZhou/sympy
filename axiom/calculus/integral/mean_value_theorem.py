@@ -3,7 +3,7 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 
-from sympy.concrete.expr_with_limits import Exists, Minimum, Maximum
+from sympy.concrete.expr_with_limits import Exists, MIN, MAX
 from sympy.integrals.integrals import Integral
 from sympy.sets.sets import Interval
 from sympy.core.function import Function
@@ -46,8 +46,8 @@ def prove(Eq):
 
     Eq << apply(given)
     
-    m = Symbol('m', definition=Minimum(f(z), (z, a, b)))
-    M = Symbol('M', definition=Maximum(f(z), (z, a, b)))
+    m = Symbol('m', definition=MIN(f(z), (z, a, b)))
+    M = Symbol('M', definition=MAX(f(z), (z, a, b)))
     
     Eq.min, Eq.max = m.equality_defined(), M.equality_defined()
     

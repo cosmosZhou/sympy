@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-from sympy.concrete.expr_with_limits import ForAll, UnionComprehension, Ref
+from sympy.concrete.expr_with_limits import ForAll, UNION, Ref
 
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
@@ -33,7 +33,7 @@ def apply(given):
         xi = xj
         assert xj.has(i)
         
-    return Equality(abs(UnionComprehension(xi, i_limit).simplify()), summation(abs(xi), i_limit), given=given)
+    return Equality(abs(UNION(xi, i_limit).simplify()), summation(abs(xi), i_limit), given=given)
 
 
 from sympy.utility import check

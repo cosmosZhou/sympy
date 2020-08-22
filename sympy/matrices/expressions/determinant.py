@@ -1,10 +1,8 @@
 from __future__ import print_function, division
 
 from sympy import Basic, Expr, S, sympify
-from .matexpr import ShapeError
 
-
-class Determinant(Expr):
+class Det(Expr):
     """Matrix Determinant
 
     Represents the determinant of a matrix expression.
@@ -12,11 +10,11 @@ class Determinant(Expr):
     Examples
     ========
 
-    >>> from sympy import MatrixSymbol, Determinant, eye
+    >>> from sympy import MatrixSymbol, Det, eye
     >>> A = MatrixSymbol('A', 3, 3)
-    >>> Determinant(A)
-    Determinant(A)
-    >>> Determinant(eye(3)).doit()
+    >>> Det(A)
+    Det(A)
+    >>> Det(eye(3)).doit()
     1
     """
     is_commutative = True
@@ -29,9 +27,6 @@ class Determinant(Expr):
             mat = HConcatenate(*mat)
 
         mat = sympify(mat)
-#         if not mat.is_Matrix:
-#             raise TypeError("Input to Determinant, %s, not a matrix" % str(mat))
-
         assert mat.is_square, "Det of a non-square matrix"
 
         return Basic.__new__(cls, mat)
@@ -71,6 +66,12 @@ class Determinant(Expr):
             
         return self
 
+    def _latex(self, p):
+        return r"\left|{%s}\right|" % p._print(self.arg)
+
+    def _sympystr(self, p):
+        return "¦%s¦" % p._print(self.arg)
+
 def det(matexpr):
     """ Matrix Determinant
 
@@ -80,12 +81,12 @@ def det(matexpr):
     >>> from sympy import MatrixSymbol, det, eye
     >>> A = MatrixSymbol('A', 3, 3)
     >>> det(A)
-    Determinant(A)
+    Det(A)
     >>> det(eye(3))
     1
     """
 
-    return Determinant(matexpr).doit()
+    return Det(matexpr).doit()
 
 
 from sympy.assumptions.ask import ask, Q
@@ -97,7 +98,7 @@ def refine_Determinant(expr, assumptions):
     >>> from sympy import MatrixSymbol, Q, assuming, refine, det
     >>> X = MatrixSymbol('X', 2, 2)
     >>> det(X)
-    Determinant(X)
+    Det(X)
     >>> with assuming(Q.orthogonal(X)):
     ...     print(refine(det(X)))
     1
@@ -112,4 +113,4 @@ def refine_Determinant(expr, assumptions):
     return expr
 
 
-handlers_dict['Determinant'] = refine_Determinant
+handlers_dict['Det'] = refine_Determinant

@@ -566,13 +566,13 @@ class Indexed(Expr):
     
     def _eval_determinant(self):
         from sympy.matrices.expressions.determinant import det
-        from sympy import Determinant
+        from sympy import Det
         definition = self.definition
         if definition is not None:
             res = det(definition)
-            if not isinstance(res, Determinant):
+            if not isinstance(res, Det):
                 return res
-        return Determinant(self)
+        return Det(self)
         
                 
         
@@ -611,11 +611,11 @@ class Slice(Expr):
 
     @property
     def set(self):
-        from sympy.concrete.expr_with_limits import UnionComprehension
+        from sympy.concrete.expr_with_limits import UNION
 
         i = self.generate_free_symbol(integer=True)
         start, stop = self.indices
-        return UnionComprehension({self.base[i]}, (i, start, stop - 1))
+        return UNION({self.base[i]}, (i, start, stop - 1))
 
     def __new__(cls, base, *args, **kw_args):
         from sympy.utilities.misc import filldedent

@@ -10,7 +10,7 @@ from .matexpr import (Identity, MatrixExpr, MatrixSymbol, ZeroMatrix, OneMatrix,
 from .matmul import MatMul
 from .matpow import MatPow
 from .trace import Trace, trace
-from .determinant import Determinant, det
+from .determinant import Det, det
 from .transpose import Transpose
 from .adjoint import Adjoint
 from .hadamard import hadamard_product, HadamardProduct, hadamard_power, HadamardPower

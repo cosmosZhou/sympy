@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible, identity
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
-from sympy.concrete.expr_with_limits import ForAll, UnionComprehension
+from sympy.concrete.expr_with_limits import ForAll, UNION
 from axiom import discrete
 
 # given: |Union x[i]| = Sum |x[i]|
@@ -63,7 +63,7 @@ def prove(Eq):
 
     x = Symbol('x', shape=(k + 1,), dtype=dtype.integer, finite=True)
 
-    given = Equality(abs(UnionComprehension[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))
+    given = Equality(abs(UNION[i:0:k](x[i])), Sum[i:0:k](abs(x[i])))
 
     Eq << apply(given)
 

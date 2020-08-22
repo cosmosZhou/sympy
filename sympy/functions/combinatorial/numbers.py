@@ -2041,7 +2041,7 @@ class Stirling(Function):
 
     @property
     def definition(self):
-        from sympy.concrete.expr_with_limits import UnionComprehension, ForAll
+        from sympy.concrete.expr_with_limits import UNION, ForAll
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval, FiniteSet, image_set
         from sympy.core.relational import Equality
@@ -2058,9 +2058,9 @@ class Stirling(Function):
         
         return abs(
             image_set(x[:k],
-                     UnionComprehension(FiniteSet(x[i]), (i, 0, k - 1)),
+                     UNION(FiniteSet(x[i]), (i, 0, k - 1)),
                      conditionset(x[:k],
-                                And(Equality(UnionComprehension(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
+                                And(Equality(UNION(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
                                     Equality(Sum(abs(x[i]), (i, 0, k - 1)), n),
                                     ForAll(StrictGreaterThan(abs(x[i]), 0), (i, 0, k - 1))
                                     )
@@ -2318,7 +2318,7 @@ class Stirling1(Function):
 
     @property
     def definition(self):
-        from sympy.concrete.expr_with_limits import UnionComprehension, ForAll
+        from sympy.concrete.expr_with_limits import UNION, ForAll
         from sympy.tensor.indexed import IndexedBase
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval, FiniteSet, image_set
@@ -2336,9 +2336,9 @@ class Stirling1(Function):
         
         return abs(
             image_set(x[:k],
-                     UnionComprehension(FiniteSet(x[i]), (i, 0, k - 1)),
+                     UNION(FiniteSet(x[i]), (i, 0, k - 1)),
                      conditionset(x[:k],
-                                And(Equality(UnionComprehension(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
+                                And(Equality(UNION(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
                                     Equality(Sum(abs(x[i]), (i, 0, k - 1)), n),
                                     ForAll(StrictGreaterThan(abs(x[i]), 0), (i, 0, k - 1))
                                     )

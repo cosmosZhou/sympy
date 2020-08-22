@@ -17,7 +17,7 @@ from sympy.utilities.misc import filldedent
 # by definition, we have
 # ConditionSet(variable, condition, base_set) == Union[variable:condition:base_set]({variable})
 def conditionset(*limit):
-    from sympy.concrete.expr_with_limits import UnionComprehension
+    from sympy.concrete.expr_with_limits import UNION
     if len(limit) > 2 and limit[2] in (S.UniversalSet, None):
         limit = limit[:2]
     variable, condition, *base_set = limit
@@ -33,7 +33,7 @@ def conditionset(*limit):
     if condition.is_BooleanFalse:
         return S.EmptySet
 
-    return UnionComprehension({variable}, limit) 
+    return UNION({variable}, limit) 
 
 
 class ConditionSet(Set):

@@ -9,6 +9,7 @@ from sympy.matrices import MatrixBase
 
 class MatPow(MatrixExpr):
     is_MatPow = True
+
     def __new__(cls, base, exp):
         base = _sympify(base)
         assert base.is_square, str(base)        
@@ -135,3 +136,9 @@ class MatPow(MatrixExpr):
     @property
     def atomic_dtype(self):
         return self.base.atomic_dtype
+
+    def _sympystr(self, p):
+        from sympy.printing.precedence import precedence
+        PREC = precedence(self)
+        return '%s^%s' % (p.parenthesize(self.base, PREC, strict=False),
+                         p.parenthesize(self.exp, PREC, strict=False))

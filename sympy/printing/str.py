@@ -412,11 +412,6 @@ class StrPrinter(Printer):
     def _print_UnevaluatedExpr(self, expr):
         return self._print(expr.args[0])
 
-    def _print_MatPow(self, expr):
-        PREC = precedence(expr)
-        return '%s**%s' % (self.parenthesize(expr.base, PREC, strict=False),
-                         self.parenthesize(expr.exp, PREC, strict=False))
-
     def _print_ImmutableDenseNDimArray(self, expr):
         return str(expr)
 

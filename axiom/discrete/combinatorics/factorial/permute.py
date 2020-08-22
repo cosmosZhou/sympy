@@ -5,7 +5,7 @@ from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import ForAll, Ref, UnionComprehension
+from sympy.concrete.expr_with_limits import ForAll, Ref, UNION
 from sympy.sets.contains import Contains
 
 
@@ -50,7 +50,7 @@ def apply(given):
     equality = given[1].function
     assert equality.is_Equality and {*equality.args} == {abs(x.set_comprehension()), n}
         
-    return Equality(abs(S), factorial(n) * abs(UnionComprehension[x:S]({x.set_comprehension()})),
+    return Equality(abs(S), factorial(n) * abs(UNION[x:S]({x.set_comprehension()})),
                     given=given)
 
 

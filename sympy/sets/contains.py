@@ -415,8 +415,8 @@ class Subset(BooleanFunction):
     is_Subset = True
 
     def union_comprehension(self, *limits):
-        from sympy.concrete.expr_with_limits import UnionComprehension
-        lhs = UnionComprehension(self.lhs, *limits)
+        from sympy.concrete.expr_with_limits import UNION
+        lhs = UNION(self.lhs, *limits)
         return self.func(lhs, self.rhs, equivalent=self)
 
     @property
@@ -740,8 +740,8 @@ class Supset(BooleanFunction):
         return Subset(self.rhs, self.lhs, equivalent=self)
 
     def union_comprehension(self, *limits):
-        from sympy.concrete.expr_with_limits import UnionComprehension
-        rhs = UnionComprehension(self.rhs, *limits)
+        from sympy.concrete.expr_with_limits import UNION
+        rhs = UNION(self.rhs, *limits)
         return self.func(self.lhs, rhs, equivalent=self)
 
     def simplify(self, deep=False):
