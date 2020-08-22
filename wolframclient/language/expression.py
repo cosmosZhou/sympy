@@ -11,6 +11,14 @@ __all__ = ["WLSymbol", "WLFunction", "WLSymbolFactory", "WLInputExpression"]
 def sympify(expr, **kwargs):
     if isinstance(expr, int):
         return expr
+    
+    if isinstance(expr, tuple):        
+        from sympy import Matrix
+        if isinstance(expr[0], tuple):
+            return Matrix(tuple(tuple(sympify(e, **kwargs) for e in t) for t in expr))
+        else:
+            return Matrix(tuple(sympify(e, **kwargs) for e in expr))
+            
     return expr.sympify(**kwargs)
 
 
@@ -64,9 +72,10 @@ class WLSymbol(WLExpressionMeta):
         name = self.name
         if args:
             import sympy  # @UnusedImport
-            return eval("sympy." + name)(*(sympify(arg, **global_variables) for arg in args))
+            return getattr(sympy, name)(*(sympify(arg, **global_variables) for arg in args))
         else:
             return global_variables[name]
+
 
 class WLFunction(WLExpressionMeta):
     """Represent a Wolfram Language function with its head and arguments.

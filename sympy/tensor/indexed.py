@@ -117,7 +117,7 @@ class IndexException(Exception):
     pass
 
 
-class Indexed(Expr):
+class Subscript(Expr):
     """Represents a mathematical object with indices.
 
     >>> from sympy import Indexed, IndexedBase, Idx, symbols
@@ -184,8 +184,11 @@ class Indexed(Expr):
 
     @property
     def is_integer(self):
-        if self.base.definition is not None:
-            return self.base.definition.is_integer 
+        try:
+            if self.base.definition is not None:
+                return self.base.definition.is_integer
+        except:
+            ... 
         return self.base.is_integer
 
     def _dummy_eq(self, other):
@@ -219,7 +222,7 @@ class Indexed(Expr):
             
         if len(args) == 1 and args[0].is_Piecewise:
             piecewise = args[0]
-            return piecewise.func(*((Indexed(base, e), c) for e, c in piecewise.args))
+            return piecewise.func(*((Subscript(base, e), c) for e, c in piecewise.args))
             
         return Expr.__new__(cls, base, *args, **kw_args)
 
@@ -330,30 +333,8 @@ class Indexed(Expr):
         >>> B[i, j].shape
         (m, m)
         """
-        try:
-            return self.base.shape[len(self.indices):]
-        except:
-            print(self.base)
-            print(self.base.shape)
-#         from sympy.utilities.misc import filldedent
-#
-#         if self.base.shape:
-#             return self.base.shape
-#         sizes = []
-#         for i in self.indices:
-#             upper = getattr(i, 'upper', None)
-#             lower = getattr(i, 'lower', None)
-#             if None in (upper, lower):
-#                 raise IndexException(filldedent("""
-#                     Range is not defined for all indices in: %s""" % self))
-#             try:
-#                 size = upper - lower + 1
-#             except TypeError:
-#                 raise IndexException(filldedent("""
-#                     Shape cannot be inferred from Idx with
-#                     undefined range: %s""" % self))
-#             sizes.append(size)
-#         return Tuple(*sizes)
+        
+        return self.base.shape[len(self.indices):]
 
     @property
     def ranges(self):
@@ -389,6 +370,15 @@ class Indexed(Expr):
     def _sympystr(self, p):
         indices = list(map(p.doprint, self.indices))
         return "%s[%s]" % (p.doprint(self.base), ", ".join(indices))
+
+    def _latex(self, p):
+        tex_base = p._print(self.base)
+        tex = '{' + tex_base + '}' + '_{%s}' % ','.join(map(p._print, self.indices))
+
+        if self.is_random_symbol():
+            return r'{\color{red} {%s}}' % tex
+        return tex
+
 
     @property
     def free_symbols(self):
@@ -574,7 +564,7 @@ class Indexed(Expr):
                 return res
         return Det(self)
         
-                
+Indexed = Subscript                
         
 class Slice(Expr):
     """Represents a mathematical object with Slices.

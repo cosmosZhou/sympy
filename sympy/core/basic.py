@@ -2247,7 +2247,8 @@ class Basic(with_metaclass(ManagedProperties)):
         wlexpr = self.to_wolfram(global_variables)                
         wlexpr = session.evaluate(wlexpr)
         global_variables = {'Global`' + x.name : x for x in global_variables}
-        return wlexpr.sympify(**global_variables)
+        from wolframclient.language import expression        
+        return expression.sympify(wlexpr, **global_variables)
 
         
 class Atom(Basic):

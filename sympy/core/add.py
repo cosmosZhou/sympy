@@ -543,10 +543,11 @@ class Plus(Expr, AssocOp):
             return 
         
         if len(self.args) == 2:
-            if self.min().is_extended_positive:
-                return False
-            if self.max().is_extended_negative:
-                return False    
+            if self.is_extended_real:
+                if self.min().is_extended_positive:
+                    return False
+                if self.max().is_extended_negative:
+                    return False    
         
         if self.is_commutative is False:
             return

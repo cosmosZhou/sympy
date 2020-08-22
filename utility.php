@@ -163,7 +163,7 @@ function render($php, $txt)
             continue;
         }
 
-        if (preg_match('/^def *prove\(Eq\) *: */', $statement, $matches)) {
+        if (preg_match('/^def *prove\(Eq(, \w+)?\) *: */', $statement, $matches)) {
             break;
         }
     }

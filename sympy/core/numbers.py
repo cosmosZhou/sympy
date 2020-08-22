@@ -882,6 +882,7 @@ class Number(AtomicExpr):
 
     def _dummy_eq(self, other):
         return self == other
+
     
 class Float(Number):
     """Represent a floating-point number of arbitrary precision.
@@ -2078,6 +2079,10 @@ class Rational(Number):
         """Efficiently extract the coefficient of a summation. """
         return self, S.Zero
 
+    def to_wolfram(self, _):
+        from wolframclient.language import wl        
+        return getattr(wl, "Rational")(self.p, self.q)
+
 
 class Integer(Rational):
     """Represents integer numbers of any size.
@@ -2473,6 +2478,10 @@ class Integer(Rational):
     def __rfloordiv__(self, other):
         return Integer(Integer(other).p // self.p)
 
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr(str(self.p))
+
 
 # Add sympify converters
 for i_type in integer_types:
@@ -2695,18 +2704,8 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
     def domain_nonzero(self, x):
         from sympy.sets.sets import EmptySet
         return EmptySet()
-    
-#     def __hash__(self):
-#         return super(Zero, self).__hash__()
-#     
-#     def __eq__(self, other):
-#         return isinstance(other, Zero) or other == 0
 
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('0')
     
-
 class One(with_metaclass(Singleton, IntegerConstant)):
     """The number one.
 
@@ -2755,11 +2754,8 @@ class One(with_metaclass(Singleton, IntegerConstant)):
 
     is_nonnegative = True
     is_positive = True
-        
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('1')
-        
+
+                
 class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     """The number negative one.
 
@@ -2858,9 +2854,6 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     def as_coeff_mmul(self):
         return 1, self
 
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('-1')
 
 class Half(with_metaclass(Singleton, RationalConstant)):
     """The rational number 1/2.
@@ -2890,9 +2883,6 @@ class Half(with_metaclass(Singleton, RationalConstant)):
     def __abs__():
         return S.Half
 
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('1/2')
 
 class Infinity(with_metaclass(Singleton, Number)):
     r"""Positive infinite quantity.
@@ -3122,6 +3112,7 @@ class Infinity(with_metaclass(Singleton, Number)):
         from wolframclient.language import wlexpr
         return wlexpr('oo')
 
+
 oo = S.Infinity
 
 
@@ -3327,6 +3318,7 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
         from wolframclient.language import wlexpr
         return wlexpr('-oo')
 
+
 class NaN(with_metaclass(Singleton, Number)):
     """
     Not a Number.
@@ -3445,6 +3437,10 @@ class NaN(with_metaclass(Singleton, Number)):
     __ge__ = Expr.__ge__
     __lt__ = Expr.__lt__
     __le__ = Expr.__le__
+
+    def to_wolfram(self, _):        
+        from wolframclient.language import wlexpr
+        return wlexpr('NaN')
 
 
 nan = S.NaN
@@ -3744,10 +3740,10 @@ class Pi(with_metaclass(Singleton, NumberSymbol)):
     def _sympystr(self, _):
         return 'π'
 
-
     def to_wolfram(self, _):        
         from wolframclient.language import wlexpr
         return wlexpr('Pi')
+
 
 pi = S.Pi
 
@@ -4079,6 +4075,7 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
     @property
     def shape(self):
         return ()
+
 
 I = S.ImaginaryUnit
 

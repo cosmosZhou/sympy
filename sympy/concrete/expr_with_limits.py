@@ -3872,8 +3872,6 @@ class Ref(ExprWithLimits):
                 function = function._subs(x, _x)
         return function.is_extended_negative
     
-    def minor(self, i, j):
-        ...
     
 class UNION(Set, ExprWithLimits):
     """

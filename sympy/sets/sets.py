@@ -608,7 +608,8 @@ class Set(Basic):
         raise NotImplementedError("(%s)._measure" % self)
 
     def __add__(self, other):
-        return self.union(other)
+        raise Exception("could not add %s, %s" %(self, other))
+#         return self.union(other)
 
     def __or__(self, other):
         return self.union(other)

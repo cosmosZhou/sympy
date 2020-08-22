@@ -1221,6 +1221,14 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
     def __repr__(self):
         return "S.Complexes"
 
+    def __add__(self, other):
+        if not other.shape and other.is_complex:
+            return self
+        if other.is_set:
+            return self
+            
+        raise Exception("could not add %s, %s" %(self, other))
+
     @property
     def element_type(self):
         return dtype.complex

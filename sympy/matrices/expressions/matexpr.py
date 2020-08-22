@@ -11,7 +11,6 @@ from sympy.functions import conjugate, adjoint
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices import ShapeError
 from sympy.simplify import simplify
-# from sympy.utilities.misc import filldedent
 
 
 def _sympifyit(arg, retval=None):
@@ -201,8 +200,9 @@ class MatrixExpr(Expr):
     def _accept_eval_derivative(self, s):
         return s._visit_eval_derivative_array(self)
 
-    def _entry(self, i, j=None, **kwargs):
-        raise NotImplementedError("Indexing not implemented for %s" % self.__class__.__name__)
+    def _entry(self, i, j=None, **_):
+        from sympy.tensor.indexed import Subscript        
+        return Subscript(self, i, j)
 
     def adjoint(self):
         return adjoint(self)

@@ -3831,11 +3831,18 @@ class Expr(Basic, EvalfMixin):
     
     @property
     def domain(self):
-        from sympy import Interval
         if self.atomic_dtype.is_set:
             return S.UniversalSet
         shape = self.shape
-        interval = Interval(S.NegativeInfinity, S.Infinity, integer=self.is_integer) 
+        
+        if self.is_extended_real:
+            if self.is_integer:
+                interval = S.Integers
+            else:
+                interval = S.Reals
+        else:
+            interval = S.Complexes
+
         if not shape:
             return interval
         from sympy.sets.sets import CartesianSpace

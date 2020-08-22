@@ -35,6 +35,7 @@ def _compare_sequence(a, b):
     # tuple
     return tuple(a) == tuple(b)
 
+
 class DenseMatrix(MatrixBase):
     __slots__ = []
     
@@ -841,6 +842,11 @@ class MutableDenseMatrix(DenseMatrix):
         rk = self._mat[k0: k0 + self.cols]
 
         self._mat[i0: i0 + self.cols] = [f(x, y) for x, y in zip(ri, rk)]
+
+    def to_wolfram(self, global_variables):
+        from wolframclient.language import wl
+        List = getattr(wl, "List")        
+        return List(*(List(*(e.to_wolfram(global_variables) for e in self.row(i))) for i in range(self.rows)))
 
     # Utility functions
 

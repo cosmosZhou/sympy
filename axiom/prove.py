@@ -128,6 +128,7 @@ if __name__ == '__main__':
     
 # Reverse[Reverse[Minors[mat], 1], 2] == Map[Reverse, Minors[mat], {0, 1}]
 
+
 # adj[m_] := Map[Reverse, Minors[Transpose[m], Length[m] - 1], {0, 1}] Table[(-1)^(i + j), {i, Length[m]}, {j, Length[m]}]
 # $Assumptions = M \[Element] Matrices[{n, n}, Reals, Symmetric[{1, 2}]]
 # Normal[SparseArray[{{i_, i_} -> i^2}, {10, 10}]] // MatrixForm

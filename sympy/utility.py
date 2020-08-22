@@ -378,7 +378,7 @@ def wolfram_decorator(py, func, **kwargs):
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
             if wolfram is not None:
-                with wolfram:
+                with wolfram:                
                     func(eqs, wolfram)
             else:
                 func(eqs, wolfram)
@@ -399,18 +399,19 @@ def wolfram_decorator(py, func, **kwargs):
 def check(func=None, wolfram=None):
     if func is not None:
         return lambda py: wolfram_decorator(py, func)
-        
-    elif wolfram:
-        def decorator(func):
+
+    def decorator(func):
+        session = None
+        if wolfram:
             try:
                 from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
-                wolfram = WolframLanguageSession()
+                session = WolframLanguageSession()                
             except:
-                wolfram = None
-            
-            return lambda py: wolfram_decorator(py, func, wolfram=wolfram)
+                ...
+        
+        return lambda py: wolfram_decorator(py, func, wolfram=session)
 
-        return decorator
+    return decorator
 
 
 def plausible(apply=None):
