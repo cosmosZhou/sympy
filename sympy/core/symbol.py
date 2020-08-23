@@ -894,6 +894,33 @@ class Symbol(AtomicExpr, NotIterable):
         global_variables.add(self)
         return wlexpr(self.name)
 
+    def _subs(self, old, new, **hints):
+        assert old != new
+            ***
+        from sympy import preorder_traversal
+        if old.is_Slice:
+            indices = set(index for indexed in preorder_traversal(self) if isinstance(indexed, Basic) and indexed.is_Indexed and indexed.base == old.base for index in indexed.indices)
+            if indices:
+                reps = {}            
+                this = self
+                for i in indices:
+                    if i.is_symbol: 
+                        i_domain = self.domain_defined(i)
+                        if i.domain != i_domain:
+                            _i = i.copy(domain=i_domain)
+                            this = this._subs(i, _i)                            
+                            reps[i] = _i
+                if this != self:
+                    this = this._subs(old, new, **hints)
+                    for i, _i in reps.items():
+                        this = this._subs(_i, i)                            
+                    return this
+
+        if self == old or self.dummy_eq(old):
+            return new
+
+        return self
+        
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
 

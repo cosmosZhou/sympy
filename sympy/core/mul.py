@@ -1705,9 +1705,33 @@ class Times(Expr, AssocOp):
             if arg.is_KroneckerDelta:
                 i, j = arg.args
                 if i == 0 and j in self.args or j == 0 and i in self.args:
-                    return S.Zero                     
-                
-        this = self.expand()
+                    return S.Zero                    
+
+        coefficient = []
+        delta = []
+        from sympy import KroneckerDelta
+        for i, arg in enumerate(self.args):
+            if arg._has(KroneckerDelta):
+                if arg.is_Det:
+                    coefficient.append(arg)
+                    continue
+                delta.append(arg)
+            else:
+                coefficient.append(arg)
+        if not delta:            
+            return self
+        
+        if len(delta) == 1:            
+            return self
+
+        delta = self.func(*delta, evaluate=False).expand()
+        
+        if coefficient:   
+            coefficient = self.func(*coefficient, evaluate=False)
+        else:
+            coefficient = S.One
+             
+        this = delta   
         if this.is_Add:
             args = [*this.args]
             hit = False
@@ -1721,8 +1745,8 @@ class Times(Expr, AssocOp):
                 this = this.func(*args)
             if this.is_Add:
                 this = this.simplifyKroneckerDelta()
-            if this != self:
-                return this
+            if this != delta:
+                return this * coefficient
             
         return self
     
@@ -1847,7 +1871,10 @@ class Times(Expr, AssocOp):
             domain = S.Integers
         elif self.is_extended_real:
             domain = S.Reals
-        else:
+        else:            
+            if not self.is_complex:
+                print(self)
+                print(type(self))
             assert self.is_complex
             domain = S.Complexes
             

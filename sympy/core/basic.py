@@ -107,6 +107,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_MatMul = False
     is_MatPow = False
     is_DenseMatrix = False
+    is_Det = False
     
     is_set = False
     is_EmptySet = None

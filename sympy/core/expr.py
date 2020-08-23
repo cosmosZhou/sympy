@@ -4049,9 +4049,22 @@ class Expr(Basic, EvalfMixin):
         j = self.generate_free_symbol(excludes=excludes | {i}, integer=True)
         m, n = self.shape
         
-        return Ref[i:m - 1, j:n - 1](Piecewise(
-            (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
-        (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1],True)), True)))
+        if m - 1 == I:
+            if n - 1 == J:
+                return Ref[i:m - 1, j:n - 1](self[i, j])
+            else:                
+                return Ref[i:m - 1, j:n - 1](Piecewise((self[i, j], j < J), 
+                                                       (self[i, j + 1], True)))
+        else:
+            if n - 1 == J:
+                return Ref[i:m - 1, j:n - 1](Piecewise(
+                    (self[i, j], i < I),
+                    (self[i + 1, j], True)))
+            else:
+                return Ref[i:m - 1, j:n - 1](Piecewise(
+                    (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
+                    (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
+
     
 class AtomicExpr(Atom, Expr):
     """

@@ -46,7 +46,6 @@ def readFolder(rootdir, sufix='.py'):
 
 
 def process(package):
-    print('testing', package)
     try:    
         package = eval(package)
     except AttributeError as e:   

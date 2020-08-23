@@ -1125,6 +1125,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if len(limit) > 1:
             x, a, b = limit
             universe = Interval(a, b, integer=True)
+            if universe.is_FiniteSet:
+                return self.finite_aggregate(x, universe)
+
             if isinstance(self.function, Piecewise):
                 has_x = [c._has(x) for _, c in self.function.args[:-1]]                                
                 if not any(has_x):

@@ -8,16 +8,13 @@ from sympy.concrete.expr_with_limits import Ref
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete.summations import Sum 
 from sympy.core.numbers import oo
-from sympy.matrices.dense import Matrix
-from sympy.matrices.expressions.minors import Minors
-from sympy.matrices.expressions.cofactor import Cofactors
+from sympy.matrices.expressions.matexpr import Identity
 
 
 @plausible
 def apply(n, a):
     i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)
-    return Equality(Det(1 + Ref[i:n, j:n](a[i] * KroneckerDelta(i, j))), (1 + Sum[i:0:n - 1](1 / a[i])) * Product[i:0:n - 1](a[i]))
+    return Equality(Det(1 + a * Identity(n)), (1 + Sum[i:0:n - 1](1 / a[i])) * Product[i:0:n - 1](a[i]))
 
 
 from sympy.utility import check
@@ -31,8 +28,6 @@ def prove(Eq, wolfram):
     
     Eq << Eq[-1].subs(n, 1)
     
-    Eq << Eq[-1].this.lhs.arg.args[1].as_Matrix()
-    
     Eq << Eq[-1].this.rhs.args[1].doit()
     
     Eq << Eq[-1].this.rhs.expand()
@@ -40,6 +35,10 @@ def prove(Eq, wolfram):
     Eq << Eq[0].subs(n, n + 1)
  
     Eq << Eq[-1].this.lhs.determinant_expansion_by_minors(i=n)
+    
+    Eq << Eq[-1].this.lhs.bisect(back=1)
+    
+    Eq << Eq[-1].this.lhs.args[0].args[-1].simplify(deep=True)
     
      
 if __name__ == '__main__':

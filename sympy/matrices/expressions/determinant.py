@@ -18,8 +18,8 @@ class Det(Expr):
     >>> Det(eye(3)).doit()
     1
     """
-    is_commutative = True
-    is_extended_real = True
+    is_complex = True
+    is_Det = True
 
     def __new__(cls, mat):
         from sympy.matrices.expressions.matexpr import VConcatenate, HConcatenate

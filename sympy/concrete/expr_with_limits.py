@@ -3327,6 +3327,9 @@ class Ref(ExprWithLimits):
                 constant = None
                 args = []
                 for e, c in self.function.args:
+                    if not e._has(self.variable):
+                        return self
+                    
                     first, second = self.simplify_add(e)
                     if first is None:
                         return self
