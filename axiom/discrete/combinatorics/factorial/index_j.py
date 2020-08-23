@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import check, plausible, identity
+from sympy.utility import check, plausible
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
 
@@ -40,13 +40,13 @@ def prove(Eq):
 
     Eq << apply(given)    
     
-    Eq << identity(Eq[-1].lhs.indices[0]).expand()    
+    Eq << Eq[-1].lhs.indices[0].this.expand()    
     
-    Eq << identity(Eq[-1].rhs.function.args[1]).definition
+    Eq << Eq[-1].rhs.function.args[1].this.definition
     
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
     
-    Eq << identity(Eq[-1].rhs.subs(1, 0)).bisect(domain={0})
+    Eq << Eq[-1].rhs.subs(1, 0).this.bisect(domain={0})
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
@@ -62,7 +62,7 @@ def prove(Eq):
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
     
-    Eq << identity(Piecewise((x[k].set, Equality(x[k], j)), (EmptySet(), True))).simplify()
+    Eq << Piecewise((x[k].set, Equality(x[k], j)), (EmptySet(), True)).this.simplify()
     
     Eq << Eq[-1].reversed.union_comprehension((k, 0, n - 1))
     

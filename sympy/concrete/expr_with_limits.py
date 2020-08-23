@@ -1131,6 +1131,40 @@ class MinMaxBase(ExprWithLimits):
             mini = function.subs(x, mini)
         return maxi, mini
     
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return '%s[%s](%s)' % (self.__class__.__name__, limits, p._print(self.function))
+        return '%s(%s)' % (self.__class__.__name__, p._print(self.function))
+    
+    def _latex(self, p):
+        name = self.__class__.__name__.lower()
+        if len(self.limits) == 1:
+            args = tuple([p._print(i) for i in self.limits[0]])
+            if len(args) == 1:
+                tex = r"\%s\limits_{%s} " % (name, args)
+            elif len(args) == 3:
+                tex = r"\%s\limits_{%s \leq %s \leq %s} " % (name, args[1], args[0], args[2])
+            else:
+                raise Exception(self)
+
+        elif len(self.limits) == 0:
+            tex = r"\%s " % name
+        else:
+
+            def _format_ineq(l):
+                return r"%s \leq %s \leq %s" % \
+                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
+
+            tex = r"\%s\limits_{\substack{%s}} " % (name, str.join('\\\\', [_format_ineq(l) for l in self.limits]))
+
+        if isinstance(self.function, Add):
+            tex += r"\left(%s\right)" % p._print(self.function)
+        else:
+            tex += p._print(self.function)
+
+        return tex
+
 
 class MIN(MinMaxBase):
     r"""Represents unevaluated MIN operator.
@@ -1793,47 +1827,6 @@ class MIN(MinMaxBase):
 
     def as_Ref(self):
         return self.func(Ref(self.function, *self.limits).simplify())
-
-#     def bisect(self, front=None, back=None):
-#         (x, *_), *_ = self.limits
-#         from sympy.tensor.indexed import Slice
-#         if isinstance(x, Slice):
-#             z, x = x.bisect(front, back)
-#             return self.func(self.func(self.function, (z,)).simplify(), (x,))
-#         return self
-    def _latex(self, p):
-        if len(self.limits) == 1:
-            args = tuple([p._print(i) for i in self.limits[0]])
-            if len(args) == 1:
-                tex = r"\min\limits_{%s} " % args
-            elif len(args) == 3:
-                tex = r"\min\limits_{%s \leq %s \leq %s} " % (args[1], args[0], args[2])
-            else:
-                raise Exception(self)
-
-        elif len(self.limits) == 0:
-            tex = r"\min "
-        else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\min\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in self.limits])
-
-        if isinstance(self.function, Add):
-            tex += r"\left(%s\right)" % p._print(self.function)
-        else:
-            tex += p._print(self.function)
-
-        return tex
-
-    def _sympystr(self, p):
-        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        if limits:
-            return 'Min[%s](%s)' % (limits, p._print(self.function))
-        return 'Min(%s)' % p._print(self.function)
 
     def assertion(self):
         from sympy.core.relational import LessThan
@@ -2524,45 +2517,10 @@ class MAX(MinMaxBase):
 
     def separate(self):
         (x, *_), *_ = self.limits
-        from sympy.tensor.indexed import Slice
-        if isinstance(x, Slice):
+        if x.is_Slice:
             z, x = x.pop()
             return self.func(self.func(self.function, (x,)).simplify(), (z,))
         return self
-
-    def _latex(self, p):
-        if len(self.limits) == 1:
-            args = tuple([p._print(i) for i in self.limits[0]])
-            if len(args) == 1:
-                tex = r"\max\limits_{%s} " % args
-            elif len(args) == 3:
-                tex = r"\max\limits_{%s \leq %s \leq %s} " % (args[1], args[0], args[2])
-            else:
-                raise Exception(self)
-
-        elif len(self.limits) == 0:
-            tex = r"\min "
-        else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\min\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in self.limits])
-
-        if isinstance(self.function, Add):
-            tex += r"\left(%s\right)" % p._print(self.function)
-        else:
-            tex += p._print(self.function)
-
-        return tex
-
-    def _sympystr(self, p):
-        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        if limits:
-            return 'Max[%s](%s)' % (limits, p._print(self.function))
-        return 'Max(%s)' % p._print(self.function)
 
     def assertion(self):
         from sympy.core.relational import GreaterThan
@@ -3499,7 +3457,7 @@ class Ref(ExprWithLimits):
         return None, exp
 
     def simplify_mul(self, exp):
-        (x, *_), *_ = self.limits
+        (x, *ab), *_ = self.limits
 
         from sympy.core.basic import Atom
         if isinstance(exp, Atom):
@@ -3509,7 +3467,11 @@ class Ref(ExprWithLimits):
 
         if isinstance(exp, Indexed):
             if exp.args[-1] == x:
-                return exp.base[exp.indices[:-1]], None
+                if not ab:
+                    return exp.base[exp.indices[:-1]], None
+                else:
+                    a, b = ab
+                    return exp.base[exp.indices[:-1]][:b + 1], None
 
             return None, exp
         

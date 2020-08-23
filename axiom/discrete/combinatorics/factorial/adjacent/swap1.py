@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, identity
+from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
@@ -37,7 +37,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << identity(Eq[1].lhs).subs(Eq[-1])
+    Eq << Eq[1].lhs.this.subs(Eq[-1])
 
 
 if __name__ == '__main__':

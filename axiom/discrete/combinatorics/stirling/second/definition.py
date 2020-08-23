@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol, generate_free_symbol
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 
 from sympy.functions.combinatorial.numbers import Stirling
 from axiom.discrete.combinatorics import stirling
@@ -54,7 +54,7 @@ def prove(Eq):
     Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp(deep=True)
 
     l = Eq[0].rhs.args[1].limits[0][0]
-    Eq << identity(binomial(k + 1, l)).rewrite(factorial)
+    Eq << binomial(k + 1, l).this.rewrite(factorial)
 
     Eq.factorial_expand_kl = axiom.discrete.combinatorics.factorial.expand.apply(k - l + 1)
 

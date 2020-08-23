@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible, identity
+from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
@@ -39,9 +39,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq.lhs_assertion = identity(x[Eq[-1].lhs]).subs(Eq[-1])
+    Eq.lhs_assertion = x[Eq[-1].lhs].this.subs(Eq[-1])
     
-    Eq << identity(w[i, j] @ x).expand()
+    Eq << (w[i, j] @ x).this.expand()
     
     Eq << Eq[-1].this.rhs.simplify(deep=True)
     

@@ -12,7 +12,6 @@ from mpmath.libmp import mpf_log, prec_to_dps
 
 from collections import defaultdict
 from builtins import isinstance
-from sympy.core.logic import fuzzy_not
 
 
 class Expr(Basic, EvalfMixin):

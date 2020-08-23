@@ -1,7 +1,7 @@
 
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible, identity
+from sympy.utility import check, plausible
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -38,7 +38,7 @@ def prove(Eq):
     w = Eq[0].lhs.base
     w_quote = Eq[1].lhs.base
     
-    Eq << identity(x @ w[i, j]).subs(Eq[0])
+    Eq << (x @ w[i, j]).this.subs(Eq[0])
     
     Eq << Eq[-1].this.rhs.expand()
     

@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Union, Intersection
 
@@ -37,9 +37,9 @@ def prove(Eq):
 
     D = Symbol('D', dtype=dtype.integer, definition=A - B)
 
-    Eq << identity(C).definition
+    Eq << C.this.definition
 
-    Eq << identity(D).definition
+    Eq << D.this.definition
 
     Eq << Eq[-1].union(A)
 

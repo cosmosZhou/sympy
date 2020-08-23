@@ -1104,26 +1104,26 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy import Dummy, Symbol
 
         unordered = False
+        from sympy import Equality
         if len(args) == 1:
             sequence = args[0]
-            from sympy.core.relational import Equality
             if isinstance(sequence, set):
                 unordered = True
             elif isinstance(sequence, (Dict, Mapping)):
                 unordered = True
                 sequence = sequence.items()
-            elif isinstance(sequence, Equality):
+            elif iterable(sequence):
+                ...
+            else:
+                assert sequence.is_Equality
                 sequence = [sequence.args]
-            elif not iterable(sequence):
-                from sympy.utilities.misc import filldedent
-                raise ValueError(filldedent("""
-                   When a single argument is passed to subs
-                   it should be a dictionary of old: new pairs or an iterable
-                   of (old, new) tuples."""))
-        elif len(args) == 2:
-            sequence = [args]
         else:
-            raise ValueError("subs accepts either 1 or 2 arguments")
+            if isinstance(args[0], Equality):
+                assert all(isinstance(eq, Equality) for eq in args)                
+                sequence = [eq.args for eq in args]
+            else:
+                assert len(args) == 2, "subs accepts either 1 or 2 arguments"
+                sequence = [args]
 
         sequence = list(sequence)
         for i, s in enumerate(sequence):
@@ -2251,6 +2251,11 @@ class Basic(with_metaclass(ManagedProperties)):
         global_variables = {'Global`' + x.name : x for x in global_variables}
         from wolframclient.language import expression        
         return expression.sympify(wlexpr, **global_variables)
+
+    @property
+    def this(self):
+        from sympy.logic.boolalg import Identity
+        return Identity(self)
 
         
 class Atom(Basic):

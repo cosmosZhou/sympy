@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
 
@@ -31,9 +31,9 @@ def prove(Eq):
     C = Symbol('C', dtype=dtype.integer, definition=A & B)
     D = Symbol('D', dtype=dtype.integer, definition=B - A)
 
-    Eq.C_definition = identity(C).definition
+    Eq.C_definition = C.this.definition
 
-    Eq.D_definition = identity(D).definition
+    Eq.D_definition = D.this.definition
 
     Eq << Equality(D & C, S.EmptySet, plausible=True)
 

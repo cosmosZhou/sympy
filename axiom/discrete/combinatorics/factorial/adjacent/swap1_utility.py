@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible, identity
+from sympy.utility import check, plausible
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo

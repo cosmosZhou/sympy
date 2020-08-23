@@ -37,12 +37,15 @@ class Det(Expr):
     def arg(self):
         return self.args[0]
 
-    def doit(self, expand=False):
+    def doit(self, expand=False, **_):
         try:
             return self.arg._eval_determinant()
         except (AttributeError, NotImplementedError):
 #             import traceback
 #             traceback.print_exc()
+            n, n = self.arg.shape
+            if n == 1:
+                return self.arg[0, 0]
             return self
 
     @property
@@ -85,7 +88,7 @@ class Det(Expr):
             i = self.generate_free_symbol(integer=True)
             sigmar = Sum[i:n]
             
-        return sigmar(A[i, j] * Cofactors(A)[i, j] * (-1) ** (i + j))
+        return sigmar(A[i, j] * Cofactors(A)[i, j])
 
 
 def det(matexpr):

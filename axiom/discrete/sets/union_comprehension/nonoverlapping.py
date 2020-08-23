@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.concrete.expr_with_limits import ForAll, UNION
@@ -79,7 +79,7 @@ def prove(Eq):
 
     Eq.strict_greater_than = Eq[0] - Eq[-1]
 
-    Eq << identity(Eq[0].lhs.arg).bisect(domain={i, j})
+    Eq << Eq[0].lhs.arg.this.bisect(domain={i, j})
 
     Eq.union_less_than = discrete.sets.union_comprehension.less_than.apply(x[i], *Eq[-1].rhs.args[0].limits)
 

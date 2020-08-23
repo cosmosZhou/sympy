@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 
 from sympy.matrices.expressions.determinant import Det
@@ -14,7 +14,7 @@ from sympy.matrices.expressions.matexpr import Identity
 @plausible
 def apply(n, a):
     i = Symbol('i', integer=True)
-    return Equality(Det(1 + a * Identity(n)), (1 + Sum[i:0:n - 1](1 / a[i])) * Product[i:0:n - 1](a[i]))
+    return Equality(Det(1 + a[:n] * Identity(n)), (1 + Sum[i:0:n - 1](1 / a[i])) * Product[i:0:n - 1](a[i]))
 
 
 from sympy.utility import check
@@ -28,7 +28,7 @@ def prove(Eq, wolfram):
     
     Eq << Eq[-1].subs(n, 1)
     
-    Eq << Eq[-1].this.rhs.args[1].doit()
+    Eq << Eq[-1].doit(deep=True)
     
     Eq << Eq[-1].this.rhs.expand()
     
@@ -38,7 +38,19 @@ def prove(Eq, wolfram):
     
     Eq << Eq[-1].this.lhs.bisect(back=1)
     
-    Eq << Eq[-1].this.lhs.args[0].args[-1].simplify(deep=True)
+    Eq << Eq[-1].this.lhs.args[0].simplify(deep=True) 
+    
+    Eq.deduction = (Eq[-1] - Eq[-1].lhs.args[0]).subs(Eq[0])
+    
+    Eq << Eq.deduction.rhs.args[0].args[1].this.bisect(back=1)
+    
+    Eq << Eq.deduction.rhs.args[0].args[0].args[1].this.bisect(back=1)
+    
+    Eq << Eq.deduction.rhs.this.subs(Eq[-1], Eq[-2])
+    
+    Eq << Eq[-1].this.rhs.expand()
+    
+    Eq.deduction = Eq.deduction.subs(Eq[-1])
     
      
 if __name__ == '__main__':

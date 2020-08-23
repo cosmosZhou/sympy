@@ -54,7 +54,7 @@ class Cofactors(MatrixExpr):
         if j is None:
             j = self.generate_free_symbol(integer=True)
             return Ref[j:n]((-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j])
-        return (-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j]
+        return (-1) ** (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j]
 
 # Needs["Combinatorica`"]
 # mat = Array[Subscript[A, ##] &, {5, 5}, 0]

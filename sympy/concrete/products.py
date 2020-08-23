@@ -483,14 +483,17 @@ class Product(ExprWithIntLimits):
                 domain = Interval(a, b, integer=True)
                 return Mul(*self.as_multiple_terms(x, domain))
 
-        var = limit[0]
-
+        x, *ab = limit
+        if len(ab) == 2:
+            a, b = ab
+            if a == b:                
+                return self.function._subs(x, a)
         import sympy
         function = self.function
         if isinstance(function, sympy.exp):
             function = function.as_Mul()
 
-        independent, dependent = function.as_independent(var, as_Add=False)
+        independent, dependent = function.as_independent(x, as_Add=False)
         if independent == S.One:
             return self
 
@@ -498,11 +501,11 @@ class Product(ExprWithIntLimits):
             if len(limit) > 1:
                 return self.function ** (b - a + 1)
             else:
-                return self.function ** var.dimension
+                return self.function ** x.dimension
         if len(limit) > 1:
             return self.func(dependent, limit).doit() * independent ** (b - a + 1)
         else:
-            return self.func(dependent, limit).doit() * independent ** var.dimension
+            return self.func(dependent, limit).doit() * independent ** x.dimension
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])

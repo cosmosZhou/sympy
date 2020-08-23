@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible, identity
+from sympy.utility import check, plausible
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -42,7 +42,7 @@ def prove(Eq):
     
     assert eq.rhs.args[-1] == j
     
-    Eq << identity(w[t, i] @ x).subs(Eq[0].subs(i, t).subs(j, i))
+    Eq << (w[t, i] @ x).this.subs(Eq[0].subs(i, t).subs(j, i))
     
     Eq << Eq[-1].this.rhs.expand().simplify(deep=True)
     
@@ -66,7 +66,7 @@ def prove(Eq):
     
     Eq.www_expansion = Eq[-1].this.simplify(deep=True)
     
-    Eq << identity(w[i, j.unbounded] @ x).expand().simplify(deep=True)
+    Eq << (w[i, j.unbounded] @ x).this.expand().simplify(deep=True)
     
     Eq << Eq[-1].simplify(wrt=j.unbounded)
     

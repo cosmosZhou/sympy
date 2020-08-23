@@ -2,7 +2,7 @@ from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.matrices.expressions.determinant import Det
 
@@ -80,7 +80,7 @@ def prove(Eq):
     
     E = Ref[i:n, j]((-1) ** (j - i) * binomial(j + 1, i + 1))
 
-    Eq << identity(Eq[0].lhs.arg @ E).expand()
+    Eq << (Eq[0].lhs.arg @ E).this.expand()
 
     (k, *_), *_ = Eq[-1].rhs.args[1].function.limits
 
@@ -94,13 +94,13 @@ def prove(Eq):
 
     Eq << Eq[-1].forall(_i)
 
-    Eq << identity(Eq[1].rhs.args[1].function).limits_subs(k, k - 1)
+    Eq << Eq[1].rhs.args[1].function.this.limits_subs(k, k - 1)
 
     Eq << Eq[-1].subs(Eq[-2])
     
     Eq.equation = Eq[1].subs(Eq[-1])
     
-    Eq << identity(Eq.equation.rhs.args[0].function).limits_subs(j, j - 1)
+    Eq << Eq.equation.rhs.args[0].function.this.limits_subs(j, j - 1)
     
     _j = Eq[-1].rhs.variable
     
@@ -132,14 +132,13 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.simplify()
     
-    Eq << identity(Sum[j](Eq.equation.rhs.args[0].function.function._subs(i, _i))).limits_subs(j, _j)
+    Eq << Sum[j](Eq.equation.rhs.args[0].function.function._subs(i, _i)).this.limits_subs(j, _j)
     
     Eq << (Eq[-2].forall(_i), Eq[-1].forall(_i))
     
     Eq << Eq[-1].subs(Eq[-2]) 
 
     Eq << Eq.equation.subs(Eq[-1])
-#     Eq << Eq.equation.this.rhs.subs(Eq[-1])
 
     Eq << Shift(n, 0, n - 1) @ Eq[-1]
 
