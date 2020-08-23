@@ -472,25 +472,6 @@ class Symbol(AtomicExpr, NotIterable):
             return self._assumptions['definition']
         return None
 
-    def generate_free_symbol(self, excludes=set(), shape=None, free_symbol=None, **kwargs):
-        excludes = self.free_symbols | excludes
-        if free_symbol is not None and free_symbol not in excludes:
-            return free_symbol.copy(shape=shape, **kwargs)
-        
-        excludes = set(symbol.name for symbol in excludes)
-        name = self.name
-        if len(name) > 1 or self.is_set:
-            name = 'a'
-
-        while True:
-            if name not in excludes:
-                if shape:
-                    kwargs['shape'] = shape
-                return self.func(name, **kwargs)
-            name = chr(ord(name) + 1)
-
-        return None
-
     def domain_nonzero(self, x):
         if self == x:
             return x.domain - {0}

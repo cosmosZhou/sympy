@@ -2093,33 +2093,28 @@ class Basic(with_metaclass(ManagedProperties)):
             if free_symbol:
                 free_symbol, *_ = free_symbol
                 return free_symbol
-#                 return free_symbol.copy(shape=shape, **kwargs)
             
-        free_symbols = [*set(symbol.name for symbol in excludes)]
-        free_symbols.sort()
-        name = None
-
-        for name in free_symbols:
-            if len(name) == 1:
-                break
-
-        if name is not None:
-            if len(name) > 1:
-                name = name[0]
-            
-            for _ in range(52):
-                name = chr(ord(name) + 1)
-                if name == '{':
-                    name = 'A'
-                elif name == '[':
-                    name = 'a'
-
-                if name not in free_symbols:
-                    from sympy import Symbol
-                    if shape:
-                        kwargs['shape'] = shape
-                                            
-                    return Symbol(name, **kwargs)
+        excludes = set(symbol.name for symbol in excludes)
+        if 'dtype' in kwargs:
+            symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        else:
+            if shape:
+                kwargs['shape'] = shape
+                if len(shape) > 1:
+                    symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                else:
+                    symbols = 'abcdefghijklmnopqrstuvwxyz'
+            else:
+                if 'integer' in kwargs:
+                    symbols = 'ijklmnabcdefghopqrstuvwxyz'
+                else:
+                    symbols = 'xyzabcdefghijklmnopqrstuvw'
+                        
+        from sympy import Symbol
+        for name in symbols:
+            if name not in excludes:                
+                return Symbol(name, **kwargs)
+        raise Exception("run out of symbols")
 
     # performing other in self
     def contains_with_subset(self, other):

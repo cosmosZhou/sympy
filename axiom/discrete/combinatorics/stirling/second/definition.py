@@ -114,7 +114,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / (k + 1)
 
-    Eq << Eq.stirling_solution.subs(Eq[-1].reversed)
+    Eq << Eq.stirling_solution.subs(-Eq[-1].reversed)
 
     Eq << Eq[-1].subs(Eq.factorial_expand.reversed)
 

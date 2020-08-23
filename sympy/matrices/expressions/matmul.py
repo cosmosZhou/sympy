@@ -306,13 +306,14 @@ class MatMul(MatrixExpr, Mul):
                     return Ref(Sum(A[i] * B[i, j], i_limit).simplify(), j_limit).simplify()
                 return Sum(A[i] * B[i], i_limit).simplify()                
             else:
-                k = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
                 if hasattr(A, "definition") and A.definition is not None:
                     A = A.definition
                     
                 if isinstance(A, Ref):
+                    k = self.generate_free_symbol(excludes={A.variable}, free_symbol=free_symbol, integer=True)
                     i_limit = A.limits[0]
                 else:
+                    k = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
                     i = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
                     i_limit = (i, 0, A.shape[0] - 1)
 

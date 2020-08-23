@@ -82,7 +82,7 @@ def prove(Eq):
     
     (a, *_), (b, *_) = Eq.inequality_ab.limits
     
-    Eq << union_comprehension.nonoverlapping.apply(Eq[0].abs())
+    Eq << union_comprehension.nonoverlapping.apply(Eq[0].abs(), excludes = Eq.inequality_ab.variables_set)
     
     Eq << Eq[-1].subs(k, a)
     

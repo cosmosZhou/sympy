@@ -1004,7 +1004,9 @@ class Plus(Expr, AssocOp):
             
             if degree == 0:
 #                 for simplification purposes only
-                this = p.nth(0)
+                constant = p.nth(0)
+                if not constant._has(delta):
+                    this = constant
                 continue
                 
             coefficient = p.nth(1)

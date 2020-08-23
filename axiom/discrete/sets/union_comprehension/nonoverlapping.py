@@ -13,7 +13,7 @@ from sympy.sets.sets import Interval
 
 
 @plausible
-def apply(given):
+def apply(given, excludes=None):
     assert given.is_Equality
     x_union_abs, x_abs_sum = given.args
     if not x_union_abs.is_Abs:
@@ -37,7 +37,7 @@ def apply(given):
     if 'domain' in kwargs:
         del kwargs['domain']
 
-    j = xi.generate_free_symbol(**kwargs)
+    j = xi.generate_free_symbol(excludes=excludes, **kwargs)
     xj = xi.subs(i, j)
 
     i_domain = limits_dict[i] or i.domain

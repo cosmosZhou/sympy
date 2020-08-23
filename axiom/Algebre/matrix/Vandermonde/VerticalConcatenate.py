@@ -150,7 +150,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.powsimp()
 
-    Eq << Eq[-1].this.rhs.args[1].limits_subs(k, k - 1)
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
 
 if __name__ == '__main__':
     prove(__file__)

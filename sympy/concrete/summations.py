@@ -819,7 +819,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     def _subs(self, old, new, **_):
         if new in self.variables and not old._has(new):
-            return self.limits_subs(new, self.generate_free_symbol(self.variables_set))._subs(old, new)
+            return self.limits_subs(new, self.generate_free_symbol(self.variables_set, integer=True))._subs(old, new)
         
         from sympy.core.basic import _aresame
         if self == old or _aresame(self, old) or self.dummy_eq(old):
@@ -1032,6 +1032,24 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     def simplify(self, deep=False, **kwargs):
         from sympy import Contains
         if deep:
+            function = self.function
+            reps = {}
+            for x, domain in self.limits_dict.items():
+                if domain.is_set and domain.is_integer:
+                    _x = x.copy(domain=domain)
+                    function = function._subs(x, _x)                  
+                    if 'wrt' in kwargs:
+                        function = function.simplify(deep=True, **kwargs)                        
+                    else:
+                        function = function.simplify(deep=True, wrt=_x, **kwargs)
+                    
+                    reps[_x] = x
+            if reps:
+                for _x, x in reps.items():
+                    function = function._subs(_x, x)
+                if function != self.function:
+                    return self.func(function, *self.limits, equivalent=self).simplify()
+            
             this = ExprWithIntLimits.simplify(self, deep=True, **kwargs)
             if this is not self:
                 return this

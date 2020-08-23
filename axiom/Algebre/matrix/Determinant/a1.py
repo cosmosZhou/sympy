@@ -9,6 +9,7 @@ from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete.summations import Sum 
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Identity
+from sympy.functions.elementary.piecewise import Piecewise
 
 
 @plausible
@@ -38,6 +39,8 @@ def prove(Eq, wolfram):
     
     Eq << Eq[-1].this.lhs.bisect(back=1)
     
+    Eq << Eq[-1].this.lhs.args[1].simplify(deep=True)
+    
     Eq << Eq[-1].this.lhs.args[0].simplify(deep=True) 
     
     Eq.deduction = (Eq[-1] - Eq[-1].lhs.args[0]).subs(Eq[0])
@@ -51,6 +54,17 @@ def prove(Eq, wolfram):
     Eq << Eq[-1].this.rhs.expand()
     
     Eq.deduction = Eq.deduction.subs(Eq[-1])
+    
+    D = Eq.deduction.lhs.function.args[1].arg
+    
+    D = D._subs(Eq.deduction.lhs.variable, 0)
+    (i, *_), (j, *_) = D.limits
+    ColumnTransformation = Identity(n) + Ref[i:n, j:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
+    Eq << (D @ ColumnTransformation).this.expand()
+    
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    
+    
     
      
 if __name__ == '__main__':
