@@ -71,7 +71,6 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Dummy = False
     is_Wild = False
     is_Function = False
-    is_Add = False
     is_Plus = False
     
     is_Mul = False
@@ -124,6 +123,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Abs = False
     
     is_Sum = False
+    is_Product = False
     is_Integral = False
     
     is_ConditionSet = False
@@ -1649,7 +1649,7 @@ class Basic(with_metaclass(ManagedProperties)):
         that describes the target expression more precisely:
 
         >>> (1 + x**(1 + y)).replace(
-        ... lambda x: x.is_Power and x.exp.is_Add and x.exp.args[0] == 1,
+        ... lambda x: x.is_Power and x.exp.is_Plus and x.exp.args[0] == 1,
         ... lambda x: x.base**(1 - (x.exp - 1)))
         ...
         x**(1 - y) + 1

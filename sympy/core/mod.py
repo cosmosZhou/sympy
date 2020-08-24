@@ -162,7 +162,7 @@ class Mod(Function):
 
         # simplify terms
         # (x + y + 2) % x -> Mod(y + 2, x)
-        if p.is_Add:
+        if p.is_Plus:
             args = []
             for i in p.args:
                 a = cls(i, q)

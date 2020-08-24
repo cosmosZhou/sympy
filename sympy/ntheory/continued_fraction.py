@@ -54,7 +54,7 @@ def continued_fraction(a):
                     return continued_fraction_periodic(p, d)
                 # look for a + b*c
                 # with c = sqrt(s)
-                if p.is_Add and len(p.args) == 2:
+                if p.is_Plus and len(p.args) == 2:
                     a, bc = p.args
                 else:
                     a = S.Zero
@@ -257,7 +257,7 @@ def continued_fraction_reduce(cf):
         rv = a.subs(x, pure).radsimp()
     else:
         rv = a
-    if rv.is_Add:
+    if rv.is_Plus:
         rv = factor_terms(rv)
         if rv.is_Mul and rv.args[0] == -1:
             rv = rv.func(*rv.args)

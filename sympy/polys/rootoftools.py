@@ -1026,7 +1026,7 @@ class RootSum(Expr):
         if not expr.has(var):
             return deg*expr
 
-        if expr.is_Add:
+        if expr.is_Plus:
             add_const, expr = expr.as_independent(var)
         else:
             add_const = S.Zero

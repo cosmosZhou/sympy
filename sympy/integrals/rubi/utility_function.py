@@ -344,7 +344,7 @@ def ProductQ(expr):
     return S(expr).is_Mul
 
 def SumQ(expr):
-    return expr.is_Add
+    return expr.is_Plus
 
 def NonsumQ(expr):
     return not SumQ(expr)
@@ -899,7 +899,7 @@ def RealQ(u):
         return RealQ(u) & RealQ(v) & (IntegerQ(v) | PositiveOrZeroQ(u))
     elif u.is_Mul:
         return all(RealQ(i) for i in u.args)
-    elif u.is_Add:
+    elif u.is_Plus:
         return all(RealQ(i) for i in u.args)
     elif u.is_Function:
         f = u.func
@@ -1008,7 +1008,7 @@ def Exponent(expr, x, h = None):
     else:
         if S(expr).is_number or (not expr.has(x)):
             res = [0]
-        if expr.is_Add:
+        if expr.is_Plus:
             expr = collect(expr, x)
             lst = []
             k = 1
@@ -2435,7 +2435,7 @@ def GeneralizedTrinomialParts(expr, x):
         n = Wild('n', exclude=[x, 0])
         q = Wild('q', exclude=[x])
         Match = expr.match(a*x**q + b*x**n+c*x**(2*n-q))
-        if Match and expr.is_Add:
+        if Match and expr.is_Plus:
             return [Match[c], Match[b], Match[a], Match[n], 2*Match[n]-Match[q]]
     else:
         return False

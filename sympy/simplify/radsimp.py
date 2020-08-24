@@ -326,7 +326,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
             return [_f for _f in terms if _f], elems, common_expo, has_deriv
 
     if evaluate:
-        if expr.is_Add:
+        if expr.is_Plus:
             o = expr.getO() or 0
             expr = expr.func(*[
                     collect(a, syms, func, True, exact, distribute_order_term)
@@ -447,7 +447,7 @@ def rcollect(expr, *vars):
     else:
         expr = expr.__class__(*[rcollect(arg, *vars) for arg in expr.args])
 
-        if expr.is_Add:
+        if expr.is_Plus:
             return collect(expr, vars)
         else:
             return expr
@@ -594,7 +594,7 @@ def collect_const(expr, *vars, **kwargs):
 
     collect, collect_sqrt, rcollect
     """
-    if not expr.is_Add:
+    if not expr.is_Plus:
         return expr
 
     recurse = False
@@ -652,7 +652,7 @@ def collect_const(expr, *vars, **kwargs):
             # be careful not to let uneval become True unless
             # it must be because it's going to be more expensive
             # to rebuild the expression as an unevaluated one
-            if Numbers and k.is_Number and v.is_Add:
+            if Numbers and k.is_Number and v.is_Plus:
                 args.append(_keep_coeff(k, v, sign=True))
                 uneval = True
             else:
@@ -663,7 +663,7 @@ def collect_const(expr, *vars, **kwargs):
                 expr = _unevaluated_Add(*args)
             else:
                 expr = Add(*args)
-            if not expr.is_Add:
+            if not expr.is_Plus:
                 break
 
     return expr
@@ -819,7 +819,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             # (1/d**i) = (1/d)**i
             return handle(1/d.base)**d.exp
 
-        if not (d.is_Add or ispow2(d)):
+        if not (d.is_Plus or ispow2(d)):
             return 1/d.func(*[handle(a) for a in d.args])
 
         # handle 1/d treating d as an Add (though it may not be)
@@ -907,7 +907,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             if old == (n, d):
                 n, d = was
         n = expand_mul(n)
-        if d.is_Number or d.is_Add:
+        if d.is_Number or d.is_Plus:
             n2, d2 = fraction(gcd_terms(_unevaluated_Mul(n, 1/d)))
             if d2.is_Number or (d2.count_ops() <= d.count_ops()):
                 n, d = [signsimp(i) for i in (n2, d2)]
@@ -930,7 +930,7 @@ def rad_rationalize(num, den):
     >>> rad_rationalize(sqrt(3), 1 + sqrt(2)/3)
     (-sqrt(3) + sqrt(6)/3, -7/9)
     """
-    if not den.is_Add:
+    if not den.is_Plus:
         return num, den
     g, a, b = split_surds(den)
     a = a*sqrt(g)

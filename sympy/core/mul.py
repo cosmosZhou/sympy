@@ -96,6 +96,8 @@ class Times(Expr, AssocOp):
     is_Mul = True
     is_Times = True
 
+    identity = 1
+    
     def argmax_shape(self):
         import numpy as np
         return np.argmax([len(arg.shape) for arg in self.args])
@@ -190,7 +192,7 @@ class Times(Expr, AssocOp):
             assert not a is S.One
             if not a.is_zero and a.is_Rational:
                 r, b = b.as_coeff_Mul()
-                if b.is_Add:
+                if b.is_Plus:
                     if r is not S.One:  # 2-arg hack
                         # leave the Mul as a Mul
                         rv = [cls(a * r, b, evaluate=False)], [], None
@@ -349,7 +351,7 @@ class Times(Expr, AssocOp):
 #                     # not an Add. This allow things like a**2*b**3 == a**5
 #                     # if a.is_commutative == False, but prohibits
 #                     # a**x*a**y and x**a*x**b from combining (x,y commute).
-#                     if b1 == b2 and (not new_exp.is_Add):
+#                     if b1 == b2 and (not new_exp.is_Plus):
 #                         o12 = b1 ** new_exp
 # 
 #                         # now o12 could be a commutative object
@@ -424,7 +426,7 @@ class Times(Expr, AssocOp):
             for b, e in c_powers:
                 if e.is_zero:
                     # canceling out infinities yields NaN
-                    if (b.is_Add or b.is_Mul) and any(infty in b.args
+                    if (b.is_Plus or b.is_Mul) and any(infty in b.args
                         for infty in (S.ComplexInfinity, S.Infinity,
                                       S.NegativeInfinity)):
                         return [S.NaN], [], None
@@ -639,7 +641,7 @@ class Times(Expr, AssocOp):
 
         # we are done
         if (global_distribute[0] and not nc_part and len(c_part) == 2 and
-                c_part[0].is_Number and c_part[0].is_finite and c_part[1].is_Add):
+                c_part[0].is_Number and c_part[0].is_finite and c_part[1].is_Plus):
             # 2*(1+a) -> 2 + 2 * a
             coeff = c_part[0]
             c_part = [Add(*[coeff * f for f in c_part[1].args])]
@@ -820,7 +822,7 @@ class Times(Expr, AssocOp):
                         del other[i]
                         break
                 else:
-                    if a.is_Add:
+                    if a.is_Plus:
                         addterms *= a
                     else:
                         other.append(a)
@@ -888,7 +890,7 @@ class Times(Expr, AssocOp):
 
         plain, sums, rewrite = [], [], False
         for factor in expr.args:
-            if factor.is_Add:
+            if factor.is_Plus:
                 sums.append(factor)
                 rewrite = True
             else:
@@ -907,7 +909,7 @@ class Times(Expr, AssocOp):
                 args = []
                 for term in terms:
                     t = self.func(plain, term)
-                    if t.is_Mul and any(a.is_Add for a in t.args) and deep:
+                    if t.is_Mul and any(a.is_Plus for a in t.args) and deep:
                         t = t._eval_expand_mul()
                     args.append(t)
                 return Add(*args)
@@ -1732,7 +1734,7 @@ class Times(Expr, AssocOp):
             coefficient = S.One
              
         this = delta   
-        if this.is_Add:
+        if this.is_Plus:
             args = [*this.args]
             hit = False
             for i, arg in enumerate(this.args):
@@ -1743,7 +1745,7 @@ class Times(Expr, AssocOp):
                         hit = True
             if hit:
                 this = this.func(*args)
-            if this.is_Add:
+            if this.is_Plus:
                 this = this.simplifyKroneckerDelta()
             if this != delta:
                 return this * coefficient
@@ -1786,7 +1788,50 @@ class Times(Expr, AssocOp):
             if this != self:
                 return this
             
+        this = self.simplifyProduct()
+        if this is not self:
+            return this
+            
         return self
+
+    def simplifyProduct(self):
+        from sympy.concrete import products
+        dic = {}
+        coeffs = []
+        for arg in self.args:
+
+            if isinstance(arg, products.Product):
+                if S.One in dic:
+                    dic[S.One].append(arg)
+                else:
+                    dic[S.One] = [arg]
+                continue
+            coeffs.append(arg)
+
+        hit = False
+        
+        for coeff in dic:
+            if self.prod_result(dic[coeff]):
+                hit = True
+
+        if hit:
+            arr = []
+            for coeff, expr in dic.items():
+                arr += [n ** coeff for n in expr]
+            return self.func(*arr + coeffs).simplify()
+        
+        return self
+
+    def prod_result(self, positive):
+        for i in range(len(positive)):
+            for j in range(i + 1, len(positive)):
+                if not positive[i].is_Product or not positive[j].is_Product:
+                    continue
+                if positive[i].function == positive[j].function:
+                    limits = positive[i].limits_union(positive[j])
+                    positive[i] = positive[i].func(positive[i].function, *limits)
+                    del positive[j]
+                    return True
 
     def as_multiple_limits(self):
         integral = []
@@ -1958,7 +2003,7 @@ class Times(Expr, AssocOp):
         if _coeff_isneg(self):
             self = -self
             tex = "- "
-            if self.is_Add:
+            if self.is_Plus:
                 tex += "("
                 include_parens = True
         else:
@@ -2051,7 +2096,6 @@ class Times(Expr, AssocOp):
             tex += ")"
         return tex
     
-    
     def _sympystr(self, p):
         from sympy.printing.precedence import precedence
         prec = precedence(self)
@@ -2108,8 +2152,10 @@ class Times(Expr, AssocOp):
             return sign + '*'.join(a_str) + "/" + b_str[0]
         else:
             return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
+
     
 Mul = Times
+
     
 def prod(a, start=1):
     """Return product of elements of a. Start with int 1 so if only
@@ -2174,7 +2220,7 @@ def _keep_coeff(coeff, factors, clear=True, sign=False):
         return factors
     elif coeff is S.NegativeOne and not sign:
         return -factors
-    elif factors.is_Add:
+    elif factors.is_Plus:
         if not clear and coeff.is_Rational and coeff.q != 1:
             q = S(coeff.q)
             for i in factors.args:
@@ -2202,7 +2248,7 @@ def expand_2arg(e):
     def do(e):
         if e.is_Mul:
             c, r = e.as_coeff_Mul()
-            if c.is_Number and r.is_Add:
+            if c.is_Number and r.is_Plus:
                 return _unevaluated_Add(*[c * ri for ri in r.args])
         return e
 

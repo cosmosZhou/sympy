@@ -1179,7 +1179,7 @@ class Interval(Set, EvalfMixin):
                     if start == end - 1:
                         return FiniteSet(start)
                     
-                if end.is_Add:
+                if end.is_Plus:
                     try:
                         index = end.args.index(S.One)
                         args = [*end.args]
@@ -1197,7 +1197,7 @@ class Interval(Set, EvalfMixin):
                     if start == end:
                         return FiniteSet(end)
                 
-                if end.is_Add:
+                if end.is_Plus:
                     try:
                         index = end.args.index(S.NegativeOne)
                         args = [*end.args]
@@ -1206,7 +1206,7 @@ class Interval(Set, EvalfMixin):
                         right_open = S.true
                     except:
                         ...
-            if not left_open and start.is_Add:
+            if not left_open and start.is_Plus:
                 try:
                     index = start.args.index(S.One)
                     args = [*start.args]
@@ -1890,6 +1890,8 @@ class Union(Set, LatticeOp, EvalfMixin):
     def _eval_is_finite(self):
         return all(a.is_finite for a in self.args)
 
+    def __add__(self, other):
+        return self.func(*(arg + other for arg in self.args))
 
 class Intersection(Set, LatticeOp):
     """
@@ -2415,6 +2417,10 @@ class Complement(Set, EvalfMixin):
     def infimum(self):
         return self.args[0].min()
     
+    def __add__(self, other):
+        A, B = self.args
+        return self.func(A + other, B + other)
+    
     def handle_finite_sets(self, unk):
         A, B = self.args
         if unk in B:
@@ -2860,6 +2866,9 @@ class FiniteSet(Set, EvalfMixin):
     def max(self):
         from sympy.functions.elementary.miscellaneous import Max
         return Max(*self.args)        
+
+    def __add__(self, other):
+        return self.func(*(arg + other for arg in self.args))
 
     def handle_finite_sets(self, unk):
         if len(unk) == len(self) == 1:

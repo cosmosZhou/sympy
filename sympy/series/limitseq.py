@@ -233,7 +233,7 @@ def limit_seq(expr, n=None, trials=5):
     if L1 is not None:
         return L1
     else:
-        if expr.is_Add:
+        if expr.is_Plus:
             limits = [limit_seq(term, n, trials) for term in expr.args]
             if any(result is None for result in limits):
                 return None

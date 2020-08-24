@@ -153,7 +153,7 @@ class Contains(BooleanFunction):
             condition.equivalent = self
             return condition
 
-        if s.is_Interval and s.is_integer and e.is_Add:
+        if s.is_Interval and s.is_integer and e.is_Plus:
             if not s.left_open or s.right_open:
                 try:
                     index = e.args.index(S.NegativeOne)

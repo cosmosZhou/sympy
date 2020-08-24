@@ -93,7 +93,7 @@ def apart(f, x=None, full=False, **options):
                 return c*nc
             else:
                 return nc
-        elif f.is_Add:
+        elif f.is_Plus:
             c = []
             nc = []
             for i in f.args:

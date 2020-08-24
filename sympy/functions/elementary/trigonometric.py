@@ -82,7 +82,7 @@ class TrigonometricFunction(Function):
                 if h == symbol:
                     return general_period / abs(g)
 
-            if f.is_Add:
+            if f.is_Plus:
                 a, h = f.as_independent(symbol)
                 g, h = h.as_independent(symbol, as_Add=False)
                 if h == symbol:
@@ -336,7 +336,7 @@ class Sin(TrigonometricFunction):
                     return cls(pi_coeff * S.Pi)
                 return None
 
-        if arg.is_Add:
+        if arg.is_Plus:
             x, m = _peeloff_pi(arg)
             if m:
                 return sin(m) * cos(x) + cos(m) * sin(x)
@@ -435,7 +435,7 @@ class Sin(TrigonometricFunction):
         from sympy.functions.special.polynomials import chebyshevt, chebyshevu
         arg = self.args[0]
         x = None
-        if arg.is_Add:  # TODO, implement more if deep stuff here
+        if arg.is_Plus:  # TODO, implement more if deep stuff here
             # TODO: Do this more efficiently for more than two terms
             x, y = arg.as_two_terms()
             sx = sin(x, evaluate=False)._eval_expand_trig()
@@ -694,7 +694,7 @@ class Cos(TrigonometricFunction):
                     return sign_cos * sqrt((1 + nval) / 2)
             return None
 
-        if arg.is_Add:
+        if arg.is_Plus:
             x, m = _peeloff_pi(arg)
             if m:
                 return cos(m) * cos(x) - sin(m) * sin(x)
@@ -926,7 +926,7 @@ class Cos(TrigonometricFunction):
         from sympy.functions.special.polynomials import chebyshevt
         arg = self.args[0]
         x = None
-        if arg.is_Add:  # TODO: Do this more efficiently for more than two terms
+        if arg.is_Plus:  # TODO: Do this more efficiently for more than two terms
             x, y = arg.as_two_terms()
             sx = sin(x, evaluate=False)._eval_expand_trig()
             sy = sin(y, evaluate=False)._eval_expand_trig()
@@ -1156,7 +1156,7 @@ class tan(TrigonometricFunction):
                 if narg != arg:
                     return cls(narg)
 
-        if arg.is_Add:
+        if arg.is_Plus:
             x, m = _peeloff_pi(arg)
             if m:
                 tanm = tan(m)
@@ -1235,7 +1235,7 @@ class tan(TrigonometricFunction):
         from sympy import im, re
         arg = self.args[0]
         x = None
-        if arg.is_Add:
+        if arg.is_Plus:
             from sympy import symmetric_poly
             n = len(arg.args)
             TX = []
@@ -1442,7 +1442,7 @@ class cot(TrigonometricFunction):
                 if narg != arg:
                     return cls(narg)
 
-        if arg.is_Add:
+        if arg.is_Plus:
             x, m = _peeloff_pi(arg)
             if m:
                 cotm = cot(m)
@@ -1574,7 +1574,7 @@ class cot(TrigonometricFunction):
         from sympy import im, re
         arg = self.args[0]
         x = None
-        if arg.is_Add:
+        if arg.is_Plus:
             from sympy import symmetric_poly
             n = len(arg.args)
             CX = []

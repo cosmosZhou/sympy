@@ -114,7 +114,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
             expr.is_Atom or expr in (exp_polar(0), exp_polar(1)))):
         return expr
 
-    if deep or expr.is_Add or expr.is_Mul and _y not in expr.args:
+    if deep or expr.is_Plus or expr.is_Mul and _y not in expr.args:
         expr = expr.func(*[recurse(w) for w in expr.args])
 
     if expr.is_Power:
@@ -203,7 +203,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
         be = list(c_powers.items())
         _n = S.NegativeOne
         for i, (b, e) in enumerate(be):
-            if ((-b).is_Symbol or b.is_Add) and -b in c_powers:
+            if ((-b).is_Symbol or b.is_Plus) and -b in c_powers:
                 if (b.is_positive in (0, 1) or e.is_integer):
                     c_powers[-b] += c_powers.pop(b)
                     if _n in c_powers:
@@ -462,7 +462,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                 def _terms(e):
                     # return the number of terms of this expression
                     # when multiplied out -- assuming no joining of terms
-                    if e.is_Add:
+                    if e.is_Plus:
                         return sum([_terms(ai) for ai in e.args])
                     if e.is_Mul:
                         return prod([_terms(mi) for mi in e.args])
@@ -666,7 +666,7 @@ def _denest_pow(eq):
         return _keep_coeff(c, g)
 
     glogb = expand_log(log(b))
-    if glogb.is_Add:
+    if glogb.is_Plus:
         args = glogb.args
         g = reduce(nc_gcd, args)
         if g != 1:
@@ -685,7 +685,7 @@ def _denest_pow(eq):
     add = []
     other = []
     for a in glogb.args:
-        if a.is_Add:
+        if a.is_Plus:
             add.append(a)
         else:
             other.append(a)

@@ -1938,7 +1938,7 @@ def _meijerint_definite_3(f, x):
     res = _meijerint_definite_4(f, x)
     if res and res[1] != False:
         return res
-    if f.is_Add:
+    if f.is_Plus:
         _debug('Expanding and evaluating all terms.')
         ress = [_meijerint_definite_4(g, x) for g in f.args]
         if all(r is not None for r in ress):

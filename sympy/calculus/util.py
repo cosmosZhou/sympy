@@ -505,7 +505,7 @@ def periodicity(f, symbol, check=False):
         else:
             period = _periodicity(g.args, symbol)
 
-    elif f.is_Add:
+    elif f.is_Plus:
         k, g = f.as_independent(symbol)
         if k is not S.Zero:
             return periodicity(g, symbol)

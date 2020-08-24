@@ -126,7 +126,7 @@ def refine_Pow(expr, assumptions):
                 return abs(expr.base.base) ** (expr.base.exp * expr.exp)
 
         if expr.base is S.NegativeOne:
-            if expr.exp.is_Add:
+            if expr.exp.is_Plus:
 
                 old = expr
 
@@ -165,7 +165,7 @@ def refine_Pow(expr, assumptions):
                 if ask(Q.even(e2), assumptions):
                     if e2.could_extract_minus_sign():
                         e2 *= expr.base
-                if e2.is_Add:
+                if e2.is_Plus:
                     i, p = e2.as_two_terms()
                     if p.is_Power and p.base is S.NegativeOne:
                         if ask(Q.integer(p.exp), assumptions):

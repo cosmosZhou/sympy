@@ -171,7 +171,7 @@ class ExprWithLimits(Expr):
         if len(s) > 1:
             s &= self.function.domain_nonzero(x)
             if s.is_EmptySet:
-                return S.Zero
+                return self.operator.identity
             if s.is_Intersection:
                 finiteset = []
                 for e in s.args:
@@ -182,7 +182,7 @@ class ExprWithLimits(Expr):
             assert s.is_FiniteSet, str(s) 
         for k in s:
             args.append(self.function._subs(x, k).simplify())
-        return self.operator(*args)                   
+        return self.operator(*args)         
 
     def subs_limits_with_epitome(self, epitome):
         if epitome.func == self.func and len(epitome.limits) == len(self.limits):
@@ -292,11 +292,6 @@ class ExprWithLimits(Expr):
             else:
                 return pre
 
-            # limits must have upper and lower bounds; the indefinite form
-            # is not supported. This restriction does not apply to AddWithLimits
-            if any(len(l) != 3 or None in l for l in limits):
-                raise ValueError('ExprWithLimits requires values for lower and upper bounds.')
-
         if cls.is_Boolean:
             obj = Boolean.__new__(cls, **assumptions)
         else:
@@ -304,7 +299,6 @@ class ExprWithLimits(Expr):
         arglist = [function]
         arglist.extend(limits)
         obj._args = tuple(arglist)
-#         obj.is_commutative = function.is_commutative  # limits already checked
 
         return obj
 
@@ -1005,8 +999,8 @@ class AddWithLimits(ExprWithLimits):
     def _eval_expand_basic(self, **hints):
         from sympy.core.function import _coeff_isneg
         summand = self.function.expand(**hints)
-#         if summand.is_Add and summand.is_commutative:
-        if summand.is_Add:
+#         if summand.is_Plus and summand.is_commutative:
+        if summand.is_Plus:
             args = []
             for arg in summand.args:
                 if _coeff_isneg(arg):
@@ -3434,7 +3428,7 @@ class Ref(ExprWithLimits):
                 a, b = domain.min(), domain.max()
 
             return Product(self[i, i], (i, a, b)).doit()
-        return Determinant(self)
+        return Det(self)
 
     @property
     def is_lower(self):

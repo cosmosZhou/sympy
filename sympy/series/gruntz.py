@@ -249,7 +249,7 @@ def mrv(e, x):
     elif e == x:
         s = SubsSet()
         return s, s[x]
-    elif e.is_Mul or e.is_Add:
+    elif e.is_Mul or e.is_Plus:
         i, d = e.as_independent(x)  # throw away x-independent terms
         if d.func != e.func:
             s, expr = mrv(d, x)

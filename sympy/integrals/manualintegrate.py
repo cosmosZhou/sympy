@@ -245,7 +245,7 @@ def find_substitutions(integrand, symbol, u_var):
             if term.args[1].is_Integer:
                 r.extend([term.args[0] ** d for d in divisors(term.args[1])
                     if 1 < d < abs(term.args[1])])
-                if term.args[0].is_Add:
+                if term.args[0].is_Plus:
                     r.extend([t for t in possible_subterms(term.args[0])
                         if t.is_Power])
             return r

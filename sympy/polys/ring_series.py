@@ -1922,7 +1922,7 @@ def _rs_series(expr, series_rs, a, prec):
         series = rs_trunc(series, R(a), prec)
         return series
 
-    elif expr.is_Add:
+    elif expr.is_Plus:
         n = len(args)
         series = R(0)
         for i in range(n):

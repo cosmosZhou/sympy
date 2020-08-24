@@ -12,6 +12,7 @@ from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Identity
 from sympy.functions.elementary.piecewise import Piecewise
 from axiom.Algebre.matrix.Determinant import expansion_by_minors
+from sympy.sets.sets import Interval
 
 
 @plausible
@@ -21,6 +22,12 @@ def apply(n, a):
 
 
 from sympy.utility import check
+
+
+def column_transformation(*limits):
+    n = limits[0][-1] + 1
+    (i, *_), (j, *_) = limits
+    return Identity(n) + Ref(Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)), *limits)
 
 
 @check(wolfram=True)
@@ -61,17 +68,28 @@ def prove(Eq, wolfram):
     
     D = Eq.deduction.lhs.function.args[1].arg
     
-    D = D._subs(Eq.deduction.lhs.variable, 0)
-    (i, *_), (j, *_) = D.limits
-    ColumnTransformation = Identity(n) + Ref[i:n, j:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
-    Eq << (D @ ColumnTransformation).this.expand()
+    i = Symbol(Eq.deduction.lhs.variable.name, domain=Interval(0, n - 1, integer=True))
+    D = D._subs(Eq.deduction.lhs.variable, i)
+    Eq << (D @ column_transformation(*D.limits)).this.expand()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    Eq.column_transformation = Eq[-1].this.rhs.simplify(deep=True)
     
-    Eq << expansion_by_minors.apply(Eq[-1].rhs, i=S.Zero)
+    Eq << expansion_by_minors.apply(Eq.column_transformation.rhs, i=i)
 
     Eq << Eq[-1].this.rhs.simplify(deep=True)
-     
+    
+    Eq << Eq[-1].this.rhs.args[1].doit()
+    
+    var = Eq[-1].rhs.args[1].variable
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(var, var - 1)
+    
+    k = Eq[-1].rhs.args[1].variable
+    Eq << Product[k:n](Eq[-1].rhs.args[1].function).this.bisect(domain={i})
+    
+    Eq << Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
+
+    Eq << Eq.column_transformation.det()
+         
 if __name__ == '__main__':
     prove(__file__)
 

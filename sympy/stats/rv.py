@@ -752,7 +752,7 @@ def expectation(expr, condition=None, numsamples=None, evaluate=True, **kwargs):
 
     # A few known statements for efficiency
 
-    if expr.is_Add:  # We know that E is Linear
+    if expr.is_Plus:  # We know that E is Linear
         return Add(*[expectation(arg, evaluate=evaluate)
                      for arg in expr.args])
 

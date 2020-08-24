@@ -290,7 +290,7 @@ class Power(Expr):
                     den = denom(ex)
                     if isinstance(den, log) and den.args[0] == b:
                         return S.Exp1 ** (c * numer(ex))
-                    elif den.is_Add:
+                    elif den.is_Plus:
                         s = sign(im(b))
                         if s.is_Number and s and den == \
                                 log(-factor_terms(b, sign=False)) + s * S.ImaginaryUnit * S.Pi:
@@ -571,7 +571,7 @@ class Power(Expr):
                     return False
             elif im_e and log(self.base).is_imaginary:
                 return True
-            elif self.exp.is_Add:
+            elif self.exp.is_Plus:
                 c, a = self.exp.as_coeff_Add()
                 if c and c.is_Integer:
                     return Mul(
@@ -739,7 +739,7 @@ class Power(Expr):
                 return Pow(new, l)
 
         if isinstance(old, self.func) and self.base == old.base:
-            if self.exp.is_Add is False:
+            if self.exp.is_Plus is False:
                 ct1 = self.exp.as_independent(Symbol, as_Add=False)
                 ct2 = old.exp.as_independent(Symbol, as_Add=False)
                 ok, pow, remainder_pow = _check(ct1, ct2, old)
@@ -851,8 +851,8 @@ class Power(Expr):
         """a**(n + m) -> a**n*a**m"""
         b = self.base
         e = self.exp
-#         if e.is_Add and e.is_commutative:
-        if e.is_Add:
+#         if e.is_Plus and e.is_commutative:
+        if e.is_Plus:
             expr = []
             for x in e.args:
                 expr.append(self.func(self.base, x))
@@ -986,7 +986,7 @@ class Power(Expr):
         base, exp = self.args
         result = self
 
-        if exp.is_Rational and exp.p > 0 and base.is_Add:
+        if exp.is_Rational and exp.p > 0 and base.is_Plus:
             if not exp.is_Integer:
                 n = Integer(exp.p // exp.q)
 
@@ -1078,16 +1078,16 @@ class Power(Expr):
 #                     return Add(*[f * g for f in base.args for g in base.args])
 #                 else:
 #                     multi = (base ** (n - 1))._eval_expand_multinomial()
-#                     if multi.is_Add:
+#                     if multi.is_Plus:
 #                         return Add(*[f * g for f in base.args
 #                             for g in multi.args])
 #                     else:
 #                         # XXX can this ever happen if base was an Add?
 #                         return Add(*[f * multi for f in base.args])
-        elif (exp.is_Rational and exp.p < 0 and base.is_Add and
+        elif (exp.is_Rational and exp.p < 0 and base.is_Plus and
                 abs(exp.p) > exp.q):
             return 1 / self.func(base, -exp)._eval_expand_multinomial()
-        elif exp.is_Add and base.is_Number:
+        elif exp.is_Plus and base.is_Number:
             #  a + b      a  b
             # n      --> n  n  , where n, a, b are Numbers
 
@@ -1522,7 +1522,7 @@ class Power(Expr):
 
             bs = b._eval_nseries(x, n=nuse, logx=logx)
             terms = bs.removeO()
-            if terms.is_Add:
+            if terms.is_Plus:
                 bs = terms
                 lt = terms.as_leading_term(x)
 
@@ -1530,7 +1530,7 @@ class Power(Expr):
                 return ((self.func(lt, e) * self.func((bs / lt).expand(), e).nseries(
                     x, n=nuse, logx=logx)).expand() + order)
 
-            if bs.is_Add:
+            if bs.is_Plus:
                 from sympy import O
                 # So, bs + O() == terms
                 c = Dummy('c')

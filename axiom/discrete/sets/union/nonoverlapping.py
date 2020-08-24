@@ -23,7 +23,7 @@ def apply(given):
     assert x_union.is_Union
     A, B = x_union.args
 
-    assert x_abs_sum.is_Add
+    assert x_abs_sum.is_Plus
     A_abs, B_abs = x_abs_sum.args
     assert A_abs.is_Abs
     assert B_abs.is_Abs

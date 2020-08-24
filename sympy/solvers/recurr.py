@@ -521,7 +521,7 @@ def rsolve_hyper(coeffs, f, n, **hints):
 
     if not f.is_zero:
         from sympy.concrete.summations import Sum
-        if f.is_Add:
+        if f.is_Plus:
             similar = {}
 
             for g in f.expand().args:

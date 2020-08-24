@@ -504,7 +504,7 @@ class Function(Application, Expr):
         from sympy.core.evalf import pure_complex
         if arg.is_Float:
             return arg._prec
-        if not arg.is_Add:
+        if not arg.is_Plus:
             return -1
         m = pure_complex(arg)
         if m is None or not (m[0].is_Float or m[1].is_Float):
@@ -3985,7 +3985,7 @@ def count_ops(expr, visual=False):
                     ops.append(DIV)
                     args.append(n)
                     continue  # could be -Mul
-            elif a.is_Add or a.is_MatAdd:
+            elif a.is_Plus or a.is_MatAdd:
                 aargs = list(a.args)
                 negs = 0
                 for i, ai in enumerate(aargs):

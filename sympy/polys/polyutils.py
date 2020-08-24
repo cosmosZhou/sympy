@@ -350,7 +350,7 @@ def _dict_from_expr(expr, opt):
 
     def _is_expandable_pow(expr):
         return (expr.is_Power and expr.exp.is_positive and expr.exp.is_Integer
-                and expr.base.is_Add)
+                and expr.base.is_Plus)
 
     if opt.expand is not False:
         if not isinstance(expr, Expr):
@@ -362,7 +362,7 @@ def _dict_from_expr(expr, opt):
                 Add.make_args(expr)):
 
             expr = expand_multinomial(expr)
-        while any(i.is_Mul and any(j.is_Add for j in i.args) for i in Add.make_args(expr)):
+        while any(i.is_Mul and any(j.is_Plus for j in i.args) for i in Add.make_args(expr)):
             expr = expand_mul(expr)
 
     if opt.gens:

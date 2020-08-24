@@ -249,7 +249,7 @@ class LatexPrinter(Printer):
             elif expr.is_Power and not self._pow_is_clean(expr):
                 return True
             # Add and Function always need brackets
-            elif expr.is_Add or expr.is_Function:
+            elif expr.is_Plus or expr.is_Function:
                 return True
             else:
                 return False
@@ -293,7 +293,7 @@ class LatexPrinter(Printer):
             return True
         if any([expr.has(x) for x in (Mod,)]):
             return True
-        if expr.is_Add:
+        if expr.is_Plus:
             return True
         return False
 
@@ -412,26 +412,6 @@ class LatexPrinter(Printer):
 
     def _print_UnevaluatedExpr(self, expr):
         return self._print(expr.args[0])
-
-    def _print_Product(self, expr):
-        if len(expr.limits) == 1:
-            tex = r"\prod\limits_{%s=%s}^{%s} " % \
-                tuple([self._print(i) for i in expr.limits[0]])
-        else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([self._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\prod_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in expr.limits])
-
-        if isinstance(expr.function, Add):
-            tex += r"\left(%s\right)" % self._print(expr.function)
-        else:
-            tex += self._print(expr.function)
-
-        return tex
 
     def _print_BasisDependent(self, expr):
         from sympy.vector import Vector
@@ -1775,7 +1755,7 @@ class LatexPrinter(Printer):
                     else:
                         s_monom += self._print(pow(poly.gens[i], exp))
 
-            if coeff.is_Add:
+            if coeff.is_Plus:
                 if s_monom:
                     s_coeff = r"\left(%s\right)" % self._print(coeff)
                 else:

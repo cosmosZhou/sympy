@@ -217,7 +217,7 @@ def test_pmint_rat():
     # would give the optimal result?
 
     def drop_const(expr, x):
-        if expr.is_Add:
+        if expr.is_Plus:
             return Add(*[ arg for arg in expr.args if arg.has(x) ])
         else:
             return expr

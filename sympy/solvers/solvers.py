@@ -1124,7 +1124,7 @@ def solve(f, *symbols, **flags):
             elif (isinstance(p, bool) or
                     not p.args or
                     p in symset or
-                    p.is_Add or p.is_Mul or
+                    p.is_Plus or p.is_Mul or
                     p.is_Power and not implicit or
                     p.is_Function and not implicit) and p.func not in (re, im):
                 continue
@@ -2650,7 +2650,7 @@ def _tsolve(eq, sym, **flags):
     if lhs == sym:
         return [rhs]
     try:
-        if lhs.is_Add:
+        if lhs.is_Plus:
             # it's time to try factoring; powdenest is used
             # to try get powers in standard form for better factoring
             f = factor(powdenest(lhs - rhs))
@@ -2751,7 +2751,7 @@ def _tsolve(eq, sym, **flags):
 
         elif lhs.is_Mul and rhs.is_positive:
             llhs = expand_log(log(lhs))
-            if llhs.is_Add:
+            if llhs.is_Plus:
                 return _solve(llhs - log(rhs), sym, **flags)
 
         elif lhs.is_Function and len(lhs.args) == 1:
@@ -3104,7 +3104,7 @@ def _invert(eq, *symbols, **kwargs):
             indep, dep = lhs.as_independent(*symbols)
 
             # dep + indep == rhs
-            if lhs.is_Add:
+            if lhs.is_Plus:
                 # this indicates we have done it all
                 if indep is S.Zero:
                     break
@@ -3122,7 +3122,7 @@ def _invert(eq, *symbols, **kwargs):
                 rhs /= indep
 
         # collect like-terms in symbols
-        if lhs.is_Add:
+        if lhs.is_Plus:
             terms = {}
             for a in lhs.args:
                 i, d = a.as_independent(*symbols)
@@ -3138,7 +3138,7 @@ def _invert(eq, *symbols, **kwargs):
 
         # if it's a two-term Add with rhs = 0 and two powers we can get the
         # dependent terms together, e.g. 3*f(x) + 2*g(x) -> f(x)/g(x) = -2/3
-        if lhs.is_Add and not rhs and len(lhs.args) == 2 and \
+        if lhs.is_Plus and not rhs and len(lhs.args) == 2 and \
                 not lhs.is_polynomial(*symbols):
             a, b = ordered(lhs.args)
             ai, ad = a.as_independent(*symbols)
@@ -3434,11 +3434,11 @@ def unrad(eq, *syms, **flags):
     ok = False  # we don't have a solution yet
     depth = sqrt_depth(eq)
 
-    if len(rterms) == 1 and not (rterms[0].is_Add and lcm > 2):
+    if len(rterms) == 1 and not (rterms[0].is_Plus and lcm > 2):
         eq = rterms[0] ** lcm - ((-others) ** lcm)
         ok = True
     else:
-        if len(rterms) == 1 and rterms[0].is_Add:
+        if len(rterms) == 1 and rterms[0].is_Plus:
             rterms = list(rterms[0].args)
         if len(bases) == 1:
             b = bases.pop()

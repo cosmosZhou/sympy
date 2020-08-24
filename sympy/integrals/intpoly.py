@@ -867,7 +867,7 @@ def best_origin(a, b, lineseg, expr):
                     return a1, b1
 
         if isinstance(expr, Expr):  # Find the sum total of power of each
-            if expr.is_Add:         # generator and store in a dictionary.
+            if expr.is_Plus:         # generator and store in a dictionary.
                 for monomial in expr.args:
                     if monomial.is_Power:
                         if monomial.args[0] in gens:
@@ -947,7 +947,7 @@ def decompose(expr, separate=False):
     if isinstance(expr, Expr) and not expr.is_number:
         if expr.is_Symbol:
             poly_dict[1] = expr
-        elif expr.is_Add:
+        elif expr.is_Plus:
             symbols = expr.atoms(Symbol)
             degrees = [(sum(degree_list(monom, *symbols)), monom)
                        for monom in expr.args]

@@ -865,7 +865,7 @@ class harmonic(Function):
         m = self.args[1] if len(self.args) == 2 else 1
 
         if m == S.One:
-            if n.is_Add:
+            if n.is_Plus:
                 off = n.args[0]
                 nnew = n - off
                 if off.is_Integer and off.is_positive:
@@ -2225,7 +2225,7 @@ class Stirling(Function):
             return binomial(*self.args)
 
         k = self.args[1]
-        if k.is_Add and n in k.args:
+        if k.is_Plus and n in k.args:
             k = n - k
 
         if k.is_Integer:
@@ -2501,7 +2501,7 @@ class Stirling1(Function):
             return binomial(*self.args)
 
         k = self.args[1]
-        if k.is_Add and n in k.args:
+        if k.is_Plus and n in k.args:
             k = n - k
 
         if k.is_Integer:

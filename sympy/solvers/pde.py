@@ -319,7 +319,7 @@ def classify_pde(eq, func=None, dict=False, **kwargs):
     # Try removing the smallest power of f(x,y)
     # from the highest partial derivatives of f(x,y)
     reduced_eq = None
-    if eq.is_Add:
+    if eq.is_Plus:
         var = set(combinations_with_replacement((x,y), order))
         dummyvar = var.copy()
         power = None

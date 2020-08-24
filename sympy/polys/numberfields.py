@@ -529,7 +529,7 @@ def _minpoly_compose(ex, x, dom):
             else:
                 ex = ex1
 
-    if ex.is_Add:
+    if ex.is_Plus:
         res = _minpoly_add(x, dom, *ex.args)
     elif ex.is_Mul:
         f = Factors(ex).factors
@@ -705,13 +705,13 @@ def _minpoly_groebner(ex, x, cls):
                     return symbols[ex]
             elif ex.is_Rational:
                 return ex
-        elif ex.is_Add:
+        elif ex.is_Plus:
             return Add(*[ bottom_up_scan(g) for g in ex.args ])
         elif ex.is_Mul:
             return Mul(*[ bottom_up_scan(g) for g in ex.args ])
         elif ex.is_Power:
             if ex.exp.is_Rational:
-                if ex.exp < 0 and ex.base.is_Add:
+                if ex.exp < 0 and ex.base.is_Plus:
                     coeff, terms = ex.base.as_coeff_add()
                     elt, _ = primitive_element(terms, polys=True)
 
@@ -752,15 +752,15 @@ def _minpoly_groebner(ex, x, cls):
         """
         if ex.is_Power:
             if (1/ex.exp).is_integer and ex.exp < 0:
-                if ex.base.is_Add:
+                if ex.base.is_Plus:
                     return True
         if ex.is_Mul:
             hit = True
             for p in ex.args:
-                if p.is_Add:
+                if p.is_Plus:
                     return False
                 if p.is_Power:
-                    if p.base.is_Add and p.exp > 0:
+                    if p.base.is_Plus and p.exp > 0:
                         return False
 
             if hit:

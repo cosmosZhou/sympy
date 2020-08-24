@@ -102,7 +102,7 @@ def _linab(arg, symbol):
 
     arg = arg.expand()
     ind, dep = arg.as_independent(symbol)
-    if not arg.is_Add:
+    if not arg.is_Plus:
         b = 0
         a, x = ind, dep
     else:
@@ -236,9 +236,9 @@ def _solve_lambert(f, symbol, gens):
         if mainlog:
             if lhs.is_Mul and rhs != 0:
                 soln = _lambert(log(lhs) - log(rhs), symbol)
-            elif lhs.is_Add:
+            elif lhs.is_Plus:
                 other = lhs.subs(mainlog, 0)
-                if other and not other.is_Add and [
+                if other and not other.is_Plus and [
                         tmp for tmp in other.atoms(Pow)
                         if symbol in tmp.free_symbols]:
                     if not rhs:
@@ -268,7 +268,7 @@ def _solve_lambert(f, symbol, gens):
             lhs = collect(lhs, mainexp)
             if lhs.is_Mul and rhs != 0:
                 soln = _lambert(expand_log(log(lhs) - log(rhs)), symbol)
-            elif lhs.is_Add:
+            elif lhs.is_Plus:
                 # move all but mainexp-containing term to rhs
                 other = lhs.subs(mainexp, 0)
                 mainterm = lhs - other
@@ -290,7 +290,7 @@ def _solve_lambert(f, symbol, gens):
             lhs = collect(lhs, mainpow)
             if lhs.is_Mul and rhs != 0:
                 soln = _lambert(expand_log(log(lhs) - log(rhs)), symbol)
-            elif lhs.is_Add:
+            elif lhs.is_Plus:
                 # move all but mainpow-containing term to rhs
                 other = lhs.subs(mainpow, 0)
                 mainterm = lhs - other

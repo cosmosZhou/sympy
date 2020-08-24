@@ -1516,10 +1516,10 @@ def test_zoo():
             assert zoo + i is zoo
             assert zoo - i is zoo
         elif i.is_finite is not False:
-            assert (i + zoo).is_Add
-            assert (i - zoo).is_Add
-            assert (zoo + i).is_Add
-            assert (zoo - i).is_Add
+            assert (i + zoo).is_Plus
+            assert (i - zoo).is_Plus
+            assert (zoo + i).is_Plus
+            assert (zoo - i).is_Plus
         else:
             assert (i + zoo) is S.NaN
             assert (i - zoo) is S.NaN
@@ -1562,9 +1562,9 @@ def test_issue_4122():
     x = Symbol('x', nonpositive=True)
     assert oo + x == oo
     x = Symbol('x', extended_nonpositive=True)
-    assert (oo + x).is_Add
+    assert (oo + x).is_Plus
     x = Symbol('x', finite=True)
-    assert (oo + x).is_Add  # x could be imaginary
+    assert (oo + x).is_Plus  # x could be imaginary
     x = Symbol('x', nonnegative=True)
     assert oo + x == oo
     x = Symbol('x', extended_nonnegative=True)
@@ -1576,9 +1576,9 @@ def test_issue_4122():
     x = Symbol('x', nonnegative=True)
     assert -oo + x == -oo
     x = Symbol('x', extended_nonnegative=True)
-    assert (-oo + x).is_Add
+    assert (-oo + x).is_Plus
     x = Symbol('x', finite=True)
-    assert (-oo + x).is_Add
+    assert (-oo + x).is_Plus
     x = Symbol('x', nonpositive=True)
     assert -oo + x == -oo
     x = Symbol('x', extended_nonpositive=True)

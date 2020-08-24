@@ -1086,7 +1086,7 @@ class Integrate(AddWithLimits):
             # in an expanded form
             if not h and len(args) == 1:
                 f = sincos_to_sum(f).expand(mul=True, deep=False)
-                if f.is_Add:
+                if f.is_Plus:
                     # Note: risch will be identical on the expanded
                     # expression, but maybe it will be able to pick out parts,
                     # like x*(exp(x) + erf(x)).

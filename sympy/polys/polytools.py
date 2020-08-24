@@ -5258,7 +5258,7 @@ def gcd(f, g=None, *gens, **args):
     x - 1
 
     """
-    if hasattr(f, '__iter__') and not (f.is_Symbol or f.is_Add or f.is_Mul):
+    if hasattr(f, '__iter__') and not (f.is_Symbol or f.is_Plus or f.is_Mul):
         if g is not None:
             gens = (g,) + gens
 
@@ -6116,7 +6116,7 @@ def to_rational_coeffs(f):
         c = simplify(coeffs[0])
         if c and not c.is_rational:
             func = Add
-            if c.is_Add:
+            if c.is_Plus:
                 args = c.args
                 func = c.func
             else:
@@ -6628,7 +6628,7 @@ def cancel(f, *gens, **args):
         if f.is_commutative and not f.has(Piecewise):
             raise PolynomialError(msg)
         # Handling of noncommutative and/or piecewise expressions
-        if f.is_Add or f.is_Mul:
+        if f.is_Plus or f.is_Mul:
             c, nc = sift(f.args, lambda x:
                 x.is_commutative is True and not x.has(Piecewise),
                 binary=True)
@@ -7089,9 +7089,9 @@ def poly(expr, *gens, **args):
             factors, poly_factors = [], []
 
             for factor in Mul.make_args(term):
-                if factor.is_Add:
+                if factor.is_Plus:
                     poly_factors.append(_poly(factor, opt))
-                elif factor.is_Power and factor.base.is_Add and \
+                elif factor.is_Power and factor.base.is_Plus and \
                         factor.exp.is_Integer and factor.exp >= 0:
                     poly_factors.append(
                         _poly(factor.base, opt).pow(factor.exp))

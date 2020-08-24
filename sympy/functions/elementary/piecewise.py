@@ -1557,8 +1557,8 @@ def piecewise_fold(expr):
         # we do that grouping before the more generic folding.
         # The following applies this idea when f = Add or f = Mul
         # (and the expression is commutative).
-#         if expr.is_Add or expr.is_Mul and expr.is_commutative:
-        if expr.is_Add or expr.is_Mul:
+#         if expr.is_Plus or expr.is_Mul and expr.is_commutative:
+        if expr.is_Plus or expr.is_Mul:
             p, args = sift(expr.args, lambda x: x.is_Piecewise, binary=True)
             if len(p) > 1:
                 return expr

@@ -524,7 +524,7 @@ class Abs(Function):
             return exp(re(arg.args[0]))
         if isinstance(arg, AppliedUndef) or arg.is_set:
             return
-        if arg.is_Add and arg.has(S.Infinity, S.NegativeInfinity):
+        if arg.is_Plus and arg.has(S.Infinity, S.NegativeInfinity):
             if any(a.is_infinite for a in arg.as_real_imag()):
                 return S.Infinity
         if arg.is_zero:
@@ -1099,7 +1099,7 @@ def _polarify(eq, lift, pause=False):
         return polar_lift(eq)
     elif eq.is_Atom:
         return eq
-    elif eq.is_Add:
+    elif eq.is_Plus:
         r = eq.func(*[_polarify(arg, lift, pause=True) for arg in eq.args])
         if lift:
             return polar_lift(r)
@@ -1177,7 +1177,7 @@ def _unpolarify(eq, exponents_only, pause=False):
         if isinstance(eq, principal_branch) and eq.args[1] == 2 * pi:
             return _unpolarify(eq.args[0], exponents_only)
         if (
-            eq.is_Add or eq.is_Mul or eq.is_Boolean or
+            eq.is_Plus or eq.is_Mul or eq.is_Boolean or
             eq.is_Relational and (
                 eq.rel_op in ('==', '!=') and 0 in eq.args or
                 eq.rel_op not in ('==', '!='))

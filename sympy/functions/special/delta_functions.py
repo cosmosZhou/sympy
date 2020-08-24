@@ -516,7 +516,7 @@ class Heaviside(Function):
         elif fuzzy_not(im(arg).is_zero):
             raise ValueError("Function defined only for Real Values. Complex part: %s  found in %s ." % (repr(im(arg)), repr(arg)))
         else:
-            if arg.is_Add:    
+            if arg.is_Plus:    
                 for arg in arg.args:            
                     if arg is S.Infinity:
                         return S.One

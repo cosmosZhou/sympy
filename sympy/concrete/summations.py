@@ -1353,7 +1353,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if len(limit) == 1:
                 tex = r"\sum_{%s} " % p._print(limit[0])
             elif len(limit) == 2:
-#                 tex = r"\sum_{%s \in %s} " % tuple([p._print(i) for i in limit])
                 tex = r"\sum\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
             else:
                 tex = r"\sum\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
@@ -1513,7 +1512,7 @@ def telescopic(L, R, limits):
     return None if not possible
     '''
     (i, a, b) = limits
-    if L.is_Add or R.is_Add:
+    if L.is_Plus or R.is_Plus:
         return None
 
     # We want to solve(L.subs(i, i + m) + R, m)
@@ -1635,7 +1634,7 @@ def eval_sum_symbolic(f, limits):
         except PolynomialError:
             pass
 
-    if f.is_Add:
+    if f.is_Plus:
         L, R = f.as_two_terms()
         lrsum = telescopic(L, R, (i, a, b))
 

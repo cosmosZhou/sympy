@@ -345,7 +345,7 @@ def wolfram_decorator(py, func, **kwargs):
     except Exception as e:
         print(e)
         traceback.print_exc()
-        return None
+        return
 
     plausibles = eqs.plausibles_dict
     if plausibles:
@@ -365,7 +365,8 @@ def check(func=None, wolfram=None):
                 from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
                 session = WolframLanguageSession()                
             except:
-                traceback.print_exc()           
+                ...
+#                 traceback.print_exc()           
                 
         
         return lambda py: wolfram_decorator(py, func, wolfram=session)

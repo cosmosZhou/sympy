@@ -29,7 +29,7 @@ def threaded_factory(func, use_add):
         else:
             expr = sympify(expr)
 
-            if use_add and expr.is_Add:
+            if use_add and expr.is_Plus:
                 return expr.__class__(*[ func(f, *args, **kwargs) for f in expr.args ])
             elif expr.is_Relational:
                 return expr.__class__(func(expr.lhs, *args, **kwargs),

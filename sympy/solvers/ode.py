@@ -1046,7 +1046,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
 
     # Precondition to try remove f(x) from highest order derivative
     reduced_eq = None
-    if eq.is_Add:
+    if eq.is_Plus:
         deriv_coef = eq.coeff(f(x).diff(x, order))
         if deriv_coef not in (1, 0):
             r = deriv_coef.match(a*f(x)**c1)
@@ -1059,7 +1059,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
     if order == 1:
 
         ## Linear case: a(x)*y'+b(x)*y+c(x) == 0
-        if eq.is_Add:
+        if eq.is_Plus:
             ind, dep = reduced_eq.as_independent(f)
         else:
             u = Dummy('u')
@@ -1278,7 +1278,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
         if r:
             r2 = r.copy()
             r2[c] = S.Zero
-            if r2[d].is_Add:
+            if r2[d].is_Plus:
                 # Separate the terms having f(x) to r[d] and
                 # remaining to r[c]
                 no_f, r2[d] = r2[d].as_independent(f(x))
@@ -2295,7 +2295,7 @@ def odesimp(ode, eq, func, hint):
             def _expand(expr):
                 numer, denom = expr.as_numer_denom()
 
-                if denom.is_Add:
+                if denom.is_Plus:
                     return expr
                 else:
                     return powsimp(expr.expand(), combine='exp', deep=True)
@@ -2853,7 +2853,7 @@ def constantsimp(expr, constants):
             for m in new_expr.args:
                 if isinstance(m, exp):
                     asfac = True
-                elif m.is_Add:
+                elif m.is_Plus:
                     infac = any(isinstance(fi, exp) for t in m.args
                         for fi in Mul.make_args(t))
                 if asfac and infac:
@@ -3759,7 +3759,7 @@ def ode_2nd_power_series_ordinary(eq, func, order, match):
     for index, coeff in enumerate(coefflist):
         if coeff[1]:
             f2 = powsimp(expand((coeff[1]*(x - x0)**(n - index)).subs(x, x + x0)))
-            if f2.is_Add:
+            if f2.is_Plus:
                 addargs = f2.args
             else:
                 addargs = [f2]
@@ -5336,7 +5336,7 @@ def _undetermined_coefficients_match(expr, x):
         """
         if not expr.has(x):
             return True
-        elif expr.is_Add:
+        elif expr.is_Plus:
             return all(_test_term(i, x) for i in expr.args)
         elif expr.is_Mul:
             if expr.has(sin, cos):
@@ -5397,7 +5397,7 @@ def _undetermined_coefficients_match(expr, x):
             return term
 
         expr = expand_mul(expr)
-        if expr.is_Add:
+        if expr.is_Plus:
             for term in expr.args:
                 if _remove_coefficient(term, x) in exprs:
                     pass
@@ -5414,7 +5414,7 @@ def _undetermined_coefficients_match(expr, x):
                 oldset = tmpset.copy()
                 expr = expr.diff(x)
                 term = _remove_coefficient(expr, x)
-                if term.is_Add:
+                if term.is_Plus:
                     tmpset = tmpset.union(_get_trial_set(term, x, tmpset))
                 else:
                     tmpset.add(term)
@@ -5907,7 +5907,7 @@ def _lie_group_remove(coords):
     """
     if isinstance(coords, AppliedUndef):
         return coords.args[0]
-    elif coords.is_Add:
+    elif coords.is_Plus:
         subfunc = coords.atoms(AppliedUndef)
         if subfunc:
             for func in subfunc:
@@ -6302,7 +6302,7 @@ def lie_heuristic_bivariate(match, comp=False):
 
             # If the individual terms are monomials, the coefficients
             # are grouped
-            if pden.is_polynomial(x, y) and pden.is_Add:
+            if pden.is_polynomial(x, y) and pden.is_Plus:
                 polyy = Poly(pden, x, y).as_dict()
             if polyy:
                 symset = xieq.free_symbols.union(etaeq.free_symbols) - {x, y}
@@ -6368,7 +6368,7 @@ def lie_heuristic_chi(match, comp=False):
                 for power in range(i + 1)])
             cnum, cden = cancel(cpde.subs({chi : chieq}).doit()).as_numer_denom()
             cnum = expand(cnum)
-            if cnum.is_polynomial(x, y) and cnum.is_Add:
+            if cnum.is_polynomial(x, y) and cnum.is_Plus:
                 cpoly = Poly(cnum, x, y).as_dict()
                 if cpoly:
                     solsyms = chieq.free_symbols - {x, y}
@@ -6781,7 +6781,7 @@ def lie_heuristic_linear(match, comp=False):
     pde = C3 + (C4 - C0)*h - (C0*x + C1*y + C2)*hx - (C3*x + C4*y + C5)*hy - C1*h**2
     pde, denom = pde.as_numer_denom()
     pde = powsimp(expand(pde))
-    if pde.is_Add:
+    if pde.is_Plus:
         terms = pde.args
         for term in terms:
             if term.is_Mul:

@@ -492,7 +492,7 @@ class MatrixExpr(Expr):
                 return [(Mul.fromiter(nonmatargs), None)] + [
                     (MatrixElement(a, i, j), (i, j)) for (i, j), a in lines.items()
                 ]
-            elif expr.is_Add:
+            elif expr.is_Plus:
                 res = [recurse_expr(i) for i in expr.args]
                 d = collections.defaultdict(list)
                 for res_addend in res:
@@ -1403,7 +1403,6 @@ class VConcatenate(Concatenate):
         is_lower_hessenberg
         """
         from sympy.sets.sets import Interval
-        free_symbols = self.free_symbols
         from sympy.functions.elementary.miscellaneous import Min
 
         i = self.generate_free_symbol(domain=Interval(0, Min(self.rows, self.cols - 1), right_open=True, integer=True))

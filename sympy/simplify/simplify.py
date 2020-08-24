@@ -128,7 +128,7 @@ def _separatevars(expr, force):
     _expr, reps = posify(expr) if force else (expr, {})
     expr = factor(_expr).subs(reps)
 
-    if not expr.is_Add:
+    if not expr.is_Plus:
         return expr
 
     # Find any common coefficients to pull out
@@ -152,7 +152,7 @@ def _separatevars(expr, force):
         _expr, reps = posify(_expr) if force else (_expr, {})
         _expr = (factor(_expr)).subs(reps)
 
-        if not _expr.is_Add:
+        if not _expr.is_Plus:
             nonsepar = _expr
 
     return commonc*nonsepar
@@ -191,7 +191,7 @@ def _separatevars_dict(expr, symbols):
 
 
 def _is_sum_surds(p):
-    args = p.args if p.is_Add else [p]
+    args = p.args if p.is_Plus else [p]
     for y in args:
         if not ((y**2).is_Rational and y.is_extended_real):
             return False
@@ -370,7 +370,7 @@ def signsimp(expr, evaluate=None):
     e = sub_post(sub_pre(expr))
     if not isinstance(e, Expr) or e.is_Atom:
         return e
-    if e.is_Add:
+    if e.is_Plus:
         return e.func(*[signsimp(a, evaluate) for a in e.args])
     if evaluate:
         e = e.xreplace({m: -(-m) for m in e.atoms(Mul) if -(-m) != m})
@@ -618,11 +618,11 @@ def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False):
         x.is_Mul and
         len(x.args) == 2 and
         x.args[0].is_Number and
-        x.args[1].is_Add)
+        x.args[1].is_Plus)
     expr = short.xreplace(hollow_mul)
 
     numer, denom = expr.as_numer_denom()
-    if denom.is_Add:
+    if denom.is_Plus:
         n, d = fraction(radsimp(1/denom, symbolic=False, max_terms=1))
         if n is not S.One:
             expr = (numer*n).expand()/d
@@ -907,7 +907,7 @@ def logcombine(expr, force=False):
     """
 
     def f(rv):
-        if not (rv.is_Add or rv.is_Mul):
+        if not (rv.is_Plus or rv.is_Mul):
             return rv
 
         def gooda(a):

@@ -94,7 +94,7 @@ def _gammasimp(expr, as_comb):
         # this sort of binomial has already been removed by
         # rising factorials but is left here in case the order
         # of rule application is changed
-        if k.is_Add:
+        if k.is_Plus:
             ck, _k = k.as_coeff_Add()
             if _k and ck.is_Integer and ck:
                 coeff *= _rf(n - ck - _k + 1, ck)/_rf(_k + 1, ck)
@@ -129,7 +129,7 @@ def _gammasimp(expr, as_comb):
             # return True if there is a gamma factor in shallow args
             if isinstance(x, gamma):
                 return True
-            if x.is_Add or x.is_Mul:
+            if x.is_Plus or x.is_Mul:
                 return any(gamma_factor(xi) for xi in x.args)
             if x.is_Power and (x.exp.is_integer or x.base.is_positive):
                 return gamma_factor(x.base)
@@ -162,7 +162,7 @@ def _gammasimp(expr, as_comb):
             for ipass in range(2):
                 args = list(ordered(Mul.make_args(nd)))
                 for i, ni in enumerate(args):
-                    if ni.is_Add:
+                    if ni.is_Plus:
                         ni, dd = Add(*[
                             rule_gamma(gamma_rat(a/dd), level + 1) for a in ni.args]
                             ).as_numer_denom()
@@ -491,7 +491,7 @@ class _rf(Function):
 
                 return 1/result
         else:
-            if b.is_Add:
+            if b.is_Plus:
                 c, _b = b.as_coeff_Add()
 
                 if c.is_Integer:
@@ -500,7 +500,7 @@ class _rf(Function):
                     elif c < 0:
                         return _rf(a, _b)/_rf(a + _b + c, -c)
 
-            if a.is_Add:
+            if a.is_Plus:
                 c, _a = a.as_coeff_Add()
 
                 if c.is_Integer:

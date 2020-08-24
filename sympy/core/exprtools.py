@@ -71,7 +71,7 @@ def _monotonic_sign(self):
         rv = _monotonic_sign(-self)
         return rv if rv is None else -rv
 
-    if not self.is_Add and self.as_numer_denom()[1].is_number:
+    if not self.is_Plus and self.as_numer_denom()[1].is_number:
         s = self
         if s.is_prime:
             if s.is_odd:
@@ -829,7 +829,7 @@ class Term(object):
             for factor in factors:
                 base, exp = decompose_power(factor)
 
-                if base.is_Add:
+                if base.is_Plus:
                     cont, base = base.primitive()
                     coeff *= cont ** exp
 
@@ -977,7 +977,7 @@ def _gcd_terms(terms, isprimitive=False, fraction=True):
         numer = Add(*numers)
         denom = denom.as_expr()
 
-    if not isprimitive and numer.is_Add:
+    if not isprimitive and numer.is_Plus:
         _cont, numer = numer.primitive()
         cont *= _cont
 
@@ -1071,7 +1071,7 @@ def gcd_terms(terms, isprimitive=False, clear=True, fraction=True):
         coeff, factors = cont.as_coeff_Mul()
         if not clear:
             c, _coeff = coeff.as_coeff_Mul()
-            if not c.is_Integer and not clear and numer.is_Add:
+            if not c.is_Integer and not clear and numer.is_Plus:
                 n, d = c.as_numer_denom()
                 _numer = numer / d
                 if any(a.as_coeff_Mul()[0].is_Integer
@@ -1230,7 +1230,7 @@ def factor_terms(expr, radical=False, clear=False, fraction=False, sign=True):
                 fraction=fraction, sign=sign)
 
         cont, p = expr.as_content_primitive(radical=radical, clear=clear)
-        if p.is_Add:
+        if p.is_Plus:
             list_args = [do(a) for a in Add.make_args(p)]
             # get a common negative (if there) which gcd_terms does not remove
             if all(a.as_coeff_Mul()[0].extract_multiplicatively(-1) is not None for a in list_args):
@@ -1366,7 +1366,7 @@ def _mask_nc(eq, name=None):
             if a.is_symbol:
                 nc_syms.add(a)
                 pot.skip()
-            elif not (a.is_Add or a.is_Mul or a.is_Power):
+            elif not (a.is_Plus or a.is_Mul or a.is_Power):
                 nc_obj.add(a)
                 pot.skip()
 
@@ -1419,7 +1419,7 @@ def factor_nc(expr):
     expr = sympify(expr)
     if not isinstance(expr, Expr) or not expr.args:
         return expr
-    if not expr.is_Add:
+    if not expr.is_Plus:
         return expr.func(*[factor_nc(a) for a in expr.args])
 
     expr, rep, nc_symbols = _mask_nc(expr)
