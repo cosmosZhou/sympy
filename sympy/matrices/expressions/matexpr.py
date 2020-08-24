@@ -1355,8 +1355,7 @@ class VConcatenate(Concatenate):
         from sympy.matrices.expressions.determinant import Det
         from sympy.concrete.products import Product
         if self.is_upper or self.is_lower:
-            from sympy.core.symbol import generate_free_symbol
-            i = generate_free_symbol(self.free_symbols, integer=True)
+            i = self.generate_free_symbol(integer=True)
             return Product(self[i, i], (i, 0, self.cols - 1)).doit()
         return Det(self)
 
@@ -1405,11 +1404,10 @@ class VConcatenate(Concatenate):
         """
         from sympy.sets.sets import Interval
         free_symbols = self.free_symbols
-        from sympy.core.symbol import generate_free_symbol
         from sympy.functions.elementary.miscellaneous import Min
 
-        i = generate_free_symbol(free_symbols, domain=Interval(0, Min(self.rows, self.cols - 1), right_open=True, integer=True))
-        j = i.generate_free_symbol(free_symbols=free_symbols, domain=Interval(i + 1, self.cols, right_open=True, integer=True))
+        i = self.generate_free_symbol(domain=Interval(0, Min(self.rows, self.cols - 1), right_open=True, integer=True))
+        j = i.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(i + 1, self.cols, right_open=True, integer=True))
         assert i < j
         return self[i, j] == 0
 
@@ -1456,12 +1454,10 @@ class VConcatenate(Concatenate):
         is_upper_hessenberg
         """
         from sympy.sets.sets import Interval
-        free_symbols = self.free_symbols
-        from sympy.core.symbol import generate_free_symbol
         from sympy.functions.elementary.miscellaneous import Min
 
-        j = generate_free_symbol(free_symbols, domain=Interval(0, Min(self.cols, self.rows - 1), right_open=True, integer=True))
-        i = j.generate_free_symbol(free_symbols=free_symbols, domain=Interval(j + 1, self.rows, right_open=True, integer=True))
+        j = self.generate_free_symbol(domain=Interval(0, Min(self.cols, self.rows - 1), right_open=True, integer=True))
+        i = j.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(j + 1, self.rows, right_open=True, integer=True))
         assert i > j
         return self[i, j] == 0
 

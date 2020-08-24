@@ -4880,7 +4880,7 @@ class ConditionalBoolean(Boolean):
                     if self.function.is_ExprWithLimits:
                         if sym in self.function.bound_symbols:
                             _sym = base_set.element_symbol(self.function.variables_set)
-#                                 _sym = base_set.element_symbol(self.function.bound_symbols)
+                            assert sym.shape == _sym.shape
                             _expr = expr.subs(sym, _sym)
                             if _expr == expr:
                                 for var in postorder_traversal(expr):

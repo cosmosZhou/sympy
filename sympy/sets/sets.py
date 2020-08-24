@@ -17,8 +17,7 @@ from sympy.core.numbers import Float
 from sympy.core.operations import LatticeOp
 from sympy.core.relational import Eq, Ne, Equality
 from sympy.core.singleton import Singleton, S
-from sympy.core.symbol import Symbol, Dummy, _uniquely_named_symbol, \
-    generate_free_symbol, dtype
+from sympy.core.symbol import Symbol, Dummy, _uniquely_named_symbol, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And, Or
 from sympy.sets.contains import Contains
@@ -87,9 +86,9 @@ class Set(Basic):
     def image_set(self):
         return None
 
-    def element_symbol(self, excludes=set()):
+    def element_symbol(self, excludes=None):
         element_type = self.element_type
-        return generate_free_symbol(self.free_symbols | excludes, **element_type.dict)
+        return self.generate_free_symbol(excludes, **element_type.dict)
 
     @property
     def atomic_dtype(self):

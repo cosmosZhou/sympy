@@ -1,4 +1,4 @@
-from sympy.core.symbol import Symbol, generate_free_symbol
+from sympy.core.symbol import Symbol
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
 from sympy.utility import plausible
@@ -14,8 +14,7 @@ from sympy.concrete.expr_with_limits import Ref
 
 @plausible
 def apply(n, k):
-    free_symbols = n.free_symbols | k.free_symbols
-    i = generate_free_symbol(free_symbols, integer=True)
+    i = n.generate_free_symbol(k.free_symbols, integer=True)
     return Equality(Stirling(n, k), Sum[i:0:k]((-1) ** (k - i) * binomial(k, i) * i ** n) / factorial(k))
 
 

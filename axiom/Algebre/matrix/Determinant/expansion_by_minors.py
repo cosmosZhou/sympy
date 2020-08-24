@@ -12,10 +12,10 @@ def apply(A, i=None, j=None):
 #         https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html
     n = A.shape[0]
     if i is not None:
-        j = A.generate_free_symbol(excludes={i}, integer=True)
+        j = A.generate_free_symbol(excludes=i.free_symbols, integer=True)
         sigmar = Sum[j:n]
     else:
-        i = A.generate_free_symbol(excludes={j}, integer=True)
+        i = A.generate_free_symbol(excludes=j.free_symbols, integer=True)
         sigmar = Sum[i:n]
         
     return Equality(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]))

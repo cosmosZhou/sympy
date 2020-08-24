@@ -117,7 +117,7 @@ class IndexException(Exception):
     pass
 
 
-class Subscript(Expr):
+class Indexed(Expr):
     """Represents a mathematical object with indices.
 
     >>> from sympy import Indexed, IndexedBase, Idx, symbols
@@ -219,7 +219,7 @@ class Subscript(Expr):
             
         if len(args) == 1 and args[0].is_Piecewise:
             piecewise = args[0]
-            return piecewise.func(*((Subscript(base, e), c) for e, c in piecewise.args))
+            return piecewise.func(*((cls(base, e), c) for e, c in piecewise.args))
             
         return Expr.__new__(cls, base, *args, **kw_args)
 
@@ -468,6 +468,7 @@ class Subscript(Expr):
             k = self.indices[0]
             start, stop = old.indices
             if k >= start and k < stop:
+                assert new.shape
                 return new[k - start]
         return Expr._subs(self, old, new)
 
@@ -558,10 +559,7 @@ class Subscript(Expr):
             res = det(definition)
             if not isinstance(res, Det):
                 return res
-        return Det(self)
-
-        
-Indexed = Subscript                
+        return Det(self)                
 
         
 class Slice(Expr):

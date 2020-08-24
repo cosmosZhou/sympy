@@ -5,7 +5,7 @@ from sympy.core.compatibility import as_int, with_metaclass, range, PY3
 from sympy.core.expr import Expr
 from sympy.core.function import Lambda
 from sympy.core.singleton import Singleton, S
-from sympy.core.symbol import Dummy, symbols, generate_free_symbol, dtype
+from sympy.core.symbol import Dummy, symbols, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
 from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet

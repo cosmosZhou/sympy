@@ -75,22 +75,6 @@ class Det(Expr):
     def _sympystr(self, p):
         return "¦%s¦" % p._print(self.arg)
 
-    def determinant_expansion_by_minors(self, i=None, j=None):
-#         https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html
-        from sympy.concrete.summations import Sum
-        from sympy.matrices.expressions.cofactor import Cofactors
-        A = self.arg
-        n = A.shape[0]
-        if i is not None:
-            j = self.generate_free_symbol(integer=True)
-            sigmar = Sum[j:n]
-        else:
-            i = self.generate_free_symbol(integer=True)
-            sigmar = Sum[i:n]
-            
-        return sigmar(A[i, j] * Cofactors(A)[i, j])
-
-
 def det(matexpr):
     """ Matrix Determinant
 

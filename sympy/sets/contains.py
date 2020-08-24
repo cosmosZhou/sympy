@@ -47,7 +47,7 @@ class Contains(BooleanFunction):
         return r"%s \in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return r"%s in %s" % tuple(p._print(a) for a in self.args)
+        return r"%s ∈ %s" % tuple(p._print(a) for a in self.args)
 
     @classmethod
     def eval(cls, x, s):
@@ -292,7 +292,7 @@ class NotContains(BooleanFunction):
         return r"%s \not\in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return r"%s not in %s" % tuple(p._print(a) for a in self.args)
+        return r"%s ∉ %s" % tuple(p._print(a) for a in self.args)
 
     @classmethod
     def eval(cls, x, s):

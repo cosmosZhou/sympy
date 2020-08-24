@@ -1228,8 +1228,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     piecewise = piecewise0.func(*args)
                     
                     return self.func(piecewise, *self.limits).simplify()
-                else:
-                    return self 
+#                 else:
+#                     return self 
             domain = self.function.domain_nonzero(x)
 
             domain &= universe

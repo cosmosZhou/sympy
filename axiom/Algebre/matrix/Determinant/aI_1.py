@@ -1,6 +1,7 @@
 from sympy.core.symbol import Symbol
 from sympy.utility import plausible
 from sympy.core.relational import Equality
+from sympy import S
 
 from sympy.matrices.expressions.determinant import Det
 from sympy.concrete.products import Product
@@ -10,6 +11,7 @@ from sympy.concrete.summations import Sum
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Identity
 from sympy.functions.elementary.piecewise import Piecewise
+from axiom.Algebre.matrix.Determinant import expansion_by_minors
 
 
 @plausible
@@ -34,8 +36,10 @@ def prove(Eq, wolfram):
     Eq << Eq[-1].this.rhs.expand()
     
     Eq << Eq[0].subs(n, n + 1)
- 
-    Eq << Eq[-1].this.lhs.determinant_expansion_by_minors(i=n)
+    
+    Eq << expansion_by_minors.apply(Eq[-1].lhs.arg, i=n)
+    
+    Eq << Eq[-2].subs(Eq[-1])
     
     Eq << Eq[-1].this.lhs.bisect(back=1)
     
@@ -64,8 +68,9 @@ def prove(Eq, wolfram):
     
     Eq << Eq[-1].this.rhs.simplify(deep=True)
     
-    
-    
+    Eq << expansion_by_minors.apply(Eq[-1].rhs, i=S.Zero)
+
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
      
 if __name__ == '__main__':
     prove(__file__)

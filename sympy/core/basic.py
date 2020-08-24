@@ -2078,7 +2078,7 @@ class Basic(with_metaclass(ManagedProperties)):
     def dtype(self):
         return self.atomic_dtype * self.shape
     
-    def generate_free_symbol(self, excludes=None, shape=None, free_symbol=None, **kwargs):
+    def generate_free_symbol(self, excludes=None, free_symbol=None, **kwargs):
         if excludes is None:
             excludes = self.free_symbols
         else:
@@ -2095,20 +2095,18 @@ class Basic(with_metaclass(ManagedProperties)):
                 return free_symbol
             
         excludes = set(symbol.name for symbol in excludes)
-        if 'dtype' in kwargs:
-            symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        else:
-            if shape:
-                kwargs['shape'] = shape
-                if len(shape) > 1:
-                    symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-                else:
-                    symbols = 'abcdefghijklmnopqrstuvwxyz'
+        if 'shape' in kwargs:      
+            if len(kwargs['shape']) > 1:
+                symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
             else:
-                if 'integer' in kwargs:
-                    symbols = 'ijklmnabcdefghopqrstuvwxyz'
-                else:
-                    symbols = 'xyzabcdefghijklmnopqrstuvw'
+                symbols = 'abcdefghijklmnopqrstuvwxyz'
+        else:
+            if 'dtype' in kwargs:
+                symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'            
+            elif 'integer' in kwargs:
+                symbols = 'ijklmnabcdefghopqrstuvwxyz'
+            else:
+                symbols = 'xyzabcdefghijklmnopqrstuvw'
                         
         from sympy import Symbol
         for name in symbols:

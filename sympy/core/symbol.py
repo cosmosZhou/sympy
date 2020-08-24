@@ -128,16 +128,6 @@ def _uniquely_named_symbol(xname, exprs=(), compare=str, modify=None, **assumpti
     return _symbol(x, default, **assumptions)
 
 
-def generate_free_symbol(excludes, shape=(), free_symbol=None, **kwargs):
-    free_symbols = [*excludes]
-    free_symbols.sort(key=lambda x : x.name)
-    for s in free_symbols:
-        s = s.generate_free_symbol(excludes=excludes, shape=shape, free_symbol=free_symbol, **kwargs)
-        if s is not None:
-            return s
-    return None
-
-
 class Symbol(AtomicExpr, NotIterable):
 # class Symbol(AtomicExpr, Boolean):
     """
