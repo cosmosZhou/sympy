@@ -200,8 +200,7 @@ class BlockMatrix(MatrixExpr):
             if ask(Q.invertible(A)):
                 return det(A)*det(D - C*A.I*B)
             elif ask(Q.invertible(D)):
-                return det(D)*det(A - B*D.I*C)
-        return Determinant(self)
+                return det(D)*det(A - B*D.I*C)        
 
     def as_real_imag(self):
         real_matrices = [re(matrix) for matrix in self.blocks]

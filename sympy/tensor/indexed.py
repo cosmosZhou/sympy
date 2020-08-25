@@ -552,14 +552,9 @@ class Indexed(Expr):
         return Inverse(self)        
     
     def _eval_determinant(self):
-        from sympy.matrices.expressions.determinant import det
-        from sympy import Det
         definition = self.definition
         if definition is not None:
-            res = det(definition)
-            if not isinstance(res, Det):
-                return res
-        return Det(self)                
+            return definition._eval_determinant()
 
         
 class Slice(Expr):

@@ -1039,10 +1039,7 @@ class OneMatrix(MatrixExpr):
             return S.One
         elif condition == False:
             return S.Zero
-        else:
-            from sympy import Det
-            return Determinant(self)
-
+        
     def conjugate(self):
         return self
 
@@ -1352,12 +1349,10 @@ class VConcatenate(Concatenate):
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
     def _eval_determinant(self):
-        from sympy.matrices.expressions.determinant import Det
         from sympy.concrete.products import Product
         if self.is_upper or self.is_lower:
             i = self.generate_free_symbol(integer=True)
             return Product(self[i, i], (i, 0, self.cols - 1)).doit()
-        return Det(self)
 
     @property
     def is_lower(self):

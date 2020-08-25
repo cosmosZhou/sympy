@@ -161,7 +161,7 @@ class KroneckerDelta(Function):
             return S.One
         if fuzzy_not(diff.is_zero):
             return S.Zero
-        if abs(diff) > 0:
+        if diff.is_nonzero:
             return S.Zero
         from sympy import Contains
         if Contains(i, j.domain).is_BooleanFalse or Contains(j, i.domain).is_BooleanFalse:

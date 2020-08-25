@@ -336,8 +336,8 @@ def wolfram_decorator(py, func, **kwargs):
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
             if wolfram is not None:
-                with wolfram:                
-                    func(eqs, wolfram)
+#                 with wolfram:                
+                func(eqs, wolfram)
             else:
                 func(eqs, wolfram)
         else:

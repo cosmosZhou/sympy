@@ -3418,7 +3418,7 @@ class Ref(ExprWithLimits):
         from sympy.matrices.expressions.determinant import Det
         from sympy.concrete.products import Product
         if not self.is_square:
-            return None
+            return
         if self.is_upper or self.is_lower:
             i, *domain = self.limits[0]
             if len(domain) == 2:
@@ -3428,7 +3428,6 @@ class Ref(ExprWithLimits):
                 a, b = domain.min(), domain.max()
 
             return Product(self[i, i], (i, a, b)).doit()
-        return Det(self)
 
     @property
     def is_lower(self):

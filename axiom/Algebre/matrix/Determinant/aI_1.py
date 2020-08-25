@@ -1,7 +1,6 @@
 from sympy.core.symbol import Symbol
 from sympy.utility import plausible
 from sympy.core.relational import Equality
-from sympy import S
 
 from sympy.matrices.expressions.determinant import Det
 from sympy.concrete.products import Product
@@ -28,10 +27,10 @@ def column_transformation(*limits):
     n = limits[0][-1] + 1
     (i, *_), (j, *_) = limits
     return Identity(n) + Ref(Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)), *limits)
+#     return Ref(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
 
-
-@check(wolfram=True)
-def prove(Eq, wolfram):
+@check
+def prove(Eq):
     n = Symbol('n', integer=True, positive=True)
     a = Symbol('a', shape=(oo,), complex=True, zero=False)
     Eq << apply(n, a)
@@ -74,10 +73,8 @@ def prove(Eq, wolfram):
     
     Eq.column_transformation = Eq[-1].this.rhs.simplify(deep=True)
     
-    Eq << expansion_by_minors.apply(Eq.column_transformation.rhs, i=i)
+    Eq << expansion_by_minors.apply(Eq.column_transformation.rhs, i=i).this.rhs.simplify(deep=True)
 
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
-    
     Eq << Eq[-1].this.rhs.args[1].doit()
     
     var = Eq[-1].rhs.args[1].variable

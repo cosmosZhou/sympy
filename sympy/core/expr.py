@@ -4065,7 +4065,9 @@ class Expr(Basic, EvalfMixin):
                     (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
         return ref.simplify()
 
-    
+    def _eval_determinant(self):
+        ...
+        
 class AtomicExpr(Atom, Expr):
     """
     A parent class for object which are both atoms and Exprs.

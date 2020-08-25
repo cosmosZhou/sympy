@@ -37,16 +37,14 @@ class Det(Expr):
     def arg(self):
         return self.args[0]
 
-    def doit(self, expand=False, **_):
-        try:
-            return self.arg._eval_determinant()
-        except (AttributeError, NotImplementedError):
-#             import traceback
-#             traceback.print_exc()
-            n, n = self.arg.shape
-            if n == 1:
-                return self.arg[0, 0]
-            return self
+    def doit(self, **_):
+        det = self.arg._eval_determinant()
+        if det is not None:
+            return det
+        _, n = self.arg.shape
+        if n == 1:
+            return self.arg[0, 0]
+        return self
 
     @property
     def shape(self):
@@ -74,6 +72,16 @@ class Det(Expr):
 
     def _sympystr(self, p):
         return "¦%s¦" % p._print(self.arg)
+
+    @property
+    def definition(self):
+        n = self.shape[0]
+        from sympy import Sum, Product
+        from sympy.combinatorics.permutations import Permutations, Signature
+        p = self.generate_free_symbol(shape=(n,), integer=True)
+        i = self.generate_free_symbol(integer=True)
+        return Sum[p:Permutations(n)](Signature(p) * Product[i:n](self[i, p[i]]))
+
 
 def det(matexpr):
     """ Matrix Determinant

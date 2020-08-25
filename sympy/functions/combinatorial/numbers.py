@@ -2024,21 +2024,6 @@ class Stirling(Function):
 
 #         return r"\left( \begin{array}{c}%s\end{array} \right)" % r'\\'.join('{%s}' % printer._print(arg) for arg in self.args)
 
-    def fdiff(self, argindex=1):
-        from sympy import polygamma
-        if argindex == 1:
-            # http://functions.wolfram.com/GammaBetaErf/Binomial/20/01/01/
-            n, k = self.args
-            return binomial(n, k) * (polygamma(0, n + 1) - \
-                polygamma(0, n - k + 1))
-        elif argindex == 2:
-            # http://functions.wolfram.com/GammaBetaErf/Binomial/20/01/02/
-            n, k = self.args
-            return binomial(n, k) * (polygamma(0, n - k + 1) - \
-                polygamma(0, k + 1))
-        else:
-            raise ArgumentIndexError(self, argindex)
-
     @property
     def definition(self):
         from sympy.concrete.expr_with_limits import UNION, ForAll
