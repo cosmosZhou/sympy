@@ -283,7 +283,7 @@ class MatMul(MatrixExpr, Mul):
                     else:
                         i_limit = (i, 0, A.shape[0] - 1)
                 
-                n = A.shape[0]
+                
                 
                 if len(B.shape) > 1:
                     if hasattr(B, "definition") and B.definition is not None:
@@ -316,8 +316,7 @@ class MatMul(MatrixExpr, Mul):
                     i = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
                     i_limit = (i, 0, A.shape[0] - 1)
                 
-                n = A.shape[1]                
-                
+                n = A.shape[-1]
                 if len(B.shape) > 1:     
                     j = None
                     if isinstance(B, Ref):

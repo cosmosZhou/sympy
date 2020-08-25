@@ -1791,7 +1791,23 @@ class Times(Expr, AssocOp):
         this = self.simplifyProduct()
         if this is not self:
             return this
-            
+        
+        pows = {}
+        nonpows = []
+        hit = False
+        for arg in self.args:
+            if arg.is_Power:
+                b, e = arg.args
+                if b in pows:
+                    pows[b] += e
+                    hit = True
+                else:
+                    pows[b] = e
+            else:
+                nonpows.append(arg)
+                
+        if hit:
+            return self.func(*[b ** e for b, e in pows.items()]) * self.func(*nonpows)
         return self
 
     def simplifyProduct(self):

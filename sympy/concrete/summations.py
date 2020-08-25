@@ -859,7 +859,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             p = old.as_poly(x)
 
             if p is None or p.degree() != 1:
-                function = self.function._subs(old, new)
+                function = self.function._subs(old, new).simplify()
 
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
@@ -1207,7 +1207,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         scope_variables = piecewise0.scope_variables & piecewise1.scope_variables
                         if len(scope_variables) != 1:
                             return self
-                        function = piecewise0.mul(piecewise1)                        
+                        function = piecewise0.mul(piecewise1)
+# this multiplication of piecewise should be unfolded to avoid complications
                         return self.func(function, *self.limits).simplify()
                     function = piecewise0.mul(piecewise1)
                     return self.func(function, *self.limits).simplify()

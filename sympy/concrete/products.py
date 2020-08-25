@@ -480,19 +480,20 @@ class Product(ExprWithIntLimits):
             if domain.is_FiniteSet:
                 return self.finite_aggregate(x, domain)
                             
-        if len(limit) == 3:
+        elif len(limit) == 3:
             from sympy.functions.elementary.piecewise import Piecewise
             x, a, b = limit
             if isinstance(self.function, Piecewise):
                 from sympy.sets.sets import Interval
                 domain = Interval(a, b, integer=True)
                 return Mul(*self.as_multiple_terms(x, domain))
-
-        x, *ab = limit
-        if len(ab) == 2:
-            a, b = ab
+            if not self.function._has(x):
+                return self.function ** (b - a + 1)
+            
             if a == b:                
                 return self.function._subs(x, a)
+        else:
+            x, *_ = limit
         import sympy
         function = self.function
         if isinstance(function, sympy.exp):
@@ -541,6 +542,7 @@ class Product(ExprWithIntLimits):
             tex += p._print(self.function)
 
         return tex
+
 
 def product(*args, **kwargs):
     r"""

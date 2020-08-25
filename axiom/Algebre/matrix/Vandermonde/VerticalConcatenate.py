@@ -124,11 +124,9 @@ def prove(Eq):
     
     Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, _i + 1, _j)
     
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << (-Eq[-1]).this.rhs.distribute()
 
-    Eq << Eq[-1].this.rhs.simplify()
-    
-    Eq << Eq[-4] + Eq[-1]
+    Eq << Eq[-3] + Eq[-1]
     
     Eq << Eq[-1].this.rhs.simplify()
     
@@ -142,9 +140,7 @@ def prove(Eq):
 
     Eq << Shift(n, 0, n - 1) @ Eq[-1]
 
-    Eq << Eq[-1].det()
-
-    Eq << Eq[-1].this.rhs.simplify() 
+    Eq << Eq[-1].det() 
 
     Eq << Eq[-1] * (-1) ** (n - 1) 
 

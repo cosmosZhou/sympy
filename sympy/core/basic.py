@@ -94,6 +94,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Relational = False
     is_Equality = False
     is_StrictGreaterThan = False
+    is_StrictLessThan = False
     
     is_Boolean = False
     is_BooleanFunction = False
@@ -2104,7 +2105,7 @@ class Basic(with_metaclass(ManagedProperties)):
             if 'dtype' in kwargs:
                 symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'            
             elif 'integer' in kwargs:
-                symbols = 'ijklmnabcdefghopqrstuvwxyz'
+                symbols = 'ijkhmnlabcdefgopqrstuvwxyz'
             else:
                 symbols = 'xyzabcdefghijklmnopqrstuvw'
                         

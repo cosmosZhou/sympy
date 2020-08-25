@@ -3415,7 +3415,6 @@ class Ref(ExprWithLimits):
         return Inverse(self)
 
     def _eval_determinant(self):
-        from sympy.matrices.expressions.determinant import Det
         from sympy.concrete.products import Product
         if not self.is_square:
             return
@@ -3423,11 +3422,12 @@ class Ref(ExprWithLimits):
             i, *domain = self.limits[0]
             if len(domain) == 2:
                 a, b = domain
-            elif len(domain) == 0:
+            elif len(domain) == 1:
+                domain = domain[0]
                 assert domain.is_Interval and domain.is_integer
                 a, b = domain.min(), domain.max()
 
-            return Product(self[i, i], (i, a, b)).doit()
+            return Product[i:a:b](self[i, i]).doit()
 
     @property
     def is_lower(self):
@@ -3472,8 +3472,13 @@ class Ref(ExprWithLimits):
         is_diagonal
         is_lower_hessenberg
         """
-        (i, *_), *_ = self.limits
-        j = i.generate_free_symbol(domain=Interval(i + 1, self.cols, right_open=True, integer=True))
+        (i, *_), (j, *_) = self.limits
+        if self.function.is_Piecewise and i in self.function.scope_variables & self.variables_set:
+            j = j.copy(domain=Interval(0, self.cols, right_open=True, integer=True))
+            i = j.generate_free_symbol(domain=Interval(0, j, right_open=True, integer=True))
+        else:
+            i = i.copy(domain=Interval(0, self.rows, right_open=True, integer=True))
+            j = i.generate_free_symbol(domain=Interval(i, self.cols, left_open=True, right_open=True, integer=True))
         assert j > i
         return self[i, j] == 0
 

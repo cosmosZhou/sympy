@@ -1369,7 +1369,7 @@ class Piecewise(Function):
                 return self.func((e1, c0.invert()), (e0, True)).simplify(deep=deep)
                 
         if expr.is_Piecewise:
-            if self.scope_variables == expr.scope_variables:
+            if self.scope_variables & expr.scope_variables:
                 args = [*self.args]
                 args.pop()
                 return self.func(*args, *expr.args).simplify(deep=deep)
@@ -1593,9 +1593,7 @@ def piecewise_fold(expr):
             args = expr.args
         # fold
         folded = list(map(piecewise_fold, args))
-        for ec in cartes(*[
-                (i.args if isinstance(i, Piecewise) else
-                 [(i, true)]) for i in folded]):
+        for ec in cartes(*[(i.args if isinstance(i, Piecewise) else [(i, true)]) for i in folded]):
             e, c = zip(*ec)
             new_args.append((expr.func(*e), And(*c)))
 

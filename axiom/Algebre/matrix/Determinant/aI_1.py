@@ -26,8 +26,9 @@ from sympy.utility import check
 def column_transformation(*limits):
     n = limits[0][-1] + 1
     (i, *_), (j, *_) = limits
-    return Identity(n) + Ref(Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)), *limits)
-#     return Ref(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
+#     return Identity(n) + Ref(Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)), *limits)
+    return Ref(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
+#     return Ref(Piecewise((KroneckerDelta(i, j), i < n - 1), (KroneckerDelta(i, j) + KroneckerDelta(j, n - 1) - 1, True)), *limits)
 
 @check
 def prove(Eq):
@@ -85,8 +86,10 @@ def prove(Eq):
     
     Eq << Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
 
-    Eq << Eq.column_transformation.det()
+    Eq << Eq.column_transformation.det().subs(Eq[-1]).forall(i)
          
+    Eq << Eq.deduction.subs(Eq[-1])
+    
 if __name__ == '__main__':
     prove(__file__)
 

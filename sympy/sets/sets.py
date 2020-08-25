@@ -1143,7 +1143,7 @@ class Interval(Set, EvalfMixin):
             raise ValueError("Non-real intervals are not supported")
 
         # evaluate if possible
-        if end < start:
+        if right_open and end <= start or not right_open and end < start:
             return S.EmptySet
 
         if end == start :
