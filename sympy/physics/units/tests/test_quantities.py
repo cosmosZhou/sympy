@@ -469,6 +469,6 @@ def test_issue_14547():
 
     x = Symbol('x')
     e = foot + x
-    assert e.is_Add and set(e.args) == {foot, x}
+    assert e.is_Plus and set(e.args) == {foot, x}
     e = foot + 1
-    assert e.is_Add and set(e.args) == {foot, 1}
+    assert e.is_Plus and set(e.args) == {foot, 1}

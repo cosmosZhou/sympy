@@ -543,9 +543,7 @@ class Equality(Relational):
                 return S.true.copy(**options)  # e.g. True == True
             elif all(isinstance(i, BooleanAtom) for i in (rhs, lhs)):
                 return S.false  # True != False
-            elif not (lhs.is_Symbol or rhs.is_Symbol) and (
-                    isinstance(lhs, Boolean) != 
-                    isinstance(rhs, Boolean)):
+            elif not (lhs.is_Symbol or rhs.is_Symbol) and (isinstance(lhs, Boolean) != isinstance(rhs, Boolean)):
                 return S.false  # only Booleans can equal Booleans
             from sympy import Contains
             if Contains(rhs, lhs.domain).is_BooleanFalse or Contains(lhs, rhs.domain).is_BooleanFalse:
@@ -556,7 +554,8 @@ class Equality(Relational):
                 dif = (lhs - rhs).simplify()
                 z = dif.is_zero
                 if z is not None:
-                    if z is False and dif.is_commutative:  # issue 10728
+#                     if z is False and dif.is_commutative:  # issue 10728
+                    if z is False:  # issue 10728
                         return S.false.copy(**options)
                     if z:
                         if 'plausible' in options:
@@ -1080,7 +1079,10 @@ class Equality(Relational):
 
         return Relational.__and__(self, other)
 
-    
+    def asKroneckerDelta(self):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        return KroneckerDelta(*self.args)
+        
 Eq = Equality
 
 
@@ -1204,6 +1206,9 @@ class Unequality(Relational):
 
         return Relational.__and__(self, other)
 
+    def asKroneckerDelta(self):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        return 1 - KroneckerDelta(*self.args)
     
 Ne = Unequality
 Equality.invert_type = Unequality
@@ -1287,6 +1292,15 @@ class _Greater(_Inequality):
                 
                 right = self.lhs
                 right_open = isinstance(self, StrictGreaterThan)
+            elif self.lhs == other.lhs:
+                from sympy import Max
+                if self.func == other.func:
+                    m = Max(self.rhs, other.rhs)
+                    if m is self.rhs:
+                        return self
+                    if m is other.rhs:
+                        return other
+                
         elif isinstance(other, _Less):
             if self.rhs == other.rhs:
                 x = self.rhs
@@ -1303,7 +1317,7 @@ class _Greater(_Inequality):
                 right = other.rhs
                 right_open = isinstance(other, StrictLessThan)
         if x is not None:                
-            return Contains(x, Interval(left, right, left_open=left_open, right_open=right_open), equivalent=[self, other])
+            return Contains(x, Interval(left, right, left_open=left_open, right_open=right_open, integer=x.is_integer), equivalent=[self, other])
                 
         return Relational.__and__(self, other)
 
@@ -1376,9 +1390,17 @@ class _Less(_Inequality):
                 
                 right = self.rhs
                 right_open = isinstance(self, StrictLessThan)
-
+            elif self.lhs == other.lhs:
+                from sympy import Min
+                if self.func == other.func:
+                    m = Min(self.rhs, other.rhs)
+                    if m is self.rhs:
+                        return self
+                    if m is other.rhs:
+                        return other
+                        
         if x is not None:                
-            return Contains(x, Interval(left, right, left_open=left_open, right_open=right_open), equivalent=[self, other])
+            return Contains(x, Interval(left, right, left_open=left_open, right_open=right_open, integer=x.is_integer), equivalent=[self, other])
     
         return Relational.__and__(self, other)
 
@@ -1767,6 +1789,13 @@ class GreaterThan(_Greater):
         else:
             return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs))
 
+    def __and__(self, other):
+        if isinstance(other, StrictGreaterThan) :
+            if self.lhs == other.lhs:
+                if other.rhs >= self.rhs:
+                    return other
+                
+        return _Greater.__and__(self, other)
 
 Ge = GreaterThan
 
@@ -2001,6 +2030,13 @@ class LessThan(_Less):
         else:
             return self.func(self.lhs.subs(*args, **kwargs), self.rhs.subs(*args, **kwargs))
 
+    def __and__(self, other):
+        if isinstance(other, StrictLessThan) :
+            if self.lhs == other.lhs:
+                if other.rhs <= self.rhs:
+                    return other
+
+        return _Less.__and__(self, other)
 
 Le = LessThan
 
@@ -2137,10 +2173,14 @@ class StrictGreaterThan(_Greater):
         if isinstance(other, Unequality) :
             if set(self.args) == set(other.args):
                 return self
-        if isinstance(other, Equality) :
+        elif isinstance(other, Equality) :
             if set(self.args) == set(other.args):
                 return S.false.copy(given=[self, other])
-            
+        elif isinstance(other, GreaterThan) :
+            if self.lhs == other.lhs:
+                if self.rhs >= other.rhs:
+                    return self
+                
         return _Greater.__and__(self, other)
 
     def __or__(self, other):
@@ -2162,6 +2202,7 @@ class StrictLessThan(_Less):
     __doc__ = GreaterThan.__doc__
     __slots__ = ()
 
+    is_StrictLessThan = True
     rel_op = '<'
     invert_type = GreaterThan
 
@@ -2267,10 +2308,14 @@ class StrictLessThan(_Less):
         if isinstance(other, Unequality) :
             if set(self.args) == set(other.args):
                 return self
-        if isinstance(other, Equality) :
+        elif isinstance(other, Equality) :
             if set(self.args) == set(other.args):
                 return S.false.copy(given=[self, other])
-            
+        elif isinstance(other, LessThan) :
+            if self.lhs == other.lhs:
+                if self.rhs <= other.rhs:
+                    return self
+
         return _Less.__and__(self, other)
 
     def __or__(self, other):

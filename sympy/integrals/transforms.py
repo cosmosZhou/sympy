@@ -121,10 +121,10 @@ class IntegralTransform(Function):
                 pass
 
         fn = self.function
-        if not fn.is_Add:
+        if not fn.is_Plus:
             fn = expand_mul(fn)
 
-        if fn.is_Add:
+        if fn.is_Plus:
             hints['needeval'] = needeval
             res = [self.__class__(*([x] + list(self.args[1:]))).doit(**hints)
                    for x in fn.args]
@@ -509,7 +509,7 @@ def _rewrite_gamma(f, s, a, b):
         if not g.has(s):
             continue
         arg = g.args[0]
-        if arg.is_Add:
+        if arg.is_Plus:
             arg = arg.as_independent(s)[1]
         coeff, _ = arg.as_coeff_mul(s)
         s_multipliers += [coeff]
@@ -517,7 +517,7 @@ def _rewrite_gamma(f, s, a, b):
         if not g.has(s):
             continue
         arg = g.args[0]
-        if arg.is_Add:
+        if arg.is_Plus:
             arg = arg.as_independent(s)[1]
         coeff, _ = arg.as_coeff_mul(s)
         s_multipliers += [coeff / pi]
@@ -724,7 +724,7 @@ def _inverse_mellin_transform(F, s, x_, strip, as_meijerg=False):
     # of the Meijer G function as a fairly general inverse mellin transform.
     F = F.rewrite(gamma)
     for g in [factor(F), expand_mul(F), expand(F)]:
-        if g.is_Add:
+        if g.is_Plus:
             # do all terms separately
             ress = [_inverse_mellin_transform(G, s, x, strip, as_meijerg,
                                               noconds=False)

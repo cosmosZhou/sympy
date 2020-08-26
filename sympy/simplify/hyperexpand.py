@@ -1803,7 +1803,7 @@ def try_lerchphi(func):
             dep = dep.base
         if dep == t:
             a == 0
-        elif dep.is_Add:
+        elif dep.is_Plus:
             a, tmp = dep.as_independent(t)
             b = 1
             if tmp != t:

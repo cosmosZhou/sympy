@@ -1332,7 +1332,7 @@ def test_new_rawargs():
 def test_issue_5226():
     assert Add(evaluate=False) == 0
     assert Mul(evaluate=False) == 1
-    assert Mul(x + y, evaluate=False).is_Add
+    assert Mul(x + y, evaluate=False).is_Plus
 
 
 def test_free_symbols():
@@ -1827,7 +1827,7 @@ def test_float_0():
 @XFAIL
 def test_float_0_fail():
     assert Float(0.0)*x == Float(0.0)
-    assert (x + Float(0.0)).is_Add
+    assert (x + Float(0.0)).is_Plus
 
 
 def test_issue_6325():

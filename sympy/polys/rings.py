@@ -381,7 +381,7 @@ class PolyRing(DefaultPrinting, IPolys):
 
             if generator is not None:
                 return generator
-            elif expr.is_Add:
+            elif expr.is_Plus:
                 return reduce(add, list(map(_rebuild, expr.args)))
             elif expr.is_Mul:
                 return reduce(mul, list(map(_rebuild, expr.args)))
@@ -2165,18 +2165,18 @@ class PolyElement(DomainElement, DefaultPrinting, CantSympify, dict):
         cfg = f.new([(monomial_ldiv(mg, _mgcd), ground_quo(cg, _cgcd)) for mg, cg in g.iterterms()])
         return h, cff, cfg
 
-    def _gcd(f, g):
-        ring = f.ring
+    def _gcd(self, g):
+        ring = self.ring
 
         if ring.domain.is_QQ:
-            return f._gcd_QQ(g)
+            return self._gcd_QQ(g)
         elif ring.domain.is_ZZ:
-            return f._gcd_ZZ(g)
+            return self._gcd_ZZ(g)
         else: # TODO: don't use dense representation (port PRS algorithms)
-            return ring.dmp_inner_gcd(f, g)
+            return ring.dmp_inner_gcd(self, g)
 
-    def _gcd_ZZ(f, g):
-        return heugcd(f, g)
+    def _gcd_ZZ(self, g):
+        return heugcd(self, g)
 
     def _gcd_QQ(self, g):
         f = self

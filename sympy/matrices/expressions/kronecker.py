@@ -148,9 +148,9 @@ class KroneckerProduct(MatrixExpr):
         return prod(trace(a) for a in self.args)
 
     def _eval_determinant(self):
-        from .determinant import det, Determinant
+        from .determinant import det
         if not all(a.is_square for a in self.args):
-            return Determinant(self)
+            return 
 
         m = self.rows
         return prod(det(a)**(m/a.rows) for a in self.args)

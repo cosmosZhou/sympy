@@ -12,7 +12,6 @@ from mpmath.libmp import mpf_log, prec_to_dps
 
 from collections import defaultdict
 from builtins import isinstance
-from sympy.core.logic import fuzzy_not
 
 
 class Expr(Basic, EvalfMixin):
@@ -128,7 +127,7 @@ class Expr(Basic, EvalfMixin):
         elif expr.is_Atom:
             args = (str(expr),)
         else:
-            if expr.is_Add:
+            if expr.is_Plus:
                 args = expr.as_ordered_terms(order=order)
             elif expr.is_Mul:
                 args = expr.as_ordered_factors(order=order)
@@ -1311,7 +1310,7 @@ class Expr(Basic, EvalfMixin):
 
         from .numbers import Number, NumberSymbol
 
-        if order is None and self.is_Add:
+        if order is None and self.is_Plus:
             # Spot the special case of Add(Number, Mul(Number, expr)) with the
             # first number positive and thhe second number nagative
             key = lambda x:not isinstance(x, (Number, NumberSymbol))
@@ -1372,13 +1371,13 @@ class Expr(Basic, EvalfMixin):
                         else:
                             continue
 
-                    if factor.is_commutative:
-                        base, exp = decompose_power(factor)
+#                     if factor.is_commutative:
+                    base, exp = decompose_power(factor)
 
-                        cpart[base] = exp
-                        gens.add(base)
-                    else:
-                        ncpart.append(factor)
+                    cpart[base] = exp
+                    gens.add(base)
+#                     else:
+#                         ncpart.append(factor)
 
             coeff = coeff.real, coeff.imag
             ncpart = tuple(ncpart)
@@ -1498,10 +1497,11 @@ class Expr(Basic, EvalfMixin):
         else:
             args = [self]
         for i, mi in enumerate(args):
-            if not mi.is_commutative:
-                c = args[:i]
-                nc = args[i:]
-                break
+            ...
+#             if not mi.is_commutative:
+#                 c = args[:i]
+#                 nc = args[i:]
+#                 break
         else:
             c = args
             nc = []
@@ -1652,7 +1652,7 @@ class Expr(Basic, EvalfMixin):
             return Add(*co)
 
         if n == 0:
-            if x.is_Add and self.is_Add:
+            if x.is_Plus and self.is_Plus:
                 c = self.coeff(x, right=right)
                 if not c:
                     return S.Zero
@@ -1707,8 +1707,11 @@ class Expr(Basic, EvalfMixin):
 
         co = []
         args = Add.make_args(self)
-        self_c = self.is_commutative
-        x_c = x.is_commutative
+#         self_c = self.is_commutative
+        self_c = True
+#         x_c = x.is_commutative
+        x_c = True
+        
         if self_c and not x_c:
             return S.Zero
 
@@ -2365,7 +2368,7 @@ class Expr(Basic, EvalfMixin):
         elif c == self:
             return S.One
 
-        if c.is_Add:
+        if c.is_Plus:
             cc, pc = c.primitive()
             if cc is not S.One:
                 c = Mul(cc, pc, evaluate=False)
@@ -2416,7 +2419,7 @@ class Expr(Basic, EvalfMixin):
                     return quotient
             elif quotient.is_Integer and c.is_Number:
                 return quotient
-        elif self.is_Add:
+        elif self.is_Plus:
             cs, ps = self.primitive()
             # assert cs >= 1
             if c.is_Number and c is not S.NegativeOne:
@@ -2525,7 +2528,7 @@ class Expr(Basic, EvalfMixin):
         # handle the args[0].is_Number case separately
         # since we will have trouble looking for the coeff of
         # a number.
-        if c.is_Add and c.args[0].is_Number:
+        if c.is_Plus and c.args[0].is_Number:
             # whole term as a term factor
             co = self.coeff(c)
             xa0 = (co.extract_additively(1) or 0) * c
@@ -2615,7 +2618,7 @@ class Expr(Basic, EvalfMixin):
         if self_has_minus != negative_self_has_minus:
             return self_has_minus
         else:
-            if self.is_Add:
+            if self.is_Plus:
                 # We choose the one with less arguments with minus signs
                 all_args = len(self.args)
                 negative_args = len([False for arg in self.args if arg.could_extract_minus_sign()])
@@ -2680,7 +2683,7 @@ class Expr(Basic, EvalfMixin):
         extras = []
         while exps:
             exp = exps.pop()
-            if exp.is_Add:
+            if exp.is_Plus:
                 exps += exp.args
                 continue
             if exp.is_Mul:
@@ -3062,7 +3065,7 @@ class Expr(Basic, EvalfMixin):
             def yield_lseries(s):
                 """Return terms of lseries one at a time."""
                 for si in s:
-                    if not si.is_Add:
+                    if not si.is_Plus:
                         yield si
                         continue
                     # yield terms 1 at a time if possible
@@ -3077,7 +3080,7 @@ class Expr(Basic, EvalfMixin):
                         o *= x
                         if not do or do.is_Order:
                             continue
-                        if do.is_Add:
+                        if do.is_Plus:
                             ndid += len(do.args)
                         else:
                             ndid += 1
@@ -3128,7 +3131,7 @@ class Expr(Basic, EvalfMixin):
         n = 0
         series = self._eval_nseries(x, n=n, logx=logx)
         if not series.is_Order:
-            if series.is_Add:
+            if series.is_Plus:
                 yield series.removeO()
             else:
                 yield series
@@ -3835,12 +3838,15 @@ class Expr(Basic, EvalfMixin):
             return S.UniversalSet
         shape = self.shape
         
-        if self.is_extended_real:
-            if self.is_integer:
-                interval = S.Integers
-            else:
-                interval = S.Reals
+        if self.is_integer:
+            interval = S.Integers
+        elif self.is_extended_real:
+            interval = S.Reals
         else:
+            if not self.is_complex:
+                print(self)
+                print(type(self))
+            assert self.is_complex
             interval = S.Complexes
 
         if not shape:
@@ -4034,6 +4040,34 @@ class Expr(Basic, EvalfMixin):
         if is_even is False:
             return self.is_integer
     
+    def drop(self, I, J):
+        from sympy.functions.elementary.piecewise import Piecewise
+        from sympy.concrete.expr_with_limits import Ref
+        excludes = I.free_symbols | J.free_symbols
+        i = self.generate_free_symbol(excludes=excludes, integer=True)
+        j = self.generate_free_symbol(excludes=excludes | {i}, integer=True)
+        m, n = self.shape
+        
+        if m - 1 == I:
+            if n - 1 == J:
+                ref = Ref[i:m - 1, j:n - 1](self[i, j])
+            else:                
+                ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j], j < J),
+                                                       (self[i, j + 1], True)))
+        else:
+            if n - 1 == J:
+                ref = Ref[i:m - 1, j:n - 1](Piecewise(
+                    (self[i, j], i < I),
+                    (self[i + 1, j], True)))
+            else:
+                ref = Ref[i:m - 1, j:n - 1](Piecewise(
+                    (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
+                    (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
+        return ref.simplify()
+
+    def _eval_determinant(self):
+        ...
+        
 class AtomicExpr(Atom, Expr):
     """
     A parent class for object which are both atoms and Exprs.

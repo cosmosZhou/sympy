@@ -82,8 +82,8 @@ def apart(f, x=None, full=False, **options):
     try:
         (P, Q), opt = parallel_poly_from_expr((P, Q), x, **options)
     except PolynomialError as msg:
-        if f.is_commutative:
-            raise PolynomialError(msg)
+#         if f.is_commutative:
+        raise PolynomialError(msg)
         # non-commutative
         if f.is_Mul:
             c, nc = f.args_cnc(split_1=False)
@@ -93,7 +93,7 @@ def apart(f, x=None, full=False, **options):
                 return c*nc
             else:
                 return nc
-        elif f.is_Add:
+        elif f.is_Plus:
             c = []
             nc = []
             for i in f.args:

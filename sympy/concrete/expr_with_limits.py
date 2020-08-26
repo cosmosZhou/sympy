@@ -171,7 +171,7 @@ class ExprWithLimits(Expr):
         if len(s) > 1:
             s &= self.function.domain_nonzero(x)
             if s.is_EmptySet:
-                return S.Zero
+                return self.operator.identity
             if s.is_Intersection:
                 finiteset = []
                 for e in s.args:
@@ -182,7 +182,7 @@ class ExprWithLimits(Expr):
             assert s.is_FiniteSet, str(s) 
         for k in s:
             args.append(self.function._subs(x, k).simplify())
-        return self.operator(*args)                   
+        return self.operator(*args)         
 
     def subs_limits_with_epitome(self, epitome):
         if epitome.func == self.func and len(epitome.limits) == len(self.limits):
@@ -292,11 +292,6 @@ class ExprWithLimits(Expr):
             else:
                 return pre
 
-            # limits must have upper and lower bounds; the indefinite form
-            # is not supported. This restriction does not apply to AddWithLimits
-            if any(len(l) != 3 or None in l for l in limits):
-                raise ValueError('ExprWithLimits requires values for lower and upper bounds.')
-
         if cls.is_Boolean:
             obj = Boolean.__new__(cls, **assumptions)
         else:
@@ -304,7 +299,6 @@ class ExprWithLimits(Expr):
         arglist = [function]
         arglist.extend(limits)
         obj._args = tuple(arglist)
-        obj.is_commutative = function.is_commutative  # limits already checked
 
         return obj
 
@@ -524,9 +518,9 @@ class ExprWithLimits(Expr):
         for f, condition in self.function.args:
             _domain = (universalSat - union) & x.domain_conditioned(condition) & domain
             assert not _domain or _domain.is_integer
-
-            union |= _domain
-            assert not union or union.is_integer
+            if not condition:
+                union |= _domain
+                assert not union or union.is_integer
 
             if isinstance(_domain, FiniteSet):
                 for e in _domain:
@@ -969,7 +963,7 @@ class AddWithLimits(ExprWithLimits):
         arglist = [orientation * function]  # orientation not used in ExprWithLimits
         arglist.extend(limits)
         obj._args = tuple(arglist)
-        obj.is_commutative = function.is_commutative  # limits already checked
+#         obj.is_commutative = function.is_commutative  # limits already checked
 
         return obj
 
@@ -992,10 +986,8 @@ class AddWithLimits(ExprWithLimits):
         if 1 == len(self.limits):
             summand = self.function.factor(**hints)
             if summand.is_Mul:
-                out = sift(summand.args, lambda w: w.is_commutative \
-                    and not set(self.variables) & w.free_symbols)
-                return Mul(*out[True]) * self.func(Mul(*out[False]), \
-                    *self.limits)
+                out = sift(summand.args, lambda w: not set(self.variables) & w.free_symbols)
+                return Mul(*out[True]) * self.func(Mul(*out[False]), *self.limits)
         else:
             summand = self.func(self.function, *self.limits[0:-1]).factor()
             if not summand.has(self.variables[-1]):
@@ -1007,7 +999,8 @@ class AddWithLimits(ExprWithLimits):
     def _eval_expand_basic(self, **hints):
         from sympy.core.function import _coeff_isneg
         summand = self.function.expand(**hints)
-        if summand.is_Add and summand.is_commutative:
+#         if summand.is_Plus and summand.is_commutative:
+        if summand.is_Plus:
             args = []
             for arg in summand.args:
                 if _coeff_isneg(arg):
@@ -1106,6 +1099,8 @@ class AddWithLimits(ExprWithLimits):
 
 class MinMaxBase(ExprWithLimits):
     
+    is_extended_real = True
+    
     def bounds(self, x, domain):
         function = self.function        
         from sympy import limit
@@ -1130,6 +1125,40 @@ class MinMaxBase(ExprWithLimits):
             mini = function.subs(x, mini)
         return maxi, mini
     
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return '%s[%s](%s)' % (self.__class__.__name__, limits, p._print(self.function))
+        return '%s(%s)' % (self.__class__.__name__, p._print(self.function))
+    
+    def _latex(self, p):
+        name = self.__class__.__name__.lower()
+        if len(self.limits) == 1:
+            args = tuple([p._print(i) for i in self.limits[0]])
+            if len(args) == 1:
+                tex = r"\%s\limits_{%s} " % (name, args)
+            elif len(args) == 3:
+                tex = r"\%s\limits_{%s \leq %s \leq %s} " % (name, args[1], args[0], args[2])
+            else:
+                raise Exception(self)
+
+        elif len(self.limits) == 0:
+            tex = r"\%s " % name
+        else:
+
+            def _format_ineq(l):
+                return r"%s \leq %s \leq %s" % \
+                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
+
+            tex = r"\%s\limits_{\substack{%s}} " % (name, str.join('\\\\', [_format_ineq(l) for l in self.limits]))
+
+        if isinstance(self.function, Add):
+            tex += r"\left(%s\right)" % p._print(self.function)
+        else:
+            tex += p._print(self.function)
+
+        return tex
+
 
 class MIN(MinMaxBase):
     r"""Represents unevaluated MIN operator.
@@ -1700,89 +1729,7 @@ class MIN(MinMaxBase):
             s += term
             g = g.diff(i, 2, simplify=False)
         return s + iterm, abs(term)
-
-    def reverse_order(self, *indices):
-        """
-        Reverse the order of a limit in a Sum.
-
-        Usage
-        =====
-
-        ``reverse_order(self, *indices)`` reverses some limits in the expression
-        ``self`` which can be either a ``Sum`` or a ``Product``. The selectors in
-        the argument ``indices`` specify some indices whose limits get reversed.
-        These selectors are either variable names or numerical indices counted
-        starting from the inner-most limit tuple.
-
-        Examples
-        ========
-
-        >>> from sympy import Sum
-        >>> from sympy.abc import x, y, a, b, c, d
-
-        >>> Sum(x, (x, 0, 3)).reverse_order(x)
-        Sum(-x, (x, 4, -1))
-        >>> Sum(x*y, (x, 1, 5), (y, 0, 6)).reverse_order(x, y)
-        Sum(x*y, (x, 6, 0), (y, 7, -1))
-        >>> Sum(x, (x, a, b)).reverse_order(x)
-        Sum(-x, (x, b + 1, a - 1))
-        >>> Sum(x, (x, a, b)).reverse_order(0)
-        Sum(-x, (x, b + 1, a - 1))
-
-        While one should prefer variable names when specifying which limits
-        to reverse, the index counting notation comes in handy in case there
-        are several symbols with the same name.
-
-        >>> S = Sum(x**2, (x, a, b), (x, c, d))
-        >>> S
-        Sum(x**2, (x, a, b), (x, c, d))
-        >>> S0 = S.reverse_order(0)
-        >>> S0
-        Sum(-x**2, (x, b + 1, a - 1), (x, c, d))
-        >>> S1 = S0.reverse_order(1)
-        >>> S1
-        Sum(x**2, (x, b + 1, a - 1), (x, d + 1, c - 1))
-
-        Of course we can mix both notations:
-
-        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(x, 1)
-        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
-        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(y, x)
-        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
-
-        See Also
-        ========
-
-        index, reorder_limit, reorder
-
-        References
-        ==========
-
-        .. [1] Michael Karr, "Summation in Finite Terms", Journal of the ACM,
-               Volume 28 Issue 2, April 1981, Pages 305-350
-               http://dl.acm.org/citation.cfm?doid=322248.322255
-        """
-        l_indices = list(indices)
-
-        for i, indx in enumerate(l_indices):
-            if not isinstance(indx, int):
-                l_indices[i] = self.index(indx)
-
-        e = 1
-        limits = []
-        for i, limit in enumerate(self.limits):
-            l = limit
-            if i in l_indices:
-                e = -e
-                l = (limit[0], limit[2] + 1, limit[1] - 1)
-            limits.append(l)
-
-        return Sum(e * self.function, *limits)
-
-    def _print_Minimum(self, expr):
-        l = [self._print(o) for o in expr.args]
-        return "Min[%s](%s)" % ", ".join(l)
-
+    
     def simplify(self, **_):
         if not self.limits:
             return self
@@ -1792,47 +1739,6 @@ class MIN(MinMaxBase):
 
     def as_Ref(self):
         return self.func(Ref(self.function, *self.limits).simplify())
-
-#     def bisect(self, front=None, back=None):
-#         (x, *_), *_ = self.limits
-#         from sympy.tensor.indexed import Slice
-#         if isinstance(x, Slice):
-#             z, x = x.bisect(front, back)
-#             return self.func(self.func(self.function, (z,)).simplify(), (x,))
-#         return self
-    def _latex(self, p):
-        if len(self.limits) == 1:
-            args = tuple([p._print(i) for i in self.limits[0]])
-            if len(args) == 1:
-                tex = r"\min\limits_{%s} " % args
-            elif len(args) == 3:
-                tex = r"\min\limits_{%s \leq %s \leq %s} " % (args[1], args[0], args[2])
-            else:
-                raise Exception(self)
-
-        elif len(self.limits) == 0:
-            tex = r"\min "
-        else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\min\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in self.limits])
-
-        if isinstance(self.function, Add):
-            tex += r"\left(%s\right)" % p._print(self.function)
-        else:
-            tex += p._print(self.function)
-
-        return tex
-
-    def _sympystr(self, p):
-        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        if limits:
-            return 'Min[%s](%s)' % (limits, p._print(self.function))
-        return 'Min(%s)' % p._print(self.function)
 
     def assertion(self):
         from sympy.core.relational import LessThan
@@ -2429,88 +2335,6 @@ class MAX(MinMaxBase):
             g = g.diff(i, 2, simplify=False)
         return s + iterm, abs(term)
 
-    def reverse_order(self, *indices):
-        """
-        Reverse the order of a limit in a Sum.
-
-        Usage
-        =====
-
-        ``reverse_order(self, *indices)`` reverses some limits in the expression
-        ``self`` which can be either a ``Sum`` or a ``Product``. The selectors in
-        the argument ``indices`` specify some indices whose limits get reversed.
-        These selectors are either variable names or numerical indices counted
-        starting from the inner-most limit tuple.
-
-        Examples
-        ========
-
-        >>> from sympy import Sum
-        >>> from sympy.abc import x, y, a, b, c, d
-
-        >>> Sum(x, (x, 0, 3)).reverse_order(x)
-        Sum(-x, (x, 4, -1))
-        >>> Sum(x*y, (x, 1, 5), (y, 0, 6)).reverse_order(x, y)
-        Sum(x*y, (x, 6, 0), (y, 7, -1))
-        >>> Sum(x, (x, a, b)).reverse_order(x)
-        Sum(-x, (x, b + 1, a - 1))
-        >>> Sum(x, (x, a, b)).reverse_order(0)
-        Sum(-x, (x, b + 1, a - 1))
-
-        While one should prefer variable names when specifying which limits
-        to reverse, the index counting notation comes in handy in case there
-        are several symbols with the same name.
-
-        >>> S = Sum(x**2, (x, a, b), (x, c, d))
-        >>> S
-        Sum(x**2, (x, a, b), (x, c, d))
-        >>> S0 = S.reverse_order(0)
-        >>> S0
-        Sum(-x**2, (x, b + 1, a - 1), (x, c, d))
-        >>> S1 = S0.reverse_order(1)
-        >>> S1
-        Sum(x**2, (x, b + 1, a - 1), (x, d + 1, c - 1))
-
-        Of course we can mix both notations:
-
-        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(x, 1)
-        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
-        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(y, x)
-        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
-
-        See Also
-        ========
-
-        index, reorder_limit, reorder
-
-        References
-        ==========
-
-        .. [1] Michael Karr, "Summation in Finite Terms", Journal of the ACM,
-               Volume 28 Issue 2, April 1981, Pages 305-350
-               http://dl.acm.org/citation.cfm?doid=322248.322255
-        """
-        l_indices = list(indices)
-
-        for i, indx in enumerate(l_indices):
-            if not isinstance(indx, int):
-                l_indices[i] = self.index(indx)
-
-        e = 1
-        limits = []
-        for i, limit in enumerate(self.limits):
-            l = limit
-            if i in l_indices:
-                e = -e
-                l = (limit[0], limit[2] + 1, limit[1] - 1)
-            limits.append(l)
-
-        return Sum(e * self.function, *limits)
-
-    def _print_Maximum(self, expr):
-        l = [self._print(o) for o in expr.args]
-        return "Max[%s](%s)" % ", ".join(l)
-
     def simplify(self, **_):
         if not self.limits:
             return self
@@ -2523,45 +2347,10 @@ class MAX(MinMaxBase):
 
     def separate(self):
         (x, *_), *_ = self.limits
-        from sympy.tensor.indexed import Slice
-        if isinstance(x, Slice):
+        if x.is_Slice:
             z, x = x.pop()
             return self.func(self.func(self.function, (x,)).simplify(), (z,))
         return self
-
-    def _latex(self, p):
-        if len(self.limits) == 1:
-            args = tuple([p._print(i) for i in self.limits[0]])
-            if len(args) == 1:
-                tex = r"\max\limits_{%s} " % args
-            elif len(args) == 3:
-                tex = r"\max\limits_{%s \leq %s \leq %s} " % (args[1], args[0], args[2])
-            else:
-                raise Exception(self)
-
-        elif len(self.limits) == 0:
-            tex = r"\min "
-        else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\min\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in self.limits])
-
-        if isinstance(self.function, Add):
-            tex += r"\left(%s\right)" % p._print(self.function)
-        else:
-            tex += p._print(self.function)
-
-        return tex
-
-    def _sympystr(self, p):
-        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        if limits:
-            return 'Max[%s](%s)' % (limits, p._print(self.function))
-        return 'Max(%s)' % p._print(self.function)
 
     def assertion(self):
         from sympy.core.relational import GreaterThan
@@ -2659,19 +2448,24 @@ class Ref(ExprWithLimits):
         i, i_a, i_b = limit_i
         j, j_a, j_b = limit_j
         
-        diff_i = i_b - i_a + 1
-        if not diff_i.is_Number:
+        i_shape = i_b - i_a + 1
+        if not i_shape.is_Number:
             return self
         
-        diff_j = j_b - j_a + 1
-        if not diff_j.is_Number:
+        j_shape = j_b - j_a + 1
+        if not j_shape.is_Number:
             return self
 
         array = []
-        for _i in range(diff_i):
-            for _j in range(diff_j):
-                array.append(self.function._subs(i, _i)._subs(j, _j)) 
-        return Matrix(diff_i, diff_j, tuple(array))
+#         _i = i.copy(domain=Interval(0, i_shape, right_open=True, integer=True))
+#         _j = j.copy(domain=Interval(0, j_shape, right_open=True, integer=True))
+#         function = self.function._subs(i, _i)._subs(j, _j)
+#         i, j = _i, _j
+        function = self.function
+        for _i in range(i_shape):
+            for _j in range(j_shape):
+                array.append(function._subs(i, _i)._subs(j, _j)) 
+        return Matrix(i_shape, j_shape, tuple(array))
 
     def as_coeff_mmul(self):
         return 1, self
@@ -3187,84 +2981,6 @@ class Ref(ExprWithLimits):
             g = g.diff(i, 2, simplify=False)
         return s + iterm, abs(term)
 
-    def reverse_order(self, *indices):
-        """
-        Reverse the order of a limit in a Sum.
-
-        Usage
-        =====
-
-        ``reverse_order(self, *indices)`` reverses some limits in the expression
-        ``self`` which can be either a ``Sum`` or a ``Product``. The selectors in
-        the argument ``indices`` specify some indices whose limits get reversed.
-        These selectors are either variable names or numerical indices counted
-        starting from the inner-most limit tuple.
-
-        Examples
-        ========
-
-        >>> from sympy import Sum
-        >>> from sympy.abc import x, y, a, b, c, d
-
-        >>> Sum(x, (x, 0, 3)).reverse_order(x)
-        Sum(-x, (x, 4, -1))
-        >>> Sum(x*y, (x, 1, 5), (y, 0, 6)).reverse_order(x, y)
-        Sum(x*y, (x, 6, 0), (y, 7, -1))
-        >>> Sum(x, (x, a, b)).reverse_order(x)
-        Sum(-x, (x, b + 1, a - 1))
-        >>> Sum(x, (x, a, b)).reverse_order(0)
-        Sum(-x, (x, b + 1, a - 1))
-
-        While one should prefer variable names when specifying which limits
-        to reverse, the index counting notation comes in handy in case there
-        are several symbols with the same name.
-
-        >>> S = Sum(x**2, (x, a, b), (x, c, d))
-        >>> S
-        Sum(x**2, (x, a, b), (x, c, d))
-        >>> S0 = S.reverse_order(0)
-        >>> S0
-        Sum(-x**2, (x, b + 1, a - 1), (x, c, d))
-        >>> S1 = S0.reverse_order(1)
-        >>> S1
-        Sum(x**2, (x, b + 1, a - 1), (x, d + 1, c - 1))
-
-        Of course we can mix both notations:
-
-        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(x, 1)
-        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
-        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(y, x)
-        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
-
-        See Also
-        ========
-
-        index, reorder_limit, reorder
-
-        References
-        ==========
-
-        .. [1] Michael Karr, "Summation in Finite Terms", Journal of the ACM,
-               Volume 28 Issue 2, April 1981, Pages 305-350
-               http://dl.acm.org/citation.cfm?doid=322248.322255
-        """
-        l_indices = list(indices)
-
-        for i, indx in enumerate(l_indices):
-            if not isinstance(indx, int):
-                l_indices[i] = self.index(indx)
-
-        e = 1
-        limits = []
-        for i, limit in enumerate(self.limits):
-            l = limit
-            if i in l_indices:
-                e = -e
-                l = (limit[0], limit[2] + 1, limit[1] - 1)
-            limits.append(l)
-
-        return Sum(e * self.function, *limits)
-
     def as_two_terms(self):
         first, second = self.function.as_two_terms()
         first = self.func(first, *self.limits).simplify()
@@ -3326,6 +3042,9 @@ class Ref(ExprWithLimits):
                 constant = None
                 args = []
                 for e, c in self.function.args:
+                    if not e._has(self.variable):
+                        return self
+                    
                     first, second = self.simplify_add(e)
                     if first is None:
                         return self
@@ -3495,7 +3214,7 @@ class Ref(ExprWithLimits):
         return None, exp
 
     def simplify_mul(self, exp):
-        (x, *_), *_ = self.limits
+        (x, *ab), *_ = self.limits
 
         from sympy.core.basic import Atom
         if isinstance(exp, Atom):
@@ -3505,7 +3224,11 @@ class Ref(ExprWithLimits):
 
         if isinstance(exp, Indexed):
             if exp.args[-1] == x:
-                return exp.base[exp.indices[:-1]], None
+                if not ab:
+                    return exp.base[exp.indices[:-1]], None
+                else:
+                    a, b = ab
+                    return exp.base[exp.indices[:-1]][:b + 1], None
 
             return None, exp
         
@@ -3697,20 +3420,19 @@ class Ref(ExprWithLimits):
         return Inverse(self)
 
     def _eval_determinant(self):
-        from sympy.matrices.expressions.determinant import Det
         from sympy.concrete.products import Product
         if not self.is_square:
-            return None
+            return
         if self.is_upper or self.is_lower:
             i, *domain = self.limits[0]
             if len(domain) == 2:
                 a, b = domain
-            elif len(domain) == 0:
+            elif len(domain) == 1:
+                domain = domain[0]
                 assert domain.is_Interval and domain.is_integer
                 a, b = domain.min(), domain.max()
 
-            return Product(self[i, i], (i, a, b)).doit()
-        return Determinant(self)
+            return Product[i:a:b](self[i, i]).doit()
 
     @property
     def is_lower(self):
@@ -3755,8 +3477,13 @@ class Ref(ExprWithLimits):
         is_diagonal
         is_lower_hessenberg
         """
-        (i, *_), *_ = self.limits
-        j = i.generate_free_symbol(domain=Interval(i + 1, self.cols, right_open=True, integer=True))
+        (i, *_), (j, *_) = self.limits
+        if self.function.is_Piecewise and i in self.function.scope_variables & self.variables_set:
+            j = j.copy(domain=Interval(0, self.cols, right_open=True, integer=True))
+            i = j.generate_free_symbol(domain=Interval(0, j, right_open=True, integer=True))
+        else:
+            i = i.copy(domain=Interval(0, self.rows, right_open=True, integer=True))
+            j = i.generate_free_symbol(domain=Interval(i, self.cols, left_open=True, right_open=True, integer=True))
         assert j > i
         return self[i, j] == 0
 
@@ -3855,6 +3582,9 @@ class Ref(ExprWithLimits):
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_extended_real
+
+    def _eval_is_complex(self):
+        return self.function.is_complex
 
     def _eval_is_extended_positive(self):
         function = self.function                
@@ -5153,7 +4883,7 @@ class ConditionalBoolean(Boolean):
                     if self.function.is_ExprWithLimits:
                         if sym in self.function.bound_symbols:
                             _sym = base_set.element_symbol(self.function.variables_set)
-#                                 _sym = base_set.element_symbol(self.function.bound_symbols)
+                            assert sym.shape == _sym.shape
                             _expr = expr.subs(sym, _sym)
                             if _expr == expr:
                                 for var in postorder_traversal(expr):

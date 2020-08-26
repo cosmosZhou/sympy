@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 import sympy
 from sympy.functions.elementary.exponential import softmax
@@ -27,7 +27,7 @@ def prove(Eq):
     Eq << apply(n, d)
     
     M = Symbol('M', shape=(n, n), definition=Eq[0].rhs.args[0].arg)
-    Eq << identity(M).definition
+    Eq << M.this.definition
     
     Eq << Eq[0].subs(Eq[-1].reversed)
     

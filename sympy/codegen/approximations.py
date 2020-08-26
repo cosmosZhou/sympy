@@ -58,7 +58,7 @@ class SumApprox(Optimization):
         return expr.factor().replace(self.query, lambda arg: self.value(arg))
 
     def query(self, expr):
-        return expr.is_Add
+        return expr.is_Plus
 
     def value(self, add):
         for term in add.args:

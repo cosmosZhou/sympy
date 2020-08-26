@@ -392,7 +392,7 @@ class PrettyPrinter(Printer):
         # create a pretty form for the argument
         prettyF = self._print(f)
         # XXX generalize parens
-        if f.is_Add:
+        if f.is_Plus:
             prettyF = prettyForm(*prettyF.parens())
 
         # dx dy dz ...
@@ -564,7 +564,7 @@ class PrettyPrinter(Printer):
 
         prettyF = self._print(f)
 
-        if f.is_Add:  # add parens
+        if f.is_Plus:  # add parens
             prettyF = prettyForm(*prettyF.parens())
 
         H = prettyF.height() + 2
@@ -1692,7 +1692,7 @@ class PrettyPrinter(Printer):
         # Convert to pretty forms. Add parens to Add instances if there
         # is more than one term in the numer/denom
         for i in range(0, len(a)):
-            if (a[i].is_Add and len(a) > 1) or (i != len(a) - 1 and
+            if (a[i].is_Plus and len(a) > 1) or (i != len(a) - 1 and
                     isinstance(a[i], (Integral, Piecewise, Product, Sum))):
                 a[i] = prettyForm(*self._print(a[i]).parens())
             elif a[i].is_Relational:
@@ -1701,7 +1701,7 @@ class PrettyPrinter(Printer):
                 a[i] = self._print(a[i])
 
         for i in range(0, len(b)):
-            if (b[i].is_Add and len(b) > 1) or (i != len(b) - 1 and
+            if (b[i].is_Plus and len(b) > 1) or (i != len(b) - 1 and
                     isinstance(b[i], (Integral, Piecewise, Product, Sum))):
                 b[i] = prettyForm(*self._print(b[i]).parens())
             else:

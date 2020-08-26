@@ -151,7 +151,7 @@ class gamma(Function):
                 p = arg.p - n * arg.q
                 return self.func(x + n)._eval_expand_func().subs(x, Rational(p, arg.q))
 
-        if arg.is_Add:
+        if arg.is_Plus:
             coeff, tail = arg.as_coeff_add()
             if coeff and coeff.q != 1:
                 intpart = floor(coeff)
@@ -695,7 +695,7 @@ class polygamma(Function):
         n, z = self.args
 
         if n.is_Integer and n.is_nonnegative:
-            if z.is_Add:
+            if z.is_Plus:
                 coeff = z.args[0]
                 if coeff.is_Integer:
                     e = -(n + 1)

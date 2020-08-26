@@ -5,7 +5,7 @@ from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
-from sympy.matrices.expressions.matexpr import Swap
+from sympy.matrices.expressions.matexpr import Swap, Identity
 from sympy.concrete.expr_with_limits import Ref
 
 
@@ -27,6 +27,7 @@ def prove(Eq):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
+    assert Identity(n).is_integer
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
     
     Eq << apply(w)

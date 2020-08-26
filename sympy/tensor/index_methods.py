@@ -271,7 +271,7 @@ def get_indices(expr):
     else:
         if expr.is_Mul:
             return _get_indices_Mul(expr)
-        elif expr.is_Add:
+        elif expr.is_Plus:
             return _get_indices_Add(expr)
         elif expr.is_Power or isinstance(expr, exp):
             return _get_indices_Pow(expr)
@@ -430,7 +430,7 @@ def get_contraction_structure(expr):
         if dicts:
             result[expr] = dicts
         return result
-    elif expr.is_Add:
+    elif expr.is_Plus:
         # Note: we just collect all terms with identical summation indices, We
         # do nothing to identify equivalent terms here, as this would require
         # substitutions or pattern matching in expressions of unknown

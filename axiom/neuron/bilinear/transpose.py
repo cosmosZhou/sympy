@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
 
@@ -24,7 +24,7 @@ def prove(Eq):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
-    Eq << identity(x @ W).expand(free_symbol={i, j})
+    Eq << (x @ W).this.expand(free_symbol={i, j})
     
     Eq << Eq[-1] @ y
     

@@ -114,7 +114,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
             expr.is_Atom or expr in (exp_polar(0), exp_polar(1)))):
         return expr
 
-    if deep or expr.is_Add or expr.is_Mul and _y not in expr.args:
+    if deep or expr.is_Plus or expr.is_Mul and _y not in expr.args:
         expr = expr.func(*[recurse(w) for w in expr.args])
 
     if expr.is_Power:
@@ -137,7 +137,8 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                 continue
             if term.is_Power:
                 term = _denest_pow(term)
-            if term.is_commutative:
+#             if term.is_commutative:
+            if True:
                 b, e = term.as_base_exp()
                 if deep:
                     b, e = [recurse(i) for i in [b, e]]
@@ -146,17 +147,17 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                     # or else it will be joined as x**(a/2) later
                     b, e = b**e, S.One
                 c_powers[b].append(e)
-            else:
-                # This is the logic that combines exponents for equal,
-                # but non-commutative bases: A**x*A**y == A**(x+y).
-                if nc_part:
-                    b1, e1 = nc_part[-1].as_base_exp()
-                    b2, e2 = term.as_base_exp()
-                    if (b1 == b2 and
-                            e1.is_commutative and e2.is_commutative):
-                        nc_part[-1] = Pow(b1, Add(e1, e2))
-                        continue
-                nc_part.append(term)
+#             else:
+#                 # This is the logic that combines exponents for equal,
+#                 # but non-commutative bases: A**x*A**y == A**(x+y).
+#                 if nc_part:
+#                     b1, e1 = nc_part[-1].as_base_exp()
+#                     b2, e2 = term.as_base_exp()
+#                     if (b1 == b2 and
+#                             e1.is_commutative and e2.is_commutative):
+#                         nc_part[-1] = Pow(b1, Add(e1, e2))
+#                         continue
+#                 nc_part.append(term)
 
         # add up exponents of common bases
         for b, e in ordered(iter(c_powers.items())):
@@ -202,7 +203,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
         be = list(c_powers.items())
         _n = S.NegativeOne
         for i, (b, e) in enumerate(be):
-            if ((-b).is_Symbol or b.is_Add) and -b in c_powers:
+            if ((-b).is_Symbol or b.is_Plus) and -b in c_powers:
                 if (b.is_positive in (0, 1) or e.is_integer):
                     c_powers[-b] += c_powers.pop(b)
                     if _n in c_powers:
@@ -377,10 +378,10 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
         c_powers = []
         nc_part = []
         for term in expr.args:
-            if term.is_commutative:
-                c_powers.append(list(term.as_base_exp()))
-            else:
-                nc_part.append(term)
+#             if term.is_commutative:
+            c_powers.append(list(term.as_base_exp()))
+#             else:
+#                 nc_part.append(term)
 
         # Pull out numerical coefficients from exponent if assumptions allow
         # e.g., 2**(2*x) => 4**x
@@ -461,7 +462,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                 def _terms(e):
                     # return the number of terms of this expression
                     # when multiplied out -- assuming no joining of terms
-                    if e.is_Add:
+                    if e.is_Plus:
                         return sum([_terms(ai) for ai in e.args])
                     if e.is_Mul:
                         return prod([_terms(mi) for mi in e.args])
@@ -665,7 +666,7 @@ def _denest_pow(eq):
         return _keep_coeff(c, g)
 
     glogb = expand_log(log(b))
-    if glogb.is_Add:
+    if glogb.is_Plus:
         args = glogb.args
         g = reduce(nc_gcd, args)
         if g != 1:
@@ -684,7 +685,7 @@ def _denest_pow(eq):
     add = []
     other = []
     for a in glogb.args:
-        if a.is_Add:
+        if a.is_Plus:
             add.append(a)
         else:
             other.append(a)

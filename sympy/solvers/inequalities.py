@@ -315,7 +315,7 @@ def reduce_abs_inequality(expr, rel, gen):
     def _bottom_up_scan(expr):
         exprs = []
 
-        if expr.is_Add or expr.is_Mul:
+        if expr.is_Plus or expr.is_Mul:
             op = expr.func
 
             for arg in expr.args:

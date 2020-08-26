@@ -983,7 +983,7 @@ class Binomial(CombinatorialFunction):
             return binomial(*self.args)
 
         k = self.args[1]
-        if k.is_Add and n in k.args:
+        if k.is_Plus and n in k.args:
             k = n - k
 
         if k.is_Integer:

@@ -121,7 +121,7 @@ class sinh(HyperbolicFunction):
                 if _coeff_isneg(arg):
                     return -cls(-arg)
 
-            if arg.is_Add:
+            if arg.is_Plus:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     return sinh(m)*cosh(x) + cosh(m)*sinh(x)
@@ -188,7 +188,7 @@ class sinh(HyperbolicFunction):
         else:
             arg = self.args[0]
         x = None
-        if arg.is_Add: # TODO, implement more if deep stuff here
+        if arg.is_Plus: # TODO, implement more if deep stuff here
             x, y = arg.as_two_terms()
         else:
             coeff, terms = arg.as_coeff_Mul(rational=True)
@@ -289,7 +289,7 @@ class cosh(HyperbolicFunction):
                 if _coeff_isneg(arg):
                     return cls(-arg)
 
-            if arg.is_Add:
+            if arg.is_Plus:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     return cosh(m)*cosh(x) + sinh(m)*sinh(x)
@@ -349,7 +349,7 @@ class cosh(HyperbolicFunction):
         else:
             arg = self.args[0]
         x = None
-        if arg.is_Add: # TODO, implement more if deep stuff here
+        if arg.is_Plus: # TODO, implement more if deep stuff here
             x, y = arg.as_two_terms()
         else:
             coeff, terms = arg.as_coeff_Mul(rational=True)
@@ -450,7 +450,7 @@ class tanh(HyperbolicFunction):
                 if _coeff_isneg(arg):
                     return -cls(-arg)
 
-            if arg.is_Add:
+            if arg.is_Plus:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     tanhm = tanh(m)
@@ -600,7 +600,7 @@ class coth(HyperbolicFunction):
                 if _coeff_isneg(arg):
                     return -cls(-arg)
 
-            if arg.is_Add:
+            if arg.is_Plus:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     cothm = coth(m)

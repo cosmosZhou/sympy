@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy import S
 from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
@@ -25,12 +25,12 @@ def prove(Eq):
     Eq << apply(A)
     
     L = Symbol('L', shape=(n, n), definition=Eq[0].lhs.arg)
-    Eq << identity(L).definition
+    Eq << L.this.definition
     shift = Eq[-1].rhs.function.args[0].base
     
     Eq.L_definition = Eq[-1].this.rhs.doit()
     
-    Eq << identity(shift @ A).expand()
+    Eq << (shift @ A).this.expand()
     Eq << Eq[-1].this.rhs.as_VConcatenate()
     
     Eq << shift @ Eq[-1]    

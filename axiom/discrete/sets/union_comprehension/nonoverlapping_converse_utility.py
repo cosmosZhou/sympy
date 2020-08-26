@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.concrete.expr_with_limits import ForAll, UNION
@@ -69,7 +69,7 @@ def prove(Eq):
     
     Eq.plausible = Eq[1].subs(n, n + 1)
     
-    Eq << identity(Eq.plausible.lhs.arg).bisect(domain={n})
+    Eq << Eq.plausible.lhs.arg.this.bisect(domain={n})
     
     Eq << union.inclusion_exclusion_principle.apply(*Eq[-1].rhs.args)
     
@@ -81,7 +81,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[1])
     
-    Eq << identity(Eq.plausible.rhs).bisect(domain={n})
+    Eq << Eq.plausible.rhs.this.bisect(domain={n})
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
 

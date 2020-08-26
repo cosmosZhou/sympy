@@ -75,9 +75,9 @@ class AssocOp(Basic):
 #         args = tuple(sorted(args, key=lambda x: str(x)))
 
         obj = super(AssocOp, cls).__new__(cls, *args)
-        if is_commutative is None:
-            is_commutative = fuzzy_and(a.is_commutative for a in args)
-        obj.is_commutative = is_commutative
+#         if is_commutative is None:
+#             is_commutative = fuzzy_and(a.is_commutative for a in args)
+#         obj.is_commutative = is_commutative
         return obj
 
     def _new_rawargs(self, *args, **kwargs):
@@ -122,11 +122,11 @@ class AssocOp(Basic):
            self is non-commutative and kwarg `reeval=False` has not been
            passed.
         """
-        if kwargs.pop('reeval', True) and self.is_commutative is False:
-            is_commutative = None
-        else:
-            is_commutative = self.is_commutative
-        return self._from_args(args, is_commutative)
+#         if kwargs.pop('reeval', True) and self.is_commutative is False:
+#             is_commutative = None
+#         else:
+#             is_commutative = self.is_commutative
+        return self._from_args(args, is_commutative=True)
 
     @classmethod
     def flatten(cls, seq):
@@ -213,7 +213,7 @@ class AssocOp(Basic):
                 # the matching continue
                 return None
             newexpr = self._combine_inverse(expr, exact)
-            if not old and (expr.is_Add or expr.is_Mul):
+            if not old and (expr.is_Plus or expr.is_Mul):
                 if newexpr.count_ops() > expr.count_ops():
                     return None
             newpattern = self._new_rawargs(*wild_part)
@@ -244,7 +244,7 @@ class AssocOp(Basic):
                         i += 1
                         continue
 
-                elif self.is_Add:
+                elif self.is_Plus:
                     # make i*e look like Add
                     c, e = expr.as_coeff_Mul()
                     if abs(c) > 1:

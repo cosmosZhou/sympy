@@ -60,7 +60,7 @@ def residue(expr, x, x0):
         if not s.has(Order) or s.getn() >= 0:
             break
     s = collect(s.removeO(), x)
-    if s.is_Add:
+    if s.is_Plus:
         args = s.args
     else:
         args = [s]

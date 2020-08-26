@@ -32,7 +32,6 @@ def prove(Eq):
     B = Symbol('B', dtype=dtype.integer)
 
     inequality = Unequality(A & B, S.EmptySet)
-    Eq << inequality
     Eq << apply(inequality)
 
     Eq << (A & B).assertion()
@@ -43,7 +42,9 @@ def prove(Eq):
 
     Eq << Eq[-1].split()
 
-    Eq << (~Eq[1] & Eq[-2])
+    Eq << (~Eq[1]).limits_subs(Eq[1].variable, Eq[-1].variable)
+    
+    Eq << (Eq[-1] & Eq[-3])
 
 
 if __name__ == '__main__':

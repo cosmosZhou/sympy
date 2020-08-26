@@ -9,7 +9,7 @@ def apply(A, B):
     return GreaterThan(abs(Union(A, B)), abs(A))
 
 
-from sympy.utility import check, identity
+from sympy.utility import check
 
 
 @check
@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(A, B)
 
-    Eq << identity(Eq[-1].lhs.arg).rewrite(complement=0)
+    Eq << Eq[-1].lhs.arg.this.rewrite(complement=0)
 
     Eq << Eq[-1].abs()
 

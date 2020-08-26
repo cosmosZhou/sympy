@@ -67,10 +67,13 @@ class MatrixExpr(Expr):
     is_MatAdd = False
     is_MatMul = False
 
-    is_commutative = False
+#     is_commutative = False
     is_number = False
     is_symbol = False
     is_scalar = False
+    
+    def _eval_is_complex(self):
+        return True
 
     def __new__(cls, *args, **kwargs):
         args = map(_sympify, args)
@@ -199,10 +202,6 @@ class MatrixExpr(Expr):
 
     def _accept_eval_derivative(self, s):
         return s._visit_eval_derivative_array(self)
-
-    def _entry(self, i, j=None, **_):
-        from sympy.tensor.indexed import Subscript        
-        return Subscript(self, i, j)
 
     def adjoint(self):
         return adjoint(self)
@@ -493,7 +492,7 @@ class MatrixExpr(Expr):
                 return [(Mul.fromiter(nonmatargs), None)] + [
                     (MatrixElement(a, i, j), (i, j)) for (i, j), a in lines.items()
                 ]
-            elif expr.is_Add:
+            elif expr.is_Plus:
                 res = [recurse_expr(i) for i in expr.args]
                 d = collections.defaultdict(list)
                 for res_addend in res:
@@ -735,7 +734,7 @@ class MatrixSymbol(MatrixExpr):
     >>> 2*A*B + Identity(3)
     I + 2*A*B
     """
-    is_commutative = False
+#     is_commutative = False
     is_symbol = True
     _diff_wrt = True
 
@@ -881,7 +880,9 @@ class Identity(MatrixExpr):
     def _eval_determinant(self):
         return S.One
 
-
+    def _eval_is_integer(self):
+        return True
+    
 class GenericIdentity(Identity):
     """
     An identity matrix without a specified shape
@@ -1038,10 +1039,7 @@ class OneMatrix(MatrixExpr):
             return S.One
         elif condition == False:
             return S.Zero
-        else:
-            from sympy import Det
-            return Determinant(self)
-
+        
     def conjugate(self):
         return self
 
@@ -1351,13 +1349,10 @@ class VConcatenate(Concatenate):
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
     def _eval_determinant(self):
-        from sympy.matrices.expressions.determinant import Det
         from sympy.concrete.products import Product
         if self.is_upper or self.is_lower:
-            from sympy.core.symbol import generate_free_symbol
-            i = generate_free_symbol(self.free_symbols, integer=True)
+            i = self.generate_free_symbol(integer=True)
             return Product(self[i, i], (i, 0, self.cols - 1)).doit()
-        return Det(self)
 
     @property
     def is_lower(self):
@@ -1403,12 +1398,10 @@ class VConcatenate(Concatenate):
         is_lower_hessenberg
         """
         from sympy.sets.sets import Interval
-        free_symbols = self.free_symbols
-        from sympy.core.symbol import generate_free_symbol
         from sympy.functions.elementary.miscellaneous import Min
 
-        i = generate_free_symbol(free_symbols, domain=Interval(0, Min(self.rows, self.cols - 1), right_open=True, integer=True))
-        j = i.generate_free_symbol(free_symbols=free_symbols, domain=Interval(i + 1, self.cols, right_open=True, integer=True))
+        i = self.generate_free_symbol(domain=Interval(0, Min(self.rows, self.cols - 1), right_open=True, integer=True))
+        j = i.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(i + 1, self.cols, right_open=True, integer=True))
         assert i < j
         return self[i, j] == 0
 
@@ -1455,12 +1448,10 @@ class VConcatenate(Concatenate):
         is_upper_hessenberg
         """
         from sympy.sets.sets import Interval
-        free_symbols = self.free_symbols
-        from sympy.core.symbol import generate_free_symbol
         from sympy.functions.elementary.miscellaneous import Min
 
-        j = generate_free_symbol(free_symbols, domain=Interval(0, Min(self.cols, self.rows - 1), right_open=True, integer=True))
-        i = j.generate_free_symbol(free_symbols=free_symbols, domain=Interval(j + 1, self.rows, right_open=True, integer=True))
+        j = self.generate_free_symbol(domain=Interval(0, Min(self.cols, self.rows - 1), right_open=True, integer=True))
+        i = j.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(j + 1, self.rows, right_open=True, integer=True))
         assert i > j
         return self[i, j] == 0
 
@@ -1615,7 +1606,7 @@ class Multiplication(Identity):
             _mat = [*rhs._mat]
             for i in range(self.i * d, self.i * d + d):
                 _mat[i] *= self.multiplier
-            return rhs.func(*rhs.args[:2], _mat)
+            return rhs.func(*rhs.args[:2], type(rhs._mat)(_mat))
 
         return MatrixExpr.__matmul__(self, rhs)
 
@@ -1628,7 +1619,7 @@ class Multiplication(Identity):
             _mat = [*lhs._mat]
             for i in range(self.i, self.i + d * d, d):
                 _mat[i] *= self.multiplier
-            return lhs.func(*lhs.args[:2], _mat)
+            return lhs.func(*lhs.args[:2], type(lhs._mat)(_mat))
             
         return MatrixExpr.__rmatmul__(self, lhs)
 

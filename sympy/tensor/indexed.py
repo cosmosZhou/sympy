@@ -117,7 +117,7 @@ class IndexException(Exception):
     pass
 
 
-class Subscript(Expr):
+class Indexed(Expr):
     """Represents a mathematical object with indices.
 
     >>> from sympy import Indexed, IndexedBase, Idx, symbols
@@ -183,12 +183,9 @@ class Subscript(Expr):
             return other in self.base.definition[self.indices]
 
     @property
-    def is_integer(self):
-        try:
-            if self.base.definition is not None:
-                return self.base.definition.is_integer
-        except:
-            ... 
+    def is_integer(self):        
+        if self.base.definition is not None:
+            return self.base.definition.is_integer
         return self.base.is_integer
 
     def _dummy_eq(self, other):
@@ -222,7 +219,7 @@ class Subscript(Expr):
             
         if len(args) == 1 and args[0].is_Piecewise:
             piecewise = args[0]
-            return piecewise.func(*((Subscript(base, e), c) for e, c in piecewise.args))
+            return piecewise.func(*((cls(base, e), c) for e, c in piecewise.args))
             
         return Expr.__new__(cls, base, *args, **kw_args)
 
@@ -379,7 +376,6 @@ class Subscript(Expr):
             return r'{\color{red} {%s}}' % tex
         return tex
 
-
     @property
     def free_symbols(self):
         base_free_symbols = self.base.free_symbols
@@ -472,6 +468,7 @@ class Subscript(Expr):
             k = self.indices[0]
             start, stop = old.indices
             if k >= start and k < stop:
+                assert new.shape
                 return new[k - start]
         return Expr._subs(self, old, new)
 
@@ -555,16 +552,10 @@ class Subscript(Expr):
         return Inverse(self)        
     
     def _eval_determinant(self):
-        from sympy.matrices.expressions.determinant import det
-        from sympy import Det
         definition = self.definition
         if definition is not None:
-            res = det(definition)
-            if not isinstance(res, Det):
-                return res
-        return Det(self)
-        
-Indexed = Subscript                
+            return definition._eval_determinant()
+
         
 class Slice(Expr):
     """Represents a mathematical object with Slices.
@@ -898,6 +889,23 @@ class Slice(Expr):
     def atomic_dtype(self):
         return self.base.atomic_dtype
 
+    def _eval_is_extended_real(self):
+        return self.base.is_extended_real
+
+    def _eval_is_complex(self):
+        return self.base.is_complex
+
+    def _eval_is_extended_negative(self):
+        return self.base.is_extended_negative
+
+    def _eval_is_extended_positive(self):
+        return self.base.is_extended_positive
+
+    def _eval_is_finite(self):
+        return self.base.is_finite
+
+    def _eval_is_zero(self):
+        return self.base.is_zero
 
 class Idx(Expr):
     """Represents an integer index as an ``Integer`` or integer expression.

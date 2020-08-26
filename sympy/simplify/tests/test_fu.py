@@ -131,7 +131,7 @@ def test_TR9():
             ex = Add(*[Mul(*ai) for ai in args])
             t = TR9(ex)
             assert not (a[0].func == a[1].func and (
-                not verify_numerically(ex, t.expand(trig=True)) or t.is_Add)
+                not verify_numerically(ex, t.expand(trig=True)) or t.is_Plus)
                 or a[1].func != a[0].func and ex != t)
 
 
@@ -187,7 +187,7 @@ def test_TR10i():
             args = zip(si, a)
             ex = Add(*[Mul(*ai) for ai in args])
             t = TR10i(ex)
-            assert not (ex - t.expand(trig=True) or t.is_Add)
+            assert not (ex - t.expand(trig=True) or t.is_Plus)
 
     c = cos(x)
     s = sin(x)
@@ -198,7 +198,7 @@ def test_TR10i():
             args = zip(si, a)
             ex = Add(*[Mul(*ai) for ai in args])
             t = TR10i(ex)
-            assert not (ex - t.expand(trig=True) or t.is_Add)
+            assert not (ex - t.expand(trig=True) or t.is_Plus)
 
 
 def test_TR11():

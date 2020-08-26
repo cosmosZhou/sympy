@@ -1,7 +1,7 @@
-from sympy.core.symbol import Symbol, generate_free_symbol
+from sympy.core.symbol import Symbol
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 
 from sympy.functions.combinatorial.numbers import Stirling
 from axiom.discrete.combinatorics import stirling
@@ -14,8 +14,7 @@ from sympy.concrete.expr_with_limits import Ref
 
 @plausible
 def apply(n, k):
-    free_symbols = n.free_symbols | k.free_symbols
-    i = generate_free_symbol(free_symbols, integer=True)
+    i = n.generate_free_symbol(k.free_symbols, integer=True)
     return Equality(Stirling(n, k), Sum[i:0:k]((-1) ** (k - i) * binomial(k, i) * i ** n) / factorial(k))
 
 
@@ -54,7 +53,7 @@ def prove(Eq):
     Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp(deep=True)
 
     l = Eq[0].rhs.args[1].limits[0][0]
-    Eq << identity(binomial(k + 1, l)).rewrite(factorial)
+    Eq << binomial(k + 1, l).this.rewrite(factorial)
 
     Eq.factorial_expand_kl = axiom.discrete.combinatorics.factorial.expand.apply(k - l + 1)
 
@@ -114,7 +113,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / (k + 1)
 
-    Eq << Eq.stirling_solution.subs(Eq[-1].reversed)
+    Eq << Eq.stirling_solution.subs(-Eq[-1].reversed)
 
     Eq << Eq[-1].subs(Eq.factorial_expand.reversed)
 

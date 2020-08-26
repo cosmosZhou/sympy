@@ -174,7 +174,8 @@ render(__FILE__, $text);
         return self.__dict__[index]
 
     def process(self, rhs, index=None, end_of_line='\n'):
-        if isinstance(rhs, identity):
+        from sympy.logic.boolalg import Identity
+        if isinstance(rhs, Identity):
             rhs = rhs.equation
         try:
             latex = rhs.latex
@@ -283,6 +284,7 @@ render(__FILE__, $text);
             self.file.append('')
         else:
             self.process(rhs)
+        return self
 
 
 def show_latex():
@@ -325,50 +327,6 @@ def topological_sort(graph):
     return None
 
 
-class identity(boolalg.Invoker):
-
-    @property
-    def equation(self):
-        return Relational.__new__(Equality, self.expr, self.obj)
-
-    def __call__(self, *args, **kwargs):
-        if self.obj.__name__ == 'subs':
-            from sympy.concrete.summations import Sum
-            from sympy.integrals.integrals import Integral
-            if isinstance(self.obj.__self__, Sum) or isinstance(self.obj.__self__, Integral):
-                if len(args) == 2:
-                    (x, *_), *_ = self.obj.__self__.limits
-                    # domain might be different!
-                    assert args[0].name == x.name
-            else:
-                assert len(args) == 1 and isinstance(args[0], Equality)
-
-        obj = self.obj(*args, **kwargs)
-
-        for i in range(-1, -len(self.func) - 1, -1):
-            self._args[i][self.index[i]] = obj
-            obj = self.func[i](*self._args[i])
-            obj = obj.simplify()
-        self.obj = obj
-        return self
-
-    def __getattr__(self, method):
-        if method == "T":
-            assert len(self.obj.shape) < 2
-        obj = getattr(self.obj, method)
-        if not callable(obj):
-            if isinstance(obj, tuple):
-                self.append()
-            elif obj in self.obj.args:
-                self.append()
-                self.index.append(self.obj.args.index(obj))
-            else:
-                ...
-
-        self.obj = obj
-        return self
-
-
 def wolfram_decorator(py, func, **kwargs):
     txt = py.replace('.py', '.php')
 
@@ -378,8 +336,8 @@ def wolfram_decorator(py, func, **kwargs):
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
             if wolfram is not None:
-                with wolfram:                
-                    func(eqs, wolfram)
+#                 with wolfram:                
+                func(eqs, wolfram)
             else:
                 func(eqs, wolfram)
         else:
@@ -387,7 +345,7 @@ def wolfram_decorator(py, func, **kwargs):
     except Exception as e:
         print(e)
         traceback.print_exc()
-        return None
+        return
 
     plausibles = eqs.plausibles_dict
     if plausibles:
@@ -401,13 +359,15 @@ def check(func=None, wolfram=None):
         return lambda py: wolfram_decorator(py, func)
 
     def decorator(func):
-        session = None
+        session = None        
         if wolfram:
             try:
                 from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
                 session = WolframLanguageSession()                
             except:
                 ...
+#                 traceback.print_exc()           
+                
         
         return lambda py: wolfram_decorator(py, func, wolfram=session)
 

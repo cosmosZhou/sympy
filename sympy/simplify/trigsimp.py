@@ -560,7 +560,7 @@ def exptrigsimp(expr):
 
         ee = rvd[S.Exp1]
         for k in rvd:
-            if k.is_Add and len(k.args) == 2:
+            if k.is_Plus and len(k.args) == 2:
                 # k == c*(1 + sign*E**x)
                 c = k.args[0]
                 sign, x = signlog(k.args[1]/c)
@@ -688,13 +688,13 @@ def trigsimp_old(expr, **opts):
                     expr *= vnew
                 old = expr
             else:
-                if d.is_Add:
+                if d.is_Plus:
                     for s in trigsyms:
                         r, e = expr.as_independent(s)
                         if r:
                             opts['first'] = False
                             expr = r + trigsimp(e, **opts)
-                            if not expr.is_Add:
+                            if not expr.is_Plus:
                                 break
                     old = expr
 
@@ -982,7 +982,7 @@ def __trigsimp(expr, deep=False):
                     expr = simp.subs(res)
                     break  # process below
 
-    if expr.is_Add:
+    if expr.is_Plus:
         args = []
         for term in expr.args:
             if not term.is_commutative:
@@ -1001,7 +1001,7 @@ def __trigsimp(expr, deep=False):
         if args != expr.args:
             expr = Add(*args)
             expr = min(expr, expand(expr), key=count_ops)
-        if expr.is_Add:
+        if expr.is_Plus:
             for pattern, result in matchers_add:
                 if not _dotrig(expr, pattern):
                     continue
@@ -1126,7 +1126,7 @@ def _futrig(e, **kwargs):
     else:
         coeff = S.One
 
-    Lops = lambda x: (L(x), x.count_ops(), _nodes(x), len(x.args), x.is_Add)
+    Lops = lambda x: (L(x), x.count_ops(), _nodes(x), len(x.args), x.is_Plus)
     trigs = lambda x: x.has(TrigonometricFunction)
 
     tree = [identity,

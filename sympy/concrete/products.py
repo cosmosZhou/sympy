@@ -186,7 +186,9 @@ class Product(ExprWithIntLimits):
     """
 
     __slots__ = ['is_commutative']
+    is_complex = True
     operator = Mul
+    is_Product = True
     
     def __new__(cls, function, *symbols, **assumptions):
         obj = ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
@@ -217,7 +219,7 @@ class Product(ExprWithIntLimits):
 
             g = self._eval_product(f, (i, a, b))
             if g in (None, S.NaN):
-                return self.func(powsimp(f), *self.limits[index:])
+                return self.func(powsimp(f), *self.limits[index:]).simplify()
             else:
                 f = g
 
@@ -275,7 +277,7 @@ class Product(ExprWithIntLimits):
 
             return poly.LC() ** (n - a + 1) * A * B
 
-        elif term.is_Add:
+        elif term.is_Plus:
             factored = factor_terms(term, fraction=True)
             if factored.is_Mul:
                 return self._eval_product(factored, (k, a, n))
@@ -473,23 +475,31 @@ class Product(ExprWithIntLimits):
         if len(self.limits) != 1:
             return self
         limit = self.limits[0]
-        if len(limit) > 1:
+        if len(limit) == 2:
+            x, domain = limit
+            if domain.is_FiniteSet:
+                return self.finite_aggregate(x, domain)
+                            
+        elif len(limit) == 3:
             from sympy.functions.elementary.piecewise import Piecewise
             x, a, b = limit
-
             if isinstance(self.function, Piecewise):
                 from sympy.sets.sets import Interval
                 domain = Interval(a, b, integer=True)
                 return Mul(*self.as_multiple_terms(x, domain))
-
-        var = limit[0]
-
+            if not self.function._has(x):
+                return self.function ** (b - a + 1)
+            
+            if a == b:                
+                return self.function._subs(x, a)
+        else:
+            x, *_ = limit
         import sympy
         function = self.function
         if isinstance(function, sympy.exp):
             function = function.as_Mul()
 
-        independent, dependent = function.as_independent(var, as_Add=False)
+        independent, dependent = function.as_independent(x, as_Add=False)
         if independent == S.One:
             return self
 
@@ -497,17 +507,42 @@ class Product(ExprWithIntLimits):
             if len(limit) > 1:
                 return self.function ** (b - a + 1)
             else:
-                return self.function ** var.dimension
+                return self.function ** x.dimension
         if len(limit) > 1:
             return self.func(dependent, limit).doit() * independent ** (b - a + 1)
         else:
-            return self.func(dependent, limit).doit() * independent ** var.dimension
+            return self.func(dependent, limit).doit() * independent ** x.dimension
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
         if limits:
             return '∏[%s](%s)' % (limits, p._print(self.function))
         return '∏(%s)' % p._print(self.function)
+
+    def _latex(self, p):
+        if len(self.limits) == 1:
+            limit = self.limits[0]
+            if len(limit) == 1:
+                tex = r"\prod_{%s} " % p._print(limit[0])
+            elif len(limit) == 2:
+                tex = r"\prod\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
+            else:
+                tex = r"\prod\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
+
+        else:
+
+            def _format_ineq(l):
+                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (l[1], l[0], l[2])])
+
+            tex = r"\prod_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
+
+        if self.function.is_Plus:
+            tex += r"\left(%s\right)" % p._print(self.function)
+        else:
+            tex += p._print(self.function)
+
+        return tex
+
 
 def product(*args, **kwargs):
     r"""

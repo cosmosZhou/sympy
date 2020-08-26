@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
 
@@ -22,9 +22,9 @@ def prove(Eq):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     Eq << apply(x, y)
     
-    Eq << identity(Eq[0].lhs).expand(free_symbol=i)
+    Eq << Eq[0].lhs.this.expand(free_symbol=i)
     
-    Eq << identity(Eq[0].rhs).expand(free_symbol=i)
+    Eq << Eq[0].rhs.this.expand(free_symbol=i)
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
         

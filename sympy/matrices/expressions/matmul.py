@@ -283,7 +283,7 @@ class MatMul(MatrixExpr, Mul):
                     else:
                         i_limit = (i, 0, A.shape[0] - 1)
                 
-                n = A.shape[0]
+                
                 
                 if len(B.shape) > 1:
                     if hasattr(B, "definition") and B.definition is not None:
@@ -306,35 +306,42 @@ class MatMul(MatrixExpr, Mul):
                     return Ref(Sum(A[i] * B[i, j], i_limit).simplify(), j_limit).simplify()
                 return Sum(A[i] * B[i], i_limit).simplify()                
             else:
-                k = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
                 if hasattr(A, "definition") and A.definition is not None:
                     A = A.definition
                     
                 if isinstance(A, Ref):
                     i_limit = A.limits[0]
-                else:
-                    i = self.generate_free_symbol({k}, free_symbol=free_symbol, integer=True)
+                    i, *_ = i_limit
+                else:                    
+                    i = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
                     i_limit = (i, 0, A.shape[0] - 1)
-
-                n = A.shape[1]
-
-                i, *_ = i_limit
-
-                if len(B.shape) > 1:
+                
+                n = A.shape[-1]
+                if len(B.shape) > 1:     
+                    j = None
                     if isinstance(B, Ref):
                         j_limit = B.limits[1]
+                        j, *_ = j_limit
                     else:
                         if hasattr(B, "definition") and B.definition is not None:
                             j_limit = B.definition.limits[1]
-                        else:
-                            j = self.generate_free_symbol({k, i}, free_symbol=free_symbol, integer=True)
-                            j_limit = (j, 0, B.shape[1] - 1)
-    
-                    j, *_ = j_limit
-    
-                    return Ref(Sum(A[i, k] * B[k, j], (k, 0, n - 1)).simplify(), i_limit, j_limit).simplify()
-                else:
-                    return Ref(Sum(A[i, k] * B[k], (k, 0, n - 1)).simplify(), i_limit).simplify()
+                            j, *_ = j_limit
+                            
+                    if i == j or j is None:
+                        j = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
+                        j_limit = (j, 0, B.shape[1] - 1)
+                        
+                    k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
+                    
+                    assert i != k                    
+                    assert k != j
+                    assert i != j
+                    return Ref(Sum[k:n](A[i, k] * B[k, j]).simplify(), i_limit, j_limit).simplify()
+                else:            
+                    k = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
+                    assert i != k
+                            
+                    return Ref(Sum[k:n](A[i, k] * B[k]).simplify(), i_limit).simplify()
 
         return MatrixExpr.expand(self)
 
@@ -559,12 +566,12 @@ canonicalize = exhaust(typed({MatMul: do_one(*rules)}))
 
 def only_squares(*matrices):
     """factor matrices only if they are square"""
-    if matrices[0].rows != matrices[-1].cols:
+    if matrices[0].shape[-2] != matrices[-1].shape[-1]:
         raise RuntimeError("Invalid matrices being multiplied")
     out = []
     start = 0
     for i, M in enumerate(matrices):
-        if M.cols == matrices[start].rows:
+        if M.shape[-1] == matrices[start].shape[-2]:
             out.append(MatMul(*matrices[start:i + 1]).doit())
             start = i + 1
     return out

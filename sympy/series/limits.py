@@ -97,7 +97,7 @@ def heuristics(e, z, z0, direction):
         rv = limit(e.subs(z, 1 / z), z, S.Zero, "+" if z0 is S.Infinity else "-")
         if isinstance(rv, Limit):
             return
-    elif e.is_Mul or e.is_Add or e.is_Power or e.is_Function:
+    elif e.is_Mul or e.is_Plus or e.is_Power or e.is_Function:
         r = []
         for a in e.args:
             l = limit(a, z, z0, direction)
@@ -161,6 +161,7 @@ class Limit(Expr):
 
     """
     is_Limit = True
+    is_complex = True
 
     def __new__(cls, e, z, z0, direction="+"):
         e = sympify(e)

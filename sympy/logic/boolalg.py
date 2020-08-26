@@ -916,7 +916,9 @@ class Boolean(Basic):
             return self
         return origin
 
-
+    def asKroneckerDelta(self):
+        ...
+        
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
 
@@ -1922,6 +1924,14 @@ class And(LatticeOp, BooleanFunction):
     def simplify(self, deep=False):
         return self
 
+    def asKroneckerDelta(self):
+        eq = 1
+        for c in self.args:
+            e = c.asKroneckerDelta()
+            if e is None:
+                return
+            eq *= e
+        return eq
 
 class Or(LatticeOp, BooleanFunction):
     """
@@ -2126,13 +2136,14 @@ class Or(LatticeOp, BooleanFunction):
 
         return self.args
 
-#     def subs(self, *args, **kwargs):
-#         result = LatticeOp.subs(self, *args, **kwargs)
-#         if all(isinstance(arg, Boolean) for arg in args):
-#             result.equivalent = [self, *args]
-#         else:
-#             result.equivalent = self
-#         return result
+    def asKroneckerDelta(self):
+        eq = 1
+        for c in self.args:
+            e = c.asKroneckerDelta()
+            if e is None:
+                return
+            eq *= 1 - e
+        return 1 - eq
 
 
 And.invert_type = Or
@@ -4006,3 +4017,49 @@ class Invoker:
     def __iter__(self):
         return iter(self.obj)
 
+
+class Identity(Invoker):
+
+    @property
+    def equation(self):
+        from sympy import Equality
+        from sympy.core.relational import Relational 
+        return Relational.__new__(Equality, self.expr, self.obj)
+
+    def __call__(self, *args, **kwargs):
+        from sympy import Equality
+        if self.obj.__name__ == 'subs':
+            from sympy.concrete.summations import Sum
+            from sympy.integrals.integrals import Integral
+            if isinstance(self.obj.__self__, Sum) or isinstance(self.obj.__self__, Integral):
+                if len(args) == 2:
+                    (x, *_), *_ = self.obj.__self__.limits
+                    # domain might be different!
+                    assert args[0].name == x.name
+            else:
+                assert all(isinstance(arg, Equality) for arg in args)                
+
+        obj = self.obj(*args, **kwargs)
+
+        for i in range(-1, -len(self.func) - 1, -1):
+            self._args[i][self.index[i]] = obj
+            obj = self.func[i](*self._args[i])
+            obj = obj.simplify()
+        self.obj = obj
+        return self
+
+    def __getattr__(self, method):
+        if method == "T":
+            assert len(self.obj.shape) < 2
+        obj = getattr(self.obj, method)
+        if not callable(obj):
+            if isinstance(obj, tuple):
+                self.append()
+            elif obj in self.obj.args:
+                self.append()
+                self.index.append(self.obj.args.index(obj))
+            else:
+                ...
+
+        self.obj = obj
+        return self

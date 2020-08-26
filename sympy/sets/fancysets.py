@@ -5,7 +5,7 @@ from sympy.core.compatibility import as_int, with_metaclass, range, PY3
 from sympy.core.expr import Expr
 from sympy.core.function import Lambda
 from sympy.core.singleton import Singleton, S
-from sympy.core.symbol import Dummy, symbols, generate_free_symbol, dtype
+from sympy.core.symbol import Dummy, symbols, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
 from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet
@@ -167,7 +167,34 @@ class Integers(with_metaclass(Singleton, Set)):
         elif intersect == b:
             return self
 
+    @property
+    def element_type(self):
+        return dtype.integer
 
+    def __add__(self, other):
+        if other.is_integer:
+            return self
+        if other.is_extended_real:
+            return S.Reals
+        if other.is_complex:
+            return S.Complexes
+
+    def __mul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        if other.is_integer:
+            return self
+        if other.is_extended_real:
+            return S.Reals
+        if other.is_complex:
+            return S.Complexes
+
+    def max(self):
+        return S.Infinity 
+    
+    def min(self):
+        return S.NegativeInfinity
+    
 class Reals(with_metaclass(Singleton, Interval)):
     """
     Represents all real numbers
@@ -207,6 +234,23 @@ class Reals(with_metaclass(Singleton, Interval)):
     def __hash__(self):
         return hash(Interval(-S.Infinity, S.Infinity))
 
+    @property
+    def element_type(self):
+        return dtype.real
+
+    def __mul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        if other.is_extended_real:
+            return self
+        if other.is_complex:
+            return S.Complexes
+
+    def max(self):
+        return S.Infinity 
+    
+    def min(self):
+        return S.NegativeInfinity
 
 class ImageSet(Set):
     """
@@ -923,6 +967,9 @@ class ComplexRegion(Set):
     is_ComplexRegion = True
 
     def union_sets(self, b):
+        if b.is_EmptySet:
+            return
+        
         if b.is_subset(S.Reals):
             # treat a subset of reals as a complex region
             b = ComplexRegion.from_real(b)
@@ -1184,8 +1231,7 @@ class ComplexRegion(Set):
         if not self.polar:
             re, im = other if isTuple else other.as_real_imag()
             for element in self.psets:
-                if And(element.args[0]._contains(re),
-                        element.args[1]._contains(im)):
+                if And(element.args[0]._contains(re), element.args[1]._contains(im)):
                     return True
             return False
 
@@ -1227,6 +1273,13 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
         if other.is_set:
             return self
             
+        raise Exception("could not add %s, %s" %(self, other))
+
+    def __mul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        if other.is_complex:
+            return S.Complexes
         raise Exception("could not add %s, %s" %(self, other))
 
     @property

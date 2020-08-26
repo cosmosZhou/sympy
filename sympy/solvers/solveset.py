@@ -196,7 +196,7 @@ def _invert_real(f, g_ys, symbol):
     if isinstance(f, Abs):
         return _invert_abs(f.args[0], g_ys, symbol)
 
-    if f.is_Add:
+    if f.is_Plus:
         # f = g + h
         g, h = f.as_independent(symbol)
         if g is not S.Zero:
@@ -229,7 +229,7 @@ def _invert_real(f, g_ys, symbol):
                 elif numer % 2 == 0:
                         n = Dummy('n')
                         neg_res = imageset(Lambda(n, -n), res)
-                        return _invert_real(base, res + neg_res, symbol)
+                        return _invert_real(base, res | neg_res, symbol)
 
                 else:
                     return _invert_real(base, res, symbol)
@@ -291,7 +291,7 @@ def _invert_complex(f, g_ys, symbol):
 
     n = Dummy('n')
 
-    if f.is_Add:
+    if f.is_Plus:
         # f = g + h
         g, h = f.as_independent(symbol)
         if g is not S.Zero:
@@ -472,7 +472,7 @@ def _is_function_class_equation(func_class, f, symbol):
     >>> _is_function_class_equation(HyperbolicFunction, tanh(x) + sinh(x), x)
     True
     """
-    if f.is_Mul or f.is_Add:
+    if f.is_Mul or f.is_Plus:
         return all(_is_function_class_equation(func_class, arg, symbol)
                    for arg in f.args)
 
@@ -876,7 +876,7 @@ def _solveset(f, symbol, domain, _check=False):
         coeff, f = f.as_independent(symbol, as_Add=False)
         if coeff in set([S.ComplexInfinity, S.NegativeInfinity, S.Infinity]):
             f = together(orig_f)
-    elif f.is_Add:
+    elif f.is_Plus:
         a, h = f.as_independent(symbol)
         m, h = h.as_independent(symbol, as_Add=False)
         if m not in set([S.ComplexInfinity, S.Zero, S.Infinity,
@@ -1482,7 +1482,7 @@ def _transolve(f, symbol, domain):
                 new_eq = _solve_exponential(lhs, rhs, x)
         ....
         rhs, lhs = eq.as_independent(x)
-        if lhs.is_Add:
+        if lhs.is_Plus:
             result = add_type(lhs, rhs, x)
 
     - Define the identification helper.
@@ -1543,7 +1543,7 @@ def _transolve(f, symbol, domain):
         assert (len(rhs_s.args)) == 1
         rhs = rhs_s.args[0]
 
-        if lhs.is_Add:
+        if lhs.is_Plus:
             result = add_type(lhs, rhs, symbol, domain)
     else:
         result = rhs_s
@@ -1859,7 +1859,7 @@ def linear_coeffs(eq, *syms, **_kw):
         f = f[0]
         if f in syms:
             d[f].append(m)
-        elif f.is_Add:
+        elif f.is_Plus:
             d1 = linear_coeffs(f, *syms, **{'dict': True})
             d[0].append(m*d1.pop(0))
             for xf, vf in d1.items():

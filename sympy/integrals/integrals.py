@@ -1086,7 +1086,7 @@ class Integrate(AddWithLimits):
             # in an expanded form
             if not h and len(args) == 1:
                 f = sincos_to_sum(f).expand(mul=True, deep=False)
-                if f.is_Add:
+                if f.is_Plus:
                     # Note: risch will be identical on the expanded
                     # expression, but maybe it will be able to pick out parts,
                     # like x*(exp(x) + erf(x)).
@@ -1532,6 +1532,9 @@ class Integrate(AddWithLimits):
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_finite
+
+    def _eval_is_integer(self):
+        ...
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])

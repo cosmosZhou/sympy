@@ -128,16 +128,6 @@ def _uniquely_named_symbol(xname, exprs=(), compare=str, modify=None, **assumpti
     return _symbol(x, default, **assumptions)
 
 
-def generate_free_symbol(excludes, shape=(), free_symbol=None, **kwargs):
-    free_symbols = [*excludes]
-    free_symbols.sort(key=lambda x : x.name)
-    for s in free_symbols:
-        s = s.generate_free_symbol(excludes=excludes, shape=shape, free_symbol=free_symbol, **kwargs)
-        if s is not None:
-            return s
-    return None
-
-
 class Symbol(AtomicExpr, NotIterable):
 # class Symbol(AtomicExpr, Boolean):
     """
@@ -470,25 +460,6 @@ class Symbol(AtomicExpr, NotIterable):
     def definition(self):
         if 'definition' in self._assumptions:
             return self._assumptions['definition']
-        return None
-
-    def generate_free_symbol(self, excludes=set(), shape=None, free_symbol=None, **kwargs):
-        excludes = self.free_symbols | excludes
-        if free_symbol is not None and free_symbol not in excludes:
-            return free_symbol.copy(shape=shape, **kwargs)
-        
-        excludes = set(symbol.name for symbol in excludes)
-        name = self.name
-        if len(name) > 1 or self.is_set:
-            name = 'a'
-
-        while True:
-            if name not in excludes:
-                if shape:
-                    kwargs['shape'] = shape
-                return self.func(name, **kwargs)
-            name = chr(ord(name) + 1)
-
         return None
 
     def domain_nonzero(self, x):
@@ -830,7 +801,8 @@ class Symbol(AtomicExpr, NotIterable):
         if 'domain' in self._assumptions:
             return True
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_complex
+            return self._assumptions['definition'].is_complex        
+        return True
 
     def _eval_is_algebraic(self):
         if 'domain' in self._assumptions:
@@ -892,7 +864,7 @@ class Symbol(AtomicExpr, NotIterable):
         from wolframclient.language import wlexpr
         global_variables.add(self)
         return wlexpr(self.name)
-
+        
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
 

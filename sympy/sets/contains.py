@@ -47,7 +47,7 @@ class Contains(BooleanFunction):
         return r"%s \in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return r"%s in %s" % tuple(p._print(a) for a in self.args)
+        return r"%s ∈ %s" % tuple(p._print(a) for a in self.args)
 
     @classmethod
     def eval(cls, x, s):
@@ -153,7 +153,7 @@ class Contains(BooleanFunction):
             condition.equivalent = self
             return condition
 
-        if s.is_Interval and s.is_integer and e.is_Add:
+        if s.is_Interval and s.is_integer and e.is_Plus:
             if not s.left_open or s.right_open:
                 try:
                     index = e.args.index(S.NegativeOne)
@@ -249,6 +249,15 @@ class Contains(BooleanFunction):
             
         return BooleanFunction.__or__(self, other)
 
+    def asKroneckerDelta(self):
+        x, domain = self.args 
+        if domain.is_FiniteSet:
+            return domain.asKroneckerDelta(x)
+    
+        domain = x.domain - domain
+        if domain.is_FiniteSet:             
+            return 1 - domain.asKroneckerDelta(x)
+            
         
 class NotContains(BooleanFunction):
     """
@@ -292,7 +301,7 @@ class NotContains(BooleanFunction):
         return r"%s \not\in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return r"%s not in %s" % tuple(p._print(a) for a in self.args)
+        return r"%s ∉ %s" % tuple(p._print(a) for a in self.args)
 
     @classmethod
     def eval(cls, x, s):
@@ -403,6 +412,14 @@ class NotContains(BooleanFunction):
             
         return BooleanFunction.__or__(self, other)
 
+    def asKroneckerDelta(self):
+        x, domain = self.args 
+        if domain.is_FiniteSet:
+            return 1 - domain.asKroneckerDelta(x)
+        domain = x.domain - domain
+        if domain.is_FiniteSet:
+            return domain.asKroneckerDelta(x)
+            
     
 Contains.invert_type = NotContains
 

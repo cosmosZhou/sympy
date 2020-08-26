@@ -130,7 +130,7 @@ exp2_opt = ReplaceOptim(
 )
 
 _d = Wild('d', properties=[lambda x: x.is_Dummy])
-_u = Wild('u', properties=[lambda x: not x.is_number and not x.is_Add])
+_u = Wild('u', properties=[lambda x: not x.is_number and not x.is_Plus])
 _v = Wild('v')
 _w = Wild('w')
 
@@ -146,7 +146,7 @@ log2const_opt = ReplaceOptim(log(2)*log2(_w), log(_w))
 
 logsumexp_2terms_opt = ReplaceOptim(
     lambda l: (isinstance(l, log)
-               and l.args[0].is_Add
+               and l.args[0].is_Plus
                and len(l.args[0].args) == 2
                and all(isinstance(t, exp) for t in l.args[0].args)),
     lambda l: (
@@ -185,7 +185,7 @@ def _expm1_value(e):
     return e.func(*chain(new_exp_terms, non_num_other))
 
 
-expm1_opt = ReplaceOptim(lambda e: e.is_Add, _expm1_value)
+expm1_opt = ReplaceOptim(lambda e: e.is_Plus, _expm1_value)
 
 
 log1p_opt = ReplaceOptim(

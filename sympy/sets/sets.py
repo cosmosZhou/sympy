@@ -17,8 +17,7 @@ from sympy.core.numbers import Float
 from sympy.core.operations import LatticeOp
 from sympy.core.relational import Eq, Ne, Equality
 from sympy.core.singleton import Singleton, S
-from sympy.core.symbol import Symbol, Dummy, _uniquely_named_symbol, \
-    generate_free_symbol, dtype
+from sympy.core.symbol import Symbol, Dummy, _uniquely_named_symbol, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And, Or
 from sympy.sets.contains import Contains
@@ -87,9 +86,9 @@ class Set(Basic):
     def image_set(self):
         return None
 
-    def element_symbol(self, excludes=set()):
+    def element_symbol(self, excludes=None):
         element_type = self.element_type
-        return generate_free_symbol(self.free_symbols | excludes, **element_type.dict)
+        return self.generate_free_symbol(excludes, **element_type.dict)
 
     @property
     def atomic_dtype(self):
@@ -1144,7 +1143,7 @@ class Interval(Set, EvalfMixin):
             raise ValueError("Non-real intervals are not supported")
 
         # evaluate if possible
-        if end < start:
+        if right_open and end <= start or not right_open and end < start:
             return S.EmptySet
 
         if end == start :
@@ -1180,7 +1179,7 @@ class Interval(Set, EvalfMixin):
                     if start == end - 1:
                         return FiniteSet(start)
                     
-                if end.is_Add:
+                if end.is_Plus:
                     try:
                         index = end.args.index(S.One)
                         args = [*end.args]
@@ -1198,7 +1197,7 @@ class Interval(Set, EvalfMixin):
                     if start == end:
                         return FiniteSet(end)
                 
-                if end.is_Add:
+                if end.is_Plus:
                     try:
                         index = end.args.index(S.NegativeOne)
                         args = [*end.args]
@@ -1207,7 +1206,7 @@ class Interval(Set, EvalfMixin):
                         right_open = S.true
                     except:
                         ...
-            if not left_open and start.is_Add:
+            if not left_open and start.is_Plus:
                 try:
                     index = start.args.index(S.One)
                     args = [*start.args]
@@ -1891,6 +1890,8 @@ class Union(Set, LatticeOp, EvalfMixin):
     def _eval_is_finite(self):
         return all(a.is_finite for a in self.args)
 
+    def __add__(self, other):
+        return self.func(*(arg + other for arg in self.args))
 
 class Intersection(Set, LatticeOp):
     """
@@ -2116,13 +2117,14 @@ class Intersection(Set, LatticeOp):
         return r" \cap ".join(args)
 
     def handle_finite_sets(self, unk):
-        if len(unk) == 1:
-            e, *_ = unk.args
-            for i, s in enumerate(self.args):
-                if e in s:
-                    args = [*self.args]
-                    args[i] = unk
-                    return self.func(*args, evaluate=False)
+        for i, s in enumerate(self.args):
+            if unk in s:
+                args = [*self.args]
+                args[i] = unk
+                return self.func(*args, evaluate=False)
+            if s in unk:
+                return self
+        return self.func(*self.args, unk, evaluate=False)
                 
     def _eval_is_finite(self):
         return any(a.is_finite for a in self.args)
@@ -2171,7 +2173,7 @@ class Complement(Set, EvalfMixin):
         else:
             B = p._print(B)
             
-        return r"%s \ %s" % (p._print(A), B)
+        return r"%s / %s" % (p._print(A), B)
 
     def assertion(self):
         A, B = self.args
@@ -2415,6 +2417,10 @@ class Complement(Set, EvalfMixin):
 
     def infimum(self):
         return self.args[0].min()
+    
+    def __add__(self, other):
+        A, B = self.args
+        return self.func(A + other, B + other)
     
     def handle_finite_sets(self, unk):
         A, B = self.args
@@ -2862,12 +2868,21 @@ class FiniteSet(Set, EvalfMixin):
         from sympy.functions.elementary.miscellaneous import Max
         return Max(*self.args)        
 
+    def __add__(self, other):
+        return self.func(*(arg + other for arg in self.args))
+
     def handle_finite_sets(self, unk):
         if len(unk) == len(self) == 1:
             return Intersection(unk, self, evaluate=False)
 #             from sympy import Piecewise
 #             return Piecewise((unk, Equality(unk.arg, self.arg)), (S.EmptySet, True)).simplify()
 
+    def asKroneckerDelta(self, x):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        eq = 1
+        for arg in self.args:
+            eq *= 1 - KroneckerDelta(x, arg)
+        return 1 - eq
 
 class FiniteList(Expr):
     """

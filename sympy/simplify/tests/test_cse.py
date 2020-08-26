@@ -457,7 +457,7 @@ def test_issue_11230():
     for p in subsets(ex, 3):
         p = list(p)
         was = R, C = cse(p)
-        assert not any(i.is_Add for a in C for i in a.args)
+        assert not any(i.is_Plus for a in C for i in a.args)
         for ri in reversed(R):
             for i in range(len(C)):
                 C[i] = C[i].subs(*ri)

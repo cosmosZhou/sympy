@@ -113,7 +113,8 @@ class ExpBase(Function):
 
     def _eval_expand_power_exp(self, **hints):
         arg = self.args[0]
-        if arg.is_Add and arg.is_commutative:
+#         if arg.is_Plus and arg.is_commutative:
+        if arg.is_Plus:
             expr = 1
             for x in arg.args:
                 expr *= self.func(x)
@@ -295,7 +296,7 @@ class exp(ExpBase):
 
             return log_term ** Mul(*coeffs) if log_term else None
 
-        elif arg.is_Add:
+        elif arg.is_Plus:
             out = []
             add = []
             for a in arg.args:
@@ -443,7 +444,7 @@ class exp(ExpBase):
     def _eval_as_leading_term(self, x):
         from sympy import Order
         arg = self.args[0]
-        if arg.is_Add:
+        if arg.is_Plus:
             return Mul(*[exp(f).as_leading_term(x) for f in arg.args])
         arg = self.args[0].as_leading_term(x)
         if Order(1, x).contains(arg):
@@ -505,7 +506,9 @@ class log(Function):
 
     exp
     """
-
+    
+    is_complex = True
+    
     def fdiff(self, argindex=1):
         """
         Returns the first derivative of the function.
@@ -592,7 +595,7 @@ class log(Function):
                 return S.One
 
         # don't autoexpand Pow or Mul (see the issue 3351):
-        if not arg.is_Add:
+        if not arg.is_Plus:
             coeff = arg.as_coefficient(S.ImaginaryUnit)
 
             if coeff is not None:

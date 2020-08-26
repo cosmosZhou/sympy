@@ -55,7 +55,7 @@ def _unevaluated_Add(*args):
     co = S.Zero
     while args:
         a = args.pop()
-        if a.is_Add:
+        if a.is_Plus:
             # this will keep nesting from building up
             # so that x + (x + 1) -> x + x + 1 (3 args)
             args.extend(a.args)
@@ -76,9 +76,10 @@ class Plus(Expr, AssocOp):
 
     __slots__ = []
 
-    is_Add = True
     is_Plus = True
 
+    identity = S.Zero
+    
     @classmethod
     def flatten(cls, seq):
         """
@@ -109,9 +110,9 @@ class Plus(Expr, AssocOp):
                 if b.is_Mul:
                     rv = [a, b], [], None
             if rv:
-                if all(s.is_commutative for s in rv[0]):
-                    return rv
-                return [], rv[0], None
+#                 if all(s.is_commutative for s in rv[0]):
+                return rv
+#                 return [], rv[0], None
 
         terms = {}  # term -> coeff
                         # e.g. x**2 -> 5   for ... + 5*x**2 + ...
@@ -174,7 +175,7 @@ class Plus(Expr, AssocOp):
                 continue
 
             # Add([...])
-            elif o.is_Add:
+            elif o.is_Plus:
                 # NB: here we assume Add is always commutative
                 seq.extend(o.args)  # TODO zerocopy?
                 continue
@@ -230,14 +231,14 @@ class Plus(Expr, AssocOp):
                     # so we can simply put c in slot0 and go the fast way.
                     cs = s._new_rawargs(*((c,) + s.args))
                     newseq.append(cs)
-                elif s.is_Add:
+                elif s.is_Plus:
                     # we just re-create the unevaluated Mul
                     newseq.append(Mul(c, s, evaluate=False))
                 else:
                     # alternatively we have to call all Mul's machinery (slow)
                     newseq.append(Mul(c, s))
 
-            noncommutative = noncommutative or not s.is_commutative
+#             noncommutative = noncommutative or not s.is_commutative
 
         # oo, -oo
         if coeff is S.Infinity:
@@ -549,8 +550,6 @@ class Plus(Expr, AssocOp):
                 if self.max().is_extended_negative:
                     return False    
         
-        if self.is_commutative is False:
-            return
         
         from sympy import preorder_traversal, KroneckerDelta 
         delta = None
@@ -646,7 +645,7 @@ class Plus(Expr, AssocOp):
             return False
 
     def _eval_subs(self, old, new):
-        if not old.is_Add:
+        if not old.is_Plus:
             if old is S.Infinity and -old in self.args:
                 # foo - oo is foo + (-oo) internally
                 return self.xreplace({-old:-new})
@@ -758,7 +757,7 @@ class Plus(Expr, AssocOp):
         old = self
 
         expr = expand_mul(self)
-        if not expr.is_Add:
+        if not expr.is_Plus:
             return expr.as_leading_term(x)
 
         infinite = [t for t in expr.args if t.is_infinite]
@@ -770,7 +769,7 @@ class Plus(Expr, AssocOp):
             return old.compute_leading_term(x)
         elif expr is S.NaN:
             return old.func._from_args(infinite)
-        elif not expr.is_Add:
+        elif not expr.is_Plus:
             return expr
         else:
             plain = expr.func(*[s for s, _ in expr.extract_leading_order(x)])
@@ -905,14 +904,14 @@ class Plus(Expr, AssocOp):
         """
         con, prim = self.func(*[_keep_coeff(*a.as_content_primitive(
             radical=radical, clear=clear)) for a in self.args]).primitive()
-        if not clear and not con.is_Integer and prim.is_Add:
+        if not clear and not con.is_Integer and prim.is_Plus:
             con, d = con.as_numer_denom()
             _p = prim / d
             if any(a.as_coeff_Mul()[0].is_Integer for a in _p.args):
                 prim = _p
             else:
                 con /= d
-        if radical and prim.is_Add:
+        if radical and prim.is_Plus:
             # look for common radicals that can be removed
             args = prim.args
             rads = []
@@ -1006,7 +1005,9 @@ class Plus(Expr, AssocOp):
             
             if degree == 0:
 #                 for simplification purposes only
-                this = p.nth(0)
+                constant = p.nth(0)
+                if not constant._has(delta):
+                    this = constant
                 continue
                 
             coefficient = p.nth(1)
@@ -1021,11 +1022,11 @@ class Plus(Expr, AssocOp):
                     continue
             else:
                 coefficient = _coefficient
-                if coefficient.is_Add:
+                if coefficient.is_Plus:
                     coefficient = coefficient.simplifyKroneckerDelta()     
                         
             this = coefficient * delta + p.nth(0)
-            if this.is_Add:
+            if this.is_Plus:
                 this = this.simplifyKroneckerDelta()
             
         return this
@@ -1187,28 +1188,6 @@ class Plus(Expr, AssocOp):
                     positive[i] = positive[i].func(positive[i].function, *limits)
                     del positive[j]
                     return True
-#                 from sympy import Wild
-#                 pos = positive[j]
-#                 neg = positive[i]
-#                 t = pos.limits[0][0]
-#                 pattern = pos.function.subs(t, Wild(t.name, **t.assumptions0))
-#                 
-#                 if not (len(pos.limits) == len(neg.limits) == 1 and len(pos.limits[0]) == len(neg.limits[0]) == 3):
-#                     continue
-#                 neg_function = -neg.function
-#                 res = neg_function.match(pattern)
-#                 if not res:
-#                     continue
-# 
-#                 t_, *_ = res.values()
-#                 neg = neg.subs(t_, t)
-# 
-#                 if pos.function != neg_function:
-#                     neg = neg.func(pos.function, *neg.limits)
-# 
-#                 positive[j] = pos - neg
-#                 del positive[i]
-#                 return True
 
     @property
     def domain(self):

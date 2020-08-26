@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.relational import Equality
 
 from sympy.matrices.expressions.determinant import Det
@@ -31,7 +31,7 @@ def prove(Eq):
     Eq << apply(a, b)
  
     L = Symbol('L', shape=(n, n), definition=Eq[0].lhs.arg)
-    Eq << identity(L).definition
+    Eq << L.this.definition
     
     Eq << Eq[-1].this.rhs.as_Matrix()
 

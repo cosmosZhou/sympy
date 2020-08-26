@@ -71,7 +71,6 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Dummy = False
     is_Wild = False
     is_Function = False
-    is_Add = False
     is_Plus = False
     
     is_Mul = False
@@ -95,6 +94,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Relational = False
     is_Equality = False
     is_StrictGreaterThan = False
+    is_StrictLessThan = False
     
     is_Boolean = False
     is_BooleanFunction = False
@@ -107,6 +107,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_MatMul = False
     is_MatPow = False
     is_DenseMatrix = False
+    is_Det = False
     
     is_set = False
     is_EmptySet = None
@@ -123,6 +124,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Abs = False
     
     is_Sum = False
+    is_Product = False
     is_Integral = False
     
     is_ConditionSet = False
@@ -1103,26 +1105,26 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy import Dummy, Symbol
 
         unordered = False
+        from sympy import Equality
         if len(args) == 1:
             sequence = args[0]
-            from sympy.core.relational import Equality
             if isinstance(sequence, set):
                 unordered = True
             elif isinstance(sequence, (Dict, Mapping)):
                 unordered = True
                 sequence = sequence.items()
-            elif isinstance(sequence, Equality):
+            elif iterable(sequence):
+                ...
+            else:
+                assert sequence.is_Equality
                 sequence = [sequence.args]
-            elif not iterable(sequence):
-                from sympy.utilities.misc import filldedent
-                raise ValueError(filldedent("""
-                   When a single argument is passed to subs
-                   it should be a dictionary of old: new pairs or an iterable
-                   of (old, new) tuples."""))
-        elif len(args) == 2:
-            sequence = [args]
         else:
-            raise ValueError("subs accepts either 1 or 2 arguments")
+            if isinstance(args[0], Equality):
+                assert all(isinstance(eq, Equality) for eq in args)                
+                sequence = [eq.args for eq in args]
+            else:
+                assert len(args) == 2, "subs accepts either 1 or 2 arguments"
+                sequence = [args]
 
         sequence = list(sequence)
         for i, s in enumerate(sequence):
@@ -1165,7 +1167,8 @@ class Basic(with_metaclass(ManagedProperties)):
             kwargs['hack2'] = True
 #             m = Dummy()
             for old, new in sequence:
-                d = Dummy(commutative=new.is_commutative, **new.dtype.dict)
+#                 d = Dummy(commutative=new.is_commutative, **new.dtype.dict)
+                d = Dummy(**new.dtype.dict)
                 # using d*m so Subs will be used on dummy variables
                 # in things like Derivative(f(x, y), x) in which x
                 # is both free and bound
@@ -1647,7 +1650,7 @@ class Basic(with_metaclass(ManagedProperties)):
         that describes the target expression more precisely:
 
         >>> (1 + x**(1 + y)).replace(
-        ... lambda x: x.is_Power and x.exp.is_Add and x.exp.args[0] == 1,
+        ... lambda x: x.is_Power and x.exp.is_Plus and x.exp.args[0] == 1,
         ... lambda x: x.base**(1 - (x.exp - 1)))
         ...
         x**(1 - y) + 1
@@ -2076,7 +2079,7 @@ class Basic(with_metaclass(ManagedProperties)):
     def dtype(self):
         return self.atomic_dtype * self.shape
     
-    def generate_free_symbol(self, excludes=None, shape=None, free_symbol=None, **kwargs):
+    def generate_free_symbol(self, excludes=None, free_symbol=None, **kwargs):
         if excludes is None:
             excludes = self.free_symbols
         else:
@@ -2091,33 +2094,26 @@ class Basic(with_metaclass(ManagedProperties)):
             if free_symbol:
                 free_symbol, *_ = free_symbol
                 return free_symbol
-#                 return free_symbol.copy(shape=shape, **kwargs)
             
-        free_symbols = [*set(symbol.name for symbol in excludes)]
-        free_symbols.sort()
-        name = None
-
-        for name in free_symbols:
-            if len(name) == 1:
-                break
-
-        if name is not None:
-            if len(name) > 1:
-                name = name[0]
-            
-            for _ in range(52):
-                name = chr(ord(name) + 1)
-                if name == '{':
-                    name = 'A'
-                elif name == '[':
-                    name = 'a'
-
-                if name not in free_symbols:
-                    from sympy import Symbol
-                    if shape:
-                        kwargs['shape'] = shape
-                                            
-                    return Symbol(name, **kwargs)
+        excludes = set(symbol.name for symbol in excludes)
+        if 'shape' in kwargs:      
+            if len(kwargs['shape']) > 1:
+                symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            else:
+                symbols = 'abcdefghijklmnopqrstuvwxyz'
+        else:
+            if 'dtype' in kwargs:
+                symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'            
+            elif 'integer' in kwargs:
+                symbols = 'ijkhtlmnabcdefgopqrsuvwxyz'
+            else:
+                symbols = 'xyzabcdefghijklmnopqrstuvw'
+                        
+        from sympy import Symbol
+        for name in symbols:
+            if name not in excludes:                
+                return Symbol(name, **kwargs)
+        raise Exception("run out of symbols")
 
     # performing other in self
     def contains_with_subset(self, other):
@@ -2249,6 +2245,11 @@ class Basic(with_metaclass(ManagedProperties)):
         global_variables = {'Global`' + x.name : x for x in global_variables}
         from wolframclient.language import expression        
         return expression.sympify(wlexpr, **global_variables)
+
+    @property
+    def this(self):
+        from sympy.logic.boolalg import Identity
+        return Identity(self)
 
         
 class Atom(Basic):

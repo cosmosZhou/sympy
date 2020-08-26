@@ -547,7 +547,7 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
         # https://en.wikipedia.org/wiki/Random_variable#Functions_of_random_variables
         if expr == self.value:
             return self.density
-        y = Dummy('y')
+        y = Dummy('y', real=True)
 
         gs = solveset(expr - y, self.value, S.Reals)
 

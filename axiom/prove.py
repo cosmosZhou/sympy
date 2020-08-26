@@ -46,7 +46,6 @@ def readFolder(rootdir, sufix='.py'):
 
 
 def process(package):
-    print('testing', package)
     try:    
         package = eval(package)
     except AttributeError as e:   
@@ -114,6 +113,7 @@ def prove():
 
 
 def parellel_process(process, items):
+#     return map(process, items)
     from multiprocessing import Pool
     from multiprocessing import cpu_count
     pool = Pool(processes=cpu_count() * 2)

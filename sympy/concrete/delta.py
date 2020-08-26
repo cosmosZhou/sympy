@@ -26,7 +26,7 @@ def _expand_delta(expr, index):
     func = Add
     terms = [S(1)]
     for h in expr.args:
-        if delta is None and h.is_Add and _has_simple_delta(h, index):
+        if delta is None and h.is_Plus and _has_simple_delta(h, index):
             delta = True
             func = h.func
             terms = [terms[0]*t for t in h.args]
@@ -93,7 +93,7 @@ def _has_simple_delta(expr, index):
     if expr.has(KroneckerDelta):
         if _is_simple_delta(expr, index):
             return True
-        if expr.is_Add or expr.is_Mul:
+        if expr.is_Plus or expr.is_Mul:
             for arg in expr.args:
                 if _has_simple_delta(arg, index):
                     return True
@@ -119,7 +119,7 @@ def _remove_multiple_delta(expr):
     Evaluate products of KroneckerDelta's.
     """
     from sympy.solvers import solve
-    if expr.is_Add:
+    if expr.is_Plus:
         return expr.func(*list(map(_remove_multiple_delta, expr.args)))
     if not expr.is_Mul:
         return expr
@@ -181,7 +181,7 @@ def deltaproduct(f, limit):
     if not f.has(KroneckerDelta):
         return product(f, limit)
 
-    if f.is_Add:
+    if f.is_Plus:
         # Identify the term in the Add that has a simple KroneckerDelta
         delta = None
         terms = []
@@ -303,7 +303,7 @@ def deltasummation(f, limit, no_piecewise=False):
     x = limit[0]
 
     g = _expand_delta(f, x)
-    if g.is_Add:
+    if g.is_Plus:
         return piecewise_fold(
             g.func(*[deltasummation(h, limit, no_piecewise) for h in g.args]))
 

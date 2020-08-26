@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
 from sympy import S
@@ -49,7 +49,7 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()
 
-    Eq << identity(UNION[i:0:k](x[i] & A)).simplify()
+    Eq << UNION[i:0:k](x[i] & A).this.simplify()
 
     Eq << Eq[-1].this.rhs.subs(Eq[0])
     

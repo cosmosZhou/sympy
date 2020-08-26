@@ -347,7 +347,7 @@ class StrPrinter(Printer):
 
             s_monom = "*".join(s_monom)
 
-            if coeff.is_Add:
+            if coeff.is_Plus:
                 if s_monom:
                     s_coeff = "(" + self._print(coeff) + ")"
                 else:

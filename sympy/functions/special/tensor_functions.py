@@ -161,18 +161,27 @@ class KroneckerDelta(Function):
             return S.One
         if fuzzy_not(diff.is_zero):
             return S.Zero
-        if abs(diff) > 0:
+        if diff.is_nonzero:
             return S.Zero
         from sympy import Contains
         if Contains(i, j.domain).is_BooleanFalse or Contains(j, i.domain).is_BooleanFalse:
             return S.Zero
         
-        if i.assumptions0.get("below_fermi") and \
-                j.assumptions0.get("above_fermi"):
+        if i.assumptions0.get("below_fermi") and j.assumptions0.get("above_fermi"):
             return S.Zero
-        if j.assumptions0.get("below_fermi") and \
-                i.assumptions0.get("above_fermi"):
+        if j.assumptions0.get("below_fermi") and i.assumptions0.get("above_fermi"):
             return S.Zero
+        
+        if i.is_Plus and j.is_Plus:
+            i_args = set(i.args)
+            j_args = set(j.args)
+            intersect = i_args & j_args
+            if intersect:
+                i_args -= intersect 
+                j_args -= intersect
+                i = i.func(*i_args)
+                j = j.func(*j_args)                        
+                return cls(i, j)
         # to make KroneckerDelta canonical
         # following lines will check if inputs are in order
         # if not, will return KroneckerDelta with correct order

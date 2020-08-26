@@ -1,6 +1,6 @@
 from sympy.core.symbol import Symbol, dtype
 from sympy.core.relational import Equality
-from sympy.utility import plausible, identity
+from sympy.utility import plausible
 
 from sympy.functions.combinatorial.numbers import Stirling
 from sympy.sets.sets import image_set, Interval, Union
@@ -29,31 +29,31 @@ def prove(Eq):
     n = Symbol('n', integer=True, nonnegative=True)
     Eq << apply(n, k)
 
-    Eq.stirling2 = identity(Eq[0].lhs).definition
-    Eq.stirling0 = identity(Eq[0].rhs.args[1]).definition
-    Eq.stirling1 = identity(Eq[0].rhs.args[0].args[1]).definition
+    Eq.stirling2 = Eq[0].lhs.this.definition
+    Eq.stirling0 = Eq[0].rhs.args[1].this.definition
+    Eq.stirling1 = Eq[0].rhs.args[0].args[1].this.definition
 
     s2 = Symbol('s2', definition=Eq.stirling2.rhs.arg)
-    Eq << identity(s2).definition
+    Eq << s2.this.definition
     s2_quote = Symbol("s'_2", definition=Eq.stirling2.rhs.arg.limits[0][1])
     Eq.stirling2 = Eq.stirling2.subs(Eq[-1].reversed)
-    Eq << identity(s2_quote).definition
+    Eq << s2_quote.this.definition
 
     Eq.s2_definition = Eq[-2].subs(Eq[-1].reversed)
 
     s0 = Symbol('s0', definition=Eq.stirling0.rhs.arg)
-    Eq << identity(s0).definition
+    Eq << s0.this.definition
     s0_quote = Symbol("s'_0", definition=Eq.stirling0.rhs.arg.limits[0][1])
     Eq.stirling0 = Eq.stirling0.subs(Eq[-1].reversed)
-    Eq << identity(s0_quote).definition
+    Eq << s0_quote.this.definition
     Eq << Eq[-2].subs(Eq[-1].reversed)
     s0_definition = Eq[-1]
 
     s1 = Symbol('s1', definition=Eq.stirling1.rhs.arg)
-    Eq << identity(s1).definition
+    Eq << s1.this.definition
     s1_quote = Symbol("s'_1", definition=Eq.stirling1.rhs.arg.limits[0][1])
     Eq.stirling1 = Eq.stirling1.subs(Eq[-1].reversed)
-    Eq << identity(s1_quote).definition
+    Eq << s1_quote.this.definition
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
     e = Symbol('e', dtype=dtype.integer.set)
@@ -183,14 +183,14 @@ def prove(Eq):
 
     B = Symbol("B", dtype=dtype.integer.set.set, definition=plausible0.args[0])
 
-    Eq.B_definition = identity(B).definition
+    Eq.B_definition = B.this.definition
 
     Eq << plausible0.subs(Eq.B_definition.reversed)
 
     Eq << Eq[-3].union(Eq[-1])
     
-#     Eq << identity(s2).bisect(ConditionSet(e, Contains({n}, e), s2))
-    Eq << identity(s2).bisect(conditionset(e, Contains({n}, e), s2))
+#     Eq << s2.this.bisect(ConditionSet(e, Contains({n}, e), s2))
+    Eq << s2.this.bisect(conditionset(e, Contains({n}, e), s2))
 
     Eq.subset_B = Subset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
     Eq.supset_B = Supset(Eq[-1].rhs.args[0], Eq[-2].lhs.args[0], plausible=True)  # unproven
@@ -277,7 +277,7 @@ def prove(Eq):
 
     s2_n = Symbol('s_{2, n}', definition=Eq[-1].limits[0][1]);
 
-    Eq.s2_n_definition = identity(s2_n).definition
+    Eq.s2_n_definition = s2_n.this.definition
 
     Eq << s2_n.assertion()
 
@@ -357,7 +357,7 @@ def prove(Eq):
 
     s2_hat_n = Symbol("\hat{s}_{2, n}", definition=Eq[-1].limits[0][1])
 
-    Eq << identity(s2_hat_n).definition
+    Eq << s2_hat_n.this.definition
 
     Eq.s2_hat_n_assertion = Eq[-2].this.limits[0].subs(Eq[-1].reversed)
 
@@ -368,7 +368,7 @@ def prove(Eq):
     assert s2_quote_n in s2_quote
     assert Supset(s2_quote, s2_quote_n)
 
-    Eq << identity(s2_quote_n).definition
+    Eq << s2_quote_n.this.definition
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
@@ -542,7 +542,7 @@ def prove(Eq):
 
     A_quote = Symbol("A'", shape=(k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.A_definition.rhs.function))
 
-    Eq.A_quote_definition = identity(A_quote).definition
+    Eq.A_quote_definition = A_quote.this.definition
 
     Eq.A_definition_simplified = Eq.A_definition.subs(Eq.A_quote_definition[j].reversed)
 

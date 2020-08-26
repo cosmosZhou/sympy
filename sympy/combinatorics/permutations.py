@@ -10,6 +10,7 @@ from sympy.polys.polytools import lcm
 from sympy.utilities.iterables import (flatten, has_variety, minlex,
     has_dups, runs)
 from mpmath.libmp.libintmath import ifac
+from sympy.core.function import Function
 
 
 def _af_rmul(a, b):
@@ -2862,3 +2863,31 @@ def _merge(arr, temp, left, mid, right):
 
 Perm = Permutation
 _af_new = Perm._af_new
+
+class Signature(Function):
+    r"""
+    """
+    is_positive = True
+    is_zero = False
+    
+    @classmethod
+    def eval(cls, arg):
+        ...
+
+    def simplify(self, **_):
+        return self
+
+
+class Permutations(Function):
+    r"""
+    """
+    @classmethod
+    def eval(cls, arg):
+        ...
+
+    def simplify(self, **_):
+        return self
+
+    @property
+    def is_set(self):
+        return True

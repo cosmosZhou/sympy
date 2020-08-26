@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible, identity
+from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
@@ -38,7 +38,7 @@ def prove(Eq):
     p = Symbol('p', real=True)
     
     x = Ref[i:n](p ** i)
-    Eq << identity(w[0, i] @ x).subs(Eq[0].subs(i, 0).subs(j, i))
+    Eq << (w[0, i] @ x).this.subs(Eq[0].subs(i, 0).subs(j, i))
     Eq << Eq[-1].this.rhs.expand().simplify(deep=True)
     
     Eq << w[0, j] @ Eq[-1]
@@ -52,14 +52,14 @@ def prove(Eq):
     Eq << w[0, i] @ Eq[-1]
     
     Eq << Eq[-1].this.function.rhs.expand()
-    
-    Eq << Eq[-1].this.simplify(deep=True)
 
+    Eq << Eq[-1].this.simplify(deep=True)
+    
     Eq << Eq[-1].this.function.rhs.function.asKroneckerDelta()
     
     Eq.www_expansion = Eq[-1].this.simplify(deep=True)
 
-    Eq << identity(w[i, j.unbounded] @ x).expand().simplify(deep=True)
+    Eq << (w[i, j.unbounded] @ x).this.expand().simplify(deep=True)
     
     Eq << Eq[-1].simplify(wrt=j.unbounded)
     
