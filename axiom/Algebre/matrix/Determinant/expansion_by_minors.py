@@ -39,8 +39,19 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].args[1].arg.as_Matrix()
     
+    Eq << Eq[-1].this.rhs.args[1].args[2].arg.as_Matrix()
     
-
+    Eq << Eq[-1].this.rhs.args[2].args[1].arg.as_Matrix()
+    
+    Eq << Eq[-1].this.rhs.args[3].args[2].arg.as_Matrix()
+    
+    Eq << Eq[-1].this.rhs.args[4].args[1].arg.as_Matrix()
+    
+    Eq << Eq[-1].this.lhs.arg.as_Matrix()
+    
+    Eq << Eq[-1].doit(deep=True)
+    
+    Eq << Eq[-1].this.rhs.expand()
     
 if __name__ == '__main__':
     prove(__file__)

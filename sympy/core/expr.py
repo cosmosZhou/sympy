@@ -4067,6 +4067,18 @@ class Expr(Basic, EvalfMixin):
 
     def _eval_determinant(self):
         ...
+      
+    def as_Matrix(self):
+        i_shape, j_shape = self.shape
+        if isinstance(i_shape, int) or i_shape.is_Number:
+            if isinstance(j_shape, int) or j_shape.is_Number:  
+                array = []
+                for i in range(i_shape):
+                    for j in range(j_shape):
+                        array.append(self[sympify(i), sympify(j)])
+                from sympy import Matrix 
+                return Matrix(i_shape, j_shape, tuple(array))
+        return self
         
 class AtomicExpr(Atom, Expr):
     """
