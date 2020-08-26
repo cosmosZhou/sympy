@@ -2448,19 +2448,24 @@ class Ref(ExprWithLimits):
         i, i_a, i_b = limit_i
         j, j_a, j_b = limit_j
         
-        diff_i = i_b - i_a + 1
-        if not diff_i.is_Number:
+        i_shape = i_b - i_a + 1
+        if not i_shape.is_Number:
             return self
         
-        diff_j = j_b - j_a + 1
-        if not diff_j.is_Number:
+        j_shape = j_b - j_a + 1
+        if not j_shape.is_Number:
             return self
 
         array = []
-        for _i in range(diff_i):
-            for _j in range(diff_j):
-                array.append(self.function._subs(i, _i)._subs(j, _j)) 
-        return Matrix(diff_i, diff_j, tuple(array))
+#         _i = i.copy(domain=Interval(0, i_shape, right_open=True, integer=True))
+#         _j = j.copy(domain=Interval(0, j_shape, right_open=True, integer=True))
+#         function = self.function._subs(i, _i)._subs(j, _j)
+#         i, j = _i, _j
+        function = self.function
+        for _i in range(i_shape):
+            for _j in range(j_shape):
+                array.append(function._subs(i, _i)._subs(j, _j)) 
+        return Matrix(i_shape, j_shape, tuple(array))
 
     def as_coeff_mmul(self):
         return 1, self
