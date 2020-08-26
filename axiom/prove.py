@@ -116,11 +116,8 @@ def parellel_process(process, items):
 #     return map(process, items)
     from multiprocessing import Pool
     from multiprocessing import cpu_count
-    pool = Pool(processes=cpu_count() * 2)
-    results = pool.map(process, items)
-    pool.close()
-    pool.join()
-    return results
+    with Pool(processes=cpu_count() * 2) as pool:
+        return pool.map(process, items)
 
        
 if __name__ == '__main__':    

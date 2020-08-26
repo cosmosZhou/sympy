@@ -477,21 +477,25 @@ class MutableDenseMatrix(DenseMatrix):
             rows, cols, flat_list = args
         else:
             rows, cols, flat_list = cls._handle_creation_inputs(*args, **kwargs)
-        self = Basic.__new__(cls)
-        self._args = (rows, cols, flat_list)
+        self = Basic.__new__(cls, shape=(rows, cols))
+        self._args = flat_list
         return self
 
     @property
+    def shape(self):        
+        return self._assumptions['shape']        
+
+    @property
     def rows(self):
-        return self.args[0]
+        return self.shape[0]
     
     @property
     def cols(self):
-        return self.args[1]
+        return self.shape[1]
     
     @property
     def _mat(self):
-        return self.args[2]
+        return self.args
 
     @property
     def is_number(self):

@@ -1606,7 +1606,7 @@ class Multiplication(Identity):
             _mat = [*rhs._mat]
             for i in range(self.i * d, self.i * d + d):
                 _mat[i] *= self.multiplier
-            return rhs.func(*rhs.args[:2], type(rhs._mat)(_mat))
+            return rhs.func(*rhs.shape, type(rhs._mat)(_mat))
 
         return MatrixExpr.__matmul__(self, rhs)
 
@@ -1619,7 +1619,7 @@ class Multiplication(Identity):
             _mat = [*lhs._mat]
             for i in range(self.i, self.i + d * d, d):
                 _mat[i] *= self.multiplier
-            return lhs.func(*lhs.args[:2], type(lhs._mat)(_mat))
+            return lhs.func(*lhs.shape, type(lhs._mat)(_mat))
             
         return MatrixExpr.__rmatmul__(self, lhs)
 

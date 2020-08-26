@@ -2438,35 +2438,6 @@ class Ref(ExprWithLimits):
         from sympy.matrices.expressions.matexpr import VConcatenate
         return VConcatenate(*array)
 
-    def as_Matrix(self):
-        if len(self.limits) != 2:
-            return self
-        limit_i, limit_j = self.limits
-        
-        if len(limit_i) != 3 or len(limit_j) != 3:
-            return self
-        i, i_a, i_b = limit_i
-        j, j_a, j_b = limit_j
-        
-        i_shape = i_b - i_a + 1
-        if not i_shape.is_Number:
-            return self
-        
-        j_shape = j_b - j_a + 1
-        if not j_shape.is_Number:
-            return self
-
-        array = []
-#         _i = i.copy(domain=Interval(0, i_shape, right_open=True, integer=True))
-#         _j = j.copy(domain=Interval(0, j_shape, right_open=True, integer=True))
-#         function = self.function._subs(i, _i)._subs(j, _j)
-#         i, j = _i, _j
-        function = self.function
-        for _i in range(i_shape):
-            for _j in range(j_shape):
-                array.append(function._subs(i, _i)._subs(j, _j)) 
-        return Matrix(i_shape, j_shape, tuple(array))
-
     def as_coeff_mmul(self):
         return 1, self
 
