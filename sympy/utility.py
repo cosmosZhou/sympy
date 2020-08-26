@@ -7,6 +7,7 @@ import traceback
 from sympy.logic import boolalg
 from sympy.utilities.iterables import topological_sort_depth_first
 from builtins import isinstance
+import time
 
 
 def init(func):
@@ -23,14 +24,16 @@ sympy.init_printing()
 
 
 class Eq:
-
-    def __init__(self, txt):
-        self.__dict__['list'] = []
+    slots = {'list', 'file', 'timing'}
         
+    def __init__(self, txt):
         from sympy.utilities.misc import Text
-
+        
+        self.__dict__['list'] = []
         self.__dict__['file'] = Text(txt)
-        self.file.clear()
+        self.__dict__['timing'] = time.time()
+        
+        self.file.clear()         
 
     def __del__(self):
 #         print('calling destructor')
@@ -44,9 +47,10 @@ class Eq:
         utility_php = re.compile(r'/\w+').sub('/utility', re.compile(r'\w+/').sub('../', php[php.index('axiom'):]))
         
         php_code = """\
+<p style='display:none'>timing = %s</p>
 <?php
 require_once '%s';
-""" % utility_php
+""" % (time.time() - self.timing, utility_php)
         lines.append(php_code)
         
         for line in self.file:            
@@ -146,9 +150,8 @@ render(__FILE__, $text);
     def plausibles_dict(self):
         plausibles = {i : eq for i, eq in enumerate(self) if eq.plausible}
 
-        for k, v in self.__dict__.items():
-            if k in ('list', 'file'):
-                continue
+        for k in self.__dict__.keys() - self.slots:
+            v = self.__dict__[k]
             if v.plausible:
                 plausibles[k] = v
         return plausibles
@@ -157,9 +160,8 @@ render(__FILE__, $text);
         for i, _eq in enumerate(self.list):
             if _eq == eq or (dummy_eq and eq.dummy_eq(_eq)):
                 return i
-        for k, v in self.__dict__.items():
-            if k in ('list', 'file'):
-                continue
+        for k in self.__dict__.keys() - self.slots:
+            v = self.__dict__[k]
             if eq == v or (dummy_eq and eq.dummy_eq(v)):
                 return k
         return -1
@@ -367,7 +369,6 @@ def check(func=None, wolfram=None):
             except:
                 ...
 #                 traceback.print_exc()           
-                
         
         return lambda py: wolfram_decorator(py, func, wolfram=session)
 

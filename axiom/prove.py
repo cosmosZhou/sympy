@@ -4,6 +4,8 @@ import re
 import axiom  # @UnusedImport
 from sympy.utilities.misc import Text
 import time
+from os.path import getsize
+from multiprocessing import cpu_count
 
 count = 0
 
@@ -29,22 +31,36 @@ def readFolder(rootdir, sufix='.py'):
             if name == '__init__':
                 continue
             
-            path = re.compile(r'[\\/]+').split(path[:-len(sufix)])
+            path = path[:-len(sufix)]
+            paths = re.compile(r'[\\/]+').split(path)
 #             print(path)
-            index = path.index('axiom')
+            index = paths.index('axiom')
 
-            package = '.'.join(path[index:])
+            package = '.'.join(paths[index:])
             if package in insurmountable:
                 continue                
 
             global count
             count += 1
-            yield package
+            path += '.php'
+            timing = 0
+            if os.path.isfile(path):                
+                with open(path, "r", encoding='utf8') as file:
+                    line = file.readline()                    
+                    m = re.compile(r"<p style='display:none'>timing = ([\d.]+)</p>").match(line)
+                    if m:
+                        timing = float(m.group(1))
+                    else:
+                        timing = getsize(path) / 500
+            
+            yield package, timing
 
         elif os.path.isdir(path):
             yield from readFolder(path, sufix)
 
-
+def process_multiple(packages):
+    return [process(package) for package in packages]
+    
 def process(package):
     try:    
         package = eval(package)
@@ -80,16 +96,51 @@ def prove():
             
             if os.path.isdir(path):
                 yield from readFolder(path)
-                
-#     for package, ret in map(process, [*generator()]):
-    for package, ret in parellel_process(process, [*generator()]):
-        if ret is False:                
-            unproven.append(package)
-        elif ret is None:
-            erroneous.append(package)
-        else:
-            continue
-        websites.append("http://localhost" + package[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php")
+
+    tasks = {task : timing for task, timing in generator()}
+    processes = []
+    timings = []
+    for _ in range(cpu_count() * 2):
+        processes.append([])
+        timings.append(0)
+    
+    total_timing = sum(timing for task, timing in tasks.items())
+    
+    average_timing = total_timing / len(processes)
+    print('total_timing =', total_timing)
+    print('average_timing =', average_timing)
+    
+    tasks = [*tasks.items()]
+    tasks.sort(key=lambda pair : pair[1], reverse=True)
+    
+    def argmin(timings):
+        m = total_timing
+        for i in range(len(timings)):
+            if timings[i] < m:
+                index = i
+                m = timings[i]
+        return index
+    
+    for task, timing in tasks:
+#         print(task, timing)
+        i = argmin(timings)
+        processes[i].append(task)
+        timings[i] += timing
+        
+    for proc, timing in zip(processes, timings):
+        print(timing, proc)
+        
+    print('total timing =', sum(timings))
+    
+    for array in parellel_process(process_multiple, processes):
+        for package, ret in array: 
+            if ret is False:                
+                unproven.append(package)
+            elif ret is None:
+                erroneous.append(package)
+            else:
+                continue
+            websites.append("http://localhost" + package[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php")
 
     print('in all %d axioms' % count)
 
@@ -107,7 +158,8 @@ def prove():
         print('.php websites')
         for p in websites:
             print(p)
-    print('cost time =', (time.time() - start) / 60, 'minutes')
+    timing = time.time() - start
+    print('cost time =', timing / 60, 'minutes =', timing, 'seconds')
     print('total unprovable =', len(unproven))
     print('total erroneous =', len(erroneous))
 
@@ -115,7 +167,6 @@ def prove():
 def parellel_process(process, items):
 #     return map(process, items)
     from multiprocessing import Pool
-    from multiprocessing import cpu_count
     with Pool(processes=cpu_count() * 2) as pool:
         return pool.map(process, items)
 
@@ -124,7 +175,6 @@ if __name__ == '__main__':
     prove()
     
 # Reverse[Reverse[Minors[mat], 1], 2] == Map[Reverse, Minors[mat], {0, 1}]
-
 
 # adj[m_] := Map[Reverse, Minors[Transpose[m], Length[m] - 1], {0, 1}] Table[(-1)^(i + j), {i, Length[m]}, {j, Length[m]}]
 # $Assumptions = M \[Element] Matrices[{n, n}, Reals, Symmetric[{1, 2}]]
