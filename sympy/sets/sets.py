@@ -2117,13 +2117,14 @@ class Intersection(Set, LatticeOp):
         return r" \cap ".join(args)
 
     def handle_finite_sets(self, unk):
-        if len(unk) == 1:
-            e, *_ = unk.args
-            for i, s in enumerate(self.args):
-                if e in s:
-                    args = [*self.args]
-                    args[i] = unk
-                    return self.func(*args, evaluate=False)
+        for i, s in enumerate(self.args):
+            if unk in s:
+                args = [*self.args]
+                args[i] = unk
+                return self.func(*args, evaluate=False)
+            if s in unk:
+                return self
+        return self.func(*self.args, unk, evaluate=False)
                 
     def _eval_is_finite(self):
         return any(a.is_finite for a in self.args)
@@ -2876,6 +2877,12 @@ class FiniteSet(Set, EvalfMixin):
 #             from sympy import Piecewise
 #             return Piecewise((unk, Equality(unk.arg, self.arg)), (S.EmptySet, True)).simplify()
 
+    def asKroneckerDelta(self, x):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        eq = 1
+        for arg in self.args:
+            eq *= 1 - KroneckerDelta(x, arg)
+        return 1 - eq
 
 class FiniteList(Expr):
     """

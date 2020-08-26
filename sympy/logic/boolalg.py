@@ -916,7 +916,9 @@ class Boolean(Basic):
             return self
         return origin
 
-
+    def asKroneckerDelta(self):
+        ...
+        
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
 
@@ -1922,6 +1924,14 @@ class And(LatticeOp, BooleanFunction):
     def simplify(self, deep=False):
         return self
 
+    def asKroneckerDelta(self):
+        eq = 1
+        for c in self.args:
+            e = c.asKroneckerDelta()
+            if e is None:
+                return
+            eq *= e
+        return eq
 
 class Or(LatticeOp, BooleanFunction):
     """
@@ -2126,13 +2136,14 @@ class Or(LatticeOp, BooleanFunction):
 
         return self.args
 
-#     def subs(self, *args, **kwargs):
-#         result = LatticeOp.subs(self, *args, **kwargs)
-#         if all(isinstance(arg, Boolean) for arg in args):
-#             result.equivalent = [self, *args]
-#         else:
-#             result.equivalent = self
-#         return result
+    def asKroneckerDelta(self):
+        eq = 1
+        for c in self.args:
+            e = c.asKroneckerDelta()
+            if e is None:
+                return
+            eq *= 1 - e
+        return 1 - eq
 
 
 And.invert_type = Or

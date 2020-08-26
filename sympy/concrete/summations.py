@@ -1084,10 +1084,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             domain_nonzero = self.function.domain_nonzero(x)
             domain &= domain_nonzero
             
-            if domain not in limit[1]:
-                print('domain =', domain)
-                print('limit[1] =', limit[1])
-                print(domain in limit[1])
+#             if domain not in limit[1]:
+#                 print('domain =', domain)
+#                 print('limit[1] =', limit[1])
+#                 print(domain in limit[1])
             assert domain in limit[1]
             
             if domain.is_EmptySet:
@@ -1098,13 +1098,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return this
             
             if domain.is_Intersection:
-                for i, s in enumerate(domain.args):
-                    if s.is_FiniteSet and len(s) == 1:
-                        s, *_ = s.args
-                        args = [*domain.args]
-                        del args[i]
-                        domain = domain.func(*args, evaluate=True)
-                        return Piecewise((self.function._subs(x, s).simplify(), Contains(s, domain).simplify()), (0, True))
+                singulars = set(s for s in domain.args if s.is_FiniteSet and len(s) == 1)
+                if len(singulars) == 1:
+                    (a, *_), *_ = singulars
+                    domain = domain.func(*domain._argset - singulars, evaluate=True)
+                    return Piecewise((self.function._subs(x, a).simplify(), Contains(a, domain).simplify()), (0, True))
+                if len(singulars) == 2:
+                    from sympy import KroneckerDelta
+                    (a, *_), (b, *_) = singulars
+                    domain = domain.func(*domain._argset - singulars, evaluate=True)                                         
+                    return KroneckerDelta(a, b) * Piecewise((self.function._subs(x, a).simplify(), Contains(a, domain).simplify()), (0, True))
                 
             if isinstance(domain, Complement):
                 A, B = domain.args

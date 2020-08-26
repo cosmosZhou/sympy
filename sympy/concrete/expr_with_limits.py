@@ -518,9 +518,9 @@ class ExprWithLimits(Expr):
         for f, condition in self.function.args:
             _domain = (universalSat - union) & x.domain_conditioned(condition) & domain
             assert not _domain or _domain.is_integer
-
-            union |= _domain
-            assert not union or union.is_integer
+            if not condition:
+                union |= _domain
+                assert not union or union.is_integer
 
             if isinstance(_domain, FiniteSet):
                 for e in _domain:

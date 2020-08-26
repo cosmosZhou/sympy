@@ -11,7 +11,6 @@ from sympy.logic.boolalg import (And, Boolean, distribute_and_over_or,
     true, false, Or, ITE, simplify_logic)
 from sympy.utilities.iterables import uniq, ordered, product, sift
 from sympy.utilities.misc import filldedent, func_name
-from _functools import reduce
 
 Undefined = S.NaN  # Piecewise()
 
@@ -1100,45 +1099,25 @@ class Piecewise(Function):
                 dtype = _dtype
         return dtype
 
-    @staticmethod
-    def logic_and(x, domain):
-        from sympy.functions.special.tensor_functions import KroneckerDelta
-        eq = 1
-        for arg in domain.args:
-            eq *= 1 - KroneckerDelta(x, arg)
-        return eq        
-    
     def asKroneckerDelta(self):
-        from sympy.functions.special.tensor_functions import KroneckerDelta
         e, c = self.args[0]
-        if c.is_Equality:
-            eq = KroneckerDelta(*c.args)
-        elif c.is_Unequality:
-            eq = 1 - KroneckerDelta(*c.args)
-        elif c.is_Contains:
-            x, domain = c.args 
-            if not domain.is_FiniteSet:
-                domain = x.domain - domain
-                if not domain.is_FiniteSet:
-                    return self
-                eq = self.logic_and(x, domain)
-            else:
-                eq = 1 - self.logic_and(x, domain)
-        elif c.is_NotContains:
-            x, domain = c.args 
-            if not domain.is_FiniteSet:
-                domain = x.domain - domain
-                if not domain.is_FiniteSet:
-                    return self
-                eq = 1 - self.logic_and(x, domain)
-            else:
-                eq = self.logic_and(x, domain)
-        else:
+        eq = c.asKroneckerDelta()
+        if eq is None:
             return self
+        
         if len(self.args) == 2:
             rest, _ = self.args[1]
             if rest.is_Piecewise:
                 rest = rest.asKroneckerDelta()
+            elif rest.is_Times or rest.is_Plus:
+                args = [*rest.args]
+                hit = False
+                for i, p in enumerate(args):
+                    if p.is_Piecewise:
+                        args[i] = p.asKroneckerDelta()
+                        hit = True
+                if hit:
+                    rest = rest.func(*args)
         else:
             rest = self.func(*self.args[1:]).asKroneckerDelta()
         if e.is_Piecewise:
@@ -1270,22 +1249,40 @@ class Piecewise(Function):
                 need_swap = False
                 for f, cond in self.args:
                     domain = (univeralSet - union) & wrt.domain_conditioned(cond)
-                    union |= domain
-                                        
+                    if not cond:
+                        union |= domain                                        
                     if domain.is_EmptySet:
                         hit = True
                         continue
                     
                     if f._has(wrt):
-                        if domain.is_FiniteSet and len(domain) == 1:
-                            if cond:
-                                need_swap = True
-                                hit = True
-                            _x, *_ = domain.args
+                        if domain.is_FiniteSet:
+                            if len(domain) == 1:
+                                if cond:
+                                    need_swap = True
+                                    hit = True
+                                _x, *_ = domain.args
+                            else:
+                                _x = domain.args
                         else:
                             _x = wrt.copy(domain=domain)
                             
-                        _f = f._subs(wrt, _x).simplify(deep=deep)._subs(_x, wrt)
+                        if isinstance(_x, tuple):
+                            arglist = []
+                            for x in _x:
+                                eq = Equality(wrt, x)
+                                if eq.is_BooleanFalse:
+                                    continue
+                                arglist.append([f._subs(wrt, x), eq])
+                                
+                            arglist[-1][-1] = True
+                            if len(arglist) == 1:
+                                _f = arglist[0][0].simplify(deep=deep)
+                            else:
+                                _f = Piecewise(*arglist).simplify(deep=deep)
+                        else:
+                            _f = f._subs(wrt, _x).simplify(deep=deep)._subs(_x, wrt)
+                                                        
                         if _f != f:
                             hit = True 
                             f = _f

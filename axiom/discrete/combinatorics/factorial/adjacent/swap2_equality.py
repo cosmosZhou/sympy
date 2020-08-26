@@ -52,9 +52,9 @@ def prove(Eq):
     Eq << w[0, i] @ Eq[-1]
     
     Eq << Eq[-1].this.function.rhs.expand()
-    
-    Eq << Eq[-1].this.simplify(deep=True)
 
+    Eq << Eq[-1].this.simplify(deep=True)
+    
     Eq << Eq[-1].this.function.rhs.function.asKroneckerDelta()
     
     Eq.www_expansion = Eq[-1].this.simplify(deep=True)

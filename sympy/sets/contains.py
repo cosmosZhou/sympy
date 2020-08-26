@@ -249,6 +249,15 @@ class Contains(BooleanFunction):
             
         return BooleanFunction.__or__(self, other)
 
+    def asKroneckerDelta(self):
+        x, domain = self.args 
+        if domain.is_FiniteSet:
+            return domain.asKroneckerDelta(x)
+    
+        domain = x.domain - domain
+        if domain.is_FiniteSet:             
+            return 1 - domain.asKroneckerDelta(x)
+            
         
 class NotContains(BooleanFunction):
     """
@@ -403,6 +412,14 @@ class NotContains(BooleanFunction):
             
         return BooleanFunction.__or__(self, other)
 
+    def asKroneckerDelta(self):
+        x, domain = self.args 
+        if domain.is_FiniteSet:
+            return 1 - domain.asKroneckerDelta(x)
+        domain = x.domain - domain
+        if domain.is_FiniteSet:
+            return domain.asKroneckerDelta(x)
+            
     
 Contains.invert_type = NotContains
 

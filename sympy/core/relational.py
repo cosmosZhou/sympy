@@ -1079,7 +1079,10 @@ class Equality(Relational):
 
         return Relational.__and__(self, other)
 
-    
+    def asKroneckerDelta(self):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        return KroneckerDelta(*self.args)
+        
 Eq = Equality
 
 
@@ -1203,6 +1206,9 @@ class Unequality(Relational):
 
         return Relational.__and__(self, other)
 
+    def asKroneckerDelta(self):
+        from sympy.functions.special.tensor_functions import KroneckerDelta
+        return 1 - KroneckerDelta(*self.args)
     
 Ne = Unequality
 Equality.invert_type = Unequality
