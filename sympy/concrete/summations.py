@@ -1351,37 +1351,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     def max(self):
         return self.func(self.function.max(), *self.limits).doit()
 
-    def _latex(self, p):
-        if len(self.limits) == 1:
-            limit = self.limits[0]
-            if len(limit) == 1:
-                tex = r"\sum_{%s} " % p._print(limit[0])
-            elif len(limit) == 2:
-                tex = r"\sum\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
-            else:
-                tex = r"\sum\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
-        else:
-
-            def _format_ineq(limit):
-                if len(limit) == 1:
-                    return p._print(limit[0])
-                elif len(limit) == 2:
-                    return r"%s \in %s" % tuple([p._print(i) for i in limit])
-                else:
-                    return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (limit[1], limit[0], limit[2])])
-                
-            if all(len(limit) == 1 for limit in self.limits):
-                tex = r"\sum_{%s} " % str.join(', ', [p._print(l[0]) for l in self.limits])
-            else:
-                tex = r"\sum\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
-
-        from sympy.matrices.expressions.hadamard import HadamardProduct
-        if isinstance(self.function, (Add, HadamardProduct)):
-            tex += r"\left(%s\right)" % p._print(self.function)
-        else:
-            tex += p._print(self.function)
-
-        return tex
     
     @property
     def shape(self):
@@ -1429,6 +1398,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             return '∑[%s](%s)' % (limits, p._print(self.function))
         return '∑(%s)' % p._print(self.function)
 
+    latex_name_of_operator = 'sum'
+    
     def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():

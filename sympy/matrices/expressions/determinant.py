@@ -37,7 +37,12 @@ class Det(Expr):
     def arg(self):
         return self.args[0]
 
-    def doit(self, **_):
+    def doit(self, deep=False, **_):
+        if deep:
+            arg = self.arg.doit(deep=True)
+            if arg != self.arg:
+                return self.func(arg).doit()
+            
         det = self.arg._eval_determinant()
         if det is not None:
             return det

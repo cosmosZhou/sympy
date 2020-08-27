@@ -210,6 +210,7 @@ class Product(ExprWithIntLimits):
 
     def doit(self, **hints):
         f = self.function
+        
         for index, limit in enumerate(self.limits):
             i, a, b = limit
             dif = b - a
@@ -218,7 +219,21 @@ class Product(ExprWithIntLimits):
                 f = 1 / f
 
             g = self._eval_product(f, (i, a, b))
-            if g in (None, S.NaN):
+            if g in (None, S.NaN):                
+                if index < len(self.limits) - 1:
+                    i, a, b = self.limits[-1]
+                    dif = b - a
+                    if dif.is_Integer:
+                        limits = self.limits[index:-1]
+                        args = []
+                        for index in range(dif + 1):
+                            _i = a + index                            
+                            args.append(self.func(f._subs(i, _i), *[limit._subs(i, _i) for limit in limits]).simplify())
+                            
+                        return self.operator(*args)
+                if index == 0:
+                    return self.simplify()
+                
                 return self.func(powsimp(f), *self.limits[index:]).simplify()
             else:
                 f = g
@@ -479,6 +494,8 @@ class Product(ExprWithIntLimits):
             x, domain = limit
             if domain.is_FiniteSet:
                 return self.finite_aggregate(x, domain)
+            if not self.function._has(x):
+                return self.function ** abs(domain)
                             
         elif len(limit) == 3:
             from sympy.functions.elementary.piecewise import Piecewise
@@ -492,6 +509,8 @@ class Product(ExprWithIntLimits):
             
             if a == b:                
                 return self.function._subs(x, a)
+            if a > b:
+                return S.One
         else:
             x, *_ = limit
         import sympy
@@ -519,30 +538,7 @@ class Product(ExprWithIntLimits):
             return '∏[%s](%s)' % (limits, p._print(self.function))
         return '∏(%s)' % p._print(self.function)
 
-    def _latex(self, p):
-        if len(self.limits) == 1:
-            limit = self.limits[0]
-            if len(limit) == 1:
-                tex = r"\prod_{%s} " % p._print(limit[0])
-            elif len(limit) == 2:
-                tex = r"\prod\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
-            else:
-                tex = r"\prod\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
-
-        else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\prod_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
-
-        if self.function.is_Plus:
-            tex += r"\left(%s\right)" % p._print(self.function)
-        else:
-            tex += p._print(self.function)
-
-        return tex
-
+    latex_name_of_operator = 'prod'
 
 def product(*args, **kwargs):
     r"""

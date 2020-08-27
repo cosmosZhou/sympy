@@ -1341,6 +1341,37 @@ class Plus(Expr, AssocOp):
             sign = ""
         return sign + ' '.join(l)
 
+    def _eval_determinant(self):
+        if self.is_upper or self.is_lower:
+            from sympy.concrete.products import Product
+            i = self.generate_free_symbol(integer=True)
+            n = self.shape[-2]
+            return Product[i:n](self[i, i].simplify()).doit()
+
+    @property
+    def is_lower(self):
+        for arg in self.args :
+            if not arg.shape:
+                return False            
+            if len(arg.shape) == 1:
+                continue
+            if arg.is_lower:
+                continue
+            return False
+        return True
+             
+    @property
+    def is_upper(self):
+        for arg in self.args :
+            if not arg.shape:
+                return False
+            if len(arg.shape) == 1:
+                continue
+            if arg.is_upper:
+                continue
+            return False
+        return True
+
 Add = Plus
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

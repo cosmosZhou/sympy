@@ -811,6 +811,9 @@ class Identity(MatrixExpr):
     >>> I*A
     A
     """
+    is_upper = True
+    is_lower = True
+    
     is_Identity = True
     is_ElementaryMatrix = True
 #     is_zero = False
@@ -1535,6 +1538,14 @@ class Swap(Identity):
     def _eval_inverse(self):
         return self
 
+    @property
+    def is_upper(self):
+        return self.i == self.j
+    
+    @property
+    def is_lower(self):
+        return self.i == self.j
+
 
 class Multiplication(Identity):
 
@@ -1705,6 +1716,13 @@ class Addition(Multiplication):
             
         return MatrixExpr.__matmul__(self, other)
 
+    @property
+    def is_upper(self):
+        return self.i >= self.j
+    
+    @property
+    def is_lower(self):
+        return self.i <= self.j
     
 class Shift(Identity):
     '''
@@ -1822,6 +1840,14 @@ class Shift(Identity):
 
         return MatrixExpr.__matmul__(self, other)
 
+
+    @property
+    def is_upper(self):
+        return self.i == self.j
+    
+    @property
+    def is_lower(self):
+        return self.i == self.j
 
 from .matmul import MatMul
 from .matadd import MatAdd

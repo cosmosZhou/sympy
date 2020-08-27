@@ -3268,7 +3268,7 @@ class Ref(ExprWithLimits):
             return minimum.func(self.func(function, *self.limits).simplify())
         return self
 
-    def __getitem__(self, indices, **kwargs):
+    def __getitem__(self, indices, **_):
         function = self.function
         if isinstance(indices, (tuple, list)):
             variables_set = self.variables_set
@@ -3291,7 +3291,7 @@ class Ref(ExprWithLimits):
                     reps[_v] = v
                     assert not index._has(v)
                     
-                function = function._subs(x, index)
+                function = function._subs(x, index)  # .simplify() will result in prolonged process
                 if not index._has(x):                        
                     if function._has(x):
                         for var in postorder_traversal(function):
@@ -3307,7 +3307,7 @@ class Ref(ExprWithLimits):
             if len(indices) > len(self.limits):
                 function = function[indices[len(self.limits):]]
                 
-            return function
+            return function  # .simplify() will result in prolonged process
         if isinstance(indices, slice):
             start, stop = indices.start, indices.stop
             x, *domain = self.limits[-1]
@@ -3448,15 +3448,15 @@ class Ref(ExprWithLimits):
         is_diagonal
         is_lower_hessenberg
         """
-        (i, *_), (j, *_) = self.limits
-        if self.function.is_Piecewise and i in self.function.scope_variables & self.variables_set:
-            j = j.copy(domain=Interval(0, self.cols, right_open=True, integer=True))
-            i = j.generate_free_symbol(domain=Interval(0, j, right_open=True, integer=True))
-        else:
-            i = i.copy(domain=Interval(0, self.rows, right_open=True, integer=True))
-            j = i.generate_free_symbol(domain=Interval(i, self.cols, left_open=True, right_open=True, integer=True))
-        assert j > i
-        return self[i, j] == 0
+        j = self.generate_free_symbol(domain=Interval(0, self.cols, right_open=True, integer=True))
+        i = j.generate_free_symbol(domain=Interval(0, j, right_open=True, integer=True))
+        if self[i, j].is_zero:
+            return True
+
+        i = self.generate_free_symbol(domain=Interval(0, self.rows, right_open=True, integer=True))
+        j = i.generate_free_symbol(domain=Interval(i, self.cols, left_open=True, right_open=True, integer=True))
+        if self[i, j].is_zero:
+            return True
 
     @property
     def is_upper(self):
@@ -3500,10 +3500,17 @@ class Ref(ExprWithLimits):
         is_diagonal
         is_upper_hessenberg
         """
-        * _ , (j, *_) = self.limits
+        
+        j = self.generate_free_symbol(domain=Interval(0, self.cols, right_open=True, integer=True))
         i = j.generate_free_symbol(domain=Interval(j + 1, self.rows, right_open=True, integer=True))
-        assert i > j
-        return self[i, j] == 0
+        if self[i, j].is_zero:
+            return True
+        
+        i = self.generate_free_symbol(domain=Interval(0, self.rows, right_open=True, integer=True))
+        j = i.generate_free_symbol(domain=Interval(0, i, right_open=True, integer=True))
+        if self[i, j].is_zero:
+            return True
+        
 
     def _latex(self, p):
         args = []

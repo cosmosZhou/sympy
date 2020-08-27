@@ -607,7 +607,7 @@ class Set(Basic):
         raise NotImplementedError("(%s)._measure" % self)
 
     def __add__(self, other):
-        raise Exception("could not add %s, %s" %(self, other))
+        raise Exception("could not add %s, %s" % (self, other))
 #         return self.union(other)
 
     def __or__(self, other):
@@ -1893,6 +1893,7 @@ class Union(Set, LatticeOp, EvalfMixin):
     def __add__(self, other):
         return self.func(*(arg + other for arg in self.args))
 
+
 class Intersection(Set, LatticeOp):
     """
     Represents an intersection of sets as a :class:`Set`.
@@ -2437,6 +2438,7 @@ class Complement(Set, EvalfMixin):
                     B = B.func(*args)
                         
             return self.func(unk, B, evaluate=False)
+
             
 class EmptySet(with_metaclass(Singleton, Set)):
     """
@@ -2685,17 +2687,18 @@ class FiniteSet(Set, EvalfMixin):
                 else:
                     return Union(*intervals, evaluate=False)
             else:
-#             elif not nums:
+
                 for i, e in enumerate(self.args):
-                    if not other.right_open and e == other.end:
+                    m, M = other.min(), other.max()
+                    if e == M:
                         args = [*self.args]
                         del args[i]
-                        return other.copy(right_open=True) - self.func(*args)
-                    if not other.left_open and e == other.start:
+                        return other.copy(end=M, right_open=True) - self.func(*args)
+                    if e == m:
                         args = [*self.args]
                         del args[i]
-                        return other.copy(left_open=True).simplify() - self.func(*args)
-                    if e > other.max() or e < other.min():
+                        return other.copy(start=m, left_open=True).simplify() - self.func(*args)
+                    if e > M or e < m:
                         args = [*self.args]
                         del args[i]
                         return other - self.func(*args)
@@ -2883,6 +2886,7 @@ class FiniteSet(Set, EvalfMixin):
         for arg in self.args:
             eq *= 1 - KroneckerDelta(x, arg)
         return 1 - eq
+
 
 class FiniteList(Expr):
     """

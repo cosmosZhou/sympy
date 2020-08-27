@@ -333,9 +333,7 @@ class MatMul(MatrixExpr, Mul):
                         
                     k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
                     
-                    assert i != k                    
-                    assert k != j
-                    assert i != j
+                    assert i != k and k != j and i != j
                     return Ref(Sum[k:n](A[i, k] * B[k, j]).simplify(), i_limit, j_limit).simplify()
                 else:            
                     k = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)

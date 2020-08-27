@@ -285,3 +285,35 @@ class ExprWithIntLimits(ExprWithLimits):
             return type(expr)(expr.function, *limits)
         else:
             raise ReorderError(expr, "could not interchange the two limits specified")
+
+    def _latex(self, p):
+        tex = '\\' + self.latex_name_of_operator  
+        if len(self.limits) == 1:
+            limit = self.limits[0]
+            if len(limit) == 1:
+                tex = r"_{%s} " % p._print(limit[0])
+            elif len(limit) == 2:
+                tex += r"\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
+            else:
+                tex += r"\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
+        else:
+
+            def _format_ineq(limit):
+                if len(limit) == 1:
+                    return p._print(limit[0])
+                elif len(limit) == 2:
+                    return r"%s \in %s" % tuple([p._print(i) for i in limit])
+                else:
+                    return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (limit[1], limit[0], limit[2])])
+                
+            if all(len(limit) == 1 for limit in self.limits):
+                tex += r"_{%s} " % str.join(', ', [p._print(l[0]) for l in self.limits])
+            else:
+                tex += r"\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
+
+        if self.function.is_Plus:
+            tex += r"\left(%s\right)" % p._print(self.function)
+        else:
+            tex += p._print(self.function)
+
+        return tex
