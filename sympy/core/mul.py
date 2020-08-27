@@ -98,10 +98,6 @@ class Times(Expr, AssocOp):
 
     identity = 1
     
-    def argmax_shape(self):
-        import numpy as np
-        return np.argmax([len(arg.shape) for arg in self.args])
-
     @classmethod
     def flatten(cls, seq):
         """Return commutative, noncommutative and order arguments by

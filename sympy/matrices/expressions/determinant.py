@@ -22,11 +22,9 @@ class Det(Expr):
     is_Det = True
 
     def __new__(cls, mat):
-        from sympy.matrices.expressions.matexpr import VConcatenate, HConcatenate
-        if isinstance(mat, list):
-            mat = VConcatenate(*mat)
-        elif isinstance(mat, tuple):
-            mat = HConcatenate(*mat)
+        from sympy.matrices.expressions.matexpr import Concatenate
+        if isinstance(mat, (list, tuple)):
+            mat = Concatenate(*mat)
 
         mat = sympify(mat)
         assert mat.is_square, "Det of a non-square matrix"

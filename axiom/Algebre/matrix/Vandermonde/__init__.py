@@ -1,3 +1,3 @@
 from . import matmul_equality
-from . import VerticalConcatenate
+from . import Concatenate
 from . import basicForm

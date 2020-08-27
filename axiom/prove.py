@@ -6,6 +6,7 @@ from sympy.utilities.misc import Text
 import time
 from os.path import getsize
 from multiprocessing import cpu_count
+from queue import PriorityQueue
 
 count = 0
 
@@ -58,8 +59,10 @@ def readFolder(rootdir, sufix='.py'):
         elif os.path.isdir(path):
             yield from readFolder(path, sufix)
 
+
 def process_multiple(packages):
     return [process(package) for package in packages]
+
     
 def process(package):
     try:    
@@ -113,19 +116,15 @@ def prove():
     tasks = [*tasks.items()]
     tasks.sort(key=lambda pair : pair[1], reverse=True)
     
-    def argmin(timings):
-        m = total_timing
-        for i in range(len(timings)):
-            if timings[i] < m:
-                index = i
-                m = timings[i]
-        return index
-    
+    pq = PriorityQueue()
+    for i, t in enumerate(timings):
+        pq.put((t, i))
+        
     for task, timing in tasks:
-#         print(task, timing)
-        i = argmin(timings)
+        t, i = pq.get()
         processes[i].append(task)
         timings[i] += timing
+        pq.put((timings[i], i))
         
     for proc, timing in zip(processes, timings):
         print(timing, proc)

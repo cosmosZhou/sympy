@@ -2419,7 +2419,7 @@ class Ref(ExprWithLimits):
         if self.function.is_zero:
             return True
 
-    def as_VConcatenate(self):
+    def as_Concatenate(self):
         if len(self.limits) > 1:
             return self
         limit, *_ = self.limits
@@ -2435,8 +2435,8 @@ class Ref(ExprWithLimits):
         array = []
         for i in range(diff + 1):
             array.append(self.function._subs(x, i))
-        from sympy.matrices.expressions.matexpr import VConcatenate
-        return VConcatenate(*array)
+        from sympy.matrices.expressions.matexpr import Concatenate
+        return Concatenate(*array)
 
     def as_coeff_mmul(self):
         return 1, self
@@ -3510,7 +3510,6 @@ class Ref(ExprWithLimits):
         j = i.generate_free_symbol(domain=Interval(0, i, right_open=True, integer=True))
         if self[i, j].is_zero:
             return True
-        
 
     def _latex(self, p):
         args = []

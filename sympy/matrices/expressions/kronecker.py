@@ -13,7 +13,6 @@ from sympy.strategies import (
 from sympy.strategies.traverse import bottom_up
 from sympy.utilities import sift
 
-from .matadd import MatAdd
 from .matmul import MatMul
 from .matpow import MatPow
 

@@ -1220,33 +1220,10 @@ class Concatenate(MatrixExpr):
                 dtype = _dtype
         return dtype
 
-    
-# horizontal Concatenation
-class HConcatenate(Concatenate):
-
-    @staticmethod
-    def broadcast(shapes):
-        dimension = max(len(s) for s in shapes)
-
-        for i, shape in enumerate(shapes):
-            if len(shape) < dimension:
-                shapes[i] = (1,) * (dimension - len(shape)) + shape
-        return shapes
-
-    @property
-    def shape(self):
-        shapes = [arg.shape for arg in self.args]
-        self.broadcast(shapes)
-        return shapes[0][0], sum(s[1] for s in shapes)
-
-
-# vertical Concatenation
-class VConcatenate(Concatenate):
-    
     def __new__(cls, *args, **kwargs):
         _args = []
         for arg in args:
-            if isinstance(arg, VConcatenate):
+            if isinstance(arg, Concatenate):
                 _args += arg.args
             else:
                 _args.append(arg)
@@ -1459,7 +1436,7 @@ class VConcatenate(Concatenate):
         return self[i, j] == 0
 
     def __add__(self, other):
-        if isinstance(other, VConcatenate):
+        if isinstance(other, Concatenate):
             if len(self.args) == len(other.args):
                 if all(x.shape == y.shape for x, y in zip(self.args, other.args)):
                     return self.func(*[x + y for x, y in zip(self.args, other.args)])
@@ -1601,7 +1578,7 @@ class Multiplication(Identity):
 
     def __matmul__(self, rhs):
         from sympy.matrices.dense import DenseMatrix        
-        if isinstance(rhs, VConcatenate):
+        if isinstance(rhs, Concatenate):
             other_i = rhs[self.i]
             if not other_i.is_Indexed:
                 args = []
@@ -1611,7 +1588,7 @@ class Multiplication(Identity):
                 if self.i + 1 != self.shape[0]:
                     args.append(rhs[self.i + 1:])
                 
-                return VConcatenate(*args)  
+                return Concatenate(*args)  
         elif isinstance(rhs, DenseMatrix):
             d = rhs.shape[0]
             _mat = [*rhs._mat]
@@ -1695,7 +1672,7 @@ class Addition(Multiplication):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmatmul__')
     def __matmul__(self, other):
-        if isinstance(other, VConcatenate):
+        if isinstance(other, Concatenate):
             other_i = other[self.i]
             other_j = other[self.j]
             args = []
@@ -1712,7 +1689,7 @@ class Addition(Multiplication):
                     args.append(other[self.i + 1:])                    
             else:
                 return MatrixExpr.__matmul__(self, other)
-            return VConcatenate(*args).simplify()  
+            return Concatenate(*args).simplify()  
             
         return MatrixExpr.__matmul__(self, other)
 
@@ -1808,13 +1785,13 @@ class Shift(Identity):
         if self.j == self.i:
             return other
 
-        if isinstance(other, VConcatenate):
+        if isinstance(other, Concatenate):
             if self.j > self.i:
                 A = other[self.i]
                 B = other[self.i + 1:self.j + 1]
 
                 args = []
-                if isinstance(B, VConcatenate):
+                if isinstance(B, Concatenate):
                     args += B.args
                 else:
                     args.append(B)
@@ -1822,18 +1799,18 @@ class Shift(Identity):
 
                 if self.i > 0:
                     C = other[:self.i]
-                    if isinstance(C, VConcatenate):
+                    if isinstance(C, Concatenate):
                         args += C.args
                     else:
                         args.append(C)
                 if self.j + 1 < self.n:
                     C = other[self.j + 1:]
-                    if isinstance(C, VConcatenate):
+                    if isinstance(C, Concatenate):
                         args += C.args
                     else:
                         args.append(C)
 
-                return VConcatenate(*args)
+                return Concatenate(*args)
 
             elif self.j < self.i:
                 ...
@@ -1850,7 +1827,6 @@ class Shift(Identity):
         return self.i == self.j
 
 from .matmul import MatMul
-from .matadd import MatAdd
 from .matpow import MatPow
 from .transpose import Transpose
 from .inverse import Inverse

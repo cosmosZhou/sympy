@@ -968,23 +968,23 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 b_diff = b - _b
                 if a_diff >= 0:
                     if b_diff > 0:
-                        return Sum(self.function, (x, _b + 1, b)).doit(deep=False) - Sum(self.function, (x, _a, a - 1)).doit(deep=False)
+                        return Sum[x:_b + 1:b](self.function).doit(deep=False) - Sum[x:_a:a - 1](self.function).doit(deep=False)
                     elif b_diff == 0:
-                        return -Sum(self.function, (x, _a, a - 1)).doit(deep=False)
+                        return -Sum[x:_a:a - 1](self.function).doit(deep=False)
                     elif b_diff <= 0:
-                        return -Sum(self.function, (x, b + 1, _b)).simplify() - Sum(self.function, (x, _a, a - 1)).simplify()
+                        return -Sum[x:b + 1:_b](self.function).simplify() - Sum[x:_a:a - 1](self.function).simplify()
 
                 if a_diff == 0:
                     if b_diff >= 0:
-                        return Sum(self.function, (x, _b + 1, b)).doit(deep=False)
+                        return Sum[x:_b + 1:b](self.function).doit(deep=False)
                     if b_diff < 0:
-                        return -Sum(self.function, (x, b + 1, _b)).doit(deep=False)
+                        return -Sum[x:b + 1:_b](self.function).doit(deep=False)
 
                 elif a_diff < 0:
                     if b_diff < 0:
-                        ...
+                        return Sum[x:a:_a - 1](self.function).doit(deep=False) - Sum[x:b + 1:_b](self.function).doit(deep=False)
                     elif b_diff == 0:
-                        return Sum(self.function, (x, a, _a - 1)).doit(deep=False)
+                        return Sum[x:a:_a - 1](self.function).doit(deep=False)
                 elif a_diff == 0:
                     ...
         
@@ -1350,7 +1350,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     def max(self):
         return self.func(self.function.max(), *self.limits).doit()
-
     
     @property
     def shape(self):
