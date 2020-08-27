@@ -10,6 +10,7 @@ from sympy.matrices.expressions.determinant import Det
 from sympy.concrete.products import Product
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices.expressions.matexpr import Identity
+from axiom.Algebre import matrix
 
 
 @plausible
@@ -47,18 +48,23 @@ def prove(Eq):
     
     Eq << (row_transformation(a, *D.limits) @ D).this.expand()
     
-    from sympy import S
+    Eq << matrix.determinant.expansion_by_minors.apply(Eq[-1].rhs, i=0)
     
+    Eq << Eq[-1].this.rhs.bisect(front=1)
     
-    i, j = Eq[-1].rhs.variables
-    Eq << Eq[-1].rhs[i, S.Zero].this.function.expand()
+    Eq << Eq[-1].this.rhs.args[0].args[0].arg.simplify(deep=True)
     
-    Eq << Eq[-1].this.rhs.function.powsimp()
+    Eq << Eq[-1].this.rhs.args[0].args[1].doit()
     
-    Eq << Eq[-1].this.rhs.as_two_terms()
+    Eq.recursion = Eq[-1].this.rhs.args[1].function.args[-1].doit()
     
-    Eq << Eq[-1].this.rhs.simplify()
+    Eq << Eq.recursion.rhs.args[0].arg.this.function.doit()
+    
+    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
+    
+    Eq << Eq[-1].this.function.rhs.expand().this.function.rhs.collect(Eq[-1].rhs.args[1].args[-1])
     
     
 if __name__ == '__main__':
     prove(__file__)
+# git clone https://github.com/sympy/sympy.git

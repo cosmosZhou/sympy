@@ -2044,12 +2044,10 @@ class Times(Expr, AssocOp):
                 for i, term in enumerate(args):
                     term_tex = p._print(term)
 
-                    if p._needs_mul_brackets(term, first=(i == 0),
-                                                last=(i == len(args) - 1)):
+                    if p._needs_mul_brackets(term, first=(i == 0), last=(i == len(args) - 1)):
                         term_tex = r"\left(%s\right)" % term_tex
 
-                    if _between_two_numbers_p[0].search(last_term_tex) and \
-                            _between_two_numbers_p[1].match(term_tex):
+                    if _between_two_numbers_p[0].search(last_term_tex) and _between_two_numbers_p[1].match(term_tex):
                         # between two numbers
                         _tex += numbersep
                     elif _tex:
@@ -2069,36 +2067,29 @@ class Times(Expr, AssocOp):
             sdenom = convert(denom)
             ldenom = len(sdenom.split())
             ratio = p._settings['long_frac_ratio']
-            if p._settings['fold_short_frac'] and ldenom <= 2 and \
-                    "^" not in sdenom:
+            if p._settings['fold_short_frac'] and ldenom <= 2 and "^" not in sdenom:
                 # handle short fractions
                 if p._needs_mul_brackets(numer, last=False):
                     tex += r"\left(%s\right) / %s" % (snumer, sdenom)
                 else:
                     tex += r"%s / %s" % (snumer, sdenom)
-            elif ratio is not None and \
-                    len(snumer.split()) > ratio * ldenom:
+            elif ratio is not None and len(snumer.split()) > ratio * ldenom:
                 # handle long fractions
                 if p._needs_mul_brackets(numer, last=True):
-                    tex += r"\frac{1}{%s}%s\left(%s\right)" \
-                        % (sdenom, separator, snumer)
+                    tex += r"\frac{1}{%s}%s\left(%s\right)" % (sdenom, separator, snumer)
                 elif numer.is_Mul:
                     # split a long numerator
                     a = S.One
                     b = S.One
                     for x in numer.args:
-                        if p._needs_mul_brackets(x, last=False) or \
-                                len(convert(a * x).split()) > ratio * ldenom or \
-                                (b.is_commutative is x.is_commutative is False):
+                        if p._needs_mul_brackets(x, last=False) or len(convert(a * x).split()) > ratio * ldenom or (b.is_commutative is x.is_commutative is False):
                             b *= x
                         else:
                             a *= x
                     if p._needs_mul_brackets(b, last=True):
-                        tex += r"\frac{%s}{%s}%s\left(%s\right)" \
-                            % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\frac{%s}{%s}%s\left(%s\right)" % (convert(a), sdenom, separator, convert(b))
                     else:
-                        tex += r"\frac{%s}{%s}%s%s" \
-                            % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\frac{%s}{%s}%s%s" % (convert(a), sdenom, separator, convert(b))
                 else:
                     tex += r"\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
             else:

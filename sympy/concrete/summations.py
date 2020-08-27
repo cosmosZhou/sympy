@@ -818,8 +818,15 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return Ref(first, *self.limits) @ Ref(second, *self.limits)
 
     def _subs(self, old, new, **_):
-        if new in self.variables and not old._has(new):
-            return self.limits_subs(new, self.generate_free_symbol(self.variables_set, integer=True))._subs(old, new)
+        intersect = new.free_symbols & self.variables_set
+        if intersect and not old._has(new):
+            this = self
+            excludes = self.variables_set | new.free_symbols
+            for var in intersect:
+                _var = self.generate_free_symbol(excludes, integer=True)
+                this = this.limits_subs(var, _var)
+                excludes.add(_var) 
+            return this._subs(old, new)
         
         from sympy.core.basic import _aresame
         if self == old or _aresame(self, old) or self.dummy_eq(old):

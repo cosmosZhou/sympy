@@ -277,8 +277,9 @@ class LatexPrinter(Printer):
             return True
         if any([expr.has(x) for x in (Mod,)]):
             return True
-        if (not last and
-                any([expr.has(x) for x in (Integral, Product, Sum)])):
+        if expr.is_Det:
+            return False
+        if not last and any(expr.has(x) for x in (Integral, Product, Sum)):
             return True
 
         return False

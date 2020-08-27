@@ -4063,3 +4063,7 @@ class Identity(Invoker):
 
         self.obj = obj
         return self
+
+    @property
+    def this(self):
+        return Invoker(self.equation)

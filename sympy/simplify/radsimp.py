@@ -364,9 +364,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
 
         for symbol in syms:
             if SYMPY_DEBUG:
-                print("DEBUG: parsing of expression %s with symbol %s " % (
-                    str(terms), str(symbol))
-                )
+                print("DEBUG: parsing of expression %s with symbol %s " % (str(terms), str(symbol)))
 
             if isinstance(symbol, Derivative) and small_first:
                 terms = list(reversed(terms))
@@ -377,8 +375,8 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
                 print("DEBUG: returned %s" % str(result))
 
             if result is not None:
-                if not symbol.is_commutative:
-                    raise AttributeError("Can not collect noncommutative symbol")
+#                 if not symbol.is_commutative:
+#                     raise AttributeError("Can not collect noncommutative symbol")
 
                 terms, elems, common_expo, has_deriv = result
 

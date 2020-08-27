@@ -151,8 +151,7 @@ def precedence_traditional(item):
         return PRECEDENCE["Times"]
     elif isinstance(item, (Transpose, Adjoint)):
         return PRECEDENCE["Power"]
-    elif (item.__class__.__name__ in ("Dot", "Cross", "Gradient", "Divergence",
-                                    "Curl", "Laplacian")):
+    elif (item.__class__.__name__ in ("Dot", "Cross", "Gradient", "Divergence", "Curl", "Laplacian")):
         return PRECEDENCE["Times"] - 1
     elif isinstance(item, UnevaluatedExpr):
         return precedence_traditional(item.args[0])

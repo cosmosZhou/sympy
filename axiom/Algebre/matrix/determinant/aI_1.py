@@ -10,7 +10,7 @@ from sympy.concrete.summations import Sum
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Identity
 from sympy.functions.elementary.piecewise import Piecewise
-from axiom.Algebre.matrix.Determinant import expansion_by_minors
+from axiom.Algebre.matrix.determinant import expansion_by_minors
 from sympy.sets.sets import Interval
 
 
