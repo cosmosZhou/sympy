@@ -986,7 +986,7 @@ class Equality(Relational):
                 if intersect:
                     hit = False
                     for arg in intersect:
-                        if arg.is_nonsingular:
+                        if arg.is_invertible:
                             lhs_args.remove(arg)
                             rhs_args.remove(arg)
                             hit = True
@@ -1097,7 +1097,7 @@ class Equality(Relational):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         return KroneckerDelta(*self.args)
 
-    def assert_nonsingular(self):
+    def conclude(self):
         from sympy import Exists
         if self.lhs.is_Det:
             if self.rhs.is_nonzero:                

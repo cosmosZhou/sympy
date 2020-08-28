@@ -10,7 +10,7 @@ from sympy.matrices.expressions.determinant import Det
 from sympy.concrete.products import Product
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices.expressions.matexpr import Identity
-from axiom.Algebre import matrix
+from axiom.algebre import matrix
 
 
 @plausible

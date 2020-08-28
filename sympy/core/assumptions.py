@@ -29,10 +29,6 @@ Here follows a list of possible assumption names:
 
 .. glossary::
 
-    commutative
-        object commutes with any other object with
-        respect to multiplication operation.
-
     complex
         object can have only values from the set
         of complex numbers.
@@ -69,7 +65,7 @@ Here follows a list of possible assumption names:
         object has the value of ``0``.
 
     nonzero
-        object is a real number that is not zero.
+        object is a complex number that is not zero.
 
     rational
         object can have only values from the set
@@ -197,12 +193,12 @@ _assume_rules = FactRules([
     'negative       ==  extended_negative & finite',
     'nonpositive    ==  extended_nonpositive & finite',
     'nonnegative    ==  extended_nonnegative & finite',
-    'nonzero        ==  extended_nonzero & finite',
+    'nonzero        ->  extended_nonzero & finite',
 
     'zero           ->  even & finite',
     'zero           ==  extended_nonnegative & extended_nonpositive',
     'zero           ==  nonnegative & nonpositive',
-    'nonzero        ->  real',
+    'nonzero        ->  complex',
 
     'prime          ->  integer & positive',
     'composite      ->  integer & positive & !prime',
@@ -215,6 +211,7 @@ _assume_rules = FactRules([
     'infinite       ->  !finite',
     'noninteger     ==  extended_real & !integer',
     'extended_nonzero == extended_real & !zero',
+    'invertible == !singular',
 ])
 
 _assume_defined = _assume_rules.defined_facts.copy()

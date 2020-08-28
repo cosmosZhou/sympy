@@ -2438,6 +2438,9 @@ class Complement(Set, EvalfMixin):
                     B = B.func(*args)
                         
             return self.func(unk, B, evaluate=False)
+        if A in unk:
+#             consider the case : [0; n) ∩ {j} / [0; n) ∩ {i}, {j}
+            return self
 
             
 class EmptySet(with_metaclass(Singleton, Set)):

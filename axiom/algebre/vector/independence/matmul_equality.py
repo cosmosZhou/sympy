@@ -3,21 +3,20 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
-from axiom import Algebre
-from axiom.Algebre.vector.independence import matmul_equality
 from sympy.concrete.expr_with_limits import Ref
+from axiom.algebre.matrix import vandermonde
 
 
 @plausible
 def apply(given):
     assert given.is_Equality
-    lhs, rhs = given.args
+    lhs, rhs = given.args        
     
     assert lhs.is_MatMul
-    x, p_polynomial = lhs.args
+    p_polynomial, x = lhs.args
     
     assert rhs.is_MatMul
-    y, _p_polynomial = rhs.args
+    _p_polynomial, y = rhs.args
     
     assert p_polynomial == _p_polynomial
     
@@ -43,19 +42,38 @@ from sympy.utility import check
 def prove(Eq):
     p = Symbol("p", complex=True)    
     n = Symbol('n', domain=Interval(1, oo, integer=True))
-    x = Symbol("x", shape=(n,), given=True, complex=True)
-    y = Symbol("y", shape=(n,), given=True, complex=True)
+    x = Symbol("x", shape=(n,), complex=True, given=True)
+    y = Symbol("y", shape=(n,), complex=True, given=True)
     k = Symbol('k', domain=Interval(1, oo, integer=True))
     
-    given = Equality(x @ Ref[k:n](p ** k), y @ Ref[k:n](p ** k))
+    assert x.is_given and y.is_given
+    
+    given = Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y)
     
     Eq << apply(given)
-    Eq << Algebre.vector.cosine_similarity.apply(*given.lhs.args)
-    Eq << Algebre.vector.cosine_similarity.apply(*given.rhs.args)
     
-    Eq << given.subs(Eq[-1], Eq[-2])
+    i = Symbol('i', domain=Interval(1, n, integer=True))
+    Eq << given.subs(p, i)
     
-    Eq << matmul_equality.apply(Eq[-1])
+    Eq << Eq[-1].forall(i)
+    
+    Eq << Eq[-1].as_Equal()
+    
+    Eq.statement = Eq[-1].T
+    
+    k, i = Eq.statement.lhs.args[1].variables
+    
+    Eq << vandermonde.basicForm.apply(Ref[i:n](i + 1))
+    
+    Eq << Eq[-1].conclude()
+    
+    i, j = Eq[-1].function.lhs.variables
+    Eq << Eq[-1].this.function.lhs.limits_subs(i, k)
+    
+    Eq.exists = Eq[-1].this.function.lhs.limits_subs(j, i)
+    
+    Eq << Eq.statement.subs(Eq.exists)
+
 
 if __name__ == '__main__':
     prove(__file__)

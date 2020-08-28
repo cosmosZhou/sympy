@@ -2228,6 +2228,13 @@ class Basic(with_metaclass(ManagedProperties)):
         if integer is False:
             return self.is_extended_real
     
+    def _eval_is_invertible(self):
+        singular = self.is_singular
+        if singular:
+            return False
+        if singular is False:
+            return True
+
     @property
     def shape(self):
         return ()

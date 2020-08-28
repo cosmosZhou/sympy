@@ -266,25 +266,25 @@ class ExprWithLimits(Expr):
             if len(symbols) == 0:
                 return function.copy(**assumptions)
 
-            limits = []
-            for sym in symbols:
+            limits = [None] * len(symbols)
+            for i, sym in enumerate(symbols):
                 if isinstance(sym, Tuple):
-                    limit = sym
+                    limits[i] = sym
                 elif isinstance(sym, tuple):
-                    limit = Tuple(*sym)
+                    if len(sym) == 2:
+                        if sym[1].is_BooleanTrue:
+                            return function.copy(**assumptions)
+                        x, cond = sym
+                        if cond.is_set and x.is_Symbol and x.is_bounded:
+                            cond &= x.domain_bounded
+                            _x = x.unbounded
+                            assert x.dtype == _x.dtype
+                            sym = _x, cond
+                            function = function._subs(x, _x)
+                    
+                    limits[i] = Tuple(*sym)
                 else:
-                    limit = Tuple(sym,)
-                if len(limit) == 2 and limit[1].is_BooleanTrue:
-                    return function.copy(**assumptions)
-                if len(limit) == 2:
-                    sym, cond = limit
-                    if cond.is_set and sym.is_Symbol and sym.is_bounded:
-                        cond &= sym.domain_bounded
-                        _sym = sym.unbounded
-                        assert sym.dtype == _sym.dtype
-                        limit = Tuple(_sym, cond)
-                        function = function._subs(sym, _sym)
-                limits.append(limit)
+                    limits[i] = Tuple(sym,)
         else:
             pre = _common_new(cls, function, *symbols, **assumptions)
             if type(pre) is tuple:
@@ -821,7 +821,11 @@ class ExprWithLimits(Expr):
                 x, *ab = limit 
                 if x != wrt:
                     continue
-                universe, *_ = ab
+                if len(ab) == 2:
+                    universe = Interval(*ab, integer=x.is_integer)
+                else:
+                    universe, *_ = ab
+                    
                 limits1 = [*self.limits]
                 limits1[i] = (x, universe & domain)
                 
@@ -3560,7 +3564,7 @@ class ForAll(ConditionalBoolean, ExprWithLimits):
                 limits = self.limits_update(i, domain | new_set)
 
                 function = function.func(*eqs)
-                return self.func(function, *limits, equivalent=self)
+                return self.func(function, *limits, equivalent=self).simplify()
 
         if self.function.is_Exists:
             exists = self.function

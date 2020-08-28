@@ -74,7 +74,7 @@ def prove(Eq):
     
     Eq.given = Eq[1].subs(Eq[-1].reversed)
     
-    Eq << axiom.Algebre.matrix.elementary.swap.identity.apply(x, w)
+    Eq << axiom.algebre.matrix.elementary.swap.identity.apply(x, w)
     
     Eq << Eq[-1].subs(Eq[-1].rhs.args[0].indices[0], 0)
     

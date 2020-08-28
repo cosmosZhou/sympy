@@ -1092,10 +1092,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             domain_nonzero = self.function.domain_nonzero(x)
             domain &= domain_nonzero
             
-#             if domain not in limit[1]:
-#                 print('domain =', domain)
-#                 print('limit[1] =', limit[1])
-#                 print(domain in limit[1])
+            if domain not in limit[1]:
+                print('domain =', domain)
+                print('limit[1] =', limit[1])                
+                print(domain & limit[1])
             assert domain in limit[1]
             
             if domain.is_EmptySet:

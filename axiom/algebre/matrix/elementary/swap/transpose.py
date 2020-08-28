@@ -12,8 +12,8 @@ from sympy.concrete.expr_with_limits import Ref
 @plausible
 def apply(w):
     n = w.shape[0]
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True))
-    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
+    i = w.generate_free_symbol(integer=True)
+    j = w.generate_free_symbol({i}, integer=True)
     
     assert len(w.shape) == 4 and all(s == n for s in w.shape)
     assert w[i, j].is_Swap or w[i, j].definition.is_Swap 
@@ -46,7 +46,10 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[-2].reversed)
     
-    Eq << w[i, j].inverse() @ Eq[-1] 
+    Eq << w[i, j].inverse() @ Eq[-1]
+    
+    Eq << Eq[-1].forall(i).forall(j)
+
 
 if __name__ == '__main__':
     prove(__file__)
