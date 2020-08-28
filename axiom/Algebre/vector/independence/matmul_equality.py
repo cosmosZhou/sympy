@@ -4,6 +4,8 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.concrete.expr_with_limits import Ref
+from axiom.Algebre.matrix import vandermonde
+
 
 @plausible
 def apply(given):
@@ -56,6 +58,21 @@ def prove(Eq):
     Eq << Eq[-1].forall(i)
     
     Eq << Eq[-1].as_Equal()
+    
+    Eq.statement = Eq[-1].T
+    
+    k, i = Eq.statement.lhs.args[1].variables
+    
+    Eq << vandermonde.basicForm.apply(Ref[i:n](i + 1))
+    
+    Eq << Eq[-1].assert_nonsingular()
+    
+    i, j = Eq[-1].function.lhs.variables
+    Eq << Eq[-1].this.function.lhs.limits_subs(i, k)
+    
+    Eq.exists = Eq[-1].this.function.lhs.limits_subs(j, i)
+    
+    Eq << Eq.statement.subs(Eq.exists)
 
 
 if __name__ == '__main__':

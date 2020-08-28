@@ -631,7 +631,9 @@ class Boolean(Basic):
     def hypothesis(self):
         substituent = self.substituent
         if substituent is not None:
-            return {substituent}
+            if max(len(dic) for dic in substituent.derivative.values()) > 1:
+                return {substituent}
+            return set()
 
         given = self.equivalent
         if given is None:
@@ -767,15 +769,33 @@ class Boolean(Basic):
                                 if not found:
                                     step = None
                         else:
-                            if given == self_equivalent:
-                                continue
-                            given = given_ancestor(given)
-                            if len(given) != 1:
-                                step = None
-                            else:
+                            def is_valid_given(given):
+                                if given == self_equivalent:
+                                    return True
+                                given = given_ancestor(given)
+                                if len(given) != 1:
+                                    return False
+                                
                                 given, *_ = given
-                                if given != self_equivalent:
-                                    step = None
+                                if given == self_equivalent:
+                                    return True
+#                                 consider the complex case : given.substituent.equivalent.equivalent == self_equivalent
+                                given = given.substituent
+                                if given is None:
+                                    return False
+                                
+                                given = given_ancestor(given)
+                                if len(given) != 1:
+                                    return False
+                                
+                                given, *_ = given
+                                return is_valid_given(given)
+                            
+                            if is_valid_given(given):
+                                continue
+                            else:
+                                step = None
+                                continue
                         continue
 
                     recurrence = False
@@ -4036,6 +4056,8 @@ class Identity(Invoker):
                     (x, *_), *_ = self.obj.__self__.limits
                     # domain might be different!
                     assert args[0].name == x.name
+#             elif self.obj.__self__.is_ConditionalBoolean:
+#                 ...
             else:
                 assert all(isinstance(arg, Equality) for arg in args)                
 

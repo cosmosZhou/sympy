@@ -1372,7 +1372,7 @@ class Plus(Expr, AssocOp):
             if not arg.shape:
                 return False            
             if len(arg.shape) == 1:
-                continue
+                return False
             if arg.is_lower:
                 continue
             return False
@@ -1384,7 +1384,7 @@ class Plus(Expr, AssocOp):
             if not arg.shape:
                 return False
             if len(arg.shape) == 1:
-                continue
+                return False
             if arg.is_upper:
                 continue
             return False

@@ -46,9 +46,9 @@ def prove(Eq):
     
     D = Eq.deduction.lhs.arg
     
-    Eq << (row_transformation(a, *D.limits) @ D).this.expand()
+    Eq.expand = (row_transformation(a, *D.limits) @ D).this.expand()
     
-    Eq << matrix.determinant.expansion_by_minors.apply(Eq[-1].rhs, i=0)
+    Eq << matrix.determinant.expansion_by_minors.apply(Eq.expand.rhs, i=0)
     
     Eq << Eq[-1].this.rhs.bisect(front=1)
     
@@ -64,7 +64,55 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.rhs.expand().this.function.rhs.collect(Eq[-1].rhs.args[1].args[-1])
     
+    Eq.recursion = Eq.recursion.subs(Eq[-1])
     
+    Eq << Eq.recursion.rhs.args[1].function.args[1].arg.this.function.args[0][0].doit()
+    
+    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
+    
+    Eq << Eq[-1].this.function.rhs.args[0][0].expand().this.function.rhs.args[0][0].collect(Eq[-1].rhs.args[0][0].args[1].args[-1])
+    
+    Eq.recursion = Eq.recursion.subs(Eq[-1])
+    
+    Eq << Eq.recursion.rhs.args[0].arg.this.as_two_terms()
+    
+    Eq << Eq[-1].det()
+    
+    var = Eq[-1].rhs.args[1].variable
+    Eq.determinant = Eq[-1].this.rhs.args[1].limits_subs(var, var - 1)
+    
+    _, k = Eq.determinant.lhs.arg.variables
+    i, j = Eq[0].lhs.arg.variables
+    
+    Eq << Eq[0].this.lhs.arg.limits_subs(j, k).this.lhs.arg.limits_subs(i, j)
+    
+    Eq << Eq[-1].subs(a[:n], a[1:n + 1])
+
+#     Eq << Eq[-1].this.rhs.limits_subs(i + 1, i).this.rhs.limits_subs(j + 1, j)
+    Eq << Eq[-1].this.rhs.limits_subs(i, i - 1)
+    
+    Eq << Eq[-1].this.rhs.limits_subs(j, j - 1)
+    
+    Eq << Eq.determinant.subs(Eq[-1])
+    
+    Eq << Eq[-1].this.rhs.as_one_term()
+    
+    Eq << Product[j:i, i:n + 1](Eq[0].rhs.function).this.bisect(front=1)
+    
+    Eq << Eq[-2].subs(Eq[-1].reversed)
+
+    Eq.recursion = Eq.recursion.subs(Eq[-1])
+    
+    D = Eq.recursion.rhs.args[1].function.args[1].arg
+    _i = i.copy(integer=True, positive=True)
+    D = D._subs(i, _i)    
+    Eq << matrix.determinant.expansion_by_minors.apply(D, j=0).forall(_i)
+    
+    Eq << Eq.recursion.subs(Eq[-1])
+    
+    Eq << Eq.expand.det().subs(Eq[-1])
+        
 if __name__ == '__main__':
     prove(__file__)
 # git clone https://github.com/sympy/sympy.git
+

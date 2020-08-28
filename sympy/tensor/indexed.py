@@ -659,7 +659,7 @@ class Slice(Expr):
             return Slice(self, indices, **kw_args)
         else:
             start, stop = self.indices
-            return self.base[indices - start]
+            return self.base[indices + start]
 
     def _eval_derivative(self, wrt):
         from sympy.tensor.array.ndim_array import NDimArray

@@ -206,7 +206,28 @@ class Product(ExprWithIntLimits):
 
     def _eval_is_zero(self):
         # a Product is zero only if its term is zero.
-        return self.term.is_zero
+        function = self.function
+        from sympy import Interval
+        reps = {}
+        for limit in self.limits[::-1]:
+            x, *ab = limit
+            if len(ab) == 1:
+                domain, *_ = ab
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+                reps[x] = _x
+            elif len(ab) == 2:
+                a, b = ab
+                if a.free_symbols & reps.keys():
+                    a = a.subs(reps)
+                    
+                if b.free_symbols & reps.keys():
+                    b = b.subs(reps)
+                _x = x.copy(domain=Interval(a, b, integer=True))
+                function = function._subs(x, _x)
+                reps[x] = _x
+                
+        return function.is_zero
 
     def doit(self, **hints):
         f = self.function
@@ -486,9 +507,21 @@ class Product(ExprWithIntLimits):
 
         return Product(expr.function ** e, *limits)
 
-    def simplify(self, **_):
-        if len(self.limits) != 1:
+    def simplify(self, deep=False, **_):
+        if len(self.limits) > 1:
+            limit = self.limits[-1]
+            if len(limit) == 3:
+                function = self.func(self.function, *self.limits[:-1])
+                x, a, b = limit
+                if not function._has(x):
+                    return function ** (b - a + 1)
+                
+                if a == b:                
+                    return function._subs(x, a).simplify(deep=deep)
+                if a > b:
+                    return S.One            
             return self
+        
         limit = self.limits[0]
         if len(limit) == 2:
             x, domain = limit
@@ -539,6 +572,17 @@ class Product(ExprWithIntLimits):
         return '∏(%s)' % p._print(self.function)
 
     latex_name_of_operator = 'prod'
+
+    def try_absorb(self, expr):
+        if len(self.limits) == 1:
+            i, *ab = self.limits[0]
+            if len(ab) == 2 and expr:
+                a, b = ab
+                if self.function.subs(i, b + 1) == expr:
+                    return self.func(self.function, (i, a, b + 1))
+                if self.function.subs(i, a - 1) == expr:
+                    return self.func(self.function, (i, a - 1 , b))
+
 
 def product(*args, **kwargs):
     r"""

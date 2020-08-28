@@ -85,6 +85,11 @@ class Det(Expr):
         i = self.generate_free_symbol(integer=True)
         return Sum[p:Permutations(n)](Signature(p) * Product[i:n](self[i, p[i]]))
 
+    def domain_defined(self, x):
+        domain = Expr.domain_defined(self, x)
+        for arg in self.args:
+            domain &= arg.domain_defined(x)
+        return domain
 
 def det(matexpr):
     """ Matrix Determinant

@@ -948,7 +948,7 @@ class Equality(Relational):
             return Boolean.simplify(self, deep=True, wrt=wrt)        
 
         lhs, rhs = self.args
-        from sympy.core.mul import Mul
+        from sympy import Mul, MatMul
         from sympy.concrete.expr_with_limits import Ref, ForAll
         from sympy.core.function import _coeff_isneg
         
@@ -975,10 +975,24 @@ class Equality(Relational):
                             rhs_args.remove(arg)
                             hit = True
                     if hit:
-                        return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()
+                        return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()            
             if op == Ref:
                 if lhs.limits == rhs.limits:
-                    return ForAll(self.func(lhs.function, rhs.function), *lhs.limits, equivalent=self)                     
+                    return ForAll(self.func(lhs.function, rhs.function), *lhs.limits, equivalent=self)
+            if op == MatMul:
+                lhs_args = [*lhs.args]
+                rhs_args = [*rhs.args]
+                intersect = set(lhs_args) & set(rhs_args)
+                if intersect:
+                    hit = False
+                    for arg in intersect:
+                        if arg.is_nonsingular:
+                            lhs_args.remove(arg)
+                            rhs_args.remove(arg)
+                            hit = True
+                    if hit:
+                        return self.func(op(*lhs_args), op(*rhs_args), equivalent=self).simplify()
+                                     
         elif type(lhs) == Add and rhs in lhs.args:
             args = [*lhs.args]
             args.remove(rhs)
@@ -1082,7 +1096,20 @@ class Equality(Relational):
     def asKroneckerDelta(self):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         return KroneckerDelta(*self.args)
-        
+
+    def assert_nonsingular(self):
+        from sympy import Exists
+        if self.lhs.is_Det:
+            if self.rhs.is_nonzero:                
+                C = self.lhs.generate_free_symbol(singular=False, **self.lhs.arg.dtype.dict)
+                return Exists[C](self.func(self.lhs.arg, C), given=self)
+        if self.rhs.is_Det:
+            if self.lhs.is_nonzero:
+                C = self.lhs.generate_free_symbol(singular=False, **self.rhs.arg.dtype.dict)
+                return Exists[C](self.func(self.rhs.arg, C), given=self)
+        return self
+
+
 Eq = Equality
 
 
@@ -1209,6 +1236,7 @@ class Unequality(Relational):
     def asKroneckerDelta(self):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         return 1 - KroneckerDelta(*self.args)
+
     
 Ne = Unequality
 Equality.invert_type = Unequality
@@ -1797,6 +1825,7 @@ class GreaterThan(_Greater):
                 
         return _Greater.__and__(self, other)
 
+
 Ge = GreaterThan
 
 
@@ -2037,6 +2066,7 @@ class LessThan(_Less):
                     return other
 
         return _Less.__and__(self, other)
+
 
 Le = LessThan
 

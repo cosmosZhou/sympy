@@ -9,8 +9,7 @@ from sympy.core.numbers import oo
 
 @plausible
 def apply(expr, *limits):
-    return LessThan(abs(UNION(expr, *limits)),
-                    summations.Sum(abs(expr), *limits).simplify())
+    return LessThan(abs(UNION(expr, *limits)), summations.Sum(abs(expr), *limits).simplify())
 
 
 from sympy.utility import check

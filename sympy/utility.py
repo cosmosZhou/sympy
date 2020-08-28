@@ -265,13 +265,18 @@ render(__FILE__, $text);
                         if len(rhs_equivalent) == 1:
                             rhs_equivalent, *_ = rhs_equivalent
                             if eq != rhs_equivalent:
-                                rhs_equivalent.equivalent = eq
+#                                 consider the complex case : rhs_equivalent.substituent.equivalent.equivalent == eq.substituent                                
                                 hypothesis = rhs_equivalent.hypothesis
                                 if hypothesis:
+                                    rhs_equivalent.equivalent = eq
                                     for h in hypothesis:
                                         h.derivative = None
                                 else:
-                                    rhs_equivalent.equivalent = None
+                                    hypothesis = eq.hypothesis
+                                    if hypothesis:
+                                        eq.equivalent = rhs_equivalent
+                                        for h in hypothesis:
+                                            h.derivative = None
             if isinstance(old_index, int):
                 self.list[old_index] = rhs
             else:

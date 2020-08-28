@@ -426,6 +426,14 @@ class MatMul(MatrixExpr):
             domain &= arg.domain_defined(x)
         return domain
     
+    @property
+    def T(self):
+        args = []
+        for arg in self.args[::-1]:
+            args.append(arg.T)
+            
+        return self.func(*args)
+    
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """
     for i in range(len(matrices) - 1):

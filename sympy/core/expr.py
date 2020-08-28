@@ -1224,17 +1224,15 @@ class Expr(Basic, EvalfMixin):
         elif self.is_antihermitian:
             return -conjugate(self)
 
-    def transpose(self):
+    @property
+    def T(self):
         if len(self.shape) < 2:
             return self
-#         from sympy.functions.elementary.complexes import transpose
         from sympy.matrices.expressions.transpose import Transpose
         if isinstance(self, Transpose):
             return self.arg
         return Transpose(self)
 
-    T = property(transpose, None, None, 'Matrix transposition.')
-    
     def _eval_adjoint(self):
         from sympy.functions.elementary.complexes import conjugate, transpose
         if self.is_hermitian:
