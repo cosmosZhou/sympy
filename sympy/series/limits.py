@@ -291,7 +291,9 @@ class Limit(Expr):
     def _sympystr(self, p):
         e, z, z0, direction = self.args
         if str(direction) == "+":
-            return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
+            return "lim[%s>%s](%s)" % tuple(map(p._print, (z, z0, e)))
+        elif str(direction) == "-":
+            return "lim[%s<%s](%s)" % tuple(map(p._print, (z, z0, e)))
         else:
-            return "lim[%s:%s%s](%s)" % tuple(map(p._print, (z, direction, z0, e)))
+            return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
 

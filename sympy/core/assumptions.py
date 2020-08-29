@@ -171,7 +171,7 @@ _assume_rules = FactRules([
     'odd            ==  integer & !even',
     'even           ==  integer & !odd',
 
-    'real           ->  complex',
+    'extended_real  ->  complex',
     'extended_real  ->  real | infinite',
     'real           ==  extended_real & finite',
 

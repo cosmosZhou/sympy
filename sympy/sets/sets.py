@@ -1627,6 +1627,17 @@ class Interval(Set, EvalfMixin):
             return self.start.is_finite
         return False
 
+    def inverse(self):
+        if self.is_integer:
+            return
+        if self.min().is_positive:            
+            return Interval(1 / self.end, 1 / self.start,
+                            left_open=self.right_open, right_open=self.left_open)
+        if self.max().is_negative:            
+            return Interval(1 / self.end, 1 / self.start,
+                            left_open=self.right_open, right_open=self.left_open)
+        return self
+
             
 class Union(Set, LatticeOp, EvalfMixin):
     """

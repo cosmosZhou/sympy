@@ -191,8 +191,7 @@ class Product(ExprWithIntLimits):
     is_Product = True
     
     def __new__(cls, function, *symbols, **assumptions):
-        obj = ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
-        return obj
+        return ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
 
     def _eval_rewrite_as_Sum(self, *args, **kwargs):
         from sympy.concrete.summations import Sum

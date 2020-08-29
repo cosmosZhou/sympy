@@ -10,9 +10,6 @@ from sympy.utility import plausible
 
 from sympy import Interval
 from axiom import algebre
-# sys.getrecursionlimit()
-# print('sys.getrecursionlimit() =', sys.getrecursionlimit())
-# sys.setrecursionlimit(100000000)
 
 
 @plausible
@@ -81,7 +78,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.function.powsimp()
 
-    Eq.convolution = Eq[-1].subs(Eq[0])
+    Eq << Eq[-1].subs(Eq[0])    
+    Eq << Eq[-1].forall(y)
+    
+    Eq << Eq[-1].bisect(domain=Interval(0, n0 + n1, integer=True))
+    
+    Eq.within, Eq.beyond = Eq[-1].split()
         
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0)
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n1)
@@ -103,8 +105,12 @@ def prove(Eq):
 
     Eq << Eq[-1].limits_subs(k, y)
     
-    Eq << Eq[-1].subs(Eq.convolution)
+    Eq << Eq[-1].subs(Eq.within)
 
+    Eq << Eq.beyond.simplify(deep=True)
+    
+    Eq << (Eq.beyond & Eq.within)
 
+    
 if __name__ == '__main__':
     prove(__file__)

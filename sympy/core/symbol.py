@@ -558,7 +558,7 @@ class Symbol(AtomicExpr, NotIterable):
         from sympy import Mul, Equality
         from sympy.concrete.expr_with_limits import Ref
         if isinstance(self.definition, Ref):
-            return Equality(self[tuple(var for var, *_ in self.definition.limits)], self.definition.function, evaluate=False)
+            return Equality(self[tuple(var for var, *_ in self.definition.limits[::-1])], self.definition.function, evaluate=False)
         elif isinstance(self.definition, Mul):
             args = []
             ref = None

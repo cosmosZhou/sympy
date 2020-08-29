@@ -40,6 +40,8 @@ def prove(Eq):
 
     Eq.s_definition, Eq.x_quote_definition, Eq.recursion, Eq.aggregate = apply(G, x, y)
     
+    Eq.x_quote_definition = Eq.x_quote_definition.reference((Eq.x_quote_definition.lhs.indices[-1],))
+    
     s = Eq.x_quote_definition.rhs.function.function.base
 
     t = Eq.recursion.lhs.indices[0] - 1

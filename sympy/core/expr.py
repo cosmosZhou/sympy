@@ -992,13 +992,6 @@ class Expr(Basic, EvalfMixin):
             return diff
         return None
 
-    def _eval_is_nonzero(self):
-        zero = self.is_zero
-        if zero:
-            return False
-        if zero is False:
-            return self.is_complex
-        
     def _eval_is_extended_nonzero(self):
         zero = self.is_zero
         if zero:
@@ -3042,8 +3035,7 @@ class Expr(Basic, EvalfMixin):
                                 ndo += 1
                             break
                     else:
-                        raise ValueError('Could not calculate %s terms for %s'
-                                         % (str(n), self))
+                        raise ValueError('Could not calculate %s terms for %s' % (str(n), self))
                     s1 += Order(x ** n, x)
                 o = s1.getO()
                 s1 = s1.removeO()

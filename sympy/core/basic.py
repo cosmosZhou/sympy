@@ -2235,6 +2235,13 @@ class Basic(with_metaclass(ManagedProperties)):
         if singular is False:
             return True
 
+    def _eval_is_nonzero(self):
+        zero = self.is_zero
+        if zero:
+            return False
+        if zero is False:
+            return self.is_complex        
+
     @property
     def shape(self):
         return ()

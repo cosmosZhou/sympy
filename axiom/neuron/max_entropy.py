@@ -44,13 +44,12 @@ def prove(Eq):
     # n is the length of the sequence
     # d is the number of output labels
 
-    Eq.s_definition, Eq.z_definition, Eq.x_quote_definition, Eq.plausible0, Eq.plausible1 = apply(G, x, y)
+    Eq.s_definition, Eq.z_definition, Eq.x_quote_definition, Eq.recursion, Eq.entropy = apply(G, x, y)
     
-    t = Eq.plausible0.lhs.indices[0] - 1
-    x_quote = Eq.plausible0.lhs.base
-
-    z = x_quote.definition.args[1].function.arg.base
-    s = z.definition.function.function.function.arg.args[1].base
+    Eq.z_definition = Eq.z_definition.reference((Eq.z_definition.lhs.indices[-1],))
+    
+    t = Eq.recursion.lhs.indices[0] - 1
+    s = Eq.s_definition.lhs.base 
     
     Eq << Eq.s_definition.subs(t, t + 1) - Eq.s_definition
 
@@ -84,7 +83,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].args[1].arg.simplify()
 
-    Eq << Eq.plausible1.this.lhs.args[1].as_Add()
+    Eq << Eq.entropy.this.lhs.args[1].as_Add()
 
     Eq << Eq[-1].exp().reversed
 

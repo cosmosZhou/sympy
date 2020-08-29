@@ -258,6 +258,11 @@ class Contains(BooleanFunction):
         if domain.is_FiniteSet:             
             return 1 - domain.asKroneckerDelta(x)
             
+    def inverse(self):
+        rhs = self.rhs.inverse()
+        if rhs is not None:
+            return self.func(1 / self.lhs, rhs, equivalent=self)
+        return self
         
 class NotContains(BooleanFunction):
     """

@@ -209,7 +209,10 @@ render(__FILE__, $text);
         if index in self.__dict__:
             eq = self.__dict__[index]
             if eq.plausible:
-                equivalent = rhs.equivalent
+                equivalent = rhs.equivalent 
+                if equivalent is None:
+                    equivalent = rhs.given
+                    
                 if isinstance(equivalent, list):
                     equivalent = [e for e in equivalent if e.plausible]
                     assert len(equivalent) == 1

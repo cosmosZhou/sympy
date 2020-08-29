@@ -1673,13 +1673,13 @@ class GreaterThan(_Greater):
         return _sympify(lhs.__ge__(rhs))
 
     def inverse(self):
-        if self.rhs > 0:
-            if self.lhs > 0:
+        if self.rhs.is_extended_positive:
+            if self.lhs.is_extended_positive:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
             from sympy.sets import Contains, Interval
             return Contains(1 / self.lhs, Interval(0, 1 / self.rhs, left_open=True), equivalent=self)
-        if self.rhs < 0:
-            if self.lhs < 0:
+        if self.rhs.is_extended_negative:
+            if self.lhs.is_extended_negative:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
 
         return self
@@ -1843,11 +1843,11 @@ class LessThan(_Less):
             return Relational.__add__(self, exp)
 
     def inverse(self):
-        if self.rhs > 0:
-            if self.lhs > 0:
+        if self.rhs.is_extended_positive:
+            if self.lhs.is_extended_positive:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
-        if self.rhs < 0:
-            if self.lhs < 0:
+        if self.rhs.is_extended_negative:
+            if self.lhs.is_extended_negative:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
             from sympy.sets import Contains, Interval
             return Contains(1 / self.lhs, Interval(1 / self.rhs, 0, right_open=True), equivalent=self)

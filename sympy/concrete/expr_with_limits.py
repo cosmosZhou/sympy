@@ -240,57 +240,38 @@ class ExprWithLimits(Expr):
         
     def __new__(cls, function, *symbols, **assumptions):
         function = sympify(function)
-        if cls in (MIN, MAX, Ref, UNION):
-            assert not function.is_Boolean
-
-            limits = [None] * len(symbols)
-            for i, sym in enumerate(symbols):
-                if isinstance(sym, Tuple):
-                    limits[i] = sym
-                elif isinstance(sym, tuple):
-                    if len(sym) == 2:
-                        x, domain = sym
-                        if domain.is_Interval and domain.is_integer:
-                            sym = (x, domain.min(), domain.max())
-                    elif len(sym) == 3: 
-                        x, *ab = sym
-                        if x.is_bounded:
-                            _x = x.unbounded
-                            function = function._subs(x, _x)
-                            sym = (_x, *ab)
-                            
-                    limits[i] = Tuple(*sym)
-                else:
-                    limits[i] = Tuple(sym,)
-        elif cls in (ForAll, Exists):
-            if len(symbols) == 0:
-                return function.copy(**assumptions)
-
-            limits = [None] * len(symbols)
-            for i, sym in enumerate(symbols):
-                if isinstance(sym, Tuple):
-                    limits[i] = sym
-                elif isinstance(sym, tuple):
-                    if len(sym) == 2:
-                        if sym[1].is_BooleanTrue:
-                            return function.copy(**assumptions)
-                        x, cond = sym
-                        if cond.is_set and x.is_Symbol and x.is_bounded:
-                            cond &= x.domain_bounded
+        limits = [None] * len(symbols)
+        for i, sym in enumerate(symbols):
+            if isinstance(sym, Tuple):
+                limits[i] = sym
+            elif isinstance(sym, tuple):
+                if len(sym) == 2:
+                    if sym[1].is_BooleanTrue:
+                        return function.copy(**assumptions)                    
+                    x, domain = sym
+                    if domain.is_set:
+                        if x.is_Symbol and x.is_bounded:
+                            domain &= x.domain_bounded
                             _x = x.unbounded
                             assert x.dtype == _x.dtype
-                            sym = _x, cond
-                            function = function._subs(x, _x)
-                    
-                    limits[i] = Tuple(*sym)
-                else:
-                    limits[i] = Tuple(sym,)
-        else:
-            pre = _common_new(cls, function, *symbols, **assumptions)
-            if type(pre) is tuple:
-                function, limits, _ = pre
+                            sym = _x, domain
+                            function = function._subs(x, _x)                            
+                        elif domain.is_Interval:
+                            sym = (x, domain.min(), domain.max())
+                elif len(sym) == 3: 
+                    x, *ab = sym
+                    if x.is_bounded:
+                        _x = x.unbounded
+                        function = function._subs(x, _x)
+                        sym = (_x, *ab)
+                        
+                limits[i] = Tuple(*sym)
             else:
-                return pre
+                limits[i] = Tuple(sym,)
+    # denest any nested calls
+        while cls == type(function):
+            limits = list(function.limits) + limits
+            function = function.function
 
         if cls.is_Boolean:
             obj = Boolean.__new__(cls, **assumptions)
@@ -699,7 +680,7 @@ class ExprWithLimits(Expr):
                 return this.limits_subs(d, new)
             
             limits = [*self.limits]
-
+            hit = False
             for i, limit in enumerate(limits):
                 x, *domain = limit
                 if old == x and not new.has(x):
@@ -803,6 +784,10 @@ class ExprWithLimits(Expr):
         return self
 
     def bisect(self, front=None, back=None, domain=None, wrt=None):
+        kwargs = {'evaluate': False}
+        if self.is_Boolean:
+            kwargs['equivalent'] = self                
+        
         if len(self.limits) > 1:
             if wrt is None:
                 x, *ab = self.limits[-1]
@@ -813,7 +798,7 @@ class ExprWithLimits(Expr):
                     else:
                         mid = b + 1 - back
 
-                    return self.func.operator(self.func(self.function, *self.limits[:-1], (x, a, mid - 1)).simplify(), self.func(self.function, *self.limits[:-1], (x, mid, b)).simplify(), evaluate=False)
+                    return self.func.operator(self.func(self.function, *self.limits[:-1], (x, a, mid - 1)).simplify(), self.func(self.function, *self.limits[:-1], (x, mid, b)).simplify(), **kwargs)
                     
                 return self
             
@@ -832,7 +817,7 @@ class ExprWithLimits(Expr):
                 limits2 = [*self.limits]
                 limits2[i] = (x, universe - domain)
 
-                return self.func.operator(self.func(self.function, *limits1).simplify(), self.func(self.function, *limits2), evaluate=False, equivalent=self)
+                return self.func.operator(self.func(self.function, *limits1).simplify(), self.func(self.function, *limits2), **kwargs)
             return self
 
         (x, *ab), *_ = self.limits
@@ -847,8 +832,8 @@ class ExprWithLimits(Expr):
                 universe = Interval(*ab, integer=True)
             else:
                 universe = S.UniversalSet
-
-            return self.func.operator(self.func(self.function, (x, universe & domain)).simplify(), self.func(self.function, (x, universe - domain)), evaluate=False)
+                
+            return self.func.operator(self.func(self.function, (x, universe & domain)).simplify(), self.func(self.function, (x, universe - domain)), **kwargs)
 
         if len(ab) == 2:
             a, b = ab
@@ -857,7 +842,7 @@ class ExprWithLimits(Expr):
             else:
                 mid = b + 1 - back
 
-            return self.func.operator(self.func(self.function, (x, a, mid - 1)).simplify(), self.func(self.function, (x, mid, b)).simplify(), evaluate=False)
+            return self.func.operator(self.func(self.function, (x, a, mid - 1)).simplify(), self.func(self.function, (x, mid, b)).simplify(), **kwargs)
 
         return self
 
@@ -989,7 +974,6 @@ class AddWithLimits(ExprWithLimits):
         arglist = [orientation * function]  # orientation not used in ExprWithLimits
         arglist.extend(limits)
         obj._args = tuple(arglist)
-#         obj.is_commutative = function.is_commutative  # limits already checked
 
         return obj
 
@@ -1159,23 +1143,19 @@ class MinMaxBase(ExprWithLimits):
     
     def _latex(self, p):
         name = self.__class__.__name__.lower()
-        if len(self.limits) == 1:
-            args = tuple([p._print(i) for i in self.limits[0]])
-            if len(args) == 1:
-                tex = r"\%s\limits_{%s} " % (name, args)
-            elif len(args) == 3:
-                tex = r"\%s\limits_{%s \leq %s \leq %s} " % (name, args[1], args[0], args[2])
-            else:
-                raise Exception(self)
 
+        def _format_ineq(l):
+            if len(l) == 3:
+                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (l[1], l[0], l[2])])
+            if len(l) == 2:
+                return r"%s \in %s" % tuple([p._print(s) for s in (l[1], l[0])])
+            return p._print(l[0])
+        
+        if len(self.limits) == 1:            
+            tex = r"\%s\limits_{%s} " % (name, _format_ineq(self.limits[0]))
         elif len(self.limits) == 0:
             tex = r"\%s " % name
         else:
-
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
-
             tex = r"\%s\limits_{\substack{%s}} " % (name, str.join('\\\\', [_format_ineq(l) for l in self.limits]))
 
         if isinstance(self.function, Add):
@@ -1184,6 +1164,12 @@ class MinMaxBase(ExprWithLimits):
             tex += p._print(self.function)
 
         return tex
+
+    def as_Ref(self):
+        *limits, limit = self.limits
+        if limits:
+            return self.func(Ref(self.func(self.function, *limits), limit).simplify())
+        return self.func(Ref(self.function, limit).simplify())
 
 
 class MIN(MinMaxBase):
@@ -1254,9 +1240,6 @@ class MIN(MinMaxBase):
         (x, *_), *_ = self.limits
         independent, dependent = self.function.as_independent(x, as_Add=True)
         return self.func(dependent, *self.limits) + independent
-
-    def as_Ref(self):
-        return self.func(Ref(self.function, *self.limits).simplify())
 
     def assertion(self):
         from sympy.core.relational import LessThan
@@ -1348,9 +1331,6 @@ class MAX(MinMaxBase):
         (x, *_), *_ = self.limits
         independent, dependent = self.function.as_independent(x, as_Add=True)
         return self.func(dependent, *self.limits) + independent
-
-    def as_Ref(self):
-        return self.func(Ref(self.function, *self.limits).simplify())
 
     def separate(self):
         (x, *_), *_ = self.limits
@@ -2099,6 +2079,7 @@ class Ref(ExprWithLimits):
         limits = [*self.limits]
         limits[-1], limits[-2] = limits[-2], limits[-1]
         return self.func(self.function, *limits)
+
     
 class UNION(Set, ExprWithLimits):
     """
@@ -2896,7 +2877,7 @@ class ConditionalBoolean(Boolean):
 
     # this will change the default new operator!
     def __new__(cls, function, *symbols, **assumptions):
-        if function.is_BooleanAtom:
+        if function.is_BooleanAtom or len(symbols) == 0:
             return function.copy(**assumptions)
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 

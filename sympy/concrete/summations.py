@@ -165,8 +165,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         obj = AddWithLimits.__new__(cls, function, *symbols, **assumptions)
         if not hasattr(obj, 'limits'):
             return obj
-#         if any(len(l) != 3 or None in l for l in obj.limits):
-#             raise ValueError('Sum requires values for lower and upper bounds.')
 
         return obj
 
