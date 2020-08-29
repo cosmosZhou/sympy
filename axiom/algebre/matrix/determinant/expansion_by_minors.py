@@ -21,7 +21,7 @@ def apply(A, i=None, j=None):
         i = A.generate_free_symbol(excludes=j.free_symbols, integer=True)
         sigmar = Sum[i:n]
         
-    return Equality(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]))
+    return Equality(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]).simplify())
 
 
 from sympy.utility import check

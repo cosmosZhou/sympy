@@ -818,8 +818,18 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return Ref(first, *self.limits) @ Ref(second, *self.limits)
 
     def _subs(self, old, new, **_):
-        if new in self.variables and not old._has(new):
-            return self.limits_subs(new, self.generate_free_symbol(self.variables_set, integer=True))._subs(old, new)
+        intersect = new.free_symbols & self.variables_set - old.free_symbols
+        if intersect:
+            this = self
+            excludes = self.variables_set | new.free_symbols
+            for var in intersect:
+                _var = self.generate_free_symbol(excludes, integer=True)
+                this = this.limits_subs(var, _var)
+                excludes.add(_var) 
+            _this = this._subs(old, new)
+            if _this == this:
+                return self
+            return _this
         
         from sympy.core.basic import _aresame
         if self == old or _aresame(self, old) or self.dummy_eq(old):
@@ -968,23 +978,23 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 b_diff = b - _b
                 if a_diff >= 0:
                     if b_diff > 0:
-                        return Sum(self.function, (x, _b + 1, b)).doit(deep=False) - Sum(self.function, (x, _a, a - 1)).doit(deep=False)
+                        return Sum[x:_b + 1:b](self.function).doit(deep=False) - Sum[x:_a:a - 1](self.function).doit(deep=False)
                     elif b_diff == 0:
-                        return -Sum(self.function, (x, _a, a - 1)).doit(deep=False)
+                        return -Sum[x:_a:a - 1](self.function).doit(deep=False)
                     elif b_diff <= 0:
-                        return -Sum(self.function, (x, b + 1, _b)).simplify() - Sum(self.function, (x, _a, a - 1)).simplify()
+                        return -Sum[x:b + 1:_b](self.function).simplify() - Sum[x:_a:a - 1](self.function).simplify()
 
                 if a_diff == 0:
                     if b_diff >= 0:
-                        return Sum(self.function, (x, _b + 1, b)).doit(deep=False)
+                        return Sum[x:_b + 1:b](self.function).doit(deep=False)
                     if b_diff < 0:
-                        return -Sum(self.function, (x, b + 1, _b)).doit(deep=False)
+                        return -Sum[x:b + 1:_b](self.function).doit(deep=False)
 
                 elif a_diff < 0:
                     if b_diff < 0:
-                        ...
+                        return Sum[x:a:_a - 1](self.function).doit(deep=False) - Sum[x:b + 1:_b](self.function).doit(deep=False)
                     elif b_diff == 0:
-                        return Sum(self.function, (x, a, _a - 1)).doit(deep=False)
+                        return Sum[x:a:_a - 1](self.function).doit(deep=False)
                 elif a_diff == 0:
                     ...
         
@@ -994,8 +1004,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             return sub
         return super(type(self), self).__sub__(autre)
 
-#     @_sympifyit('other', NotImplemented)
-#     @call_highest_priority('__radd__')
     def __add__(self, expr):
         if len(self.limits) == 1:
             i, *ab = self.limits[0]
@@ -1084,10 +1092,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             domain_nonzero = self.function.domain_nonzero(x)
             domain &= domain_nonzero
             
-#             if domain not in limit[1]:
-#                 print('domain =', domain)
-#                 print('limit[1] =', limit[1])
-#                 print(domain in limit[1])
+            if domain not in limit[1]:
+                print('domain =', domain)
+                print('limit[1] =', limit[1])                
+                print(domain & limit[1])
             assert domain in limit[1]
             
             if domain.is_EmptySet:
@@ -1350,38 +1358,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     def max(self):
         return self.func(self.function.max(), *self.limits).doit()
-
-    def _latex(self, p):
-        if len(self.limits) == 1:
-            limit = self.limits[0]
-            if len(limit) == 1:
-                tex = r"\sum_{%s} " % p._print(limit[0])
-            elif len(limit) == 2:
-                tex = r"\sum\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
-            else:
-                tex = r"\sum\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
-        else:
-
-            def _format_ineq(limit):
-                if len(limit) == 1:
-                    return p._print(limit[0])
-                elif len(limit) == 2:
-                    return r"%s \in %s" % tuple([p._print(i) for i in limit])
-                else:
-                    return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (limit[1], limit[0], limit[2])])
-                
-            if all(len(limit) == 1 for limit in self.limits):
-                tex = r"\sum_{%s} " % str.join(', ', [p._print(l[0]) for l in self.limits])
-            else:
-                tex = r"\sum\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
-
-        from sympy.matrices.expressions.hadamard import HadamardProduct
-        if isinstance(self.function, (Add, HadamardProduct)):
-            tex += r"\left(%s\right)" % p._print(self.function)
-        else:
-            tex += p._print(self.function)
-
-        return tex
     
     @property
     def shape(self):
@@ -1429,6 +1405,8 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             return '∑[%s](%s)' % (limits, p._print(self.function))
         return '∑(%s)' % p._print(self.function)
 
+    latex_name_of_operator = 'sum'
+    
     def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():

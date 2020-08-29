@@ -1089,17 +1089,24 @@ class Plus(Expr, AssocOp):
         return self.func(*matrix) + self.func(*scalar)
 
     def simplifySummations(self):
-        from sympy.concrete import summations
+        from sympy.concrete.summations import Sum 
         from sympy import Wild
+        from sympy.core.function import _coeff_isneg
         dic = {}
         ceoffs = []
         for arg in self.args:
 
-            if isinstance(arg, summations.Sum):
-                if S.One in dic:
-                    dic[S.One].append(arg)
+            if isinstance(arg, Sum):
+                if _coeff_isneg(arg.function):
+                    arg = arg.func(-arg.function, *arg.limits)
+                    key = S.NegativeOne
                 else:
-                    dic[S.One] = [arg]
+                    key = S.One                    
+                    
+                if key in dic:
+                    dic[key].append(arg)
+                else:
+                    dic[key] = [arg]
                 continue
 
             coeff, summation = arg.as_coeff_Sum()
@@ -1133,8 +1140,7 @@ class Plus(Expr, AssocOp):
         hit = False
         for coeff in dic:
             if -coeff not in dic:
-                continue
-            from sympy.core.function import _coeff_isneg
+                continue            
             if _coeff_isneg(coeff):
                 continue
 
@@ -1154,11 +1160,23 @@ class Plus(Expr, AssocOp):
                         continue
 
                     t_, *_ = res.values()
-                    neg = neg.limits_subs(t_, t)
-
-                    if pos.function != neg.function:
-                        neg = neg.func(pos.function, *neg.limits)
-
+                    
+                    (x, a, b), *_= neg.limits
+                    if not t_.is_Symbol:
+                        p = t_.as_poly(x)
+                        alpha = p.nth(1)
+                        if alpha == S.One:
+                            diff = t_ - x
+                            a += diff
+                            b += diff
+                        elif alpha == S.NegativeOne:
+                            bound = t_ + x
+                            a, b = bound - b, bound - a
+                        else:
+                            continue
+                            
+                    neg = Sum[t:a:b](pos.function)
+                    
                     try_sub = pos.try_sub(neg)
                     if try_sub is not None:
                         positive[index] = try_sub
@@ -1340,6 +1358,37 @@ class Plus(Expr, AssocOp):
         if sign == '+':
             sign = ""
         return sign + ' '.join(l)
+
+    def _eval_determinant(self):
+        if self.is_upper or self.is_lower:
+            from sympy.concrete.products import Product
+            i = self.generate_free_symbol(integer=True)
+            n = self.shape[-2]
+            return Product[i:n](self[i, i].simplify()).doit()
+
+    @property
+    def is_lower(self):
+        for arg in self.args :
+            if not arg.shape:
+                return False            
+            if len(arg.shape) == 1:
+                return False
+            if arg.is_lower:
+                continue
+            return False
+        return True
+             
+    @property
+    def is_upper(self):
+        for arg in self.args :
+            if not arg.shape:
+                return False
+            if len(arg.shape) == 1:
+                return False
+            if arg.is_upper:
+                continue
+            return False
+        return True
 
 Add = Plus
 from .mul import Mul, _keep_coeff, prod

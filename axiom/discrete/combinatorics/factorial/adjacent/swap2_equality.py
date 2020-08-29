@@ -5,7 +5,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.concrete.expr_with_limits import ForAll, Ref
-from axiom import Algebre
+from axiom import algebre
 
 
 @plausible
@@ -68,7 +68,7 @@ def prove(Eq):
 
     Eq << Eq.www_expansion.subs(Eq[-1].reversed)
 
-    Eq << Eq[-1].apply(Algebre.matrix.independence.rmatmul_equality)
+    Eq << Eq[-1].apply(algebre.matrix.independence.rmatmul_equality)
 
 
 if __name__ == '__main__':

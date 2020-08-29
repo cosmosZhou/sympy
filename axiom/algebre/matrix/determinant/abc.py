@@ -31,7 +31,7 @@ def prove(Eq):
     Eq.L_definition = Eq[-1].this.rhs.doit()
     
     Eq << (shift @ A).this.expand()
-    Eq << Eq[-1].this.rhs.as_VConcatenate()
+    Eq << Eq[-1].this.rhs.as_Concatenate()
     
     Eq << shift @ Eq[-1]    
     Eq << shift @ Eq[-1]

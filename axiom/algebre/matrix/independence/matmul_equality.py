@@ -4,7 +4,7 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.concrete.expr_with_limits import Exists, Ref
-from axiom import Algebre
+from axiom import algebre
 from sympy.matrices.expressions.matmul import MatMul
 
 
@@ -62,7 +62,7 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     Eq << Eq[0][i]
     
-    Eq << Algebre.vector.independence.matmul_equality.apply(Eq[-1])
+    Eq << algebre.vector.independence.matmul_equality.apply(Eq[-1])
     
     Eq << Eq[1].T[i:0:m]
 

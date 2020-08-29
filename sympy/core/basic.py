@@ -1153,13 +1153,11 @@ class Basic(with_metaclass(ManagedProperties)):
                     d.setdefault(ops, []).append((o, n))
                 newseq = []
                 for k in sorted(d.keys(), reverse=True):
-                    newseq.extend(
-                        sorted([v[0] for v in d[k]], key=default_sort_key))
+                    newseq.extend(sorted([v[0] for v in d[k]], key=default_sort_key))
                 sequence = [(k, sequence[k]) for k in newseq]
                 del newseq, d
             else:
-                sequence = sorted([(k, v) for (k, v) in sequence.items()],
-                                  key=default_sort_key)
+                sequence = sorted([(k, v) for (k, v) in sequence.items()], key=default_sort_key)
 
         if kwargs.pop('simultaneous', False):  # XXX should this be the default for dict subs?
             reps = {}
@@ -2230,6 +2228,13 @@ class Basic(with_metaclass(ManagedProperties)):
         if integer is False:
             return self.is_extended_real
     
+    def _eval_is_invertible(self):
+        singular = self.is_singular
+        if singular:
+            return False
+        if singular is False:
+            return True
+
     @property
     def shape(self):
         return ()

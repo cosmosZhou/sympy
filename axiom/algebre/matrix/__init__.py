@@ -1,5 +1,5 @@
-from . import Vandermonde
+from . import vandermonde
 from . import elementary
 
 from . import independence
-from . import Determinant
+from . import determinant

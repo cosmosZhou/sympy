@@ -9,7 +9,7 @@ from sympy.utility import check
 from sympy.utility import plausible
 
 from sympy import Interval
-from axiom import Algebre
+from axiom import algebre
 # sys.getrecursionlimit()
 # print('sys.getrecursionlimit() =', sys.getrecursionlimit())
 # sys.setrecursionlimit(100000000)
@@ -93,13 +93,13 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.as_multiple_limits()
 
     (k, *_), (l, *_) = Eq[-1].this.lhs.limits
-    Eq << Eq[-1].this.lhs.subs(k, k - l)
+    Eq << Eq[-1].this.lhs.limits_subs(k, k - l)
 
     Eq << Eq[-1].this.lhs.as_separate_limits()
 
     Eq << Eq[-1].as_two_terms()
     
-    Eq << Algebre.vector.independence.matmul_equality.apply(Eq[-1])
+    Eq << algebre.vector.independence.matmul_equality.apply(Eq[-1])
 
     Eq << Eq[-1].limits_subs(k, y)
     

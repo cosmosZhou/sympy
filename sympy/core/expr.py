@@ -1224,17 +1224,15 @@ class Expr(Basic, EvalfMixin):
         elif self.is_antihermitian:
             return -conjugate(self)
 
-    def transpose(self):
+    @property
+    def T(self):
         if len(self.shape) < 2:
             return self
-#         from sympy.functions.elementary.complexes import transpose
         from sympy.matrices.expressions.transpose import Transpose
         if isinstance(self, Transpose):
             return self.arg
         return Transpose(self)
 
-    T = property(transpose, None, None, 'Matrix transposition.')
-    
     def _eval_adjoint(self):
         from sympy.functions.elementary.complexes import conjugate, transpose
         if self.is_hermitian:
@@ -4051,18 +4049,31 @@ class Expr(Basic, EvalfMixin):
         if m - 1 == I:
             if n - 1 == J:
                 ref = Ref[i:m - 1, j:n - 1](self[i, j])
-            else:                
-                ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j], j < J),
-                                                       (self[i, j + 1], True)))
+            else:       
+                if J.is_zero:
+                    ref = Ref[i:m - 1, j:n - 1](self[i, j + 1])                    
+                else:
+                    ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j], j < J), (self[i, j + 1], True)))
         else:
             if n - 1 == J:
-                ref = Ref[i:m - 1, j:n - 1](Piecewise(
-                    (self[i, j], i < I),
-                    (self[i + 1, j], True)))
+                if I.is_zero:
+                    ref = Ref[i:m - 1, j:n - 1](self[i + 1, j])            
+                else:
+                    ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j], i < I), (self[i + 1, j], True)))
             else:
-                ref = Ref[i:m - 1, j:n - 1](Piecewise(
-                    (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
-                    (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
+                if I.is_zero:
+                    if J.is_zero:
+                        ref = Ref[i:m - 1, j:n - 1](self[i + 1, j + 1])
+                    else:
+                        ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)))
+                else:
+                    if J.is_zero:
+                        ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j + 1], i < I),
+                            (self[i + 1, j + 1], True)))
+                    else: 
+                        ref = Ref[i:m - 1, j:n - 1](Piecewise(
+                            (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
+                            (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
         return ref.simplify()
 
     def _eval_determinant(self):
@@ -4079,6 +4090,7 @@ class Expr(Basic, EvalfMixin):
                 from sympy import Matrix 
                 return Matrix(i_shape, j_shape, tuple(array))
         return self
+
         
 class AtomicExpr(Atom, Expr):
     """

@@ -57,7 +57,7 @@ class TensorflowPrinter(AbstractPythonCodePrinter):
         sympy.MatAdd: "tensorflow.add",
         sympy.HadamardProduct: "tensorflow.multiply",
         sympy.Trace: "tensorflow.trace",
-        sympy.Determinant : "tensorflow.matrix_determinant",
+        sympy.Det : "tensorflow.matrix_determinant",
         sympy.Inverse: "tensorflow.matrix_inverse",
         sympy.Transpose: "tensorflow.matrix_transpose",
     }

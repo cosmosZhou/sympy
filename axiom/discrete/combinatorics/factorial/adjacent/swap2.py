@@ -7,6 +7,7 @@ from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.factorial.adjacent import swap2_equality
 import axiom
+from axiom.algebre.matrix import elementary
 
 
 @plausible
@@ -58,10 +59,10 @@ def prove(Eq):
     
     Eq.i_complement = Eq.final_statement.subs(Eq[-1])
     
-    plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)
-    Eq << plausible
+    Eq.plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)    
+#     Eq.plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, 1, n - 1), plausible=True)
     
-    Eq << plausible.bisect(wrt=j, domain=i.set)
+    Eq << Eq.plausible.bisect(wrt=j, domain=i.set)
     
     Eq.i_complement, Eq.i_intersection = Eq[-1].split()
     
@@ -73,11 +74,13 @@ def prove(Eq):
     
     Eq << (Eq.i_complement & Eq.i_intersection)
     
-    Eq << Eq[2].subs(j, 0)
+#     Eq << Eq[2].subs(j, 0)
+
+    Eq << elementary.swap.transpose.apply(w).subs(j, 0)
+    Eq << Eq.given_i.subs(Eq[-1].reversed)
     
-    Eq << w[i, j].equality_defined()
-    
-    Eq << w[j, i].equality_defined()
+    Eq << (Eq[-1] & Eq.plausible)
+
     
 if __name__ == '__main__':
     prove(__file__)

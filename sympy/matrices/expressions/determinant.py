@@ -22,11 +22,9 @@ class Det(Expr):
     is_Det = True
 
     def __new__(cls, mat):
-        from sympy.matrices.expressions.matexpr import VConcatenate, HConcatenate
-        if isinstance(mat, list):
-            mat = VConcatenate(*mat)
-        elif isinstance(mat, tuple):
-            mat = HConcatenate(*mat)
+        from sympy.matrices.expressions.matexpr import Concatenate
+        if isinstance(mat, (list, tuple)):
+            mat = Concatenate(*mat)
 
         mat = sympify(mat)
         assert mat.is_square, "Det of a non-square matrix"
@@ -37,7 +35,12 @@ class Det(Expr):
     def arg(self):
         return self.args[0]
 
-    def doit(self, **_):
+    def doit(self, deep=False, **_):
+        if deep:
+            arg = self.arg.doit(deep=True)
+            if arg != self.arg:
+                return self.func(arg).doit()
+            
         det = self.arg._eval_determinant()
         if det is not None:
             return det
@@ -82,6 +85,11 @@ class Det(Expr):
         i = self.generate_free_symbol(integer=True)
         return Sum[p:Permutations(n)](Signature(p) * Product[i:n](self[i, p[i]]))
 
+    def domain_defined(self, x):
+        domain = Expr.domain_defined(self, x)
+        for arg in self.args:
+            domain &= arg.domain_defined(x)
+        return domain
 
 def det(matexpr):
     """ Matrix Determinant

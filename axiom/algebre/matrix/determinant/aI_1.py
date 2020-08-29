@@ -10,7 +10,7 @@ from sympy.concrete.summations import Sum
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Identity
 from sympy.functions.elementary.piecewise import Piecewise
-from axiom.Algebre.matrix.Determinant import expansion_by_minors
+from axiom.algebre.matrix.determinant import expansion_by_minors
 from sympy.sets.sets import Interval
 
 
@@ -25,10 +25,12 @@ from sympy.utility import check
 
 def column_transformation(*limits):
     n = limits[0][-1] + 1
-    (i, *_), (j, *_) = limits
-#     return Identity(n) + Ref(Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)), *limits)
+    (i, *_), (j, *_) = limits    
+#     return Identity(n) + Ref[i:n, j:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
+#     return Identity(n) + Ref[i:n, j:n](Piecewise((KroneckerDelta(j, n - 1) - 1, Equality(i, n - 1)), (0, True)))
+    return Identity(n) + Ref[i:n, j:n](KroneckerDelta(i, n - 1) * (KroneckerDelta(j, n - 1) - 1))
     return Ref(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
-#     return Ref(Piecewise((KroneckerDelta(i, j), i < n - 1), (KroneckerDelta(i, j) + KroneckerDelta(j, n - 1) - 1, True)), *limits)
+
 
 @check
 def prove(Eq):
@@ -72,8 +74,14 @@ def prove(Eq):
     D = D._subs(Eq.deduction.lhs.variable, i)
     Eq << (D @ column_transformation(*D.limits)).this.expand()
     
-    Eq.column_transformation = Eq[-1].this.rhs.simplify(deep=True)
+    Eq << Eq[-1].this.rhs.function.args[1].bisect(back=1)
     
+    Eq << (Eq[-1].rhs.args[1].function.args[3].this.simplify(deep=True), Eq[-1].rhs.args[1].function.args[2].this.simplify(deep=True)) 
+    
+    Eq << Eq[-3].this.rhs.subs(Eq[-2] + Eq[-1])
+    
+    Eq.column_transformation = Eq[-1].this.rhs.simplify(deep=True)
+
     Eq << expansion_by_minors.apply(Eq.column_transformation.rhs, i=i).this.rhs.simplify(deep=True)
 
     Eq << Eq[-1].this.rhs.args[1].doit()
@@ -89,6 +97,7 @@ def prove(Eq):
     Eq << Eq.column_transformation.det().subs(Eq[-1]).forall(i)
          
     Eq << Eq.deduction.subs(Eq[-1])
+
     
 if __name__ == '__main__':
     prove(__file__)

@@ -8,14 +8,12 @@ from sympy.matrices.expressions.transpose import transpose
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
 from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError,
-        Identity, ZeroMatrix, GenericIdentity, VConcatenate, HConcatenate,
-    Addition)
+        Identity, ZeroMatrix, GenericIdentity, Concatenate)
 from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
 
 
-# XXX: MatMul should perhaps not subclass directly from Mul
-class MatMul(MatrixExpr, Mul):
+class MatMul(MatrixExpr):
     precedence = 45
     """
     A product of matrix expressions
@@ -31,7 +29,6 @@ class MatMul(MatrixExpr, Mul):
     A*B*C
     """
     is_MatMul = True
-    is_Mul = False
     is_commutative = True
 
     identity = GenericIdentity()
@@ -75,6 +72,10 @@ class MatMul(MatrixExpr, Mul):
             # return Basic.__neq__(cls, factor, GenericIdentity()) ?
             return factor
         return obj
+
+    def argmax_shape(self):
+        import numpy as np
+        return np.argmax([len(arg.shape) for arg in self.args])
 
     @property
     def shape(self):
@@ -264,7 +265,7 @@ class MatMul(MatrixExpr, Mul):
             A, B = self.args
             if A.is_MatPow:
                 return self
-            if isinstance(A, (VConcatenate, HConcatenate)):
+            if isinstance(A, Concatenate):
                 args = [self.func(arg, B) for arg in A.args]
                 if deep:
                     args = [arg.expand(deep=True) for arg in args]
@@ -333,9 +334,7 @@ class MatMul(MatrixExpr, Mul):
                         
                     k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
                     
-                    assert i != k                    
-                    assert k != j
-                    assert i != j
+                    assert i != k and k != j and i != j
                     return Ref(Sum[k:n](A[i, k] * B[k, j]).simplify(), i_limit, j_limit).simplify()
                 else:            
                     k = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
@@ -404,6 +403,36 @@ class MatMul(MatrixExpr, Mul):
             return False
         return True
 
+    @classmethod
+    def class_key(cls):
+        return 3, 0, cls.__name__
+    
+    @property
+    def atomic_dtype(self):
+        dtype = None
+        for arg in self.args:
+            _dtype = arg.atomic_dtype
+            if dtype is None or dtype in _dtype:
+                dtype = _dtype
+        return dtype
+    
+    def domain_defined(self, x):
+        from sympy import S
+        if x.atomic_dtype.is_set:
+            return S.UniversalSet
+        
+        domain = x.domain
+        for arg in self.args:
+            domain &= arg.domain_defined(x)
+        return domain
+    
+    @property
+    def T(self):
+        args = []
+        for arg in self.args[::-1]:
+            args.append(arg.T)
+            
+        return self.func(*args)
     
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """

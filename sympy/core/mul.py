@@ -98,10 +98,6 @@ class Times(Expr, AssocOp):
 
     identity = 1
     
-    def argmax_shape(self):
-        import numpy as np
-        return np.argmax([len(arg.shape) for arg in self.args])
-
     @classmethod
     def flatten(cls, seq):
         """Return commutative, noncommutative and order arguments by
@@ -740,6 +736,43 @@ class Times(Expr, AssocOp):
         else:
             return args[0], self._new_rawargs(*args[1:])
 
+    def as_one_term(self):
+        from sympy import Product
+        function = []
+        limits = None
+        coeff = []
+        for arg in self.args:
+            if isinstance(arg, Product):                
+                if limits is None:
+                    limits = arg.limits
+                    function.append(arg.function)
+                else:
+                    if len(arg.limits) > len(limits):
+                        if arg.limits[len(limits):] == limits:
+                            function.append(Product(arg.function, *arg.limits[:len(limits)]))
+                        else:
+                            return self
+                    elif len(arg.limits) < len(limits):
+                        if limits[len(limits):] == arg.limits:
+                            function = [Product(func, *limits[:len(arg.limits)]) for func in function]
+                            function.append(arg.function)
+                            limits = arg.limits
+                        else:
+                            return self
+                    elif limits != arg.limits:
+                        return self
+                continue
+
+            coeff.append(arg)
+            
+        if len(function) > 1:
+            prod = Product(self.func(*function).simplify(), *limits)
+            if coeff:
+                return self.func(*coeff) * prod
+            return prod
+        
+        return self
+
     @cacheit
     def as_coefficients_dict(self):
         """Return a dictionary mapping terms to their coefficient.
@@ -956,6 +989,19 @@ class Times(Expr, AssocOp):
             args[-1].diff((s, Max(0, klast))),
             [(k, 0, n) for k in kvals])
         return Sum(e, *l)
+
+    def _eval_determinant(self):
+        if len(self.args) == 2:
+            x, A = self.args
+            if len(x.shape) == 2 and len(A.shape) == 1:
+                tmp = A
+                A = x
+                x = tmp
+            if len(x.shape) == 1 and len(A.shape) == 2:
+                from sympy import Product, det
+                n = x.shape[0]
+                i = x.generate_free_symbol(integer=True)
+                return det(A) * Product[i:n](x[i])
 
     def _eval_difference_delta(self, n, step):
         from sympy.series.limitseq import difference_delta as dd
@@ -1836,6 +1882,14 @@ class Times(Expr, AssocOp):
                 arr += [n ** coeff for n in expr]
             return self.func(*arr + coeffs).simplify()
         
+        if len(dic) == 1 and coeffs:
+            prod, *_ = dic.values()
+            if len(prod) == 1:
+                prod, *_ = prod
+                coeff = self.func(*coeffs)
+                prod = prod.try_absorb(coeff)
+                if prod:
+                    return prod
         return self
 
     def prod_result(self, positive):
@@ -2048,12 +2102,10 @@ class Times(Expr, AssocOp):
                 for i, term in enumerate(args):
                     term_tex = p._print(term)
 
-                    if p._needs_mul_brackets(term, first=(i == 0),
-                                                last=(i == len(args) - 1)):
+                    if p._needs_mul_brackets(term, first=(i == 0), last=(i == len(args) - 1)):
                         term_tex = r"\left(%s\right)" % term_tex
 
-                    if _between_two_numbers_p[0].search(last_term_tex) and \
-                            _between_two_numbers_p[1].match(term_tex):
+                    if _between_two_numbers_p[0].search(last_term_tex) and _between_two_numbers_p[1].match(term_tex):
                         # between two numbers
                         _tex += numbersep
                     elif _tex:
@@ -2073,36 +2125,29 @@ class Times(Expr, AssocOp):
             sdenom = convert(denom)
             ldenom = len(sdenom.split())
             ratio = p._settings['long_frac_ratio']
-            if p._settings['fold_short_frac'] and ldenom <= 2 and \
-                    "^" not in sdenom:
+            if p._settings['fold_short_frac'] and ldenom <= 2 and "^" not in sdenom:
                 # handle short fractions
                 if p._needs_mul_brackets(numer, last=False):
                     tex += r"\left(%s\right) / %s" % (snumer, sdenom)
                 else:
                     tex += r"%s / %s" % (snumer, sdenom)
-            elif ratio is not None and \
-                    len(snumer.split()) > ratio * ldenom:
+            elif ratio is not None and len(snumer.split()) > ratio * ldenom:
                 # handle long fractions
                 if p._needs_mul_brackets(numer, last=True):
-                    tex += r"\frac{1}{%s}%s\left(%s\right)" \
-                        % (sdenom, separator, snumer)
+                    tex += r"\frac{1}{%s}%s\left(%s\right)" % (sdenom, separator, snumer)
                 elif numer.is_Mul:
                     # split a long numerator
                     a = S.One
                     b = S.One
                     for x in numer.args:
-                        if p._needs_mul_brackets(x, last=False) or \
-                                len(convert(a * x).split()) > ratio * ldenom or \
-                                (b.is_commutative is x.is_commutative is False):
+                        if p._needs_mul_brackets(x, last=False) or len(convert(a * x).split()) > ratio * ldenom or (b.is_commutative is x.is_commutative is False):
                             b *= x
                         else:
                             a *= x
                     if p._needs_mul_brackets(b, last=True):
-                        tex += r"\frac{%s}{%s}%s\left(%s\right)" \
-                            % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\frac{%s}{%s}%s\left(%s\right)" % (convert(a), sdenom, separator, convert(b))
                     else:
-                        tex += r"\frac{%s}{%s}%s%s" \
-                            % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\frac{%s}{%s}%s%s" % (convert(a), sdenom, separator, convert(b))
                 else:
                     tex += r"\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
             else:
@@ -2169,6 +2214,30 @@ class Times(Expr, AssocOp):
         else:
             return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
 
+
+    @property
+    def is_lower(self):
+        for arg in self.args :
+            if not arg.shape:
+                continue            
+            if len(arg.shape) == 1:
+                continue
+            if arg.is_lower:
+                continue
+            return False
+        return True
+             
+    @property
+    def is_upper(self):
+        for arg in self.args :
+            if not arg.shape:
+                continue
+            if len(arg.shape) == 1:
+                continue
+            if arg.is_upper:
+                continue
+            return False
+        return True
     
 Mul = Times
 
