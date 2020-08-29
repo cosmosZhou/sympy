@@ -2263,6 +2263,22 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.logic.boolalg import Identity
         return Identity(self)
 
+    @property
+    def parent(self):
+        if 'parent' in self._assumptions:
+            return self._assumptions['parent']
+        return None
+
+    @parent.setter
+    def parent(self, parent):
+        if parent is not None:
+            if 'parent' in self._assumptions:
+                print('parent already in it') 
+            self._assumptions['parent'] = parent
+            return
+
+        if 'parent' in self._assumptions:
+            del self._assumptions['parent']
         
 class Atom(Basic):
     """

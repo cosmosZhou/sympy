@@ -550,7 +550,6 @@ class Plus(Expr, AssocOp):
                 if self.max().is_extended_negative:
                     return False    
         
-        
         from sympy import preorder_traversal, KroneckerDelta 
         delta = None
         for arg in preorder_traversal(self):
@@ -1031,7 +1030,7 @@ class Plus(Expr, AssocOp):
             
         return this
 
-    def simplify(self, deep=False, **kwargs):
+    def simplify(self, deep=False, context=False, **kwargs):
         if deep:
             this = Expr.simplify(self, deep=True, **kwargs)
             if this is not self:
@@ -1161,7 +1160,7 @@ class Plus(Expr, AssocOp):
 
                     t_, *_ = res.values()
                     
-                    (x, a, b), *_= neg.limits
+                    (x, a, b), *_ = neg.limits
                     if not t_.is_Symbol:
                         p = t_.as_poly(x)
                         alpha = p.nth(1)
@@ -1389,6 +1388,7 @@ class Plus(Expr, AssocOp):
                 continue
             return False
         return True
+
 
 Add = Plus
 from .mul import Mul, _keep_coeff, prod

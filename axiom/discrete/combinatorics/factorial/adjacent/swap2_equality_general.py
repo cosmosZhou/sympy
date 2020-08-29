@@ -16,7 +16,7 @@ def apply(n):
     i = Symbol('i', domain=domain)
     j = Symbol('j', domain=domain)
     assert n >= 2
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     
     return ForAll(Equality(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
 

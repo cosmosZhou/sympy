@@ -164,7 +164,7 @@ def prove():
 
 
 def parellel_process(process, items):
-#     return map(process, items)
+    return map(process, items)
     from multiprocessing import Pool
     with Pool(processes=cpu_count() * 2) as pool:
         return pool.map(process, items)

@@ -2893,10 +2893,9 @@ class ConditionalBoolean(Boolean):
     def __rmatmul__(self, rhs):
         return self.this.function.__rmatmul__(rhs)
     
-    def transpose(self):
+    @property
+    def T(self):
         return self.this.function.transpose()
-    
-    T = property(transpose, None, None, 'Matrix transposition.')
     
     def inverse(self):
         return self.this.function.inverse()

@@ -18,7 +18,6 @@ from sympy.core.sympify import converter, _sympify, sympify
 from sympy.utilities.iterables import sift, ibin
 from sympy.utilities.misc import filldedent
 
-
 def as_Boolean(e):
     """Like bool, return the Boolean value of an expression, e,
     which can be any instance of Boolean or bool.
@@ -769,6 +768,7 @@ class Boolean(Basic):
                                 if not found:
                                     step = None
                         else:
+
                             def is_valid_given(given):
                                 if given == self_equivalent:
                                     return True
@@ -938,6 +938,7 @@ class Boolean(Basic):
 
     def asKroneckerDelta(self):
         ...
+
         
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
@@ -1952,6 +1953,7 @@ class And(LatticeOp, BooleanFunction):
                 return
             eq *= e
         return eq
+
 
 class Or(LatticeOp, BooleanFunction):
     """
@@ -3940,45 +3942,51 @@ class Invoker:
 
     def __new__(cls, expr):
         this = object.__new__(cls)
-        this.expr = expr
-        this.obj = expr
-        this.func = []
+        this._expr = expr 
+        this._objs = []
         this._args = []
         this.index = []
+        this.assumptions = []  
+        this.append(expr)      
         return this
-
+    
+    @property
+    def object(self):
+        return self._objs[-1]
+    
     def result(self, obj, equivalent=True):
         kwargs = {}
         if obj.is_Boolean:
             kwargs = {}
             if obj.equivalent is not None:
-                kwargs['equivalent'] = self.expr
+                kwargs['equivalent'] = self._expr
             elif obj.given is not None:
-                kwargs['given'] = self.expr
+                kwargs['given'] = self._expr
             elif obj.imply is not None:
-                kwargs['imply'] = self.expr
+                kwargs['imply'] = self._expr
         else:
             if equivalent:
-                kwargs['equivalent'] = self.expr
+                kwargs['equivalent'] = self._expr
             else:
-                kwargs['given'] = self.expr
+                kwargs['given'] = self._expr
 
-        for i in range(-1, -len(self.func) - 1, -1):
+        for i in range(-1, -len(self._objs) - 1, -1):
             self._args[i][self.index[i]] = obj
 
-            if i == -len(self.func):
-                obj = self.func[i](*self._args[i], **kwargs)
+            if i == -len(self._objs):
+                obj = self._objs[i].func(*self._args[i], **kwargs)
             else:
-                obj = self.func[i](*self._args[i])
+                obj = self._objs[i].func(*self._args[i])
 
             obj = obj.simplify()
             
-        if obj.equivalent == self.expr and obj == self.expr:
-            return self.expr
+        if obj.equivalent == self._expr and obj == self._expr:
+            return self._expr
         return obj
 
+    
     def __call__(self, *args, **kwargs):
-        funcname = self.obj.__name__
+        funcname = self.object.__name__
         if funcname == 'subs':
             from sympy.concrete.summations import Sum
             from sympy.integrals.integrals import Integral
@@ -3988,50 +3996,72 @@ class Invoker:
                     (x, *_), *_ = self.obj.__self__.limits
                     # domain might be different!
                     assert args[0].name == x.name
-            elif self.obj.__self__.is_ConditionalBoolean:
+            elif self.object.__self__.is_ConditionalBoolean:
                 ...
             else:
                 assert all(isinstance(arg, Equality) for arg in args)
 
-        obj = self.obj(*args, **kwargs)
+        if self.assumptions:
+            obj = self.callable(*args, assumptions=self.assumptions, **kwargs)
+        else:
+            obj = self.callable(*args, **kwargs)
         return self.result(obj, funcname not in ('abs',))
 
-    def append(self):
-        self.func.append(self.obj.func)
-        self._args.append([*self.obj.args])
+    def append(self, object):
+        self._objs.append(object)
+        self._args.append([*object.args])
 
-    def __getattr__(self, method):
-        obj = getattr(self.obj, method)
-        if not callable(obj):
-            if isinstance(obj, tuple):
-                self.append()
-            elif obj in self.obj.args:
-                self.append()
-                self.index.append(self.obj.args.index(obj))
-            else:
-                return self.result(obj)
+    def __getattr__(self, method):        
+        object = self.object
+        obj = getattr(object, method)
+        if callable(obj):
+            self.callable = obj
+            return self
 
-        self.obj = obj
+        if isinstance(obj, tuple):
+            self.append(obj)
+            return self
+        
+        if obj in object.args:
+#                     from sympy.concrete.expr_with_limits import limits_dict
+            from sympy.functions.elementary.piecewise import ExprCondPair, Piecewise
+            from sympy.concrete.expr_with_limits import ExprWithLimits
+            if isinstance(object, ExprWithLimits):
+                self.assumptions += object.limits
+            elif isinstance(object, ExprCondPair):
+                piecewise = self._objs[-2]
+                cond = object.cond
+                for e, c in piecewise.args:
+                    cond &= c.invert()
+                    if e == object.expr:
+                        break
+                self.assumptions += [cond]
+                
+            self.append(obj)
+            self.index.append(object.args.index(obj))
+                    
+        else:
+            return self.result(obj)
+
         return self
 
     def __str__(self):
-        return str(self.obj)
+        return str(self.object)
 
     @property
     def latex(self):
-        return self.obj.latex
+        return self.value.latex
 
-    def __getitem__(self, j):
-        obj = self.obj[j]
+    def __getitem__(self, j):        
+        obj = self._args[-1][j]
         try:
-            self.index.append(self.obj.args.index(obj))
-            self.append()
+            self.index.append(self.object.args.index(obj))
+            self.append(obj)
         except:
             try:
                 self.index.append(self._args[-1].index(obj))
             except:    
                 return self.result(obj)
-        self.obj = obj
         return self
 
     def __iter__(self):
@@ -4044,16 +4074,16 @@ class Identity(Invoker):
     def equation(self):
         from sympy import Equality
         from sympy.core.relational import Relational 
-        return Relational.__new__(Equality, self.expr, self.obj)
+        return Relational.__new__(Equality, self._expr, self.obj)
 
     def __call__(self, *args, **kwargs):
         from sympy import Equality
-        if self.obj.__name__ == 'subs':
+        if self.callable.__name__ == 'subs':
             from sympy.concrete.summations import Sum
             from sympy.integrals.integrals import Integral
-            if isinstance(self.obj.__self__, Sum) or isinstance(self.obj.__self__, Integral):
+            if isinstance(self.callable.__self__, Sum) or isinstance(self.callable.__self__, Integral):
                 if len(args) == 2:
-                    (x, *_), *_ = self.obj.__self__.limits
+                    (x, *_), *_ = self.callable.__self__.limits
                     # domain might be different!
                     assert args[0].name == x.name
 #             elif self.obj.__self__.is_ConditionalBoolean:
@@ -4061,29 +4091,31 @@ class Identity(Invoker):
             else:
                 assert all(isinstance(arg, Equality) for arg in args)                
 
-        obj = self.obj(*args, **kwargs)
+        obj = self.callable(*args, **kwargs)
 
-        for i in range(-1, -len(self.func) - 1, -1):
+        for i in range(-1, -len(self._objs) - 1, -1):
             self._args[i][self.index[i]] = obj
-            obj = self.func[i](*self._args[i])
+            obj = self._objs[i].func(*self._args[i])
             obj = obj.simplify()
-        self.obj = obj
+        self.value = obj
         return self
 
     def __getattr__(self, method):
         if method == "T":
-            assert len(self.obj.shape) < 2
-        obj = getattr(self.obj, method)
-        if not callable(obj):
-            if isinstance(obj, tuple):
-                self.append()
-            elif obj in self.obj.args:
-                self.append()
-                self.index.append(self.obj.args.index(obj))
-            else:
-                ...
+            assert len(self.object.shape) < 2
+        obj = getattr(self.object, method)
+        if callable(obj):
+            self.callable = obj
+            return self
 
-        self.obj = obj
+        if isinstance(obj, tuple):
+            self.append(obj)
+        elif obj in self.object.args:
+            self.append(obj)
+            self.index.append(self.object.args.index(obj))
+        else:
+            ...
+
         return self
 
     @property
