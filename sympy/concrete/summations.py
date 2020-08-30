@@ -1262,7 +1262,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     domain, *_ = finiteset
                     if domain not in universe:                    
                         e, *_ = domain
-                        return Piecewise((self.function._subs(x, e), Contains(e, universe)), (0, True)).simplify()
+                        return Piecewise((self.function._subs(x, e), Contains(e, universe).simplify()), (0, True)).simplify()
 
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)

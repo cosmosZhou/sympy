@@ -1030,7 +1030,7 @@ class Plus(Expr, AssocOp):
             
         return this
 
-    def simplify(self, deep=False, context=False, **kwargs):
+    def simplify(self, deep=False, **kwargs):
         if deep:
             this = Expr.simplify(self, deep=True, **kwargs)
             if this is not self:

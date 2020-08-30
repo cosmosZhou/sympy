@@ -175,10 +175,7 @@ render(__FILE__, $text);
             return self.list[index]
         return self.__dict__[index]
 
-    def process(self, rhs, index=None, end_of_line='\n'):
-        from sympy.logic.boolalg import Identity
-        if isinstance(rhs, Identity):
-            rhs = rhs.equation
+    def process(self, rhs, index=None, end_of_line='\n'):        
         try:
             latex = rhs.latex
         except:

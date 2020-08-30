@@ -352,6 +352,26 @@ class NotContains(BooleanFunction):
                 return Unequality(e, y, equivalent=self)
             return And(*(Unequality(e, y) for y in s), equivalent=self)
 
+        if s.is_Interval and s.is_integer and e.is_Plus:
+            if not s.left_open or s.right_open:
+                try:
+                    index = e.args.index(S.NegativeOne)
+                    s += S.One
+                    e += S.One
+                    return self.func(e, s, evaluate=False, equivalent=self)
+                except:
+                    ...
+                    
+            if s.left_open or not s.right_open:
+                try:
+                    index = e.args.index(S.One)
+                    s += S.NegativeOne
+                    e += S.NegativeOne
+                    return self.func(e, s, evaluate=False, equivalent=self)
+                except:
+                    ...
+        
+
         return self
 
     @property
