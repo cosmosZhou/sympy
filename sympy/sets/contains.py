@@ -263,6 +263,7 @@ class Contains(BooleanFunction):
         if rhs is not None:
             return self.func(1 / self.lhs, rhs, equivalent=self)
         return self
+
         
 class NotContains(BooleanFunction):
     """
@@ -370,7 +371,6 @@ class NotContains(BooleanFunction):
                     return self.func(e, s, evaluate=False, equivalent=self)
                 except:
                     ...
-        
 
         return self
 
@@ -498,7 +498,11 @@ class Subset(BooleanFunction):
             return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
         else:
             return self.func(self.lhs & exp, self.rhs & exp, given=self)
-
+            
+    def _sympystr(self, p):
+#         ⊆        
+        return '%s ⊂ %s' % tuple(p._print(x) for x in self.args)
+    
     def _latex(self, printer):
         return r'%s \subset %s' % tuple(printer._print(x) for x in self.args)
 
@@ -663,6 +667,10 @@ class NotSubset(BooleanFunction):
         else:
             return self.func(self.lhs & exp, self.rhs & exp, given=self)
 
+    def _sympystr(self, p):
+#         ⊊        
+        return r'%s ⊄ %s' % tuple(p._print(x) for x in self.args)
+
     def _latex(self, printer):
         return r'%s \not\subset %s' % tuple(printer._print(x) for x in self.args)
 
@@ -807,6 +815,10 @@ class Supset(BooleanFunction):
         """The right-hand side of the relation."""
         return self._args[1]
 
+    def _sympystr(self, p):
+#         ⊇        
+        return '%s ⊃ %s' % tuple(p._print(x) for x in self.args)
+
     def _latex(self, printer):
         return r'%s\supset %s' % tuple(printer._print(x) for x in self.args)
 
@@ -919,6 +931,10 @@ class NotSupset(BooleanFunction):
     def rhs(self):
         """The right-hand side of the relation."""
         return self._args[1]
+
+    def _sympystr(self, p):
+#         ⊋
+        return r'%s ⊅ %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\not\supset %s' % tuple(printer._print(x) for x in self.args)

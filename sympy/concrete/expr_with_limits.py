@@ -3586,8 +3586,8 @@ class ForAll(ConditionalBoolean, ExprWithLimits):
                             return self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
-        limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])
-        return 'ForAll[%s](%s)' % (limits, p.doprint(self.function))
+        limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])        
+        return '∀[%s](%s)' % (limits, p.doprint(self.function))
 
     def int_limit(self):
         if len(self.limits) != 1:
@@ -4070,7 +4070,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])
-        return 'Exists[%s](%s)' % (limits, p.doprint(self.function))
+        return '∃[%s](%s)' % (limits, p.doprint(self.function))
 
     def int_limit(self):
         if len(self.limits) != 1:

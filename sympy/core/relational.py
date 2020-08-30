@@ -1156,7 +1156,7 @@ class Unequality(Relational):
         return self.func(abs(self.lhs), abs(self.rhs), given=self)
 
     def _sympystr(self, p):
-        return '%s != %s' % tuple(p._print(arg) for arg in self.args)
+        return '%s ≠ %s' % tuple(p._print(arg) for arg in self.args)
 
     def __new__(cls, lhs, rhs, **options):
         lhs = _sympify(lhs)

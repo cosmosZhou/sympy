@@ -9,7 +9,12 @@ from axiom.discrete import sets
 # A = B
 @plausible
 def apply(*given):
-    assert given[0].is_Subset and given[1].is_Equality
+    if given[0].is_Equality and given[1].is_Subset:
+        given = [*given]
+        given[0], given[1] = given[1], given[0]
+    else:
+        assert given[0].is_Subset and given[1].is_Equality
+            
     A, B = given[0].args
     
     A_abs, B_abs = abs(A), abs(B)

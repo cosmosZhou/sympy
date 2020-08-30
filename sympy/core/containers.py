@@ -154,7 +154,7 @@ class Tuple(Basic):
         if len(self) == 3:
             return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (self[1], self[0], self[2])])
         if len(self) == 2:
-            return r"%s \in %s" % tuple([p._print(s) for s in (self[1], self[0])])
+            return r"%s \in %s" % tuple([p._print(s) for s in (self[0], self[1])])
         return p._print(self[0])
         
 
