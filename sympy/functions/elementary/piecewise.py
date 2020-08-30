@@ -18,6 +18,7 @@ Undefined = S.NaN  # Piecewise()
 class ExprCondPair(Tuple):
     """Represents an expression, condition pair."""
 
+    is_ExprCondPair = True
     def __new__(cls, expr, cond):
         expr = as_Basic(expr)
         if cond == True:
@@ -1229,7 +1230,7 @@ class Piecewise(Function):
         
     def simplify(self, deep=False, wrt=None):
         from sympy.functions.special.tensor_functions import KroneckerDelta
-        if deep:
+        if deep or wrt is not None:
             scope_variables = self.scope_variables
             if wrt is None:
                 if len(scope_variables) == 1:

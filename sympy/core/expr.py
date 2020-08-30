@@ -3886,6 +3886,11 @@ class Expr(Basic, EvalfMixin):
                             return domain & interval
                         
             return conditionset(self, condition, domain)
+        
+        if condition.is_NotContains:
+            if condition.lhs == self:
+                return self.domain_conditioned(condition.invert_type(self, self.domain - condition.rhs))
+            return conditionset(self, condition, domain)
 
         if condition.is_And:
             sol = domain

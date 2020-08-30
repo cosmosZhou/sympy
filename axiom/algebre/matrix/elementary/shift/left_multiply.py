@@ -43,9 +43,9 @@ def prove(Eq):
     
     Eq << w[i, j].T @ Eq[-1]
      
-    Eq << Eq[-1].this.rhs.expand()
+#     Eq << Eq[-1].this.rhs.expand()
 
-    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
+#     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
         
 
 if __name__ == '__main__':

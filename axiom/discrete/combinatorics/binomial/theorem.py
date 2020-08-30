@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.function.powsimp()
 
-    (k, *_), *_ = Eq[-1].this.rhs.limits
+    (k, *_), *_ = Eq[-1].rhs.limits
     Eq << Eq[-1].this.rhs.as_two_terms()
 
     Eq << Eq[-1].this.rhs.args[1].subs(k, k - 1)

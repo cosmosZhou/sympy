@@ -1475,8 +1475,7 @@ class LatexPrinter(Printer):
         return r"\mathbb{U}"
 
     def _print_tuple(self, expr):
-        return r"\left( %s\right)" % \
-            r", \  ".join([self._print(i) for i in expr])
+        return r"\left( %s\right)" % r", \  ".join([self._print(i) for i in expr])
 
     def _print_TensorProduct(self, expr):
         elements = [self._print(a) for a in expr.args]

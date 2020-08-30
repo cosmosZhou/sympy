@@ -85,7 +85,10 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Order = False
     is_Derivative = False
     is_Difference = False
+    
+    is_ExprCondPair = False
     is_Piecewise = False
+    
     is_Poly = False
     is_AlgebraicNumber = False
     is_Min = False

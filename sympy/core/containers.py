@@ -149,6 +149,15 @@ class Tuple(Basic):
             domain &= arg.domain_defined(x)
         return domain
 
+
+    def _format_ineq(self, p):
+        if len(self) == 3:
+            return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (self[1], self[0], self[2])])
+        if len(self) == 2:
+            return r"%s \in %s" % tuple([p._print(s) for s in (self[1], self[0])])
+        return p._print(self[0])
+        
+
 converter[tuple] = lambda tup: Tuple(*tup)
 
 

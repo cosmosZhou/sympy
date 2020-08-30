@@ -15,7 +15,7 @@ def apply(n, w=None):
     
     assert n >= 2
     if w is None:
-        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     

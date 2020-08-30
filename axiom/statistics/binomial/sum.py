@@ -94,7 +94,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.as_multiple_limits()
 
-    (k, *_), (l, *_) = Eq[-1].this.lhs.limits
+    (k, *_), (l, *_) = Eq[-1].lhs.limits
     Eq << Eq[-1].this.lhs.limits_subs(k, k - l)
 
     Eq << Eq[-1].this.lhs.as_separate_limits()

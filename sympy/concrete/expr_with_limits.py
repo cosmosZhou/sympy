@@ -1144,19 +1144,12 @@ class MinMaxBase(ExprWithLimits):
     def _latex(self, p):
         name = self.__class__.__name__.lower()
 
-        def _format_ineq(l):
-            if len(l) == 3:
-                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (l[1], l[0], l[2])])
-            if len(l) == 2:
-                return r"%s \in %s" % tuple([p._print(s) for s in (l[1], l[0])])
-            return p._print(l[0])
-        
         if len(self.limits) == 1:            
-            tex = r"\%s\limits_{%s} " % (name, _format_ineq(self.limits[0]))
+            tex = r"\%s\limits_{%s} " % (name, self.limits[0]._format_ineq(p))
         elif len(self.limits) == 0:
             tex = r"\%s " % name
         else:
-            tex = r"\%s\limits_{\substack{%s}} " % (name, str.join('\\\\', [_format_ineq(l) for l in self.limits]))
+            tex = r"\%s\limits_{\substack{%s}} " % (name, str.join('\\\\', [l._format_ineq(p) for l in self.limits]))
 
         if isinstance(self.function, Add):
             tex += r"\left(%s\right)" % p._print(self.function)
@@ -2510,12 +2503,7 @@ class UNION(Set, ExprWithLimits):
                 tex = r"\bigcup\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
         else:
 
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([p._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\bigcup\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in limits])
+            tex = r"\bigcup\limits_{\substack{%s}} " % str.join('\\\\', [l._format_ineq(p) for l in limits])
 
         if isinstance(function, Add):
             tex += r"\left(%s\right)" % p._print(function)
@@ -2720,29 +2708,24 @@ class INTERSECTION(Set, ExprWithLimits):
     
     is_IntersectionComprehension = True
 
-    def _latex(self, printer):
+    def _latex(self, p):
         function = self.function
         limits = self.limits
 
         if len(limits) == 1:
             limit = limits[0]
             if len(limit) == 1:
-                tex = r"\bigcap_{%s} " % printer._print(limit[0])
+                tex = r"\bigcap_{%s} " % p._print(limit[0])
             else:
-                tex = r"\bigcap\limits_{%s=%s}^{%s} " % tuple([printer._print(i) for i in limit])
+                tex = r"\bigcap\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
         else:
 
-            def _format_ineq(l):
-                return r"%s \leq %s \leq %s" % \
-                    tuple([printer._print(s) for s in (l[1], l[0], l[2])])
-
-            tex = r"\bigcap\limits_{\substack{%s}} " % \
-                str.join('\\\\', [_format_ineq(l) for l in limits])
+            tex = r"\bigcap\limits_{\substack{%s}} " % str.join('\\\\', [l._format_ineq(p) for l in limits])
 
         if isinstance(function, Add):
-            tex += r"\left(%s\right)" % printer._print(function)
+            tex += r"\left(%s\right)" % p._print(function)
         else:
-            tex += printer._print(function)
+            tex += p._print(function)
 
         return tex
 

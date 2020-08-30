@@ -3946,8 +3946,9 @@ class Invoker:
         this._objs = []
         this._args = []
         this.index = []
-        this.assumptions = None
-        this.append(expr)      
+        this._context = []
+        this.append(expr)
+        this.callable = None      
         return this
     
     @property
@@ -3990,6 +3991,9 @@ class Invoker:
         return obj
     
     def __call__(self, *args, **kwargs):
+        if self.callable is None:
+            return self.enter(*args)
+        
         funcname = self.callable.__name__
         if funcname == 'subs':
             from sympy.concrete.summations import Sum
@@ -4005,37 +4009,39 @@ class Invoker:
             else:
                 assert all(isinstance(arg, Equality) for arg in args)
 
-        if self.assumptions:
+        if self._context:
             try:
                 this = self.callable.__self__
                 reps = []
                 from sympy import Interval
-                for x, *ab in self.assumptions:
-                    if isinstance(x, set):
-                        cond, *_ = ab
-                        x &= this.free_symbols
-                        wrt = kwargs.get('wrt')
-                        if wrt is not None:
-                            assert wrt in x                        
-                            domain = wrt.domain_conditioned(cond)
-                            x = wrt
-                        else:
-                            for x in x:
-                                domain = x.domain_conditioned(cond)
-                                break
-                    else:
+                outer_context = {}
+                for _, limits in self._context:
+                    for x, *ab in limits:
                         if len(ab) == 1:
-                            domain, *_ = ab                    
+                            domain, *_ = ab
+                            if domain.is_Boolean:
+                                domain = x.domain_conditioned(domain)                                                    
                         else:
                             domain = Interval(*ab, integer=x.is_integer)
-                    _x = x.copy(domain=domain)
-                    this = this._subs(x, _x).simplify()
-                    reps.append((x, _x))
+                            
+                        if x in outer_context:
+                            x, _domain = outer_context[x]
+                            keys = domain.free_symbols & outer_context.keys()
+                            if keys:
+                                for key in keys:
+                                    domain = domain._subs(key, outer_context[key][0])
+                            domain &= _domain
+                                
+                        _x = x.copy(domain=domain)
+                        this = this._subs(x, _x).simplify()
+                        reps.append((x, _x))
+                        outer_context[x] = (_x, domain)
                 
                 obj = getattr(this, self.callable.__name__)(*args, **kwargs).simplify()
                 reps.reverse()
                 for x, _x in reps:
                     obj = obj._subs(_x, x)
+                    
             except Exception as e:
                 print(e)
                 import traceback
@@ -4048,8 +4054,8 @@ class Invoker:
         self._objs.append(obj)
 
     def __getattr__(self, method):        
-        objet = self.target
-        obj = getattr(objet, method)
+        target = self.target
+        obj = getattr(target, method)
         if callable(obj):
             self.callable = obj
             return self
@@ -4059,7 +4065,7 @@ class Invoker:
             return self
         
         try:
-            self.index.append(objet.args.index(obj))
+            self.index.append(target.args.index(obj))
             self.append(obj)
         except:
             return self.result(obj)
@@ -4075,45 +4081,59 @@ class Invoker:
 
     def __getitem__(self, j):
         target = self.target
-        assert isinstance(target, tuple)        
         obj = target[j]
+            
         try:
-            self.index.append(target.index(obj))
-            self._objs[-1] = obj
+            if isinstance(target, tuple):
+                self.index.append(self._objs[-2].args.index(obj))
+                self._objs[-1] = obj
+            else:
+                self.index.append(target.index(obj))
+                self._objs.append(obj)
         except:
-            try:
-                self.index.append(self._args[-1].index(obj))
-            except:    
-                return self.result(obj)
+            return self.result(obj)
+                        
         return self
 
     def __iter__(self):
         return iter(self.obj)
 
-    def __enter__(self):
-        if self.assumptions is None:
-            self.assumptions = []
-        objet = self.target
-        from sympy.functions.elementary.piecewise import ExprCondPair
-        from sympy.concrete.expr_with_limits import ExprWithLimits
-        if isinstance(objet, ExprWithLimits):
-            self.assumptions += objet.limits
-        elif isinstance(objet, ExprCondPair):
+    def enter(self, *args):
+        target = self.target
+        limits = ()
+        
+        if target.is_ExprWithLimits:
+            limits = target.limits
+        elif target.is_ExprCondPair:
             piecewise = self._objs[-2]
-            cond = objet.cond
+            cond = target.cond
             for e, c in piecewise.args:
-                if e == objet.expr:
+                if e == target.expr:
                     break
                 cond &= c.invert()
-            self.assumptions.append((cond.free_symbols, cond))
-        self._target = objet
+                
+            if cond.is_Contains or cond.is_NotContains:
+                free_symbols = cond.lhs.free_symbols
+            else:
+                free_symbols = cond.free_symbols
+            x, *_ = free_symbols
+            limit = (x, cond)
+            limits = (limit,)
+        if args:
+            limits += tuple((x, target.domain_defined(x)) for x in args)
+                            
+        self._context.append((target, limits))
         return self
 
-    def __exit__(self, *_):
-        while self.target != self._target:
-            self._objs.pop()
-            self.index.pop()
-        return self
+#     def __exit__(self, *_):
+#         self._context.pop()
+#         if self._context:
+#             target, _ = self._context[-1]
+#             while self.target != target:
+#                 self._objs.pop()
+#                 self.index.pop()
+#         
+#         return self
     
     def __or__(self, x):
         if self.assumptions is None:
@@ -4124,9 +4144,13 @@ class Invoker:
         return self
 
 
-
 class Identity(Invoker):
 
+    def result(self, target):
+        from sympy.core.relational import Relational
+        from sympy import Equality 
+        return Relational.__new__(Equality, self.source, target)            
+        
     def __call__(self, *args, **kwargs):
         from sympy import Equality
         if self.callable.__name__ == 'subs':
@@ -4147,30 +4171,8 @@ class Identity(Invoker):
         for i in range(-1, -len(self.index) - 1, -1):
             this = self._objs[i - 1]
             args = [*this.args]
-            args[i][self.index[i]] = obj
+            args[self.index[i]] = obj
             obj = this.func(*args).simplify()
-            
-        from sympy.core.relational import Relational 
-        return Relational.__new__(Equality, self.source, obj)            
+        
+        return self.result(obj)
 
-    def __getattr__(self, method):
-        if method == "T":
-            assert len(self.target.shape) < 2
-        obj = getattr(self.target, method)
-        if callable(obj):
-            self.callable = obj
-            return self
-
-        if isinstance(obj, tuple):
-            self.append(obj)
-        elif obj in self.target.args:
-            self.append(obj)
-            self.index.append(self.target.args.index(obj))
-        else:
-            ...
-
-        return self
-
-    @property
-    def this(self):
-        return Invoker(self.equation)

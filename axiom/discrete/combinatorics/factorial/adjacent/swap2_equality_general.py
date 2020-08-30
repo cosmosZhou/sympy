@@ -53,7 +53,7 @@ def prove(Eq):
     Eq << Eq[-1].forall(j)
     
     Eq << Eq[-1].forall(*Eq[1].limits[0])
-    
+    return
     Eq << Eq[-1].this.function.rhs.simplify(deep=True)
     
     Eq << w[t, i] @ Eq[-1]

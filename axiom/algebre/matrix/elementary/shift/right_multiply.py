@@ -39,13 +39,10 @@ def prove(Eq):
     Eq << (x @ w[i, j]).this.subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    with Eq[-1].this.rhs as rhs:
-        with rhs.function.args[1] as piece:
-            Eq << piece.expr.simplify()
-    return
-
+    Eq << Eq[-1].this.rhs().function.args[1]().expr.simplify(wrt=Eq[-1].rhs.variable)
+    
     Eq << Eq[-1] @ w[i, j].T
-
+    return
     Eq << Eq[-1].this.rhs.expand()    
     
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)

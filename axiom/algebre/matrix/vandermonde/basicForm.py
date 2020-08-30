@@ -64,11 +64,11 @@ def prove(Eq):
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
-    Eq << Eq.recursion.rhs.args[1].function.args[1].arg.this.function.args[0][0].doit()
+    Eq << Eq.recursion.rhs.args[1].function.args[1].arg.this.function.args[0].expr.doit()
     
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
     
-    Eq << Eq[-1].this.function.rhs.args[0][0].expand().this.function.rhs.args[0][0].collect(Eq[-1].rhs.args[0][0].args[1].args[-1])
+    Eq << Eq[-1].this.function.rhs.args[0].expr.expand().this.function.rhs.args[0].expr.collect(Eq[-1].rhs.args[0][0].args[1].args[-1])
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
