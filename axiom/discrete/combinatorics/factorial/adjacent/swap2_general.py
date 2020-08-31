@@ -46,7 +46,7 @@ def apply(given):
     
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.dtype    
     
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j:n, i:n](Swap(n, i, j)))
     
 #     return ForAll(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
     return ForAll(Contains(w[i, j] @ x, S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)

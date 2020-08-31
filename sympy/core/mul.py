@@ -1811,7 +1811,7 @@ class Times(Expr, AssocOp):
         infinity = []
         coeff = []
         for arg in self.args:
-            if arg == S.Infinity or arg == arg == S.NegativeInfinity:
+            if arg == S.Infinity or arg == S.NegativeInfinity:
                 infinity.append(arg)
             else:
                 coeff.append(arg)

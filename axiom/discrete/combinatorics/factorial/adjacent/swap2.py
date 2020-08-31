@@ -35,7 +35,7 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    
     
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j:n, i:n](Swap(n, i, j)))
     
     given = ForAll[x:S](Contains(w[0, j] @ x, S))
     

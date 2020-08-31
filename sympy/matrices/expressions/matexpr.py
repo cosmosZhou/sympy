@@ -885,6 +885,7 @@ class Identity(MatrixExpr):
 
     def _eval_is_integer(self):
         return True
+
     
 class GenericIdentity(Identity):
     """
@@ -1080,7 +1081,7 @@ class _LeftRightArgs(object):
 
     @property
     def first_pointer(self):
-       return self._first_pointer_parent[self._first_pointer_index]
+        return self._first_pointer_parent[self._first_pointer_index]
 
     @first_pointer.setter
     def first_pointer(self, value):
@@ -1469,6 +1470,7 @@ class Concatenate(MatrixExpr):
     def _symptr(self, p):
         return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
 
+
 # precondition: i > j or i < j
 class Swap(Identity):    
     is_Swap = True
@@ -1500,7 +1502,7 @@ class Swap(Identity):
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise            
 
     @property
@@ -1580,7 +1582,7 @@ class Multiplication(Identity):
         piecewise = (1 + (self.multiplier - 1) * KroneckerDelta(i, self.i)) * KroneckerDelta(i, j)
         
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise
 
     def __matmul__(self, rhs):
@@ -1670,7 +1672,7 @@ class Addition(Multiplication):
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise            
 
     def _eval_determinant(self):
@@ -1707,6 +1709,7 @@ class Addition(Multiplication):
     @property
     def is_lower(self):
         return self.i <= self.j
+
     
 class Shift(Identity):
     '''
@@ -1783,7 +1786,7 @@ class Shift(Identity):
                               (piecewise_ji, True))
 
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise            
 
     @_sympifyit('other', NotImplemented)
@@ -1824,7 +1827,6 @@ class Shift(Identity):
 
         return MatrixExpr.__matmul__(self, other)
 
-
     @property
     def is_upper(self):
         return self.i == self.j
@@ -1832,6 +1834,7 @@ class Shift(Identity):
     @property
     def is_lower(self):
         return self.i == self.j
+
 
 from .matmul import MatMul
 from .matpow import MatPow

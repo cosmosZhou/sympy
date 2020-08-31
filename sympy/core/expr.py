@@ -4043,32 +4043,32 @@ class Expr(Basic, EvalfMixin):
         j = self.generate_free_symbol(excludes=excludes | {i}, integer=True)
         m, n = self.shape
         
+        Ref = Ref[j:n - 1, i:m - 1]
         if m - 1 == I:
             if n - 1 == J:
-                ref = Ref[i:m - 1, j:n - 1](self[i, j])
+                ref = Ref(self[i, j])
             else:       
                 if J.is_zero:
-                    ref = Ref[i:m - 1, j:n - 1](self[i, j + 1])                    
+                    ref = Ref(self[i, j + 1])                    
                 else:
-                    ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j], j < J), (self[i, j + 1], True)))
+                    ref = Ref(Piecewise((self[i, j], j < J), (self[i, j + 1], True)))
         else:
             if n - 1 == J:
                 if I.is_zero:
-                    ref = Ref[i:m - 1, j:n - 1](self[i + 1, j])            
+                    ref = Ref(self[i + 1, j])            
                 else:
-                    ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j], i < I), (self[i + 1, j], True)))
+                    ref = Ref(Piecewise((self[i, j], i < I), (self[i + 1, j], True)))
             else:
                 if I.is_zero:
                     if J.is_zero:
-                        ref = Ref[i:m - 1, j:n - 1](self[i + 1, j + 1])
+                        ref = Ref(self[i + 1, j + 1])
                     else:
-                        ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)))
+                        ref = Ref(Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)))
                 else:
                     if J.is_zero:
-                        ref = Ref[i:m - 1, j:n - 1](Piecewise((self[i, j + 1], i < I),
-                            (self[i + 1, j + 1], True)))
+                        ref = Ref(Piecewise((self[i, j + 1], i < I), (self[i + 1, j + 1], True)))
                     else: 
-                        ref = Ref[i:m - 1, j:n - 1](Piecewise(
+                        ref = Ref(Piecewise(
                             (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
                             (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
         return ref.simplify()
@@ -4088,8 +4088,8 @@ class Expr(Basic, EvalfMixin):
                 return Matrix(i_shape, j_shape, tuple(array))
         return self
 
-    def generate_int_limit(self, index, excludes=None, generator=None, **kwargs): 
-        return (generator.generate_free_symbol(excludes, **kwargs), 0, self.shape[-index - 1] - 1)
+    def generate_int_limit(self, index, excludes=None, generator=None, free_symbol=None): 
+        return (generator.generate_free_symbol(excludes, free_symbol=free_symbol, integer=True), 0, self.shape[-index - 1] - 1)
 
         
 class AtomicExpr(Atom, Expr):

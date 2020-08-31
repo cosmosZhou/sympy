@@ -134,9 +134,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].combsimp()
     
-    Eq << Sum[j](Eq.equation.rhs.args[0].function.function._subs(i, _i)).this.limits_subs(j, _j)
-    
-    Eq << (Eq[-2].forall(_i), Eq[-1].forall(_i))
+    Eq << Eq.equation.rhs.args[0].function.this.limits_subs(i_, i)
     
     Eq << Eq[-1].subs(Eq[-2]) 
 

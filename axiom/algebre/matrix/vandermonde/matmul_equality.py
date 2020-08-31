@@ -8,14 +8,15 @@ import axiom
 from sympy.concrete.expr_with_limits import Ref
 from sympy.concrete.summations import Sum
 
+
 @plausible
 def apply(x, m, n, d, delta):
     i = Symbol('i', domain=Interval(0, m - d, right_open=True, integer=True))
     j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
     h = Symbol('h', integer=True)
 
-    return Equality(Ref[i, j:m](binomial(d, j - i) * (-1) ** (d + i - j)) @ Ref[i:m, j]((i + delta) ** j * x ** i),
-                    Ref[i, j]((i + delta) ** j * x ** i) @ Ref[i:n, j](binomial(j, i) * Sum[h:0:d](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
+    return Equality(Ref[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ Ref[j, i:m]((i + delta) ** j * x ** i),
+                    Ref[j, i]((i + delta) ** j * x ** i) @ Ref[j, i:n](binomial(j, i) * Sum[h:0:d](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
 
 
 from sympy.utility import check

@@ -274,7 +274,7 @@ class MatMul(MatrixExpr):
             return A.func(*args)
         
         if len(A.shape) > 1:
-            i_limit = A.generate_int_limit(1)
+            i_limit = A.generate_int_limit(1, None, self)
             i, *_ = i_limit
             if len(B.shape) > 1:
                 j_limit = B.generate_int_limit(0, {i}, self)
@@ -299,7 +299,7 @@ class MatMul(MatrixExpr):
                 k, *_ = k_limit
                 assert k != j
                 return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
-            k_limit = A.generate_int_limit(0)
+            k_limit = A.generate_int_limit(0, generator=self, free_symbol=free_symbol)
             k, *_ = k_limit
             return Sum(A[k] * B[k], k_limit).simplify()                
 

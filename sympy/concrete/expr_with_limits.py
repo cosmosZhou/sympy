@@ -1470,9 +1470,9 @@ class Ref(ExprWithLimits):
         
         if self.function.is_Piecewise:
             if len(limits_dict) > 1:
-                function = self.func(self.function, self.limits[-1]).simplify(squeeze=squeeze)
+                function = self.func(self.function, self.limits[0]).simplify(squeeze=squeeze)
                 if not function.is_Ref:
-                    return self.func(function, *self.limits[:-1]).simplify(squeeze=squeeze)
+                    return self.func(function, *self.limits[1:]).simplify(squeeze=squeeze)
             else:
                 if len(self.function.args) == 2:
                     e0, c0 = self.function.args[0]
@@ -1669,7 +1669,7 @@ class Ref(ExprWithLimits):
         return None, exp
 
     def simplify_mul(self, exp):
-        (x, *ab), *_ = self.limits
+        x, *ab = self.limits[-1]
 
         from sympy.core.basic import Atom
         if isinstance(exp, Atom):
@@ -1882,10 +1882,13 @@ class Ref(ExprWithLimits):
             i, *domain = self.limits[0]
             if len(domain) == 2:
                 a, b = domain
-            elif len(domain) == 1:
-                domain = domain[0]
+            else:
+                if not domain:
+                    domain = i.domain
+                elif len(domain) == 1:
+                    domain = domain[0]
                 assert domain.is_Interval and domain.is_integer
-                a, b = domain.min(), domain.max()
+                a, b = domain.min(), domain.max()                
 
             return Product[i:a:b](self[i, i]).doit()
 

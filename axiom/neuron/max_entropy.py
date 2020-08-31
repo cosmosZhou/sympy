@@ -19,8 +19,7 @@ def apply(G, x, y):
     s = Symbol('s', shape=(oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
-    z = Symbol('z', shape=(oo, d),
-                    definition=Ref[t](Ref[y[t]](Sum[y[0:t]](sympy.E ** -s[t]))))
+    z = Symbol('z', shape=(oo, d), definition=Ref[y[t], t](Sum[y[0:t]](sympy.E ** -s[t])))
 
     x_quote = Symbol("x'", shape=(oo, d),
                     definition=-Ref[t](sympy.log(z[t])))

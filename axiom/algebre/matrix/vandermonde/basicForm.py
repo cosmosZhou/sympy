@@ -17,7 +17,7 @@ def apply(a):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)
 
-    return Equality(Det(Ref[i:n, j:n](a[j] ** i)), Product[j:i, i:n](a[i] - a[j]))
+    return Equality(Det(Ref[j:n, i:n](a[j] ** i)), Product[j:i, i:n](a[i] - a[j]))
 
 
 from sympy.utility import check
@@ -26,7 +26,7 @@ from sympy.utility import check
 def row_transformation(a, *limits):
     n = limits[0][-1] + 1
     (i, *_), (j, *_) = limits
-    return Identity(n) - Ref[i:n, j:n](a[0] * KroneckerDelta(i, j + 1))
+    return Identity(n) - Ref[j:n, i:n](a[0] * KroneckerDelta(i, j + 1))
 
 
 @check
