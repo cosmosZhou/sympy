@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << Eq.distribute.this.rhs.subs(Eq[-1])
 
-    Eq << Eq[2].reference((i,), (j,))
+    Eq << Eq[2].reference((j,), (i,))
 
 
 if __name__ == '__main__':

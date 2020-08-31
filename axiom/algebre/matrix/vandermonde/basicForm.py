@@ -79,12 +79,10 @@ def prove(Eq):
     var = Eq[-1].rhs.args[1].variable
     Eq.determinant = Eq[-1].this.rhs.args[1].limits_subs(var, var - 1)
     
-    _, k = Eq.determinant.lhs.arg.variables
-    i, j = Eq[0].lhs.arg.variables
+    k, _ = Eq.determinant.lhs.arg.variables
+    j, i = Eq[0].lhs.arg.variables
     
-    Eq << Eq[0].this.lhs.arg.limits_subs(j, k).this.lhs.arg.limits_subs(i, j)
-    
-    Eq << Eq[-1].subs(a[:n], a[1:n + 1])
+    Eq << Eq[0].this.lhs.arg.limits_subs(j, k).this.lhs.arg.limits_subs(i, j).subs(a[:n], a[1:n + 1])
 
 #     Eq << Eq[-1].this.rhs.limits_subs(i + 1, i).this.rhs.limits_subs(j + 1, j)
     Eq << Eq[-1].this.rhs.limits_subs(i, i - 1)

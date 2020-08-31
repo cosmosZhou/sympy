@@ -39,11 +39,14 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq.lhs_assertion = x[Eq[-1].lhs].this.subs(Eq[-1]).this.rhs.asKroneckerDelta().this.rhs.expand()
+    Eq.lhs_assertion = x[Eq[-1].lhs].this.subs(Eq[-1]).this.rhs.expand()
     
-    Eq << (w[i, j] @ x).this.expand()
     
-    Eq << Eq[-1][k].this.rhs.asKroneckerDelta().this.rhs.expand()
+    Eq << (w[i, j] @ x).this.subs(Eq[0])
+    
+    Eq << Eq[-1].subs(Eq[-1].rhs.this.expand())
+    
+    Eq << Eq[-1][k]
     
     Eq << Eq.lhs_assertion.subs(Eq[-1].reversed)
     

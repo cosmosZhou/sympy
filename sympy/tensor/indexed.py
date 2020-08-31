@@ -559,7 +559,7 @@ class Indexed(Expr):
     def generate_int_limit(self, *args, **kwargs):
         definition = self.definition
         if definition is not None:
-            return definition.generate_limit(*args, **kwargs) 
+            return definition.generate_int_limit(*args, **kwargs) 
         return Expr.generate_int_limit(self, *args, **kwargs)
         
 class Slice(Expr):

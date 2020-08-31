@@ -41,7 +41,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1] @ w_quote[i]
+    Eq << (Eq[-1] @ w_quote[i]).this.rhs.subs(Eq[1])
     
     Eq << Eq[-1].this.rhs.expand()
     

@@ -57,9 +57,11 @@ def prove(Eq):
     
     Eq << Eq[-1].forall(i)
     
-    Eq.statement = Eq[-1].as_Equal()
+    Eq << Eq[-1].as_Equal()
     
-    k, i = Eq.statement.lhs.args[0].variables
+    Eq.statement = Eq[-1].T
+    
+    i, k = Eq.statement.lhs.args[1].variables
     
     Eq << vandermonde.basicForm.apply(Ref[i:n](i + 1))
     

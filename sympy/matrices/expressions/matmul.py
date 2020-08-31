@@ -273,11 +273,12 @@ class MatMul(MatrixExpr):
                 args = [arg.expand(deep=True) for arg in args]
             return A.func(*args)
         
+        kwargs = {'free_symbol' : free_symbol, 'generator' : self}
         if len(A.shape) > 1:
-            i_limit = A.generate_int_limit(1, None, self)
+            i_limit = A.generate_int_limit(1, **kwargs)
             i, *_ = i_limit
             if len(B.shape) > 1:
-                j_limit = B.generate_int_limit(0, {i}, self)
+                j_limit = B.generate_int_limit(0, {i}, **kwargs)
                 j, *_ = j_limit
                 k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
                 k_dimension = A.shape[-1]  # @UnusedVariable
@@ -285,21 +286,21 @@ class MatMul(MatrixExpr):
                 assert i != k and k != j and i != j
                 return Ref(Sum[k:k_dimension](A[i, k] * B[k, j]).simplify(), j_limit, i_limit).simplify()
             else:
-                k_limit = B.generate_int_limit(0, {i}, self)  # @UnusedVariable
+                k_limit = B.generate_int_limit(0, {i}, **kwargs)
                 k, *_ = k_limit
                 
                 assert i != k                            
                 return Ref(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
         else:
             if len(B.shape) > 1:
-                j_limit = B.generate_int_limit(0)                
+                j_limit = B.generate_int_limit(0, **kwargs)                
                 j, *_ = j_limit
                 
-                k_limit = A.generate_int_limit(0, {j}, generator=self)
+                k_limit = A.generate_int_limit(0, {j}, **kwargs)
                 k, *_ = k_limit
                 assert k != j
                 return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
-            k_limit = A.generate_int_limit(0, generator=self, free_symbol=free_symbol)
+            k_limit = A.generate_int_limit(0, **kwargs)
             k, *_ = k_limit
             return Sum(A[k] * B[k], k_limit).simplify()                
 

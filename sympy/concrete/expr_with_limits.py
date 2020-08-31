@@ -952,6 +952,13 @@ class ExprWithLimits(Expr):
         if dic:
             return dic[i_]
 
+    def limits_swap(self):
+        if len(self.limits) == 2:
+            i_limit, j_limit = self.limits
+            j, *_ = j_limit
+            if not i_limit._has(j):
+                return self.func(self.function, j_limit, i_limit)
+        return self
 
 class AddWithLimits(ExprWithLimits):
     r"""Represents unevaluated oriented additions.
@@ -1422,8 +1429,8 @@ class Ref(ExprWithLimits):
         return None
 
     def squeeze(self):
-        if not self.function._has(self.variable):
-            limits = self.limits[1:]
+        if not self.function._has(self.variables[-1]):
+            limits = self.limits[:-1]
             if limits:
                 return self.func(self.function, *limits).squeeze()
             return self.function            
@@ -2074,7 +2081,7 @@ class Ref(ExprWithLimits):
         limits[-1], limits[-2] = limits[-2], limits[-1]
         return self.func(self.function, *limits)
 
-    def generate_int_limit(self, index, excludes=None, generator=None):
+    def generate_int_limit(self, index, excludes=None, generator=None, free_symbol=None):
         limit = self.limits[index]
         if excludes:
             x, *ab = limit
@@ -2082,11 +2089,16 @@ class Ref(ExprWithLimits):
                 kwargs = x.dtype.dict
                 if not ab:               
                     kwargs['domain'] = x.domain
-                x = generator.generate_free_symbol(excludes, **kwargs)
+                if free_symbol is not None and free_symbol not in excludes:
+                    x = free_symbol
+                else:
+                    x = generator.generate_free_symbol(excludes, **kwargs)
                 return (x, *ab)
         return limit
         
-        
+    def limits_swap(self):
+        return self
+                
 class UNION(Set, ExprWithLimits):
     """
     Represents a union of sets as a :class:`Set`.
@@ -3215,8 +3227,9 @@ class ConditionalBoolean(Boolean):
         variables = self.variables
 
         deletes = {*()}
+        function = self.function
         for i, x in enumerate(variables):
-            if not self.function.has(x):
+            if not function.has(x):
                 needsToDelete = True
                 for j in range(i):
                     dependent = variables[j]
@@ -3227,19 +3240,21 @@ class ConditionalBoolean(Boolean):
 
                 if needsToDelete:
                     deletes.add(x)
-#             else:
-#                 domain = limits_dict[x]                
-#                 if self.is_ForAll and domain.is_set and self.function.domain_defined(x) in domain:
-#                     deletes.add(x)
+            
+            domain = limits_dict[x]
+            if domain is not None and domain.is_FiniteSet and len(domain) == 1:
+                needsToDelete = True
+                deletes.add(x)
+                _x, *_ = limits_dict[x].args
+                function = function.subs(x, _x)
                     
         if deletes:
             limits = self.limits_delete(deletes)
             if limits:
-                return self.func(self.function, *limits, equivalent=self)
+                return self.func(function, *limits, equivalent=self)
 
-            return self.function.copy(equivalent=self)
+            return function.copy(equivalent=self)
 
-        function = self.function
         if function.is_And or function.is_Or:
             for x, *domain in self.limits:
                 index = []
@@ -3408,6 +3423,12 @@ class ConditionalBoolean(Boolean):
 
         return self
 
+    def limits_swap(self):
+        this = ExprWithLimits.limits_swap(self)
+        if this != self:
+            this.equivalent = self
+            return this
+        return self
 
 class ForAll(ConditionalBoolean, ExprWithLimits):
     """

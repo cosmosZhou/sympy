@@ -1173,8 +1173,8 @@ class Plus(Expr, AssocOp):
                             a, b = bound - b, bound - a
                         else:
                             continue
-                    if t != neg.variable:
-                        neg = Sum[t:a:b](pos.function)
+                    
+                    neg = Sum[t:a:b](pos.function)
                     
                     try_sub = pos.try_sub(neg)
                     if try_sub is not None:

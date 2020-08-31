@@ -975,16 +975,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 a_diff = a - _a
                 b_diff = b - _b
                 if a_diff.is_nonnegative: # a >= _a
-                    a = -Sum[x:_a:a - 1](self.function).doit(deep=False)
+                    a = -Sum[x:_a:a - 1](self.function).simplify()
                 elif a_diff.is_nonpositive: # a <= _a
-                    a = Sum[x:a:_a - 1](self.function).doit(deep=False)
+                    a = Sum[x:a:_a - 1](self.function).simplify()
                 else:
                     return
                     
                 if b_diff.is_nonnegative: # b >= _b
-                    b = Sum[x:_b + 1:b](self.function).doit(deep=False)
+                    b = Sum[x:_b + 1:b](self.function).simplify()
                 elif b_diff.is_nonpositive: # b <= _b
-                    b = -Sum[x:b + 1:_b](self.function).doit(deep=False)
+                    b = -Sum[x:b + 1:_b](self.function).simplify()
                 else:
                     return
                 return a + b
@@ -1317,7 +1317,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return self.func(function, *self.limits, limit).simplify()
 
     def limits_swap(self):
-#         from sympy.core.mul import Mul
         if isinstance(self.function, Mul):
             index = -1
             for i in range(len(self.function.args)):
@@ -1336,13 +1335,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if independent == S.One:
                     return sgm.func(self.func(function, *self.limits), *sgm.limits)
                 return sgm.func(independent * self.func(dependent, *self.limits), *sgm.limits)
-
-        if len(self.limits) == 2:
-            i_limit, j_limit = self.limits
-            j, *_ = j_limit
-            if not i_limit._has(j):
-                return self.func(self.function, j_limit, i_limit)
-        return self
+        return ExprWithIntLimits.limits_swap(self)
 
     def min(self):
         return self.func(self.function.min(), *self.limits).doit()

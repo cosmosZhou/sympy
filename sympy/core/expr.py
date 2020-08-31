@@ -4088,8 +4088,13 @@ class Expr(Basic, EvalfMixin):
                 return Matrix(i_shape, j_shape, tuple(array))
         return self
 
-    def generate_int_limit(self, index, excludes=None, generator=None, free_symbol=None): 
-        return (generator.generate_free_symbol(excludes, free_symbol=free_symbol, integer=True), 0, self.shape[-index - 1] - 1)
+    def generate_int_limit(self, index, excludes=None, generator=None, free_symbol=None):
+        x = generator.generate_free_symbol(excludes, free_symbol=free_symbol, integer=True)
+        domain = x.domain_assumed
+        start, end = 0, self.shape[-index - 1] - 1
+        if domain is not None and domain.is_Interval and domain.min() == start and domain.max() == end:
+            return (x,)   
+        return (x, start, end)
 
         
 class AtomicExpr(Atom, Expr):

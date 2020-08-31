@@ -2106,7 +2106,7 @@ class Basic(with_metaclass(ManagedProperties)):
             if 'dtype' in kwargs:
                 symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'            
             elif 'integer' in kwargs:
-                symbols = 'ijkhtlmnabcdefgopqrsuvwxyz'
+                symbols = 'ijkhtdlmnabcefgopqrsuvwxyz'
             else:
                 symbols = 'xyzabcdefghijklmnopqrstuvw'
                         

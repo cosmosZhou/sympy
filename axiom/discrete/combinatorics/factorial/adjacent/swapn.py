@@ -31,7 +31,7 @@ def apply(given):
     
     assert w.definition.is_Ref
     
-    (_i,), (_j,) = w.definition.limits
+    (_j,), (_i,) = w.definition.limits
     assert _k == k and _i == i and _j == j
     assert isinstance(w.definition.function, Swap)
     _n, _i, _j = w.definition.function.args
@@ -63,7 +63,7 @@ def prove(Eq):
     
     k = Symbol('k', domain=Interval(0, n - 1, integer=True))
     
-    given = ForAll(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (x, S))
+    given = ForAll[x:S](Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S))
     
     Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(given)
     
