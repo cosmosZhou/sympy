@@ -500,8 +500,8 @@ class Subset(BooleanFunction):
             return self.func(self.lhs & exp, self.rhs & exp, given=self)
             
     def _sympystr(self, p):
-#         ⊆        
-        return '%s ⊂ %s' % tuple(p._print(x) for x in self.args)
+#                 ⊂
+        return '%s ⊆ %s' % tuple(p._print(x) for x in self.args)
     
     def _latex(self, printer):
         return r'%s \subset %s' % tuple(printer._print(x) for x in self.args)
@@ -816,8 +816,8 @@ class Supset(BooleanFunction):
         return self._args[1]
 
     def _sympystr(self, p):
-#         ⊇        
-        return '%s ⊃ %s' % tuple(p._print(x) for x in self.args)
+#         ⊃        
+        return '%s ⊇ %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\supset %s' % tuple(printer._print(x) for x in self.args)

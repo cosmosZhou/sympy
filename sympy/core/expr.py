@@ -4088,6 +4088,9 @@ class Expr(Basic, EvalfMixin):
                 return Matrix(i_shape, j_shape, tuple(array))
         return self
 
+    def generate_int_limit(self, index, excludes=None, generator=None, **kwargs): 
+        return (generator.generate_free_symbol(excludes, **kwargs), 0, self.shape[-index - 1] - 1)
+
         
 class AtomicExpr(Atom, Expr):
     """

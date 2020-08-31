@@ -864,6 +864,12 @@ class Symbol(AtomicExpr, NotIterable):
         from wolframclient.language import wlexpr
         global_variables.add(self)
         return wlexpr(self.name)
+      
+    def generate_int_limit(self, *args, **kwargs):
+        definition = self.definition
+        if definition is not None:
+            return definition.generate_limit(*args, **kwargs) 
+        return Expr.generate_int_limit(self, *args, **kwargs)
         
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:

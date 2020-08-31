@@ -261,88 +261,47 @@ class MatMul(MatrixExpr):
     def expand(self, free_symbol=None, deep=True, **_):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.concrete.summations import Sum
-        if len(self.args) == 2:
-            A, B = self.args
-            if A.is_MatPow:
-                return self
-            if isinstance(A, Concatenate):
-                args = [self.func(arg, B) for arg in A.args]
-                if deep:
-                    args = [arg.expand(deep=True) for arg in args]
-                return A.func(*args)
-            
-            if len(A.shape) < 2:
-                if isinstance(A, Ref):
-                    i_limit = A.limits[0]
-                    i, *_ = i_limit 
-                else:
-                    i = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
-                    if 'domain' in i._assumptions:
-                        i_domain = i._assumptions['domain']
-                        assert i_domain.is_Interval and i_domain.is_integer and i_domain.min() == 0 and i_domain.max() == A.shape[0] - 1
-                        i_limit = (i,)
-                    else:
-                        i_limit = (i, 0, A.shape[0] - 1)
+        if len(self.args) > 2:
+            return MatrixExpr.expand(self)
+        
+        A, B = self.args
+        if A.is_MatPow:
+            return self
+        if isinstance(A, Concatenate):
+            args = [self.func(arg, B) for arg in A.args]
+            if deep:
+                args = [arg.expand(deep=True) for arg in args]
+            return A.func(*args)
+        
+        if len(A.shape) > 1:
+            i_limit = A.generate_int_limit(1)
+            i, *_ = i_limit
+            if len(B.shape) > 1:
+                j_limit = B.generate_int_limit(0, {i}, self)
+                j, *_ = j_limit
+                k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
+                k_dimension = A.shape[-1]  # @UnusedVariable
                 
-                
-                
-                if len(B.shape) > 1:
-                    if hasattr(B, "definition") and B.definition is not None:
-                        B = B.definition
-                        
-                    if isinstance(B, Ref):
-                        j_limit = B.limits[0]
-                    else:                    
-                        j = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
-                        
-                        if 'domain' in j._assumptions:
-                            j_domain = j._assumptions['domain']
-                            assert j_domain.is_Interval and j_domain.is_integer and j_domain.min() == 0 and j_domain.max() == B.shape[1] - 1
-                            j_limit = (j,)
-                        else:                        
-                            j_limit = (j, 0, B.shape[1] - 1)
-
-                    j, *_ = j_limit
-    
-                    return Ref(Sum(A[i] * B[i, j], i_limit).simplify(), j_limit).simplify()
-                return Sum(A[i] * B[i], i_limit).simplify()                
+                assert i != k and k != j and i != j
+                return Ref(Sum[k:k_dimension](A[i, k] * B[k, j]).simplify(), j_limit, i_limit).simplify()
             else:
-                if hasattr(A, "definition") and A.definition is not None:
-                    A = A.definition
-                    
-                if isinstance(A, Ref):
-                    i_limit = A.limits[0]
-                    i, *_ = i_limit
-                else:                    
-                    i = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
-                    i_limit = (i, 0, A.shape[0] - 1)
+                k_limit = B.generate_int_limit(0, {i}, self)  # @UnusedVariable
+                k, *_ = k_limit
                 
-                n = A.shape[-1]
-                if len(B.shape) > 1:     
-                    j = None
-                    if isinstance(B, Ref):
-                        j_limit = B.limits[1]
-                        j, *_ = j_limit
-                    else:
-                        if hasattr(B, "definition") and B.definition is not None:
-                            j_limit = B.definition.limits[1]
-                            j, *_ = j_limit
-                            
-                    if i == j or j is None:
-                        j = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
-                        j_limit = (j, 0, B.shape[1] - 1)
-                        
-                    k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
-                    
-                    assert i != k and k != j and i != j
-                    return Ref(Sum[k:n](A[i, k] * B[k, j]).simplify(), i_limit, j_limit).simplify()
-                else:            
-                    k = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
-                    assert i != k
-                            
-                    return Ref(Sum[k:n](A[i, k] * B[k]).simplify(), i_limit).simplify()
-
-        return MatrixExpr.expand(self)
+                assert i != k                            
+                return Ref(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
+        else:
+            if len(B.shape) > 1:
+                j_limit = B.generate_int_limit(0)                
+                j, *_ = j_limit
+                
+                k_limit = A.generate_int_limit(0, {j}, generator=self)
+                k, *_ = k_limit
+                assert k != j
+                return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
+            k_limit = A.generate_int_limit(0)
+            k, *_ = k_limit
+            return Sum(A[k] * B[k], k_limit).simplify()                
 
     def _eval_is_integer(self):
         for elem in self.args:
@@ -433,6 +392,7 @@ class MatMul(MatrixExpr):
             args.append(arg.T)
             
         return self.func(*args)
+
     
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """

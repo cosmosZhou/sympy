@@ -14,7 +14,7 @@ def apply(x):
     n = x.shape[0]
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))    
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     
     lhs = (w[i, j] @ x).set_comprehension()
     return Equality(lhs, x.set_comprehension(free_symbol=lhs.variable))

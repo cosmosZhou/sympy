@@ -974,28 +974,21 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if x == _x:
                 a_diff = a - _a
                 b_diff = b - _b
-                if a_diff >= 0:
-                    if b_diff > 0:
-                        return Sum[x:_b + 1:b](self.function).doit(deep=False) - Sum[x:_a:a - 1](self.function).doit(deep=False)
-                    elif b_diff == 0:
-                        return -Sum[x:_a:a - 1](self.function).doit(deep=False)
-                    elif b_diff <= 0:
-                        return -Sum[x:b + 1:_b](self.function).simplify() - Sum[x:_a:a - 1](self.function).simplify()
+                if a_diff.is_nonnegative: # a >= _a
+                    a = -Sum[x:_a:a - 1](self.function).doit(deep=False)
+                elif a_diff.is_nonpositive: # a <= _a
+                    a = Sum[x:a:_a - 1](self.function).doit(deep=False)
+                else:
+                    return
+                    
+                if b_diff.is_nonnegative: # b >= _b
+                    b = Sum[x:_b + 1:b](self.function).doit(deep=False)
+                elif b_diff.is_nonpositive: # b <= _b
+                    b = -Sum[x:b + 1:_b](self.function).doit(deep=False)
+                else:
+                    return
+                return a + b
 
-                if a_diff == 0:
-                    if b_diff >= 0:
-                        return Sum[x:_b + 1:b](self.function).doit(deep=False)
-                    if b_diff < 0:
-                        return -Sum[x:b + 1:_b](self.function).doit(deep=False)
-
-                elif a_diff < 0:
-                    if b_diff < 0:
-                        return Sum[x:a:_a - 1](self.function).doit(deep=False) - Sum[x:b + 1:_b](self.function).doit(deep=False)
-                    elif b_diff == 0:
-                        return Sum[x:a:_a - 1](self.function).doit(deep=False)
-                elif a_diff == 0:
-                    ...
-        
     def __sub__(self, autre):
         sub = self.try_sub(autre)
         if sub is not None:

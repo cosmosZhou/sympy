@@ -16,7 +16,7 @@ def apply(x, w=None):
     k = Symbol('k', domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     
@@ -39,13 +39,11 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq.lhs_assertion = x[Eq[-1].lhs].this.subs(Eq[-1])
+    Eq.lhs_assertion = x[Eq[-1].lhs].this.subs(Eq[-1]).this.rhs.asKroneckerDelta().this.rhs.expand()
     
     Eq << (w[i, j] @ x).this.expand()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
-    
-    Eq << Eq[-1][k]
+    Eq << Eq[-1][k].this.rhs.asKroneckerDelta().this.rhs.expand()
     
     Eq << Eq.lhs_assertion.subs(Eq[-1].reversed)
     

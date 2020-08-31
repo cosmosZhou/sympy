@@ -1336,14 +1336,6 @@ class LatexPrinter(Printer):
         return self._print_Symbol(expr, style=self._settings[
             'mat_symbol_style'])
 
-    def _print_HConcatenate(self, expr):
-        return r"\left(%s\right)" % ','.join(self._print(arg) for arg in expr.args)
-
-    def _print_VConcatenate(self, expr):
-#         return r'\begin{pmatrix}%s\end{pmatrix}' % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-        return r"\left(\begin{array}{c}%s\end{array}\right)" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-#         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-
     def _print_ZeroMatrix(self, Z):
         return r"\mathbb{0}" if self._settings[
             'mat_symbol_style'] == 'plain' else r"\mathbf{0}"

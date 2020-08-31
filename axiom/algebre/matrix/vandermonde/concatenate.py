@@ -23,13 +23,12 @@ def apply(r, n):
     i = Symbol('i', integer=True)
     j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
 
-    A = Ref[i:n - 1, j]((j + 1) ** (i + 1))
+    A = Ref[j, i:n - 1]((j + 1) ** (i + 1))
     R = Ref[j](1 - r ** (j + 1))
 # note : [A, B].T = (A.T, B.T)
 # [R, A] = (R.T, A.T).T
 
-    return Equality(Det([R, A]),
-                    (1 - r) ** n * Product[k:1:n - 1](factorial(k)))
+    return Equality(Det([R, A]), (1 - r) ** n * Product[k:1:n - 1](factorial(k)))
 
 
 from sympy.utility import check
@@ -74,11 +73,11 @@ def prove(Eq):
 
     Eq << apply(r, n)
 
-    (i, *iab), (j, *_) = Eq[0].lhs.arg.args[1].limits
+    (j, *_), (i, *iab) = Eq[0].lhs.arg.args[1].limits
     
     assert (2*i).is_even
     
-    E = Ref[i:n, j]((-1) ** (j - i) * binomial(j + 1, i + 1))
+    E = Ref[j, i:n]((-1) ** (j - i) * binomial(j + 1, i + 1))
 
     Eq << (Eq[0].lhs.arg @ E).this.expand()
 
@@ -100,19 +99,20 @@ def prove(Eq):
     
     Eq.equation = Eq[1].subs(Eq[-1])
     
-    Eq << Eq.equation.rhs.args[0].function.this.limits_subs(j, j - 1)
+    i_ = Eq.equation.rhs.args[0].function.variable
+    Eq << Eq.equation.rhs.args[0].function.this.limits_subs(i_, i_ - 1)
     
-    _j = Eq[-1].rhs.variable
+    i = Eq[-1].rhs.variable
     
     Eq << Eq[-1].this.rhs.expand()
     
     Eq << Eq[-1].this.rhs.args[1].simplify()
     
-    Eq << Eq[-1].subs(i, _i)
+#     Eq << Eq[-1].subs(_j, j)
     
-    Eq << Eq[-1].this.lhs.limits_subs(j, _j)
+    Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, i)
     
-    Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, _i + 1, _j)
+    Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, j + 1, i)
     
     Eq << Eq[-1].this.rhs.expand()
     
@@ -122,13 +122,17 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.simplify()
     
-    Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, _i + 1, _j)
+    Eq << Eq[-1].this.rhs.args[-1].args[-1].function.powsimp()
+    
+    Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, j + 1, i)
     
     Eq << (-Eq[-1]).this.rhs.distribute()
 
     Eq << Eq[-3] + Eq[-1]
     
-    Eq << Eq[-1].this.rhs.simplify()
+    Eq << Eq[-1].this.rhs.simplify()    
+    
+    Eq << Eq[-1].this.rhs.args[0].combsimp()
     
     Eq << Sum[j](Eq.equation.rhs.args[0].function.function._subs(i, _i)).this.limits_subs(j, _j)
     

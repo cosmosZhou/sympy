@@ -337,8 +337,8 @@ def topological_sort(graph):
 def wolfram_decorator(py, func, **kwargs):
     txt = py.replace('.py', '.php')
 
-    eqs = Eq(txt) 
-    print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
+    eqs = Eq(txt)
+    website = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
     try: 
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
@@ -352,8 +352,10 @@ def wolfram_decorator(py, func, **kwargs):
     except Exception as e:
         print(e)
         traceback.print_exc()
+        print(website)
         return
-
+    
+    print(website)
     plausibles = eqs.plausibles_dict
     if plausibles:
         return False

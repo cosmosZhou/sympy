@@ -609,13 +609,10 @@ class ExprWithLimits(Expr):
             p = old.as_poly(x)
 
             if p is None or p.degree() != 1:
-                function = self.function.subs(old, new)
-                if len(domain) == 2:
-                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
-#                 from sympy.tensor.indexed import Slice
-                if isinstance(x, Slice):
+                if x.is_Slice:
                     x = x.subs(old, new)
-                return self.func(function, (x,)).simplify()
+                    return self.func(self.function.subs(old, new), (x,)).simplify()
+                return self
 
             if new.has(x):
                 diff = old - new
@@ -1758,7 +1755,7 @@ class Ref(ExprWithLimits):
         if isinstance(indices, (tuple, list)):
             variables_set = self.variables_set
             reps = {}            
-            for (x, *domain), index in zip(self.limits, indices):
+            for (x, *domain), index in zip(self.limits[::-1], indices):
                 index = sympify(index)
                 variables_set.remove(x)
                 if x == index:
@@ -1844,6 +1841,7 @@ class Ref(ExprWithLimits):
             else:
                 a, b = ab
                 shape.append(b - a + 1)
+        shape.reverse()
         return tuple(shape)
         
     @property
@@ -2073,7 +2071,19 @@ class Ref(ExprWithLimits):
         limits[-1], limits[-2] = limits[-2], limits[-1]
         return self.func(self.function, *limits)
 
-    
+    def generate_int_limit(self, index, excludes=None, generator=None):
+        limit = self.limits[index]
+        if excludes:
+            x, *ab = limit
+            if x in excludes:
+                kwargs = x.dtype.dict
+                if not ab:               
+                    kwargs['domain'] = x.domain
+                x = generator.generate_free_symbol(excludes, **kwargs)
+                return (x, *ab)
+        return limit
+        
+        
 class UNION(Set, ExprWithLimits):
     """
     Represents a union of sets as a :class:`Set`.
@@ -3587,7 +3597,7 @@ class ForAll(ConditionalBoolean, ExprWithLimits):
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])        
-        return '∀[%s](%s)' % (limits, p.doprint(self.function))
+        return '∀［%s］(%s)' % (limits, p.doprint(self.function))
 
     def int_limit(self):
         if len(self.limits) != 1:
@@ -4070,7 +4080,7 @@ class Exists(ConditionalBoolean, ExprWithLimits):
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p.doprint(arg) for arg in limit]) for limit in self.limits])
-        return '∃[%s](%s)' % (limits, p.doprint(self.function))
+        return '∃［%s］(%s)' % (limits, p.doprint(self.function))
 
     def int_limit(self):
         if len(self.limits) != 1:

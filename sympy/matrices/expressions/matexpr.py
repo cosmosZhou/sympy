@@ -1461,6 +1461,13 @@ class Concatenate(MatrixExpr):
             return arg.base[start:len(self.args)]
         return self
 
+    def _latex(self, p):
+#         return r'\begin{pmatrix}%s\end{pmatrix}' % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
+        return r"\left(\begin{array}{c}%s\end{array}\right)" % r'\\'.join('{%s}' % p._print(arg) for arg in self.args)
+#         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
+
+    def _symptr(self, p):
+        return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
 
 # precondition: i > j or i < j
 class Swap(Identity):    

@@ -556,6 +556,11 @@ class Indexed(Expr):
         if definition is not None:
             return definition._eval_determinant()
 
+    def generate_int_limit(self, *args, **kwargs):
+        definition = self.definition
+        if definition is not None:
+            return definition.generate_limit(*args, **kwargs) 
+        return Expr.generate_int_limit(self, *args, **kwargs)
         
 class Slice(Expr):
     """Represents a mathematical object with Slices.
