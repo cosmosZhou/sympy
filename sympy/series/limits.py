@@ -97,7 +97,7 @@ def heuristics(e, z, z0, direction):
         rv = limit(e.subs(z, 1 / z), z, S.Zero, "+" if z0 is S.Infinity else "-")
         if isinstance(rv, Limit):
             return
-    elif e.is_Mul or e.is_Plus or e.is_Power or e.is_Function:
+    elif e.is_Times or e.is_Plus or e.is_Power or e.is_Function:
         r = []
         for a in e.args:
             l = limit(a, z, z0, direction)
@@ -120,7 +120,7 @@ def heuristics(e, z, z0, direction):
                 r.append(l)
         if r:
             rv = e.func(*r)
-            if rv is S.NaN and e.is_Mul and any(isinstance(rr, AccumBounds) for rr in r):
+            if rv is S.NaN and e.is_Times and any(isinstance(rr, AccumBounds) for rr in r):
                 r2 = []
                 e2 = []
                 for ii in range(len(r)):
@@ -234,7 +234,7 @@ class Limit(Expr):
         if z0.is_extended_positive:
             e = e.rewrite([factorial, RisingFactorial], gamma)
 
-        if e.is_Mul:
+        if e.is_Times:
             if abs(z0) is S.Infinity:
                 e = factor_terms(e)
                 e = e.rewrite(fibonacci, GoldenRatio)

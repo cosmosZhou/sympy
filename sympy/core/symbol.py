@@ -647,7 +647,8 @@ class Symbol(AtomicExpr, NotIterable):
         return False
     
     def _eval_transpose(self):
-        ...
+        if len(self.shape) < 2:
+            return self
 
     greek_letters = {'Alpha': 'Α',
                      'ALPHA': 'Α',

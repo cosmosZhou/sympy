@@ -314,10 +314,10 @@ class Product(ExprWithIntLimits):
 
         elif term.is_Plus:
             factored = factor_terms(term, fraction=True)
-            if factored.is_Mul:
+            if factored.is_Times:
                 return self._eval_product(factored, (k, a, n))
 
-        elif term.is_Mul:
+        elif term.is_Times:
             exclude, include = [], []
 
             for t in term.args:

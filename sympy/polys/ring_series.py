@@ -1901,7 +1901,7 @@ def _rs_series(expr, series_rs, a, prec):
             R(a), prec)
         return series
 
-    elif expr.is_Mul:
+    elif expr.is_Times:
         n = len(args)
         for arg in args:    # XXX Looks redundant
             if not arg.is_Number:

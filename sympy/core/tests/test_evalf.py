@@ -345,7 +345,7 @@ def test_implemented_function_evalf():
 def test_evaluate_false():
     for no in [0, False]:
         assert Add(3, 2, evaluate=no).is_Plus
-        assert Mul(3, 2, evaluate=no).is_Mul
+        assert Mul(3, 2, evaluate=no).is_Times
         assert Pow(3, 2, evaluate=no).is_Power
     assert Pow(y, 2, evaluate=True) - Pow(y, 2, evaluate=True) == 0
 

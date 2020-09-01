@@ -71,12 +71,11 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Dummy = False
     is_Wild = False
     is_Function = False
-    is_Plus = False
     
-    is_Mul = False
-    is_Times = False
-    
+    is_Plus = False    
+    is_Times = False    
     is_Power = False
+    
     is_Number = False
     is_Float = False
     is_Rational = False
@@ -1298,7 +1297,7 @@ class Basic(with_metaclass(ManagedProperties)):
             if hit:
                 rv = self.func(*args)
                 hack2 = hints.get('hack2', False)
-                if hack2 and self.is_Mul and not rv.is_Mul:  # 2-arg hack
+                if hack2 and self.is_Times and not rv.is_Times:  # 2-arg hack
                     coeff = S.One
                     nonnumber = []
                     for i in args:
@@ -1617,7 +1616,7 @@ class Basic(with_metaclass(ManagedProperties)):
         such a fashion that changes are not made twice.
 
             >>> e = x*(x*y + 1)
-            >>> e.replace(lambda x: x.is_Mul, lambda x: 2*x)
+            >>> e.replace(lambda x: x.is_Times, lambda x: 2*x)
             2*x*(2*x*y + 1)
 
         When matching a single symbol, `exact` will default to True, but
@@ -2282,6 +2281,9 @@ class Basic(with_metaclass(ManagedProperties)):
 
         if 'parent' in self._assumptions:
             del self._assumptions['parent']
+      
+    def asKroneckerDelta(self):
+        return self
         
 class Atom(Basic):
     """

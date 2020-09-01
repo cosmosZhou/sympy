@@ -974,7 +974,7 @@ def _separate(eq, dep, others):
     # Extract derivatives depending our separable variable...
     terms = set()
     for term in eq.args:
-        if term.is_Mul:
+        if term.is_Times:
             for i in term.args:
                 if i.is_Derivative and not i.has(*others):
                     terms.add(term)

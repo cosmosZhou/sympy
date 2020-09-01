@@ -114,13 +114,13 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
             expr.is_Atom or expr in (exp_polar(0), exp_polar(1)))):
         return expr
 
-    if deep or expr.is_Plus or expr.is_Mul and _y not in expr.args:
+    if deep or expr.is_Plus or expr.is_Times and _y not in expr.args:
         expr = expr.func(*[recurse(w) for w in expr.args])
 
     if expr.is_Power:
         return recurse(expr*_y, deep=False)/_y
 
-    if not expr.is_Mul:
+    if not expr.is_Times:
         return expr
 
     # handle the Mul
@@ -281,7 +281,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                 common_b[b] = common_b[b] + e
             else:
                 common_b[b] = e
-            if b[1] != 1 and b[0].is_Mul:
+            if b[1] != 1 and b[0].is_Times:
                 bases.append(b)
         bases.sort(key=default_sort_key)  # this makes tie-breaking canonical
         bases.sort(key=measure, reverse=True)  # handle longest first
@@ -464,7 +464,7 @@ def powsimp(expr, deep=False, combine='all', force=False, measure=count_ops):
                     # when multiplied out -- assuming no joining of terms
                     if e.is_Plus:
                         return sum([_terms(ai) for ai in e.args])
-                    if e.is_Mul:
+                    if e.is_Times:
                         return prod([_terms(mi) for mi in e.args])
                     return 1
                 xnew_base = expand_mul(new_base, deep=False)
@@ -605,7 +605,7 @@ def _denest_pow(eq):
             b, e = new.as_base_exp()
 
     # denest exp with log terms in exponent
-    if b is S.Exp1 and e.is_Mul:
+    if b is S.Exp1 and e.is_Times:
         logs = []
         other = []
         for ei in e.args:
@@ -617,7 +617,7 @@ def _denest_pow(eq):
         return Pow(exp(logs), Mul(*other))
 
     _, be = b.as_base_exp()
-    if be is S.One and not (b.is_Mul or
+    if be is S.One and not (b.is_Times or
                             b.is_Rational and b.q != 1 or
                             b.is_positive):
         return eq
@@ -632,7 +632,7 @@ def _denest_pow(eq):
             polars.append(bb.as_base_exp())
         else:
             nonpolars.append(bb)
-    if len(polars) == 1 and not polars[0][0].is_Mul:
+    if len(polars) == 1 and not polars[0][0].is_Times:
         return Pow(polars[0][0], polars[0][1]*e)*powdenest(Mul(*nonpolars)**e)
     elif polars:
         return Mul(*[powdenest(bb**(ee*e)) for (bb, ee) in polars]) \
@@ -641,14 +641,14 @@ def _denest_pow(eq):
     if b.is_Integer:
         # use log to see if there is a power here
         logb = expand_log(log(b))
-        if logb.is_Mul:
+        if logb.is_Times:
             c, logb = logb.args
             e *= c
             base = logb.args[0]
             return Pow(base, e)
 
     # if b is not a Mul or any factor is an atom then there is nothing to do
-    if not b.is_Mul or any(s.is_Atom for s in Mul.make_args(b)):
+    if not b.is_Times or any(s.is_Atom for s in Mul.make_args(b)):
         return eq
 
     # let log handle the case of the base of the argument being a Mul, e.g.
@@ -674,7 +674,7 @@ def _denest_pow(eq):
             glogb = _keep_coeff(cg, rg*Add(*[a/g for a in args]))
 
     # now put the log back together again
-    if isinstance(glogb, log) or not glogb.is_Mul:
+    if isinstance(glogb, log) or not glogb.is_Times:
         if glogb.args[0].is_Power or isinstance(glogb.args[0], exp):
             glogb = _denest_pow(glogb.args[0])
             if (abs(glogb.exp) < 1) == True:

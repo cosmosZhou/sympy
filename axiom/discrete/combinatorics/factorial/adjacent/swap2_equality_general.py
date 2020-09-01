@@ -44,7 +44,9 @@ def prove(Eq):
     
     Eq << (w[t, i] @ x).this.subs(Eq[0].subs(i, t).subs(j, i))
     
-    Eq << Eq[-1].this.rhs.expand().simplify(deep=True)
+    Eq << Eq[-1].this.rhs.expand()
+    ***
+    return
     
     Eq << w[t, j] @ Eq[-1]
     

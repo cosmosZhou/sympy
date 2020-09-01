@@ -873,8 +873,7 @@ class Number(AtomicExpr):
     def shape(self):
         return ()
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return self
 
     def simplify(self, *_, **__):

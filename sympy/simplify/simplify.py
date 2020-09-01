@@ -108,7 +108,7 @@ def _separatevars(expr, force):
     if len(expr.free_symbols) == 1:
         return expr
     # don't destroy a Mul since much of the work may already be done
-    if expr.is_Mul:
+    if expr.is_Times:
         args = list(expr.args)
         changed = False
         for i, a in enumerate(args):
@@ -615,7 +615,7 @@ def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False):
     hollow_mul = Transform(
         lambda x: Mul(*x.args),
         lambda x:
-        x.is_Mul and
+        x.is_Times and
         len(x.args) == 2 and
         x.args[0].is_Number and
         x.args[1].is_Plus)
@@ -907,7 +907,7 @@ def logcombine(expr, force=False):
     """
 
     def f(rv):
-        if not (rv.is_Plus or rv.is_Mul):
+        if not (rv.is_Plus or rv.is_Times):
             return rv
 
         def gooda(a):
@@ -927,7 +927,7 @@ def logcombine(expr, force=False):
         for a in Add.make_args(rv):
             if isinstance(a, log) and goodlog(a):
                 log1[()].append(([], a))
-            elif not a.is_Mul:
+            elif not a.is_Times:
                 other.append(a)
             else:
                 ot = []

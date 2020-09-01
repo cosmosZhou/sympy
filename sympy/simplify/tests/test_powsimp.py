@@ -91,7 +91,7 @@ def test_powsimp():
 
     # issue 6368
     eq = Mul(*[sqrt(Dummy(imaginary=True)) for i in range(3)])
-    assert powsimp(eq) == eq and eq.is_Mul
+    assert powsimp(eq) == eq and eq.is_Times
 
     assert all(powsimp(e) == e for e in (sqrt(x**a), sqrt(x**2)))
 
@@ -278,7 +278,7 @@ def test_issue_5728():
     # symbolic powers work, too
     b = x**y*y
     a = b*sqrt(b)
-    assert a.is_Mul is True
+    assert a.is_Times is True
     assert powsimp(a) == sqrt(b)**3
 
     # as does exp

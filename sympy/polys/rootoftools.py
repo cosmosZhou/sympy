@@ -1031,7 +1031,7 @@ class RootSum(Expr):
         else:
             add_const = S.Zero
 
-        if expr.is_Mul:
+        if expr.is_Times:
             mul_const, expr = expr.as_independent(var)
         else:
             mul_const = S.One

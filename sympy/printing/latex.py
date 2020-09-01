@@ -243,7 +243,7 @@ class LatexPrinter(Printer):
             return False
         else:
             # Muls of the form a*b*c... can be folded
-            if expr.is_Mul and not self._mul_is_clean(expr):
+            if expr.is_Times and not self._mul_is_clean(expr):
                 return True
             # Pows which don't need brackets can be folded
             elif expr.is_Power and not self._pow_is_clean(expr):
@@ -266,7 +266,7 @@ class LatexPrinter(Printer):
         """
         from sympy import Integral, Product, Sum
 
-        if expr.is_Mul:
+        if expr.is_Times:
             if not first and _coeff_isneg(expr):
                 return True
         elif precedence_traditional(expr) < PRECEDENCE["Times"]:

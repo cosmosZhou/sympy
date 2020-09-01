@@ -430,7 +430,7 @@ class MatrixExpr(Expr):
             return rule(expr)
 
         def recurse_expr(expr, index_ranges={}):
-            if expr.is_Mul:
+            if expr.is_Times:
                 nonmatargs = []
                 pos_arg = []
                 pos_ind = []
@@ -829,10 +829,6 @@ class Identity(MatrixExpr):
     @property
     def n(self):
         return self.args[0]
-
-    @property
-    def T(self):
-        return self
 
     @property
     def atomic_dtype(self):
@@ -1517,8 +1513,7 @@ class Swap(Identity):
         from sympy import KroneckerDelta
         return 2 * KroneckerDelta(self.i, self.j) - 1
 
-    @property
-    def T(self):
+    def _eval_transpose(self):        
         return self
 
     def _eval_inverse(self):
@@ -1547,8 +1542,7 @@ class Multiplication(Identity):
     def multiplier(self):
         return self.args[-1]
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return self
 
     def _eval_inverse(self):
@@ -1637,8 +1631,7 @@ class Addition(Multiplication):
     def j(self):
         return self.args[2]
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return self.func(self.n, self.j, self.i, self.multiplier)
 
     def _eval_inverse(self):
@@ -1736,8 +1729,7 @@ class Shift(Identity):
     def _eval_determinant(self):
         return (-1) ** (self.j - self.i)
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return Shift(self.n, self.j, self.i)
 
     def _eval_inverse(self):

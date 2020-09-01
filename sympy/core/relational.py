@@ -1080,10 +1080,9 @@ class Equality(Relational):
         from sympy.core.function import Derivative
         return self.func(Derivative(self.lhs, *symbols), Derivative(self.rhs, *symbols), given=self)
 
-    def transpose(self):
+    @property
+    def T(self):
         return self.func(self.lhs.T, self.rhs.T, equivalent=self)
-    
-    T = property(transpose, None, None, 'Matrix transposition.')
 
     def __and__(self, other):
         """Overloading for & operator"""

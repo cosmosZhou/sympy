@@ -158,29 +158,6 @@ class MatMul(MatrixExpr):
         coeff, matrices = self.as_coeff_matrices()
         return coeff, MatMul(*matrices)
 
-    def _eval_transpose(self):
-        """Transposition of matrix multiplication.
-
-        Notes
-        =====
-
-        The following rules are applied.
-
-        Transposition for matrix multiplied with another matrix:
-        `\\left(A B\\right)^{T} = B^{T} A^{T}`
-
-        Transposition for matrix multiplied with scalar:
-        `\\left(c A\\right)^{T} = c A^{T}`
-
-        References
-        ==========
-
-        .. [1] https://en.wikipedia.org/wiki/Transpose
-        """
-        coeff, matrices = self.as_coeff_matrices()
-        return MatMul(
-            coeff, *[transpose(arg) for arg in matrices[::-1]]).doit()
-
     def _eval_adjoint(self):
         return MatMul(*[adjoint(arg) for arg in self.args[::-1]]).doit()
 
@@ -386,13 +363,27 @@ class MatMul(MatrixExpr):
             domain &= arg.domain_defined(x)
         return domain
     
-    @property
-    def T(self):
-        args = []
-        for arg in self.args[::-1]:
-            args.append(arg.T)
-            
-        return self.func(*args)
+    def _eval_transpose(self):
+        """Transposition of matrix multiplication.
+
+        Notes
+        =====
+
+        The following rules are applied.
+
+        Transposition for matrix multiplied with another matrix:
+        `\\left(A B\\right)^{T} = B^{T} A^{T}`
+
+        Transposition for matrix multiplied with scalar:
+        `\\left(c A\\right)^{T} = c A^{T}`
+
+        References
+        ==========
+
+        .. [1] https://en.wikipedia.org/wiki/Transpose
+        """
+
+        return self.func(*(arg.T for arg in self.args[::-1]))
 
     
 def validate(*matrices):

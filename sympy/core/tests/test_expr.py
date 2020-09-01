@@ -693,7 +693,7 @@ def test_replace():
     assert cos(x).replace(cos, sin, map=True) == (sin(x), {cos(x): sin(x)})
     assert sin(x).replace(cos, sin) == sin(x)
 
-    cond, func = lambda x: x.is_Mul, lambda x: 2*x
+    cond, func = lambda x: x.is_Times, lambda x: 2*x
     assert (x*y).replace(cond, func, map=True) == (2*x*y, {x*y: 2*x*y})
     assert (x*(1 + x*y)).replace(cond, func, map=True) == \
         (2*x*(2*x*y + 1), {x*(2*x*y + 1): 2*x*(2*x*y + 1), x*y: 2*x*y})
@@ -705,7 +705,7 @@ def test_replace():
     assert (x**2 + O(x**3)).replace(Pow, lambda b, e: b**e/e) == O(1, x)
     assert (x**2 + O(x**3)).replace(Pow, lambda b, e: b**e/e,
         simultaneous=False) == x**2/2 + O(x**3)
-    assert (x*(x*y + 3)).replace(lambda x: x.is_Mul, lambda x: 2 + x) == \
+    assert (x*(x*y + 3)).replace(lambda x: x.is_Times, lambda x: 2 + x) == \
         x*(x*y + 5) + 2
     e = (x*y + 1)*(2*x*y + 1) + 1
     assert e.replace(cond, func, map=True) == (

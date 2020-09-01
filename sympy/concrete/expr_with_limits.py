@@ -999,7 +999,7 @@ class AddWithLimits(ExprWithLimits):
     def _eval_factor(self, **hints):
         if 1 == len(self.limits):
             summand = self.function.factor(**hints)
-            if summand.is_Mul:
+            if summand.is_Times:
                 out = sift(summand.args, lambda w: not set(self.variables) & w.free_symbols)
                 return Mul(*out[True]) * self.func(Mul(*out[False]), *self.limits)
         else:
@@ -1694,7 +1694,7 @@ class Ref(ExprWithLimits):
 
             return None, exp
         
-        if exp.is_Mul:
+        if exp.is_Times:
             argsNonSimplified = []
             argsSimplified = []
             for arg in exp.args:
@@ -2073,8 +2073,7 @@ class Ref(ExprWithLimits):
                 function = function._subs(x, _x)
         return function.is_extended_negative
     
-    @property
-    def T(self):
+    def _eval_transpose(self):
         if len(self.shape) < 2:
             return self
         limits = [*self.limits]

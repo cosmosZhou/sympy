@@ -36,7 +36,7 @@ def sqrt_depth(p):
 
     if p.is_Atom:
         return 0
-    elif p.is_Plus or p.is_Mul:
+    elif p.is_Plus or p.is_Times:
         return max([sqrt_depth(x) for x in p.args], key=default_sort_key)
     elif is_sqrt(p):
         return sqrt_depth(p.base) + 1
@@ -66,7 +66,7 @@ def is_algebraic(p):
         return False
     elif is_sqrt(p) or p.is_Power and p.exp.is_Integer:
         return is_algebraic(p.base)
-    elif p.is_Plus or p.is_Mul:
+    elif p.is_Plus or p.is_Times:
         return all(is_algebraic(x) for x in p.args)
     else:
         return False
@@ -173,7 +173,7 @@ def _sqrt_match(p):
             r = pargs.pop(i)
             v.pop(i)
             b = S.One
-            if r.is_Mul:
+            if r.is_Times:
                 bv = []
                 rv = []
                 for x in r.args:
@@ -194,7 +194,7 @@ def _sqrt_match(p):
                     if x1 == r:
                         b1.append(1)
                     else:
-                        if x1.is_Mul:
+                        if x1.is_Times:
                             x1args = list(x1.args)
                             if r in x1args:
                                 x1args.remove(r)

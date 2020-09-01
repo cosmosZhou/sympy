@@ -436,7 +436,7 @@ def test_issue_11230():
     a, b, f, k, l, i = symbols('a b f k l i')
     p = [a*b*f*k*l, a*i*k**2*l, f*i*k**2*l]
     R, C = cse(p)
-    assert not any(i.is_Mul for a in C for i in a.args)
+    assert not any(i.is_Times for a in C for i in a.args)
 
     # random tests for the issue
     from random import choice
@@ -447,7 +447,7 @@ def test_issue_11230():
     for p in subsets(ex, 3):
         p = list(p)
         R, C = cse(p)
-        assert not any(i.is_Mul for a in C for i in a.args)
+        assert not any(i.is_Times for a in C for i in a.args)
         for ri in reversed(R):
             for i in range(len(C)):
                 C[i] = C[i].subs(*ri)

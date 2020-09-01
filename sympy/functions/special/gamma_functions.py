@@ -707,7 +707,7 @@ class polygamma(Function):
                             z + i, e) for i in range(0, int(-coeff))])
                     return polygamma(n, z - coeff) + (-1) ** n * factorial(n) * tail
 
-            elif z.is_Mul:
+            elif z.is_Times:
                 coeff, z = z.as_two_terms()
                 if coeff.is_Integer and coeff.is_positive:
                     tail = [ polygamma(n, z + Rational(

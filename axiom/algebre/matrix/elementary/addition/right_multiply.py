@@ -41,14 +41,18 @@ def prove(Eq):
     Eq << (x @ w[i, j]).this.subs(Eq[0])
     
     Eq << Eq[-1].this.rhs.expand()
-    ***
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+        
+    Eq << Eq[-1].this.rhs.args[1].function.asKroneckerDelta()
     
-    Eq << Eq[-1] @ w_quote[i, j]     
-
+    Eq << Eq[-1].this.rhs.args[1].function.expand()
+    
+    Eq << (Eq[-1] @ w_quote[i, j]).this.rhs.subs(Eq[1])     
+    
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    Eq << Eq[-1].this.rhs.args[1].function.asKroneckerDelta()
+    
+    Eq << Eq[-1].this.rhs.args[1].function.expand()    
 
     
 if __name__ == '__main__':

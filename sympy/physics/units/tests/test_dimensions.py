@@ -82,11 +82,11 @@ def test_Dimension_mul_div_exp():
     assert 2/length == 1/length
     x = Symbol('x')
     m = x*length
-    assert m == length*x and m.is_Mul and set(m.args) == {x, length}
+    assert m == length*x and m.is_Times and set(m.args) == {x, length}
     d = x/length
-    assert d == x*length**-1 and d.is_Mul and set(d.args) == {x, 1/length}
+    assert d == x*length**-1 and d.is_Times and set(d.args) == {x, 1/length}
     d = length/x
-    assert d == length*x**-1 and d.is_Mul and set(d.args) == {1/x, length}
+    assert d == length*x**-1 and d.is_Times and set(d.args) == {1/x, length}
 
     velo = length / time
 

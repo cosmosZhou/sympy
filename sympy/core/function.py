@@ -89,7 +89,7 @@ def _coeff_isneg(a):
 
     if a.is_MatMul:
         a = a.args[0]
-    if a.is_Mul:
+    if a.is_Times:
         a = a.args[0]
     return a.is_Number and a.is_extended_negative
 
@@ -3965,7 +3965,7 @@ def count_ops(expr, visual=False):
                     if a.q != 1:
                         ops.append(DIV)
                     continue
-            elif a.is_Mul or a.is_MatMul:
+            elif a.is_Times or a.is_MatMul:
                 if _coeff_isneg(a):
                     ops.append(NEG)
                     if a.args[0] is S.NegativeOne:
@@ -4007,7 +4007,7 @@ def count_ops(expr, visual=False):
                 ops.append(DIV)
                 args.append(a.base)  # won't be -Mul but could be Add
                 continue
-            if (a.is_Mul or
+            if (a.is_Times or
                 a.is_Power or
                 a.is_Function or
                 isinstance(a, Derivative) or
@@ -4015,7 +4015,7 @@ def count_ops(expr, visual=False):
 
                 o = Symbol(a.func.__name__.upper())
                 # count the args
-                if (a.is_Mul or isinstance(a, LatticeOp)):
+                if (a.is_Times or isinstance(a, LatticeOp)):
                     ops.append(o * (len(a.args) - 1))
                 else:
                     ops.append(o)

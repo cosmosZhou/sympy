@@ -129,7 +129,7 @@ class Expr(Basic, EvalfMixin):
         else:
             if expr.is_Plus:
                 args = expr.as_ordered_terms(order=order)
-            elif expr.is_Mul:
+            elif expr.is_Times:
                 args = expr.as_ordered_factors(order=order)
             else:
                 args = expr.args
@@ -1219,11 +1219,7 @@ class Expr(Basic, EvalfMixin):
 
     @property
     def T(self):
-        if len(self.shape) < 2:
-            return self
         from sympy.matrices.expressions.transpose import Transpose
-        if isinstance(self, Transpose):
-            return self.arg
         return Transpose(self)
 
     def _eval_adjoint(self):
@@ -1431,7 +1427,7 @@ class Expr(Basic, EvalfMixin):
                 return S.One
             if o.is_Power:
                 return o.args[1]
-            if o.is_Mul:  # x**n*log(x)**n or x**n/log(x)**n
+            if o.is_Times:  # x**n*log(x)**n or x**n/log(x)**n
                 for oi in o.args:
                     if oi.is_Symbol:
                         return S.One
@@ -1483,7 +1479,7 @@ class Expr(Basic, EvalfMixin):
         [[-1, oo], []]
         """
 
-        if self.is_Mul:
+        if self.is_Times:
             args = list(self.args)
         else:
             args = [self]
@@ -2364,7 +2360,7 @@ class Expr(Basic, EvalfMixin):
             if cc is not S.One:
                 c = Mul(cc, pc, evaluate=False)
 
-        if c.is_Mul:
+        if c.is_Times:
             a, b = c.as_two_terms()
             x = self.extract_multiplicatively(a)
             if x is not None:
@@ -2405,7 +2401,7 @@ class Expr(Basic, EvalfMixin):
                 else:
                     return quotient
         elif self.is_NumberSymbol or self.is_Symbol or self is S.ImaginaryUnit:
-            if quotient.is_Mul and len(quotient.args) == 2:
+            if quotient.is_Times and len(quotient.args) == 2:
                 if quotient.args[0].is_Integer and quotient.args[0].is_positive and quotient.args[1] == self:
                     return quotient
             elif quotient.is_Integer and c.is_Number:
@@ -2437,7 +2433,7 @@ class Expr(Basic, EvalfMixin):
                 return Add._from_args([cs * t for t in newargs])
             else:
                 return Add._from_args(newargs)
-        elif self.is_Mul:
+        elif self.is_Times:
             args = list(self.args)
             for i, arg in enumerate(args):
                 newarg = arg.extract_multiplicatively(c)
@@ -2618,7 +2614,7 @@ class Expr(Basic, EvalfMixin):
                     return False
                 elif positive_args < negative_args:
                     return True
-            elif self.is_Mul:
+            elif self.is_Times:
                 # We choose the one with an odd number of minus signs
                 num, den = self.as_numer_denom()
                 args = Mul.make_args(num) + Mul.make_args(den)
@@ -2677,7 +2673,7 @@ class Expr(Basic, EvalfMixin):
             if exp.is_Plus:
                 exps += exp.args
                 continue
-            if exp.is_Mul:
+            if exp.is_Times:
                 coeff = exp.as_coefficient(pi * I)
                 if coeff is not None:
                     piimult += coeff
@@ -4096,7 +4092,6 @@ class Expr(Basic, EvalfMixin):
             return (x,)   
         return (x, start, end)
 
-        
 class AtomicExpr(Atom, Expr):
     """
     A parent class for object which are both atoms and Exprs.

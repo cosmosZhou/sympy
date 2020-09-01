@@ -547,7 +547,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         # inside the loop, could make this test extremely slow
         # for larger summation expressions.
 
-        if order.expr.is_Mul:
+        if order.expr.is_Times:
             args = order.expr.args
             argset = set(args)
 
@@ -1193,7 +1193,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self
             
             if self.function._has(Piecewise):
-                if self.function.is_Mul and all(arg.is_Piecewise for arg in self.function.args):
+                if self.function.is_Times and all(arg.is_Piecewise for arg in self.function.args):
                     if len(self.function.args) > 2:
                         return self
                     piecewise0 = self.function.args[0]
@@ -1589,7 +1589,7 @@ def eval_sum_symbolic(f, limits):
         return f * (b - a + 1)
 
     # Linearity
-    if f.is_Mul:
+    if f.is_Times:
         L, R = f.as_two_terms()
 
         if not L.has(i):

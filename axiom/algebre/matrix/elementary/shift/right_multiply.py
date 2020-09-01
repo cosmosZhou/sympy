@@ -7,7 +7,6 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Shift
-from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete.expr_with_limits import Ref
 
 
@@ -41,11 +40,13 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs().function.args[1]().expr.simplify(wrt=Eq[-1].rhs.variable)
     
-    Eq << Eq[-1] @ w[i, j].T
-    return
+    Eq << (Eq[-1] @ w[i, j].T).this.rhs.subs(Eq[0])
+
     Eq << Eq[-1].this.rhs.expand()    
+
+    Eq << Eq[-1].this.rhs().function.args[1]().expr.simplify(wrt=Eq[-1].rhs.variable)
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
+    Eq << Eq[-1].this.rhs().function.args[1]().expr.simplify()
 
 
 if __name__ == '__main__':
