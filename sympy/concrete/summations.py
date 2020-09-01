@@ -1263,6 +1263,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if domain.is_Intersection :
                 return self
                 
+            if self.function.is_Plus:
+                for i, arg in enumerate(self.function.args):
+                    if arg.is_Times and any(e.is_KroneckerDelta and e._has(x) for e in arg.args):
+                        args = [*self.function.args]
+                        del args[i]
+                        return self.func(arg, limit).simplify() + self.func(self.function.func(*args), limit).simplify()
+                        
             _a, _b = domain.min(), domain.max()
             if not _b.is_Min:
                 b = _b

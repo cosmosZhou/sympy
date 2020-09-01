@@ -41,13 +41,13 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    Eq << Eq[-1].this.rhs.function.args[1]().expr.simplify()
     
-    Eq << w_quote[i, j] @ Eq[-1]    
+    Eq << (w_quote[i, j] @ Eq[-1]).this.rhs.subs(Eq[0])    
 
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    Eq << Eq[-1].this.rhs.function.simplify(wrt=j)
 
     
 if __name__ == '__main__':

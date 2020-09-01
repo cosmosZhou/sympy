@@ -33,7 +33,7 @@ def prove(Eq):
     Eq << (x @ w[i, j]).this.subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1] @ w[i, j]
+    Eq << (Eq[-1] @ w[i, j]).this.rhs.subs(Eq[0])
     
     Eq << Eq[-1].this.rhs.expand()    
 

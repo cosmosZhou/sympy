@@ -1296,7 +1296,7 @@ class Piecewise(Function):
                     args[-1] = (e_second_last, True)
                     
                 if hit:                    
-                    return self.func(*args).simplify(deep=True)
+                    return self.func(*args).simplify(deep=deep)
                         
             args = []
             hit = False

@@ -4037,7 +4037,7 @@ class Invoker:
                         reps.append((x, _x))
                         outer_context[x] = (_x, domain)
                 
-                obj = getattr(this, self.callable.__name__)(*args, **kwargs).simplify()
+                obj = getattr(this, self.callable.__name__)(*args, **kwargs)#.simplify()
                 reps.reverse()
                 for x, _x in reps:
                     obj = obj._subs(_x, x)

@@ -1948,9 +1948,16 @@ class Intersection(Set, LatticeOp):
 
     def union_sets(self, b):
 # (A - B) | (C & D) = ((A - B) | C) & ((A - B) | D) = (A | C) & ((A - B) | D)
-        for c in self.args:
+        for i, c in enumerate(self.args):
             if c.is_subset(b):
                 return b
+            if c.is_Complement:
+                A, B = c.args
+                if B in b:
+#                     ({k} ∩ ([0; n) / {i})) ∪ {i}
+                    args = [*self.args]
+                    del args[i]
+                    return (self.func(*args, evaluate=False) | b) & A
             
 # (A & C) | (B & C) = (A | B) & C           
         if b.is_Intersection:

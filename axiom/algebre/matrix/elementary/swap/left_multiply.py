@@ -33,11 +33,9 @@ def prove(Eq):
     Eq << (w[i, j] @ x).this.subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << w[i, j] @ Eq[-1]
+    Eq << (w[i, j] @ Eq[-1]).this.rhs.subs(Eq[0])
     
     Eq << Eq[-1].this.rhs.expand()
-    
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
         
 
 if __name__ == '__main__':
