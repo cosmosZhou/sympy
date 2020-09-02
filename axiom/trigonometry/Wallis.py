@@ -22,7 +22,7 @@ def apply(m, n=1):
 from sympy.utility import check
 
 
-@check(wolfram=None)
+@check(wolfram=True)
 def prove(Eq, wolfram):
     m = Symbol("m", integer=True, positive=True)
     n = Symbol("n", integer=True, positive=True)

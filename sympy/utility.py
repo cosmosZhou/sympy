@@ -372,10 +372,13 @@ def check(func=None, wolfram=None):
         if wolfram:
             try:
                 from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
-                session = WolframLanguageSession()                
+                session = WolframLanguageSession()
+                session.evaluate('1+1')                
             except:
-                ...
-#                 traceback.print_exc()           
+                traceback.print_exc()
+                
+                session = None
+                           
         
         return lambda py: wolfram_decorator(py, func, wolfram=session)
 
