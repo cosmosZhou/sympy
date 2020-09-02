@@ -319,7 +319,6 @@ class Relational(Boolean, Expr, EvalfMixin):
     def definition(self):
         if 'definition' in self._assumptions:
             return self._assumptions['definition']
-        return None
 
     def simplify(self, deep=False, wrt=None):
         if deep or wrt is not None:

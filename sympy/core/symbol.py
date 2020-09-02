@@ -747,6 +747,17 @@ class Symbol(AtomicExpr, NotIterable):
     def _sympystr(self, _):   
         return Symbol.sympystr(self.name)     
 
+    def _latex(self, p):
+        if self in p._settings['symbol_names']:
+            return p._settings['symbol_names'][self]
+
+        result = p._deal_with_super_sub(self.name) if '\\' not in self.name else self.name
+
+        if self.domain_assumed:
+            result = r"{\color{Magenta} {%s}}" % result
+
+        return result
+
     def _eval_is_extended_positive(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain'].is_extended_positive

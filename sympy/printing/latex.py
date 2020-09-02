@@ -1159,22 +1159,10 @@ class LatexPrinter(Printer):
                 s += self._print(expr.point[0])
         return r"O\left(%s\right)" % s
 
-    def _print_Symbol(self, expr, style='plain'):
-        if expr in self._settings['symbol_names']:
-            return self._settings['symbol_names'][expr]
-
-        result = self._deal_with_super_sub(expr.name) if \
-            '\\' not in expr.name else expr.name
-
-        if style == 'bold':
-            result = r"\mathbf{{{}}}".format(result)
-
-        return result
-
     def _print_RandomSymbol(self, expr, style='plain'):
 #         result = r"\mathbf{{{}}}".format(result)
 
-        return r'{\color{red} {%s}}' % self._print(expr.symbol)
+        return r'{\color{red} {\mathbf{%s}}}' % self._print(expr.symbol)
 
     def _deal_with_super_sub(self, string):
         if '{' in string:

@@ -168,8 +168,7 @@ class Expr(Basic, EvalfMixin):
         except (SympifyError, SyntaxError):
             return False
         # check for pure number expr
-        if  not (self.is_Number and other.is_Number) and (
-                type(self) != type(other)):
+        if  not (self.is_Number and other.is_Number) and (type(self) != type(other)):
             return False
         a, b = self._hashable_content(), other._hashable_content()
         if a != b:
@@ -3829,9 +3828,6 @@ class Expr(Basic, EvalfMixin):
         elif self.is_extended_real:
             interval = S.Reals
         else:
-            if not self.is_complex:
-                print(self)
-                print(type(self))
             assert self.is_complex
             interval = S.Complexes
 

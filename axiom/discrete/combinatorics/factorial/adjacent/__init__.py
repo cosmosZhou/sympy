@@ -6,3 +6,9 @@ from . import swap1_utility
 from . import swap2_equality
 from . import swap2_equality_general
 from . import swap2_general
+from . import swapn2
+from . import swap2_utility
+from . import factorization
+from . import swapn_integer
+from . import swap2_utility_general
+from . import swapn_utility

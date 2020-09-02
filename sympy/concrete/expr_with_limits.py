@@ -3146,6 +3146,8 @@ class ConditionalBoolean(Boolean):
             function = lhs.subs(rhs)
             if not clue:
                 clue = function.clue
+                if not clue and function == lhs:
+                    clue = 'equivalent'
 
             for func, limits in funcs[:-1]:
                 if rhs.is_Equality:
@@ -3384,21 +3386,28 @@ class ConditionalBoolean(Boolean):
                         assert sym not in self.function.bound_symbols
 
                     limits = self.limits_update({e : (sym, base_set)})
-                    return self.func(self.function._subs(e, expr), *limits, equivalent=self).simplify()
-            elif s.is_Equality:
-                if e == s.lhs:
-                    y = s.rhs
-                elif e == s.rhs:
-                    y = s.lhs
-                else:
-                    y = None
-                if y is not None and not y.has(e):
-                    function = function._subs(e, y)
-                    limits = self.limits_delete(e)
-                    if limits:
-                        return self.func(function, equivalent=self)
-                    function.equivalent = self
-                    return function
+                    function = self.function
+                    if e != expr:
+                        function = function._subs(e, expr)
+                    return self.func(function, *limits, equivalent=self).simplify()
+            else: #s.dtype.is_condition: 
+                if s.is_Equality:
+                    if e == s.lhs:
+                        y = s.rhs
+                    elif e == s.rhs:
+                        y = s.lhs
+                    else:
+                        y = None
+                    if y is not None and not y.has(e):
+                        function = function._subs(e, y)
+                        limits = self.limits_delete(e)
+                        if limits:
+                            return self.func(function, equivalent=self)
+                        function.equivalent = self
+                        return function
+                if s == self.function or s.dummy_eq(self.function): #s.invert() | self.function
+                    return S.true.copy(equivalent=self)
+            
 
         if self.function.is_Equality:
             limits_dict = self.limits_dict
