@@ -251,19 +251,37 @@ class MatMul(MatrixExpr):
             return A.func(*args)
         
         kwargs = {'free_symbol' : free_symbol, 'generator' : self}
+        
+        def generate_k_limit(A, B, excludes=None, **kwargs):
+            if A.is_Ref or not B.is_Ref:
+                if excludes:
+                    excludes |= B.free_symbols
+                else:
+                    excludes = B.free_symbols
+                    
+                return A.generate_int_limit(0, excludes, **kwargs)
+            
+            if excludes:
+                excludes |= A.free_symbols
+            else:
+                excludes = A.free_symbols
+            
+            return B.generate_int_limit(0 if len(B.shape) == 1 else 1, excludes, **kwargs)
+
         if len(A.shape) > 1:
             i_limit = A.generate_int_limit(1, **kwargs)
             i, *_ = i_limit
             if len(B.shape) > 1:
                 j_limit = B.generate_int_limit(0, {i}, **kwargs)
                 j, *_ = j_limit
-                k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
-                k_dimension = A.shape[-1]  # @UnusedVariable
+                
+                k_limit = generate_k_limit(A, B, {i, j}, **kwargs)
+                k, *_ = k_limit
                 
                 assert i != k and k != j and i != j
-                return Ref(Sum[k:k_dimension](A[i, k] * B[k, j]).simplify(), j_limit, i_limit).simplify()
+                return Ref(Sum(A[i, k] * B[k, j], k_limit).simplify(), j_limit, i_limit).simplify()
             else:
-                k_limit = B.generate_int_limit(0, {i}, **kwargs)
+                k_limit = generate_k_limit(A, B, {i}, **kwargs)
                 k, *_ = k_limit
                 
                 assert i != k                            
@@ -273,11 +291,12 @@ class MatMul(MatrixExpr):
                 j_limit = B.generate_int_limit(0, **kwargs)                
                 j, *_ = j_limit
                 
-                k_limit = A.generate_int_limit(0, {j}, **kwargs)
+                k_limit = generate_k_limit(A, B, {j}, **kwargs)
                 k, *_ = k_limit
+                
                 assert k != j
                 return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
-            k_limit = A.generate_int_limit(0, **kwargs)
+            k_limit = generate_k_limit(A, B, **kwargs)
             k, *_ = k_limit
             return Sum(A[k] * B[k], k_limit).simplify()                
 

@@ -108,10 +108,6 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[1].simplify()
     
-#     Eq << Eq[-1].subs(_j, j)
-    
-    Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, i)
-    
     Eq << discrete.combinatorics.binomial.theorem.apply(r, -1, j + 1, i)
     
     Eq << Eq[-1].this.rhs.expand()
@@ -132,12 +128,6 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.simplify()    
     
-    Eq << Eq[-1].this.rhs.args[0].combsimp()
-    
-    Eq << Eq.equation.rhs.args[0].function.this.limits_subs(i_, i)
-    
-    Eq << Eq[-1].subs(Eq[-2]) 
-
     Eq << Eq.equation.subs(Eq[-1])
 
     Eq << Shift(n, 0, n - 1) @ Eq[-1]

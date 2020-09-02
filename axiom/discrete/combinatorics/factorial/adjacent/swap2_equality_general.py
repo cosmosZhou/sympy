@@ -45,34 +45,36 @@ def prove(Eq):
     Eq << (w[t, i] @ x).this.subs(Eq[0].subs(i, t).subs(j, i))
     
     Eq << Eq[-1].this.rhs.expand()
-    ***
-    return
     
-    Eq << w[t, j] @ Eq[-1]
+    Eq << Eq[-1].this.rhs().function.simplify()
+    
+    Eq << (w[t, j] @ Eq[-1]).this.rhs.subs(w[t, j].this.definition)
     
     Eq << Eq[-1].this.rhs.expand()
     
+    Eq << Eq[-1].this.rhs().function.simplify(wrt=True)
+
     Eq << Eq[-1].forall(j)
-    
+
     Eq << Eq[-1].forall(*Eq[1].limits[0])
-    return
-    Eq << Eq[-1].this.function.rhs.simplify(deep=True)
-    
-    Eq << w[t, i] @ Eq[-1]
+        
+    Eq << (w[t, i] @ Eq[-1]).this.function.rhs.subs(w[t, i].this.definition)
     
     Eq << Eq[-1].this.function.rhs.expand()
     
-    Eq << Eq[-1].this.simplify(deep=True)
-
+    Eq << Eq[-1].this().function.rhs().function.simplify(wrt=True)
+    
     Eq << Eq[-1].this.function.rhs.function.asKroneckerDelta()
     
-    Eq.www_expansion = Eq[-1].this.simplify(deep=True)
+    Eq.www_expansion = Eq[-1].this().function.rhs.function.simplify()
+
+    j = j.unbounded
+    Eq << (w[i, j] @ x).this.subs(w[i, j].this.definition).this.rhs.expand()
     
-    Eq << (w[i, j.unbounded] @ x).this.expand().simplify(deep=True)
-    
-    Eq << Eq[-1].simplify(wrt=j.unbounded)
+    Eq << Eq[-1].this(j).rhs().function.simplify(wrt=True)
     
     Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
+
     Eq << Eq[-1].this.rhs.function.expand()
 
     Eq << Eq.www_expansion.subs(Eq[-1].reversed)

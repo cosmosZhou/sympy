@@ -388,9 +388,9 @@ class ExprWithLimits(Expr):
         function, limits = self.function, self.limits
         isyms = function.free_symbols
         for xab in limits:
-            if len(xab) == 1:
-                isyms.add(xab[0])
-                continue
+#             if len(xab) == 1:
+#                 isyms.add(xab[0])
+#                 continue
             # take out the target symbol
             if xab[0] in isyms:
                 isyms.remove(xab[0])
@@ -2086,8 +2086,8 @@ class Ref(ExprWithLimits):
             x, *ab = limit
             if x in excludes:
                 kwargs = x.dtype.dict
-                if not ab:               
-                    kwargs['domain'] = x.domain
+                if not ab:
+                    ab = x.domain.min(), x.domain.max()
                 if free_symbol is not None and free_symbol not in excludes:
                     x = free_symbol
                 else:

@@ -1159,9 +1159,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if has_x[0]:
                     index = has_x.index(False)
                     
-#                     if any(has_x[index:]):
-#                         return self
-                    
                     independent_of_x = []
                     for arg in self.function.args[index:]:                        
                         independent_of_x.append(arg)

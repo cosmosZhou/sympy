@@ -1246,12 +1246,14 @@ class Piecewise(Function):
                 univeralSet = wrt.domain
                 args = []
                 union = S.EmptySet
+#                 union_second_last = None
                 hit = False
                 need_swap = False
                 for f, cond in self.args:
                     domain = (univeralSet - union) & wrt.domain_conditioned(cond)
                     if not cond:
-                        union |= domain                                        
+#                         union_second_last = union
+                        union |= domain
                     if domain.is_EmptySet:
                         hit = True
                         continue
