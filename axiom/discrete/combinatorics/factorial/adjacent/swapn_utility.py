@@ -9,6 +9,7 @@ from sympy.concrete.expr_with_limits import Ref
 from axiom.discrete.combinatorics.factorial.adjacent import swap2_utility, \
     swap2_utility_general
 from sympy.concrete.products import MatProduct
+from sympy.matrices.expressions.matmul import MatMul
 
 
 @plausible
@@ -32,26 +33,27 @@ def apply(x, d, w=None):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))    
-    m = Symbol('m', domain=Interval(2, oo, integer=True))
+    m = Symbol('m', domain=Interval(1, oo, integer=True))
     x = Symbol('x', complex=True, shape=(n,))
     d = Symbol('d', integer=True, shape=(oo,))
         
     Eq << apply(x, d[:m])    
-    return
+    
     k = Eq[-1].lhs.variable
     Eq << Eq[-1][k]
     
+    Eq << Eq[-1].subs(m, 1)
+    
     w = Eq[0].lhs.base
     i, j = Eq[0].lhs.indices
-    d = Eq[1].rhs.args[0].indices[1].base
-    
+    d = Eq[1].rhs.args[1].function.indices[1].base
     Eq << swap2_utility.apply(x, w).subs(i, 0).subs(j, d[0])
+
+    Eq << Eq[2].subs(m, m + 1)
     
-    Eq << w[1, d[1]] @ Eq[-1] 
+    Eq << swap2_utility_general.apply(x, Ref[k](Eq[1].lhs.function.indices[0]).simplify(), w)
     
-    Eq << Eq[1].subs(Eq[-1].reversed)
-    
-    Eq << swap2_utility_general.apply(x, w[0, d[0]] @ Ref[k](k), w).subs(i, 1).subs(j, d[1])
+    Eq << Eq[-1].subs(i, m).subs(j, d[m])
 
 
 if __name__ == '__main__':

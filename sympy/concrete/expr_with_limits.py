@@ -1729,6 +1729,15 @@ class Ref(ExprWithLimits):
 
     def simplify_matmul(self, exp):
         if exp.is_MatMul:
+            last = self.func(exp.args[-1], self.limits[0])
+            _last = last.simplify()
+            if last != _last:
+                independent = exp.func(*exp.args[:-1], _last).simplify()
+                limits = self.limits[1:]
+                if limits:
+                    independent = self.func(independent, *limits)
+                return None, independent
+            
             index_simplified = None
             for i, arg in enumerate(exp.args):
                 _, simplified = self.simplify_matmul(arg)                

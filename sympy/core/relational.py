@@ -680,7 +680,7 @@ class Equality(Relational):
                 return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, equivalent=[self, lhs])
             return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, given=[self, lhs])
         else:
-            if det(lhs).is_nonzero:
+            if len(lhs.shape) == 2 and det(lhs).is_nonzero:
                 return Eq(lhs @ self.lhs, lhs @ self.rhs, equivalent=self)
             return Eq(lhs @ self.lhs, lhs @ self.rhs, given=self)
 

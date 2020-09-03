@@ -9,6 +9,7 @@ from sympy.functions.elementary.exponential import exp, log
 from sympy.polys import quo, roots
 from sympy.simplify import powsimp
 from sympy.matrices.expressions.matmul import MatMul
+from sympy.matrices.expressions.matexpr import MatrixExpr
 
 
 class Product(ExprWithIntLimits):
@@ -584,7 +585,7 @@ class Product(ExprWithIntLimits):
                     return self.func(self.function, (i, a - 1 , b))
 
 
-class MatProduct(ExprWithIntLimits):
+class MatProduct(ExprWithIntLimits, MatrixExpr):
     r"""Represents unevaluated products of matrices.
 
     ``MatProduct`` represents a finite or infinite product, with the first
@@ -637,39 +638,7 @@ class MatProduct(ExprWithIntLimits):
         return function.is_zero
 
     def doit(self, **hints):
-        f = self.function
-        
-        for index, limit in enumerate(self.limits):
-            i, a, b = limit
-            dif = b - a
-            if dif.is_Integer and dif < 0:
-                a, b = b + 1, a - 1
-                f = 1 / f
-
-            g = self._eval_product(f, (i, a, b))
-            if g in (None, S.NaN):                
-                if index < len(self.limits) - 1:
-                    i, a, b = self.limits[-1]
-                    dif = b - a
-                    if dif.is_Integer:
-                        limits = self.limits[index:-1]
-                        args = []
-                        for index in range(dif + 1):
-                            _i = a + index                            
-                            args.append(self.func(f._subs(i, _i), *[limit._subs(i, _i) for limit in limits]).simplify())
-                            
-                        return self.operator(*args)
-                if index == 0:
-                    return self.simplify()
-                
-                return self.func(powsimp(f), *self.limits[index:]).simplify()
-            else:
-                f = g
-
-        if hints.get('deep', True):
-            return f.doit(**hints)
-        else:
-            return powsimp(f)
+        return self
 
     def _eval_adjoint(self):
         return self.func(self.function.adjoint(), *self.limits)        
@@ -945,8 +914,9 @@ class MatProduct(ExprWithIntLimits):
             
             if a == b:                
                 return self.function._subs(x, a)
+            from sympy import Identity
             if a > b:
-                return S.One
+                return Identity(self.shape[0])
         else:
             x, *_ = limit
         import sympy
@@ -976,15 +946,191 @@ class MatProduct(ExprWithIntLimits):
 
     latex_name_of_operator = 'prod'
 
-    def try_absorb(self, expr):
+    def try_absorb_forward(self, expr):
+        if len(self.limits) == 1:
+            i, *ab = self.limits[0]
+            if len(ab) == 2 and expr:
+                a, b = ab
+                if self.function.subs(i, a - 1) == expr:
+                    return self.func(self.function, (i, a - 1 , b))
+
+    def try_absorb_backward(self, expr):
         if len(self.limits) == 1:
             i, *ab = self.limits[0]
             if len(ab) == 2 and expr:
                 a, b = ab
                 if self.function.subs(i, b + 1) == expr:
                     return self.func(self.function, (i, a, b + 1))
-                if self.function.subs(i, a - 1) == expr:
-                    return self.func(self.function, (i, a - 1 , b))
+
+    def _entry(self, i, j=None):
+        if isinstance(i, slice):
+            start, stop = i.start, i.stop
+            if start is None:
+                if stop is None:
+                    if j is not None:
+                        if len(self.limits) > 1:
+                            return 
+                        limit = self.limits[0]
+                        x, a, b = limit
+                        if a <= b:
+                            return self.func[x:a:b - 1](self.function) @ self.function._subs(x, b)[:, j]
+                        else:
+                            return
+                start = 0
+            if stop is None:
+                stop = self.shape[0]
+
+    def _subs(self, old, new, **_):
+        intersect = new.free_symbols & self.variables_set - old.free_symbols
+        if intersect:
+            this = self
+            excludes = self.variables_set | new.free_symbols
+            for var in intersect:
+                _var = self.generate_free_symbol(excludes, integer=True)
+                this = this.limits_subs(var, _var)
+                excludes.add(_var) 
+            _this = this._subs(old, new)
+            if _this == this:
+                return self
+            return _this
+        
+        from sympy.core.basic import _aresame
+        if self == old or _aresame(self, old) or self.dummy_eq(old):
+            return new        
+
+        from sympy.tensor.indexed import Slice
+        if len(self.limits) == 1:
+            limit = self.limits[0]
+            x, *ab = limit
+
+            if ab:
+                if len(ab) == 1:
+                    domain = ab[0]
+                    if old.has(x):
+                        if domain.is_set:
+                            _domain = domain._subs(old, new)
+                            if _domain != domain:
+                                return self.func(self.function, (x, _domain)).simplify()
+                    else:
+                        _domain = domain._subs(old, new)
+                        function = self.function._subs(old, new)
+                        if _domain != domain or function != self.function:
+                            return self.func(function, (x, _domain)).simplify()
+
+                    return self
+
+                a, b = ab
+
+            if isinstance(old, Slice) and len(ab) == 2:
+                _x = x.copy(domain=Interval(*ab, integer=x.is_integer))
+                function = self.function.subs(x, _x)
+                _function = function.subs(old, new)
+                if _function != function:
+                    function = _function.subs(_x, x)
+                    return self.func(function, *self.limits)
+
+            p = old.as_poly(x)
+
+            if p is None or p.degree() != 1:
+                function = self.function._subs(old, new).simplify()
+
+                if ab:
+                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
+
+                if isinstance(x, Slice):
+                    x = x.subs(old, new)
+                return self.func(function, (x,))
+
+            if new.has(x):
+                diff = old - new
+                if old != x:
+                    if diff.has(x):
+                        return self
+
+                    alpha = p.coeff_monomial(x)
+                    diff /= alpha
+
+                function = self.function.subs(x, x - diff)
+                if ab:
+                    return self.func(function, (x, a + diff, b + diff))
+                else:
+                    return self.func(function, (x,))
+
+            if old != x:
+                sol = solve(old - new, x)
+                if len(sol) != 1:
+                    return self
+                new = sol[0]
+
+            _x = new.free_symbols - old.free_symbols
+
+            if len(_x) != 1:
+                return self
+            _x, *_ = _x
+
+            function = self.function.subs(x, new)
+
+            if ab:
+                a = solve(new - a, _x)
+                b = solve(new - b, _x)
+                if len(a) != 1 or len(b) != 1:
+                    return self
+                a, b = a[0], b[0]
+
+                p = new.as_poly(_x)
+                alpha = p.coeff_monomial(_x)
+                if alpha > 0:
+                    return self.func(function, (_x, a, b))
+                elif alpha < 0:
+                    return self.func(function, (_x, b, a))
+                else:
+                    return self
+
+            return self.func(function, (_x))
+
+        elif len(self.limits) == 0:
+            function = self.function.subs(old, new)
+
+            return self.func(function, *self.limits)
+        else:
+#             len(self.limits) > 1
+
+            index = -1
+            for i, limit in enumerate(self.limits):
+                x, *ab = limit
+                if ab:
+                    a, b = ab
+
+                p = old.as_poly(x)
+                if p is None:
+                    continue
+                if p.degree() != 1:
+                    continue
+                index = i
+
+                if new.has(x):
+                    diff = old - new
+                    if old != x:
+                        if diff.has(x):
+                            return self
+
+                        alpha = p.coeff_monomial(x)
+                        diff /= alpha
+
+                    function = self.function.subs(x, x - diff)
+                    if ab:
+                        limit = (x, a + diff, b + diff)
+                break
+
+            if index < 0:
+                return self.func(self.function._subs(old, new), *self.limits)
+
+            limits = [*self.limits]
+            limits[index] = limit
+            return self.func(function, *limits)
+
+        return self
+
 
 def product(*args, **kwargs):
     r"""

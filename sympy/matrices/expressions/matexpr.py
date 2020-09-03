@@ -248,7 +248,8 @@ class MatrixExpr(Expr):
             elif len(key) == 2:
                 i, j = key
                 if isinstance(i, slice) or isinstance(j, slice):
-                    return MatrixSlice(self, i, j)
+                    return self._entry(i, j)
+#                     return MatrixSlice(self, i, j)
                 i, j = _sympify(i), _sympify(j)
                 if self.valid_index(i, j) != False:
                     return self._entry(i, j)
@@ -258,23 +259,6 @@ class MatrixExpr(Expr):
         if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
             return self._entry(key)
 #             # row-wise decomposition of matrix
-#             rows, cols = self.shape
-#             # allow single indexing if number of columns is known
-#             if not isinstance(cols, Integer):
-#                 raise IndexError(filldedent('''
-#                     Single indexing is only supported when the number
-#                     of columns is known.'''))
-#             key = _sympify(key)
-#             i = key // cols
-#             j = key % cols
-#             if self.valid_index(i, j) != False:
-#                 return self._entry(i, j)
-#             else:
-#                 raise IndexError("Invalid index %s" % key)
-#         elif isinstance(key, (Symbol, Expr)):
-#                 raise IndexError(filldedent('''
-#                     Only integers may be used when addressing the matrix
-#                     with a single index.'''))
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
     def as_explicit(self):

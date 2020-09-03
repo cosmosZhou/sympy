@@ -100,8 +100,18 @@ class MatMul(MatrixExpr):
     def _entry(self, i, j=None, expand=True, **kwargs):
         if j is None:
             if len(self.args[0].shape) == 1:
-                return self.args[0] @ self.func(*self.args[1:]).T[i]
+                return self.args[0] @ self.func(*self.args[1:])[:, i]
             return self.args[0][i] @ self.func(*self.args[1:])            
+        if isinstance(i, slice):
+            start, stop = i.start, i.stop
+            if start is None:
+                if stop is None:
+                    return self.func(*self.args[:-1]) @ self.args[-1][:, j]
+                start = 0
+            if stop is None:
+                stop = self.shape[0]
+                
+            return
                 
         from sympy import Dummy, Sum, ImmutableMatrix, Integer
 
@@ -233,8 +243,32 @@ class MatMul(MatrixExpr):
             if len(self.args[0].shape) < len(self.args[1].shape):
                 from sympy.concrete import summations
                 return summations.Sum(exp(self.args[0].arg + self.args[1].arg.T))
+            
+        this = self.simplifyProduct()
+        if this is not self:
+            return this
+            
         return self
 
+    def simplifyProduct(self):
+        from sympy.concrete.products import MatProduct        
+        
+        for i, prod in enumerate(self.args):
+            if isinstance(prod, MatProduct):
+                before = self.func(*self.args[:i])
+                after = self.func(*self.args[i + 1:])
+                
+                _prod = prod.try_absorb_forward(before)
+                if _prod:
+                    return _prod @ after                
+                
+                _prod = prod.try_absorb_backward(after)
+                if _prod:
+                    return before @ _prod
+
+        return self
+
+                
     def expand(self, free_symbol=None, deep=True, **_):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.concrete.summations import Sum

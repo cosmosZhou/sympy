@@ -214,10 +214,10 @@ class Symbol(AtomicExpr, NotIterable):
     @property
     def unbounded(self):
         if self.is_bounded:
-            return self.func(self.name, 
-                             integer=self.is_integer, 
-                             real=self.is_real, 
-                             complex=self.is_complex, 
+            return self.func(self.name,
+                             integer=self.is_integer,
+                             real=self.is_real,
+                             complex=self.is_complex,
                              shape=self.shape if self.shape else None)
         return self
 
@@ -603,6 +603,15 @@ class Symbol(AtomicExpr, NotIterable):
             # Special case needed because M[*my_tuple] is a syntax error.
 #             if self.shape and len(self.shape) != len(indices):
 #                 raise IndexException("Rank mismatch.")
+            if len(indices) == 2 and isinstance(indices[0], slice):
+                start, stop = indices[0].start, indices[0].stop
+                if start is None:
+                    if stop is None:
+                        return self.T[indices[1]]
+                    start = 0
+                if stop is None:
+                    stop = self.shape[0]                
+                return self[start:stop].T[indices[1]]
             return Indexed(self, *indices, **kw_args)
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
@@ -882,6 +891,7 @@ class Symbol(AtomicExpr, NotIterable):
         if definition is not None:
             return definition.generate_limit(*args, **kwargs) 
         return Expr.generate_int_limit(self, *args, **kwargs)
+
         
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:

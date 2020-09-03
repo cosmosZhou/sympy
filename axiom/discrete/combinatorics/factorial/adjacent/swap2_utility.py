@@ -21,7 +21,7 @@ def apply(x, w=None):
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
     
-    return Equality(Ref[k](x[w[i, j, k] @ Ref[k](k)]), w[i, j] @ x)
+    return Equality(x[Ref[k](k) @ w[i, j, k]], x @ w[i, j, k])
 
 
 @check
@@ -31,18 +31,17 @@ def prove(Eq):
     
     Eq << apply(x)    
     
-    k = Eq[-1].lhs.variable
-    Eq << Eq[-1][k]
+    k = Eq[-1].rhs.args[1].indices[-1]
     
-    Eq << (Eq[0][k] @ x).this.rhs.expand()
+    Eq << Eq[-1].rhs.this.subs(Eq[0][k])
     
+    Eq << Eq[-1].this.rhs.expand()
+
+    Eq << Eq[1].subs(Eq[-1])
+    
+    Eq << (Ref[k](k) @ Eq[0][k]).this.rhs.expand()
+
     Eq << Eq[-2].subs(Eq[-1])
-    
-    Eq << (Eq[0][k] @ Ref[k](k)).this.rhs.expand()
-    
-    Eq << Eq[-2].subs(Eq[-1])
-    
-    Eq << Eq[2].reference((k,))
     
 
 if __name__ == '__main__':
