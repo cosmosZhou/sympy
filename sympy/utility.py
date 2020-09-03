@@ -264,7 +264,7 @@ render(__FILE__, $text);
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
                             rhs_equivalent, *_ = rhs_equivalent
-                            if eq != rhs_equivalent:
+                            if eq != rhs_equivalent or rhs.given is not None:
 #                                 consider the complex case : rhs_equivalent.substituent.equivalent.equivalent == eq.substituent                                
                                 hypothesis = rhs_equivalent.hypothesis
                                 if hypothesis:

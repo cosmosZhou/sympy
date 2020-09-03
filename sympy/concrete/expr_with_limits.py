@@ -1603,7 +1603,9 @@ class Ref(ExprWithLimits):
             return Mul(first, self.func(second, *self.limits).simplify(squeeze=squeeze))
 
         if second is None:
-            return first
+            if squeeze or first.shape == self.shape:
+                return first
+            return self
         return first + self.func(second, *self.limits).simplify(squeeze=squeeze)
 
     def simplify_add(self, exp):
@@ -1738,6 +1740,15 @@ class Ref(ExprWithLimits):
                     independent = self.func(independent, *limits)
                 return None, independent
             
+            first = self.func(exp.args[0], self.limits[-1])
+            _first = first.simplify()
+            if first != _first:
+                independent = exp.func(_first, *exp.args[1:]).simplify()
+                limits = self.limits[:-1]
+                if limits:
+                    independent = self.func(independent, *limits)
+                return None, independent
+
             index_simplified = None
             for i, arg in enumerate(exp.args):
                 _, simplified = self.simplify_matmul(arg)                
@@ -3176,13 +3187,30 @@ class ConditionalBoolean(Boolean):
                 function = self.function.subs(*args, **kwargs)
                 clue = function.clue
             else:
-                i, j = args
-                if i.is_symbol and j in i.domain:
-                    function = self.function._subs(i, j, **kwargs)
-                    clue = 'given'
+                n, n0 = args
+                if self.plausible:        
+                    function = self.function._subs(n, n0, **kwargs)
+                    if hasattr(n0, 'has') and n0.has(n):
+                        eq = self.func(function, *limits, substituent=self)
+                    else:
+                        eq = self.func(function, *limits, given=self).simplify()
+                    derivative = self.derivative
+                    if derivative is None:
+                        derivative = {}
+                        self.derivative = derivative
+        
+                    if n not in derivative:
+                        derivative[n] = {}
+        
+                    derivative[n][n0] = eq
+                    return eq
                 else:
-                    function = self.function.subs(i, j, **kwargs)
-                    clue = function.clue
+                    if n.is_symbol and n0 in n.domain:
+                        function = self.function._subs(n, n0, **kwargs)
+                        clue = 'given'
+                    else:
+                        function = self.function.subs(n, n0, **kwargs)
+                        clue = function.clue
 
         kwargs = {}
 

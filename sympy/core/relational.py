@@ -858,16 +858,18 @@ class Equality(Relational):
 
             derivative[old][new] = eq
             return eq
-        else:
-            if isinstance(new, Symbol) and self._has(new):
-                from sympy.core.symbol import Dummy
-                d = Dummy(**new.dtype.dict)
-                this = self.subs(old, d)
-                this = this.subs(new, old)
-                return this.subs(d, new)
-            else:
-                return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
+        return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
 
+    def swap(self, x, y):
+        if self.plausible:
+            return self
+        
+        from sympy.core.symbol import Dummy
+        d = Dummy(**y.dtype.dict)
+        this = self.subs(x, d)
+        this = this.subs(y, x)
+        return this.subs(d, y)
+        
     @staticmethod
     def define(x, expr, given=None):
         from sympy.tensor.indexed import Indexed, Slice

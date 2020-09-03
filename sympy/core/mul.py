@@ -1797,7 +1797,14 @@ class Times(Expr, AssocOp):
     def simplify(self, deep=False, **kwargs):
         if deep:
             return Expr.simplify(self, deep=True, **kwargs)
-
+        
+        for i, arg in enumerate(self.args):
+            if arg.is_Ref:
+                _arg = arg.simplify(squeeze=True)
+                if _arg != arg:
+                    args = [*self.args]
+                    args[i] = _arg
+                    return self.func(*args).simplify()
         a = self.args[0]
         b = self.args[1]
         # dissolve the initial minus sign

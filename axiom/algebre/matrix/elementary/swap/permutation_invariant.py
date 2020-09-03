@@ -7,11 +7,11 @@ from sympy.concrete.expr_with_limits import ForAll, Ref
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
-from axiom.discrete.combinatorics.factorial.adjacent import swap2_invariant
+from axiom.algebre.matrix import elementary
 
 
 @plausible
-def apply(n, w=None):
+def apply(n, w=None, left=True):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))    
     
@@ -25,7 +25,10 @@ def apply(n, w=None):
     
     P = Symbol('P', dtype=dtype.integer * n, definition=conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
     
-    return ForAll[x:P](Contains(w[i, j] @ x, P))
+    if left:
+        return ForAll[x:P](Contains(w[i, j] @ x, P))
+    else:
+        return ForAll[x:P](Contains(x @ w[i, j], P))
 
 
 @check
@@ -39,7 +42,7 @@ def prove(Eq):
     
     x = Eq[2].variable
     
-    Eq << swap2_invariant.apply(x, w)
+    Eq << elementary.swap.set_invariant.apply(x, w)
     
     Eq << Eq[2].definition.subs(Eq[-1])
     

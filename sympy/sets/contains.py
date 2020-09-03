@@ -526,17 +526,22 @@ class Subset(BooleanFunction):
         if x == S.EmptySet:
             return S.true
 
-        if x.is_ConditionSet and s.is_ConditionSet:
+        if x.is_ConditionSet:
             sym, condition, base_set = x.variable, x.condition, x.base_set
-            _sym, _condition, _base_set = s.variable, s.condition, s.base_set
-            if sym.dtype == _sym.dtype and (base_set == _base_set or base_set in _base_set):
-                if sym != _sym:
-                    _condition = _condition._subs(_sym, sym)
-                if condition == _condition:
-                    return S.true
-                if condition.is_And:
-                    if _condition.is_And and all(eq in condition._argset for eq in _condition.args) or _condition in condition._argset:
+            if s.is_ConditionSet:                
+                _sym, _condition, _base_set = s.variable, s.condition, s.base_set
+                if sym.dtype == _sym.dtype and (base_set == _base_set or base_set in _base_set):
+                    if sym != _sym:
+                        _condition = _condition._subs(_sym, sym)
+                    if condition == _condition:
                         return S.true
+                    if condition.is_And:
+                        if _condition.is_And and all(eq in condition._argset for eq in _condition.args) or _condition in condition._argset:
+                            return S.true
+            base_set &= sym.domain
+            if base_set in s:
+                return S.true
+            
         if x.is_Piecewise and not s.is_Piecewise:
             return x.func(*((cls(e, s), c) for e, c in x.args))
 #         if not x.is_Piecewise and s.is_Piecewise:

@@ -6,10 +6,8 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.concrete.expr_with_limits import Ref
-from axiom.discrete.combinatorics.factorial.adjacent import swap2_utility, \
-    swap2_utility_general
 from sympy.concrete.products import MatProduct
-from sympy.matrices.expressions.matmul import MatMul
+from axiom.algebre.matrix import elementary
 
 
 @plausible
@@ -47,14 +45,18 @@ def prove(Eq):
     w = Eq[0].lhs.base
     i, j = Eq[0].lhs.indices
     d = Eq[1].rhs.args[1].function.indices[1].base
-    Eq << swap2_utility.apply(x, w).subs(i, 0).subs(j, d[0])
+    Eq << elementary.swap.identity.apply(x, w, left=False, reference=None).subs(i, 0).subs(j, d[0])
 
     Eq << Eq[2].subs(m, m + 1)
     
-    Eq << swap2_utility_general.apply(x, Ref[k](Eq[1].lhs.function.indices[0]).simplify(), w)
+    Eq << elementary.swap.identity_general.apply(x, Ref[k](Eq[1].lhs.function.indices[0]).simplify(), w)
     
     Eq << Eq[-1].subs(i, m).subs(j, d[m])
+    
+    Eq << Eq[2].reference((k,))
+    
+    Eq << Eq[-1].subs(Eq[1])
 
-
+    
 if __name__ == '__main__':
     prove(__file__)

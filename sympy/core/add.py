@@ -1040,6 +1040,14 @@ class Plus(Expr, AssocOp):
             this = Expr.simplify(self, deep=True, **kwargs)
             if this is not self:
                 return this
+            
+        for i, arg in enumerate(self.args):
+            if arg.is_Ref:
+                _arg = arg.simplify(squeeze=True)
+                if _arg != arg:
+                    args = [*self.args]
+                    args[i] = _arg
+                    return self.func(*args).simplify()
 
         this = self.simplifyPiecewise()
         if this is not self:

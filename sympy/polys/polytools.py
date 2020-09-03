@@ -109,7 +109,8 @@ class Poly(Expr):
         if 'order' in opt:
             raise NotImplementedError("'order' keyword is not implemented yet")
 
-        if iterable(rep, exclude=(str, Symbol)):
+        from sympy.concrete.expr_with_limits import Ref
+        if iterable(rep, exclude=(str, Symbol, Ref)):
             if isinstance(rep, dict):
                 return cls._from_dict(rep, opt)
             else:

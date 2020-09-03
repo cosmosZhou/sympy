@@ -7,7 +7,6 @@ from sympy.concrete.expr_with_limits import ForAll, Exists, Ref
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
-from sympy.functions.special.tensor_functions import KroneckerDelta
 from axiom.discrete.combinatorics.factorial.adjacent import factorization
 
 
