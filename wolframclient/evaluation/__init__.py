@@ -13,9 +13,17 @@ from wolframclient.evaluation.cloud import (
 try:
     from wolframclient.evaluation.kernel import WolframLanguageAsyncSession, WolframLanguageSession
 except:
-    ...
+    WolframLanguageAsyncSession = None
+    WolframLanguageSession = None
     
-from wolframclient.evaluation.pool import WolframEvaluatorPool, parallel_evaluate
+try:
+    from wolframclient.evaluation.pool import WolframEvaluatorPool
+except:
+    WolframEvaluatorPool = None
+
+
+from wolframclient.evaluation.pool import parallel_evaluate
+
 from wolframclient.evaluation.result import (
     WolframAPIResponse,
     WolframAPIResponseAsync,
