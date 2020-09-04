@@ -21,8 +21,12 @@ try:
 except:
     WolframEvaluatorPool = None
 
+try:
+    from wolframclient.evaluation.pool import parallel_evaluate
+except:
+    parallel_evaluate = None
 
-from wolframclient.evaluation.pool import parallel_evaluate
+
 
 from wolframclient.evaluation.result import (
     WolframAPIResponse,
