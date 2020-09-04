@@ -1,12 +1,10 @@
 
-from sympy.core.relational import Equality, Relational
 import sympy
 import os
 from sympy.logic.boolalg import equivalent_ancestor, Boolean
 import traceback
 from sympy.logic import boolalg
 from sympy.utilities.iterables import topological_sort_depth_first
-from builtins import isinstance
 import time
 
 
@@ -343,8 +341,8 @@ def wolfram_decorator(py, func, **kwargs):
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
             if wolfram is not None:
-#                 with wolfram:                
-                func(eqs, wolfram)
+                with wolfram:                
+                    func(eqs, wolfram)
             else:
                 func(eqs, wolfram)
         else:
@@ -362,22 +360,17 @@ def wolfram_decorator(py, func, **kwargs):
 
     return True
 
+from wolframclient.evaluation.cloud import cloudsession
+session = cloudsession.session
+# from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
+# session = WolframLanguageSession()
 
 def check(func=None, wolfram=None):
     if func is not None:
         return lambda py: wolfram_decorator(py, func)
 
     def decorator(func):
-        session = None        
-        if wolfram:
-            try:
-                from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
-                session = WolframLanguageSession()                
-            except:                
-                session = None
-                           
-        
-        return lambda py: wolfram_decorator(py, func, wolfram=session)
+        return lambda py: wolfram_decorator(py, func, wolfram=session if wolfram else None)
 
     return decorator
 

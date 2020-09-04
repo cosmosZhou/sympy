@@ -3,7 +3,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 import logging
 
 from wolframclient.evaluation.base import WolframEvaluator
-from wolframclient.evaluation.cloud.base import WolframAPICallBase
+from wolframclient.evaluation.cloud.base import WolframAPICallBase, \
+    SecuredAuthenticationKey
 from wolframclient.evaluation.cloud.oauth import OAuth1RequestsSyncSession as OAuthSession
 from wolframclient.evaluation.cloud.oauth import XAuthRequestsSyncSession as XAuthSession
 from wolframclient.evaluation.cloud.server import WOLFRAM_PUBLIC_CLOUD_SERVER
@@ -356,3 +357,63 @@ def encode_api_inputs(inputs, target_format="wl", multipart=False, **kwargs):
         )
 
     return encoder(inputs, multipart, **kwargs)
+
+
+def test_cloud_service():
+    from wolframclient.language import wl, wlexpr
+    print(session.evaluate(wl.Range(3)))
+    print(session.evaluate(wl.StringReverse('abc')))
+    
+    wl_str_reverse = session.function(wl.StringReverse)
+    print(wl_str_reverse("hello"))
+    print(wl_str_reverse("world."))
+
+    capital_distance = session.function(wlexpr('''\
+    QuantityMagnitude[
+        GeoDistance[
+            EntityValue[Entity["Country", #1], "CapitalCity"],
+            EntityValue[Entity["Country", #2], "CapitalCity"]
+        ],
+        "Kilometers"
+    ] &
+'''))
+    print(capital_distance('France', 'Japan'))
+#     print(capital_distance('Egypt', 'Peru'))
+    print(session.evaluate(wl.QuantityMagnitude(['Egypt', 'Peru'])))
+    api_code = '''
+CloudConnect["744984949@qq.com", "861001ok"];
+
+api = APIFunction[{"x" -> "Integer"}, #x^2 &];
+
+CloudDeploy[api, CloudObject["api/private/xsquared"]];
+
+SetPermissions[CloudObject["api/private/xsquared"], 
+ SecuredAuthenticationKeys["pythonclientlibrary"] -> {"Read", 
+   "Execute"}];
+'''
+    
+    api = ('744984949@qq.com', 'api/private/xsquared')
+    result = session.call(api, {'x' : 4})
+    print(result.success)
+    print(result.get())
+    
+#     from wolframclient.evaluation import WolframAPICall
+#     call = WolframAPICall(session, api)
+#     call.set_parameter('x', 16)
+#     result = call.perform()
+#     print(result.success)
+#     print(result.get())
+
+    
+
+try:
+    # reference:
+#     https://reference.wolfram.com/language/WolframClientForPython/docpages/basic_usages.html#wolfram-cloud-interactions
+    sak = SecuredAuthenticationKey("zyf7IQXKTgvd5qzSyGkqnYffxWgd+MoNbu6iASD8gcY=",
+                                   "5K1k/gqeMBDcshkVpmAUJK+q0eD26SugHhESQJesxlE=")
+    session = WolframCloudSession(credentials=sak)
+    session.authorized()
+#     session.start()
+    
+except:
+    session = None

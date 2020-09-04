@@ -5,8 +5,8 @@ from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.utility import plausible
 from sympy.core.sympify import sympify
 from sympy.functions.special.beta_functions import beta
-from axiom.trigonometry import sine
 from sympy.integrals.integrals import Integral
+import axiom
 
 
 @plausible
@@ -35,7 +35,7 @@ def prove(Eq, wolfram):
 
     Eq << Eq[1].subs(m, 1)
 
-    Eq << sine.Wallis.apply(n)
+    Eq << axiom.trigonometry.sine.Wallis.apply(n)
 
     Eq << Eq[1].subs(m, m + 2)
 

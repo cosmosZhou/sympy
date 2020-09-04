@@ -8,6 +8,7 @@ from os.path import getsize
 from multiprocessing import cpu_count
 from queue import PriorityQueue
 
+
 count = 0
 
 unproven = []
@@ -161,8 +162,7 @@ def prove():
     print('cost time =', timing / 60, 'minutes =', timing, 'seconds')
     print('total unprovable =', len(unproven))
     print('total erroneous =', len(erroneous))
-
-
+    
 def parellel_process(process, items):
 #     return map(process, items)
     from multiprocessing import Pool
