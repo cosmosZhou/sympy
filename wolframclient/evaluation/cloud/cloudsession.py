@@ -378,8 +378,8 @@ def test_cloud_service():
     ] &
 '''))
     print(capital_distance('France', 'Japan'))
-#     print(capital_distance('Egypt', 'Peru'))
-    print(session.evaluate(wl.QuantityMagnitude(['Egypt', 'Peru'])))
+    print(capital_distance('Egypt', 'Peru'))
+#     print(session.evaluate(wl.QuantityMagnitude(['Egypt', 'Peru'])))
     api_code = '''
 CloudConnect["744984949@qq.com", "861001ok"];
 
