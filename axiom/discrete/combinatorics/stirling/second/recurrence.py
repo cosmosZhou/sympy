@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality
+from sympy.core.relational import Equality, StrictLessThan
 from sympy.utility import plausible
 
 from sympy.functions.combinatorial.numbers import Stirling
@@ -221,7 +221,7 @@ def prove(Eq):
   
     Eq << Eq[-1].subs(Eq[-2])
     
-    Eq.set_size_inequality = Eq[-1].subs(1, 0)
+    Eq.set_size_inequality = Eq[-1].subs(StrictLessThan(Eq[-1].function.rhs, Eq[-1].function.rhs + 1, plausible=True))
     
     Eq << x_quote_union.this.function.lhs.bisect(domain={i, j})
 
