@@ -582,7 +582,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
             except PolynomialError:
                 factorization = poly
 
-            if factorization.is_Mul:
+            if factorization.is_Times:
                 factors = factorization.args
             else:
                 factors = (factorization, )
@@ -670,7 +670,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
                 pass # ignore variables
             elif not expr.has(*syms):
                 non_syms.add(expr)
-            elif expr.is_Plus or expr.is_Mul or expr.is_Power:
+            elif expr.is_Plus or expr.is_Times or expr.is_Power:
                 list(map(find_non_syms, expr.args))
             else:
                 # TODO: Non-polynomial expression. This should have been

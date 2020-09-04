@@ -21,7 +21,7 @@ def prove(Eq):
     assert Eq[-1].lhs.is_extended_real
     Eq << Eq[0] * sqrt(2 * pi)
 
-    x, *_ = Eq[-1].this.lhs.limits[0]
+    x, *_ = Eq[-1].lhs.limits[0]
     y = Symbol("y", real=True)
 
     assert Eq[-1].lhs.is_extended_real    

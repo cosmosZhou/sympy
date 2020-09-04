@@ -287,11 +287,13 @@ class ExprWithIntLimits(ExprWithLimits):
             raise ReorderError(expr, "could not interchange the two limits specified")
 
     def _latex(self, p):
-        tex = '\\' + self.latex_name_of_operator  
-        if len(self.limits) == 1:
+        tex = '\\' + self.latex_name_of_operator
+        if not self.limits:
+            tex += ' '  
+        elif len(self.limits) == 1:
             limit = self.limits[0]
             if len(limit) == 1:
-                tex = r"_{%s} " % p._print(limit[0])
+                tex += r"_{%s} " % p._print(limit[0])
             elif len(limit) == 2:
                 tex += r"\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
             else:

@@ -109,7 +109,8 @@ class Poly(Expr):
         if 'order' in opt:
             raise NotImplementedError("'order' keyword is not implemented yet")
 
-        if iterable(rep, exclude=(str, Symbol)):
+        from sympy.concrete.expr_with_limits import Ref
+        if iterable(rep, exclude=(str, Symbol, Ref)):
             if isinstance(rep, dict):
                 return cls._from_dict(rep, opt)
             else:
@@ -5258,7 +5259,7 @@ def gcd(f, g=None, *gens, **args):
     x - 1
 
     """
-    if hasattr(f, '__iter__') and not (f.is_Symbol or f.is_Plus or f.is_Mul):
+    if hasattr(f, '__iter__') and not (f.is_Symbol or f.is_Plus or f.is_Times):
         if g is not None:
             gens = (g,) + gens
 
@@ -5911,7 +5912,7 @@ def _symbolic_factor_list(expr, opt, method):
         if arg.is_Number:
             coeff *= arg
             continue
-        if arg.is_Mul:
+        if arg.is_Times:
             args.extend(arg.args)
             continue
         if arg.is_Power:
@@ -6334,7 +6335,7 @@ def factor(f, *gens, **args):
             Factor, but avoid changing the expression when unable to.
             """
             fac = factor(expr, *gens, **args)
-            if fac.is_Mul or fac.is_Power:
+            if fac.is_Times or fac.is_Power:
                 return fac
             return expr
 
@@ -6345,7 +6346,7 @@ def factor(f, *gens, **args):
         muladd = f.atoms(Mul, Add)
         for p in muladd:
             fac = factor(p, *gens, **args)
-            if (fac.is_Mul or fac.is_Power) and fac != p:
+            if (fac.is_Times or fac.is_Power) and fac != p:
                 partials[p] = fac
         return f.xreplace(partials)
 
@@ -6628,7 +6629,7 @@ def cancel(f, *gens, **args):
         if f.is_commutative and not f.has(Piecewise):
             raise PolynomialError(msg)
         # Handling of noncommutative and/or piecewise expressions
-        if f.is_Plus or f.is_Mul:
+        if f.is_Plus or f.is_Times:
             c, nc = sift(f.args, lambda x:
                 x.is_commutative is True and not x.has(Piecewise),
                 binary=True)

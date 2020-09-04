@@ -61,7 +61,7 @@ def prove(Eq):
     
     Eq.statement = Eq[-1].T
     
-    k, i = Eq.statement.lhs.args[1].variables
+    i, k = Eq.statement.lhs.args[1].variables
     
     Eq << vandermonde.basicForm.apply(Ref[i:n](i + 1))
     

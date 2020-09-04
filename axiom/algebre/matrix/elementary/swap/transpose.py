@@ -28,7 +28,7 @@ def prove(Eq):
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
     assert Identity(n).is_integer
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     
     Eq << apply(w)
 

@@ -123,7 +123,7 @@ class EPath(object):
         """Sort ``expr.args`` using printing order. """
         if expr.is_Plus:
             return expr.as_ordered_terms()
-        elif expr.is_Mul:
+        elif expr.is_Times:
             return expr.as_ordered_factors()
         else:
             return expr.args

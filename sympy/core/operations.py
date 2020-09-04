@@ -107,7 +107,7 @@ class AssocOp(Basic):
                x
                >>> m == x
                False
-               >>> m.is_Mul
+               >>> m.is_Times
                True
 
            Another issue to be aware of is that the commutativity of the result
@@ -213,7 +213,7 @@ class AssocOp(Basic):
                 # the matching continue
                 return None
             newexpr = self._combine_inverse(expr, exact)
-            if not old and (expr.is_Plus or expr.is_Mul):
+            if not old and (expr.is_Plus or expr.is_Times):
                 if newexpr.count_ops() > expr.count_ops():
                     return None
             newpattern = self._new_rawargs(*wild_part)
@@ -234,7 +234,7 @@ class AssocOp(Basic):
                             return d2
 
             if i == 0:
-                if self.is_Mul:
+                if self.is_Times:
                     # make e**i look like Mul
                     if expr.is_Power and expr.exp.is_Integer:
                         if expr.exp > 0:
@@ -419,6 +419,8 @@ class AssocOp(Basic):
                 return False
         return True
 
+    def asKroneckerDelta(self):
+        return self.func(*(arg.asKroneckerDelta() for arg in self.args))
 
 class ShortCircuit(Exception):
     pass

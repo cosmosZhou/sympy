@@ -214,10 +214,10 @@ class Symbol(AtomicExpr, NotIterable):
     @property
     def unbounded(self):
         if self.is_bounded:
-            return self.func(self.name, 
-                             integer=self.is_integer, 
-                             real=self.is_real, 
-                             complex=self.is_complex, 
+            return self.func(self.name,
+                             integer=self.is_integer,
+                             real=self.is_real,
+                             complex=self.is_complex,
                              shape=self.shape if self.shape else None)
         return self
 
@@ -558,7 +558,7 @@ class Symbol(AtomicExpr, NotIterable):
         from sympy import Mul, Equality
         from sympy.concrete.expr_with_limits import Ref
         if isinstance(self.definition, Ref):
-            return Equality(self[tuple(var for var, *_ in self.definition.limits)], self.definition.function, evaluate=False)
+            return Equality(self[tuple(var for var, *_ in self.definition.limits[::-1])], self.definition.function, evaluate=False)
         elif isinstance(self.definition, Mul):
             args = []
             ref = None
@@ -603,6 +603,15 @@ class Symbol(AtomicExpr, NotIterable):
             # Special case needed because M[*my_tuple] is a syntax error.
 #             if self.shape and len(self.shape) != len(indices):
 #                 raise IndexException("Rank mismatch.")
+            if len(indices) == 2 and isinstance(indices[0], slice):
+                start, stop = indices[0].start, indices[0].stop
+                if start is None:
+                    if stop is None:
+                        return self.T[indices[1]]
+                    start = 0
+                if stop is None:
+                    stop = self.shape[0]                
+                return self[start:stop].T[indices[1]]
             return Indexed(self, *indices, **kw_args)
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
@@ -647,7 +656,8 @@ class Symbol(AtomicExpr, NotIterable):
         return False
     
     def _eval_transpose(self):
-        ...
+        if len(self.shape) < 2:
+            return self
 
     greek_letters = {'Alpha': 'Α',
                      'ALPHA': 'Α',
@@ -745,6 +755,17 @@ class Symbol(AtomicExpr, NotIterable):
         
     def _sympystr(self, _):   
         return Symbol.sympystr(self.name)     
+
+    def _latex(self, p):
+        if self in p._settings['symbol_names']:
+            return p._settings['symbol_names'][self]
+
+        result = p._deal_with_super_sub(self.name) if '\\' not in self.name else self.name
+
+        if self.domain_assumed:
+            result = r"{\color{Magenta} {%s}}" % result
+
+        return result
 
     def _eval_is_extended_positive(self):
         if 'domain' in self._assumptions:
@@ -864,6 +885,13 @@ class Symbol(AtomicExpr, NotIterable):
         from wolframclient.language import wlexpr
         global_variables.add(self)
         return wlexpr(self.name)
+      
+    def generate_int_limit(self, *args, **kwargs):
+        definition = self.definition
+        if definition is not None:
+            return definition.generate_limit(*args, **kwargs) 
+        return Expr.generate_int_limit(self, *args, **kwargs)
+
         
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:

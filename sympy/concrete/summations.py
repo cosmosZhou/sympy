@@ -165,8 +165,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         obj = AddWithLimits.__new__(cls, function, *symbols, **assumptions)
         if not hasattr(obj, 'limits'):
             return obj
-#         if any(len(l) != 3 or None in l for l in obj.limits):
-#             raise ValueError('Sum requires values for lower and upper bounds.')
 
         return obj
 
@@ -549,7 +547,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         # inside the loop, could make this test extremely slow
         # for larger summation expressions.
 
-        if order.expr.is_Mul:
+        if order.expr.is_Times:
             args = order.expr.args
             argset = set(args)
 
@@ -976,28 +974,21 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if x == _x:
                 a_diff = a - _a
                 b_diff = b - _b
-                if a_diff >= 0:
-                    if b_diff > 0:
-                        return Sum[x:_b + 1:b](self.function).doit(deep=False) - Sum[x:_a:a - 1](self.function).doit(deep=False)
-                    elif b_diff == 0:
-                        return -Sum[x:_a:a - 1](self.function).doit(deep=False)
-                    elif b_diff <= 0:
-                        return -Sum[x:b + 1:_b](self.function).simplify() - Sum[x:_a:a - 1](self.function).simplify()
+                if a_diff.is_nonnegative: # a >= _a
+                    a = -Sum[x:_a:a - 1](self.function).simplify()
+                elif a_diff.is_nonpositive: # a <= _a
+                    a = Sum[x:a:_a - 1](self.function).simplify()
+                else:
+                    return
+                    
+                if b_diff.is_nonnegative: # b >= _b
+                    b = Sum[x:_b + 1:b](self.function).simplify()
+                elif b_diff.is_nonpositive: # b <= _b
+                    b = -Sum[x:b + 1:_b](self.function).simplify()
+                else:
+                    return
+                return a + b
 
-                if a_diff == 0:
-                    if b_diff >= 0:
-                        return Sum[x:_b + 1:b](self.function).doit(deep=False)
-                    if b_diff < 0:
-                        return -Sum[x:b + 1:_b](self.function).doit(deep=False)
-
-                elif a_diff < 0:
-                    if b_diff < 0:
-                        return Sum[x:a:_a - 1](self.function).doit(deep=False) - Sum[x:b + 1:_b](self.function).doit(deep=False)
-                    elif b_diff == 0:
-                        return Sum[x:a:_a - 1](self.function).doit(deep=False)
-                elif a_diff == 0:
-                    ...
-        
     def __sub__(self, autre):
         sub = self.try_sub(autre)
         if sub is not None:
@@ -1168,9 +1159,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if has_x[0]:
                     index = has_x.index(False)
                     
-#                     if any(has_x[index:]):
-#                         return self
-                    
                     independent_of_x = []
                     for arg in self.function.args[index:]:                        
                         independent_of_x.append(arg)
@@ -1202,7 +1190,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self
             
             if self.function._has(Piecewise):
-                if self.function.is_Mul and all(arg.is_Piecewise for arg in self.function.args):
+                if self.function.is_Times and all(arg.is_Piecewise for arg in self.function.args):
                     if len(self.function.args) > 2:
                         return self
                     piecewise0 = self.function.args[0]
@@ -1264,7 +1252,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     domain, *_ = finiteset
                     if domain not in universe:                    
                         e, *_ = domain
-                        return Piecewise((self.function._subs(x, e), Contains(e, universe)), (0, True)).simplify()
+                        return Piecewise((self.function._subs(x, e), Contains(e, universe).simplify()), (0, True)).simplify()
 
             if isinstance(domain, FiniteSet):
                 return self.finite_aggregate(x, domain)
@@ -1272,6 +1260,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if domain.is_Intersection :
                 return self
                 
+            if self.function.is_Plus:
+                for i, arg in enumerate(self.function.args):
+                    if arg.is_Times and any(e.is_KroneckerDelta and e._has(x) for e in arg.args):
+                        args = [*self.function.args]
+                        del args[i]
+                        return self.func(arg, limit).simplify() + self.func(self.function.func(*args), limit).simplify()
+                        
             _a, _b = domain.min(), domain.max()
             if not _b.is_Min:
                 b = _b
@@ -1326,7 +1321,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return self.func(function, *self.limits, limit).simplify()
 
     def limits_swap(self):
-#         from sympy.core.mul import Mul
         if isinstance(self.function, Mul):
             index = -1
             for i in range(len(self.function.args)):
@@ -1345,13 +1339,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if independent == S.One:
                     return sgm.func(self.func(function, *self.limits), *sgm.limits)
                 return sgm.func(independent * self.func(dependent, *self.limits), *sgm.limits)
-
-        if len(self.limits) == 2:
-            i_limit, j_limit = self.limits
-            j, *_ = j_limit
-            if not i_limit._has(j):
-                return self.func(self.function, j_limit, i_limit)
-        return self
+        return ExprWithIntLimits.limits_swap(self)
 
     def min(self):
         return self.func(self.function.min(), *self.limits).doit()
@@ -1598,7 +1586,7 @@ def eval_sum_symbolic(f, limits):
         return f * (b - a + 1)
 
     # Linearity
-    if f.is_Mul:
+    if f.is_Times:
         L, R = f.as_two_terms()
 
         if not L.has(i):

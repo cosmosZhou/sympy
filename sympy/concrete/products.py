@@ -8,6 +8,8 @@ from sympy.core.exprtools import factor_terms
 from sympy.functions.elementary.exponential import exp, log
 from sympy.polys import quo, roots
 from sympy.simplify import powsimp
+from sympy.matrices.expressions.matmul import MatMul
+from sympy.matrices.expressions.matexpr import MatrixExpr
 
 
 class Product(ExprWithIntLimits):
@@ -191,8 +193,7 @@ class Product(ExprWithIntLimits):
     is_Product = True
     
     def __new__(cls, function, *symbols, **assumptions):
-        obj = ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
-        return obj
+        return ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
 
     def _eval_rewrite_as_Sum(self, *args, **kwargs):
         from sympy.concrete.summations import Sum
@@ -315,10 +316,10 @@ class Product(ExprWithIntLimits):
 
         elif term.is_Plus:
             factored = factor_terms(term, fraction=True)
-            if factored.is_Mul:
+            if factored.is_Times:
                 return self._eval_product(factored, (k, a, n))
 
-        elif term.is_Mul:
+        elif term.is_Times:
             exclude, include = [], []
 
             for t in term.args:
@@ -582,6 +583,553 @@ class Product(ExprWithIntLimits):
                     return self.func(self.function, (i, a, b + 1))
                 if self.function.subs(i, a - 1) == expr:
                     return self.func(self.function, (i, a - 1 , b))
+
+
+class MatProduct(ExprWithIntLimits, MatrixExpr):
+    r"""Represents unevaluated products of matrices.
+
+    ``MatProduct`` represents a finite or infinite product, with the first
+    argument being the general form of terms in the series, and the second
+    argument being ``(dummy_variable, start, end)``, with ``dummy_variable``
+    taking all integer values from ``start`` through ``end``. In accordance
+    with long-standing mathematical convention, the end term is included in
+    the product.
+
+    Finite products
+    ===============
+    """
+
+    is_complex = True
+    operator = MatMul
+    is_MatProduct = True
+    
+    def __new__(cls, function, *symbols, **assumptions):
+        return ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
+
+    @property
+    def term(self):
+        return self._args[0]
+
+    function = term
+
+    def _eval_is_zero(self):
+        # a Product is zero only if its term is zero.
+        function = self.function
+        from sympy import Interval
+        reps = {}
+        for limit in self.limits[::-1]:
+            x, *ab = limit
+            if len(ab) == 1:
+                domain, *_ = ab
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+                reps[x] = _x
+            elif len(ab) == 2:
+                a, b = ab
+                if a.free_symbols & reps.keys():
+                    a = a.subs(reps)
+                    
+                if b.free_symbols & reps.keys():
+                    b = b.subs(reps)
+                _x = x.copy(domain=Interval(a, b, integer=True))
+                function = function._subs(x, _x)
+                reps[x] = _x
+                
+        return function.is_zero
+
+    def doit(self, **hints):
+        return self
+
+    def _eval_adjoint(self):
+        return self.func(self.function.adjoint(), *self.limits)        
+
+    def _eval_conjugate(self):
+        return self.func(self.function.conjugate(), *self.limits)
+
+    def _eval_product(self, term, limits):
+        from sympy.concrete.delta import deltaproduct, _has_simple_delta
+        from sympy.concrete.summations import summation
+        from sympy.functions import KroneckerDelta, RisingFactorial
+
+        (k, a, n) = limits
+
+        if k not in term.free_symbols:
+            if (term - 1).is_zero:
+                return S.One
+            return term ** (n - a + 1)
+
+        if a == n:
+            return term.subs(k, a)
+
+        if term.has(KroneckerDelta) and _has_simple_delta(term, limits[0]):
+            return deltaproduct(term, limits)
+
+        dif = n - a
+        if dif.is_Integer:
+            return Mul(*[term.subs(k, a + i) for i in range(dif + 1)])
+
+        elif term.is_polynomial(k):
+            poly = term.as_poly(k)
+
+            A = B = Q = S.One
+
+            all_roots = roots(poly)
+
+            M = 0
+            for r, m in all_roots.items():
+                M += m
+                A *= RisingFactorial(a - r, n - a + 1) ** m
+                Q *= (n - r) ** m
+
+            if M < poly.degree():
+                arg = quo(poly, Q.as_poly(k))
+                B = self.func(arg, (k, a, n)).doit()
+
+            return poly.LC() ** (n - a + 1) * A * B
+
+        elif term.is_Plus:
+            factored = factor_terms(term, fraction=True)
+            if factored.is_Times:
+                return self._eval_product(factored, (k, a, n))
+
+        elif term.is_Times:
+            exclude, include = [], []
+
+            for t in term.args:
+                p = self._eval_product(t, (k, a, n))
+
+                if p is not None:
+                    exclude.append(p)
+                else:
+                    include.append(t)
+
+            if not exclude:
+                return None
+            else:
+                arg = term._new_rawargs(*include)
+                A = Mul(*exclude)
+                B = self.func(arg, (k, a, n)).doit()
+                return A * B
+
+        elif term.is_Power:
+            if not term.base.has(k):
+                s = summation(term.exp, (k, a, n))
+
+                return term.base ** s
+            elif not term.exp.has(k):
+                p = self._eval_product(term.base, (k, a, n))
+
+                if p is not None:
+                    return p ** term.exp
+
+        elif isinstance(term, Product):
+            evaluated = term.doit()
+            f = self._eval_product(evaluated, limits)
+            if f is None:
+                return self.func(evaluated, limits)
+            else:
+                return f
+
+    def _eval_simplify(self, ratio, measure, rational, inverse):
+        from sympy.simplify.simplify import product_simplify
+        return product_simplify(self)
+
+    def _eval_transpose(self):
+        return self.func(self.function.transpose(), *self.limits)
+
+    def is_convergent(self):
+        r"""
+        See docs of Sum.is_convergent() for explanation of convergence
+        in SymPy.
+
+        The infinite product:
+
+        .. math::
+
+            \prod_{1 \leq i < \infty} f(i)
+
+        is defined by the sequence of partial products:
+
+        .. math::
+
+            \prod_{i=1}^{n} f(i) = f(1) f(2) \cdots f(n)
+
+        as n increases without bound. The product converges to a non-zero
+        value if and only if the sum:
+
+        .. math::
+
+            \sum_{1 \leq i < \infty} \log{f(n)}
+
+        converges.
+
+        Examples
+        ========
+
+        >>> from sympy import Interval, S, Product, Symbol, cos, pi, exp, oo
+        >>> n = Symbol('n', integer=True)
+        >>> Product(n/(n + 1), (n, 1, oo)).is_convergent()
+        False
+        >>> Product(1/n**2, (n, 1, oo)).is_convergent()
+        False
+        >>> Product(cos(pi/n), (n, 1, oo)).is_convergent()
+        True
+        >>> Product(exp(-n**2), (n, 1, oo)).is_convergent()
+        False
+
+        References
+        ==========
+
+        .. [1] https://en.wikipedia.org/wiki/Infinite_product
+        """
+        from sympy.concrete.summations import Sum
+
+        sequence_term = self.function
+        log_sum = log(sequence_term)
+        lim = self.limits
+        try:
+            is_conv = Sum(log_sum, *lim).is_convergent()
+        except NotImplementedError:
+            if Sum(sequence_term - 1, *lim).is_absolutely_convergent() is S.true:
+                return S.true
+            raise NotImplementedError("The algorithm to find the product convergence of %s "
+                                        "is not yet implemented" % (sequence_term))
+        return is_conv
+
+    def reverse_order(expr, *indices):
+        """
+        Reverse the order of a limit in a Product.
+
+        Usage
+        =====
+
+        ``reverse_order(expr, *indices)`` reverses some limits in the expression
+        ``expr`` which can be either a ``Sum`` or a ``Product``. The selectors in
+        the argument ``indices`` specify some indices whose limits get reversed.
+        These selectors are either variable names or numerical indices counted
+        starting from the inner-most limit tuple.
+
+        Examples
+        ========
+
+        >>> from sympy import Product, simplify, RisingFactorial, gamma, Sum
+        >>> from sympy.abc import x, y, a, b, c, d
+        >>> P = Product(x, (x, a, b))
+        >>> Pr = P.reverse_order(x)
+        >>> Pr
+        Product(1/x, (x, b + 1, a - 1))
+        >>> Pr = Pr.doit()
+        >>> Pr
+        1/RisingFactorial(b + 1, a - b - 1)
+        >>> simplify(Pr)
+        gamma(b + 1)/gamma(a)
+        >>> P = P.doit()
+        >>> P
+        RisingFactorial(a, -a + b + 1)
+        >>> simplify(P)
+        gamma(b + 1)/gamma(a)
+
+        While one should prefer variable names when specifying which limits
+        to reverse, the index counting notation comes in handy in case there
+        are several symbols with the same name.
+
+        >>> S = Sum(x*y, (x, a, b), (y, c, d))
+        >>> S
+        Sum(x*y, (x, a, b), (y, c, d))
+        >>> S0 = S.reverse_order(0)
+        >>> S0
+        Sum(-x*y, (x, b + 1, a - 1), (y, c, d))
+        >>> S1 = S0.reverse_order(1)
+        >>> S1
+        Sum(x*y, (x, b + 1, a - 1), (y, d + 1, c - 1))
+
+        Of course we can mix both notations:
+
+        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(x, 1)
+        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
+        >>> Sum(x*y, (x, a, b), (y, 2, 5)).reverse_order(y, x)
+        Sum(x*y, (x, b + 1, a - 1), (y, 6, 1))
+
+        See Also
+        ========
+
+        index, reorder_limit, reorder
+
+        References
+        ==========
+
+        .. [1] Michael Karr, "Summation in Finite Terms", Journal of the ACM,
+               Volume 28 Issue 2, April 1981, Pages 305-350
+               http://dl.acm.org/citation.cfm?doid=322248.322255
+        """
+        l_indices = list(indices)
+
+        for i, indx in enumerate(l_indices):
+            if not isinstance(indx, int):
+                l_indices[i] = expr.index(indx)
+
+        e = 1
+        limits = []
+        for i, limit in enumerate(expr.limits):
+            l = limit
+            if i in l_indices:
+                e = -e
+                l = (limit[0], limit[2] + 1, limit[1] - 1)
+            limits.append(l)
+
+        return Product(expr.function ** e, *limits)
+
+    def simplify(self, deep=False, **_):
+        if len(self.limits) > 1:
+            limit = self.limits[-1]
+            if len(limit) == 3:
+                function = self.func(self.function, *self.limits[:-1])
+                x, a, b = limit
+                if not function._has(x):
+                    return function ^ (b - a + 1)
+                
+                if a == b:                
+                    return function._subs(x, a).simplify(deep=deep)
+                if a > b:
+                    return S.One            
+            return self
+        
+        limit = self.limits[0]
+        if len(limit) == 2:
+            x, domain = limit
+            if domain.is_FiniteSet:
+                return self.finite_aggregate(x, domain)
+            if not self.function._has(x):
+                return self.function ^ abs(domain)
+                            
+        elif len(limit) == 3:
+            from sympy.functions.elementary.piecewise import Piecewise
+            x, a, b = limit
+            if isinstance(self.function, Piecewise):
+                from sympy.sets.sets import Interval
+                domain = Interval(a, b, integer=True)
+                return Mul(*self.as_multiple_terms(x, domain))
+            if not self.function._has(x):
+                return self.function ^ (b - a + 1)
+            
+            if a == b:                
+                return self.function._subs(x, a)
+            from sympy import Identity
+            if a > b:
+                return Identity(self.shape[0])
+        else:
+            x, *_ = limit
+        import sympy
+        function = self.function
+        if isinstance(function, sympy.exp):
+            function = function.as_Mul()
+
+        independent, dependent = function.as_independent(x, as_Add=False)
+        if independent == S.One:
+            return self
+
+        if dependent == S.One:
+            if len(limit) > 1:
+                return self.function ^ (b - a + 1)
+            else:
+                return self.function ^ x.dimension
+        if len(limit) > 1:
+            return self.func(dependent, limit).doit() @ (independent ^ (b - a + 1))
+        else:
+            return self.func(dependent, limit).doit() @ (independent ^ x.dimension)
+
+    def _sympystr(self, p):
+        limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
+        if limits:
+            return '∏[%s](%s)' % (limits, p._print(self.function))
+        return '∏(%s)' % p._print(self.function)
+
+    latex_name_of_operator = 'prod'
+
+    def try_absorb_forward(self, expr):
+        if len(self.limits) == 1:
+            i, *ab = self.limits[0]
+            if len(ab) == 2 and expr:
+                a, b = ab
+                if self.function.subs(i, a - 1) == expr:
+                    return self.func(self.function, (i, a - 1 , b))
+
+    def try_absorb_backward(self, expr):
+        if len(self.limits) == 1:
+            i, *ab = self.limits[0]
+            if len(ab) == 2 and expr:
+                a, b = ab
+                if self.function.subs(i, b + 1) == expr:
+                    return self.func(self.function, (i, a, b + 1))
+
+    def _entry(self, i, j=None):
+        if isinstance(i, slice):
+            start, stop = i.start, i.stop
+            if start is None:
+                if stop is None:
+                    if j is not None:
+                        if len(self.limits) > 1:
+                            return 
+                        limit = self.limits[0]
+                        x, a, b = limit
+                        if a <= b:
+                            return self.func[x:a:b - 1](self.function) @ self.function._subs(x, b)[:, j]
+                        else:
+                            return
+                start = 0
+            if stop is None:
+                stop = self.shape[0]
+
+    def _subs(self, old, new, **_):
+        intersect = new.free_symbols & self.variables_set - old.free_symbols
+        if intersect:
+            this = self
+            excludes = self.variables_set | new.free_symbols
+            for var in intersect:
+                _var = self.generate_free_symbol(excludes, integer=True)
+                this = this.limits_subs(var, _var)
+                excludes.add(_var) 
+            _this = this._subs(old, new)
+            if _this == this:
+                return self
+            return _this
+        
+        from sympy.core.basic import _aresame
+        if self == old or _aresame(self, old) or self.dummy_eq(old):
+            return new        
+
+        from sympy.tensor.indexed import Slice
+        if len(self.limits) == 1:
+            limit = self.limits[0]
+            x, *ab = limit
+
+            if ab:
+                if len(ab) == 1:
+                    domain = ab[0]
+                    if old.has(x):
+                        if domain.is_set:
+                            _domain = domain._subs(old, new)
+                            if _domain != domain:
+                                return self.func(self.function, (x, _domain)).simplify()
+                    else:
+                        _domain = domain._subs(old, new)
+                        function = self.function._subs(old, new)
+                        if _domain != domain or function != self.function:
+                            return self.func(function, (x, _domain)).simplify()
+
+                    return self
+
+                a, b = ab
+
+            if isinstance(old, Slice) and len(ab) == 2:
+                _x = x.copy(domain=Interval(*ab, integer=x.is_integer))
+                function = self.function.subs(x, _x)
+                _function = function.subs(old, new)
+                if _function != function:
+                    function = _function.subs(_x, x)
+                    return self.func(function, *self.limits)
+
+            p = old.as_poly(x)
+
+            if p is None or p.degree() != 1:
+                function = self.function._subs(old, new).simplify()
+
+                if ab:
+                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
+
+                if isinstance(x, Slice):
+                    x = x.subs(old, new)
+                return self.func(function, (x,))
+
+            if new.has(x):
+                diff = old - new
+                if old != x:
+                    if diff.has(x):
+                        return self
+
+                    alpha = p.coeff_monomial(x)
+                    diff /= alpha
+
+                function = self.function.subs(x, x - diff)
+                if ab:
+                    return self.func(function, (x, a + diff, b + diff))
+                else:
+                    return self.func(function, (x,))
+
+            if old != x:
+                sol = solve(old - new, x)
+                if len(sol) != 1:
+                    return self
+                new = sol[0]
+
+            _x = new.free_symbols - old.free_symbols
+
+            if len(_x) != 1:
+                return self
+            _x, *_ = _x
+
+            function = self.function.subs(x, new)
+
+            if ab:
+                a = solve(new - a, _x)
+                b = solve(new - b, _x)
+                if len(a) != 1 or len(b) != 1:
+                    return self
+                a, b = a[0], b[0]
+
+                p = new.as_poly(_x)
+                alpha = p.coeff_monomial(_x)
+                if alpha > 0:
+                    return self.func(function, (_x, a, b))
+                elif alpha < 0:
+                    return self.func(function, (_x, b, a))
+                else:
+                    return self
+
+            return self.func(function, (_x))
+
+        elif len(self.limits) == 0:
+            function = self.function.subs(old, new)
+
+            return self.func(function, *self.limits)
+        else:
+#             len(self.limits) > 1
+
+            index = -1
+            for i, limit in enumerate(self.limits):
+                x, *ab = limit
+                if ab:
+                    a, b = ab
+
+                p = old.as_poly(x)
+                if p is None:
+                    continue
+                if p.degree() != 1:
+                    continue
+                index = i
+
+                if new.has(x):
+                    diff = old - new
+                    if old != x:
+                        if diff.has(x):
+                            return self
+
+                        alpha = p.coeff_monomial(x)
+                        diff /= alpha
+
+                    function = self.function.subs(x, x - diff)
+                    if ab:
+                        limit = (x, a + diff, b + diff)
+                break
+
+            if index < 0:
+                return self.func(self.function._subs(old, new), *self.limits)
+
+            limits = [*self.limits]
+            limits[index] = limit
+            return self.func(function, *limits)
+
+        return self
 
 
 def product(*args, **kwargs):

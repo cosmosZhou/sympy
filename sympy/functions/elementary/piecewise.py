@@ -18,6 +18,7 @@ Undefined = S.NaN  # Piecewise()
 class ExprCondPair(Tuple):
     """Represents an expression, condition pair."""
 
+    is_ExprCondPair = True
     def __new__(cls, expr, cond):
         expr = as_Basic(expr)
         if cond == True:
@@ -1229,7 +1230,7 @@ class Piecewise(Function):
         
     def simplify(self, deep=False, wrt=None):
         from sympy.functions.special.tensor_functions import KroneckerDelta
-        if deep:
+        if deep or wrt is not None:
             scope_variables = self.scope_variables
             if wrt is None:
                 if len(scope_variables) == 1:
@@ -1245,12 +1246,14 @@ class Piecewise(Function):
                 univeralSet = wrt.domain
                 args = []
                 union = S.EmptySet
+#                 union_second_last = None
                 hit = False
                 need_swap = False
                 for f, cond in self.args:
                     domain = (univeralSet - union) & wrt.domain_conditioned(cond)
                     if not cond:
-                        union |= domain                                        
+#                         union_second_last = union
+                        union |= domain
                     if domain.is_EmptySet:
                         hit = True
                         continue
@@ -1295,7 +1298,7 @@ class Piecewise(Function):
                     args[-1] = (e_second_last, True)
                     
                 if hit:                    
-                    return self.func(*args).simplify(deep=True)
+                    return self.func(*args).simplify(deep=deep)
                         
             args = []
             hit = False
@@ -1554,8 +1557,8 @@ def piecewise_fold(expr):
         # we do that grouping before the more generic folding.
         # The following applies this idea when f = Add or f = Mul
         # (and the expression is commutative).
-#         if expr.is_Plus or expr.is_Mul and expr.is_commutative:
-        if expr.is_Plus or expr.is_Mul:
+#         if expr.is_Plus or expr.is_Times and expr.is_commutative:
+        if expr.is_Plus or expr.is_Times:
             p, args = sift(expr.args, lambda x: x.is_Piecewise, binary=True)
             if len(p) > 1:
                 return expr

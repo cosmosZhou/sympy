@@ -129,7 +129,7 @@ def _gammasimp(expr, as_comb):
             # return True if there is a gamma factor in shallow args
             if isinstance(x, gamma):
                 return True
-            if x.is_Plus or x.is_Mul:
+            if x.is_Plus or x.is_Times:
                 return any(gamma_factor(xi) for xi in x.args)
             if x.is_Power and (x.exp.is_integer or x.base.is_positive):
                 return gamma_factor(x.base)
@@ -140,7 +140,7 @@ def _gammasimp(expr, as_comb):
             expr = expr.func(*[rule_gamma(x, level + 1) for x in expr.args])
             level += 1
 
-        if not expr.is_Mul:
+        if not expr.is_Times:
             return expr
 
         # non-commutative step
@@ -174,7 +174,7 @@ def _gammasimp(expr, as_comb):
                     break
                 nd, dd = dd, nd  # now process in reversed order
             expr = gamma_ind*nd/dd
-            if not (expr.is_Mul and (gamma_factor(dd) or gamma_factor(nd))):
+            if not (expr.is_Times and (gamma_factor(dd) or gamma_factor(nd))):
                 return expr
             level += 1
 

@@ -2056,7 +2056,7 @@ def meijerint_inversion(f, x, t):
     # work, but the calling code will take care of that.
     shift = S.Zero
 
-    if f.is_Mul:
+    if f.is_Times:
         args = list(f.args)
     elif isinstance(f, exp):
         args = [f]
@@ -2070,7 +2070,7 @@ def meijerint_inversion(f, x, t):
             arg = args.pop()
             if isinstance(arg, exp):
                 arg2 = expand(arg)
-                if arg2.is_Mul:
+                if arg2.is_Times:
                     args += arg2.args
                     continue
                 try:
@@ -2083,7 +2083,7 @@ def meijerint_inversion(f, x, t):
                     newargs.append(arg)
             elif arg.is_Power:
                 arg2 = expand(arg)
-                if arg2.is_Mul:
+                if arg2.is_Times:
                     args += arg2.args
                     continue
                 if x not in arg.base.free_symbols:

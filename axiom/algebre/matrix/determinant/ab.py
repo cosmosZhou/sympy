@@ -16,7 +16,7 @@ def apply(a, b):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)
     
-    return Equality(Det(Ref[i:n, j:n](a[Min(i, j)] * b[Max(i, j)])),
+    return Equality(Det(Ref[j:n, i:n](a[Min(i, j)] * b[Max(i, j)])),
                     a[0] * b[n - 1] * Product(a[i] * b[i - 1] - a[i - 1] * b[i], (i, 1, n - 1)))
 
 

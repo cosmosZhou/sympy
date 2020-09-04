@@ -1229,9 +1229,12 @@ class ComplexRegion(Set):
             return S.false
         # self in rectangular form
         if not self.polar:
+            if self is S.Complexes:
+                return True
+            
             re, im = other if isTuple else other.as_real_imag()
             for element in self.psets:
-                if And(element.args[0]._contains(re), element.args[1]._contains(im)):
+                if element.args[0]._contains(re) and element.args[1]._contains(im):
                     return True
             return False
 

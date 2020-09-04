@@ -40,7 +40,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << w_quote[i] @ Eq[-1]
+    Eq << (w_quote[i] @ Eq[-1]).this.rhs.subs(Eq[0])
     
     Eq << Eq[-1].this.rhs.expand()
     

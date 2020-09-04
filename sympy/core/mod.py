@@ -203,7 +203,7 @@ class Mod(Function):
         if G.is_Float and G == 1:
             p *= G
             return cls(p, q, evaluate=False)
-        elif G.is_Mul and G.args[0].is_Float and G.args[0] == 1:
+        elif G.is_Times and G.args[0].is_Float and G.args[0] == 1:
             p = G.args[0]*p
             G = Mul._from_args(G.args[1:])
         return G*cls(p, q, evaluate=(p, q) != (pwas, qwas))

@@ -865,7 +865,7 @@ class Power(Expr):
 
         b = self.base
         e = self.exp
-        if not b.is_Mul:
+        if not b.is_Times:
             return self
 
         cargs, nc = b.args_cnc(split_1=False)
@@ -1623,11 +1623,11 @@ class Power(Expr):
         3**(2*x + 2)
 
         >>> eq = (2 + 2*x)**y
-        >>> s = expand_power_base(eq); s.is_Mul, s
+        >>> s = expand_power_base(eq); s.is_Times, s
         (False, (2*x + 2)**y)
         >>> eq.as_content_primitive()
         (1, (2*(x + 1))**y)
-        >>> s = expand_power_base(_[1]); s.is_Mul, s
+        >>> s = expand_power_base(_[1]); s.is_Times, s
         (True, 2**y*(x + 1)**y)
 
         See docstring of Expr.as_content_primitive for more examples.
@@ -1658,7 +1658,7 @@ class Power(Expr):
                 return c, self.func(b, _keep_coeff(ce, t + r / ce / ceh.q))
         e = _keep_coeff(ce, pe)
         # b**e = (h*t)**e = h**e*t**e = c*m*t**e
-        if e.is_Rational and b.is_Mul:
+        if e.is_Rational and b.is_Times:
             h, t = b.as_content_primitive(radical=radical, clear=clear)  # h is positive
             c, m = self.func(h, e).as_coeff_Mul()  # so c is positive
             m, me = m.as_base_exp()

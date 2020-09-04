@@ -319,7 +319,6 @@ class Relational(Boolean, Expr, EvalfMixin):
     def definition(self):
         if 'definition' in self._assumptions:
             return self._assumptions['definition']
-        return None
 
     def simplify(self, deep=False, wrt=None):
         if deep or wrt is not None:
@@ -681,7 +680,7 @@ class Equality(Relational):
                 return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, equivalent=[self, lhs])
             return Eq(lhs.lhs @ self.lhs, lhs.rhs @ self.rhs, given=[self, lhs])
         else:
-            if det(lhs).is_nonzero:
+            if len(lhs.shape) == 2 and det(lhs).is_nonzero:
                 return Eq(lhs @ self.lhs, lhs @ self.rhs, equivalent=self)
             return Eq(lhs @ self.lhs, lhs @ self.rhs, given=self)
 
@@ -859,16 +858,18 @@ class Equality(Relational):
 
             derivative[old][new] = eq
             return eq
-        else:
-            if isinstance(new, Symbol) and self._has(new):
-                from sympy.core.symbol import Dummy
-                d = Dummy(**new.dtype.dict)
-                this = self.subs(old, d)
-                this = this.subs(new, old)
-                return this.subs(d, new)
-            else:
-                return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
+        return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
 
+    def swap(self, x, y):
+        if self.plausible:
+            return self
+        
+        from sympy.core.symbol import Dummy
+        d = Dummy(**y.dtype.dict)
+        this = self.subs(x, d)
+        this = this.subs(y, x)
+        return this.subs(d, y)
+        
     @staticmethod
     def define(x, expr, given=None):
         from sympy.tensor.indexed import Indexed, Slice
@@ -1080,10 +1081,9 @@ class Equality(Relational):
         from sympy.core.function import Derivative
         return self.func(Derivative(self.lhs, *symbols), Derivative(self.rhs, *symbols), given=self)
 
-    def transpose(self):
+    @property
+    def T(self):
         return self.func(self.lhs.T, self.rhs.T, equivalent=self)
-    
-    T = property(transpose, None, None, 'Matrix transposition.')
 
     def __and__(self, other):
         """Overloading for & operator"""
@@ -1156,7 +1156,7 @@ class Unequality(Relational):
         return self.func(abs(self.lhs), abs(self.rhs), given=self)
 
     def _sympystr(self, p):
-        return '%s != %s' % tuple(p._print(arg) for arg in self.args)
+        return '%s ≠ %s' % tuple(p._print(arg) for arg in self.args)
 
     def __new__(cls, lhs, rhs, **options):
         lhs = _sympify(lhs)
@@ -1673,13 +1673,13 @@ class GreaterThan(_Greater):
         return _sympify(lhs.__ge__(rhs))
 
     def inverse(self):
-        if self.rhs > 0:
-            if self.lhs > 0:
+        if self.rhs.is_extended_positive:
+            if self.lhs.is_extended_positive:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
             from sympy.sets import Contains, Interval
             return Contains(1 / self.lhs, Interval(0, 1 / self.rhs, left_open=True), equivalent=self)
-        if self.rhs < 0:
-            if self.lhs < 0:
+        if self.rhs.is_extended_negative:
+            if self.lhs.is_extended_negative:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
 
         return self
@@ -1843,11 +1843,11 @@ class LessThan(_Less):
             return Relational.__add__(self, exp)
 
     def inverse(self):
-        if self.rhs > 0:
-            if self.lhs > 0:
+        if self.rhs.is_extended_positive:
+            if self.lhs.is_extended_positive:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
-        if self.rhs < 0:
-            if self.lhs < 0:
+        if self.rhs.is_extended_negative:
+            if self.lhs.is_extended_negative:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs, equivalent=self)
             from sympy.sets import Contains, Interval
             return Contains(1 / self.lhs, Interval(1 / self.rhs, 0, right_open=True), equivalent=self)

@@ -4,6 +4,7 @@ from sympy import Basic
 from sympy.functions import adjoint, conjugate
 
 from sympy.matrices.expressions.matexpr import MatrixExpr
+from sympy.core.sympify import _sympify
 
 
 class Transpose(MatrixExpr):
@@ -37,8 +38,12 @@ class Transpose(MatrixExpr):
     def atomic_dtype(self):
         return self.arg.atomic_dtype
 
-#     def _sympystr(self, p):
-#         return p.parenthesize(self.arg, 0) + ".T"
+    def __new__(cls, arg, **kwargs):        
+        arg = _sympify(arg)
+        transpose = arg._eval_transpose()
+        if transpose is not None:
+            return transpose
+        return MatrixExpr.__new__(cls, arg, **kwargs)
     
     def _sympystr(self, p):
         from sympy.printing.precedence import PRECEDENCE

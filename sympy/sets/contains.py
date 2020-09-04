@@ -258,6 +258,12 @@ class Contains(BooleanFunction):
         if domain.is_FiniteSet:             
             return 1 - domain.asKroneckerDelta(x)
             
+    def inverse(self):
+        rhs = self.rhs.inverse()
+        if rhs is not None:
+            return self.func(1 / self.lhs, rhs, equivalent=self)
+        return self
+
         
 class NotContains(BooleanFunction):
     """
@@ -346,6 +352,25 @@ class NotContains(BooleanFunction):
                 y, *_ = s
                 return Unequality(e, y, equivalent=self)
             return And(*(Unequality(e, y) for y in s), equivalent=self)
+
+        if s.is_Interval and s.is_integer and e.is_Plus:
+            if not s.left_open or s.right_open:
+                try:
+                    index = e.args.index(S.NegativeOne)
+                    s += S.One
+                    e += S.One
+                    return self.func(e, s, evaluate=False, equivalent=self)
+                except:
+                    ...
+                    
+            if s.left_open or not s.right_open:
+                try:
+                    index = e.args.index(S.One)
+                    s += S.NegativeOne
+                    e += S.NegativeOne
+                    return self.func(e, s, evaluate=False, equivalent=self)
+                except:
+                    ...
 
         return self
 
@@ -473,7 +498,11 @@ class Subset(BooleanFunction):
             return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
         else:
             return self.func(self.lhs & exp, self.rhs & exp, given=self)
-
+            
+    def _sympystr(self, p):
+#                 ⊂
+        return '%s ⊆ %s' % tuple(p._print(x) for x in self.args)
+    
     def _latex(self, printer):
         return r'%s \subset %s' % tuple(printer._print(x) for x in self.args)
 
@@ -497,17 +526,22 @@ class Subset(BooleanFunction):
         if x == S.EmptySet:
             return S.true
 
-        if x.is_ConditionSet and s.is_ConditionSet:
+        if x.is_ConditionSet:
             sym, condition, base_set = x.variable, x.condition, x.base_set
-            _sym, _condition, _base_set = s.variable, s.condition, s.base_set
-            if sym.dtype == _sym.dtype and (base_set == _base_set or base_set in _base_set):
-                if sym != _sym:
-                    _condition = _condition._subs(_sym, sym)
-                if condition == _condition:
-                    return S.true
-                if condition.is_And:
-                    if _condition.is_And and all(eq in condition._argset for eq in _condition.args) or _condition in condition._argset:
+            if s.is_ConditionSet:                
+                _sym, _condition, _base_set = s.variable, s.condition, s.base_set
+                if sym.dtype == _sym.dtype and (base_set == _base_set or base_set in _base_set):
+                    if sym != _sym:
+                        _condition = _condition._subs(_sym, sym)
+                    if condition == _condition:
                         return S.true
+                    if condition.is_And:
+                        if _condition.is_And and all(eq in condition._argset for eq in _condition.args) or _condition in condition._argset:
+                            return S.true
+            base_set &= sym.domain
+            if base_set in s:
+                return S.true
+            
         if x.is_Piecewise and not s.is_Piecewise:
             return x.func(*((cls(e, s), c) for e, c in x.args))
 #         if not x.is_Piecewise and s.is_Piecewise:
@@ -637,6 +671,10 @@ class NotSubset(BooleanFunction):
             return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
         else:
             return self.func(self.lhs & exp, self.rhs & exp, given=self)
+
+    def _sympystr(self, p):
+#         ⊊        
+        return r'%s ⊄ %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s \not\subset %s' % tuple(printer._print(x) for x in self.args)
@@ -782,6 +820,10 @@ class Supset(BooleanFunction):
         """The right-hand side of the relation."""
         return self._args[1]
 
+    def _sympystr(self, p):
+#         ⊃        
+        return '%s ⊇ %s' % tuple(p._print(x) for x in self.args)
+
     def _latex(self, printer):
         return r'%s\supset %s' % tuple(printer._print(x) for x in self.args)
 
@@ -894,6 +936,10 @@ class NotSupset(BooleanFunction):
     def rhs(self):
         """The right-hand side of the relation."""
         return self._args[1]
+
+    def _sympystr(self, p):
+#         ⊋
+        return r'%s ⊅ %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\not\supset %s' % tuple(printer._print(x) for x in self.args)

@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality
+from sympy.core.relational import Equality, StrictLessThan
 from sympy.utility import plausible
 
 from sympy.functions.combinatorial.numbers import Stirling
@@ -221,7 +221,7 @@ def prove(Eq):
   
     Eq << Eq[-1].subs(Eq[-2])
     
-    Eq.set_size_inequality = Eq[-1].subs(1, 0)
+    Eq.set_size_inequality = Eq[-1].subs(StrictLessThan(Eq[-1].function.rhs, Eq[-1].function.rhs + 1, plausible=True))
     
     Eq << x_quote_union.this.function.lhs.bisect(domain={i, j})
 
@@ -353,7 +353,7 @@ def prove(Eq):
 
     Eq << Eq.subset_A.subs(Eq.A_definition)
 
-    Eq << Eq[-1].definition.definition.definition
+    Eq << Eq[-1].definition.definition
 
     s2_hat_n = Symbol("\hat{s}_{2, n}", definition=Eq[-1].limits[0][1])
 
@@ -376,7 +376,7 @@ def prove(Eq):
 
     Eq << s2_quote_n.assertion()
 
-    Eq.x_abs_positive_s2_n, Eq.n_not_in_x, Eq.x_abs_sum_s2_n, Eq.x_union_s2_n = Eq[-1].split()
+    Eq.n_not_in_x, Eq.x_abs_positive_s2_n, Eq.x_abs_sum_s2_n, Eq.x_union_s2_n = Eq[-1].split()
 
     Eq << Eq.n_not_in_x.definition
 

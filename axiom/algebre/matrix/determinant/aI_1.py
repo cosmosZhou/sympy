@@ -26,9 +26,9 @@ from sympy.utility import check
 def column_transformation(*limits):
     n = limits[0][-1] + 1
     (i, *_), (j, *_) = limits    
-#     return Identity(n) + Ref[i:n, j:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
-#     return Identity(n) + Ref[i:n, j:n](Piecewise((KroneckerDelta(j, n - 1) - 1, Equality(i, n - 1)), (0, True)))
-    return Identity(n) + Ref[i:n, j:n](KroneckerDelta(i, n - 1) * (KroneckerDelta(j, n - 1) - 1))
+#     return Identity(n) + Ref[j:n, i:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
+#     return Identity(n) + Ref[j:n, i:n](Piecewise((KroneckerDelta(j, n - 1) - 1, Equality(i, n - 1)), (0, True)))
+    return Identity(n) + Ref[j:n, i:n](KroneckerDelta(i, n - 1) * (KroneckerDelta(j, n - 1) - 1))
     return Ref(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
 
 

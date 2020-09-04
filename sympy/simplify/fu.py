@@ -310,7 +310,7 @@ def TR2i(rv, half=False):
     """
 
     def f(rv):
-        if not rv.is_Mul:
+        if not rv.is_Times:
             return rv
 
         n, d = rv.as_numer_denom()
@@ -609,7 +609,7 @@ def TR8(rv, first=True):
 
     def f(rv):
         if not (
-            rv.is_Mul or
+            rv.is_Times or
             rv.is_Power and
             rv.base.func in (cos, sin) and
             (rv.exp.is_integer or rv.base.is_positive)):
@@ -621,7 +621,7 @@ def TR8(rv, first=True):
             newd = TR8(d, first=False)
             if newn != n or newd != d:
                 rv = gcd_terms(newn/newd)
-                if rv.is_Mul and rv.args[0].is_Rational and \
+                if rv.is_Times and rv.args[0].is_Rational and \
                         len(rv.args) == 2 and rv.args[1].is_Plus:
                     rv = Mul(*rv.as_coeff_Mul())
             return rv
@@ -898,7 +898,7 @@ def TR10i(rv):
             byrad = defaultdict(list)
             for a in rv.args:
                 hit = 0
-                if a.is_Mul:
+                if a.is_Times:
                     for ai in a.args:
                         if ai.is_Power and ai.exp is S.Half and \
                                 ai.base.is_Integer:
@@ -989,7 +989,7 @@ def TR11(rv, base=None):
             f = rv.func
             t = f(base*2)
             co = S.One
-            if t.is_Mul:
+            if t.is_Times:
                 co, t = t.as_coeff_Mul()
             if not t.func in (cos, sin):
                 return rv
@@ -1079,7 +1079,7 @@ def TR12i(rv):
     from sympy import factor
 
     def f(rv):
-        if not (rv.is_Plus or rv.is_Mul or rv.is_Power):
+        if not (rv.is_Plus or rv.is_Times or rv.is_Power):
             return rv
 
         n, d = rv.as_numer_denom()
@@ -1092,7 +1092,7 @@ def TR12i(rv):
             m = as_f_sign_1(di)
             if m:
                 g, f, s = m
-                if s is S.NegativeOne and f.is_Mul and len(f.args) == 2 and \
+                if s is S.NegativeOne and f.is_Times and len(f.args) == 2 and \
                         all(isinstance(fi, tan) for fi in f.args):
                     return g, f
 
@@ -1107,7 +1107,7 @@ def TR12i(rv):
                 continue
             if di.is_Plus:
                 di = factor(di)
-                if di.is_Mul:
+                if di.is_Times:
                     d_args.extend(di.args)
                     d_args[i] = S.One
             elif di.is_Power and (di.exp.is_integer or di.base.is_positive):
@@ -1119,7 +1119,7 @@ def TR12i(rv):
                     d_args[i] = g**di.exp
                 else:
                     di = factor(di)
-                    if di.is_Mul:
+                    if di.is_Times:
                         d_args.extend(di.args)
                         d_args[i] = S.One
         if not dok:
@@ -1141,7 +1141,7 @@ def TR12i(rv):
                 else:
                     if ni.is_Plus:
                         ni = factor(ni)
-                        if ni.is_Mul:
+                        if ni.is_Times:
                             n_args.extend(ni.args)
                             n_args[i] = S.One
                         continue
@@ -1152,7 +1152,7 @@ def TR12i(rv):
                             n_args[i] = S.One
                         else:
                             ni = factor(ni)
-                            if ni.is_Mul:
+                            if ni.is_Times:
                                 n_args.extend(ni.args)
                                 n_args[i] = S.One
                             continue
@@ -1195,7 +1195,7 @@ def TR13(rv):
     """
 
     def f(rv):
-        if not rv.is_Mul:
+        if not rv.is_Times:
             return rv
 
         # XXX handle products of powers? or let power-reducing handle it?
@@ -1287,7 +1287,7 @@ def TRmorrie(rv):
     """
 
     def f(rv):
-        if not rv.is_Mul:
+        if not rv.is_Times:
             return rv
 
         args = defaultdict(list)
@@ -1367,7 +1367,7 @@ def TR14(rv, first=True):
     """
 
     def f(rv):
-        if not rv.is_Mul:
+        if not rv.is_Times:
             return rv
 
         if first:
@@ -1917,11 +1917,11 @@ def trig_split(a, b, two=False):
         """
         c = s = None
         co = S.One
-        if a.is_Mul:
+        if a.is_Times:
             co, a = a.as_coeff_Mul()
             if len(a.args) > 2 or not two:
                 return None
-            if a.is_Mul:
+            if a.is_Times:
                 args = list(a.args)
             else:
                 args = [a]
@@ -2038,7 +2038,7 @@ def as_f_sign_1(e):
     a, b = e.args
     if a in (S.NegativeOne, S.One):
         g = S.One
-        if b.is_Mul and b.args[0].is_Number and b.args[0] < 0:
+        if b.is_Times and b.args[0].is_Number and b.args[0] < 0:
             a, b = -a, -b
             g = -g
         return g, b, a

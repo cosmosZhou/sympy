@@ -1616,7 +1616,7 @@ class PrettyPrinter(Printer):
             return prettyForm(binding=prettyForm.NEG, *p)
 
         for i, term in enumerate(terms):
-            if term.is_Mul and _coeff_isneg(term):
+            if term.is_Times and _coeff_isneg(term):
                 coeff, other = term.as_coeff_mul(rational=False)
                 pform = self._print(Mul(-coeff, *other, evaluate=False))
                 pforms.append(pretty_negative(pform, i))

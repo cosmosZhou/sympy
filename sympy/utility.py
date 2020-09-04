@@ -175,10 +175,7 @@ render(__FILE__, $text);
             return self.list[index]
         return self.__dict__[index]
 
-    def process(self, rhs, index=None, end_of_line='\n'):
-        from sympy.logic.boolalg import Identity
-        if isinstance(rhs, Identity):
-            rhs = rhs.equation
+    def process(self, rhs, index=None, end_of_line='\n'):        
         try:
             latex = rhs.latex
         except:
@@ -209,7 +206,10 @@ render(__FILE__, $text);
         if index in self.__dict__:
             eq = self.__dict__[index]
             if eq.plausible:
-                equivalent = rhs.equivalent
+                equivalent = rhs.equivalent 
+                if equivalent is None:
+                    equivalent = rhs.given
+                    
                 if isinstance(equivalent, list):
                     equivalent = [e for e in equivalent if e.plausible]
                     assert len(equivalent) == 1
@@ -264,7 +264,7 @@ render(__FILE__, $text);
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
                             rhs_equivalent, *_ = rhs_equivalent
-                            if eq != rhs_equivalent:
+                            if eq != rhs_equivalent or rhs.given is not None:
 #                                 consider the complex case : rhs_equivalent.substituent.equivalent.equivalent == eq.substituent                                
                                 hypothesis = rhs_equivalent.hypothesis
                                 if hypothesis:
@@ -337,8 +337,8 @@ def topological_sort(graph):
 def wolfram_decorator(py, func, **kwargs):
     txt = py.replace('.py', '.php')
 
-    eqs = Eq(txt) 
-    print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
+    eqs = Eq(txt)
+    website = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
     try: 
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
@@ -352,8 +352,10 @@ def wolfram_decorator(py, func, **kwargs):
     except Exception as e:
         print(e)
         traceback.print_exc()
+        print(website)
         return
-
+    
+    print(website)
     plausibles = eqs.plausibles_dict
     if plausibles:
         return False
@@ -371,9 +373,9 @@ def check(func=None, wolfram=None):
             try:
                 from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
                 session = WolframLanguageSession()                
-            except:
-                ...
-#                 traceback.print_exc()           
+            except:                
+                session = None
+                           
         
         return lambda py: wolfram_decorator(py, func, wolfram=session)
 

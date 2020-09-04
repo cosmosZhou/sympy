@@ -132,7 +132,7 @@ class Dagger(Expr):
         if isinstance(arg, Basic):
             if arg.is_Plus:
                 return Add(*tuple(map(Dagger, arg.args)))
-            if arg.is_Mul:
+            if arg.is_Times:
                 return Mul(*tuple(map(Dagger, reversed(arg.args))))
             if arg.is_Number:
                 return arg
@@ -1780,7 +1780,7 @@ class NO(Expr):
         if arg.is_Plus:
             return Add(*[ cls(term) for term in arg.args])
 
-        if arg.is_Mul:
+        if arg.is_Times:
 
             # take coefficient outside of normal ordering brackets
             c_part, seq = arg.args_cnc()

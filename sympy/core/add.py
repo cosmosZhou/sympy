@@ -107,7 +107,7 @@ class Plus(Expr, AssocOp):
             if b.is_Rational:
                 a, b = b, a
             if a.is_Rational:
-                if b.is_Mul:
+                if b.is_Times:
                     rv = [a, b], [], None
             if rv:
 #                 if all(s.is_commutative for s in rv[0]):
@@ -181,7 +181,7 @@ class Plus(Expr, AssocOp):
                 continue
 
             # Mul([...])
-            elif o.is_Mul:
+            elif o.is_Times:
                 c, s = o.as_coeff_Mul()
 
             # check for unevaluated Pow, e.g. 2**3 or 2**(-1/2)
@@ -226,7 +226,7 @@ class Plus(Expr, AssocOp):
                 newseq.append(s)
             # c*s
             else:
-                if s.is_Mul:
+                if s.is_Times:
                     # Mul, already keeps its arguments in perfect order.
                     # so we can simply put c in slot0 and go the fast way.
                     cs = s._new_rawargs(*((c,) + s.args))
@@ -549,7 +549,6 @@ class Plus(Expr, AssocOp):
                     return False
                 if self.max().is_extended_negative:
                     return False    
-        
         
         from sympy import preorder_traversal, KroneckerDelta 
         delta = None
@@ -981,13 +980,18 @@ class Plus(Expr, AssocOp):
 
     def simplifyKroneckerDelta(self):        
         dic = {}
-        from sympy import KroneckerDelta
-        from sympy.core.basic import preorder_traversal
-        for expr in preorder_traversal(self):
-            if isinstance(expr, KroneckerDelta):
-                if expr not in dic:
-                    dic[expr] = 0    
-                dic[expr] += 1
+        
+        def traversal(self):
+            if self.is_Plus or self.is_Times:
+                for arg in self.args:
+                    yield from traversal(arg)
+            if self.is_KroneckerDelta:
+                yield self    
+    
+        for expr in traversal(self):
+            if expr not in dic:
+                dic[expr] = 0    
+            dic[expr] += 1
         
         dic = {key: value for key, value in dic.items() if value > 1}
             
@@ -1036,6 +1040,14 @@ class Plus(Expr, AssocOp):
             this = Expr.simplify(self, deep=True, **kwargs)
             if this is not self:
                 return this
+            
+        for i, arg in enumerate(self.args):
+            if arg.is_Ref:
+                _arg = arg.simplify(squeeze=True)
+                if _arg != arg:
+                    args = [*self.args]
+                    args[i] = _arg
+                    return self.func(*args).simplify()
 
         this = self.simplifyPiecewise()
         if this is not self:
@@ -1161,7 +1173,7 @@ class Plus(Expr, AssocOp):
 
                     t_, *_ = res.values()
                     
-                    (x, a, b), *_= neg.limits
+                    (x, a, b), *_ = neg.limits
                     if not t_.is_Symbol:
                         p = t_.as_poly(x)
                         alpha = p.nth(1)
@@ -1174,7 +1186,7 @@ class Plus(Expr, AssocOp):
                             a, b = bound - b, bound - a
                         else:
                             continue
-                            
+                    
                     neg = Sum[t:a:b](pos.function)
                     
                     try_sub = pos.try_sub(neg)

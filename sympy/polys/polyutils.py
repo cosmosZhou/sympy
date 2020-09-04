@@ -357,12 +357,12 @@ def _dict_from_expr(expr, opt):
             raise PolynomialError('expression must be of type Expr')
         expr = expr.expand()
         # TODO: Integrate this into expand() itself
-        while any(_is_expandable_pow(i) or i.is_Mul and
+        while any(_is_expandable_pow(i) or i.is_Times and
             any(_is_expandable_pow(j) for j in i.args) for i in
                 Add.make_args(expr)):
 
             expr = expand_multinomial(expr)
-        while any(i.is_Mul and any(j.is_Plus for j in i.args) for i in Add.make_args(expr)):
+        while any(i.is_Times and any(j.is_Plus for j in i.args) for i in Add.make_args(expr)):
             expr = expand_mul(expr)
 
     if opt.gens:

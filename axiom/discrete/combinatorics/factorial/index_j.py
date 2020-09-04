@@ -78,7 +78,7 @@ def prove(Eq):
     
     Eq << Eq.sj_greater_than_1.lhs.assertion()
     
-    Eq.inequality_ab, Eq.sj_less_than_1 = Eq[-1].split()
+    Eq.sj_less_than_1, Eq.inequality_ab = Eq[-1].split()
     
     (a, *_), (b, *_) = Eq.inequality_ab.limits
     

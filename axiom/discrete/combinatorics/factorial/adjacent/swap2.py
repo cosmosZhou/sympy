@@ -35,7 +35,7 @@ def prove(Eq):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)    
     
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j:n, i:n](Swap(n, i, j)))
     
     given = ForAll[x:S](Contains(w[0, j] @ x, S))
     
@@ -60,7 +60,6 @@ def prove(Eq):
     Eq.i_complement = Eq.final_statement.subs(Eq[-1])
     
     Eq.plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)    
-#     Eq.plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, 1, n - 1), plausible=True)
     
     Eq << Eq.plausible.bisect(wrt=j, domain=i.set)
     

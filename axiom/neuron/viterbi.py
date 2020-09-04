@@ -18,8 +18,7 @@ def apply(G, x, y):
     s = Symbol('s', shape=(oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
 
-    x_quote = Symbol("x'", shape=(oo, d),
-                          definition=Ref[t](Ref[y[t]](MIN[y[0:t]](s[t]))))
+    x_quote = Symbol("x'", shape=(oo, d), definition=Ref[y[t], t](MIN[y[0:t]](s[t])))
 
     return Equality(x_quote[t + 1], x[t + 1] + MIN(x_quote[t] + G)), \
         Equality(MIN[y[:t + 1]](s[t]), MIN(x_quote[t]))
@@ -39,6 +38,8 @@ def prove(Eq):
     y = Symbol('y', shape=(oo,), real=True)
 
     Eq.s_definition, Eq.x_quote_definition, Eq.recursion, Eq.aggregate = apply(G, x, y)
+    
+    Eq.x_quote_definition = Eq.x_quote_definition.reference((Eq.x_quote_definition.lhs.indices[-1],))
     
     s = Eq.x_quote_definition.rhs.function.function.base
 

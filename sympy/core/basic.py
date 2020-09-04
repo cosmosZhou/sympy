@@ -71,12 +71,11 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Dummy = False
     is_Wild = False
     is_Function = False
-    is_Plus = False
     
-    is_Mul = False
-    is_Times = False
-    
+    is_Plus = False    
+    is_Times = False    
     is_Power = False
+    
     is_Number = False
     is_Float = False
     is_Rational = False
@@ -85,7 +84,10 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Order = False
     is_Derivative = False
     is_Difference = False
+    
+    is_ExprCondPair = False
     is_Piecewise = False
+    
     is_Poly = False
     is_AlgebraicNumber = False
     is_Min = False
@@ -1295,7 +1297,7 @@ class Basic(with_metaclass(ManagedProperties)):
             if hit:
                 rv = self.func(*args)
                 hack2 = hints.get('hack2', False)
-                if hack2 and self.is_Mul and not rv.is_Mul:  # 2-arg hack
+                if hack2 and self.is_Times and not rv.is_Times:  # 2-arg hack
                     coeff = S.One
                     nonnumber = []
                     for i in args:
@@ -1614,7 +1616,7 @@ class Basic(with_metaclass(ManagedProperties)):
         such a fashion that changes are not made twice.
 
             >>> e = x*(x*y + 1)
-            >>> e.replace(lambda x: x.is_Mul, lambda x: 2*x)
+            >>> e.replace(lambda x: x.is_Times, lambda x: 2*x)
             2*x*(2*x*y + 1)
 
         When matching a single symbol, `exact` will default to True, but
@@ -2103,7 +2105,7 @@ class Basic(with_metaclass(ManagedProperties)):
             if 'dtype' in kwargs:
                 symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'            
             elif 'integer' in kwargs:
-                symbols = 'ijkhtlmnabcdefgopqrsuvwxyz'
+                symbols = 'ijkhtdlmnabcefgopqrsuvwxyz'
             else:
                 symbols = 'xyzabcdefghijklmnopqrstuvw'
                         
@@ -2235,6 +2237,13 @@ class Basic(with_metaclass(ManagedProperties)):
         if singular is False:
             return True
 
+    def _eval_is_nonzero(self):
+        zero = self.is_zero
+        if zero:
+            return False
+        if zero is False:
+            return self.is_complex        
+
     @property
     def shape(self):
         return ()
@@ -2256,6 +2265,25 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.logic.boolalg import Identity
         return Identity(self)
 
+    @property
+    def parent(self):
+        if 'parent' in self._assumptions:
+            return self._assumptions['parent']
+        return None
+
+    @parent.setter
+    def parent(self, parent):
+        if parent is not None:
+            if 'parent' in self._assumptions:
+                print('parent already in it') 
+            self._assumptions['parent'] = parent
+            return
+
+        if 'parent' in self._assumptions:
+            del self._assumptions['parent']
+      
+    def asKroneckerDelta(self):
+        return self
         
 class Atom(Basic):
     """

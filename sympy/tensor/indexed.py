@@ -146,6 +146,16 @@ class Indexed(Expr):
 
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
+            if len(indices) == 2 and isinstance(indices[0], slice):
+                start, stop = indices[0].start, indices[0].stop
+                if start is None:
+                    if stop is None:
+                        return self.T[indices[1]]
+                    start = 0
+                if stop is None:
+                    stop = self.shape[0]                
+                return self[start:stop].T[indices[1]]
+                
             indices = self.indices + tuple(indices)
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
@@ -556,7 +566,21 @@ class Indexed(Expr):
         if definition is not None:
             return definition._eval_determinant()
 
+    def generate_int_limit(self, *args, **kwargs):
+        definition = self.definition
+        if definition is not None:
+            return definition.generate_int_limit(*args, **kwargs) 
+        return Expr.generate_int_limit(self, *args, **kwargs)
+      
+    def _eval_transpose(self):
+        if len(self.shape) < 2:
+            return self
         
+        definition = self.definition
+        if definition is not None:
+            if definition.T == definition:
+                return self
+
 class Slice(Expr):
     """Represents a mathematical object with Slices.
 
@@ -616,7 +640,7 @@ class Slice(Expr):
         elif isinstance(base, string_types):
             from sympy import oo
             base = Symbol(base, shape=(oo,))
-        elif not hasattr(base, '__getitem__') and not isinstance(base, IndexedBase):
+        elif not hasattr(base, '__getitem__') and not isinstance(base, Symbol):
             raise TypeError(filldedent("""
                 Indexed expects string, Symbol, or IndexedBase as base."""))
         elif base.is_Ref:

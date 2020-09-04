@@ -37,19 +37,20 @@ def prove(Eq):
 
     Eq.mean_value_theorem = axiom.calculus.integral.mean_value_theorem.apply(Eq[-1])
 
-    Eq << Eq[-1].limits_assertion().split()
+    Eq << Eq[-1].limits_assertion()
 
-    Eq << (Eq[-2].inverse(), Eq[-1].inverse())
+    Eq << Eq[-1].inverse().split()
 
-    Eq << (Eq.mean_value_theorem.subs(Eq[-2]), Eq.mean_value_theorem.subs(Eq[-1]))
+    Eq << (Eq.mean_value_theorem.subs(Eq[-1]), Eq.mean_value_theorem.subs(Eq[-2]))
 
-    Eq << (Eq[-2].summation((k, 1, n)), Eq[-1].summation((k, 1, n - 1)))
+    Eq << (Eq[-1].summation((k, 1, n - 1)), Eq[-2].summation((k, 1, n)))
     
-    Eq << (Eq[-2].this.lhs.doit(), Eq[-1].this.lhs.doit().reversed)
+    Eq << (Eq[-1].this.lhs.doit(), Eq[-2].this.lhs.doit().reversed)
     
     k = Eq[-1].lhs.variable
     Eq << Eq[-1].this.lhs.limits_subs(k, k - 1) + 1
 
+    assert Eq[-3].lhs > 0    
     Eq << (Eq[-3] / Eq[-3].lhs, Eq[-1] / Eq[-3].lhs) 
     
     Eq << (Eq[-2].limit(n, oo), Eq[-1].limit(n, oo))
