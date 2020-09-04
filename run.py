@@ -1,13 +1,15 @@
 # coding=utf-8
-import axiom
+
 import sys
 # to run this script, please install:
 # pip install mpmath==1.1.0
 if __name__ == '__main__':
 
     if len(sys.argv) == 1:
-        axiom.prove.prove()
+        from axiom.prove import prove 
+        prove()
     else:
+        import axiom
         for package in sys.argv[1:]:
             package = package.replace('/', '.').replace('\\', '.')
             package = eval(package)
