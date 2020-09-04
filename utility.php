@@ -202,7 +202,7 @@ function render($php, $txt)
         }
 
         if (preg_match('/Eq *<< */', $statement, $matches)) {
-            $inputs[] = join(";", $input);
+            $inputs[] = join("<br>", $input);
             unset($input);
             $lengths[] = 1;
         } else if (preg_match('/(Eq\.\w+ *(?:, *Eq\.\w+ *)*)= */', $statement, $matches)) {
@@ -213,7 +213,7 @@ function render($php, $txt)
 
             $lengths[] = count($matches);
 
-            $inputs[] = join(";", $input);
+            $inputs[] = join("<br>", $input);
             unset($input);
         } else {
             // error_log("python statements: $statement");

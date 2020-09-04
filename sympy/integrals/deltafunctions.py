@@ -150,7 +150,7 @@ def deltaintegrate(f, x):
         else:  # let's try to integrate the simplified expression
             fh = integrate(h, x)
             return fh
-    elif f.is_Mul or f.is_Power:  # g(x) = a*b*c*f(DiracDelta(h(x)))*d*e
+    elif f.is_Times or f.is_Power:  # g(x) = a*b*c*f(DiracDelta(h(x)))*d*e
         g = f.expand()
         if f != g:  # the expansion worked
             fh = integrate(g, x)
@@ -166,7 +166,7 @@ def deltaintegrate(f, x):
                     return fh
             else:
                 deltaterm = deltaterm.expand(diracdelta=True, wrt=x)
-                if deltaterm.is_Mul:  # Take out any extracted factors
+                if deltaterm.is_Times:  # Take out any extracted factors
                     deltaterm, rest_mult_2 = change_mul(deltaterm, x)
                     rest_mult = rest_mult*rest_mult_2
                 point = solve(deltaterm.args[0], x)[0]

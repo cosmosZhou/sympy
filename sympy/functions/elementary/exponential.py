@@ -213,7 +213,7 @@ class exp(ExpBase):
     def _eval_refine(self, assumptions):
         from sympy.assumptions import ask, Q
         arg = self.args[0]
-        if arg.is_Mul:
+        if arg.is_Times:
             Ioo = S.ImaginaryUnit * S.Infinity
             if arg in [Ioo, -Ioo]:
                 return S.NaN
@@ -256,7 +256,7 @@ class exp(ExpBase):
             return AccumBounds(exp(arg.min), exp(arg.max))
         elif isinstance(arg, SetExpr):
             return arg._eval_func(cls)
-        elif arg.is_Mul:
+        elif arg.is_Times:
             if arg.is_number or arg.is_Symbol:
                 coeff = arg.coeff(S.Pi * S.ImaginaryUnit)
                 if coeff:
@@ -467,7 +467,7 @@ class exp(ExpBase):
 
     def _eval_rewrite_as_sqrt(self, arg, **kwargs):
         from sympy.functions.elementary.trigonometric import sin, cos
-        if arg.is_Mul:
+        if arg.is_Times:
             coeff = arg.coeff(S.Pi * S.ImaginaryUnit)
             if coeff and coeff.is_number:
                 cosine, sine = cos(S.Pi * coeff), sin(S.Pi * coeff)
@@ -475,7 +475,7 @@ class exp(ExpBase):
                     return cosine + S.ImaginaryUnit * sine
 
     def _eval_rewrite_as_Pow(self, arg, **kwargs):
-        if arg.is_Mul:
+        if arg.is_Times:
             logs = [a for a in arg.args if isinstance(a, log) and len(a.args) == 1]
             if logs:
                 return Pow(logs[0].args[0], arg.coeff(logs[0]))
@@ -647,7 +647,7 @@ class log(Function):
                 return p[1] * self.func(p[0])
         elif arg.is_Rational:
             return log(arg.p) - log(arg.q)
-        elif arg.is_Mul:
+        elif arg.is_Times:
             expr = []
             nonpos = []
             for x in arg.args:

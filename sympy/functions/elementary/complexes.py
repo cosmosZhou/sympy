@@ -296,7 +296,7 @@ class sign(Function):
     @classmethod
     def eval(cls, arg):
         # handle what we can
-        if arg.is_Mul:
+        if arg.is_Times:
             c, args = arg.as_coeff_mul()
             unk = []
             s = sign(c)
@@ -480,7 +480,7 @@ class Abs(Function):
 #             raise TypeError("Bad argument type for Abs(): %s" % type(arg))
         # handle what we can
         arg = signsimp(arg, evaluate=False)
-        if arg.is_Mul:
+        if arg.is_Times:
             known = []
             unk = []
             for t in arg.args:
@@ -675,7 +675,7 @@ class arg(Function):
             return periodic_argument(arg, oo)
         if not arg.is_Atom:
             c, arg_ = factor_terms(arg).as_coeff_Mul()
-            if arg_.is_Mul:
+            if arg_.is_Times:
                 arg_ = Mul(*[a if (sign(a) not in (-1, 1)) else
                     sign(a) for a in arg_.args])
             arg_ = sign(c) * arg_
@@ -876,7 +876,7 @@ class polar_lift(Function):
             if ar in (0, pi / 2, -pi / 2, pi):
                 return exp_polar(I * ar) * abs(arg)
 
-        if arg.is_Mul:
+        if arg.is_Times:
             args = arg.args
         else:
             args = [arg]
@@ -935,7 +935,7 @@ class periodic_argument(Function):
 
     @classmethod
     def _getunbranched(cls, ar):
-        if ar.is_Mul:
+        if ar.is_Times:
             args = ar.args
         else:
             args = [ar]
@@ -967,7 +967,7 @@ class periodic_argument(Function):
             return periodic_argument(*ar.args)
         if isinstance(ar, polar_lift) and period >= 2 * pi:
             return periodic_argument(ar.args[0], period)
-        if ar.is_Mul:
+        if ar.is_Times:
             newargs = [x for x in ar.args if not x.is_positive]
             if len(newargs) != len(ar.args):
                 return periodic_argument(Mul(*newargs), period)
@@ -1177,7 +1177,7 @@ def _unpolarify(eq, exponents_only, pause=False):
         if isinstance(eq, principal_branch) and eq.args[1] == 2 * pi:
             return _unpolarify(eq.args[0], exponents_only)
         if (
-            eq.is_Plus or eq.is_Mul or eq.is_Boolean or
+            eq.is_Plus or eq.is_Times or eq.is_Boolean or
             eq.is_Relational and (
                 eq.rel_op in ('==', '!=') and 0 in eq.args or
                 eq.rel_op not in ('==', '!='))

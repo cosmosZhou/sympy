@@ -1533,8 +1533,8 @@ def test_zoo():
             assert i*zoo is S.NaN
             assert zoo*i is S.NaN
         else:
-            assert (i*zoo).is_Mul
-            assert (zoo*i).is_Mul
+            assert (i*zoo).is_Times
+            assert (zoo*i).is_Times
 
         if fuzzy_not((1/i).is_zero) and (i.is_real or i.is_imaginary):
             assert zoo/i is zoo
@@ -1543,9 +1543,9 @@ def test_zoo():
         elif i.is_zero:
             assert zoo/i is zoo
         else:
-            assert (zoo/i).is_Mul
+            assert (zoo/i).is_Times
 
-    assert (I*oo).is_Mul  # allow directed infinity
+    assert (I*oo).is_Times  # allow directed infinity
     assert zoo + zoo is S.NaN
     assert zoo * zoo is zoo
     assert zoo - zoo is S.NaN

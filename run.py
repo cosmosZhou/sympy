@@ -30,3 +30,5 @@ if __name__ == '__main__':
 # https://mathworld.wolfram.com/
 # https://reference.wolfram.com/language/JLink/tutorial/WritingJavaProgramsThatUseTheWolframLanguage.html
 
+# https://store.wolfram.com/arrive.cgi?URI=/catalog/
+# https://www.wolfram.com/mathematica/pricing/home-hobby/

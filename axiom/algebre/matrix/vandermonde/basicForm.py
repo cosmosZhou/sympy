@@ -3,9 +3,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
-import axiom
 from sympy.concrete.expr_with_limits import Ref
-from sympy.concrete.summations import Sum
 from sympy.matrices.expressions.determinant import Det
 from sympy.concrete.products import Product
 from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -19,7 +17,7 @@ def apply(a):
     i = Symbol('i', integer=True)
     j = Symbol('j', integer=True)
 
-    return Equality(Det(Ref[i:n, j:n](a[j] ** i)), Product[j:i, i:n](a[i] - a[j]))
+    return Equality(Det(Ref[j:n, i:n](a[j] ** i)), Product[j:i, i:n](a[i] - a[j]))
 
 
 from sympy.utility import check
@@ -28,7 +26,7 @@ from sympy.utility import check
 def row_transformation(a, *limits):
     n = limits[0][-1] + 1
     (i, *_), (j, *_) = limits
-    return Identity(n) - Ref[i:n, j:n](a[0] * KroneckerDelta(i, j + 1))
+    return Identity(n) - Ref[j:n, i:n](a[0] * KroneckerDelta(i, j + 1))
 
 
 @check
@@ -66,11 +64,11 @@ def prove(Eq):
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
-    Eq << Eq.recursion.rhs.args[1].function.args[1].arg.this.function.args[0][0].doit()
+    Eq << Eq.recursion.rhs.args[1].function.args[1].arg.this.function.args[0].expr.doit()
     
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
     
-    Eq << Eq[-1].this.function.rhs.args[0][0].expand().this.function.rhs.args[0][0].collect(Eq[-1].rhs.args[0][0].args[1].args[-1])
+    Eq << Eq[-1].this.function.rhs.args[0].expr.expand().this.function.rhs.args[0].expr.collect(Eq[-1].rhs.args[0][0].args[1].args[-1])
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
@@ -81,12 +79,10 @@ def prove(Eq):
     var = Eq[-1].rhs.args[1].variable
     Eq.determinant = Eq[-1].this.rhs.args[1].limits_subs(var, var - 1)
     
-    _, k = Eq.determinant.lhs.arg.variables
-    i, j = Eq[0].lhs.arg.variables
+    k, _ = Eq.determinant.lhs.arg.variables
+    j, i = Eq[0].lhs.arg.variables
     
-    Eq << Eq[0].this.lhs.arg.limits_subs(j, k).this.lhs.arg.limits_subs(i, j)
-    
-    Eq << Eq[-1].subs(a[:n], a[1:n + 1])
+    Eq << Eq[0].this.lhs.arg.limits_subs(j, k).this.lhs.arg.limits_subs(i, j).subs(a[:n], a[1:n + 1])
 
 #     Eq << Eq[-1].this.rhs.limits_subs(i + 1, i).this.rhs.limits_subs(j + 1, j)
     Eq << Eq[-1].this.rhs.limits_subs(i, i - 1)

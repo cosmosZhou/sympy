@@ -1,12 +1,10 @@
 
-from sympy.core.relational import Equality, Relational
 import sympy
 import os
 from sympy.logic.boolalg import equivalent_ancestor, Boolean
 import traceback
 from sympy.logic import boolalg
 from sympy.utilities.iterables import topological_sort_depth_first
-from builtins import isinstance
 import time
 
 
@@ -175,10 +173,7 @@ render(__FILE__, $text);
             return self.list[index]
         return self.__dict__[index]
 
-    def process(self, rhs, index=None, end_of_line='\n'):
-        from sympy.logic.boolalg import Identity
-        if isinstance(rhs, Identity):
-            rhs = rhs.equation
+    def process(self, rhs, index=None, end_of_line='\n'):        
         try:
             latex = rhs.latex
         except:
@@ -209,7 +204,10 @@ render(__FILE__, $text);
         if index in self.__dict__:
             eq = self.__dict__[index]
             if eq.plausible:
-                equivalent = rhs.equivalent
+                equivalent = rhs.equivalent 
+                if equivalent is None:
+                    equivalent = rhs.given
+                    
                 if isinstance(equivalent, list):
                     equivalent = [e for e in equivalent if e.plausible]
                     assert len(equivalent) == 1
@@ -264,7 +262,7 @@ render(__FILE__, $text);
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
                             rhs_equivalent, *_ = rhs_equivalent
-                            if eq != rhs_equivalent:
+                            if eq != rhs_equivalent or rhs.given is not None:
 #                                 consider the complex case : rhs_equivalent.substituent.equivalent.equivalent == eq.substituent                                
                                 hypothesis = rhs_equivalent.hypothesis
                                 if hypothesis:
@@ -337,14 +335,14 @@ def topological_sort(graph):
 def wolfram_decorator(py, func, **kwargs):
     txt = py.replace('.py', '.php')
 
-    eqs = Eq(txt) 
-    print("http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php")
+    eqs = Eq(txt)
+    website = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
     try: 
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
             if wolfram is not None:
-#                 with wolfram:                
-                func(eqs, wolfram)
+                with wolfram:                
+                    func(eqs, wolfram)
             else:
                 func(eqs, wolfram)
         else:
@@ -352,30 +350,27 @@ def wolfram_decorator(py, func, **kwargs):
     except Exception as e:
         print(e)
         traceback.print_exc()
+        print(website)
         return
-
+    
+    print(website)
     plausibles = eqs.plausibles_dict
     if plausibles:
         return False
 
     return True
 
+from wolframclient.evaluation.cloud import cloudsession
+session = cloudsession.session
+# from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
+# session = WolframLanguageSession()
 
 def check(func=None, wolfram=None):
     if func is not None:
         return lambda py: wolfram_decorator(py, func)
 
     def decorator(func):
-        session = None        
-        if wolfram:
-            try:
-                from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
-                session = WolframLanguageSession()                
-            except:
-                ...
-#                 traceback.print_exc()           
-        
-        return lambda py: wolfram_decorator(py, func, wolfram=session)
+        return lambda py: wolfram_decorator(py, func, wolfram=session if wolfram else None)
 
     return decorator
 

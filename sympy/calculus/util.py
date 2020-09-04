@@ -497,7 +497,7 @@ def periodicity(f, symbol, check=False):
         else:
             period = _periodicity(f.args, symbol)
 
-    elif f.is_Mul:
+    elif f.is_Times:
         coeff, g = f.as_independent(symbol, as_Add=False)
         if isinstance(g, TrigonometricFunction) or coeff is not S.One:
             period = periodicity(g, symbol)

@@ -880,7 +880,7 @@ def best_origin(a, b, lineseg, expr):
                             elif term_type == 2 and univariate.args[0] in gens:
                                 power_gens[univariate.args[0]] +=\
                                            univariate.args[1]
-            elif expr.is_Mul:
+            elif expr.is_Times:
                 for term in expr.args:
                     term_type = len(term.args)
                     if term_type == 0 and term in gens:

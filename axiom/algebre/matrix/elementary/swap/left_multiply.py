@@ -15,7 +15,7 @@ def apply(x):
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     
     return Equality(w[i, j] @ w[i, j] @ x, x)
 
@@ -33,11 +33,9 @@ def prove(Eq):
     Eq << (w[i, j] @ x).this.subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << w[i, j] @ Eq[-1]
+    Eq << (w[i, j] @ Eq[-1]).this.rhs.subs(Eq[0])
     
     Eq << Eq[-1].this.rhs.expand()
-    
-    Eq << Eq[-1].this.rhs.simplify(deep=True)
         
 
 if __name__ == '__main__':

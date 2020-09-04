@@ -249,7 +249,7 @@ def mrv(e, x):
     elif e == x:
         s = SubsSet()
         return s, s[x]
-    elif e.is_Mul or e.is_Plus:
+    elif e.is_Times or e.is_Plus:
         i, d = e.as_independent(x)  # throw away x-independent terms
         if d.func != e.func:
             s, expr = mrv(d, x)
@@ -382,7 +382,7 @@ def sign(e, x):
         return _sign(e)
     elif e == x:
         return 1
-    elif e.is_Mul:
+    elif e.is_Times:
         a, b = e.as_two_terms()
         sa = sign(a, x)
         if not sa:

@@ -501,7 +501,7 @@ def classify_diop(eq, _dict=True):
             diop_type = "inhomogeneous_general_quadratic"
         else:
             # there may be Pow keys like x**2 or Mul keys like x*y
-            if any(k.is_Mul for k in coeff):  # cross terms
+            if any(k.is_Times for k in coeff):  # cross terms
                 if not homogeneous:
                     diop_type = "inhomogeneous_general_quadratic"
                 else:

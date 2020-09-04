@@ -17,7 +17,7 @@ def apply(x, w=None):
     j = Symbol('j', domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Shift(n, i, j)))
+        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Shift(n, i, j)))
     else:
         assert w[i, j] == Shift(n, i, j)
     
@@ -39,13 +39,15 @@ def prove(Eq):
     Eq << (w[i, j] @ x).this.subs(Eq[0])
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
-    
-    Eq << w[i, j].T @ Eq[-1]
+    Eq << Eq[-1].this.rhs().function.args[2]().expr.simplify(wrt=Eq[-1].rhs.variable)
+
+    Eq << (w[i, j].T @ Eq[-1]).this.rhs.subs(Eq[0])
      
     Eq << Eq[-1].this.rhs.expand()
 
-    Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=i)
+    Eq << Eq[-1].this.rhs().function.args[2]().expr.simplify(wrt=Eq[-1].rhs.variable)
+    
+    Eq << Eq[-1].this.rhs().function.args[1]().expr.simplify()
         
 
 if __name__ == '__main__':

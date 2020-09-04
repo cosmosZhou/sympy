@@ -243,7 +243,7 @@ class LatexPrinter(Printer):
             return False
         else:
             # Muls of the form a*b*c... can be folded
-            if expr.is_Mul and not self._mul_is_clean(expr):
+            if expr.is_Times and not self._mul_is_clean(expr):
                 return True
             # Pows which don't need brackets can be folded
             elif expr.is_Power and not self._pow_is_clean(expr):
@@ -266,7 +266,7 @@ class LatexPrinter(Printer):
         """
         from sympy import Integral, Product, Sum
 
-        if expr.is_Mul:
+        if expr.is_Times:
             if not first and _coeff_isneg(expr):
                 return True
         elif precedence_traditional(expr) < PRECEDENCE["Times"]:
@@ -1159,22 +1159,10 @@ class LatexPrinter(Printer):
                 s += self._print(expr.point[0])
         return r"O\left(%s\right)" % s
 
-    def _print_Symbol(self, expr, style='plain'):
-        if expr in self._settings['symbol_names']:
-            return self._settings['symbol_names'][expr]
-
-        result = self._deal_with_super_sub(expr.name) if \
-            '\\' not in expr.name else expr.name
-
-        if style == 'bold':
-            result = r"\mathbf{{{}}}".format(result)
-
-        return result
-
     def _print_RandomSymbol(self, expr, style='plain'):
 #         result = r"\mathbf{{{}}}".format(result)
 
-        return r'{\color{red} {%s}}' % self._print(expr.symbol)
+        return r'{\color{red} {\mathbf{%s}}}' % self._print(expr.symbol)
 
     def _deal_with_super_sub(self, string):
         if '{' in string:
@@ -1336,14 +1324,6 @@ class LatexPrinter(Printer):
         return self._print_Symbol(expr, style=self._settings[
             'mat_symbol_style'])
 
-    def _print_HConcatenate(self, expr):
-        return r"\left(%s\right)" % ','.join(self._print(arg) for arg in expr.args)
-
-    def _print_VConcatenate(self, expr):
-#         return r'\begin{pmatrix}%s\end{pmatrix}' % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-        return r"\left(\begin{array}{c}%s\end{array}\right)" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-#         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-
     def _print_ZeroMatrix(self, Z):
         return r"\mathbb{0}" if self._settings[
             'mat_symbol_style'] == 'plain' else r"\mathbf{0}"
@@ -1475,8 +1455,7 @@ class LatexPrinter(Printer):
         return r"\mathbb{U}"
 
     def _print_tuple(self, expr):
-        return r"\left( %s\right)" % \
-            r", \  ".join([self._print(i) for i in expr])
+        return r"\left( %s\right)" % r", \  ".join([self._print(i) for i in expr])
 
     def _print_TensorProduct(self, expr):
         elements = [self._print(a) for a in expr.args]

@@ -1124,7 +1124,7 @@ def solve(f, *symbols, **flags):
             elif (isinstance(p, bool) or
                     not p.args or
                     p in symset or
-                    p.is_Plus or p.is_Mul or
+                    p.is_Plus or p.is_Times or
                     p.is_Power and not implicit or
                     p.is_Function and not implicit) and p.func not in (re, im):
                 continue
@@ -1449,7 +1449,7 @@ def _solve(f, *symbols, **flags):
     flags['check'] = checkdens = check = flags.pop('check', True)
 
     # build up solutions if f is a Mul
-    if f.is_Mul:
+    if f.is_Times:
         result = set()
         for m in f.args:
             if m in set([S.NegativeInfinity, S.ComplexInfinity, S.Infinity]):
@@ -1547,7 +1547,7 @@ def _solve(f, *symbols, **flags):
             b, e = x.as_base_exp()
             if e.is_Rational:
                 return b, e.q
-            if not e.is_Mul:
+            if not e.is_Times:
                 return x, 1
             c, ee = e.as_coeff_Mul()
             if c.is_Rational and c is not S.One:  # c could be a Float
@@ -2654,7 +2654,7 @@ def _tsolve(eq, sym, **flags):
             # it's time to try factoring; powdenest is used
             # to try get powers in standard form for better factoring
             f = factor(powdenest(lhs - rhs))
-            if f.is_Mul:
+            if f.is_Times:
                 return _solve(f, sym, **flags)
             if rhs:
                 f = logcombine(lhs, force=flags.get('force', True))
@@ -2749,7 +2749,7 @@ def _tsolve(eq, sym, **flags):
                 sol.extend(s for s in check if eq.subs(sym, s).equals(0))
                 return list(ordered(set(sol)))
 
-        elif lhs.is_Mul and rhs.is_positive:
+        elif lhs.is_Times and rhs.is_positive:
             llhs = expand_log(log(lhs))
             if llhs.is_Plus:
                 return _solve(llhs - log(rhs), sym, **flags)
@@ -3169,7 +3169,7 @@ def _invert(eq, *symbols, **kwargs):
                         raise ValueError(
                             'function with different numbers of args')
 
-        elif lhs.is_Mul and any(_ispow(a) for a in lhs.args):
+        elif lhs.is_Times and any(_ispow(a) for a in lhs.args):
             lhs = powsimp(powdenest(lhs))
 
         if lhs.is_Function:
@@ -3310,7 +3310,7 @@ def unrad(eq, *syms, **flags):
         # remove constants and powers of factors since these don't change
         # the location of the root; XXX should factor or factor_terms be used?
         eq = factor_terms(_mexpand(eq.as_numer_denom()[0], recursive=True), clear=True)
-        if eq.is_Mul:
+        if eq.is_Times:
             args = []
             for f in eq.args:
                 if f.is_number:

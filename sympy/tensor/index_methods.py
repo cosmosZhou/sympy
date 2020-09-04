@@ -269,7 +269,7 @@ def get_indices(expr):
 
     # recurse via specialized functions
     else:
-        if expr.is_Mul:
+        if expr.is_Times:
             return _get_indices_Mul(expr)
         elif expr.is_Plus:
             return _get_indices_Add(expr)
@@ -403,7 +403,7 @@ def get_contraction_structure(expr):
         return {key or None: {expr}}
     elif expr.is_Atom:
         return {None: {expr}}
-    elif expr.is_Mul:
+    elif expr.is_Times:
         junk, junk, key = _get_indices_Mul(expr, return_dummies=True)
         result = {key or None: {expr}}
         # recurse on every factor

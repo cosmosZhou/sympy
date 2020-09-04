@@ -302,7 +302,7 @@ def interactive_traversal(expr):
         if isinstance(expr, Basic):
             if expr.is_Plus:
                 args = expr.as_ordered_terms()
-            elif expr.is_Mul:
+            elif expr.is_Times:
                 args = expr.as_ordered_factors()
             else:
                 args = expr.args

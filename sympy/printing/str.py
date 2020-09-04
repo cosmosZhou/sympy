@@ -186,11 +186,6 @@ class StrPrinter(Printer):
         else:
             return self.parenthesize(expr.parent, PRECEDENCE["Atom"], strict=True) + '[%s]' % self._print(expr.i)
 
-    def _print_HConcatenate(self, expr):
-        return r"(%s)" % ','.join(self._print(arg) for arg in expr.args)
-
-    def _print_VConcatenate(self, expr):
-        return r"[%s]" % ','.join(self._print(arg) for arg in expr.args)
 
     def _print_MatrixSlice(self, expr):
 
@@ -553,9 +548,6 @@ class StrPrinter(Printer):
         from sympy.matrices import Matrix
         return self._print(Matrix(expr))
     
-    def _print_Equality(self, expr):
-        return '%s == %s' % tuple(self._print(arg) for arg in expr.args)
-
     def _print_ZeroMatrix(self, expr):
         return "0"
 

@@ -11,6 +11,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.factorial.adjacent import swap1_utility, \
     swap2_equality
 import axiom
+from axiom.discrete import combinatorics
 
 
 @plausible
@@ -46,10 +47,9 @@ def apply(given):
     
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.dtype    
     
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i:n, j:n](Swap(n, i, j)))
+    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j:n, i:n](Swap(n, i, j)))
     
-#     return ForAll(Contains(Ref[k:n](x[(w[i, j] @ Ref[k:n](k))[k]]), S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
-    return ForAll(Contains(w[i, j] @ x, S), (i, 0, n - 1), (j, 0, n - 1), (x, S), given=given)
+    return ForAll(Contains(w[i, j] @ x, S), (x, S), given=given)
 
 
 @check
@@ -86,9 +86,15 @@ def prove(Eq):
     
     Eq.given = Eq.given.subs(Eq[-1])
     
-    Eq << swap2_equality.apply(n, w)
+    Eq << Eq.given.limits_swap()
     
-    Eq << Eq[-1] @ x
+    Eq << ForAll[x:S](Eq[-1].function.subs(j, 0), plausible=True)
+    
+    Eq << Eq[-1].subs(w[0, 0].this.definition)
+    
+    Eq << (Eq[-1] & Eq[-2])
+    
+    Eq << combinatorics.factorial.adjacent.swap2.apply(Eq[-1])
         
 
 if __name__ == '__main__':

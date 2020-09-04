@@ -100,8 +100,18 @@ class MatMul(MatrixExpr):
     def _entry(self, i, j=None, expand=True, **kwargs):
         if j is None:
             if len(self.args[0].shape) == 1:
-                return self.args[0] @ self.func(*self.args[1:]).T[i]
+                return self.args[0] @ self.func(*self.args[1:])[:, i]
             return self.args[0][i] @ self.func(*self.args[1:])            
+        if isinstance(i, slice):
+            start, stop = i.start, i.stop
+            if start is None:
+                if stop is None:
+                    return self.func(*self.args[:-1]) @ self.args[-1][:, j]
+                start = 0
+            if stop is None:
+                stop = self.shape[0]
+                
+            return
                 
         from sympy import Dummy, Sum, ImmutableMatrix, Integer
 
@@ -157,29 +167,6 @@ class MatMul(MatrixExpr):
     def as_coeff_mmul(self):
         coeff, matrices = self.as_coeff_matrices()
         return coeff, MatMul(*matrices)
-
-    def _eval_transpose(self):
-        """Transposition of matrix multiplication.
-
-        Notes
-        =====
-
-        The following rules are applied.
-
-        Transposition for matrix multiplied with another matrix:
-        `\\left(A B\\right)^{T} = B^{T} A^{T}`
-
-        Transposition for matrix multiplied with scalar:
-        `\\left(c A\\right)^{T} = c A^{T}`
-
-        References
-        ==========
-
-        .. [1] https://en.wikipedia.org/wiki/Transpose
-        """
-        coeff, matrices = self.as_coeff_matrices()
-        return MatMul(
-            coeff, *[transpose(arg) for arg in matrices[::-1]]).doit()
 
     def _eval_adjoint(self):
         return MatMul(*[adjoint(arg) for arg in self.args[::-1]]).doit()
@@ -256,93 +243,96 @@ class MatMul(MatrixExpr):
             if len(self.args[0].shape) < len(self.args[1].shape):
                 from sympy.concrete import summations
                 return summations.Sum(exp(self.args[0].arg + self.args[1].arg.T))
+            
+        this = self.simplifyProduct()
+        if this is not self:
+            return this
+            
         return self
 
+    def simplifyProduct(self):
+        from sympy.concrete.products import MatProduct        
+        
+        for i, prod in enumerate(self.args):
+            if isinstance(prod, MatProduct):
+                before = self.func(*self.args[:i])
+                after = self.func(*self.args[i + 1:])
+                
+                _prod = prod.try_absorb_forward(before)
+                if _prod:
+                    return _prod @ after                
+                
+                _prod = prod.try_absorb_backward(after)
+                if _prod:
+                    return before @ _prod
+
+        return self
+
+                
     def expand(self, free_symbol=None, deep=True, **_):
         from sympy.concrete.expr_with_limits import Ref
         from sympy.concrete.summations import Sum
-        if len(self.args) == 2:
-            A, B = self.args
-            if A.is_MatPow:
-                return self
-            if isinstance(A, Concatenate):
-                args = [self.func(arg, B) for arg in A.args]
-                if deep:
-                    args = [arg.expand(deep=True) for arg in args]
-                return A.func(*args)
-            
-            if len(A.shape) < 2:
-                if isinstance(A, Ref):
-                    i_limit = A.limits[0]
-                    i, *_ = i_limit 
+        if len(self.args) > 2:
+            return MatrixExpr.expand(self)
+        
+        A, B = self.args
+        if A.is_MatPow:
+            return self
+        if isinstance(A, Concatenate):
+            args = [self.func(arg, B) for arg in A.args]
+            if deep:
+                args = [arg.expand(deep=True) for arg in args]
+            return A.func(*args)
+        
+        kwargs = {'free_symbol' : free_symbol, 'generator' : self}
+        
+        def generate_k_limit(A, B, excludes=None, **kwargs):
+            if A.is_Ref or not B.is_Ref:
+                if excludes:
+                    excludes |= B.free_symbols
                 else:
-                    i = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
-                    if 'domain' in i._assumptions:
-                        i_domain = i._assumptions['domain']
-                        assert i_domain.is_Interval and i_domain.is_integer and i_domain.min() == 0 and i_domain.max() == A.shape[0] - 1
-                        i_limit = (i,)
-                    else:
-                        i_limit = (i, 0, A.shape[0] - 1)
-                
-                
-                
-                if len(B.shape) > 1:
-                    if hasattr(B, "definition") and B.definition is not None:
-                        B = B.definition
-                        
-                    if isinstance(B, Ref):
-                        j_limit = B.limits[0]
-                    else:                    
-                        j = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
-                        
-                        if 'domain' in j._assumptions:
-                            j_domain = j._assumptions['domain']
-                            assert j_domain.is_Interval and j_domain.is_integer and j_domain.min() == 0 and j_domain.max() == B.shape[1] - 1
-                            j_limit = (j,)
-                        else:                        
-                            j_limit = (j, 0, B.shape[1] - 1)
-
-                    j, *_ = j_limit
-    
-                    return Ref(Sum(A[i] * B[i, j], i_limit).simplify(), j_limit).simplify()
-                return Sum(A[i] * B[i], i_limit).simplify()                
+                    excludes = B.free_symbols
+                    
+                return A.generate_int_limit(0, excludes, **kwargs)
+            
+            if excludes:
+                excludes |= A.free_symbols
             else:
-                if hasattr(A, "definition") and A.definition is not None:
-                    A = A.definition
-                    
-                if isinstance(A, Ref):
-                    i_limit = A.limits[0]
-                    i, *_ = i_limit
-                else:                    
-                    i = self.generate_free_symbol(free_symbol=free_symbol, integer=True)
-                    i_limit = (i, 0, A.shape[0] - 1)
-                
-                n = A.shape[-1]
-                if len(B.shape) > 1:     
-                    j = None
-                    if isinstance(B, Ref):
-                        j_limit = B.limits[1]
-                        j, *_ = j_limit
-                    else:
-                        if hasattr(B, "definition") and B.definition is not None:
-                            j_limit = B.definition.limits[1]
-                            j, *_ = j_limit
-                            
-                    if i == j or j is None:
-                        j = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
-                        j_limit = (j, 0, B.shape[1] - 1)
-                        
-                    k = self.generate_free_symbol({i, j}, free_symbol=free_symbol, integer=True)
-                    
-                    assert i != k and k != j and i != j
-                    return Ref(Sum[k:n](A[i, k] * B[k, j]).simplify(), i_limit, j_limit).simplify()
-                else:            
-                    k = self.generate_free_symbol({i}, free_symbol=free_symbol, integer=True)
-                    assert i != k
-                            
-                    return Ref(Sum[k:n](A[i, k] * B[k]).simplify(), i_limit).simplify()
+                excludes = A.free_symbols
+            
+            return B.generate_int_limit(0 if len(B.shape) == 1 else 1, excludes, **kwargs)
 
-        return MatrixExpr.expand(self)
+        if len(A.shape) > 1:
+            i_limit = A.generate_int_limit(1, **kwargs)
+            i, *_ = i_limit
+            if len(B.shape) > 1:
+                j_limit = B.generate_int_limit(0, {i}, **kwargs)
+                j, *_ = j_limit
+                
+                k_limit = generate_k_limit(A, B, {i, j}, **kwargs)
+                k, *_ = k_limit
+                
+                assert i != k and k != j and i != j
+                return Ref(Sum(A[i, k] * B[k, j], k_limit).simplify(), j_limit, i_limit).simplify()
+            else:
+                k_limit = generate_k_limit(A, B, {i}, **kwargs)
+                k, *_ = k_limit
+                
+                assert i != k                            
+                return Ref(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
+        else:
+            if len(B.shape) > 1:
+                j_limit = B.generate_int_limit(0, **kwargs)                
+                j, *_ = j_limit
+                
+                k_limit = generate_k_limit(A, B, {j}, **kwargs)
+                k, *_ = k_limit
+                
+                assert k != j
+                return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
+            k_limit = generate_k_limit(A, B, **kwargs)
+            k, *_ = k_limit
+            return Sum(A[k] * B[k], k_limit).simplify()                
 
     def _eval_is_integer(self):
         for elem in self.args:
@@ -426,13 +416,28 @@ class MatMul(MatrixExpr):
             domain &= arg.domain_defined(x)
         return domain
     
-    @property
-    def T(self):
-        args = []
-        for arg in self.args[::-1]:
-            args.append(arg.T)
-            
-        return self.func(*args)
+    def _eval_transpose(self):
+        """Transposition of matrix multiplication.
+
+        Notes
+        =====
+
+        The following rules are applied.
+
+        Transposition for matrix multiplied with another matrix:
+        `\\left(A B\\right)^{T} = B^{T} A^{T}`
+
+        Transposition for matrix multiplied with scalar:
+        `\\left(c A\\right)^{T} = c A^{T}`
+
+        References
+        ==========
+
+        .. [1] https://en.wikipedia.org/wiki/Transpose
+        """
+
+        return self.func(*(arg.T for arg in self.args[::-1]))
+
     
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """

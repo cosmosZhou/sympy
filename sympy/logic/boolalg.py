@@ -6,11 +6,11 @@ from __future__ import print_function, division
 from collections import defaultdict
 from itertools import combinations, product
 from sympy.core.add import Add
-from sympy.core.basic import Basic, _aresame
+from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import (ordered, range, with_metaclass,
     as_int)
-from sympy.core.function import Application, Derivative, count_ops
+from sympy.core.function import Application, Derivative
 from sympy.core.numbers import Number
 from sympy.core.operations import LatticeOp
 from sympy.core.singleton import Singleton, S
@@ -769,6 +769,7 @@ class Boolean(Basic):
                                 if not found:
                                     step = None
                         else:
+
                             def is_valid_given(given):
                                 if given == self_equivalent:
                                     return True
@@ -938,6 +939,7 @@ class Boolean(Basic):
 
     def asKroneckerDelta(self):
         ...
+
         
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
@@ -1952,6 +1954,7 @@ class And(LatticeOp, BooleanFunction):
                 return
             eq *= e
         return eq
+
 
 class Or(LatticeOp, BooleanFunction):
     """
@@ -3940,120 +3943,222 @@ class Invoker:
 
     def __new__(cls, expr):
         this = object.__new__(cls)
-        this.expr = expr
-        this.obj = expr
-        this.func = []
+        this._objs = []
         this._args = []
         this.index = []
+        this._context = []
+        this.append(expr)
+        this.callable = None      
         return this
-
+    
+    @property
+    def target(self):
+        return self._objs[-1]
+    
+    @property
+    def source(self):
+        return self._objs[0]
+    
     def result(self, obj, equivalent=True):
         kwargs = {}
         if obj.is_Boolean:
-            kwargs = {}
             if obj.equivalent is not None:
-                kwargs['equivalent'] = self.expr
+                kwargs['equivalent'] = self.source
             elif obj.given is not None:
-                kwargs['given'] = self.expr
+                kwargs['given'] = self.source
             elif obj.imply is not None:
-                kwargs['imply'] = self.expr
+                kwargs['imply'] = self.source
         else:
             if equivalent:
-                kwargs['equivalent'] = self.expr
+                kwargs['equivalent'] = self.source
             else:
-                kwargs['given'] = self.expr
+                kwargs['given'] = self.source
 
-        for i in range(-1, -len(self.func) - 1, -1):
-            self._args[i][self.index[i]] = obj
+        for i in range(-1, -len(self.index) - 1, -1):
+            this = self._objs[i - 1]
+            args = [*this.args]
+            args[self.index[i]] = obj
 
-            if i == -len(self.func):
-                obj = self.func[i](*self._args[i], **kwargs)
+            if i == -len(self.index):
+                obj = this.func(*args, **kwargs)
             else:
-                obj = self.func[i](*self._args[i])
+                obj = this.func(*args)
 
             obj = obj.simplify()
             
-        if obj.equivalent == self.expr and obj == self.expr:
-            return self.expr
+        if obj.equivalent == self.source and obj == self.source:
+            return self.source
         return obj
-
+    
     def __call__(self, *args, **kwargs):
-        funcname = self.obj.__name__
+        if self.callable is None:
+            return self.enter(*args)
+        
+        funcname = self.callable.__name__
         if funcname == 'subs':
             from sympy.concrete.summations import Sum
             from sympy.integrals.integrals import Integral
             from sympy.core.relational import Equality
-            if isinstance(self.obj.__self__, Sum) or isinstance(self.obj.__self__, Integral):
+            if isinstance(self.callable.__self__, Sum) or isinstance(self.callable.__self__, Integral):
                 if len(args) == 2:
-                    (x, *_), *_ = self.obj.__self__.limits
+                    (x, *_), *_ = self.callable.__self__.limits
                     # domain might be different!
                     assert args[0].name == x.name
-            elif self.obj.__self__.is_ConditionalBoolean:
+            elif self.callable.__self__.is_ConditionalBoolean:
                 ...
             else:
                 assert all(isinstance(arg, Equality) for arg in args)
 
-        obj = self.obj(*args, **kwargs)
+        if self._context:
+            try:
+                this = self.callable.__self__
+                reps = []
+                from sympy import Interval
+                outer_context = {}
+                for _, limits in self._context:
+                    for x, *ab in limits:
+                        if len(ab) == 1:
+                            domain, *_ = ab
+                            if domain.is_Boolean:
+                                domain = x.domain_conditioned(domain)                                                    
+                        else:
+                            domain = Interval(*ab, integer=x.is_integer)
+                            
+                        if x in outer_context:
+                            x, _domain = outer_context[x]
+                            keys = domain.free_symbols & outer_context.keys()
+                            if keys:
+                                for key in keys:
+                                    domain = domain._subs(key, outer_context[key][0])
+                            domain &= _domain
+                                
+                        _x = x.copy(domain=domain)
+                        this = this._subs(x, _x).simplify()
+                        reps.append((x, _x))
+                        outer_context[x] = (_x, domain)
+                
+                obj = getattr(this, self.callable.__name__)(*args, **kwargs)#.simplify()
+                reps.reverse()
+                for x, _x in reps:
+                    obj = obj._subs(_x, x)
+                    
+            except Exception as e:
+                print(e)
+                import traceback
+                traceback.print_exc()
+        else:                    
+            obj = self.callable(*args, **kwargs)
         return self.result(obj, funcname not in ('abs',))
 
-    def append(self):
-        self.func.append(self.obj.func)
-        self._args.append([*self.obj.args])
+    def append(self, obj):
+        self._objs.append(obj)
 
-    def __getattr__(self, method):
-        obj = getattr(self.obj, method)
-        if not callable(obj):
-            if isinstance(obj, tuple):
-                self.append()
-            elif obj in self.obj.args:
-                self.append()
-                self.index.append(self.obj.args.index(obj))
-            else:
-                return self.result(obj)
+    def __getattr__(self, method):        
+        target = self.target
+        obj = getattr(target, method)
+        if callable(obj):
+            self.callable = obj
+            return self
 
-        self.obj = obj
+        if isinstance(obj, tuple):
+            self.append(obj)
+            return self
+        
+        try:
+            self.index.append(target.args.index(obj))
+            self.append(obj)
+        except:
+            return self.result(obj)
+
         return self
 
     def __str__(self):
-        return str(self.obj)
+        return str(self.target)
 
     @property
     def latex(self):
-        return self.obj.latex
+        return self.value.latex
 
     def __getitem__(self, j):
-        obj = self.obj[j]
+        target = self.target
+        obj = target[j]
+            
         try:
-            self.index.append(self.obj.args.index(obj))
-            self.append()
+            if isinstance(target, tuple):
+                self.index.append(self._objs[-2].args.index(obj))
+                self._objs[-1] = obj
+            else:
+                self.index.append(target.index(obj))
+                self._objs.append(obj)
         except:
-            try:
-                self.index.append(self._args[-1].index(obj))
-            except:    
-                return self.result(obj)
-        self.obj = obj
+            return self.result(obj)
+                        
         return self
 
     def __iter__(self):
         return iter(self.obj)
 
+    def enter(self, *args):
+        target = self.target
+        limits = ()
+        
+        if target.is_ExprWithLimits:
+            limits = target.limits
+        elif target.is_ExprCondPair:
+            piecewise = self._objs[-2]
+            cond = target.cond
+            for e, c in piecewise.args:
+                if e == target.expr:
+                    break
+                cond &= c.invert()
+                
+            if cond.is_Contains or cond.is_NotContains:
+                free_symbols = cond.lhs.free_symbols
+            else:
+                free_symbols = cond.free_symbols
+            x, *_ = free_symbols
+            limit = (x, cond)
+            limits = (limit,)
+        if args:
+            limits += tuple((x, target.domain_defined(x)) for x in args)
+                            
+        self._context.append((target, limits))
+        return self
+
+#     def __exit__(self, *_):
+#         self._context.pop()
+#         if self._context:
+#             target, _ = self._context[-1]
+#             while self.target != target:
+#                 self._objs.pop()
+#                 self.index.pop()
+#         
+#         return self
+    
+    def __or__(self, x):
+        if self.assumptions is None:
+            self.assumptions = []
+        target = self.target
+        domain = target.domain_defined(x)
+        self.assumptions.append((x, domain))
+        return self
+
 
 class Identity(Invoker):
 
-    @property
-    def equation(self):
-        from sympy import Equality
-        from sympy.core.relational import Relational 
-        return Relational.__new__(Equality, self.expr, self.obj)
-
+    def result(self, target):
+        from sympy.core.relational import Relational
+        from sympy import Equality 
+        return Relational.__new__(Equality, self.source, target)            
+        
     def __call__(self, *args, **kwargs):
         from sympy import Equality
-        if self.obj.__name__ == 'subs':
+        if self.callable.__name__ == 'subs':
             from sympy.concrete.summations import Sum
             from sympy.integrals.integrals import Integral
-            if isinstance(self.obj.__self__, Sum) or isinstance(self.obj.__self__, Integral):
+            if isinstance(self.callable.__self__, Sum) or isinstance(self.callable.__self__, Integral):
                 if len(args) == 2:
-                    (x, *_), *_ = self.obj.__self__.limits
+                    (x, *_), *_ = self.callable.__self__.limits
                     # domain might be different!
                     assert args[0].name == x.name
 #             elif self.obj.__self__.is_ConditionalBoolean:
@@ -4061,31 +4166,13 @@ class Identity(Invoker):
             else:
                 assert all(isinstance(arg, Equality) for arg in args)                
 
-        obj = self.obj(*args, **kwargs)
+        obj = self.callable(*args, **kwargs)
+        
+        for i in range(-1, -len(self.index) - 1, -1):
+            this = self._objs[i - 1]
+            args = [*this.args]
+            args[self.index[i]] = obj
+            obj = this.func(*args).simplify()
+        
+        return self.result(obj)
 
-        for i in range(-1, -len(self.func) - 1, -1):
-            self._args[i][self.index[i]] = obj
-            obj = self.func[i](*self._args[i])
-            obj = obj.simplify()
-        self.obj = obj
-        return self
-
-    def __getattr__(self, method):
-        if method == "T":
-            assert len(self.obj.shape) < 2
-        obj = getattr(self.obj, method)
-        if not callable(obj):
-            if isinstance(obj, tuple):
-                self.append()
-            elif obj in self.obj.args:
-                self.append()
-                self.index.append(self.obj.args.index(obj))
-            else:
-                ...
-
-        self.obj = obj
-        return self
-
-    @property
-    def this(self):
-        return Invoker(self.equation)

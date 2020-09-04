@@ -245,7 +245,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
             arg = expr.args[0]
             if arg.is_Rational:
                 sexpr, rat_expo = S.Exp1, arg
-            elif arg.is_Mul:
+            elif arg.is_Times:
                 coeff, tail = arg.as_coeff_Mul(rational=True)
                 sexpr, rat_expo = exp(tail), coeff
         elif isinstance(expr, Derivative):
@@ -331,7 +331,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
             expr = expr.func(*[
                     collect(a, syms, func, True, exact, distribute_order_term)
                     for a in expr.args if a != o]) + o
-        elif expr.is_Mul:
+        elif expr.is_Times:
             return expr.func(*[
                 collect(term, syms, func, True, exact, distribute_order_term)
                 for term in expr.args])
@@ -802,7 +802,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             return _unevaluated_Mul(n, handle(1/d))
         elif n is not S.One:
             return _unevaluated_Mul(n, handle(1/d))
-        elif d.is_Mul:
+        elif d.is_Times:
             return _unevaluated_Mul(*[handle(1/d) for d in d.args])
 
         # By this step, expr is 1/d, and d is not a mul.
@@ -909,7 +909,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             n2, d2 = fraction(gcd_terms(_unevaluated_Mul(n, 1/d)))
             if d2.is_Number or (d2.count_ops() <= d.count_ops()):
                 n, d = [signsimp(i) for i in (n2, d2)]
-                if n.is_Mul and n.args[0].is_Number:
+                if n.is_Times and n.args[0].is_Number:
                     n = n.func(*n.args)
 
     return coeff + _unevaluated_Mul(n, 1/d)
@@ -1013,7 +1013,7 @@ def fraction(expr, exact=False):
                     denom.append(Pow(b, -ex))
             elif ex.is_positive:
                 numer.append(term)
-            elif not exact and ex.is_Mul:
+            elif not exact and ex.is_Times:
                 n, d = term.as_numer_denom()
                 numer.append(n)
                 denom.append(d)

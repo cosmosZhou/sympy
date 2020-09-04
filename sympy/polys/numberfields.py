@@ -111,7 +111,7 @@ def _separate_sq(p):
     # p = c1*sqrt(q1) + ... + cn*sqrt(qn) -> a = [(c1, q1), .., (cn, qn)]
     a = []
     for y in p.args:
-        if not y.is_Mul:
+        if not y.is_Times:
             if is_sqrt(y):
                 a.append((S.One, y**2))
             elif y.is_Atom:
@@ -531,7 +531,7 @@ def _minpoly_compose(ex, x, dom):
 
     if ex.is_Plus:
         res = _minpoly_add(x, dom, *ex.args)
-    elif ex.is_Mul:
+    elif ex.is_Times:
         f = Factors(ex).factors
         r = sift(f.items(), lambda itx: itx[0].is_Rational and itx[1].is_Rational)
         if r[True] and dom == QQ:
@@ -707,7 +707,7 @@ def _minpoly_groebner(ex, x, cls):
                 return ex
         elif ex.is_Plus:
             return Add(*[ bottom_up_scan(g) for g in ex.args ])
-        elif ex.is_Mul:
+        elif ex.is_Times:
             return Mul(*[ bottom_up_scan(g) for g in ex.args ])
         elif ex.is_Power:
             if ex.exp.is_Rational:
@@ -754,7 +754,7 @@ def _minpoly_groebner(ex, x, cls):
             if (1/ex.exp).is_integer and ex.exp < 0:
                 if ex.base.is_Plus:
                     return True
-        if ex.is_Mul:
+        if ex.is_Times:
             hit = True
             for p in ex.args:
                 if p.is_Plus:

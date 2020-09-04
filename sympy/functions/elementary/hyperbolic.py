@@ -53,7 +53,7 @@ def _peeloff_ipi(arg):
         if a == S.Pi*S.ImaginaryUnit:
             K = S.One
             break
-        elif a.is_Mul:
+        elif a.is_Times:
             K, p = a.as_two_terms()
             if p == S.Pi*S.ImaginaryUnit and K.is_Rational:
                 break

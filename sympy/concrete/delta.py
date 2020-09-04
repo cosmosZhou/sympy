@@ -20,7 +20,7 @@ def _expand_delta(expr, index):
     """
     Expand the first Add containing a simple KroneckerDelta.
     """
-    if not expr.is_Mul:
+    if not expr.is_Times:
         return expr
     delta = None
     func = Add
@@ -70,7 +70,7 @@ def _extract_delta(expr, index):
         return (None, expr)
     if isinstance(expr, KroneckerDelta):
         return (expr, S(1))
-    if not expr.is_Mul:
+    if not expr.is_Times:
         raise ValueError("Incorrect expr")
     delta = None
     terms = []
@@ -93,7 +93,7 @@ def _has_simple_delta(expr, index):
     if expr.has(KroneckerDelta):
         if _is_simple_delta(expr, index):
             return True
-        if expr.is_Plus or expr.is_Mul:
+        if expr.is_Plus or expr.is_Times:
             for arg in expr.args:
                 if _has_simple_delta(arg, index):
                     return True
@@ -121,7 +121,7 @@ def _remove_multiple_delta(expr):
     from sympy.solvers import solve
     if expr.is_Plus:
         return expr.func(*list(map(_remove_multiple_delta, expr.args)))
-    if not expr.is_Mul:
+    if not expr.is_Times:
         return expr
     eqs = []
     newargs = []

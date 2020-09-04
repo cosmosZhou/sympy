@@ -243,7 +243,7 @@ class Order(Expr):
                                 b, r = b.args
                                 if b in (x, -x) and r.is_real:
                                     margs[i] = x**(r*q)
-                            elif b.is_Mul and b.args[0] is S.NegativeOne:
+                            elif b.is_Times and b.args[0] is S.NegativeOne:
                                 b = -b
                                 if b.is_Power and not b.exp.has(x):
                                     b, r = b.args

@@ -248,7 +248,8 @@ class MatrixExpr(Expr):
             elif len(key) == 2:
                 i, j = key
                 if isinstance(i, slice) or isinstance(j, slice):
-                    return MatrixSlice(self, i, j)
+                    return self._entry(i, j)
+#                     return MatrixSlice(self, i, j)
                 i, j = _sympify(i), _sympify(j)
                 if self.valid_index(i, j) != False:
                     return self._entry(i, j)
@@ -258,23 +259,6 @@ class MatrixExpr(Expr):
         if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
             return self._entry(key)
 #             # row-wise decomposition of matrix
-#             rows, cols = self.shape
-#             # allow single indexing if number of columns is known
-#             if not isinstance(cols, Integer):
-#                 raise IndexError(filldedent('''
-#                     Single indexing is only supported when the number
-#                     of columns is known.'''))
-#             key = _sympify(key)
-#             i = key // cols
-#             j = key % cols
-#             if self.valid_index(i, j) != False:
-#                 return self._entry(i, j)
-#             else:
-#                 raise IndexError("Invalid index %s" % key)
-#         elif isinstance(key, (Symbol, Expr)):
-#                 raise IndexError(filldedent('''
-#                     Only integers may be used when addressing the matrix
-#                     with a single index.'''))
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
     def as_explicit(self):
@@ -430,7 +414,7 @@ class MatrixExpr(Expr):
             return rule(expr)
 
         def recurse_expr(expr, index_ranges={}):
-            if expr.is_Mul:
+            if expr.is_Times:
                 nonmatargs = []
                 pos_arg = []
                 pos_ind = []
@@ -831,10 +815,6 @@ class Identity(MatrixExpr):
         return self.args[0]
 
     @property
-    def T(self):
-        return self
-
-    @property
     def atomic_dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
@@ -885,6 +865,7 @@ class Identity(MatrixExpr):
 
     def _eval_is_integer(self):
         return True
+
     
 class GenericIdentity(Identity):
     """
@@ -1080,7 +1061,7 @@ class _LeftRightArgs(object):
 
     @property
     def first_pointer(self):
-       return self._first_pointer_parent[self._first_pointer_index]
+        return self._first_pointer_parent[self._first_pointer_index]
 
     @first_pointer.setter
     def first_pointer(self, value):
@@ -1461,6 +1442,14 @@ class Concatenate(MatrixExpr):
             return arg.base[start:len(self.args)]
         return self
 
+    def _latex(self, p):
+#         return r'\begin{pmatrix}%s\end{pmatrix}' % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
+        return r"\left(\begin{array}{c}%s\end{array}\right)" % r'\\'.join('{%s}' % p._print(arg) for arg in self.args)
+#         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
+
+    def _symptr(self, p):
+        return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
+
 
 # precondition: i > j or i < j
 class Swap(Identity):    
@@ -1493,7 +1482,7 @@ class Swap(Identity):
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise            
 
     @property
@@ -1508,8 +1497,7 @@ class Swap(Identity):
         from sympy import KroneckerDelta
         return 2 * KroneckerDelta(self.i, self.j) - 1
 
-    @property
-    def T(self):
+    def _eval_transpose(self):        
         return self
 
     def _eval_inverse(self):
@@ -1538,8 +1526,7 @@ class Multiplication(Identity):
     def multiplier(self):
         return self.args[-1]
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return self
 
     def _eval_inverse(self):
@@ -1573,7 +1560,7 @@ class Multiplication(Identity):
         piecewise = (1 + (self.multiplier - 1) * KroneckerDelta(i, self.i)) * KroneckerDelta(i, j)
         
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise
 
     def __matmul__(self, rhs):
@@ -1628,8 +1615,7 @@ class Addition(Multiplication):
     def j(self):
         return self.args[2]
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return self.func(self.n, self.j, self.i, self.multiplier)
 
     def _eval_inverse(self):
@@ -1663,7 +1649,7 @@ class Addition(Multiplication):
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise            
 
     def _eval_determinant(self):
@@ -1700,6 +1686,7 @@ class Addition(Multiplication):
     @property
     def is_lower(self):
         return self.i <= self.j
+
     
 class Shift(Identity):
     '''
@@ -1726,8 +1713,7 @@ class Shift(Identity):
     def _eval_determinant(self):
         return (-1) ** (self.j - self.i)
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return Shift(self.n, self.j, self.i)
 
     def _eval_inverse(self):
@@ -1776,7 +1762,7 @@ class Shift(Identity):
                               (piecewise_ji, True))
 
         if return_reference:
-            return Ref(piecewise, (j, 0, self.n - 1))
+            return Ref[j:self.n](piecewise)
         return piecewise            
 
     @_sympifyit('other', NotImplemented)
@@ -1817,7 +1803,6 @@ class Shift(Identity):
 
         return MatrixExpr.__matmul__(self, other)
 
-
     @property
     def is_upper(self):
         return self.i == self.j
@@ -1825,6 +1810,7 @@ class Shift(Identity):
     @property
     def is_lower(self):
         return self.i == self.j
+
 
 from .matmul import MatMul
 from .matpow import MatPow

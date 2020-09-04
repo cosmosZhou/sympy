@@ -688,7 +688,7 @@ def test_mul2():
     was added in the same commit as this test
     2) remove the special handling in Mul.flatten
     """
-    assert (2*(x + 1)).is_Mul
+    assert (2*(x + 1)).is_Times
 
 
 def test_noncommutative_subs():

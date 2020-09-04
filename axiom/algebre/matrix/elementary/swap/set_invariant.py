@@ -10,11 +10,15 @@ from sympy.concrete.expr_with_limits import Ref
 
 
 @plausible
-def apply(x):
+def apply(x, w=None):
     n = x.shape[0]
     i = Symbol('i', domain=Interval(0, n - 1, integer=True))
-    j = Symbol('j', domain=Interval(0, n - 1, integer=True))    
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[i, j](Swap(n, i, j)))
+    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
+    if w is None:    
+        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
+    else:
+        assert len(w.shape) == 4 and all(s == n for s in w.shape)
+        assert w[i, j].is_Swap or w[i, j].definition.is_Swap        
     
     lhs = (w[i, j] @ x).set_comprehension()
     return Equality(lhs, x.set_comprehension(free_symbol=lhs.variable))

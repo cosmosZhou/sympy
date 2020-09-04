@@ -873,8 +873,7 @@ class Number(AtomicExpr):
     def shape(self):
         return ()
 
-    @property
-    def T(self):
+    def _eval_transpose(self):
         return self
 
     def simplify(self, *_, **__):
@@ -2924,7 +2923,7 @@ class Infinity(with_metaclass(Singleton, Number)):
 
     is_commutative = True
     is_number = True
-    is_complex = False
+#     is_complex = False
     is_extended_real = True
     is_infinite = True
     is_extended_positive = True
@@ -3129,7 +3128,7 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
     """
 
     is_extended_real = True
-    is_complex = False
+#     is_complex = False
     is_commutative = True
     is_infinite = True
     is_extended_negative = True

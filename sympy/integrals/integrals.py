@@ -73,13 +73,7 @@ class Integrate(AddWithLimits):
 
         """
 
-        # This will help other classes define their own definitions
-        # of behaviour with Integral.
-#         if hasattr(function, '_eval_Integral'):
-#             return function._eval_Integral(*symbols, **assumptions)
-
-        obj = AddWithLimits.__new__(cls, function, *symbols, **assumptions)
-        return obj
+        return AddWithLimits.__new__(cls, function, *symbols, **assumptions)
 
     def __getnewargs__(self):
         return (self.function,) + tuple([tuple(xab) for xab in self.limits])

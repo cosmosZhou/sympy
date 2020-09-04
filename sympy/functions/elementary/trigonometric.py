@@ -77,7 +77,7 @@ class TrigonometricFunction(Function):
             return general_period
 
         if symbol in f.free_symbols:
-            if f.is_Mul:
+            if f.is_Times:
                 g, h = f.as_independent(symbol)
                 if h == symbol:
                     return general_period / abs(g)
@@ -117,7 +117,7 @@ def _peeloff_pi(arg):
         if a is S.Pi:
             K = S.One
             break
-        elif a.is_Mul:
+        elif a.is_Times:
             K, p = a.as_two_terms()
             if p is S.Pi and K.is_Rational:
                 break
@@ -170,7 +170,7 @@ def _pi_coeff(arg, cycles=1):
         return S.One
     elif not arg:
         return S.Zero
-    elif arg.is_Mul:
+    elif arg.is_Times:
         cx = arg.coeff(S.Pi)
         if cx:
             c, x = cx.as_coeff_Mul()  # pi is not included as coeff

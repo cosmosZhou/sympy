@@ -34,7 +34,7 @@ def prove(Eq):
     
     Eq << Eq.expansion.subs(W, W.T)
     
-    Eq << Eq[-1].subs(x, y)
+    Eq << Eq[-1].swap(x, y)
     
     Eq << Eq[-1].this.rhs.limits_subs(i, j)
     

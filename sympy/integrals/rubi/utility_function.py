@@ -341,7 +341,7 @@ def RationalQ(*nodes):
     return all(var.is_Rational for var in nodes)
 
 def ProductQ(expr):
-    return S(expr).is_Mul
+    return S(expr).is_Times
 
 def SumQ(expr):
     return expr.is_Plus
@@ -414,7 +414,7 @@ def SqrtNumberQ(expr):
         m = expr.base
         n = expr.exp
         return (IntegerQ(n) and SqrtNumberQ(m)) or (IntegerQ(n-S(1)/2) and RationalQ(m))
-    elif expr.is_Mul:
+    elif expr.is_Times:
         return all(SqrtNumberQ(i) for i in expr.args)
     else:
         return RationalQ(expr) or expr == I
@@ -897,7 +897,7 @@ def RealQ(u):
         u = u.base
         v = u.exp
         return RealQ(u) & RealQ(v) & (IntegerQ(v) | PositiveOrZeroQ(u))
-    elif u.is_Mul:
+    elif u.is_Times:
         return all(RealQ(i) for i in u.args)
     elif u.is_Plus:
         return all(RealQ(i) for i in u.args)

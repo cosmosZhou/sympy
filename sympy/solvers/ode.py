@@ -1411,7 +1411,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
                 if x in coeff.free_symbols:
                     return False
                 return True
-            if coeff.is_Mul:
+            if coeff.is_Times:
                 if coeff.has(f(x)):
                     return False
                 return x**order in coeff.args
@@ -2847,7 +2847,7 @@ def constantsimp(expr, constants):
         new_expr = terms_gcd(expr, clear=False, deep=True, expand=False)
 
         # we do not want to factor exponentials, so handle this separately
-        if new_expr.is_Mul:
+        if new_expr.is_Times:
             infac = False
             asfac = False
             for m in new_expr.args:
@@ -5338,7 +5338,7 @@ def _undetermined_coefficients_match(expr, x):
             return True
         elif expr.is_Plus:
             return all(_test_term(i, x) for i in expr.args)
-        elif expr.is_Mul:
+        elif expr.is_Times:
             if expr.has(sin, cos):
                 foundtrig = False
                 # Make sure that there is only one trig function in the args.
@@ -5388,7 +5388,7 @@ def _undetermined_coefficients_match(expr, x):
             multiplicatively.
             """
             term = S.One
-            if expr.is_Mul:
+            if expr.is_Times:
                 for i in expr.args:
                     if i.has(x):
                         term *= i
@@ -5918,7 +5918,7 @@ def _lie_group_remove(coords):
         base = _lie_group_remove(base)
         expr = _lie_group_remove(expr)
         return base**expr
-    elif coords.is_Mul:
+    elif coords.is_Times:
         mulargs = []
         coordargs = coords.args
         for arg in coordargs:
@@ -6466,7 +6466,7 @@ def lie_heuristic_function_sum(match, comp=False):
                         fx = fx.subs(x, y)
                         gy = gy.subs(y, x)
                     etaval = factor_terms(fx + gy)
-                    if etaval.is_Mul:
+                    if etaval.is_Times:
                         etaval = Mul(*[arg for arg in etaval.args if arg.has(x, y)])
                     if odefac == hinv:  # Inverse ODE
                         inf = {eta: etaval.subs(y, func), xi : S(0)}
@@ -6784,7 +6784,7 @@ def lie_heuristic_linear(match, comp=False):
     if pde.is_Plus:
         terms = pde.args
         for term in terms:
-            if term.is_Mul:
+            if term.is_Times:
                 rem = Mul(*[m for m in term.args if not m.has(x, y)])
                 xypart = term/rem
                 if xypart not in coeffdict:
