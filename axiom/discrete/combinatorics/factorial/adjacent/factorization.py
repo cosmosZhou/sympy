@@ -10,23 +10,16 @@ from sympy.concrete.products import MatProduct
 
 
 @plausible
-def apply(n, w=None):
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True))
-    j = Symbol('j', domain=Interval(0, n - 1, integer=True))    
+def apply(n):
+    i = Symbol('i', integer=True)
     
-    if w is None:
-        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
-    else:
-        assert len(w.shape) == 4 and all(s == n for s in w.shape)
-        assert w[i, j].is_Swap or w[i, j].definition.is_Swap
-        
-    p = Symbol('p', shape=(n,), integer=True, nonnegative=True)
+    p = Symbol('p', shape=(oo,), integer=True, nonnegative=True)
     
-    P = Symbol('P', dtype=dtype.integer * n, definition=conditionset(p, Equality(p.set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol('P', dtype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
-    b = Symbol('b', integer=True, shape=(n,))
+    b = Symbol('b', integer=True, shape=(oo,), nonnegative=True)
     
-    return ForAll[p:P](Exists[b](Equality(p, Ref[i](i) @ MatProduct[i](w[i, b[i]]))))
+    return ForAll[p[:n]:P](Exists[b[:n]](Equality(p[:n], MatProduct[i:n](Swap(n, i, b[i])) @ Ref[i:n](i))))
 
 
 @check
@@ -34,6 +27,12 @@ def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     
     Eq << apply(n)
+    
+    Eq << Eq[-1].subs(Eq[0])
+    
+    Eq << Eq[-1].subs(n, 2)
+    
+    
 
     
 if __name__ == '__main__':

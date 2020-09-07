@@ -581,6 +581,7 @@ class Indexed(Expr):
             if definition.T == definition:
                 return self
 
+
 class Slice(Expr):
     """Represents a mathematical object with Slices.
 
@@ -825,8 +826,25 @@ class Slice(Expr):
         return ranges
 
     def _sympystr(self, p):
-        indices = list(map(p.doprint, self.indices))
-        return "%s[%s]" % (p.doprint(self.base), ":".join(indices))
+        start, end = self.indices
+        if start.is_zero:
+            start = ''
+        else:
+            start = p._print(start)
+        end = p._print(end)
+        
+        return "%s[%s]" % (p.doprint(self.base), ':'.join([start, end]))
+
+    def _latex(self, p):
+        start, end = self.indices
+        if start.is_zero:
+            start = ''
+        else:
+            start = p._print(start)
+            
+        end = p._print(end)
+        tex = '{%s}_{%s}' % (p._print(self.base), ':'.join([start, end]))
+        return tex
 
     @property
     def free_symbols(self):
@@ -913,6 +931,10 @@ class Slice(Expr):
     def atomic_dtype(self):
         return self.base.atomic_dtype
 
+    @property
+    def is_integer(self):        
+        return self.base.is_integer
+
     def _eval_is_extended_real(self):
         return self.base.is_extended_real
 
@@ -930,6 +952,7 @@ class Slice(Expr):
 
     def _eval_is_zero(self):
         return self.base.is_zero
+
 
 class Idx(Expr):
     """Represents an integer index as an ``Integer`` or integer expression.

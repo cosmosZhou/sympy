@@ -42,14 +42,9 @@ def prove(Eq):
     
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     
-    k = Symbol('k', domain=Interval(0, n - 1, integer=True))
-    
     given = ForAll[x:S](Contains(w[i, j] @ x, S))
     
     Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(given)
-    
-    Eq << factorization.apply(n, w)
-
 
 if __name__ == '__main__':
     prove(__file__)

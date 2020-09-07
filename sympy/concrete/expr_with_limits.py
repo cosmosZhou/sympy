@@ -2188,7 +2188,10 @@ class UNION(Set, ExprWithLimits):
         if self.is_ConditionSet:
             from sympy.sets.conditionset import conditionset
             if b.is_ConditionSet and self.variable == b.variable:
-                return conditionset(self.variable, self.condition & b.condition, self.base_set & b.base_set)                
+                return conditionset(self.variable, self.condition & b.condition, self.base_set & b.base_set)
+            base_set = self.variable.domain & self.base_set
+            if base_set in b:
+                return self                
             return conditionset(self.variable, self.condition, self.base_set & b)
     
     @property
@@ -3183,7 +3186,7 @@ class ConditionalBoolean(Boolean):
             for x, *ab in self.limits:
                 limits.append((x, *(e._subs(*args, **kwargs) for e in ab)))   
             
-            if self.function.is_ConditionalBoolean or all(arg.is_Boolean for arg in args):
+            if all(arg.is_Boolean for arg in args):
                 function = self.function.subs(*args, **kwargs)
                 clue = function.clue
             else:
