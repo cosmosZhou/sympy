@@ -1231,46 +1231,46 @@ class MatrixBase(MatrixCommon):
 
     @classmethod
     def irregular(cls, ntop, *matrices, **kwargs):
-      """Return a matrix filled by the given matrices which
-      are listed in order of appearance from left to right, top to
-      bottom as they first appear in the matrix. They must fill the
-      matrix completely.
-
-      Examples
-      ========
-
-      >>> from sympy import ones, Matrix
-      >>> Matrix.irregular(3, ones(2,1), ones(3,3)*2, ones(2,2)*3,
-      ...   ones(1,1)*4, ones(2,2)*5, ones(1,2)*6, ones(1,2)*7)
-      Matrix([
-        [1, 2, 2, 2, 3, 3],
-        [1, 2, 2, 2, 3, 3],
-        [4, 2, 2, 2, 5, 5],
-        [6, 6, 7, 7, 5, 5]])
-      """
-      from sympy.core.compatibility import as_int
-      ntop = as_int(ntop)
-      # make sure we are working with explicit matrices
-      b = [i.as_explicit() if hasattr(i, 'as_explicit') else i
-          for i in matrices]
-      q = list(range(len(b)))
-      dat = [i.rows for i in b]
-      active = [q.pop(0) for _ in range(ntop)]
-      cols = sum([b[i].cols for i in active])
-      rows = []
-      while any(dat):
-          r = []
-          for a, j in enumerate(active):
-              r.extend(b[j][-dat[j], :])
-              dat[j] -= 1
-              if dat[j] == 0 and q:
-                  active[a] = q.pop(0)
-          if len(r) != cols:
-            raise ValueError(filldedent('''
-                Matrices provided do not appear to fill
-                the space completely.'''))
-          rows.append(r)
-      return cls._new(rows)
+        """Return a matrix filled by the given matrices which
+        are listed in order of appearance from left to right, top to
+        bottom as they first appear in the matrix. They must fill the
+        matrix completely.
+        
+        Examples
+        ========
+        
+        >>> from sympy import ones, Matrix
+        >>> Matrix.irregular(3, ones(2,1), ones(3,3)*2, ones(2,2)*3,
+        ...   ones(1,1)*4, ones(2,2)*5, ones(1,2)*6, ones(1,2)*7)
+        Matrix([
+          [1, 2, 2, 2, 3, 3],
+          [1, 2, 2, 2, 3, 3],
+          [4, 2, 2, 2, 5, 5],
+          [6, 6, 7, 7, 5, 5]])
+        """
+        from sympy.core.compatibility import as_int
+        ntop = as_int(ntop)
+        # make sure we are working with explicit matrices
+        b = [i.as_explicit() if hasattr(i, 'as_explicit') else i
+            for i in matrices]
+        q = list(range(len(b)))
+        dat = [i.rows for i in b]
+        active = [q.pop(0) for _ in range(ntop)]
+        cols = sum([b[i].cols for i in active])
+        rows = []
+        while any(dat):
+            r = []
+            for a, j in enumerate(active):
+                r.extend(b[j][-dat[j], :])
+                dat[j] -= 1
+                if dat[j] == 0 and q:
+                    active[a] = q.pop(0)
+            if len(r) != cols:
+                raise ValueError(filldedent('''
+                  Matrices provided do not appear to fill
+                  the space completely.'''))
+            rows.append(r)
+        return cls._new(rows)
 
     @classmethod
     def _handle_creation_inputs(cls, *args, **kwargs):
@@ -1359,13 +1359,9 @@ class MatrixBase(MatrixCommon):
                         "SymPy supports just 1D and 2D matrices")
 
             # Matrix([1, 2, 3]) or Matrix([[1, 2], [3, 4]])
-            elif is_sequence(args[0]) \
-                    and not isinstance(args[0], DeferredVector):
-                dat = list(args[0])
-                ismat = lambda i: isinstance(i, MatrixBase) and (
-                    evaluate or
-                    isinstance(i, BlockMatrix) or
-                    isinstance(i, MatrixSymbol))
+            elif is_sequence(args[0]) and not isinstance(args[0], DeferredVector):
+                dat = args[0]
+                ismat = lambda i: isinstance(i, MatrixBase) and (evaluate or isinstance(i, BlockMatrix) or isinstance(i, MatrixSymbol))
                 raw = lambda i: is_sequence(i) and not ismat(i)
                 evaluate = kwargs.get('evaluate', True)
                 if evaluate:
@@ -1374,20 +1370,18 @@ class MatrixBase(MatrixCommon):
                         # make Block and Symbol explicit
                         if isinstance(x, (list, tuple)):
                             return type(x)([do(i) for i in x])
-                        if isinstance(x, BlockMatrix) or \
-                                isinstance(x, MatrixSymbol) and \
-                                all(_.is_Integer for _ in x.shape):
+                        if isinstance(x, BlockMatrix) or isinstance(x, MatrixSymbol) and all(_.is_Integer for _ in x.shape):
                             return x.as_explicit()
                         return x
 
                     dat = do(dat)
 
-                if dat == [] or dat == [[]]:
+                if not dat or len(dat) == 1 and not dat[0]:
                     rows = cols = 0
                     flat_list = []
                 elif not any(raw(i) or ismat(i) for i in dat):
                     # a column as a list of values
-                    flat_list = [cls._sympify(i) for i in dat]
+                    flat_list = type(dat)(cls._sympify(i) for i in dat)
                     
 #                     rows = len(flat_list)
 #                     cols = 1 if rows else 0
@@ -1412,8 +1406,7 @@ class MatrixBase(MatrixCommon):
                     flat_list = []
                     for i in dat:
                         if ismat(i):
-                            flat_list.extend(
-                                [k for j in i.tolist() for k in j])
+                            flat_list.extend([k for j in i.tolist() for k in j])
                             if any(i.shape):
                                 ncol.add(i.cols)
                         elif raw(i):

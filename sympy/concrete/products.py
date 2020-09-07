@@ -996,9 +996,11 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         
         from sympy.core.basic import _aresame
         if self == old or _aresame(self, old) or self.dummy_eq(old):
-            return new        
-
-        from sympy.tensor.indexed import Slice
+            return new
+                
+        if not self._has(old):
+            return self
+        
         if len(self.limits) == 1:
             limit = self.limits[0]
             x, *ab = limit
@@ -1021,7 +1023,8 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
                 a, b = ab
 
-            if isinstance(old, Slice) and len(ab) == 2:
+            if old.is_Slice and len(ab) == 2:
+                from sympy import Interval
                 _x = x.copy(domain=Interval(*ab, integer=x.is_integer))
                 function = self.function.subs(x, _x)
                 _function = function.subs(old, new)
@@ -1037,7 +1040,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
 
-                if isinstance(x, Slice):
+                if x.is_Slice:
                     x = x.subs(old, new)
                 return self.func(function, (x,))
 
@@ -1055,7 +1058,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                     return self.func(function, (x, a + diff, b + diff))
                 else:
                     return self.func(function, (x,))
-
+            from sympy import solve
             if old != x:
                 sol = solve(old - new, x)
                 if len(sol) != 1:
@@ -1093,8 +1096,6 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
             return self.func(function, *self.limits)
         else:
-#             len(self.limits) > 1
-
             index = -1
             for i, limit in enumerate(self.limits):
                 x, *ab = limit

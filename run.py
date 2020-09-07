@@ -3,6 +3,7 @@
 import sys
 # to run this script, please install:
 # pip install mpmath==1.1.0
+# pip install oauthlib
 if __name__ == '__main__':
 
     if len(sys.argv) == 1:

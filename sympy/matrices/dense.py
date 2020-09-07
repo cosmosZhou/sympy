@@ -18,7 +18,6 @@ from sympy.simplify import simplify as _simplify
 from sympy.utilities.decorator import doctest_depends_on
 from sympy.utilities.misc import filldedent
 
-
 def _iszero(x):
     """Returns True if x is zero."""
     return x.is_zero
@@ -113,6 +112,14 @@ class DenseMatrix(MatrixBase):
             # row-wise decomposition of matrix
             if isinstance(key, slice):
                 return self._mat[key]
+            if len(self.shape) == 1:
+                from sympy.functions.elementary.piecewise import Piecewise
+                from sympy import Equal
+                args = []
+                for i in range(len(self._mat)):
+                    args.append([self._mat[i], Equal(key,i)])
+                args[-1][1] = True
+                return Piecewise(*args).simplify()
             return self._mat[a2idx(key)]
 
     def __setitem__(self, key, value):
@@ -474,10 +481,12 @@ class MutableDenseMatrix(DenseMatrix):
         if kwargs.get('copy', True) is False:
             if len(args) != 3:
                 raise TypeError("'copy=False' requires a matrix be initialized as rows,cols,[list]")
-            rows, cols, flat_list = args
+            *shape, flat_list = args
         else:
-            rows, cols, flat_list = cls._handle_creation_inputs(*args, **kwargs)
-        self = Basic.__new__(cls, shape=(rows, cols))
+            *shape, flat_list = cls._handle_creation_inputs(*args, **kwargs)
+        if shape[0] == 1:
+            shape = shape[1:]
+        self = Basic.__new__(cls, shape=shape)
         self._args = flat_list
         return self
 
@@ -487,11 +496,14 @@ class MutableDenseMatrix(DenseMatrix):
 
     @property
     def rows(self):
-        return self.shape[0]
+        if len(self.shape) == 2:
+            return self.shape[0]
+        else:
+            return 1
     
     @property
     def cols(self):
-        return self.shape[1]
+        return self.shape[-1]
     
     @property
     def _mat(self):
@@ -813,9 +825,12 @@ class MutableDenseMatrix(DenseMatrix):
 
         sympy.simplify.simplify.simplify
         """
+        if isinstance(self._mat, tuple):
+            return self.func(tuple(_simplify(self._mat[i]) for i in range(len(self._mat))), shape=self.shape)
         for i in range(len(self._mat)):
-            self._mat[i] = _simplify(self._mat[i], ratio=ratio, measure=measure,
-                                     rational=rational, inverse=inverse)
+            self._mat[i] = _simplify(self._mat[i], ratio=ratio, measure=measure, rational=rational, inverse=inverse)
+            
+        return self
 
     def zip_row_op(self, i, k, f):
         """In-place operation on row ``i`` using two-arg functor whose args are

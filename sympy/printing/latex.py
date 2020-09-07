@@ -1205,9 +1205,11 @@ class LatexPrinter(Printer):
 
     def _print_MatrixBase(self, expr):
         lines = []
-
-        for line in range(expr.rows):  # horrible, should be 'rows'
-            lines.append(" & ".join([self._print(i) for i in expr[line, :]]))
+        if expr.rows == 1:
+            lines.append(" & ".join([self._print(i) for i in expr.args]))
+        else:
+            for line in range(expr.rows):  # horrible, should be 'rows'
+                lines.append(" & ".join([self._print(i) for i in expr[line, :]]))
 
         mat_str = self._settings['mat_str']
         if mat_str is None:
@@ -1226,13 +1228,10 @@ class LatexPrinter(Printer):
         if self._settings['mat_delim']:
             left_delim = self._settings['mat_delim']
             right_delim = self._delim_dict[left_delim]
-            out_str = r'\left' + left_delim + out_str + \
-                      r'\right' + right_delim
+            out_str = r'\left' + left_delim + out_str + r'\right' + right_delim
         return out_str % r"\\".join(lines)
 
-    _print_ImmutableMatrix = _print_ImmutableDenseMatrix \
- = _print_Matrix \
- = _print_MatrixBase
+    _print_ImmutableMatrix = _print_ImmutableDenseMatrix = _print_Matrix = _print_MatrixBase
 
     def _print_MatrixElement(self, expr):
         if len(expr.args) == 3:

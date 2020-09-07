@@ -960,6 +960,7 @@ class ExprWithLimits(Expr):
                 return self.func(self.function, j_limit, i_limit)
         return self
 
+
 class AddWithLimits(ExprWithLimits):
     r"""Represents unevaluated oriented additions.
         Parent class for Integral and Sum.
@@ -2117,6 +2118,7 @@ class Ref(ExprWithLimits):
         
     def limits_swap(self):
         return self
+
                 
 class UNION(Set, ExprWithLimits):
     """
@@ -3338,8 +3340,7 @@ class ConditionalBoolean(Boolean):
         dic = {x : domain for x, *domain in limits}
         updated = False
         for var, *domain in limits:
-            from sympy.tensor.indexed import Slice
-            if isinstance(var, Slice):
+            if var.is_Slice:
                 start, stop = var.indices
                 if var.base[stop] in dic and not dic[var.base[stop]] and not dic[var]:
                     del dic[var.base[stop]]
@@ -3359,6 +3360,21 @@ class ConditionalBoolean(Boolean):
                     del dic[var]
                     dic[var.base[start + 1 : stop]] = domain
                     updated = True
+                else:
+                    from sympy.core.basic import preorder_traversal
+                    validDomain = S.EmptySet
+                    for p in preorder_traversal(self.function):
+                        if p.is_Slice and p.base == var.base:
+                            validDomain |= Interval(*p.indices, right_open=True, integer=True)
+                        elif p.is_Indexed and p.base == var.base:
+                            validDomain |= p.indices[0].set
+                    universe = Interval(*var.indices, right_open=True, integer=True)
+                    if validDomain != universe and validDomain in universe:
+                        if validDomain.is_Interval:
+                            start, end = validDomain.min(), validDomain.max()
+                            del dic[var]
+                            dic[var.base[start : end + 1]] = domain
+                            updated = True
 
         if updated:
             dic_original = {x : domain for x, *domain in limits}
@@ -3430,7 +3446,7 @@ class ConditionalBoolean(Boolean):
                     if e != expr:
                         function = function._subs(e, expr)
                     return self.func(function, *limits, equivalent=self).simplify()
-            else: #s.dtype.is_condition: 
+            else:  # s.dtype.is_condition: 
                 if s.is_Equality:
                     if e == s.lhs:
                         y = s.rhs
@@ -3445,9 +3461,8 @@ class ConditionalBoolean(Boolean):
                             return self.func(function, equivalent=self)
                         function.equivalent = self
                         return function
-                if s == self.function or s.dummy_eq(self.function): #s.invert() | self.function
+                if s == self.function or s.dummy_eq(self.function):  # s.invert() | self.function
                     return S.true.copy(equivalent=self)
-            
 
         if self.function.is_Equality:
             limits_dict = self.limits_dict
@@ -3477,6 +3492,7 @@ class ConditionalBoolean(Boolean):
             this.equivalent = self
             return this
         return self
+
 
 class ForAll(ConditionalBoolean, ExprWithLimits):
     """

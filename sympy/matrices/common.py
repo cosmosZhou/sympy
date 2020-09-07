@@ -1071,15 +1071,15 @@ class MatrixProperties(MatrixRequired):
     __slots__ = []
     def _eval_atoms(self, *types):
         result = set()
-        for i in self:
+        for i in self._mat:
             result.update(i.atoms(*types))
         return result
 
     def _eval_free_symbols(self):
-        return set().union(*(i.free_symbols for i in self))
+        return set().union(*(i.free_symbols for i in self._mat))
 
     def _eval_has(self, *patterns):
-        return any(a.has(*patterns) for a in self)
+        return any(a.has(*patterns) for a in self._mat)
 
     def _eval_is_anti_symmetric(self, simpfunc):
         if not all(simpfunc(self[i, j] + self[j, i]).is_zero for i in range(self.rows) for j in range(self.cols)):
@@ -1127,9 +1127,9 @@ class MatrixProperties(MatrixRequired):
         return mat.is_zero
 
     def _eval_is_zero(self):
-        if any(i.is_zero == False for i in self):
+        if any(i.is_zero == False for i in self._mat):
             return False
-        if any(i.is_zero is None for i in self):
+        if any(i.is_zero is None for i in self._mat):
             return None
         return True
 
@@ -1139,7 +1139,7 @@ class MatrixProperties(MatrixRequired):
                    for j in range(min(self.cols, (i - 1))))
 
     def _eval_values(self):
-        return [i for i in self if not i.is_zero]
+        return [i for i in self._mat if not i.is_zero]
 
     def atoms(self, *types):
         """Returns the atoms that form the current object.
@@ -1654,7 +1654,7 @@ class MatrixOperations(MatrixRequired):
         return self.transpose().conjugate()
 
     def _eval_applyfunc(self, f):
-        out = self._new(self.rows, self.cols, [f(x) for x in self])
+        out = self._new(self.rows, self.cols, [f(x) for x in self._mat])
         return out
 
     def _eval_as_real_imag(self):

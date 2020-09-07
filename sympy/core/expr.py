@@ -4080,6 +4080,17 @@ class Expr(Basic, EvalfMixin):
                 return Matrix(i_shape, j_shape, tuple(array))
         return self
 
+    def as_Vector(self):
+        if len(self.shape) == 1:
+            n = self.shape[0]
+            if isinstance(n, int) or n.is_Number:  
+                array = []
+                for i in range(n):
+                    array.append(self[sympify(i)])
+                from sympy import Matrix
+                return Matrix(tuple(array))
+        return self
+
     def generate_int_limit(self, index, excludes=None, generator=None, free_symbol=None):
         x = generator.generate_free_symbol(excludes, free_symbol=free_symbol, integer=True)
         domain = x.domain_assumed
@@ -4087,6 +4098,7 @@ class Expr(Basic, EvalfMixin):
         if domain is not None and domain.is_Interval and domain.min() == start and domain.max() == end:
             return (x,)   
         return (x, start, end)
+
 
 class AtomicExpr(Atom, Expr):
     """

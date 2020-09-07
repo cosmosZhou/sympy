@@ -14,7 +14,7 @@ from .power import Pow, integer_nthroot, integer_log, Power
 from .mul import Mul, prod, Times
 from .add import Add, Plus
 from .mod import Mod
-from .relational import ( Rel, Eq, Ne, Lt, Le, Gt, Ge,
+from .relational import ( Rel, Eq, Ne, Lt, Le, Gt, Ge, Equal, Unequal, 
     Equality, GreaterThan, LessThan, Unequality, StrictGreaterThan,
     StrictLessThan )
 from .multidimensional import vectorize
