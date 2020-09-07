@@ -378,34 +378,12 @@ def test_cloud_service():
     ] &
 '''))
     print(capital_distance('France', 'Japan'))
-    print(capital_distance('Egypt', 'Peru'))
-#     print(session.evaluate(wl.QuantityMagnitude(['Egypt', 'Peru'])))
-    api_code = '''
-CloudConnect["744984949@qq.com", "861001ok"];
-
-api = APIFunction[{"x" -> "Integer"}, #x^2 &];
-
-CloudDeploy[api, CloudObject["api/private/xsquared"]];
-
-SetPermissions[CloudObject["api/private/xsquared"], 
- SecuredAuthenticationKeys["pythonclientlibrary"] -> {"Read", 
-   "Execute"}];
-'''
-    
+    print(capital_distance('Egypt', 'Peru'))    
     api = ('744984949@qq.com', 'api/private/xsquared')
     result = session.call(api, {'x' : 4})
     print(result.success)
     print(result.get())
     
-#     from wolframclient.evaluation import WolframAPICall
-#     call = WolframAPICall(session, api)
-#     call.set_parameter('x', 16)
-#     result = call.perform()
-#     print(result.success)
-#     print(result.get())
-
-    
-
 try:
     # reference:
 #     https://reference.wolfram.com/language/WolframClientForPython/docpages/basic_usages.html#wolfram-cloud-interactions
