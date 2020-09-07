@@ -548,9 +548,6 @@ class StrPrinter(Printer):
         from sympy.matrices import Matrix
         return self._print(Matrix(expr))
     
-    def _print_Equality(self, expr):
-        return '%s == %s' % tuple(self._print(arg) for arg in expr.args)
-
     def _print_ZeroMatrix(self, expr):
         return "0"
 

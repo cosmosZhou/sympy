@@ -584,8 +584,7 @@ def default_sort_key(item, order=None):
         # e.g. str
         cls_index, args = 0, (1, (str(item),))
 
-    return (cls_index, 0, item.__class__.__name__
-            ), args, S.One.sort_key(), S.One
+    return (cls_index, 0, item.__class__.__name__), args, S.One.sort_key(), S.One
 
 
 def _nodes(e):

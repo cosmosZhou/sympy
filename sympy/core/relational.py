@@ -434,7 +434,7 @@ class Relational(Boolean, Expr, EvalfMixin):
 Rel = Relational
 
 
-class Equality(Relational):
+class Equal(Relational):
     """An equal relation between two objects.
 
     Represents that two objects are equal.  If they can be easily shown
@@ -1109,11 +1109,13 @@ class Equality(Relational):
                 return Exists[C](self.func(self.rhs.arg, C), given=self)
         return self
 
+    def _sympystr(self, p):
+        return '%s == %s' % tuple(p._print(arg) for arg in self.args)
 
-Eq = Equality
+Eq = Equality = Equal
 
 
-class Unequality(Relational):
+class Unequal(Relational):
     """An unequal relation between two objects.
 
     Represents that two objects are not equal.  If they can be shown to be
@@ -1238,7 +1240,7 @@ class Unequality(Relational):
         return 1 - KroneckerDelta(*self.args)
 
     
-Ne = Unequality
+Ne = Unequality = Unequal
 Equality.invert_type = Unequality
 
 
