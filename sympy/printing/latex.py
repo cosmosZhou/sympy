@@ -444,15 +444,6 @@ class LatexPrinter(Printer):
             outstr = outstr[1:]
         return outstr
 
-    def _print_Slice(self, expr):
-        tex_base = self._print(expr.base)
-        tex = '{' + tex_base + '}' + '_{%s}' % ':'.join(
-            map(self._print, expr.indices))
-        return tex
-
-    def _print_IndexedBase(self, expr):
-        return self._print(expr.label)
-
     def _print_Derivative(self, expr):
         if requires_partial(expr):
             diff_symbol = r'\partial'

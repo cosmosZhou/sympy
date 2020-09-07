@@ -54,7 +54,6 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.subs(Eq[-1])
 
-    assert Eq[-1].rhs.is_nonzero
     Eq << Eq[-1] / Eq[-1].rhs
 
     Eq << Eq[-1].log()
