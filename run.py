@@ -35,3 +35,13 @@ if __name__ == '__main__':
 
 # https://store.wolfram.com/arrive.cgi?URI=/catalog/
 # https://www.wolfram.com/mathematica/pricing/home-hobby/
+
+
+# https://www.ginac.de/ginac.git/
+# git clone git://www.ginac.de/ginac.git
+# https://sourceforge.net/projects/maxima/
+# http://www.mmrc.iss.ac.cn/
+
+# http://dandelion-ecl.sourceforge.net/update/
+# http://mirrors.aliyun.com/gnu/emacs/windows/emacs-27/
+# http://www.gnu.org/software/emacs/download.html
