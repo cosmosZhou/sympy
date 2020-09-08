@@ -9,7 +9,7 @@ from sympy.core.numbers import oo
 from sympy.concrete import summations
 from sympy.concrete.summations import Sum
 from sympy.concrete.expr_with_limits import Ref
-
+from sympy import var
 
 @plausible
 def apply(given):
@@ -37,7 +37,7 @@ def apply(given):
 def prove(Eq):
     n = Symbol('n', domain=Interval(2, oo, integer=True))    
     t = Symbol('t', shape=(n,), real=True)
-    j = Symbol('j', integer=True)
+    j = var(integer=True).j
     given = Equality(Sum[j:0:n - 1](t[j]), 1)
     
     Eq << apply(given)

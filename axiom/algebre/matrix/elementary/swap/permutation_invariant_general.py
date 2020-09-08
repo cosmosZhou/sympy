@@ -9,7 +9,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
 from axiom.algebre.matrix import elementary
 from sympy.concrete.products import MatProduct
-
+from sympy import var
 
 @plausible
 def apply(m, d, w=None):
@@ -34,7 +34,7 @@ def apply(m, d, w=None):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
-    m = Symbol('m', integer=True, nonnegative=True)
+    m = var(integer=True, nonnegative=True).m
     d = Symbol('d', shape=(n,), integer=True, nonnegative=True)
     
     Eq << apply(m, d)

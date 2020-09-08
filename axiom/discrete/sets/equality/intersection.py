@@ -4,7 +4,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy.sets.contains import Contains
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.sets.sets import EmptySet
-
+from sympy import var
 # given : e.set & s = a, |a| > 0 => e in s
 
 
@@ -18,8 +18,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    s = Symbol('s', dtype=dtype.integer)
-    e = Symbol('e', integer=True)
+    s = var(dtype=dtype.integer).s
+    e = var(integer=True).e
     
     Eq << apply(e, s)
     

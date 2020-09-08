@@ -7,7 +7,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from sympy.concrete.expr_with_limits import ForAll, Ref
 from axiom import algebre
 from axiom.discrete.combinatorics.factorial.adjacent import swap2_equality_general
-
+from sympy import var
 
 @plausible
 def apply(n, w=None):

@@ -9,13 +9,13 @@ from sympy.concrete.products import Product
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices.expressions.matexpr import Identity
 from axiom.algebre import matrix
-
+from sympy import var
 
 @plausible
 def apply(a):
     n = a.shape[0]
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)
+    i = var(integer=True).i
+    j = var(integer=True).j
 
     return Equality(Det(Ref[j:n, i:n](a[j] ** i)), Product[j:i, i:n](a[i] - a[j]))
 

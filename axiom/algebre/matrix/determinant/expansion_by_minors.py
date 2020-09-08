@@ -6,7 +6,7 @@ from sympy.matrices.expressions.determinant import Det
 from sympy.matrices.expressions.cofactor import Cofactors
 from sympy.concrete.summations import Sum
 from sympy.core.sympify import sympify
-
+from sympy import var
 
 @plausible
 def apply(A, i=None, j=None):
@@ -29,9 +29,9 @@ from sympy.utility import check
 
 @check
 def prove(Eq):    
-    n = Symbol('n', integer=True, positive=True)
+    n = var(integer=True, positive=True).n
     n = 5
-    i = Symbol('i', integer=True, positive=True)
+    i = var(integer=True, positive=True).i
     i = 4
     A = Symbol('A', shape=(n, n), complex=True, zero=False)
     Eq << apply(A, i=i)

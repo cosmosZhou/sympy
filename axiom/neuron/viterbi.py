@@ -1,6 +1,6 @@
 
 from sympy.core.symbol import Symbol
-
+from sympy import var
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 
@@ -12,8 +12,8 @@ from sympy.concrete.summations import Sum
 @plausible
 def apply(G, x, y):
     _, d = x.shape
-    i = Symbol('i', integer=True)
-    t = Symbol('t', integer=True, nonnegative=True)
+    i = var(integer=True).i
+    t = var(integer=True, nonnegative=True).t
 
     s = Symbol('s', shape=(oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
@@ -29,7 +29,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    d = Symbol('d', integer=True)
+    d = var(integer=True).d
 
     # oo is the length of the sequence
     # d is the number of output labels

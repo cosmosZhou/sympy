@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
-
+from sympy import var
 # given: |A| = 0
 # A == {}
 
@@ -24,7 +24,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
 
     Eq << apply(Equality(abs(A), 0))
 

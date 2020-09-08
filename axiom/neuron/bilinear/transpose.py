@@ -2,7 +2,7 @@ from sympy.core.symbol import Symbol
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
-
+from sympy import var
 
 @plausible
 def apply(x, y, W):    
@@ -14,7 +14,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True)
+    n = var(integer=True).n
     x = Symbol('x', shape=(n,), real=True)
     y = Symbol('y', shape=(n,), real=True)
     W = Symbol('W', shape=(n, n), real=True)

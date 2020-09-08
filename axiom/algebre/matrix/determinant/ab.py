@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol
 from sympy.utility import plausible
 from sympy.core.relational import Equality
-
+from sympy import var
 from sympy.matrices.expressions.determinant import Det
 from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.concrete.products import Product
@@ -13,8 +13,8 @@ from sympy.concrete.expr_with_limits import Ref
 def apply(a, b):
     n = a.shape[0]
     
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)
+    i = var(integer=True).i
+    j = var(integer=True).j
     
     return Equality(Det(Ref[j:n, i:n](a[Min(i, j)] * b[Max(i, j)])),
                     a[0] * b[n - 1] * Product(a[i] * b[i - 1] - a[i - 1] * b[i], (i, 1, n - 1)))

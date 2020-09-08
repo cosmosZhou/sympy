@@ -8,7 +8,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.factorial.adjacent import swap2_equality
 import axiom
 from axiom.algebre.matrix import elementary
-
+from sympy import var
 
 @plausible
 def apply(given):
@@ -20,7 +20,7 @@ def apply(given):
     
     w = contains.lhs.args[0].base
     _, j = contains.lhs.args[0].indices
-    i = Symbol('i', integer=True)
+    i = var(integer=True).i
     
     return ForAll[x:S](Contains(w[i, j] @ x, S), given=given)
 
@@ -28,12 +28,12 @@ def apply(given):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
-    S = Symbol('S', dtype=dtype.integer * n)    
+    S = var(dtype=dtype.integer * n).S    
     
     x = Symbol('x', **S.element_symbol().dtype.dict)
     
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)    
+    i = var(integer=True).i
+    j = var(integer=True).j    
     
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j:n, i:n](Swap(n, i, j)))
     

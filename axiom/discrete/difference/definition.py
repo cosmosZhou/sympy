@@ -5,7 +5,7 @@ from sympy.core.symbol import Symbol
 from sympy.core.function import Difference, Function
 from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
-
+from sympy import var
 
 @plausible
 def apply(fx, x, n):
@@ -20,10 +20,10 @@ from sympy.utility import check
 @check
 def prove(Eq):
     f = Function('f', real=True)
-    x = Symbol('x', real=True)
+    x = var(real=True).x
     fx = f(x)
     assert fx.is_real
-    n = Symbol('n', integer=True, nonnegative=True)
+    n = var(integer=True, nonnegative=True).n
     Eq << apply(fx, x, n)
 
     Eq << Eq[-1].subs(n, 0).doit()

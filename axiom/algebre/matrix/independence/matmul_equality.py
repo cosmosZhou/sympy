@@ -6,7 +6,7 @@ from sympy.core.relational import Equality
 from sympy.concrete.expr_with_limits import Exists, Ref
 from axiom import algebre
 from sympy.matrices.expressions.matmul import MatMul
-
+from sympy import var
 
 @plausible
 def apply(given):
@@ -59,7 +59,7 @@ def prove(Eq):
     
     Eq << apply(given)
     
-    i = Symbol('i', integer=True)
+    i = var(integer=True).i
     Eq << Eq[0][i]
     
     Eq << algebre.vector.independence.matmul_equality.apply(Eq[-1])

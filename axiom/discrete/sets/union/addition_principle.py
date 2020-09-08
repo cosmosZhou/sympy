@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Union, Intersection
-
+from sympy import var
 from sympy import S
 from axiom import discrete
 
@@ -28,14 +28,14 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
 
     Eq << apply(Equality(Intersection(A, B), S.EmptySet))
 
-    C = Symbol('C', dtype=dtype.integer, definition=A | B)
+    C = var(dtype=dtype.integer, definition=A | B).C
 
-    D = Symbol('D', dtype=dtype.integer, definition=A - B)
+    D = var(dtype=dtype.integer, definition=A - B).D
 
     Eq << C.this.definition
 

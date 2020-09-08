@@ -3,7 +3,7 @@ from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.contains import Contains
 from axiom.discrete import sets
-
+from sympy import var
 
 # given : e.set & s = a, |a| > 0 => e in s
 
@@ -43,9 +43,9 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    s = Symbol('s', dtype=dtype.integer)
-    e = Symbol('e', integer=True)
-    a = Symbol('a', dtype=dtype.integer)
+    s = var(dtype=dtype.integer).s
+    e = var(integer=True).e
+    a = var(dtype=dtype.integer).a
     
     Eq << apply(Equality(e.set & s, a), StrictGreaterThan(abs(a), 0))    
     

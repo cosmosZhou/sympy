@@ -3,7 +3,7 @@ from sympy.utility import plausible
 from sympy.core.relational import Equality
 import sympy
 from sympy.functions.elementary.exponential import softmax
-
+from sympy import var
 
 @plausible
 def apply(n, d):
@@ -21,8 +21,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True)
-    d = Symbol('d', integer=True)
+    n = var(integer=True).n
+    d = var(integer=True).d
 
     Eq << apply(n, d)
     

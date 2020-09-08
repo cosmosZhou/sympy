@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol
 from sympy.utility import plausible
 from sympy.core.relational import Equality
-
+from sympy import var
 from sympy.matrices.expressions.determinant import Det
 from sympy.concrete.products import Product
 from sympy.concrete.expr_with_limits import Ref
@@ -16,7 +16,7 @@ from sympy.sets.sets import Interval
 
 @plausible
 def apply(n, a):
-    i = Symbol('i', integer=True)
+    i = var(integer=True).i
     return Equality(Det(1 + a[:n] * Identity(n)), (1 + Sum[i:0:n - 1](1 / a[i])) * Product[i:0:n - 1](a[i]))
 
 
@@ -34,7 +34,7 @@ def column_transformation(*limits):
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True, positive=True)
+    n = var(integer=True, positive=True).n
     a = Symbol('a', shape=(oo,), complex=True, zero=False)
     Eq << apply(n, a)
     
@@ -86,8 +86,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].doit()
     
-    var = Eq[-1].rhs.args[1].variable
-    Eq << Eq[-1].this.rhs.args[1].limits_subs(var, var - 1)
+    v = Eq[-1].rhs.args[1].variable
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(v, v - 1)
     
     k = Eq[-1].rhs.args[1].variable
     Eq << Product[k:n](Eq[-1].rhs.args[1].function).this.bisect(domain={i})

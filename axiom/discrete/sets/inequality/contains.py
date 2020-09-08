@@ -4,7 +4,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.sets.contains import Contains
 from sympy.concrete.expr_with_limits import Exists
-
+from sympy import var
 # given: A != {}
 # Exists[x] (x in A)
 
@@ -25,7 +25,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
     Eq << apply(Unequality(A, S.EmptySet))
     
     Eq << (Eq[0].lhs.assertion() & Eq[0])

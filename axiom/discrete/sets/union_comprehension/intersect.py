@@ -4,7 +4,7 @@ from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
 from sympy import S
 from sympy.concrete.expr_with_limits import ForAll, UNION
-
+from sympy import var
 # given: A & Union[i](x[i]) = {}
 # A & x[i] = {}
 
@@ -38,9 +38,9 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    i = Symbol('i', integer=True)
-    k = Symbol('k', integer=True, positive=True)
+    A = var(dtype=dtype.integer).A
+    i = var(integer=True).i
+    k = var(integer=True, positive=True).k
     x = Symbol('x', shape=(k + 1,), dtype=dtype.integer)
 
     equality = Equality(UNION[i:0:k](x[i]) & A, S.EmptySet)

@@ -1,7 +1,7 @@
 from sympy.core.relational import Unequality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
-
+from sympy import var
 from sympy import S
 from sympy.sets.contains import Contains
 from sympy.concrete.expr_with_limits import Exists
@@ -28,8 +28,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
 
     inequality = Unequality(A & B, S.EmptySet)
     Eq << apply(inequality)

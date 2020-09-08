@@ -2,6 +2,7 @@ from sympy.core.symbol import Symbol
 from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
+from sympy import var
 
 from sympy.concrete.expr_with_limits import Exists, ForAll, MAX, MIN
 
@@ -23,7 +24,7 @@ def apply(given):
     _f = f._subs(z, xi)
     assert given.function.rhs == _f
 
-    y = Symbol('y', real=True)
+    y = var(real=True).y
     return ForAll(Exists(Equality(f, y), (z, a, b)),
             (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))),
             given=given)               
@@ -35,7 +36,7 @@ from sympy.utility import check
 @check
 def prove(Eq):    
 
-    a = Symbol('a', real=True)
+    a = var(real=True).a
     b = Symbol('b', real=True, domain=Interval(a, oo, left_open=True))
 
     Eq << apply(Equality.continuity(Function('f'), a, b))

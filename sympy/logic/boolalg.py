@@ -4052,7 +4052,7 @@ class Invoker:
     def append(self, obj):
         self._objs.append(obj)
 
-    def __getattr__(self, method):        
+    def __getattr__(self, method):                
         target = self.target
         obj = getattr(target, method)
         if callable(obj):

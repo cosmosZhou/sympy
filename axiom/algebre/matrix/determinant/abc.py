@@ -5,12 +5,12 @@ from sympy import S
 from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
 from sympy.matrices.expressions.determinant import det
 from sympy.concrete.summations import Sum
-
+from sympy import var
 
 @plausible
 def apply(A):
     n = A.shape[0]
-    k = Symbol('k', integer=True)    
+    k = var(integer=True).k    
     return Equality(det(Sum[k:1:n-1]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
 
 

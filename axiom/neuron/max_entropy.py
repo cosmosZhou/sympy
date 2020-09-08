@@ -7,14 +7,14 @@ from sympy import log, exp
 from sympy.core.numbers import oo
 from sympy.concrete.expr_with_limits import Ref
 from sympy.concrete.summations import Sum
-
+from sympy import var
 
 @plausible
 def apply(G, x, y):
     _, d = x.shape
 
-    i = Symbol('i', integer=True)
-    t = Symbol('t', integer=True, nonnegative=True)
+    i = var(integer=True).i
+    t = var(integer=True, nonnegative=True).t
 
     s = Symbol('s', shape=(oo,),
                     definition=Ref[t](Sum[i:1:t](G[y[i], y[i - 1]]) + Sum[i:0:t](x[i, y[i]])))
@@ -35,7 +35,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    d = Symbol('d', integer=True)
+    d = var(integer=True).d
     G = Symbol('G', shape=(d, d), real=True)
     x = Symbol('x', shape=(oo, d), real=True)
     y = Symbol('y', shape=(oo,), integer=True)

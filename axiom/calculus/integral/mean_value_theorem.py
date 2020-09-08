@@ -2,7 +2,7 @@ from sympy.core.symbol import Symbol
 from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
-
+from sympy import var
 from sympy.concrete.expr_with_limits import Exists, MIN, MAX
 from sympy.integrals.integrals import Integral
 from sympy.sets.sets import Interval
@@ -33,7 +33,7 @@ from sympy.utility import check
 @check
 def prove(Eq):    
 
-    a = Symbol('a', real=True)
+    a = var(real=True).a
     b = Symbol('b', real=True, domain=Interval(a, oo, left_open=True))
 
     assert b > a 

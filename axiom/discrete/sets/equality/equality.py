@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.contains import Subset
-
+from sympy import var
 # given : A & B = A | B => A = B
 
 
@@ -21,8 +21,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
     
     Eq << apply(Equality(A & B, A | B))
     

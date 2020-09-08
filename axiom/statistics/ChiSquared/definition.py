@@ -9,11 +9,11 @@ from sympy.stats import Normal
 from axiom.trigonometry import Wallis
 from sympy.concrete.expr_with_limits import Ref
 from sympy.concrete.summations import Sum
-
+from sympy import var
 
 @plausible
 def apply(X, Y):
-    i = Symbol('i', integer=True)
+    i = var(integer=True).i
 
     assert isinstance(Y, RandomSymbol)
     y = Y.symbol
@@ -29,10 +29,10 @@ from sympy.utility import check
 @check
 def prove(Eq):
     x = Symbol('x', shape=(oo,), real=True)
-    i = Symbol('i', integer=True)
+    i = var(integer=True).i
     X = Symbol('X', shape=(oo,), definition=Ref[i](Normal(x[i], 0, 1)))
 
-    k = Symbol('k', integer=True, positive=True)
+    k = var(integer=True, positive=True).k
     Y = ChiSquared('y', k)
 
     Eq << apply(X, Y)

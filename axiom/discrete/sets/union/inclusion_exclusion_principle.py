@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
-
+from sympy import var
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
@@ -18,8 +18,8 @@ from sympy import S
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
     Eq << apply(A, B)
 
     Eq << Equality(abs(A | B), abs(A) + abs(B - A), plausible=True)
@@ -28,8 +28,8 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-1].lhs.args[1]
 
-    C = Symbol('C', dtype=dtype.integer, definition=A & B)
-    D = Symbol('D', dtype=dtype.integer, definition=B - A)
+    C = var(dtype=dtype.integer, definition=A & B).C
+    D = var(dtype=dtype.integer, definition=B - A).D
 
     Eq.C_definition = C.this.definition
 

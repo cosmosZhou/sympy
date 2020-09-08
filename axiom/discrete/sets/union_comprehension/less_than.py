@@ -5,7 +5,7 @@ from axiom import discrete
 from sympy.concrete.expr_with_limits import UNION
 from sympy.concrete import summations
 from sympy.core.numbers import oo
-
+from sympy import var
 
 @plausible
 def apply(expr, *limits):
@@ -17,8 +17,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True, positive=True)
-    k = Symbol('k', integer=True)
+    n = var(integer=True, positive=True).n
+    k = var(integer=True).k
     A = Symbol('A', shape=(oo,), dtype=dtype.integer)
     Eq << apply(A[k], (k, 0, n))
 

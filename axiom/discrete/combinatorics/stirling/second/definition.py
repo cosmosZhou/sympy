@@ -10,7 +10,7 @@ from axiom.discrete import difference
 from axiom import discrete
 from sympy.concrete.summations import Sum
 from sympy.concrete.expr_with_limits import Ref
-
+from sympy import var
 
 @plausible
 def apply(n, k):
@@ -23,8 +23,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    k = Symbol('k', integer=True, nonnegative=True)
-    n = Symbol('n', integer=True, nonnegative=True)
+    k = var(integer=True, nonnegative=True).k
+    n = var(integer=True, nonnegative=True).n
     Eq << apply(n, k)
 
     Eq << Eq[-1].subs(k, 0).doit()
@@ -73,7 +73,7 @@ def prove(Eq):
     
     Eq.exist_C0 = Eq.exist_C0.subs(Eq.factorial_expand_kl.reversed)        
 
-    x = Symbol('x', real=True)
+    x = var(real=True).x
 
     Eq << difference.definition.apply(x ** (k + 1), x, k + 1)
 

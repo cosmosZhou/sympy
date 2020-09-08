@@ -3,7 +3,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy.sets.contains import Contains, Subset
 from sympy.core.relational import Equality
 from axiom.discrete.sets import subset
-
+from sympy import var
 # given: A in B 
 # => A | B = B
 @plausible
@@ -19,8 +19,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    e = Symbol('e', integer=True)
-    s = Symbol('s', dtype=dtype.integer)
+    e = var(integer=True).e
+    s = var(dtype=dtype.integer).s
     contains = Contains(e, s)
     
     Eq << apply(contains)

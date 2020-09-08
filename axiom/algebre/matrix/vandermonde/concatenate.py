@@ -5,22 +5,20 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.matrices.expressions.determinant import Det
-
+from sympy import var
 from sympy.matrices.expressions.matexpr import Shift
 from axiom import discrete
 from sympy.concrete.expr_with_limits import Ref
 from sympy.concrete.products import Product
 from sympy.concrete.summations import Sum
-
-
 # r = Symbol('r')
-# n = Symbol('n', integer=True, positive=True)
+# n = var(integer=True, positive=True).n
 @plausible
 def apply(r, n):
     if not n >= 2:
         return None
-    k = Symbol('k', integer=True)
-    i = Symbol('i', integer=True)
+    k = var(integer=True).k
+    i = var(integer=True).i
     j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
 
     A = Ref[j, i:n - 1]((j + 1) ** (i + 1))
@@ -68,7 +66,7 @@ def numeric_prove():
 
 @check
 def prove(Eq):
-    r = Symbol('r', real=True)
+    r = var(real=True).r
     n = Symbol('n', domain=Interval(2, oo, integer=True))    
 
     Eq << apply(r, n)
@@ -138,8 +136,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.powsimp()
 
-    var = Eq[-1].rhs.args[1].variable
-    Eq << Eq[-1].this.rhs.args[1].limits_subs(var, var - 1)
+    v = Eq[-1].rhs.args[1].variable
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(v, v - 1)
 
 if __name__ == '__main__':
     prove(__file__)

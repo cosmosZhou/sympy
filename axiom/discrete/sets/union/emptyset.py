@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-
+from sympy import var
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
@@ -30,8 +30,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
 
     equality = Equality(A | B, S.EmptySet)
 

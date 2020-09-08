@@ -16,9 +16,9 @@ from sympy.utility import check
 @check
 def prove(Eq):
     n = Symbol('n', domain=Interval(3, oo, integer=True))
-    x = Symbol('x', integer=True, nonnegative=True)
-    y = Symbol('y', integer=True, nonnegative=True)
-    z = Symbol('z', integer=True, nonnegative=True)
+    x = var(integer=True, nonnegative=True).x
+    y = var(integer=True, nonnegative=True).y
+    z = var(integer=True, nonnegative=True).z
     
     Eq << apply(x, y, z, n)
 

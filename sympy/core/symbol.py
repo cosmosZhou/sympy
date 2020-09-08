@@ -892,7 +892,6 @@ class Symbol(AtomicExpr, NotIterable):
             return definition.generate_limit(*args, **kwargs) 
         return Expr.generate_int_limit(self, *args, **kwargs)
 
-        
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
 

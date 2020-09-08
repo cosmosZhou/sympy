@@ -4,7 +4,7 @@ from sympy.core.symbol import Symbol, dtype
 from axiom import discrete
 from sympy import S
 from sympy.sets.contains import Subset
-
+from sympy import var
 # given0: A in B
 # given1: B & C = {}
 # C - A = C
@@ -39,9 +39,9 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
-    C = Symbol('C', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
+    C = var(dtype=dtype.integer).C
 
     subset = Subset(A, B, evaluate=False)
 

@@ -8,7 +8,7 @@ from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
 from sympy.functions.special.tensor_functions import KroneckerDelta
-
+from sympy import var
 
 @plausible
 def apply(given):
@@ -52,7 +52,7 @@ def apply(given):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
-    S = Symbol('S', dtype=dtype.integer * n)    
+    S = var(dtype=dtype.integer * n).S    
     
     x = Symbol('x', **S.element_symbol().dtype.dict)
     

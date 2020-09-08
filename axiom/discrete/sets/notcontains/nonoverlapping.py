@@ -3,7 +3,7 @@ from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.sets.contains import NotContains
-
+from sympy import var
 
 # given e not in S
 @plausible
@@ -18,8 +18,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    s = Symbol('s', dtype=dtype.integer)
-    e = Symbol('e', integer=True)
+    s = var(dtype=dtype.integer).s
+    e = var(integer=True).e
 
     Eq << apply(NotContains(e, s))
 

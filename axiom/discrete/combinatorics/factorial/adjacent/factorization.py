@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol, dtype
+from sympy.core.symbol import dtype
 from sympy.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -7,24 +7,24 @@ from sympy.concrete.expr_with_limits import ForAll, Ref, Exists
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
 from sympy.concrete.products import MatProduct
-
+from sympy import var
 
 @plausible
 def apply(n):
-    i = Symbol('i', integer=True)
+    i = var(integer=True).i
     
-    p = Symbol('p', shape=(oo,), integer=True, nonnegative=True)
+    p = var(shape=(oo,), integer=True, nonnegative=True).p
     
-    P = Symbol('P', dtype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = var(dtype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True)))).P
     
-    b = Symbol('b', integer=True, shape=(oo,), nonnegative=True)
+    b = var(integer=True, shape=(oo,), nonnegative=True).b
     
     return ForAll[p[:n]:P](Exists[b[:n]](Equality(p[:n], Ref[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))))
 
 
 @check
 def prove(Eq): 
-    n = Symbol('n', domain=Interval(2, oo, integer=True))
+    n = var(domain=Interval(2, oo, integer=True)).n
     
     Eq << apply(n)
     

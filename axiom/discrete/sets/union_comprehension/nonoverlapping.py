@@ -4,7 +4,7 @@ from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.concrete.expr_with_limits import ForAll, UNION
 from axiom import discrete
-
+from sympy import var
 # given: |Union x[i]| = Sum |x[i]|
 # x[i] & x[j] = {}
 
@@ -51,8 +51,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    i = Symbol('i', integer=True)
-    k = Symbol('k', integer=True, positive=True)
+    i = var(integer=True).i
+    k = var(integer=True, positive=True).k
     
     j = Symbol('j', domain=Interval(0, k, integer=True) - {i})
     

@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol, dtype
 from sympy.utility import check, plausible
-
+from sympy import var
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
@@ -13,8 +13,8 @@ from sympy.concrete.expr_with_limits import Ref
 @plausible
 def apply(x, w=None):
     n = x.shape[0]
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)
+    i = var(integer=True).i
+    j = var(integer=True).j
     
     if w is None:
         w = Symbol('w', shape=(n, n, n), definition=Ref[j:n](Swap(n, 0, j)))

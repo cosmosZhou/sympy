@@ -5,7 +5,7 @@ from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy import S
 from sympy.concrete.expr_with_limits import ForAll, UNION
-
+from sympy import var
 # given: Union[i](x[i]) = {}
 # x[i] = {}
 
@@ -29,8 +29,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    i = Symbol('i', integer=True)
-    k = Symbol('k', integer=True, positive=True)
+    i = var(integer=True).i
+    k = var(integer=True, positive=True).k
     x = Symbol('x', shape=(k + 1,), dtype=dtype.integer)
 
     equality = Equality(UNION[i:0:k](x[i]), S.EmptySet)

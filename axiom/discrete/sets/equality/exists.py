@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality 
 from sympy.utility import plausible
 from sympy.core.symbol import dtype, Symbol
-
+from sympy import var
 from sympy.concrete.expr_with_limits import Exists, ForAll
 from axiom.discrete import sets
 # given: |S| = 1
@@ -24,7 +24,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    S = Symbol('S', dtype=dtype.integer)
+    S = var(dtype=dtype.integer).S
 
     Eq << apply(Equality(abs(S), 1))
     

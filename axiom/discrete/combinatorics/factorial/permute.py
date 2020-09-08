@@ -7,7 +7,7 @@ from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.concrete.expr_with_limits import ForAll, Ref, UNION
 from sympy.sets.contains import Contains
-
+from sympy import var
 
 @plausible
 def apply(given):
@@ -57,12 +57,12 @@ def apply(given):
 @check
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
-    S = Symbol('S', dtype=dtype.integer * n)    
+    S = var(dtype=dtype.integer * n).S    
     
     x = Symbol('x', **S.element_symbol().dtype.dict)
     
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)    
+    i = var(integer=True).i
+    j = var(integer=True).j    
     
     given = [ForAll[j:1:n - 1, x:S](Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
              ForAll[x:S](Equality(abs(x.set_comprehension()), n))]

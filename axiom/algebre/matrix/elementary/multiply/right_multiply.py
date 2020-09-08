@@ -1,4 +1,4 @@
-
+from sympy import var
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible
@@ -29,7 +29,7 @@ def apply(x, lamda, w=None):
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     x = Symbol('x', shape=(n,), real=True)
-    lamda = Symbol('lamda', real=True)
+    lamda = var(real=True).lamda
     Eq << apply(x, lamda)
 
     i, *_ = Eq[0].lhs.indices    

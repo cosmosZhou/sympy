@@ -3,7 +3,7 @@ from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S 
 from axiom.discrete import sets
-
+from sympy import var
 # given: A != {}
 # |A| >= 1
 
@@ -24,7 +24,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
     inequality = Unequality(A, S.EmptySet)
 
     Eq << apply(inequality)

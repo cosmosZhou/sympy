@@ -3,7 +3,7 @@ from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy import S
 from sympy.concrete.expr_with_limits import ForAll, UNION
-
+from sympy import var
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from axiom.discrete.sets import union
@@ -43,8 +43,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)
+    i = var(integer=True).i
+    j = var(integer=True).j
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     
     baseset = Interval(0, n, integer=True)

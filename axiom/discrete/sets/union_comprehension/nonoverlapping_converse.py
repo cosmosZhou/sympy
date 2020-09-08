@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.concrete.expr_with_limits import ForAll, UNION, Ref
-
+from sympy import var
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
 from axiom.discrete.sets.union_comprehension import nonoverlapping_converse_utility
@@ -41,8 +41,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)
+    i = var(integer=True).i
+    j = var(integer=True).j
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     x = Symbol('x', shape=(oo,), dtype=dtype.integer, finite=True)
    

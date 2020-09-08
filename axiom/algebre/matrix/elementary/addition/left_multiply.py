@@ -7,7 +7,7 @@ from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Addition
 from sympy.concrete.expr_with_limits import Ref
-
+from sympy import var
 
 @plausible
 def apply(x, lamda, w=None):
@@ -29,7 +29,7 @@ def apply(x, lamda, w=None):
 def prove(Eq): 
     n = Symbol('n', domain=Interval(2, oo, integer=True))
     x = Symbol('x', shape=(n,), real=True)
-    lamda = Symbol('lamda', real=True)
+    lamda = var(real=True).lamda
     Eq << apply(x, lamda)
 
     i, j = Eq[0].lhs.indices    

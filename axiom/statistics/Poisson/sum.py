@@ -7,7 +7,7 @@ from sympy.stats.rv import Density, RandomSymbol
 from sympy.utility import plausible
 from sympy.utility import check
 import axiom
-
+from sympy import var
 @plausible
 def apply(x0, x1):
     if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):

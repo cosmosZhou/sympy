@@ -7,13 +7,13 @@ from sympy.core.relational import Equality
 import axiom
 from sympy.concrete.expr_with_limits import Ref
 from sympy.concrete.summations import Sum
-
+from sympy import var
 
 @plausible
 def apply(x, m, n, d, delta):
     i = Symbol('i', domain=Interval(0, m - d, right_open=True, integer=True))
     j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
-    h = Symbol('h', integer=True)
+    h = var(integer=True).h
 
     return Equality(Ref[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ Ref[j, i:m]((i + delta) ** j * x ** i),
                     Ref[j, i]((i + delta) ** j * x ** i) @ Ref[j, i:n](binomial(j, i) * Sum[h:0:d](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
@@ -30,11 +30,11 @@ def prove(Eq):
 
     i = Symbol('i', domain=Interval(0, m - d, right_open=True, integer=True))
     j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
-    h = Symbol('h', integer=True)
+    h = var(integer=True).h
 
-    delta = Symbol('delta', real=True)
+    delta = var(real=True).delta
     
-    x = Symbol('x', real=True)
+    x = var(real=True).x
 
     Eq << apply(x, m, n, d, delta)
 

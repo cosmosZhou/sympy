@@ -2,7 +2,7 @@ from sympy.core.symbol import Symbol
 from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
-
+from sympy import var
 from sympy.series.limits import Limit
 from sympy.functions.elementary.exponential import log
 from sympy.sets.sets import Interval
@@ -12,7 +12,7 @@ from sympy.concrete.summations import Sum
 
 @plausible
 def apply(n):
-    k = Symbol('k', integer=True)
+    k = var(integer=True).k
     return Equality(Limit(Sum[k:1:n](1 / k) / log(n + 1), n, oo), 1)
 
 
@@ -21,11 +21,11 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True, positive=True)
+    n = var(integer=True, positive=True).n
     Eq << apply(n)
 
-    x = Symbol('x', real=True)
-    x0 = Symbol('x0', real=True, positive=True)
+    x = var(real=True).x
+    x0 = var(real=True, positive=True).x0
     Eq.continuity = Equality(Limit(1 / x, x, x0, "+-"), 1 / x0, plausible=True)
 
     Eq << Eq.continuity.this.lhs.doit()

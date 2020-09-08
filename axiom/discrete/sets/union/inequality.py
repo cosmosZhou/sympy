@@ -3,7 +3,7 @@ from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.sets import Union
 from axiom import discrete
-
+from sympy import var
 
 @plausible
 def apply(A, B):
@@ -15,8 +15,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
     Eq << apply(A, B)
     
     Eq << discrete.sets.union.inclusion_exclusion_principle.apply(A, B).reversed

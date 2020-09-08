@@ -7,7 +7,7 @@ from sympy.stats.drv_types import BinomialDistribution, Binomial
 from sympy.stats.rv import Density, RandomSymbol
 from sympy.utility import check
 from sympy.utility import plausible
-
+from sympy import var
 from sympy import Interval
 from axiom import algebre
 

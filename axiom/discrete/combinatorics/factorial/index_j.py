@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from sympy.utility import check, plausible
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
-
+from sympy import var
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete import expr_with_limits
 from axiom.discrete.sets.emptyset import greater_than_one
@@ -35,7 +35,7 @@ def prove(Eq):
     
     x = Symbol('x', shape=(n,), integer=True)    
     
-    k = Symbol('k', integer=True)    
+    k = var(integer=True).k    
     given = Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True))    
 
     Eq << apply(given)    
@@ -50,7 +50,7 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
-    sj = Symbol('s_j', definition=Eq[-1].rhs.limits[0][1])
+    sj = var(definition=Eq[-1].rhs.limits[0][1]).s_j
     
     Eq.sj_definition = sj.equality_defined()
     Eq.crossproduct = Eq[-1].subs(Eq.sj_definition.reversed)

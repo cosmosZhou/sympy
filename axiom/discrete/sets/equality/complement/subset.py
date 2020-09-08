@@ -3,7 +3,7 @@ from sympy.utility import plausible
 from sympy.core.symbol import Symbol, dtype
 from sympy.sets.contains import Subset
 from sympy.sets.sets import EmptySet
-
+from sympy import var
 # given: B - A = {} 
 # B in A
 
@@ -24,8 +24,8 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = var(dtype=dtype.integer).A
+    B = var(dtype=dtype.integer).B
 
     Eq << apply(Equality(B - A, EmptySet()))
     

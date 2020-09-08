@@ -67,6 +67,7 @@ def process_multiple(packages):
     
 def process(package):
     try:    
+        print(package)
         package = eval(package)
     except AttributeError as e:   
         print(e)

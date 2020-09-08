@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import Symbol
 from sympy.utility import check, plausible
-
+from sympy import var
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
@@ -12,9 +12,9 @@ from axiom import algebre
 @plausible
 def apply(n):
     domain = Interval(0, n - 1, integer=True)
-    t = Symbol('t', domain=domain)
-    i = Symbol('i', domain=domain)
-    j = Symbol('j', domain=domain)
+    t = var(domain=domain).t
+    i = var(domain=domain).i
+    j = var(domain=domain).j
     assert n >= 2
     w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
     
@@ -32,7 +32,7 @@ def prove(Eq):
     
     t = Eq[1].function.lhs.args[0].indices[0]
     
-    p = Symbol('p', complex=True)
+    p = var(complex=True).p
     
     x = Ref[i:n](p ** i)
     

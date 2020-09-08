@@ -5,7 +5,7 @@ from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy.core.function import Difference
-
+from sympy import var
 
 @plausible
 def apply(x, n):
@@ -19,14 +19,14 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    x = Symbol('x', real=True)
+    x = var(real=True).x
     
-    k = Symbol('k', integer=True, nonnegative=True)
+    k = var(integer=True, nonnegative=True).k
     t = x ** k
     assert t.is_complex
     assert t.is_extended_real
     
-    n = Symbol('n', integer=True, nonnegative=True)
+    n = var(integer=True, nonnegative=True).n
     Eq << apply(x, n)
     Eq << Eq[0].subs(n, 0).doit()
     Eq << Eq[0].subs(n, n + 1)

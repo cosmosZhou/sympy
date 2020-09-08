@@ -3,7 +3,7 @@ from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.concrete.summations import Sum
-
+from sympy import var
 
 def extract(recurrence):
     lhs, rhs = recurrence.args
@@ -30,7 +30,7 @@ def apply(*given):
     m0, _0 = initial_condition.args
     assert m0 == m[0] and _0.is_zero
 
-    k = Symbol('k', integer=True, nonnegative=True)
+    k = var(integer=True, nonnegative=True).k
 
     return Equality(m[k], beta ** k * (1 - beta) * Sum[t:1:k](beta ** (-t) * g[t]),
                     given=given)
@@ -43,8 +43,8 @@ from sympy.utility import check
 def prove(Eq):
     m = Symbol('m', shape=(oo,), real=True)
     g = Symbol('g', shape=(oo,), real=True)
-    t = Symbol('t', integer=True, positive=True)
-    beta = Symbol('beta', real=True, nonzero=True)
+    t = var(integer=True, positive=True).t
+    beta = var(real=True, nonzero=True).beta
     recurrence = Equality(m[t], beta * m[t - 1] + (1 - beta) * g[t])
     initial_condition = Equality(m[0], 0)
     

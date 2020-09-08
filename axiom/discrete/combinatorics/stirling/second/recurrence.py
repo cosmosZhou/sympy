@@ -1,7 +1,7 @@
 from sympy.core.symbol import Symbol, dtype
 from sympy.core.relational import Equality, StrictLessThan
 from sympy.utility import plausible
-
+from sympy import var
 from sympy.functions.combinatorial.numbers import Stirling
 from sympy.sets.sets import image_set, Interval, Union
 from sympy.sets.contains import Subset, Supset, Contains, NotContains
@@ -24,16 +24,16 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    k = Symbol('k', integer=True, nonnegative=True)
+    k = var(integer=True, nonnegative=True).k
 
-    n = Symbol('n', integer=True, nonnegative=True)
+    n = var(integer=True, nonnegative=True).n
     Eq << apply(n, k)
 
     Eq.stirling2 = Eq[0].lhs.this.definition
     Eq.stirling0 = Eq[0].rhs.args[1].this.definition
     Eq.stirling1 = Eq[0].rhs.args[0].args[1].this.definition
 
-    s2 = Symbol('s2', definition=Eq.stirling2.rhs.arg)
+    s2 = var(definition=Eq.stirling2.rhs.arg).s2
     Eq << s2.this.definition
     s2_quote = Symbol("s'_2", definition=Eq.stirling2.rhs.arg.limits[0][1])
     Eq.stirling2 = Eq.stirling2.subs(Eq[-1].reversed)
@@ -41,7 +41,7 @@ def prove(Eq):
 
     Eq.s2_definition = Eq[-2].subs(Eq[-1].reversed)
 
-    s0 = Symbol('s0', definition=Eq.stirling0.rhs.arg)
+    s0 = var(definition=Eq.stirling0.rhs.arg).s0
     Eq << s0.this.definition
     s0_quote = Symbol("s'_0", definition=Eq.stirling0.rhs.arg.limits[0][1])
     Eq.stirling0 = Eq.stirling0.subs(Eq[-1].reversed)
@@ -49,14 +49,14 @@ def prove(Eq):
     Eq << Eq[-2].subs(Eq[-1].reversed)
     s0_definition = Eq[-1]
 
-    s1 = Symbol('s1', definition=Eq.stirling1.rhs.arg)
+    s1 = var(definition=Eq.stirling1.rhs.arg).s1
     Eq << s1.this.definition
     s1_quote = Symbol("s'_1", definition=Eq.stirling1.rhs.arg.limits[0][1])
     Eq.stirling1 = Eq.stirling1.subs(Eq[-1].reversed)
     Eq << s1_quote.this.definition
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
-    e = Symbol('e', dtype=dtype.integer.set)
+    e = var(dtype=dtype.integer.set).e
     s0_ = image_set(e, Union(e, {n.set}), s0)
 
     plausible0 = Subset(s0_, s2, plausible=True)
@@ -466,7 +466,7 @@ def prove(Eq):
     Eq << Eq.equation.subs(Eq[-1])
 
     a = Eq[-1].variable
-    b = Symbol('b', **a.dtype.dict)
+    b = var(**a.dtype.dict).b
     
     Eq << Eq[-1].limits_subs(a, b)
     

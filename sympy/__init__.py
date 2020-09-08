@@ -90,3 +90,15 @@ evalf._create_evalf_table()
 #import abc
 
 from .deprecated import *
+
+
+class var:    
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        
+    def __call__(self, **kwargs):         
+        self.kwargs.update(kwargs)
+        return self
+    
+    def __getattr__(self, attr):
+        return Symbol(attr, **self.kwargs)

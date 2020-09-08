@@ -3,7 +3,7 @@ from sympy.core.relational import Equality
 from sympy.utility import plausible
 from sympy.core.symbol import Symbol
 from sympy.functions.special.gamma_functions import gamma
-
+from sympy import var
 
 @plausible
 def apply(n):
@@ -15,7 +15,7 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True, nonnegative=True)
+    n = var(integer=True, nonnegative=True).n
     Eq << apply(n)
     Eq << Eq[0].rewrite(gamma).expand(func=True)
 
