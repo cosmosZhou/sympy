@@ -17,8 +17,6 @@ from sympy.utilities.iterables import sift
 from mpmath.libmp import sqrtrem as mpmath_sqrtrem
 
 from math import sqrt as _sqrt
-import re
-
 
 def isqrt(n):
     """Return the largest integer less than or equal to sqrt(n)."""
@@ -1792,6 +1790,7 @@ class Power(Expr):
         from sympy.printing.precedence import precedence
         PREC = precedence(self)
 
+        import re
         if self.exp is S.Half and not rational:
             arg = p._print(self.base)
             if re.compile('\w+').fullmatch(arg):

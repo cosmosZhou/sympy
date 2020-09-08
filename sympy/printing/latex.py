@@ -149,14 +149,12 @@ class LatexPrinter(Printer):
         Printer.__init__(self, settings)
 
         if 'mode' in self._settings:
-            valid_modes = ['inline', 'plain', 'equation',
-                           'equation*']
+            valid_modes = ['inline', 'plain', 'equation', 'equation*']
             if self._settings['mode'] not in valid_modes:
                 raise ValueError("'mode' must be one of 'inline', 'plain', "
                                  "'equation' or 'equation*'")
 
-        if self._settings['fold_short_frac'] is None and \
-                self._settings['mode'] == 'inline':
+        if self._settings['fold_short_frac'] is None and self._settings['mode'] == 'inline':
             self._settings['fold_short_frac'] = True
 
         mul_symbol_table = {
@@ -166,22 +164,17 @@ class LatexPrinter(Printer):
             "times": r" \times "
         }
         try:
-            self._settings['mul_symbol_latex'] = \
-                mul_symbol_table[self._settings['mul_symbol']]
+            self._settings['mul_symbol_latex'] = mul_symbol_table[self._settings['mul_symbol']]
         except KeyError:
-            self._settings['mul_symbol_latex'] = \
-                self._settings['mul_symbol']
+            self._settings['mul_symbol_latex'] = self._settings['mul_symbol']
         try:
-            self._settings['mul_symbol_latex_numbers'] = \
-                mul_symbol_table[self._settings['mul_symbol'] or 'dot']
+            self._settings['mul_symbol_latex_numbers'] = mul_symbol_table[self._settings['mul_symbol'] or 'dot']
         except KeyError:
             if (self._settings['mul_symbol'].strip() in
                     ['', ' ', '\\', '\\,', '\\:', '\\;', '\\quad']):
-                self._settings['mul_symbol_latex_numbers'] = \
-                    mul_symbol_table['dot']
+                self._settings['mul_symbol_latex_numbers'] = mul_symbol_table['dot']
             else:
-                self._settings['mul_symbol_latex_numbers'] = \
-                    self._settings['mul_symbol']
+                self._settings['mul_symbol_latex_numbers'] = self._settings['mul_symbol']
 
         self._delim_dict = {'(': ')', '[': ']'}
 
@@ -195,11 +188,9 @@ class LatexPrinter(Printer):
             "tj": r"\text{j}",
         }
         try:
-            self._settings['imaginary_unit_latex'] = \
-                imaginary_unit_table[self._settings['imaginary_unit']]
+            self._settings['imaginary_unit_latex'] = imaginary_unit_table[self._settings['imaginary_unit']]
         except KeyError:
-            self._settings['imaginary_unit_latex'] = \
-                self._settings['imaginary_unit']
+            self._settings['imaginary_unit_latex'] = self._settings['imaginary_unit']
 
     def parenthesize(self, item, level, strict=False):
         prec_val = precedence_traditional(item)
@@ -1190,8 +1181,7 @@ class LatexPrinter(Printer):
             "!=": r"\neq",
         }
 
-        return "%s %s %s" % (self._print(expr.lhs),
-                             charmap[expr.rel_op], self._print(expr.rhs))
+        return "%s %s %s" % (self._print(expr.lhs), charmap[expr.rel_op], self._print(expr.rhs))
 
     def _print_Piecewise(self, expr):
         ecpairs = [r"%s & \text{if}\: %s" % (self._print(e), self._print(c))
@@ -1205,11 +1195,8 @@ class LatexPrinter(Printer):
 
     def _print_MatrixBase(self, expr):
         lines = []
-        if expr.rows == 1:
-            lines.append(" & ".join([self._print(i) for i in expr.args]))
-        else:
-            for line in range(expr.rows):  # horrible, should be 'rows'
-                lines.append(" & ".join([self._print(i) for i in expr[line, :]]))
+        for i in range(0, len(expr._mat), expr.cols):  # horrible, should be 'rows'                
+            lines.append(" & ".join([self._print(i) for i in expr._mat[i:i + expr.cols]]))
 
         mat_str = self._settings['mat_str']
         if mat_str is None:

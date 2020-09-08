@@ -6,9 +6,13 @@ NOTE
 at present this is mainly needed for facts.py , feel free however to improve
 this stuff for general purpose.
 """
-from __future__ import print_function, division
 
-from sympy.core.compatibility import range, string_types
+# from typing import Dict, Type
+from typing import Union
+
+
+# Type of a fuzzy bool
+FuzzyBool = Union[bool, None]
 
 
 def _torf(args):
@@ -189,10 +193,10 @@ def fuzzy_or(args):
     return fuzzy_not(fuzzy_and(fuzzy_not(i) for i in args))
 
 
-class Logic(object):
+class Logic:
     """Logical expression"""
     # {} 'op' -> LogicClass
-    op_2class = {}
+    op_2class = {}  ## type: Dict[str, Type[Logic]]
 
     def __new__(cls, *args):
         obj = object.__new__(cls)
@@ -293,7 +297,7 @@ class AndOr_Base(Logic):
             if a == cls.op_x_notx:
                 return a
             elif a == (not cls.op_x_notx):
-                continue  # skip this argument
+                continue    # skip this argument
             bargs.append(a)
 
         args = sorted(set(cls.flatten(bargs)), key=hash)
@@ -370,11 +374,10 @@ class Or(AndOr_Base):
     def __str__(self):
         return ' | '.join(str(a) for a in self.args)
 
-
 class Not(Logic):
 
     def __new__(cls, arg):
-        if isinstance(arg, string_types):
+        if isinstance(arg, str):
             return Logic.__new__(cls, arg)
 
         elif isinstance(arg, bool):
@@ -398,7 +401,6 @@ class Not(Logic):
         if isinstance(self.arg, AndOr_Base):
             return '!(%s)' % str(self.arg) 
         return '!' + str(self.arg)
-
 
 Logic.op_2class['&'] = And
 Logic.op_2class['|'] = Or

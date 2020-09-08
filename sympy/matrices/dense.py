@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-
 import random
 
 from sympy.core import SympifyError
@@ -94,15 +92,13 @@ class DenseMatrix(MatrixBase):
                     return MatrixElement(self, i, j)
 
                 if isinstance(i, slice):
-                    # XXX remove list() when PY2 support is dropped
-                    i = list(range(self.rows))[i]
+                    i = range(self.rows)[i]
                 elif is_sequence(i):
                     pass
                 else:
                     i = [i]
                 if isinstance(j, slice):
-                    # XXX remove list() when PY2 support is dropped
-                    j = list(range(self.cols))[j]
+                    j = range(self.cols)[j]
                 elif is_sequence(j):
                     pass
                 else:
@@ -111,7 +107,7 @@ class DenseMatrix(MatrixBase):
         else:
             # row-wise decomposition of matrix
             if isinstance(key, slice):
-                return self._mat[key]
+                return self._new(self._mat[key])
             if len(self.shape) == 1:
                 from sympy.functions.elementary.piecewise import Piecewise
                 from sympy import Equal
@@ -484,11 +480,13 @@ class MutableDenseMatrix(DenseMatrix):
             *shape, flat_list = args
         else:
             *shape, flat_list = cls._handle_creation_inputs(*args, **kwargs)
-        if shape[0] == 1:
+        while shape and shape[0] == 1:
             shape = shape[1:]
-        self = Basic.__new__(cls, shape=shape)
-        self._args = flat_list
-        return self
+        if shape:
+            self = Basic.__new__(cls, shape=tuple(shape))
+            self._args = flat_list
+            return self
+        return flat_list[0]
 
     @property
     def shape(self):        
@@ -1155,7 +1153,10 @@ def casoratian(seqs, n, zero=True):
 
     k = len(seqs)
 
-    return Matrix(k, k, f).det()
+    mat = Matrix(k, k, f)
+    if not mat.shape:
+        return mat 
+    return mat.det()
 
 
 def eye(*args, **kwargs):

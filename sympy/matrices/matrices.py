@@ -190,6 +190,8 @@ class MatrixBase(MatrixCommon):
         # Recursively implemented Bareiss' algorithm as per Deanna Richelle Leggett's
         # thesis http://www.math.usm.edu/perry/Research/Thesis_DRL.pdf
         def bareiss(mat, cumm=1):
+            if not mat.shape:
+                return mat
             if mat.rows == 0:
                 return mat.one
             elif mat.rows == 1:
@@ -199,8 +201,7 @@ class MatrixBase(MatrixCommon):
             # With the default iszerofunc, _find_reasonable_pivot slows down
             # the computation by the factor of 2.5 in one test.
             # Relevant issues: #10279 and #13877.
-            pivot_pos, pivot_val, _, _ = _find_reasonable_pivot(mat[:, 0],
-                                         iszerofunc=iszerofunc)
+            pivot_pos, pivot_val, _, _ = _find_reasonable_pivot(mat[:, 0], iszerofunc=iszerofunc)
             if pivot_pos is None:
                 return mat.zero
 
@@ -214,7 +215,10 @@ class MatrixBase(MatrixCommon):
             tmp_mat = mat.extract(rows, cols)
 
             def entry(i, j):
-                ret = (pivot_val * tmp_mat[i, j + 1] - mat[pivot_pos, j + 1] * tmp_mat[i, 0]) / cumm
+                if len(tmp_mat.shape) == 1:
+                    ret = (pivot_val * tmp_mat[j + 1] - mat[pivot_pos, j + 1] * tmp_mat[0]) / cumm
+                else:
+                    ret = (pivot_val * tmp_mat[i, j + 1] - mat[pivot_pos, j + 1] * tmp_mat[i, 0]) / cumm
                 if not ret.is_Atom:
                     return cancel(ret)
                 return ret
@@ -710,7 +714,7 @@ class MatrixBase(MatrixCommon):
             If ``zero_above=False``, an echelon matrix will be returned.
         """
         rows, cols = self.rows, self.cols
-        mat = list(self)
+        mat = list(self._mat)
 
         def get_col(i):
             return mat[i::cols]
@@ -3983,14 +3987,14 @@ class MatrixBase(MatrixCommon):
             X = self._new(X)
         # Both X and ``self`` can be a row or a column matrix, so we need to make
         # sure all valid combinations work, but everything else fails:
-        if self.shape[0] == 1:
-            m = self.shape[1]
+        if self.rows == 1:
+            m = self.cols
         elif self.shape[1] == 1:
             m = self.shape[0]
         else:
             raise TypeError("``self`` must be a row or a column matrix")
-        if X.shape[0] == 1:
-            n = X.shape[1]
+        if X.rows == 1:
+            n = X.cols
         elif X.shape[1] == 1:
             n = X.shape[0]
         else:

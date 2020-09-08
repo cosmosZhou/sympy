@@ -230,7 +230,10 @@ def constant_system(A, u, DE):
     """
     if not A:
         return A, u
-    Au = A.row_join(u)
+    if not A.shape:
+        Au = Matrix([A, u])
+    else:
+        Au = A.row_join(u)
     Au = Au.rref(simplify=cancel, normalize_last=False)[0]
     # Warning: This will NOT return correct results if cancel() cannot reduce
     # an identically zero expression to 0.  The danger is that we might
@@ -254,29 +257,52 @@ def constant_system(A, u, DE):
     # problems in the integration variable).
 
     Au = Au.applyfunc(cancel)
-    A, u = Au[:, :-1], Au[:, -1]
+    if len(Au.shape) == 1:
+        A, u = Au[:-1], Au[-1]
+    else:
+        A, u = Au[:, :-1], Au[:, -1]
 
-    for j in range(A.cols):
-        for i in range(A.rows):
-            if A[i, j].has(*DE.T):
-                # This assumes that const(F(t0, ..., tn) == const(K) == F
-                Ri = A[i, :]
-                # Rm+1; m = A.rows
-                Rm1 = Ri.applyfunc(lambda x: derivation(x, DE, basic=True)/
-                    derivation(A[i, j], DE, basic=True))
-                Rm1 = Rm1.applyfunc(cancel)
-                um1 = cancel(derivation(u[i], DE, basic=True)/
-                    derivation(A[i, j], DE, basic=True))
+    if not A.shape:
+        if A.has(*DE.T):
+            # This assumes that const(F(t0, ..., tn) == const(K) == F
+            Ri = A
+            # Rm+1; m = A.rows
+            Rm1 = Ri.applyfunc(lambda x: derivation(x, DE, basic=True)/
+                derivation(A, DE, basic=True))
+            Rm1 = Rm1.applyfunc(cancel)
+            um1 = cancel(derivation(u, DE, basic=True)/
+                derivation(A, DE, basic=True))
+            
+            # A[s, :] = A[s, :] - A[s, i]*A[:, m+1]
+            Asj = A
+            A.row_op(0, lambda r, jj: cancel(r - Asj*Rm1[jj]))
+            # u[s] = u[s] - A[s, j]*u[m+1
+            u.row_op(0, lambda r, jj: cancel(r - Asj*um1))
 
-                for s in range(A.rows):
-                    # A[s, :] = A[s, :] - A[s, i]*A[:, m+1]
-                    Asj = A[s, j]
-                    A.row_op(s, lambda r, jj: cancel(r - Asj*Rm1[jj]))
-                    # u[s] = u[s] - A[s, j]*u[m+1
-                    u.row_op(s, lambda r, jj: cancel(r - Asj*um1))
-
-                A = A.col_join(Rm1)
-                u = u.col_join(Matrix([um1]))
+            A = A.col_join(Rm1)
+            u = u.col_join(Matrix([um1]))        
+    else:        
+        for j in range(A.cols):
+            for i in range(A.rows):
+                if A[i, j].has(*DE.T):
+                    # This assumes that const(F(t0, ..., tn) == const(K) == F
+                    Ri = A[i, :]
+                    # Rm+1; m = A.rows
+                    Rm1 = Ri.applyfunc(lambda x: derivation(x, DE, basic=True)/
+                        derivation(A[i, j], DE, basic=True))
+                    Rm1 = Rm1.applyfunc(cancel)
+                    um1 = cancel(derivation(u[i], DE, basic=True)/
+                        derivation(A[i, j], DE, basic=True))
+    
+                    for s in range(A.rows):
+                        # A[s, :] = A[s, :] - A[s, i]*A[:, m+1]
+                        Asj = A[s, j]
+                        A.row_op(s, lambda r, jj: cancel(r - Asj*Rm1[jj]))
+                        # u[s] = u[s] - A[s, j]*u[m+1
+                        u.row_op(s, lambda r, jj: cancel(r - Asj*um1))
+    
+                    A = A.col_join(Rm1)
+                    u = u.col_join(Matrix([um1]))
 
     return (A, u)
 
@@ -1118,7 +1144,11 @@ def is_log_deriv_k_t_radical(fa, fd, DE, Df=True):
     rhs = Matrix([dfa.as_expr()/dfd.as_expr()])
 
     A, u = constant_system(lhs, rhs, DE)
-    if not all(derivation(i, DE, basic=True).is_zero for i in u) or not A:
+    if not A:
+        return
+    if not u.shape and not derivation(u, DE, basic=True).is_zero:
+        return            
+    if not all(derivation(i, DE, basic=True).is_zero for i in u._mat):
         # If the elements of u are not all constant
         # Note: See comment in constant_system
 

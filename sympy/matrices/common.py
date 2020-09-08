@@ -4,7 +4,7 @@ when creating more advanced matrices (e.g., matrices over rings,
 etc.).
 """
 
-from __future__ import division, print_function
+from sympy.core.logic import FuzzyBool
 
 from collections import defaultdict
 from inspect import isfunction
@@ -263,8 +263,8 @@ class MatrixShaping(MatrixRequired):
         ========
 
         row
-        col_op
-        col_swap
+        sympy.matrices.dense.MutableDenseMatrix.col_op
+        sympy.matrices.dense.MutableDenseMatrix.col_swap
         col_del
         col_join
         col_insert

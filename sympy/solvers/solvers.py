@@ -1803,13 +1803,22 @@ def _solve_system(exprs, symbols, **flags):
             n, m = len(polys), len(symbols)
             matrix = zeros(n, m + 1)
 
-            for i, poly in enumerate(polys):
-                for monom, coeff in poly.terms():
+            if n == 1:
+                poly, *_ = polys
+                for monom, coeff in polys[0].terms():
                     try:
                         j = monom.index(1)
-                        matrix[i, j] = coeff
+                        matrix[j] = coeff
                     except ValueError:
-                        matrix[i, m] = -coeff
+                        matrix[m] = -coeff                
+            else:                
+                for i, poly in enumerate(polys):
+                    for monom, coeff in poly.terms():
+                        try:
+                            j = monom.index(1)
+                            matrix[i, j] = coeff
+                        except ValueError:
+                            matrix[i, m] = -coeff
 
             # returns a dictionary ({symbols: values}) or None
             if flags.pop('particular', False):
@@ -2280,8 +2289,13 @@ def solve_linear_system(system, *symbols, **flags):
     if system.rows == system.cols - 1 == len(symbols):
         try:
             # well behaved n-equations and n-unknowns
-            inv = inv_quick(system[:, :-1])
-            rv = dict(zip(symbols, inv * system[:, -1]))
+            if system.rows == 1:
+                inv = inv_quick(system[:-1])
+                rv = dict(zip(symbols, [inv * system[-1]]))                    
+            else:
+                inv = inv_quick(system[:, :-1])
+                rv = dict(zip(symbols, inv * system[:, -1]))
+                
             if do_simplify:
                 for k, v in rv.items():
                     rv[k] = simplify(v)
@@ -2581,6 +2595,8 @@ def inv_quick(M):
     is small.
     """
     from sympy.matrices import zeros
+    if not M.shape:
+        return 1 / M
     if not all(i.is_Number for i in M):
         if not any(i.is_Number for i in M):
             det = lambda _: det_perm(_)
