@@ -20,12 +20,11 @@ from sympy.utility import check
 @check
 def prove(Eq):
     n = 6
-    A = Symbol('A', shape=(n, n), complex=True)
+    A = var(shape=(n, n), complex=True).A
     
     Eq << apply(A)
     
-    L = Symbol('L', shape=(n, n), definition=Eq[0].lhs.arg)
-    Eq << L.this.definition
+    Eq << var(shape=(n, n), definition=Eq[0].lhs.arg).L.this.definition
     shift = Eq[-1].rhs.function.args[0].base
     
     Eq.L_definition = Eq[-1].this.rhs.doit()

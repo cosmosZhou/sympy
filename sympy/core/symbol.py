@@ -315,6 +315,12 @@ class Symbol(AtomicExpr, NotIterable):
 
         # be strict about commutativity
         is_commutative = fuzzy_bool(assumptions.get('commutative', True))
+        if 'domain' in assumptions:
+            domain = assumptions['domain']
+            if isinstance(domain, list):
+                from sympy import Interval
+                assumptions['domain'] = Interval(*domain, integer=assumptions.get('integer'))
+                
         assumptions['commutative'] = is_commutative
         obj._assumptions = StdFactKB(assumptions)
         obj._assumptions._generator = tmp_asm_copy  # Issue #8873

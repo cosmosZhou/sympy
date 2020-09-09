@@ -24,7 +24,7 @@ def apply(n):
 
 @check
 def prove(Eq): 
-    n = var(domain=Interval(2, oo, integer=True)).n
+    n = var(domain=[2, oo], integer=True).n
     
     Eq << apply(n)
     

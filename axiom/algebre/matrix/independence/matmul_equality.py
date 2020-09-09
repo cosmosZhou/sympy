@@ -1,5 +1,3 @@
-from sympy.core.symbol import Symbol
-from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.utility import plausible
 from sympy.core.relational import Equality
@@ -48,12 +46,12 @@ from sympy.utility import check
 
 @check
 def prove(Eq):
-    p = Symbol("p", complex=True)    
-    m = Symbol('m', domain=Interval(1, oo, integer=True))
-    n = Symbol('n', domain=Interval(1, oo, integer=True))
-    x = Symbol("x", shape=(n, m), given=True, complex=True)
-    y = Symbol("y", shape=(n, m), given=True, complex=True)
-    k = Symbol('k', domain=Interval(1, oo, integer=True))
+    p = var(complex=True).p    
+    m = var(domain=[1, oo], integer=True).m
+    n = var(domain=[1, oo], integer=True).n
+    x = var(shape=(n, m), given=True, complex=True).x
+    y = var(shape=(n, m), given=True, complex=True).y
+    k = var(domain=[1, oo], integer=True).k
     
     given = Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y)
     

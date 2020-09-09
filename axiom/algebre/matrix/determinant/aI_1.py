@@ -35,7 +35,7 @@ def column_transformation(*limits):
 @check
 def prove(Eq):
     n = var(integer=True, positive=True).n
-    a = Symbol('a', shape=(oo,), complex=True, zero=False)
+    a = var(shape=(oo,), complex=True, zero=False).a
     Eq << apply(n, a)
     
     Eq << Eq[-1].subs(n, 1)

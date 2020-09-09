@@ -26,12 +26,11 @@ from sympy.utility import check
 @check
 def prove(Eq):
     n = 5
-    a = Symbol('a', shape=(n,), complex=True, zero=False)
-    b = Symbol('b', shape=(n,), complex=True, zero=False)
+    a = var(shape=(n,), complex=True, zero=False).a
+    b = var(shape=(n,), complex=True, zero=False).b
     Eq << apply(a, b)
  
-    L = Symbol('L', shape=(n, n), definition=Eq[0].lhs.arg)
-    Eq << L.this.definition
+    Eq << var(shape=(n, n), definition=Eq[0].lhs.arg).L.this.definition
     
     Eq << Eq[-1].this.rhs.as_Matrix()
 

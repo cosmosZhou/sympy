@@ -33,7 +33,7 @@ def prove(Eq):
     n = 5
     i = var(integer=True, positive=True).i
     i = 4
-    A = Symbol('A', shape=(n, n), complex=True, zero=False)
+    A = var(shape=(n, n), complex=True, zero=False).A
     Eq << apply(A, i=i)
     Eq << Eq[-1].this.rhs.doit()
     
