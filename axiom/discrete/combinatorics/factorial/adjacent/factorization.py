@@ -32,9 +32,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(n, 2)
     
-    Eq << Eq[-1].variable.this.as_Vector()
-    
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-1].doit()
     
     
 

@@ -34,6 +34,7 @@ class Expr(Basic, EvalfMixin):
     is_scalar = True  # self derivative is 1
     is_Identity = False
     is_ElementaryMatrix = False
+    is_ZeroMatrix = False
     is_square = False
     is_infinitesimal = None
     is_FiniteSet = False
@@ -4069,6 +4070,16 @@ class Expr(Basic, EvalfMixin):
         ...
       
     def as_Matrix(self):
+        from sympy import Matrix
+        if len(self.shape) == 1:
+            n = self.shape[0]
+            if isinstance(n, int) or n.is_Number:  
+                array = []
+                for i in range(n):
+                    array.append(self[sympify(i)])                
+                return Matrix(tuple(array))
+            return self
+
         i_shape, j_shape = self.shape
         if isinstance(i_shape, int) or i_shape.is_Number:
             if isinstance(j_shape, int) or j_shape.is_Number:  
@@ -4076,19 +4087,7 @@ class Expr(Basic, EvalfMixin):
                 for i in range(i_shape):
                     for j in range(j_shape):
                         array.append(self[sympify(i), sympify(j)])
-                from sympy import Matrix 
                 return Matrix(i_shape, j_shape, tuple(array))
-        return self
-
-    def as_Vector(self):
-        if len(self.shape) == 1:
-            n = self.shape[0]
-            if isinstance(n, int) or n.is_Number:  
-                array = []
-                for i in range(n):
-                    array.append(self[sympify(i)])
-                from sympy import Matrix
-                return Matrix(tuple(array))
         return self
 
     def generate_int_limit(self, index, excludes=None, generator=None, free_symbol=None):

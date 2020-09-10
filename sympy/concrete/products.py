@@ -638,7 +638,19 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         return function.is_zero
 
     def doit(self, **hints):
-        return self
+        limit = self.limits[-1]
+        x, a, b = limit
+        dif = b - a
+        if not dif.is_Integer:
+            return self
+        
+        limits = self.limits[:-1]
+        if limits:
+            function = self.func(self.function, *limits).doit(**hints)
+        else:
+            function = self.function
+        from sympy import sympify
+        return MatMul(*[function._subs(x, sympify(i)) for i in range(dif + 1)])    
 
     def _eval_adjoint(self):
         return self.func(self.function.adjoint(), *self.limits)        

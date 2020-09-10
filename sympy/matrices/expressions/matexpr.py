@@ -63,7 +63,6 @@ class MatrixExpr(Expr):
     is_Identity = None
     is_Inverse = False
     
-    is_ZeroMatrix = False
     is_MatAdd = False
     is_MatMul = False
 
@@ -1208,7 +1207,9 @@ class Concatenate(MatrixExpr):
                 _args += arg.args
             else:
                 _args.append(arg)
-            
+        if all(not arg.shape for arg in _args):
+            from sympy import Matrix
+            return Matrix(tuple(_args))
         return Basic.__new__(cls, *_args, **kwargs)
     
     @staticmethod

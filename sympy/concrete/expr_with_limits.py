@@ -1404,30 +1404,27 @@ class Ref(ExprWithLimits):
         if self.function.is_zero:
             return True
 
-    def as_Concatenate(self):
-        if len(self.limits) > 1:
-            return self
-        limit, *_ = self.limits
-        
-        if len(limit) != 3:
-            return self
+    def doit(self, **hints):
+        limit = self.limits[-1]
         x, a, b = limit
-        assert a == 0
         diff = b - a
         if not diff.is_Number:
             return self
         
+        limits = self.limits[:-1]
+        if limits:
+            function = self.func(self.function, *limits).doit(**hints)
+        else:
+            function = self.function
+                    
         array = []
         for i in range(diff + 1):
-            array.append(self.function._subs(x, i))
+            array.append(function._subs(x, sympify(i)))
         from sympy.matrices.expressions.matexpr import Concatenate
         return Concatenate(*array)
 
     def as_coeff_mmul(self):
         return 1, self
-
-    def _eval_summation(self, f, x):
-        return None
 
     def squeeze(self):
         if not self.function._has(self.variables[-1]):
@@ -1887,10 +1884,6 @@ class Ref(ExprWithLimits):
         return self.shape[-2]
 
     @property
-    def is_ZeroMatrix(self):
-        return False
-
-    @property
     def is_Matrix(self):
         return len(self.shape) == 2
 
@@ -2214,27 +2207,18 @@ class UNION(Set, ExprWithLimits):
             return S.UniversalSet
 
     def doit(self, **hints):
-        if hints.get('deep', True):
-            f = self.function.doit(**hints)
+        *limits, limit = self.limits
+        i, a, b = limit
+        dif = b - a
+        if not dif.is_Integer:
+            return self
+        
+        if limits:
+            function = self.func(self.function, *limits)
         else:
-            f = self.function
-
-        for limit in self.limits:
-            if len(limit) != 3:
-                f = self.func(f, limit)
-                continue
-            i, a, b = limit
-            dif = b - a
-            if not dif.is_Integer:
-                f = self.func(f, limit)
-                continue
-            u = S.EmptySet
-            for index in range(0, dif + 1):
-                u |= f._subs(i, index + a)
-
-            f = u
-
-        return f
+            function = self.function
+        
+        return Union(*[function._subs(i, index + a) for index in range(dif + 1)])
 
     def as_two_terms(self):
         first, second = self.function.as_two_terms()
@@ -3158,11 +3142,20 @@ class ConditionalBoolean(Boolean):
         
         def _subs_with_Equality(limits, old, new):
             _limits = []
-            for x, *domain in limits:
-                _domain = []
-                for expr in domain:
-                    _domain.append(expr._subs(old, new))
-                _limits.append((x, *_domain))
+            for limit in limits:
+                x, *domain = limit
+                if not domain:
+                    ...
+                elif len(domain) == 1:
+                    domain, *_ = domain
+                    if domain.is_set or not old._has(x):
+                        limit = (x, domain._subs(old, new))
+                else:                
+                    _domain = []
+                    for expr in domain:
+                        _domain.append(expr._subs(old, new))
+                    limit = (x, *_domain)
+                _limits.append(limit)
             return _limits
 
         clue = None
@@ -3492,6 +3485,26 @@ class ConditionalBoolean(Boolean):
             this.equivalent = self
             return this
         return self
+
+    def doit(self, **hints):
+        function = self.function.doit(**hints)
+        limits = []
+        for limit in self.limits:
+            limit = limit.doit()
+            x, *ab = limit
+            if x.is_Matrix:
+                varset = FiniteSet(*x._mat)
+                if ab:
+                    limit = (varset, *ab)
+                else:
+                    for arg in varset.args:                    
+                        limits.append((arg,))
+            else:
+                limits.append(limit)
+        kwargs = {}
+        if self.plausible is not None:
+            kwargs['equivalent'] = self
+        return self.func(function, *limits, **kwargs)
 
 
 class ForAll(ConditionalBoolean, ExprWithLimits):

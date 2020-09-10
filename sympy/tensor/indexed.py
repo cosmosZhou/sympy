@@ -927,6 +927,11 @@ class Slice(Expr):
 
         return any(arg._has(pattern) for arg in args)
 
+    def doit(self, **_):
+        if self.shape[0].is_Number:
+            return self.as_Matrix()
+        return self
+
     @property
     def atomic_dtype(self):
         return self.base.atomic_dtype
