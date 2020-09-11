@@ -143,6 +143,8 @@ class Basic(with_metaclass(ManagedProperties)):
     
     is_CartesianSpace = False
     
+    is_Tuple = False
+    
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
 

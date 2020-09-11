@@ -1386,6 +1386,11 @@ class Interval(Set, EvalfMixin):
     def _measure(self):
         return self.end - self.start
 
+    def doit(self, deep=False, **_):
+        if deep:
+            return self.copy(start=self.start.doit(), end=self.end.doit())
+        return self
+
     def to_mpi(self, prec=53):
         return mpi(mpf(self.start._eval_evalf(prec)),
             mpf(self.end._eval_evalf(prec)))
@@ -1427,17 +1432,17 @@ class Interval(Set, EvalfMixin):
         return And(left, right)
 
     def _eval_Eq(self, other):
-        if not isinstance(other, Interval):
-            if isinstance(other, FiniteSet):
-                return S.false
+        if not other.is_Interval:
+            if other.is_FiniteSet:
+                if not self.is_integer:
+                    return S.false
+                return
             elif other.is_set:
                 return None
             return S.false
 
-        return And(Eq(self.left, other.left),
-                   Eq(self.right, other.right),
-                   self.left_open == other.left_open,
-                   self.right_open == other.right_open)
+        return And(Eq(self.left, other.left), Eq(self.right, other.right), 
+                   self.left_open == other.left_open, self.right_open == other.right_open)
 
     @property
     def free_symbols(self):
@@ -2675,16 +2680,19 @@ class FiniteSet(Set, EvalfMixin):
 
     def _eval_Eq(self, other):
         if not isinstance(other, FiniteSet):
-            if isinstance(other, (Interval, EmptySet)):
+            if other.is_EmptySet:
                 return S.false
-            elif other.is_set:
+            
+            if other.is_Interval:
+                if not other.is_integer:
+                    return S.false
+                
+            if other.is_set:
                 return None
             return S.false
 
         if len(self) != len(other):
             return S.false
-        return None
-#         return And(*(Eq(x, y) for x, y in zip(self.args, other.args)))
 
     def __iter__(self):
         return iter(self.args)

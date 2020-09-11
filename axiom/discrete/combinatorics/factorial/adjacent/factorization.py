@@ -8,6 +8,8 @@ from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
 from sympy.concrete.products import MatProduct
 from sympy import var
+from sympy.functions.special.tensor_functions import KroneckerDelta
+from sympy.matrices import Matrix
 
 @plausible
 def apply(n):
@@ -33,6 +35,13 @@ def prove(Eq):
     Eq << Eq[-1].subs(n, 2)
     
     Eq << Eq[-1].doit()
+    
+#     b[0] = 0, b[1] = KroneckerDelta[p[0], 0]
+    b = Eq[-2].function.variable
+    p = Eq[-1].variable
+    Eq << Eq[-1].subs(b, Matrix((0, KroneckerDelta(p[0], 0))))
+    
+    Eq << Eq[-1].this.function.rhs.expand()
     
     
 

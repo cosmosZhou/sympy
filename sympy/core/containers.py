@@ -45,7 +45,8 @@ class Tuple(Basic):
     (d, b, c)
 
     """
-
+    is_Tuple = True
+    
     def __new__(cls, *args, **kwargs):
         if kwargs.get('sympify', True):
             args = ( sympify(arg) for arg in args )
@@ -157,6 +158,36 @@ class Tuple(Basic):
             return r"%s \in %s" % tuple([p._print(s) for s in (self[0], self[1])])
         return p._print(self[0])
         
+
+    def domain_latex(self, domain=None):
+        from sympy.core.numbers import oo
+        if domain.is_Interval:
+            start, end = domain.start, domain.end
+            if end == oo:
+                if start == -oo:
+                    if domain.is_integer:
+                        return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
+                    return r"%s\in%s" % (self.latex, r'\mathbb{R}')
+                if domain.left_open:
+                    return r"%s > %s" % (self.latex, start.latex)
+                return r"%s \ge %s" % (self.latex, start.latex)
+            else:
+                if start == -oo:
+                    if domain.right_open:
+                        return r"%s < %s" % (self.latex, end.latex)
+                    return r"%s \le %s" % (self.latex, end.latex)
+
+                if domain.left_open:
+                    if domain.right_open:
+                        return r"%s < %s < %s" % (start.latex, self.latex, end.latex)
+                    return r"%s < %s \le %s" % (start.latex, self.latex, end.latex)
+                if domain.right_open:
+                    return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
+                return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
+        elif domain.dtype.is_condition:
+            return r"%s \left| %s \right." % (self.latex, domain.latex)
+        else:
+            return r"%s \in %s" % (self.latex, domain.latex)
 
 converter[tuple] = lambda tup: Tuple(*tup)
 

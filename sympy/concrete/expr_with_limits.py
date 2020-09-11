@@ -3493,14 +3493,14 @@ class ConditionalBoolean(Boolean):
             limit = limit.doit()
             x, *ab = limit
             if x.is_Matrix:
-                varset = FiniteSet(*x._mat)
                 if ab:
-                    limit = (varset, *ab)
+                    limit = (Tuple(*x._mat), *ab)
                 else:
-                    for arg in varset.args:                    
+                    for arg in x._mat:                    
                         limits.append((arg,))
-            else:
-                limits.append(limit)
+                    continue
+            
+            limits.append(limit)
         kwargs = {}
         if self.plausible is not None:
             kwargs['equivalent'] = self
@@ -3569,6 +3569,23 @@ class ForAll(ConditionalBoolean, ExprWithLimits):
             else:
                 return Or(*eqs, given=self)
 
+        if self.function.is_Exists:
+            exists = self.function.limits_dict
+            hit = False
+            if old in exists:
+                function = self.function.subs(old, new)
+                hit = True                
+            elif old.is_Slice:
+                old = old.as_Matrix()
+                if old.is_DenseMatrix:
+                    old = Tuple(*old._mat)                    
+                    if old in exists or all(sym in exists for sym in old):
+                        hit = True
+            if hit:
+                function = self.function.subs(old, new)
+                if function.clue == 'imply':                                        
+                    return self.func(function, *self.limits, imply=self)
+                
         return ConditionalBoolean.subs(self, *args, **kwargs)
 
     def simplify(self, **kwargs):
@@ -4016,9 +4033,11 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             return ConditionalBoolean.subs(self, *args, **kwargs)
         if len(args) != 2:
             return Expr.subs(self, *args, **kwargs)
-
+        
+        from sympy.sets.contains import Contains
+        
         old, new = args
-        exists = self.limits_dict
+        exists = self.limits_dict        
         if old in exists:
             domain = exists[old]
             eqs = []
@@ -4026,7 +4045,6 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             if domain is not None:
                 if not domain.is_set:
                     domain = old.domain_conditioned(domain)
-                from sympy.sets.contains import Contains
                 eqs.append(Contains(new, domain))
 
             if self.function.is_And:
@@ -4045,6 +4063,41 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                     return self.func(And(*eqs), (new,), imply=self).simplify()
                     
                 return And(*eqs, imply=self)
+            
+        if old.is_Tuple and all(sym in exists for sym in old):            
+            domains = [exists[sym] for sym in old]
+            eqs = []
+
+            for domain in domains:
+                if domain is not None:
+                    if not domain.is_set:
+                        domain = old.domain_conditioned(domain)                    
+                    eqs.append(Contains(new, domain))
+
+            if self.function.is_And:
+                for equation in self.function.args:
+                    eqs.append(equation._subs(old, new))
+            else:
+                if old.is_Tuple:
+                    function = self.function
+                    for i in range(len(old)):
+                        function = function._subs(old[i], new[i])
+                    eqs.append(function)
+                else:
+                    eqs.append(self.function._subs(old, new))
+            limits = self.limits_delete(old)
+            if limits:
+                if new.is_symbol:
+                    return self.func(And(*eqs), (new,), *limits, imply=self).simplify()
+                else:
+                    return self.func(And(*eqs), *limits, imply=self)
+            else:
+                if new.is_symbol:
+                    return self.func(And(*eqs), (new,), imply=self).simplify()
+                    
+                return And(*eqs, imply=self)
+
+            
 
         return ConditionalBoolean.subs(self, *args, **kwargs)
 

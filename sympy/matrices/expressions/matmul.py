@@ -322,14 +322,23 @@ class MatMul(MatrixExpr):
                 return Ref(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
         else:
             if len(B.shape) > 1:
-                j_limit = B.generate_int_limit(0, **kwargs)                
-                j, *_ = j_limit
-                
-                k_limit = generate_k_limit(A, B, {j}, **kwargs)
-                k, *_ = k_limit
-                
-                assert k != j
-                return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
+                if B.shape[-1].is_Integer:
+                    k_limit = generate_k_limit(A, B, **kwargs)
+                    k, *_ = k_limit
+  
+                    args = []
+                    for j in range(B.shape[-1]):
+                        args.append(Sum(A[k] * B[k, j], k_limit).simplify())
+                    return Concatenate(*args)
+                else:                    
+                    j_limit = B.generate_int_limit(0, **kwargs)                
+                    j, *_ = j_limit
+                    
+                    k_limit = generate_k_limit(A, B, {j}, **kwargs)
+                    k, *_ = k_limit
+                    
+                    assert k != j
+                    return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
             k_limit = generate_k_limit(A, B, **kwargs)
             k, *_ = k_limit
             return Sum(A[k] * B[k], k_limit).simplify()                
