@@ -1819,6 +1819,18 @@ class Power(Expr):
                 return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
         return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e)
     
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            return Expr.simplify(self, deep)
+        
+        base, exp = self.args
+        if exp.is_Integer:
+            if {*base.enumerate_KroneckerDelta()}:
+                return self.expand()
+            
+        return self
+
+
 Pow = Power    
 from .add import Add
 from .numbers import Integer

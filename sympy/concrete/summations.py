@@ -1148,7 +1148,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if universe.is_FiniteSet:
                 return self.finite_aggregate(x, universe)
 
-            if isinstance(self.function, Piecewise):
+            if self.function.is_Piecewise:
                 has_x = [c._has(x) for _, c in self.function.args[:-1]]                                
                 if not any(has_x):
                     return self.function.func(*((self.func(e, (x, universe)).simplify(), c) for e, c in self.function.args)).simplify()

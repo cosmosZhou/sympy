@@ -6626,12 +6626,11 @@ def cancel(f, *gens, **args):
         else:
             return S.One, p, q
     except PolynomialError as msg:
-        if f.is_commutative and not f.has(Piecewise):
+        if not f.has(Piecewise):
             raise PolynomialError(msg)
         # Handling of noncommutative and/or piecewise expressions
         if f.is_Plus or f.is_Times:
-            c, nc = sift(f.args, lambda x:
-                x.is_commutative is True and not x.has(Piecewise),
+            c, nc = sift(f.args, lambda x: not x.has(Piecewise),
                 binary=True)
             nc = [cancel(i) for i in nc]
             return f.func(cancel(f.func(*c)), *nc)

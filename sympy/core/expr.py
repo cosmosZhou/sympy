@@ -4098,6 +4098,8 @@ class Expr(Basic, EvalfMixin):
             return (x,)   
         return (x, start, end)
 
+    def enumerate_KroneckerDelta(self):
+        yield from []
 
 class AtomicExpr(Atom, Expr):
     """

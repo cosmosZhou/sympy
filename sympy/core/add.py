@@ -978,17 +978,14 @@ class Plus(Expr, AssocOp):
 
         return (Float(re_part)._mpf_, Float(im_part)._mpf_)
 
+    def enumerate_KroneckerDelta(self):
+        for arg in self.args:
+            yield from arg.enumerate_KroneckerDelta()
+
     def simplifyKroneckerDelta(self):        
         dic = {}
-        
-        def traversal(self):
-            if self.is_Plus or self.is_Times:
-                for arg in self.args:
-                    yield from traversal(arg)
-            if self.is_KroneckerDelta:
-                yield self    
-    
-        for expr in traversal(self):
+       
+        for expr in self.enumerate_KroneckerDelta():
             if expr not in dic:
                 dic[expr] = 0    
             dic[expr] += 1

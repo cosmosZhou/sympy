@@ -7,6 +7,7 @@ from sympy.core.logic import fuzzy_not
 from sympy.core.mul import prod
 from sympy.utilities.iterables import (has_dups, default_sort_key)
 
+
 ###############################################################################
 ###################### Kronecker Delta, Levi-Civita etc. ######################
 ###############################################################################
@@ -182,6 +183,12 @@ class KroneckerDelta(Function):
                 i = i.func(*i_args)
                 j = j.func(*j_args)                        
                 return cls(i, j)
+            
+        if j.is_KroneckerDelta:
+            if i == 1:
+                return j
+            if i == 0:
+                return 1 - j
         # to make KroneckerDelta canonical
         # following lines will check if inputs are in order
         # if not, will return KroneckerDelta with correct order
@@ -485,3 +492,10 @@ class KroneckerDelta(Function):
     def _sympystr(self, p):
         return 'δ[%s]' % ', '.join(p._print(arg) for arg in self.args)
         
+    @property
+    def domain(self):
+        from sympy.sets.sets import FiniteSet
+        return FiniteSet(0, 1)
+
+    def enumerate_KroneckerDelta(self):
+        yield self

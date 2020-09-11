@@ -1753,12 +1753,8 @@ class Times(Expr, AssocOp):
 
         coefficient = []
         delta = []
-        from sympy import KroneckerDelta
         for i, arg in enumerate(self.args):
-            if arg._has(KroneckerDelta):
-                if arg.is_Det:
-                    coefficient.append(arg)
-                    continue
+            if {*arg.enumerate_KroneckerDelta()}:
                 delta.append(arg)
             else:
                 coefficient.append(arg)
@@ -1791,6 +1787,10 @@ class Times(Expr, AssocOp):
                 this = this.simplifyKroneckerDelta()
             if this != delta:
                 return this * coefficient
+        else:
+            this *= coefficient
+            if this != self:
+                return this
             
         return self
     
@@ -2240,7 +2240,11 @@ class Times(Expr, AssocOp):
                 continue
             return False
         return True
-    
+
+    def enumerate_KroneckerDelta(self):
+        for arg in self.args:
+            yield from arg.enumerate_KroneckerDelta()
+
 Mul = Times
 
     

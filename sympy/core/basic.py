@@ -1423,7 +1423,7 @@ class Basic(with_metaclass(ManagedProperties)):
                 return self.func(*args), True
         return self, False
 
-    @cacheit
+#     @cacheit
     def has(self, *patterns):
         """
         Test whether any subexpression matches any of the patterns.
@@ -1474,6 +1474,8 @@ class Basic(with_metaclass(ManagedProperties)):
 
     def _has(self, pattern):
         """Helper for .has()"""
+        if pattern.is_Tuple:
+            return any(self._has(pattern) for pattern in pattern)
         from sympy.core.function import UndefinedFunction, Function
         if isinstance(pattern, UndefinedFunction):
             return any(f.func == pattern or f == pattern for f in self.atoms(Function, UndefinedFunction))
