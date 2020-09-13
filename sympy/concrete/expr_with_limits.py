@@ -3246,6 +3246,23 @@ class ConditionalBoolean(Boolean):
             return [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
         return self
 
+    def _split(self, *args, **kwargs):
+        arr = self.function._split(*args, **kwargs)
+        if isinstance(arr, list):
+            for eq in arr:
+                if eq.given is None:
+                    if eq.equivalent.given is None:
+                        print('eq.equivalent.given is None')
+                    else:
+                        eq.equivalent.given = None
+                        eq.equivalent = None
+                else:
+                    eq.given = None
+                assert eq.equivalent is None
+
+            return [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
+        return self
+
     @property
     def set(self):
         return self.func(self.function.set, *self.limits, equivalent=self)

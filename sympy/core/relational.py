@@ -1039,7 +1039,40 @@ class Equal(Relational):
     def as_two_terms(self):
         return self.func(self.lhs.as_two_terms(), self.rhs.as_two_terms(), equivalent=self).simplify()
 
-    def split(self, variable=None):
+    def as_Or(self):
+        if self.rhs.is_Piecewise:
+            piecewise = self.rhs
+            lhs = self.lhs
+        elif self.lhs.is_Piecewise:
+            piecewise = self.lhs
+            lhs = self.rhs
+        else:
+            piecewise = None
+            
+        if piecewise is not None:
+            univeralSet = S.BooleanTrue
+            args = []
+
+            for expr, condition in piecewise.args:
+                condition &= univeralSet
+                invert = condition.invert()
+                univeralSet &= invert
+                eq = condition & self.func(lhs, expr)
+                args.append(eq)
+                
+            from sympy import Or            
+            return Or(*args, equivalent=self)
+        return self
+    
+    def split(self):
+        if self.lhs.is_DenseMatrix and self.rhs.is_DenseMatrix:
+            args = []
+            for lhs, rhs in zip(self.lhs._mat, self.rhs._mat):
+                args.append(self.func(lhs, rhs, given=self).simplify())
+            return args
+        return self
+
+    def _split(self, variable=None):
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.concrete.expr_with_limits import ForAll
         if isinstance(self.rhs, Piecewise):

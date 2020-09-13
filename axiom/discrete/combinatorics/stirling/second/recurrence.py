@@ -1,5 +1,6 @@
 from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan
+from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
+    Unequality
 from sympy.utility import plausible
 from sympy import var
 from sympy.functions.combinatorial.numbers import Stirling
@@ -156,7 +157,11 @@ def prove(Eq):
     Eq << Eq[-4].subs(Eq[-1])
     SqueezeTheorem = Eq[-1]
 
-    Eq << x_quote_abs.split()
+    Eq << x_quote_abs.as_Or()
+    
+    Eq << Eq[-1].subs(i, j)
+    
+    Eq << Eq[-2].forall(i, Unequality(i, j))
 
     Eq << discrete.sets.union.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
 
@@ -318,8 +323,10 @@ def prove(Eq):
 
     Eq.x_tilde_abs_sum = Eq[-1].subs(Eq.x_abs_sum_s2, Eq.x_j_definition.abs())
 
-    Eq << Eq.x_tilde_abs.split()
-
+    Eq << Eq.x_tilde_abs.as_Or()
+    Eq << Eq[-1].forall(i, i < j)
+    Eq << Eq[-2].forall(i, i >= j)
+    
     Eq << Eq[-2].subs(Eq.x_abs_positive_s2)
 
     Eq << Eq[-2].subs(Eq.x_abs_positive_s2.limits_subs(i, i + 1))
@@ -399,15 +406,17 @@ def prove(Eq):
 
     Eq << Eq.x_j_subset.apply(discrete.sets.subset.nonemptyset, Eq.x_j_inequality, evaluate=False)
 
-    Eq << Eq[-1].apply(discrete.sets.inequality.strict_greater_than)  # -4
+    Eq.x_j_abs_positive = Eq[-1].apply(discrete.sets.inequality.strict_greater_than)
 
     Eq.x_hat_abs = Eq.x_hat_definition.abs()
 
-    Eq << Eq.x_hat_abs.split()  # -2, -3
-
+    Eq << Eq.x_hat_abs.as_Or()
+    Eq << Eq[-1].subs(i, j)
+    Eq << Eq[-2].forall(i, Unequality(i, j))
+    
     Eq << Eq[-1].subs(Eq.x_abs_positive_s2_n)  # -1
 
-    Eq << Eq[-3].subs(Eq[-4])
+    Eq << Eq[-3].subs(Eq.x_j_abs_positive)
 
     Eq.x_hat_abs_positive = Eq[-1] & Eq[-2]
 
@@ -441,8 +450,10 @@ def prove(Eq):
 
     Eq << Eq.x_hat_in_s1.definition
 
-    Eq << Eq.x_hat_definition.split()
-
+    Eq << Eq.x_hat_definition.as_Or()
+    Eq << Eq[-1].subs(i, j)
+    Eq << Eq[-2].forall(i, Unequality(i, j))
+    
     Eq << Eq[-1].subs(Eq.x_complement_n.reversed)
 
     Eq << (Eq[-1] & Eq[-3])
@@ -570,7 +581,10 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.x_quote_definition)
 
-    Eq << Eq[-1].split(variable=Eq[-1].rhs.args[0][1].lhs)
+    Eq << Eq[-1]._split(variable=Eq[-1].rhs.args[0][1].lhs)
+#     variable = Eq[-1].rhs.args[0][1].lhs
+#     Eq << Eq[-1].this.function.as_Or()
+#     return
 
     Eq << Eq[-1].intersect({n})
 
