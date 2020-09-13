@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from sympy import var
 from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from sympy.core.symbol import dtype
 from axiom import discrete
 from sympy import S
 from sympy.logic.boolalg import And

@@ -1055,9 +1055,14 @@ class Equal(Relational):
 
             for expr, condition in piecewise.args:
                 condition &= univeralSet
+                condition.equivalent = None
+                
                 invert = condition.invert()
                 univeralSet &= invert
-                eq = condition & self.func(lhs, expr)
+                univeralSet.equivalent = None
+                
+                eq = condition & self.func(lhs, expr)                
+                eq.equivalent = None
                 args.append(eq)
                 
             from sympy import Or            

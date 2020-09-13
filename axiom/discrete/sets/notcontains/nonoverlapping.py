@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from sympy.core.symbol import dtype
 from sympy import S
 from sympy.sets.contains import NotContains
 from sympy import var

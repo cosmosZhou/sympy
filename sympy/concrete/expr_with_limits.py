@@ -3244,6 +3244,12 @@ class ConditionalBoolean(Boolean):
                 assert eq.equivalent is None
 
             return [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
+        elif isinstance(arr, tuple):
+            for eq in arr:
+                assert eq.parent is not None
+                eq.parent = None
+
+            return [self.func(eq, *self.limits, parent=self).simplify() for eq in arr]
         return self
 
     def _split(self, *args, **kwargs):
@@ -4125,8 +4131,6 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                     return self.func(And(*eqs), (new,), imply=self).simplify()
                     
                 return And(*eqs, imply=self)
-
-            
 
         return ConditionalBoolean.subs(self, *args, **kwargs)
 

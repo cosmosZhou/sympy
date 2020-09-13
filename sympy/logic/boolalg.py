@@ -532,10 +532,10 @@ class Boolean(Basic):
                 return
             return False
         
-        parent = self.parent
+        parent = self.parent  # similar with self.imply used in Or structure
         if parent is not None:
-            if parent.is_Or:
-                return True                
+            assert parent.is_Or or parent.is_ConditionalBoolean and parent.function.is_Or
+            return True                
 
     @plausible.setter
     def plausible(self, value):
@@ -1091,19 +1091,16 @@ def process_given(given, value):
             given.plausible = False
 
 
-def process_options(options, value=True):
-    equivalent = options.get('equivalent', None)
+def process_options(equivalent=None, given=None, imply=None, value=True):
 
     if equivalent is not None:
         process_equivalent(equivalent, value)
         return
 
-    given = options.get('given', None)
     if given is not None:
         process_given(given, value)
         return
 
-    imply = options.get('imply', None)
     if imply is not None:
         process_imply(imply, value)
         return
@@ -4036,7 +4033,7 @@ class Invoker:
                         reps.append((x, _x))
                         outer_context[x] = (_x, domain)
                 
-                obj = getattr(this, self.callable.__name__)(*args, **kwargs)#.simplify()
+                obj = getattr(this, self.callable.__name__)(*args, **kwargs)  # .simplify()
                 reps.reverse()
                 for x, _x in reps:
                     obj = obj._subs(_x, x)
@@ -4075,7 +4072,6 @@ class Invoker:
         if self.target.is_Equality:
             self.callable = self.target.__sub__
             return self.__call__(rhs)
-        
         
     def __str__(self):
         return str(self.target)

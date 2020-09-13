@@ -233,7 +233,7 @@ render(__FILE__, $text);
         old_index = self.index(rhs)
         if old_index == -1:
             if rhs.is_BooleanAtom:
-                boolalg.process_options(rhs._assumptions, value=bool(rhs))
+                boolalg.process_options(value=bool(rhs), **rhs._assumptions)
                 return -1
             if index is not None:
                 self.__dict__[index] = rhs

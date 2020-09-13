@@ -581,15 +581,14 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.x_quote_definition)
 
-    Eq << Eq[-1]._split(variable=Eq[-1].rhs.args[0][1].lhs)
-#     variable = Eq[-1].rhs.args[0][1].lhs
-#     Eq << Eq[-1].this.function.as_Or()
-#     return
+#     Eq << Eq[-1]._split(variable=Eq[-1].rhs.args[0][1].lhs)
+    Eq << Eq[-1].this.function.as_Or()
 
-    Eq << Eq[-1].intersect({n})
-
+    Eq << Eq[-1].split()
+    
+    Eq << Eq[-1].split()[1].intersect({n})
     Eq << Eq[-1].subs(Eq.nonoverlapping_s1_quote)
-
+    return
     assert len(Eq.plausibles_dict) == 3
 
     Eq << Eq.nonoverlapping.union_comprehension(Eq.nonoverlapping.limits[1])
