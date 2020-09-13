@@ -197,7 +197,7 @@ class MatMul(MatrixExpr):
             return Inverse(self)
 
     def doit(self, **kwargs):
-        deep = kwargs.get('deep', True)
+        deep = kwargs.get('deep', False)
         if deep:
             args = [arg.doit(**kwargs) for arg in self.args]
         else:
@@ -614,7 +614,12 @@ def only_squares(*matrices):
     start = 0
     for i, M in enumerate(matrices):
         if M.shape[-1] == matrices[start].shape[-2]:
-            out.append(MatMul(*matrices[start:i + 1]).doit())
+            args = matrices[start:i + 1]
+            if len(args) == 1:
+                mat = args[0]
+            else:
+                mat = MatMul(*args).doit()
+            out.append(mat)
             start = i + 1
     return out
 

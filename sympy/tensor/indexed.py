@@ -452,6 +452,8 @@ class Indexed(Expr):
         return False
 
     def _has(self, pattern):
+        if pattern.is_Tuple:
+            return any(self._has(pattern) for pattern in pattern)
         """Helper for .has()"""
         if any(arg._has(pattern) for arg in self.indices):
             return True

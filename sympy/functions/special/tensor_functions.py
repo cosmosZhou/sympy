@@ -7,7 +7,6 @@ from sympy.core.logic import fuzzy_not
 from sympy.core.mul import prod
 from sympy.utilities.iterables import (has_dups, default_sort_key)
 
-
 ###############################################################################
 ###################### Kronecker Delta, Levi-Civita etc. ######################
 ###############################################################################
@@ -499,3 +498,7 @@ class KroneckerDelta(Function):
 
     def enumerate_KroneckerDelta(self):
         yield self
+        
+    def as_Piecewise(self):
+        from sympy import Piecewise, Equality
+        return Piecewise((1, Equality(*self.args)), (0, True))

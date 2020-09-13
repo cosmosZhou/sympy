@@ -48,3 +48,5 @@ if __name__ == '__main__':
 
 # https://doc.sagemath.org/html/en/reference/index.html
 
+# http://www.gigamonkeys.com/book/
+# https://common-lisp.net/downloads

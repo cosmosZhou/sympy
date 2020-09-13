@@ -1,5 +1,5 @@
 from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality, StrictLessThan
+from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan
 from sympy.utility import plausible
 from sympy import var
 from sympy.functions.combinatorial.numbers import Stirling
@@ -97,7 +97,7 @@ def prove(Eq):
 
     Eq << x_k_definition.abs()
 
-    Eq << Eq[-1].subs(1, 0)
+    Eq << Eq[-1].subs(StrictGreaterThan(1, 0, plausible=True))    
     
     Eq << x_abs_sum + Eq[-2]
 

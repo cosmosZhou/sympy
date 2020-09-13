@@ -1485,7 +1485,10 @@ class MatrixBase(MatrixCommon):
             # Empty Matrix
             rows = cols = 0
             flat_list = []
-
+        elif len(args) == 2:
+            rows = 1
+            cols = len(args)
+            flat_list = args
         if flat_list is None:
             raise TypeError(filldedent('''
                 Data type not understood; expecting list of lists

@@ -976,7 +976,17 @@ class AddWithLimits(ExprWithLimits):
             return pre
 
         obj = Expr.__new__(cls, **assumptions)
-        arglist = [orientation * function]  # orientation not used in ExprWithLimits
+        if function.is_set:
+            assert not limits
+            if function.is_FiniteSet:                
+                return Add(*function.args)
+            if function.is_Interval:
+                if function.is_integer:
+                    a, b = function.min(), function.max()
+                    return (a + b) * (b - a + 1) / 2
+            arglist = [function]  # orientation not used in ExprWithLimits
+        else:
+            arglist = [orientation * function]  # orientation not used in ExprWithLimits
         arglist.extend(limits)
         obj._args = tuple(arglist)
 
@@ -3449,6 +3459,8 @@ class ConditionalBoolean(Boolean):
                         y = None
                     if y is not None and not y.has(e):
                         function = function._subs(e, y)
+                        if function.is_BooleanTrue:
+                            return S.true.copy(equivalent=self) 
                         limits = self.limits_delete(e)
                         if limits:
                             return self.func(function, equivalent=self)

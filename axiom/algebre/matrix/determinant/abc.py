@@ -1,4 +1,3 @@
-from sympy.core.symbol import Symbol
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy import S
@@ -30,7 +29,7 @@ def prove(Eq):
     Eq.L_definition = Eq[-1].this.rhs.doit()
     
     Eq << (shift @ A).this.expand()
-    Eq << Eq[-1].this.rhs.as_Concatenate()
+    Eq << Eq[-1].this.rhs.doit()
     
     Eq << shift @ Eq[-1]    
     Eq << shift @ Eq[-1]

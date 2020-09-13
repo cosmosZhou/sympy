@@ -10,7 +10,6 @@ from sympy.matrices.expressions.matexpr import Shift
 from axiom import discrete
 from sympy.concrete.expr_with_limits import Ref
 from sympy.concrete.products import Product
-from sympy.concrete.summations import Sum
 # r = Symbol('r')
 # n = var(integer=True, positive=True).n
 @plausible

@@ -34,14 +34,24 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(n, 2)
     
-    Eq << Eq[-1].doit()
+    Eq << Eq[-1].doit(deep=True)
     
 #     b[0] = 0, b[1] = KroneckerDelta[p[0], 0]
     b = Eq[-2].function.variable
     p = Eq[-1].variable
     Eq << Eq[-1].subs(b, Matrix((0, KroneckerDelta(p[0], 0))))
     
-    Eq << Eq[-1].this.function.rhs.expand()
+    Eq.equation = Eq[-1].this.function.rhs.expand()
+    
+    Eq << Eq.equation.limits_assertion()
+    
+    Eq << Eq[-1].summation()
+    
+    Eq << (Eq[-1].this.function - p[0])
+    
+    Eq << Eq.equation.subs(Eq[-1]) 
+    
+    Eq << Eq[-1].split()
     
     
 

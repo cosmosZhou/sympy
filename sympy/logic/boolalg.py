@@ -4071,6 +4071,12 @@ class Invoker:
 
         return self
 
+    def __sub__(self, rhs):
+        if self.target.is_Equality:
+            self.callable = self.target.__sub__
+            return self.__call__(rhs)
+        
+        
     def __str__(self):
         return str(self.target)
 

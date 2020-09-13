@@ -771,7 +771,7 @@ class Equal(Relational):
             return Eq(x, x_sol, equivalent=self)
         if len(res) > 1:
             from sympy.logic.boolalg import Or
-            return Or(*(Equality(x, x_sol, equivalent=self) for x_sol in res))
+            return Or(*(self.func(x, x_sol, equivalent=self) for x_sol in res))
 
         return self
 
@@ -1054,27 +1054,50 @@ class Equal(Relational):
             for expr, condition in self.rhs.args:
                 condition = condition & univeralSet
                 univeralSet = condition.invert() & univeralSet
+                eq = ForAll(self.func(self.lhs, expr), (variable, condition), given=self).simplify()
+                if eq.is_BooleanTrue:
+                    continue
+                args.append(eq)
 
-                args.append(ForAll(self.func(self.lhs, expr), (variable, condition), given=self).simplify())
-
+            if len(args) == 1:
+                eq, *_ = args
+                while eq.given is None:
+                    eq = eq.equivalent
+                eq.given = None
+                eq.equivalent = self
+                return args[0]
             return args
 
         if isinstance(self.lhs, Piecewise):
-            if variable is None:
-                variables = self.rhs.free_symbols & self.lhs.scope_variables
-                if len(variables) > 1:
-                    return self
-                variable, *_ = variables
             univeralSet = S.BooleanTrue
+            
             args = []
 
             for expr, condition in self.lhs.args:
                 condition = condition & univeralSet
-                univeralSet = condition.invert() & univeralSet
-                args.append(ForAll(self.func(expr, self.rhs), (variable, condition), given=self).simplify())
-
+                
+                invert = condition.invert()
+                univeralSet = invert & univeralSet
+                
+                eq = invert | self.func(expr, self.rhs)
+                if eq.is_BooleanTrue:
+                    continue
+                eq.given = self
+                args.append(eq)
+                
+            if len(args) == 1:
+                eq, *_ = args
+                eq.given = None
+                eq.equivalent = self
+                return eq
+            
             return args
 
+        if self.lhs.is_DenseMatrix and self.rhs.is_DenseMatrix:
+            args = []
+            for lhs, rhs in zip(self.lhs._mat, self.rhs._mat):
+                args.append(self.func(lhs, rhs, given=self).simplify())
+            return args
         return self
 
     def diff(self, *symbols):

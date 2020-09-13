@@ -1629,7 +1629,7 @@ class Derivative(Expr):
                 return Add(*args)
             elif isinstance(self.expr, Pow):
                 base, exponent = self.expr.args
-                if not exponent.has(self._wrt_variables):
+                if not exponent.has(*self._wrt_variables):
                     return exponent * base ** (exponent - 1) * Expr.__new__(self.func, base, *self.variable_count).doit(deep=False)
                 if not base.has(self._wrt_variables):
                     return self.expr * log(base) * Expr.__new__(self.func, exponent, *self.variable_count)
@@ -1915,7 +1915,7 @@ class Derivative(Expr):
             _wrt_variables = self._wrt_variables
             for limit in self.expr.limits:
                 for bound in limit[1:]:
-                    if bound.has(_wrt_variables):
+                    if bound.has(*_wrt_variables):
                         return self
             
             derivative = Expr.__new__(self.func, self.expr.function, *self.variable_count)
