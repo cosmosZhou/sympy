@@ -3243,7 +3243,8 @@ class ConditionalBoolean(Boolean):
                     eq.given = None
                 assert eq.equivalent is None
 
-            return [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
+            self.derivative = [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
+            return self.derivative
         elif isinstance(arr, tuple):
             for eq in arr:
                 assert eq.parent is not None
@@ -3295,7 +3296,7 @@ class ConditionalBoolean(Boolean):
         limits_dict = self.limits_dict
         variables = self.variables
 
-        deletes = {*()}
+        deletes = set()
         function = self.function
         for i, x in enumerate(variables):
             if not function.has(x):
@@ -3320,7 +3321,7 @@ class ConditionalBoolean(Boolean):
         if deletes:
             limits = self.limits_delete(deletes)
             if limits:
-                return self.func(function, *limits, equivalent=self)
+                return self.func(function, *limits, equivalent=self).simplify()
 
             return function.copy(equivalent=self)
 
@@ -3511,7 +3512,6 @@ class ConditionalBoolean(Boolean):
                         return self.func(function, *limits, equivalent=self)
                     function.equivalent = self
                     return function
-
         return self
 
     def limits_swap(self):
@@ -3704,10 +3704,11 @@ class ForAll(ConditionalBoolean, ExprWithLimits):
                     return self.func(exists, *self.limits_delete(dic), equivalent=self)
 
         if self.function.is_Contains:
-            element = self.function.lhs
-            container = self.function.rhs
-            if element in forall:
-                if forall[element] == container:
+            x = self.function.lhs
+            limits_dict = self.limits_dict            
+            if x in limits_dict:
+                domain = limits_dict[x]
+                if domain in self.function.rhs:
                     return S.BooleanTrue.copy(equivalent=self)
                     
         if self.function.is_NotContains:
@@ -4088,15 +4089,12 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             else:
                 eqs.append(self.function._subs(old, new))
             limits = self.limits_delete(old)
+            if new.is_symbol:
+                limits = limits_intersect(limits, [(new,)])
+                        
             if limits:
-                if new.is_symbol:
-                    return self.func(And(*eqs), (new,), *limits, imply=self).simplify()
-                else:
-                    return self.func(And(*eqs), *limits, imply=self)
+                return self.func(And(*eqs), *limits, imply=self).simplify()
             else:
-                if new.is_symbol:
-                    return self.func(And(*eqs), (new,), imply=self).simplify()
-                    
                 return And(*eqs, imply=self)
             
         if old.is_Tuple and all(sym in exists for sym in old):            
@@ -4121,15 +4119,12 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                 else:
                     eqs.append(self.function._subs(old, new))
             limits = self.limits_delete(old)
+            if new.is_symbol:
+                limits = limits_intersect(limits, [(new,)])
+            
             if limits:
-                if new.is_symbol:
-                    return self.func(And(*eqs), (new,), *limits, imply=self).simplify()
-                else:
-                    return self.func(And(*eqs), *limits, imply=self)
+                return self.func(And(*eqs), *limits, imply=self).simplify()
             else:
-                if new.is_symbol:
-                    return self.func(And(*eqs), (new,), imply=self).simplify()
-                    
                 return And(*eqs, imply=self)
 
         return ConditionalBoolean.subs(self, *args, **kwargs)
@@ -4221,7 +4216,9 @@ class Exists(ConditionalBoolean, ExprWithLimits):
             if x is not None and not y.has(x):
                 domain = limits_dict[x]
                 if domain is not None and domain.is_set:
-                    function = Contains(y, domain, evaluate=False)
+                    function = Contains(y, domain)
+                    if function.is_BooleanTrue:
+                        return function.copy(equivalent=self)
                     limits = self.limits_delete(x)
                     if limits:
                         return self.func(function, *limits, equivalent=self)

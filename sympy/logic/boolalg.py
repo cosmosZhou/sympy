@@ -2141,13 +2141,31 @@ class Or(LatticeOp, BooleanFunction):
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
         # standard simplify
-        rv = super(Or, self)._eval_simplify(
-            ratio, measure, rational, inverse)
+        rv = super(Or, self)._eval_simplify(ratio, measure, rational, inverse)
         if not isinstance(rv, Or):
             return rv
         patterns = simplify_patterns_or()
         return self._apply_patternbased_simplification(rv, patterns,
                                                        measure, S.true)
+
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            return Boolean.simplify(self, deep, **kwargs)
+        
+        if all(eq.is_Equality for eq in self.args):
+            args = [{*eq.args} for eq in self.args]
+            lhs = args[0]
+            rhs = {*lhs}
+            for i in range(1, len(args)):
+                lhs &= args[i]
+                if not lhs:
+                    return self
+                rhs |= args[i]
+            from sympy import Contains, FiniteSet
+            rhs -= lhs
+            return Contains(*lhs, FiniteSet(*rhs), equivalent=self)
+           
+        return self
 
     def split(self):
         for arg in self.args:

@@ -77,16 +77,14 @@ function create_a_tag($theorem, &$statement, &$axiom_prefix)
 }
 
 // input is a php file
-function render($php, $txt)
+function render($php)
 {
     // error_log("php file = $php");
-    // $txt = str_replace('.php', '.txt', $php);
-    // error_log("txt file = $txt");
+    
     $py = str_replace('.php', '.py', $php);
     // $py = str_replace('latex', 'sympy', $py);
     // error_log("python file = $py");
 
-    // assert(file_exists($txt), "file_exists($txt)");
     assert(file_exists($py), "file_exists($py)");
 
     $inputs = [];
@@ -205,7 +203,7 @@ function render($php, $txt)
             $inputs[] = join("<br>", $input);
             unset($input);
             $lengths[] = 1;
-        } else if (preg_match('/(Eq\.\w+ *(?:, *Eq\.\w+ *)*)= */', $statement, $matches)) {
+        } else if (preg_match('/(Eq\.\w+ *(?:, *(?:Eq\.\w+|\w+) *)*)= */', $statement, $matches)) {
             $statement = $matches[1];
             error_log("parameter: " . $statement);
 
@@ -224,7 +222,14 @@ function render($php, $txt)
     $p = [];
     $i = 0;
     $statements = '';
-    foreach ($txt as &$statement) {
+    foreach (file($php) as &$statement) {
+        error_log($statement);
+        if (strncmp($statement, "//", 2) !== 0){
+            continue;
+        }        
+        
+        $statement = substr($statement, 2);
+        
         $statements .= $statement;
         if ($lengths[$i] == 1) {
             $p[] = "<p>$statements</p>";

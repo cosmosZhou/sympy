@@ -24,34 +24,40 @@ sympy.init_printing()
 class Eq:
     slots = {'list', 'file', 'timing'}
         
-    def __init__(self, txt):
+    def __init__(self, php_file):
         from sympy.utilities.misc import Text
         
         self.__dict__['list'] = []
-        self.__dict__['file'] = Text(txt)
+        self.__dict__['file'] = Text(php_file)
         self.__dict__['timing'] = time.time()
         
-        self.file.clear()         
+        self.file.clear()
+        
+        php = self.file.file.name
+#         sep = os.sep
+        php = php.replace('\\', '/')        
+
+        utility_php = re.compile(r'/\w+').sub('/utility', re.compile(r'\w+/').sub('../', php[php.index('axiom'):]))
+        php_code = """\
+<?php
+require_once '%s';
+render(__FILE__);        
+""" % utility_php
+
+        self.file.write(php_code)
 
     def __del__(self):
 #         print('calling destructor')
         self.file.home()
-        lines = []        
-#         print('writing .php :', self.file.file.name)
-        php = self.file.file.name
-#         sep = os.sep
-        php = php.replace('\\', '/')        
-#         utility_php = re.compile(r'\\\w+').sub(r'\\utility', re.compile(r'\w+\\').sub(r'..\\', php[php.index('axiom'):]))        
-        utility_php = re.compile(r'/\w+').sub('/utility', re.compile(r'\w+/').sub('../', php[php.index('axiom'):]))
+#         sep = os.sep        
+        lines = []
         
-        php_code = """\
-<p style='display:none'>timing = %s</p>
-<?php
-require_once '%s';
-""" % (time.time() - self.timing, utility_php)
-        lines.append(php_code)
-        
-        for line in self.file:            
+        lines.append("<p style='display:none'>timing = %s</p>" % (time.time() - self.timing))
+        for line in self.file:
+            if not line.startswith('//'):
+                lines.append(line)
+                continue
+                        
             i = 0  
             res = []   
             for m in re.finditer(r"\\tag\*{(Eq(?:\[(\d+)\]|\.(\w+)))}", line):
@@ -91,15 +97,11 @@ require_once '%s';
                 
             res.append(line[i:])
             
-            lines.append('$text[] = "%s";' % ''.join(res).replace('\\', '\\\\'))
-        
-        php_code = """\
-render(__FILE__, $text);
-?>        
-"""
-        lines.append(php_code)
+#             lines.append('$text[] = "%s";' % ''.join(res).replace('\\', '\\\\'))
+            lines.append(''.join(res))
         
         self.file.write(lines)
+        self.file.append("?>")        
 
     @staticmethod   
     def reference(index):
@@ -173,7 +175,7 @@ render(__FILE__, $text);
             return self.list[index]
         return self.__dict__[index]
 
-    def process(self, rhs, index=None, end_of_line='\n'):        
+    def process(self, rhs, index=None, flush=True):        
         try:
             latex = rhs.latex
         except:
@@ -195,10 +197,13 @@ render(__FILE__, $text);
                 latex += tag
                 infix = '%s : %s' % (index, infix)            
 #         self.file.append(r'\[%s\]' % latex)
-        self.file.append(r'\(%s\)' % latex, end_of_line)
-
+        
         print(infix)
-        return self
+        latex = r'\(%s\)' % latex
+        if flush:
+            self.file.append('//' + latex)
+        else:
+            return latex 
 
     def __setattr__(self, index, rhs):
         if index in self.__dict__:
@@ -282,11 +287,8 @@ render(__FILE__, $text);
             return old_index
 
     def __lshift__(self, rhs):
-
-        if isinstance(rhs, (list, tuple)):
-            for arg in rhs:
-                self.process(arg, end_of_line='')
-            self.file.append('')
+        if isinstance(rhs, (list, tuple)):    
+            self.file.append('//' + ''.join([self.process(arg, flush=False) for arg in rhs]))
         else:
             self.process(rhs)
         return self
@@ -333,9 +335,7 @@ def topological_sort(graph):
 
 
 def wolfram_decorator(py, func, **kwargs):
-    txt = py.replace('.py', '.php')
-
-    eqs = Eq(txt)
+    eqs = Eq(py.replace('.py', '.php'))
     website = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
     try: 
         if 'wolfram' in kwargs:
@@ -360,10 +360,12 @@ def wolfram_decorator(py, func, **kwargs):
 
     return True
 
+
 from wolframclient.evaluation.cloud import cloudsession
 session = cloudsession.session
 # from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
 # session = WolframLanguageSession()
+
 
 def check(func=None, wolfram=None):
     if func is not None:

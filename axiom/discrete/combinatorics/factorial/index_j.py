@@ -10,7 +10,8 @@ from axiom.discrete.sets import union_comprehension
 from axiom.discrete import sets
 from sympy.core.symbol import Symbol
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import Ref, ForAll
+from sympy.sets.contains import Contains
 
 
 @plausible
@@ -82,7 +83,7 @@ def prove(Eq):
     
     (a, *_), (b, *_) = Eq.inequality_ab.limits
     
-    Eq << union_comprehension.nonoverlapping.apply(Eq[0].abs(), excludes = Eq.inequality_ab.variables_set)
+    Eq << union_comprehension.nonoverlapping.apply(Eq[0].abs(), excludes=Eq.inequality_ab.variables_set)
     
     Eq << Eq[-1].subs(k, a)
     
@@ -92,13 +93,19 @@ def prove(Eq):
     
     Eq.distribute_ab = Eq[-1].this.function.distribute()
 
-    Eq.j_equality, Eq.k_domain = sj.assertion().split()
+    Eq.j_equality, _ = sj.assertion().split()
     
-    Eq << Eq.k_domain.limits_subs(k, a).apply(sets.contains.union)
+    Eq.i_domain = ForAll[a:sj](Contains(a, Interval(0, n - 1, integer=True)), plausible=True)
+    Eq << Eq.i_domain.simplify()
+    
+    Eq.b_domain = ForAll[b:sj](Contains(b, Interval(0, n - 1, integer=True)), plausible=True)
+    Eq << Eq.b_domain.simplify()
+    
+    Eq << Eq.i_domain.apply(sets.contains.union)
     
     Eq << Eq.distribute_ab.subs(Eq[-1])
     
-    Eq << (Eq[-1] & Eq.k_domain.limits_subs(k, b))
+    Eq << (Eq[-1] & Eq.b_domain)
     
     Eq << Eq.j_equality.limits_subs(k, a).reversed
     Eq << Eq[-2].subs(Eq[-1])

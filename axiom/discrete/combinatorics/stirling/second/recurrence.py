@@ -287,7 +287,7 @@ def prove(Eq):
     Eq << s2_n.assertion()
 
     Eq << Eq[-1].split()
-
+    return
     Eq << Eq[-2].subs(Eq.s2_definition)
 
     Eq.s2_n_assertion = Eq[-1].definition
@@ -588,6 +588,10 @@ def prove(Eq):
     
     Eq << Eq[-1].split()[1].intersect({n})
     Eq << Eq[-1].subs(Eq.nonoverlapping_s1_quote)
+    
+    Eq << Eq[-3].split()
+    
+    Eq << Eq[-1].subs(i, j_quote)
     return
     assert len(Eq.plausibles_dict) == 3
 

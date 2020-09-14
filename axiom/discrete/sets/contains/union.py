@@ -1,6 +1,6 @@
 from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
-from sympy.sets.contains import Contains, Subset
+from sympy.core.symbol import dtype
+from sympy.sets.contains import Contains
 from sympy.core.relational import Equality
 from axiom.discrete.sets import subset
 from sympy import var

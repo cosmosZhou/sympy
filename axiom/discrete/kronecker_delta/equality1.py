@@ -12,7 +12,7 @@ def apply(given):
     x, domain = given.args
     assert domain == FiniteSet(0, 1)
         
-    return Equality(KroneckerDelta(1, x), x)
+    return Equality(KroneckerDelta(1, x), x, given=given)
 
 
 from sympy.utility import check
@@ -27,7 +27,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.as_Piecewise()
     
-    Eq << Eq[-1].split()
+    Eq << Eq[-1].as_Or()
+    
+    
 
 
 if __name__ == '__main__':

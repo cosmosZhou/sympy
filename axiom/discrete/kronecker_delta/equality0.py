@@ -1,6 +1,5 @@
 from sympy import var
-from sympy.sets.sets import Interval, FiniteSet
-from sympy.core.numbers import oo
+from sympy.sets.sets import FiniteSet
 from sympy.utility import plausible
 from sympy.core.relational import Equality
 from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -13,7 +12,7 @@ def apply(given):
     x, domain = given.args
     assert domain == FiniteSet(0, 1)
         
-    return Equality(KroneckerDelta(0, x), 1 - x)
+    return Equality(KroneckerDelta(0, x), 1 - x, given=given)
 
 
 from sympy.utility import check
@@ -25,6 +24,10 @@ def prove(Eq):
     given = Contains(x, {0, 1})
     
     Eq << apply(given)
+
+    Eq << Eq[-1].this.lhs.as_Piecewise()
+    
+    Eq << Eq[-1].as_Or()
 
 
 if __name__ == '__main__':

@@ -1002,10 +1002,33 @@ class Equal(Relational):
             args = [*rhs.args]
             args.remove(lhs)
             return self.func(0, Add(*args), equivalent=self).simplify()
-        elif lhs == 0 and _coeff_isneg(rhs):
-            return self.func(0, -rhs, equivalent=self)
-        elif rhs == 0 and _coeff_isneg(lhs):
-            return self.func(-lhs, 0, equivalent=self)
+        elif lhs == 0:
+            if _coeff_isneg(rhs):
+                return self.func(0, -rhs, equivalent=self)
+            elif rhs.is_Plus:
+                _lhs = []
+                _rhs = []
+                for arg in lhs.args:
+                    if _coeff_isneg(arg):
+                        _lhs.append(-arg)
+                    else:
+                        _rhs.append(arg)
+                if _lhs:
+                    return self.func(Add(*_lhs), Add(*_rhs), equivalent=self)            
+        elif rhs == 0:
+            if _coeff_isneg(lhs):
+                return self.func(-lhs, 0, equivalent=self)
+            elif lhs.is_Plus:
+                _lhs = []
+                _rhs = []
+                for arg in lhs.args:
+                    if _coeff_isneg(arg):
+                        _rhs.append(-arg)
+                    else:
+                        _lhs.append(arg)
+                if _rhs:
+                    return self.func(Add(*_lhs), Add(*_rhs), equivalent=self)
+                        
         elif lhs.is_Piecewise:
             if rhs.is_Piecewise:
                 ...
@@ -1053,28 +1076,42 @@ class Equal(Relational):
             univeralSet = S.BooleanTrue
             args = []
 
-            for expr, condition in piecewise.args:
-                condition &= univeralSet
+            for expr, cond in piecewise.args:
+                condition = cond & univeralSet
                 condition.equivalent = None
                 
-                invert = condition.invert()
-                univeralSet &= invert
-                univeralSet.equivalent = None
+                if not cond:
+                    invert = condition.invert()
+                    univeralSet &= invert
+                    univeralSet.equivalent = None
                 
-                eq = condition & self.func(lhs, expr)                
+                eq = condition & self.func(lhs, expr).simplify()                
                 eq.equivalent = None
                 args.append(eq)
                 
             from sympy import Or            
-            return Or(*args, equivalent=self)
+            return Or(*args, equivalent=self).simplify()
         return self
     
     def split(self):
-        if self.lhs.is_DenseMatrix and self.rhs.is_DenseMatrix:
+        if self.lhs.is_DenseMatrix and self.rhs.is_DenseMatrix:             
             args = []
-            for lhs, rhs in zip(self.lhs._mat, self.rhs._mat):
-                args.append(self.func(lhs, rhs, given=self).simplify())
+            for lhs, rhs in zip(self.lhs.args, self.rhs.args):
+                args.append(self.func(lhs, rhs).simplify())
+                
+            from sympy import And    
+            this = And(*args, equivalent=self)
+            for eq in args:
+                eq.given = this
             return args
+        
+        if self.lhs.is_FiniteSet:
+            from sympy import Contains
+            args = []
+            for lhs in self.lhs.args:
+                args.append(Contains(lhs, self.rhs, given=self).simplify())
+            return args
+
         return self
 
     def _split(self, variable=None):
@@ -1172,6 +1209,7 @@ class Equal(Relational):
 
     def _sympystr(self, p):
         return '%s == %s' % tuple(p._print(arg) for arg in self.args)
+
 
 Eq = Equality = Equal
 
@@ -1294,6 +1332,22 @@ class Unequal(Relational):
             if set(self.args) == set(other.args):
                 return other
 
+        if isinstance(other, Equality):
+            argset = {*self.args}
+            _argset = {*other.args}
+            x = argset & _argset
+            if len(x) == 2:
+                return S.false.copy(equivalent=[self, other])
+            elif len(x) == 1:
+                x, *_ = x
+                argset.remove(x)
+                _argset.remove(x)
+                lhs, *_ = argset
+                rhs, *_ = _argset
+                eq = Equality(lhs, rhs).simplify()
+                if eq.is_BooleanFalse:                    
+                    return other
+                
         return Relational.__and__(self, other)
 
     def asKroneckerDelta(self):

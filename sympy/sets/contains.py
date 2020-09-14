@@ -144,7 +144,7 @@ class Contains(BooleanFunction):
                 if not e._has(Symbol) and y._has(Symbol):
                     return Equality(y, e, equivalent=self)
                 return Equality(e, y, equivalent=self)
-            return Or(*(Equality(e, y) for y in s), equivalent=self)
+#             return Or(*(Equality(e, y) for y in s), equivalent=self)
 
         if s.is_ConditionSet:
             if e == s.variable:

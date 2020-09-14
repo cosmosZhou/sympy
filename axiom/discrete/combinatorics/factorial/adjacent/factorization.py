@@ -10,6 +10,9 @@ from sympy.concrete.products import MatProduct
 from sympy import var
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices import Matrix
+from sympy.sets.contains import Contains
+from axiom.discrete.kronecker_delta import equality0
+
 
 @plausible
 def apply(n):
@@ -43,17 +46,21 @@ def prove(Eq):
     
     Eq.equation = Eq[-1].this.function.rhs.expand()
     
-    Eq << Eq.equation.limits_assertion()
+    Eq.limits_assertion = Eq.equation.limits_assertion()
     
-    Eq << Eq[-1].summation()
+    Eq << Eq.limits_assertion.summation()
     
     Eq << (Eq[-1].this.function - p[0])
     
     Eq << Eq.equation.subs(Eq[-1]) 
     
-    Eq << Eq[-1].split()
+    Eq.first, Eq.second = Eq[-1].split()
     
+    Eq << Eq.limits_assertion.split()
     
+    Eq << Eq[-2].apply(equality0).reversed
+    
+    Eq << Eq.first.subs(Eq.second.reversed)
 
     
 if __name__ == '__main__':

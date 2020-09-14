@@ -1389,6 +1389,12 @@ class Interval(Set, EvalfMixin):
     def doit(self, deep=False, **_):
         if deep:
             return self.copy(start=self.start.doit(), end=self.end.doit())
+        if self.is_integer:
+            m = self.min()
+            if m.is_Integer:
+                M = self.max()
+                if M.is_Integer:                    
+                    return FiniteSet(*range(m, M + 1))
         return self
 
     def to_mpi(self, prec=53):
@@ -1441,7 +1447,7 @@ class Interval(Set, EvalfMixin):
                 return None
             return S.false
 
-        return And(Eq(self.left, other.left), Eq(self.right, other.right), 
+        return And(Eq(self.left, other.left), Eq(self.right, other.right),
                    self.left_open == other.left_open, self.right_open == other.right_open)
 
     @property
