@@ -112,7 +112,7 @@ def prove(Eq):
 
     Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = s1_quote_definition.split()
 
-    j = Symbol('j', domain=Interval(0, k, integer=True))
+    j = var(domain=[0, k], integer=True).j
 
     x_quote = Symbol("x'", shape=(k + 1,), dtype=dtype.integer,
                      definition=Ref[i:k + 1](Piecewise((Union(x_tuple[i], {n}) , Equality(i, j)), (x_tuple[i], True))))
@@ -178,7 +178,7 @@ def prove(Eq):
     assert len(Eq.plausibles_dict) == 1
     Eq.x_quote_definition = Eq.x_quote_definition.reference((i, 0, k))
 
-    A = Symbol("A", shape=(k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0]))
+    A = var(shape=(k + 1,), dtype=dtype.integer.set.set, definition=Ref[j](Eq.x_quote_set_in_s2.args[0])).A
 
     Eq.A_definition = A.equality_defined()
 
@@ -186,7 +186,7 @@ def prove(Eq):
 
     Eq << Eq[-1].union_comprehension((j,))
 
-    B = Symbol("B", dtype=dtype.integer.set.set, definition=plausible0.args[0])
+    B = var(dtype=dtype.integer.set.set, definition=plausible0.args[0]).B 
 
     Eq.B_definition = B.this.definition
 
@@ -280,19 +280,17 @@ def prove(Eq):
 
     Eq << Eq.subset_B_definition.subs(Eq.s0_complement_n)
 
-    s2_n = Symbol('s_{2, n}', definition=Eq[-1].limits[0][1]);
+    s2_n = Symbol('s_{2, n}', definition=Eq[-1].limits[0][1])
 
     Eq.s2_n_definition = s2_n.this.definition
 
     Eq << s2_n.assertion()
 
-    Eq << Eq[-1].split()
-    return
-    Eq << Eq[-2].subs(Eq.s2_definition)
+    Eq << Eq[-1].subs(Eq.s2_definition).split()
 
-    Eq.s2_n_assertion = Eq[-1].definition
+    Eq.s2_n_assertion = Eq[-2].definition
 
-    Eq << Eq[-2].subs(Eq.s2_n_assertion)
+    Eq << Eq[-1].subs(Eq.s2_n_assertion)
 
     Eq << Eq[-1].definition
 

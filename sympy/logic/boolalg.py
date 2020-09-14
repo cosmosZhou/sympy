@@ -521,6 +521,8 @@ class Boolean(Basic):
 
         imply = self.imply
         if imply is not None:
+            if imply.is_Or:
+                return True
             return imply.plausible
         
         counterpart = self.counterpart
@@ -531,11 +533,6 @@ class Boolean(Basic):
             if plausible is False:
                 return
             return False
-        
-        parent = self.parent  # similar with self.imply used in Or structure
-        if parent is not None:
-            assert parent.is_Or or parent.is_ConditionalBoolean and parent.function.is_Or
-            return True                
 
     @plausible.setter
     def plausible(self, value):
@@ -608,23 +605,6 @@ class Boolean(Basic):
         if 'substituent' in self._assumptions:
             return self._assumptions['substituent']
         return None
-
-    @property
-    def parent(self):
-        if 'parent' in self._assumptions:
-            return self._assumptions['parent']
-        return None
-
-    @parent.setter
-    def parent(self, eq):
-        if eq is not None:
-            assert 'parent' not in self._assumptions
-            self._assumptions['parent'] = eq
-            assert 'plausible' not in self._assumptions
-            return            
-
-        if 'parent' in self._assumptions:
-            del self._assumptions['parent']
 
     @property
     def hypothesis(self):
@@ -700,7 +680,16 @@ class Boolean(Basic):
         if derivative is None:
             return
 # perform mathematical induction
-
+        if isinstance(derivative, list):
+            if self.is_Equality or self.is_And or \
+            self.is_ForAll and (self.function.is_Equality or self.function.is_And) or \
+            self.is_Exists and self.function.is_Equality:
+            # Exists of And structure is not deductive!
+                if all(eq.plausible is None for eq in derivative):
+                    del self._assumptions['derivative']
+                    self.plausible = True
+            return
+                 
         self_equivalent = equivalent_ancestor(self)
         if len(self_equivalent) > 1:
             return
@@ -1928,7 +1917,10 @@ class And(LatticeOp, BooleanFunction):
         return Intersection(*[arg.as_set() for arg in self.args])
 
     def split(self):
-        return [eq.func(*eq.args, given=self) for eq in self.args]
+        eqs = [eq.func(*eq.args, given=self) for eq in self.args]
+        if self.plausible:
+            self.derivative = eqs
+        return eqs
 
     def distribute(self):
         for i, logic_or in enumerate(self.args):
@@ -2168,10 +2160,10 @@ class Or(LatticeOp, BooleanFunction):
         return self
 
     def split(self):
-        for arg in self.args:
-            arg.parent = self
-
-        return self.args
+        args = [arg.func(arg.args, imply=self) for arg in self.args]
+        if self.plausible:
+            self.derivative = args
+        return args
 
     def asKroneckerDelta(self):
         eq = 1

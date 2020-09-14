@@ -10,7 +10,6 @@ from sympy.concrete.products import MatProduct
 from sympy import var
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices import Matrix
-from sympy.sets.contains import Contains
 from axiom.discrete.kronecker_delta import equality0
 
 
@@ -54,13 +53,13 @@ def prove(Eq):
     
     Eq << Eq.equation.subs(Eq[-1]) 
     
-    Eq.first, Eq.second = Eq[-1].split()
+    Eq.premier, Eq.second = Eq[-1].split()
     
     Eq << Eq.limits_assertion.split()
     
     Eq << Eq[-2].apply(equality0).reversed
     
-    Eq << Eq.first.subs(Eq.second.reversed)
+    Eq << Eq.premier.subs(Eq.second.reversed)
 
     
 if __name__ == '__main__':

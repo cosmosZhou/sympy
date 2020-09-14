@@ -3242,9 +3242,10 @@ class ConditionalBoolean(Boolean):
                 else:
                     eq.given = None
                 assert eq.equivalent is None
-
-            self.derivative = [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
-            return self.derivative
+            eqs = [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
+            if self.plausible:
+                self.derivative = eqs
+            return eqs
         elif isinstance(arr, tuple):
             for eq in arr:
                 assert eq.parent is not None
@@ -4441,14 +4442,13 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                     pending -= 1
                     nexts = itertools.cycle(itertools.islice(nexts, pending))
 
-        if all(set.is_iterable for set in self.args):
+        if all(s.is_iterable for s in self.args):
             return roundrobin(*(iter(arg) for arg in self.args))
         else:
             raise TypeError("Not all constituent sets are iterable")
         
     def limits_subs(self, old, new):
         ...
-
         
 ForAll.invert_type = Exists
 

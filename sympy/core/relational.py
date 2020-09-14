@@ -1095,24 +1095,20 @@ class Equal(Relational):
     
     def split(self):
         if self.lhs.is_DenseMatrix and self.rhs.is_DenseMatrix:             
-            args = []
-            for lhs, rhs in zip(self.lhs.args, self.rhs.args):
-                args.append(self.func(lhs, rhs).simplify())
-                
-            from sympy import And    
-            this = And(*args, equivalent=self)
-            for eq in args:
-                eq.given = this
-            return args
-        
-        if self.lhs.is_FiniteSet:
+            args = [self.func(lhs, rhs, given=self).simplify() for lhs, rhs in zip(self.lhs.args, self.rhs.args)]        
+        elif self.lhs.is_FiniteSet:
             from sympy import Contains
-            args = []
-            for lhs in self.lhs.args:
-                args.append(Contains(lhs, self.rhs, given=self).simplify())
-            return args
-
-        return self
+            args = [Contains(lhs, self.rhs, given=self).simplify() for lhs in self.lhs.args]                
+        else:
+            args = None
+            
+        if args is None:
+            return self
+            
+        if self.plausible:
+            self.derivative = args
+        return args
+        
 
     def _split(self, variable=None):
         from sympy.functions.elementary.piecewise import Piecewise
