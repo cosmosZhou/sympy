@@ -3223,7 +3223,10 @@ class ConditionalBoolean(Boolean):
         kwargs = {}
 
         if clue:
-            kwargs[clue] = [self, *args] if all(isinstance(arg, Boolean) for arg in args) else self
+            if isinstance(clue, dict):
+                kwargs = clue
+            else:
+                kwargs[clue] = [self, *args] if all(isinstance(arg, Boolean) for arg in args) else self
         if function.is_BooleanAtom:
             return function.copy(**kwargs)
 
@@ -3243,7 +3246,8 @@ class ConditionalBoolean(Boolean):
                     eq.given = None
                 assert eq.equivalent is None
             eqs = [self.func(eq, *self.limits, given=self).simplify() for eq in arr]
-            if self.plausible:
+            if self.plausible is not None:
+                assert all(eq.plausible for eq in eqs)
                 self.derivative = eqs
             return eqs
         elif isinstance(arr, tuple):
@@ -4021,8 +4025,13 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                     limits = self.limits_delete(dic)
                     func.append([Exists, rhs.limits_intersect(limits)])
                     return 'given', func, self.function, rhs.function.function
-            func.append([Exists, self.limits_intersect(rhs)])
-            return None, func, self.function, rhs.function
+            limits = self.limits_intersect(rhs)
+            if self.variables_set == rhs.variables_set:
+                clue = {'equivalent' : Exists(self.function & rhs.function, *limits, imply=[self, rhs])}
+            else:
+                clue = None
+            func.append([Exists, limits])
+            return clue, func, self.function, rhs.function
 
         if rhs.is_ForAll:
             func = []
@@ -4067,7 +4076,13 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                 assert len(args) == 0
                 args = [self.limits_dict[kwargs.pop('var')]]
 
+            if len(args) == 1:
+                eq, *_ = args
+                if eq in self.function.args:
+                    function = self.function.subs(eq)
+                    return self.func(function, *self.limits, equivalent=self).simplify()
             return ConditionalBoolean.subs(self, *args, **kwargs)
+
         if len(args) != 2:
             return Expr.subs(self, *args, **kwargs)
         
@@ -4436,8 +4451,8 @@ class Exists(ConditionalBoolean, ExprWithLimits):
                 nexts = itertools.cycle(iter(it).next for it in iterables)
             while pending:
                 try:
-                    for next in nexts:
-                        yield next()
+                    for nxt in nexts:
+                        yield nxt()
                 except StopIteration:
                     pending -= 1
                     nexts = itertools.cycle(itertools.islice(nexts, pending))
@@ -4449,6 +4464,33 @@ class Exists(ConditionalBoolean, ExprWithLimits):
         
     def limits_subs(self, old, new):
         ...
+
+    def __and__(self, eq):
+        """Overloading for & operator"""
+        if eq.is_Exists:
+            return And(self, eq, equivalent=[self, eq])
+        
+        clue, funcs, lhs, rhs = self.combine_clauses(eq)
+        function = lhs & rhs
+        if not clue:
+            clue = function.clue
+
+        for func, limits in funcs[:-1]:
+            function = func(function, *limits).simplify()
+        func, limits = funcs[-1]
+
+        if not clue:
+            if function.equivalent is not None:
+                clue = 'equivalent'
+            elif function.given is not None:
+                clue = 'given'
+
+        kwargs = {}
+        if clue:
+            kwargs[clue] = [self, eq]
+
+        return func(function, *limits, **kwargs).simplify()
+
         
 ForAll.invert_type = Exists
 

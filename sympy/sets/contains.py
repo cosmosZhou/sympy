@@ -77,7 +77,11 @@ class Contains(BooleanFunction):
         if self.rhs.is_Union:
             return [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
         if self.rhs.is_Intersection:
-            return [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
+            args = [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
+            if self.plausible:
+                self.derivative = args
+            return args
+        
         if self.rhs.is_Interval:
             if self.rhs.left_open:
                 lower_bound = self.lhs > self.rhs.start

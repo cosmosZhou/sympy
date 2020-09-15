@@ -259,10 +259,17 @@ render(__FILE__);
                     if isinstance(rhs.equivalent, (list, tuple)):
                         if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
                             return old_index
-                    if isinstance(rhs.given, (list, tuple)):
-                        if any(id(eq) == id(_eq) for _eq in rhs.given):
-                            return old_index 
                         
+                    if rhs.given is not None:
+                        if isinstance(rhs.given, (list, tuple)):
+                            if any(id(eq) == id(_eq) for _eq in rhs.given):
+                                return old_index
+                        else:
+                            if rhs.given.plausible is False:
+                                eqs = [eq for eq in rhs.given.derivative if eq.plausible is not None]
+                                if len(eqs) == 1:
+                                    eqs[0].plausible = False
+                    
                     if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:

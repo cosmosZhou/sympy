@@ -513,17 +513,17 @@ class Boolean(Basic):
                         return True
 
                 return
-            return given.plausible
-
+            if given.plausible is not None:
+                return True
+            return 
+        
         substituent = self.substituent
         if substituent is not None:
             return substituent.plausible
 
         imply = self.imply
-        if imply is not None:
-            if imply.is_Or:
-                return True
-            return imply.plausible
+        if imply is not None:            
+            return True
         
         counterpart = self.counterpart
         if counterpart is not None:
@@ -576,29 +576,6 @@ class Boolean(Basic):
                     counterpart.plausible = True
                 else:
                     assert plausible is None
-                    
-        parent = self.parent
-        if parent is not None:
-            if parent.is_Or:
-                self.parent = None
-                plausible = parent.plausible
-                if value:
-                    if plausible:
-                        ...
-                    else:
-                        ...
-                else:
-                    if plausible:
-                        ...
-                    else:
-                        sumOfPlausible = sum(eq.plausible == True for eq in parent.args)
-                        sumOfFalsity = sum(eq.plausible == False for eq in parent.args)
-                        if sumOfFalsity + sumOfPlausible == len(parent.args):
-                            if sumOfPlausible == 1:
-                                for eq in parent.args:
-                                    if eq.plausible:
-                                        eq.plausible = True
-                                        break 
 
     @property
     def substituent(self):
@@ -2160,9 +2137,8 @@ class Or(LatticeOp, BooleanFunction):
         return self
 
     def split(self):
-        args = [arg.func(arg.args, imply=self) for arg in self.args]
-        if self.plausible:
-            self.derivative = args
+        args = [arg.func(*arg.args, imply=self) for arg in self.args]        
+        self.derivative = args
         return args
 
     def asKroneckerDelta(self):

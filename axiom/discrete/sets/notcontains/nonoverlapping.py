@@ -4,6 +4,7 @@ from sympy.core.symbol import dtype
 from sympy import S
 from sympy.sets.contains import NotContains
 from sympy import var
+from sympy.concrete.expr_with_limits import Exists
 
 # given e not in S
 @plausible
@@ -27,18 +28,23 @@ def prove(Eq):
 
     Eq << Eq[-1].split()
 
-    Eq << Eq[-1].split()
+    Eq << Eq[-1].split()[1]
 
     Eq << Eq[-1].this.function.simplify()
-
+    
     Eq << Eq[-1].subs(Eq[-1].limits[0][0], e)
-
-    Eq << Eq[-3].subs(Eq[-1])
-
+    
+    Eq.plausible = Exists(Eq[-3].function & Eq[-1].function, *Eq[-1].limits, plausible=True)
+    
+    Eq << Eq.plausible.subs(Eq.plausible.function.args[0])
+    
+    Eq << Eq[-1].split()
+    
     Eq << (Eq[-1] & Eq[0])
-
-    Eq << (Eq[2] & (~Eq[3])).split()
-
+    
+    Eq << Eq.plausible.split()
+    
+#     Eq << Eq[2].split()
 
 if __name__ == '__main__':
     prove(__file__)
