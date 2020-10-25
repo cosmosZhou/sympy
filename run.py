@@ -26,8 +26,8 @@ def listdir_recursive(rootdir, sufix='.php'):
         elif os.path.isdir(path):
             yield from listdir_recursive(path, sufix)
 
-def clean():
-    for php in listdir(os.path.dirname(__file__) + '/axiom'):
+def clean():    
+    for php in listdir(os.path.abspath(os.path.dirname(__file__)) + '/axiom'):
         py = php.replace('.php', '.py')
         if not os.path.exists(py):
             print(php)
