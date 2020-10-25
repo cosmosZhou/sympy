@@ -5,20 +5,64 @@ import sys
 # pip install mpmath==1.1.0
 # pip install oauthlib
 from axiom import prove
-if __name__ == '__main__':
+import os
 
+def listdir(rootdir, sufix='.php'):
+    for name in os.listdir(rootdir):
+        path = os.path.join(rootdir, name)
+
+        if path.endswith(sufix):
+            yield path
+        elif os.path.isdir(path):
+            yield from listdir_recursive(path, sufix)
+
+
+def listdir_recursive(rootdir, sufix='.php'):
+    for name in os.listdir(rootdir):
+        path = os.path.join(rootdir, name)
+
+        if path.endswith(sufix):
+            yield path
+        elif os.path.isdir(path):
+            yield from listdir_recursive(path, sufix)
+
+def clean():
+    for php in listdir(os.path.dirname(__file__) + '/axiom'):
+        py = php.replace('.php', '.py')
+        if not os.path.exists(py):
+            print(php)
+            os.remove(php)
+    
+def args_kwargs(argv):
+    args = []
+    kwargs = {}
+    for arg in argv:
+        arr = arg.split('=')
+        if len(arr) == 2:
+            key, value = arr
+            kwargs[key] = value
+        else:
+            args.append(arg)
+    return args, kwargs
+
+if __name__ == '__main__':
     if len(sys.argv) == 1:         
         prove.prove()
     else:
+        args, kwargs = args_kwargs(sys.argv[1:])
+        if kwargs:
+            if 'clean' in kwargs:
+                clean()
+            
         unproven = []
 
         erroneous = []
 
         websites = []
 
-        import axiom
+        import axiom  # @UnusedImport
         def generator():
-            for package in sys.argv[1:]:
+            for package in args:
                 packageStr = package.replace('/', '.').replace('\\', '.')
                 package = eval(packageStr)
                 ret = package.prove(package.__file__)
