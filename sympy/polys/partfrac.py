@@ -85,7 +85,7 @@ def apart(f, x=None, full=False, **options):
 #         if f.is_commutative:
         raise PolynomialError(msg)
         # non-commutative
-        if f.is_Times:
+        if f.is_Mul:
             c, nc = f.args_cnc(split_1=False)
             nc = f.func(*nc)
             if c:
@@ -93,7 +93,7 @@ def apart(f, x=None, full=False, **options):
                 return c*nc
             else:
                 return nc
-        elif f.is_Plus:
+        elif f.is_Add:
             c = []
             nc = []
             for i in f.args:

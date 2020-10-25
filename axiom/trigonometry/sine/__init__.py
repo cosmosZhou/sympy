@@ -1,1 +1,1 @@
-from . import Wallis
+from . import wallis

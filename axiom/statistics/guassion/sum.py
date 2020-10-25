@@ -1,8 +1,8 @@
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 
-from sympy.stats.crv_types import NormalDistribution, Normal
-from sympy.stats.rv import Density, RandomSymbol
+from sympy.stats.crv_types import NormalDistribution
+from sympy.stats.rv import PDF, pspace
 from sympy import sqrt
 from sympy.stats.crv import SingleContinuousPSpace
 from axiom.statistics.guassion import quadratic
@@ -11,40 +11,41 @@ from sympy.core.symbol import Symbol
 
 @plausible
 def apply(x0, x1):
-    if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):
-        return None
-    pspace0 = x0.pspace
-    pspace1 = x1.pspace
+    assert x0.is_random and x1.is_random
+
+    pspace0 = pspace(x0)
+    pspace1 = pspace(x1)
     if not isinstance(pspace0, SingleContinuousPSpace) or not isinstance(pspace1, SingleContinuousPSpace):
         return None
     distribution0 = pspace0.distribution
     distribution1 = pspace1.distribution
     if not isinstance(distribution0, NormalDistribution) or not isinstance(distribution1, NormalDistribution):
         return None
-    Y = Normal('y', distribution0.mean + distribution1.mean, sqrt(distribution0.std * distribution0.std + distribution1.std * distribution1.std))
-    y = Y.symbol
+    Y = Symbol.y(distribution=NormalDistribution(distribution0.mean + distribution1.mean,
+                                            sqrt(distribution0.std * distribution0.std + distribution1.std * distribution1.std)))
+    y = pspace(Y).symbol
 
-    return Equality(Density(x0 + x1)(y), Density(Y)(y).doit())
+    return Equality(PDF(x0 + x1)(y), PDF(Y)(y).doit())
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
 
-    mu0 = Symbol("mu0", real=True)
-    mu1 = Symbol("mu1", real=True)
+    mu0 = Symbol.mu0(real=True)
+    mu1 = Symbol.mu1(real=True)
 
-    sigma0 = Symbol("sigma0", positive=True)
-    sigma1 = Symbol("sigma1", positive=True)
+    sigma0 = Symbol.sigma0(positive=True)
+    sigma1 = Symbol.sigma1(positive=True)
 
-    x0 = Normal('x0', mu0, sigma0)
-    x1 = Normal('x1', mu1, sigma1)
+    x0 = Symbol.x0(distribution=NormalDistribution(mu0, sigma0))
+    x1 = Symbol.x1(distribution=NormalDistribution(mu1, sigma1))    
     assert sqrt(sigma0 * sigma0 + sigma1 * sigma1) > 0
     Eq << apply(x0, x1)
 
-    Eq << Density(x0 + x1).equality_defined()
+    Eq << Eq[0].lhs.this.doit(evaluate=False)
 
     Eq << Eq[-1].this.rhs.args[-1].args[0].doit()
 

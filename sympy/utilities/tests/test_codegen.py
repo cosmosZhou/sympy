@@ -7,7 +7,7 @@ from sympy.utilities.codegen import (
     codegen, make_routine, CCodeGen, C89CodeGen, C99CodeGen, InputArgument,
     CodeGenError, FCodeGen, CodeGenArgumentListError, OutputArgument,
     InOutArgument)
-from sympy.utilities.pytest import raises
+from sympy.testing.pytest import raises
 from sympy.utilities.lambdify import implemented_function
 
 #FIXME: Fails due to circular import in with core
@@ -757,8 +757,8 @@ def test_no_results_f():
 
 def test_intrinsic_math_codegen():
     # not included: log10
-    from sympy import (acos, asin, atan, ceiling, cos, cosh, floor, log, ln,
-            sin, sinh, sqrt, tan, tanh, Abs)
+    from sympy import (acos, asin, atan, cos, cosh, log, ln, sin, sinh, sqrt,
+            tan, tanh, Abs)
     x = symbols('x')
     name_expr = [
         ("test_abs", Abs(x)),
@@ -1472,7 +1472,7 @@ def test_global_vars():
     assert source == expected
 
 def test_custom_codegen():
-    from sympy.printing.ccode import C99CodePrinter
+    from sympy.printing.c import C99CodePrinter
     from sympy.functions.elementary.exponential import exp
 
     printer = C99CodePrinter(settings={'user_functions': {'exp': 'fastexp'}})
@@ -1519,7 +1519,7 @@ def test_custom_codegen():
 
 def test_c_with_printer():
     #issue 13586
-    from sympy.printing.ccode import C99CodePrinter
+    from sympy.printing.c import C99CodePrinter
     class CustomPrinter(C99CodePrinter):
         def _print_Pow(self, expr):
             return "fastpow({}, {})".format(self._print(expr.base),

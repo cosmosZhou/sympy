@@ -11,7 +11,7 @@ def test_qexpr_new():
     q = QExpr(0)
     assert q.label == (0,)
     assert q.hilbert_space == HilbertSpace()
-    assert q.is_commutative is False
+    assert q.is_commutative == False
 
     q = QExpr(0, 1)
     assert q.label == (Integer(0), Integer(1))
@@ -24,19 +24,19 @@ def test_qexpr_new():
 def test_qexpr_commutative():
     q1 = QExpr(x)
     q2 = QExpr(y)
-    assert q1.is_commutative is False
-    assert q2.is_commutative is False
+    assert q1.is_commutative == False
+    assert q2.is_commutative == False
     assert q1*q2 != q2*q1
 
     q = QExpr._new_rawargs(0, 1, HilbertSpace())
-    assert q.is_commutative is False
+    assert q.is_commutative == False
 
 def test_qexpr_commutative_free_symbols():
     q1 = QExpr(x)
-    assert q1.free_symbols.pop().is_commutative is False
+    assert q1.free_symbols.pop().is_commutative == False
 
     q2 = QExpr('q2')
-    assert q2.free_symbols.pop().is_commutative is False
+    assert q2.free_symbols.pop().is_commutative == False
 
 def test_qexpr_subs():
     q1 = QExpr(x, y)

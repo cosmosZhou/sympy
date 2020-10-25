@@ -6,7 +6,7 @@ from .cache import cacheit
 from .basic import Basic, Atom, preorder_traversal
 from .singleton import S
 from .expr import Expr, AtomicExpr, UnevaluatedExpr
-from .symbol import Symbol, Wild, Dummy, symbols, var
+from .symbol import Symbol, Wild, Dummy, symbols, var, dtype
 from .numbers import Number, Float, Rational, Integer, NumberSymbol, \
     RealNumber, igcd, ilcm, seterr, E, I, nan, oo, pi, zoo, \
     AlgebraicNumber, comp, mod_inverse
@@ -14,7 +14,7 @@ from .power import Pow, integer_nthroot, integer_log, Power
 from .mul import Mul, prod, Times
 from .add import Add, Plus
 from .mod import Mod
-from .relational import ( Rel, Eq, Ne, Lt, Le, Gt, Ge,
+from .relational import ( Rel, Eq, Ne, Lt, Le, Gt, Ge, Equal, Unequal, 
     Equality, GreaterThan, LessThan, Unequality, StrictGreaterThan,
     StrictLessThan )
 from .multidimensional import vectorize
@@ -26,7 +26,7 @@ from .function import Lambda, WildFunction, Derivative, diff, FunctionClass, \
 from .evalf import PrecisionExhausted, N
 from .containers import Tuple, Dict
 from .exprtools import gcd_terms, factor_terms, factor_nc
-from .evaluate import evaluate
+from .parameters import evaluate
 
 # expose singletons
 Catalan = S.Catalan

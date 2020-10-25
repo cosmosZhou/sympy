@@ -17,8 +17,6 @@ False
 
 """
 
-from __future__ import division, print_function
-
 import warnings
 
 from sympy.core import S, sympify, Expr
@@ -30,7 +28,7 @@ from sympy.functions.elementary.miscellaneous import sqrt
 from sympy.functions.elementary.complexes import im
 from sympy.matrices import Matrix
 from sympy.core.numbers import Float
-from sympy.core.evaluate import global_evaluate
+from sympy.core.parameters import global_parameters
 from sympy.core.add import Add
 from sympy.utilities.iterables import uniq
 from sympy.utilities.misc import filldedent, func_name, Undecidable

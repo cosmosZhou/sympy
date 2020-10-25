@@ -1,8 +1,7 @@
-from sympy.core.symbol import Symbol
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
-
+from sympy import Symbol
 
 @plausible
 def apply(x, y):
@@ -11,15 +10,15 @@ def apply(x, y):
     return Equality(x @ y, y @ x)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    n = Symbol('n', integer=True)
-    x = Symbol('x', shape=(n,), real=True)
-    y = Symbol('y', shape=(n,), real=True)
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True))
+    n = Symbol.n(integer=True)
+    x = Symbol.x(shape=(n,), real=True)
+    y = Symbol.y(shape=(n,), real=True)
+    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     Eq << apply(x, y)
     
     Eq << Eq[0].lhs.this.expand(free_symbol=i)

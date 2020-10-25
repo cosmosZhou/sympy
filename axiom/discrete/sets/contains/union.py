@@ -1,9 +1,9 @@
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
-from sympy.sets.contains import Contains, Subset
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
+from sympy.sets.contains import Contains
 from sympy.core.relational import Equality
 from axiom.discrete.sets import subset
-
+from sympy import Symbol
 # given: A in B 
 # => A | B = B
 @plausible
@@ -14,13 +14,13 @@ def apply(given):
     return Equality(A.set | B, B, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    e = Symbol('e', integer=True)
-    s = Symbol('s', dtype=dtype.integer)
+    e = Symbol.e(integer=True)
+    s = Symbol.s(dtype=dtype.integer)
     contains = Contains(e, s)
     
     Eq << apply(contains)

@@ -1,16 +1,15 @@
 from sympy.core.relational import Equality
-from sympy.utility import check, plausible
+from axiom.utility import check, plausible
 from sympy.sets.sets import Interval, EmptySet
 from sympy.core.numbers import oo
-
+from sympy import Symbol
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.concrete import expr_with_limits
-from axiom.discrete.sets.emptyset import greater_than_one
-from axiom.discrete.sets import union_comprehension
+from axiom.discrete.sets.inequality import greater_than
 from axiom.discrete import sets
-from sympy.core.symbol import Symbol
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import LAMBDA, ForAll
+from sympy.sets.contains import Contains
 
 
 @plausible
@@ -22,42 +21,49 @@ def apply(given):
     assert len(x_set_comprehension.limits) == 1
     k, a, b = x_set_comprehension.limits[0]
     assert b - a == n - 1
-    x = expr_with_limits.Ref(x_set_comprehension.function.arg, *x_set_comprehension.limits).simplify()
+    x = expr_with_limits.LAMBDA(x_set_comprehension.function.arg, *x_set_comprehension.limits).simplify()
     
-    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
-    return Equality(x[Ref[k:n](KroneckerDelta(x[k], j)) @ Ref[k:n](k)], j, given=given)
+    j = Symbol.j(domain=[0, n - 1], integer=True)
+    return Equality(x[LAMBDA[k:n](KroneckerDelta(x[k], j)) @ LAMBDA[k:n](k)], j, given=given)
 
 
 @check
 def prove(Eq): 
     
-    n = Symbol('n', domain=Interval(2, oo, integer=True))
+    n = Symbol.n(domain=[2, oo], integer=True)
     
-    x = Symbol('x', shape=(n,), integer=True)    
+    x = Symbol.x(shape=(n,), integer=True)    
     
-    k = Symbol('k', integer=True)    
+    k = Symbol.k(integer=True)
     given = Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True))    
 
     Eq << apply(given)    
     
     Eq << Eq[-1].lhs.indices[0].this.expand()    
     
-    Eq << Eq[-1].rhs.function.args[1].this.definition
+    Eq << Eq[-1].rhs.function.args[1].this.as_Piecewise()
     
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
     
-    Eq << Eq[-1].rhs.subs(1, 0).this.bisect(domain={0})
+    Eq << Eq[-1].rhs.subs(1, 0).this.bisect({0})
     
+    assert Eq[-1].lhs.limits[0][1].args[-1][-1].step.is_zero == False
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
-    sj = Symbol('s_j', definition=Eq[-1].rhs.limits[0][1])
+    assert Eq[-1].rhs.limits[0][1].args[-1][-1].step.is_zero == False
+    
+    sj = Symbol.s_j(definition=Eq[-1].rhs.limits[0][1])
     
     Eq.sj_definition = sj.equality_defined()
-    Eq.crossproduct = Eq[-1].subs(Eq.sj_definition.reversed)
+    assert Eq.sj_definition.rhs.limits[0][-1].step.is_zero == False
+    
+    Eq.crossproduct = Eq[-1].subs(Eq.sj_definition.reversed)    
     
     Eq.sj_definition_reversed = Eq.sj_definition.this.rhs.limits[0][1].reversed
-    
+    assert Eq.sj_definition_reversed.args[-1].args[-1][-1].step.is_zero == False
     Eq.sj_definition_reversed = Eq.sj_definition_reversed.reversed
+    
+    assert Eq.sj_definition_reversed.lhs.args[-1][-1].step.is_zero == False
     
     j = Eq[1].rhs
     Eq << Eq[0].intersect({j})
@@ -72,7 +78,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.sj_definition_reversed)
     
-    Eq.sj_greater_than_1 = greater_than_one.apply(Eq[-1])
+    Eq.sj_greater_than_1 = greater_than.apply(Eq[-1])
     
     Eq.distribute = Eq.distribute.subs(Eq.sj_definition_reversed)
     
@@ -82,7 +88,7 @@ def prove(Eq):
     
     (a, *_), (b, *_) = Eq.inequality_ab.limits
     
-    Eq << union_comprehension.nonoverlapping.apply(Eq[0].abs(), excludes = Eq.inequality_ab.variables_set)
+    Eq << sets.equality.abs.nonoverlapping.apply(Eq[0].abs(), excludes=Eq.inequality_ab.variables_set)
     
     Eq << Eq[-1].subs(k, a)
     
@@ -92,13 +98,19 @@ def prove(Eq):
     
     Eq.distribute_ab = Eq[-1].this.function.distribute()
 
-    Eq.j_equality, Eq.k_domain = sj.assertion().split()
+    Eq.j_equality, _ = sj.assertion().split()
     
-    Eq << Eq.k_domain.limits_subs(k, a).apply(sets.contains.union)
+    Eq.i_domain = ForAll[a:sj](Contains(a, Interval(0, n - 1, integer=True)), plausible=True)
+    Eq << Eq.i_domain.simplify()
+    
+    Eq.b_domain = ForAll[b:sj](Contains(b, Interval(0, n - 1, integer=True)), plausible=True)
+    Eq << Eq.b_domain.simplify()
+    
+    Eq << Eq.i_domain.apply(sets.contains.union)
     
     Eq << Eq.distribute_ab.subs(Eq[-1])
     
-    Eq << (Eq[-1] & Eq.k_domain.limits_subs(k, b))
+    Eq << (Eq[-1] & Eq.b_domain)
     
     Eq << Eq.j_equality.limits_subs(k, a).reversed
     Eq << Eq[-2].subs(Eq[-1])
@@ -109,13 +121,13 @@ def prove(Eq):
     
     Eq << Eq.sj_less_than_1.subs(Eq.sj_greater_than_1)
     
-    Eq.a_relation = sets.equality.exists.apply(Eq[-1]).reversed
+    Eq.a_relation = sets.equality.abs.exists.apply(Eq[-1]).reversed
     
     Eq.crossproduct = Eq.crossproduct.subs(Eq.a_relation).reversed
     
     Eq << Eq.j_equality.subs(k, a)
     
-    Eq << Eq.a_relation.intersect(Eq.a_relation.rhs).apply(sets.equality.contains)
+    Eq << Eq.a_relation.intersect(Eq.a_relation.rhs).apply(sets.equality.strict_greater_than.contains)
     
     Eq << (Eq[-1] & Eq[-2]).reversed
     

@@ -1,11 +1,13 @@
-from sympy.core.symbol import Symbol
+
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
-from sympy.concrete.expr_with_limits import Exists, Ref
+from sympy.concrete.expr_with_limits import Exists, LAMBDA
 from axiom import algebre
 from sympy.matrices.expressions.matmul import MatMul
+from sympy import Symbol
+
 
 @plausible
 def apply(given):
@@ -13,14 +15,14 @@ def apply(given):
     lhs, rhs = given.args
     
     assert lhs.is_MatMul
-    *x, p_polynomial = lhs.args
+    * x, p_polynomial = lhs.args
     
     assert rhs.is_MatMul
-    *y, _p_polynomial = rhs.args
+    * y, _p_polynomial = rhs.args
     
     assert p_polynomial == _p_polynomial
     
-    assert p_polynomial.is_Ref
+    assert p_polynomial.is_LAMBDA
     assert p_polynomial.shape    
     assert len(p_polynomial.shape) == 1
     
@@ -44,23 +46,23 @@ def apply(given):
         return Equality(x, y, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    p = Symbol("p")    
-    m = Symbol('m', domain=Interval(1, oo, integer=True))
-    n = Symbol('n', domain=Interval(1, oo, integer=True))
-    x = Symbol("x", shape=(m, n))
-    y = Symbol("y", shape=(m, n))
-    k = Symbol('k', domain=Interval(1, oo, integer=True))
+    p = Symbol.p(complex=True)    
+    m = Symbol.m(domain=Interval(1, oo, integer=True))
+    n = Symbol.n(domain=Interval(1, oo, integer=True))
+    x = Symbol.x(shape=(m, n))
+    y = Symbol.y(shape=(m, n))
+    k = Symbol.k(domain=Interval(1, oo, integer=True))
     
-    given = Equality(x @ Ref[k:n](p ** k), y @ Ref[k:n](p ** k))
+    given = Equality(x @ LAMBDA[k:n](p ** k), y @ LAMBDA[k:n](p ** k))
     
     Eq << apply(given)
     
-    i = Symbol('i', integer=True)
+    i = Symbol.i(integer=True)
     Eq << Eq[0][i]
     
     Eq << algebre.vector.independence.rmatmul_equality.apply(Eq[-1])

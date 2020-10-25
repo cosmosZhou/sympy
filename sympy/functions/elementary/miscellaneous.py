@@ -529,7 +529,7 @@ class MinMaxBase(Expr, LatticeOp):
         for arg in arg_sequence:
 
             # pre-filter, checking comparability of arguments
-            if not isinstance(arg, Expr) or arg.is_extended_real is False or (
+            if not isinstance(arg, Expr) or arg.is_extended_real == False or (
                     arg.is_number and
                     not arg.is_comparable):
                 raise ValueError("The argument '%s' is not comparable." % arg)
@@ -760,7 +760,6 @@ class Max(MinMaxBase, Application):
     """
     zero = S.Infinity
     identity = S.NegativeInfinity
-    is_Max = True
     def fdiff(self, argindex):
         from sympy import Heaviside
         n = len(self.args)
@@ -897,7 +896,6 @@ class Min(MinMaxBase, Application):
     """
     zero = S.NegativeInfinity
     identity = S.Infinity
-    is_Min = True
     
     def fdiff(self, argindex):
         from sympy import Heaviside

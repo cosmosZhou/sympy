@@ -1,37 +1,34 @@
 from sympy.functions.combinatorial.factorials import binomial, factorial
-from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy.matrices.expressions.determinant import Det
-
+from sympy import Symbol
 from sympy.matrices.expressions.matexpr import Shift
 from axiom import discrete
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import LAMBDA
 from sympy.concrete.products import Product
-from sympy.concrete.summations import Sum
 
 
-# r = Symbol('r')
-# n = Symbol('n', integer=True, positive=True)
+# n = Symbol.n(integer=True, positive=True)
 @plausible
 def apply(r, n):
     if not n >= 2:
         return None
-    k = Symbol('k', integer=True)
-    i = Symbol('i', integer=True)
-    j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
+    k = Symbol.k(integer=True)
+    i = Symbol.i(integer=True)
+    j = Symbol.j(domain=Interval(0, n, right_open=True, integer=True))
 
-    A = Ref[j, i:n - 1]((j + 1) ** (i + 1))
-    R = Ref[j](1 - r ** (j + 1))
+    A = LAMBDA[j, i:n - 1]((j + 1) ** (i + 1))
+    R = LAMBDA[j](1 - r ** (j + 1))
 # note : [A, B].T = (A.T, B.T)
 # [R, A] = (R.T, A.T).T
 
     return Equality(Det([R, A]), (1 - r) ** n * Product[k:1:n - 1](factorial(k)))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 def numeric_prove():
@@ -68,16 +65,16 @@ def numeric_prove():
 
 @check
 def prove(Eq):
-    r = Symbol('r', real=True)
-    n = Symbol('n', domain=Interval(2, oo, integer=True))    
+    r = Symbol.r(real=True)
+    n = Symbol.n(domain=Interval(2, oo, integer=True))    
 
     Eq << apply(r, n)
 
     (j, *_), (i, *iab) = Eq[0].lhs.arg.args[1].limits
     
-    assert (2*i).is_even
+    assert (2 * i).is_even
     
-    E = Ref[j, i:n]((-1) ** (j - i) * binomial(j + 1, i + 1))
+    E = LAMBDA[j, i:n]((-1) ** (j - i) * binomial(j + 1, i + 1))
 
     Eq << (Eq[0].lhs.arg @ E).this.expand()
 
@@ -91,7 +88,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << Eq[-1].forall(_i)
+    Eq << Eq[-1].forall((_i,))
 
     Eq << Eq[1].rhs.args[1].function.this.limits_subs(k, k - 1)
 
@@ -138,8 +135,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.powsimp()
 
-    var = Eq[-1].rhs.args[1].variable
-    Eq << Eq[-1].this.rhs.args[1].limits_subs(var, var - 1)
+    v = Eq[-1].rhs.args[1].variable
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(v, v - 1)
+
 
 if __name__ == '__main__':
     prove(__file__)

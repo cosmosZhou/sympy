@@ -1,5 +1,3 @@
-from __future__ import absolute_import, print_function, division
-
 import numbers
 import decimal
 import fractions
@@ -30,7 +28,7 @@ from mpmath.libmp.libmpf import (
     fnan as _mpf_nan, fzero, _normalize as mpf_normalize,
     prec_to_dps, fone, fnone)
 from sympy.utilities.misc import debug, filldedent
-from .evaluate import global_evaluate
+from .parameters import global_parameters
 
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
@@ -587,13 +585,15 @@ class Number(AtomicExpr):
     """
     is_commutative = True
     is_number = True
-    is_Number = True
 
     __slots__ = []
 
     # Used to make max(x._prec, y._prec) return x._prec when only x is a float
     _prec = -1
 
+    def _coeff_isneg(self):
+        return self.is_extended_negative
+    
     @property
     def atomic_dtype(self):
         from sympy.core.symbol import dtype
@@ -699,6 +699,18 @@ class Number(AtomicExpr):
     def __ceil__(self):
         return self.ceiling()
 
+    def _eval_exp(self):
+        if self is S.NaN:
+            return S.NaN
+        elif self is S.Zero:
+            return S.One
+        elif self is S.One:
+            return S.Exp1
+        elif self is S.Infinity:
+            return S.Infinity
+        elif self is S.NegativeInfinity:
+            return S.Zero
+
     def _eval_conjugate(self):
         return self
 
@@ -725,7 +737,7 @@ class Number(AtomicExpr):
 
     @_sympifyit('other', NotImplemented)
     def __add__(self, other):
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             if other is S.NaN:
                 return S.NaN
             elif other is S.Infinity:
@@ -736,7 +748,7 @@ class Number(AtomicExpr):
 
     @_sympifyit('other', NotImplemented)
     def __sub__(self, other):
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             if other is S.NaN:
                 return S.NaN
             elif other is S.Infinity:
@@ -750,7 +762,7 @@ class Number(AtomicExpr):
         if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
             return other.__rmul__(self)
 
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             if other is S.NaN:
                 return S.NaN
             elif other is S.Infinity:
@@ -773,7 +785,7 @@ class Number(AtomicExpr):
 
     @_sympifyit('other', NotImplemented)
     def __div__(self, other):
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             if other is S.NaN:
                 return S.NaN
             elif other is S.Infinity:
@@ -1057,8 +1069,6 @@ class Float(Number):
     is_real = True
     is_extended_real = True
 
-    is_Float = True
-
     def __new__(cls, num, dps=None, prec=None, precision=None):
         if prec is not None:
             SymPyDeprecationWarning(
@@ -1311,28 +1321,28 @@ class Float(Number):
         if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
             return other.__radd__(self)
 
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             rhs, prec = other._as_mpf_op(self._prec)
             return Float._new(mlib.mpf_add(self._mpf_, rhs, prec, rnd), prec)
         return Number.__add__(self, other)
 
     @_sympifyit('other', NotImplemented)
     def __sub__(self, other):
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             rhs, prec = other._as_mpf_op(self._prec)
             return Float._new(mlib.mpf_sub(self._mpf_, rhs, prec, rnd), prec)
         return Number.__sub__(self, other)
 
     @_sympifyit('other', NotImplemented)
     def __mul__(self, other):
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             rhs, prec = other._as_mpf_op(self._prec)
             return Float._new(mlib.mpf_mul(self._mpf_, rhs, prec, rnd), prec)
         return Number.__mul__(self, other)
 
     @_sympifyit('other', NotImplemented)
     def __div__(self, other):
-        if isinstance(other, Number) and other != 0 and global_evaluate[0]:
+        if isinstance(other, Number) and other != 0 and global_parameters.evaluate:
             rhs, prec = other._as_mpf_op(self._prec)
             return Float._new(mlib.mpf_div(self._mpf_, rhs, prec, rnd), prec)
         return Number.__div__(self, other)
@@ -1341,24 +1351,24 @@ class Float(Number):
 
     @_sympifyit('other', NotImplemented)
     def __mod__(self, other):
-        if isinstance(other, Rational) and other.q != 1 and global_evaluate[0]:
+        if isinstance(other, Rational) and other.q != 1 and global_parameters.evaluate:
             # calculate mod with Rationals, *then* round the result
             return Float(Rational.__mod__(Rational(self), other),
                          precision=self._prec)
-        if isinstance(other, Float) and global_evaluate[0]:
-            r = self / other
+        if isinstance(other, Float) and global_parameters.evaluate:
+            r = self/other
             if r == int(r):
                 return Float(0, precision=max(self._prec, other._prec))
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             rhs, prec = other._as_mpf_op(self._prec)
             return Float._new(mlib.mpf_mod(self._mpf_, rhs, prec, rnd), prec)
         return Number.__mod__(self, other)
 
     @_sympifyit('other', NotImplemented)
     def __rmod__(self, other):
-        if isinstance(other, Float) and global_evaluate[0]:
+        if isinstance(other, Float) and global_parameters.evaluate:
             return other.__mod__(self)
-        if isinstance(other, Number) and global_evaluate[0]:
+        if isinstance(other, Number) and global_parameters.evaluate:
             rhs, prec = other._as_mpf_op(self._prec)
             return Float._new(mlib.mpf_mod(rhs, self._mpf_, prec, rnd), prec)
         return Number.__rmod__(self, other)
@@ -1609,8 +1619,6 @@ class Rational(Number):
 
     __slots__ = ['p', 'q']
 
-    is_Rational = True
-
     @property
     def atomic_dtype(self):
         from sympy.core.symbol import dtype
@@ -1727,7 +1735,7 @@ class Rational(Number):
         if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
             return other.__radd__(self)
 
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, Integer):
                 return Rational(self.p + self.q * other.p, self.q, 1)
             elif isinstance(other, Rational):
@@ -1738,29 +1746,27 @@ class Rational(Number):
             else:
                 return Number.__add__(self, other)
         return Number.__add__(self, other)
-
     __radd__ = __add__
 
     @_sympifyit('other', NotImplemented)
     def __sub__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, Integer):
-                return Rational(self.p - self.q * other.p, self.q, 1)
+                return Rational(self.p - self.q*other.p, self.q, 1)
             elif isinstance(other, Rational):
-                return Rational(self.p * other.q - self.q * other.p, self.q * other.q)
+                return Rational(self.p*other.q - self.q*other.p, self.q*other.q)
             elif isinstance(other, Float):
                 return -other + self
             else:
                 return Number.__sub__(self, other)
         return Number.__sub__(self, other)
-
     @_sympifyit('other', NotImplemented)
     def __rsub__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, Integer):
-                return Rational(self.q * other.p - self.p, self.q, 1)
+                return Rational(self.q*other.p - self.p, self.q, 1)
             elif isinstance(other, Rational):
-                return Rational(self.q * other.p - self.p * other.q, self.q * other.q)
+                return Rational(self.q*other.p - self.p*other.q, self.q*other.q)
             elif isinstance(other, Float):
                 return -self + other
             else:
@@ -1772,7 +1778,7 @@ class Rational(Number):
         if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
             return other.__rmul__(self)
 
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, Integer):
                 return Rational(self.p * other.p, self.q, igcd(other.p, self.q))
             elif isinstance(other, Rational):
@@ -1787,7 +1793,7 @@ class Rational(Number):
 
     @_sympifyit('other', NotImplemented)
     def __div__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, Integer):
                 if self.p and other.p == S.Zero:
                     return S.ComplexInfinity
@@ -1803,7 +1809,7 @@ class Rational(Number):
 
     @_sympifyit('other', NotImplemented)
     def __rdiv__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, Integer):
                 return Rational(other.p * self.q, self.p, igcd(self.p, other.p))
             elif isinstance(other, Rational):
@@ -1818,7 +1824,7 @@ class Rational(Number):
 
     @_sympifyit('other', NotImplemented)
     def __mod__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, Rational):
                 n = (self.p * other.q) // (other.p * self.q)
                 return Rational(self.p * other.q - n * other.p * self.q, self.q * other.q)
@@ -2113,9 +2119,6 @@ class Integer(Rational):
     q = 1
     is_integer = True
     is_number = True
-
-    is_Integer = True
-
     __slots__ = ['p']
 
     @property
@@ -2188,14 +2191,14 @@ class Integer(Rational):
 
     def __divmod__(self, other):
         from .containers import Tuple
-        if isinstance(other, Integer) and global_evaluate[0]:
+        if isinstance(other, Integer) and global_parameters.evaluate:
             return Tuple(*(divmod(self.p, other.p)))
         else:
             return Number.__divmod__(self, other)
 
     def __rdivmod__(self, other):
         from .containers import Tuple
-        if isinstance(other, integer_types) and global_evaluate[0]:
+        if isinstance(other, int) and global_parameters.evaluate:
             return Tuple(*(divmod(other, self.p)))
         else:
             try:
@@ -2212,7 +2215,7 @@ class Integer(Rational):
         if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
             return other.__radd__(self)
 
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(self.p + other)
             elif isinstance(other, Integer):
@@ -2224,7 +2227,7 @@ class Integer(Rational):
             return Add(self, other)
 
     def __radd__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(other + self.p)
             elif isinstance(other, Rational):
@@ -2233,7 +2236,7 @@ class Integer(Rational):
         return Rational.__radd__(self, other)
 
     def __sub__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(self.p - other)
             elif isinstance(other, Integer):
@@ -2244,7 +2247,7 @@ class Integer(Rational):
         return Rational.__sub__(self, other)
 
     def __rsub__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(other - self.p)
             elif isinstance(other, Rational):
@@ -2256,7 +2259,7 @@ class Integer(Rational):
         if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
             return other.__rmul__(self)
 
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(self.p * other)
             elif isinstance(other, Integer):
@@ -2267,7 +2270,7 @@ class Integer(Rational):
         return Rational.__mul__(self, other)
 
     def __rmul__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(other * self.p)
             elif isinstance(other, Rational):
@@ -2276,7 +2279,7 @@ class Integer(Rational):
         return Rational.__rmul__(self, other)
 
     def __mod__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(self.p % other)
             elif isinstance(other, Integer):
@@ -2285,7 +2288,7 @@ class Integer(Rational):
         return Rational.__mod__(self, other)
 
     def __rmod__(self, other):
-        if global_evaluate[0]:
+        if global_parameters.evaluate:
             if isinstance(other, integer_types):
                 return Integer(other % self.p)
             elif isinstance(other, Integer):
@@ -2491,8 +2494,6 @@ class AlgebraicNumber(Expr):
     """Class for representing algebraic numbers in SymPy. """
 
     __slots__ = ['rep', 'root', 'alias', 'minpoly']
-
-    is_AlgebraicNumber = True
     is_algebraic = True
     is_number = True
 
@@ -2656,7 +2657,6 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
     is_negative = False
     is_zero = True
     is_number = True
-    is_Zero = True
 
     __slots__ = []
 
@@ -2676,7 +2676,7 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
 #             return self
         if expt.is_negative:
             return S.ComplexInfinity
-        if expt.is_extended_real is False:
+        if expt.is_extended_real == False:
             return S.NaN
         # infinities are already handled with pos and neg
         # tests above; now throw away leading numbers on Mul
@@ -2824,7 +2824,7 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
                 if is_even:
                     found = True
                     continue
-                if is_even is False:
+                if is_even == False:
                     odd.append(e)
                 else:
                     args.append(e)
@@ -2838,10 +2838,8 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
             elif len(odd) > 0:
                 found = True
 
-            from sympy.core.function import _coeff_isneg
-
             for i, arg in enumerate(args):
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     args[i] = -arg
                     found = True
 
@@ -3029,7 +3027,7 @@ class Infinity(with_metaclass(Singleton, Number)):
             return S.NaN
         if expt is S.ComplexInfinity:
             return S.NaN
-        if expt.is_extended_real is False and expt.is_number:
+        if expt.is_extended_real == False and expt.is_number:
             expt_real = re(expt)
             if expt_real.is_positive:
                 return S.ComplexInfinity
@@ -3111,6 +3109,13 @@ class Infinity(with_metaclass(Singleton, Number)):
         from wolframclient.language import wlexpr
         return wlexpr('oo')
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+    
+    def _eval_is_integer(self):
+        return True
 
 oo = S.Infinity
 
@@ -3317,6 +3322,13 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
         from wolframclient.language import wlexpr
         return wlexpr('-oo')
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+
+    def _eval_is_integer(self):
+        return True
 
 class NaN(with_metaclass(Singleton, Number)):
     """
@@ -3520,7 +3532,9 @@ class ComplexInfinity(with_metaclass(Singleton, AtomicExpr)):
         import sage.all as sage
         return sage.UnsignedInfinityRing.gen()
 
-
+    def _eval_exp(self):
+        return S.NaN
+        
 zoo = S.ComplexInfinity
 
 
@@ -3531,8 +3545,6 @@ class NumberSymbol(AtomicExpr):
     is_number = True
 
     __slots__ = []
-
-    is_NumberSymbol = True
 
     @property
     def atomic_dtype(self):
@@ -4270,7 +4282,7 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
             return S.NaN
         if expt is S.ComplexInfinity:
             return S.NaN
-        if expt.is_extended_real is False and expt.is_number:
+        if expt.is_extended_real == False and expt.is_number:
             expt_real = re(expt)
             if expt_real.is_positive:
                 return S.ComplexInfinity
@@ -4491,7 +4503,7 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
             return S.NaN
         if expt is S.ComplexInfinity:
             return S.NaN
-        if expt.is_extended_real is False and expt.is_number:
+        if expt.is_extended_real == False and expt.is_number:
             expt_real = re(expt)
             if expt_real.is_positive:
                 return S.ComplexInfinity

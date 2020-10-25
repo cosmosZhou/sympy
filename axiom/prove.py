@@ -18,8 +18,8 @@ erroneous = []
 websites = []
 
 insurmountable = {'axiom.calculus.integral.intermediate_value_theorem',
-                  'axiom.discrete.Fermat.LastTheorem',
-                  'axiom.statistics.KullbackLeibler',
+                  'axiom.discrete.fermat.last_theorem',
+                  'axiom.statistics.kullback_leibler',
                   'axiom.trigonometry.cosine.theorem',
                   } 
 
@@ -67,6 +67,7 @@ def process_multiple(packages):
     
 def process(package):
     try:    
+        print(package)
         package = eval(package)
     except AttributeError as e:   
         print(e)
@@ -81,17 +82,25 @@ def process(package):
         dirname = os.path.dirname(os.path.dirname(__file__))
         __init__ = dirname + sep + package.replace('.', sep) + sep + '__init__.py'
         print('editing', __init__)
-
-        Text(__init__).append('from . import %s' % module)
+        
+        hit = False
+        for line in Text(__init__):
+            m = re.compile('from \. import (\w+)').match(line)
+            assert m
+            if m.group(1) == module:
+                hit = True
+                break
+        if not hit:
+            Text(__init__).append('from . import %s' % module)
 
         return dirname + sep + apply_package.replace('.', sep) + '.py', None
     file = package.__file__
     ret = package.prove(file)
     return file, ret
 
-    
-def prove():
-    start = time.time()
+start = time.time()    
+
+def prove():    
     rootdir = os.path.dirname(__file__)
     
     def generator(): 
@@ -133,17 +142,12 @@ def prove():
     print('total timing =', sum(timings))
     
     for array in parellel_process(process_multiple, processes):
-        for package, ret in array: 
-            if ret is False:                
-                unproven.append(package)
-            elif ret is None:
-                erroneous.append(package)
-            else:
-                continue
-            websites.append("http://localhost" + package[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php")
-
+        post_process(array)
+        
     print('in all %d axioms' % count)
-
+    print_summary()
+    
+def print_summary():
     if unproven:
         print('unproven axioms')
         for p in unproven:
@@ -162,7 +166,17 @@ def prove():
     print('cost time =', timing / 60, 'minutes =', timing, 'seconds')
     print('total unprovable =', len(unproven))
     print('total erroneous =', len(erroneous))
-    
+        
+def post_process(result):
+    for package, ret in result: 
+        if ret is False:                
+            unproven.append(package)
+        elif ret is None:
+            erroneous.append(package)
+        else:
+            continue
+        websites.append("http://localhost" + package[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php")
+        
 def parellel_process(process, items):
 #     return map(process, items)
     from multiprocessing import Pool

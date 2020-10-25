@@ -49,11 +49,11 @@ class Cofactors(MatrixExpr):
 
     def _entry(self, i, j=None, **_):
         from sympy.matrices.expressions.minors import Minors
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         m, n = self.rows, self.cols
         if j is None:
             j = self.generate_free_symbol(integer=True)
-            return Ref[j:n]((-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j])
+            return LAMBDA[j:n]((-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j])
         return (-1) ** (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j]
 
 # Needs["Combinatorica`"]

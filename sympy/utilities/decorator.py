@@ -10,7 +10,7 @@ from functools import update_wrapper
 
 from sympy.core.decorators import wraps
 from sympy.core.compatibility import class_types, get_function_globals, get_function_name, iterable
-from sympy.utilities.runtests import DependencyError, SymPyDocTests, PyTestReporter
+from sympy.testing.runtests import DependencyError, SymPyDocTests, PyTestReporter
 
 def threaded_factory(func, use_add):
     """A factory for ``threaded`` decorators. """
@@ -29,7 +29,7 @@ def threaded_factory(func, use_add):
         else:
             expr = sympify(expr)
 
-            if use_add and expr.is_Plus:
+            if use_add and expr.is_Add:
                 return expr.__class__(*[ func(f, *args, **kwargs) for f in expr.args ])
             elif expr.is_Relational:
                 return expr.__class__(func(expr.lhs, *args, **kwargs),

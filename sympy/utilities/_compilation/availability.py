@@ -1,8 +1,6 @@
-from __future__ import (absolute_import, division, print_function)
 import os
 from .compilation import compile_run_strings
 from .util import CompilerNotFoundError
-
 
 def has_fortran():
     if not hasattr(has_fortran, 'result'):
@@ -61,7 +59,7 @@ def has_cxx():
                 [('main.cxx', (
                     '#include <iostream>\n'
                     'int main(){\n'
-                    'std::cout<< "hello world" << std::endl;\n'
+                    'std::cout << "hello world" << std::endl;\n'
                     '}'
                 ))], clean=True
             )

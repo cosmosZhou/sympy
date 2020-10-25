@@ -644,7 +644,7 @@ class bell(Function):
             else:
                 raise ValueError("Bell polynomial is not defined")
 
-        if n.is_negative or n.is_integer is False:
+        if n.is_negative or n.is_integer == False:
             raise ValueError("a non-negative integer expected")
 
         if n.is_Integer and n.is_nonnegative:
@@ -865,7 +865,7 @@ class harmonic(Function):
         m = self.args[1] if len(self.args) == 2 else 1
 
         if m == S.One:
-            if n.is_Plus:
+            if n.is_Add:
                 off = n.args[0]
                 nnew = n - off
                 if off.is_Integer and off.is_positive:
@@ -2031,9 +2031,9 @@ class Stirling(Function):
         from sympy.sets.sets import Interval, FiniteSet, image_set
         from sympy.core.relational import Equality
         from sympy.logic.boolalg import And
-        from sympy import Sum
+        from sympy import Sum, var
         from sympy.core.symbol import dtype, DtypeVector
-        x = Symbol('x', shape=(oo,), dtype=dtype.integer, finite=True)
+        x = Symbol.x(shape=(oo,), dtype=dtype.integer, finite=True)
         assert x.dtype[0] == dtype.integer.set
         assert not x.is_set
         assert isinstance(x.dtype, DtypeVector)
@@ -2122,7 +2122,7 @@ class Stirling(Function):
     def _eval_Mod(self, q):
         n, k = self.args
 
-        if any(x.is_integer is False for x in (n, k, q)):
+        if any(x.is_integer == False for x in (n, k, q)):
             raise ValueError("Integers expected for binomial Mod")
 
         if all(x.is_Integer for x in (n, k, q)):
@@ -2210,7 +2210,7 @@ class Stirling(Function):
             return binomial(*self.args)
 
         k = self.args[1]
-        if k.is_Plus and n in k.args:
+        if k.is_Add and n in k.args:
             k = n - k
 
         if k.is_Integer:
@@ -2244,7 +2244,7 @@ class Stirling(Function):
         n, k = self.args
         if n.is_integer and k.is_integer:
             return True
-        elif k.is_integer is False:
+        elif k.is_integer == False:
             return False
 
     def _eval_is_extended_negative(self):
@@ -2252,7 +2252,7 @@ class Stirling(Function):
         if n.is_integer and k.is_integer:
             if n.is_extended_nonnegative or k.is_negative or k.is_even:
                 return False
-            elif k.is_even is False:
+            elif k.is_even == False:
                 return True
 
     def domain_nonzero(self, x):
@@ -2398,7 +2398,7 @@ class Stirling1(Function):
     def _eval_Mod(self, q):
         n, k = self.args
 
-        if any(x.is_integer is False for x in (n, k, q)):
+        if any(x.is_integer == False for x in (n, k, q)):
             raise ValueError("Integers expected for binomial Mod")
 
         if all(x.is_Integer for x in (n, k, q)):
@@ -2486,7 +2486,7 @@ class Stirling1(Function):
             return binomial(*self.args)
 
         k = self.args[1]
-        if k.is_Plus and n in k.args:
+        if k.is_Add and n in k.args:
             k = n - k
 
         if k.is_Integer:
@@ -2521,7 +2521,7 @@ class Stirling1(Function):
         n, k = self.args
         if n.is_integer and k.is_integer:
             return True
-        elif k.is_integer is False:
+        elif k.is_integer == False:
             return False
 
     def _eval_is_extended_negative(self):
@@ -2529,7 +2529,7 @@ class Stirling1(Function):
         if n.is_integer and k.is_integer:
             if n.is_extended_nonnegative or k.is_extended_negative or k.is_even:
                 return False
-            elif k.is_even is False:
+            elif k.is_even == False:
                 return True
 
     def domain_nonzero(self, x):

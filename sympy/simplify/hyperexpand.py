@@ -592,7 +592,7 @@ class Hyper_Function(Expr):
         """
         for a in self.ap:
             for b in self.bq:
-                if (a - b).is_integer and (a - b).is_negative is False:
+                if (a - b).is_integer and (a - b).is_negative == False:
                     return False
         for a in self.ap:
             if a == 0:
@@ -1803,7 +1803,7 @@ def try_lerchphi(func):
             dep = dep.base
         if dep == t:
             a == 0
-        elif dep.is_Plus:
+        elif dep.is_Add:
             a, tmp = dep.as_independent(t)
             b = 1
             if tmp != t:

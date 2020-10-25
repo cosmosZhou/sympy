@@ -17,17 +17,8 @@ __all__ += ['python', 'print_python']
 from .pycode import pycode
 __all__ += ['pycode']
 
-from .ccode import ccode, print_ccode
-__all__ += ['ccode', 'print_ccode']
-
 from .glsl import glsl_code, print_glsl
 __all__ += ['glsl_code', 'print_glsl']
-
-from .cxxcode import cxxcode
-__all__ += ['cxxcode']
-
-from .fcode import fcode, print_fcode
-__all__ += ['fcode', 'print_fcode']
 
 from .rcode import rcode, print_rcode
 __all__ += ['rcode', 'print_rcode']

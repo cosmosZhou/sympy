@@ -1,11 +1,10 @@
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol
+from axiom.utility import plausible
 from sympy.core.function import Difference, Function
 from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
-
+from sympy import Symbol, Slice
 
 @plausible
 def apply(fx, x, n):
@@ -14,22 +13,22 @@ def apply(fx, x, n):
                     Sum[k:0:n]((-1) ** (n - k) * binomial(n, k) * fx.subs(x, x + k)))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
     f = Function('f', real=True)
-    x = Symbol('x', real=True)
+    x = Symbol.x(real=True)
     fx = f(x)
     assert fx.is_real
-    n = Symbol('n', integer=True, nonnegative=True)
+    n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(fx, x, n)
 
     Eq << Eq[-1].subs(n, 0).doit()
     Eq << Eq[-1].subs(n, n + 1)
 
-    Eq << Eq[-1].this.lhs.bisect(back=1)
+    Eq << Eq[-1].this.lhs.bisect(Slice[:1])
 
     Eq << Eq[-1].this.lhs.expr.doit()
 

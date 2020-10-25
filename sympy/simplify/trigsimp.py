@@ -537,7 +537,7 @@ def exptrigsimp(expr):
     newexpr = bottom_up(expr, exp_trig)
 
     def f(rv):
-        if not rv.is_Times:
+        if not rv.is_Mul:
             return rv
         commutative_part, noncommutative_part = rv.args_cnc()
         # Since as_powers_dict loses order information,
@@ -560,7 +560,7 @@ def exptrigsimp(expr):
 
         ee = rvd[S.Exp1]
         for k in rvd:
-            if k.is_Plus and len(k.args) == 2:
+            if k.is_Add and len(k.args) == 2:
                 # k == c*(1 + sign*E**x)
                 c = k.args[0]
                 sign, x = signlog(k.args[1]/c)
@@ -673,7 +673,7 @@ def trigsimp_old(expr, **opts):
             from sympy.simplify.simplify import separatevars
 
             d = separatevars(expr)
-            if d.is_Times:
+            if d.is_Mul:
                 d = separatevars(d, dict=True) or d
             if isinstance(d, dict):
                 expr = 1
@@ -688,13 +688,13 @@ def trigsimp_old(expr, **opts):
                     expr *= vnew
                 old = expr
             else:
-                if d.is_Plus:
+                if d.is_Add:
                     for s in trigsyms:
                         r, e = expr.as_independent(s)
                         if r:
                             opts['first'] = False
                             expr = r + trigsimp(e, **opts)
-                            if not expr.is_Plus:
+                            if not expr.is_Add:
                                 break
                     old = expr
 
@@ -841,7 +841,7 @@ def _replace_mul_fpowxgpow(expr, f, g, rexp, h, rexph):
     Replace f(b_)**c_*g(b_)**(rexp(c_)) with h(b)**rexph(c) if f(b_)
     and g(b_) are both positive or if c_ is an integer.
     """
-    # assert expr.is_Times and expr.is_commutative and f != g
+    # assert expr.is_Mul and expr.is_commutative and f != g
     fargs = defaultdict(int)
     gargs = defaultdict(int)
     args = []
@@ -945,7 +945,7 @@ def __trigsimp(expr, deep=False):
     a, b, c, d, matchers_division, matchers_add, \
     matchers_identity, artifacts = _trigpat
 
-    if expr.is_Times:
+    if expr.is_Mul:
         # do some simplifications like sin/cos -> tan:
         if not expr.is_commutative:
             com, nc = expr.args_cnc()
@@ -982,7 +982,7 @@ def __trigsimp(expr, deep=False):
                     expr = simp.subs(res)
                     break  # process below
 
-    if expr.is_Plus:
+    if expr.is_Add:
         args = []
         for term in expr.args:
             if not term.is_commutative:
@@ -1001,7 +1001,7 @@ def __trigsimp(expr, deep=False):
         if args != expr.args:
             expr = Add(*args)
             expr = min(expr, expand(expr), key=count_ops)
-        if expr.is_Plus:
+        if expr.is_Add:
             for pattern, result in matchers_add:
                 if not _dotrig(expr, pattern):
                     continue
@@ -1043,7 +1043,7 @@ def __trigsimp(expr, deep=False):
                 m = expr.match(pattern)
                 m.setdefault(c, S.Zero)
 
-    elif expr.is_Times or expr.is_Power or deep and expr.args:
+    elif expr.is_Mul or expr.is_Power or deep and expr.args:
         expr = expr.func(*[_trigsimp(a, deep) for a in expr.args])
 
     try:
@@ -1104,7 +1104,7 @@ def futrig(e, **kwargs):
         e, f = hyper_as_trig(e)
         e = f(_futrig(e))
 
-    if e != old and e.is_Times and e.args[0].is_Rational:
+    if e != old and e.is_Mul and e.args[0].is_Rational:
         # redistribute leading coeff on 2-arg Add
         e = Mul(*e.as_coeff_Mul())
     return e
@@ -1121,12 +1121,12 @@ def _futrig(e, **kwargs):
     if not e.has(TrigonometricFunction):
         return e
 
-    if e.is_Times:
+    if e.is_Mul:
         coeff, e = e.as_independent(TrigonometricFunction)
     else:
         coeff = S.One
 
-    Lops = lambda x: (L(x), x.count_ops(), _nodes(x), len(x.args), x.is_Plus)
+    Lops = lambda x: (L(x), x.count_ops(), _nodes(x), len(x.args), x.is_Add)
     trigs = lambda x: x.has(TrigonometricFunction)
 
     tree = [identity,

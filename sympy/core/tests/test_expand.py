@@ -2,10 +2,9 @@ from sympy import (log, sqrt, Rational as R, Symbol, I, exp, pi, S,
     cos, sin, Mul, Pow, O)
 from sympy.simplify.radsimp import expand_numer
 from sympy.core.function import expand, expand_multinomial, expand_power_base
-from sympy.core.compatibility import range
 
-from sympy.utilities.pytest import raises
-from sympy.utilities.randtest import verify_numerically
+from sympy.testing.pytest import raises
+from sympy.testing.randtest import verify_numerically
 
 from sympy.abc import x, y, z
 
@@ -133,15 +132,17 @@ def test_expand_frac():
 def test_issue_6121():
     eq = -I*exp(-3*I*pi/4)/(4*pi**(S(3)/2)*sqrt(x))
     assert eq.expand(complex=True)  # does not give oo recursion
+    eq = -I*exp(-3*I*pi/4)/(4*pi**(R(3, 2))*sqrt(x))
+    assert eq.expand(complex=True)  # does not give oo recursion
 
 
 def test_expand_power_base():
     assert expand_power_base((x*y*z)**4) == x**4*y**4*z**4
-    assert expand_power_base((x*y*z)**x).is_Power
+    assert expand_power_base((x*y*z)**x).is_Pow
     assert expand_power_base((x*y*z)**x, force=True) == x**x*y**x*z**x
     assert expand_power_base((x*(y*z)**2)**3) == x**3*y**6*z**6
 
-    assert expand_power_base((sin((x*y)**2)*y)**z).is_Power
+    assert expand_power_base((sin((x*y)**2)*y)**z).is_Pow
     assert expand_power_base(
         (sin((x*y)**2)*y)**z, force=True) == sin((x*y)**2)**z*y**z
     assert expand_power_base(
@@ -155,7 +156,7 @@ def test_expand_power_base():
     assert expand_power_base((exp((x*y)**z)*exp(
         y))**2, deep=True, force=True) == exp(2*x**z*y**z)*exp(2*y)
 
-    assert expand_power_base((exp(x)*exp(y))**z).is_Power
+    assert expand_power_base((exp(x)*exp(y))**z).is_Pow
     assert expand_power_base(
         (exp(x)*exp(y))**z, force=True) == exp(x)**z*exp(y)**z
 
@@ -187,7 +188,7 @@ def test_expand_arit():
     assert e.expand() == 5*a + 5*b + 5*c + 2*a*c + b*c + a*b + a**2 + c**2
     x = Symbol("x")
     s = exp(x*x) - 1
-    e = s.nseries(x, 0, 3)/x**2
+    e = s.nseries(x, 0, 6)/x**2
     assert e.expand() == 1 + x**2/2 + O(x**4)
 
     e = (x*(y + z))**(x*(y + z))*(x + y)
@@ -202,7 +203,7 @@ def test_expand_arit():
                     z)**z, (x*y + x*z)**z]
     assert ((2*y)**z).expand() == 2**z*y**z
     p = Symbol('p', positive=True)
-    assert sqrt(-x).expand().is_Power
+    assert sqrt(-x).expand().is_Pow
     assert sqrt(-x).expand(force=True) == I*sqrt(x)
     assert ((2*y*p)**z).expand() == 2**z*p**z*y**z
     assert ((2*y*p*x)**z).expand() == 2**z*p**z*(x*y)**z
@@ -289,7 +290,7 @@ def test_issues_5919_6830():
         return verify_numerically(e, expand_multinomial(e))
 
     for a in [2, S.Half]:
-        for b in [3, S(1)/3]:
+        for b in [3, R(1, 3)]:
             for n in range(2, 6):
                 assert ok(a, b, n)
 

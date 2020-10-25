@@ -131,7 +131,6 @@ class KroneckerDelta(Function):
     """
     is_extended_nonnegative = True
     is_integer = True
-    is_KroneckerDelta = True
 
     @classmethod
     def eval(cls, i, j):
@@ -172,7 +171,7 @@ class KroneckerDelta(Function):
         if j.assumptions0.get("below_fermi") and i.assumptions0.get("above_fermi"):
             return S.Zero
         
-        if i.is_Plus and j.is_Plus:
+        if i.is_Add and j.is_Add:
             i_args = set(i.args)
             j_args = set(j.args)
             intersect = i_args & j_args
@@ -182,6 +181,12 @@ class KroneckerDelta(Function):
                 i = i.func(*i_args)
                 j = j.func(*j_args)                        
                 return cls(i, j)
+            
+        if j.is_KroneckerDelta:
+            if i == 1:
+                return j
+            if i == 0:
+                return 1 - j
         # to make KroneckerDelta canonical
         # following lines will check if inputs are in order
         # if not, will return KroneckerDelta with correct order
@@ -476,12 +481,17 @@ class KroneckerDelta(Function):
         from sympy.core.symbol import dtype
         return dtype.integer
 
-    @property
-    def definition(self):
-        from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.core.relational import Equality    
-        return Piecewise((1, Equality(self.args[0], self.args[1])), (0, True))
-
     def _sympystr(self, p):
         return 'δ[%s]' % ', '.join(p._print(arg) for arg in self.args)
         
+    @property
+    def domain(self):
+        from sympy.sets.sets import FiniteSet
+        return FiniteSet(0, 1)
+
+    def enumerate_KroneckerDelta(self):
+        yield self
+        
+    def as_Piecewise(self):
+        from sympy import Piecewise, Equality
+        return Piecewise((1, Equality(*self.args)), (0, True))

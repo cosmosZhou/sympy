@@ -3,7 +3,7 @@ from __future__ import print_function, division
 from sympy import Basic, Expr, S, sympify
 
 
-class Det(Expr):
+class Determinant(Expr):
     """Matrix Determinant
 
     Represents the determinant of a matrix expression.
@@ -19,7 +19,6 @@ class Det(Expr):
     1
     """
     is_complex = True
-    is_Det = True
 
     def __new__(cls, mat):
         from sympy.matrices.expressions.matexpr import Concatenate
@@ -90,6 +89,8 @@ class Det(Expr):
         for arg in self.args:
             domain &= arg.domain_defined(x)
         return domain
+
+Det = Determinant
 
 def det(matexpr):
     """ Matrix Determinant

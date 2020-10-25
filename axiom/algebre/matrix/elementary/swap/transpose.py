@@ -1,12 +1,11 @@
-
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible
+from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Swap, Identity
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import Symbol
 
 
 @plausible
@@ -23,12 +22,12 @@ def apply(w):
 
 @check
 def prove(Eq):
-    n = Symbol('n', domain=Interval(2, oo, integer=True))
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True))
-    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
+    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
+    j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
     assert Identity(n).is_integer
-    w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
+    w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j, i](Swap(n, i, j)))
     
     Eq << apply(w)
 
@@ -39,8 +38,9 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.expand()
     
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
+#     Eq << Eq[-1].this.rhs().function.args[-1].expr.simplify(deep=True, wrt=Eq[-1].rhs.variable)
     
-    Eq << Eq[-1].this.rhs.function.asKroneckerDelta()
+    Eq << Eq[-1].this.rhs.function.as_KroneckerDelta()
     
     Eq << Eq[0] @ Eq[0]
     
@@ -48,7 +48,7 @@ def prove(Eq):
     
     Eq << w[i, j].inverse() @ Eq[-1]
     
-    Eq << Eq[-1].forall(i).forall(j)
+    Eq << Eq[-1].forall((i,), (j,))
 
 
 if __name__ == '__main__':

@@ -3,28 +3,30 @@
 Contains
 ========
 Geometric
-Poisson
+Hermite
 Logarithmic
 NegativeBinomial
 Poisson
+Skellam
 YuleSimon
 Zeta
 """
 
-from __future__ import print_function, division
-
-from sympy import (factorial, exp, S, sympify, And, I, zeta, polylog, log, beta,
-    hyper, binomial, Piecewise, floor)
-from sympy.stats import density
+from sympy import (Basic, factorial, exp, S, sympify, I, zeta, polylog, log, beta,
+                   hyper, binomial, Piecewise, floor, besseli, sqrt, Sum, Dummy,
+                   Lambda)
 from sympy.stats.drv import SingleDiscreteDistribution, SingleDiscretePSpace
-from sympy.stats.joint_rv import JointPSpace, CompoundDistribution
-from sympy.stats.rv import _value_check, RandomSymbol
-import random
+from sympy.stats.rv import _value_check, is_random
+from sympy.sets.sets import Interval
+from sympy.core.numbers import oo
+from sympy.sets import PositiveIntegers, NonnegativeIntegers, Integers
 
 __all__ = ['Geometric',
+'Hermite',
 'Logarithmic',
 'NegativeBinomial',
 'Poisson',
+'Skellam',
 'YuleSimon',
 'Zeta'
 ]
@@ -35,9 +37,67 @@ def rv(symbol, cls, *args):
     dist = cls(*args)
     dist.check(*args)
     pspace = SingleDiscretePSpace(symbol, dist)
-    if any(isinstance(arg, RandomSymbol) for arg in args):
-        pspace = JointPSpace(symbol, CompoundDistribution(dist))
+    if any(is_random(arg) for arg in args):
+        from sympy.stats.compound_rv import CompoundPSpace, CompoundDistribution
+        pspace = CompoundPSpace(symbol, CompoundDistribution(dist))
     return pspace.value
+
+
+class DiscreteDistributionHandmade(SingleDiscreteDistribution):
+    _argnames = ('pdf',)
+
+    def __new__(cls, pdf, set=Integers):
+        return Basic.__new__(cls, pdf, set)
+
+    @property
+    def set(self):
+        return self.args[1]
+
+    @staticmethod
+    def check(pdf, set):
+        x = Dummy('x')
+        val = Sum(pdf(x), (x, set._inf, set._sup)).doit()
+        _value_check(val == S.One, "The pdf is incorrect on the given set.")
+
+
+def DiscreteRV(symbol, density, set=Integers):
+    """
+    Create a Discrete Random Variable given the following:
+
+    Parameters
+    ==========
+
+    symbol : Symbol
+        Represents name of the random variable.
+    density : Expression containing symbol
+        Represents probability density function.
+    set : set
+        Represents the region where the pdf is valid, by default is real line.
+
+    Examples
+    ========
+
+    >>> from sympy.stats import DiscreteRV, P, E
+    >>> from sympy import Rational, Symbol
+    >>> x = Symbol('x')
+    >>> n = 10
+    >>> density = Rational(1, 10)
+    >>> X = DiscreteRV(x, density, set=set(range(n)))
+    >>> E(X)
+    9/2
+    >>> P(X>3)
+    3/5
+
+    Returns
+    =======
+
+    RandomSymbol
+
+    """
+    set = sympify(set)
+    pdf = Piecewise((density, set.as_relational(symbol)), (0, True))
+    pdf = Lambda(symbol, pdf)
+    return rv(symbol.name, DiscreteDistributionHandmade, pdf, set)
 
 #-------------------------------------------------------------------------------
 # Geometric distribution ------------------------------------------------------------
@@ -45,7 +105,7 @@ def rv(symbol, cls, *args):
 
 class GeometricDistribution(SingleDiscreteDistribution):
     _argnames = ('p',)
-    set = S.Naturals
+    set = PositiveIntegers
 
     @staticmethod
     def check(p):
@@ -80,7 +140,7 @@ def Geometric(name, p):
     Returns
     =======
 
-    A RandomSymbol.
+    RandomSymbol
 
     Examples
     ========
@@ -112,13 +172,98 @@ def Geometric(name, p):
     return rv(name, GeometricDistribution, p)
 
 #-------------------------------------------------------------------------------
+# Hermite distribution ---------------------------------------------------------
+
+
+class HermiteDistribution(SingleDiscreteDistribution):
+    _argnames = ('a1', 'a2')
+    set = NonnegativeIntegers
+
+    @staticmethod
+    def check(a1, a2):
+        _value_check(a1.is_nonnegative, 'Parameter a1 must be >= 0.')
+        _value_check(a2.is_nonnegative, 'Parameter a2 must be >= 0.')
+
+    def pdf(self, k):
+        a1, a2 = self.a1, self.a2
+        term1 = exp(-(a1 + a2))
+        j = Dummy("j", integer=True)
+        num = a1 ** (k - 2 * j) * a2 ** j
+        den = factorial(k - 2 * j) * factorial(j)
+        return term1 * Sum(num / den, (j, 0, k // 2)).doit()
+
+    def _moment_generating_function(self, t):
+        a1, a2 = self.a1, self.a2
+        term1 = a1 * (exp(t) - 1)
+        term2 = a2 * (exp(2 * t) - 1)
+        return exp(term1 + term2)
+
+    def _characteristic_function(self, t):
+        a1, a2 = self.a1, self.a2
+        term1 = a1 * (exp(I * t) - 1)
+        term2 = a2 * (exp(2 * I * t) - 1)
+        return exp(term1 + term2)
+
+
+def Hermite(name, a1, a2):
+    r"""
+    Create a discrete random variable with a Hermite distribution.
+
+    The density of the Hermite distribution is given by
+
+    .. math::
+        f(x):= e^{-a_1 -a_2}\sum_{j=0}^{\left \lfloor x/2 \right \rfloor}
+                    \frac{a_{1}^{x-2j}a_{2}^{j}}{(x-2j)!j!}
+
+    Parameters
+    ==========
+
+    a1: A Positive number greater than equal to 0.
+    a2: A Positive number greater than equal to 0.
+
+    Returns
+    =======
+
+    RandomSymbol
+
+    Examples
+    ========
+
+    >>> from sympy.stats import Hermite, density, E, variance
+    >>> from sympy import Symbol
+
+    >>> a1 = Symbol("a1", positive=True)
+    >>> a2 = Symbol("a2", positive=True)
+    >>> x = Symbol("x")
+
+    >>> H = Hermite("H", a1=5, a2=4)
+
+    >>> density(H)(2)
+    33*exp(-9)/2
+
+    >>> E(H)
+    13
+
+    >>> variance(H)
+    21
+
+    References
+    ==========
+
+    .. [1] https://en.wikipedia.org/wiki/Hermite_distribution
+
+    """
+
+    return rv(name, HermiteDistribution, a1, a2)
+
+#-------------------------------------------------------------------------------
 # Logarithmic distribution ------------------------------------------------------------
 
 
 class LogarithmicDistribution(SingleDiscreteDistribution):
     _argnames = ('p',)
 
-    set = S.Naturals
+    set = PositiveIntegers
 
     @staticmethod
     def check(p):
@@ -135,10 +280,6 @@ class LogarithmicDistribution(SingleDiscreteDistribution):
     def _moment_generating_function(self, t):
         p = self.p
         return log(1 - p * exp(t)) / log(1 - p)
-
-    def sample(self):
-        # ## TODO
-        raise NotImplementedError("Sampling of %s is not implemented" % density(self))
 
 
 def Logarithmic(name, p):
@@ -158,7 +299,7 @@ def Logarithmic(name, p):
     Returns
     =======
 
-    A RandomSymbol.
+    RandomSymbol
 
     Examples
     ========
@@ -195,7 +336,7 @@ def Logarithmic(name, p):
 
 class NegativeBinomialDistribution(SingleDiscreteDistribution):
     _argnames = ('r', 'p')
-    set = S.Naturals0
+    set = NonnegativeIntegers
 
     @staticmethod
     def check(r, p):
@@ -220,10 +361,6 @@ class NegativeBinomialDistribution(SingleDiscreteDistribution):
 
         return ((1 - p) / (1 - p * exp(t))) ** r
 
-    def sample(self):
-        # ## TODO
-        raise NotImplementedError("Sampling of %s is not implemented" % density(self))
-
 
 def NegativeBinomial(name, r, p):
     r"""
@@ -243,7 +380,7 @@ def NegativeBinomial(name, r, p):
     Returns
     =======
 
-    A RandomSymbol.
+    RandomSymbol
 
     Examples
     ========
@@ -282,7 +419,7 @@ def NegativeBinomial(name, r, p):
 class PoissonDistribution(SingleDiscreteDistribution):
     _argnames = ('lamda',)
 
-    set = S.Naturals0
+    domain = set = NonnegativeIntegers
 
     @staticmethod
     def check(lamda):
@@ -290,27 +427,6 @@ class PoissonDistribution(SingleDiscreteDistribution):
 
     def pdf(self, k):
         return self.lamda ** k / factorial(k) * exp(-self.lamda)
-
-    def sample(self):
-
-        def search(x, y, u):
-            while x < y:
-                mid = (x + y) // 2
-                if u <= self.cdf(mid):
-                    y = mid
-                else:
-                    x = mid + 1
-            return x
-
-        u = random.uniform(0, 1)
-        if u <= self.cdf(S.Zero):
-            return S.Zero
-        n = S.One
-        while True:
-            if u > self.cdf(2 * n):
-                n *= 2
-            else:
-                return search(n, 2 * n, u)
 
     def _characteristic_function(self, t):
         return exp(self.lamda * (exp(I * t) - 1))
@@ -336,7 +452,7 @@ def Poisson(name, lamda):
     Returns
     =======
 
-    A RandomSymbol.
+    RandomSymbol
 
     Examples
     ========
@@ -369,8 +485,9 @@ def Poisson(name, lamda):
 
 
 class BinomialDistribution(SingleDiscreteDistribution):
-    _argnames = ('n', 'p')
-
+    _argnames = ('n', 'p')    
+    is_extended_negative = False
+    
     @staticmethod
     def check(n, p):
         _value_check((n.is_integer, n.is_nonnegative),
@@ -378,8 +495,12 @@ class BinomialDistribution(SingleDiscreteDistribution):
         _value_check((p <= 1, p >= 0),
                     "p should be in range [0, 1].")
 
-    set = S.Naturals0
+    @property
+    def domain(self):  
+        return Interval(0, self.n, integer=True) 
 
+    set = domain
+    
     def pdf(self, k):
         return binomial(self.n, k) * self.p ** k * (1 - self.p) ** (self.n - k)
 
@@ -437,13 +558,135 @@ def Binomial(name, n, p):
 
     return rv(name, BinomialDistribution, n, p)
 
+
+class DieDistribution(SingleDiscreteDistribution):    
+    _argnames = ('sides',)
+
+    @staticmethod
+    def check(sides):
+        _value_check((sides.is_positive, sides.is_integer),
+                    "number of sides must be a positive integer.")
+
+    @property
+    def is_symbolic(self):
+        return not self.sides.is_number
+
+    @property
+    def high(self):
+        return self.sides
+
+    @property
+    def low(self):
+        return S.One
+
+    @property
+    def set(self):        
+        return Interval(1, self.sides, integer=True)
+
+    domain = set
+    
+    def pdf(self, x):
+        x = sympify(x)
+        cond = (x >= 1) & (x <= self.sides)
+        pdf = S.One / self.sides
+        if cond:
+            return pdf
+        return Piecewise((pdf, cond), (S.Zero, True))
+
+# -----------------------------------------------------------------------------
+# Skellam distribution --------------------------------------------------------
+
+
+class SkellamDistribution(SingleDiscreteDistribution):
+    _argnames = ('mu1', 'mu2')
+    set = Integers
+
+    @staticmethod
+    def check(mu1, mu2):
+        _value_check(mu1 >= 0, 'Parameter mu1 must be >= 0')
+        _value_check(mu2 >= 0, 'Parameter mu2 must be >= 0')
+
+    def pdf(self, k):
+        (mu1, mu2) = (self.mu1, self.mu2)
+        term1 = exp(-(mu1 + mu2)) * (mu1 / mu2) ** (k / 2)
+        term2 = besseli(k, 2 * sqrt(mu1 * mu2))
+        return term1 * term2
+
+    def _cdf(self, x):
+        raise NotImplementedError(
+            "Skellam doesn't have closed form for the CDF.")
+
+    def _characteristic_function(self, t):
+        (mu1, mu2) = (self.mu1, self.mu2)
+        return exp(-(mu1 + mu2) + mu1 * exp(I * t) + mu2 * exp(-I * t))
+
+    def _moment_generating_function(self, t):
+        (mu1, mu2) = (self.mu1, self.mu2)
+        return exp(-(mu1 + mu2) + mu1 * exp(t) + mu2 * exp(-t))
+
+
+def Skellam(name, mu1, mu2):
+    r"""
+    Create a discrete random variable with a Skellam distribution.
+
+    The Skellam is the distribution of the difference N1 - N2
+    of two statistically independent random variables N1 and N2
+    each Poisson-distributed with respective expected values mu1 and mu2.
+
+    The density of the Skellam distribution is given by
+
+    .. math::
+        f(k) := e^{-(\mu_1+\mu_2)}(\frac{\mu_1}{\mu_2})^{k/2}I_k(2\sqrt{\mu_1\mu_2})
+
+    Parameters
+    ==========
+
+    mu1: A non-negative value
+    mu2: A non-negative value
+
+    Returns
+    =======
+
+    RandomSymbol
+
+    Examples
+    ========
+
+    >>> from sympy.stats import Skellam, density, E, variance
+    >>> from sympy import Symbol, pprint
+
+    >>> z = Symbol("z", integer=True)
+    >>> mu1 = Symbol("mu1", positive=True)
+    >>> mu2 = Symbol("mu2", positive=True)
+    >>> X = Skellam("x", mu1, mu2)
+
+    >>> pprint(density(X)(z), use_unicode=False)
+         z
+         -
+         2
+    /mu1\   -mu1 - mu2        /       _____   _____\
+    |---| *e          *besseli\z, 2*\/ mu1 *\/ mu2 /
+    \mu2/
+    >>> E(X)
+    mu1 - mu2
+    >>> variance(X).expand()
+    mu1 + mu2
+
+    References
+    ==========
+
+    .. [1] https://en.wikipedia.org/wiki/Skellam_distribution
+
+    """
+    return rv(name, SkellamDistribution, mu1, mu2)
+
 #-------------------------------------------------------------------------------
 # Yule-Simon distribution ------------------------------------------------------------
 
 
 class YuleSimonDistribution(SingleDiscreteDistribution):
     _argnames = ('rho',)
-    set = S.Naturals
+    set = PositiveIntegers
 
     @staticmethod
     def check(rho):
@@ -464,10 +707,6 @@ class YuleSimonDistribution(SingleDiscreteDistribution):
         rho = self.rho
         return rho * hyper((1, 1), (rho + 2,), exp(t)) * exp(t) / (rho + 1)
 
-    def sample(self):
-        # ## TODO
-        raise NotImplementedError("Sampling of %s is not implemented" % density(self))
-
 
 def YuleSimon(name, rho):
     r"""
@@ -486,7 +725,7 @@ def YuleSimon(name, rho):
     Returns
     =======
 
-    A RandomSymbol.
+    RandomSymbol
 
     Examples
     ========
@@ -522,7 +761,7 @@ def YuleSimon(name, rho):
 
 class ZetaDistribution(SingleDiscreteDistribution):
     _argnames = ('s',)
-    set = S.Naturals
+    set = PositiveIntegers
 
     @staticmethod
     def check(s):
@@ -537,10 +776,6 @@ class ZetaDistribution(SingleDiscreteDistribution):
 
     def _moment_generating_function(self, t):
         return polylog(self.s, exp(t)) / zeta(self.s)
-
-    def sample(self):
-        # ## TODO
-        raise NotImplementedError("Sampling of %s is not implemented" % density(self))
 
 
 def Zeta(name, s):
@@ -560,7 +795,7 @@ def Zeta(name, s):
     Returns
     =======
 
-    A RandomSymbol.
+    RandomSymbol
 
     Examples
     ========
@@ -589,3 +824,47 @@ def Zeta(name, s):
 
     """
     return rv(name, ZetaDistribution, s)
+
+
+# an AbstractDiscreteDistribution is a Discrete Distribution whose true probability density function is unevaluated!
+# we only know its expression composed of other known random variables;
+class AbstractDiscreteDistribution(SingleDiscreteDistribution):
+#     _argnames = ['expression', 'set']
+
+#     def __new__(cls, expr, domain=None):
+#         if domain is None:
+#             return SingleDiscreteDistribution.__new__(expr)
+#         return SingleDiscreteDistribution.__new__(cls, expr, domain)
+
+    @property
+    def expression(self):
+        return self.args[0]
+
+    def pdf(self, x):
+        from sympy.stats.rv import PDF
+        if len(self.args) > 1:
+            return self.expression(x)
+        return PDF(self.expression)(x)
+
+    @property
+    def domain(self):
+        if len(self.args) > 1: 
+            return self.args[1]
+               
+        if self.expression >= 0:
+            return Interval(0, oo)
+        return Interval(-oo, oo)
+
+    def __getattr__(self, attr):
+        try:
+            if attr == 'set':
+                if self.expression >= 0:
+                    return Interval(0, oo)
+                return Interval(-oo, oo)
+
+            if attr == 'expression':
+                return self.args[0]
+            return SingleDiscreteDistribution.__getattr__(self, attr)
+        except Exception as e:
+#             print(e)
+            raise AttributeError("'%s' object has no attribute '%s'" % (type(self).__name__, attr))

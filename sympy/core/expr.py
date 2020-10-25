@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from .sympify import sympify, _sympify, SympifyError
 from .basic import Basic, Atom
 from .singleton import S
@@ -11,8 +9,6 @@ from sympy.utilities.misc import func_name
 from mpmath.libmp import mpf_log, prec_to_dps
 
 from collections import defaultdict
-from builtins import isinstance
-
 
 class Expr(Basic, EvalfMixin):
     """
@@ -34,20 +30,26 @@ class Expr(Basic, EvalfMixin):
     is_scalar = True  # self derivative is 1
     is_Identity = False
     is_ElementaryMatrix = False
+    is_ZeroMatrix = False
     is_square = False
     is_infinitesimal = None
     is_FiniteSet = False
-    is_Minimum = None
-    is_Maximum = None
+    is_Minimize = None
+    is_Maximize = None
     is_Quantity = False
+    is_Concatenate = False
+    is_MatProduct = False
+    
+    def _coeff_isneg(self):
+        return False
     
     def as_Ref(self):
         from sympy import Interval
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         k = []
         for size in self.shape:             
             k.append(self.generate_free_symbol(excludes={*k}, domain=Interval(0, size - 1, integer=True)))
-        return Ref(self[k], *k) 
+        return LAMBDA(self[k], *k) 
         
     def intersect(self, other):
         from sympy.sets.sets import Intersection
@@ -64,6 +66,9 @@ class Expr(Basic, EvalfMixin):
     def _complement(self, other):
         ...
 
+    def _eval_exp(self):
+        ...
+        
     @property
     def _diff_wrt(self):
         """Return True if one can differentiate with respect to this
@@ -127,9 +132,9 @@ class Expr(Basic, EvalfMixin):
         elif expr.is_Atom:
             args = (str(expr),)
         else:
-            if expr.is_Plus:
+            if expr.is_Add:
                 args = expr.as_ordered_terms(order=order)
-            elif expr.is_Times:
+            elif expr.is_Mul:
                 args = expr.as_ordered_factors(order=order)
             else:
                 args = expr.args
@@ -419,7 +424,7 @@ class Expr(Basic, EvalfMixin):
         except SympifyError:
             raise TypeError("Invalid comparison %s >= %s" % (self, other))
         for me in (self, other):
-            if me.is_complex and me.is_extended_real is False:
+            if me.is_complex and me.is_extended_real == False:
                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
@@ -461,7 +466,7 @@ class Expr(Basic, EvalfMixin):
         except SympifyError:
             raise TypeError("Invalid comparison %s <= %s" % (self, other))
         for me in (self, other):
-            if me.is_complex and me.is_extended_real is False:
+            if me.is_complex and me.is_extended_real == False:
                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
@@ -504,7 +509,7 @@ class Expr(Basic, EvalfMixin):
         except SympifyError:
             raise TypeError("Invalid comparison %s > %s" % (self, other))
         for me in (self, other):
-            if me.is_complex and me.is_extended_real is False:
+            if me.is_complex and me.is_extended_real == False:
                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
@@ -547,7 +552,7 @@ class Expr(Basic, EvalfMixin):
         except SympifyError:
             raise TypeError("Invalid comparison %s < %s" % (self, other))
         for me in (self, other):
-            if me.is_complex and me.is_extended_real is False:
+            if me.is_complex and me.is_extended_real == False:
                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
@@ -953,7 +958,7 @@ class Expr(Basic, EvalfMixin):
                             # perfect powers are removed at instantiation
                             # so surd s cannot be an integer
                             return False
-                        if all(i.is_algebraic is False for i in sol):
+                        if all(i.is_algebraic == False for i in sol):
                             # a surd is algebraic
                             return False
                         if any(si in surds for si in sol):
@@ -995,7 +1000,7 @@ class Expr(Basic, EvalfMixin):
         zero = self.is_zero
         if zero:
             return False
-        if zero is False:
+        if zero == False:
             return self.is_extended_real
         
     def _eval_is_real(self):
@@ -1004,43 +1009,43 @@ class Expr(Basic, EvalfMixin):
 
     def _eval_is_positive(self):
         finite = self.is_finite
-        if finite is False:
+        if finite == False:
             return False
         extended_positive = self.is_extended_positive
-        if finite is True:
+        if finite:
             return extended_positive
-        if extended_positive is False:
+        if extended_positive == False:
             return False
 
     def _eval_is_negative(self):
         finite = self.is_finite
-        if finite is False:
+        if finite == False:
             return False
         extended_negative = self.is_extended_negative
-        if finite is True:
+        if finite:
             return extended_negative
-        if extended_negative is False:
+        if extended_negative == False:
             return False
 
     def _eval_is_nonnegative(self):
         negative = self.is_negative        
         if negative:
             return False
-        if negative is False:
+        if negative == False:
             return self.is_real
 
     def _eval_is_nonpositive(self):
         positive = self.is_positive        
         if positive:
             return False
-        if positive is False:
+        if positive == False:
             return self.is_real
 
     def _eval_is_extended_positive(self):
         from sympy.polys.numberfields import minimal_polynomial
         from sympy.polys.polyerrors import NotAlgebraic
         if self.is_number:
-            if self.is_extended_real is False:
+            if self.is_extended_real == False:
                 return False
 
             # check to see that we can get a value
@@ -1075,7 +1080,7 @@ class Expr(Basic, EvalfMixin):
         from sympy.polys.numberfields import minimal_polynomial
         from sympy.polys.polyerrors import NotAlgebraic
         if self.is_number:
-            if self.is_extended_real is False:
+            if self.is_extended_real == False:
                 return False
 
             # check to see that we can get a value
@@ -1296,7 +1301,7 @@ class Expr(Basic, EvalfMixin):
 
         from .numbers import Number, NumberSymbol
 
-        if order is None and self.is_Plus:
+        if order is None and self.is_Add:
             # Spot the special case of Add(Number, Mul(Number, expr)) with the
             # first number positive and thhe second number nagative
             key = lambda x:not isinstance(x, (Number, NumberSymbol))
@@ -1426,7 +1431,7 @@ class Expr(Basic, EvalfMixin):
                 return S.One
             if o.is_Power:
                 return o.args[1]
-            if o.is_Times:  # x**n*log(x)**n or x**n/log(x)**n
+            if o.is_Mul:  # x**n*log(x)**n or x**n/log(x)**n
                 for oi in o.args:
                     if oi.is_Symbol:
                         return S.One
@@ -1478,7 +1483,7 @@ class Expr(Basic, EvalfMixin):
         [[-1, oo], []]
         """
 
-        if self.is_Times:
+        if self.is_Mul:
             args = list(self.args)
         else:
             args = [self]
@@ -1638,7 +1643,7 @@ class Expr(Basic, EvalfMixin):
             return Add(*co)
 
         if n == 0:
-            if x.is_Plus and self.is_Plus:
+            if x.is_Add and self.is_Add:
                 c = self.coeff(x, right=right)
                 if not c:
                     return S.Zero
@@ -2354,12 +2359,12 @@ class Expr(Basic, EvalfMixin):
         elif c == self:
             return S.One
 
-        if c.is_Plus:
+        if c.is_Add:
             cc, pc = c.primitive()
             if cc is not S.One:
                 c = Mul(cc, pc, evaluate=False)
 
-        if c.is_Times:
+        if c.is_Mul:
             a, b = c.as_two_terms()
             x = self.extract_multiplicatively(a)
             if x is not None:
@@ -2400,12 +2405,12 @@ class Expr(Basic, EvalfMixin):
                 else:
                     return quotient
         elif self.is_NumberSymbol or self.is_Symbol or self is S.ImaginaryUnit:
-            if quotient.is_Times and len(quotient.args) == 2:
+            if quotient.is_Mul and len(quotient.args) == 2:
                 if quotient.args[0].is_Integer and quotient.args[0].is_positive and quotient.args[1] == self:
                     return quotient
             elif quotient.is_Integer and c.is_Number:
                 return quotient
-        elif self.is_Plus:
+        elif self.is_Add:
             cs, ps = self.primitive()
             # assert cs >= 1
             if c.is_Number and c is not S.NegativeOne:
@@ -2432,7 +2437,7 @@ class Expr(Basic, EvalfMixin):
                 return Add._from_args([cs * t for t in newargs])
             else:
                 return Add._from_args(newargs)
-        elif self.is_Times:
+        elif self.is_Mul:
             args = list(self.args)
             for i, arg in enumerate(args):
                 newarg = arg.extract_multiplicatively(c)
@@ -2514,7 +2519,7 @@ class Expr(Basic, EvalfMixin):
         # handle the args[0].is_Number case separately
         # since we will have trouble looking for the coeff of
         # a number.
-        if c.is_Plus and c.args[0].is_Number:
+        if c.is_Add and c.args[0].is_Number:
             # whole term as a term factor
             co = self.coeff(c)
             xa0 = (co.extract_additively(1) or 0) * c
@@ -2604,7 +2609,7 @@ class Expr(Basic, EvalfMixin):
         if self_has_minus != negative_self_has_minus:
             return self_has_minus
         else:
-            if self.is_Plus:
+            if self.is_Add:
                 # We choose the one with less arguments with minus signs
                 all_args = len(self.args)
                 negative_args = len([False for arg in self.args if arg.could_extract_minus_sign()])
@@ -2613,7 +2618,7 @@ class Expr(Basic, EvalfMixin):
                     return False
                 elif positive_args < negative_args:
                     return True
-            elif self.is_Times:
+            elif self.is_Mul:
                 # We choose the one with an odd number of minus signs
                 num, den = self.as_numer_denom()
                 args = Mul.make_args(num) + Mul.make_args(den)
@@ -2669,10 +2674,10 @@ class Expr(Basic, EvalfMixin):
         extras = []
         while exps:
             exp = exps.pop()
-            if exp.is_Plus:
+            if exp.is_Add:
                 exps += exp.args
                 continue
-            if exp.is_Times:
+            if exp.is_Mul:
                 coeff = exp.as_coefficient(pi * I)
                 if coeff is not None:
                     piimult += coeff
@@ -3050,7 +3055,7 @@ class Expr(Basic, EvalfMixin):
             def yield_lseries(s):
                 """Return terms of lseries one at a time."""
                 for si in s:
-                    if not si.is_Plus:
+                    if not si.is_Add:
                         yield si
                         continue
                     # yield terms 1 at a time if possible
@@ -3065,7 +3070,7 @@ class Expr(Basic, EvalfMixin):
                         o *= x
                         if not do or do.is_Order:
                             continue
-                        if do.is_Plus:
+                        if do.is_Add:
                             ndid += len(do.args)
                         else:
                             ndid += 1
@@ -3116,7 +3121,7 @@ class Expr(Basic, EvalfMixin):
         n = 0
         series = self._eval_nseries(x, n=n, logx=logx)
         if not series.is_Order:
-            if series.is_Plus:
+            if series.is_Add:
                 yield series.removeO()
             else:
                 yield series
@@ -3778,9 +3783,8 @@ class Expr(Basic, EvalfMixin):
         return self.aggregate(MAX)
 
     def aggregate(self, aggregate):
-        from sympy.stats.rv import RandomSymbol
         free_symbols = self.free_symbols
-        for symbol in [symbol for symbol in free_symbols if isinstance(symbol, RandomSymbol)]:
+        for symbol in {*free_symbols}:
             free_symbols -= symbol.free_symbols
             free_symbols.add(symbol)
 
@@ -3824,11 +3828,12 @@ class Expr(Basic, EvalfMixin):
         shape = self.shape
         
         if self.is_integer:
-            interval = S.Integers
+            from sympy.sets import Integers
+            interval = Integers
         elif self.is_extended_real:
             interval = S.Reals
         else:
-            assert self.is_complex
+            assert self.is_complex, type(self)
             interval = S.Complexes
 
         if not shape:
@@ -3864,17 +3869,17 @@ class Expr(Basic, EvalfMixin):
                     c0 = poly.nth(0)
                     if interval.is_integer:
                         if c1 == 1:
-                            interval = interval.copy(start=interval.start - c0, end=interval.end - c0)
+                            interval = interval.copy(start=interval.start - c0, stop=interval.stop - c0)
                             return domain & interval
                         elif c1 == -1:
-                            interval = interval.copy(start=c0 - interval.end, end=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
+                            interval = interval.copy(start=c0 - interval.stop, stop=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
                             return domain & interval                            
                     else:
                         if c1 > 0:
-                            interval.func(start=(interval.start - c0) / c1, end=(interval.end - c0) / c1)
+                            interval.func(start=(interval.start - c0) / c1, stop=(interval.stop - c0) / c1)
                             return domain & interval
                         elif c1 < 0:
-                            interval.func(end=(interval.start - c0) / c1, start=(interval.end - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
+                            interval.func(start=(interval.stop - c0) / c1, stop=(interval.start - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
                             return domain & interval
                         
             return conditionset(self, condition, domain)
@@ -3901,7 +3906,17 @@ class Expr(Basic, EvalfMixin):
 
         from sympy import solve
         equation = condition.lhs - condition.rhs
-        solution = solve(equation, self)
+        if self.is_integer and not self.is_random:
+            from sympy import Dummy
+            x = Dummy('x', real=True)
+            equation = equation._subs(self, x)
+        else:
+            x = self
+            
+        try:
+            solution = solve(equation, x)
+        except:
+            solution = []
         if len(solution) != 1:
 #             solution = solve(equation, self)
             return conditionset(self, condition, domain)
@@ -3913,8 +3928,8 @@ class Expr(Basic, EvalfMixin):
         op = type(condition)
 
         from sympy import limit
-        b = limit(equation, self, oo)
-        a = limit(equation, self, -oo)
+        b = limit(equation, x, oo)
+        a = limit(equation, x, -oo)
 
         if b < 0:
             b = -b
@@ -3975,7 +3990,7 @@ class Expr(Basic, EvalfMixin):
         from sympy.core.numbers import oo
         from sympy.core.symbol import dtype
         if type(domain) == Interval:
-            start, end = domain.start, domain.end
+            start, end = domain.start, domain.stop
             if end == oo:
                 if start == -oo:
                     if domain.is_integer:
@@ -4006,13 +4021,20 @@ class Expr(Basic, EvalfMixin):
         if self.is_set:
             from sympy.sets.sets import Union
             return Union(self, exp)
-        from sympy.logic import Or
-        return Or(self, exp)
-
+        if self.is_boolean and exp.is_boolean:
+            from sympy.logic import Or
+            return Or(self, exp)
+        
+        assert self.is_random or exp.is_random
+            #overload given operator in probability theorems
+        from sympy.stats.rv import given
+        return given(self, exp)
+            
     def set_comprehension(self, free_symbol=None):
         from sympy.concrete.expr_with_limits import UNION
 
-        i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)         
+        i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)
+#         assert self.shape[0] > 1         
         return UNION({self[i]}, (i, 0, self.shape[0] - 1))
 
     @property
@@ -4024,43 +4046,43 @@ class Expr(Basic, EvalfMixin):
         is_even = self.is_even
         if is_even:
             return False
-        if is_even is False:
+        if is_even == False:
             return self.is_integer
     
     def drop(self, I, J):
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         excludes = I.free_symbols | J.free_symbols
         i = self.generate_free_symbol(excludes=excludes, integer=True)
         j = self.generate_free_symbol(excludes=excludes | {i}, integer=True)
         m, n = self.shape
         
-        Ref = Ref[j:n - 1, i:m - 1]
+        LAMBDA = LAMBDA[j:n - 1, i:m - 1]
         if m - 1 == I:
             if n - 1 == J:
-                ref = Ref(self[i, j])
+                ref = LAMBDA(self[i, j])
             else:       
                 if J.is_zero:
-                    ref = Ref(self[i, j + 1])                    
+                    ref = LAMBDA(self[i, j + 1])                    
                 else:
-                    ref = Ref(Piecewise((self[i, j], j < J), (self[i, j + 1], True)))
+                    ref = LAMBDA(Piecewise((self[i, j], j < J), (self[i, j + 1], True)))
         else:
             if n - 1 == J:
                 if I.is_zero:
-                    ref = Ref(self[i + 1, j])            
+                    ref = LAMBDA(self[i + 1, j])            
                 else:
-                    ref = Ref(Piecewise((self[i, j], i < I), (self[i + 1, j], True)))
+                    ref = LAMBDA(Piecewise((self[i, j], i < I), (self[i + 1, j], True)))
             else:
                 if I.is_zero:
                     if J.is_zero:
-                        ref = Ref(self[i + 1, j + 1])
+                        ref = LAMBDA(self[i + 1, j + 1])
                     else:
-                        ref = Ref(Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)))
+                        ref = LAMBDA(Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)))
                 else:
                     if J.is_zero:
-                        ref = Ref(Piecewise((self[i, j + 1], i < I), (self[i + 1, j + 1], True)))
+                        ref = LAMBDA(Piecewise((self[i, j + 1], i < I), (self[i + 1, j + 1], True)))
                     else: 
-                        ref = Ref(Piecewise(
+                        ref = LAMBDA(Piecewise(
                             (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
                             (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
         return ref.simplify()
@@ -4069,6 +4091,16 @@ class Expr(Basic, EvalfMixin):
         ...
       
     def as_Matrix(self):
+        from sympy import Matrix
+        if len(self.shape) == 1:
+            n = self.shape[0]
+            if isinstance(n, int) or n.is_Number:  
+                array = []
+                for i in range(n):
+                    array.append(self[sympify(i)])                
+                return Matrix(tuple(array))
+            return self
+
         i_shape, j_shape = self.shape
         if isinstance(i_shape, int) or i_shape.is_Number:
             if isinstance(j_shape, int) or j_shape.is_Number:  
@@ -4076,7 +4108,6 @@ class Expr(Basic, EvalfMixin):
                 for i in range(i_shape):
                     for j in range(j_shape):
                         array.append(self[sympify(i), sympify(j)])
-                from sympy import Matrix 
                 return Matrix(i_shape, j_shape, tuple(array))
         return self
 
@@ -4087,6 +4118,14 @@ class Expr(Basic, EvalfMixin):
         if domain is not None and domain.is_Interval and domain.min() == start and domain.max() == end:
             return (x,)   
         return (x, start, end)
+
+    def enumerate_KroneckerDelta(self):
+        yield from []
+
+    def copy(self, **kwargs):
+        if kwargs:
+            return self.func(*self.args, **kwargs)
+        return self
 
 class AtomicExpr(Atom, Expr):
     """

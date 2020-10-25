@@ -4,7 +4,7 @@ from sympy.core import sympify
 from sympy.core.add import Add
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import range
-from sympy.core.function import Function, ArgumentIndexError, _coeff_isneg
+from sympy.core.function import Function, ArgumentIndexError
 from sympy.core.logic import fuzzy_not
 from sympy.core.mul import Mul
 from sympy.core.numbers import Integer
@@ -61,7 +61,7 @@ class ExpBase(Function):
         exp = self.exp
         neg_exp = exp.is_negative
         if not neg_exp and not (-exp).is_negative:
-            neg_exp = _coeff_isneg(exp)
+            neg_exp = exp._coeff_isneg()
         if neg_exp:
             return S.One, self.func(-exp)
         return self, S.One
@@ -113,8 +113,8 @@ class ExpBase(Function):
 
     def _eval_expand_power_exp(self, **hints):
         arg = self.args[0]
-#         if arg.is_Plus and arg.is_commutative:
-        if arg.is_Plus:
+#         if arg.is_Add and arg.is_commutative:
+        if arg.is_Add:
             expr = 1
             for x in arg.args:
                 expr *= self.func(x)
@@ -213,7 +213,7 @@ class exp(ExpBase):
     def _eval_refine(self, assumptions):
         from sympy.assumptions import ask, Q
         arg = self.args[0]
-        if arg.is_Times:
+        if arg.is_Mul:
             Ioo = S.ImaginaryUnit * S.Infinity
             if arg in [Ioo, -Ioo]:
                 return S.NaN
@@ -232,87 +232,7 @@ class exp(ExpBase):
 
     @classmethod
     def eval(cls, arg):
-        from sympy.assumptions import ask, Q
-        from sympy.calculus import AccumBounds
-        from sympy.sets.setexpr import SetExpr
-        from sympy.matrices.matrices import MatrixBase
-        from sympy import logcombine
-        if arg.is_Number:
-            if arg is S.NaN:
-                return S.NaN
-            elif arg is S.Zero:
-                return S.One
-            elif arg is S.One:
-                return S.Exp1
-            elif arg is S.Infinity:
-                return S.Infinity
-            elif arg is S.NegativeInfinity:
-                return S.Zero
-        elif arg is S.ComplexInfinity:
-            return S.NaN
-        elif isinstance(arg, log):
-            return arg.args[0]
-        elif isinstance(arg, AccumBounds):
-            return AccumBounds(exp(arg.min), exp(arg.max))
-        elif isinstance(arg, SetExpr):
-            return arg._eval_func(cls)
-        elif arg.is_Times:
-            if arg.is_number or arg.is_Symbol:
-                coeff = arg.coeff(S.Pi * S.ImaginaryUnit)
-                if coeff:
-                    if ask(Q.integer(2 * coeff)):
-                        if ask(Q.even(coeff)):
-                            return S.One
-                        elif ask(Q.odd(coeff)):
-                            return S.NegativeOne
-                        elif ask(Q.even(coeff + S.Half)):
-                            return -S.ImaginaryUnit
-                        elif ask(Q.odd(coeff + S.Half)):
-                            return S.ImaginaryUnit
-
-            # Warning: code in risch.py will be very sensitive to changes
-            # in this (see DifferentialExtension).
-
-            # look for a single log factor
-
-            coeff, terms = arg.as_coeff_Mul()
-
-            # but it can't be multiplied by oo
-            if coeff in [S.NegativeInfinity, S.Infinity]:
-                return None
-
-            coeffs, log_term = [coeff], None
-            for term in Mul.make_args(terms):
-                term_ = logcombine(term)
-                if isinstance(term_, log):
-                    if log_term is None:
-                        log_term = term_.args[0]
-                    else:
-                        return None
-                elif term.is_comparable:
-                    coeffs.append(term)
-                else:
-                    return None
-
-            return log_term ** Mul(*coeffs) if log_term else None
-
-        elif arg.is_Plus:
-            out = []
-            add = []
-            for a in arg.args:
-                if a is S.One:
-                    add.append(a)
-                    continue
-                newa = cls(a)
-                if isinstance(newa, cls):
-                    add.append(a)
-                else:
-                    out.append(newa)
-            if out:
-                return Mul(*out) * cls(Add(*add), evaluate=False)
-
-        elif isinstance(arg, MatrixBase):
-            return arg.exp()
+        return arg._eval_exp()
 
     @property
     def base(self):
@@ -444,7 +364,7 @@ class exp(ExpBase):
     def _eval_as_leading_term(self, x):
         from sympy import Order
         arg = self.args[0]
-        if arg.is_Plus:
+        if arg.is_Add:
             return Mul(*[exp(f).as_leading_term(x) for f in arg.args])
         arg = self.args[0].as_leading_term(x)
         if Order(1, x).contains(arg):
@@ -467,7 +387,7 @@ class exp(ExpBase):
 
     def _eval_rewrite_as_sqrt(self, arg, **kwargs):
         from sympy.functions.elementary.trigonometric import sin, cos
-        if arg.is_Times:
+        if arg.is_Mul:
             coeff = arg.coeff(S.Pi * S.ImaginaryUnit)
             if coeff and coeff.is_number:
                 cosine, sine = cos(S.Pi * coeff), sin(S.Pi * coeff)
@@ -475,7 +395,7 @@ class exp(ExpBase):
                     return cosine + S.ImaginaryUnit * sine
 
     def _eval_rewrite_as_Pow(self, arg, **kwargs):
-        if arg.is_Times:
+        if arg.is_Mul:
             logs = [a for a in arg.args if isinstance(a, log) and len(a.args) == 1]
             if logs:
                 return Pow(logs[0].args[0], arg.coeff(logs[0]))
@@ -494,7 +414,7 @@ class exp(ExpBase):
         return Interval(-oo, oo, integer=integer)
 
 
-class log(Function):
+class Log(Function):
     r"""
     The natural logarithm function `\ln(x)` or `\log(x)`.
     Logarithms are taken with the natural base, `e`. To get
@@ -595,7 +515,7 @@ class log(Function):
                 return S.One
 
         # don't autoexpand Pow or Mul (see the issue 3351):
-        if not arg.is_Plus:
+        if not arg.is_Add:
             coeff = arg.as_coefficient(S.ImaginaryUnit)
 
             if coeff is not None:
@@ -647,7 +567,7 @@ class log(Function):
                 return p[1] * self.func(p[0])
         elif arg.is_Rational:
             return log(arg.p) - log(arg.q)
-        elif arg.is_Times:
+        elif arg.is_Mul:
             expr = []
             nonpos = []
             for x in arg.args:
@@ -747,7 +667,9 @@ class log(Function):
             return s.is_algebraic
 
     def _eval_is_extended_real(self):
-        return self.arg.is_extended_positive
+#         self.arg is defined to be nonzero already! so it is only necessary to return is_extended_nonnegative， not is_extended_positive!!
+        return self.arg.is_extended_nonnegative
+#         return self.arg.is_extended_positive
 
     def _eval_is_finite(self):
         arg = self.args[0]
@@ -803,8 +725,27 @@ class log(Function):
         return self.func(arg)
 
     def as_Add(self):
-        if isinstance(self.arg, Mul):
+        if self.arg.is_Mul:
             return Add(*(self.func(arg).simplify() for arg in self.arg.args))
+        
+        from sympy import Sum
+        if self.arg.is_Product:
+            product = self.arg
+            return Sum(self.func(product.function), *product.limits)
+        return self
+
+    def as_Max(self):
+        if self.arg.is_Maximize:
+            m = self.arg
+            return m.func(self.func(m.function), *m.limits)
+        
+        return self
+
+    def as_Min(self):
+        if self.arg.is_Minimize:
+            m = self.arg
+            return m.func(self.func(m.function), *m.limits)
+        
         return self
 
     def simplify(self, **_):
@@ -823,7 +764,7 @@ class log(Function):
             return Add(*coeff) + self.func(Mul(*exponent))
         if isinstance(arg, Pow):
             base, exponent = arg.args
-            if _coeff_isneg(exponent):
+            if exponent._coeff_isneg():
                 exponent = -exponent
             arg = base ** exponent
             return -self.func(arg)
@@ -835,6 +776,19 @@ class log(Function):
 
     def __getitem__(self, index):
         return self.func(self.arg[index])
+
+    def _eval_exp(self):
+        return self.args[0]
+
+    def _latex(self, p):
+        arg = p._print(self.arg)
+        if self.arg.is_Mul:
+            return r"\log \left(%s\right)" % arg
+        return r"\log {%s}" % arg
+
+    
+log = Log    
+
 
 class LambertW(Function):
     r"""

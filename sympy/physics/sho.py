@@ -25,7 +25,7 @@ def R_nl(n, l, nu, r):
     ========
 
     >>> from sympy.physics.sho import R_nl
-    >>> from sympy import var
+    >>> from sympy import Symbol
     >>> var("r nu l")
     (r, nu, l)
     >>> R_nl(0, 0, 1, r)

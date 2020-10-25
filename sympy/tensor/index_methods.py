@@ -269,9 +269,9 @@ def get_indices(expr):
 
     # recurse via specialized functions
     else:
-        if expr.is_Times:
+        if expr.is_Mul:
             return _get_indices_Mul(expr)
-        elif expr.is_Plus:
+        elif expr.is_Add:
             return _get_indices_Add(expr)
         elif expr.is_Power or isinstance(expr, exp):
             return _get_indices_Pow(expr)
@@ -403,7 +403,7 @@ def get_contraction_structure(expr):
         return {key or None: {expr}}
     elif expr.is_Atom:
         return {None: {expr}}
-    elif expr.is_Times:
+    elif expr.is_Mul:
         junk, junk, key = _get_indices_Mul(expr, return_dummies=True)
         result = {key or None: {expr}}
         # recurse on every factor
@@ -430,7 +430,7 @@ def get_contraction_structure(expr):
         if dicts:
             result[expr] = dicts
         return result
-    elif expr.is_Plus:
+    elif expr.is_Add:
         # Note: we just collect all terms with identical summation indices, We
         # do nothing to identify equivalent terms here, as this would require
         # substitutions or pattern matching in expressions of unknown

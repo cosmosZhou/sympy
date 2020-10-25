@@ -1,8 +1,9 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from sympy.sets.contains import Subset
 from axiom.discrete import sets
+from sympy import Symbol
 
 
 # given: A in B and |A| = |B|
@@ -27,13 +28,13 @@ def apply(*given):
     return Equality(A, B, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = Symbol.A(dtype=dtype.integer, given=True)
+    B = Symbol.B(dtype=dtype.integer, given=True)
 
     Eq << apply(Subset(A, B), Equality(abs(A), abs(B)))
     
@@ -49,7 +50,7 @@ def prove(Eq):
     
     Eq << Eq.union_AB.subs(Eq[-1]).reversed
     
-    Eq << sets.zero.equality.apply(Eq[-1])
+    Eq << sets.equality.equality.emptyset.apply(Eq[-1])
     
     Eq << sets.equality.complement.subset.apply(Eq[-1])
     

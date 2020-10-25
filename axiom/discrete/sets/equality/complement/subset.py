@@ -1,9 +1,9 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from sympy.sets.contains import Subset
 from sympy.sets.sets import EmptySet
-
+from sympy import Symbol
 # given: B - A = {} 
 # B in A
 
@@ -19,13 +19,13 @@ def apply(given):
     return Subset(B, A, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = Symbol.A(dtype=dtype.integer, given=True)
+    B = Symbol.B(dtype=dtype.integer, given=True)
 
     Eq << apply(Equality(B - A, EmptySet()))
     

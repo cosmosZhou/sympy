@@ -22,7 +22,7 @@ from sympy import (
     I,
 )
 from sympy.abc import x, y, z
-from sympy.utilities.pytest import XFAIL
+from sympy.testing.pytest import XFAIL
 
 A, B, C = symbols("A B C", commutative=False)
 X = symbols("X", commutative=False, hermitian=True)
@@ -30,7 +30,7 @@ Y = symbols("Y", commutative=False, antihermitian=True)
 
 
 def test_adjoint():
-    assert adjoint(A).is_commutative is False
+    assert adjoint(A).is_commutative == False
     assert adjoint(A*A) == adjoint(A)**2
     assert adjoint(A*B) == adjoint(B)*adjoint(A)
     assert adjoint(A*B**2) == adjoint(B)**2*adjoint(A)
@@ -71,7 +71,7 @@ def test_gammasimp():
 
 
 def test_conjugate():
-    assert conjugate(A).is_commutative is False
+    assert conjugate(A).is_commutative == False
     assert (A*A).conjugate() == conjugate(A)**2
     assert (A*B).conjugate() == conjugate(A)*conjugate(B)
     assert (A*B**2).conjugate() == conjugate(A)*conjugate(B)**2
@@ -95,7 +95,7 @@ def test_factor():
 
 
 def test_posify():
-    assert posify(A)[0].is_commutative is False
+    assert posify(A)[0].is_commutative == False
     for q in (A*B/A, (A*B/A)**2, (A*B)**2, A*B - B*A):
         p = posify(q)
         assert p[0].subs(p[1]) == q
@@ -131,7 +131,7 @@ def test_subs():
 
 
 def test_transpose():
-    assert transpose(A).is_commutative is False
+    assert transpose(A).is_commutative == False
     assert transpose(A*A) == transpose(A)**2
     assert transpose(A*B) == transpose(B)*transpose(A)
     assert transpose(A*B**2) == transpose(B)**2*transpose(A)

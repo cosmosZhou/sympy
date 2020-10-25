@@ -1,5 +1,3 @@
-from __future__ import division, print_function
-
 import random
 
 from sympy.core import SympifyError
@@ -17,7 +15,6 @@ from sympy.matrices.matrices import MatrixBase, ShapeError
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.decorator import doctest_depends_on
 from sympy.utilities.misc import filldedent
-
 
 def _iszero(x):
     """Returns True if x is zero."""
@@ -40,7 +37,6 @@ class DenseMatrix(MatrixBase):
     __slots__ = []
     
     is_MatrixExpr = False
-    is_DenseMatrix = True
     
     _op_priority = 10.01
     _class_priority = 4
@@ -95,15 +91,13 @@ class DenseMatrix(MatrixBase):
                     return MatrixElement(self, i, j)
 
                 if isinstance(i, slice):
-                    # XXX remove list() when PY2 support is dropped
-                    i = list(range(self.rows))[i]
+                    i = range(self.rows)[i]
                 elif is_sequence(i):
                     pass
                 else:
                     i = [i]
                 if isinstance(j, slice):
-                    # XXX remove list() when PY2 support is dropped
-                    j = list(range(self.cols))[j]
+                    j = range(self.cols)[j]
                 elif is_sequence(j):
                     pass
                 else:
@@ -112,7 +106,15 @@ class DenseMatrix(MatrixBase):
         else:
             # row-wise decomposition of matrix
             if isinstance(key, slice):
-                return self._mat[key]
+                return self._new(self._mat[key])
+            if len(self.shape) == 1:
+                from sympy.functions.elementary.piecewise import Piecewise
+                from sympy import Equal
+                args = []
+                for i in range(len(self._mat)):
+                    args.append([self._mat[i], Equal(key,i)])
+                args[-1][1] = True
+                return Piecewise(*args).simplify()
             return self._mat[a2idx(key)]
 
     def __setitem__(self, key, value):
@@ -134,7 +136,7 @@ class DenseMatrix(MatrixBase):
                         sum(L[i, k] * L[j, k].conjugate() for k in range(j)))
                 Lii2 = expand_mul(self[i, i] - 
                     sum(L[i, k] * L[i, k].conjugate() for k in range(i)))
-                if Lii2.is_positive is False:
+                if Lii2.is_positive == False:
                     raise ValueError("Matrix must be positive-definite")
                 L[i, i] = sqrt(Lii2)
         else:
@@ -297,7 +299,7 @@ class DenseMatrix(MatrixBase):
                         L[i, k] * L[j, k].conjugate() * D[k, k] for k in range(j)))
                 D[i, i] = expand_mul(self[i, i] - 
                     sum(L[i, k] * L[i, k].conjugate() * D[k, k] for k in range(i)))
-                if D[i, i].is_positive is False:
+                if D[i, i].is_positive == False:
                     raise ValueError("Matrix must be positive-definite")
         else:
             for i in range(self.rows):
@@ -474,12 +476,16 @@ class MutableDenseMatrix(DenseMatrix):
         if kwargs.get('copy', True) is False:
             if len(args) != 3:
                 raise TypeError("'copy=False' requires a matrix be initialized as rows,cols,[list]")
-            rows, cols, flat_list = args
+            *shape, flat_list = args
         else:
-            rows, cols, flat_list = cls._handle_creation_inputs(*args, **kwargs)
-        self = Basic.__new__(cls, shape=(rows, cols))
-        self._args = flat_list
-        return self
+            *shape, flat_list = cls._handle_creation_inputs(*args, **kwargs)
+        while shape and shape[0] == 1:
+            shape = shape[1:]
+        if shape:
+            self = Basic.__new__(cls, shape=tuple(shape))
+            self._args = flat_list
+            return self
+        return flat_list[0]
 
     @property
     def shape(self):        
@@ -487,11 +493,14 @@ class MutableDenseMatrix(DenseMatrix):
 
     @property
     def rows(self):
-        return self.shape[0]
+        if len(self.shape) == 2:
+            return self.shape[0]
+        else:
+            return 1
     
     @property
     def cols(self):
-        return self.shape[1]
+        return self.shape[-1]
     
     @property
     def _mat(self):
@@ -813,9 +822,12 @@ class MutableDenseMatrix(DenseMatrix):
 
         sympy.simplify.simplify.simplify
         """
+        if isinstance(self._mat, tuple):
+            return self.func(tuple(_simplify(self._mat[i]) for i in range(len(self._mat))), shape=self.shape)
         for i in range(len(self._mat)):
-            self._mat[i] = _simplify(self._mat[i], ratio=ratio, measure=measure,
-                                     rational=rational, inverse=inverse)
+            self._mat[i] = _simplify(self._mat[i], ratio=ratio, measure=measure, rational=rational, inverse=inverse)
+            
+        return self
 
     def zip_row_op(self, i, k, f):
         """In-place operation on row ``i`` using two-arg functor whose args are
@@ -1140,7 +1152,10 @@ def casoratian(seqs, n, zero=True):
 
     k = len(seqs)
 
-    return Matrix(k, k, f).det()
+    mat = Matrix(k, k, f)
+    if not mat.shape:
+        return mat 
+    return mat.det()
 
 
 def eye(*args, **kwargs):

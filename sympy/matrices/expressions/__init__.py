@@ -4,12 +4,12 @@ from .slice import MatrixSlice
 from .blockmatrix import BlockMatrix, BlockDiagMatrix, block_collapse, blockcut
 from .funcmatrix import FunctionMatrix
 from .inverse import Inverse
-from .matexpr import (Identity, MatrixExpr, MatrixSymbol, ZeroMatrix, OneMatrix,
+from .matexpr import (Identity, MatrixExpr, MatrixSymbol, ZeroMatrix, OneMatrix, Concatenate,
                       matrix_symbols)
 from .matmul import MatMul
 from .matpow import MatPow
 from .trace import Trace, trace
-from .determinant import Det, det
+from .determinant import Det, det, Determinant
 from .minors import Minors
 
 from .transpose import Transpose
@@ -18,3 +18,4 @@ from .hadamard import hadamard_product, HadamardProduct, hadamard_power, Hadamar
 from .diagonal import DiagonalMatrix, DiagonalOf, DiagonalizeVector, diagonalize_vector
 from .dotproduct import DotProduct
 from .kronecker import kronecker_product, KroneckerProduct, combine_kronecker
+from .sets import MatrixSet

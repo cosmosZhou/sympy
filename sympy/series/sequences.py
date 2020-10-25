@@ -6,7 +6,7 @@ from sympy.core.compatibility import (range, integer_types, with_metaclass,
                                       is_sequence, iterable, ordered)
 from sympy.core.containers import Tuple
 from sympy.core.decorators import call_highest_priority
-from sympy.core.evaluate import global_evaluate
+from sympy.core.parameters import global_parameters
 from sympy.core.function import UndefinedFunction
 from sympy.core.mul import Mul
 from sympy.core.numbers import Integer

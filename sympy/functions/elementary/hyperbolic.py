@@ -2,7 +2,7 @@ from __future__ import print_function, division
 
 from sympy.core import S, sympify, cacheit
 from sympy.core.add import Add
-from sympy.core.function import Function, ArgumentIndexError, _coeff_isneg
+from sympy.core.function import Function, ArgumentIndexError
 from sympy.functions.combinatorial.factorials import factorial, RisingFactorial
 from sympy.functions.elementary.exponential import exp, log
 from sympy.functions.elementary.miscellaneous import sqrt
@@ -53,7 +53,7 @@ def _peeloff_ipi(arg):
         if a == S.Pi*S.ImaginaryUnit:
             K = S.One
             break
-        elif a.is_Times:
+        elif a.is_Mul:
             K, p = a.as_two_terms()
             if p == S.Pi*S.ImaginaryUnit and K.is_Rational:
                 break
@@ -118,10 +118,10 @@ class sinh(HyperbolicFunction):
             if i_coeff is not None:
                 return S.ImaginaryUnit * sin(i_coeff)
             else:
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     return -cls(-arg)
 
-            if arg.is_Plus:
+            if arg.is_Add:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     return sinh(m)*cosh(x) + cosh(m)*sinh(x)
@@ -188,7 +188,7 @@ class sinh(HyperbolicFunction):
         else:
             arg = self.args[0]
         x = None
-        if arg.is_Plus: # TODO, implement more if deep stuff here
+        if arg.is_Add: # TODO, implement more if deep stuff here
             x, y = arg.as_two_terms()
         else:
             coeff, terms = arg.as_coeff_Mul(rational=True)
@@ -286,10 +286,10 @@ class cosh(HyperbolicFunction):
             if i_coeff is not None:
                 return cos(i_coeff)
             else:
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     return cls(-arg)
 
-            if arg.is_Plus:
+            if arg.is_Add:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     return cosh(m)*cosh(x) + sinh(m)*sinh(x)
@@ -349,7 +349,7 @@ class cosh(HyperbolicFunction):
         else:
             arg = self.args[0]
         x = None
-        if arg.is_Plus: # TODO, implement more if deep stuff here
+        if arg.is_Add: # TODO, implement more if deep stuff here
             x, y = arg.as_two_terms()
         else:
             coeff, terms = arg.as_coeff_Mul(rational=True)
@@ -443,14 +443,14 @@ class tanh(HyperbolicFunction):
             i_coeff = arg.as_coefficient(S.ImaginaryUnit)
 
             if i_coeff is not None:
-                if _coeff_isneg(i_coeff):
+                if i_coeff._coeff_isneg():
                     return -S.ImaginaryUnit * tan(-i_coeff)
                 return S.ImaginaryUnit * tan(i_coeff)
             else:
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     return -cls(-arg)
 
-            if arg.is_Plus:
+            if arg.is_Add:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     tanhm = tanh(m)
@@ -593,14 +593,14 @@ class coth(HyperbolicFunction):
             i_coeff = arg.as_coefficient(S.ImaginaryUnit)
 
             if i_coeff is not None:
-                if _coeff_isneg(i_coeff):
+                if i_coeff._coeff_isneg():
                     return S.ImaginaryUnit * cot(-i_coeff)
                 return -S.ImaginaryUnit * cot(i_coeff)
             else:
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     return -cls(-arg)
 
-            if arg.is_Plus:
+            if arg.is_Add:
                 x, m = _peeloff_ipi(arg)
                 if m:
                     cothm = coth(m)
@@ -923,7 +923,7 @@ class asinh(InverseHyperbolicFunction):
             if i_coeff is not None:
                 return S.ImaginaryUnit * asin(i_coeff)
             else:
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     return -cls(-arg)
 
     @staticmethod
@@ -1118,7 +1118,7 @@ class atanh(InverseHyperbolicFunction):
             if i_coeff is not None:
                 return S.ImaginaryUnit * atan(i_coeff)
             else:
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     return -cls(-arg)
 
     @staticmethod
@@ -1191,7 +1191,7 @@ class acoth(InverseHyperbolicFunction):
             if i_coeff is not None:
                 return -S.ImaginaryUnit * acot(i_coeff)
             else:
-                if _coeff_isneg(arg):
+                if arg._coeff_isneg():
                     return -cls(-arg)
 
     @staticmethod
@@ -1433,7 +1433,7 @@ class acsch(InverseHyperbolicFunction):
         if arg is S.ComplexInfinity:
             return S.Zero
 
-        if _coeff_isneg(arg):
+        if arg._coeff_isneg():
             return -cls(-arg)
 
     def inverse(self, argindex=1):

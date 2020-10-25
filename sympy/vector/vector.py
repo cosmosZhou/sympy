@@ -16,7 +16,6 @@ class Vector(BasisDependent):
     instantiated by the user.
     """
 
-    is_Vector = True
     _op_priority = 12.0
 
     @property
@@ -292,8 +291,7 @@ class Vector(BasisDependent):
 
         """
 
-        return Matrix([self.dot(unit_vec) for unit_vec in
-                       system.base_vectors()])
+        return Matrix([self.dot(unit_vec) for unit_vec in system.base_vectors()])
 
     def separate(self):
         """

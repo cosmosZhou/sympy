@@ -1,7 +1,6 @@
 """
 Boolean algebra module for SymPy
 """
-from __future__ import print_function, division
 
 from collections import defaultdict
 from itertools import combinations, product
@@ -56,27 +55,18 @@ def as_Boolean(e):
 class Boolean(Basic):
     """A boolean object is an object for which logic operations make sense."""
 
-    is_FiniteSet = False
-    is_And = False
-    is_Or = False
-    is_Boolean = True
-    is_Unequality = False
-    is_Contains = False
-    is_NotContains = False
-    is_Subset = False
-    is_Supset = False
-
-    is_BooleanTrue = False
-    is_BooleanFalse = False
-
+    is_boolean = True
     __slots__ = []
 
+    def simplify_condition_on_random_variable(self):
+        return self
+        
     def reference(self, *limits):
         if not self.sanctity_check(*limits):
             return self
         
         from sympy.concrete import expr_with_limits
-        this = self.comprehension(expr_with_limits.Ref, *limits)
+        this = self.comprehension(expr_with_limits.LAMBDA, *limits)
         if this != self:                    
             this.equivalent = self
         return this
@@ -100,12 +90,71 @@ class Boolean(Basic):
             this.given = self
         return this
 
-    def summation(self, *limits):
+    def sum(self, *limits):
         if not self.sanctity_check(*limits):
             return self
         
         from sympy.concrete import summations
         this = self.comprehension(summations.Sum, *limits)
+        if this != self:
+            this.given = self
+        return this
+
+    def product(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        from sympy.concrete.products import Product
+        this = self.comprehension(Product, *limits)
+        if this != self:
+            this.given = self
+        return this
+
+    def integrate(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
+        from sympy.integrals.integrals import Integrate
+        this = self.comprehension(Integrate, *limits)
+        if this != self:
+            this.given = self
+        return this
+
+    def max(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
+        from sympy.concrete import expr_with_limits
+        this = self.comprehension(expr_with_limits.MAX, *limits)
+        if this != self:
+            this.given = self
+        return this
+
+    def argmax(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
+        from sympy.concrete import expr_with_limits
+        this = self.comprehension(expr_with_limits.ArgMax, *limits)
+        if this != self:
+            this.given = self
+        return this
+
+    def min(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
+        from sympy.concrete import expr_with_limits
+        this = self.comprehension(expr_with_limits.MIN, *limits)
+        if this != self:
+            this.given = self
+        return this
+
+    def argmin(self, *limits):
+        if not self.sanctity_check(*limits):
+            return self
+        
+        from sympy.concrete import expr_with_limits
+        this = self.comprehension(expr_with_limits.ArgMin, *limits)
         if this != self:
             this.given = self
         return this
@@ -160,45 +209,59 @@ class Boolean(Basic):
 
         return eq.func(function, *eq.limits, **kwargs).simplify()
 
-    def forall(self, x, *args):
-        if not self.has(x):
-            return self
-        from sympy.concrete.expr_with_limits import ForAll
-        if len(args) == 2:
-            from sympy.sets.sets import Interval
-
-            domain = Interval(*args, integer=x.is_integer)
-        elif len(args) == 1:
-            domain = args[0]
-            if not domain.is_set:
-                domain = x.domain_conditioned(domain)
-        else:
-            _x = x.unbounded
-            return ForAll(self._subs(x, _x), (_x, x.domain), equivalent=self).simplify()
-        
-        if domain in x.domain and x.domain not in domain:
-            if self.is_ForAll:
-                function = self.function.copy()
-                _x = self.generate_free_symbol(domain=domain)                
-                function = function._subs(x, _x)
-                function = function._subs(_x, x)
-                index = -1
-                for i, (v, *_) in enumerate(self.limits):
-                    if domain.has(v):
-                        index = i
-                        break
-                limits = [*self.limits]
-                if index >= 0:
-                    limits.insert(index, (x, *args))
-                else:
-                    limits.append((x, *args))
-                return ForAll(function, *limits, given=self).simplify()
+    def forall(self, *limits, simplify=True):
+        if len(limits) == 1:
+            x, *args = limits[0]
+            if not self.has(x):                
+                return self
+            from sympy.concrete.expr_with_limits import ForAll
+            if len(args) == 2:
+                from sympy.sets.sets import Interval
+    
+                domain = Interval(*args, integer=x.is_integer)
+            elif len(args) == 1:
+                domain = args[0]
+                if not domain.is_set:
+                    domain = x.domain_conditioned(domain)
             else:
-                function = self.copy()
-                _x = self.generate_free_symbol(domain=domain)
-                function = function._subs(x, _x)
-                function = function._subs(_x, x) 
-                return ForAll(function, (x, *args), given=self).simplify()
+                _x = x.unbounded
+                self = ForAll(self._subs(x, _x), (_x, x.domain), equivalent=self)
+                return self.simplify() if simplify else self
+                            
+            if domain in x.domain and x.domain not in domain:
+                if self.is_ForAll:
+                    function = self.function.copy()
+                    _x = self.generate_free_symbol(domain=domain)                
+                    function = function._subs(x, _x)
+                    function = function._subs(_x, x)
+                    index = -1
+                    
+                    for i in range(len(self.limits) - 1, -1, -1):
+                        v, *ab = self.limits[i]
+                        
+                        if any(a._has(x) for a in ab):
+                            index = i
+                            break
+                        
+                        if domain.has(v):
+                            index = i
+                            break
+                    limits = [*self.limits]
+                    if index >= 0:
+                        index += 1
+                        limits.insert(index, (x, *args))
+                    else:
+                        limits.append((x, *args))
+                else:
+                    function = self.copy()
+                    _x = self.generate_free_symbol(domain=domain)
+                    function = function._subs(x, _x)
+                    function = function._subs(_x, x)
+                self = ForAll(function, *limits, given=self) 
+                return self.simplify() if simplify else self
+        else:
+            for limit in limits:
+                self = self.forall(limit, simplify=simplify)                
 
         return self
 
@@ -207,6 +270,10 @@ class Boolean(Basic):
         from sympy.stats.rv import RandomSymbol
         free_symbols = {*self.free_symbols}
         for symbol in self.free_symbols:
+            if symbol.is_given:
+                free_symbols.remove(symbol)
+                continue
+                        
             if isinstance(symbol, (RandomSymbol, Indexed, Slice)):
                 free_symbols -= symbol.free_symbols
                 free_symbols.add(symbol)
@@ -459,11 +526,111 @@ class Boolean(Basic):
         from sympy.core.relational import Eq, Ne
         return set().union(*[i.binary_symbols for i in self.args if i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne))])
 
-    @property
-    def where(self):
-        if 'where' in self._assumptions:
-            return self._assumptions['where']
-        return None
+    def is_given_by(self, given):
+        while True:
+            equivalent = equivalent_ancestor(self)
+            if len(equivalent) != 1:
+                return False
+            equivalent, *_ = equivalent
+            
+            if equivalent is self:
+                return False
+            
+            if isinstance(equivalent.given, (list, tuple)):
+                for i, g in enumerate(equivalent.given):
+                    if g is not given:
+                        continue
+                    if all(g.plausible is None for j, g in enumerate(equivalent.given) if j != i):
+                        return True                    
+            elif equivalent.given is given:
+                return True
+            
+            self = equivalent
+         
+    def coexist_with_list(self, rhs):
+        eq_set = {*rhs}
+        bases = [None] * len(rhs)
+        
+        def get_basis(i):
+            if bases[i] is None:
+                bases[i] = self.coexist_with(rhs[i])
+            return bases[i]
+        
+        for i, eq in enumerate(rhs):
+            basis = get_basis(i)
+            if basis is False:
+                continue
+            
+            eqs = plausibles(eq_set - {eq})
+            if not eqs:
+                return basis
+            
+            hit = True
+            for j, eq in enumerate(rhs):
+                if j == i:
+                    continue
+                basis_j = get_basis(j)
+                if basis_j != basis:
+                    hit = False
+                    break
+            if hit:
+                return basis
+
+    # return False or return the common given condition!
+    def coexist_with(self, rhs):
+        while self != rhs:
+            if self.equivalent is None:                
+                if self.given is None:
+                    if rhs.equivalent is None:
+                        if rhs.given is None:
+                            return False
+                        else:
+                            rhs = rhs.given
+                            if isinstance(rhs, list):                                
+                                return self.coexist_with_list(rhs)
+                    else:
+                        rhs = rhs.equivalent
+                        if isinstance(rhs, list):
+                            return self.coexist_with_list(rhs)
+                    continue                        
+                else:
+                    self = self.given
+            else:
+                self = self.equivalent
+                
+            if isinstance(self, list):
+                return rhs.coexist_with_list(self)
+            
+            if self == rhs:
+                return self
+            
+            if rhs.equivalent is None: 
+                if rhs.given is None:
+                    continue
+                else:
+                    rhs = rhs.given
+            else:
+                rhs = rhs.equivalent
+                
+            if isinstance(rhs, list):
+                return self.coexist_with_list(rhs)
+            
+        return self
+        
+    def is_equivalent_of(self, rhs):
+        while True:
+            if self == rhs:
+                return True
+            equivalent = self.equivalent
+            if equivalent is None:
+                return False
+            
+            if isinstance(equivalent, (list, tuple)):
+                equivalent = plausibles(equivalent)                
+                if len(equivalent) != 1:
+                    return False
+                equivalent, *_ = equivalent
+            self = equivalent
 
     @property
     def clue(self):
@@ -514,15 +681,17 @@ class Boolean(Basic):
                         return True
 
                 return
-            return given.plausible
-
+            if given.plausible is not None:
+                return True
+            return 
+        
         substituent = self.substituent
         if substituent is not None:
             return substituent.plausible
 
         imply = self.imply
-        if imply is not None:
-            return imply.plausible
+        if imply is not None:            
+            return True
         
         counterpart = self.counterpart
         if counterpart is not None:
@@ -532,11 +701,6 @@ class Boolean(Basic):
             if plausible is False:
                 return
             return False
-        
-        parent = self.parent
-        if parent is not None:
-            if parent.is_Or:
-                return True                
 
     @plausible.setter
     def plausible(self, value):
@@ -580,52 +744,12 @@ class Boolean(Basic):
                     counterpart.plausible = True
                 else:
                     assert plausible is None
-                    
-        parent = self.parent
-        if parent is not None:
-            if parent.is_Or:
-                self.parent = None
-                plausible = parent.plausible
-                if value:
-                    if plausible:
-                        ...
-                    else:
-                        ...
-                else:
-                    if plausible:
-                        ...
-                    else:
-                        sumOfPlausible = sum(eq.plausible == True for eq in parent.args)
-                        sumOfFalsity = sum(eq.plausible == False for eq in parent.args)
-                        if sumOfFalsity + sumOfPlausible == len(parent.args):
-                            if sumOfPlausible == 1:
-                                for eq in parent.args:
-                                    if eq.plausible:
-                                        eq.plausible = True
-                                        break 
 
     @property
     def substituent(self):
         if 'substituent' in self._assumptions:
             return self._assumptions['substituent']
         return None
-
-    @property
-    def parent(self):
-        if 'parent' in self._assumptions:
-            return self._assumptions['parent']
-        return None
-
-    @parent.setter
-    def parent(self, eq):
-        if eq is not None:
-            assert 'parent' not in self._assumptions
-            self._assumptions['parent'] = eq
-            assert 'plausible' not in self._assumptions
-            return            
-
-        if 'parent' in self._assumptions:
-            del self._assumptions['parent']
 
     @property
     def hypothesis(self):
@@ -701,7 +825,16 @@ class Boolean(Basic):
         if derivative is None:
             return
 # perform mathematical induction
-
+        if isinstance(derivative, list):
+            if self.is_Equality or self.is_And or \
+            self.is_ForAll and (self.function.is_Equality or self.function.is_And) or \
+            self.is_Exists and self.function.is_Equality:
+            # Exists of And structure is not deductive!
+                if all(eq.plausible is None for eq in derivative):
+                    del self._assumptions['derivative']
+                    self.plausible = True
+            return
+                 
         self_equivalent = equivalent_ancestor(self)
         if len(self_equivalent) > 1:
             return
@@ -773,23 +906,21 @@ class Boolean(Basic):
                             def is_valid_given(given):
                                 if given == self_equivalent:
                                     return True
-                                given = given_ancestor(given)
-                                if len(given) != 1:
+                                if given.given is not None:
+                                    given = given.given                               
+                                elif given.equivalent is not None:
+                                    given = given.equivalent
+                                elif given.substituent is not None:
+                                    given = given.substituent
+                                else:
                                     return False
                                 
-                                given, *_ = given
-                                if given == self_equivalent:
-                                    return True
-#                                 consider the complex case : given.substituent.equivalent.equivalent == self_equivalent
-                                given = given.substituent
-                                if given is None:
-                                    return False
+                                if isinstance(given, (list, tuple)):
+                                    given = [g for g in given if g.plausible is not None]                                     
+                                    if len(given) != 1:
+                                        return False
+                                    given, *_ = given
                                 
-                                given = given_ancestor(given)
-                                if len(given) != 1:
-                                    return False
-                                
-                                given, *_ = given
                                 return is_valid_given(given)
                             
                             if is_valid_given(given):
@@ -937,9 +1068,22 @@ class Boolean(Basic):
             return self
         return origin
 
-    def asKroneckerDelta(self):
+    def as_KroneckerDelta(self):
         ...
 
+    def _eval_is_random(self):
+        for arg in self.args:
+            if arg.is_random:
+                return True
+
+#     def _subs(self, old, new, **hints):        
+#         rv = Basic._subs(self, old, new, **hints)
+#         if rv.is_BooleanAtom:
+#             return rv.copy(equivalent=self)
+#         if rv.equivalent is not None:
+#             rv.equivalent = None 
+#         rv.equivalent = self
+#         return rv
         
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
@@ -966,7 +1110,31 @@ def equivalent_ancestor(a):
 
         a = equivalent
 
-
+def relationship(lhs, rhs):
+    if lhs is rhs:
+        return 'equivalent'
+#     lhs.equivalent[1].equivalent[1].equivalent.given.equivalent[0] is rhs
+    equivalent = lhs.equivalent
+    if equivalent is None:
+        given = lhs.given
+        if given is None:
+            return 
+        if isinstance(given, (list, tuple)):
+            for lhs in given:
+                if relationship(lhs, rhs):
+                    return 'given'
+        else:
+            if relationship(given, rhs):
+                return 'given'
+    elif isinstance(equivalent, (list, tuple)):
+        for lhs in equivalent:
+            clue = relationship(lhs, rhs)
+            if clue:
+                return clue
+    
+    else:
+        return relationship(equivalent, rhs)
+    
 def given_ancestor(a):
     if a is None:
         return a
@@ -1063,8 +1231,24 @@ def process_imply(imply, value):
             return
 
         imply.plausible = True
-    else:
-        ...
+    else:        
+        if imply.plausible is None:
+            derivative = imply.derivative
+            
+            if any(eq.plausible is None for eq in derivative):
+                return 
+            
+            plausibles = [eq for eq in derivative if eq.plausible]
+            if len(plausibles) == 1:
+                imply.derivative = None
+                plausibles[0].plausible = True
+        elif imply.plausible:
+            derivative = imply.derivative
+            
+            if any(eq.plausible is None for eq in derivative):
+                imply.plausible = None
+            elif all(eq.plausible is False for eq in derivative):
+                imply.plausible = False
 
 
 def process_given(given, value):
@@ -1092,19 +1276,16 @@ def process_given(given, value):
             given.plausible = False
 
 
-def process_options(options, value=True):
-    equivalent = options.get('equivalent', None)
+def process_options(equivalent=None, given=None, imply=None, value=True, **_):
 
     if equivalent is not None:
         process_equivalent(equivalent, value)
         return
 
-    given = options.get('given', None)
     if given is not None:
         process_given(given, value)
         return
 
-    imply = options.get('imply', None)
     if imply is not None:
         process_imply(imply, value)
         return
@@ -1116,7 +1297,6 @@ class BooleanAtom(Boolean):
     """
 #     is_Boolean = True
     is_Atom = True
-    is_BooleanAtom = True
     _op_priority = 11  # higher than Expr
 
     def simplify(self, *a, **kw):
@@ -1256,8 +1436,6 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
 
     """
 
-    is_BooleanTrue = True
-
     def __nonzero__(self):
         return True
 
@@ -1332,7 +1510,6 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     sympy.logic.boolalg.BooleanTrue
 
     """
-    is_BooleanFalse = True
 
     def __nonzero__(self):
         return False
@@ -1419,8 +1596,6 @@ class BooleanFunction(Application, Boolean):
     """Boolean function is a function that lives in a boolean space
     It is used as base class for And, Or, Not, etc.
     """
-    is_Boolean = True
-    is_BooleanFunction = True
 
     def __new__(cls, *args, **assumptions):
         if len(args) == 1 and isinstance(args[0], frozenset):
@@ -1679,7 +1854,6 @@ class And(LatticeOp, BooleanFunction):
     y
 
     """
-    is_And = True
 
     def _print_LogOp(self, args, char):
 
@@ -1700,7 +1874,7 @@ class And(LatticeOp, BooleanFunction):
     def _latex(self, p):
         args = []
         for arg in self.args:
-            if arg.is_Or:
+            if arg.is_Or or arg.is_Conditioned:
                 args.append(r"\left(%s\right)" % p._print(arg))
             else:
                 args.append(p._print(arg))
@@ -1749,8 +1923,7 @@ class And(LatticeOp, BooleanFunction):
         for arg in args:
             if arg:
                 continue            
-            if arg is False or arg.is_BooleanFalse:
-#                 assert S.BooleanFalse.equivalent is None
+            if arg == False:
                 return S.BooleanFalse
             valuable.add(arg)
 
@@ -1932,7 +2105,10 @@ class And(LatticeOp, BooleanFunction):
         return Intersection(*[arg.as_set() for arg in self.args])
 
     def split(self):
-        return [eq.func(*eq.args, given=self) for eq in self.args]
+        eqs = [eq.func(*eq.args, given=self) for eq in self.args]
+        if self.plausible:
+            self.derivative = eqs
+        return eqs
 
     def distribute(self):
         for i, logic_or in enumerate(self.args):
@@ -1946,14 +2122,33 @@ class And(LatticeOp, BooleanFunction):
     def simplify(self, deep=False):
         return self
 
-    def asKroneckerDelta(self):
+    def as_KroneckerDelta(self):
         eq = 1
         for c in self.args:
-            e = c.asKroneckerDelta()
+            e = c.as_KroneckerDelta()
             if e is None:
                 return
             eq *= e
         return eq
+
+    def __and__(self, other):
+        """Overloading for & operator"""
+        lhs = tuple(self._argset)
+        
+        rhs = None
+        if other.is_And:
+            rhs = tuple(other._argset)
+        elif other.is_Or:
+            _self = self.invert()
+            if _self in other._argset:
+                args = set(other._argset)
+                args.remove(_self)
+                rhs = (other.func(*args),)
+
+        if rhs is None:
+            rhs = (other,)
+
+        return And(*lhs + rhs, equivalent=[self, other])
 
 
 class Or(LatticeOp, BooleanFunction):
@@ -1986,7 +2181,6 @@ class Or(LatticeOp, BooleanFunction):
     """
     zero = true
     identity = false
-    is_Or = True
 
     def _latex(self, p):
         return p._print_LogOp(self.args, r"\vee")
@@ -2145,30 +2339,101 @@ class Or(LatticeOp, BooleanFunction):
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
         # standard simplify
-        rv = super(Or, self)._eval_simplify(
-            ratio, measure, rational, inverse)
+        rv = super(Or, self)._eval_simplify(ratio, measure, rational, inverse)
         if not isinstance(rv, Or):
             return rv
         patterns = simplify_patterns_or()
         return self._apply_patternbased_simplification(rv, patterns,
                                                        measure, S.true)
 
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            return Boolean.simplify(self, deep, **kwargs)
+        
+        if all(eq.is_Equality for eq in self.args):
+            args = [{*eq.args} for eq in self.args]
+            lhs = args[0]
+            rhs = {*lhs}
+            for i in range(1, len(args)):
+                lhs &= args[i]
+                if not lhs:
+                    return self
+                rhs |= args[i]
+            from sympy import Contains, FiniteSet
+            rhs -= lhs
+            return Contains(*lhs, FiniteSet(*rhs), equivalent=self)
+           
+        return self
+
     def split(self):
-        for arg in self.args:
-            arg.parent = self
+        args = [arg.func(*arg.args, imply=self) for arg in self.args]        
+        self.derivative = args
+        return args
 
-        return self.args
-
-    def asKroneckerDelta(self):
+    def as_KroneckerDelta(self):
         eq = 1
         for c in self.args:
-            e = c.asKroneckerDelta()
+            e = c.as_KroneckerDelta()
             if e is None:
                 return
             eq *= 1 - e
         return 1 - eq
 
+    def subs(self, *args, **kwargs):
+        if len(args) == 1:
+            eq = args[0]
+            if eq.is_ConditionalBoolean:
+                return self.bfn(self.subs, eq)
+        
+        result = LatticeOp.subs(self, *args, **kwargs)
+        if all(isinstance(arg, Boolean) for arg in args):
+            if result.is_BooleanAtom:
+                result = result.copy(equivalent=[self, *args])
+            else:
+                result.equivalent = [self, *args]
+        else:
+            if result.is_BooleanAtom:
+                result = result.copy(equivalent=self)
+            else:
+                result.equivalent = self
+            
+        return result
 
+    def __and__(self, other):
+        this = self
+        if not other.is_Or:
+            for eq in self._argset:
+                if (other & eq).is_BooleanFalse:
+                    args = set(self._argset)
+                    args.remove(eq)
+                    this = self.func(*args)
+                    break
+
+        if other.is_And:
+            rhs = tuple(other._argset)
+        else:
+            rhs = (other,)
+
+        return And(this, *rhs, equivalent=[self, other])
+    
+    def as_ForAll(self):
+        from sympy.concrete.expr_with_limits import ForAll
+        for eq in self._argset:
+            if eq.is_Relational and eq.lhs.is_symbol:
+                x, cond = eq.lhs, eq.invert()
+                argset = {*self._argset}
+                argset.remove(eq)
+                return ForAll[x:cond](self.func(*argset), equivalent=self).simplify()
+                
+        return self           
+
+    def domain_defined(self, x):
+        domain = S.EmptySet
+        for arg in self.args:
+            domain |= arg.domain_defined(x)
+        return domain
+
+    
 And.invert_type = Or
 Or.invert_type = And
 
@@ -2219,8 +2484,6 @@ class Not(BooleanFunction):
     False
 
     """
-
-    is_Not = True
 
     @classmethod
     def eval(cls, arg):
@@ -3963,11 +4226,14 @@ class Invoker:
         kwargs = {}
         if obj.is_Boolean:
             if obj.equivalent is not None:
-                kwargs['equivalent'] = self.source
+                clue = obj.equivalent.clue
+                if clue is None:
+                    clue = 'equivalent'
             elif obj.given is not None:
-                kwargs['given'] = self.source
+                clue = 'given'
             elif obj.imply is not None:
-                kwargs['imply'] = self.source
+                clue = 'imply'
+            kwargs[clue] = self.source
         else:
             if equivalent:
                 kwargs['equivalent'] = self.source
@@ -4037,10 +4303,18 @@ class Invoker:
                         reps.append((x, _x))
                         outer_context[x] = (_x, domain)
                 
-                obj = getattr(this, self.callable.__name__)(*args, **kwargs)#.simplify()
+                obj = getattr(this, self.callable.__name__)(*args, **kwargs)  # .simplify()
                 reps.reverse()
                 for x, _x in reps:
-                    obj = obj._subs(_x, x)
+                    _obj = obj._subs(_x, x)
+                    if obj.is_boolean:
+                        if _obj.equivalent is not None:
+                            if _obj.equivalent is not obj:
+                                _obj.equivalent = None
+                                _obj.equivalent = obj 
+                        else:
+                            _obj.equivalent = obj
+                    obj = _obj
                     
             except Exception as e:
                 print(e)
@@ -4053,8 +4327,12 @@ class Invoker:
     def append(self, obj):
         self._objs.append(obj)
 
-    def __getattr__(self, method):        
+    def __getattr__(self, method):                
         target = self.target
+        if method == 'T':
+            if len(target.shape) > 1:
+                return self
+            
         obj = getattr(target, method)
         if callable(obj):
             self.callable = obj
@@ -4071,6 +4349,16 @@ class Invoker:
             return self.result(obj)
 
         return self
+
+    def __sub__(self, rhs):
+        if self.target.is_Equality:
+            self.callable = self.target.__sub__
+            return self.__call__(rhs)
+        
+    def __matmul__(self, rhs):
+        if self.target.is_Equality:
+            self.callable = self.target.__matmul__
+            return self.__call__(rhs)
 
     def __str__(self):
         return str(self.target)
@@ -4146,10 +4434,17 @@ class Invoker:
 
 class Identity(Invoker):
 
-    def result(self, target):
+    def result(self, obj):
         from sympy.core.relational import Relational
-        from sympy import Equality 
-        return Relational.__new__(Equality, self.source, target)            
+        from sympy import Equality
+        
+        for i in range(-1, -len(self.index) - 1, -1):
+            this = self._objs[i - 1]
+            args = [*this.args]
+            args[self.index[i]] = obj
+            obj = this.func(*args).simplify()            
+
+        return Relational.__new__(Equality, self.source, obj)            
         
     def __call__(self, *args, **kwargs):
         from sympy import Equality
@@ -4167,12 +4462,6 @@ class Identity(Invoker):
                 assert all(isinstance(arg, Equality) for arg in args)                
 
         obj = self.callable(*args, **kwargs)
-        
-        for i in range(-1, -len(self.index) - 1, -1):
-            this = self._objs[i - 1]
-            args = [*this.args]
-            args[self.index[i]] = obj
-            obj = this.func(*args).simplify()
         
         return self.result(obj)
 

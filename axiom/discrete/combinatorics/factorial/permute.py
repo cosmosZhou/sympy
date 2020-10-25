@@ -1,13 +1,13 @@
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol, dtype
-from sympy.utility import check, plausible
+from sympy.core.symbol import dtype
+from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import ForAll, Ref, UNION
+from sympy.concrete.expr_with_limits import UNION, ForAll, LAMBDA
 from sympy.sets.contains import Contains
-
+from sympy import Symbol
 
 @plausible
 def apply(given):
@@ -20,7 +20,7 @@ def apply(given):
     contains = given[0].function
     assert contains.is_Contains
     ref, _S = contains.args
-    assert S == _S and ref.is_Ref and S.is_set
+    assert S == _S and ref.is_LAMBDA and S.is_set
     dtype = S.element_type
     
     assert len(ref.limits) == 1
@@ -56,15 +56,15 @@ def apply(given):
 
 @check
 def prove(Eq): 
-    n = Symbol('n', domain=Interval(2, oo, integer=True))
-    S = Symbol('S', dtype=dtype.integer * n)    
+    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    S = Symbol.S(dtype=dtype.integer * n)    
     
-    x = Symbol('x', **S.element_symbol().dtype.dict)
+    x = Symbol.x(**S.element_symbol().dtype.dict)
     
-    i = Symbol('i', integer=True)
-    j = Symbol('j', integer=True)    
+    i = Symbol.i(integer=True)
+    j = Symbol.j(integer=True)    
     
-    given = [ForAll[j:1:n - 1, x:S](Contains(Ref[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
+    given = [ForAll[j:1:n - 1, x:S](Contains(LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
              ForAll[x:S](Equality(abs(x.set_comprehension()), n))]
     
     Eq << apply(given)

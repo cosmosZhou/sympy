@@ -313,7 +313,7 @@ class ExprWithIntLimits(ExprWithLimits):
             else:
                 tex += r"\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
 
-        if self.function.is_Plus:
+        if self.function.is_Add:
             tex += r"\left(%s\right)" % p._print(self.function)
         else:
             tex += p._print(self.function)

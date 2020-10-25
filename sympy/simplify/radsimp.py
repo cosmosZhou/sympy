@@ -7,12 +7,13 @@ from sympy import SYMPY_DEBUG
 from sympy.core import expand_power_base, sympify, Add, S, Mul, Derivative, Pow, symbols, expand_mul
 from sympy.core.add import _unevaluated_Add
 from sympy.core.compatibility import iterable, ordered, default_sort_key
-from sympy.core.evaluate import global_evaluate
+from sympy.core.parameters import global_parameters
 from sympy.core.exprtools import Factors, gcd_terms
 from sympy.core.function import _mexpand
 from sympy.core.mul import _keep_coeff, _unevaluated_Mul
 from sympy.core.numbers import Rational
 from sympy.functions import exp, sqrt, log
+from sympy.functions.elementary.complexes import Abs
 from sympy.polys import gcd
 from sympy.simplify.sqrtdenest import sqrtdenest
 
@@ -162,7 +163,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
     syms = list(syms) if iterable(syms) else [syms]
 
     if evaluate is None:
-        evaluate = global_evaluate[0]
+        evaluate = global_parameters.evaluate
 
     def make_expression(terms):
         product = []
@@ -245,7 +246,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
             arg = expr.args[0]
             if arg.is_Rational:
                 sexpr, rat_expo = S.Exp1, arg
-            elif arg.is_Times:
+            elif arg.is_Mul:
                 coeff, tail = arg.as_coeff_Mul(rational=True)
                 sexpr, rat_expo = exp(tail), coeff
         elif isinstance(expr, Derivative):
@@ -326,12 +327,12 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
             return [_f for _f in terms if _f], elems, common_expo, has_deriv
 
     if evaluate:
-        if expr.is_Plus:
+        if expr.is_Add:
             o = expr.getO() or 0
             expr = expr.func(*[
                     collect(a, syms, func, True, exact, distribute_order_term)
                     for a in expr.args if a != o]) + o
-        elif expr.is_Times:
+        elif expr.is_Mul:
             return expr.func(*[
                 collect(term, syms, func, True, exact, distribute_order_term)
                 for term in expr.args])
@@ -445,7 +446,7 @@ def rcollect(expr, *vars):
     else:
         expr = expr.__class__(*[rcollect(arg, *vars) for arg in expr.args])
 
-        if expr.is_Plus:
+        if expr.is_Add:
             return collect(expr, vars)
         else:
             return expr
@@ -493,7 +494,7 @@ def collect_sqrt(expr, evaluate=None):
     collect, collect_const, rcollect
     """
     if evaluate is None:
-        evaluate = global_evaluate[0]
+        evaluate = global_parameters.evaluate
     # this step will help to standardize any complex arguments
     # of sqrts
     coeff, expr = expr.as_content_primitive()
@@ -592,7 +593,7 @@ def collect_const(expr, *vars, **kwargs):
 
     collect, collect_sqrt, rcollect
     """
-    if not expr.is_Plus:
+    if not expr.is_Add:
         return expr
 
     recurse = False
@@ -650,7 +651,7 @@ def collect_const(expr, *vars, **kwargs):
             # be careful not to let uneval become True unless
             # it must be because it's going to be more expensive
             # to rebuild the expression as an unevaluated one
-            if Numbers and k.is_Number and v.is_Plus:
+            if Numbers and k.is_Number and v.is_Add:
                 args.append(_keep_coeff(k, v, sign=True))
                 uneval = True
             else:
@@ -661,7 +662,7 @@ def collect_const(expr, *vars, **kwargs):
                 expr = _unevaluated_Add(*args)
             else:
                 expr = Add(*args)
-            if not expr.is_Plus:
+            if not expr.is_Add:
                 break
 
     return expr
@@ -802,7 +803,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             return _unevaluated_Mul(n, handle(1/d))
         elif n is not S.One:
             return _unevaluated_Mul(n, handle(1/d))
-        elif d.is_Times:
+        elif d.is_Mul:
             return _unevaluated_Mul(*[handle(1/d) for d in d.args])
 
         # By this step, expr is 1/d, and d is not a mul.
@@ -817,7 +818,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
             # (1/d**i) = (1/d)**i
             return handle(1/d.base)**d.exp
 
-        if not (d.is_Plus or ispow2(d)):
+        if not (d.is_Add or ispow2(d)):
             return 1/d.func(*[handle(a) for a in d.args])
 
         # handle 1/d treating d as an Add (though it may not be)
@@ -905,11 +906,11 @@ def radsimp(expr, symbolic=True, max_terms=4):
             if old == (n, d):
                 n, d = was
         n = expand_mul(n)
-        if d.is_Number or d.is_Plus:
+        if d.is_Number or d.is_Add:
             n2, d2 = fraction(gcd_terms(_unevaluated_Mul(n, 1/d)))
             if d2.is_Number or (d2.count_ops() <= d.count_ops()):
                 n, d = [signsimp(i) for i in (n2, d2)]
-                if n.is_Times and n.args[0].is_Number:
+                if n.is_Mul and n.args[0].is_Number:
                     n = n.func(*n.args)
 
     return coeff + _unevaluated_Mul(n, 1/d)
@@ -928,7 +929,7 @@ def rad_rationalize(num, den):
     >>> rad_rationalize(sqrt(3), 1 + sqrt(2)/3)
     (-sqrt(3) + sqrt(6)/3, -7/9)
     """
-    if not den.is_Plus:
+    if not den.is_Add:
         return num, den
     g, a, b = split_surds(den)
     a = a*sqrt(g)
@@ -1013,7 +1014,7 @@ def fraction(expr, exact=False):
                     denom.append(Pow(b, -ex))
             elif ex.is_positive:
                 numer.append(term)
-            elif not exact and ex.is_Times:
+            elif not exact and ex.is_Mul:
                 n, d = term.as_numer_denom()
                 numer.append(n)
                 denom.append(d)

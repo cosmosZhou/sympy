@@ -306,7 +306,7 @@ def reduce_abs_inequality(expr, rel, gen):
 
     reduce_abs_inequalities
     """
-    if gen.is_extended_real is False:
+    if gen.is_extended_real == False:
          raise TypeError(filldedent('''
             can't solve inequalities with absolute values containing
             non-real variables.
@@ -315,7 +315,7 @@ def reduce_abs_inequality(expr, rel, gen):
     def _bottom_up_scan(expr):
         exprs = []
 
-        if expr.is_Plus or expr.is_Times:
+        if expr.is_Add or expr.is_Mul:
             op = expr.func
 
             for arg in expr.args:
@@ -464,7 +464,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
     # real.
     _gen = gen
     _domain = domain
-    if gen.is_extended_real is False:
+    if gen.is_extended_real == False:
         rv = S.EmptySet
         return rv if not relational else rv.as_relational(_gen)
     elif gen.is_extended_real is None:
@@ -552,7 +552,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
                     r = S.false
                 if r in (S.true, S.false):
                     return r
-                if v.is_extended_real is False:
+                if v.is_extended_real == False:
                     return S.false
                 else:
                     v = v.n(2)
@@ -961,7 +961,7 @@ def reduce_inequalities(inequalities, symbols=[]):
     if not iterable(symbols):
         symbols = [symbols]
     symbols = (set(symbols) or gens) & gens
-    if any(i.is_extended_real is False for i in symbols):
+    if any(i.is_extended_real == False for i in symbols):
         raise TypeError(filldedent('''
             inequalities cannot contain symbols that are not real.
             '''))

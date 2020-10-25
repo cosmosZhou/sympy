@@ -381,9 +381,9 @@ class PolyRing(DefaultPrinting, IPolys):
 
             if generator is not None:
                 return generator
-            elif expr.is_Plus:
+            elif expr.is_Add:
                 return reduce(add, list(map(_rebuild, expr.args)))
-            elif expr.is_Times:
+            elif expr.is_Mul:
                 return reduce(mul, list(map(_rebuild, expr.args)))
             elif expr.is_Power and expr.exp.is_Integer and expr.exp >= 0:
                 return _rebuild(expr.base)**int(expr.exp)

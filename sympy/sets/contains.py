@@ -5,6 +5,7 @@ from sympy.core.relational import Eq, Ne, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan, Equality, Unequality
 from sympy.logic.boolalg import BooleanFunction, And, Or
 from sympy.utilities.misc import func_name
+from sympy.core.sympify import _sympify
 
 
 class Contains(BooleanFunction):
@@ -29,8 +30,6 @@ class Contains(BooleanFunction):
 
     .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
     """
-    is_Contains = True
-
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
@@ -41,7 +40,13 @@ class Contains(BooleanFunction):
                 return self
             if eq.is_ConditionalBoolean:
                 return self.bfn(self.subs, eq)
-        return BooleanFunction.subs(self, *args, **kwargs)
+        old, new = args
+        new = _sympify(new)
+        if old.is_symbol and new in old.domain:
+            lhs = self.lhs._subs(old, new)
+            rhs = self.rhs._subs(old, new)            
+            return self.func(lhs, rhs, given=self)
+        return self
 
     def _latex(self, p):
         return r"%s \in %s" % tuple(p._print(a) for a in self.args)
@@ -77,16 +82,20 @@ class Contains(BooleanFunction):
         if self.rhs.is_Union:
             return [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
         if self.rhs.is_Intersection:
-            return [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
+            args = [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
+            if self.plausible:
+                self.derivative = args
+            return args
+        
         if self.rhs.is_Interval:
             if self.rhs.left_open:
                 lower_bound = self.lhs > self.rhs.start
             else:
                 lower_bound = self.lhs >= self.rhs.start
             if self.rhs.right_open:
-                upper_bound = self.lhs < self.rhs.end
+                upper_bound = self.lhs < self.rhs.stop
             else:
-                upper_bound = self.lhs <= self.rhs.end
+                upper_bound = self.lhs <= self.rhs.stop
             upper_bound.given = lower_bound.given = self
             return [lower_bound, upper_bound]
         return self
@@ -120,9 +129,9 @@ class Contains(BooleanFunction):
             res[0] = GreaterThan(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.end, **kwargs)
+            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.end, **kwargs)
+            res[1] = LessThan(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -144,7 +153,7 @@ class Contains(BooleanFunction):
                 if not e._has(Symbol) and y._has(Symbol):
                     return Equality(y, e, equivalent=self)
                 return Equality(e, y, equivalent=self)
-            return Or(*(Equality(e, y) for y in s), equivalent=self)
+#             return Or(*(Equality(e, y) for y in s), equivalent=self)
 
         if s.is_ConditionSet:
             if e == s.variable:
@@ -153,25 +162,28 @@ class Contains(BooleanFunction):
             condition.equivalent = self
             return condition
 
-        if s.is_Interval and s.is_integer and e.is_Plus:
-            if not s.left_open or s.right_open:
-                try:
-                    index = e.args.index(S.NegativeOne)
-                    s += S.One
-                    e += S.One
-                    return self.func(e, s, evaluate=False, equivalent=self)
-                except:
-                    ...
+        if s.is_Interval:
+            if s.is_integer and e.is_Add:
+                if not s.left_open or s.right_open:
+                    if S.NegativeOne in e.args:
+                        s += S.One
+                        e += S.One
+                        return self.func(e, s, evaluate=False, equivalent=self)
+                        
+                if s.left_open or not s.right_open:
+                    if S.One in e.args:
+                        s -= S.One
+                        e -= S.One
+                        return self.func(e, s, evaluate=False, equivalent=self)
                     
-            if s.left_open or not s.right_open:
-                try:
-                    index = e.args.index(S.One)
-                    s += S.NegativeOne
-                    e += S.NegativeOne
-                    return self.func(e, s, evaluate=False, equivalent=self)
-                except:
-                    ...
-        
+            if e.is_integer == s.is_integer:
+                if s.start is S.NegativeInfinity:
+                    func = StrictLessThan if s.right_open else LessThan
+                    return func(e, s.stop, equivalent=self)
+                if s.stop is S.Infinity:
+                    func = StrictGreaterThan if s.left_open else GreaterThan
+                    return func(e, s.start, equivalent=self)
+            
         if s.is_Complement and s.args[1].is_FiniteSet and len(s.args[1]) == 1:
             domain_assumed = e.domain_assumed
             if domain_assumed and domain_assumed == s.args[0]:
@@ -224,8 +236,7 @@ class Contains(BooleanFunction):
             assert not e.has(variables)
             return Exists(Equality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
 
-        if S.is_UnionComprehension:
-#             from sympy.concrete.expr_with_limits import Exists
+        if S.is_UNION:
             for v in S.variables:
                 if self.lhs._has(v):
                     _v = v.generate_free_symbol(self.free_symbols, **v.dtype.dict)
@@ -240,6 +251,19 @@ class Contains(BooleanFunction):
     def asSubset(self):
         return Subset(self.lhs.set, self.rhs, equivalent=self)
 
+    def __and__(self, other):
+        """Overloading for & operator"""
+        if other.is_NotContains:
+            if self.element == other.element:
+                s = self.set - other.set
+                return self.func(self.element, s, equivalent=[self, other])
+        if other.is_Contains:
+            if self.element == other.element:
+                s = self.set & other.set
+                return self.func(self.element, s, equivalent=[self, other])
+
+        return BooleanFunction.__and__(self, other)
+
     def __or__(self, other):
         if other.is_Contains:
             x, X = self.args
@@ -249,14 +273,14 @@ class Contains(BooleanFunction):
             
         return BooleanFunction.__or__(self, other)
 
-    def asKroneckerDelta(self):
+    def as_KroneckerDelta(self):
         x, domain = self.args 
         if domain.is_FiniteSet:
-            return domain.asKroneckerDelta(x)
+            return domain.as_KroneckerDelta(x)
     
         domain = x.domain - domain
         if domain.is_FiniteSet:             
-            return 1 - domain.asKroneckerDelta(x)
+            return 1 - domain.as_KroneckerDelta(x)
             
     def inverse(self):
         rhs = self.rhs.inverse()
@@ -264,6 +288,10 @@ class Contains(BooleanFunction):
             return self.func(1 / self.lhs, rhs, equivalent=self)
         return self
 
+    @property
+    def T(self):
+        assert len(self.lhs.shape) <= 1
+        return self.func(self.lhs.T, self.rhs, equivalent=self)
         
 class NotContains(BooleanFunction):
     """
@@ -288,7 +316,6 @@ class NotContains(BooleanFunction):
     .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
     """
     invert_type = Contains
-    is_NotContains = True
 
     def subs(self, *args, **kwargs):
         if len(args) == 1:
@@ -353,25 +380,21 @@ class NotContains(BooleanFunction):
                 return Unequality(e, y, equivalent=self)
             return And(*(Unequality(e, y) for y in s), equivalent=self)
 
-        if s.is_Interval and s.is_integer and e.is_Plus:
-            if not s.left_open or s.right_open:
-                try:
-                    index = e.args.index(S.NegativeOne)
-                    s += S.One
-                    e += S.One
-                    return self.func(e, s, evaluate=False, equivalent=self)
-                except:
-                    ...
+        if s.is_Interval and s.is_integer and e.is_Add:
+            if S.NegativeOne in e.args:
+                s += S.One
+                e += S.One
+                return self.func(e, s, evaluate=False, equivalent=self).simplify()
                     
-            if s.left_open or not s.right_open:
-                try:
-                    index = e.args.index(S.One)
-                    s += S.NegativeOne
-                    e += S.NegativeOne
-                    return self.func(e, s, evaluate=False, equivalent=self)
-                except:
-                    ...
-
+            if S.One in e.args:                
+                s -= S.One
+                e -= S.One
+                return self.func(e, s, evaluate=False, equivalent=self).simplify()
+            
+        domain = e.domain - s
+        if domain.is_FiniteSet:
+            return self.invert_type(e, domain).simplify()
+        
         return self
 
     @property
@@ -407,7 +430,7 @@ class NotContains(BooleanFunction):
         if condition_set:
             return Or(~condition_set.condition._subs(condition_set.variable, e), ~self.func(e, condition_set.base_set), equivalent=self)
 
-        if S.is_UnionComprehension:
+        if S.is_UNION:
             contains = self.func(self.lhs, S.function).simplify()
             contains.equivalent = None
             return ForAll(contains, *S.limits, equivalent=self).simplify()
@@ -415,7 +438,16 @@ class NotContains(BooleanFunction):
         return self
 
     def __and__(self, other):
-        if other.is_Unequality:
+        if other.is_NotContains:
+            if self.element == other.element:
+                s = self.set | other.set
+                return self.func(self.element, s, equivalent=[self, other])
+        elif other.is_Contains:
+            if self.element == other.element:
+                s = other.set - self.set
+                return other.func(self.element, s, equivalent=[self, other])
+        
+        elif other.is_Unequality:
             x, X = self.args
             if x == other.rhs:
                 X |= {other.lhs}
@@ -437,14 +469,18 @@ class NotContains(BooleanFunction):
             
         return BooleanFunction.__or__(self, other)
 
-    def asKroneckerDelta(self):
+    def as_KroneckerDelta(self):
         x, domain = self.args 
         if domain.is_FiniteSet:
-            return 1 - domain.asKroneckerDelta(x)
+            return 1 - domain.as_KroneckerDelta(x)
         domain = x.domain - domain
         if domain.is_FiniteSet:
-            return domain.asKroneckerDelta(x)
+            return domain.as_KroneckerDelta(x)
             
+    @property
+    def T(self):
+        assert len(self.lhs.shape) <= 1
+        return self.func(self.lhs.T, self.rhs, equivalent=self)
     
 Contains.invert_type = NotContains
 
@@ -454,8 +490,6 @@ class Subset(BooleanFunction):
     Asserts that A is a subset of the set S
 
     """
-    is_Subset = True
-
     def union_comprehension(self, *limits):
         from sympy.concrete.expr_with_limits import UNION
         lhs = UNION(self.lhs, *limits)
@@ -467,7 +501,7 @@ class Subset(BooleanFunction):
 
     def simplify(self, deep=False):
         from sympy.concrete.expr_with_limits import ForAll
-        if self.lhs.is_UnionComprehension:
+        if self.lhs.is_UNION:
             return ForAll(self.func(self.lhs.function, self.rhs).simplify(), *self.lhs.limits, equivalent=self).simplify()
         if self.lhs.is_FiniteSet:
             eqs = []
@@ -544,17 +578,12 @@ class Subset(BooleanFunction):
             
         if x.is_Piecewise and not s.is_Piecewise:
             return x.func(*((cls(e, s), c) for e, c in x.args))
-#         if not x.is_Piecewise and s.is_Piecewise:
-#             return s.func(*((cls(x, e), c) for e, c in s.args))
+        
+        if s.is_CartesianSpace:
+            if x.is_Symbol:
+                if x.element_type.as_Set() in s:
+                    return S.true
                 
-#     @property
-#     def binary_symbols(self):
-#         binary_symbols = [i.binary_symbols for i in self.args[1].args if hasattr(i, 'binary_symbols') and (i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne)))]
-#         return set().union(*binary_symbols)
-# #         return set().union(*[i.binary_symbols
-# #             for i in self.args[1].args
-# #             if i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne))])
-
     @property
     def definition(self):
         A, B = self.args
@@ -591,9 +620,9 @@ class Subset(BooleanFunction):
             res[0] = GreaterThan(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.end, **kwargs)
+            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.end, **kwargs)
+            res[1] = LessThan(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -636,7 +665,6 @@ class NotSubset(BooleanFunction):
     Asserts that A is a subset of the set S
 
     """
-    is_Subset = True
     invert_type = Subset
 
     @property
@@ -644,7 +672,7 @@ class NotSubset(BooleanFunction):
         return NotSupset(self.rhs, self.lhs, equivalent=self)
 
     def simplify(self, deep=False):
-        if self.lhs.is_UnionComprehension:
+        if self.lhs.is_UNION:
             from sympy.concrete.expr_with_limits import Exists
             return Exists(self.func(self.lhs.function, self.rhs), *self.lhs.limits, equivalent=self)
 
@@ -726,9 +754,9 @@ class NotSubset(BooleanFunction):
             res[0] = GreaterThan(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.end, **kwargs)
+            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.end, **kwargs)
+            res[1] = LessThan(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -769,8 +797,6 @@ class Supset(BooleanFunction):
     Asserts that A is a super set of the set S
 
     """
-    is_Supset = True
-
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
@@ -801,7 +827,7 @@ class Supset(BooleanFunction):
 
     def simplify(self, deep=False):
         from sympy.concrete.expr_with_limits import ForAll
-        if self.rhs.is_UnionComprehension:
+        if self.rhs.is_UNION:
             return ForAll(self.func(self.lhs, self.rhs.function).simplify(), *self.rhs.limits, equivalent=self).simplify()
         if self.rhs.is_FiniteSet:
             eqs = []
@@ -867,9 +893,9 @@ class Supset(BooleanFunction):
             res[0] = GreaterThan(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.end, **kwargs)
+            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.end, **kwargs)
+            res[1] = LessThan(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -895,7 +921,6 @@ class NotSupset(BooleanFunction):
     Asserts that A is a super set of the set S
 
     """
-    is_Supset = True
     invert_type = Supset
 
     def subs(self, *args, **kwargs):
@@ -923,7 +948,7 @@ class NotSupset(BooleanFunction):
 
     def simplify(self, deep=False):
         from sympy.concrete.expr_with_limits import Exists
-        if self.rhs.is_UnionComprehension:
+        if self.rhs.is_UNION:
             return Exists(self.func(self.lhs, self.rhs.function), *self.rhs.limits, equivalent=self).simplify()
         return self
 
@@ -977,9 +1002,9 @@ class NotSupset(BooleanFunction):
             res[0] = GreaterThan(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.end, **kwargs)
+            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.end, **kwargs)
+            res[1] = LessThan(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):

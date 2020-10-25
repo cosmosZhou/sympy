@@ -4,13 +4,13 @@ from sympy import Number
 from sympy.core import Mul, Basic, sympify
 from sympy.core.compatibility import range
 from sympy.functions import adjoint
-from sympy.matrices.expressions.transpose import transpose
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
 from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError,
         Identity, ZeroMatrix, GenericIdentity, Concatenate)
 from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
+from sympy.core.logic import fuzzy_and
 
 
 class MatMul(MatrixExpr):
@@ -28,7 +28,6 @@ class MatMul(MatrixExpr):
     >>> MatMul(A, B, C)
     A*B*C
     """
-    is_MatMul = True
     is_commutative = True
 
     identity = GenericIdentity()
@@ -159,8 +158,8 @@ class MatMul(MatrixExpr):
         matrices = [x for x in self.args if x.shape]
 
         coeff = Mul(*scalars)
-        if coeff.is_commutative is False:
-            raise NotImplementedError("noncommutative scalars in MatMul are not supported.")
+#         if coeff.is_commutative == False:
+#             raise NotImplementedError("noncommutative scalars in MatMul are not supported.")
 
         return coeff, matrices
 
@@ -188,16 +187,16 @@ class MatMul(MatrixExpr):
 
     def _eval_inverse(self):
         try:
-            from sympy.concrete.expr_with_limits import Ref
+            from sympy.concrete.expr_with_limits import LAMBDA
             return MatMul(*[
-                arg.inverse() if isinstance(arg, (MatrixExpr, Ref)) else arg ** -1
+                arg.inverse() if isinstance(arg, (MatrixExpr, LAMBDA)) else arg ** -1
                     for arg in self.args[::-1]]).doit()
         except ShapeError:
             from sympy.matrices.expressions.inverse import Inverse
             return Inverse(self)
 
     def doit(self, **kwargs):
-        deep = kwargs.get('deep', True)
+        deep = kwargs.get('deep', False)
         if deep:
             args = [arg.doit(**kwargs) for arg in self.args]
         else:
@@ -238,6 +237,10 @@ class MatMul(MatrixExpr):
         return lines
 
     def simplify(self, **_):
+        this = any_zeros(self)
+        if this != self:
+            return this
+        
         from sympy import exp
         if len(self.args) == 2 and all(isinstance(arg, exp) for arg in self.args):
             if len(self.args[0].shape) < len(self.args[1].shape):
@@ -267,10 +270,9 @@ class MatMul(MatrixExpr):
                     return before @ _prod
 
         return self
-
                 
     def expand(self, free_symbol=None, deep=True, **_):
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.concrete.summations import Sum
         if len(self.args) > 2:
             return MatrixExpr.expand(self)
@@ -278,16 +280,82 @@ class MatMul(MatrixExpr):
         A, B = self.args
         if A.is_MatPow:
             return self
-        if isinstance(A, Concatenate):
-            args = [self.func(arg, B) for arg in A.args]
-            if deep:
-                args = [arg.expand(deep=True) for arg in args]
-            return A.func(*args)
+        if A.is_Concatenate:
+            if B.is_Concatenate and len(A.shape) == 1:
+                if len(A.args) == len(B.args):
+                    sgm = None
+                    for a, b in zip(A.args, B.args):
+                        if a.shape:
+                            product = a @ b
+                            if product.is_MatMul and len(product.args) == 2:
+                                product = product.expand()
+                        else:
+                            product = a * b
+                        if sgm is None:
+                            sgm = product
+                        else:
+                            sgm += product
+                    return sgm
+                else:
+                    return self
+            else:                    
+                args = [self.func(arg, B).simplify() for arg in A.args]
+                if deep:
+                    args = [arg.expand(deep=True) if arg.is_MatMul else arg for arg in args]
+                return A.func(*args)
+        
+        if A.is_Transpose:
+            if B.is_Transpose:
+                return (B.arg @ A.arg).expand().T
+            if A.arg.is_Concatenate and B.is_Concatenate:
+                A_T = A.arg
+                if len(A_T.args) == len(B.args):
+                    B_T = B._eval_transpose()
+                    if B_T is not None:
+                        # A @ B = A.T.T @ B.T.T = (B.T @ A.T).T
+                        return (B_T @ A_T).expand().T
+                        
+                    sgm = None
+                    for a, b in zip(A_T.args, B.args):
+                        if len(a.shape) == 1 and len(b.shape) == 1:
+                            n = a.shape[0]
+                            if b.shape[0] == n:
+                                i = a.generate_free_symbol(b.free_symbols, integer=True)
+                                j = a.generate_free_symbol(b.free_symbols | {i}, integer=True)                                
+                                product = LAMBDA[j:n, i:n](a[i] * b[j]).simplify()
+                            else:
+                                return self
+                        else:
+                            if not b.shape:
+                                product = a * b
+                            elif a.rows == b.shape[0]:
+                                product = (a.T @ b).simplify()
+                                if product.is_MatMul and len(product.args) == 2:
+                                    X = product.args[1]
+                                    if X.is_Transpose and X.arg.is_Concatenate:
+                                        product = product.expand()
+                            else:
+                                return self
+                        if sgm is None:
+                            sgm = product
+                        else:
+                            sgm += product
+                    return sgm
+            return self
+            
+        if B.is_Concatenate:
+            return self     
+             
+        if B.is_Transpose and B.arg.is_Concatenate:
+            return (B.arg @ A.T).expand().T
+              
+        if A.is_MatProduct:
+            return self
         
         kwargs = {'free_symbol' : free_symbol, 'generator' : self}
         
         def generate_k_limit(A, B, excludes=None, **kwargs):
-            if A.is_Ref or not B.is_Ref:
+            if A.is_LAMBDA or not B.is_LAMBDA:
                 if excludes:
                     excludes |= B.free_symbols
                 else:
@@ -313,23 +381,32 @@ class MatMul(MatrixExpr):
                 k, *_ = k_limit
                 
                 assert i != k and k != j and i != j
-                return Ref(Sum(A[i, k] * B[k, j], k_limit).simplify(), j_limit, i_limit).simplify()
+                return LAMBDA(Sum(A[i, k] * B[k, j], k_limit).simplify(), j_limit, i_limit).simplify()
             else:
                 k_limit = generate_k_limit(A, B, {i}, **kwargs)
                 k, *_ = k_limit
                 
                 assert i != k                            
-                return Ref(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
+                return LAMBDA(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
         else:
             if len(B.shape) > 1:
-                j_limit = B.generate_int_limit(0, **kwargs)                
-                j, *_ = j_limit
-                
-                k_limit = generate_k_limit(A, B, {j}, **kwargs)
-                k, *_ = k_limit
-                
-                assert k != j
-                return Ref(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
+                if B.shape[-1].is_Integer:
+                    k_limit = generate_k_limit(A, B, **kwargs)
+                    k, *_ = k_limit
+  
+                    args = []
+                    for j in range(B.shape[-1]):
+                        args.append(Sum(A[k] * B[k, j], k_limit).simplify())
+                    return Concatenate(*args)
+                else:                    
+                    j_limit = B.generate_int_limit(0, **kwargs)                
+                    j, *_ = j_limit
+                    
+                    k_limit = generate_k_limit(A, B, {j}, **kwargs)
+                    k, *_ = k_limit
+                    
+                    assert k != j
+                    return LAMBDA(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
             k_limit = generate_k_limit(A, B, **kwargs)
             k, *_ = k_limit
             return Sum(A[k] * B[k], k_limit).simplify()                
@@ -370,13 +447,12 @@ class MatMul(MatrixExpr):
         from sympy import MatMul
 
         from sympy.printing.precedence import precedence_traditional
-        from sympy.core.function import _coeff_isneg
         parens = lambda x: p.parenthesize(x, precedence_traditional(self), False)
 
         args = self.args
         args = list(args)
 
-        if isinstance(self, MatMul) and _coeff_isneg(self):
+        if isinstance(self, MatMul) and self._coeff_isneg():
             if args[0] == -1:
                 args = args[1:]
             else:
@@ -389,9 +465,16 @@ class MatMul(MatrixExpr):
         return [self]
 
     def _eval_is_extended_real(self):
-        if self.shape:
-            return False
-        return True
+        return fuzzy_and(arg.is_extended_real for arg in self.args)
+
+    def _eval_is_extended_positive(self):
+        return fuzzy_and(arg.is_extended_positive for arg in self.args)
+
+    def _eval_is_extended_negative(self):
+        return fuzzy_and(arg.is_extended_negative for arg in self.args)
+
+    def _eval_is_finite(self):
+        return fuzzy_and(arg.is_finite for arg in self.args)
 
     @classmethod
     def class_key(cls):
@@ -438,6 +521,14 @@ class MatMul(MatrixExpr):
 
         return self.func(*(arg.T for arg in self.args[::-1]))
 
+    def _subs(self, old, new):
+        if old.is_MatMul:
+            args = old.args
+            for i in range(len(self.args) - len(args) + 1): 
+                if all(self.args[j] == args[j - i]for j in range(i, i + len(args))):
+                    return self.func(*self.args[:i] + (new.args if new.is_MatMul else (new,)) + self.args[i + len(args):]).simplify()
+        return MatrixExpr._subs(self, old, new)
+
     
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """
@@ -456,9 +547,15 @@ def newmul(*args):
 
 
 def any_zeros(mul):
-    if any([arg.is_zero or (arg.is_Matrix and arg.is_ZeroMatrix)
-                       for arg in mul.args]):
+    if any([arg.is_zero or (arg.is_Matrix and arg.is_ZeroMatrix) for arg in mul.args]):
         matrices = [arg for arg in mul.args if arg.is_Matrix]
+        if len(matrices[0].shape) == 1:
+            if len(matrices[-1].shape) == 1:
+                from sympy import S
+                return S.Zero
+            return ZeroMatrix(matrices[-1].cols)
+        if len(matrices[-1].shape) == 1:
+            return ZeroMatrix(matrices[0].rows)
         return ZeroMatrix(matrices[0].rows, matrices[-1].cols)
     return mul
 
@@ -566,7 +663,7 @@ def combine_powers(mul):
     args = []
     base = None
     exp = 0
-    for arg in mmul.args:
+    for arg in mmul.args if mmul.is_MatMul else (mmul,):
         if isinstance(arg, MatPow):
             current_base = arg.args[0]
             current_exp = arg.args[1]
@@ -606,7 +703,12 @@ def only_squares(*matrices):
     start = 0
     for i, M in enumerate(matrices):
         if M.shape[-1] == matrices[start].shape[-2]:
-            out.append(MatMul(*matrices[start:i + 1]).doit())
+            args = matrices[start:i + 1]
+            if len(args) == 1:
+                mat = args[0]
+            else:
+                mat = MatMul(*args).doit()
+            out.append(mat)
             start = i + 1
     return out
 

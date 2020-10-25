@@ -1,8 +1,8 @@
 from sympy.core.relational import Unequality, StrictGreaterThan, GreaterThan
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from sympy import S
-
+from sympy import Symbol
 # given: A != {}
 # |A| > 0
 
@@ -17,12 +17,12 @@ def apply(given):
     return StrictGreaterThan(abs(A), 0, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
+    A = Symbol.A(dtype=dtype.integer)
     inequality = Unequality(A, S.EmptySet, evaluate=False)
 
     Eq << apply(inequality)

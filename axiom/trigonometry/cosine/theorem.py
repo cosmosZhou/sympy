@@ -1,4 +1,4 @@
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan
 
@@ -50,18 +50,18 @@ def extract(x_constraint, y_constraint, z_constraint):
 def apply(*given):
     x, y, z = extract(*given)
 
-    theta = Symbol("theta")
+    theta = Symbol.theta(real=True)
     return Exists(Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)), (theta, Interval(pi / 3, pi, right_open=True)), given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    x = Symbol("x", positive=True)
-    y = Symbol("y", positive=True)
-    z = Symbol("z", positive=True)
+    x = Symbol.x(positive=True)
+    y = Symbol.y(positive=True)
+    z = Symbol.z(positive=True)
     x_constraint = x <= z
     y_constraint = y <= z
     z_constraint = z < x + y

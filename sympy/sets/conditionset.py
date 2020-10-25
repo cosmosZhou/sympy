@@ -132,8 +132,6 @@ class ConditionSet(Set):
     >>> _.subs(_.variable, Symbol('_x'))
     ConditionSet(_x, (_x < y) & (_x + x < 2), Integers)
     """
-    is_ConditionSet = True
-
     def _complement(self, universe):
         if self.base_set == universe:
             return ~self

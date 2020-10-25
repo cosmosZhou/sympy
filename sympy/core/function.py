@@ -29,7 +29,8 @@ There are three types of functions implemented in SymPy:
     (x,)
 
 """
-from __future__ import print_function, division
+
+from typing import Any, Dict as tDict, Optional, Set as tSet
 
 from .add import Add
 from .assumptions import ManagedProperties, _assume_defined
@@ -45,54 +46,18 @@ from .singleton import S
 from .sympify import sympify
 
 from sympy.core.containers import Tuple, Dict
+from sympy.core.parameters import global_parameters
 from sympy.core.logic import fuzzy_and
 from sympy.core.compatibility import string_types, with_metaclass, PY3, range
 from sympy.utilities import default_sort_key
 from sympy.utilities.misc import filldedent
 from sympy.utilities.iterables import has_dups, sift
-from sympy.core.evaluate import global_evaluate
 
 import mpmath
 import mpmath.libmp as mlib
 
 import inspect
 from collections import Counter
-from builtins import isinstance
-
-
-def _coeff_isneg(a):
-    """Return True if the leading Number is negative.
-
-    Examples
-    ========
-
-    >>> from sympy.core.function import _coeff_isneg
-    >>> from sympy import S, Symbol, oo, pi
-    >>> _coeff_isneg(-3*pi)
-    True
-    >>> _coeff_isneg(S(3))
-    False
-    >>> _coeff_isneg(-oo)
-    True
-    >>> _coeff_isneg(Symbol('n', negative=True)) # coeff is 1
-    False
-
-    For matrix expressions:
-
-    >>> from sympy import MatrixSymbol, sqrt
-    >>> A = MatrixSymbol("A", 3, 3)
-    >>> _coeff_isneg(-sqrt(2)*A)
-    True
-    >>> _coeff_isneg(sqrt(2)*A)
-    False
-    """
-
-    if a.is_MatMul:
-        a = a.args[0]
-    if a.is_Times:
-        a = a.args[0]
-    return a.is_Number and a.is_extended_negative
-
 
 class PoleError(Exception):
     pass
@@ -244,9 +209,10 @@ class FunctionClass(ManagedProperties):
         1
         """
         from sympy.sets.sets import FiniteSet
+        from sympy.sets import NonnegativeIntegers
         # XXX it would be nice to handle this in __init__ but there are import
         # problems with trying to import FiniteSet there
-        return FiniteSet(*self._nargs) if self._nargs else S.Naturals0
+        return FiniteSet(*self._nargs) if self._nargs else NonnegativeIntegers
 
     def __repr__(cls):
         return cls.__name__
@@ -262,13 +228,12 @@ class Application(with_metaclass(FunctionClass, Basic)):
 
     is_Function = True
 
-#     @cacheit
+    @cacheit
     def __new__(cls, *args, **options):
-        from sympy.sets.fancysets import Naturals0
         from sympy.sets.sets import FiniteSet
 
         args = list(map(sympify, args))
-        evaluate = options.pop('evaluate', global_evaluate[0])
+        evaluate = options.pop('evaluate', global_parameters.evaluate)
         # WildFunction (and anything else like it) may have nargs defined
         # and we throw that value away here
         options.pop('nargs', None)
@@ -311,7 +276,8 @@ class Application(with_metaclass(FunctionClass, Basic)):
             #  - AppliedUndef with no nargs like Function('f')(1).nargs
             nargs = obj._nargs  # note the underscore here
         # convert to FiniteSet
-        obj.nargs = FiniteSet(*nargs) if nargs else Naturals0()
+        from sympy.sets import NonnegativeIntegers
+        obj.nargs = FiniteSet(*nargs) if nargs else NonnegativeIntegers
         return obj
 
     @classmethod
@@ -480,7 +446,7 @@ class Function(Application, Expr):
                 'plural': 's' * (min(cls.nargs) != 1),
                 'given': n})
 
-        evaluate = options.get('evaluate', global_evaluate[0])
+        evaluate = options.get('evaluate', global_parameters.evaluate)
         result = super(Function, cls).__new__(cls, *args, **options)
         if evaluate and isinstance(result, cls) and result.args:
             pr2 = min(cls._should_evalf(a) for a in result.args)
@@ -504,7 +470,7 @@ class Function(Application, Expr):
         from sympy.core.evalf import pure_complex
         if arg.is_Float:
             return arg._prec
-        if not arg.is_Plus:
+        if not arg.is_Add:
             return -1
         m = pure_complex(arg)
         if m is None or not (m[0].is_Float or m[1].is_Float):
@@ -515,7 +481,6 @@ class Function(Application, Expr):
 
     @classmethod
     def class_key(cls):
-        from sympy.sets.fancysets import Naturals0
         funcs = {
             'exp': 10,
             'log': 11,
@@ -537,7 +502,12 @@ class Function(Application, Expr):
         try:
             i = funcs[name]
         except KeyError:
-            i = 0 if isinstance(cls.nargs, Naturals0) else 10000
+            from sympy.sets import NonnegativeIntegers
+            if cls.nargs == NonnegativeIntegers:
+                i = 0
+            else:
+                i = 10000
+#             i = 0 if isinstance(cls.nargs, Naturals0) else 10000
 # modified by cosmos, in the case of t log y, to prevent logy t 
         return 5, i, name
 #         return 4, i, name
@@ -683,7 +653,7 @@ class Function(Application, Expr):
         from sympy.sets.sets import FiniteSet
         args = self.args
         args0 = [t.limit(x, 0) for t in args]
-        if any(t.is_finite is False for t in args0):
+        if any(t.is_finite == False for t in args0):
             from sympy import oo, zoo, nan
             # XXX could use t.as_leading_term(x) here but it's a little
             # slower
@@ -727,7 +697,7 @@ class Function(Application, Expr):
                 # for example when e = sin(x+1) or e = sin(cos(x))
                 # let's try the general algorithm
                 term = e.subs(x, S.Zero)
-                if term.is_finite is False or term is S.NaN:
+                if term.is_finite == False or term is S.NaN:
                     raise PoleError("Cannot expand %s around 0" % (self))
                 series = term
                 fact = S.One
@@ -741,7 +711,7 @@ class Function(Application, Expr):
                     if subs is S.NaN:
                         # try to evaluate a limit if we have to
                         subs = e.limit(_x, S.Zero)
-                    if subs.is_finite is False:
+                    if subs.is_finite == False:
                         raise PoleError("Cannot expand %s around 0" % (self))
                     term = subs * (x ** i) / fact
                     term = term.expand()
@@ -1192,8 +1162,6 @@ class Derivative(Expr):
     _sort_variable_count
     """
 
-    is_Derivative = True
-
     @property
     def _diff_wrt(self):
         """An expression may be differentiated wrt a Derivative if
@@ -1629,7 +1597,7 @@ class Derivative(Expr):
                 return Add(*args)
             elif isinstance(self.expr, Pow):
                 base, exponent = self.expr.args
-                if not exponent.has(self._wrt_variables):
+                if not exponent.has(*self._wrt_variables):
                     return exponent * base ** (exponent - 1) * Expr.__new__(self.func, base, *self.variable_count).doit(deep=False)
                 if not base.has(self._wrt_variables):
                     return self.expr * log(base) * Expr.__new__(self.func, exponent, *self.variable_count)
@@ -1915,7 +1883,7 @@ class Derivative(Expr):
             _wrt_variables = self._wrt_variables
             for limit in self.expr.limits:
                 for bound in limit[1:]:
-                    if bound.has(_wrt_variables):
+                    if bound.has(*_wrt_variables):
                         return self
             
             derivative = Expr.__new__(self.func, self.expr.function, *self.variable_count)
@@ -2146,8 +2114,6 @@ class Difference(Expr):
     ========
     _sort_variable_count
     """
-
-    is_Difference = True
 
     @property
     def _diff_wrt(self):
@@ -2729,16 +2695,13 @@ class Difference(Expr):
             return r'{\color{blue} \Delta}_{%s}\ {%s}' % (printer._print(x), expr)
         return r'{\color{blue} \Delta}_{%s}^{%s}\ {%s}' % (printer._print(x), printer._print(n), expr)
 
-    def bisect(self, front=None, back=None):
+    def bisect(self, index):
         x, n = self.variable_count
-        if front is not None:
-            back = n - front
-        elif back is not None:
-            front = n - back
-        else:
-            front = 1
-            back = n - 1
-        return self.func(self.func(self.expr, x, back).simplify(), x, front)
+        mid = Symbol.process_slice(index, 0, n)
+        assert mid >= 0, "mid >= 0 => %s" % (mid >= 0)        
+        assert mid <= n, "mid <= n => %s" % (mid <= n)
+
+        return self.func(self.func(self.expr, x, mid).simplify(), x, n - mid)
 
     def simplify(self, **_):
         x, n = self.variable_count
@@ -2767,7 +2730,7 @@ class Difference(Expr):
         return self
 
     def as_Add(self):
-        if isinstance(self.expr, Add):
+        if self.expr.is_Add:
             return self.expr.func(*(self.func(arg, *self.variable_count).simplify() for arg in self.expr.args))
         return self
 
@@ -2861,9 +2824,9 @@ class Lambda(Expr):
         args, expr = self.args
         if isinstance(args, Tuple):
             arg_string = ", ".join(p._print(arg) for arg in args)
-            return "Lambda((%s), %s)" % (arg_string, p._print(expr))
+            return "[%s](%s)" % (arg_string, p._print(expr))
         else:
-            return "Lambda(%s, %s)" % (p._print(args), p._print(expr))
+            return "[%s](%s)" % (p._print(args), p._print(expr))
 
     @property
     def variables(self):
@@ -2910,6 +2873,8 @@ class Lambda(Expr):
         if isinstance(self.variables, Tuple):
             return self.expr.xreplace(dict(list(zip(self.variables, args))))
 #         return self.expr.xreplace({self.variables: args})
+        if self.variables == args:
+            return self.expr
         return self.expr._subs(self.variables, args)
 
     def __eq__(self, other):
@@ -3965,8 +3930,8 @@ def count_ops(expr, visual=False):
                     if a.q != 1:
                         ops.append(DIV)
                     continue
-            elif a.is_Times or a.is_MatMul:
-                if _coeff_isneg(a):
+            elif a.is_Mul or a.is_MatMul:
+                if a._coeff_isneg():
                     ops.append(NEG)
                     if a.args[0] is S.NegativeOne:
                         a = a.as_two_terms()[1]
@@ -3985,11 +3950,11 @@ def count_ops(expr, visual=False):
                     ops.append(DIV)
                     args.append(n)
                     continue  # could be -Mul
-            elif a.is_Plus or a.is_MatAdd:
+            elif a.is_Add:  # or a.is_MatAdd:
                 aargs = list(a.args)
                 negs = 0
                 for i, ai in enumerate(aargs):
-                    if _coeff_isneg(ai):
+                    if ai._coeff_isneg():
                         negs += 1
                         args.append(-ai)
                         if i > 0:
@@ -4000,14 +3965,14 @@ def count_ops(expr, visual=False):
                             ops.append(ADD)
                 if negs == len(aargs):  # -x - y = NEG + SUB
                     ops.append(NEG)
-                elif _coeff_isneg(aargs[0]):  # -x + y = SUB, but already recorded ADD
+                elif aargs[0]._coeff_isneg():  # -x + y = SUB, but already recorded ADD
                     ops.append(SUB - ADD)
                 continue
             if a.is_Power and a.exp is S.NegativeOne:
                 ops.append(DIV)
                 args.append(a.base)  # won't be -Mul but could be Add
                 continue
-            if (a.is_Times or
+            if (a.is_Mul or
                 a.is_Power or
                 a.is_Function or
                 isinstance(a, Derivative) or
@@ -4015,7 +3980,7 @@ def count_ops(expr, visual=False):
 
                 o = Symbol(a.func.__name__.upper())
                 # count the args
-                if (a.is_Times or isinstance(a, LatticeOp)):
+                if (a.is_Mul or isinstance(a, LatticeOp)):
                     ops.append(o * (len(a.args) - 1))
                 else:
                     ops.append(o)

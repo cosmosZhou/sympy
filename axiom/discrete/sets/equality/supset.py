@@ -1,8 +1,8 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from sympy.sets.contains import Supset
-
+from sympy import Symbol
 
 # given: A = B
 # A >> B
@@ -14,13 +14,13 @@ def apply(given):
     return Supset(A, B, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
+    A = Symbol.A(dtype=dtype.integer)
+    B = Symbol.B(dtype=dtype.integer)
 
     equality = Equality(A, B)
 

@@ -1675,7 +1675,7 @@ class totient(Function):
             for p, k in factors.items():
                 t *= (p - 1) * p**(k - 1)
             return t
-        elif not isinstance(n, Expr) or (n.is_integer is False) or (n.is_positive is False):
+        elif not isinstance(n, Expr) or (n.is_integer == False) or (n.is_positive == False):
             raise ValueError("n must be a positive integer")
 
     def _eval_is_integer(self):

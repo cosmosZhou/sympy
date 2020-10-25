@@ -417,7 +417,7 @@ class DimensionSystem(Basic):
 
         get_for_name = dimsys_default._get_dimensional_dependencies_for_name
 
-        if name.is_Times:
+        if name.is_Mul:
             ret = collections.defaultdict(int)
             dicts = [get_for_name(i) for i in name.args]
             for d in dicts:

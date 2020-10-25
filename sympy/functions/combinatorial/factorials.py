@@ -895,7 +895,7 @@ class Binomial(CombinatorialFunction):
     def _eval_Mod(self, q):
         n, k = self.args
 
-        if any(x.is_integer is False for x in (n, k, q)):
+        if any(x.is_integer == False for x in (n, k, q)):
             raise ValueError("Integers expected for binomial Mod")
 
         if all(x.is_Integer for x in (n, k, q)):
@@ -983,7 +983,7 @@ class Binomial(CombinatorialFunction):
             return binomial(*self.args)
 
         k = self.args[1]
-        if k.is_Plus and n in k.args:
+        if k.is_Add and n in k.args:
             k = n - k
 
         if k.is_Integer:
@@ -1018,7 +1018,7 @@ class Binomial(CombinatorialFunction):
         n, k = self.args
         if n.is_integer and k.is_integer:
             return True
-        elif k.is_integer is False:
+        elif k.is_integer == False:
             return False
 
     def _eval_is_extended_real(self):
@@ -1031,7 +1031,7 @@ class Binomial(CombinatorialFunction):
         if n.is_integer and k.is_integer:
             if n.is_extended_nonnegative or k.is_extended_negative or k.is_even:
                 return False
-            elif k.is_even is False:
+            elif k.is_even == False:
                 return True
 
     def domain_nonzero(self, x):

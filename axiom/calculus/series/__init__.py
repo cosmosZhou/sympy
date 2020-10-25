@@ -1,1 +1,1 @@
-from . import Harmonic
+from . import harmonic

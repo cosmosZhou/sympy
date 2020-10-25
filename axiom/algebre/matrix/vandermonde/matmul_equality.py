@@ -1,40 +1,40 @@
 from sympy.functions.combinatorial.factorials import binomial
-from sympy.core.symbol import Symbol
+
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 import axiom
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import LAMBDA
 from sympy.concrete.summations import Sum
-
+from sympy import Symbol
 
 @plausible
 def apply(x, m, n, d, delta):
-    i = Symbol('i', domain=Interval(0, m - d, right_open=True, integer=True))
-    j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
-    h = Symbol('h', integer=True)
+    i = Symbol.i(domain=Interval(0, m - d, right_open=True, integer=True))
+    j = Symbol.j(domain=Interval(0, n, right_open=True, integer=True))
+    h = Symbol.h(integer=True)
 
-    return Equality(Ref[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ Ref[j, i:m]((i + delta) ** j * x ** i),
-                    Ref[j, i]((i + delta) ** j * x ** i) @ Ref[j, i:n](binomial(j, i) * Sum[h:0:d](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
+    return Equality(LAMBDA[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ LAMBDA[j, i:m]((i + delta) ** j * x ** i),
+                    LAMBDA[j, i]((i + delta) ** j * x ** i) @ LAMBDA[j, i:n](binomial(j, i) * Sum[h:0:d](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    n = Symbol('n', domain=Interval(1, oo, right_open=True, integer=True))
-    m = Symbol('m', domain=Interval(1, oo, right_open=True, integer=True))
-    d = Symbol('d', domain=Interval(0, oo, right_open=True, integer=True))
+    n = Symbol.n(domain=Interval(1, oo, right_open=True, integer=True))
+    m = Symbol.m(domain=Interval(1, oo, right_open=True, integer=True))
+    d = Symbol.d(domain=Interval(0, oo, right_open=True, integer=True))
 
-    i = Symbol('i', domain=Interval(0, m - d, right_open=True, integer=True))
-    j = Symbol('j', domain=Interval(0, n, right_open=True, integer=True))
-    h = Symbol('h', integer=True)
+    i = Symbol.i(domain=Interval(0, m - d, right_open=True, integer=True))
+    j = Symbol.j(domain=Interval(0, n, right_open=True, integer=True))
+    h = Symbol.h(integer=True)
 
-    delta = Symbol('delta', real=True)
+    delta = Symbol.delta(real=True)
     
-    x = Symbol('x', real=True)
+    x = Symbol.x(real=True)
 
     Eq << apply(x, m, n, d, delta)
 

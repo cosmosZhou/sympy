@@ -1,19 +1,19 @@
-from sympy.core.symbol import Symbol
+
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from sympy.utility import plausible
-
+from axiom.utility import plausible
+from sympy import Symbol
 from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
 
 @plausible
 def apply(x, y, n=None, free_symbol=None):
     if free_symbol is None:
-        k = Symbol('k', integer=True)
+        k = Symbol.k(integer=True)
     else:
         k = free_symbol
     if n is None:
-        n = Symbol('n', integer=True, nonnegative=True)
+        n = Symbol.n(integer=True, nonnegative=True)
         return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)))
     elif n < 0:
         return None
@@ -21,14 +21,14 @@ def apply(x, y, n=None, free_symbol=None):
         return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    x = Symbol('x', integer=True)
-    y = Symbol('y', integer=True)
-    n = Symbol('n', integer=True, nonnegative=True)
+    x = Symbol.x(integer=True)
+    y = Symbol.y(integer=True)
+    n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(x, y, n)
 
     Eq << Eq[-1].subs(n, n + 1)

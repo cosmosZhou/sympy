@@ -6,8 +6,12 @@ from .conditionset import ConditionSet
 from .ordinals import Ordinal, OmegaPower, ord0
 from ..core.singleton import S
 Reals = S.Reals
-Naturals = S.Naturals
-Naturals0 = S.Naturals0
+PositiveIntegers = Interval(1, S.Infinity, integer=True)
+NonnegativeIntegers = Interval(0, S.Infinity, integer=True)
+
+Naturals = PositiveIntegers 
+Naturals0 = NonnegativeIntegers
+
 UniversalSet = S.UniversalSet
-Integers = S.Integers
+Integers = Interval(S.NegativeInfinity, S.Infinity, integer=True)
 del S

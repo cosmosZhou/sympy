@@ -249,7 +249,7 @@ def mrv(e, x):
     elif e == x:
         s = SubsSet()
         return s, s[x]
-    elif e.is_Times or e.is_Plus:
+    elif e.is_Mul or e.is_Add:
         i, d = e.as_independent(x)  # throw away x-independent terms
         if d.func != e.func:
             s, expr = mrv(d, x)
@@ -382,7 +382,7 @@ def sign(e, x):
         return _sign(e)
     elif e == x:
         return 1
-    elif e.is_Times:
+    elif e.is_Mul:
         a, b = e.as_two_terms()
         sa = sign(a, x)
         if not sa:
@@ -417,10 +417,10 @@ def limitinf(e, x):
     if e.has(Order):
         e = e.expand().removeO()
     if not x.is_positive:
-        # We make sure that x.is_positive is True so we
+        # We make sure that x.is_positive == True so we
         # get all the correct mathematical behavior from the expression.
         # We need a fresh variable.
-        p = Dummy('p', positive=True, finite=True)
+        p = Dummy('p', positive=True, finite=True, integer=x.is_integer)
         e = e.subs(x, p)
         x = p
     c0, e0 = mrv_leadterm(e, x)

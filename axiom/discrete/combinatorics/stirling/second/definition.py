@@ -1,7 +1,7 @@
-from sympy.core.symbol import Symbol
+
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.core.relational import Equality
-from sympy.utility import plausible
+from axiom.utility import plausible
 
 from sympy.functions.combinatorial.numbers import Stirling
 from axiom.discrete.combinatorics import stirling
@@ -9,8 +9,8 @@ import axiom
 from axiom.discrete import difference
 from axiom import discrete
 from sympy.concrete.summations import Sum
-from sympy.concrete.expr_with_limits import Ref
-
+from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import Symbol, Slice
 
 @plausible
 def apply(n, k):
@@ -18,13 +18,13 @@ def apply(n, k):
     return Equality(Stirling(n, k), Sum[i:0:k]((-1) ** (k - i) * binomial(k, i) * i ** n) / factorial(k))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    k = Symbol('k', integer=True, nonnegative=True)
-    n = Symbol('n', integer=True, nonnegative=True)
+    k = Symbol.k(integer=True, nonnegative=True)
+    n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(n, k)
 
     Eq << Eq[-1].subs(k, 0).doit()
@@ -34,7 +34,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0])
 
     from sympy import oo
-    y = Symbol('y', shape=(oo,), definition=Ref[n](Stirling(n, k + 1)))
+    y = Symbol.y(shape=(oo,), definition=LAMBDA[n](Stirling(n, k + 1)))
 
     Eq << y.equality_defined()
 
@@ -73,7 +73,7 @@ def prove(Eq):
     
     Eq.exist_C0 = Eq.exist_C0.subs(Eq.factorial_expand_kl.reversed)        
 
-    x = Symbol('x', real=True)
+    x = Symbol.x(real=True)
 
     Eq << difference.definition.apply(x ** (k + 1), x, k + 1)
 
@@ -87,7 +87,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.distribute()
 
-    Eq << Eq[-1].this.rhs.bisect(back=1)
+    Eq << Eq[-1].this.rhs.bisect(Slice[-1:])
 
     Eq << Eq[-1] - Eq[-1].rhs.args[0]
 
@@ -124,7 +124,7 @@ def prove(Eq):
 
     Eq << Eq[0].subs(k, k + 1) * factorial(k + 1)
 
-    Eq << Eq[-1].this.rhs.bisect(back=1)
+    Eq << Eq[-1].this.rhs.bisect(Slice[-1:])
 
 
 if __name__ == '__main__':

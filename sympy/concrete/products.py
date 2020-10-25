@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.compatibility import range
 from sympy.core.mul import Mul
 from sympy.core.singleton import S
@@ -190,7 +188,6 @@ class Product(ExprWithIntLimits):
     __slots__ = ['is_commutative']
     is_complex = True
     operator = Mul
-    is_Product = True
     
     def __new__(cls, function, *symbols, **assumptions):
         return ExprWithIntLimits.__new__(cls, function, *symbols, **assumptions)
@@ -234,7 +231,16 @@ class Product(ExprWithIntLimits):
         f = self.function
         
         for index, limit in enumerate(self.limits):
-            i, a, b = limit
+            if len(limit) == 1:
+                i = limit[0]
+                domain = self.function.domain_defined(i)
+                if domain.is_Interval:                    
+                    a, b = domain.min(), domain.max()
+                else:
+                    return self 
+            else:
+                i, a, b = limit
+                
             dif = b - a
             if dif.is_Integer and dif < 0:
                 a, b = b + 1, a - 1
@@ -314,12 +320,12 @@ class Product(ExprWithIntLimits):
 
             return poly.LC() ** (n - a + 1) * A * B
 
-        elif term.is_Plus:
+        elif term.is_Add:
             factored = factor_terms(term, fraction=True)
-            if factored.is_Times:
+            if factored.is_Mul:
                 return self._eval_product(factored, (k, a, n))
 
-        elif term.is_Times:
+        elif term.is_Mul:
             exclude, include = [], []
 
             for t in term.args:
@@ -361,10 +367,30 @@ class Product(ExprWithIntLimits):
         from sympy.simplify.simplify import product_simplify
         return product_simplify(self)
 
-    def _eval_transpose(self):
-        if self.is_commutative:
-            return self.func(self.function.transpose(), *self.limits)
-        return None
+    def _eval_transpose(self):        
+        return self.func(self.function.transpose(), *self.limits)        
+
+    def _eval_is_finite(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                if domain.is_infinite:
+                    return None
+                    
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_finite
+
+    def _eval_is_extended_positive(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if domain is not None:
+                if domain.is_infinite:
+                    return None
+                    
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_extended_positive
 
     def is_convergent(self):
         r"""
@@ -509,6 +535,18 @@ class Product(ExprWithIntLimits):
         return Product(expr.function ** e, *limits)
 
     def simplify(self, deep=False, **_):
+        limits_dict = self.limits_dict
+
+        for i, (x, *_) in enumerate(self.limits):
+            domain = limits_dict[x]
+            if domain is None:
+                continue
+            if self.function._has(x):                
+                if domain.is_set and self.function.domain_defined(x) in domain:
+                    limits = [*self.limits]
+                    limits[i] = (x,)
+                    return self.func(self.function, *limits).simplify()
+        
         if len(self.limits) > 1:
             limit = self.limits[-1]
             if len(limit) == 3:
@@ -541,6 +579,19 @@ class Product(ExprWithIntLimits):
             if not self.function._has(x):
                 return self.function ** (b - a + 1)
             
+            if self.function.is_Mul:
+                if len(self.function.args) == 2:
+                    fx1, fx = self.function.args
+                    if fx.is_Power and fx.exp == -1:
+                        fx = 1 / fx
+                        from sympy import Wild
+                        pattern = fx.subs(x, Wild(x.name, **x.assumptions0))
+
+                        res = fx1.match(pattern)
+                        if res:
+                            x_, *_ = res.values()
+                            if x_ == x + 1:
+                                return fx1._subs(x, b) / fx._subs(x, a)
             if a == b:                
                 return self.function._subs(x, a)
             if a > b:
@@ -580,9 +631,15 @@ class Product(ExprWithIntLimits):
             if len(ab) == 2 and expr:
                 a, b = ab
                 if self.function.subs(i, b + 1) == expr:
-                    return self.func(self.function, (i, a, b + 1))
+                    return self.func(self.function, (i, a, b + 1)).simplify()
                 if self.function.subs(i, a - 1) == expr:
-                    return self.func(self.function, (i, a - 1 , b))
+                    return self.func(self.function, (i, a - 1 , b)).simplify()
+
+    def as_two_terms(self):
+        first, second = self.function.as_two_terms()        
+        if isinstance(self.function, self.operator):
+            return self.operator(self.func(first, *self.limits), self.func(second, *self.limits))
+        return self
 
 
 class MatProduct(ExprWithIntLimits, MatrixExpr):
@@ -638,7 +695,19 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         return function.is_zero
 
     def doit(self, **hints):
-        return self
+        limit = self.limits[-1]
+        x, a, b = limit
+        dif = b - a
+        if not dif.is_Integer:
+            return self
+        
+        limits = self.limits[:-1]
+        if limits:
+            function = self.func(self.function, *limits).doit(**hints)
+        else:
+            function = self.function
+        from sympy import sympify
+        return MatMul(*[function._subs(x, sympify(i)) for i in range(dif + 1)])    
 
     def _eval_adjoint(self):
         return self.func(self.function.adjoint(), *self.limits)        
@@ -687,12 +756,12 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
             return poly.LC() ** (n - a + 1) * A * B
 
-        elif term.is_Plus:
+        elif term.is_Add:
             factored = factor_terms(term, fraction=True)
-            if factored.is_Times:
+            if factored.is_Mul:
                 return self._eval_product(factored, (k, a, n))
 
-        elif term.is_Times:
+        elif term.is_Mul:
             exclude, include = [], []
 
             for t in term.args:
@@ -735,7 +804,15 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         return product_simplify(self)
 
     def _eval_transpose(self):
-        return self.func(self.function.transpose(), *self.limits)
+        limits = self.limits
+        function = self.function
+        for x, *ab in limits:
+            if len(ab) != 2:
+                return None
+            a, b = ab
+            function = function._subs(x, a + b - x)
+            
+        return self.func(function.T, *limits)
 
     def is_convergent(self):
         r"""
@@ -996,9 +1073,11 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         
         from sympy.core.basic import _aresame
         if self == old or _aresame(self, old) or self.dummy_eq(old):
-            return new        
-
-        from sympy.tensor.indexed import Slice
+            return new
+                
+        if not self._has(old):
+            return self
+        
         if len(self.limits) == 1:
             limit = self.limits[0]
             x, *ab = limit
@@ -1021,7 +1100,8 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
                 a, b = ab
 
-            if isinstance(old, Slice) and len(ab) == 2:
+            if old.is_Slice and len(ab) == 2:
+                from sympy import Interval
                 _x = x.copy(domain=Interval(*ab, integer=x.is_integer))
                 function = self.function.subs(x, _x)
                 _function = function.subs(old, new)
@@ -1037,7 +1117,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
 
-                if isinstance(x, Slice):
+                if x.is_Slice:
                     x = x.subs(old, new)
                 return self.func(function, (x,))
 
@@ -1055,7 +1135,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                     return self.func(function, (x, a + diff, b + diff))
                 else:
                     return self.func(function, (x,))
-
+            from sympy import solve
             if old != x:
                 sol = solve(old - new, x)
                 if len(sol) != 1:
@@ -1093,8 +1173,6 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
             return self.func(function, *self.limits)
         else:
-#             len(self.limits) > 1
-
             index = -1
             for i, limit in enumerate(self.limits):
                 x, *ab = limit

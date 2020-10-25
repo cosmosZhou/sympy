@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from math import log as _log
 
 from .sympify import _sympify
@@ -7,17 +5,15 @@ from .cache import cacheit
 from .singleton import S
 from .expr import Expr
 from .evalf import PrecisionExhausted
-from .function import (_coeff_isneg, expand_complex, expand_multinomial,
-    expand_mul)
+from .function import expand_complex, expand_multinomial, expand_mul
 from .logic import fuzzy_bool, fuzzy_not, fuzzy_and
 from .compatibility import as_int, range
-from .evaluate import global_evaluate
+from .parameters import global_parameters
 from sympy.utilities.iterables import sift
 
 from mpmath.libmp import sqrtrem as mpmath_sqrtrem
 
 from math import sqrt as _sqrt
-import re
 
 
 def isqrt(n):
@@ -237,7 +233,6 @@ class Power(Expr):
     .. [3] https://en.wikipedia.org/wiki/Indeterminate_forms
 
     """
-    is_Power = True
 
     __slots__ = ['is_commutative']
 
@@ -255,7 +250,7 @@ class Power(Expr):
     @cacheit
     def __new__(cls, b, e, evaluate=None):
         if evaluate is None:
-            evaluate = global_evaluate[0]
+            evaluate = global_parameters.evaluate
         from sympy.functions.elementary.exponential import exp_polar
 
         b = _sympify(b)
@@ -271,7 +266,7 @@ class Power(Expr):
                 return S.ComplexInfinity
             # Only perform autosimplification if exponent or base is a Symbol or number
             elif (b.is_Symbol or b.is_number) and (e.is_Symbol or e.is_number) and\
-                e.is_integer and _coeff_isneg(b):
+                e.is_integer and b._coeff_isneg():
                 if e.is_even:
                     b = -b
                 elif e.is_odd:
@@ -290,7 +285,7 @@ class Power(Expr):
                     den = denom(ex)
                     if isinstance(den, log) and den.args[0] == b:
                         return S.Exp1 ** (c * numer(ex))
-                    elif den.is_Plus:
+                    elif den.is_Add:
                         s = sign(im(b))
                         if s.is_Number and s and den == \
                                 log(-factor_terms(b, sign=False)) + s * S.ImaginaryUnit * S.Pi:
@@ -321,7 +316,7 @@ class Power(Expr):
     def _eval_refine(self, assumptions):
         from sympy.assumptions.ask import ask, Q
         b, e = self.as_base_exp()
-        if ask(Q.integer(e), assumptions) and _coeff_isneg(b):
+        if ask(Q.integer(e), assumptions) and b._coeff_isneg():
             if ask(Q.even(e), assumptions):
                 return Pow(-b, e)
             elif ask(Q.odd(e), assumptions):
@@ -369,9 +364,9 @@ class Power(Expr):
                 if e == -1:
                     # floor arg. is 1/2 + arg(b)/2/pi
                     if _half(other):
-                        if b.is_negative is True:
+                        if b.is_negative == True:
                             return S.NegativeOne ** other * Pow(-b, e * other)
-                        if b.is_extended_real is False:
+                        if b.is_extended_real == False:
                             return Pow(b.conjugate() / Abs(b) ** 2, other)
                 elif e.is_even:
                     if b.is_extended_real:
@@ -395,7 +390,7 @@ class Power(Expr):
                     else:
                         s = None
             else:
-                # e.is_extended_real is False requires:
+                # e.is_extended_real == False requires:
                 #     _half(other) with constant floor or
                 #     floor(S.Half - im(e*log(b))/2/pi) == 0
                 try:
@@ -450,7 +445,7 @@ class Power(Expr):
         if self.base == self.exp:
             if self.base.is_extended_nonnegative:
                 return True
-        elif self.base.is_positive:
+        elif self.base.is_extended_positive:
             if self.exp.is_extended_real:
                 return True
         elif self.base.is_extended_negative:
@@ -464,12 +459,15 @@ class Power(Expr):
         elif self.base.is_extended_nonpositive:
             if self.exp.is_odd:
                 return False
+        elif self.base.is_extended_nonnegative:
+            if self.exp.is_extended_negative:
+                return True
         elif self.base.is_imaginary:
             if self.exp.is_integer:
                 m = self.exp % 4
                 if m.is_zero:
                     return True
-                if m.is_integer and m.is_zero is False:
+                if m.is_integer and m.is_zero == False:
                     return False
             if self.exp.is_imaginary:
                 return log(self.base).is_imaginary
@@ -502,7 +500,7 @@ class Power(Expr):
                 return True
             elif self.exp.is_extended_nonpositive:
                 return False
-        elif self.base.is_zero is False:
+        elif self.base.is_zero == False:
             if self.exp.is_negative:
                 return self.base.is_infinite
             elif self.exp.is_nonnegative:
@@ -523,7 +521,7 @@ class Power(Expr):
     def _eval_is_integer(self):
         b, e = self.args
         if b.is_rational:
-            if b.is_integer is False and e.is_positive:
+            if b.is_integer == False and e.is_positive:
                 return False  # rat**nonneg
         if b.is_integer and e.is_integer:
             if b is S.NegativeOne:
@@ -571,13 +569,13 @@ class Power(Expr):
                     return False
             elif im_e and log(self.base).is_imaginary:
                 return True
-            elif self.exp.is_Plus:
+            elif self.exp.is_Add:
                 c, a = self.exp.as_coeff_Add()
                 if c and c.is_Integer:
                     return Mul(
                         self.base ** c, self.base ** a, evaluate=False).is_extended_real
             elif self.base in (-S.ImaginaryUnit, S.ImaginaryUnit):
-                if (self.exp / 2).is_integer is False:
+                if (self.exp / 2).is_integer == False:
                     return False
         if real_b and im_e:
             if self.base is S.NegativeOne:
@@ -625,7 +623,7 @@ class Power(Expr):
                         return self.base.is_negative
                     return half
 
-        if self.base.is_extended_real is False:  # we already know it's not imag
+        if self.base.is_extended_real == False:  # we already know it's not imag
             i = arg(self.base) * self.exp / S.Pi
             isodd = (2 * i).is_odd
             if isodd is not None:
@@ -739,7 +737,7 @@ class Power(Expr):
                 return Pow(new, l)
 
         if isinstance(old, self.func) and self.base == old.base:
-            if self.exp.is_Plus is False:
+            if self.exp.is_Add is False:
                 ct1 = self.exp.as_independent(Symbol, as_Add=False)
                 ct2 = old.exp.as_independent(Symbol, as_Add=False)
                 ok, pow, remainder_pow = _check(ct1, ct2, old)
@@ -851,8 +849,8 @@ class Power(Expr):
         """a**(n + m) -> a**n*a**m"""
         b = self.base
         e = self.exp
-#         if e.is_Plus and e.is_commutative:
-        if e.is_Plus:
+#         if e.is_Add and e.is_commutative:
+        if e.is_Add:
             expr = []
             for x in e.args:
                 expr.append(self.func(self.base, x))
@@ -865,7 +863,7 @@ class Power(Expr):
 
         b = self.base
         e = self.exp
-        if not b.is_Times:
+        if not b.is_Mul:
             return self
 
         cargs, nc = b.args_cnc(split_1=False)
@@ -893,7 +891,7 @@ class Power(Expr):
             nc = [Mul(*nc)]
 
         # sift the commutative bases
-        other, maybe_real = sift(cargs, lambda x: x.is_extended_real is False,
+        other, maybe_real = sift(cargs, lambda x: x.is_extended_real == False,
             binary=True)
 
         def pred(x):
@@ -986,7 +984,7 @@ class Power(Expr):
         base, exp = self.args
         result = self
 
-        if exp.is_Rational and exp.p > 0 and base.is_Plus:
+        if exp.is_Rational and exp.p > 0 and base.is_Add:
             if not exp.is_Integer:
                 n = Integer(exp.p // exp.q)
 
@@ -1078,16 +1076,16 @@ class Power(Expr):
 #                     return Add(*[f * g for f in base.args for g in base.args])
 #                 else:
 #                     multi = (base ** (n - 1))._eval_expand_multinomial()
-#                     if multi.is_Plus:
+#                     if multi.is_Add:
 #                         return Add(*[f * g for f in base.args
 #                             for g in multi.args])
 #                     else:
 #                         # XXX can this ever happen if base was an Add?
 #                         return Add(*[f * multi for f in base.args])
-        elif (exp.is_Rational and exp.p < 0 and base.is_Plus and
+        elif (exp.is_Rational and exp.p < 0 and base.is_Add and
                 abs(exp.p) > exp.q):
             return 1 / self.func(base, -exp)._eval_expand_multinomial()
-        elif exp.is_Plus and base.is_Number:
+        elif exp.is_Add and base.is_Number:
             #  a + b      a  b
             # n      --> n  n  , where n, a, b are Numbers
 
@@ -1186,7 +1184,7 @@ class Power(Expr):
         base = base._evalf(prec)
         if not exp.is_Integer:
             exp = exp._evalf(prec)
-        if exp.is_negative and base.is_number and base.is_extended_real is False:
+        if exp.is_negative and base.is_number and base.is_extended_real == False:
             base = base.conjugate() / (base * base.conjugate())._evalf(prec)
             exp = -exp
             return self.func(base, exp).expand()
@@ -1238,13 +1236,13 @@ class Power(Expr):
         if self.base.is_zero or _is_one(self.base):
             return True
         elif self.exp.is_rational:
-            if self.base.is_algebraic is False:
+            if self.base.is_algebraic == False:
                 return self.exp.is_zero
             return self.base.is_algebraic
         elif self.base.is_algebraic and self.exp.is_algebraic:
             if ((fuzzy_not(self.base.is_zero)
                 and fuzzy_not(_is_one(self.base)))
-                or self.base.is_integer is False
+                or self.base.is_integer == False
                 or self.base.is_irrational):
                 return self.exp.is_rational
 
@@ -1291,7 +1289,7 @@ class Power(Expr):
         # exponent handling
         neg_exp = exp.is_negative
         if not neg_exp and not (-exp).is_negative:
-            neg_exp = _coeff_isneg(exp)
+            neg_exp = exp._coeff_isneg()
         int_exp = exp.is_integer
         # the denominator cannot be separated from the numerator if
         # its sign is unknown unless the exponent is an integer, e.g.
@@ -1522,7 +1520,7 @@ class Power(Expr):
 
             bs = b._eval_nseries(x, n=nuse, logx=logx)
             terms = bs.removeO()
-            if terms.is_Plus:
+            if terms.is_Add:
                 bs = terms
                 lt = terms.as_leading_term(x)
 
@@ -1530,7 +1528,7 @@ class Power(Expr):
                 return ((self.func(lt, e) * self.func((bs / lt).expand(), e).nseries(
                     x, n=nuse, logx=logx)).expand() + order)
 
-            if bs.is_Plus:
+            if bs.is_Add:
                 from sympy import O
                 # So, bs + O() == terms
                 c = Dummy('c')
@@ -1623,11 +1621,11 @@ class Power(Expr):
         3**(2*x + 2)
 
         >>> eq = (2 + 2*x)**y
-        >>> s = expand_power_base(eq); s.is_Times, s
+        >>> s = expand_power_base(eq); s.is_Mul, s
         (False, (2*x + 2)**y)
         >>> eq.as_content_primitive()
         (1, (2*(x + 1))**y)
-        >>> s = expand_power_base(_[1]); s.is_Times, s
+        >>> s = expand_power_base(_[1]); s.is_Mul, s
         (True, 2**y*(x + 1)**y)
 
         See docstring of Expr.as_content_primitive for more examples.
@@ -1658,7 +1656,7 @@ class Power(Expr):
                 return c, self.func(b, _keep_coeff(ce, t + r / ce / ceh.q))
         e = _keep_coeff(ce, pe)
         # b**e = (h*t)**e = h**e*t**e = c*m*t**e
-        if e.is_Rational and b.is_Times:
+        if e.is_Rational and b.is_Mul:
             h, t = b.as_content_primitive(radical=radical, clear=clear)  # h is positive
             c, m = self.func(h, e).as_coeff_Mul()  # so c is positive
             m, me = m.as_base_exp()
@@ -1713,7 +1711,7 @@ class Power(Expr):
         domain = self.base.domain_defined(x) & self.exp.domain_defined(x)
         if self.exp < 0:
             domain &= self.base.domain_nonzero(x)
-        if self.exp.is_integer is False:
+        if self.exp.is_integer == False:
             domain &= x.domain_conditioned(self.base >= 0)
         return domain
 
@@ -1792,6 +1790,7 @@ class Power(Expr):
         from sympy.printing.precedence import precedence
         PREC = precedence(self)
 
+        import re
         if self.exp is S.Half and not rational:
             arg = p._print(self.base)
             if re.compile('\w+').fullmatch(arg):
@@ -1820,6 +1819,23 @@ class Power(Expr):
                 return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
         return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e)
     
+    def _eval_is_random(self):
+        for arg in self.args:
+            if arg.is_random:
+                return True
+    
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            return Expr.simplify(self, deep)
+        
+        base, exp = self.args
+        if exp.is_Integer:
+            if {*base.enumerate_KroneckerDelta()}:
+                return self.expand()
+            
+        return self
+
+
 Pow = Power    
 from .add import Add
 from .numbers import Integer

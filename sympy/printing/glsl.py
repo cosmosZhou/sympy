@@ -1,7 +1,7 @@
 from sympy.codegen.ast import Assignment
 from sympy.core import S
 from sympy.core.compatibility import string_types, range
-from sympy.core.function import _coeff_isneg, Lambda
+from sympy.core.function import Lambda
 from sympy.printing.codeprinter import CodePrinter
 from sympy.printing.precedence import precedence
 from functools import reduce
@@ -292,7 +292,7 @@ class GLSLPrinter(CodePrinter):
         def add(a,b):
             return self._print_Function_with_args('add', (a, b))
             # return self.known_functions['add']+'(%s, %s)' % (a,b)
-        neg, pos = partition(lambda arg: _coeff_isneg(arg), terms)
+        neg, pos = partition(lambda arg: arg._coeff_isneg(), terms)
         s = pos = reduce(lambda a,b: add(a,b), map(lambda t: self._print(t),pos))
         if neg:
             # sum the absolute values of the negative terms

@@ -39,7 +39,7 @@ def test_operator():
     assert isinstance(A, QExpr)
 
     assert A.label == (Symbol('A'),)
-    assert A.is_commutative is False
+    assert A.is_commutative == False
     assert A.hilbert_space == HilbertSpace()
 
     assert A*B != B*A
@@ -67,8 +67,8 @@ def test_hermitian():
 
     assert Dagger(H) == H
     assert H.inv() != H
-    assert H.is_commutative is False
-    assert Dagger(H).is_commutative is False
+    assert H.is_commutative == False
+    assert Dagger(H).is_commutative == False
 
 
 def test_unitary():
@@ -80,8 +80,8 @@ def test_unitary():
     assert U.inv() == Dagger(U)
     assert U*Dagger(U) == 1
     assert Dagger(U)*U == 1
-    assert U.is_commutative is False
-    assert Dagger(U).is_commutative is False
+    assert U.is_commutative == False
+    assert Dagger(U).is_commutative == False
 
 
 def test_identity():
@@ -94,6 +94,8 @@ def test_identity():
 
     assert I * O == O
     assert O * I == O
+    assert I * Dagger(O) == Dagger(O)
+    assert Dagger(O) * I == Dagger(O)
     assert isinstance(I * I, IdentityOperator)
     assert isinstance(3 * I, Mul)
     assert isinstance(I * x, Mul)
@@ -117,7 +119,7 @@ def test_outer_product():
     assert op.ket == k
     assert op.bra == b
     assert op.label == (k, b)
-    assert op.is_commutative is False
+    assert op.is_commutative == False
 
     op = k*b
 
@@ -127,7 +129,7 @@ def test_outer_product():
     assert op.ket == k
     assert op.bra == b
     assert op.label == (k, b)
-    assert op.is_commutative is False
+    assert op.is_commutative == False
 
     op = 2*k*b
 
@@ -138,7 +140,7 @@ def test_outer_product():
     assert op == Mul(Integer(2), OuterProduct(k, b))
 
     assert Dagger(k*b) == OuterProduct(Dagger(b), Dagger(k))
-    assert Dagger(k*b).is_commutative is False
+    assert Dagger(k*b).is_commutative == False
 
     #test the _eval_trace
     assert Tr(OuterProduct(JzKet(1, 1), JzBra(1, 1))).doit() == 1

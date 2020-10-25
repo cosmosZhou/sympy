@@ -63,8 +63,6 @@ class MatrixExpr(Expr):
     is_Identity = None
     is_Inverse = False
     
-    is_ZeroMatrix = False
-    is_MatAdd = False
     is_MatMul = False
 
 #     is_commutative = False
@@ -136,11 +134,13 @@ class MatrixExpr(Expr):
 
     @property
     def rows(self):
+        if len(self.shape) == 1:
+            return 1
         return self.shape[0]
 
     @property
     def cols(self):
-        return self.shape[1]
+        return self.shape[-1]
 
     def _eval_conjugate(self):
         from sympy.matrices.expressions.adjoint import Adjoint
@@ -158,7 +158,7 @@ class MatrixExpr(Expr):
         return Inverse(self)
 
     def _eval_transpose(self):
-        return Transpose(self)
+        ...
 
     def _eval_power(self, exp):
         return MatPow(self, exp)
@@ -175,7 +175,7 @@ class MatrixExpr(Expr):
 
     def _eval_derivative(self, x):
         # x is a scalar:
-        return ZeroMatrix(self.shape[0], self.shape[1])
+        return ZeroMatrix(*self.shape)
 
     def _eval_derivative_array(self, x):
         if isinstance(x, MatrixExpr):
@@ -414,7 +414,7 @@ class MatrixExpr(Expr):
             return rule(expr)
 
         def recurse_expr(expr, index_ranges={}):
-            if expr.is_Times:
+            if expr.is_Mul:
                 nonmatargs = []
                 pos_arg = []
                 pos_ind = []
@@ -476,7 +476,7 @@ class MatrixExpr(Expr):
                 return [(Mul.fromiter(nonmatargs), None)] + [
                     (MatrixElement(a, i, j), (i, j)) for (i, j), a in lines.items()
                 ]
-            elif expr.is_Plus:
+            elif expr.is_Add:
                 res = [recurse_expr(i) for i in expr.args]
                 d = collections.defaultdict(list)
                 for res_addend in res:
@@ -849,9 +849,9 @@ class Identity(MatrixExpr):
 
     def _entry(self, i, j=None, **kwargs):
         if j is None:
-            from sympy.concrete.expr_with_limits import Ref
+            from sympy.concrete.expr_with_limits import LAMBDA
             j = self.generate_free_symbol(integer=True)
-            return Ref(KroneckerDelta(i, j), (j, 0, self.n - 1))
+            return LAMBDA(KroneckerDelta(i, j), (j, 0, self.n - 1))
         else:
             eq = Eq(i, j)
             if eq is S.true:
@@ -918,13 +918,10 @@ class ZeroMatrix(MatrixExpr):
     0
     """
     is_ZeroMatrix = True
-
-    def __new__(cls, m, n):
-        return super(ZeroMatrix, cls).__new__(cls, m, n)
-
-    @property
-    def shape(self):
-        return (self.args[0], self.args[1])
+    is_zero = True
+    
+    def __new__(cls, *shape):
+        return super(ZeroMatrix, cls).__new__(cls, shape=shape)
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rpow__')
@@ -938,6 +935,8 @@ class ZeroMatrix(MatrixExpr):
         return self
 
     def _eval_transpose(self):
+        if self.rows == 1:
+            return self
         return ZeroMatrix(self.cols, self.rows)
 
     def _eval_trace(self):
@@ -949,7 +948,9 @@ class ZeroMatrix(MatrixExpr):
     def conjugate(self):
         return self
 
-    def _entry(self, i, j, **kwargs):
+    def _entry(self, i, j=None, **kwargs):
+        if j is None and len(self.shape) > 1:
+            return self.func(self.shape[1])            
         return S.Zero
 
     def __nonzero__(self):
@@ -957,7 +958,24 @@ class ZeroMatrix(MatrixExpr):
 
     __bool__ = __nonzero__
 
+    @property
+    def atomic_dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
 
+    def _latex(self, p):
+        return r"\mathbf{0}"
+#         return r"\mathbb{0}" if p._settings['mat_symbol_style'] == 'plain' else r"\mathbf{0}"
+
+    def _sympystr(self, p):
+        return "0"
+
+    def __rmul__(self, other):
+        if len(other.shape) > len(self.shape):
+            return self.func(*other.shape)
+        return self
+
+    
 class GenericZeroMatrix(ZeroMatrix):
     """
     A zero matrix without a specified shape
@@ -1191,6 +1209,7 @@ def _make_matrix(x):
 
 
 class Concatenate(MatrixExpr):
+    is_Concatenate = True
     
     @property
     def atomic_dtype(self):
@@ -1203,37 +1222,62 @@ class Concatenate(MatrixExpr):
 
     def __new__(cls, *args, **kwargs):
         _args = []
-        for arg in args:
-            if isinstance(arg, Concatenate):
+        from sympy import sympify
+        args = [*map(sympify, args)]
+        length = max(len(arg.shape) for arg in args)
+        for arg in args:            
+            if isinstance(arg, Concatenate) and len(arg.shape) == length:
                 _args += arg.args
             else:
                 _args.append(arg)
-            
+        if all(not arg.shape for arg in _args):
+            from sympy import Matrix
+            return Matrix(tuple(_args))
         return Basic.__new__(cls, *_args, **kwargs)
     
     @staticmethod
     def broadcast(shapes):
-        length = 2
+        length = 0
         cols = 0
-        for shape in shapes:
+        for i, shape in enumerate(shapes):
+            if not shape:
+                shapes[i] = (1,)
+                shape = shapes[i]
             if shape[-1] > cols:
                 cols = shape[-1]
-
+            if len(shape) > length:
+                length = len(shape)
+                
+        if all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes):
+            length += 1
+            
         for i, shape in enumerate(shapes):
-            if shape[-1] < cols:
+            if shape[-1] < cols and len(shape) > 1:
                 shape = shape[:-1] + (cols,)
             if len(shape) < length:
                 shape = (1,) * (length - len(shape)) + shape
             shapes[i] = shape
         return shapes
     
-    @property
-    def shape(self):
+    def _eval_shape(self):
         shapes = [arg.shape for arg in self.args]
         self.broadcast(shapes)
-        return sum(s[0] for s in shapes), shapes[0][1]
+        rows = sum(s[0] for s in shapes)
+        if len(shapes[0]) > 1:
+            return rows, shapes[0][1]
+        else:
+            return (rows,)
+        
+    @property
+    def shape(self):
+        if 'shape' in self._assumptions:
+            return self._assumptions['shape']
+        shape = self._eval_shape()
+        self._assumptions['shape'] = shape
+        return shape
 
     def __getitem__(self, key):
+        from sympy.functions.elementary.piecewise import Piecewise
         if not isinstance(key, tuple) and isinstance(key, slice):
             start, stop = key.start, key.stop
             if start is None:
@@ -1274,17 +1318,19 @@ class Concatenate(MatrixExpr):
                 from sympy.matrices.expressions.slice import MatrixSlice
                 return MatrixSlice(self, i, j)
             i, j = _sympify(i), _sympify(j)
-            if self.valid_index(i, j) != False:
-                from sympy.functions.elementary.piecewise import Piecewise
+            if self.valid_index(i, j) != False:                
                 args = []
                 length = 0
                 for arg in self.args:
                     _length = length
                     length += arg.rows
+                    cond = i < length
                     if len(arg.shape) == 1:
-                        args.append([arg[j], i < length])
-                    else:
-                        args.append([arg[i - _length, j], i < length])
+                        args.append([arg[j], cond])
+                    else:                        
+                        if cond.is_BooleanFalse:
+                            continue                         
+                        args.append([arg[i - _length, j], cond])
                         
                 args[-1][-1] = True
                 return Piecewise(*args)
@@ -1292,20 +1338,24 @@ class Concatenate(MatrixExpr):
                 raise IndexError("Invalid indices (%s, %s)" % (i, j))
         elif isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
             rows = 0
+            args = []
             for arg in self.args:
                 index = rows
-                if len(arg.shape) == 1:
+                if len(arg.shape) < len(self.shape):
                     rows += 1
                 else:
                     rows += arg.shape[0]
-
-                if key < rows:
-                    if len(arg.shape) == 1:
-                        return arg
-                    else:
-                        return arg[key - index]
-
-            raise IndexError("Invalid index %s" % key)
+                    
+                cond = key < rows
+                if cond.is_BooleanFalse:
+                    continue
+                
+                if len(arg.shape) < len(self.shape):
+                    args.append([arg, cond])
+                else:
+                    args.append([arg[key - index], cond]) 
+            args[-1][-1] = True
+            return Piecewise(*args)
 
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
@@ -1441,19 +1491,119 @@ class Concatenate(MatrixExpr):
                 
             return arg.base[start:len(self.args)]
         return self
+    
+    def matrixblock(self):
+        cols = None
+        blocks = []
+        for X in self.args:            
+            if X.is_Transpose and X.arg.is_Concatenate:
+                if cols is None:
+                    cols = len(X.arg.args)
+                else:
+                    if cols != len(X.arg.args):
+                        return
+                blocks.append([x.T for x in X.arg.args])
+                continue
+            if len(X.shape) == 1 and X.is_Concatenate:
+                if cols is None:
+                    cols = len(X.args)
+                else:
+                    if cols != len(X.args):
+                        return
+                blocks.append([x for x in X.args])
+                continue                
+                
+            return
+        
+        for i in range(cols):
+            cols = None
+            block = [block[i] for block in blocks]
+            matrix = [b for b in block if len(b.shape) == 2]           
+            
+            if matrix:
+                cols = matrix[0].cols
+                if any(m.cols != cols for m in matrix):
+                    return
+                
+                vector = [b for b in block if len(b.shape) == 1]
+                if any(v.shape[0] != cols for v in vector):
+                    return
+                
+                scalar = [b for b in block if len(b.shape) == 0]
+                if scalar:
+                    return
+                
+        return blocks
+        
+    @property
+    def is_BlockMatrix(self):
+        return self.matrixblock() is not None
 
+    # {c} means center, {l} means left, {r} means right
     def _latex(self, p):
 #         return r'\begin{pmatrix}%s\end{pmatrix}' % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-        return r"\left(\begin{array}{c}%s\end{array}\right)" % r'\\'.join('{%s}' % p._print(arg) for arg in self.args)
+
+        blocks = self.matrixblock()
+        if blocks is not None:
+            cols = len(blocks[0])
+            array = (' & '.join('{%s}' % p._print(X) for X in block) for block in blocks)
+            return r"\left(\begin{array}{%s}%s\end{array}\right)" % ('c' * cols, r'\\'.join(array))
+            
+        array = []
+        for X in self.args:            
+            if X.is_Transpose and X.arg.is_Concatenate:                
+                X = X.arg       
+                latex = r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args),
+                                                                            ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
+            else:
+                latex = '{%s}' % p._print(X)   
+            array.append(latex)
+
+        if len(self.shape) == 1:
+            delimiter = ' & '
+            center = 'c' * len(self.args)
+        else:
+            delimiter = r'\\'
+            center = 'c'
+            
+        return r"\left(\begin{array}{%s}%s\end{array}\right)" % (center, delimiter.join(array))
 #         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
 
-    def _symptr(self, p):
+    def _sympystr(self, p):
         return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
+
+    def domain_defined(self, x):
+        if x.atomic_dtype.is_set:
+            return S.UniversalSet
+        
+        domain = x.domain
+        for arg in self.args:
+            domain &= arg.domain_defined(x)
+        return domain
+
+    def _eval_transpose(self):
+        blocks = self.matrixblock()
+        if blocks is None:
+            if len(self.shape) == 1:
+                return self
+            return
+        rows = len(blocks)
+        cols = len(blocks[0])
+        
+        blocks_T = [[None] * rows for _ in range(cols)]
+        for i in range(rows):
+            for j in range(cols):
+                blocks_T[j][i] = blocks[i][j]
+        return self.func(*[self.func(*block).T for block in blocks_T])
+
+    def __rmul__(self, other):        
+        if not other.shape:
+            return self.func(*(other * arg for arg in self.args))
+        return MatrixExpr.__rmul__(self, other)
 
 
 # precondition: i > j or i < j
 class Swap(Identity):    
-    is_Swap = True
     is_Identity = False
     
     def _latex(self, p):
@@ -1468,23 +1618,40 @@ class Swap(Identity):
         return Identity.__new__(cls, n, i, j)
     
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equality
         
+        if isinstance(i, slice):
+            if i.start in (0, None) and i.stop in (self.n, None):
+                i = self.generate_free_symbol(excludes=None if j is None else j.free_symbols, integer=True)
+                return_reference_i = True
+            else:
+                raise Exception('general i slice unimplemented')
+        else:
+            return_reference_i = False
+            
         if j is None:
-            return_reference = True
+            return_reference_j = True
             j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
         else:
-            return_reference = False                        
+            return_reference_j = False                        
         piecewise = Piecewise((KroneckerDelta(j, self.i), Equality(i, self.j)),
                               (KroneckerDelta(j, self.j), Equality(i, self.i)),
                               (KroneckerDelta(j, i), True))
 
-        if return_reference:
-            return Ref[j:self.n](piecewise)
+        if return_reference_j:
+            return LAMBDA[j:self.n](piecewise)
+        if return_reference_i:
+            return LAMBDA[i:self.n](piecewise)
         return piecewise            
 
+    def as_Piecewise(self):
+        from sympy.concrete.expr_with_limits import LAMBDA
+        i = self.generate_free_symbol(integer=True)
+        j = self.generate_free_symbol({i}, integer=True)
+        return LAMBDA[j:self.n, i:self.n](self._entry(i, j))
+        
     @property
     def i(self):
         return self.args[1]
@@ -1510,6 +1677,9 @@ class Swap(Identity):
     @property
     def is_lower(self):
         return self.i == self.j
+
+    def domain_defined(self, x): 
+        return self.n.domain_defined(x) & x.domain_conditioned((self.i < self.n) & (self.i >= 0) & (self.j < self.n) & (self.j >= 0))
 
 
 class Multiplication(Identity):
@@ -1540,7 +1710,7 @@ class Multiplication(Identity):
         return self.multiplier
 
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
 #     1   0   0   0   0   0
 #     0   1   0   0   0   0    
 #     0   0   k   0   0   0    <-----self.i    th row
@@ -1560,7 +1730,7 @@ class Multiplication(Identity):
         piecewise = (1 + (self.multiplier - 1) * KroneckerDelta(i, self.i)) * KroneckerDelta(i, j)
         
         if return_reference:
-            return Ref[j:self.n](piecewise)
+            return LAMBDA[j:self.n](piecewise)
         return piecewise
 
     def __matmul__(self, rhs):
@@ -1622,7 +1792,7 @@ class Addition(Multiplication):
         return self.func(self.n, self.i, self.j, -self.multiplier)
 
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equality
         
@@ -1649,7 +1819,7 @@ class Addition(Multiplication):
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
-            return Ref[j:self.n](piecewise)
+            return LAMBDA[j:self.n](piecewise)
         return piecewise            
 
     def _eval_determinant(self):
@@ -1720,7 +1890,7 @@ class Shift(Identity):
         return self.T
 
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equality, StrictLessThan 
         from sympy.sets import Contains, Interval
@@ -1762,7 +1932,7 @@ class Shift(Identity):
                               (piecewise_ji, True))
 
         if return_reference:
-            return Ref[j:self.n](piecewise)
+            return LAMBDA[j:self.n](piecewise)
         return piecewise            
 
     @_sympifyit('other', NotImplemented)

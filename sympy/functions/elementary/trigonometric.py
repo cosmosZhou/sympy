@@ -77,12 +77,12 @@ class TrigonometricFunction(Function):
             return general_period
 
         if symbol in f.free_symbols:
-            if f.is_Times:
+            if f.is_Mul:
                 g, h = f.as_independent(symbol)
                 if h == symbol:
                     return general_period / abs(g)
 
-            if f.is_Plus:
+            if f.is_Add:
                 a, h = f.as_independent(symbol)
                 g, h = h.as_independent(symbol, as_Add=False)
                 if h == symbol:
@@ -117,7 +117,7 @@ def _peeloff_pi(arg):
         if a is S.Pi:
             K = S.One
             break
-        elif a.is_Times:
+        elif a.is_Mul:
             K, p = a.as_two_terms()
             if p is S.Pi and K.is_Rational:
                 break
@@ -170,7 +170,7 @@ def _pi_coeff(arg, cycles=1):
         return S.One
     elif not arg:
         return S.Zero
-    elif arg.is_Times:
+    elif arg.is_Mul:
         cx = arg.coeff(S.Pi)
         if cx:
             c, x = cx.as_coeff_Mul()  # pi is not included as coeff
@@ -311,7 +311,7 @@ class Sin(TrigonometricFunction):
             if (2 * pi_coeff).is_integer:
                 if pi_coeff.is_even:
                     return S.Zero
-                elif pi_coeff.is_even is False:
+                elif pi_coeff.is_even == False:
                     return S.NegativeOne ** (pi_coeff - S.Half)
 
             if not pi_coeff.is_Rational:
@@ -336,7 +336,7 @@ class Sin(TrigonometricFunction):
                     return cls(pi_coeff * S.Pi)
                 return None
 
-        if arg.is_Plus:
+        if arg.is_Add:
             x, m = _peeloff_pi(arg)
             if m:
                 return sin(m) * cos(x) + cos(m) * sin(x)
@@ -435,7 +435,7 @@ class Sin(TrigonometricFunction):
         from sympy.functions.special.polynomials import chebyshevt, chebyshevu
         arg = self.args[0]
         x = None
-        if arg.is_Plus:  # TODO, implement more if deep stuff here
+        if arg.is_Add:  # TODO, implement more if deep stuff here
             # TODO: Do this more efficiently for more than two terms
             x, y = arg.as_two_terms()
             sx = sin(x, evaluate=False)._eval_expand_trig()
@@ -626,7 +626,7 @@ class Cos(TrigonometricFunction):
             if (2 * pi_coeff).is_integer:
                 if pi_coeff.is_even:
                     return (S.NegativeOne) ** (pi_coeff / 2)
-                elif pi_coeff.is_even is False:
+                elif pi_coeff.is_even == False:
                     return S.Zero
 
             if not pi_coeff.is_Rational:
@@ -694,7 +694,7 @@ class Cos(TrigonometricFunction):
                     return sign_cos * sqrt((1 + nval) / 2)
             return None
 
-        if arg.is_Plus:
+        if arg.is_Add:
             x, m = _peeloff_pi(arg)
             if m:
                 return cos(m) * cos(x) - sin(m) * sin(x)
@@ -926,7 +926,7 @@ class Cos(TrigonometricFunction):
         from sympy.functions.special.polynomials import chebyshevt
         arg = self.args[0]
         x = None
-        if arg.is_Plus:  # TODO: Do this more efficiently for more than two terms
+        if arg.is_Add:  # TODO: Do this more efficiently for more than two terms
             x, y = arg.as_two_terms()
             sx = sin(x, evaluate=False)._eval_expand_trig()
             sy = sin(y, evaluate=False)._eval_expand_trig()
@@ -1156,7 +1156,7 @@ class tan(TrigonometricFunction):
                 if narg != arg:
                     return cls(narg)
 
-        if arg.is_Plus:
+        if arg.is_Add:
             x, m = _peeloff_pi(arg)
             if m:
                 tanm = tan(m)
@@ -1235,7 +1235,7 @@ class tan(TrigonometricFunction):
         from sympy import im, re
         arg = self.args[0]
         x = None
-        if arg.is_Plus:
+        if arg.is_Add:
             from sympy import symmetric_poly
             n = len(arg.args)
             TX = []
@@ -1442,7 +1442,7 @@ class cot(TrigonometricFunction):
                 if narg != arg:
                     return cls(narg)
 
-        if arg.is_Plus:
+        if arg.is_Add:
             x, m = _peeloff_pi(arg)
             if m:
                 cotm = cot(m)
@@ -1574,7 +1574,7 @@ class cot(TrigonometricFunction):
         from sympy import im, re
         arg = self.args[0]
         x = None
-        if arg.is_Plus:
+        if arg.is_Add:
             from sympy import symmetric_poly
             n = len(arg.args)
             CX = []
@@ -2333,7 +2333,7 @@ class acos(InverseTrigonometricFunction):
     def _eval_conjugate(self):
         z = self.args[0]
         r = self.func(self.args[0].conjugate())
-        if z.is_extended_real is False:
+        if z.is_extended_real == False:
             return r
         elif z.is_extended_real and (z + 1).is_nonnegative and (z - 1).is_nonpositive:
             return r
@@ -2791,7 +2791,7 @@ class asec(InverseTrigonometricFunction):
 
     def _eval_is_extended_real(self):
         x = self.args[0]
-        if x.is_extended_real is False:
+        if x.is_extended_real == False:
             return False
         return fuzzy_or(((x - 1).is_nonnegative, (-x - 1).is_nonnegative))
 

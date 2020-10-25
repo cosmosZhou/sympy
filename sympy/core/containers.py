@@ -14,7 +14,7 @@ from sympy.core.basic import Basic
 from sympy.core.compatibility import as_int, range, MutableSet
 from sympy.core.sympify import sympify, converter
 from sympy.utilities.iterables import iterable
-
+from sympy.core.logic import fuzzy_or
 
 
 class Tuple(Basic):
@@ -48,7 +48,7 @@ class Tuple(Basic):
 
     def __new__(cls, *args, **kwargs):
         if kwargs.get('sympify', True):
-            args = ( sympify(arg) for arg in args )
+            args = (sympify(arg) for arg in args)
         obj = Basic.__new__(cls, *args)
         return obj
 
@@ -88,7 +88,7 @@ class Tuple(Basic):
             n = as_int(other)
         except ValueError:
             raise TypeError("Can't multiply sequence by non-integer of type '%s'" % type(other))
-        return self.func(*(self.args*n))
+        return self.func(*(self.args * n))
 
     __rmul__ = __mul__
 
@@ -149,15 +149,72 @@ class Tuple(Basic):
             domain &= arg.domain_defined(x)
         return domain
 
-
     def _format_ineq(self, p):
         if len(self) == 3:
             return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (self[1], self[0], self[2])])
         if len(self) == 2:
             return r"%s \in %s" % tuple([p._print(s) for s in (self[0], self[1])])
         return p._print(self[0])
-        
 
+    def domain_latex(self, domain=None):
+        from sympy.core.numbers import oo
+        if domain.is_Interval:
+            start, end = domain.start, domain.stop
+            if end == oo:
+                if start == -oo:
+                    if domain.is_integer:
+                        return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
+                    return r"%s\in%s" % (self.latex, r'\mathbb{R}')
+                if domain.left_open:
+                    return r"%s > %s" % (self.latex, start.latex)
+                return r"%s \ge %s" % (self.latex, start.latex)
+            else:
+                if start == -oo:
+                    if domain.right_open:
+                        return r"%s < %s" % (self.latex, end.latex)
+                    return r"%s \le %s" % (self.latex, end.latex)
+
+                if domain.left_open:
+                    if domain.right_open:
+                        return r"%s < %s < %s" % (start.latex, self.latex, end.latex)
+                    return r"%s < %s \le %s" % (start.latex, self.latex, end.latex)
+                if domain.right_open:
+                    return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
+                return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
+        elif domain.dtype.is_condition:
+            return r"%s \left| %s \right." % (self.latex, domain.latex)
+        else:
+            return r"%s \in %s" % (self.latex, domain.latex)
+
+    def _eval_is_random(self):
+        return fuzzy_or(arg.is_random for arg in self.args)
+    
+    def _subs_limits(self, old, new):
+        hit = False
+        x, *ab = self
+        for j, t in enumerate(ab):
+            _t = t._subs(old, new)
+            if t != _t:
+                hit = True
+                ab[j] = _t
+                
+        if x.is_Indexed or x.is_Slice:
+            _hit = False
+            indices = [*x.indices]
+            for j, t in enumerate(indices):
+                _t = t._subs(old, new)
+                if t != _t:
+                    _hit = True
+                    indices[j] = _t
+            if _hit:
+                x = x.func(x.base, *indices)
+                hit = True
+        
+        if hit:
+            return self.func(x, *ab)
+        return self
+
+        
 converter[tuple] = lambda tup: Tuple(*tup)
 
 
@@ -180,6 +237,7 @@ def tuple_wrapper(method):
     (0, (1, 2), 3)
 
     """
+
     def wrap_tuples(*args, **kw_args):
         newargs = []
         for arg in args:
@@ -188,6 +246,7 @@ def tuple_wrapper(method):
             else:
                 newargs.append(arg)
         return method(*newargs, **kw_args)
+
     return wrap_tuples
 
 
@@ -285,6 +344,7 @@ class Dict(Basic):
 
 
 class OrderedSet(MutableSet):
+
     def __init__(self, iterable=None):
         if iterable:
             self.map = OrderedDict((item, None) for item in iterable)

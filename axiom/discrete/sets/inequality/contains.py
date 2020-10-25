@@ -1,10 +1,10 @@
 from sympy.core.relational import Unequality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from sympy import S
 from sympy.sets.contains import Contains
 from sympy.concrete.expr_with_limits import Exists
-
+from sympy import Symbol
 # given: A != {}
 # Exists[x] (x in A)
 
@@ -20,12 +20,12 @@ def apply(given):
     return Exists(Contains(x, A), (x,), given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
+    A = Symbol.A(dtype=dtype.integer)
     Eq << apply(Unequality(A, S.EmptySet))
     
     Eq << (Eq[0].lhs.assertion() & Eq[0])

@@ -130,9 +130,9 @@ class Dagger(Expr):
         if dagger is not None:
             return dagger()
         if isinstance(arg, Basic):
-            if arg.is_Plus:
+            if arg.is_Add:
                 return Add(*tuple(map(Dagger, arg.args)))
-            if arg.is_Times:
+            if arg.is_Mul:
                 return Mul(*tuple(map(Dagger, reversed(arg.args))))
             if arg.is_Number:
                 return arg
@@ -1777,10 +1777,10 @@ class NO(Expr):
         # {ab + cd} = {ab} + {cd}
         arg = sympify(arg)
         arg = arg.expand()
-        if arg.is_Plus:
+        if arg.is_Add:
             return Add(*[ cls(term) for term in arg.args])
 
-        if arg.is_Times:
+        if arg.is_Mul:
 
             # take coefficient outside of normal ordering brackets
             c_part, seq = arg.args_cnc()

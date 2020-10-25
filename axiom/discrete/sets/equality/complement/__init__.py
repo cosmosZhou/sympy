@@ -1,2 +1,3 @@
-from . import subset
 
+from . import subset
+from . import equality

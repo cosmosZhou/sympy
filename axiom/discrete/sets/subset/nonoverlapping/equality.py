@@ -1,10 +1,10 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from axiom import discrete
 from sympy import S
 from sympy.sets.contains import Subset
-
+from sympy import Symbol
 # given0: A in B
 # given1: B & C = {}
 # C - A = C
@@ -34,22 +34,18 @@ def apply(*given):
     return Equality(C - A, C, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    A = Symbol('A', dtype=dtype.integer)
-    B = Symbol('B', dtype=dtype.integer)
-    C = Symbol('C', dtype=dtype.integer)
+    A = Symbol.A(dtype=dtype.integer, given=True)
+    B = Symbol.B(dtype=dtype.integer, given=True)
+    C = Symbol.C(dtype=dtype.integer, given=True)
 
-    subset = Subset(A, B, evaluate=False)
+    Eq << apply(Equality(B & C, S.EmptySet, evaluate=False), Subset(A, B, evaluate=False))
 
-    equality = Equality(B & C, S.EmptySet, evaluate=False)
-
-    Eq << apply(equality, subset)
-
-    Eq << discrete.sets.emptyset.subset.apply(equality, subset)
+    Eq << discrete.sets.equality.emptyset.subset.apply(Eq[0], Eq[1])
 
     Eq << Eq[-1].union(Eq[-2].lhs).reversed
 

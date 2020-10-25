@@ -151,15 +151,6 @@ class StrPrinter(Printer):
     def _print_Inverse(self, I):
         return "%s**(-1)" % self.parenthesize(I.arg, PRECEDENCE["Pow"])
 
-    def _print_PDF(self, expr):
-        expr, symbols = expr.args
-
-        symbols = self._print(symbols)
-
-        tex = r"%s(%s)" % (self._print(expr), symbols)
-
-        return tex
-
     def _print_LatticeOp(self, expr):
         args = sorted(expr.args, key=default_sort_key)
         return expr.func.__name__ + "(%s)" % ", ".join(self._print(arg) for arg in args)
@@ -342,7 +333,7 @@ class StrPrinter(Printer):
 
             s_monom = "*".join(s_monom)
 
-            if coeff.is_Plus:
+            if coeff.is_Add:
                 if s_monom:
                     s_coeff = "(" + self._print(coeff) + ")"
                 else:
@@ -548,9 +539,6 @@ class StrPrinter(Printer):
         from sympy.matrices import Matrix
         return self._print(Matrix(expr))
     
-    def _print_ZeroMatrix(self, expr):
-        return "0"
-
     def _print_OneMatrix(self, expr):
         return "1"
 

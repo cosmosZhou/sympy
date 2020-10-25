@@ -1,10 +1,10 @@
 from sympy.core.relational import  Unequality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from sympy import S
 from sympy.sets.contains import Contains
 from axiom.discrete import sets
-
+from sympy import Symbol
 
 # given : e.set & s != S.EmptySet
 @plausible
@@ -25,19 +25,19 @@ def apply(given):
     return Contains(e, s, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    s = Symbol('s', dtype=dtype.integer)
-    e = Symbol('e', integer=True)
+    s = Symbol.s(dtype=dtype.integer)
+    e = Symbol.e(integer=True)
 
     Eq << apply(Unequality(e.set & s, S.EmptySet))
     
     Eq << ~Eq[1]
     
-    Eq << Eq[-1].apply(sets.notcontains.nonoverlapping)
+    Eq << Eq[-1].apply(sets.notcontains.emptyset)
     
     Eq << Eq[-1].subs(Eq[0])
     
