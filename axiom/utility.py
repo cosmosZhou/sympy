@@ -501,8 +501,5 @@ def get_function_body(func):
 # http://www.sagemath.org/download-source.html
 # https://www.sagemath.org/
 
-from colorama import init
-init(autoreset=True)
-
 if __name__ == '__main__':
     ...
