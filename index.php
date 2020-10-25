@@ -1,12 +1,29 @@
 <?php
 include_once 'index.html';
-
 ?>
-welcome to http://www.cosmosstudio.cn/sympy/<br>
 
-www.cosmosstudio.cn is a website for mathematical axioms proving system, <br>
+welcome to
+<a href=http://www.cosmosstudio.cn/sympy/axiom>
+	http://www.cosmosstudio.cn/</a>
+<br>
 
-based on open-source symbolic computation project of sympy and Maxima, as well as on commercial algebraic system namely, Mathematica <br>
+<a href=http://www.cosmosstudio.cn/sympy/axiom>
+	http://www.cosmosstudio.cn/</a>
+is a website for mathematical axioms proving system,
+<br>
 
-on which the low-level computation of cosmosstudio.cn is based. <br>
+based on open-source symbolic computation project of
+<a href=https://github.com/cosmosZhou/sympy>sympy</a>
+
+and
+<a href=http://maxima.sourceforge.net> Maxima </a>
+, as well as on commercial algebraic system namely,
+
+<a
+	href=https://reference.wolfram.com/language/index.html.en?source=footer>
+	Mathematica</a>
+<br>
+
+on which the low-level computation of cosmosstudio.cn is based.
+<br>
 
