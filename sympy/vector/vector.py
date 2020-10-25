@@ -16,7 +16,6 @@ class Vector(BasisDependent):
     instantiated by the user.
     """
 
-    is_Vector = True
     _op_priority = 12.0
 
     @property

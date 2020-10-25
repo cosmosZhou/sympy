@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy import Basic
 from sympy.functions import adjoint, conjugate
 
@@ -32,17 +30,18 @@ class Transpose(MatrixExpr):
     B.T*A.T
 
     """
-    is_Transpose = True
-
     @property
     def atomic_dtype(self):
         return self.arg.atomic_dtype
 
     def __new__(cls, arg, **kwargs):        
         arg = _sympify(arg)
-        transpose = arg._eval_transpose()
-        if transpose is not None:
-            return transpose
+        
+        if kwargs.get('evaluate', True):
+            transpose = arg._eval_transpose()
+            if transpose is not None:
+                return transpose
+            
         return MatrixExpr.__new__(cls, arg, **kwargs)
     
     def _sympystr(self, p):
@@ -50,11 +49,14 @@ class Transpose(MatrixExpr):
         return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Power"])
 
     def _latex(self, p): 
-        from sympy.printing.precedence import precedence_traditional
-        return r"%s^{\color{red} T}" % p.parenthesize(self.arg, precedence_traditional(self), True)
+        if self.arg.is_Concatenate:
+            X = self.arg
+            return r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args),
+                                                                        ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
 
-#     def _latex(self, p):        
-#         return r"{%s}^{\color{red} T}" % p._print(self.arg)
+        else:
+            from sympy.printing.precedence import precedence_traditional
+            return r"{%s}^{\color{magenta} T}" % p.parenthesize(self.arg, precedence_traditional(self), True)
 
     def doit(self, **hints):
         arg = self.arg
@@ -101,6 +103,18 @@ class Transpose(MatrixExpr):
         from sympy.matrices.expressions.determinant import det
         return det(self.arg)
 
+    def _eval_is_extended_real(self):
+        return self.arg.is_extended_real
+    
+    def _eval_is_extended_positive(self):
+        return self.arg.is_extended_positive
+    
+    def _eval_is_extended_negative(self):
+        return self.arg.is_extended_negative
+    
+    def _eval_is_finite(self):
+        return self.arg.is_finite    
+
     def _eval_derivative_matrix_lines(self, x):
         lines = self.args[0]._eval_derivative_matrix_lines(x)
         return [i.transpose() for i in lines]
@@ -122,6 +136,13 @@ class Transpose(MatrixExpr):
         definition = self.arg.definition
         if definition is not None:
             return definition.T
+
+    def domain_defined(self, x):
+        domain = MatrixExpr.domain_defined(self, x)
+        for arg in self.args:
+            domain &= arg.domain_defined(x)
+        return domain
+
 
 def transpose(expr):
     """Matrix transpose"""

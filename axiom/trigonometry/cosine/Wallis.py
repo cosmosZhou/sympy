@@ -1,30 +1,30 @@
-from sympy.core.symbol import Symbol
+
 from sympy.core.relational import Equality
 from sympy.core.numbers import pi
 from sympy.functions.elementary.trigonometric import cos
 from sympy.functions.special.gamma_functions import gamma
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.sympify import sympify
 from sympy.functions.elementary.miscellaneous import sqrt
 
-from sympy import S
+from sympy import S, Symbol
 from sympy.integrals.integrals import Integral
 
 
 @plausible
 def apply(n):
     n = sympify(n)
-    x = Symbol("x", real=True)
+    x = Symbol.x(real=True)
     return Equality(Integral[x:0:pi / 2](cos(x) ** (n - 1)),
                     sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    n = Symbol("n", integer=True, positive=True)
+    n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
     (x, *_), *_ = Eq[0].lhs.limits
 

@@ -1,10 +1,10 @@
-from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import LAMBDA
 from axiom.algebre.matrix import vandermonde
+from sympy import Symbol
 
 
 @plausible
@@ -20,7 +20,7 @@ def apply(given):
     
     assert p_polynomial == _p_polynomial
     
-    assert p_polynomial.is_Ref
+    assert p_polynomial.is_LAMBDA
     assert p_polynomial.shape == x.shape == y.shape    
     assert len(p_polynomial.shape) == 1
 #     n = p_polynomial.shape[0]
@@ -35,27 +35,27 @@ def apply(given):
     return Equality(x, y, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    p = Symbol("p", complex=True)    
-    n = Symbol('n', domain=Interval(1, oo, integer=True))
-    x = Symbol("x", shape=(n,), complex=True, given=True)
-    y = Symbol("y", shape=(n,), complex=True, given=True)
-    k = Symbol('k', domain=Interval(1, oo, integer=True))
+    p = Symbol.p(complex=True)
+    n = Symbol.n(domain=Interval(1, oo, integer=True))
+    x = Symbol.x(shape=(n,), complex=True, given=True)
+    y = Symbol.y(shape=(n,), complex=True, given=True)
+    k = Symbol.k(domain=Interval(1, oo, integer=True))
     
     assert x.is_given and y.is_given
     
-    given = Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y)
+    given = Equality(LAMBDA[k:n](p ** k) @ x, LAMBDA[k:n](p ** k) @ y)
     
     Eq << apply(given)
     
-    i = Symbol('i', domain=Interval(1, n, integer=True))
+    i = Symbol.i(domain=Interval(1, n, integer=True))
     Eq << given.subs(p, i)
     
-    Eq << Eq[-1].forall(i)
+    Eq << Eq[-1].forall((i,))
     
     Eq << Eq[-1].as_Equal()
     
@@ -63,7 +63,7 @@ def prove(Eq):
     
     i, k = Eq.statement.lhs.args[1].variables
     
-    Eq << vandermonde.basicForm.apply(Ref[i:n](i + 1))
+    Eq << vandermonde.basicForm.apply(LAMBDA[i:n](i + 1))
     
     Eq << Eq[-1].conclude()
     

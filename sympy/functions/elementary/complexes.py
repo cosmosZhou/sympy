@@ -289,14 +289,14 @@ class sign(Function):
     is_complex = True
 
     def doit(self, **hints):
-        if self.args[0].is_zero is False:
+        if self.args[0].is_zero == False:
             return self.args[0] / Abs(self.args[0])
         return self
 
     @classmethod
     def eval(cls, arg):
         # handle what we can
-        if arg.is_Times:
+        if arg.is_Mul:
             c, args = arg.as_coeff_mul()
             unk = []
             s = sign(c)
@@ -441,7 +441,6 @@ class Abs(Function):
     is_extended_negative = False
     is_extended_nonnegative = True
     unbranched = True
-    is_Abs = True
 
     @property
     def atomic_dtype(self):
@@ -480,7 +479,7 @@ class Abs(Function):
 #             raise TypeError("Bad argument type for Abs(): %s" % type(arg))
         # handle what we can
         arg = signsimp(arg, evaluate=False)
-        if arg.is_Times:
+        if arg.is_Mul:
             known = []
             unk = []
             for t in arg.args:
@@ -524,7 +523,7 @@ class Abs(Function):
             return exp(re(arg.args[0]))
         if isinstance(arg, AppliedUndef) or arg.is_set:
             return
-        if arg.is_Plus and arg.has(S.Infinity, S.NegativeInfinity):
+        if arg.is_Add and arg.has(S.Infinity, S.NegativeInfinity):
             if any(a.is_infinite for a in arg.as_real_imag()):
                 return S.Infinity
         if arg.is_zero:
@@ -675,7 +674,7 @@ class arg(Function):
             return periodic_argument(arg, oo)
         if not arg.is_Atom:
             c, arg_ = factor_terms(arg).as_coeff_Mul()
-            if arg_.is_Times:
+            if arg_.is_Mul:
                 arg_ = Mul(*[a if (sign(a) not in (-1, 1)) else
                     sign(a) for a in arg_.args])
             arg_ = sign(c) * arg_
@@ -876,7 +875,7 @@ class polar_lift(Function):
             if ar in (0, pi / 2, -pi / 2, pi):
                 return exp_polar(I * ar) * abs(arg)
 
-        if arg.is_Times:
+        if arg.is_Mul:
             args = arg.args
         else:
             args = [arg]
@@ -935,7 +934,7 @@ class periodic_argument(Function):
 
     @classmethod
     def _getunbranched(cls, ar):
-        if ar.is_Times:
+        if ar.is_Mul:
             args = ar.args
         else:
             args = [ar]
@@ -967,7 +966,7 @@ class periodic_argument(Function):
             return periodic_argument(*ar.args)
         if isinstance(ar, polar_lift) and period >= 2 * pi:
             return periodic_argument(ar.args[0], period)
-        if ar.is_Times:
+        if ar.is_Mul:
             newargs = [x for x in ar.args if not x.is_positive]
             if len(newargs) != len(ar.args):
                 return periodic_argument(Mul(*newargs), period)
@@ -1099,7 +1098,7 @@ def _polarify(eq, lift, pause=False):
         return polar_lift(eq)
     elif eq.is_Atom:
         return eq
-    elif eq.is_Plus:
+    elif eq.is_Add:
         r = eq.func(*[_polarify(arg, lift, pause=True) for arg in eq.args])
         if lift:
             return polar_lift(r)
@@ -1177,7 +1176,7 @@ def _unpolarify(eq, exponents_only, pause=False):
         if isinstance(eq, principal_branch) and eq.args[1] == 2 * pi:
             return _unpolarify(eq.args[0], exponents_only)
         if (
-            eq.is_Plus or eq.is_Times or eq.is_Boolean or
+            eq.is_Add or eq.is_Mul or eq.is_Boolean or
             eq.is_Relational and (
                 eq.rel_op in ('==', '!=') and 0 in eq.args or
                 eq.rel_op not in ('==', '!='))

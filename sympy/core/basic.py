@@ -1,5 +1,4 @@
 """Base class for all the objects in SymPy"""
-from __future__ import print_function, division
 from collections import defaultdict
 from itertools import chain
 
@@ -11,7 +10,6 @@ from .compatibility import (iterable, Iterator, ordered,
 from .singleton import S
 
 from inspect import getmro
-
 
 def as_Basic(expr):
     """Return expr as a Basic instance using strict sympify
@@ -63,87 +61,21 @@ class Basic(with_metaclass(ManagedProperties)):
 
     # To be overridden with True in the appropriate subclasses
     is_number = False
-    is_Atom = False
-    is_BooleanAtom = False
-    is_Symbol = False
     is_symbol = False
-    is_Indexed = False
-    is_Dummy = False
-    is_Wild = False
-    is_Function = False
+   
+    is_Add = False
+    is_Mul = False   
     
-    is_Plus = False    
-    is_Times = False    
-    is_Power = False
-    
-    is_Number = False
-    is_Float = False
-    is_Rational = False
-    is_Integer = False
-    is_NumberSymbol = False
-    is_Order = False
-    is_Derivative = False
-    is_Difference = False
-    
-    is_ExprCondPair = False
-    is_Piecewise = False
-    
-    is_Poly = False
-    is_AlgebraicNumber = False
-    is_Min = False
-    is_Max = False
-    
-    is_Relational = False
     is_Equality = False
-    is_StrictGreaterThan = False
-    is_StrictLessThan = False
+    is_Unequality = False
     
-    is_Boolean = False
-    is_BooleanFunction = False
-    is_Not = False
+    is_boolean = False
+    
     is_Matrix = False
-    is_Vector = False
-    is_Point = False
-    
-    is_MatAdd = False
-    is_MatMul = False
-    is_MatPow = False
-    is_DenseMatrix = False
-    is_Det = False
     
     is_set = False
-    is_EmptySet = None
-    is_Union = False
-    is_Interval = False
-    is_Intersection = False
-    is_Complement = False
-    is_UnionComprehension = False
-    is_ForAll = False
-    is_Exists = False
-    is_ConditionalBoolean = False
-    is_Slice = False
-    is_UniversalSet = None
-    is_Abs = False
     
-    is_Sum = False
-    is_Product = False
     is_Integral = False
-    
-    is_ConditionSet = False
-    is_ExprWithLimits = False
-    is_Ref = False
-    is_Limit = False
-    is_BooleanTrue = None
-    is_BooleanFalse = None
-    is_Zero = None
-    
-    is_Swap = False
-    is_KroneckerDelta = False
-    is_Transpose = False
-    
-    is_CartesianSpace = False
-    
-    is_Tuple = False
     
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
@@ -158,22 +90,6 @@ class Basic(with_metaclass(ManagedProperties)):
             
         return hashset
         
-    @property
-    def list_set(self):
-        from sympy.core.symbol import Symbol
-        from sympy import Interval, Equality         
-        from sympy.sets.sets import image_set
-        
-        l = self.list
-
-        from sympy.tensor.indexed import IndexedBase
-        n = abs(self)
-        a = IndexedBase('a', shape=(n,), integer=True)
-        i = Symbol('i', integer=True)
-        from sympy.concrete.expr_with_limits import Ref
-        domain = Interval(0, n, right_open=True, integer=True)
-        return image_set(a, Ref(l[a[i]], (i, 0, n - 1)), Equality(image_set(i, a[i], domain), domain))
-
     def condition_set(self):
         ...
 
@@ -187,42 +103,11 @@ class Basic(with_metaclass(ManagedProperties)):
         """Overloading for & operator"""
         if self.is_set:
             return self.intersect(other)
-        from sympy.logic.boolalg import And
-        lhs = None
-        if isinstance(self, And):
-            lhs = tuple(self._argset)
-        elif self.is_Or and not other.is_Or:
-            _other = other.invert()
-            if _other in self._argset:
-                args = set(self._argset)
-                args.remove(_other)
-                lhs = (self.func(*args),)
-        elif self.is_Contains:
-            if other.is_NotContains:
-                if self.element == other.element:
-                    s = self.set - other.set
-                    return self.func(self.element, s, equivalent=[self, other])
-            if other.is_Contains:
-                if self.element == other.element:
-                    s = self.set & other.set
-                    return self.func(self.element, s, equivalent=[self, other])
-        elif self.is_NotContains:
-            if other.is_NotContains:
-                if self.element == other.element:
-                    s = self.set | other.set
-                    return self.func(self.element, s, equivalent=[self, other])
-            if other.is_Contains:
-                if self.element == other.element:
-                    s = other.set - self.set
-                    return other.func(self.element, s, equivalent=[self, other])
-
-        if lhs is None:
-            lhs = (self,)
-
+        
         rhs = None
-        if isinstance(other, And):
+        if other.is_And:
             rhs = tuple(other._argset)
-        elif other.is_Or and not self.is_Or:
+        elif other.is_Or:
             _self = self.invert()
             if _self in other._argset:
                 args = set(other._argset)
@@ -231,17 +116,27 @@ class Basic(with_metaclass(ManagedProperties)):
 
         if rhs is None:
             rhs = (other,)
-
-        return And(*lhs + rhs, equivalent=[self, other])
+            
+        from sympy.logic.boolalg import And
+        return And(self, *rhs, equivalent=[self, other])
 
     __rand__ = __and__
 
     def __or__(self, other):
-        from sympy.logic.boolalg import Or
-        """Overloading for |"""
-        return Or(self, other)
+        if self.is_boolean and other.is_boolean:        
+            from sympy.logic.boolalg import Or        
+            """Overloading for |"""
+            return Or(self, other)
+        from sympy.stats.rv import given
+        return given(self, other)        
 
-    __ror__ = __or__
+    def __ror__ (self, other):
+        if self.is_boolean and other.is_boolean:
+            return other.__or__(self)
+        
+        from sympy.stats.rv import given
+        return given(other, self)
+        
 
     def union_sets(self, b):
         return
@@ -668,11 +563,6 @@ class Basic(with_metaclass(ManagedProperties)):
             types = (Atom,)
         result = set()
         for expr in preorder_traversal(self):
-#             from sympy.tensor.indexed import Indexed
-#             if isinstance(expr, Indexed):
-#                 if expr.base.definition is not None:
-#                     expr = expr.base.definition[expr.indices]
-
             if isinstance(expr, types):
                 result.add(expr)
 
@@ -861,7 +751,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
         """
         is_extended_real = self.is_extended_real
-        if is_extended_real is False:
+        if is_extended_real == False:
             return False
         if not self.is_number:
             return False
@@ -1271,7 +1161,9 @@ class Basic(with_metaclass(ManagedProperties)):
                 reps = {}            
                 this = self
                 for i in indices:
-                    if i.is_symbol: 
+                    if i.is_symbol:
+                        if i >= old.indices[1] or i < old.indices[0]: 
+                            continue
                         i_domain = self.domain_defined(i)
                         if i.domain != i_domain:
                             _i = i.copy(domain=i_domain)
@@ -1299,7 +1191,7 @@ class Basic(with_metaclass(ManagedProperties)):
             if hit:
                 rv = self.func(*args)
                 hack2 = hints.get('hack2', False)
-                if hack2 and self.is_Times and not rv.is_Times:  # 2-arg hack
+                if hack2 and self.is_Mul and not rv.is_Mul:  # 2-arg hack
                     coeff = S.One
                     nonnumber = []
                     for i in args:
@@ -1620,7 +1512,7 @@ class Basic(with_metaclass(ManagedProperties)):
         such a fashion that changes are not made twice.
 
             >>> e = x*(x*y + 1)
-            >>> e.replace(lambda x: x.is_Times, lambda x: 2*x)
+            >>> e.replace(lambda x: x.is_Mul, lambda x: 2*x)
             2*x*(2*x*y + 1)
 
         When matching a single symbol, `exact` will default to True, but
@@ -1654,7 +1546,7 @@ class Basic(with_metaclass(ManagedProperties)):
         that describes the target expression more precisely:
 
         >>> (1 + x**(1 + y)).replace(
-        ... lambda x: x.is_Power and x.exp.is_Plus and x.exp.args[0] == 1,
+        ... lambda x: x.is_Power and x.exp.is_Add and x.exp.args[0] == 1,
         ... lambda x: x.base**(1 - (x.exp - 1)))
         ...
         x**(1 - y) + 1
@@ -2132,7 +2024,7 @@ class Basic(with_metaclass(ManagedProperties)):
         if other.is_UniversalSet:
             return             
             
-        if other.dtype == self.dtype:
+        if other.dtype in self.dtype or self.dtype in other.dtype:
             return other.is_subset(self)
 
     def infimum(self):
@@ -2174,17 +2066,15 @@ class Basic(with_metaclass(ManagedProperties)):
         """
         assumptions = self._assumptions
         
-        from sympy.core.assumptions import _assume_rules
-        a = None
-        for sufficient_fact, truth in _assume_rules.sufficient_conditions[(fact, True)]:
-            if assumptions.get(sufficient_fact) == truth:
-                a = True
-                break
+        def sufficient_conditions(b):
+            for sufficient_fact, truth in _assume_rules.sufficient_conditions[(fact, b)]:
+                if assumptions.get(sufficient_fact) == truth:
+                    return b
             
-        for sufficient_fact, truth in _assume_rules.sufficient_conditions[(fact, False)]:
-            if assumptions.get(sufficient_fact) == truth:
-                a = False
-                break
+        from sympy.core.assumptions import _assume_rules
+        a = sufficient_conditions(True)
+        if a is None:
+            a = sufficient_conditions(False)
         
         if a is None:
             evaluate = self._prop_handler.get(fact)
@@ -2197,14 +2087,14 @@ class Basic(with_metaclass(ManagedProperties)):
         extended_positive = self.is_extended_positive        
         if extended_positive:
             return False
-        if extended_positive is False:
+        if extended_positive == False:
             return self.is_extended_real
 
     def _eval_is_extended_nonnegative(self):
         extended_negative = self.is_extended_negative        
         if extended_negative:
             return False
-        if extended_negative is False:
+        if extended_negative == False:
             return self.is_extended_real
     
     def _eval_is_infinite(self):
@@ -2215,7 +2105,7 @@ class Basic(with_metaclass(ManagedProperties)):
         algebraic = self.is_algebraic
         if algebraic:
             return False
-        if algebraic is False:
+        if algebraic == False:
             if self.is_complex:
                 return self.is_finite
             return self.is_complex
@@ -2224,32 +2114,34 @@ class Basic(with_metaclass(ManagedProperties)):
         rational = self.is_rational
         if rational:
             return False
-        if rational is False:
+        if rational == False:
             return self.is_real
 
     def _eval_is_noninteger(self):
         integer = self.is_integer
         if integer:
             return False
-        if integer is False:
+        if integer == False:
             return self.is_extended_real
     
     def _eval_is_invertible(self):
         singular = self.is_singular
         if singular:
             return False
-        if singular is False:
+        if singular == False:
             return True
 
     def _eval_is_nonzero(self):
         zero = self.is_zero
         if zero:
             return False
-        if zero is False:
+        if zero == False:
             return self.is_complex        
 
     @property
     def shape(self):
+        if 'shape' in self._assumptions:
+            return self._assumptions['shape']
         return ()
     
     def to_wolfram(self, global_variables):
@@ -2269,8 +2161,11 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.logic.boolalg import Identity
         return Identity(self)
       
-    def asKroneckerDelta(self):
+    def as_KroneckerDelta(self):
         return self
+
+    def domain_definition(self):
+        return S.true
         
 class Atom(Basic):
     """
@@ -2282,8 +2177,6 @@ class Atom(Basic):
     Symbol, Number, Rational, Integer, ...
     But not: Add, Mul, Pow, ...
     """
-
-    is_Atom = True
 
     __slots__ = []
 

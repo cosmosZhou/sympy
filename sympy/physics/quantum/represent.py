@@ -398,7 +398,7 @@ def integrate_result(orig_expr, result, **options):
             #TODO: Add support for sets of operators
             basis_op = state_to_operators(basis)
             start = basis_op.hilbert_space.interval.start
-            end = basis_op.hilbert_space.interval.end
+            end = basis_op.hilbert_space.interval.stop
             result = integrate(result, (coord, start, end))
 
     return result

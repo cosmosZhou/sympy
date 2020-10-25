@@ -284,16 +284,17 @@ class Gens(with_metaclass(OptionType, Option)):
     def preprocess(cls, gens):
         from sympy import Wild, Symbol
         from sympy.tensor.indexed import Slice, Indexed
+        from sympy.functions.elementary.exponential import ExpBase
         if isinstance(gens, Basic):
             gens = (gens,)
-        elif len(gens) == 1 and hasattr(gens[0], '__iter__') and not isinstance(gens[0], (Wild, Slice, Indexed, Symbol)):
+        elif len(gens) == 1 and hasattr(gens[0], '__iter__') and not isinstance(gens[0], (Wild, Slice, Indexed, Symbol, ExpBase)):
             gens = gens[0]
 
         if gens == (None,):
             gens = ()
         elif has_dups(gens):
             raise GeneratorsError("duplicated generators: %s" % str(gens))
-#         elif any(gen.is_commutative is False for gen in gens):
+#         elif any(gen.is_commutative == False for gen in gens):
 #             raise GeneratorsError("non-commutative generators: %s" % str(gens))
 
         return tuple(gens)

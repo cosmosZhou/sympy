@@ -5,7 +5,6 @@ import itertools
 from sympy.core import S
 from sympy.core.compatibility import range, string_types
 from sympy.core.containers import Tuple
-from sympy.core.function import _coeff_isneg
 from sympy.core.mul import Mul
 from sympy.core.numbers import Rational
 from sympy.core.power import Pow
@@ -392,7 +391,7 @@ class PrettyPrinter(Printer):
         # create a pretty form for the argument
         prettyF = self._print(f)
         # XXX generalize parens
-        if f.is_Plus:
+        if f.is_Add:
             prettyF = prettyForm(*prettyF.parens())
 
         # dx dy dz ...
@@ -564,7 +563,7 @@ class PrettyPrinter(Printer):
 
         prettyF = self._print(f)
 
-        if f.is_Plus:  # add parens
+        if f.is_Add:  # add parens
             prettyF = prettyForm(*prettyF.parens())
 
         H = prettyF.height() + 2
@@ -1616,7 +1615,7 @@ class PrettyPrinter(Printer):
             return prettyForm(binding=prettyForm.NEG, *p)
 
         for i, term in enumerate(terms):
-            if term.is_Times and _coeff_isneg(term):
+            if term.is_Mul and term._coeff_isneg():
                 coeff, other = term.as_coeff_mul(rational=False)
                 pform = self._print(Mul(-coeff, *other, evaluate=False))
                 pforms.append(pretty_negative(pform, i))
@@ -1692,7 +1691,7 @@ class PrettyPrinter(Printer):
         # Convert to pretty forms. Add parens to Add instances if there
         # is more than one term in the numer/denom
         for i in range(0, len(a)):
-            if (a[i].is_Plus and len(a) > 1) or (i != len(a) - 1 and
+            if (a[i].is_Add and len(a) > 1) or (i != len(a) - 1 and
                     isinstance(a[i], (Integral, Piecewise, Product, Sum))):
                 a[i] = prettyForm(*self._print(a[i]).parens())
             elif a[i].is_Relational:
@@ -1701,7 +1700,7 @@ class PrettyPrinter(Printer):
                 a[i] = self._print(a[i])
 
         for i in range(0, len(b)):
-            if (b[i].is_Plus and len(b) > 1) or (i != len(b) - 1 and
+            if (b[i].is_Add and len(b) > 1) or (i != len(b) - 1 and
                     isinstance(b[i], (Integral, Piecewise, Product, Sum))):
                 b[i] = prettyForm(*self._print(b[i]).parens())
             else:
@@ -1850,7 +1849,7 @@ class PrettyPrinter(Printer):
         return self._print_seq(printset, '{', '}', ', ' )
 
     def _print_Interval(self, i):
-        if i.start == i.end:
+        if i.start == i.stop:
             return self._print_seq(i.args[:1], '{', '}')
 
         else:

@@ -1,8 +1,8 @@
 from sympy.core.relational import Equality
-from sympy.utility import plausible
-from sympy.core.symbol import Symbol, dtype
+from axiom.utility import plausible
+from sympy.core.symbol import dtype
 from sympy.sets.contains import Subset, Supset
-from sympy import var
+from sympy import Symbol
 
 # given: A in B
 # A | B = B
@@ -14,13 +14,13 @@ def apply(given):
     return Equality(A | B, B, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    A = var(dtype=dtype.integer).A
-    B = var(dtype=dtype.integer).B
+    A = Symbol.A(dtype=dtype.integer)
+    B = Symbol.B(dtype=dtype.integer)
 
     subset = Subset(A, B)
 

@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from collections import defaultdict
 from functools import cmp_to_key
 import operator
@@ -12,14 +10,15 @@ from .cache import cacheit
 from .logic import fuzzy_not, _fuzzy_group
 from .compatibility import reduce, range
 from .expr import Expr
-from .evaluate import global_distribute
+from .parameters import global_parameters
+from sympy.core.logic import fuzzy_or
 
 
 # internal marker to indicate:
 #   "there are still non-commutative objects -- don't forget to process them"
 class NC_Marker:
     is_Order = False
-    is_Times = False
+    is_Mul = False
     is_Number = False
     is_Poly = False
 
@@ -72,7 +71,7 @@ def _unevaluated_Mul(*args):
     co = S.One
     while args:
         a = args.pop()
-        if a.is_Times:
+        if a.is_Mul:
             c, nc = a.args_cnc()
             args.extend(c)
             if nc:
@@ -93,10 +92,38 @@ class Times(Expr, AssocOp):
 
     __slots__ = []
 
-    is_Times = True
+    is_Mul = True
 
     identity = 1
     
+    def _coeff_isneg(self):
+        """Return True if the leading Number is negative.
+    
+        Examples
+        ========
+    
+        >>> from sympy.core.function import _coeff_isneg
+        >>> from sympy import S, Symbol, oo, pi
+        >>> _coeff_isneg(-3*pi)
+        True
+        >>> _coeff_isneg(S(3))
+        False
+        >>> _coeff_isneg(-oo)
+        True
+        >>> _coeff_isneg(Symbol('n', negative=True)) # coeff is 1
+        False
+    
+        For matrix expressions:
+    
+        >>> from sympy import MatrixSymbol, sqrt
+        >>> A = MatrixSymbol("A", 3, 3)
+        >>> _coeff_isneg(-sqrt(2)*A)
+        True
+        >>> _coeff_isneg(sqrt(2)*A)
+        False
+        """ 
+        return self.args[0]._coeff_isneg()
+
     @classmethod
     def flatten(cls, seq):
         """Return commutative, noncommutative and order arguments by
@@ -187,12 +214,12 @@ class Times(Expr, AssocOp):
             assert not a is S.One
             if not a.is_zero and a.is_Rational:
                 r, b = b.as_coeff_Mul()
-                if b.is_Plus:
+                if b.is_Add:
                     if r is not S.One:  # 2-arg hack
                         # leave the Mul as a Mul
                         rv = [cls(a * r, b, evaluate=False)], [], None
-#                     elif global_distribute[0] and b.is_commutative:
-                    elif global_distribute[0]:
+#                     elif global_parameters.distribute and b.is_commutative:
+                    elif global_parameters.distribute:
                         r, b = b.as_coeff_Add()
                         bargs = [_keep_coeff(a, bi) for bi in Add.make_args(b)]
                         _addsort(bargs)
@@ -243,7 +270,7 @@ class Times(Expr, AssocOp):
                 o, order_symbols = o.as_expr_variables(order_symbols)
 
             # Mul([...])
-            if o.is_Times:
+            if o.is_Mul:
 #                 if o.is_commutative:
                 seq.extend(o.args)  # XXX zerocopy?
 
@@ -346,7 +373,7 @@ class Times(Expr, AssocOp):
 #                     # not an Add. This allow things like a**2*b**3 == a**5
 #                     # if a.is_commutative == False, but prohibits
 #                     # a**x*a**y and x**a*x**b from combining (x,y commute).
-#                     if b1 == b2 and (not new_exp.is_Plus):
+#                     if b1 == b2 and (not new_exp.is_Add):
 #                         o12 = b1 ** new_exp
 # 
 #                         # now o12 could be a commutative object
@@ -421,7 +448,7 @@ class Times(Expr, AssocOp):
             for b, e in c_powers:
                 if e.is_zero:
                     # canceling out infinities yields NaN
-                    if (b.is_Plus or b.is_Times) and any(infty in b.args
+                    if (b.is_Add or b.is_Mul) and any(infty in b.args
                         for infty in (S.ComplexInfinity, S.Infinity,
                                       S.NegativeInfinity)):
                         return [S.NaN], [], None
@@ -635,8 +662,8 @@ class Times(Expr, AssocOp):
             c_part.insert(0, coeff)
 
         # we are done
-        if (global_distribute[0] and not nc_part and len(c_part) == 2 and
-                c_part[0].is_Number and c_part[0].is_finite and c_part[1].is_Plus):
+        if (global_parameters.distribute and not nc_part and len(c_part) == 2 and
+                c_part[0].is_Number and c_part[0].is_finite and c_part[1].is_Add):
             # 2*(1+a) -> 2 + 2 * a
             coeff = c_part[0]
             c_part = [Add(*[coeff * f for f in c_part[1].args])]
@@ -679,7 +706,7 @@ class Times(Expr, AssocOp):
     def _eval_evalf(self, prec):
         c, m = self.as_coeff_Mul()
         if c is S.NegativeOne:
-            if m.is_Times:
+            if m.is_Mul:
                 rv = -AssocOp._eval_evalf(m, prec)
             else:
                 mnew = m._eval_evalf(prec)
@@ -854,7 +881,7 @@ class Times(Expr, AssocOp):
                         del other[i]
                         break
                 else:
-                    if a.is_Plus:
+                    if a.is_Add:
                         addterms *= a
                     else:
                         other.append(a)
@@ -913,16 +940,16 @@ class Times(Expr, AssocOp):
         # to 1/x*1/(x + 1)
         expr = self
         n, d = fraction(expr)
-        if d.is_Times:
-            n, d = [i._eval_expand_mul(**hints) if i.is_Times else i
+        if d.is_Mul:
+            n, d = [i._eval_expand_mul(**hints) if i.is_Mul else i
                 for i in (n, d)]
             expr = n / d
-            if not expr.is_Times:
+            if not expr.is_Mul:
                 return expr
 
         plain, sums, rewrite = [], [], False
         for factor in expr.args:
-            if factor.is_Plus:
+            if factor.is_Add:
                 sums.append(factor)
                 rewrite = True
             else:
@@ -941,7 +968,7 @@ class Times(Expr, AssocOp):
                 args = []
                 for term in terms:
                     t = self.func(plain, term)
-                    if t.is_Times and any(a.is_Plus for a in t.args) and deep:
+                    if t.is_Mul and any(a.is_Add for a in t.args) and deep:
                         t = t._eval_expand_mul()
                     args.append(t)
                 return Add(*args)
@@ -1049,17 +1076,17 @@ class Times(Expr, AssocOp):
         sign = 1
         a, b = self.as_two_terms()
         if a is S.NegativeOne:
-            if b.is_Times:
+            if b.is_Mul:
                 sign = -sign
             else:
                 # the remainder, b, is not a Mul anymore
                 return b.matches(-expr, repl_dict)
         expr = sympify(expr)
-        if expr.is_Times and expr.args[0] is S.NegativeOne:
+        if expr.is_Mul and expr.args[0] is S.NegativeOne:
             expr = -expr
             sign = -sign
 
-        if not expr.is_Times:
+        if not expr.is_Mul:
             # expr can only match if it matches b and a matches +/- 1
             if len(self.args) == 2:
                 # quickly test for equality
@@ -1121,7 +1148,7 @@ class Times(Expr, AssocOp):
 
         if check(lhs, rhs) or check(rhs, lhs):
             return S.One
-        if any(i.is_Power or i.is_Times for i in (lhs, rhs)):
+        if any(i.is_Power or i.is_Mul for i in (lhs, rhs)):
             # gruntz and limit wants a literal I to not combine
             # with a power of -1
             d = Dummy('I')
@@ -1185,12 +1212,12 @@ class Times(Expr, AssocOp):
         if all(a.is_finite for a in self.args):
             return True
         if any(a.is_infinite for a in self.args):
-            if all(a.is_zero is False for a in self.args):
+            if all(a.is_zero == False for a in self.args):
                 return False
 
     def _eval_is_rational(self):
         return _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
-
+    
     def _eval_is_algebraic(self):
         r = _fuzzy_group((a.is_algebraic for a in self.args), quick_exit=True)
         if r:
@@ -1229,7 +1256,7 @@ class Times(Expr, AssocOp):
                 return True
             elif d is S(2):
                 return n.is_even
-        elif is_rational is False:
+        elif is_rational == False:
             return False
 
     def _eval_is_polar(self):
@@ -1244,25 +1271,25 @@ class Times(Expr, AssocOp):
         t_not_re_im = None
 
         for t in self.args:
-            if t.is_complex is False and t.is_extended_real is False:
+            if t.is_complex == False and t.is_extended_real == False:
                 return False
             elif t.is_imaginary:  # I
                 real = not real
             elif t.is_extended_real:  # 2
                 if not zero:
                     z = t.is_zero
-                    if not z and zero is False:
+                    if not z and zero == False:
                         zero = z
                     elif z:
                         if all(a.is_finite for a in self.args):
                             return True
                         return
-            elif t.is_extended_real is False:
+            elif t.is_extended_real == False:
                 # symbolic or literal like `2 + I` or symbolic imaginary
                 if t_not_re_im:
                     return  # complex terms might cancel
                 t_not_re_im = t
-            elif t.is_imaginary is False:  # symbolic like `2` or `2 + I`
+            elif t.is_imaginary == False:  # symbolic like `2` or `2 + I`
                 if t_not_re_im:
                     return  # complex terms might cancel
                 t_not_re_im = t
@@ -1270,13 +1297,13 @@ class Times(Expr, AssocOp):
                 return
 
         if t_not_re_im:
-            if t_not_re_im.is_extended_real is False:
+            if t_not_re_im.is_extended_real == False:
                 if real:  # like 3
                     return zero  # 3*(smthng like 2 + I or i) is not real
-            if t_not_re_im.is_imaginary is False:  # symbolic 2 or 2 + I
+            if t_not_re_im.is_imaginary == False:  # symbolic 2 or 2 + I
                 if not real:  # like I
                     return zero  # I*(smthng like 2 or 2 + I) is not real
-        elif zero is False:
+        elif zero == False:
             return real  # can't be trumped by 0
         elif real:
             return real  # doesn't matter what zero is
@@ -1285,7 +1312,7 @@ class Times(Expr, AssocOp):
         z = self.is_zero
         if z:
             return False
-        elif z is False:
+        elif z == False:
             return self._eval_real_imag(False)
 
     def _eval_is_hermitian(self):
@@ -1305,13 +1332,13 @@ class Times(Expr, AssocOp):
             elif t.is_hermitian:
                 if not zero:
                     z = t.is_zero
-                    if not z and zero is False:
+                    if not z and zero == False:
                         zero = z
                     elif z:
                         if all(a.is_finite for a in self.args):
                             return True
                         return
-            elif t.is_hermitian is False:
+            elif t.is_hermitian == False:
                 if one_neither:
                     return
                 one_neither = True
@@ -1321,14 +1348,14 @@ class Times(Expr, AssocOp):
         if one_neither:
             if real:
                 return zero
-        elif zero is False or real:
+        elif zero == False or real:
             return real
 
     def _eval_is_antihermitian(self):
         z = self.is_zero
         if z:
             return False
-        elif z is False:
+        elif z == False:
             return self._eval_herm_antiherm(False)
 
     def _eval_is_irrational(self):
@@ -1347,25 +1374,25 @@ class Times(Expr, AssocOp):
     def _eval_pos_neg(self, sign):
         saw_NON = saw_NOT = False
         for t in self.args:
-            if t.is_positive:
+            if t.is_extended_positive:
                 continue
-            elif t.is_negative:
+            elif t.is_extended_negative:
                 sign = -sign
             elif t.is_zero:
                 if all(a.is_finite for a in self.args):
                     return False
                 return
-            elif t.is_nonpositive:
+            elif t.is_extended_nonpositive:
                 sign = -sign
                 saw_NON = True
-            elif t.is_nonnegative:
+            elif t.is_extended_nonnegative:
                 saw_NON = True
-            elif t.is_positive is False:
+            elif t.is_extended_positive == False:
                 sign = -sign
                 if saw_NOT:
                     return
                 saw_NOT = True
-            elif t.is_negative is False:
+            elif t.is_extended_negative == False:
                 if saw_NOT:
                     return
                 saw_NOT = True
@@ -1383,11 +1410,11 @@ class Times(Expr, AssocOp):
             is_even = [t.is_even for t in self.args]
             if any(is_even):
                 return True
-            if all(b is False for b in is_even):
+            if all(b == False for b in is_even):
                 return False
             return 
         # !integer -> !odd
-        if is_integer is False:
+        if is_integer == False:
             return False
 
     def _eval_is_composite(self):
@@ -1413,7 +1440,7 @@ class Times(Expr, AssocOp):
         from sympy.simplify.powsimp import powdenest
         from sympy.simplify.radsimp import fraction
 
-        if not old.is_Times:
+        if not old.is_Mul:
             return None
 
         # try keep replacement literal so -2*x doesn't replace 4*x
@@ -1479,7 +1506,7 @@ class Times(Expr, AssocOp):
         self2 = self
         if d is not S.One:
             self2 = n._subs(old, new) / d._subs(old, new)
-            if not self2.is_Times:
+            if not self2.is_Mul:
                 return self2._subs(old, new)
             if self2 != self:
                 rv = self2
@@ -1688,6 +1715,48 @@ class Times(Expr, AssocOp):
     def _eval_adjoint(self):
         return self.func(*[t.adjoint() for t in self.args[::-1]])
 
+    def _eval_exp(self):
+        from sympy.assumptions import ask, Q
+        from sympy import logcombine, log
+        if self.is_number or self.is_Symbol:
+            coeff = self.coeff(S.Pi * S.ImaginaryUnit)
+            if coeff:
+                if ask(Q.integer(2 * coeff)):
+                    if ask(Q.even(coeff)):
+                        return S.One
+                    elif ask(Q.odd(coeff)):
+                        return S.NegativeOne
+                    elif ask(Q.even(coeff + S.Half)):
+                        return -S.ImaginaryUnit
+                    elif ask(Q.odd(coeff + S.Half)):
+                        return S.ImaginaryUnit
+
+        # Warning: code in risch.py will be very sensitive to changes
+        # in this (see DifferentialExtension).
+
+        # look for a single log factor
+
+        coeff, terms = self.as_coeff_Mul()
+
+        # but it can't be multiplied by oo
+        if coeff in [S.NegativeInfinity, S.Infinity]:
+            return None
+
+        coeffs, log_term = [coeff], None
+        for term in Mul.make_args(terms):
+            term_ = logcombine(term)
+            if isinstance(term_, log):
+                if log_term is None:
+                    log_term = term_.args[0]
+                else:
+                    return None
+            elif term.is_comparable:
+                coeffs.append(term)
+            else:
+                return None
+
+        return log_term ** Mul(*coeffs) if log_term else None
+
     def _sage_(self):
         s = 1
         for x in self.args:
@@ -1772,18 +1841,18 @@ class Times(Expr, AssocOp):
             coefficient = S.One
              
         this = delta   
-        if this.is_Plus:
+        if this.is_Add:
             args = [*this.args]
             hit = False
             for i, arg in enumerate(this.args):
-                if arg.is_Times:
+                if arg.is_Mul:
                     _arg = arg.simplifyKroneckerDelta()
                     if arg != _arg:
                         args[i] = _arg
                         hit = True
             if hit:
                 this = this.func(*args)
-            if this.is_Plus:
+            if this.is_Add:
                 this = this.simplifyKroneckerDelta()
             if this != delta:
                 return this * coefficient
@@ -1799,7 +1868,7 @@ class Times(Expr, AssocOp):
             return Expr.simplify(self, deep=True, **kwargs)
         
         for i, arg in enumerate(self.args):
-            if arg.is_Ref:
+            if arg.is_LAMBDA:
                 _arg = arg.simplify(squeeze=True)
                 if _arg != arg:
                     args = [*self.args]
@@ -1983,15 +2052,12 @@ class Times(Expr, AssocOp):
 
     @property
     def domain(self):        
-        from sympy import Interval, oo
         if self.is_integer:
-            domain = S.Integers
+            from sympy.sets import Integers
+            domain = Integers
         elif self.is_extended_real:
             domain = S.Reals
         else:            
-            if not self.is_complex:
-                print(self)
-                print(type(self))
             assert self.is_complex
             domain = S.Complexes
             
@@ -2070,12 +2136,11 @@ class Times(Expr, AssocOp):
 
     def _latex(self, p):
         from sympy.core.power import Pow
-        from sympy.core.function import _coeff_isneg
         include_parens = False
-        if _coeff_isneg(self):
+        if self._coeff_isneg():
             self = -self
             tex = "- "
-            if self.is_Plus:
+            if self.is_Add:
                 tex += "("
                 include_parens = True
         else:
@@ -2088,7 +2153,7 @@ class Times(Expr, AssocOp):
 
         def convert(expr):
             from sympy.printing.latex import _between_two_numbers_p
-            if not expr.is_Times:
+            if not expr.is_Mul:
                 return str(p._print(expr))
             else:
                 _tex = last_term_tex = ""
@@ -2136,24 +2201,24 @@ class Times(Expr, AssocOp):
             elif ratio is not None and len(snumer.split()) > ratio * ldenom:
                 # handle long fractions
                 if p._needs_mul_brackets(numer, last=True):
-                    tex += r"\frac{1}{%s}%s\left(%s\right)" % (sdenom, separator, snumer)
-                elif numer.is_Times:
+                    tex += r"\displaystyle\frac{1}{%s}%s\left(%s\right)" % (sdenom, separator, snumer)
+                elif numer.is_Mul:
                     # split a long numerator
                     a = S.One
                     b = S.One
                     for x in numer.args:
-                        if p._needs_mul_brackets(x, last=False) or len(convert(a * x).split()) > ratio * ldenom or (b.is_commutative is x.is_commutative is False):
+                        if p._needs_mul_brackets(x, last=False) or len(convert(a * x).split()) > ratio * ldenom or (b.is_commutative is x.is_commutative == False):
                             b *= x
                         else:
                             a *= x
                     if p._needs_mul_brackets(b, last=True):
-                        tex += r"\frac{%s}{%s}%s\left(%s\right)" % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\displaystyle\frac{%s}{%s}%s\left(%s\right)" % (convert(a), sdenom, separator, convert(b))
                     else:
-                        tex += r"\frac{%s}{%s}%s%s" % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\displaystyle\frac{%s}{%s}%s%s" % (convert(a), sdenom, separator, convert(b))
                 else:
-                    tex += r"\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
+                    tex += r"\displaystyle\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
             else:
-                tex += r"\frac{%s}{%s}" % (snumer, sdenom)
+                tex += r"\displaystyle\frac{%s}{%s}" % (snumer, sdenom)
 
         if include_parens:
             tex += ")"
@@ -2311,7 +2376,7 @@ def _keep_coeff(coeff, factors, clear=True, sign=False):
         return factors
     elif coeff is S.NegativeOne and not sign:
         return -factors
-    elif factors.is_Plus:
+    elif factors.is_Add:
         if not clear and coeff.is_Rational and coeff.q != 1:
             q = S(coeff.q)
             for i in factors.args:
@@ -2320,7 +2385,7 @@ def _keep_coeff(coeff, factors, clear=True, sign=False):
                 if r == int(r):
                     return coeff * factors
         return Mul(coeff, factors, evaluate=False)
-    elif factors.is_Times:
+    elif factors.is_Mul:
         margs = list(factors.args)
         if margs[0].is_Number:
             margs[0] *= coeff
@@ -2337,9 +2402,9 @@ def expand_2arg(e):
     from sympy.simplify.simplify import bottom_up
 
     def do(e):
-        if e.is_Times:
+        if e.is_Mul:
             c, r = e.as_coeff_Mul()
-            if c.is_Number and r.is_Plus:
+            if c.is_Number and r.is_Add:
                 return _unevaluated_Add(*[c * ri for ri in r.args])
         return e
 

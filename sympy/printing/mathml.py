@@ -6,7 +6,6 @@ from __future__ import print_function, division
 
 from sympy import sympify, S, Mul
 from sympy.core.compatibility import range, string_types, default_sort_key
-from sympy.core.function import _coeff_isneg
 from sympy.printing.conventions import split_super_sub, requires_partial
 from sympy.printing.precedence import precedence_traditional, PRECEDENCE
 from sympy.printing.pretty.pretty_symbology import greek_unicode
@@ -174,7 +173,7 @@ class MathMLContentPrinter(MathMLPrinterBase):
 
     def _print_Mul(self, expr):
 
-        if _coeff_isneg(expr):
+        if expr._coeff_isneg():
             x = self.dom.createElement('apply')
             x.appendChild(self.dom.createElement('minus'))
             x.appendChild(self._print_Mul(-expr))
@@ -212,7 +211,7 @@ class MathMLContentPrinter(MathMLPrinterBase):
         lastProcessed = self._print(args[0])
         plusNodes = []
         for arg in args[1:]:
-            if _coeff_isneg(arg):
+            if arg._coeff_isneg():
                 # use minus
                 x = self.dom.createElement('apply')
                 x.appendChild(self.dom.createElement('minus'))
@@ -611,7 +610,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
                     mrow.appendChild(y)
             return mrow
         mrow = self.dom.createElement('mrow')
-        if _coeff_isneg(expr):
+        if expr._coeff_isneg():
             x = self.dom.createElement('mo')
             x.appendChild(self.dom.createTextNode('-'))
             mrow.appendChild(x)
@@ -626,7 +625,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
         args = self._as_ordered_terms(expr, order=order)
         mrow.appendChild(self._print(args[0]))
         for arg in args[1:]:
-            if _coeff_isneg(arg):
+            if arg._coeff_isneg():
                 # use minus
                 x = self.dom.createElement('mo')
                 x.appendChild(self.dom.createTextNode('-'))
@@ -1104,7 +1103,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
     def _print_Interval(self, i):
         mrow = self.dom.createElement('mrow')
         brac = self.dom.createElement('mfenced')
-        if i.start == i.end:
+        if i.start == i.stop:
             # Most often, this type of Interval is converted to a FiniteSet
             brac.setAttribute('open', '{')
             brac.setAttribute('close', '}')
@@ -1120,7 +1119,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
             else:
                 brac.setAttribute('close', ']')
             brac.appendChild(self._print(i.start))
-            brac.appendChild(self._print(i.end))
+            brac.appendChild(self._print(i.stop))
 
         mrow.appendChild(brac)
         return mrow
@@ -1634,7 +1633,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
         else:
             args = list(args)
 
-        if isinstance(expr, MatMul) and _coeff_isneg(expr):
+        if isinstance(expr, MatMul) and expr._coeff_isneg():
             if args[0] == -1:
                 args = args[1:]
             else:

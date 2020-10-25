@@ -1,13 +1,11 @@
-from __future__ import print_function, division
-
 from collections import defaultdict
 from functools import cmp_to_key
-
 from .basic import Basic
-from .compatibility import reduce, is_sequence, range
+from .compatibility import reduce, is_sequence
+from .parameters import global_parameters
 from .logic import _fuzzy_group, fuzzy_or, fuzzy_not
 from .singleton import S
-from .operations import AssocOp
+from .operations import AssocOp, AssocOpDispatcher
 from .cache import cacheit
 from .numbers import ilcm, igcd
 from .expr import Expr
@@ -44,7 +42,7 @@ def _unevaluated_Add(*args):
     be tested against the output of this function or as one of several
     options:
 
-    >>> opts = (Add(x, y, evaluated=False), Add(y, x, evaluated=False))
+    >>> opts = (Add(x, y, evaluate=False), Add(y, x, evaluate=False))
     >>> a = uAdd(x, y)
     >>> assert a in opts and a == uAdd(x, y)
     >>> uAdd(x + 1, x + 2)
@@ -55,7 +53,7 @@ def _unevaluated_Add(*args):
     co = S.Zero
     while args:
         a = args.pop()
-        if a.is_Plus:
+        if a.is_Add:
             # this will keep nesting from building up
             # so that x + (x + 1) -> x + x + 1 (3 args)
             args.extend(a.args)
@@ -76,7 +74,7 @@ class Plus(Expr, AssocOp):
 
     __slots__ = []
 
-    is_Plus = True
+    is_Add = True
 
     identity = S.Zero
     
@@ -107,7 +105,7 @@ class Plus(Expr, AssocOp):
             if b.is_Rational:
                 a, b = b, a
             if a.is_Rational:
-                if b.is_Times:
+                if b.is_Mul:
                     rv = [a, b], [], None
             if rv:
 #                 if all(s.is_commutative for s in rv[0]):
@@ -140,7 +138,7 @@ class Plus(Expr, AssocOp):
             # 3 or NaN
             elif o.is_Number:
                 if (o is S.NaN or coeff is S.ComplexInfinity and
-                        o.is_finite is False) and not extra:
+                        o.is_finite == False) and not extra:
                     # we know for sure the result will be nan
                     return [S.NaN], [], None
                 if coeff.is_Number:
@@ -159,7 +157,7 @@ class Plus(Expr, AssocOp):
                 continue
 
             elif isinstance(o, MatrixExpr):
-                # can't add 0 to Matrix so make sure coeff is not 0
+                # can't add 0 to Matrix so make sure coeff is not 0                
                 extra.append(o)
                 continue
 
@@ -168,20 +166,20 @@ class Plus(Expr, AssocOp):
                 continue
 
             elif o is S.ComplexInfinity:
-                if coeff.is_finite is False and not extra:
+                if coeff.is_finite == False and not extra:
                     # we know for sure the result will be nan
                     return [S.NaN], [], None
                 coeff = S.ComplexInfinity
                 continue
 
             # Add([...])
-            elif o.is_Plus:
+            elif o.is_Add:
                 # NB: here we assume Add is always commutative
                 seq.extend(o.args)  # TODO zerocopy?
                 continue
 
             # Mul([...])
-            elif o.is_Times:
+            elif o.is_Mul:
                 c, s = o.as_coeff_Mul()
 
             # check for unevaluated Pow, e.g. 2**3 or 2**(-1/2)
@@ -226,12 +224,12 @@ class Plus(Expr, AssocOp):
                 newseq.append(s)
             # c*s
             else:
-                if s.is_Times:
+                if s.is_Mul:
                     # Mul, already keeps its arguments in perfect order.
                     # so we can simply put c in slot0 and go the fast way.
                     cs = s._new_rawargs(*((c,) + s.args))
                     newseq.append(cs)
-                elif s.is_Plus:
+                elif s.is_Add:
                     # we just re-create the unevaluated Mul
                     newseq.append(Mul(c, s, evaluate=False))
                 else:
@@ -289,8 +287,19 @@ class Plus(Expr, AssocOp):
             newseq.insert(0, coeff)
 
         if extra:
-            newseq += extra
-            noncommutative = True
+            _extra = [mat for mat in extra if not mat.is_zero]            
+            newseq += _extra
+            if not newseq:
+                from sympy.matrices.expressions.matexpr import Concatenate 
+                shapes = [mat.shape for mat in extra]
+                Concatenate.broadcast(shapes)
+                for shape in shapes:
+                    if shape[0] > 1:
+                        break
+                if shape[0] == 1:
+                    shape = shape[1:]
+                from sympy import ZeroMatrix
+                newseq.append(ZeroMatrix(*shape))
 
         if infinitesimal is not None:
             newseq.append(infinitesimal)
@@ -402,6 +411,22 @@ class Plus(Expr, AssocOp):
                         r - i * S.ImaginaryUnit,
                         1 / (r ** 2 + i ** 2))
 
+    def _eval_exp(self):
+        from sympy import exp
+        out = []
+        add = []
+        for a in self.args:
+            if a is S.One:
+                add.append(a)
+                continue
+            newa = exp(a)
+            if isinstance(newa, exp):
+                add.append(a)
+            else:
+                out.append(newa)
+        if out:
+            return Mul(*out) * exp(Add(*add), evaluate=False)
+        
     @cacheit
     def _eval_derivative(self, s):
         return self.func(*[a.diff(s) for a in self.args])
@@ -510,12 +535,37 @@ class Plus(Expr, AssocOp):
     _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
     _eval_is_antihermitian = lambda self: _fuzzy_group((a.is_antihermitian for a in self.args), quick_exit=True)
     _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self.args), quick_exit=True)
-    _eval_is_hermitian = lambda self: _fuzzy_group((a.is_hermitian for a in self.args), quick_exit=True)
-    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self.args), quick_exit=True)
+    _eval_is_hermitian = lambda self: _fuzzy_group((a.is_hermitian for a in self.args), quick_exit=True)    
     _eval_is_rational = lambda self: _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
     _eval_is_algebraic = lambda self: _fuzzy_group((a.is_algebraic for a in self.args), quick_exit=True)
     _eval_is_commutative = lambda self: _fuzzy_group(a.is_commutative for a in self.args)
-
+    
+    def _eval_is_integer(self):
+        nonintegers = []
+        for arg in self.args:
+            integer = arg.is_integer
+            if integer is None:
+                return
+            if integer:
+                continue
+            nonintegers.append(arg)
+        if not nonintegers:
+            return True
+        if len(nonintegers) < len(self.args):
+            self = self.func(*nonintegers)
+        num, den = self.as_numer_denom()
+        if den.is_integer:
+            rem = num % den
+            if rem.is_zero:
+                return True
+            if rem.is_zero is None:
+                return
+            return False
+        if den.is_integer is None:
+            return
+        if num.is_integer:
+            return False
+                
     def _eval_is_imaginary(self):
         nz = []
         im_I = []
@@ -523,7 +573,7 @@ class Plus(Expr, AssocOp):
             if a.is_extended_real:
                 if a.is_zero:
                     pass
-                elif a.is_zero is False:
+                elif a.is_zero == False:
                     nz.append(a)
                 else:
                     return
@@ -536,7 +586,7 @@ class Plus(Expr, AssocOp):
         b = self.func(*nz)
         if b.is_zero:
             return fuzzy_not(self.func(*im_I).is_zero)
-        elif b.is_zero is False:
+        elif b.is_zero == False:
             return False
 
     def _eval_is_zero(self):
@@ -562,39 +612,8 @@ class Plus(Expr, AssocOp):
             delta1 = self._subs(delta, S.One).is_zero
             if delta0 and delta1:
                 return True
-            if delta0 is False and delta1 is False:
+            if delta0 == False and delta1 == False:
                 return False
-                
-#         nz = []
-#         z = 0
-#         im_or_z = False
-#         im = False
-#         for a in self.args:
-#             if a.is_extended_real:
-#                 if a.is_zero:
-#                     z += 1
-#                 elif a.is_zero is False:
-#                     nz.append(a)
-#                 else:
-#                     return
-#             elif a.is_imaginary:
-#                 im = True
-#             elif (S.ImaginaryUnit * a).is_extended_real:
-#                 im_or_z = True
-#             else:
-#                 return
-#         if z == len(self.args):
-#             return True
-#         if len(nz) == 0 or len(nz) == len(self.args):
-#             return 
-#         b = self.func(*nz)
-#         if b.is_zero:
-#             if not im_or_z and not im:
-#                 return True
-#             if im and not im_or_z:
-#                 return False
-#         if b.is_zero is False:
-#             return False
 
     def _eval_is_irrational(self):
         for t in self.args:
@@ -602,7 +621,7 @@ class Plus(Expr, AssocOp):
             if a:
                 others = list(self.args)
                 others.remove(t)
-                if all(x.is_rational is True for x in others):
+                if all(x.is_rational == True for x in others):
                     return True
                 return None
             if a is None:
@@ -644,7 +663,7 @@ class Plus(Expr, AssocOp):
             return False
 
     def _eval_subs(self, old, new):
-        if not old.is_Plus:
+        if not old.is_Add:
             if old is S.Infinity and -old in self.args:
                 # foo - oo is foo + (-oo) internally
                 return self.xreplace({-old:-new})
@@ -756,7 +775,7 @@ class Plus(Expr, AssocOp):
         old = self
 
         expr = expand_mul(self)
-        if not expr.is_Plus:
+        if not expr.is_Add:
             return expr.as_leading_term(x)
 
         infinite = [t for t in expr.args if t.is_infinite]
@@ -768,7 +787,7 @@ class Plus(Expr, AssocOp):
             return old.compute_leading_term(x)
         elif expr is S.NaN:
             return old.func._from_args(infinite)
-        elif not expr.is_Plus:
+        elif not expr.is_Add:
             return expr
         else:
             plain = expr.func(*[s for s, _ in expr.extract_leading_order(x)])
@@ -903,14 +922,14 @@ class Plus(Expr, AssocOp):
         """
         con, prim = self.func(*[_keep_coeff(*a.as_content_primitive(
             radical=radical, clear=clear)) for a in self.args]).primitive()
-        if not clear and not con.is_Integer and prim.is_Plus:
+        if not clear and not con.is_Integer and prim.is_Add:
             con, d = con.as_numer_denom()
             _p = prim / d
             if any(a.as_coeff_Mul()[0].is_Integer for a in _p.args):
                 prim = _p
             else:
                 con /= d
-        if radical and prim.is_Plus:
+        if radical and prim.is_Add:
             # look for common radicals that can be removed
             args = prim.args
             rads = []
@@ -1017,17 +1036,21 @@ class Plus(Expr, AssocOp):
 
             i, j = delta.args
             _coefficient = coefficient._subs(j, i)
+            if _coefficient == coefficient:
+                __coefficient = coefficient._subs(i, j)
+                if __coefficient.is_zero:
+                    _coefficient = __coefficient
                 
             if _coefficient == coefficient:
                 if degree == 1:
                     continue
             else:
                 coefficient = _coefficient
-                if coefficient.is_Plus:
+                if coefficient.is_Add:
                     coefficient = coefficient.simplifyKroneckerDelta()     
                         
             this = coefficient * delta + p.nth(0)
-            if this.is_Plus:
+            if this.is_Add:
                 this = this.simplifyKroneckerDelta()
             
         return this
@@ -1039,7 +1062,7 @@ class Plus(Expr, AssocOp):
                 return this
             
         for i, arg in enumerate(self.args):
-            if arg.is_Ref:
+            if arg.is_LAMBDA:
                 _arg = arg.simplify(squeeze=True)
                 if _arg != arg:
                     args = [*self.args]
@@ -1100,13 +1123,12 @@ class Plus(Expr, AssocOp):
     def simplifySummations(self):
         from sympy.concrete.summations import Sum 
         from sympy import Wild
-        from sympy.core.function import _coeff_isneg
         dic = {}
         ceoffs = []
         for arg in self.args:
 
             if isinstance(arg, Sum):
-                if _coeff_isneg(arg.function):
+                if arg.function._coeff_isneg():
                     arg = arg.func(-arg.function, *arg.limits)
                     key = S.NegativeOne
                 else:
@@ -1150,7 +1172,7 @@ class Plus(Expr, AssocOp):
         for coeff in dic:
             if -coeff not in dic:
                 continue            
-            if _coeff_isneg(coeff):
+            if coeff._coeff_isneg():
                 continue
 
             positive = dic[coeff]
@@ -1160,7 +1182,7 @@ class Plus(Expr, AssocOp):
                 if not pos.limits:
                     continue
                 t = pos.limits[0][0]
-                pattern = pos.function.subs(t, Wild(t.name, **t.assumptions0))
+                pattern = pos.function._subs(t, Wild(t.name, **t.assumptions0), symbol=False)
                 for i, neg in enumerate(negative):
                     if not (len(pos.limits) == len(neg.limits) == 1 and len(pos.limits[0]) == len(neg.limits[0]) == 3):
                         continue
@@ -1206,11 +1228,19 @@ class Plus(Expr, AssocOp):
         return self
 
     def sum_result(self, positive):
+        from sympy.concrete.expr_with_limits import limits_empty
         for i in range(len(positive)):
             for j in range(i + 1, len(positive)):
                 if not positive[i].is_Sum or not positive[j].is_Sum:
                     continue
                 if positive[i].function == positive[j].function:
+                    limits = positive[i].limits_intersect(positive[j])
+                    if not limits_empty(limits):
+                        if positive[i].limits == positive[j].limits:
+                            positive[i] *= 2
+                            del positive[j]
+                            return True                            
+                        continue
                     limits = positive[i].limits_union(positive[j])
                     positive[i] = positive[i].func(positive[i].function, *limits)
                     del positive[j]
@@ -1226,7 +1256,8 @@ class Plus(Expr, AssocOp):
                 coeff.append(arg)
                 continue
 
-            domain |= arg.domain
+#             domain |= arg.domain
+            domain += arg.domain
         if coeff:
             return domain + Add(*coeff)
         return domain
@@ -1256,8 +1287,9 @@ class Plus(Expr, AssocOp):
             is_even = arg.is_even
             if is_even:
                 continue
-            if is_even is False:
+            if is_even == False:
                 even = not even
+                continue
             return None
         return even
 
@@ -1327,11 +1359,10 @@ class Plus(Expr, AssocOp):
             terms = p._as_ordered_terms(self, order=order)
 
         tex = ""
-        from sympy.core.function import _coeff_isneg 
         for i, term in enumerate(terms):
             if i == 0:
                 pass
-            elif _coeff_isneg(term):
+            elif term._coeff_isneg():
                 tex += " - "
                 term = -term
             else:
@@ -1398,6 +1429,7 @@ class Plus(Expr, AssocOp):
                 continue
             return False
         return True
+
 
 Add = Plus
 from .mul import Mul, _keep_coeff, prod

@@ -1,15 +1,15 @@
-from sympy.core.symbol import Symbol
+
 from sympy.core.relational import Equality
 import sympy
 from sympy.functions.elementary.exponential import softmax
 from sympy.core.function import Derivative
 from sympy.sets.sets import Interval
-from sympy.utility import check, plausible
+from axiom.utility import check, plausible
 from sympy.core.numbers import oo
 from sympy.concrete import summations
 from sympy.concrete.summations import Sum
-from sympy.concrete.expr_with_limits import Ref
-from sympy import var
+from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import Symbol
 
 @plausible
 def apply(given):
@@ -21,30 +21,30 @@ def apply(given):
     j, a, b = limit
     n = b - a + 1
     
-    t = Ref[j:0:n - 1](lhs.function).simplify()    
+    t = LAMBDA[j:0:n - 1](lhs.function).simplify()    
     
     assert n >= 2
     
-    x = Symbol('x', shape=(n,), real=True)    
-    y = Symbol('y', shape=(n,), definition=softmax(x))
+    x = Symbol.x(shape=(n,), real=True)    
+    y = Symbol.y(shape=(n,), definition=softmax(x))
     
-    L = Symbol('L', definition=-t @ sympy.log(y))
+    L = Symbol.L(definition=-t @ sympy.log(y))
     
     return Equality(Derivative(L, x), y - t, given=given)
 
 
 @check
 def prove(Eq):
-    n = Symbol('n', domain=Interval(2, oo, integer=True))    
-    t = Symbol('t', shape=(n,), real=True)
-    j = var(integer=True).j
+    n = Symbol.n(domain=Interval(2, oo, integer=True))    
+    t = Symbol.t(shape=(n,), real=True)
+    j = Symbol.j(integer=True)
     given = Equality(Sum[j:0:n - 1](t[j]), 1)
     
     Eq << apply(given)
         
     Eq << Eq[1].expand(free_symbol=j)
     
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     xi = Eq[-2].lhs._wrt_variables[0][i]
 
     assert Eq[1].lhs.has(xi)

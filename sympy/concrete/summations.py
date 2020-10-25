@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.calculus.singularities import is_decreasing
 from sympy.calculus.util import AccumulationBounds
 from sympy.concrete.expr_with_limits import AddWithLimits
@@ -25,7 +23,6 @@ from sympy.simplify.powsimp import powsimp
 from sympy.solvers import solve
 from sympy.solvers.solveset import solveset
 import itertools
-from builtins import isinstance
 
 
 class Sum(AddWithLimits, ExprWithIntLimits):
@@ -159,7 +156,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
     __slots__ = ['is_commutative']
     operator = Add
-    is_Sum = True
 
     def __new__(cls, function, *symbols, **assumptions):
         obj = AddWithLimits.__new__(cls, function, *symbols, **assumptions)
@@ -430,14 +426,14 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         ###  -------- Divergence test ----------- ###
         try:
             lim_val = limit_seq(sequence_term, sym)
-            if lim_val is not None and lim_val.is_zero is False:
+            if lim_val is not None and lim_val.is_zero == False:
                 return S.false
         except NotImplementedError:
             pass
 
         try:
             lim_val_abs = limit_seq(abs(sequence_term), sym)
-            if lim_val_abs is not None and lim_val_abs.is_zero is False:
+            if lim_val_abs is not None and lim_val_abs.is_zero == False:
                 return S.false
         except NotImplementedError:
             pass
@@ -547,7 +543,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         # inside the loop, could make this test extremely slow
         # for larger summation expressions.
 
-        if order.expr.is_Times:
+        if order.expr.is_Mul:
             args = order.expr.args
             argset = set(args)
 
@@ -809,13 +805,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     def as_two_terms(self):
         first, second = self.function.as_two_terms()
 
-        if isinstance(self.function, Add):
-            return self.func(first, *self.limits) + self.func(second, *self.limits)
-        from sympy.concrete.expr_with_limits import Ref
+        if isinstance(self.function, self.operator):
+            return self.operator(self.func(first, *self.limits), self.func(second, *self.limits))            
+        
+        from sympy.concrete.expr_with_limits import LAMBDA
+        return LAMBDA(first, *self.limits) @ LAMBDA(second, *self.limits)
 
-        return Ref(first, *self.limits) @ Ref(second, *self.limits)
-
-    def _subs(self, old, new, **_):
+    def _subs(self, old, new, **hints):
         intersect = new.free_symbols & self.variables_set - old.free_symbols
         if intersect:
             this = self
@@ -833,7 +829,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if self == old or _aresame(self, old) or self.dummy_eq(old):
             return new        
 
-        from sympy.tensor.indexed import Slice
         if len(self.limits) == 1:
             limit = self.limits[0]
             x, *ab = limit
@@ -856,7 +851,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
                 a, b = ab
 
-            if isinstance(old, Slice) and len(ab) == 2:
+            if old.is_Slice and len(ab) == 2:
                 _x = x.copy(domain=Interval(*ab, integer=x.is_integer))
                 function = self.function.subs(x, _x)
                 _function = function.subs(old, new)
@@ -867,13 +862,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             p = old.as_poly(x)
 
             if p is None or p.degree() != 1:
-                function = self.function._subs(old, new).simplify()
+                function = self.function._subs(old, new, **hints).simplify()
 
                 if ab:
                     return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
 
-                if isinstance(x, Slice):
-                    x = x.subs(old, new)
+                if (x.is_Slice or x.is_Indexed) and x.base != old:
+                    x = x._subs(old, new)
                 return self.func(function, (x,))
 
             if new.has(x):
@@ -974,16 +969,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if x == _x:
                 a_diff = a - _a
                 b_diff = b - _b
-                if a_diff.is_nonnegative: # a >= _a
+                if a_diff.is_nonnegative:  # a >= _a
                     a = -Sum[x:_a:a - 1](self.function).simplify()
-                elif a_diff.is_nonpositive: # a <= _a
+                elif a_diff.is_nonpositive:  # a <= _a
                     a = Sum[x:a:_a - 1](self.function).simplify()
                 else:
                     return
                     
-                if b_diff.is_nonnegative: # b >= _b
+                if b_diff.is_nonnegative:  # b >= _b
                     b = Sum[x:_b + 1:b](self.function).simplify()
-                elif b_diff.is_nonpositive: # b <= _b
+                elif b_diff.is_nonpositive:  # b <= _b
                     b = -Sum[x:b + 1:_b](self.function).simplify()
                 else:
                     return
@@ -1065,7 +1060,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                         return self.func(self.function, (x_slice,))
             return self
 
-        if len(self.limits) != 1:
+        if not self.limits:
+            if self.function.is_LAMBDA:
+                if len(self.function.limits) == 1 and not self.function.variable.shape:
+                    function = self.function.function
+                    self = self.func(function, *self.function.limits).simplify(**kwargs)
+            elif self.function.is_Piecewise:
+                self = self.function.func(*((self.func(e).simplify(), c) for e, c in self.function.args)).simplify()            
             return self
         limit = self.limits[0]
         if len(limit) == 2:
@@ -1111,7 +1112,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if isinstance(domain, Complement):
                 A, B = domain.args
                 if isinstance(A, Interval) and A.is_integer and B in A:
-                    A = self.func(self.function, (x, A.min(), A.max()))
+                    A = self.func(self.function, (x, A.min(), A.max())).simplify()
                     if isinstance(B, FiniteSet):
                         B = Add(*[self.function.subs(x, b) for b in B])
                     else:
@@ -1190,7 +1191,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self
             
             if self.function._has(Piecewise):
-                if self.function.is_Times and all(arg.is_Piecewise for arg in self.function.args):
+                if self.function.is_Mul and all(arg.is_Piecewise for arg in self.function.args):
                     if len(self.function.args) > 2:
                         return self
                     piecewise0 = self.function.args[0]
@@ -1235,7 +1236,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             domain &= universe
             if not domain:
                 return S.Zero
-            assert domain.is_integer
+            assert domain.is_integer, domain
             
             if domain.is_Piecewise:
                 domain = Union(*(e for e, _ in domain.args)) & universe
@@ -1260,9 +1261,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if domain.is_Intersection :
                 return self
                 
-            if self.function.is_Plus:
+            if self.function.is_Add:
                 for i, arg in enumerate(self.function.args):
-                    if arg.is_Times and any(e.is_KroneckerDelta and e._has(x) for e in arg.args):
+                    if arg.is_Mul and any(e.is_KroneckerDelta and e._has(x) for e in arg.args):
                         args = [*self.function.args]
                         del args[i]
                         return self.func(arg, limit).simplify() + self.func(self.function.func(*args), limit).simplify()
@@ -1286,7 +1287,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self
             if limit != self.limits[0]:
                 return self.func(function, limit)
-            return self
+            
+            if dependent != S.One:
+                return self
 
         if dependent == S.One:
             if len(limit) > 1:
@@ -1298,23 +1301,23 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return self.func(dependent, limit) * independent
 
     def as_Ref(self):
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         limits = self.limits[1:]
-        sigmar = self.func(Ref(self.function, self.limits[0]).simplify())
+        sigmar = self.func(LAMBDA(self.function, self.limits[0]).simplify())
         if not limits:
             return sigmar
         return self.func(sigmar, *limits)
 
     def as_Sum(self):
-        from sympy.concrete.expr_with_limits import Ref
+        from sympy.concrete.expr_with_limits import LAMBDA
         function = self.function
-        if not function.is_Ref:            
+        if not function.is_LAMBDA:            
             function = function.as_Ref()
 
         limit = function.limits[-1]
         limits = function.limits[:-1]
         if limits:
-            function = Ref(function.function, *limits)
+            function = LAMBDA(function.function, *limits)
         else:
             function = function.function
 
@@ -1406,6 +1409,12 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 function = function._subs(x, _x)
         return function.is_finite
 
+    def _eval_exp(self):
+        from sympy import log
+        from sympy.concrete.products import Product
+        if isinstance(self.function, log):
+            return Product(self.function.arg, *self.limits)
+
 
 def summation(f, *symbols, **kwargs):
     r"""
@@ -1482,7 +1491,7 @@ def telescopic(L, R, limits):
     return None if not possible
     '''
     (i, a, b) = limits
-    if L.is_Plus or R.is_Plus:
+    if L.is_Add or R.is_Add:
         return None
 
     # We want to solve(L.subs(i, i + m) + R, m)
@@ -1586,7 +1595,7 @@ def eval_sum_symbolic(f, limits):
         return f * (b - a + 1)
 
     # Linearity
-    if f.is_Times:
+    if f.is_Mul:
         L, R = f.as_two_terms()
 
         if not L.has(i):
@@ -1604,7 +1613,7 @@ def eval_sum_symbolic(f, limits):
         except PolynomialError:
             pass
 
-    if f.is_Plus:
+    if f.is_Add:
         L, R = f.as_two_terms()
         lrsum = telescopic(L, R, (i, a, b))
 

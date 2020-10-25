@@ -65,7 +65,7 @@ class BesselBase(Function):
 
     def _eval_conjugate(self):
         z = self.argument
-        if z.is_extended_negative is False:
+        if z.is_extended_negative == False:
             return self.__class__(self.order.conjugate(), z.conjugate())
 
     def _eval_expand_func(self, **hints):
@@ -160,9 +160,9 @@ class besselj(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.One
-            elif (nu.is_integer and nu.is_zero is False) or re(nu).is_positive:
+            elif (nu.is_integer and nu.is_zero == False) or re(nu).is_positive:
                 return S.Zero
-            elif re(nu).is_negative and not (nu.is_integer is True):
+            elif re(nu).is_negative and not (nu.is_integer == True):
                 return S.ComplexInfinity
             elif nu.is_imaginary:
                 return S.NaN
@@ -197,7 +197,7 @@ class besselj(BesselBase):
         return exp(I*pi*nu/2)*besseli(nu, polar_lift(-I)*z)
 
     def _eval_rewrite_as_bessely(self, nu, z, **kwargs):
-        if nu.is_integer is False:
+        if nu.is_integer == False:
             return csc(pi*nu)*bessely(-nu, z) - cot(pi*nu)*bessely(nu, z)
 
     def _eval_rewrite_as_jn(self, nu, z, **kwargs):
@@ -259,7 +259,7 @@ class bessely(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.NegativeInfinity
-            elif re(nu).is_zero is False:
+            elif re(nu).is_zero == False:
                 return S.ComplexInfinity
             elif re(nu).is_zero:
                 return S.NaN
@@ -271,7 +271,7 @@ class bessely(BesselBase):
                 return S(-1)**(-nu)*bessely(-nu, z)
 
     def _eval_rewrite_as_besselj(self, nu, z, **kwargs):
-        if nu.is_integer is False:
+        if nu.is_integer == False:
             return csc(pi*nu)*(cos(pi*nu)*besselj(nu, z) - besselj(-nu, z))
 
     def _eval_rewrite_as_besseli(self, nu, z, **kwargs):
@@ -337,9 +337,9 @@ class besseli(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.One
-            elif (nu.is_integer and nu.is_zero is False) or re(nu).is_positive:
+            elif (nu.is_integer and nu.is_zero == False) or re(nu).is_positive:
                 return S.Zero
-            elif re(nu).is_negative and not (nu.is_integer is True):
+            elif re(nu).is_negative and not (nu.is_integer == True):
                 return S.ComplexInfinity
             elif nu.is_imaginary:
                 return S.NaN
@@ -435,7 +435,7 @@ class besselk(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.Infinity
-            elif re(nu).is_zero is False:
+            elif re(nu).is_zero == False:
                 return S.ComplexInfinity
             elif re(nu).is_zero:
                 return S.NaN
@@ -448,7 +448,7 @@ class besselk(BesselBase):
                 return besselk(-nu, z)
 
     def _eval_rewrite_as_besseli(self, nu, z, **kwargs):
-        if nu.is_integer is False:
+        if nu.is_integer == False:
             return pi*csc(pi*nu)*(besseli(-nu, z) - besseli(nu, z))/2
 
     def _eval_rewrite_as_besselj(self, nu, z, **kwargs):
@@ -515,7 +515,7 @@ class hankel1(BesselBase):
 
     def _eval_conjugate(self):
         z = self.argument
-        if z.is_extended_negative is False:
+        if z.is_extended_negative == False:
             return hankel2(self.order.conjugate(), z.conjugate())
 
 
@@ -559,7 +559,7 @@ class hankel2(BesselBase):
 
     def _eval_conjugate(self):
         z = self.argument
-        if z.is_extended_negative is False:
+        if z.is_extended_negative == False:
             return hankel1(self.order.conjugate(), z.conjugate())
 
 

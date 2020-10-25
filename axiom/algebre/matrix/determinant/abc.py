@@ -1,29 +1,29 @@
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy import S
 from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
 from sympy.matrices.expressions.determinant import det
 from sympy.concrete.summations import Sum
-from sympy import var
+from sympy import Symbol
 
 @plausible
 def apply(A):
     n = A.shape[0]
-    k = var(integer=True).k    
+    k = Symbol.k(integer=True)    
     return Equality(det(Sum[k:1:n-1]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
     n = 6
-    A = var(shape=(n, n), complex=True).A
+    A = Symbol.A(shape=(n, n), complex=True)
     
     Eq << apply(A)
     
-    Eq << var(shape=(n, n), definition=Eq[0].lhs.arg).L.this.definition
+    Eq << Symbol.L(shape=(n, n), definition=Eq[0].lhs.arg).this.definition
     shift = Eq[-1].rhs.function.args[0].base
     
     Eq.L_definition = Eq[-1].this.rhs.doit()

@@ -310,7 +310,7 @@ def not_empty_in(finset_intersection, *syms):
         from sympy.solvers.solveset import solveset
 
         _start = intrvl.start
-        _end = intrvl.end
+        _end = intrvl.stop
         _singularities = solveset(expr.as_numer_denom()[1], symb,
                                   domain=S.Reals)
 
@@ -497,7 +497,7 @@ def periodicity(f, symbol, check=False):
         else:
             period = _periodicity(f.args, symbol)
 
-    elif f.is_Times:
+    elif f.is_Mul:
         coeff, g = f.as_independent(symbol, as_Add=False)
         if isinstance(g, TrigonometricFunction) or coeff is not S.One:
             period = periodicity(g, symbol)
@@ -505,7 +505,7 @@ def periodicity(f, symbol, check=False):
         else:
             period = _periodicity(g.args, symbol)
 
-    elif f.is_Plus:
+    elif f.is_Add:
         k, g = f.as_independent(symbol)
         if k is not S.Zero:
             return periodicity(g, symbol)
@@ -1588,7 +1588,9 @@ class AccumulationBounds(AtomicExpr):
 
         if other.min <= self.min and other.max >= self.min:
             return AccumBounds(other.min, Max(self.max, other.max))
-
-
+        
+    def _eval_exp(self):
+        from sympy import exp
+        return AccumBounds(exp(self.min), exp(self.max))
 # setting an alias for AccumulationBounds
 AccumBounds = AccumulationBounds

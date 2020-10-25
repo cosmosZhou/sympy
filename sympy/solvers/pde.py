@@ -319,7 +319,7 @@ def classify_pde(eq, func=None, dict=False, **kwargs):
     # Try removing the smallest power of f(x,y)
     # from the highest partial derivatives of f(x,y)
     reduced_eq = None
-    if eq.is_Plus:
+    if eq.is_Add:
         var = set(combinations_with_replacement((x,y), order))
         dummyvar = var.copy()
         power = None
@@ -974,7 +974,7 @@ def _separate(eq, dep, others):
     # Extract derivatives depending our separable variable...
     terms = set()
     for term in eq.args:
-        if term.is_Times:
+        if term.is_Mul:
             for i in term.args:
                 if i.is_Derivative and not i.has(*others):
                     terms.add(term)

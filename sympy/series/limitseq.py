@@ -49,7 +49,7 @@ def difference_delta(expr, n=None, step=1):
                              " expression, a variable must be supplied to"
                              " take the difference of %s" % expr)
     step = sympify(step)
-    if step.is_number is False or step.is_finite is False:
+    if step.is_number is False or step.is_finite == False:
         raise ValueError("Step should be a finite number.")
 
     if hasattr(expr, '_eval_difference_delta'):
@@ -233,7 +233,7 @@ def limit_seq(expr, n=None, trials=5):
     if L1 is not None:
         return L1
     else:
-        if expr.is_Plus:
+        if expr.is_Add:
             limits = [limit_seq(term, n, trials) for term in expr.args]
             if any(result is None for result in limits):
                 return None

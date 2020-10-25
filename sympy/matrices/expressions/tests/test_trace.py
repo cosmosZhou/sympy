@@ -6,8 +6,8 @@ from sympy.matrices.expressions import (
     Adjoint, Identity, FunctionMatrix, MatrixExpr, MatrixSymbol, Trace,
     ZeroMatrix, trace, MatPow, MatAdd, MatMul
 )
-from sympy.matrices.expressions.matexpr import OneMatrix
-from sympy.utilities.pytest import raises, XFAIL
+from sympy.matrices.expressions.special import OneMatrix
+from sympy.testing.pytest import raises
 
 n = symbols('n', integer=True)
 A = MatrixSymbol('A', n, n)
@@ -47,7 +47,7 @@ def test_Trace():
 
     assert str(trace(A)) == str(Trace(A).doit())
 
-    assert Trace(A).is_commutative is True
+    assert Trace(A).is_commutative == True
 
 def test_Trace_A_plus_B():
     assert trace(A + B) == Trace(A) + Trace(B)

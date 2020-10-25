@@ -1,12 +1,11 @@
-from sympy.core.symbol import Symbol
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 
 from sympy.matrices.expressions.determinant import Det
 from sympy.matrices.expressions.cofactor import Cofactors
 from sympy.concrete.summations import Sum
 from sympy.core.sympify import sympify
-from sympy import var
+from sympy import Symbol
 
 @plausible
 def apply(A, i=None, j=None):
@@ -24,16 +23,16 @@ def apply(A, i=None, j=None):
     return Equality(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]).simplify())
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):    
-    n = var(integer=True, positive=True).n
+    n = Symbol.n(integer=True, positive=True)
     n = 5
-    i = var(integer=True, positive=True).i
+    i = Symbol.i(integer=True, positive=True)
     i = 4
-    A = var(shape=(n, n), complex=True, zero=False).A
+    A = Symbol.A(shape=(n, n), complex=True, zero=False)
     Eq << apply(A, i=i)
     Eq << Eq[-1].this.rhs.doit()
     

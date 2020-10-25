@@ -212,11 +212,164 @@ _assume_rules = FactRules([
     'noninteger     ==  extended_real & !integer',
     'extended_nonzero == extended_real & !zero',
     'invertible == !singular',
+    'random -> finite',
 ])
 
 _assume_defined = _assume_rules.defined_facts.copy()
 _assume_defined.add('polar')
 _assume_defined = frozenset(_assume_defined)
+
+
+def assumptions(expr, _check=None):
+    """return the T/F assumptions of ``expr``"""
+    n = sympify(expr)
+    if n.is_Symbol:
+        rv = n.assumptions0  # are any important ones missing?
+        if _check is not None:
+            rv = {k: rv[k] for k in set(rv) & set(_check)}
+        return rv
+    rv = {}
+    for k in _assume_defined if _check is None else _check:
+        v = getattr(n, 'is_{}'.format(k))
+        if v is not None:
+            rv[k] = v
+    return rv
+
+
+def common_assumptions(exprs, check=None):
+    """return those assumptions which have the same True or False
+    value for all the given expressions.
+
+    Examples
+    ========
+
+    >>> from sympy.core.assumptions import common_assumptions
+    >>> from sympy import oo, pi, sqrt
+    >>> common_assumptions([-4, 0, sqrt(2), 2, pi, oo])
+    {'commutative': True, 'composite': False,
+    'extended_real': True, 'imaginary': False, 'odd': False}
+
+    By default, all assumptions are tested; pass an iterable of the
+    assumptions to limit those that are reported:
+
+    >>> common_assumptions([0, 1, 2], ['positive', 'integer'])
+    {'integer': True}
+    """
+    check = _assume_defined if check is None else set(check)
+    if not check or not exprs:
+        return {}
+
+    # get all assumptions for each
+    assume = [assumptions(i, _check=check) for i in sympify(exprs)]
+    # focus on those of interest that are True
+    for i, e in enumerate(assume):
+        assume[i] = {k: e[k] for k in set(e) & check}
+    # what assumptions are in common?
+    common = set.intersection(*[set(i) for i in assume])
+    # which ones hold the same value
+    a = assume[0]
+    return {k: a[k] for k in common if all(a[k] == b[k]
+        for b in assume)}
+
+
+def failing_assumptions(expr, **assumptions):
+    """
+    Return a dictionary containing assumptions with values not
+    matching those of the passed assumptions.
+
+    Examples
+    ========
+
+    >>> from sympy import failing_assumptions, Symbol
+
+    >>> x = Symbol('x', real=True, positive=True)
+    >>> y = Symbol('y')
+    >>> failing_assumptions(6*x + y, real=True, positive=True)
+    {'positive': None, 'real': None}
+
+    >>> failing_assumptions(x**2 - 1, positive=True)
+    {'positive': None}
+
+    If *expr* satisfies all of the assumptions, an empty dictionary is returned.
+
+    >>> failing_assumptions(x**2, positive=True)
+    {}
+
+    """
+    expr = sympify(expr)
+    failed = {}
+    for k in assumptions:
+        test = getattr(expr, 'is_%s' % k, None)
+        if test is not assumptions[k]:
+            failed[k] = test
+    return failed  # {} or {assumption: value != desired}
+
+
+def check_assumptions(expr, against=None, **assume):
+    """
+    Checks whether assumptions of ``expr`` match the T/F assumptions
+    given (or possessed by ``against``). True is returned if all
+    assumptions match; False is returned if there is a mismatch and
+    the assumption in ``expr`` is not None; else None is returned.
+
+    Explanation
+    ===========
+
+    *assume* is a dict of assumptions with True or False values
+
+    Examples
+    ========
+
+    >>> from sympy import Symbol, pi, I, exp, check_assumptions
+    >>> check_assumptions(-5, integer=True)
+    True
+    >>> check_assumptions(pi, real=True, integer=False)
+    True
+    >>> check_assumptions(pi, real=True, negative=True)
+    False
+    >>> check_assumptions(exp(I*pi/7), real=False)
+    True
+    >>> x = Symbol('x', real=True, positive=True)
+    >>> check_assumptions(2*x + 1, real=True, positive=True)
+    True
+    >>> check_assumptions(-2*x - 5, real=True, positive=True)
+    False
+
+    To check assumptions of *expr* against another variable or expression,
+    pass the expression or variable as ``against``.
+
+    >>> check_assumptions(2*x + 1, x)
+    True
+
+    ``None`` is returned if ``check_assumptions()`` could not conclude.
+
+    >>> check_assumptions(2*x - 1, x)
+
+    >>> z = Symbol('z')
+    >>> check_assumptions(z, real=True)
+
+    See Also
+    ========
+
+    failing_assumptions
+
+    """
+    expr = sympify(expr)
+    if against:
+        if against is not None and assume:
+            raise ValueError(
+                'Expecting `against` or `assume`, not both.')
+        assume = assumptions(against)
+    known = True
+    for k, v in assume.items():
+        if v is None:
+            continue
+        e = getattr(expr, 'is_' + k, None)
+        if e is None:
+            known = None
+        elif v != e:
+            return False
+    return known
 
 
 class StdFactKB(FactKB):
@@ -253,7 +406,7 @@ def as_property(fact):
 def make_property(fact):
     """Create the automagic property corresponding to a fact."""
 
-    def getit(self):
+    def _getit(self):
         try:
             return self._assumptions[fact]
         except KeyError:
@@ -261,8 +414,8 @@ def make_property(fact):
                 self._assumptions = self.default_assumptions.copy()
             return self._ask(fact)
 
-    getit.func_name = as_property(fact)
-    return property(getit)
+    _getit.func_name = as_property(fact)
+    return property(_getit)
 
 
 def _ask(fact, obj):
@@ -329,57 +482,72 @@ def _ask(fact, obj):
 class ManagedProperties(BasicMeta):
     """Metaclass for classes with old-style assumptions"""
 
-    def __init__(cls, *args, **kws):
-        BasicMeta.__init__(cls, *args, **kws)
+    def __init__(self, *args, **kws):
+        BasicMeta.__init__(self, *args, **kws)
 
         local_defs = {}
         for k in _assume_defined:
             attrname = as_property(k)
-            v = cls.__dict__.get(attrname, '')
+            v = self.__dict__.get(attrname, '')
             if isinstance(v, (bool, integer_types, type(None))):
                 if v is not None:
                     v = bool(v)
                 local_defs[k] = v
 
         defs = {}
-        for base in reversed(cls.__bases__):
+        for base in reversed(self.__bases__):
             assumptions = getattr(base, '_explicit_class_assumptions', None)
             if assumptions is not None:
                 defs.update(assumptions)
         defs.update(local_defs)
 
-        cls._explicit_class_assumptions = defs
-        cls.default_assumptions = StdFactKB(defs)
+        self._explicit_class_assumptions = defs
+        self.default_assumptions = StdFactKB(defs)
 
-        cls._prop_handler = {}
+        self._prop_handler = {}
         for k in _assume_defined:
-            eval_is_meth = getattr(cls, '_eval_is_%s' % k, None)
+            eval_is_meth = getattr(self, '_eval_is_%s' % k, None)
             if eval_is_meth is not None:
-                cls._prop_handler[k] = eval_is_meth
+                self._prop_handler[k] = eval_is_meth
 
         # Put definite results directly into the class dict, for speed
-        for k, v in cls.default_assumptions.items():
-            setattr(cls, as_property(k), v)
+        for k, v in self.default_assumptions.items():
+            setattr(self, as_property(k), v)
 
         # protection e.g. for Integer.is_even=F <- (Rational.is_integer=F)
         derived_from_bases = set()
-        for base in cls.__bases__:
+        for base in self.__bases__:
             default_assumptions = getattr(base, 'default_assumptions', None)
             # is an assumption-aware class
             if default_assumptions is not None:
                 derived_from_bases.update(default_assumptions)
 
-        for fact in derived_from_bases - set(cls.default_assumptions):
+        for fact in derived_from_bases - set(self.default_assumptions):
             pname = as_property(fact)
-            if pname not in cls.__dict__:
-                setattr(cls, pname, make_property(fact))
+            if pname not in self.__dict__:
+                setattr(self, pname, make_property(fact))
 
-        # Finally, add any missing automagic property (e.g. for Basic)
+        # add any missing automagic property (e.g. for Basic)
         for fact in _assume_defined:
             pname = as_property(fact)
-            if not hasattr(cls, pname):
-                setattr(cls, pname, make_property(fact))
-
+            if not hasattr(self, pname):
+                setattr(self, pname, make_property(fact))
+                
+        # Finally, add class name property for Basic and self, eg, Basic.is_CLASSNAME = None, and CLASSNAME.is_CLASSNAME = True
+        pname = as_property(self.__name__)
+        if pname not in self.__dict__: 
+            setattr(self, pname, True)
+        
+#         look in Method Resolution Order
+        for base in reversed(self.__mro__):
+            if not isinstance(base, ManagedProperties):
+                continue
+        
+            assert base.__name__ == 'Basic', "self = %s, base = %s" % (self, base)
+            if pname not in base.__dict__:
+                setattr(base, pname, False)
+            break
+        
     def __getitem__(self, limits):
         from sympy.core.symbol import dtype
         if isinstance(limits, tuple):
@@ -389,7 +557,7 @@ class ManagedProperties(BasicMeta):
                     x, a, b = limit.start, limit.stop, limit.step
                     if b is not None:
                         limits[i] = (x, a, b)
-                    elif isinstance(a, int) or a.dtype == dtype.integer:
+                    elif isinstance(a, int) or a.dtype in dtype.integer:
                         limits[i] = (x, 0, a - 1)
                     else:
                         limits[i] = (x, a)
@@ -399,7 +567,7 @@ class ManagedProperties(BasicMeta):
             x, a, b = limits.start, limits.stop, limits.step
             if limits.step is not None:
                 limits = [(x, a, b)]
-            elif isinstance(a, int) or a.dtype == dtype.integer:
+            elif isinstance(a, int) or a.dtype in dtype.integer or a.is_Infinity:
                 limits = [(x, 0, a - 1)]
             else:
                 limits = [(x, a)]

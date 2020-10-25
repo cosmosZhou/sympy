@@ -85,7 +85,10 @@ class SetExpr(Expr):
         if res is None:
             return SetExpr(ImageSet(func, self.set))
         return SetExpr(res)
-
+    
+    def _eval_exp(self):
+        from sympy import exp
+        return self._eval_func(exp)
 
 def _setexpr_apply_operation(op, x, y):
     if isinstance(x, SetExpr):

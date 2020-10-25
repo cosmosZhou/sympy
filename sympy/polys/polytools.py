@@ -99,7 +99,6 @@ class Poly(Expr):
     __slots__ = ['rep', 'gens']
 
     is_commutative = True
-    is_Poly = True
     _op_priority = 10.001
 
     def __new__(cls, rep, *gens, **args):
@@ -109,8 +108,8 @@ class Poly(Expr):
         if 'order' in opt:
             raise NotImplementedError("'order' keyword is not implemented yet")
 
-        from sympy.concrete.expr_with_limits import Ref
-        if iterable(rep, exclude=(str, Symbol, Ref)):
+        from sympy.concrete.expr_with_limits import LAMBDA
+        if iterable(rep, exclude=(str, Symbol, LAMBDA)):
             if isinstance(rep, dict):
                 return cls._from_dict(rep, opt)
             else:
@@ -5259,7 +5258,7 @@ def gcd(f, g=None, *gens, **args):
     x - 1
 
     """
-    if hasattr(f, '__iter__') and not (f.is_Symbol or f.is_Plus or f.is_Times):
+    if hasattr(f, '__iter__') and not (f.is_Symbol or f.is_Add or f.is_Mul):
         if g is not None:
             gens = (g,) + gens
 
@@ -5912,7 +5911,7 @@ def _symbolic_factor_list(expr, opt, method):
         if arg.is_Number:
             coeff *= arg
             continue
-        if arg.is_Times:
+        if arg.is_Mul:
             args.extend(arg.args)
             continue
         if arg.is_Power:
@@ -6117,7 +6116,7 @@ def to_rational_coeffs(f):
         c = simplify(coeffs[0])
         if c and not c.is_rational:
             func = Add
-            if c.is_Plus:
+            if c.is_Add:
                 args = c.args
                 func = c.func
             else:
@@ -6335,7 +6334,7 @@ def factor(f, *gens, **args):
             Factor, but avoid changing the expression when unable to.
             """
             fac = factor(expr, *gens, **args)
-            if fac.is_Times or fac.is_Power:
+            if fac.is_Mul or fac.is_Power:
                 return fac
             return expr
 
@@ -6346,7 +6345,7 @@ def factor(f, *gens, **args):
         muladd = f.atoms(Mul, Add)
         for p in muladd:
             fac = factor(p, *gens, **args)
-            if (fac.is_Times or fac.is_Power) and fac != p:
+            if (fac.is_Mul or fac.is_Power) and fac != p:
                 partials[p] = fac
         return f.xreplace(partials)
 
@@ -6629,7 +6628,7 @@ def cancel(f, *gens, **args):
         if not f.has(Piecewise):
             raise PolynomialError(msg)
         # Handling of noncommutative and/or piecewise expressions
-        if f.is_Plus or f.is_Times:
+        if f.is_Add or f.is_Mul:
             c, nc = sift(f.args, lambda x: not x.has(Piecewise),
                 binary=True)
             nc = [cancel(i) for i in nc]
@@ -7089,9 +7088,9 @@ def poly(expr, *gens, **args):
             factors, poly_factors = [], []
 
             for factor in Mul.make_args(term):
-                if factor.is_Plus:
+                if factor.is_Add:
                     poly_factors.append(_poly(factor, opt))
-                elif factor.is_Power and factor.base.is_Plus and \
+                elif factor.is_Power and factor.base.is_Add and \
                         factor.exp.is_Integer and factor.exp >= 0:
                     poly_factors.append(
                         _poly(factor.base, opt).pow(factor.exp))

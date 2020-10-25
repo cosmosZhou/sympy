@@ -1,12 +1,13 @@
-from sympy.core.symbol import Symbol
+
 from sympy.core.relational import Equality
 from sympy.core.singleton import S
 from sympy.functions.elementary.trigonometric import cos, sin
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.sympify import sympify
 from sympy.functions.special.beta_functions import beta
 from sympy.integrals.integrals import Integral
 import axiom
+from sympy import Symbol
 
 
 @plausible
@@ -14,18 +15,18 @@ def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)
 
-    x = Symbol("x", real=True)
+    x = Symbol.x(real=True)
     return Equality(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
                     beta(m / 2, n / 2) / 2)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
-@check(wolfram=True)
+@check(wolfram=None)
 def prove(Eq, wolfram):
-    m = Symbol("m", integer=True, positive=True)
-    n = Symbol("n", integer=True, positive=True)
+    m = Symbol.m(integer=True, positive=True)
+    n = Symbol.n(integer=True, positive=True)
 
     Eq << apply(m, n)
 
@@ -35,7 +36,7 @@ def prove(Eq, wolfram):
 
     Eq << Eq[1].subs(m, 1)
 
-    Eq << axiom.trigonometry.sine.Wallis.apply(n)
+    Eq << axiom.trigonometry.sine.wallis.apply(n)
 
     Eq << Eq[1].subs(m, m + 2)
 

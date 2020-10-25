@@ -86,7 +86,9 @@ class MatrixBase(MatrixCommon):
     one = S.One
 
 #     __hash__ = None  # Mutable
-
+    def _eval_exp(self):
+        return self.exp()
+    
     def _eval_berkowitz_toeplitz_matrix(self):
         """Return (A,T) where T the Toeplitz matrix used in the Berkowitz algorithm
         corresponding to ``self`` and A is the first principal submatrix."""

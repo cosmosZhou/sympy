@@ -2182,7 +2182,7 @@ class MatrixArithmetic(MatrixRequired):
         # matrix-like objects can have shapes.  This is
         # our first sanity check.
         if hasattr(other, 'shape') and len(other.shape) == 2:
-            if self.shape[1] != other.shape[0]:
+            if self.shape[-1] != other.shape[0]:
                 raise ShapeError("Matrix size mismatch: %s * %s." % (
                     self.shape, other.shape))
 

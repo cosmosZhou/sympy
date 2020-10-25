@@ -310,7 +310,7 @@ def TR2i(rv, half=False):
     """
 
     def f(rv):
-        if not rv.is_Times:
+        if not rv.is_Mul:
             return rv
 
         n, d = rv.as_numer_denom()
@@ -322,7 +322,7 @@ def TR2i(rv, half=False):
             return (
                 (e.is_integer or k.is_positive) and (
                 k.func in (sin, cos) or (half and
-                k.is_Plus and
+                k.is_Add and
                 len(k.args) >= 2 and
                 any(any(isinstance(ai, cos) or ai.is_Power and ai.base is cos
                 for ai in Mul.make_args(a)) for a in k.args))))
@@ -342,7 +342,7 @@ def TR2i(rv, half=False):
         def factorize(d, ddone):
             newk = []
             for k in d:
-                if k.is_Plus and len(k.args) > 1:
+                if k.is_Add and len(k.args) > 1:
                     knew = factor(k) if half else factor_terms(k)
                     if knew != k:
                         newk.append((k, knew))
@@ -379,7 +379,7 @@ def TR2i(rv, half=False):
                 if a in d and d[a] == n[k]:
                     t.append(tan(k.args[0])**-n[k])
                     n[k] = d[a] = None
-            elif half and k.is_Plus and k.args[0] is S.One and \
+            elif half and k.is_Add and k.args[0] is S.One and \
                     isinstance(k.args[1], cos):
                 a = sin(k.args[1].args[0], evaluate=False)
                 if a in d and d[a] == n[k] and (d[a].is_integer or \
@@ -431,7 +431,7 @@ def TR3(rv):
         rv = rv.func(signsimp(rv.args[0]))
         if not isinstance(rv, TrigonometricFunction):
             return rv
-        if (rv.args[0] - S.Pi/4).is_positive is (S.Pi/2 - rv.args[0]).is_positive is True:
+        if (rv.args[0] - S.Pi/4).is_positive is (S.Pi/2 - rv.args[0]).is_positive == True:
             fmap = {cos: sin, sin: cos, tan: cot, cot: tan, sec: csc, csc: sec}
             rv = fmap[rv.func](S.Pi/2 - rv.args[0])
         return rv
@@ -609,7 +609,7 @@ def TR8(rv, first=True):
 
     def f(rv):
         if not (
-            rv.is_Times or
+            rv.is_Mul or
             rv.is_Power and
             rv.base.func in (cos, sin) and
             (rv.exp.is_integer or rv.base.is_positive)):
@@ -621,8 +621,8 @@ def TR8(rv, first=True):
             newd = TR8(d, first=False)
             if newn != n or newd != d:
                 rv = gcd_terms(newn/newd)
-                if rv.is_Times and rv.args[0].is_Rational and \
-                        len(rv.args) == 2 and rv.args[1].is_Plus:
+                if rv.is_Mul and rv.args[0].is_Rational and \
+                        len(rv.args) == 2 and rv.args[1].is_Add:
                     rv = Mul(*rv.as_coeff_Mul())
             return rv
 
@@ -689,7 +689,7 @@ def TR9(rv):
     """
 
     def f(rv):
-        if not rv.is_Plus:
+        if not rv.is_Add:
             return rv
 
         def do(rv, first=True):
@@ -706,7 +706,7 @@ def TR9(rv):
             # and y term instead of the y and z term in something like
             # cos(x) + cos(y) + cos(z).
 
-            if not rv.is_Plus:
+            if not rv.is_Add:
                 return rv
 
             args = list(ordered(rv.args))
@@ -729,7 +729,7 @@ def TR9(rv):
                             break  # go to next i
                 if hit:
                     rv = Add(*[_f for _f in args if _f])
-                    if rv.is_Plus:
+                    if rv.is_Add:
                         rv = do(rv)
 
                 return rv
@@ -783,14 +783,14 @@ def TR10(rv, first=True):
 
         f = rv.func
         arg = rv.args[0]
-        if arg.is_Plus:
+        if arg.is_Add:
             if first:
                 args = list(ordered(arg.args))
             else:
                 args = list(arg.args)
             a = args.pop()
             b = Add._from_args(args)
-            if b.is_Plus:
+            if b.is_Add:
                 if f == sin:
                     return sin(a)*TR10(cos(b), first=False) + \
                         cos(a)*TR10(sin(b), first=False)
@@ -830,7 +830,7 @@ def TR10i(rv):
         _roots()
 
     def f(rv):
-        if not rv.is_Plus:
+        if not rv.is_Add:
             return rv
 
         def do(rv, first=True):
@@ -843,7 +843,7 @@ def TR10i(rv):
             # structure -- all pairs must be checked to find the ones that
             # work.
 
-            if not rv.is_Plus:
+            if not rv.is_Add:
                 return rv
 
             args = list(ordered(rv.args))
@@ -866,7 +866,7 @@ def TR10i(rv):
                             break  # go to next i
                 if hit:
                     rv = Add(*[_f for _f in args if _f])
-                    if rv.is_Plus:
+                    if rv.is_Add:
                         rv = do(rv)
 
                 return rv
@@ -894,11 +894,11 @@ def TR10i(rv):
 
         # need to check for inducible pairs in ratio of sqrt(3):1 that
         # appeared in different lists when sorting by coefficient
-        while rv.is_Plus:
+        while rv.is_Add:
             byrad = defaultdict(list)
             for a in rv.args:
                 hit = 0
-                if a.is_Times:
+                if a.is_Mul:
                     for ai in a.args:
                         if ai.is_Power and ai.exp is S.Half and \
                                 ai.base.is_Integer:
@@ -989,7 +989,7 @@ def TR11(rv, base=None):
             f = rv.func
             t = f(base*2)
             co = S.One
-            if t.is_Times:
+            if t.is_Mul:
                 co, t = t.as_coeff_Mul()
             if not t.func in (cos, sin):
                 return rv
@@ -1038,14 +1038,14 @@ def TR12(rv, first=True):
             return rv
 
         arg = rv.args[0]
-        if arg.is_Plus:
+        if arg.is_Add:
             if first:
                 args = list(ordered(arg.args))
             else:
                 args = list(arg.args)
             a = args.pop()
             b = Add._from_args(args)
-            if b.is_Plus:
+            if b.is_Add:
                 tb = TR12(tan(b), first=False)
             else:
                 tb = tan(b)
@@ -1079,7 +1079,7 @@ def TR12i(rv):
     from sympy import factor
 
     def f(rv):
-        if not (rv.is_Plus or rv.is_Times or rv.is_Power):
+        if not (rv.is_Add or rv.is_Mul or rv.is_Power):
             return rv
 
         n, d = rv.as_numer_denom()
@@ -1092,7 +1092,7 @@ def TR12i(rv):
             m = as_f_sign_1(di)
             if m:
                 g, f, s = m
-                if s is S.NegativeOne and f.is_Times and len(f.args) == 2 and \
+                if s is S.NegativeOne and f.is_Mul and len(f.args) == 2 and \
                         all(isinstance(fi, tan) for fi in f.args):
                     return g, f
 
@@ -1105,9 +1105,9 @@ def TR12i(rv):
                 dok[s] = S.One
                 d_args[i] = g
                 continue
-            if di.is_Plus:
+            if di.is_Add:
                 di = factor(di)
-                if di.is_Times:
+                if di.is_Mul:
                     d_args.extend(di.args)
                     d_args[i] = S.One
             elif di.is_Power and (di.exp.is_integer or di.base.is_positive):
@@ -1119,14 +1119,14 @@ def TR12i(rv):
                     d_args[i] = g**di.exp
                 else:
                     di = factor(di)
-                    if di.is_Times:
+                    if di.is_Mul:
                         d_args.extend(di.args)
                         d_args[i] = S.One
         if not dok:
             return rv
 
         def ok(ni):
-            if ni.is_Plus and len(ni.args) == 2:
+            if ni.is_Add and len(ni.args) == 2:
                 a, b = ni.args
                 if isinstance(a, tan) and isinstance(b, tan):
                     return a, b
@@ -1139,9 +1139,9 @@ def TR12i(rv):
                 if m:
                     n_args[i] = S.NegativeOne
                 else:
-                    if ni.is_Plus:
+                    if ni.is_Add:
                         ni = factor(ni)
-                        if ni.is_Times:
+                        if ni.is_Mul:
                             n_args.extend(ni.args)
                             n_args[i] = S.One
                         continue
@@ -1152,7 +1152,7 @@ def TR12i(rv):
                             n_args[i] = S.One
                         else:
                             ni = factor(ni)
-                            if ni.is_Times:
+                            if ni.is_Mul:
                                 n_args.extend(ni.args)
                                 n_args[i] = S.One
                             continue
@@ -1195,7 +1195,7 @@ def TR13(rv):
     """
 
     def f(rv):
-        if not rv.is_Times:
+        if not rv.is_Mul:
             return rv
 
         # XXX handle products of powers? or let power-reducing handle it?
@@ -1287,7 +1287,7 @@ def TRmorrie(rv):
     """
 
     def f(rv):
-        if not rv.is_Times:
+        if not rv.is_Mul:
             return rv
 
         args = defaultdict(list)
@@ -1367,7 +1367,7 @@ def TR14(rv, first=True):
     """
 
     def f(rv):
-        if not rv.is_Times:
+        if not rv.is_Mul:
             return rv
 
         if first:
@@ -1917,11 +1917,11 @@ def trig_split(a, b, two=False):
         """
         c = s = None
         co = S.One
-        if a.is_Times:
+        if a.is_Mul:
             co, a = a.as_coeff_Mul()
             if len(a.args) > 2 or not two:
                 return None
-            if a.is_Times:
+            if a.is_Mul:
                 args = list(a.args)
             else:
                 args = [a]
@@ -2032,13 +2032,13 @@ def as_f_sign_1(e):
     >>> as_f_sign_1(2*x + 2)
     (2, x, 1)
     """
-    if not e.is_Plus or len(e.args) != 2:
+    if not e.is_Add or len(e.args) != 2:
         return
     # exact match
     a, b = e.args
     if a in (S.NegativeOne, S.One):
         g = S.One
-        if b.is_Times and b.args[0].is_Number and b.args[0] < 0:
+        if b.is_Mul and b.args[0].is_Number and b.args[0] < 0:
             a, b = -a, -b
             g = -g
         return g, b, a
@@ -2089,7 +2089,7 @@ def _osborne(e, d):
         if not isinstance(rv, HyperbolicFunction):
             return rv
         a = rv.args[0]
-        a = a*d if not a.is_Plus else Add._from_args([i*d for i in a.args])
+        a = a*d if not a.is_Add else Add._from_args([i*d for i in a.args])
         if isinstance(rv, sinh):
             return I*sin(a)
         elif isinstance(rv, cosh):

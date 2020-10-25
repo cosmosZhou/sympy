@@ -217,9 +217,9 @@ class FracField(DefaultPrinting):
 
             if generator is not None:
                 return generator
-            elif expr.is_Plus:
+            elif expr.is_Add:
                 return reduce(add, list(map(_rebuild, expr.args)))
-            elif expr.is_Times:
+            elif expr.is_Mul:
                 return reduce(mul, list(map(_rebuild, expr.args)))
             elif expr.is_Power or isinstance(expr, (ExpBase, Exp1)):
                 b, e = expr.as_base_exp()

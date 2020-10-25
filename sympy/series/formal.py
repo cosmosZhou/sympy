@@ -431,7 +431,7 @@ def _rsolve_hypergeometric(f, x, P, Q, k, m):
     ind, mp = S.Zero, -oo
     for i in range(k_max + m + 1):
         r = f.diff(x, i).limit(x, 0) / factorial(i)
-        if r.is_finite is False:
+        if r.is_finite == False:
             old_f = f
             f, P, Q, m = _transformation_a(f, x, P, Q, k, m, i)
             f, P, Q, m = _transformation_e(f, x, P, Q, k, m)
@@ -513,7 +513,7 @@ def rsolve_hypergeometric(f, x, P, Q, k, m):
         j, mk = cond.as_coeff_Add()
         c = mk.coeff(k)
 
-        if j.is_integer is False:
+        if j.is_integer == False:
             res *= x**frac(j)
             j = floor(j)
 
@@ -529,7 +529,7 @@ def rsolve_hypergeometric(f, x, P, Q, k, m):
 
     if mp is -oo:
         s = S.Zero
-    elif mp.is_integer is False:
+    elif mp.is_integer == False:
         s = ceiling(mp)
     else:
         s = mp + 1
@@ -1004,7 +1004,7 @@ class FormalPowerSeries(SeriesBase):
             xp = self._get_pow_x(t)
             if xp >= n:
                 break
-            elif xp.is_integer is True and i == n + 1:
+            elif xp.is_integer == True and i == n + 1:
                 break
             elif t is not S.Zero:
                 terms.append(t)

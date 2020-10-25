@@ -1,11 +1,11 @@
-from sympy.core.symbol import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from axiom import algebre
 from axiom.algebre.vector.independence import matmul_equality
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import Symbol
 
 
 @plausible
@@ -21,7 +21,7 @@ def apply(given):
     
     assert p_polynomial == _p_polynomial
     
-    assert p_polynomial.is_Ref
+    assert p_polynomial.is_LAMBDA
     assert p_polynomial.shape == x.shape == y.shape    
     assert len(p_polynomial.shape) == 1
 #     n = p_polynomial.shape[0]
@@ -36,18 +36,18 @@ def apply(given):
     return Equality(x, y, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    p = Symbol("p", complex=True)    
-    n = Symbol('n', domain=Interval(1, oo, integer=True))
-    x = Symbol("x", shape=(n,), given=True, complex=True)
-    y = Symbol("y", shape=(n,), given=True, complex=True)
-    k = Symbol('k', domain=Interval(1, oo, integer=True))
+    p = Symbol.p(complex=True)    
+    n = Symbol.n(domain=Interval(1, oo, integer=True))
+    x = Symbol.x(shape=(n,), given=True, complex=True)
+    y = Symbol.y(shape=(n,), given=True, complex=True)
+    k = Symbol.k(domain=Interval(1, oo, integer=True))
     
-    given = Equality(x @ Ref[k:n](p ** k), y @ Ref[k:n](p ** k))
+    given = Equality(x @ LAMBDA[k:n](p ** k), y @ LAMBDA[k:n](p ** k))
     
     Eq << apply(given)
     Eq << algebre.vector.cosine_similarity.apply(*given.lhs.args)

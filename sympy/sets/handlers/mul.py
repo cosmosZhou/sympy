@@ -27,9 +27,9 @@ def _set_mul(x, y):
     # TODO: some intervals containing 0 and oo will fail as 0*oo returns nan.
     comvals = (
         (x.start * y.start, bool(x.left_open or y.left_open)),
-        (x.start * y.end, bool(x.left_open or y.right_open)),
-        (x.end * y.start, bool(x.right_open or y.left_open)),
-        (x.end * y.end, bool(x.right_open or y.right_open)),
+        (x.start * y.stop, bool(x.left_open or y.right_open)),
+        (x.stop * y.start, bool(x.right_open or y.left_open)),
+        (x.stop * y.stop, bool(x.right_open or y.right_open)),
     )
     # TODO: handle symbolic intervals
     minval, minopen = min(comvals)
@@ -63,14 +63,14 @@ def _set_div(x, y):
     """
     from sympy.sets.setexpr import set_mul
     from sympy import oo
-    if (y.start*y.end).is_negative:
+    if (y.start*y.stop).is_negative:
         return Interval(-oo, oo)
     if y.start == 0:
         s2 = oo
     else:
         s2 = 1/y.start
-    if y.end == 0:
+    if y.stop == 0:
         s1 = -oo
     else:
-        s1 = 1/y.end
+        s1 = 1/y.stop
     return set_mul(x, Interval(s1, s2, y.right_open, y.left_open))

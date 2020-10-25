@@ -8,8 +8,6 @@ from sympy.matrices import MatrixBase
 
 
 class MatPow(MatrixExpr):
-    is_MatPow = True
-
     def __new__(cls, base, exp):
         base = _sympify(base)
         assert base.is_square, str(base)        

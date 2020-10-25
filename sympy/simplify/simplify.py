@@ -6,8 +6,8 @@ from sympy.core import (Basic, S, Add, Mul, Pow, Symbol, sympify, expand_mul,
                         expand_func, Function, Dummy, Expr, factor_terms,
                         expand_power_exp)
 from sympy.core.compatibility import iterable, ordered, range, as_int
-from sympy.core.evaluate import global_evaluate
-from sympy.core.function import expand_log, count_ops, _mexpand, _coeff_isneg, nfloat
+from sympy.core.parameters import global_parameters
+from sympy.core.function import expand_log, count_ops, _mexpand, nfloat
 from sympy.core.numbers import Float, I, pi, Rational, Integer
 from sympy.core.rules import Transform
 from sympy.core.sympify import _sympify
@@ -108,7 +108,7 @@ def _separatevars(expr, force):
     if len(expr.free_symbols) == 1:
         return expr
     # don't destroy a Mul since much of the work may already be done
-    if expr.is_Times:
+    if expr.is_Mul:
         args = list(expr.args)
         changed = False
         for i, a in enumerate(args):
@@ -128,7 +128,7 @@ def _separatevars(expr, force):
     _expr, reps = posify(expr) if force else (expr, {})
     expr = factor(_expr).subs(reps)
 
-    if not expr.is_Plus:
+    if not expr.is_Add:
         return expr
 
     # Find any common coefficients to pull out
@@ -152,7 +152,7 @@ def _separatevars(expr, force):
         _expr, reps = posify(_expr) if force else (_expr, {})
         _expr = (factor(_expr)).subs(reps)
 
-        if not _expr.is_Plus:
+        if not _expr.is_Add:
             nonsepar = _expr
 
     return commonc*nonsepar
@@ -191,7 +191,7 @@ def _separatevars_dict(expr, symbols):
 
 
 def _is_sum_surds(p):
-    args = p.args if p.is_Plus else [p]
+    args = p.args if p.is_Add else [p]
     for y in args:
         if not ((y**2).is_Rational and y.is_extended_real):
             return False
@@ -363,14 +363,14 @@ def signsimp(expr, evaluate=None):
 
     """
     if evaluate is None:
-        evaluate = global_evaluate[0]
+        evaluate = global_parameters.evaluate
     expr = sympify(expr)
     if not isinstance(expr, Expr) or expr.is_Atom:
         return expr
     e = sub_post(sub_pre(expr))
     if not isinstance(e, Expr) or e.is_Atom:
         return e
-    if e.is_Plus:
+    if e.is_Add:
         return e.func(*[signsimp(a, evaluate) for a in e.args])
     if evaluate:
         e = e.xreplace({m: -(-m) for m in e.atoms(Mul) if -(-m) != m})
@@ -615,14 +615,14 @@ def simplify(expr, ratio=1.7, measure=count_ops, rational=False, inverse=False):
     hollow_mul = Transform(
         lambda x: Mul(*x.args),
         lambda x:
-        x.is_Times and
+        x.is_Mul and
         len(x.args) == 2 and
         x.args[0].is_Number and
-        x.args[1].is_Plus)
+        x.args[1].is_Add)
     expr = short.xreplace(hollow_mul)
 
     numer, denom = expr.as_numer_denom()
-    if denom.is_Plus:
+    if denom.is_Add:
         n, d = fraction(radsimp(1/denom, symbolic=False, max_terms=1))
         if n is not S.One:
             expr = (numer*n).expand()/d
@@ -907,7 +907,7 @@ def logcombine(expr, force=False):
     """
 
     def f(rv):
-        if not (rv.is_Plus or rv.is_Times):
+        if not (rv.is_Add or rv.is_Mul):
             return rv
 
         def gooda(a):
@@ -927,7 +927,7 @@ def logcombine(expr, force=False):
         for a in Add.make_args(rv):
             if isinstance(a, log) and goodlog(a):
                 log1[()].append(([], a))
-            elif not a.is_Times:
+            elif not a.is_Mul:
                 other.append(a)
             else:
                 ot = []
@@ -1344,7 +1344,7 @@ def nsimplify(expr, constants=(), tolerance=None, full=False, rational=None,
             expr = sympify(newexpr)
             if x and not expr:  # don't let x become 0
                 raise ValueError
-            if expr.is_finite is False and not xv in [mpmath.inf, mpmath.ninf]:
+            if expr.is_finite == False and not xv in [mpmath.inf, mpmath.ninf]:
                 raise ValueError
             return expr
         finally:
@@ -1476,7 +1476,7 @@ def clear_coefficients(expr, rhs=S.Zero):
         c, expr = expr.as_coeff_Add(rational=True)
         rhs -= c
     expr = signsimp(expr, evaluate = False)
-    if _coeff_isneg(expr):
+    if expr._coeff_isneg():
         expr = -expr
         rhs = -rhs
     return expr, rhs

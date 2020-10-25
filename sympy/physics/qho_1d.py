@@ -23,7 +23,7 @@ def psi_n(n, x, m, omega):
     ========
 
     >>> from sympy.physics.qho_1d import psi_n
-    >>> from sympy import var
+    >>> from sympy import Symbol
     >>> var("x m omega")
     (x, m, omega)
     >>> psi_n(0, x, m, omega)
@@ -58,7 +58,7 @@ def E_n(n, omega):
     ========
 
     >>> from sympy.physics.qho_1d import E_n
-    >>> from sympy import var
+    >>> from sympy import Symbol
     >>> var("x omega")
     (x, omega)
     >>> E_n(x, omega)

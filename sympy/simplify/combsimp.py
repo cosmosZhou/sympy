@@ -68,7 +68,7 @@ def _gamma_as_comb(expr):
     from .simplify import bottom_up
 
     def f(rv):
-        if not rv.is_Times:
+        if not rv.is_Mul:
             return rv
         rvd = rv.as_powers_dict()
         nd_fact_args = [[], []] # numerator, denominator

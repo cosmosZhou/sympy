@@ -1,12 +1,13 @@
 from sympy import (Add, conjugate, diff, I, Integer, Mul, oo, pi, Pow,
-                   Rational, sin, sqrt, Symbol, symbols, sympify)
-from sympy.utilities.pytest import raises
+                   Rational, sin, sqrt, Symbol, symbols, sympify, S)
+from sympy.testing.pytest import raises
 
 from sympy.physics.quantum.dagger import Dagger
 from sympy.physics.quantum.qexpr import QExpr
 from sympy.physics.quantum.state import (
     Ket, Bra, TimeDepKet, TimeDepBra,
-    KetBase, BraBase, StateBase, Wavefunction
+    KetBase, BraBase, StateBase, Wavefunction,
+    OrthogonalKet, OrthogonalBra
 )
 from sympy.physics.quantum.hilbert import HilbertSpace
 
@@ -47,7 +48,7 @@ def test_ket():
 
     assert k.label == (Symbol('0'),)
     assert k.hilbert_space == HilbertSpace()
-    assert k.is_commutative is False
+    assert k.is_commutative == False
 
     # Make sure this doesn't get converted to the number pi.
     k = Ket('pi')
@@ -56,7 +57,7 @@ def test_ket():
     k = Ket(x, y)
     assert k.label == (x, y)
     assert k.hilbert_space == HilbertSpace()
-    assert k.is_commutative is False
+    assert k.is_commutative == False
 
     assert k.dual_class() == Bra
     assert k.dual == Bra(x, y)
@@ -81,7 +82,7 @@ def test_bra():
 
     assert b.label == (Symbol('0'),)
     assert b.hilbert_space == HilbertSpace()
-    assert b.is_commutative is False
+    assert b.is_commutative == False
 
     # Make sure this doesn't get converted to the number pi.
     b = Bra('pi')
@@ -90,7 +91,7 @@ def test_bra():
     b = Bra(x, y)
     assert b.label == (x, y)
     assert b.hilbert_space == HilbertSpace()
-    assert b.is_commutative is False
+    assert b.is_commutative == False
 
     assert b.dual_class() == Ket
     assert b.dual == Ket(x, y)
@@ -104,7 +105,7 @@ def test_ops():
     k1 = Ket(1)
     k = 2*I*k0 - (x/sqrt(2))*k1
     assert k == Add(Mul(2, I, k0),
-        Mul(Rational(-1, 2), x, Pow(2, Rational(1, 2)), k1))
+        Mul(Rational(-1, 2), x, Pow(2, S.Half), k1))
 
 
 def test_time_dep_ket():
@@ -169,7 +170,7 @@ def test_bra_ket_dagger():
     b = Bra('b')
     assert Dagger(k) == Bra('k')
     assert Dagger(b) == Ket('b')
-    assert Dagger(k).is_commutative is False
+    assert Dagger(k).is_commutative == False
 
     k2 = Ket('k2')
     e = 2*I*k + x*k2
@@ -186,7 +187,7 @@ def test_wavefunction():
     lims = f.limits
 
     assert f.is_normalized is False
-    assert f.norm == oo
+    assert f.norm is oo
     assert f(10) == 100
     assert p(10) == 10000
     assert lims[x] == (-oo, oo)
@@ -226,3 +227,13 @@ def test_wavefunction():
 
     k = Wavefunction(x**2, 'x')
     assert type(k.variables[0]) == Symbol
+
+def test_orthogonal_states():
+    braket = OrthogonalBra(x) * OrthogonalKet(x)
+    assert braket.doit() == 1
+
+    braket = OrthogonalBra(x) * OrthogonalKet(x+1)
+    assert braket.doit() == 0
+
+    braket = OrthogonalBra(x) * OrthogonalKet(y)
+    assert braket.doit() == braket

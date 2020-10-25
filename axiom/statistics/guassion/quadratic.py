@@ -1,7 +1,7 @@
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
-from sympy import sqrt, pi, exp, Symbol, log
+from sympy import sqrt, pi, exp, log, Symbol
 from sympy.integrals.integrals import Integral
 
 from axiom.statistics.guassion import std
@@ -51,15 +51,15 @@ def apply(y, x=None):
     return Equality(Integral(y, (x, -oo, oo)), doit(a, b, c))
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    a = Symbol("a", positive=True)
-    b = Symbol("b", real=True)
-    c = Symbol("c", real=True)
-    x = Symbol("x", real=True)
+    a = Symbol.a(positive=True)
+    b = Symbol.b(real=True)
+    c = Symbol.c(real=True)
+    x = Symbol.x(real=True)
     y = a * x * x + b * x + c
 
     Eq << apply(exp(-y), x)

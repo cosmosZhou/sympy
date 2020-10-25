@@ -37,7 +37,6 @@ class DenseMatrix(MatrixBase):
     __slots__ = []
     
     is_MatrixExpr = False
-    is_DenseMatrix = True
     
     _op_priority = 10.01
     _class_priority = 4
@@ -137,7 +136,7 @@ class DenseMatrix(MatrixBase):
                         sum(L[i, k] * L[j, k].conjugate() for k in range(j)))
                 Lii2 = expand_mul(self[i, i] - 
                     sum(L[i, k] * L[i, k].conjugate() for k in range(i)))
-                if Lii2.is_positive is False:
+                if Lii2.is_positive == False:
                     raise ValueError("Matrix must be positive-definite")
                 L[i, i] = sqrt(Lii2)
         else:
@@ -300,7 +299,7 @@ class DenseMatrix(MatrixBase):
                         L[i, k] * L[j, k].conjugate() * D[k, k] for k in range(j)))
                 D[i, i] = expand_mul(self[i, i] - 
                     sum(L[i, k] * L[i, k].conjugate() * D[k, k] for k in range(i)))
-                if D[i, i].is_positive is False:
+                if D[i, i].is_positive == False:
                     raise ValueError("Matrix must be positive-definite")
         else:
             for i in range(self.rows):

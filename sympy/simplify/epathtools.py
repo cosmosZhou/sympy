@@ -121,9 +121,9 @@ class EPath(object):
 
     def _get_ordered_args(self, expr):
         """Sort ``expr.args`` using printing order. """
-        if expr.is_Plus:
+        if expr.is_Add:
             return expr.as_ordered_terms()
-        elif expr.is_Times:
+        elif expr.is_Mul:
             return expr.as_ordered_factors()
         else:
             return expr.args

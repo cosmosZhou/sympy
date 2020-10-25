@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.basic import Basic
 from sympy.core.compatibility import as_int, with_metaclass, range, PY3
 from sympy.core.expr import Expr
@@ -11,190 +9,6 @@ from sympy.logic.boolalg import And
 from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet
 from sympy.utilities.misc import filldedent
 
-
-class Naturals(with_metaclass(Singleton, Set)):
-    """
-    Represents the natural numbers (or counting numbers) which are all
-    positive integers starting from 1. This set is also available as
-    the Singleton, S.Naturals.
-
-    Examples
-    ========
-
-    >>> from sympy import S, Interval, pprint
-    >>> 5 in S.Naturals
-    True
-    >>> iterable = iter(S.Naturals)
-    >>> next(iterable)
-    1
-    >>> next(iterable)
-    2
-    >>> next(iterable)
-    3
-    >>> pprint(S.Naturals.intersect(Interval(0, 10)))
-    {1, 2, ..., 10}
-
-    See Also
-    ========
-
-    Naturals0 : non-negative integers (i.e. includes 0, too)
-    Integers : also includes negative integers
-    """
-
-    is_iterable = True
-    _inf = S.One
-    _sup = S.Infinity
-
-    @property
-    def element_type(self):
-        from sympy.core.symbol import dtype
-        return dtype.integer(positive=True)
-
-    def _contains(self, other):
-        if not isinstance(other, Expr):
-            return S.false
-        elif other.is_positive and other.is_integer:
-            return S.true
-        elif other.is_integer is False or other.is_positive is False:
-            return S.false
-
-    def __iter__(self):
-        i = self._inf
-        while True:
-            yield i
-            i = i + 1
-
-    @property
-    def _boundary(self):
-        return self
-
-
-class Naturals0(Naturals):
-    """Represents the whole numbers which are all the non-negative integers,
-    inclusive of zero.
-
-    See Also
-    ========
-
-    Naturals : positive integers; does not include 0
-    Integers : also includes the negative integers
-    """
-    _inf = S.Zero
-
-    def _contains(self, other):
-        if not isinstance(other, Expr):
-            return S.false
-        elif other.is_integer and other.is_nonnegative:
-            return S.true
-        elif other.is_integer is False or other.is_nonnegative is False:
-            return S.false
-
-
-class Integers(with_metaclass(Singleton, Set)):
-    """
-    Represents all integers: positive, negative and zero. This set is also
-    available as the Singleton, S.Integers.
-
-    Examples
-    ========
-
-    >>> from sympy import S, Interval, pprint
-    >>> 5 in S.Naturals
-    True
-    >>> iterable = iter(S.Integers)
-    >>> next(iterable)
-    0
-    >>> next(iterable)
-    1
-    >>> next(iterable)
-    -1
-    >>> next(iterable)
-    2
-
-    >>> pprint(S.Integers.intersect(Interval(-4, 4)))
-    {-4, -3, ..., 4}
-
-    See Also
-    ========
-
-    Naturals0 : non-negative integers
-    Integers : positive and negative integers and zero
-    """
-
-    is_iterable = True
-    is_integer = True
-
-    def _contains(self, other):
-        if not isinstance(other, Expr):
-            return S.false
-        elif other.is_integer:
-            return S.true
-        elif other.is_integer is False:
-            return S.false
-
-    def __iter__(self):
-        yield S.Zero
-        i = S.One
-        while True:
-            yield i
-            yield -i
-            i = i + 1
-
-    @property
-    def _inf(self):
-        return -S.Infinity
-
-    @property
-    def _sup(self):
-        return S.Infinity
-
-    @property
-    def _boundary(self):
-        return self
-    
-    def intersection_sets(self, b):
-        if isinstance(b, Reals):
-            return self
-
-        if isinstance(b, Naturals) or b.is_Interval and b.is_integer:
-            return b        
-
-    def union_sets(self, b):
-        from sympy import Intersection
-        intersect = Intersection(self, b)
-        if intersect == self:
-            return b
-        elif intersect == b:
-            return self
-
-    @property
-    def element_type(self):
-        return dtype.integer
-
-    def __add__(self, other):
-        if other.is_integer:
-            return self
-        if other.is_extended_real:
-            return S.Reals
-        if other.is_complex:
-            return S.Complexes
-
-    def __mul__(self, other):
-        if other.is_set:
-            return ProductSet(self, other)
-        if other.is_integer:
-            return self
-        if other.is_extended_real:
-            return S.Reals
-        if other.is_complex:
-            return S.Complexes
-
-    def max(self):
-        return S.Infinity 
-    
-    def min(self):
-        return S.NegativeInfinity
-    
 class Reals(with_metaclass(Singleton, Interval)):
     """
     Represents all real numbers
@@ -228,29 +42,117 @@ class Reals(with_metaclass(Singleton, Interval)):
     def __new__(cls):
         return Interval.__new__(cls, -S.Infinity, S.Infinity)
 
-    def __eq__(self, other):
-        return other == Interval(-S.Infinity, S.Infinity)
-
-    def __hash__(self):
-        return hash(Interval(-S.Infinity, S.Infinity))
-
-    @property
-    def element_type(self):
-        return dtype.real
-
-    def __mul__(self, other):
+    def __matmul__(self, other):
         if other.is_set:
             return ProductSet(self, other)
+        
+        raise Exception("could not multiply %s, %s" % (self, other))
+    
+    def __mul__(self, other):
         if other.is_extended_real:
             return self
         if other.is_complex:
             return S.Complexes
 
-    def max(self):
-        return S.Infinity 
+        raise Exception("could not multiply %s, %s" % (self, other))
     
-    def min(self):
-        return S.NegativeInfinity
+# class Integers(Reals):
+#     """
+#     Represents all integers: positive, negative and zero. This set is also
+#     available as the Singleton, S.Integers.
+# 
+#     Examples
+#     ========
+# 
+#     >>> from sympy import S, Interval, pprint
+#     >>> 5 in S.Naturals
+#     True
+#     >>> iterable = iter(S.Integers)
+#     >>> next(iterable)
+#     0
+#     >>> next(iterable)
+#     1
+#     >>> next(iterable)
+#     -1
+#     >>> next(iterable)
+#     2
+# 
+#     >>> pprint(S.Integers.intersect(Interval(-4, 4)))
+#     {-4, -3, ..., 4}
+# 
+#     See Also
+#     ========
+# 
+#     Naturals0 : non-negative integers
+#     Integers : positive and negative integers and zero
+#     """
+# 
+#     is_iterable = True
+#     is_integer = True
+#     
+#     def __new__(cls):
+#         return Interval.__new__(cls, -S.Infinity, S.Infinity, integer=True)
+# 
+#     def _contains(self, other):
+#         if not isinstance(other, Expr):
+#             return S.false
+#         elif other.is_integer:
+#             return S.true
+#         elif other.is_integer == False:
+#             return S.false
+# 
+#     def __iter__(self):
+#         yield S.Zero
+#         i = S.One
+#         while True:
+#             yield i
+#             yield -i
+#             i = i + 1
+# 
+#     @property
+#     def _inf(self):
+#         return -S.Infinity
+# 
+#     @property
+#     def _sup(self):
+#         return S.Infinity
+# 
+#     @property
+#     def _boundary(self):
+#         return self
+#     
+#     def intersection_sets(self, b):
+#         if isinstance(b, Reals):
+#             return self
+# 
+#         if b.is_Interval and b.is_integer:
+#             return b        
+# 
+#     def union_sets(self, b):
+#         from sympy import Intersection
+#         intersect = Intersection(self, b)
+#         if intersect == self:
+#             return b
+#         elif intersect == b:
+#             return self
+# 
+#     def __add__(self, other):
+#         if other.is_integer:
+#             return self
+#         if other.is_extended_real:
+#             return S.Reals
+#         if other.is_complex:
+#             return S.Complexes
+# 
+#     def __mul__(self, other):
+#         if other.is_set:
+#             return ProductSet(self, other)
+#         if other.is_integer:
+#             return self
+#         if other.is_extended_real:
+#             return S.Reals
+#         if other.is_complex:
+#             return S.Complexes
 
 class ImageSet(Set):
     """
@@ -851,7 +753,7 @@ def normalize_theta_set(theta):
                         Interval(k * S.Pi, 2 * S.Pi, True, True))
             return Interval(0, 2 * S.Pi, False, True)
 
-        k_start, k_end = coeff(theta.start), coeff(theta.end)
+        k_start, k_end = coeff(theta.start), coeff(theta.stop)
 
         if k_start is None or k_end is None:
             raise NotImplementedError("Normalizing theta without pi as coefficient is "
@@ -964,7 +866,6 @@ class ComplexRegion(Set):
     Reals
 
     """
-    is_ComplexRegion = True
 
     def union_sets(self, b):
         if b.is_EmptySet:
@@ -1256,13 +1157,13 @@ class ComplexRegion(Set):
 class Complexes(with_metaclass(Singleton, ComplexRegion)):
 
     def __new__(cls):
-        return ComplexRegion.__new__(cls, S.Reals * S.Reals)
+        return ComplexRegion.__new__(cls, S.Reals @ S.Reals)
 
     def __eq__(self, other):
-        return other == ComplexRegion(S.Reals * S.Reals)
+        return other == ComplexRegion(S.Reals @ S.Reals)
 
     def __hash__(self):
-        return hash(ComplexRegion(S.Reals * S.Reals))
+        return hash(ComplexRegion(S.Reals @ S.Reals))
 
     def __str__(self):
         return "S.Complexes"
@@ -1276,14 +1177,20 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
         if other.is_set:
             return self
             
-        raise Exception("could not add %s, %s" %(self, other))
+        raise Exception("could not add %s, %s" % (self, other))
+
+    def __matmul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        
+        raise Exception("could not multiply %s, %s" % (self, other))
 
     def __mul__(self, other):
         if other.is_set:
             return ProductSet(self, other)
         if other.is_complex:
             return S.Complexes
-        raise Exception("could not add %s, %s" %(self, other))
+        raise Exception("could not multiply %s, %s" % (self, other))
 
     @property
     def element_type(self):

@@ -31,8 +31,8 @@ def _set_pow(x, exponent):
     https://en.wikipedia.org/wiki/Interval_arithmetic
     """
     s1 = x.start**exponent
-    s2 = x.end**exponent
-    if ((s2 > s1) if exponent > 0 else (x.end > -x.start)) == True:
+    s2 = x.stop**exponent
+    if ((s2 > s1) if exponent > 0 else (x.stop > -x.start)) == True:
         left_open = x.left_open
         right_open = x.right_open
         # TODO: handle unevaluated condition.
@@ -47,17 +47,17 @@ def _set_pow(x, exponent):
         return Interval(
             Min(s1, s2),
             Max(s1, s2), left_open, right_open)
-    elif x.end.is_negative:
+    elif x.stop.is_negative:
         return Interval(
             Min(s1, s2),
             Max(s1, s2), left_open, right_open)
 
-    # Case where x.start < 0 and x.end > 0:
+    # Case where x.start < 0 and x.stop > 0:
     if exponent.is_odd:
         if exponent.is_negative:
             if x.start.is_zero:
                 return Interval(s2, oo, x.right_open)
-            if x.end.is_zero:
+            if x.stop.is_zero:
                 return Interval(-oo, s1, True, x.left_open)
             return Union(Interval(-oo, s1, True, x.left_open), Interval(s2, oo, x.right_open))
         else:
@@ -66,7 +66,7 @@ def _set_pow(x, exponent):
         if exponent.is_negative:
             if x.start.is_zero:
                 return Interval(s2, oo, x.right_open)
-            if x.end.is_zero:
+            if x.stop.is_zero:
                 return Interval(s1, oo, x.left_open)
             return Interval(0, oo)
         else:
@@ -76,20 +76,20 @@ def _set_pow(x, exponent):
 def _set_pow(b, e):
     # TODO: add logic for open intervals?
     if b.start.is_nonnegative:
-        if b.end < 1:
+        if b.stop < 1:
             return FiniteSet(S.Zero)
         if b.start > 1:
             return FiniteSet(S.Infinity)
         return Interval(0, oo)
-    elif b.end.is_negative:
+    elif b.stop.is_negative:
         if b.start > -1:
             return FiniteSet(S.Zero)
-        if b.end < -1:
+        if b.stop < -1:
             return FiniteSet(-oo, oo)
         return Interval(-oo, oo)
     else:
         if b.start > -1:
-            if b.end < 1:
+            if b.stop < 1:
                 return FiniteSet(S.Zero)
             return Interval(0, oo)
         return Interval(-oo, oo)

@@ -71,7 +71,7 @@ def _monotonic_sign(self):
         rv = _monotonic_sign(-self)
         return rv if rv is None else -rv
 
-    if not self.is_Plus and self.as_numer_denom()[1].is_number:
+    if not self.is_Add and self.as_numer_denom()[1].is_number:
         s = self
         if s.is_prime:
             if s.is_odd:
@@ -85,7 +85,7 @@ def _monotonic_sign(self):
                 return S(4)
         elif s.is_positive:
             if s.is_even:
-                if s.is_prime is False:
+                if s.is_prime == False:
                     return S(4)
                 else:
                     return S(2)
@@ -176,7 +176,7 @@ def _monotonic_sign(self):
         if not (n.is_number or d.is_number):
             return
         if (
-                a.is_Times or a.is_Power) and \
+                a.is_Mul or a.is_Power) and \
                 a.is_rational and \
                 all(p.exp.is_Integer for p in a.atoms(Pow) if p.is_Power) and \
                 (a.is_positive or a.is_negative):
@@ -380,7 +380,7 @@ class Factors(object):
                         continue
                     i1 *= k ** factors.pop(k)
                 if i1 is not S.One:
-                    for a in i1.args if i1.is_Times else [i1]:  # at worst, -1.0*I*(-1)**e
+                    for a in i1.args if i1.is_Mul else [i1]:  # at worst, -1.0*I*(-1)**e
                         if a is S.NegativeOne:
                             factors[a] = S.One
                         elif a is I:
@@ -829,7 +829,7 @@ class Term(object):
             for factor in factors:
                 base, exp = decompose_power(factor)
 
-                if base.is_Plus:
+                if base.is_Add:
                     cont, base = base.primitive()
                     coeff *= cont ** exp
 
@@ -977,7 +977,7 @@ def _gcd_terms(terms, isprimitive=False, fraction=True):
         numer = Add(*numers)
         denom = denom.as_expr()
 
-    if not isprimitive and numer.is_Plus:
+    if not isprimitive and numer.is_Add:
         _cont, numer = numer.primitive()
         cont *= _cont
 
@@ -1071,7 +1071,7 @@ def gcd_terms(terms, isprimitive=False, clear=True, fraction=True):
         coeff, factors = cont.as_coeff_Mul()
         if not clear:
             c, _coeff = coeff.as_coeff_Mul()
-            if not c.is_Integer and not clear and numer.is_Plus:
+            if not c.is_Integer and not clear and numer.is_Add:
                 n, d = c.as_numer_denom()
                 _numer = numer / d
                 if any(a.as_coeff_Mul()[0].is_Integer
@@ -1086,7 +1086,7 @@ def gcd_terms(terms, isprimitive=False, clear=True, fraction=True):
     if terms.is_Atom:
         return terms
 
-    if terms.is_Times:
+    if terms.is_Mul:
         c, args = terms.as_coeff_mul()
         return _keep_coeff(c, Mul(*[gcd_terms(i, isprimitive, clear, fraction)
             for i in args]), clear=clear)
@@ -1230,7 +1230,7 @@ def factor_terms(expr, radical=False, clear=False, fraction=False, sign=True):
                 fraction=fraction, sign=sign)
 
         cont, p = expr.as_content_primitive(radical=radical, clear=clear)
-        if p.is_Plus:
+        if p.is_Add:
             list_args = [do(a) for a in Add.make_args(p)]
             # get a common negative (if there) which gcd_terms does not remove
             if all(a.as_coeff_Mul()[0].extract_multiplicatively(-1) is not None for a in list_args):
@@ -1240,7 +1240,7 @@ def factor_terms(expr, radical=False, clear=False, fraction=False, sign=True):
             special = {}
             for i, a in enumerate(list_args):
                 b, e = a.as_base_exp()
-                if e.is_Times and e != Mul(*e.args):
+                if e.is_Mul and e != Mul(*e.args):
                     list_args[i] = Dummy()
                     special[list_args[i]] = a
             # rebuild p not worrying about the order which gcd_terms will fix
@@ -1366,7 +1366,7 @@ def _mask_nc(eq, name=None):
             if a.is_symbol:
                 nc_syms.add(a)
                 pot.skip()
-            elif not (a.is_Plus or a.is_Times or a.is_Power):
+            elif not (a.is_Add or a.is_Mul or a.is_Power):
                 nc_obj.add(a)
                 pot.skip()
 
@@ -1419,7 +1419,7 @@ def factor_nc(expr):
     expr = sympify(expr)
     if not isinstance(expr, Expr) or not expr.args:
         return expr
-    if not expr.is_Plus:
+    if not expr.is_Add:
         return expr.func(*[factor_nc(a) for a in expr.args])
 
     expr, rep, nc_symbols = _mask_nc(expr)
@@ -1540,7 +1540,7 @@ def factor_nc(expr):
         if new_mid.is_Power:
             return _keep_coeff(c, g * l * new_mid * r)
 
-        if new_mid.is_Times:
+        if new_mid.is_Mul:
             # XXX TODO there should be a way to inspect what order the terms
             # must be in and just select the plausible ordering without
             # checking permutations

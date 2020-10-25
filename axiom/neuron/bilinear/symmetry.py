@@ -1,8 +1,8 @@
-from sympy.core.symbol import Symbol
-from sympy.utility import plausible
+
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from axiom.neuron import bilinear
-from sympy import var
+from sympy import Symbol
 
 @plausible
 def apply(x, y, given):
@@ -13,15 +13,15 @@ def apply(x, y, given):
     return Equality(x @ W @ y, y @ W @ x, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    n = var(integer=True).n
-    x = Symbol('x', shape=(n,), real=True)
-    y = Symbol('y', shape=(n,), real=True)
-    W = Symbol('W', shape=(n, n), real=True)
+    n = Symbol.n(integer=True)
+    x = Symbol.x(shape=(n,), real=True)
+    y = Symbol.y(shape=(n,), real=True)
+    W = Symbol.W(shape=(n, n), real=True)
      
     Eq << apply(x, y, Equality(W.T, W))
     

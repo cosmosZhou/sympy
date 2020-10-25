@@ -1,6 +1,6 @@
-from sympy import var
+from sympy import Symbol
 from sympy.sets.sets import FiniteSet
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.sets.contains import Contains
@@ -15,12 +15,12 @@ def apply(given):
     return Equality(KroneckerDelta(1, x), x, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    x = var(integer=True).x
+    x = Symbol.x(integer=True)
     given = Contains(x, {0, 1})
     
     Eq << apply(given)

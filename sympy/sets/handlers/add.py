@@ -22,7 +22,7 @@ def _set_add(x, y):
     Additions in interval arithmetic
     https://en.wikipedia.org/wiki/Interval_arithmetic
     """
-    return Interval(x.start + y.start, x.end + y.end,
+    return Interval(x.start + y.start, x.stop + y.stop,
         x.left_open or y.left_open, x.right_open or y.right_open)
 
 @dispatch(Interval, Infinity)
@@ -33,7 +33,7 @@ def _set_add(x, y):
 
 @dispatch(Interval, NegativeInfinity)
 def _set_add(x, y):
-    if x.end == S.Infinity:
+    if x.stop == S.Infinity:
         return Interval(-oo, oo)
     return FiniteSet({S.NegativeInfinity})
 
@@ -52,7 +52,7 @@ def _set_sub(x, y):
     Subtractions in interval arithmetic
     https://en.wikipedia.org/wiki/Interval_arithmetic
     """
-    return Interval(x.start - y.end, x.end - y.start,
+    return Interval(x.start - y.stop, x.stop - y.start,
         x.left_open or y.right_open, x.right_open or y.left_open)
 
 @dispatch(Interval, Infinity)

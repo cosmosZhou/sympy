@@ -1,8 +1,7 @@
-from sympy.core.compatibility import range
 from sympy import evalf, symbols, pi, sin, cos, sqrt, acos, Matrix
 from sympy.physics.mechanics import (ReferenceFrame, dynamicsymbols, inertia,
                                      KanesMethod, RigidBody, Point, dot, msubs)
-from sympy.utilities.pytest import slow, ON_TRAVIS, skip, warns_deprecated_sympy
+from sympy.testing.pytest import slow, ON_TRAVIS, skip, warns_deprecated_sympy
 
 
 @slow
@@ -193,11 +192,11 @@ def test_bicycle():
     PaperForkCgZ                    =  0.7
     FrameLength                     =  evalf.N(PaperWb*sin(HTA)-(rake-(PaperRadFront-PaperRadRear)*cos(HTA)))
     FrameCGNorm                     =  evalf.N((PaperFrameCgZ - PaperRadRear-(PaperFrameCgX/sin(HTA))*cos(HTA))*sin(HTA))
-    FrameCGPar                      =  evalf.N((PaperFrameCgX / sin(HTA) + (PaperFrameCgZ - PaperRadRear - PaperFrameCgX / sin(HTA) * cos(HTA)) * cos(HTA)))
-    tempa                           =  evalf.N((PaperForkCgZ - PaperRadFront))
-    tempb                           =  evalf.N((PaperWb-PaperForkCgX))
+    FrameCGPar                      =  evalf.N(PaperFrameCgX / sin(HTA) + (PaperFrameCgZ - PaperRadRear - PaperFrameCgX / sin(HTA) * cos(HTA)) * cos(HTA))
+    tempa                           =  evalf.N(PaperForkCgZ - PaperRadFront)
+    tempb                           =  evalf.N(PaperWb-PaperForkCgX)
     tempc                           =  evalf.N(sqrt(tempa**2+tempb**2))
-    PaperForkL                      =  evalf.N((PaperWb*cos(HTA)-(PaperRadFront-PaperRadRear)*sin(HTA)))
+    PaperForkL                      =  evalf.N(PaperWb*cos(HTA)-(PaperRadFront-PaperRadRear)*sin(HTA))
     ForkCGNorm                      =  evalf.N(rake+(tempc * sin(pi/2-HTA-acos(tempa/tempc))))
     ForkCGPar                       =  evalf.N(tempc * cos((pi/2-HTA)-acos(tempa/tempc))-PaperForkL)
 

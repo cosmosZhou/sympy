@@ -1,23 +1,20 @@
-
-from sympy import Symbol
 import axiom
 from sympy.core.relational import Equality
 from sympy.stats.drv import SingleDiscretePSpace
-from sympy.stats.drv_types import BinomialDistribution, Binomial
-from sympy.stats.rv import Density, RandomSymbol
-from sympy.utility import check
-from sympy.utility import plausible
-from sympy import var
+from sympy.stats.drv_types import BinomialDistribution
+from sympy.stats.rv import pspace, PDF
+from axiom.utility import check
+from axiom.utility import plausible
+from sympy import Symbol
 from sympy import Interval
 from axiom import algebre
 
-
 @plausible
 def apply(x0, x1):
-    if not isinstance(x0, RandomSymbol) or not isinstance(x1, RandomSymbol):
+    if not x0.is_random or not x1.is_random:
         return
-    pspace0 = x0.pspace
-    pspace1 = x1.pspace
+    pspace0 = pspace(x0)
+    pspace1 = pspace(x1)
     if not isinstance(pspace0, SingleDiscretePSpace) or not isinstance(pspace1, SingleDiscretePSpace):
         return
     distribution0 = pspace0.distribution
@@ -27,22 +24,20 @@ def apply(x0, x1):
     if distribution0.p != distribution1.p:
         return
 
-    Y = Binomial('y', distribution0.n + distribution1.n, distribution0.p)
-    y = Y.symbol
+    Y = Symbol.y(distribution=BinomialDistribution(distribution0.n + distribution1.n, distribution0.p))
+    y = pspace(Y).symbol
 
-    return Equality(Density(x0 + x1)(y), Density(Y)(y).doit())
+    return Equality(PDF(x0 + x1)(y), PDF(Y)(y).doit())
 
 
 @check
 def prove(Eq):
-    n0 = Symbol("n0", integer=True, positive=True)
-    n1 = Symbol("n1", integer=True, positive=True)
+    n0 = Symbol.n0(integer=True, positive=True)
+    n1 = Symbol.n1(integer=True, positive=True)
     
-    y = Symbol("y", integer=True, nonnegative=True)
-#     y = Symbol("y", domain=Interval(0, n0 + n1, integer=True))    
+    y = Symbol.y(integer=True, nonnegative=True)
 
     from sympy.functions.elementary.miscellaneous import Min, Max
-    from sympy.core.numbers import oo
     lhs = y + 1
     rhs = Max(-1, -n0 + y - 1)
     assert lhs > rhs
@@ -51,40 +46,25 @@ def prove(Eq):
     rhs = Min(n1, Max(-1, -n0 + y - 1))    
     assert lhs > rhs
     
-    mini = Min(n1, Max(-1, -n0 + y - 1))
-    print(mini < 0)    
-    union = Interval(Max(0, -n0 + y), Min(n1, y), integer=True)
-    univeralSet = Interval(-oo, oo, integer=True)
-    domain = Interval(0, n1, integer=True)
-
-    complement = univeralSet - union
-    print(complement)
-    print(complement & domain)
-
-    p = Symbol("p", domain=Interval(0, 1, left_open=True, right_open=True))
+    p = Symbol.p(domain=Interval(0, 1, left_open=True, right_open=True))
 
     assert p.is_nonzero
     assert (1 - p).is_nonzero
     
-    x0 = Binomial('x0', n0, p)
-    x1 = Binomial('x1', n1, p)
+    x0 = Symbol.x0(distribution=BinomialDistribution(n0, p)) 
+    x1 = Symbol.x1(distribution=BinomialDistribution(n1, p))
 
     Eq << apply(x0, x1)
-
-    assert Eq[0].rhs.args[0].is_nonzero
-    assert Eq[0].rhs.args[1].is_nonzero
     
-    Eq << Density(x0 + x1).equality_defined()
-
+    assert Eq[0].rhs.args[0].is_nonzero and Eq[0].rhs.args[1].is_nonzero
+    assert x0.is_integer and x1.is_integer
+    
+    Eq << Eq[0].lhs.this.doit(evaluate=False)
+    
     Eq << Eq[-1].this.rhs.function.powsimp()
-
+    
     Eq << Eq[-1].subs(Eq[0])    
-    Eq << Eq[-1].forall(y)
     
-    Eq << Eq[-1].bisect(domain=Interval(0, n0 + n1, integer=True))
-    
-    Eq.within, Eq.beyond = Eq[-1].split()
-        
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0)
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n1)
 
@@ -103,13 +83,9 @@ def prove(Eq):
     
     Eq << algebre.vector.independence.matmul_equality.apply(Eq[-1])
 
-    Eq << Eq[-1].limits_subs(k, y)
+    Eq << Eq[-1].limits_subs(k, Eq[0].lhs.symbol)
     
-    Eq << Eq[-1].subs(Eq.within)
-
-    Eq << Eq.beyond.simplify(deep=True)
-    
-    Eq << (Eq.beyond & Eq.within)
+    Eq << Eq[-1].reversed
 
     
 if __name__ == '__main__':

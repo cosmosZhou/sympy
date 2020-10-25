@@ -1466,7 +1466,7 @@ class EvalfMixin(object):
         else:
             return re
 
-    n = evalf
+#     n = evalf
 
     def _evalf(self, prec):
         """Helper for evalf. Does the same thing but takes binary precision"""

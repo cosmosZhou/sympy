@@ -2,8 +2,6 @@
 
 from __future__ import print_function, division
 
-from sympy.core.function import _coeff_isneg
-
 # Default precedence values for some basic types
 PRECEDENCE = {
     "Lambda": 1,
@@ -59,7 +57,7 @@ PRECEDENCE_VALUES = {
 
 
 def precedence_Times(item):
-    if _coeff_isneg(item):
+    if item._coeff_isneg():
         return PRECEDENCE["Plus"]
     return PRECEDENCE["Times"]
 

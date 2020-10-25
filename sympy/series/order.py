@@ -120,9 +120,6 @@ class Order(Expr):
     and the limit point is assumed to be zero.
 
     """
-
-    is_Order = True
-
     __slots__ = []
 
     @cacheit
@@ -196,7 +193,7 @@ class Order(Expr):
 
             expr = expr.subs(s)
 
-            if expr.is_Plus:
+            if expr.is_Add:
                 from sympy import expand_multinomial
                 expr = expand_multinomial(expr)
 
@@ -210,10 +207,10 @@ class Order(Expr):
                 # workaround e.g: expr = x*(x + y).
                 # (x*(x + y)).as_leading_term(x, y) currently returns
                 # x*y (wrong order term!).  That's why we want to deal with
-                # expand()'ed expr (handled in "if expr.is_Plus" branch below).
+                # expand()'ed expr (handled in "if expr.is_Add" branch below).
                 expr = expr.expand()
 
-            if expr.is_Plus:
+            if expr.is_Add:
                 lst = expr.extract_leading_order(args)
                 expr = Add(*[f.expr for (e, f) in lst])
 
@@ -243,7 +240,7 @@ class Order(Expr):
                                 b, r = b.args
                                 if b in (x, -x) and r.is_real:
                                     margs[i] = x**(r*q)
-                            elif b.is_Times and b.args[0] is S.NegativeOne:
+                            elif b.is_Mul and b.args[0] is S.NegativeOne:
                                 b = -b
                                 if b.is_Power and not b.exp.has(x):
                                     b, r = b.args
@@ -348,9 +345,9 @@ class Order(Expr):
             if expr.expr == self.expr:
                 # O(1) + O(1), O(1) + O(1, x), etc.
                 return all([x in self.args[1:] for x in expr.args[1:]])
-            if expr.expr.is_Plus:
+            if expr.expr.is_Add:
                 return all([self.contains(x) for x in expr.expr.args])
-            if self.expr.is_Plus and point == S.Zero:
+            if self.expr.is_Add and point == S.Zero:
                 return any([self.func(x, *self.args[1:]).contains(expr)
                             for x in self.expr.args])
             if self.variables and expr.variables:

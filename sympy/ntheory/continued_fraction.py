@@ -35,7 +35,7 @@ def continued_fraction(a):
             return continued_fraction_periodic(e.p, e.q, 0)
         elif e.is_Power and e.exp is S.Half and e.base.is_Integer:
             return continued_fraction_periodic(0, 1, e.base)
-        elif e.is_Times and len(e.args) == 2 and (
+        elif e.is_Mul and len(e.args) == 2 and (
                 e.args[0].is_Rational and
                 e.args[1].is_Power and
                 e.args[1].base.is_Integer and
@@ -54,14 +54,14 @@ def continued_fraction(a):
                     return continued_fraction_periodic(p, d)
                 # look for a + b*c
                 # with c = sqrt(s)
-                if p.is_Plus and len(p.args) == 2:
+                if p.is_Add and len(p.args) == 2:
                     a, bc = p.args
                 else:
                     a = S.Zero
                     bc = p
                 if a.is_Integer:
                     b = S.NaN
-                    if bc.is_Times and len(bc.args) == 2:
+                    if bc.is_Mul and len(bc.args) == 2:
                         b, c = bc.args
                     elif bc.is_Power:
                         b = Integer(1)
@@ -257,9 +257,9 @@ def continued_fraction_reduce(cf):
         rv = a.subs(x, pure).radsimp()
     else:
         rv = a
-    if rv.is_Plus:
+    if rv.is_Add:
         rv = factor_terms(rv)
-        if rv.is_Times and rv.args[0] == -1:
+        if rv.is_Mul and rv.args[0] == -1:
             rv = rv.func(*rv.args)
     return rv
 

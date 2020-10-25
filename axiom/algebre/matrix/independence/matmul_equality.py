@@ -1,10 +1,10 @@
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
-from sympy.concrete.expr_with_limits import Exists, Ref
+from sympy.concrete.expr_with_limits import Exists, LAMBDA
 from axiom import algebre
 from sympy.matrices.expressions.matmul import MatMul
-from sympy import var
+from sympy import Symbol
 
 @plausible
 def apply(given):
@@ -21,7 +21,7 @@ def apply(given):
     
     assert p_polynomial == _p_polynomial
     
-    assert p_polynomial.is_Ref
+    assert p_polynomial.is_LAMBDA
     assert p_polynomial.shape
     assert x.shape == y.shape    
     assert len(p_polynomial.shape) == 1
@@ -41,23 +41,23 @@ def apply(given):
         return Equality(x, y, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    p = var(complex=True).p    
-    m = var(domain=[1, oo], integer=True).m
-    n = var(domain=[1, oo], integer=True).n
-    x = var(shape=(n, m), given=True, complex=True).x
-    y = var(shape=(n, m), given=True, complex=True).y
-    k = var(domain=[1, oo], integer=True).k
+    p = Symbol.p(complex=True)    
+    m = Symbol.m(domain=[1, oo], integer=True)
+    n = Symbol.n(domain=[1, oo], integer=True)
+    x = Symbol.x(shape=(n, m), given=True, complex=True)
+    y = Symbol.y(shape=(n, m), given=True, complex=True)
+    k = Symbol.k(domain=[1, oo], integer=True)
     
-    given = Equality(Ref[k:n](p ** k) @ x, Ref[k:n](p ** k) @ y)
+    given = Equality(LAMBDA[k:n](p ** k) @ x, LAMBDA[k:n](p ** k) @ y)
     
     Eq << apply(given)
     
-    i = var(integer=True).i
+    i = Symbol.i(integer=True)
     Eq << Eq[0][i]
     
     Eq << algebre.vector.independence.matmul_equality.apply(Eq[-1])

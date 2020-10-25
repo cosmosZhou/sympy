@@ -1,2 +1,2 @@
 from . import theorem
-from . import Wallis
+from . import wallis

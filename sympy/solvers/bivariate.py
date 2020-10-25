@@ -102,7 +102,7 @@ def _linab(arg, symbol):
 
     arg = arg.expand()
     ind, dep = arg.as_independent(symbol)
-    if not arg.is_Plus:
+    if not arg.is_Add:
         b = 0
         a, x = ind, dep
     else:
@@ -205,7 +205,7 @@ def _solve_lambert(f, symbol, gens):
     if not lamcheck:
         raise NotImplementedError()
 
-    if lhs.is_Times:
+    if lhs.is_Mul:
         lhs = expand_log(log(lhs))
         rhs = log(rhs)
 
@@ -234,11 +234,11 @@ def _solve_lambert(f, symbol, gens):
     if not soln:
         mainlog = _mostfunc(lhs, log, symbol)
         if mainlog:
-            if lhs.is_Times and rhs != 0:
+            if lhs.is_Mul and rhs != 0:
                 soln = _lambert(log(lhs) - log(rhs), symbol)
-            elif lhs.is_Plus:
+            elif lhs.is_Add:
                 other = lhs.subs(mainlog, 0)
-                if other and not other.is_Plus and [
+                if other and not other.is_Add and [
                         tmp for tmp in other.atoms(Pow)
                         if symbol in tmp.free_symbols]:
                     if not rhs:
@@ -266,9 +266,9 @@ def _solve_lambert(f, symbol, gens):
         mainexp = _mostfunc(lhs, exp, symbol)
         if mainexp:
             lhs = collect(lhs, mainexp)
-            if lhs.is_Times and rhs != 0:
+            if lhs.is_Mul and rhs != 0:
                 soln = _lambert(expand_log(log(lhs) - log(rhs)), symbol)
-            elif lhs.is_Plus:
+            elif lhs.is_Add:
                 # move all but mainexp-containing term to rhs
                 other = lhs.subs(mainexp, 0)
                 mainterm = lhs - other
@@ -288,9 +288,9 @@ def _solve_lambert(f, symbol, gens):
         mainpow = _mostfunc(lhs, Pow, symbol)
         if mainpow and symbol in mainpow.exp.free_symbols:
             lhs = collect(lhs, mainpow)
-            if lhs.is_Times and rhs != 0:
+            if lhs.is_Mul and rhs != 0:
                 soln = _lambert(expand_log(log(lhs) - log(rhs)), symbol)
-            elif lhs.is_Plus:
+            elif lhs.is_Add:
                 # move all but mainpow-containing term to rhs
                 other = lhs.subs(mainpow, 0)
                 mainterm = lhs - other

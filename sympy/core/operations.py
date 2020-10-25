@@ -1,13 +1,17 @@
-from __future__ import print_function, division
+from typing import Tuple
+
+from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 from sympy.core.sympify import _sympify, sympify
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import ordered, range, default_sort_key
-from sympy.core.logic import fuzzy_and
-from sympy.core.evaluate import global_evaluate
+from sympy.core.logic import fuzzy_and, fuzzy_or
+from sympy.core.parameters import global_parameters
 from sympy.utilities.iterables import sift
-# from functools import cmp_to_key
+from sympy.multipledispatch.dispatcher import (Dispatcher,
+    ambiguity_register_error_ignore_dup,
+    str_signature, RaiseNotImplementedError)
 
 
 class AssocOp(Basic):
@@ -20,26 +24,54 @@ class AssocOp(Basic):
 
     This is an abstract base class, concrete derived classes must define
     the attribute `identity`.
+
+    Parameters
+    ==========
+
+    *args :
+        Arguments which are operated
+
+    evaluate : bool, optional
+        Evaluate the operation. If not passed, refer to ``global_parameters.evaluate``.
     """
 
     # for performance reason, we don't let is_commutative go to assumptions,
     # and keep it right here
-    __slots__ = ['is_commutative']
+    __slots__ = ('is_commutative',)  # type: Tuple[str, ...]
 
-#     @cacheit
+    _args_type = None  # type: Type[Basic]
+
+    @cacheit
     def __new__(cls, *args, **options):
         from sympy import Order
         args = list(map(_sympify, args))
-        args = [a for a in args if a is not cls.identity]
 
+        # Disallow non-Expr args in Add/Mul
+        typ = cls._args_type
+        if typ is not None:
+            from sympy.core.relational import Relational
+            if any(isinstance(arg, Relational) for arg in args):
+                raise TypeError("Relational can not be used in %s" % cls.__name__)
+
+            # This should raise TypeError once deprecation period is over:
+            if not all(isinstance(arg, typ) for arg in args):
+                SymPyDeprecationWarning(
+                    feature="Add/Mul with non-Expr args",
+                    useinstead="Expr args",
+                    issue=19445,
+                    deprecated_since_version="1.7"
+                ).warn()
+
+        args = [a for a in args if a is not cls.identity]
+        
         evaluate = options.get('evaluate')
         if evaluate is None:
-            evaluate = global_evaluate[0]
+            evaluate = global_parameters.evaluate
         if not evaluate:
             obj = cls._from_args(args)
             obj = cls._exec_constructor_postprocessors(obj)
             return obj
-
+        
         if len(args) == 0:
             return cls.identity
         if len(args) == 1:
@@ -65,7 +97,10 @@ class AssocOp(Basic):
 
     @classmethod
     def _from_args(cls, args, is_commutative=None):
-        """Create new instance with already-processed args"""
+        """Create new instance with already-processed args.
+        If the args are not in canonical order, then a non-canonical
+        result will be returned, so use with caution. The order of
+        args may change if the sign of the args is changed."""
         if len(args) == 0:
             return cls.identity
         elif len(args) == 1:
@@ -107,7 +142,7 @@ class AssocOp(Basic):
                x
                >>> m == x
                False
-               >>> m.is_Times
+               >>> m.is_Mul
                True
 
            Another issue to be aware of is that the commutativity of the result
@@ -122,7 +157,7 @@ class AssocOp(Basic):
            self is non-commutative and kwarg `reeval=False` has not been
            passed.
         """
-#         if kwargs.pop('reeval', True) and self.is_commutative is False:
+#         if kwargs.pop('reeval', True) and self.is_commutative == False:
 #             is_commutative = None
 #         else:
 #             is_commutative = self.is_commutative
@@ -213,7 +248,7 @@ class AssocOp(Basic):
                 # the matching continue
                 return None
             newexpr = self._combine_inverse(expr, exact)
-            if not old and (expr.is_Plus or expr.is_Times):
+            if not old and (expr.is_Add or expr.is_Mul):
                 if newexpr.count_ops() > expr.count_ops():
                     return None
             newpattern = self._new_rawargs(*wild_part)
@@ -234,7 +269,7 @@ class AssocOp(Basic):
                             return d2
 
             if i == 0:
-                if self.is_Times:
+                if self.is_Mul:
                     # make e**i look like Mul
                     if expr.is_Power and expr.exp.is_Integer:
                         if expr.exp > 0:
@@ -244,7 +279,7 @@ class AssocOp(Basic):
                         i += 1
                         continue
 
-                elif self.is_Plus:
+                elif self.is_Add:
                     # make i*e look like Add
                     c, e = expr.as_coeff_Mul()
                     if abs(c) > 1:
@@ -281,7 +316,7 @@ class AssocOp(Basic):
             # we don't assume expr is a Mul -- hence deal with args --
             # and always return a set.
             cpart, ncpart = sift(expr.args,
-                lambda arg: arg.is_commutative is True, binary=True)
+                lambda arg: arg.is_commutative == True, binary=True)
             return set(cpart), ncpart
 
         c, nc = _ncsplit(self)
@@ -415,12 +450,17 @@ class AssocOp(Basic):
 
     def _eval_is_extended_real(self):
         for arg in self.args:
-            if arg.is_extended_real is False:
+            if arg.is_extended_real == False:
                 return False
         return True
 
-    def asKroneckerDelta(self):
-        return self.func(*(arg.asKroneckerDelta() for arg in self.args))
+    def _eval_is_random(self):
+        for arg in self.args:
+            if arg.is_random:
+                return True
+
+    def as_KroneckerDelta(self):
+        return self.func(*(arg.as_KroneckerDelta() for arg in self.args))
 
 class ShortCircuit(Exception):
     pass
@@ -536,3 +576,172 @@ class LatticeOp(AssocOp):
     @staticmethod
     def _compare_pretty(a, b):
         return (str(a) > str(b)) - (str(a) < str(b))
+
+
+class AssocOpDispatcher:
+    """
+    Handler dispatcher for associative operators
+
+    .. notes::
+       This approach is experimental, and can be replaced or deleted in the future.
+       See https://github.com/sympy/sympy/pull/19463.
+
+    Explanation
+    ===========
+
+    If arguments of different types are passed, the classes which handle the operation for each type
+    are collected. Then, a class which performs the operation is selected by recursive binary dispatching.
+    Dispatching relation can be registered by ``register_handlerclass`` method.
+
+    Priority registration is unordered. You cannot make ``A*B`` and ``B*A`` refer to
+    different handler classes. All logic dealing with the order of arguments must be implemented
+    in the handler class.
+
+    Examples
+    ========
+
+    >>> from sympy import Add, Expr, Symbol
+    >>> from sympy.core.add import add
+
+    >>> class NewExpr(Expr):
+    ...     @property
+    ...     def _add_handler(self):
+    ...         return NewAdd
+    >>> class NewAdd(NewExpr, Add):
+    ...     pass
+    >>> add.register_handlerclass((Add, NewAdd), NewAdd)
+
+    >>> a, b = Symbol('a'), NewExpr()
+    >>> add(a, b) == NewAdd(a, b)
+    True
+
+    """
+    def __init__(self, name, doc=None):
+        self.name = name
+        self.doc = doc
+        self.handlerattr = "_%s_handler" % name
+        self._handlergetter = attrgetter(self.handlerattr)
+        self._dispatcher = Dispatcher(name)
+
+    def __repr__(self):
+        return "<dispatched %s>" % self.name
+
+    def register_handlerclass(self, classes, typ, on_ambiguity=ambiguity_register_error_ignore_dup):
+        """
+        Register the handler class for two classes, in both straight and reversed order.
+
+        Paramteters
+        ===========
+
+        classes : tuple of two types
+            Classes who are compared with each other.
+
+        typ:
+            Class which is registered to represent *cls1* and *cls2*.
+            Handler method of *self* must be implemented in this class.
+        """
+        if not len(classes) == 2:
+            raise RuntimeError(
+                "Only binary dispatch is supported, but got %s types: <%s>." % (
+                len(classes), str_signature(classes)
+            ))
+        if len(set(classes)) == 1:
+            raise RuntimeError(
+                "Duplicate types <%s> cannot be dispatched." % str_signature(classes)
+            )
+        self._dispatcher.add(tuple(classes), typ, on_ambiguity=on_ambiguity)
+        self._dispatcher.add(tuple(reversed(classes)), typ, on_ambiguity=on_ambiguity)
+
+    @cacheit
+    def __call__(self, *args, _sympify=True, **kwargs):
+        """
+        Parameters
+        ==========
+
+        *args :
+            Arguments which are operated
+        """
+        if _sympify:
+            args = tuple(map(_sympify_, args))
+        handlers = frozenset(map(self._handlergetter, args))
+
+        # no need to sympify again
+        return self.dispatch(handlers)(*args, _sympify=False, **kwargs)
+
+    @cacheit
+    def dispatch(self, handlers):
+        """
+        Select the handler class, and return its handler method.
+        """
+
+        # Quick exit for the case where all handlers are same
+        if len(handlers) == 1:
+            h, = handlers
+            if not isinstance(h, type):
+                raise RuntimeError("Handler {!r} is not a type.".format(h))
+            return h
+
+        # Recursively select with registered binary priority
+        for i, typ in enumerate(handlers):
+
+            if not isinstance(typ, type):
+                raise RuntimeError("Handler {!r} is not a type.".format(typ))
+
+            if i == 0:
+                handler = typ
+            else:
+                prev_handler = handler
+                handler = self._dispatcher.dispatch(prev_handler, typ)
+
+                if not isinstance(handler, type):
+                    raise RuntimeError(
+                        "Dispatcher for {!r} and {!r} must return a type, but got {!r}".format(
+                        prev_handler, typ, handler
+                    ))
+
+        # return handler class
+        return handler
+
+    @property
+    def __doc__(self):
+        docs = [
+            "Multiply dispatched associative operator: %s" % self.name,
+            "Note that support for this is experimental, see the docs for :class:`AssocOpDispatcher` for details"
+        ]
+
+        if self.doc:
+            docs.append(self.doc)
+
+        s = "Registered handler classes\n"
+        s += '=' * len(s)
+        docs.append(s)
+
+        amb_sigs = []
+
+        typ_sigs = defaultdict(list)
+        for sigs in self._dispatcher.ordering[::-1]:
+            key = self._dispatcher.funcs[sigs]
+            typ_sigs[key].append(sigs)
+
+        for typ, sigs in typ_sigs.items():
+
+            sigs_str = ', '.join('<%s>' % str_signature(sig) for sig in sigs)
+
+            if isinstance(typ, RaiseNotImplementedError):
+                amb_sigs.append(sigs_str)
+                continue
+
+            s = 'Inputs: %s\n' % sigs_str
+            s += '-' * len(s) + '\n'
+            s += typ.__name__
+            docs.append(s)
+
+        if amb_sigs:
+            s = "Ambiguous handler classes\n"
+            s += '=' * len(s)
+            docs.append(s)
+
+            s = '\n'.join(amb_sigs)
+            docs.append(s)
+
+        return '\n\n'.join(docs)

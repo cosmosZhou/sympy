@@ -1,41 +1,42 @@
 from sympy.core.relational import Equality
-from sympy.core.symbol import Symbol
-from sympy.utility import check, plausible
+
+from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.concrete.expr_with_limits import Ref
+from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import Symbol
 
 
 @plausible
 def apply(x, w=None, left=True, reference=True):
     n = x.shape[0]
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True))
-    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
-    k = Symbol('k', domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(integer=True)
+    j = Symbol.j(integer=True)
+    k = Symbol.k(integer=True)
     
     if w is None:
-        w = Symbol('w', integer=True, shape=(n, n, n, n), definition=Ref[j, i](Swap(n, i, j)))
+        w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     
     if left:
         if reference:
-            return Equality(Ref[k:n](x[w[i, j, k] @ Ref[k:n](k)]), w[i, j] @ x)
+            return Equality(LAMBDA[k:n](x[w[i, j, k] @ LAMBDA[k:n](k)]), w[i, j] @ x)
         else:
-            return Equality(x[w[i, j, k] @ Ref[k:n](k)], w[i, j, k] @ x)
+            return Equality(x[w[i, j, k] @ LAMBDA[k:n](k)], w[i, j, k] @ x)
     else:
         if reference:
-            return Equality(Ref[k:n](x[Ref[k:n](k) @ w[i, j, k]]), x @ w[i, j])
+            return Equality(LAMBDA[k:n](x[LAMBDA[k:n](k) @ w[i, j, k]]), x @ w[i, j])
         else:
-            return Equality(x[Ref[k:n](k) @ w[i, j, k]], x @ w[i, j, k])
+            return Equality(x[LAMBDA[k:n](k) @ w[i, j, k]], x @ w[i, j, k])
 
 
 @check
 def prove(Eq): 
-    n = Symbol('n', domain=Interval(2, oo, integer=True))
-    x = Symbol('x', shape=(n,), real=True)
+    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    x = Symbol.x(shape=(n,), real=True)
     Eq << apply(x)
     
     w = Eq[0].lhs.base
@@ -44,9 +45,13 @@ def prove(Eq):
     k = Eq[1].lhs.variable
     
     Eq << Eq[0][k]  
-    Eq << Eq[-1] @ Ref[k:n](k)
+    Eq << Eq[-1] @ LAMBDA[k:n](k)
     
     Eq << Eq[-1].this.rhs.expand()
+    
+    Eq << Eq[-1].this(i).rhs.args[0].expr.simplify()
+    Eq << Eq[-1].this(j).rhs.args[1].expr.simplify()
+    Eq << Eq[-1].this(k).rhs.args[2].simplify()
     
     Eq.lhs_assertion = x[Eq[-1].lhs].this.subs(Eq[-1]).this.rhs.expand()
     
@@ -58,7 +63,7 @@ def prove(Eq):
     
     Eq << Eq.lhs_assertion.subs(Eq[-1].reversed)
     
-    Eq << Eq[-1].reference((k,))
+    Eq << Eq[-1].reference((k, 0, n - 1))
 
 
 if __name__ == '__main__':

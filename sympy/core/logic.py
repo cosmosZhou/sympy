@@ -7,8 +7,7 @@ at present this is mainly needed for facts.py , feel free however to improve
 this stuff for general purpose.
 """
 
-# from typing import Dict, Type
-from typing import Union
+from typing import Dict, Type, Union
 
 
 # Type of a fuzzy bool
@@ -80,7 +79,7 @@ def _fuzzy_group(args, quick_exit=False):
     """
     saw_other = False
     for a in args:
-        if a is True:
+        if a:
             continue
         if a is None:
             return
@@ -192,6 +191,25 @@ def fuzzy_or(args):
     """
     return fuzzy_not(fuzzy_and(fuzzy_not(i) for i in args))
 
+def fuzzy_xor(args):
+    """Return None if any element of args is not True or False, else
+    True (if there are an odd number of True elements), else False."""
+    t = f = 0
+    for a in args:
+        ai = fuzzy_bool(a)
+        if ai:
+            t += 1
+        elif ai is False:
+            f += 1
+        else:
+            return
+    return t % 2 == 1
+
+
+def fuzzy_nand(args):
+    """Return False if all args are True, True if they are all False,
+    else None."""
+    return fuzzy_not(fuzzy_and(args))
 
 class Logic:
     """Logical expression"""

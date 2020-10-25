@@ -21,7 +21,7 @@ def R_nl(n, l, r, Z=1):
     ========
 
     >>> from sympy.physics.hydrogen import R_nl
-    >>> from sympy import var
+    >>> from sympy import Symbol
     >>> var("r Z")
     (r, Z)
     >>> R_nl(1, 0, r, Z)
@@ -151,7 +151,7 @@ def E_nl(n, Z=1):
     Examples
     ========
 
-    >>> from sympy import var
+    >>> from sympy import Symbol
     >>> from sympy.physics.hydrogen import E_nl
     >>> var("n Z")
     (n, Z)

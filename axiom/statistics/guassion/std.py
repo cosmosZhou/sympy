@@ -1,5 +1,5 @@
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy import sqrt, pi, exp, Symbol
 from sympy.integrals.integrals import Integral
@@ -7,11 +7,11 @@ from sympy.integrals.integrals import Integral
 
 @plausible
 def apply():
-    x = Symbol("x", real=True)
+    x = Symbol.x(real=True)
     return Equality(1 / sqrt(2 * pi) * Integral(exp(-x * x / 2), (x, -oo, oo)), 1, evaluate=False)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
@@ -22,7 +22,7 @@ def prove(Eq):
     Eq << Eq[0] * sqrt(2 * pi)
 
     x, *_ = Eq[-1].lhs.limits[0]
-    y = Symbol("y", real=True)
+    y = Symbol.y(real=True)
 
     assert Eq[-1].lhs.is_extended_real    
     Eq << Eq[-1].this.lhs.limits_subs(x, y) * Eq[-1]

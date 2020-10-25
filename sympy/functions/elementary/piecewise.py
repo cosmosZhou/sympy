@@ -18,7 +18,6 @@ Undefined = S.NaN  # Piecewise()
 class ExprCondPair(Tuple):
     """Represents an expression, condition pair."""
 
-    is_ExprCondPair = True
     def __new__(cls, expr, cond):
         expr = as_Basic(expr)
         if cond == True:
@@ -130,7 +129,6 @@ class Piecewise(Function):
     """
 
     nargs = None
-    is_Piecewise = True
 
     @property
     def scope_variables(self):
@@ -1100,30 +1098,30 @@ class Piecewise(Function):
                 dtype = _dtype
         return dtype
 
-    def asKroneckerDelta(self):
+    def as_KroneckerDelta(self):
         e, c = self.args[0]
-        eq = c.asKroneckerDelta()
+        eq = c.as_KroneckerDelta()
         if eq is None:
             return self
         
         if len(self.args) == 2:
             rest, _ = self.args[1]
             if rest.is_Piecewise:
-                rest = rest.asKroneckerDelta()
-            elif rest.is_Times or rest.is_Plus:
+                rest = rest.as_KroneckerDelta()
+            elif rest.is_Mul or rest.is_Add:
                 args = [*rest.args]
                 hit = False
                 for i, p in enumerate(args):
                     if p.is_Piecewise:
-                        args[i] = p.asKroneckerDelta()
+                        args[i] = p.as_KroneckerDelta()
                         hit = True
                 if hit:
                     rest = rest.func(*args)
         else:
-            rest = self.func(*self.args[1:]).asKroneckerDelta()
+            rest = self.func(*self.args[1:]).as_KroneckerDelta()
         if e.is_Piecewise:
-            e = e.asKroneckerDelta()
-        return (e * eq + rest * (1 - eq)).simplify()
+            e = e.as_KroneckerDelta()
+        return ((e * eq).simplify() + (rest * (1 - eq)).simplify()).simplify()
                  
     @staticmethod
     def simplifyEquality(e0, e1, lhs, rhs):
@@ -1501,6 +1499,15 @@ class Piecewise(Function):
     def _eval_is_finite(self):
         return all(e.is_finite for e, _ in self.args)
 
+    def _latex(self, p):
+        ecpairs = [r"{%s} & \text{if}\: {%s}" % (p._print(e), p._print(c)) for e, c in self.args[:-1]]
+        if self.args[-1].cond == true:
+            ecpairs.append(r"{%s} & \text{else}" % p._print(self.args[-1].expr))
+        else:
+            ecpairs.append(r"{%s} & \text{if}\: {%s}" % (p._print(self.args[-1].expr), p._print(self.args[-1].cond)))
+        tex = r"\begin{cases} %s \end{cases}"
+        return tex % r" \\".join(ecpairs)
+
 
 def piecewise_fold(expr):
     """
@@ -1522,7 +1529,7 @@ def piecewise_fold(expr):
 
     Piecewise
     """
-    if not isinstance(expr, Basic) or not expr.has(Piecewise) or expr.is_Ref:
+    if not isinstance(expr, Basic) or not expr.has(Piecewise) or expr.is_LAMBDA:
         return expr
 
     new_args = []
@@ -1557,8 +1564,8 @@ def piecewise_fold(expr):
         # we do that grouping before the more generic folding.
         # The following applies this idea when f = Add or f = Mul
         # (and the expression is commutative).
-#         if expr.is_Plus or expr.is_Times and expr.is_commutative:
-        if expr.is_Plus or expr.is_Times:
+#         if expr.is_Add or expr.is_Mul and expr.is_commutative:
+        if expr.is_Add or expr.is_Mul:
             p, args = sift(expr.args, lambda x: x.is_Piecewise, binary=True)
             if len(p) > 1:
                 return expr

@@ -1,8 +1,8 @@
-from sympy.core.symbol import Symbol
+
 from sympy.core.numbers import oo
-from sympy.utility import plausible
+from axiom.utility import plausible
 from sympy.core.relational import Equality
-from sympy import var
+from sympy import Symbol
 from sympy.concrete.expr_with_limits import Exists, MIN, MAX
 from sympy.integrals.integrals import Integral
 from sympy.sets.sets import Interval
@@ -27,14 +27,14 @@ def apply(given):
     return Exists(Equality(Integral(f, (z, a, b)), (b - a) * _f), limit, given=given)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):    
 
-    a = var(real=True).a
-    b = Symbol('b', real=True, domain=Interval(a, oo, left_open=True))
+    a = Symbol.a(real=True)
+    b = Symbol.b(real=True, domain=Interval(a, oo, left_open=True))
 
     assert b > a 
     assert b - a > 0
@@ -46,8 +46,8 @@ def prove(Eq):
 
     Eq << apply(given)
     
-    m = Symbol('m', definition=MIN(f(z), (z, a, b)))
-    M = Symbol('M', definition=MAX(f(z), (z, a, b)))
+    m = Symbol.m(definition=MIN(f(z), (z, a, b)))
+    M = Symbol.M(definition=MAX(f(z), (z, a, b)))
     
     Eq.min, Eq.max = m.equality_defined(), M.equality_defined()
     
@@ -78,10 +78,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.rhs.ratsimp().reversed
     
-    Eq << Eq[1].subs(Eq[1].variable, z)
     
-#     Eq << Eq[-1].rewrite(index=1)
-
     
 if __name__ == '__main__':
     prove(__file__)

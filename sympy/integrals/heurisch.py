@@ -347,7 +347,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
     if x not in f.free_symbols:
         return f*x
 
-    if not f.is_Plus:
+    if not f.is_Add:
         indep, f = f.as_independent(x)
     else:
         indep = S.One
@@ -582,7 +582,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
             except PolynomialError:
                 factorization = poly
 
-            if factorization.is_Times:
+            if factorization.is_Mul:
                 factors = factorization.args
             else:
                 factors = (factorization, )
@@ -670,7 +670,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
                 pass # ignore variables
             elif not expr.has(*syms):
                 non_syms.add(expr)
-            elif expr.is_Plus or expr.is_Times or expr.is_Power:
+            elif expr.is_Add or expr.is_Mul or expr.is_Power:
                 list(map(find_non_syms, expr.args))
             else:
                 # TODO: Non-polynomial expression. This should have been
@@ -710,7 +710,7 @@ def heurisch(f, x, rewrite=False, hints=None, mappings=None, retries=3,
         antideriv = solution.subs(rev_mapping)
         antideriv = cancel(antideriv).expand(force=True)
 
-        if antideriv.is_Plus:
+        if antideriv.is_Add:
             antideriv = antideriv.as_independent(x)[1]
 
         return indep*antideriv

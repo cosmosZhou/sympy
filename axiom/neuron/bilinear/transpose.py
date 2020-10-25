@@ -1,28 +1,28 @@
-from sympy.core.symbol import Symbol
-from sympy.utility import plausible
+
+from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
-from sympy import var
+from sympy import Symbol
 
 @plausible
 def apply(x, y, W):    
     return Equality(x @ W @ y, y @ W.T @ x)
 
 
-from sympy.utility import check
+from axiom.utility import check
 
 
 @check
 def prove(Eq):
-    n = var(integer=True).n
-    x = Symbol('x', shape=(n,), real=True)
-    y = Symbol('y', shape=(n,), real=True)
-    W = Symbol('W', shape=(n, n), real=True)
+    n = Symbol.n(integer=True)
+    x = Symbol.x(shape=(n,), real=True)
+    y = Symbol.y(shape=(n,), real=True)
+    W = Symbol.W(shape=(n, n), real=True)
      
     Eq << apply(x, y, W)
     
-    i = Symbol('i', domain=Interval(0, n - 1, integer=True))
-    j = Symbol('j', domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
+    j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
     Eq << (x @ W).this.expand(free_symbol={i, j})
     

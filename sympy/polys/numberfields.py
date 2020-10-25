@@ -111,7 +111,7 @@ def _separate_sq(p):
     # p = c1*sqrt(q1) + ... + cn*sqrt(qn) -> a = [(c1, q1), .., (cn, qn)]
     a = []
     for y in p.args:
-        if not y.is_Times:
+        if not y.is_Mul:
             if is_sqrt(y):
                 a.append((S.One, y**2))
             elif y.is_Atom:
@@ -529,9 +529,9 @@ def _minpoly_compose(ex, x, dom):
             else:
                 ex = ex1
 
-    if ex.is_Plus:
+    if ex.is_Add:
         res = _minpoly_add(x, dom, *ex.args)
-    elif ex.is_Times:
+    elif ex.is_Mul:
         f = Factors(ex).factors
         r = sift(f.items(), lambda itx: itx[0].is_Rational and itx[1].is_Rational)
         if r[True] and dom == QQ:
@@ -705,13 +705,13 @@ def _minpoly_groebner(ex, x, cls):
                     return symbols[ex]
             elif ex.is_Rational:
                 return ex
-        elif ex.is_Plus:
+        elif ex.is_Add:
             return Add(*[ bottom_up_scan(g) for g in ex.args ])
-        elif ex.is_Times:
+        elif ex.is_Mul:
             return Mul(*[ bottom_up_scan(g) for g in ex.args ])
         elif ex.is_Power:
             if ex.exp.is_Rational:
-                if ex.exp < 0 and ex.base.is_Plus:
+                if ex.exp < 0 and ex.base.is_Add:
                     coeff, terms = ex.base.as_coeff_add()
                     elt, _ = primitive_element(terms, polys=True)
 
@@ -752,15 +752,15 @@ def _minpoly_groebner(ex, x, cls):
         """
         if ex.is_Power:
             if (1/ex.exp).is_integer and ex.exp < 0:
-                if ex.base.is_Plus:
+                if ex.base.is_Add:
                     return True
-        if ex.is_Times:
+        if ex.is_Mul:
             hit = True
             for p in ex.args:
-                if p.is_Plus:
+                if p.is_Add:
                     return False
                 if p.is_Power:
-                    if p.base.is_Plus and p.exp > 0:
+                    if p.base.is_Add and p.exp > 0:
                         return False
 
             if hit:

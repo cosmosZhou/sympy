@@ -52,6 +52,14 @@ from types import GeneratorType
 from collections import defaultdict
 
 
+class NonlinearError(ValueError):
+    """Raised when unexpectedly encountering nonlinear equations"""
+    pass
+
+
+_rc = Dummy("R", real=True), Dummy("C", complex=True)
+
+
 def _masked(f, *atoms):
     """Return ``f``, with all objects given by ``atoms`` replaced with
     Dummy symbols, ``d``, and the list of replacements, ``(d, e)``,
@@ -196,13 +204,13 @@ def _invert_real(f, g_ys, symbol):
     if isinstance(f, Abs):
         return _invert_abs(f.args[0], g_ys, symbol)
 
-    if f.is_Plus:
+    if f.is_Add:
         # f = g + h
         g, h = f.as_independent(symbol)
         if g is not S.Zero:
             return _invert_real(h, imageset(Lambda(n, n - g), g_ys), symbol)
 
-    if f.is_Times:
+    if f.is_Mul:
         # f = g*h
         g, h = f.as_independent(symbol)
 
@@ -291,13 +299,13 @@ def _invert_complex(f, g_ys, symbol):
 
     n = Dummy('n')
 
-    if f.is_Plus:
+    if f.is_Add:
         # f = g + h
         g, h = f.as_independent(symbol)
         if g is not S.Zero:
             return _invert_complex(h, imageset(Lambda(n, n - g), g_ys), symbol)
 
-    if f.is_Times:
+    if f.is_Mul:
         # f = g*h
         g, h = f.as_independent(symbol)
 
@@ -472,7 +480,7 @@ def _is_function_class_equation(func_class, f, symbol):
     >>> _is_function_class_equation(HyperbolicFunction, tanh(x) + sinh(x), x)
     True
     """
-    if f.is_Times or f.is_Plus:
+    if f.is_Mul or f.is_Add:
         return all(_is_function_class_equation(func_class, arg, symbol)
                    for arg in f.args)
 
@@ -872,11 +880,11 @@ def _solveset(f, symbol, domain, _check=False):
     from sympy.simplify.simplify import signsimp
 
     orig_f = f
-    if f.is_Times:
+    if f.is_Mul:
         coeff, f = f.as_independent(symbol, as_Add=False)
         if coeff in set([S.ComplexInfinity, S.NegativeInfinity, S.Infinity]):
             f = together(orig_f)
-    elif f.is_Plus:
+    elif f.is_Add:
         a, h = f.as_independent(symbol)
         m, h = h.as_independent(symbol, as_Add=False)
         if m not in set([S.ComplexInfinity, S.Zero, S.Infinity,
@@ -893,7 +901,7 @@ def _solveset(f, symbol, domain, _check=False):
         return domain
     elif not f.has(symbol):
         return EmptySet()
-    elif f.is_Times and all(_is_finite_with_finite_vars(m, domain)
+    elif f.is_Mul and all(_is_finite_with_finite_vars(m, domain)
             for m in f.args):
         # if f(x) and g(x) are both finite we can say that the solution of
         # f(x)*g(x) == 0 is same as Union(f(x) == 0, g(x) == 0) is not true in
@@ -1482,7 +1490,7 @@ def _transolve(f, symbol, domain):
                 new_eq = _solve_exponential(lhs, rhs, x)
         ....
         rhs, lhs = eq.as_independent(x)
-        if lhs.is_Plus:
+        if lhs.is_Add:
             result = add_type(lhs, rhs, x)
 
     - Define the identification helper.
@@ -1543,7 +1551,7 @@ def _transolve(f, symbol, domain):
         assert (len(rhs_s.args)) == 1
         rhs = rhs_s.args[0]
 
-        if lhs.is_Plus:
+        if lhs.is_Add:
             result = add_type(lhs, rhs, symbol, domain)
     else:
         result = rhs_s
@@ -1859,7 +1867,7 @@ def linear_coeffs(eq, *syms, **_kw):
         f = f[0]
         if f in syms:
             d[f].append(m)
-        elif f.is_Plus:
+        elif f.is_Add:
             d1 = linear_coeffs(f, *syms, **{'dict': True})
             d[0].append(m*d1.pop(0))
             for xf, vf in d1.items():

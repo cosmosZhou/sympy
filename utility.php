@@ -203,7 +203,7 @@ function render($php)
             $inputs[] = join("<br>", $input);
             unset($input);
             $lengths[] = 1;
-        } else if (preg_match('/(Eq\.\w+ *(?:, *(?:Eq\.\w+|\w+) *)*)= */', $statement, $matches)) {
+        } else if (preg_match('/(Eq\.\w+ *(?:, *(?:Eq\.\w+|\w+|\*\w+) *)*)= */', $statement, $matches)) {
             $statement = $matches[1];
             error_log("parameter: " . $statement);
 

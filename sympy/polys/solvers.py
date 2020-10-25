@@ -4,13 +4,15 @@ from __future__ import print_function, division
 
 from sympy.matrices import Matrix, zeros
 
+
 class RawMatrix(Matrix):
     _sympify = staticmethod(lambda x: x)
+
 
 def eqs_to_matrix(eqs, ring):
     """Transform from equations to matrix form. """
     xs = ring.gens
-    M = zeros(len(eqs), len(xs)+1, cls=RawMatrix)
+    M = zeros(len(eqs), len(xs) + 1, cls=RawMatrix)
 
     for j, e_j in enumerate(eqs):
         for i, x_i in enumerate(xs):
@@ -18,6 +20,7 @@ def eqs_to_matrix(eqs, ring):
         M[j, -1] = -e_j.coeff(1)
 
     return M
+
 
 def solve_lin_sys(eqs, ring, _raw=True):
     """Solve a system of linear equations.
@@ -57,7 +60,13 @@ def solve_lin_sys(eqs, ring, _raw=True):
         _g = [[-i] for i in g]
         for i, p in enumerate(pivots):
             vect = RawMatrix(_g[p + 1:] + [[ring.one]])
-            v = (echelon[i, p + 1:] @ vect)[0]
+            
+            v_echelon = echelon[i, p + 1:]
+            if isinstance(v_echelon, RawMatrix) and isinstance(vect, RawMatrix):
+                v = v_echelon @ vect
+            else:
+                v = v_echelon * vect
+#             v = (echelon[i, p + 1:] @ vect)[0]
             if as_expr:
                 v = v.as_expr()
             sols[keys[p]] = v

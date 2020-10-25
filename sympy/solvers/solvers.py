@@ -448,7 +448,7 @@ def check_assumptions(expr, against=None, **assumptions):
     def _test(key):
         v = getattr(expr, 'is_' + key, None)
         if v is not None:
-            return assumptions[key] is v
+            return assumptions[key] == v
 
     return fuzzy_and(_test(key) for key in assumptions)
 
@@ -1124,7 +1124,7 @@ def solve(f, *symbols, **flags):
             elif (isinstance(p, bool) or
                     not p.args or
                     p in symset or
-                    p.is_Plus or p.is_Times or
+                    p.is_Add or p.is_Mul or
                     p.is_Power and not implicit or
                     p.is_Function and not implicit) and p.func not in (re, im):
                 continue
@@ -1449,7 +1449,7 @@ def _solve(f, *symbols, **flags):
     flags['check'] = checkdens = check = flags.pop('check', True)
 
     # build up solutions if f is a Mul
-    if f.is_Times:
+    if f.is_Mul:
         result = set()
         for m in f.args:
             if m in set([S.NegativeInfinity, S.ComplexInfinity, S.Infinity]):
@@ -1547,7 +1547,7 @@ def _solve(f, *symbols, **flags):
             b, e = x.as_base_exp()
             if e.is_Rational:
                 return b, e.q
-            if not e.is_Times:
+            if not e.is_Mul:
                 return x, 1
             c, ee = e.as_coeff_Mul()
             if c.is_Rational and c is not S.One:  # c could be a Float
@@ -2666,11 +2666,11 @@ def _tsolve(eq, sym, **flags):
     if lhs == sym:
         return [rhs]
     try:
-        if lhs.is_Plus:
+        if lhs.is_Add:
             # it's time to try factoring; powdenest is used
             # to try get powers in standard form for better factoring
             f = factor(powdenest(lhs - rhs))
-            if f.is_Times:
+            if f.is_Mul:
                 return _solve(f, sym, **flags)
             if rhs:
                 f = logcombine(lhs, force=flags.get('force', True))
@@ -2765,9 +2765,9 @@ def _tsolve(eq, sym, **flags):
                 sol.extend(s for s in check if eq.subs(sym, s).equals(0))
                 return list(ordered(set(sol)))
 
-        elif lhs.is_Times and rhs.is_positive:
+        elif lhs.is_Mul and rhs.is_positive:
             llhs = expand_log(log(lhs))
-            if llhs.is_Plus:
+            if llhs.is_Add:
                 return _solve(llhs - log(rhs), sym, **flags)
 
         elif lhs.is_Function and len(lhs.args) == 1:
@@ -3120,7 +3120,7 @@ def _invert(eq, *symbols, **kwargs):
             indep, dep = lhs.as_independent(*symbols)
 
             # dep + indep == rhs
-            if lhs.is_Plus:
+            if lhs.is_Add:
                 # this indicates we have done it all
                 if indep is S.Zero:
                     break
@@ -3138,7 +3138,7 @@ def _invert(eq, *symbols, **kwargs):
                 rhs /= indep
 
         # collect like-terms in symbols
-        if lhs.is_Plus:
+        if lhs.is_Add:
             terms = {}
             for a in lhs.args:
                 i, d = a.as_independent(*symbols)
@@ -3154,7 +3154,7 @@ def _invert(eq, *symbols, **kwargs):
 
         # if it's a two-term Add with rhs = 0 and two powers we can get the
         # dependent terms together, e.g. 3*f(x) + 2*g(x) -> f(x)/g(x) = -2/3
-        if lhs.is_Plus and not rhs and len(lhs.args) == 2 and \
+        if lhs.is_Add and not rhs and len(lhs.args) == 2 and \
                 not lhs.is_polynomial(*symbols):
             a, b = ordered(lhs.args)
             ai, ad = a.as_independent(*symbols)
@@ -3185,7 +3185,7 @@ def _invert(eq, *symbols, **kwargs):
                         raise ValueError(
                             'function with different numbers of args')
 
-        elif lhs.is_Times and any(_ispow(a) for a in lhs.args):
+        elif lhs.is_Mul and any(_ispow(a) for a in lhs.args):
             lhs = powsimp(powdenest(lhs))
 
         if lhs.is_Function:
@@ -3326,7 +3326,7 @@ def unrad(eq, *syms, **flags):
         # remove constants and powers of factors since these don't change
         # the location of the root; XXX should factor or factor_terms be used?
         eq = factor_terms(_mexpand(eq.as_numer_denom()[0], recursive=True), clear=True)
-        if eq.is_Times:
+        if eq.is_Mul:
             args = []
             for f in eq.args:
                 if f.is_number:
@@ -3450,11 +3450,11 @@ def unrad(eq, *syms, **flags):
     ok = False  # we don't have a solution yet
     depth = sqrt_depth(eq)
 
-    if len(rterms) == 1 and not (rterms[0].is_Plus and lcm > 2):
+    if len(rterms) == 1 and not (rterms[0].is_Add and lcm > 2):
         eq = rterms[0] ** lcm - ((-others) ** lcm)
         ok = True
     else:
-        if len(rterms) == 1 and rterms[0].is_Plus:
+        if len(rterms) == 1 and rterms[0].is_Add:
             rterms = list(rterms[0].args)
         if len(bases) == 1:
             b = bases.pop()
