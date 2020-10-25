@@ -46,14 +46,14 @@ def args_kwargs(argv):
     return args, kwargs
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:         
+    args, kwargs = args_kwargs(sys.argv[1:])
+    if kwargs:
+        if 'clean' in kwargs:
+            clean()
+    
+    if not args:         
         prove.prove()
-    else:
-        args, kwargs = args_kwargs(sys.argv[1:])
-        if kwargs:
-            if 'clean' in kwargs:
-                clean()
-            
+    else:            
         unproven = []
 
         erroneous = []
