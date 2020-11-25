@@ -499,76 +499,6 @@ class LatexPrinter(Printer):
             name = r"\operatorname{%s}" % func
         return name
 
-    def _print_Function(self, expr, exp=None):
-        r'''
-        Render functions to LaTeX, handling functions that LaTeX knows about
-        e.g., sin, cos, ... by using the proper LaTeX command (\sin, \cos, ...).
-        For single-letter function names, render them as regular LaTeX math
-        symbols. For multi-letter function names that LaTeX does not know
-        about, (e.g., Li, sech) use \operatorname{} so that the function name
-        is rendered in Roman font and LaTeX handles spacing properly.
-
-        expr is the expression involving the function
-        exp is an exponent
-        '''
-        func = expr.func.__name__
-        if hasattr(self, '_print_' + func) and \
-                not isinstance(expr, AppliedUndef):
-            return getattr(self, '_print_' + func)(expr, exp)
-        else:
-            args = [str(self._print(arg)) for arg in expr.args]
-            # How inverse trig functions should be displayed, formats are:
-            # abbreviated: asin, full: arcsin, power: sin^-1
-            inv_trig_style = self._settings['inv_trig_style']
-            # If we are dealing with a power-style inverse trig function
-            inv_trig_power_case = False
-            # If it is applicable to fold the argument brackets
-            can_fold_brackets = self._settings['fold_func_brackets'] and \
-                len(args) == 1 and \
-                not self._needs_function_brackets(expr.args[0])
-
-            inv_trig_table = ["asin", "acos", "atan", "acsc", "asec", "acot"]
-
-            # If the function is an inverse trig function, handle the style
-            if func in inv_trig_table:
-                if inv_trig_style == "abbreviated":
-                    pass
-                elif inv_trig_style == "full":
-                    func = "arc" + func[1:]
-                elif inv_trig_style == "power":
-                    func = func[1:]
-                    inv_trig_power_case = True
-
-                    # Can never fold brackets if we're raised to a power
-                    if exp is not None:
-                        can_fold_brackets = False
-
-            if inv_trig_power_case:
-                if func in accepted_latex_functions:
-                    name = r"\%s^{-1}" % func
-                else:
-                    name = r"\operatorname{%s}^{-1}" % func
-            elif exp is not None:
-                name = r'%s^{%s}' % (self._hprint_Function(func), exp)
-            else:
-                name = self._hprint_Function(func)
-
-            if can_fold_brackets:
-                if func in accepted_latex_functions:
-                    # Wrap argument safely to avoid parse-time conflicts
-                    # with the function name itself
-                    name += r" {%s}"
-                else:
-                    name += r"{\left(%s \right)}"
-#                     name += r"%s"
-            else:
-                name += r"{\left(%s \right)}"
-
-            if inv_trig_power_case and exp is not None:
-                name += r"^{%s}" % exp
-
-            return name % ",".join(args)
-
     def _print_UndefinedFunction(self, expr):
         return self._hprint_Function(str(expr))
 
@@ -732,12 +662,6 @@ class LatexPrinter(Printer):
             return r"%s^{%s}%s" % (func, exp, arg)
         else:
             return r"%s%s" % (func, arg)
-
-    def _print_ExpBase(self, expr, exp=None):
-        # TODO should exp_polar be printed differently? what about exp_polar(0), exp_polar(1)?
-        tex = r"{\color{blue} e}^{%s}" % self._print(expr.args[0])
-#         tex = r"\textcolor{blue} {e}^{%s}" % self._print(expr.args[0])
-        return self._do_exponent(tex, exp)
 
     def _print_elliptic_k(self, expr, exp=None):
         tex = r"\left(%s\right)" % self._print(expr.args[0])
@@ -1243,15 +1167,6 @@ class LatexPrinter(Printer):
         return r' \otimes '.join(
             map(lambda arg: parens(arg, prec, strict=True), args))
 
-    def _print_MatPow(self, expr):
-        base, exp = expr.base, expr.exp
-        from sympy.matrices import MatrixSymbol
-        if not isinstance(base, MatrixSymbol):
-            return "\\left(%s\\right)^{%s}" % (self._print(base),
-                                              self._print(exp))
-        else:
-            return "%s^{%s}" % (self._print(base), self._print(exp))
-
     def _print_MatrixSymbol(self, expr):
         return self._print_Symbol(expr, style=self._settings[
             'mat_symbol_style'])
@@ -1581,7 +1496,7 @@ class LatexPrinter(Printer):
 
     def _print_ConditionSet(self, s):
         vars_print = ', '.join([self._print(var) for var in Tuple(s.variable)])
-        if s.base_set is S.UniversalSet:
+        if s.base_set.is_UniversalSet:
             return r"\left\{%s \mid %s \right\}" % (vars_print, self._print(s.condition.as_expr()))
 
         return r"\left\{%s \in %s \mid %s \right\}" % (vars_print, self._print(s.base_set), self._print(s.condition))
@@ -1821,7 +1736,8 @@ class LatexPrinter(Printer):
     def _print_Diagram(self, diagram):
         if not diagram.premises:
             # This is an empty diagram.
-            return self._print(S.EmptySet)
+            from sympy import EmptySet
+            return self._print(EmptySet())
 
         latex_result = self._print(diagram.premises)
         if diagram.conclusions:

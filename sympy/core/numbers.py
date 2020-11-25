@@ -595,7 +595,7 @@ class Number(AtomicExpr):
         return self.is_extended_negative
     
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
 
@@ -1620,7 +1620,7 @@ class Rational(Number):
     __slots__ = ['p', 'q']
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.rational
 
@@ -2122,7 +2122,7 @@ class Integer(Rational):
     __slots__ = ['p']
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
 
@@ -2704,6 +2704,25 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         from sympy.sets.sets import EmptySet
         return EmptySet()
 
+    @classmethod
+    def simplifyEqual(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Zero object!
+        """
+        if rhs._coeff_isneg():
+            return self.func(0, -rhs, equivalent=self)
+        elif rhs.is_Plus:
+            _lhs = []
+            _rhs = []
+            for arg in rhs.args:
+                if arg._coeff_isneg():
+                    _lhs.append(-arg)
+                else:
+                    _rhs.append(arg)
+            if _lhs:
+                return self.func(Add(*_lhs), Add(*_rhs), equivalent=self)
+        elif rhs.is_KroneckerDelta:
+            return self.invert_type(*rhs.args, equivalent=self).simplify()
     
 class One(with_metaclass(Singleton, IntegerConstant)):
     """The number one.
@@ -3110,7 +3129,7 @@ class Infinity(with_metaclass(Singleton, Number)):
         return wlexpr('oo')
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
     
@@ -3323,7 +3342,7 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
         return wlexpr('-oo')
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
 
@@ -3547,7 +3566,7 @@ class NumberSymbol(AtomicExpr):
     __slots__ = []
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
 

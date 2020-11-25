@@ -7,8 +7,8 @@ from sympy.stats.symbolic_probability import Probability as P
 from sympy.concrete.products import Product
 from sympy.concrete.expr_with_limits import ArgMax
 from axiom.statistics import bayes
-from axiom import algebre
-
+from axiom import algebre, statistics
+from sympy.logic.boolalg import Or
 
 # given: x[t] | x[:t] = x[t], y[t] | y[:t] = y[t]
 # imply: max[i]P(y[i] | x) = max[i](P(y[i]) * ∏[j:n](P(x[j] | y[i]))) 
@@ -58,40 +58,40 @@ def prove(Eq):
     i = Eq[-1].lhs.variable
     j = Eq[-1].rhs.function.args[-1].variable
     
-    Eq << bayes.inequality.et.apply(Eq[1]).split()
-    Eq << bayes.theorem.apply(Eq[-2], var=y[i])
+    Eq << bayes.is_nonzero.et.apply(Eq[1]).split()
+    Eq << bayes.corollary.apply(Eq[-2], var=y[i])
     
-    Eq.y_given_x = algebre.scalar.inequality.equality.apply(Eq[-1], Eq[-3]).reversed
+    Eq.y_given_x = algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq[-3]).reversed
     
-    Eq << bayes.inequality.inequality.joint_slice.apply(Eq[1], [j, i])
+    Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], [j, i])
     
-    Eq << bayes.inequality.et.apply(Eq[-1]).split()
+    Eq << bayes.is_nonzero.et.apply(Eq[-1]).split()
     
-    Eq << bayes.theorem.apply(Eq[-1], var=x)
+    Eq << bayes.corollary.apply(Eq[-1], var=x)
     
     Eq.y_given_x = Eq.y_given_x.subs(Eq[-1])
     
     Eq << Eq.y_given_x.argmax((i,))
     
-    assert Eq[-1].lhs.is_ArgMinMaxBase
-    
-    Eq << bayes.inequality.inequality.joint_slice.apply(Eq[1], Slice[:t, i]) 
+    Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], Slice[:t, i]) 
     
     Eq.xt_given_x_historic = bayes.equality.equality.given_addition.joint_probability.apply(Eq[0], Eq[-1])
     
-    Eq.xt_given_yi_nonzero = bayes.inequality.inequality.conditioned.apply(Eq[-1], wrt=y[i])
+    Eq.xt_given_yi_nonzero = bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
     
-    Eq << P(x[:t + 1] | y[i]).bayes_theorem(x[:t]).as_Or()
+    Eq << statistics.bayes.theorem.apply(P(x[:t + 1] | y[i]), x[:t]).astype(Or)
     Eq << (Eq[-1] & Eq.xt_given_yi_nonzero).split()
     
     Eq << Eq[-1].subs(Eq.xt_given_x_historic)
     
-    Eq << algebre.scalar.inequality.equality.apply(Eq[-1], Eq.xt_given_yi_nonzero)
+    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq.xt_given_yi_nonzero)
     
     Eq << Eq[-1].product((t, 1, n - 1))
     
     t = Eq[-1].rhs.variable
     Eq << Eq[-1] / Eq[-1].lhs.args[-1]
+    
+    Eq << Eq[-1].this.rhs.astype(Product)
     
     Eq << Eq[-1].this.rhs.limits_subs(t, j)
     

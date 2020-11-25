@@ -1,9 +1,6 @@
 """
 A Printer for generating readable representation of most sympy classes.
 """
-
-from __future__ import print_function, division
-
 from sympy.core import S, Rational, Pow, Basic, Mul
 from sympy.core.mul import _keep_coeff
 from sympy.core.compatibility import string_types
@@ -78,7 +75,7 @@ class StrPrinter(Printer):
 
     def _print_ConditionSet(self, s):
         args = tuple([self._print(i) for i in (s.variable, s.condition)])
-        if s.base_set is S.UniversalSet:
+        if s.base_set.is_UniversalSet:
             return 'ConditionSet(%s, %s)' % args
         args += (self._print(s.base_set),)
         return 'ConditionSet(%s, %s, %s)' % args

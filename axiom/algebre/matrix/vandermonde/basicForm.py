@@ -9,6 +9,7 @@ from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices.expressions.matexpr import Identity
 from axiom.algebre import matrix
 from sympy import Symbol, Slice
+from sympy.matrices.dense import Matrix
 
 @plausible
 def apply(a):
@@ -37,7 +38,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(n, 2).this.rhs.doit(deep=True)
     
-    Eq << Eq[-1].this.lhs.arg.as_Matrix().this.lhs.doit()
+    Eq << Eq[-1].this.lhs.arg.astype(Matrix).this.lhs.doit()
     
     Eq.deduction = Eq[0].subs(n, n + 1)
     
@@ -49,7 +50,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.bisect(Slice[:1])
     
-    Eq << Eq[-1].this.rhs.args[0].args[0].arg.simplify(deep=True)
+    Eq << Eq[-1].this.rhs.args[0].args[0].arg().function.simplify()
     
     Eq << Eq[-1].this.rhs.args[0].args[1].doit()
     
@@ -83,14 +84,15 @@ def prove(Eq):
     
     Eq << Eq[0].this.lhs.arg.limits_subs(j, k).this.lhs.arg.limits_subs(i, j).subs(a[:n], a[1:n + 1])
 
-#     Eq << Eq[-1].this.rhs.limits_subs(i + 1, i).this.rhs.limits_subs(j + 1, j)
     Eq << Eq[-1].this.rhs.limits_subs(i, i - 1)
     
     Eq << Eq[-1].this.rhs.limits_subs(j, j - 1)
     
     Eq << Eq.determinant.subs(Eq[-1])
     
-    Eq << Eq[-1].this.rhs.as_one_term()
+    Eq << Eq[-1].this.rhs.astype(Product)
+    
+    Eq << Eq[-1].this.rhs.function.astype(Product)
     
     Eq << Product[j:i, i:n + 1](Eq[0].rhs.function).this.bisect(Slice[:1])
     

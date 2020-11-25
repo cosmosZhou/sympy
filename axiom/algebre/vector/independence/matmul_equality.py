@@ -1,10 +1,11 @@
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from axiom.utility import plausible
-from sympy.core.relational import Equality
+from sympy.core.relational import Equality, Unequal, Equal
 from sympy.concrete.expr_with_limits import LAMBDA
 from axiom.algebre.matrix import vandermonde
 from sympy import Symbol
+from axiom import algebre
 
 
 @plausible
@@ -57,7 +58,7 @@ def prove(Eq):
     
     Eq << Eq[-1].forall((i,))
     
-    Eq << Eq[-1].as_Equal()
+    Eq << Eq[-1].astype(Equal)
     
     Eq.statement = Eq[-1].T
     
@@ -65,15 +66,17 @@ def prove(Eq):
     
     Eq << vandermonde.basicForm.apply(LAMBDA[i:n](i + 1))
     
-    Eq << Eq[-1].conclude()
+    Eq << Unequal(Eq[-1].rhs, 0, plausible=True)
     
-    i, j = Eq[-1].function.lhs.variables
-    Eq << Eq[-1].this.function.lhs.limits_subs(i, k)
+    Eq << Eq[-1].subs(Eq[-2].reversed)
     
-    Eq.exists = Eq[-1].this.function.lhs.limits_subs(j, i)
+    j, i = Eq[-1].lhs.arg.variables
+    Eq << Eq[-1].this.lhs.arg.limits_subs(i, k)
     
-    Eq << Eq.statement.subs(Eq.exists)
+    Eq << Eq[-1].this.lhs.arg.limits_subs(j, i)
 
+    Eq << algebre.matrix.inequality.equality.apply(Eq[-1], Eq.statement)
+    
 
 if __name__ == '__main__':
     prove(__file__)

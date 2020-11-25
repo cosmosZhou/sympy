@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy import Basic, Expr, S, sympify
 
 
@@ -53,8 +51,8 @@ class Determinant(Expr):
         return ()
 
     @property
-    def atomic_dtype(self):
-        return self.arg.atomic_dtype
+    def dtype(self):
+        return self.arg.dtype
 
     def simplify(self, deep=False, **kwargs):
         if deep:
@@ -84,8 +82,8 @@ class Determinant(Expr):
         i = self.generate_free_symbol(integer=True)
         return Sum[p:Permutations(n)](Signature(p) * Product[i:n](self[i, p[i]]))
 
-    def domain_defined(self, x):
-        domain = Expr.domain_defined(self, x)
+    def _eval_domain_defined(self, x):
+        domain = Expr._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
         return domain

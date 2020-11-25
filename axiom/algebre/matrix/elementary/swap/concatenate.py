@@ -34,7 +34,7 @@ def prove(Eq):
     h = Symbol.h(integer=True, domain=[0, n])
     k = Symbol.k(integer=True, domain=[0, n])
 
-    Eq << (Eq[-1][h, k], Eq[-2][h, k])
+    Eq << (V[h, k].this.definition, W[h, k].this.definition)
 
     Eq << (Eq[-1].this.rhs.as_KroneckerDelta(), Eq[-2].this.rhs.as_KroneckerDelta())
     

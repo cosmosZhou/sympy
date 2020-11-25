@@ -1,0 +1,5 @@
+axiom.calculus.integral.intermediate_value_theorem
+axiom.calculus.trigonometry.cosine.theorem
+axiom.discrete.fermat.last_theorem
+axiom.discrete.combinatorics.stirling.premier.recurrence
+axiom.statistics.kullback_leibler

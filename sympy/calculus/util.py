@@ -13,6 +13,7 @@ from sympy.sets.sets import (Interval, Intersection, FiniteSet, Union,
 from sympy.simplify.radsimp import denom
 from sympy.solvers.inequalities import solve_univariate_inequality
 from sympy.utilities import filldedent
+from sympy.core.symbol import dtype
 
 def continuous_domain(f, symbol, domain):
     """
@@ -155,10 +156,9 @@ def function_range(f, symbol, domain):
         is continuous are not finite or real,
         OR if the critical points of the function on the domain can't be found.
     """
-    from sympy.solvers.solveset import solveset
-
+    from sympy.solvers.solveset import solveset    
     if isinstance(domain, EmptySet):
-        return S.EmptySet
+        return EmptySet(etype=dtype.real)
 
     period = periodicity(f, symbol)
     if period is S.Zero:
@@ -176,7 +176,7 @@ def function_range(f, symbol, domain):
                     domain = Interval(0, period)
 
     intervals = continuous_domain(f, symbol, domain)
-    range_int = S.EmptySet
+    range_int = EmptySet(etype=dtype.real)
     if isinstance(intervals,(Interval, FiniteSet)):
         interval_iter = (intervals,)
 
@@ -194,9 +194,9 @@ def function_range(f, symbol, domain):
                 if singleton in domain:
                     range_int += FiniteSet(f.subs(symbol, singleton))
         elif isinstance(interval, Interval):
-            vals = S.EmptySet
-            critical_points = S.EmptySet
-            critical_values = S.EmptySet
+            vals = EmptySet(etype=dtype.real)
+            critical_points = EmptySet(etype=dtype.real)
+            critical_values = EmptySet(etype=dtype.real)
             bounds = ((interval.left_open, interval.inf, '+'),
                    (interval.right_open, interval.sup, '-'))
 
@@ -220,7 +220,7 @@ def function_range(f, symbol, domain):
 
             left_open, right_open = False, False
 
-            if critical_values is not S.EmptySet:
+            if critical_values is not EmptySet(etype=dtype.real):
                 if critical_values.inf == vals.inf:
                     left_open = True
 
@@ -339,7 +339,7 @@ def not_empty_in(finset_intersection, *syms):
         return Union(*[elm_domain(element, _sets) for element in finite_set])
 
     if isinstance(_sets, Union):
-        _domain = S.EmptySet
+        _domain = EmptySet(etype=dtype.real)
         for intrvl in _sets.args:
             _domain_element = Union(*[elm_domain(element, intrvl)
                                       for element in finite_set])
@@ -745,7 +745,7 @@ def stationary_points(f, symbol, domain=S.Reals):
     from sympy import solveset, diff
 
     if isinstance(domain, EmptySet):
-        return S.EmptySet
+        return EmptySet(etype=dtype.real)
 
     domain = continuous_domain(f, symbol, domain)
     set = solveset(diff(f, symbol), symbol, domain)
@@ -1554,14 +1554,14 @@ class AccumulationBounds(AtomicExpr):
                 "Input must be AccumulationBounds or FiniteSet object")
 
         if isinstance(other, FiniteSet):
-            fin_set = S.EmptySet
+            fin_set = EmptySet(etype=dtype.real)
             for i in other:
                 if i in self:
                     fin_set = fin_set + FiniteSet(i)
             return fin_set
 
         if self.max < other.min or self.min > other.max:
-            return S.EmptySet
+            return EmptySet(etype=dtype.real)
 
         if self.min <= other.min:
             if self.max <= other.max:

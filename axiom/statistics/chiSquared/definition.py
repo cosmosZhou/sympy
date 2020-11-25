@@ -6,7 +6,7 @@ from sympy.stats.crv_types import ChiSquaredDistribution, NormalDistribution
     
 from sympy.stats.rv import PDF, pspace
 from sympy import pi
-from axiom.trigonometry import wallis
+from axiom.calculus.trigonometry import wallis
 from sympy.concrete.expr_with_limits import LAMBDA
 from sympy.concrete.summations import Sum
 from sympy import Symbol

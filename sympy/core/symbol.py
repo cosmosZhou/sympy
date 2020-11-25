@@ -168,13 +168,12 @@ def _uniquely_named_symbol(xname, exprs=(), compare=str, modify=None, **assumpti
 
 class Symbol(ManagedProperties):
 
-    def __getattr__(self, attr):
-        from sympy import println, Foreground
+    def __getattr__(self, attr):        
         if attr.startswith('_'):             
 #             println('skipping attr', attr, color=Foreground.RED)
             return
-        
-        println('generating attr:', attr, color=Foreground.RED)
+#         from sympy import println, Foreground
+#         println('generating attr:', attr, color=Foreground.RED)
 
 # replacement regex:        
 # \bvar\((([^()]+(?:\([^()]*(?:\([^()]*(?:\([^()]*(?:\([^()]*\)[^()]*)*\)[^()]*)*\)[^()]*)*\)))+[^()]*)\).(\w+)
@@ -184,7 +183,7 @@ class Symbol(ManagedProperties):
 
         return __new__
 
-            
+
 class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 # class Symbol(AtomicExpr, Boolean):
     """
@@ -207,7 +206,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     __slots__ = ['name']
 
     is_symbol = True
-
+    _explicit_class_assumptions = {}
+    
     def intersection_sets(self, b):
         if b.is_ConditionSet:
             from sympy.sets.conditionset import conditionset
@@ -236,12 +236,17 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
         return mid        
 
-    def slice(self, index, self_start, self_stop):
+    def slice(self, index, self_start, self_stop, allow_empty=False):
         from sympy import Concatenate
         mid = Symbol.process_slice(index, self_start, self_stop)
         if mid is None:
             return self
-        assert mid > self_start, "mid > self_start => %s" % (mid > self_start) 
+        
+        if allow_empty:
+            assert mid >= self_start, "mid >= self_start => %s" % (mid >= self_start)
+        else:            
+            assert mid > self_start, "mid > self_start => %s" % (mid > self_start)
+             
         assert mid < self_stop, "mid < self_stop => %s" % (mid < self_stop)
         
         if isinstance(mid, tuple):
@@ -322,12 +327,12 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def copy(self, **kwargs):
         if not kwargs:
             return self
-        integer, rational, real, shape, dtype = self.is_integer, self.is_rational, self.is_real, self.shape, self.element_type
+        integer, rational, real, shape, dtype = self.is_integer, self.is_rational, self.is_real, self.shape, self.etype
         kwargs['integer'] = integer
         kwargs['rational'] = rational
         kwargs['real'] = real
         kwargs['shape'] = shape if shape else None
-        kwargs['dtype'] = dtype
+        kwargs['etype'] = dtype
         
         self.process_assumptions(kwargs, integer)
         return self.func(self.name, **kwargs)
@@ -354,14 +359,13 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     def image_set(self):
         definition = self.definition
-        if definition is None:
-            return None
-        return definition.image_set()
+        if definition is not None:            
+            return definition.image_set()
 
     def condition_set(self):
         definition = self.definition
         if definition is None:
-            return None
+            return
         return definition.condition_set()
 
     @staticmethod
@@ -393,11 +397,11 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 key = keymap[key]
 
             v = assumptions[key]
-            if v is None:
+            if v is None or (key != 'definition' and 'definition' in assumptions):
                 assumptions.pop(key)
                 continue
 
-            if key not in ('domain', 'definition', 'dtype', 'shape', 'distribution'):
+            if key not in ('domain', 'definition', 'etype', 'shape', 'distribution'):
                 assumptions[key] = bool(v)
         integer = assumptions.get('integer')
         if integer is None:
@@ -484,10 +488,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     @property
     def assumptions0(self):
-        return dict((key, value) for key, value in self._assumptions.items() if value is not None)
+        return {key : value for key, value in self._assumptions.items() if value is not None}
 
     def assumptions_hashable(self):
-        return {k : v for k, v in self._assumptions.items() if v is not None and not isinstance(v, BooleanAtom) }
+        return {k : v for k, v in self._assumptions.items() if v is not None and not isinstance(v, BooleanAtom)}
 
     @cacheit
     def sort_key(self, order=None):
@@ -524,7 +528,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     binary_symbols = free_symbols  # in this case, not always
 
     def as_set(self):
-        return S.UniversalSet
+        return self.universalSet
 
     @property
     def is_unbounded(self):
@@ -576,24 +580,29 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 return domain.copy(integer=True)
             return domain
          
-        if self.is_set:
-            return S.UniversalSet
+        if self.dtype.is_set:
+            return self.universalSet
         
         if 'distribution' in self._assumptions:
             return self._assumptions['distribution'].domain
                          
-        interval = Interval(**self.assumptions0)
+        if self.is_extended_real:
+            assumptions = self.assumptions0
+            if 'integer' not in assumptions:
+                assumptions['integer'] = self.is_integer
+            domain = Interval(**assumptions)
+        else:        
+            domain = S.Complexes
         shape = self.shape
         if not shape:
-            return interval
+            return domain
         from sympy.sets.sets import CartesianSpace
-        return CartesianSpace(interval, *shape)        
+        return CartesianSpace(domain, *shape)        
 
     @property
     def definition(self):
         if 'definition' in self._assumptions:
-            return self._assumptions['definition']
-        return None
+            return self._assumptions['definition']        
 
     def domain_nonzero(self, x):
         if self == x:
@@ -604,8 +613,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def is_set(self):
         if self.shape:
             return False
-        if 'dtype' in self._assumptions:
-            dtype = self._assumptions['dtype']
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']
             if dtype is not None:
                 return True
         definition = self.definition
@@ -614,23 +623,34 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return False
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         definition = self.definition
         if definition is not None:
-            return definition.atomic_dtype
+            return definition.dtype
 
-        if 'dtype' in self._assumptions:
-            return self._assumptions['dtype'].set
-        elif self.is_integer:
-            return dtype.integer
+        if 'etype' in self._assumptions:
+            return self._assumptions['etype'].set
+        
+        assumptions = {}
+        if self._assumptions.get('positive'):
+            assumptions['positive'] = True
+        elif self._assumptions.get('nonnegative'):
+            assumptions['nonnegative'] = True
+        elif self._assumptions.get('negative'):
+            assumptions['negative'] = True
+        elif self._assumptions.get('nonpositive'):
+            assumptions['nonpositive'] = True
+             
+        if self.is_integer:
+            return dtype.integer(**assumptions)
         elif self.is_rational:
-            return dtype.rational
+            return dtype.rational  # (**self.assumptions0)
         elif self.is_real:
-            return dtype.real
+            return dtype.real  # (**self.assumptions0)
         elif self.is_complex:
-            return dtype.complex
+            return dtype.complex  # (**self.assumptions0)
         else:
-            return dtype.real
+            return dtype.real  # (**self.assumptions0)
 
     def _has(self, pattern):
         """Helper for .has()"""
@@ -654,26 +674,22 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return False
 
     @property
-    def element_type(self):
-        if 'dtype' in self._assumptions:
-            return self._assumptions['dtype']
+    def etype(self):
+        if 'etype' in self._assumptions:
+            return self._assumptions['etype']
         definition = self.definition
         if definition is not None:
-            return definition.element_type        
+            return definition.etype        
 
     def element_symbol(self, excludes=set(), free_symbol=None):
-        element_type = self.element_type
-        if element_type is None:
+        etype = self.etype
+        if etype is None:
             return
 
-        return self.generate_free_symbol(excludes=excludes, free_symbol=free_symbol, **element_type.dict)
+        return self.generate_free_symbol(excludes=excludes, free_symbol=free_symbol, **etype.dict)
 
     def assertion(self, reverse=False):
-        definition = self.definition
-        from sympy.sets import sets
-        if definition is None:
-            return sets.Set.static_assertion(self)
-        
+        definition = self.definition       
         if definition.is_ConditionSet:
             sym = definition.variable
             condition = definition.condition
@@ -710,11 +726,21 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def shape(self):
         if 'shape' in self._assumptions:
             return self._assumptions['shape']
-        if self.definition is not None:
-            shape = self.definition.shape
-            self._assumptions['shape'] = shape
-            return shape
-        return ()
+        
+        if 'domain' in self._assumptions:
+            domain = self._assumptions['domain']
+            dtype = domain.etype
+            shape = dtype.shape
+        elif self.definition is not None:
+            shape = self.definition.shape            
+        else:
+            shape = ()
+            
+        # dangerous codes? possibly make the hashable content obselete!
+#         if shape:            
+#             self._assumptions['shape'] = shape
+            
+        return shape        
 
     @property
     def cols(self):
@@ -779,14 +805,15 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return True
         
         if exp.is_Indexed and exp.base == self:
-            if exp.is_Slice:
-                index_start, index_stop = exp.indices
-                start, stop = 0, self.shape[-1]
-    
-                if index_stop <= start:
-                    return False  # index < start
-                if index_start >= stop:
-                    return False  # index >= stop
+            return True
+        if exp.is_Slice and exp.base == self:
+            index_start, index_stop = exp.indices
+            start, stop = 0, self.shape[-1]
+
+            if index_stop <= start:
+                return False  # index < start
+            if index_start >= stop:
+                return False  # index >= stop
     # it is possible for them to be equal!
             return True
         return False
@@ -905,6 +932,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
         if self.domain_assumed:
             return r"{\color{green} {%s}}" % result
+        
+        if self.definition is not None:
+            return r"{\color{blue} {%s}}" % result
 
         return result
 
@@ -916,6 +946,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if 'distribution' in self._assumptions:
             distribution = self._assumptions['distribution']
             return distribution.is_extended_positive
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']
+            return dtype.is_extended_positive
                  
     def _eval_is_extended_negative(self):
         if 'domain' in self._assumptions:
@@ -925,6 +958,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if 'distribution' in self._assumptions:
             distribution = self._assumptions['distribution']
             return distribution.is_extended_negative
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']
+            return dtype.is_extended_negative
 
     def _eval_is_zero(self):
         if 'domain' in self._assumptions:
@@ -943,6 +979,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if 'distribution' in self._assumptions:
             distribution = self._assumptions['distribution']
             return distribution.is_extended_real
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']
+            return dtype.is_real
 
     def _eval_is_finite(self):
         if 'domain' in self._assumptions:
@@ -967,6 +1006,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if 'distribution' in self._assumptions:
             distribution = self._assumptions['distribution']
             return distribution.is_integer
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_integer
 
     def _eval_is_rational(self):
         if 'domain' in self._assumptions:
@@ -976,6 +1018,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if 'distribution' in self._assumptions:
             distribution = self._assumptions['distribution']
             return distribution.is_rational
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_rational
 
     def _eval_is_complex(self):
         if 'domain' in self._assumptions:
@@ -1031,7 +1076,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if self.name != other.name:
             return False
         
-        nonboolean_attributes = {'domain', 'definition', 'shape', 'dtype', 'distribution'}
+        nonboolean_attributes = {'domain', 'definition', 'shape', 'etype', 'distribution'}
         for attr in nonboolean_attributes:
             if (attr in self._assumptions) != (attr in other._assumptions):
                 return False
@@ -1057,12 +1102,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         global_variables.add(self)
         return wlexpr(self.name)
       
-    def generate_int_limit(self, *args, **kwargs):
-        definition = self.definition
-        if definition is not None:
-            return definition.generate_limit(*args, **kwargs) 
-        return Expr.generate_int_limit(self, *args, **kwargs)
-
     def is_independent_of(self, y, **kwargs):
         from sympy.core.relational import Equality
         return Equality(self | y, self, **kwargs)
@@ -1082,12 +1121,12 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             if self == old:
                 return new
             if not old.shape and not old.is_set and hints.get('symbol') is not False:
-                element_type = self.element_type
-                if element_type:        
-                    _element_type = element_type._subs(old, new)
-                    if _element_type is not element_type:
+                etype = self.etype
+                if etype:        
+                    _element_type = etype._subs(old, new)
+                    if _element_type is not etype:
                         assumptions = self.assumptions_hashable()
-                        assumptions['dtype'] = _element_type
+                        assumptions['etype'] = _element_type
                         return self.func(r"{%s}_{%s}" % (self.name, str(new)), **assumptions)
                     
                 definition = self.definition
@@ -1104,7 +1143,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                         assumptions['definition'] = _definition
                         if 'shape' in assumptions:
                             del assumptions['shape']
-        #rgb values for colors                 
+        # rgb values for colors                 
         #                 https://www.917118.com/tool/color_3.html
         # darkyellow                
                         return self.func(r"{\color{ADAD00} %s}" % self.name, **assumptions)
@@ -1293,14 +1332,6 @@ class Wild(Symbol):
         repl_dict = repl_dict.copy()
         repl_dict[self] = expr
         return repl_dict
-
-    def __iter__(self):
-        raise TypeError
-
-    def __getitem__(self, indices, **kw_args):
-        assert self.shape
-        from sympy.tensor.indexed import Indexed
-        return Indexed(self, indices, **kw_args)
 
     @property
     def shape(self):
@@ -1657,7 +1688,13 @@ def disambiguate(*iter):
 class Dtype:
     is_set = False
     is_condition = False
-
+    is_integer = None
+    is_rational = None
+    is_real = None
+    is_complex = True
+    is_extended_positive = None
+    is_extended_negative = None
+    
     def as_Set(self):
         ...
         
@@ -1696,6 +1733,16 @@ class Dtype:
     def distribution(self):
         return DtypeDistribution()
 
+    @property
+    def emptySet(self):
+        from sympy import EmptySet
+        return EmptySet(etype=self)
+    
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import UniversalSet
+        return UniversalSet(etype=self)
+
     def __mul__(self, length):
         if isinstance(length, (tuple, Tuple, list)):
             if not length:
@@ -1719,20 +1766,24 @@ class Dtype:
     def _has(self, pattern):
         return False
 
-    def _subs(self, old, new):
+    def _subs(self, old, new, **hints):
         return self
     
     def __repr__(self):
         return str(self)
+    
+    def __str__(self, head):
+        return '%s(%s)' % (head, ', '.join(("%s=%s" % args for args in self.assumptions.items())))
+
 
 class DtypeComplex(Dtype):
+    is_complex = True
 
     def as_Set(self):
         return S.Complexes        
 
     def __str__(self):
         return 'complex'
-    
     
     @property
     def dict(self):
@@ -1759,8 +1810,7 @@ class DtypeComplexConditional(DtypeComplex):
         self.assumptions = assumptions
     
     def __str__(self):
-        return 'complex%s' % str(self.assumptions)
-    
+        return Dtype.__str__(self, 'complex')
     
     @property
     def dict(self):
@@ -1781,7 +1831,6 @@ class DtypeCondition(Dtype):
     def __str__(self):
         return 'condition'
     
-    
     @property
     def dict(self):
         return {'condition' : True}
@@ -1799,7 +1848,6 @@ class DtypeDistribution(Dtype):
     def __str__(self):
         return 'distribution'
     
-    
     @property
     def dict(self):
         return {'random' : True}
@@ -1813,12 +1861,13 @@ class DtypeDistribution(Dtype):
 
 class DtypeReal(DtypeComplex):
     
+    is_real = True
+    
     def as_Set(self):
         return S.Reals
 
     def __str__(self):
         return 'real'
-    
     
     @property
     def dict(self):
@@ -1847,9 +1896,7 @@ class DtypeRealConditional(DtypeReal):
         self.assumptions = assumptions
     
     def __str__(self):
-        return 'real%s' % str(self.assumptions)
-
-    
+        return Dtype.__str__(self, 'real')
     
     @property
     def dict(self):
@@ -1866,13 +1913,13 @@ class DtypeRealConditional(DtypeReal):
 
 class DtypeRational(DtypeReal):
 
+    is_rational = True
+
     def as_Set(self):
         return S.Rationals
 
     def __str__(self):
         return 'rational'
-
-    
     
     @property
     def dict(self):
@@ -1901,9 +1948,7 @@ class DtypeRationalConditional(DtypeRational):
         self.assumptions = assumptions
     
     def __str__(self):
-        return 'rational%s' % str(self.assumptions)
-
-    
+        return Dtype.__str__(self, 'rational')
     
     @property
     def dict(self):
@@ -1920,14 +1965,14 @@ class DtypeRationalConditional(DtypeRational):
 
 class DtypeInteger(DtypeRational):
     
+    is_integer = True
+    
     def as_Set(self):
         from sympy.sets import Integers
         return Integers
 
     def __str__(self):
         return 'integer'
-
-    
     
     @property
     def dict(self):
@@ -1949,20 +1994,25 @@ class DtypeIntegerConditional(DtypeInteger):
 
     def as_Set(self):
         positive = self.assumptions.get('positive')
-        negative = self.assumptions.get('negative')
-        nonpositive = self.assumptions.get('nonpositive')
+        if positive:
+            from sympy.sets import PositiveIntegers
+            return PositiveIntegers
         nonnegative = self.assumptions.get('nonnegative')
+        if nonnegative:
+            from sympy.sets import NonnegativeIntegers
+            return NonnegativeIntegers
+        
+        from sympy.sets.sets import Interval
+        negative = self.assumptions.get('negative')
+        if negative:
+            return Interval(S.NegativeInfinity, -1, integer=True)
+        nonpositive = self.assumptions.get('nonpositive')
+        if nonpositive:
+            return Interval(S.NegativeInfinity, 0, integer=True)
+
         even = self.assumptions.get('even')
         odd = self.assumptions.get('odd')
-        from sympy.sets.sets import Interval
-        if positive:
-            return S.PositiveIntegers
-        if negative:
-            return S.NegativeIntegers
-        if nonpositive:
-            return S.NonpositiveIntegers
-        if nonnegative:
-            return S.NonnegativeIntegers
+        
         if even:
             return Interval(0, S.PositiveInfinity, step=2, integer=True) | Interval(S.NegativeInfinity, 0, step=2, integer=True)
         if odd:
@@ -1973,9 +2023,7 @@ class DtypeIntegerConditional(DtypeInteger):
         self.assumptions = assumptions
     
     def __str__(self):
-        return 'integer%s' % str(self.assumptions)
-
-    
+        return Dtype.__str__(self, 'integer')
     
     @property
     def dict(self):
@@ -2001,34 +2049,73 @@ class DtypeIntegerConditional(DtypeInteger):
 class DtypeSet(Dtype):
     is_set = True
     
-    def __init__(self, dtype):
-        self.dtype = dtype
+    def __init__(self, etype):
+        self.etype = etype
 
     def __str__(self):
-        return '{%s}' % self.dtype
-
+        return '{%s}' % self.etype
     
     @property
     def dict(self):
-        return {'dtype' : self.dtype}
+        return {'etype' : self.etype}
 
     def __eq__(self, other):
-        return isinstance(other, DtypeSet) and self.dtype == other.dtype
+        return isinstance(other, DtypeSet) and self.etype == other.etype
 
     def __hash__(self):
-        return hash((type(self).__name__, self.dtype))
+        return hash((type(self).__name__, self.etype))
     
     def _has(self, pattern):
-        return self.dtype._has(pattern)
+        return self.etype._has(pattern)
     
-    def _subs(self, old, new):
-        dtype = self.dtype._subs(old, new)
-        if dtype is not self.dtype:
-            return type(self)(dtype)
+    def _subs(self, old, new, **hints):
+        etype = self.etype._subs(old, new)
+        if etype is not self.etype:
+            return type(self)(etype)
         return self
+
+    @property
+    def is_integer(self):
+        return self.etype.is_integer
+    
+    @property
+    def is_real(self):
+        return self.etype.is_real
+
+    @property
+    def is_extended_positive(self):
+        return self.etype.is_extended_positive
+
+    @property
+    def is_extended_negative(self):
+        return self.etype.is_extended_negative
+    
+    @property
+    def is_rational(self):
+        return self.etype.is_rational
+
+    @property
+    def is_complex(self):
+        return self.etype.is_complex
 
 
 class DtypeVector(Dtype):
+    
+    @property
+    def is_integer(self):
+        return self.dtype.is_integer
+    
+    @property
+    def is_rational(self):
+        return self.dtype.is_rational
+
+    @property
+    def is_real(self):
+        return self.dtype.is_real
+
+    @property
+    def is_complex(self):
+        return self.dtype.is_complex
     
     def as_Set(self):
         from sympy.sets.sets import CartesianSpace
@@ -2043,7 +2130,6 @@ class DtypeVector(Dtype):
         if self.assumptions:
             return '%s[%s]%s' % (self.dtype, self.length, str(self.assumptions))
         return '%s[%s]' % (self.dtype, self.length)
-
     
     def __getitem__(self, indices):
         if isinstance(indices, slice):
@@ -2082,7 +2168,7 @@ class DtypeVector(Dtype):
     def _has(self, pattern):
         return self.length._has(pattern)
 
-    def _subs(self, old, new):
+    def _subs(self, old, new, **hints):
         hit = False
         dtype = self.dtype._subs(old, new)
         if dtype is not self.dtype:
@@ -2097,8 +2183,25 @@ class DtypeVector(Dtype):
         
         return self
 
+
 class DtypeMatrix(Dtype):
     
+    @property
+    def is_integer(self):
+        return self.dtype.is_integer
+    
+    @property
+    def is_rational(self):
+        return self.dtype.is_rational
+
+    @property
+    def is_real(self):
+        return self.dtype.is_real
+
+    @property
+    def is_complex(self):
+        return self.dtype.is_complex
+
     def as_Set(self):
         from sympy.sets.sets import CartesianSpace
         return CartesianSpace(self.dtype.as_Set(), *self.lengths)
@@ -2113,7 +2216,6 @@ class DtypeMatrix(Dtype):
 
     def __str__(self):
         return '%s[%s]' % (self.dtype, ', '.join(str(length) for length in self.shape))
-    
     
     def __getitem__(self, indices):
         if isinstance(indices, (tuple, Tuple, list)):

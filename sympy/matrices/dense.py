@@ -406,10 +406,10 @@ class DenseMatrix(MatrixBase):
         return rv
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         dtype = None
         for arg in self._mat:
-            _dtype = arg.atomic_dtype
+            _dtype = arg.dtype
             if dtype is None or dtype in _dtype:
                 dtype = _dtype
         return dtype
@@ -863,7 +863,40 @@ class MutableDenseMatrix(DenseMatrix):
         from wolframclient.language import wl
         List = getattr(wl, "List")        
         return List(*(List(*(e.to_wolfram(global_variables) for e in self.row(i))) for i in range(self.rows)))
+    
+    @classmethod
+    def rewrite_from_Slice(cls, self):
+        return cls.rewrite_from_Expr(self)
 
+    @classmethod
+    def rewrite_from_Symbol(cls, self):
+        return cls.rewrite_from_Expr(self)
+
+    @classmethod
+    def rewrite_from_LAMBDA(cls, self):
+        return cls.rewrite_from_Expr(self)
+
+    @classmethod
+    def rewrite_from_Expr(cls, self):
+        if len(self.shape) == 1:
+            n = self.shape[0]
+            if isinstance(n, int) or n.is_Number:  
+                array = []
+                for i in range(n):
+                    array.append(self[sympify(i)])                
+                return cls(tuple(array))
+            return self
+
+        i_shape, j_shape = self.shape
+        if isinstance(i_shape, int) or i_shape.is_Number:
+            if isinstance(j_shape, int) or j_shape.is_Number:  
+                array = []
+                for i in range(i_shape):
+                    for j in range(j_shape):
+                        array.append(self[sympify(i), sympify(j)])
+                return cls(i_shape, j_shape, tuple(array))            
+        return self
+    
     # Utility functions
 
 

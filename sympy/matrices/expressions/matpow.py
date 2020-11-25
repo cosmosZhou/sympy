@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from .matexpr import MatrixExpr, ShapeError, Identity, ZeroMatrix
 from sympy.core import S
 from sympy.core.compatibility import range
@@ -8,12 +6,21 @@ from sympy.matrices import MatrixBase
 
 
 class MatPow(MatrixExpr):
+    
+    @property
+    def is_Inverse(self):
+        return self.exp is S.NegativeOne
+    
     def __new__(cls, base, exp):
         base = _sympify(base)
         assert base.is_square, str(base)        
 #         if not base.is_Matrix:
 #             raise TypeError("Function parameter should be a matrix")
         exp = _sympify(exp)
+        if exp.is_zero:
+            return Identity(base.shape[-1])
+        elif exp.is_One:
+            return base
         return super(MatPow, cls).__new__(cls, base, exp)
 
     @property
@@ -122,7 +129,13 @@ class MatPow(MatrixExpr):
         if (exp > 0) == True:
             newexpr = MatMul.fromiter([self.base for i in range(exp)])
         elif (exp == -1) == True:
-            return Inverse(self.base)._eval_derivative_matrix_lines(x)
+            arg = self.args[0]
+            lines = arg._eval_derivative_matrix_lines(x)
+            for line in lines:
+                line.first_pointer *= -self.T
+                line.second_pointer *= self
+            return lines            
+#             return Inverse(self.base)._eval_derivative_matrix_lines(x)
         elif (exp < 0) == True:
             newexpr = MatMul.fromiter([Inverse(self.base) for i in range(-exp)])
         elif (exp == 0) == True:
@@ -131,12 +144,34 @@ class MatPow(MatrixExpr):
             raise NotImplementedError("cannot evaluate %s derived by %s" % (self, x))
         return newexpr._eval_derivative_matrix_lines(x)
 
+    def _eval_inverse(self):
+        if self.exp is S.NegativeOne:
+            return self.base
+
+    def _eval_determinant(self):
+        from sympy.matrices.expressions.determinant import det
+        return det(self.base) ** self.exp
+
     @property
-    def atomic_dtype(self):
-        return self.base.atomic_dtype
+    def dtype(self):
+        return self.base.dtype
 
     def _sympystr(self, p):
         from sympy.printing.precedence import precedence
         PREC = precedence(self)
-        return '%s^%s' % (p.parenthesize(self.base, PREC, strict=False),
+#         deliberately to distinguish from x ** y which is element-wise power operator
+        return '%s ^ %s' % (p.parenthesize(self.base, PREC, strict=False),
                          p.parenthesize(self.exp, PREC, strict=False))
+
+    def _latex(self, p):
+        base, exp = self.base, self.exp
+        if base.is_symbol:
+            return "%s^{%s}" % (p._print(base), p._print(exp))            
+        else:
+            return r"\left(%s\right)^{%s}" % (p._print(base), p._print(exp))
+
+    def domain_definition(self):
+        if self.exp.is_extended_negative:
+            from sympy import Unequal
+            return Unequal(self.base.det(), S.Zero)
+        return MatrixExpr.domain_definition(self)

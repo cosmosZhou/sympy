@@ -1175,10 +1175,9 @@ class Integrate(AddWithLimits):
                 return self
         var = limit[0]
 
-        import sympy
         function = self.function
-        if isinstance(function, sympy.exp):
-            function = function.as_Mul()
+        if function.is_Exp:
+            function = function.astype(Mul)
 
         independent, dependent = function.as_independent(var, as_Add=False)
         if independent == S.One:
@@ -1194,7 +1193,7 @@ class Integrate(AddWithLimits):
                 return self.function * var.dimension
         return self.func(dependent, limit) * independent
 
-    def _subs(self, old, new, **_):
+    def _subs(self, old, new, **hints):
         if self == old:
             return new
 
@@ -1228,7 +1227,7 @@ class Integrate(AddWithLimits):
 
         return self
 
-    def limits_subs(self, old, new):
+    def limits_subs(self, old, new, simplify=True):
         from sympy.solvers.solvers import solve
 
         if len(self.limits) == 1:
@@ -1244,7 +1243,8 @@ class Integrate(AddWithLimits):
             if len(limit) == 3:
                 x, a, b = limit
                 if not old.has(x):
-                    return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
+                    self = self.func(function, (x, a.subs(old, new), b.subs(old, new)))
+                    return self.simplify() if simplify else self
 
                 if old != x:
 
@@ -1255,7 +1255,8 @@ class Integrate(AddWithLimits):
                         res = []
 
                     if not res:
-                        return self.func(function, *self.limits).simplify()
+                        self = self.func(function, *self.limits)
+                        return self.simplify() if simplify else self
                     if len(res) != 1:
                         return self
 
@@ -1280,7 +1281,7 @@ class Integrate(AddWithLimits):
                         a, b = a[0], b[0]
 
                         if 'domain' in _x._assumptions:
-                            __x = _x.func(_x.name)
+                            __x = _x.func(_x.name, real=_x.is_real)
                             function = function.subs(_x, __x)
                             new = new.subs(_x, __x)
                             _x = __x
@@ -1288,13 +1289,15 @@ class Integrate(AddWithLimits):
                         function *= diff(new, _x)
                     else:
                         if 'domain' in _x._assumptions:
-                            __x = _x.func(_x.name)
+                            __x = _x.func(_x.name, real=_x.is_real)
                             function = function.subs(_x, __x)
                             _x = __x
 
-                    return self.func(function, (_x, a, b)).simplify()
+                    self = self.func(function, (_x, a, b))
+                    return self.simplify() if simplify else self
 
-                return self.func(dg * function, (x, new.subs(x, a).simplify(), new.subs(x, b).simplify())).simplify()
+                self = self.func(dg * function, (x, new.subs(x, a).simplify(), new.subs(x, b).simplify()))
+                return self.simplify() if simplify else self
 
             else:
                 x = limit[0]
@@ -1524,8 +1527,8 @@ class Integrate(AddWithLimits):
         if len(self.limits) != 2:
             return self
         from sympy import Matrix, sin, cos
-        rho = Symbol('rho')
-        theta = Symbol('theta')
+        rho = Symbol('rho', real=True)
+        theta = Symbol('theta', real=True)
         _x = rho * cos(theta)
         _y = rho * sin(theta)
 
@@ -1539,7 +1542,7 @@ class Integrate(AddWithLimits):
     def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
-            if domain is not None:
+            if not isinstance(domain, list):
                 if domain.is_infinite:
                     return None
                     

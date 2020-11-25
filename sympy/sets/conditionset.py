@@ -18,7 +18,7 @@ from sympy.utilities.misc import filldedent
 # ConditionSet(variable, condition, base_set) == Union[variable:condition:base_set]({variable})
 def conditionset(*limit):
     from sympy.concrete.expr_with_limits import UNION
-    if len(limit) > 2 and limit[2] in (S.UniversalSet, None):
+    if len(limit) > 2 and (limit[2] is None or limit[2].is_UniversalSet):
         limit = limit[:2]
     variable, condition, *base_set = limit
     if base_set:
@@ -26,12 +26,12 @@ def conditionset(*limit):
         if not base_set:
             return base_set        
     else:
-        base_set = S.UniversalSet
+        base_set = variable.universalSet
        
     if condition:
         return base_set        
     if condition.is_BooleanFalse:
-        return S.EmptySet
+        return variable.emptySet
 
     return UNION({variable}, limit) 
 
@@ -144,14 +144,14 @@ class ConditionSet(Set):
             expr, variable, base_set = self.base_set.image_set()
             from sympy import sets
             condition = Contains(variable, base_set).simplify() & self.condition._subs(self.variable, expr)
-            return sets.image_set(variable, expr, ConditionSet(variable, condition))
+            return sets.image_set(expr, variable, ConditionSet(variable, condition))
         except:
             ...
 
     def condition_set(self):
         return self
 
-    def __new__(cls, variable, condition, base_set=S.UniversalSet):
+    def __new__(cls, variable, condition, base_set=None):
         # nonlinsolve uses ConditionSet to return an unsolved system
         # of equations (see _return_conditionset in solveset) so until
         # that is changed we do minimal checking of the args
@@ -165,7 +165,7 @@ class ConditionSet(Set):
         elif not base_set.is_set:
             raise TypeError('expecting set for base_set')
         if condition is S.false:
-            return S.EmptySet
+            return EmptySet()
         if condition is S.true:
             return base_set
         if isinstance(base_set, EmptySet):
@@ -205,7 +205,7 @@ class ConditionSet(Set):
 #             if s not in condition.xreplace({variable: s}).free_symbols:
 #                 raise ValueError('non-symbol dummy not recognized in condition')
         if condition.is_BooleanFalse:
-            return S.EmptySet
+            return EmptySet()
         rv = Basic.__new__(cls, variable, condition, base_set)
         return rv if know is None else Union(know, rv)
 
@@ -235,12 +235,10 @@ class ConditionSet(Set):
         return self.func(self.variable, condition, self.base_set)
 
     @property
-    def element_type(self):
-        if self.base_set != S.UniversalSet:
-            return self.base_set.element_type
-#         if self.variable.is_set:
-#             return self.variable.element_type() + 's'
-        return self.variable.dtype
+    def etype(self):
+        if not self.base_set.is_UniversalSet:
+            return self.base_set.etype
+        return self.variable.type
 
     @property
     def free_symbols(self):
@@ -345,7 +343,7 @@ def image_set_definition(self, reverse=False):
             return ForAll(Contains(expr, self), (variables, base_set))
 
         element_symbol = self.element_symbol()
-        assert expr.dtype == element_symbol.dtype
+        assert expr.type == element_symbol.type
         condition = Equality(expr, element_symbol)
         return ForAll(Exists(condition, (variables, base_set)), (element_symbol, self))
 
@@ -359,7 +357,7 @@ def image_set_definition(self, reverse=False):
     elif isinstance(variable, Slice):
         condition = base_set.condition
         element_symbol = self.element_symbol()
-        assert expr.dtype == element_symbol.dtype
+        assert expr.type == element_symbol.type
 
         exists = Exists(condition.func(*condition.args), (variables, Equality(expr, element_symbol)))
         return ForAll(exists, (element_symbol, self))

@@ -38,7 +38,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.expand()
     
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
-#     Eq << Eq[-1].this.rhs().function.args[-1].expr.simplify(deep=True, wrt=Eq[-1].rhs.variable)
     
     Eq << Eq[-1].this.rhs.function.as_KroneckerDelta()
     

@@ -50,7 +50,7 @@ def prove(Eq):
     
     Eq << apply(Equality(x | y, x), Unequal(P(y, z), 0))
     
-    Eq << bayes.inequality.inequality.conditioned.apply(Eq[1], y)
+    Eq << bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[1], y)
     
     Eq << bayes.equality.equality.given_addition.condition_probability.apply(Eq[0], Eq[-1])
 

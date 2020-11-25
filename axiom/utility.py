@@ -22,14 +22,15 @@ sympy.init_printing()
 
 
 class Eq:
-    slots = {'list', 'file', 'timing'}
-        
-    def __init__(self, php_file):
+    slots = {'list', 'file', 'timing', 'debug'}    
+
+    def __init__(self, php_file, debug=True):
         from sympy.utilities.misc import Text
         
         self.__dict__['list'] = []
         self.__dict__['file'] = Text(php_file)
         self.__dict__['timing'] = time.time()
+        self.__dict__['debug'] = debug
         
         self.file.clear()
         
@@ -37,12 +38,12 @@ class Eq:
 #         sep = os.sep
         php = php.replace('\\', '/')        
 
-        utility_php = re.compile(r'/\w+').sub('/utility', re.compile(r'\w+/').sub('../', php[php.index('axiom'):]))
+        render_php = re.compile(r'/\w+').sub('/render', re.compile(r'\w+/').sub('../', php[len(os.path.dirname(__file__)) + 1:]))
         php_code = """\
 <?php
 require_once '%s';
 render(__FILE__);        
-""" % utility_php
+""" % render_php
 
         self.file.write(php_code)
 
@@ -85,7 +86,8 @@ render(__FILE__);
                     
                 if eq.plausible:                    
                     _expr = Eq.reference(self.get_index(Eq.get_equivalent(eq)))
-                    print("%s=>%s : %s" % (_expr, expr, eq))
+                    if self.debug:
+                        print("%s=>%s : %s" % (_expr, expr, eq))
                     res.append(_expr)                
                     res.append('=>')
                 elif eq.plausible == False:
@@ -175,7 +177,7 @@ render(__FILE__);
             return self.list[index]
         return self.__dict__[index]
 
-    def process(self, rhs, index=None, flush=True):        
+    def process(self, rhs, index=None, flush=True):
         try:
             latex = rhs.latex
         except:
@@ -183,6 +185,7 @@ render(__FILE__);
             latex = ''
 
         infix = str(rhs)
+            
         if isinstance(rhs, Boolean):
             index = self.add_to_list(rhs, index)
             if index != -1:
@@ -195,10 +198,11 @@ render(__FILE__);
                 tag = r'\tag*{%s}' % index
 
                 latex += tag
-                infix = '%s : %s' % (index, infix)            
-#         self.file.append(r'\[%s\]' % latex)
-        
-        print(infix)
+                infix = '%s : %s' % (index, infix)
+                            
+        if self.debug:
+            print(infix)
+            
         latex = r'\(%s\)' % latex
         if flush:
             self.file.append('//' + latex)
@@ -233,7 +237,20 @@ render(__FILE__);
                     eq.plausible = True
             else:
                 if eq.plausible is None:
+                    given = rhs.given
+                    equivalent = rhs.equivalent
                     rhs.plausible = True
+                    if given is None:
+                        if equivalent is not None:
+                            if not isinstance(equivalent, (list, tuple)):
+                                equivalent.equivalent = eq
+                                                    
+                    elif not isinstance(given, (list, tuple)):
+                        derivative = given.derivative     
+                        if isinstance(derivative, (list, tuple)):
+                            if all(eq.plausible is None for eq in derivative):
+                                given.plausible = True
+                                
                 elif eq.plausible is False:
                     rhs.plausible = False
                 else:
@@ -251,6 +268,9 @@ render(__FILE__);
                                 if len(eqs) == 1:
                                     eqs[0].plausible = False
                     
+#                     if eq.counterpart is not None and rhs.counterpart is None:
+#                         rhs.counterpart = eq.counterpart
+                        
                     if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
@@ -297,6 +317,7 @@ render(__FILE__);
             self.process(rhs)
         return self
 
+
 def show_latex():
     import matplotlib.pyplot as plt
     ax = plt.subplot(111)
@@ -337,9 +358,9 @@ def topological_sort(graph):
     return None
 
 
-def wolfram_decorator(py, func, **kwargs):
-    eqs = Eq(py.replace('.py', '.php'))
-    website = "http://localhost/sympy/axiom" + func.__code__.co_filename[len(os.path.dirname(__file__)):-3] + ".php"
+def wolfram_decorator(py, func, debug=True, **kwargs):
+    eqs = Eq(py.replace('.py', '.php'), debug=debug)
+    website = "http://localhost" + func.__code__.co_filename[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php"
     try: 
         if 'wolfram' in kwargs:
             wolfram = kwargs['wolfram']
@@ -356,7 +377,8 @@ def wolfram_decorator(py, func, **kwargs):
         print(website)
         return
     
-    print(website)
+    if debug:
+        print(website)
     plausibles = eqs.plausibles_dict
     if plausibles:
         return False
@@ -372,10 +394,10 @@ session = cloudsession.session
 
 def check(func=None, wolfram=None):
     if func is not None:
-        return lambda py: wolfram_decorator(py, func)
+        return lambda py, **kwargs: wolfram_decorator(py, func, **kwargs)
 
     def decorator(func):
-        return lambda py: wolfram_decorator(py, func, wolfram=session if wolfram else None)
+        return lambda py, **kwargs: wolfram_decorator(py, func, wolfram=session if wolfram else None, **kwargs)
 
     return decorator
 
@@ -434,11 +456,11 @@ def plausible(apply=None):
             else:
                 s.given.definition_set(dependency)
 
-    def plausible(*args, **kwargs):
+    def plausible(*args, simplify=True, **kwargs): 
         statement = apply(*args, **kwargs)
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]:
-            if not kwargs.get('evaluate', True):
+            if not simplify:
                 return statement
             if isinstance(statement, tuple):
                 return [*(s.simplify() for s in statement)]
@@ -485,7 +507,6 @@ def get_function_body(func):
         indentation = len(lines[1]) - len(lines[1].lstrip())
         return '\n'.join([lines[0]] + [line[indentation:] for line in lines[1:]])
 
-
 # https://en.wikipedia.org/wiki/Topological_sorting#
 # http://latex.91maths.com/
 # http://ctex.math.org.cn/blackboard.html
@@ -500,6 +521,7 @@ def get_function_body(func):
 
 # http://www.sagemath.org/download-source.html
 # https://www.sagemath.org/
+
 
 if __name__ == '__main__':
     ...

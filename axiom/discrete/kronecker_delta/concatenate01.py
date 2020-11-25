@@ -24,12 +24,19 @@ def prove(Eq):
     U = Symbol.U(definition=Eq[0].lhs)
     V = Symbol.V(definition=Eq[0].rhs)
     
+    assert V.is_complex
+    assert V.is_real
+    assert V.is_rational
+    assert V.is_integer
+    
     Eq << U.this.definition
     Eq << V.this.definition
     
     i = Symbol.i(integer=True, domain=[0, n])
     
-    Eq << (Eq[-1][i], Eq[-2][i])
+    Eq << Eq[-1][i]
+    
+    Eq << U[i].this.definition
     
     Eq << Eq[-2].this.rhs.as_KroneckerDelta()
     

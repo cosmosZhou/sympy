@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.sympify import _sympify
 from sympy.core import Basic
 from sympy.matrices.expressions.matexpr import MatrixExpr
@@ -44,8 +42,8 @@ class Cofactors(MatrixExpr):
             return self
 
     @property
-    def atomic_dtype(self):
-        return self.arg.atomic_dtype
+    def dtype(self):
+        return self.arg.dtype
 
     def _entry(self, i, j=None, **_):
         from sympy.matrices.expressions.minors import Minors

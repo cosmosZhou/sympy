@@ -14,8 +14,7 @@ class Minors(MatrixExpr):
     method of matrices.
 
     """
-    is_Minors = True
-
+    
     def __new__(cls, mat):        
         mat = _sympify(mat)
         return Basic.__new__(cls, mat)

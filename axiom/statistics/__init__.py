@@ -5,3 +5,4 @@ from . import binomial
 from . import kullback_leibler
 from . import die
 from . import bayes
+from . import total_probability_theorem

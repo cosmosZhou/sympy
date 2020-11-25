@@ -8,6 +8,7 @@ from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import Interval
 from sympy.sets.contains import Contains
+from axiom import sets
 
 
 @plausible
@@ -16,7 +17,7 @@ def apply(n):
     
     p = Symbol.p(shape=(oo,), integer=True, nonnegative=True)
     
-    P = Symbol.P(dtype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
     return ForAll[p[:n]:P](Exists[i:n](Equality(p[i], n - 1)))
 
@@ -31,7 +32,7 @@ def prove(Eq):
     
     Eq << Eq[1].subs(Eq[0])
     
-    Eq << Eq[-1].limits_assertion()
+    Eq << sets.imply.forall.apply(Eq[-1], simplify=False)
     
     Eq << Contains(n - 1, Eq[-1].rhs, plausible=True)
     

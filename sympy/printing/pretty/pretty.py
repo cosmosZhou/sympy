@@ -1939,7 +1939,7 @@ class PrettyPrinter(Printer):
 
         bar = self._print("|")
 
-        if ts.base_set is S.UniversalSet:
+        if ts.base_set.is_UniversalSet:
             return self._print_seq((variables, bar, cond), "{", "}", ' ')
 
         base = self._print(ts.base_set)
@@ -2412,7 +2412,8 @@ class PrettyPrinter(Printer):
     def _print_Diagram(self, diagram):
         if not diagram.premises:
             # This is an empty diagram.
-            return self._print(S.EmptySet)
+            from sympy import EmptySet
+            return self._print(EmptySet())
 
         pretty_result = self._print(diagram.premises)
         if diagram.conclusions:

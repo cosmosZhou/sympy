@@ -1152,17 +1152,6 @@ class MatrixBase(MatrixCommon):
         from .dense import matrix2numpy
         return matrix2numpy(self, dtype=dtype)
 
-#     def __getattr__(self, attr):
-#         if attr in ('diff', 'integrate', 'limit'):
-#             def doit(*args):
-#                 item_doit = lambda item: getattr(item, attr)(*args)
-#                 return self.applyfunc(item_doit)
-# 
-#             return doit
-#         else:
-#             raise AttributeError(
-#                 "%s has no attribute %s." % (self.__class__.__name__, attr))
-
     def __len__(self):
         """Return the number of elements of ``self``.
 

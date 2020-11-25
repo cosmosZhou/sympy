@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import S, Add, Mul, sympify, Symbol, Dummy, Basic
 from sympy.core.expr import Expr
 from sympy.core.exprtools import factor_terms
@@ -443,7 +441,7 @@ class Abs(Function):
     unbranched = True
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         if self.arg.is_set:
             return dtype.integer(nonnegative=True)
@@ -632,16 +630,6 @@ class Abs(Function):
                 return abs(x.max())
         return S.Zero
     
-    def assertion(self):
-        from sympy.concrete.expr_with_limits import Exists
-        from sympy import Unequality
-        s = self.arg
-        if not s.is_set:
-            return
-        x = s.element_symbol()
-        y = s.element_symbol({x})
-        return (self <= 1) | Exists(Unequality(x, y), (x, s), (y, s))
-
     def _sympystr(self, p):
         return "|%s|" % p._print(self.arg)
 
@@ -768,8 +756,8 @@ class transpose(Function):
             return obj
 
     @property
-    def atomic_dtype(self):
-        return self.arg.atomic_dtype
+    def dtype(self):
+        return self.arg.dtype
 
     def _sympystr(self, p):
         return p.parenthesize(self.arg, 0) + ".T"

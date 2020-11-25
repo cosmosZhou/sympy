@@ -101,8 +101,7 @@ class KroneckerProduct(MatrixExpr):
     >>> isinstance(KroneckerProduct(A, B), KroneckerProduct)
     True
     """
-    is_KroneckerProduct = True
-
+        
     def __new__(cls, *args, **kwargs):
         args = list(map(sympify, args))
         if all(a.is_Identity for a in args):

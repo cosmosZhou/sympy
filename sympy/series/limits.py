@@ -279,7 +279,7 @@ class Limit(Expr):
         return r
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
 

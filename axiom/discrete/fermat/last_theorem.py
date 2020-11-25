@@ -3,6 +3,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from axiom.utility import plausible
 from sympy.core.relational import Unequality
+from sympy.core.symbol import Symbol
 
 
 @plausible

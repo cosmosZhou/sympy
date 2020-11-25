@@ -6,6 +6,7 @@ from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.concrete.products import Product
 from sympy.matrices.expressions.matexpr import Multiplication
 from sympy.concrete.expr_with_limits import LAMBDA
+from sympy.matrices import Matrix
 
 
 @plausible
@@ -31,7 +32,7 @@ def prove(Eq):
  
     Eq << Symbol.L(shape=(n, n), definition=Eq[0].lhs.arg).this.definition
     
-    Eq << Eq[-1].this.rhs.as_Matrix()
+    Eq << Eq[-1].this.rhs.astype(Matrix)
 
     Eq << Eq[-1] @ Multiplication(n, 0, 1 / a[0])
     

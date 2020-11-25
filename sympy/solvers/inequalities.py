@@ -49,7 +49,7 @@ def solve_poly_inequality(poly, rel):
         if t is S.true:
             return [S.Reals]
         elif t is S.false:
-            return [S.EmptySet]
+            return [S.Reals.etype.emptySet]
         else:
             raise NotImplementedError(
                 "could not determine truth value of %s" % t)
@@ -151,8 +151,8 @@ def solve_rational_inequalities(eqs):
     See Also
     ========
     solve_poly_inequality
-    """
-    result = S.EmptySet
+    """    
+    result = S.Reals.etype.emptySet
 
     for _eqs in eqs:
         if not _eqs:
@@ -170,7 +170,7 @@ def solve_rational_inequalities(eqs):
                 for global_interval in global_intervals:
                     interval = numer_interval.intersect(global_interval)
 
-                    if interval is not S.EmptySet:
+                    if not interval.is_EmptySet:
                         intervals.append(interval)
 
             global_intervals = intervals
@@ -181,7 +181,7 @@ def solve_rational_inequalities(eqs):
                 for denom_interval in denom_intervals:
                     global_interval -= denom_interval
 
-                if global_interval is not S.EmptySet:
+                if not global_interval.is_EmptySet:
                     intervals.append(global_interval)
 
             global_intervals = intervals
@@ -226,7 +226,7 @@ def reduce_rational_inequalities(exprs, gen, relational=True):
     """
     exact = True
     eqs = []
-    solution = S.Reals if exprs else S.EmptySet
+    solution = S.Reals if exprs else S.Reals.etype.emptySet
     for _exprs in exprs:
         _eqs = []
 
@@ -465,7 +465,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
     _gen = gen
     _domain = domain
     if gen.is_extended_real == False:
-        rv = S.EmptySet
+        rv = S.Reals.etype.emptySet
         return rv if not relational else rv.as_relational(_gen)
     elif gen.is_extended_real is None:
         gen = Dummy('gen', extended_real=True)
@@ -483,7 +483,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
         rv = domain
 
     elif expr is S.false:
-        rv = S.EmptySet
+        rv = S.Reals.etype.emptySet
 
     else:
         e = expr.lhs - expr.rhs
@@ -494,7 +494,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
             if const is S.true:
                 rv = domain
             elif const is S.false:
-                rv = S.EmptySet
+                rv = S.Reals.etype.emptySet
         elif period is not None:
             frange = function_range(e, gen, domain)
 
@@ -503,13 +503,13 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
                 if expr.func(frange.sup, 0):
                     rv = domain
                 elif not expr.func(frange.inf, 0):
-                    rv = S.EmptySet
+                    rv = S.Reals.etype.emptySet
 
             elif rel == '>' or rel == '>=':
                 if expr.func(frange.inf, 0):
                     rv = domain
                 elif not expr.func(frange.sup, 0):
-                    rv = S.EmptySet
+                    rv = S.Reals.etype.emptySet
 
             inf, sup = domain.inf, domain.sup
             if sup - inf is S.Infinity:
@@ -639,7 +639,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=S.Reals, cont
 
                 make_real = make_real.intersect(im_sol)
 
-            empty = sol_sets = [S.EmptySet]
+            empty = sol_sets = [S.Reals.etype.emptySet]
 
             start = domain.inf
             if valid(start) and start.is_finite:

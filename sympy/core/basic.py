@@ -56,7 +56,8 @@ class Basic(with_metaclass(ManagedProperties)):
     """
     __slots__ = ['_mhash',  # hash value
                  '_args',  # arguments
-                 '_assumptions'
+                 '_assumptions',
+                 '_domain_defined'
                 ]
 
     # To be overridden with True in the appropriate subclasses
@@ -64,7 +65,8 @@ class Basic(with_metaclass(ManagedProperties)):
     is_symbol = False
    
     is_Add = False
-    is_Mul = False   
+    is_Mul = False
+    is_Pow = False   
     
     is_Equality = False
     is_Unequality = False
@@ -134,6 +136,9 @@ class Basic(with_metaclass(ManagedProperties)):
         if self.is_boolean and other.is_boolean:
             return other.__or__(self)
         
+        if self.is_set:
+            return self.__or__(other)
+        
         from sympy.stats.rv import given
         return given(other, self)
         
@@ -153,6 +158,16 @@ class Basic(with_metaclass(ManagedProperties)):
             if name not in obj._assumptions:
                 if value is not None:
                     obj._assumptions[name] = value
+        
+                    
+        obj._domain_defined = {}
+        for arg in args:
+            try:
+                for sym in arg.free_symbols:
+                    obj._domain_defined[sym] = None
+            except :
+                ...
+        
         return obj
 
     def copy(self, **kwargs):
@@ -668,14 +683,12 @@ class Basic(with_metaclass(ManagedProperties)):
                 while v.name == d.name or d.name in free:
                     d = next(dums)
 
-#             print('v.dtype =', v.dtype)
-#             print('d.dtype =', d.dtype)
-            kwargs = v.dtype.dict
+            kwargs = v.type.dict
             if v.shape:
                 kwargs['shape'] = v.shape
             
             d = Symbol(d.name, **kwargs)
-            assert v.dtype == d.dtype
+            assert v.type == d.type
 
             reps[v] = d
         return reps
@@ -1059,8 +1072,8 @@ class Basic(with_metaclass(ManagedProperties)):
             kwargs['hack2'] = True
 #             m = Dummy()
             for old, new in sequence:
-#                 d = Dummy(commutative=new.is_commutative, **new.dtype.dict)
-                d = Dummy(**new.dtype.dict)
+
+                d = Dummy(**new.type.dict)
                 # using d*m so Subs will be used on dummy variables
                 # in things like Derivative(f(x, y), x) in which x
                 # is both free and bound
@@ -1152,17 +1165,26 @@ class Basic(with_metaclass(ManagedProperties)):
         """
         
         assert old != new
-#         if old.dtype != new.dtype:            
-#             print("inconsistent dtype: old.dtype = %s, new.dtype = %s" % (old.dtype, new.dtype))
-            
+
         if old.is_Slice:
-            indices = set(index for indexed in preorder_traversal(self) if isinstance(indexed, Basic) and indexed.is_Indexed and indexed.base == old.base for index in indexed.indices)
+            indices = set()
+            for indexed in preorder_traversal(self):
+                if not isinstance(indexed, Basic):
+                    continue
+                if indexed.is_Indexed:
+                    if indexed.base == old.base:
+                        indices |= {*indexed.indices}
+                elif indexed.is_Slice:
+                    if indexed.base == old.base:
+                        indices |= {*indexed.indices}
+                    
             if indices:
+                start, stop = old.indices
                 reps = {}            
                 this = self
                 for i in indices:
                     if i.is_symbol:
-                        if i >= old.indices[1] or i < old.indices[0]: 
+                        if i >= stop or i < start: 
                             continue
                         i_domain = self.domain_defined(i)
                         if i.domain != i_domain:
@@ -1226,7 +1248,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
         _subs
         """
-        return None
+        ...
 
     def xreplace(self, rule):
         """
@@ -1385,14 +1407,6 @@ class Basic(with_metaclass(ManagedProperties)):
                 return True
 
         return any(arg._has(pattern) for arg in self.args)
-# for wild card matching
-#         _has_matcher = getattr(pattern, '_has_matcher', None)
-#         if _has_matcher is not None:
-#             match = _has_matcher()
-#             return any(match(arg) for arg in preorder_traversal(self))
-#         else:
-#             return any(arg._has(pattern) for arg in self.args)
-#             return any(arg == pattern for arg in preorder_traversal(self))
 
     def _has_matcher(self):
         """Helper for .has()"""
@@ -1966,14 +1980,14 @@ class Basic(with_metaclass(ManagedProperties)):
 
         return self
 
-    def domain_defined(self, x):
-        if x.atomic_dtype.is_set:
-            return S.UniversalSet
+    def _eval_domain_defined(self, x):
+        if x.dtype.is_set:
+            return x.universalSet
         return x.domain            
     
     @property
-    def dtype(self):
-        return self.atomic_dtype * self.shape
+    def type(self):
+        return self.dtype * self.shape
     
     def generate_free_symbol(self, excludes=None, free_symbol=None, **kwargs):
         if excludes is None:
@@ -1992,18 +2006,27 @@ class Basic(with_metaclass(ManagedProperties)):
                 return free_symbol
             
         excludes = set(symbol.name for symbol in excludes)
+        if 'definition' in kwargs:
+            definition = kwargs['definition']
+            shape = definition.shape
+            if shape:
+                kwargs['shape'] = definition.shape            
+            elif definition.is_set:
+                kwargs['etype'] = definition.etype
+            else:
+                kwargs['integer'] = definition.is_integer
+            
         if 'shape' in kwargs:      
             if len(kwargs['shape']) > 1:
                 symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
             else:
-                symbols = 'abcdefghijklmnopqrstuvwxyz'
+                symbols = 'abcdefgopqrstuvwxyzhijklmn'
+        elif 'etype' in kwargs:
+            symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'            
+        elif 'integer' in kwargs:
+            symbols = 'ijkhtdlmnabcefgopqrsuvwxyz'
         else:
-            if 'dtype' in kwargs:
-                symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'            
-            elif 'integer' in kwargs:
-                symbols = 'ijkhtdlmnabcefgopqrsuvwxyz'
-            else:
-                symbols = 'xyzabcdefghijklmnopqrstuvw'
+            symbols = 'xyzabcdefghijklmnopqrstuvw'
                         
         from sympy import Symbol
         for name in symbols:
@@ -2024,7 +2047,7 @@ class Basic(with_metaclass(ManagedProperties)):
         if other.is_UniversalSet:
             return             
             
-        if other.dtype in self.dtype or self.dtype in other.dtype:
+        if other.type in self.type or self.type in other.type:
             return other.is_subset(self)
 
     def infimum(self):
@@ -2166,7 +2189,64 @@ class Basic(with_metaclass(ManagedProperties)):
 
     def domain_definition(self):
         return S.true
-        
+      
+    def simplify_forall(self, forall):
+        ...        
+      
+    @classmethod
+    def simplifyEqual(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Basic object!
+        """
+        if rhs.is_zero:
+            if lhs._coeff_isneg():
+                return self.func(-lhs, 0, equivalent=self)
+            elif lhs.is_Add:
+                cls = lhs.func
+                _lhs = []
+                _rhs = []
+                for arg in lhs.args:
+                    if arg._coeff_isneg():
+                        _rhs.append(-arg)
+                    else:
+                        _lhs.append(arg)
+                if _rhs:
+                    return self.func(cls(*_lhs), cls(*_rhs), equivalent=self).simplify()
+            elif lhs.is_KroneckerDelta:
+                return self.invert_type(*lhs.args, equivalent=self).simplify()
+        elif rhs.is_Plus and lhs in rhs.args:
+            cls = rhs.func
+            args = [*rhs.args]
+            args.remove(lhs)
+            return self.func(0, cls(*args), equivalent=self).simplify()
+
+    def domain_defined(self, x):
+        domain_defined = self._domain_defined
+        if x in domain_defined:
+            domain = domain_defined[x]
+            if domain is None:
+                domain = self._eval_domain_defined(x)
+                domain_defined[x] = domain
+            return domain
+        return x.domain
+    
+    @property
+    def emptySet(self):
+        from sympy.sets.sets import EmptySet
+        return EmptySet(etype=self.type)
+    
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import UniversalSet
+        return UniversalSet(etype=self.type)
+    
+    def astype(self, cls):
+        return getattr(cls, 'rewrite_from_' + self.__class__.__name__)(self)    
+    
+    @classmethod
+    def rewrite_from_Minimize(cls, self):
+        return cls.rewrite_from_Maximize(self)
+    
 class Atom(Basic):
     """
     A parent class for atomic things. An atom is an expression with no subexpressions.

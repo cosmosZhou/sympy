@@ -369,4 +369,4 @@ def is_monotonic(expression, interval=S.Reals, symbol=None):
 
     variable = symbol or (free.pop() if free else Symbol('x'))
     turning_points = solveset(expression.diff(variable), variable, interval)
-    return interval.intersection(turning_points) is S.EmptySet
+    return interval.intersection(turning_points).is_EmptySet

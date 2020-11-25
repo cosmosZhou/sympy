@@ -1,12 +1,12 @@
 
 from sympy.core.relational import Equality, Unequal
-
+from sympy.logic.boolalg import Or
 from axiom.utility import plausible
 from axiom.utility import check
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.statistics import bayes
-from axiom import algebre
+from axiom import algebre, statistics
 
 
 # given: x | y = x
@@ -42,20 +42,20 @@ def prove(Eq):
     
     Eq << apply(Equality(x | y, x), Unequal(P(z | y), 0))
     
-    Eq << P(x | y, z).bayes_theorem(z)    
-    Eq << Eq[-1].as_Or()
+    Eq << statistics.bayes.theorem.apply(P(x | y, z), z)    
+    Eq << Eq[-1].astype(Or)
 
     Eq << (Eq[-1] & Eq[1]).split()
 
     Eq << Eq[-1].subs(Eq[0])
     
-    Eq << bayes.inequality.inequality.marginal.apply(Eq[1])
+    Eq << bayes.is_nonzero.is_nonzero.marginal.apply(Eq[1])
     
-    Eq << bayes.theorem.apply(Eq[-1], var=x)
+    Eq << bayes.corollary.apply(Eq[-1], var=x)
     
     Eq << Eq[-3].subs(Eq[-1])
     
-    Eq << algebre.scalar.inequality.equality.apply(Eq[-1], Eq[-3])
+    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq[-3])
     
     Eq << Eq[-1].reversed
 

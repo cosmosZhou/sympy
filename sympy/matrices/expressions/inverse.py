@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.sympify import _sympify
 from sympy.core import S, Basic
 
@@ -31,7 +29,6 @@ class Inverse(MatPow):
     (A*B)**(-1)
 
     """
-    is_Inverse = True
     exp = S(-1)
 
     def __new__(cls, mat, exp=S(-1)):
@@ -42,7 +39,7 @@ class Inverse(MatPow):
 #             raise TypeError("mat should be a matrix")
         assert mat.is_square, "Inverse of non-square matrix %s" % mat
         
-        return Basic.__new__(cls, mat, exp)
+        return Basic.__new__(MatPow, mat, exp)
 
     @property
     def arg(self):

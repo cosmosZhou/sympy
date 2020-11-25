@@ -10,12 +10,16 @@ from sympy import Symbol
 
 
 @plausible
-def apply(x):
+def apply(x, i=None, j=None, w=None):
     n = x.shape[0]
-    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
-    j = Symbol.j(domain=Interval(0, n - 1, integer=True))
+    if i is None:
+        i = Symbol.i(domain=Interval(0, n - 1, integer=True))
+        
+    if j is None:
+        j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
-    w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j, i](Swap(n, i, j)))
+    if w is None:
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     
     return Equality(w[i, j] @ w[i, j] @ x, x)
 

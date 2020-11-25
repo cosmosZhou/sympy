@@ -539,7 +539,7 @@ class Product(ExprWithIntLimits):
 
         for i, (x, *_) in enumerate(self.limits):
             domain = limits_dict[x]
-            if domain is None:
+            if isinstance(domain, list):
                 continue
             if self.function._has(x):                
                 if domain.is_set and self.function.domain_defined(x) in domain:
@@ -570,9 +570,8 @@ class Product(ExprWithIntLimits):
                 return self.function ** abs(domain)
                             
         elif len(limit) == 3:
-            from sympy.functions.elementary.piecewise import Piecewise
             x, a, b = limit
-            if isinstance(self.function, Piecewise):
+            if self.function.is_Piecewise:
                 from sympy.sets.sets import Interval
                 domain = Interval(a, b, integer=True)
                 return Mul(*self.as_multiple_terms(x, domain))
@@ -641,7 +640,25 @@ class Product(ExprWithIntLimits):
             return self.operator(self.func(first, *self.limits), self.func(second, *self.limits))
         return self
 
-
+    @classmethod
+    def rewrite_from_Times(cls, self):
+        function_limits_coeff = self._detect_multiple_products()
+        if function_limits_coeff is not None:
+            function, limits, coeff, last_product = function_limits_coeff
+            if len(function) == 1:
+                coeff = self.func(*coeff)
+                prod = last_product.try_absorb(coeff)
+                if prod is not None:
+                    return prod
+            elif len(function) > 1:
+                prod = cls(self.func(*function).simplify(), *limits)
+                if coeff:
+                    return self.func(*coeff) * prod
+                return prod
+        
+        return self
+        
+        
 class MatProduct(ExprWithIntLimits, MatrixExpr):
     r"""Represents unevaluated products of matrices.
 
@@ -1057,7 +1074,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
             if stop is None:
                 stop = self.shape[0]
 
-    def _subs(self, old, new, **_):
+    def _subs(self, old, new, **hints):
         intersect = new.free_symbols & self.variables_set - old.free_symbols
         if intersect:
             this = self
@@ -1247,3 +1264,6 @@ def product(*args, **kwargs):
         return prod.doit(deep=False)
     else:
         return prod
+
+
+Mul.identity = S.One

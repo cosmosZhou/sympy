@@ -6,6 +6,7 @@ from sympy.matrices.expressions.cofactor import Cofactors
 from sympy.concrete.summations import Sum
 from sympy.core.sympify import sympify
 from sympy import Symbol
+from sympy.matrices import Matrix
 
 @plausible
 def apply(A, i=None, j=None):
@@ -28,6 +29,7 @@ from axiom.utility import check
 
 @check
 def prove(Eq):    
+    print('this is a validation, not a proof in', __file__)
     n = Symbol.n(integer=True, positive=True)
     n = 5
     i = Symbol.i(integer=True, positive=True)
@@ -36,17 +38,17 @@ def prove(Eq):
     Eq << apply(A, i=i)
     Eq << Eq[-1].this.rhs.doit()
     
-    Eq << Eq[-1].this.rhs.args[0].args[1].arg.as_Matrix()
+    Eq << Eq[-1].this.rhs.args[0].args[1].arg.astype(Matrix)
     
-    Eq << Eq[-1].this.rhs.args[1].args[2].arg.as_Matrix()
+    Eq << Eq[-1].this.rhs.args[1].args[2].arg.astype(Matrix)
     
-    Eq << Eq[-1].this.rhs.args[2].args[1].arg.as_Matrix()
+    Eq << Eq[-1].this.rhs.args[2].args[1].arg.astype(Matrix)
     
-    Eq << Eq[-1].this.rhs.args[3].args[2].arg.as_Matrix()
+    Eq << Eq[-1].this.rhs.args[3].args[2].arg.astype(Matrix)
     
-    Eq << Eq[-1].this.rhs.args[4].args[1].arg.as_Matrix()
+    Eq << Eq[-1].this.rhs.args[4].args[1].arg.astype(Matrix)
     
-    Eq << Eq[-1].this.lhs.arg.as_Matrix()
+    Eq << Eq[-1].this.lhs.arg.astype(Matrix)
     
     Eq << Eq[-1].doit(deep=True)
     

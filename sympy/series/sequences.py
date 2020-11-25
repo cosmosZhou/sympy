@@ -394,7 +394,8 @@ class EmptySequence(with_metaclass(Singleton, SeqBase)):
 
     @property
     def interval(self):
-        return S.EmptySet
+        from sympy import EmptySet
+        return EmptySet()
 
     @property
     def length(self):
@@ -541,7 +542,7 @@ class SeqPer(SeqExpr):
             raise ValueError("invalid period %s should be something "
                              "like e.g (1, 2) " % periodical)
 
-        if Interval(limits[1], limits[2]) is S.EmptySet:
+        if Interval(limits[1], limits[2]).is_EmptySet:
             return S.EmptySequence
 
         return Basic.__new__(cls, periodical, limits)
@@ -676,7 +677,7 @@ class SeqFormula(SeqExpr):
                                  "cannot be unbounded")
         limits = sympify((x, start, stop))
 
-        if Interval(limits[1], limits[2]) is S.EmptySet:
+        if Interval(limits[1], limits[2]).is_EmptySet:
             return S.EmptySequence
 
         return Basic.__new__(cls, formula, limits)
@@ -1029,7 +1030,7 @@ class SeqAdd(SeqExprOp):
         if not args:
             return S.EmptySequence
 
-        if Intersection(*(a.interval for a in args)) is S.EmptySet:
+        if Intersection(*(a.interval for a in args)).is_EmptySet:
             return S.EmptySequence
 
         # reduce using known rules
@@ -1136,7 +1137,7 @@ class SeqMul(SeqExprOp):
         if not args:
             return S.EmptySequence
 
-        if Intersection(*(a.interval for a in args)) is S.EmptySet:
+        if Intersection(*(a.interval for a in args)).is_EmptySet:
             return S.EmptySequence
 
         # reduce using known rules

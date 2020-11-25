@@ -226,8 +226,8 @@ class ImageSet(Set):
     base_set = property(lambda self: ProductSet(self.args[1:]))
 
     @property
-    def element_type(self):
-        return self.lamda.expr.dtype
+    def etype(self):
+        return self.lamda.expr.type
 
     def _latex(self, p):
         from sympy.sets.conditionset import ConditionSet
@@ -302,7 +302,7 @@ class ImageSet(Set):
                         elif len(s) == 1:
                             sy = s.pop()
                             sol = solveset(e, sy)
-                            if sol is S.EmptySet:
+                            if sol.is_EmptySet:
                                 return S.false
                             elif isinstance(sol, FiniteSet):
                                 solns[sy] = list(sol)
@@ -336,7 +336,7 @@ class ImageSet(Set):
                 # scalar -> vector
                 for e, o in zip(L.expr, other):
                     solns = solveset(e - o, x)
-                    if solns is S.EmptySet:
+                    if solns.is_EmptySet:
                         return S.false
                     for soln in solns:
                         try:
@@ -1193,5 +1193,5 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
         raise Exception("could not multiply %s, %s" % (self, other))
 
     @property
-    def element_type(self):
+    def etype(self):
         return dtype.complex

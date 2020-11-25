@@ -84,7 +84,7 @@ class Conditioned(Expr):
     lhs = property(lambda self: self.args[0])
     rhs = property(lambda self: self.args[1])
     
-    def domain_defined(self, x):        
+    def _eval_domain_defined(self, x):        
         return self.lhs.domain_defined(x) & self.rhs.domain_defined(x)            
 
     def simplify_condition_on_random_variable(self):
@@ -119,8 +119,8 @@ class Conditioned(Expr):
         return given(self.lhs, self.rhs)
 
     @property
-    def atomic_dtype(self):        
-        return self.lhs.atomic_dtype
+    def dtype(self):        
+        return self.lhs.dtype
     
     @property
     def shape(self):
@@ -192,7 +192,7 @@ class Probability(Expr):
     is_extended_real = True
     is_finite = True
     
-    def domain_defined(self, x):        
+    def _eval_domain_defined(self, x):        
         return self.arg.domain_defined(x)            
 
     def marginalize(self, given):
@@ -249,61 +249,8 @@ class Probability(Expr):
             if condition.is_And:
                 return cls.marginalize_condition(condition, given)
             
-    def total_probability_theorem(self, given):
-        marginal_probability = self.marginalize(given)
-        x = pspace(given).symbol
-        if given.is_integer:
-            return Equality(Sum[x](self), marginal_probability)
-        else:
-            return Equality(Integral[x](self), marginal_probability)
-        
-    def bayes_theorem(self, *given):
-        if len(given) == 1:
-            given = given[0]
-            marginal_prob = self.marginalize(given)
-        
-            expr = marginal_prob.arg
-            if expr.is_Conditioned and self.arg.is_Conditioned:
-                given_probability = self.func(given, given=expr.rhs)
-            else:
-                given_probability = self.func(given)
-            
-            given_marginal_prob = self.func(expr, given=given)
-            assert given_marginal_prob.arg.is_Conditioned
-            
-            if given_marginal_prob.arg.rhs.is_And:
-                given_additions = given_marginal_prob.arg.rhs._argset - {given.as_boolean()}                    
-                inequality = Unequal(self.func(given_probability.arg, given=And(*given_additions)), 0)
-            else:
-                inequality = Unequal(given_probability, 0)
-            
-            return ForAll[given: inequality](Equality(self, given_probability * given_marginal_prob))
-        else:
-            marginal_prob = self
-            cond = S.true
-            for g in given:
-                marginal_prob = marginal_prob.marginalize(g)
-                cond &= g.as_boolean()            
-            
-            expr = marginal_prob.arg
-            if expr.is_Conditioned and self.arg.is_Conditioned:
-                given_probability = self.func(cond, given=expr.rhs)
-            else:
-                given_probability = self.func(cond)
-            
-            given_marginal_prob = self.func(expr, given=cond)
-            assert given_marginal_prob.arg.is_Conditioned
-            
-            if given_marginal_prob.arg.rhs.is_And:
-                given_additions = given_marginal_prob.arg.rhs._argset - cond._argset                    
-                inequality = Unequal(self.func(given_probability.arg, given=And(*given_additions)), 0)
-            else:
-                inequality = Unequal(given_probability, 0)
-            
-            return ForAll[given: inequality](Equality(self, given_probability * given_marginal_prob))
-
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
     
@@ -401,7 +348,18 @@ class Probability(Expr):
             new = new.as_boolean()
         return Expr._subs(self, old, new, **hints)
 
-    
+    @classmethod
+    def simplifyEqual(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Probability object!
+        """
+        if rhs.is_Probability:                
+            lhs = self.lhs.arg.simplify_condition_on_random_variable()
+            if lhs is not self.lhs.arg:
+                rhs = self.rhs.arg.simplify_condition_on_random_variable()
+                if rhs is not self.rhs.arg:
+                    return self.func(lhs, rhs, equivalent=self)
+                
 class Expectation(ExprWithLimits):
     """
     Symbolic expression for the expectation.
@@ -488,8 +446,8 @@ class Expectation(ExprWithLimits):
         return self.args[0]
 
     @property
-    def atomic_dtype(self):
-        return self.expr.atomic_dtype
+    def dtype(self):
+        return self.expr.dtype
 
     @property
     def shape(self):

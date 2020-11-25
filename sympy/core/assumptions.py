@@ -557,7 +557,7 @@ class ManagedProperties(BasicMeta):
                     x, a, b = limit.start, limit.stop, limit.step
                     if b is not None:
                         limits[i] = (x, a, b)
-                    elif isinstance(a, int) or a.dtype in dtype.integer:
+                    elif isinstance(a, int) or a.type in dtype.integer:
                         limits[i] = (x, 0, a - 1)
                     else:
                         limits[i] = (x, a)
@@ -567,7 +567,7 @@ class ManagedProperties(BasicMeta):
             x, a, b = limits.start, limits.stop, limits.step
             if limits.step is not None:
                 limits = [(x, a, b)]
-            elif isinstance(a, int) or a.dtype in dtype.integer or a.is_Infinity:
+            elif isinstance(a, int) or a.type in dtype.integer or a.is_Infinity:
                 limits = [(x, 0, a - 1)]
             else:
                 limits = [(x, a)]

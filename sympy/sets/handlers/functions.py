@@ -39,7 +39,7 @@ def _set_function(f, x):
     var = f.variables[0]
 
     if expr.is_Piecewise:
-        result = S.EmptySet
+        result = EmptySet()
         domain_set = x
         for (p_expr, p_cond) in expr.args:
             if p_cond is true:
@@ -145,7 +145,7 @@ def _set_function(f, x):
 def _set_function(f, self):
     from sympy.core.function import expand_mul
     if not self:
-        return S.EmptySet
+        return EmptySet()
     if not isinstance(f.expr, Expr):
         return
     if self.size == 1:

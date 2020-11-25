@@ -8,7 +8,7 @@ from sympy.core.logic import fuzzy_and
 from sympy.core.numbers import Integer, pi
 from sympy.core.relational import Eq
 from sympy.ntheory import sieve
-from sympy.polys.polytools import Poly
+# from sympy.polys.polytools import Poly
 
 from math import sqrt as _sqrt
 
@@ -541,7 +541,7 @@ class RisingFactorial(CombinatorialFunction):
                         else:
                             return S.Infinity
                     else:
-                        if isinstance(x, Poly):
+                        if x.is_Poly:
                             gens = x.gens
                             if len(gens) != 1:
                                 raise ValueError("rf only defined for "
@@ -560,7 +560,7 @@ class RisingFactorial(CombinatorialFunction):
                     elif x is S.NegativeInfinity:
                         return S.Infinity
                     else:
-                        if isinstance(x, Poly):
+                        if x.is_Poly:
                             gens = x.gens
                             if len(gens) != 1:
                                 raise ValueError("rf only defined for "
@@ -676,7 +676,7 @@ class FallingFactorial(CombinatorialFunction):
                         else:
                             return S.Infinity
                     else:
-                        if isinstance(x, Poly):
+                        if x.is_Poly:
                             gens = x.gens
                             if len(gens) != 1:
                                 raise ValueError("ff only defined for "
@@ -694,7 +694,7 @@ class FallingFactorial(CombinatorialFunction):
                     elif x is S.NegativeInfinity:
                         return S.Infinity
                     else:
-                        if isinstance(x, Poly):
+                        if x.is_Poly:
                             gens = x.gens
                             if len(gens) != 1:
                                 raise ValueError("rf only defined for "
@@ -1051,12 +1051,12 @@ class Binomial(CombinatorialFunction):
         return Interval(-oo, oo, integer=True)
 
     @property
-    def atomic_dtype(self):        
+    def dtype(self):        
         from sympy.core.symbol import dtype
         n, _ = self.args
         if n.is_integer:
             return dtype.integer
-        return n.dtype
+        return n.type
     
     @property
     def shape(self):

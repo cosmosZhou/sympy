@@ -6,8 +6,6 @@
     They are supposed to work seamlessly within the SymPy framework.
 """
 
-from __future__ import print_function, division
-
 from collections import OrderedDict
 
 from sympy.core.basic import Basic
@@ -15,7 +13,6 @@ from sympy.core.compatibility import as_int, range, MutableSet
 from sympy.core.sympify import sympify, converter
 from sympy.utilities.iterables import iterable
 from sympy.core.logic import fuzzy_or
-
 
 class Tuple(Basic):
     """
@@ -143,25 +140,36 @@ class Tuple(Basic):
         else:
             return self.args.index(value, start, stop)
 
-    def domain_defined(self, x):
-        domain = Basic.domain_defined(self, x)
+    def _eval_domain_defined(self, x):
+        domain = Basic._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
         return domain
 
     def _format_ineq(self, p):
-        if len(self) == 3:
-            return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (self[1], self[0], self[2])])
-        if len(self) == 2:
-            return r"%s \in %s" % tuple([p._print(s) for s in (self[0], self[1])])
-        return p._print(self[0])
+        if p.printmethod == '_latex':
+            if len(self) == 3:
+                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (self[1], self[0], self[2])])
+            elif len(self) == 2:
+                return r"%s \in %s" % tuple([p._print(s) for s in (self[0], self[1])])
+            else:
+                return p._print(self[0])
+        else:
+            if len(self) == 3:
+                if self[1].is_zero:
+                    return r"%s:%s" % tuple([p._print(s) for s in (self[0], self[2] + 1)])
+                else:
+                    return r"%s:%s:%s" % tuple([p._print(s) for s in (self[0], self[1], self[2])])
+            elif len(self) == 2:
+                return r"%s:%s" % tuple([p._print(s) for s in (self[0], self[1])])
+            else:
+                return p._print(self[0])            
 
     def domain_latex(self, domain=None):
-        from sympy.core.numbers import oo
         if domain.is_Interval:
             start, end = domain.start, domain.stop
-            if end == oo:
-                if start == -oo:
+            if end.is_Infinity:
+                if start.is_NegativeInfinity:
                     if domain.is_integer:
                         return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
                     return r"%s\in%s" % (self.latex, r'\mathbb{R}')
@@ -169,7 +177,7 @@ class Tuple(Basic):
                     return r"%s > %s" % (self.latex, start.latex)
                 return r"%s \ge %s" % (self.latex, start.latex)
             else:
-                if start == -oo:
+                if start.is_NegativeInfinity:
                     if domain.right_open:
                         return r"%s < %s" % (self.latex, end.latex)
                     return r"%s \le %s" % (self.latex, end.latex)
@@ -181,7 +189,7 @@ class Tuple(Basic):
                 if domain.right_open:
                     return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
                 return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
-        elif domain.dtype.is_condition:
+        elif domain.is_boolean:
             return r"%s \left| %s \right." % (self.latex, domain.latex)
         else:
             return r"%s \in %s" % (self.latex, domain.latex)
@@ -214,7 +222,26 @@ class Tuple(Basic):
             return self.func(x, *ab)
         return self
 
+    @property
+    def is_intlimit(self):
+        x, *ab = self
+        return x.is_integer and len(ab) == 2 and not x.shape and not x.is_set                
         
+    def to_setlimit(self):
+        x, *ab = self
+        if len(ab) == 2 and not ab[1].is_set:
+            from sympy.sets.sets import Interval
+            return (x, Interval(*ab, integer=x.is_integer))
+        return self
+    
+    @classmethod
+    def as_setlimit(cls, self):
+        x, *ab = self
+        if len(ab) == 2 and not ab[1].is_set:
+            from sympy.sets.sets import Interval
+            return (x, Interval(*ab, integer=x.is_integer))
+        return self
+
 converter[tuple] = lambda tup: Tuple(*tup)
 
 

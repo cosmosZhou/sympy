@@ -200,7 +200,7 @@ class SubsSet(dict):
 
     def __getitem__(self, key):
         if not key in self:
-            self[key] = Dummy()
+            self[key] = Dummy(real=True)
         return dict.__getitem__(self, key)
 
     def do_subs(self, e):

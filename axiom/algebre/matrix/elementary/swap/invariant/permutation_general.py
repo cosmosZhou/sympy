@@ -11,6 +11,7 @@ from axiom.algebre.matrix import elementary
 from sympy.concrete.products import MatProduct
 from sympy import Symbol
 
+
 @plausible
 def apply(m, d, w=None):
     n = d.shape[0]
@@ -19,14 +20,15 @@ def apply(m, d, w=None):
     
     assert m >= 0
     if w is None:
-        w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
         
-    x = Symbol.x(shape=(n,), integer=True, nonnegative=True)
+    x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
+    x = x[:n]
     
-    P = Symbol.P(dtype=dtype.integer * n, definition=conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(etype=dtype.integer * n, definition=conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
     
     return ForAll[x:P](Contains(x @ MatProduct[i:m](w[i, d[i]]), P))
 

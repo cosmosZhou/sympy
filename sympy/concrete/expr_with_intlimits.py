@@ -1,4 +1,3 @@
-from __future__ import print_function, division
 
 from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.core.singleton import S
@@ -295,9 +294,17 @@ class ExprWithIntLimits(ExprWithLimits):
             if len(limit) == 1:
                 tex += r"_{%s} " % p._print(limit[0])
             elif len(limit) == 2:
-                tex += r"\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])
+                var, domain = limit
+                if domain.is_boolean:
+#                     "\right." here is necessary to match the previous \left
+                    tex += r"\limits_{%s \left| %s \right.}" % (var.latex, domain.latex)
+                else:
+                    tex += r"\limits_{\substack{%s \in %s}} " % tuple([p._print(i) for i in limit])                
             else:
-                tex += r"\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
+                if limit[1].is_boolean:
+                    tex += r"\limits_{{%s \in %s} \left| %s \right.}" % (limit[0].latex, limit[2].latex, limit[1].latex)
+                else:
+                    tex += r"\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
         else:
 
             def _format_ineq(limit):

@@ -1,12 +1,14 @@
-from typing import Tuple
+from operator import attrgetter
+from typing import Tuple, Type
+from collections import defaultdict
 
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
-from sympy.core.sympify import _sympify, sympify
+from sympy.core.sympify import _sympify as _sympify_, sympify
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
-from sympy.core.compatibility import ordered, range, default_sort_key
-from sympy.core.logic import fuzzy_and, fuzzy_or
+from sympy.core.compatibility import ordered, default_sort_key
+from sympy.core.logic import fuzzy_and
 from sympy.core.parameters import global_parameters
 from sympy.utilities.iterables import sift
 from sympy.multipledispatch.dispatcher import (Dispatcher,
@@ -42,9 +44,13 @@ class AssocOp(Basic):
     _args_type = None  # type: Type[Basic]
 
     @cacheit
-    def __new__(cls, *args, **options):
+    def __new__(cls, *args, evaluate=None, _sympify=True):
         from sympy import Order
-        args = list(map(_sympify, args))
+
+        # Allow faster processing by passing ``_sympify=False``, if all arguments
+        # are already sympified.
+        if _sympify:
+            args = list(map(_sympify_, args))
 
         # Disallow non-Expr args in Add/Mul
         typ = cls._args_type
@@ -63,15 +69,14 @@ class AssocOp(Basic):
                 ).warn()
 
         args = [a for a in args if a is not cls.identity]
-        
-        evaluate = options.get('evaluate')
+        #sifting so here to simplify the result
         if evaluate is None:
             evaluate = global_parameters.evaluate
         if not evaluate:
             obj = cls._from_args(args)
             obj = cls._exec_constructor_postprocessors(obj)
             return obj
-        
+
         if len(args) == 0:
             return cls.identity
         if len(args) == 1:
@@ -87,10 +92,10 @@ class AssocOp(Basic):
         return obj
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         dtype = None
         for arg in self.args:
-            _dtype = arg.atomic_dtype
+            _dtype = arg.dtype
             if dtype is None or dtype in _dtype:
                 dtype = _dtype
         return dtype
@@ -119,6 +124,9 @@ class AssocOp(Basic):
         """Create new instance of own class with args exactly as provided by
         caller but returning the self class identity if args is empty.
 
+        Examples
+        ========
+
            This is handy when we want to optimize things, e.g.
 
                >>> from sympy import Mul, S
@@ -134,12 +142,10 @@ class AssocOp(Basic):
            Note: use this with caution. There is no checking of arguments at
            all. This is best used when you are rebuilding an Add or Mul after
            simply removing one or more args. If, for example, modifications,
-           result in extra 1s being inserted (as when collecting an
-           expression's numerators and denominators) they will not show up in
-           the result but a Mul will be returned nonetheless:
+           result in extra 1s being inserted they will show up in the result:
 
                >>> m = (x*y)._new_rawargs(S.One, x); m
-               x
+               1*x
                >>> m == x
                False
                >>> m.is_Mul
@@ -190,7 +196,8 @@ class AssocOp(Basic):
 
         This function is the main workhorse for Add/Mul.
 
-        For instance:
+        Examples
+        ========
 
         >>> from sympy import symbols, Wild, sin
         >>> a = Wild("a")
@@ -222,6 +229,7 @@ class AssocOp(Basic):
         # make sure expr is Expr if pattern is Expr
         from .expr import Add, Expr
         from sympy import Mul
+        repl_dict = repl_dict.copy()
         if isinstance(self, Expr) and not isinstance(expr, Expr):
             return None
 
@@ -236,9 +244,18 @@ class AssocOp(Basic):
         # eliminate exact part from pattern: (2+a+w1+w2).matches(expr) -> (w1+w2).matches(expr-a-2)
         from .function import WildFunction
         from .symbol import Wild
-        wild_part, exact_part = sift(self.args, lambda p: p.has(Wild, WildFunction) and not expr.has(p), binary=True)
+        wild_part, exact_part = sift(self.args, lambda p:
+            p.has(Wild, WildFunction) and not expr.has(p),
+            binary=True)
         if not exact_part:
             wild_part = list(ordered(wild_part))
+            if self.is_Add:
+                # in addition to normal ordered keys, impose
+                # sorting on Muls with leading Number to put
+                # them in order
+                wild_part = sorted(wild_part, key=lambda x:
+                    x.args[0] if x.is_Mul and x.args[0].is_Number else
+                    0)
         else:
             exact = self._new_rawargs(*exact_part)
             free = expr.free_symbols
@@ -259,7 +276,15 @@ class AssocOp(Basic):
         saw = set()
         while expr not in saw:
             saw.add(expr)
-            expr_list = (self.identity,) + tuple(ordered(self.make_args(expr)))
+            args = tuple(ordered(self.make_args(expr)))
+            if self.is_Add and expr.is_Add:
+                # in addition to normal ordered keys, impose
+                # sorting on Muls with leading Number to put
+                # them in order
+                args = tuple(sorted(args, key=lambda x:
+                    x.args[0] if x.is_Mul and x.args[0].is_Number else
+                    0))
+            expr_list = (self.identity,) + args
             for last_op in reversed(expr_list):
                 for w in reversed(wild_part):
                     d1 = w.matches(last_op, repl_dict)
@@ -271,7 +296,7 @@ class AssocOp(Basic):
             if i == 0:
                 if self.is_Mul:
                     # make e**i look like Mul
-                    if expr.is_Power and expr.exp.is_Integer:
+                    if expr.is_Pow and expr.exp.is_Integer:
                         if expr.exp > 0:
                             expr = Mul(*[expr.base, expr.base ** (expr.exp - 1)], evaluate=False)
                         else:
@@ -337,7 +362,6 @@ class AssocOp(Basic):
                             if _nc[i:i + len(nc)] == nc:
                                 return True
             return False
-
         return is_in
 
     def _eval_evalf(self, prec):
@@ -346,7 +370,7 @@ class AssocOp(Basic):
         was a number with no functions it would have been evaluated, but
         it wasn't so we must judiciously extract the numbers and reconstruct
         the object. This is *not* simply replacing numbers with evaluated
-        numbers. Nunmbers should be handled in the largest pure-number
+        numbers. Numbers should be handled in the largest pure-number
         expression as possible. So the code below separates ``self`` into
         number and non-number parts and evaluates the number parts and
         walks the args of the non-number part recursively (doing the same
@@ -397,6 +421,9 @@ class AssocOp(Basic):
         """
         Return a sequence of elements `args` such that cls(*args) == expr
 
+        Examples
+        ========
+
         >>> from sympy import Symbol, Mul, Add
         >>> x, y = map(Symbol, 'xy')
 
@@ -412,6 +439,13 @@ class AssocOp(Basic):
             return expr.args
         else:
             return (sympify(expr),)
+
+    def doit(self, **hints):
+        if hints.get('deep', True):
+            terms = [term.doit(**hints) for term in self.args]
+        else:
+            terms = self.args
+        return self.func(*terms, evaluate=True)
 
     @property
     def shape(self):
@@ -438,10 +472,9 @@ class AssocOp(Basic):
     def as_expr(self):
         return self
 
-    def domain_defined(self, x):
-        from sympy import S
-        if x.atomic_dtype.is_set:
-            return S.UniversalSet
+    def _eval_domain_defined(self, x):
+        if x.dtype.is_set:
+            return x.universalSet
         
         domain = x.domain
         for arg in self.args:
@@ -470,6 +503,9 @@ class LatticeOp(AssocOp):
     """
     Join/meet operations of an algebraic lattice[1].
 
+    Explanation
+    ===========
+
     These binary operations are associative (op(op(a, b), c) = op(a, op(b, c))),
     commutative (op(a, b) = op(b, a)) and idempotent (op(a, a) = op(a) = a).
     Common examples are AND, OR, Union, Intersection, max or min. They have an
@@ -478,6 +514,9 @@ class LatticeOp(AssocOp):
 
     This is an abstract base class, concrete derived classes must declare
     attributes zero and identity. All defining properties are then respected.
+
+    Examples
+    ========
 
     >>> from sympy import Integer
     >>> from sympy.core.operations import LatticeOp
@@ -495,7 +534,7 @@ class LatticeOp(AssocOp):
 
     References:
 
-    [1] - https://en.wikipedia.org/wiki/Lattice_%28order%29
+    .. [1] https://en.wikipedia.org/wiki/Lattice_%28order%29
     """
 
     is_commutative = True
@@ -520,7 +559,7 @@ class LatticeOp(AssocOp):
         return self.args[0], self.func(*self.args[1:])
 
     def __new__(cls, *args, **options):
-        args = [_sympify(arg) for arg in args]
+        args = [_sympify_(arg) for arg in args]
 
         try:
             # /!\ args is a generator and _new_args_filter
@@ -551,8 +590,7 @@ class LatticeOp(AssocOp):
             elif arg == ncls.identity:
                 continue
             elif arg.func == ncls:
-                for x in arg.args:
-                    yield x
+                yield from arg.args
             else:
                 yield arg
 
@@ -566,7 +604,9 @@ class LatticeOp(AssocOp):
         else:
             return frozenset([sympify(expr)])
 
-    @property
+    # XXX: This should be cached on the object rather than using cacheit
+    # Maybe _argset can just be sorted in the constructor?
+    @property  # type: ignore
     @cacheit
     def args(self):
 

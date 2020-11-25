@@ -1,7 +1,7 @@
 from sympy.core.numbers import oo
 from axiom.utility import plausible
 from sympy.core.relational import Equality
-from sympy.concrete.expr_with_limits import Exists, LAMBDA
+from sympy.concrete.expr_with_limits import LAMBDA
 from axiom import algebre
 from sympy.matrices.expressions.matmul import MatMul
 from sympy import Symbol
@@ -35,10 +35,7 @@ def apply(given):
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
     
-    if given.is_Exists:
-        return Exists(Equality(x, y), (x,), (y,), given=given)
-    else:
-        return Equality(x, y, given=given)
+    return Equality(x, y, given=given)
 
 
 from axiom.utility import check
@@ -57,13 +54,9 @@ def prove(Eq):
     
     Eq << apply(given)
     
-    i = Symbol.i(integer=True)
-    Eq << Eq[0][i]
+    Eq << Eq[0].T
     
-    Eq << algebre.vector.independence.matmul_equality.apply(Eq[-1])
-    
-    Eq << Eq[1].T[i:0:m]
-
+    Eq << algebre.matrix.independence.rmatmul_equality.apply(Eq[-1])
 
 if __name__ == '__main__':
     prove(__file__)

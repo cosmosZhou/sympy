@@ -34,7 +34,7 @@ def prove(Eq):
     i = Symbol.i(integer=True, domain=[0, n])
     j = Symbol.j(integer=True, domain=[0, n])
     
-    Eq << (Eq[-1][i, j], Eq[-2][i, j])
+    Eq << (V[i, j].this.definition, U[i, j].this.definition)
     
     Eq << (Eq[-1].this.rhs.as_KroneckerDelta(), Eq[-2].this.rhs.as_KroneckerDelta())
     

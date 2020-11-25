@@ -7,7 +7,8 @@ from sympy.concrete.products import Product
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.statistics import bayes
 from sympy.core.numbers import oo
-from axiom import algebre
+from axiom import algebre, sets, statistics
+from sympy.logic.boolalg import Or
 
 
 def assumptions():
@@ -61,22 +62,22 @@ def prove(Eq):
     
     Eq << Eq.x_independence.domain_definition()
     
-    Eq << bayes.inequality.et.apply(Eq[-1]).split()
-    Eq << bayes.inequality.inequality.conditioned.apply(Eq[-3], y[:k])
+    Eq << bayes.is_nonzero.et.apply(Eq[-1]).split()
+    Eq << bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-3], y[:k])
     
-    Eq << bayes.theorem.apply(Eq[-2], var=Eq[0].lhs.subs(k, k + 1))   
+    Eq << bayes.corollary.apply(Eq[-2], var=Eq[0].lhs.subs(k, k + 1))   
     
-    Eq << bayes.theorem.apply(Eq[-2], var=Eq[-1].rhs.args[0])
+    Eq << bayes.corollary.apply(Eq[-2], var=Eq[-1].rhs.args[0])
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq.xy_joint_probability = bayes.theorem.apply(Eq[2], var=Eq[0].lhs)
+    Eq.xy_joint_probability = bayes.corollary.apply(Eq[2], var=Eq[0].lhs)
     
     Eq << Eq[-1].subs(Eq.xy_joint_probability.reversed)
     
-    Eq.recursion = algebre.scalar.inequality.equality.apply(Eq[0], Eq[-1])
+    Eq.recursion = algebre.is_nonzero.equality.imply.equality.apply(Eq[0], Eq[-1])
     
-    Eq << bayes.inequality.inequality.joint_slice.apply(Eq.xy_nonzero_assumption, [k, k])
+    Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq.xy_nonzero_assumption, [k, k])
     
     Eq << bayes.equality.equality.given_deletion.single_condition.apply(Eq.x_independence)
     
@@ -86,18 +87,18 @@ def prove(Eq):
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
-    Eq.or_statement = Eq.recursion.rhs.bayes_theorem(y[k]).as_Or()
+    Eq.or_statement = statistics.bayes.theorem.apply(Eq.recursion.rhs, y[k]).astype(Or)
     
     Eq << Eq[2].subs(k, k + 1)
     
-    Eq << Eq[-1].as_ForAll()
+    Eq << sets.ou.imply.forall.apply(Eq[-1], wrt=k)
     
-    _, Eq.y_nonzero_assumption = bayes.inequality.et.apply(Eq.xy_nonzero_assumption).split()
+    _, Eq.y_nonzero_assumption = bayes.is_nonzero.et.apply(Eq.xy_nonzero_assumption).split()
     Eq <<= Eq[-1] & Eq.y_nonzero_assumption
     
     Eq.y_joint_y_historic = Eq[-1].this.lhs.arg.bisect(Slice[-1:])
     
-    Eq << bayes.inequality.inequality.conditioned.apply(Eq.y_joint_y_historic, y[:k])
+    Eq << bayes.is_nonzero.is_nonzero.conditioned.apply(Eq.y_joint_y_historic, y[:k])
     
     Eq << (Eq[-1] & Eq.or_statement).split()
     
@@ -124,7 +125,7 @@ def prove(Eq):
     t = Eq.factorization.rhs.args[-1].limits[0][2]
     Eq << Eq[-1].subs(k, t)    
     
-    Eq << Eq[-1].as_ForAll()
+    Eq << sets.ou.imply.forall.apply(Eq[-1])
     
     Eq <<= Eq[-1] & Eq.first
 

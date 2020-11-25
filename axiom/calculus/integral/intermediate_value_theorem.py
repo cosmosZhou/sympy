@@ -38,8 +38,8 @@ def prove(Eq):
 
     a = Symbol.a(real=True)
     b = Symbol.b(real=True, domain=Interval(a, oo, left_open=True))
-
-    Eq << apply(Equality.continuity(Function('f'), a, b))
+    f = Function.f(shape=(), real=True)
+    Eq << apply(Equality.continuity(f, a, b))
 
 
 if __name__ == '__main__':

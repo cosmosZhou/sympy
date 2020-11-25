@@ -672,6 +672,17 @@ class MinMaxBase(Expr, LatticeOp):
         
         return self.func(*(arg + other for arg in self.args))
 
+    @classmethod
+    def rewrite_from_Plus(cls, self):                                
+        for i, arg in enumerate(self.args):
+            if not isinstance(arg, cls):
+                continue
+            args = [*self.args]
+            del args[i]
+            
+            rest = self.func(*args)
+            return cls(*(e + rest for e in arg.args))
+        return self
 
 class Max(MinMaxBase, Application):
     """
@@ -1001,4 +1012,4 @@ class Min(MinMaxBase, Application):
             return Max(*(arg * other for arg in self.args))
 
         return MinMaxBase.__mul__(self, other)
-        
+

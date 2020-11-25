@@ -5,6 +5,7 @@ from sympy.core.function import Difference, Function
 from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
 from sympy import Symbol, Slice
+from sympy.core.add import Add
 
 @plausible
 def apply(fx, x, n):
@@ -32,7 +33,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.expr.doit()
 
-    Eq << Eq[-1].this.lhs.as_Add()
+    Eq << Eq[-1].this.lhs.astype(Add)
 
     Eq << Eq[0].subs(x, x + 1) - Eq[0]
 

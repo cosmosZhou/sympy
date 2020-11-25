@@ -38,7 +38,7 @@ def prove(Eq):
  
     Eq << apply(given, Unequal(P(x, y), 0))
     
-    Eq << bayes.inequality.et.apply(Eq[1]).split()
+    Eq << bayes.is_nonzero.et.apply(Eq[1]).split()
     
     Eq << bayes.equality.equality.symmetry.apply(Eq[0], Eq[-2])
     

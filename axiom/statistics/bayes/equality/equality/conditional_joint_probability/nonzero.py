@@ -51,25 +51,25 @@ def prove(Eq):
     
     Eq.bayes_yz = bayes.equality.equality.product.apply(Eq[1])
     
-    Eq.bayes_xyz = bayes.theorem.apply(Eq[0].domain_definition(), var=P(x, y))
+    Eq.bayes_xyz = bayes.corollary.apply(Eq[0].domain_definition(), var=P(x, y))
     
     Eq << Eq[2].subs(Eq[1].reversed)
     
     Eq.given_addition = bayes.equality.equality.given_addition.condition_probability.apply(Eq[0], Eq[-1])
     
-    Eq << bayes.inequality.inequality.joint.apply(Eq[-1])
+    Eq << bayes.is_nonzero.is_nonzero.joint.apply(Eq[-1])
     
-    Eq << bayes.theorem.apply(Eq[-1], var=x)
+    Eq << bayes.corollary.apply(Eq[-1], var=x)
     
     Eq << Eq.bayes_xyz.subs(Eq[-1])
     
     Eq << Eq[-1].subs(Eq.bayes_yz)
     
-    Eq << algebre.scalar.inequality.equality.apply(Eq[-1], Eq[0].domain_definition())
+    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq[0].domain_definition())
     
     Eq << Eq[-1].subs(Eq.given_addition)
     
-    Eq << bayes.theorem.apply(Eq[2], var=x)
+    Eq << bayes.corollary.apply(Eq[2], var=x)
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     

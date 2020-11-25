@@ -6,6 +6,7 @@ from sympy.sets.sets import Interval
 from axiom import discrete
 from sympy.core.function import Difference
 from sympy import Symbol, Slice
+from sympy.concrete.summations import Sum
 
 
 @plausible
@@ -40,13 +41,13 @@ def prove(Eq):
 
     Eq << Eq[-3].subs(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.as_Sum()
+    Eq << Eq[-1].this.lhs.astype(Sum)
 
     Eq << Eq[-1].this.lhs.bisect(n.set)
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << discrete.combinatorics.factorial.expand.apply(n + 1)
+    Eq << discrete.combinatorics.permutation.factorial.expand.apply(n + 1)
 
     Eq.equation = Eq[-2].this.rhs.subs(Eq[-1])
     

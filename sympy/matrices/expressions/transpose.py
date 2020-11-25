@@ -31,8 +31,8 @@ class Transpose(MatrixExpr):
 
     """
     @property
-    def atomic_dtype(self):
-        return self.arg.atomic_dtype
+    def dtype(self):
+        return self.arg.dtype
 
     def __new__(cls, arg, **kwargs):        
         arg = _sympify(arg)
@@ -74,13 +74,16 @@ class Transpose(MatrixExpr):
         return self.args[0]
 
     @property
-    def shape(self):
-        return self.arg.shape[::-1]
+    def shape(self):        
+        shape = self.arg.shape
+        assert len(shape) > 1
+        return (*shape[:-2], shape[-1], shape[-2])
 
     def _entry(self, i, j=None, expand=False, **kwargs):
         if j is None:
-            from sympy import Indexed
-            return Indexed(self, i)
+            if len(self.shape) > 2:
+                return self.arg[i].T
+            raise Exception('unimplemented method')
         if hasattr(self.arg, '_entry'):
             return self.arg._entry(j, i, expand=expand, **kwargs)
         else:
@@ -119,6 +122,14 @@ class Transpose(MatrixExpr):
         lines = self.args[0]._eval_derivative_matrix_lines(x)
         return [i.transpose() for i in lines]
 
+    @classmethod
+    def simplifyEqual(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Transpose object!
+        """
+        if rhs.is_Transpose:
+            return self.func(lhs.arg, rhs.arg, equivalent=self)
+
     def simplify(self, **_):
         from sympy.core.function import Function
         from sympy.core.mul import Mul
@@ -137,12 +148,37 @@ class Transpose(MatrixExpr):
         if definition is not None:
             return definition.T
 
-    def domain_defined(self, x):
-        domain = MatrixExpr.domain_defined(self, x)
+    def _eval_domain_defined(self, x):
+        domain = MatrixExpr._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
         return domain
 
+    def __getitem__(self, key):
+        from sympy.matrices.expressions.slice import MatrixSlice
+        if not isinstance(key, tuple) and isinstance(key, slice):            
+            return MatrixSlice(self, key, (0, None, 1))
+        if isinstance(key, tuple): 
+            if len(key) == 1:
+                key = key[0]
+            elif len(key) == 2:
+                i, j = key
+                if isinstance(i, slice):
+                    if isinstance(j, slice):
+                        return self._entry(i, j)
+                    else:
+                        return self.func(self.arg[j])
+#                     return MatrixSlice(self, i, j)
+                i, j = _sympify(i), _sympify(j)
+                if self.valid_index(i, j) != False:
+                    return self._entry(i, j)
+                else:
+                    raise IndexError("Invalid indices (%s, %s)" % (i, j))
+        from sympy import Integer, Symbol, Expr
+        if isinstance(key, (int, Integer, Symbol, Expr)):
+            return self._entry(key)
+#             # row-wise decomposition of matrix
+        raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
 def transpose(expr):
     """Matrix transpose"""

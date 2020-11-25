@@ -1,9 +1,14 @@
 # SymPy
 
-to avoid php websites to show .py files, add the following codes to 
-D:\wamp64\bin\apache\apache2.4.39\conf\httpd.conf for windows.
+the latex is printed with the aid of the following project:
 
-<Files ~ ".py|.pyc">
+https://github.com/mathjax/MathJax.git
+
+to avoid php websites to show .py files, add the following codes to 
+D:\wamp64\bin\apache\apache2.4.39\conf\httpd.conf
+for windows.
+
+<Files ~ "\.py|\.gitignore">
 Order allow,deny
 Deny from all
 </Files>
@@ -12,3 +17,4 @@ Deny from all
 Order allow,deny
 Deny from all
 </Directory>
+

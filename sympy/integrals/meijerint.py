@@ -50,7 +50,7 @@ from sympy.utilities.misc import debug as _debug
 from sympy.utilities import default_sort_key
 
 # keep this at top for easy reference
-z = Dummy('z')
+z = Dummy('z', real=True)
 
 
 def _has(res, *f):
@@ -65,7 +65,7 @@ def _has(res, *f):
 def _create_lookup_table(table):
     """ Add formulae for the function -> meijerg lookup table. """
     def wild(n):
-        return Wild(n, exclude=[z])
+        return Wild(n, exclude=[z], real=True)
     p, q, a, b, c = list(map(wild, 'pqabc'))
     n = Wild('n', properties=[lambda x: x.is_Integer and x > 0])
     t = p*z**q

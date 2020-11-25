@@ -47,9 +47,9 @@ class PowerSet(Set):
 
     A power set of an empty set:
 
-    >>> PowerSet(S.EmptySet)
+    >>> PowerSet(EmptySet())
     PowerSet(EmptySet)
-    >>> PowerSet(PowerSet(S.EmptySet))
+    >>> PowerSet(PowerSet(EmptySet()))
     PowerSet(PowerSet(EmptySet))
 
     A power set of an infinite set:
@@ -108,8 +108,9 @@ class PowerSet(Set):
 
     def __iter__(self):
         from .sets import FiniteSet
-        found = [S.EmptySet]
-        yield S.EmptySet
+        from .sets import EmptySet
+        found = [EmptySet()]
+        yield EmptySet()
 
         for x in self.arg:
             temp = []

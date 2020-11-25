@@ -279,20 +279,15 @@ class Sin(TrigonometricFunction):
                 min = min - d * 2 * S.Pi
             if max is not S.Infinity:
                 max = max - d * 2 * S.Pi
-            if AccumBounds(min, max).intersection(FiniteSet(S.Pi / 2, 5 * S.Pi / 2)) \
-                    is not S.EmptySet and \
-                    AccumBounds(min, max).intersection(FiniteSet(3 * S.Pi / 2,
-                        7 * S.Pi / 2)) is not S.EmptySet:
+            if not AccumBounds(min, max).intersection(FiniteSet(S.Pi / 2, 5 * S.Pi / 2)).is_EmptySet and \
+                    not AccumBounds(min, max).intersection(FiniteSet(3 * S.Pi / 2, 7 * S.Pi / 2)).is_EmptySet:
                 return AccumBounds(-1, 1)
-            elif AccumBounds(min, max).intersection(FiniteSet(S.Pi / 2, 5 * S.Pi / 2)) \
-                    is not S.EmptySet:
+            elif not AccumBounds(min, max).intersection(FiniteSet(S.Pi / 2, 5 * S.Pi / 2)).is_EmptySet:
                 return AccumBounds(Min(sin(min), sin(max)), 1)
-            elif AccumBounds(min, max).intersection(FiniteSet(3 * S.Pi / 2, 8 * S.Pi / 2)) \
-                        is not S.EmptySet:
+            elif not AccumBounds(min, max).intersection(FiniteSet(3 * S.Pi / 2, 8 * S.Pi / 2)).is_EmptySet:
                 return AccumBounds(-1, Max(sin(min), sin(max)))
             else:
-                return AccumBounds(Min(sin(min), sin(max)),
-                                Max(sin(min), sin(max)))
+                return AccumBounds(Min(sin(min), sin(max)), Max(sin(min), sin(max)))
         elif isinstance(arg, SetExpr):
             return arg._eval_func(cls)
 

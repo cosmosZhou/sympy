@@ -608,8 +608,16 @@ class Plus(Expr, AssocOp):
                 break
             
         if delta is not None:
-            delta0 = self._subs(delta, S.Zero).is_zero
-            delta1 = self._subs(delta, S.One).is_zero
+            #to prevent infinite loop!
+            this = self._subs(delta, S.Zero)
+            if this is self:
+                return 
+            delta0 = this.is_zero
+            
+            this = self._subs(delta, S.One)
+            if this is self:
+                return             
+            delta1 = this.is_zero
             if delta0 and delta1:
                 return True
             if delta0 == False and delta1 == False:
@@ -644,6 +652,10 @@ class Plus(Expr, AssocOp):
         f = self.max()
         if f is not self and f.is_extended_nonpositive:
             return False
+        
+        if all(arg.is_extended_nonnegative for arg in self.args):
+            if any(arg.is_extended_positive for arg in self.args):
+                return True            
     
     def _eval_is_extended_negative(self):
         is_infinitesimal = self.is_infinitesimal
@@ -661,6 +673,10 @@ class Plus(Expr, AssocOp):
         f = self.min()
         if f is not self and f.is_extended_nonnegative:
             return False
+        
+        if all(arg.is_extended_nonpositive for arg in self.args):
+            if any(arg.is_extended_negative for arg in self.args):
+                return True            
 
     def _eval_subs(self, old, new):
         if not old.is_Add:
@@ -769,14 +785,14 @@ class Plus(Expr, AssocOp):
             im_part.append(im)
         return (self.func(*re_part), self.func(*im_part))
 
-    def _eval_as_leading_term(self, x):
+    def _eval_as_leading_term(self, x, cdir=0):
         from sympy import expand_mul, factor_terms
 
         old = self
 
         expr = expand_mul(self)
         if not expr.is_Add:
-            return expr.as_leading_term(x)
+            return expr.as_leading_term(x, cdir=cdir)
 
         infinite = [t for t in expr.args if t.is_infinite]
 
@@ -809,7 +825,7 @@ class Plus(Expr, AssocOp):
         return self.func(*[t.conjugate() for t in self.args])
 
     def _eval_transpose(self):
-        return self.func(*[t.transpose() for t in self.args])
+        return self.func(*[t.T for t in self.args])
 
     def __neg__(self):
         return self * (-1)
@@ -1001,6 +1017,30 @@ class Plus(Expr, AssocOp):
         for arg in self.args:
             yield from arg.enumerate_KroneckerDelta()
 
+    @classmethod
+    def simplifyEqual(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Plus object!
+        """
+        if rhs.is_Plus:
+            lhs_args = [*lhs.args]
+            rhs_args = [*rhs.args]
+            intersect = set(lhs_args) & set(rhs_args)
+            if intersect:
+                for arg in intersect:
+                    lhs_args.remove(arg)
+                    rhs_args.remove(arg)
+                return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
+
+        elif rhs in lhs.args:
+            args = [*lhs.args]
+            args.remove(rhs)
+            return self.func(cls(*args), 0, equivalent=self).simplify()
+        elif rhs.is_zero:
+            return Basic.simplifyEqual(self, lhs, rhs)
+            
+            
+
     def simplifyKroneckerDelta(self):        
         dic = {}
        
@@ -1035,7 +1075,7 @@ class Plus(Expr, AssocOp):
                 coefficient += p.nth(d)
 
             i, j = delta.args
-            _coefficient = coefficient._subs(j, i)
+            _coefficient = coefficient._subs(j, i, symbol=False)
             if _coefficient == coefficient:
                 __coefficient = coefficient._subs(i, j)
                 if __coefficient.is_zero:
@@ -1072,7 +1112,7 @@ class Plus(Expr, AssocOp):
         this = self.simplifyPiecewise()
         if this is not self:
             if deep:
-                return this.simplify(deep=True)
+                return this.simplify(deep=deep)
             return this         
 
         this = self.simplifyKroneckerDelta()
@@ -1248,15 +1288,13 @@ class Plus(Expr, AssocOp):
 
     @property
     def domain(self):
-
-        domain = S.EmptySet
+        domain = self.emptySet
         coeff = []
         for arg in self.args:
             if arg.is_number:
                 coeff.append(arg)
                 continue
 
-#             domain |= arg.domain
             domain += arg.domain
         if coeff:
             return domain + Add(*coeff)
@@ -1295,55 +1333,32 @@ class Plus(Expr, AssocOp):
 
     @property
     def is_infinitesimal(self):
-        from sympy.core.numbers import Infinitesimal, NegativeInfinitesimal
-        if isinstance(self.args[-1], Infinitesimal):
+        if self.args[-1].is_Infinitesimal:
             return True
-        if isinstance(self.args[-1], NegativeInfinitesimal):
+        if self.args[-1].is_NegativeInfinitesimal:
             return False
-        return None
 
     def clear_infinitesimal(self):
         if self.is_infinitesimal is not None:
             return self.func(*self.args[:-1])
         return self
 
-    def as_one_term(self):
-        from sympy import Integral
-        function = []
-        limits = None
-        for arg in self.args:
-
-            if isinstance(arg, Integral):
-                function.append(arg.function)
-                if limits is None:
-                    limits = arg.limits
-                else:
-                    if limits != arg.limits:
-                        return self
-                continue
-
-            coeff, additive = arg.as_Integral()
-            if coeff is None:
-                return self
-            else:
-                if limits is None:
-                    limits = additive.limits
-                else:
-                    if limits != additive.limits:
-                        return self
-
-                function.append(additive.function * coeff)
-
-        return Integral(self.func(*function), *limits)
-
     def __iter__(self):
         raise TypeError
 
     def __getitem__(self, index, **_):
+        shape = self.shape
+        len_shape = len(shape)
+        if isinstance(index, (tuple,list)):
+            len_subtracted = len(index)
+        else:
+            len_subtracted = 1
+        len_required = len_shape - len_subtracted
+        
         args = []
         for arg in self.args:
             shape_length = len(arg.shape)
-            if shape_length == 0:
+            if shape_length <= len_required:
                 args.append(arg)
             elif hasattr(index, "__len__"):
                 args.append(arg[index[:shape_length]])
@@ -1430,7 +1445,20 @@ class Plus(Expr, AssocOp):
             return False
         return True
 
+    @classmethod
+    def rewrite_from_Log(cls, self):
+        assert self.is_Log
+        if self.arg.is_Mul:
+            return cls(*(self.func(arg).simplify() for arg in self.arg.args))        
+        return self
 
+    @classmethod
+    def rewrite_from_Difference(cls, self):
+        if self.expr.is_Plus:
+            return self.expr.func(*(self.func(arg, *self.variable_count).simplify() for arg in self.expr.args))
+        return self
+
+        
 Add = Plus
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

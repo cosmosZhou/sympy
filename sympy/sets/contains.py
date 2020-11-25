@@ -1,14 +1,12 @@
-from __future__ import print_function, division
-
 from sympy.core import S
 from sympy.core.relational import Eq, Ne, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan, Equality, Unequality
-from sympy.logic.boolalg import BooleanFunction, And, Or
+from sympy.logic.boolalg import And, Or, BinaryCondition
 from sympy.utilities.misc import func_name
-from sympy.core.sympify import _sympify
+from sympy.core.sympify import _sympify, sympify
 
 
-class Contains(BooleanFunction):
+class Contains(BinaryCondition):
     """
     Asserts that x is an element of the set S
 
@@ -30,6 +28,13 @@ class Contains(BooleanFunction):
 
     .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
     """
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
+
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
@@ -40,12 +45,35 @@ class Contains(BooleanFunction):
                 return self
             if eq.is_ConditionalBoolean:
                 return self.bfn(self.subs, eq)
+            return self
         old, new = args
         new = _sympify(new)
-        if old.is_symbol and new in old.domain:
-            lhs = self.lhs._subs(old, new)
-            rhs = self.rhs._subs(old, new)            
-            return self.func(lhs, rhs, given=self)
+
+        if self.plausible:
+
+            lhs, rhs = self.lhs._subs(old, new), self.rhs._subs(old, new)
+            if hasattr(new, 'has') and new.has(old):
+                eq = self.func(lhs, rhs, substituent=self)
+            else:
+                eq = self.func(lhs, rhs, given=self)
+            derivative = self.derivative
+            if derivative is None:
+                derivative = {}
+                self.derivative = derivative
+
+            if old not in derivative:
+                derivative[old] = {}
+
+            derivative[old][new] = eq
+            return eq
+        
+        if old.is_symbol:
+            if new in old.domain:
+                lhs = self.lhs._subs(old, new)
+                rhs = self.rhs._subs(old, new)            
+                return self.func(lhs, rhs, given=self)
+            if old.domain_assumed is not None:
+                return self.forall((old,)).subs(old.unbounded, new)
         return self
 
     def _latex(self, p):
@@ -68,17 +96,7 @@ class Contains(BooleanFunction):
         binary_symbols = [i.binary_symbols for i in self.args[1].args if hasattr(i, 'binary_symbols') and (i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne)))]
         return set().union(*binary_symbols)
 
-    @property
-    def lhs(self):
-        """The left-hand side of the relation."""
-        return self._args[0]
-
-    @property
-    def rhs(self):
-        """The right-hand side of the relation."""
-        return self._args[1]
-
-    def split(self):
+    def split(self, *args, **kwargs):
         if self.rhs.is_Union:
             return [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
         if self.rhs.is_Intersection:
@@ -97,7 +115,10 @@ class Contains(BooleanFunction):
             else:
                 upper_bound = self.lhs <= self.rhs.stop
             upper_bound.given = lower_bound.given = self
-            return [lower_bound, upper_bound]
+            args = [lower_bound, upper_bound]
+            if self.plausible:
+                self.derivative = args
+            return args
         return self
 
     def as_set(self):
@@ -183,6 +204,9 @@ class Contains(BooleanFunction):
                 if s.stop is S.Infinity:
                     func = StrictGreaterThan if s.left_open else GreaterThan
                     return func(e, s.start, equivalent=self)
+                complement = e.domain - s
+                if complement.is_FiniteSet:
+                    return self.invert_type(e, complement, equivalent=self).simplify()                
             
         if s.is_Complement and s.args[1].is_FiniteSet and len(s.args[1]) == 1:
             domain_assumed = e.domain_assumed
@@ -197,7 +221,7 @@ class Contains(BooleanFunction):
         from sympy.concrete.expr_with_limits import Exists
         e, S = self.args
         x = S.element_symbol(self.free_symbols)
-        assert x.dtype == e.dtype
+        assert x.type == e.type
         return Exists(Equality(x, e), (x, S), equivalent=self)
 
     @property
@@ -217,29 +241,29 @@ class Contains(BooleanFunction):
         if image_set is not None:
             expr, variables, base_set = image_set
             from sympy import Wild
-            variables_ = Wild(variables.name, **variables.dtype.dict)
+            variables_ = Wild(variables.name, **variables.type.dict)
             assert variables_.shape == variables.shape
             e = e.subs_limits_with_epitome(expr)
             dic = e.match(expr.subs(variables, variables_))
             if dic:
                 variables_ = dic[variables_]
-                if variables.dtype != variables_.dtype:
+                if variables.type != variables_.type:
                     assert len(variables.shape) == 1
                     variables_ = variables_[:variables.shape[-1]]
                 return Contains(variables_, base_set, equivalent=self)
 
-            if e.has(variables):
+            if e._has(variables):
                 _variables = base_set.element_symbol(e.free_symbols)
-                assert _variables.dtype == variables.dtype
+                assert _variables.type == variables.type
                 expr = expr._subs(variables, _variables)
                 variables = _variables
-            assert not e.has(variables)
+            assert not e._has(variables)
             return Exists(Equality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
 
         if S.is_UNION:
             for v in S.variables:
                 if self.lhs._has(v):
-                    _v = v.generate_free_symbol(self.free_symbols, **v.dtype.dict)
+                    _v = v.generate_free_symbol(self.free_symbols, **v.type.dict)
                     S = S.limits_subs(v, _v)
 
             contains = Contains(self.lhs, S.function).simplify()
@@ -248,21 +272,23 @@ class Contains(BooleanFunction):
 
         return self
 
-    def asSubset(self):
-        return Subset(self.lhs.set, self.rhs, equivalent=self)
-
     def __and__(self, other):
         """Overloading for & operator"""
         if other.is_NotContains:
             if self.element == other.element:
                 s = self.set - other.set
                 return self.func(self.element, s, equivalent=[self, other])
-        if other.is_Contains:
+        elif other.is_Contains:
             if self.element == other.element:
                 s = self.set & other.set
                 return self.func(self.element, s, equivalent=[self, other])
+            elif self.rhs == other.rhs:                
+                return Subset(self.lhs.set | other.lhs.set, self.rhs, equivalent=[self, other])
+        elif other.is_Subset:
+            if self.rhs == other.lhs:
+                return self.func(self.lhs, other.rhs, equivalent=[self, other])
 
-        return BooleanFunction.__and__(self, other)
+        return BinaryCondition.__and__(self, other)
 
     def __or__(self, other):
         if other.is_Contains:
@@ -271,7 +297,7 @@ class Contains(BooleanFunction):
             if x == y:                
                 return self.func(x, X | Y, given=[self, other]).simplify()
             
-        return BooleanFunction.__or__(self, other)
+        return BinaryCondition.__or__(self, other)
 
     def as_KroneckerDelta(self):
         x, domain = self.args 
@@ -292,8 +318,43 @@ class Contains(BooleanFunction):
     def T(self):
         assert len(self.lhs.shape) <= 1
         return self.func(self.lhs.T, self.rhs, equivalent=self)
-        
-class NotContains(BooleanFunction):
+      
+    def domain_conditioned(self, x):
+        domain = x.domain & self.domain_defined(x)
+        if x == self.lhs:
+            return self.rhs
+        interval = self.rhs
+        if interval.is_Interval:                
+            poly = self.lhs.as_poly(x)
+            if poly is not None and poly.degree() == 1:
+                c1 = poly.nth(1)
+                c0 = poly.nth(0)
+                if interval.is_integer:
+                    if c1 == 1:
+                        interval = interval.copy(start=interval.start - c0, stop=interval.stop - c0)
+                        return domain & interval
+                    elif c1 == -1:
+                        interval = interval.copy(start=c0 - interval.stop, stop=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
+                        return domain & interval                            
+                else:
+                    if c1 > 0:
+                        interval.func(start=(interval.start - c0) / c1, stop=(interval.stop - c0) / c1)
+                        return domain & interval
+                    elif c1 < 0:
+                        interval.func(start=(interval.stop - c0) / c1, stop=(interval.start - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
+                        return domain & interval             
+      
+    def simplify_forall(self, forall):
+        function, self = self, forall
+        if function.is_Contains:
+            x = function.lhs
+            limits_dict = self.limits_dict            
+            if x in limits_dict:
+                domain = limits_dict[x]
+                if domain in function.rhs:
+                    return S.BooleanTrue.copy(equivalent=self)
+                        
+class NotContains(BinaryCondition):
     """
     Asserts that x is not an element of the set S
 
@@ -316,6 +377,12 @@ class NotContains(BooleanFunction):
     .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
     """
     invert_type = Contains
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
 
     def subs(self, *args, **kwargs):
         if len(args) == 1:
@@ -327,8 +394,34 @@ class NotContains(BooleanFunction):
                 return self
             if eq.is_ConditionalBoolean:
                 return self.bfn(self.subs, eq)
+            return self
 
-        return self
+        old, new = args
+        new = sympify(new)
+        if self.plausible:
+
+            lhs, rhs = self.lhs._subs(old, new), self.rhs._subs(old, new)
+            if hasattr(new, 'has') and new.has(old):
+                eq = self.func(lhs, rhs, substituent=self)
+            else:
+                eq = self.func(lhs, rhs, given=self)
+            derivative = self.derivative
+            if derivative is None:
+                derivative = {}
+                self.derivative = derivative
+
+            if old not in derivative:
+                derivative[old] = {}
+
+            derivative[old][new] = eq
+            return eq
+        if old.domain_assumed is not None:
+            if new in old.domain_assumed:
+                ...
+            else:
+                return self.forall((old,)).subs(old.unbounded, new)
+
+        return self.func(self.lhs.subs(*args, **kwargs).simplify(), self.rhs.subs(*args, **kwargs).simplify())
 
     def _latex(self, p):
         return r"%s \not\in %s" % tuple(p._print(a) for a in self.args)
@@ -345,21 +438,6 @@ class NotContains(BooleanFunction):
         from sympy.core.sympify import sympify
         if not isinstance(ret, Contains) and (ret in (S.true, S.false) or ret.is_set):
             return sympify(not ret)
-
-#     @property
-#     def binary_symbols(self):
-#         binary_symbols = [i.binary_symbols for i in self.args[1].args if hasattr(i, 'binary_symbols') and (i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne)))]
-#         return set().union(*binary_symbols)
-
-    @property
-    def lhs(self):
-        """The left-hand side of the relation."""
-        return self._args[0]
-
-    @property
-    def rhs(self):
-        """The right-hand side of the relation."""
-        return self._args[1]
 
     def as_set(self):
         return self
@@ -407,20 +485,20 @@ class NotContains(BooleanFunction):
         if image_set is not None:
             expr, variables, base_set = image_set
             from sympy import Wild
-            variables_ = Wild(variables.name, **variables.dtype.dict)
+            variables_ = Wild(variables.name, **variables.type.dict)
 
             e = e.subs_limits_with_epitome(expr)
             dic = e.match(expr.subs(variables, variables_))
             if dic:
                 variables_ = dic[variables_]
-                if variables.dtype != variables_.dtype:
+                if variables.type != variables_.type:
                     assert len(variables.shape) == 1
                     variables_ = variables_[:variables.shape[-1]]
                 return self.func(variables_, base_set, equivalent=self)
 
             if e.has(variables):
                 _variables = base_set.element_symbol(e.free_symbols)
-                assert _variables.dtype == variables.dtype
+                assert _variables.type == variables.type
                 expr = expr._subs(variables, _variables)
                 variables = _variables
             assert not e.has(variables)
@@ -429,11 +507,6 @@ class NotContains(BooleanFunction):
         condition_set = S.condition_set()
         if condition_set:
             return Or(~condition_set.condition._subs(condition_set.variable, e), ~self.func(e, condition_set.base_set), equivalent=self)
-
-        if S.is_UNION:
-            contains = self.func(self.lhs, S.function).simplify()
-            contains.equivalent = None
-            return ForAll(contains, *S.limits, equivalent=self).simplify()
 
         return self
 
@@ -458,7 +531,7 @@ class NotContains(BooleanFunction):
             if X is not None:
                 return self.func(x, X, equivalent=[self, other])      
             
-        return BooleanFunction.__and__(self, other)
+        return BinaryCondition.__and__(self, other)
 
     def __or__(self, other):
         if other.is_NotContains:
@@ -467,7 +540,7 @@ class NotContains(BooleanFunction):
             if x == y:                
                 return self.func(x, X & Y, given=[self, other])
             
-        return BooleanFunction.__or__(self, other)
+        return BinaryCondition.__or__(self, other)
 
     def as_KroneckerDelta(self):
         x, domain = self.args 
@@ -481,23 +554,59 @@ class NotContains(BooleanFunction):
     def T(self):
         assert len(self.lhs.shape) <= 1
         return self.func(self.lhs.T, self.rhs, equivalent=self)
-    
+
+    def split(self, *args, **kwargs):
+        if self.rhs.is_Union:
+            args = [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
+            if self.plausible:
+                self.derivative = args
+            return args
+        if self.rhs.is_Intersection:
+            return [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
+        
+        if self.rhs.is_Interval:
+            if self.rhs.left_open:
+                lower_bound = self.lhs <= self.rhs.start
+            else:
+                lower_bound = self.lhs < self.rhs.start
+            if self.rhs.right_open:
+                upper_bound = self.lhs >= self.rhs.stop
+            else:
+                upper_bound = self.lhs > self.rhs.stop
+            upper_bound.imply = lower_bound.imply = self
+            return [lower_bound, upper_bound]
+        return self
+
+    def domain_conditioned(self, x):        
+        if self.lhs == x:
+            domain = x.domain & self.domain_defined(x)
+            return x.domain_conditioned(self.invert_type(x, domain - self.rhs))
+        
+    def simplify_forall(self, forall):
+        function, self = self, forall
+        if function.is_NotContains:
+            element = function.lhs
+            container = function.rhs
+            forall = self.limits_dict
+            if element in forall:
+                if forall[element] == container:
+                    return S.BooleanFalse.copy(equivalent=self)
+
+        
 Contains.invert_type = NotContains
 
 
-class Subset(BooleanFunction):
+class Subset(BinaryCondition):
     """
     Asserts that A is a subset of the set S
 
     """
-    def union_comprehension(self, *limits):
-        from sympy.concrete.expr_with_limits import UNION
-        lhs = UNION(self.lhs, *limits)
-        return self.func(lhs, self.rhs, equivalent=self)
-
-    @property
-    def reversed(self):
-        return Supset(self.rhs, self.lhs, equivalent=self)
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
 
     def simplify(self, deep=False):
         from sympy.concrete.expr_with_limits import ForAll
@@ -510,16 +619,6 @@ class Subset(BooleanFunction):
             return And(*eqs, equivalent=self)
 
         return self
-
-    @property
-    def lhs(self):
-        """The left-hand side of the relation."""
-        return self._args[0]
-
-    @property
-    def rhs(self):
-        """The right-hand side of the relation."""
-        return self._args[1]
 
     def union(self, exp):
         if isinstance(exp, Subset):
@@ -543,9 +642,9 @@ class Subset(BooleanFunction):
     @classmethod
     def eval(cls, x, s):
         assert x.is_set and s.is_set, 'expecting Set, not %s' % func_name(s)
-        if x.is_Symbol and x.definition is not None:
+        if x.is_symbol and x.definition is not None:
             x = x.definition
-        if s.is_Symbol and s.definition is not None:
+        if s.is_symbol and s.definition is not None:
             s = s.definition
 
         if x == s:
@@ -557,14 +656,14 @@ class Subset(BooleanFunction):
             for e in x._argset:
                 if e in s:
                     return S.true
-        if x == S.EmptySet:
+        if x.is_EmptySet:
             return S.true
 
         if x.is_ConditionSet:
             sym, condition, base_set = x.variable, x.condition, x.base_set
             if s.is_ConditionSet:                
                 _sym, _condition, _base_set = s.variable, s.condition, s.base_set
-                if sym.dtype == _sym.dtype and (base_set == _base_set or base_set in _base_set):
+                if sym.type == _sym.type and (base_set == _base_set or base_set in _base_set):
                     if sym != _sym:
                         _condition = _condition._subs(_sym, sym)
                     if condition == _condition:
@@ -581,7 +680,7 @@ class Subset(BooleanFunction):
         
         if s.is_CartesianSpace:
             if x.is_Symbol:
-                if x.element_type.as_Set() in s:
+                if x.etype.as_Set() in s:
                     return S.true
                 
     @property
@@ -656,20 +755,82 @@ class Subset(BooleanFunction):
                     return Equality(A, B, equivalent=[self, eq])
             elif eq.is_ConditionalBoolean:
                 return self.bfn(self.subs, eq)
+            return self
+
+        old, new = args
+        new = _sympify(new)
+
+        if self.plausible:
+
+            lhs, rhs = self.lhs._subs(old, new), self.rhs._subs(old, new)
+            if hasattr(new, 'has') and new.has(old):
+                eq = self.func(lhs, rhs, substituent=self)
+            else:
+                eq = self.func(lhs, rhs, given=self)
+            derivative = self.derivative
+            if derivative is None:
+                derivative = {}
+                self.derivative = derivative
+
+            if old not in derivative:
+                derivative[old] = {}
+
+            derivative[old][new] = eq
+            return eq
+        
+        if old.is_symbol and new in old.domain:
+            lhs = self.lhs._subs(old, new)
+            rhs = self.rhs._subs(old, new)            
+            return self.func(lhs, rhs, given=self)
 
         return self
 
+    def __and__(self, other):
+        if other.is_Supset:
+            if self.args == other.args:
+                return Equality(*self.args, equivalent=[self, other])
+        elif other.is_Subset:
+            lhs, rhs = self.args
+            if (rhs, lhs) == other.args:
+                return Equality(*self.args, equivalent=[self, other])
+            elif rhs == other.rhs:
+                return self.func(lhs | other.lhs, rhs, equivalent=[self, other])
+            elif rhs == other.lhs:
+                return self.func(lhs, other.rhs, equivalent=[self, other]).simplify()
+        elif other.is_Contains:
+            if other.rhs == self.lhs:
+                return other.func(other.lhs, self.rhs, equivalent=[self, other]).simplify()
+        return BinaryCondition.__and__(self, other)
 
-class NotSubset(BooleanFunction):
+    def domain_conditioned(self, x):
+        if self.lhs.is_FiniteSet:
+            if x.type in self.lhs.etype:
+                if x in self.lhs:
+                    return Contains(x, self.rhs).domain_conditioned(x)
+
+    def simplify_forall(self, forall):
+        function, self = self, forall
+        if function.lhs.is_FiniteSet:
+            function, S = function.lhs, function.rhs
+            res = forall.simplify_int_limits(function)
+            if res:
+                function, limits = res            
+                function = Subset(function, S).simplify()
+                return self.func(function, *limits, equivalent=self).simplify()
+
+
+class NotSubset(BinaryCondition):
     """
     Asserts that A is a subset of the set S
 
     """
     invert_type = Subset
-
-    @property
-    def reversed(self):
-        return NotSupset(self.rhs, self.lhs, equivalent=self)
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
 
     def simplify(self, deep=False):
         if self.lhs.is_UNION:
@@ -680,16 +841,6 @@ class NotSubset(BooleanFunction):
             return NotContains(self.lhs.arg, self.rhs, equivalent=self).simplify()            
              
         return self
-
-    @property
-    def lhs(self):
-        """The left-hand side of the relation."""
-        return self._args[0]
-
-    @property
-    def rhs(self):
-        """The right-hand side of the relation."""
-        return self._args[1]
 
     def union(self, exp):
         return self
@@ -792,11 +943,18 @@ class NotSubset(BooleanFunction):
 Subset.invert_type = NotSubset
 
 
-class Supset(BooleanFunction):
+class Supset(BinaryCondition):
     """
     Asserts that A is a super set of the set S
 
     """
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
+    
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
@@ -814,17 +972,48 @@ class Supset(BooleanFunction):
                 if A == _A and _B == B:
                     return Equality(A, B, equivalent=[self, eq])
 
+            return self
+        old, new = args
+        new = _sympify(new)
+
+        if self.plausible:
+
+            lhs, rhs = self.lhs._subs(old, new), self.rhs._subs(old, new)
+            if hasattr(new, 'has') and new.has(old):
+                eq = self.func(lhs, rhs, substituent=self)
+            else:
+                eq = self.func(lhs, rhs, given=self)
+            derivative = self.derivative
+            if derivative is None:
+                derivative = {}
+                self.derivative = derivative
+
+            if old not in derivative:
+                derivative[old] = {}
+
+            derivative[old][new] = eq
+            return eq
+        
+        if old.is_symbol and new in old.domain:
+            lhs = self.lhs._subs(old, new)
+            rhs = self.rhs._subs(old, new)            
+            return self.func(lhs, rhs, given=self)
+
         return self
-
-    @property
-    def reversed(self):
-        return Subset(self.rhs, self.lhs, equivalent=self)
-
-    def union_comprehension(self, *limits):
-        from sympy.concrete.expr_with_limits import UNION
-        rhs = UNION(self.rhs, *limits)
-        return self.func(self.lhs, rhs, equivalent=self)
-
+    
+    def __and__(self, other):
+        if other.is_Subset:
+            if self.args == other.args:
+                return Equality(*self.args, equivalent=[self, other])
+        elif other.is_Supset:
+            lhs, rhs = self.args
+            if (rhs, lhs) == other.args:
+                return Equality(*self.args, equivalent=[self, other])
+            elif lhs == other.lhs:
+                return self.func(lhs, rhs | other.rhs, equivalent=[self, other])
+            
+        return BinaryCondition.__and__(self, other)
+    
     def simplify(self, deep=False):
         from sympy.concrete.expr_with_limits import ForAll
         if self.rhs.is_UNION:
@@ -836,16 +1025,6 @@ class Supset(BooleanFunction):
             return And(*eqs, equivalent=self)
         return self
 
-    @property
-    def lhs(self):
-        """The left-hand side of the relation."""
-        return self._args[0]
-
-    @property
-    def rhs(self):
-        """The right-hand side of the relation."""
-        return self._args[1]
-
     def _sympystr(self, p):
 #         ⊃        
         return '%s ⊇ %s' % tuple(p._print(x) for x in self.args)
@@ -856,13 +1035,6 @@ class Supset(BooleanFunction):
     @classmethod
     def eval(cls, x, s):
         return Subset.eval(s, x)
-#     @property
-#     def binary_symbols(self):
-#         binary_symbols = [i.binary_symbols for i in self.args[1].args if hasattr(i, 'binary_symbols') and (i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne)))]
-#         return set().union(*binary_symbols)
-#         return set().union(*[i.binary_symbols
-#             for i in self.args[1].args
-#             if i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne))])
 
     def as_set(self):
         return self
@@ -915,13 +1087,19 @@ class Supset(BooleanFunction):
         from sympy.concrete.expr_with_limits import ForAll
         return ForAll(Contains(e, A), (e, B), equivalent=self).simplify()
 
-
-class NotSupset(BooleanFunction):
+class NotSupset(BinaryCondition):
     """
     Asserts that A is a super set of the set S
 
     """
     invert_type = Supset
+
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
 
     def subs(self, *args, **kwargs):
         if len(args) == 1:
@@ -942,25 +1120,11 @@ class NotSupset(BooleanFunction):
 
         return self
 
-    @property
-    def reversed(self):
-        return NotSubset(self.rhs, self.lhs, equivalent=self)
-
     def simplify(self, deep=False):
         from sympy.concrete.expr_with_limits import Exists
         if self.rhs.is_UNION:
             return Exists(self.func(self.lhs, self.rhs.function), *self.rhs.limits, equivalent=self).simplify()
         return self
-
-    @property
-    def lhs(self):
-        """The left-hand side of the relation."""
-        return self._args[0]
-
-    @property
-    def rhs(self):
-        """The right-hand side of the relation."""
-        return self._args[1]
 
     def _sympystr(self, p):
 #         ⊋
@@ -1026,4 +1190,9 @@ class NotSupset(BooleanFunction):
 
 
 Supset.invert_type = NotSupset
+
+Supset.reversed_type = Subset
+Subset.reversed_type = Supset
+NotSubset.reversed_type = NotSupset
+NotSupset.reversed_type = NotSubset
 

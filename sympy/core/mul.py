@@ -5,13 +5,13 @@ import operator
 from .sympify import sympify
 from .basic import Basic
 from .singleton import S
-from .operations import AssocOp
+from .operations import AssocOp, AssocOpDispatcher
 from .cache import cacheit
-from .logic import fuzzy_not, _fuzzy_group
-from .compatibility import reduce, range
+from .logic import fuzzy_not, _fuzzy_group, fuzzy_and
+from .compatibility import reduce
 from .expr import Expr
 from .parameters import global_parameters
-from sympy.core.logic import fuzzy_or
+
 
 
 # internal marker to indicate:
@@ -27,8 +27,6 @@ class NC_Marker:
 
 # Key for sorting commutative args in canonical order
 _args_sortkey = cmp_to_key(Basic.compare)
-
-
 def _mulsort(args):
     # in-place sorting of args
     args.sort(key=_args_sortkey)
@@ -90,11 +88,25 @@ def _unevaluated_Mul(*args):
 
 class Times(Expr, AssocOp):
 
-    __slots__ = []
+    __slots__ = ()
 
     is_Mul = True
-
-    identity = 1
+    
+    is_commutative = True
+    
+    def __neg__(self):
+        c, args = self.as_coeff_mul()
+        c = -c
+        if c is not S.One:
+            if args[0].is_Number:
+                args = list(args)
+                if c is S.NegativeOne:
+                    args[0] = -args[0]
+                else:
+                    args[0] *= c
+            else:
+                args = (c,) + args
+        return self._from_args(args, self.is_commutative)
     
     def _coeff_isneg(self):
         """Return True if the leading Number is negative.
@@ -216,10 +228,14 @@ class Times(Expr, AssocOp):
                 r, b = b.as_coeff_Mul()
                 if b.is_Add:
                     if r is not S.One:  # 2-arg hack
-                        # leave the Mul as a Mul
-                        rv = [cls(a * r, b, evaluate=False)], [], None
-#                     elif global_parameters.distribute and b.is_commutative:
-                    elif global_parameters.distribute:
+                        # leave the Mul as a Mul?
+                        ar = a*r
+                        if ar is S.One:
+                            arb = b
+                        else:
+                            arb = cls(a*r, b, evaluate=False)
+                        rv = [arb], [], None
+                    elif global_parameters.distribute:# and b.is_commutative:
                         r, b = b.as_coeff_Add()
                         bargs = [_keep_coeff(a, bi) for bi in Add.make_args(b)]
                         _addsort(bargs)
@@ -290,7 +306,7 @@ class Times(Expr, AssocOp):
 
             # 3
             elif o.is_Number:
-                if o is S.NaN or coeff is S.ComplexInfinity and o is S.Zero:
+                if o is S.NaN or coeff is S.ComplexInfinity and o.is_zero:
                     # we know for sure the result will be nan
                     return [S.NaN], [], None
                 elif coeff.is_Number or isinstance(coeff, AccumBounds):  # it could be zoo
@@ -308,9 +324,6 @@ class Times(Expr, AssocOp):
                 if not coeff:
                     # 0 * zoo = NaN
                     return [S.NaN], [], None
-                if coeff is S.ComplexInfinity:
-                    # zoo * zoo = zoo
-                    return [S.ComplexInfinity], [], None
                 coeff = S.ComplexInfinity
                 continue
 
@@ -403,7 +416,7 @@ class Times(Expr, AssocOp):
         def _gather(c_powers):
             common_b = {}  # b:e
             for b, e in c_powers:
-                co = e.as_coeff_Mul()
+                co = e.as_coeff_Mul()                    
                 common_b.setdefault(b, {}).setdefault(
                     co[1], []).append(co[0])
             for b, d in common_b.items():
@@ -472,8 +485,8 @@ class Times(Expr, AssocOp):
                 new_c_powers.append((b, e))
             # there might have been a change, but unless the base
             # matches some other base, there is nothing to do
-            if changed and len(set(
-                    b for b, e in new_c_powers)) != len(new_c_powers):
+            if changed and len({
+                    b for b, e in new_c_powers}) != len(new_c_powers):
                 # start over again
                 c_part = []
                 c_powers = _gather(new_c_powers)
@@ -550,7 +563,7 @@ class Times(Expr, AssocOp):
                         if obj.is_Number:
                             coeff *= obj
                         else:
-                            assert obj.is_Power
+                            assert obj.is_Pow
                             bi, ei = obj.args
                             pnew[ei].append(bi)
 
@@ -636,7 +649,7 @@ class Times(Expr, AssocOp):
                                                   c.is_extended_real is not None)]
 
         # 0
-        elif coeff is S.Zero:
+        elif coeff.is_zero:
             # we know for sure the result will be 0 except the multiplicand
             # is infinity or a matrix
             if any(isinstance(c, MatrixExpr) for c in nc_part):
@@ -670,10 +683,10 @@ class Times(Expr, AssocOp):
 
         return c_part, nc_part, order_symbols
 
-    def _eval_power(b, e):
+    def _eval_power(self, e):
 
         # don't break up NC terms: (A*B)**3 != A**3*B**3, it is A*B*A*B*A*B
-        cargs, nc = b.args_cnc(split_1=False)
+        cargs, nc = self.args_cnc(split_1=False)
 
         if e.is_Integer:
             return Mul(*[Pow(b, e, evaluate=False) for b in cargs]) * \
@@ -681,8 +694,8 @@ class Times(Expr, AssocOp):
         if e.is_Rational and e.q == 2:
             from sympy.core.power import integer_nthroot
             from sympy.functions.elementary.complexes import sign
-            if b.is_imaginary:
-                a = b.as_real_imag()[1]
+            if self.is_imaginary:
+                a = self.as_real_imag()[1]
                 if a.is_Rational:
                     n, d = abs(a / 2).as_numer_denom()
                     n, t = integer_nthroot(n, 2)
@@ -692,7 +705,7 @@ class Times(Expr, AssocOp):
                             r = sympify(n) / d
                             return _unevaluated_Mul(r ** e.p, (1 + sign(a) * S.ImaginaryUnit) ** e.p)
 
-        p = Pow(b, e, evaluate=False)
+        p = Pow(self, e, evaluate=False)
 
         if e.is_Rational or e.is_Float:
             return p._eval_expand_power_base()
@@ -748,6 +761,9 @@ class Times(Expr, AssocOp):
         - if you want the coefficient when self is treated as an Add
           then use self.as_coeff_add()[0]
 
+        Examples
+        ========
+
         >>> from sympy.abc import x, y
         >>> (3*x*y).as_two_terms()
         (3, x*y)
@@ -762,43 +778,38 @@ class Times(Expr, AssocOp):
         else:
             return args[0], self._new_rawargs(*args[1:])
 
-    def as_one_term(self):
-        from sympy import Product
+    def _detect_multiple_products(self):
+        last_product = None
         function = []
         limits = None
         coeff = []
         for arg in self.args:
-            if isinstance(arg, Product):                
+            if arg.is_Product:
+                last_product = arg                
                 if limits is None:
                     limits = arg.limits
                     function.append(arg.function)
                 else:
                     if len(arg.limits) > len(limits):
                         if arg.limits[len(limits):] == limits:
-                            function.append(Product(arg.function, *arg.limits[:len(limits)]))
+                            function.append(arg.func(arg.function, *arg.limits[:len(limits)]))
                         else:
-                            return self
+                            return 
                     elif len(arg.limits) < len(limits):
                         if limits[len(limits):] == arg.limits:
-                            function = [Product(func, *limits[:len(arg.limits)]) for func in function]
+                            function = [arg.func(func, *limits[:len(arg.limits)]) for func in function]
                             function.append(arg.function)
                             limits = arg.limits
                         else:
-                            return self
+                            return
                     elif limits != arg.limits:
-                        return self
+                        return 
                 continue
 
             coeff.append(arg)
             
-        if len(function) > 1:
-            prod = Product(self.func(*function).simplify(), *limits)
-            if coeff:
-                return self.func(*coeff) * prod
-            return prod
+        return function, limits, coeff, last_product
         
-        return self
-
     @cacheit
     def as_coefficients_dict(self):
         """Return a dictionary mapping terms to their coefficient.
@@ -827,17 +838,11 @@ class Times(Expr, AssocOp):
         return d
 
     @cacheit
-    def as_coeff_mul(self, *deps, **kwargs):
-        rational = kwargs.pop('rational', True)
+    def as_coeff_mul(self, *deps, rational=True, **kwargs):
         if deps:
-            l1 = []
-            l2 = []
-            for f in self.args:
-                if f.has(*deps):
-                    l2.append(f)
-                else:
-                    l1.append(f)
-            return self._new_rawargs(*l1), tuple(l2)
+            from sympy.utilities.iterables import sift
+            l1, l2 = sift(self.args, lambda x: x.has(*deps), binary=True)
+            return self._new_rawargs(*l2), tuple(l1)
         args = self.args
         if args[0].is_Number:
             if not rational or args[0].is_Rational:
@@ -847,7 +852,9 @@ class Times(Expr, AssocOp):
         return S.One, args
 
     def as_coeff_Mul(self, rational=False):
-        """Efficiently extract the coefficient of a product. """
+        """
+        Efficiently extract the coefficient of a product.
+        """
         coeff, args = self.args[0], self.args[1:]
 
         if coeff.is_Number:
@@ -900,7 +907,7 @@ class Times(Expr, AssocOp):
         r, i = (reco * re(m), reco * im(m))
         if addterms == 1:
             if m == 1:
-                if imco is S.Zero:
+                if imco.is_zero:
                     return (reco, S.Zero)
                 else:
                     return (S.Zero, reco * imco)
@@ -996,7 +1003,7 @@ class Times(Expr, AssocOp):
         if not isinstance(s, AppliedUndef) and not isinstance(s, Symbol):
             # other types of s may not be well behaved, e.g.
             # (cos(x)*sin(y)).diff([[x, y, z]])
-            return super(Mul, self)._eval_derivative_n_times(s, n)
+            return super()._eval_derivative_n_times(s, n)
         args = self.args
         m = len(args)
         if isinstance(n, (int, Integer)):
@@ -1047,27 +1054,33 @@ class Times(Expr, AssocOp):
 
     def matches(self, expr, repl_dict={}, old=False):
         expr = sympify(expr)
+        repl_dict = repl_dict.copy()
 #         if self.is_commutative and expr.is_commutative:
         return AssocOp._matches_commutative(self, expr, repl_dict, old)
 #         elif self.is_commutative is not expr.is_commutative:
 #             return None
         c1, nc1 = self.args_cnc()
         c2, nc2 = expr.args_cnc()
-        repl_dict = repl_dict.copy()
-        if c1:
-            if not c2:
-                c2 = [1]
-            a = self.func(*c1)
-            if isinstance(a, AssocOp):
-                repl_dict = a._matches_commutative(self.func(*c2), repl_dict, old)
-            else:
-                repl_dict = a.matches(self.func(*c2), repl_dict)
-        if repl_dict:
-            a = self.func(*nc1)
-            if isinstance(a, self.func):
-                repl_dict = a._matches(self.func(*nc2), repl_dict)
-            else:
-                repl_dict = a.matches(self.func(*nc2), repl_dict)
+        c1, c2 = [c or [1] for c in [c1, c2]]
+
+        # TODO: Should these be self.func?
+        comm_mul_self = Mul(*c1)
+        comm_mul_expr = Mul(*c2)
+
+        repl_dict = comm_mul_self.matches(comm_mul_expr, repl_dict, old)
+
+        # If the commutative arguments didn't match and aren't equal, then
+        # then the expression as a whole doesn't match
+        if repl_dict is None and c1 != c2:
+            return None
+
+        # Now match the non-commutative arguments, expanding powers to
+        # multiplications
+        nc1 = Mul._matches_expand_pows(nc1)
+        nc2 = Mul._matches_expand_pows(nc2)
+
+        repl_dict = Mul._matches_noncomm(nc1, nc2, repl_dict)
+
         return repl_dict or None
 
     def _matches(self, expr, repl_dict={}):
@@ -1126,6 +1139,137 @@ class Times(Expr, AssocOp):
             if d is None:
                 return None
         return d
+
+    @staticmethod
+    def _matches_expand_pows(arg_list):
+        new_args = []
+        for arg in arg_list:
+            if arg.is_Pow and arg.exp > 0:
+                new_args.extend([arg.base] * arg.exp)
+            else:
+                new_args.append(arg)
+        return new_args
+
+    @staticmethod
+    def _matches_noncomm(nodes, targets, repl_dict={}):
+        """Non-commutative multiplication matcher.
+
+        `nodes` is a list of symbols within the matcher multiplication
+        expression, while `targets` is a list of arguments in the
+        multiplication expression being matched against.
+        """
+        repl_dict = repl_dict.copy()
+        # List of possible future states to be considered
+        agenda = []
+        # The current matching state, storing index in nodes and targets
+        state = (0, 0)
+        node_ind, target_ind = state
+        # Mapping between wildcard indices and the index ranges they match
+        wildcard_dict = {}
+        repl_dict = repl_dict.copy()
+
+        while target_ind < len(targets) and node_ind < len(nodes):
+            node = nodes[node_ind]
+
+            if node.is_Wild:
+                Mul._matches_add_wildcard(wildcard_dict, state)
+
+            states_matches = Mul._matches_new_states(wildcard_dict, state,
+                                                     nodes, targets)
+            if states_matches:
+                new_states, new_matches = states_matches
+                agenda.extend(new_states)
+                if new_matches:
+                    for match in new_matches:
+                        repl_dict[match] = new_matches[match]
+            if not agenda:
+                return None
+            else:
+                state = agenda.pop()
+                node_ind, target_ind = state
+
+        return repl_dict
+
+    @staticmethod
+    def _matches_add_wildcard(dictionary, state):
+        node_ind, target_ind = state
+        if node_ind in dictionary:
+            begin, end = dictionary[node_ind]
+            dictionary[node_ind] = (begin, target_ind)
+        else:
+            dictionary[node_ind] = (target_ind, target_ind)
+
+    @staticmethod
+    def _matches_new_states(dictionary, state, nodes, targets):
+        node_ind, target_ind = state
+        node = nodes[node_ind]
+        target = targets[target_ind]
+
+        # Don't advance at all if we've exhausted the targets but not the nodes
+        if target_ind >= len(targets) - 1 and node_ind < len(nodes) - 1:
+            return None
+
+        if node.is_Wild:
+            match_attempt = Mul._matches_match_wilds(dictionary, node_ind,
+                                                     nodes, targets)
+            if match_attempt:
+                # If the same node has been matched before, don't return
+                # anything if the current match is diverging from the previous
+                # match
+                other_node_inds = Mul._matches_get_other_nodes(dictionary,
+                                                               nodes, node_ind)
+                for ind in other_node_inds:
+                    other_begin, other_end = dictionary[ind]
+                    curr_begin, curr_end = dictionary[node_ind]
+
+                    other_targets = targets[other_begin:other_end + 1]
+                    current_targets = targets[curr_begin:curr_end + 1]
+
+                    for curr, other in zip(current_targets, other_targets):
+                        if curr != other:
+                            return None
+
+                # A wildcard node can match more than one target, so only the
+                # target index is advanced
+                new_state = [(node_ind, target_ind + 1)]
+                # Only move on to the next node if there is one
+                if node_ind < len(nodes) - 1:
+                    new_state.append((node_ind + 1, target_ind + 1))
+                return new_state, match_attempt
+        else:
+            # If we're not at a wildcard, then make sure we haven't exhausted
+            # nodes but not targets, since in this case one node can only match
+            # one target
+            if node_ind >= len(nodes) - 1 and target_ind < len(targets) - 1:
+                return None
+
+            match_attempt = node.matches(target)
+
+            if match_attempt:
+                return [(node_ind + 1, target_ind + 1)], match_attempt
+            elif node == target:
+                return [(node_ind + 1, target_ind + 1)], None
+            else:
+                return None
+
+    @staticmethod
+    def _matches_match_wilds(dictionary, wildcard_ind, nodes, targets):
+        """Determine matches of a wildcard with sub-expression in `target`."""
+        wildcard = nodes[wildcard_ind]
+        begin, end = dictionary[wildcard_ind]
+        terms = targets[begin:end + 1]
+        # TODO: Should this be self.func?
+        mul = Mul(*terms) if len(terms) > 1 else terms[0]
+        return wildcard.matches(mul)
+
+    @staticmethod
+    def _matches_get_other_nodes(dictionary, nodes, node_ind):
+        """Find other wildcards that may have already been matched."""
+        other_node_inds = []
+        for ind in dictionary:
+            if nodes[ind] == nodes[node_ind]:
+                other_node_inds.append(ind)
+        return other_node_inds
 
     @staticmethod
     def _combine_inverse(lhs, rhs):
@@ -1202,10 +1346,15 @@ class Times(Expr, AssocOp):
     def _eval_is_rational_function(self, syms):
         return all(term._eval_is_rational_function(syms) for term in self.args)
 
+    def _eval_is_meromorphic(self, x, a):
+        return _fuzzy_group((arg.is_meromorphic(x, a) for arg in self.args),
+                            quick_exit=True)
+
     def _eval_is_algebraic_expr(self, syms):
         return all(term._eval_is_algebraic_expr(syms) for term in self.args)
 
-    _eval_is_commutative = lambda self: _fuzzy_group(a.is_commutative for a in self.args)
+    _eval_is_commutative = lambda self: _fuzzy_group(
+        a.is_commutative for a in self.args)
     _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
 
     def _eval_is_finite(self):
@@ -1261,7 +1410,8 @@ class Times(Expr, AssocOp):
 
     def _eval_is_polar(self):
         has_polar = any(arg.is_polar for arg in self.args)
-        return has_polar and all(arg.is_polar or arg.is_positive for arg in self.args)
+        return has_polar and \
+            all(arg.is_polar or arg.is_positive for arg in self.args)
 
     def _eval_is_extended_real(self):
         return self._eval_real_imag(True)
@@ -1371,6 +1521,24 @@ class Times(Expr, AssocOp):
                 return
         return False
 
+    def _eval_is_extended_positive(self):
+        """Return True if self is positive, False if not, and None if it
+        cannot be determined.
+
+        Explanation
+        ===========
+
+        This algorithm is non-recursive and works by keeping track of the
+        sign which changes when a negative or nonpositive is encountered.
+        Whether a nonpositive or nonnegative is seen is also tracked since
+        the presence of these makes it impossible to return True, but
+        possible to return False if the end result is nonpositive. e.g.
+
+            pos * neg * nonpositive -> pos or zero -> None is returned
+            pos * neg * nonnegative -> neg or zero -> False is returned
+        """
+        return self._eval_pos_neg(1)
+
     def _eval_pos_neg(self, sign):
         saw_NON = saw_NOT = False
         for t in self.args:
@@ -1402,6 +1570,9 @@ class Times(Expr, AssocOp):
             return True
         if sign < 0:
             return False
+
+    def _eval_is_extended_negative(self):
+        return self._eval_pos_neg(-1)
 
     def _eval_is_even(self):
         is_integer = self.is_integer
@@ -1441,7 +1612,7 @@ class Times(Expr, AssocOp):
         from sympy.simplify.radsimp import fraction
 
         if not old.is_Mul:
-            return None
+            return 
 
         # try keep replacement literal so -2*x doesn't replace 4*x
         if old.args[0].is_Number and old.args[0] < 0:
@@ -1455,7 +1626,7 @@ class Times(Expr, AssocOp):
             # a -1 base (see issue 6421); all we want here are the
             # true Pow or exp separated into base and exponent
             from sympy import exp
-            if a.is_Power or isinstance(a, exp):
+            if a.is_Pow or isinstance(a, exp):
                 return a.as_base_exp()
             return a, S.One
 
@@ -1558,7 +1729,7 @@ class Times(Expr, AssocOp):
         elif len(old_c) > len(c):
             # more commutative terms
             ok = False
-        elif set(i[0] for i in old_nc).difference(set(i[0] for i in nc)):
+        elif {i[0] for i in old_nc}.difference({i[0] for i in nc}):
             # unmatched non-commutative bases
             ok = False
         elif set(old_c).difference(set(c)):
@@ -1706,8 +1877,8 @@ class Times(Expr, AssocOp):
             res += Order(x ** n, x)
         return res
 
-    def _eval_as_leading_term(self, x):
-        return self.func(*[t.as_leading_term(x) for t in self.args])
+    def _eval_as_leading_term(self, x, cdir=0):
+        return self.func(*[t.as_leading_term(x, cdir=cdir) for t in self.args])
 
     def _eval_conjugate(self):
         return self.func(*[t.conjugate() for t in self.args])
@@ -1813,6 +1984,28 @@ class Times(Expr, AssocOp):
     def as_coeff_mmul(self):
         return 1, self
 
+    @classmethod
+    def simplifyEqual(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Times object!
+        """
+        if rhs.is_Times:
+            lhs_args = [*lhs.args]
+            rhs_args = [*rhs.args]
+            intersect = set(lhs_args) & set(rhs_args)
+            if intersect:
+                hit = False
+                for arg in intersect:
+                    if arg.is_nonzero:
+                        lhs_args.remove(arg)
+                        rhs_args.remove(arg)
+                        hit = True
+                if hit:
+                    return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
+        elif rhs.is_zero:
+            return Basic.simplifyEqual(self, lhs, rhs)
+
+
     def simplifyKroneckerDelta(self):
         for arg in self.args:
             if arg.is_KroneckerDelta:
@@ -1861,7 +2054,7 @@ class Times(Expr, AssocOp):
             if this != self:
                 return this
             
-        return self
+        return self    
     
     def simplify(self, deep=False, **kwargs):
         if deep:
@@ -1874,10 +2067,22 @@ class Times(Expr, AssocOp):
                     args = [*self.args]
                     args[i] = _arg
                     return self.func(*args).simplify()
+            elif arg.is_Power:
+                b, e = arg.args
+                if e is S.NegativeOne:
+                    try:
+                        j = self.args.index(-b)
+                        args = [*self.args]
+                        args[i] = -1              
+                        del args[j]
+                        return self.func(*args).simplify()
+                    except:
+                        ...
+                        
         a = self.args[0]
         b = self.args[1]
         # dissolve the initial minus sign
-        if a.is_Number and a.is_extended_negative and isinstance(b, Add):
+        if a.is_Number and a._coeff_isneg() and isinstance(b, Add):
             return self.func(*(b.func(*(arg * a for arg in b.args)),) + self.args[2:])
 
         infinity = []
@@ -1954,14 +2159,6 @@ class Times(Expr, AssocOp):
                 arr += [n ** coeff for n in expr]
             return self.func(*arr + coeffs).simplify()
         
-        if len(dic) == 1 and coeffs:
-            prod, *_ = dic.values()
-            if len(prod) == 1:
-                prod, *_ = prod
-                coeff = self.func(*coeffs)
-                prod = prod.try_absorb(coeff)
-                if prod:
-                    return prod
         return self
 
     def prod_result(self, positive):
@@ -1979,9 +2176,8 @@ class Times(Expr, AssocOp):
         integral = []
         function = []
         free_symbols = self.free_symbols
-        from sympy.concrete.expr_with_limits import AddWithLimits
         for arg in self.args:
-            if isinstance(arg, AddWithLimits):
+            if arg.is_AddWithLimits:
                 integral.append(arg)
             else:
                 function.append(arg)
@@ -1997,7 +2193,7 @@ class Times(Expr, AssocOp):
                     x = limit[0]
                     if x in var_list:
                         _x = x.generate_free_symbol(free_symbols, integer=x.is_integer)
-                        it = it.subs(x, _x)
+                        it = it.limits_subs(x, _x)
 
                 limits += it.limits
                 if isinstance(it.function, Mul):
@@ -2025,22 +2221,6 @@ class Times(Expr, AssocOp):
         i = -1
         for index, arg in enumerate(self.args):
             if isinstance(arg, summations.Sum) :
-                summation = arg
-                i = index
-
-        if summation is None:
-            return None, None
-        args = self.args[:i] + self.args[i + 1:]
-
-        return self.func(*args), summation
-
-    def as_Integral(self):
-        from sympy import Integral
-
-        summation = None
-        i = -1
-        for index, arg in enumerate(self.args):
-            if isinstance(arg, Integral) :
                 summation = arg
                 i = index
 
@@ -2116,24 +2296,6 @@ class Times(Expr, AssocOp):
                 return arg.func(function, *arg.limits)
         return self
         
-    def _eval_is_extended_negative(self):
-        return self._eval_pos_neg(-1)
-
-    def _eval_is_extended_positive(self):
-        """Return True if self is positive, False if not, and None if it
-        cannot be determined.
-
-        This algorithm is non-recursive and works by keeping track of the
-        sign which changes when a negative or nonpositive is encountered.
-        Whether a nonpositive or nonnegative is seen is also tracked since
-        the presence of these makes it impossible to return True, but
-        possible to return False if the end result is nonpositive. e.g.
-
-            pos * neg * nonpositive -> pos or zero -> None is returned
-            pos * neg * nonnegative -> neg or zero -> False is returned
-        """
-        return self._eval_pos_neg(1)
-
     def _latex(self, p):
         from sympy.core.power import Pow
         include_parens = False
@@ -2310,6 +2472,17 @@ class Times(Expr, AssocOp):
         for arg in self.args:
             yield from arg.enumerate_KroneckerDelta()
 
+    def _eval_inverse(self):
+        return self.func(*[arg.inverse() for arg in self.args])        
+
+    @classmethod
+    def rewrite_from_Exp(cls, self):
+        if self.arg.is_Plus:
+            return cls(*(self.func(arg) for arg in self.args[0].args))
+        return self
+    
+mul = AssocOpDispatcher('mul')
+
 Mul = Times
 
     
@@ -2400,14 +2573,12 @@ def _keep_coeff(coeff, factors, clear=True, sign=False):
 
 def expand_2arg(e):
     from sympy.simplify.simplify import bottom_up
-
     def do(e):
         if e.is_Mul:
             c, r = e.as_coeff_Mul()
             if c.is_Number and r.is_Add:
                 return _unevaluated_Add(*[c * ri for ri in r.args])
         return e
-
     return bottom_up(e, do)
 
 

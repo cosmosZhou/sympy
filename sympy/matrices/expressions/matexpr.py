@@ -11,6 +11,7 @@ from sympy.functions import conjugate, adjoint
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices import ShapeError
 from sympy.simplify import simplify
+from sympy.core.logic import _fuzzy_group
 
 
 def _sympifyit(arg, retval=None):
@@ -213,17 +214,6 @@ class MatrixExpr(Expr):
     def conjugate(self):
         return conjugate(self)
 
-#     def transpose(self):
-#         from sympy.matrices.expressions.transpose import transpose
-#         return transpose(self)
-
-#     T = property(transpose, None, None, 'Matrix transposition.')
-
-    def inverse(self):
-        return self._eval_inverse()
-
-    inv = inverse
-
     @property
     def I(self):
         return self.inverse()
@@ -252,7 +242,7 @@ class MatrixExpr(Expr):
 #                     return MatrixSlice(self, i, j)
                 i, j = _sympify(i), _sympify(j)
                 if self.valid_index(i, j) != False:
-                    return self._entry(i, j)
+                    return self._entry(i, j, expand=False)
                 else:
                     raise IndexError("Invalid indices (%s, %s)" % (i, j))
                 
@@ -815,7 +805,7 @@ class Identity(MatrixExpr):
         return self.args[0]
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
 
@@ -959,7 +949,7 @@ class ZeroMatrix(MatrixExpr):
     __bool__ = __nonzero__
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
 
@@ -1212,10 +1202,10 @@ class Concatenate(MatrixExpr):
     is_Concatenate = True
     
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         dtype = None
         for arg in self.args:
-            _dtype = arg.atomic_dtype
+            _dtype = arg.dtype
             if dtype is None or dtype in _dtype:
                 dtype = _dtype
         return dtype
@@ -1278,7 +1268,7 @@ class Concatenate(MatrixExpr):
 
     def __getitem__(self, key):
         from sympy.functions.elementary.piecewise import Piecewise
-        if not isinstance(key, tuple) and isinstance(key, slice):
+        if isinstance(key, slice):
             start, stop = key.start, key.stop
             if start is None:
                 start = 0
@@ -1312,31 +1302,36 @@ class Concatenate(MatrixExpr):
             if len(args) == 0:
                 return ZeroMatrix(*self.shape)
             return self.func(*args)
-        if isinstance(key, tuple) and len(key) == 2:
-            i, j = key
-            if isinstance(i, slice) or isinstance(j, slice):
-                from sympy.matrices.expressions.slice import MatrixSlice
-                return MatrixSlice(self, i, j)
-            i, j = _sympify(i), _sympify(j)
-            if self.valid_index(i, j) != False:                
-                args = []
-                length = 0
-                for arg in self.args:
-                    _length = length
-                    length += arg.rows
-                    cond = i < length
-                    if len(arg.shape) == 1:
-                        args.append([arg[j], cond])
-                    else:                        
-                        if cond.is_BooleanFalse:
-                            continue                         
-                        args.append([arg[i - _length, j], cond])
-                        
-                args[-1][-1] = True
-                return Piecewise(*args)
-            else:
-                raise IndexError("Invalid indices (%s, %s)" % (i, j))
-        elif isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
+        if isinstance(key, tuple):
+            if len(key) == 1:
+                key = key[0]
+                
+            elif len(key) == 2:
+                i, j = key
+                if isinstance(i, slice) or isinstance(j, slice):
+                    from sympy.matrices.expressions.slice import MatrixSlice
+                    return MatrixSlice(self, i, j)
+                i, j = _sympify(i), _sympify(j)
+                if self.valid_index(i, j) != False:                
+                    args = []
+                    length = 0
+                    for arg in self.args:
+                        _length = length
+                        length += arg.rows
+                        cond = i < length
+                        if len(arg.shape) == 1:
+                            args.append([arg[j], cond])
+                        else:                        
+                            if cond.is_BooleanFalse:
+                                continue                         
+                            args.append([arg[i - _length, j], cond])
+                            
+                    args[-1][-1] = True
+                    return Piecewise(*args)
+                else:
+                    raise IndexError("Invalid indices (%s, %s)" % (i, j))
+                
+        if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
             rows = 0
             args = []
             for arg in self.args:
@@ -1572,9 +1567,9 @@ class Concatenate(MatrixExpr):
     def _sympystr(self, p):
         return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
 
-    def domain_defined(self, x):
-        if x.atomic_dtype.is_set:
-            return S.UniversalSet
+    def _eval_domain_defined(self, x):
+        if x.dtype.is_set:
+            return x.universalSet
         
         domain = x.domain
         for arg in self.args:
@@ -1601,6 +1596,19 @@ class Concatenate(MatrixExpr):
             return self.func(*(other * arg for arg in self.args))
         return MatrixExpr.__rmul__(self, other)
 
+    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self.args), quick_exit=True)
+
+    @classmethod
+    def rewrite_from_Slice(cls, self):
+        i_shape = self.shape[0]        
+        if isinstance(i_shape, int) or i_shape.is_Number:
+            from sympy import sympify
+            array = []
+            for i in range(i_shape):
+                array.append(self[sympify(i)])
+            return Concatenate(*array)
+            
+        return self
 
 # precondition: i > j or i < j
 class Swap(Identity):    
@@ -1646,12 +1654,6 @@ class Swap(Identity):
             return LAMBDA[i:self.n](piecewise)
         return piecewise            
 
-    def as_Piecewise(self):
-        from sympy.concrete.expr_with_limits import LAMBDA
-        i = self.generate_free_symbol(integer=True)
-        j = self.generate_free_symbol({i}, integer=True)
-        return LAMBDA[j:self.n, i:self.n](self._entry(i, j))
-        
     @property
     def i(self):
         return self.args[1]
@@ -1661,7 +1663,7 @@ class Swap(Identity):
         return self.args[2]
 
     def _eval_determinant(self):
-        from sympy import KroneckerDelta
+        
         return 2 * KroneckerDelta(self.i, self.j) - 1
 
     def _eval_transpose(self):        
@@ -1678,8 +1680,8 @@ class Swap(Identity):
     def is_lower(self):
         return self.i == self.j
 
-    def domain_defined(self, x): 
-        return self.n.domain_defined(x) & x.domain_conditioned((self.i < self.n) & (self.i >= 0) & (self.j < self.n) & (self.j >= 0))
+    def _eval_domain_defined(self, x): 
+        return self.n.domain_defined(x) & x.domain_conditioned((self.i < self.n) & (self.i >= 0) & ((self.j < self.n) & (self.j >= 0)))
 
 
 class Multiplication(Identity):

@@ -174,15 +174,15 @@ class Indexed(Expr):
     def image_set(self):
         definition = self.base.definition
         if definition is None:
-            return None
+            return
         return definition[self.indices].image_set()
 
     def element_symbol(self, excludes=set()):
-        element_type = self.element_type
-        if element_type is None:
+        etype = self.etype
+        if etype is None:
             return
 
-        return self.generate_free_symbol(excludes=excludes, **element_type.dict)
+        return self.generate_free_symbol(excludes=excludes, **etype.dict)
 
     # performing other in self
     def __contains__(self, other):
@@ -243,7 +243,7 @@ class Indexed(Expr):
 
     @property
     def is_set(self):
-        return self.base.dtype[self.indices].is_set
+        return self.base.type[self.indices].is_set
 
     def _eval_derivative(self, wrt):
         from sympy.tensor.array.ndim_array import NDimArray
@@ -484,16 +484,25 @@ class Indexed(Expr):
         
         return False
 
-    def _subs(self, old, new, **kwargs):
+    def _subs(self, old, new, **hints):
         if self.base == old:
             return new[self.indices]
-        if isinstance(old, Slice) and old.base == self.base and len(self.indices) == 1:
+        if old.is_Slice and old.base == self.base and len(self.indices) == 1:
             k = self.indices[0]
             start, stop = old.indices
             if k >= start and k < stop:
                 assert new.shape
                 return new[k - start]
-        return Expr._subs(self, old, new, **kwargs)
+        this = Expr._subs(self, old, new, **hints)
+        if this != self:
+            return this
+        if hints.get('symbol') is not False:
+            definition = self.definition
+            if definition is not None:
+                this = definition._subs(old, new, **hints)
+                if this != definition:
+                    return this
+        return self             
 
     def _eval_is_random(self):
         return self.base.is_random
@@ -514,10 +523,10 @@ class Indexed(Expr):
                 return AbstractContinuousDistribution(definition) 
 
     @property
-    def atomic_dtype(self):
-        return self.base.atomic_dtype
+    def dtype(self):
+        return self.base.dtype
 
-    def domain_defined(self, x):
+    def _eval_domain_defined(self, x):
         from sympy.sets.sets import Interval
         for i, index in enumerate(self.indices):
             if not x.shape and index._has(x):
@@ -525,11 +534,12 @@ class Indexed(Expr):
                 if diff.free_symbols & index.free_symbols:
                     continue
                 return Interval(diff, self.base.shape[i] - 1 + diff, integer=True)
-        if self.base.definition is not None:
-            return self.base.definition[self.indices].domain_defined(x)
+        definition = self.definition
+        if definition is not None:
+            return definition.domain_defined(x)
         
-        if x.atomic_dtype.is_set:
-            return S.UniversalSet
+        if x.dtype.is_set:
+            return x.universalSet
         domain = x.domain          
          
         for index in self.indices:
@@ -567,10 +577,6 @@ class Indexed(Expr):
         from sympy import Equality
         return Equality(self, self.definition, evaluate=False)
 
-    def inverse(self):
-        from sympy.matrices.expressions.inverse import Inverse
-        return Inverse(self)        
-    
     def _eval_determinant(self):
         definition = self.definition
         if definition is not None:
@@ -594,7 +600,10 @@ class Indexed(Expr):
     @property
     def domain(self):        
         if self.is_set:
-            return S.UniversalSet
+            return self.universalSet
+        definition = self.definition
+        if definition is not None:
+            return definition.domain
         
         from sympy.sets.sets import Interval
         domain = self.base.domain_assumed
@@ -620,6 +629,12 @@ class Indexed(Expr):
             from sympy import Equality
             from sympy.stats.rv import pspace
             return Equality(self, pspace(self).symbol)
+
+    def condition_set(self):
+        definition = self.definition
+        if definition is None:
+            return
+        return definition.condition_set()
 
 
 class Slice(Expr):
@@ -663,8 +678,8 @@ class Slice(Expr):
 
     @property
     def domain(self):    
-        if self.atomic_dtype.is_set:
-            return S.UniversalSet    
+        if self.dtype.is_set:
+            return self.universalSet    
 
         from sympy.sets.sets import Interval
         domain = self.base.domain_assumed
@@ -701,11 +716,10 @@ class Slice(Expr):
         index = other.indices[0]
         return index >= start and index < stop
 
-    @property
-    def set(self):
+    def set_comprehension(self, free_symbol=None):
         from sympy.concrete.expr_with_limits import UNION
 
-        i = self.generate_free_symbol(integer=True)
+        i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)
         start, stop = self.indices
         return UNION({self.base[i]}, (i, start, stop - 1))
 
@@ -739,6 +753,7 @@ class Slice(Expr):
             start, stop = args
             return base[start : stop]
 
+        assert start != stop
         return Expr.__new__(cls, base, *args, **kw_args)
 
     def __iter__(self):
@@ -772,7 +787,10 @@ class Slice(Expr):
                 start = 0
             if start == stop - 1:
                 return self[start]
-            return Slice(self, indices, **kw_args)
+            self_start, self_stop = self.indices
+            start, stop = self_start + start, self_start + stop
+            assert stop <= self_stop
+            return self.base[start: stop]
         else:
             start, stop = self.indices
             return self.base[indices + start]
@@ -933,8 +951,8 @@ class Slice(Expr):
     def expr_free_symbols(self):
         return {self}
 
-    def bisect(self, index):
-        return self.base.slice(index, self.start, self.stop)
+    def bisect(self, index, allow_empty=False):
+        return self.base.slice(index, self.start, self.stop, allow_empty=allow_empty)
         
     # return exp._has(self)
     def has_match(self, exp):
@@ -994,16 +1012,33 @@ class Slice(Expr):
                 return True
             args = self.args
 
-        return any(arg._has(pattern) for arg in args)
+        if any(arg._has(pattern) for arg in args):
+            return True
+        
+        definition = self.base.definition
+        if definition is not None:            
+            from sympy.core.symbol import Dummy
+            from sympy.sets.sets import Interval
+            
+            k = Dummy('k', integer=True, domain=Interval(*self.indices, right_open=True))
+            
+            return definition[k]._has(pattern)
+        
+        return False
 
     def doit(self, **_):
         if self.shape[0].is_Number:
-            return self.as_Matrix()
+            if len(self.shape) > 1:
+                from sympy import Concatenate
+                return self.astype(Concatenate)
+            else:
+                from sympy import Matrix
+                return self.astype(Matrix)
         return self
 
     @property
-    def atomic_dtype(self):
-        return self.base.atomic_dtype
+    def dtype(self):
+        return self.base.dtype
 
     @property
     def is_integer(self):        
@@ -1040,15 +1075,45 @@ class Slice(Expr):
             from sympy.stats.rv import pspace
             return Equality(self, pspace(self).symbol)
 
-    def domain_defined(self, x):
+    def _eval_domain_defined(self, x, allow_empty=False):
         start, stop = self.indices
-        return x.domain_conditioned(start < stop)
+        if allow_empty:
+            return x.domain_conditioned(start <= stop)
+        else:
+            return x.domain_conditioned(start < stop)
 
     @property
     def T(self):
         if len(self.shape) < 2:
             return self
         return Expr.T(self)
+
+    def _subs(self, old, new, **kwargs):
+        if self == old:
+            return new
+        if self.base == old:
+            return new[slice(*self.indices)]
+        if old.is_Slice and old.base == self.base:
+
+# base[      self_start : self_stop]       = self
+# 
+# base[start            :            stop] = old
+# 
+# new = old
+# 
+# base[self_start] = base[start:stop][self_start - start] = old[self_start - start] = new[self_start - start]
+# base[self_start + 1] = base[start:stop][self_start - start + 1] = old[self_start - start + 1] = new[self_start - start + 1]
+# base[self_stop - 1] = base[start:stop][self_stop - 1 - start] = old[self_stop - 1 - start] = new[self_stop - 1 - start]
+# 
+# new[self_start - start: self_stop - start]
+            
+            self_start, self_stop = self.indices
+            start, stop = old.indices
+            
+            if start <= self_start and stop >= self_stop:
+                assert new.shape
+                return new[self_start - start: self_stop - start]
+        return Expr._subs(self, old, new, **kwargs)
 
 
 # Warning: the following class is obsolete!!! using Symbol.x(shape=(m,n,k)) instead

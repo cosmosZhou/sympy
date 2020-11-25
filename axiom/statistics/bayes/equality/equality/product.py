@@ -33,7 +33,7 @@ def prove(Eq):
     
     Eq << apply(given)
     
-    Eq << statistics.bayes.theorem.apply(Eq[0].lhs.domain_definition(), var=x)
+    Eq << statistics.bayes.corollary.apply(Eq[0].lhs.domain_definition(), var=x)
     
     Eq << Eq[-1].subs(Eq[0].probability())
     

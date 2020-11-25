@@ -7,6 +7,7 @@ from sympy.functions.elementary.exponential import log
 from sympy.sets.sets import Interval
 import axiom
 from sympy.concrete.summations import Sum
+from axiom import sets
 
 
 @plausible
@@ -36,7 +37,7 @@ def prove(Eq):
 
     Eq.mean_value_theorem = axiom.calculus.integral.mean_value_theorem.apply(Eq[-1])
 
-    Eq << Eq[-1].limits_assertion()
+    Eq << sets.imply.forall.apply(Eq[-1], simplify=False)
 
     Eq << Eq[-1].inverse().split()
 

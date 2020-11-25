@@ -8,7 +8,7 @@ Special - gamma, zeta,spherical harmonics...
 from sympy.functions.combinatorial.factorials import (factorial, factorial2,
         rf, ff, binomial, RisingFactorial, FallingFactorial, subfactorial)
 
-from sympy.functions.combinatorial.factorials import Binomial#, Factorial, Factorial2, 
+from sympy.functions.combinatorial.factorials import Binomial  # , Factorial, Factorial2, 
 
 from sympy.functions.combinatorial.numbers import (carmichael, fibonacci, lucas, tribonacci,
         harmonic, bernoulli, bell, euler, catalan, genocchi, partition)
@@ -20,9 +20,9 @@ from sympy.functions.elementary.complexes import (re, im, sign, Abs,
 from sympy.functions.elementary.trigonometric import (sin, cos, tan,
         sec, csc, cot, sinc, asin, acos, atan, asec, acsc, acot, atan2)
 
-from sympy.functions.elementary.trigonometric import Sin, Cos#, Tan, Sec, Csc, Cot, Sinc, Asin, Acos, Atan, Asec, Acsc, Acot, Atan2
+from sympy.functions.elementary.trigonometric import Sin, Cos  # , Tan, Sec, Csc, Cot, Sinc, Asin, Acos, Atan, Asec, Acsc, Acot, Atan2
 
-from sympy.functions.elementary.exponential import (exp_polar, exp, log,
+from sympy.functions.elementary.exponential import (exp_polar, exp, log, Exp, Log,
         LambertW)
 from sympy.functions.elementary.hyperbolic import (sinh, cosh, tanh, coth,
         sech, csch, asinh, acosh, atanh, acoth, asech, acsch)

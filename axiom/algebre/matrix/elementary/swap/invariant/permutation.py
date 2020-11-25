@@ -12,19 +12,21 @@ from sympy import Symbol
 
 
 @plausible
-def apply(n, w=None, left=True):
+def apply(n, w=None, left=True, P=None):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
     if w is None:
-        w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
         
-    x = Symbol.x(shape=(n,), integer=True, nonnegative=True)
+    x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
+    x = x[:n]
     
-    P = Symbol.P(dtype=dtype.integer * n, definition=conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
+    if P is None:
+        P = Symbol.P(etype=dtype.integer * n, definition=conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
     
     if left:
         return ForAll[x:P](Contains(w[i, j] @ x, P))

@@ -5,12 +5,11 @@ from axiom.utility import plausible
 
 from sympy.functions.combinatorial.numbers import Stirling
 from axiom.discrete.combinatorics import stirling
-import axiom
-from axiom.discrete import difference
-from axiom import discrete
+from axiom.discrete import combinatorics
 from sympy.concrete.summations import Sum
 from sympy.concrete.expr_with_limits import LAMBDA
 from sympy import Symbol, Slice
+
 
 @plausible
 def apply(n, k):
@@ -27,6 +26,8 @@ def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(n, k)
 
+    i = Eq[-1].rhs.args[1].variable
+    
     Eq << Eq[-1].subs(k, 0).doit()
 
     Eq << stirling.second.recurrence.apply(n, k)
@@ -44,87 +45,66 @@ def prove(Eq):
 
     Eq << Eq[-1].rsolve(y[n])
 
+    Eq << combinatorics.binomial.fraction.apply(k + 1, i).reversed * (k + 1 - i)
+    
+    Eq << Eq[-2].subs(Eq[-1])
+    
     Eq.stirling_solution = Eq[-1].subs(Eq[3])
-
+    
     Eq << Eq.stirling_solution.subs(n, k + 1)
 
-    Eq << Eq[-1].this.function.solve(Eq[-1].variable)
-
-    Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp(deep=True)
-
-    l = Eq[0].rhs.args[1].limits[0][0]
-    Eq << binomial(k + 1, l).this.rewrite(factorial)
-
-    Eq.factorial_expand_kl = axiom.discrete.combinatorics.factorial.expand.apply(k - l + 1)
-
-    Eq << Eq[-1].subs(Eq.factorial_expand_kl)
-
-    Eq << Eq[-1] / factorial(k + 1)
-
-    Eq << Eq[-1].reversed
-
-    Eq.factorial_expand = axiom.discrete.combinatorics.factorial.expand.apply(k + 1)
-
-    Eq << Eq.exist_C0.subs(Eq.factorial_expand, Eq[-1])
-
-    Eq << Eq[-1].this.function.rhs.expand(deep=False)
-
-    Eq.exist_C0 = Eq[-1].this.function.rhs.powsimp()
+    Eq << Eq[-1].this.function / (k + 1) ** (k + 1)
     
-    Eq.exist_C0 = Eq.exist_C0.subs(Eq.factorial_expand_kl.reversed)        
-
-    x = Symbol.x(real=True)
-
-    Eq << difference.definition.apply(x ** (k + 1), x, k + 1)
-
-    Eq << difference.factorial.apply(x, k + 1)
-
-    Eq << Eq[-2].subs(Eq[-1])
-
-    Eq << Eq[-1].subs(x, 0)
-
+    Eq << Eq.stirling_solution.this.function / (k + 1) ** n
+    Eq << Eq[-1] - Eq[-2]
+    
+    Eq << Eq[-1] * (k + 1) ** n
+    
+    Eq << Eq[-1].this.lhs.expand()
+    
+    Eq << Eq[-1].this.rhs.expand()
+    
+    Eq.ratsimp = Eq[-1].this.rhs.args[0].ratsimp()
+    
+    Eq.powsimp = Eq[-1].rhs.args[1].args[-1].this.function.powsimp()
+    
+    Eq << combinatorics.permutation.factorial.sum.apply(k + 1)
+    
     Eq << Eq[-1] * (-1) ** (k + 1)
-
+    
     Eq << Eq[-1].this.rhs.distribute()
-
-    Eq << Eq[-1].this.rhs.bisect(Slice[-1:])
-
-    Eq << Eq[-1] - Eq[-1].rhs.args[0]
-
-    Eq << Eq[-1].this.rhs.rewrite(factorial) / factorial(k + 1)
     
-    Eq << Eq[-1].this.rhs.powsimp(deep=True)
+    Eq << Eq[-1].this.rhs.bisect(Slice[-1:]).reversed
     
-    Eq << Eq.exist_C0.subs(Eq[-1].reversed, Eq.factorial_expand)
-
-    Eq << Eq[-1].this.function.rhs.expand()
-
-    Eq << Eq[-1].this.function.rhs.ratsimp()
-
-    Eq << Eq[-1].subs(Eq.factorial_expand.this.rhs.expand().reversed)
-
-    Eq.stirling_solution = Eq.stirling_solution.subs(Eq[-1])
-
-    Eq << discrete.combinatorics.binomial.expand.apply(k + 1, k - l + 1)
-    Eq << discrete.combinatorics.binomial.complement.apply(k, l)
-    Eq << discrete.combinatorics.binomial.complement.apply(k + 1, l)
-
-    Eq << Eq[-3].subs(Eq[-1].reversed, Eq[-2].reversed)
-
-    Eq << Eq[-1] / (k + 1)
-
-    Eq << Eq.stirling_solution.subs(-Eq[-1].reversed)
-
-    Eq << Eq[-1].subs(Eq.factorial_expand.reversed)
-
+    Eq << Eq[-1].subs(Eq.powsimp.reversed)
+    
+    Eq << Eq[-1] - Eq[-1].lhs.args[0]
+    
+    Eq << Eq.ratsimp.subs(Eq[-1])
+    
+    Eq << Eq[-1] - Eq[-1].lhs.args[0] - Eq[-1].rhs.args[0]
+    
     Eq << Eq[-1] * factorial(k + 1)
-    Eq << Eq[-1].expand()
-
-    Eq << Eq[-1].this.rhs.args[0].distribute()
-
+    
+    Eq << Eq[-1].this.lhs.expand()    
+    
+    Eq.k_factorial_expand = combinatorics.permutation.factorial.expand.apply(k + 1).this.rhs.expand()
+    
+    Eq << Eq[-1].this.lhs.args[1].subs(Eq.k_factorial_expand)
+    
+    Eq << Eq[-1].this.rhs.subs(Eq.k_factorial_expand)
+    
+    Eq << Eq[-1].this.rhs.ratsimp()    
+    
     Eq << Eq[0].subs(k, k + 1) * factorial(k + 1)
 
     Eq << Eq[-1].this.rhs.bisect(Slice[-1:])
+    
+    Eq << Eq[-3].subs(Eq[-1])
+    
+    Eq << Eq[-1] - Eq[-1].lhs.args[0]
+    
+    Eq << Eq[-1].this.rhs.distribute()
 
 
 if __name__ == '__main__':

@@ -6,7 +6,6 @@ from sympy.stats.rv import PDF, pspace
 from axiom.utility import plausible
 from axiom.utility import check
 import axiom
-from sympy import S
 from sympy.core.symbol import Symbol
 from sympy.sets import NonnegativeIntegers
 

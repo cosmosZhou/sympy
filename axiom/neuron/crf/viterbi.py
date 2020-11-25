@@ -2,14 +2,15 @@ from sympy import Symbol, Slice
 from axiom.utility import plausible
 from sympy.core.relational import Equality
 
-from sympy.concrete.expr_with_limits import LAMBDA, MIN, MAX
+from sympy.concrete.expr_with_limits import LAMBDA, MIN, MAX, Minimize
 import sympy
 from sympy.functions.elementary.exponential import log, exp
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
 from axiom.neuron import crf
 from axiom.neuron.crf.markov import process_assumptions, assumptions
-from sympy.functions.elementary.piecewise import Piecewise
+from sympy.sets.sets import Interval
+from sympy.functions.elementary.miscellaneous import Min
 
 
 @plausible
@@ -17,7 +18,7 @@ def apply(*given):
     x, y = process_assumptions(*given)
 
     n, d = x.shape
-    t = Symbol.t(integer=True, domain=[0, n - 1])
+    t = Symbol.t(domain=Interval(0, n - 1, integer=True))
     i = Symbol.i(integer=True)
     
     joint_probability_t = P(x[:t + 1], y[:t + 1])
@@ -26,12 +27,14 @@ def apply(*given):
     transition_probability = P(y[i] | y[i - 1])
     y = pspace(y).symbol
     
-    G = Symbol.G(shape=(d, d), definition=LAMBDA[y[i - 1], y[i]](-sympy.log(transition_probability)))
-    s = Symbol.s(shape=(n,), definition=LAMBDA[t](-log(joint_probability_t)))
-    x = Symbol.x(shape=(n, d), definition=LAMBDA[y[i], i](-sympy.log(emission_probability)))
-
-    x_quote = Symbol.x_quote(shape=(n, d), definition=LAMBDA[y[t], t](Piecewise((MIN[y[0:t]](s[t]), t > 0),
-                                                                     (s[0], True))))
+    G = Symbol.G(definition=LAMBDA[y[i - 1], y[i]](-sympy.log(transition_probability)))
+    assert G.shape == (d, d)
+    s = Symbol.s(definition=LAMBDA[t](-log(joint_probability_t)))
+    assert s.shape == (n,)
+    x = Symbol.x(definition=LAMBDA[y[i], i](-sympy.log(emission_probability)))
+    assert x.shape == (n, d)
+    x_quote = Symbol.x_quote(definition=LAMBDA[y[t], t](MIN[y[:t]](s[t])))
+    assert x_quote.shape == (n, d)
 
     assert x_quote.is_real
     return Equality(x_quote[t + 1], x[t + 1] + MIN(x_quote[t] + G), given=given), \
@@ -50,12 +53,7 @@ def prove(Eq):
     n = x.shape[0]
     
     s, t = Eq.s_definition.lhs.args
-    Eq << Eq.x_quote_definition.reference((Eq.x_quote_definition.lhs.indices[-1],))
-    
-    Eq.x_quote_definition = Eq[-1].this.rhs.as_Piecewise()
-    
-    Eq.x_quote_definition_1 = Eq.x_quote_definition.forall((t, 1, n - 1))
-    Eq.x_quote_definition_0 = Eq.x_quote_definition.subs(t, 0)
+    Eq.x_quote_definition = Eq.x_quote_definition.reference((Eq.x_quote_definition.lhs.indices[-1],))
     
     Eq << crf.markov.apply(*given)
     
@@ -68,23 +66,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.function.simplify()
     
-    Eq.bisect0, Eq.bisect1 = Eq[-1].bisect(t > 0).split()    
+    Eq << Eq[-1].this.rhs.args[1].function.bisect(Slice[-1:])
     
-    Eq << Eq.bisect1.this().function.rhs.args[1].function.bisect(Slice[-1:])
+    Eq << Eq[-1].this.rhs.args[1].function.astype(LAMBDA)
     
-    Eq << Eq[-1].this.function.rhs.args[1].function.as_Ref()
+    Eq << Eq[-1].this.rhs.args[1].astype(Minimize)
     
-    Eq << Eq[-1].this.function.rhs.args[1].as_Min()
-    
-    Eq.x_quote_recursion = Eq[-1].subs(Eq.x_quote_definition_1.reversed)
-    
-    Eq << Eq.bisect0.this.rhs.args[1].function.as_Ref()
-    Eq << Eq[-1].this.rhs.args[1].as_Min()
-    Eq << Eq[-1].subs(Eq.x_quote_definition_0.reversed)
-    
-    Eq <<= Eq.x_quote_recursion & Eq[-1]
-    
-    Eq << Eq[-1].subs(Eq.x_quote_recursion.variable, t)
+    Eq << Eq[-1].subs(Eq.x_quote_definition.reversed)
     
     Eq << -Eq.s_definition.reversed
     
@@ -92,7 +80,7 @@ def prove(Eq):
  
     Eq << Eq[-1].max((y[:t + 1],))
     
-    Eq << Eq[-1].this.rhs.as_Exp()
+    Eq << Eq[-1].this.rhs.astype(exp)
     
     Eq << Eq.x_quote_definition.min().this.rhs.simplify(wrt=t)
     

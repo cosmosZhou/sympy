@@ -46,7 +46,7 @@ def prove(Eq):
     (k, *_), *_ = Eq[-1].rhs.limits
     Eq << Eq[-1].this.rhs.as_two_terms()
 
-    Eq << Eq[-1].this.rhs.args[1].subs(k, k - 1)
+    Eq << Eq[-1].this.rhs.args[1].limits_subs(k, k - 1)
 
     Eq << Eq[-1].subs(Pascal.apply(n + 1, k))
 

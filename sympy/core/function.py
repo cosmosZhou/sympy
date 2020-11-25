@@ -59,6 +59,7 @@ import mpmath.libmp as mlib
 import inspect
 from collections import Counter
 
+
 class PoleError(Exception):
     pass
 
@@ -124,27 +125,21 @@ class FunctionClass(ManagedProperties):
     """
     _new = type.__new__
 
-    def __init__(cls, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         # honor kwarg value or class-defined value before using
         # the number of arguments in the eval function (if present)
-        nargs = kwargs.pop('nargs', cls.__dict__.get('nargs', arity(cls)))
+        nargs = kwargs.pop('nargs', self.__dict__.get('nargs', arity(self)))
 
         # Canonicalize nargs here; change to set in nargs.
         if is_sequence(nargs):
             if not nargs:
-                raise ValueError(filldedent('''
-                    Incorrectly specified nargs as %s:
-                    if there are no arguments, it should be
-                    `nargs = 0`;
-                    if there are any number of arguments,
-                    it should be
-                    `nargs = None`''' % str(nargs)))
+                nargs = (1,)
             nargs = tuple(ordered(set(nargs)))
         elif nargs is not None:
             nargs = (as_int(nargs),)
-        cls._nargs = nargs
+        self._nargs = nargs
 
-        super(FunctionClass, cls).__init__(*args, **kwargs)
+        super(FunctionClass, self).__init__(*args, **kwargs)
 
     @property
     def __signature__(self):
@@ -214,8 +209,19 @@ class FunctionClass(ManagedProperties):
         # problems with trying to import FiniteSet there
         return FiniteSet(*self._nargs) if self._nargs else NonnegativeIntegers
 
-    def __repr__(cls):
-        return cls.__name__
+    def __repr__(self):
+        return self.__name__
+
+    def __getattr__(self, attr):
+        if attr.startswith('_'):             
+            return
+#         from sympy import println, Foreground        
+#         println('generating func:', attr, color=Foreground.MAGENTA)
+
+        def __new__(**kwargs):
+            return Function(attr, **kwargs)
+
+        return __new__
 
 
 class Application(with_metaclass(FunctionClass, Basic)):
@@ -237,7 +243,7 @@ class Application(with_metaclass(FunctionClass, Basic)):
         # WildFunction (and anything else like it) may have nargs defined
         # and we throw that value away here
         options.pop('nargs', None)
-
+        
         if evaluate:
             evaluated = cls.eval(*args)
             if evaluated is not None:
@@ -405,8 +411,8 @@ class Function(Application, Expr):
     """
 
     @property
-    def atomic_dtype(self):
-        return self.arg.atomic_dtype
+    def dtype(self):
+        return self.arg.dtype
 
 # it is highly dangerous to write the following codes below: this pitfall will disable the function sympy.solvers.recurr.rsolve
 #     def __iter__(self):
@@ -418,36 +424,46 @@ class Function(Application, Expr):
     def _diff_wrt(self):
         return False
 
-#     def __iter__(self):
-#         raise TypeError
-# 
-#     def __getitem__(self, index):
-#         return self.func(self.arg[index])
-
+    @classmethod
+    def allow_variable_argslist(cls):
+        return cls.nargs.is_FiniteSet and S.One in cls.nargs 
+    
     @cacheit
-    def __new__(cls, *args, **options):
+    def __new__(cls, *args, limits=(), **options):
         # Handle calls like Function('f')
         if cls is Function:
             return UndefinedFunction(*args, **options)
 
-        n = len(args)
+        args = [*map(sympify, args)]
+        n = len(args)        
+        if n == 1:
+            arg = args[0]
+            if arg.shape:
+                if len(arg.shape) > 1:
+                    if not cls.allow_variable_argslist():
+                        raise TypeError('function only allows 1 dimentional args')
+                else:
+                    n = arg.shape[0]
+            
         if n not in cls.nargs:
+                
             # XXX: exception message must be in exactly this format to
             # make it work with NumPy's functions like vectorize(). See,
             # for example, https://github.com/numpy/numpy/issues/1697.
             # The ideal solution would be just to attach metadata to
             # the exception and change NumPy to take advantage of this.
-            temp = ('%(name)s takes %(qual)s %(args)s '
-                   'argument%(plural)s (%(given)s given)')
-            raise TypeError(temp % {
-                'name': cls,
-                'qual': 'exactly' if len(cls.nargs) == 1 else 'at least',
-                'args': min(cls.nargs),
-                'plural': 's' * (min(cls.nargs) != 1),
-                'given': n})
+            if not cls.allow_variable_argslist():
+                temp = ('%(name)s takes %(qual)s %(args)s '
+                        'argument%(plural)s (%(given)s given)')
+                raise TypeError(temp % {
+                    'name': cls,
+                    'qual': 'exactly' if len(cls.nargs) == 1 else 'at least',
+                    'args': min(cls.nargs),
+                    'plural': 's' * (min(cls.nargs) != 1),
+                    'given': n})
 
         evaluate = options.get('evaluate', global_parameters.evaluate)
-        result = super(Function, cls).__new__(cls, *args, **options)
+        result = super(Function, cls).__new__(cls, *args, *limits, **options)
         if evaluate and isinstance(result, cls) and result.args:
             pr2 = min(cls._should_evalf(a) for a in result.args)
             if pr2 > 0:
@@ -508,7 +524,7 @@ class Function(Application, Expr):
             else:
                 i = 10000
 #             i = 0 if isinstance(cls.nargs, Naturals0) else 10000
-# modified by cosmos, in the case of t log y, to prevent logy t 
+# modified in the case of t log y, to prevent logy t 
         return 5, i, name
 #         return 4, i, name
 
@@ -764,7 +780,7 @@ class Function(Application, Expr):
         args = self.args[:ix] + (D,) + self.args[ix + 1:]
         return Subs(Derivative(self.func(*args), D), D, A)
 
-    def _eval_as_leading_term(self, x):
+    def _eval_as_leading_term(self, x, cdir=0):
         """Stub that should be overridden by new Functions to return
         the first non-zero term in a series if ever an x-dependent
         argument whose leading term vanishes as x -> 0 might be encountered.
@@ -820,14 +836,86 @@ class Function(Application, Expr):
     def T(self):
         return self.func(self.arg.T)
 
-    def domain_defined(self, x):
-        domain = Expr.domain_defined(self, x)
+    def _eval_domain_defined(self, x):
+        domain = Expr._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
         return domain
 
     def _sympystr(self, p):
         return self.func.__name__ + "(%s)" % p.stringify(self.args, ", ")
+
+    def _latex(self, p, exp=None):
+        r'''
+        Render functions to LaTeX, handling functions that LaTeX knows about
+        e.g., sin, cos, ... by using the proper LaTeX command (\sin, \cos, ...).
+        For single-letter function names, render them as regular LaTeX math
+        symbols. For multi-letter function names that LaTeX does not know
+        about, (e.g., Li, sech) use \operatorname{} so that the function name
+        is rendered in Roman font and LaTeX handles spacing properly.
+
+        expr is the expression involving the function
+        exp is an exponent
+        '''
+        func = self.func.__name__
+        if hasattr(p, '_print_' + func) and \
+                not isinstance(self, AppliedUndef):
+            return getattr(p, '_print_' + func)(self, exp)
+        else:
+            args = [str(p._print(arg)) for arg in self.args]
+            # How inverse trig functions should be displayed, formats are:
+            # abbreviated: asin, full: arcsin, power: sin^-1
+            inv_trig_style = p._settings['inv_trig_style']
+            # If we are dealing with a power-style inverse trig function
+            inv_trig_power_case = False
+            # If it is applicable to fold the argument brackets
+            can_fold_brackets = p._settings['fold_func_brackets'] and \
+                len(args) == 1 and \
+                not p._needs_function_brackets(self.args[0])
+
+            inv_trig_table = ["asin", "acos", "atan", "acsc", "asec", "acot"]
+
+            # If the function is an inverse trig function, handle the style
+            if func in inv_trig_table:
+                if inv_trig_style == "abbreviated":
+                    pass
+                elif inv_trig_style == "full":
+                    func = "arc" + func[1:]
+                elif inv_trig_style == "power":
+                    func = func[1:]
+                    inv_trig_power_case = True
+
+                    # Can never fold brackets if we're raised to a power
+                    if exp is not None:
+                        can_fold_brackets = False
+
+            from sympy.printing.latex import accepted_latex_functions
+            
+            if inv_trig_power_case:
+                if func in accepted_latex_functions:
+                    name = r"\%s^{-1}" % func
+                else:
+                    name = r"\operatorname{%s}^{-1}" % func
+            elif exp is not None:
+                name = r'%s^{%s}' % (p._hprint_Function(func), exp)
+            else:
+                name = p._hprint_Function(func)
+
+            if can_fold_brackets:
+                if func in accepted_latex_functions:
+                    # Wrap argument safely to avoid parse-time conflicts
+                    # with the function name itself
+                    name += r" {%s}"
+                else:
+                    name += r"{\left(%s \right)}"
+#                     name += r"%s"
+            else:
+                name += r"{\left(%s \right)}"
+
+            if inv_trig_power_case and exp is not None:
+                name += r"^{%s}" % exp
+
+            return name % ",".join(args)
 
 
 class AppliedUndef(Function):
@@ -838,12 +926,21 @@ class AppliedUndef(Function):
 
     is_number = False
 
-    def __new__(cls, *args, **options):
+    def __new__(cls, *args, evaluate=False, **options):
+        index_of_limits = len(args)
+        for i, arg in enumerate(args):
+            if isinstance(arg, (tuple, Tuple)):
+                index_of_limits = i
+                break
+                
+        limits = args[index_of_limits:]
+        if limits:
+            args = args[:index_of_limits]
         args = list(map(sympify, args))
-        obj = super(AppliedUndef, cls).__new__(cls, *args, **options)
+        obj = super(AppliedUndef, cls).__new__(cls, *args, limits=limits, evaluate=evaluate, **options)
         return obj
 
-    def _eval_as_leading_term(self, x):
+    def _eval_as_leading_term(self, x, cdir=0):
         return self
 
     def _sage_(self):
@@ -871,24 +968,93 @@ class AppliedUndef(Function):
         """
         return True
 
+    @property
+    def limits(self):
+        index_of_limits = -1
+        for i, arg in enumerate(self.args):
+            if arg.is_Tuple:
+                index_of_limits = i
+        if index_of_limits >= 0:
+            return self.args[index_of_limits:]
+        return ()
+        
+    @property
+    def arg(self):
+        inputs = self.inputs
+        assert len(inputs) == 1, "illegal arg for %s" % type(self)
+        return inputs[0]
+        
+    @property
+    def inputs(self):
+        index_of_limits = -1
+        for i, arg in enumerate(self.args):
+            if arg.is_Tuple:
+                index_of_limits = i
+        if index_of_limits >= 0:
+            return self.args[:index_of_limits]
+        return self.args
+        
+    def _sympystr(self, p):
+        limits = self.limits
+        if limits:            
+            limits = [x for x, *_ in limits]
+            return self.func.__name__ + "[%s](%s)" % (p.stringify(limits, ", "), p.stringify(self.inputs, ", "))
+        return Function._sympystr(self, p)
 
+    def _latex(self, p):
+        limits = self.limits
+        if limits:            
+            limits = [x for x, *_ in limits]
+            return self.func.__name__ + "_{%s}(%s)" % ((", ".join(map(p._print, limits))), ", ".join(map(p._print, self.inputs)))
+        return Function._latex(self, p)
+    
+    @property
+    def definition(self):
+        return self.func(*self.args, evaluate=True)
+
+    def _subs(self, old, new, **hints):
+        if old in self.nargs.free_symbols:
+#             print('substitute self.nargs.free_symbols is not allowed!')
+            return self
+        return Function._subs(self, old, new, **hints)
+
+    def __contains__(self, other):
+        ...
+    
+    def image_set(self):
+        if self.is_set:
+            return self.definition.image_set()
+    
+    def condition_set(self):
+        if self.is_set:
+            return self.definition.condition_set()
+    
+    @property
+    def dtype(self):
+        if self.is_set:
+            return self.dtype
+        return super(AppliedUndef, self).dtype
+    
 class UndefinedFunction(FunctionClass):
     """
     The (meta)class of undefined functions.
     """
 
-    def __new__(mcl, name, bases=(AppliedUndef,), __dict__=None, **kwargs):
+    def __new__(self, name, bases=(AppliedUndef,), __dict__=None, **kwargs):
         __dict__ = __dict__ or {}
         # Allow Function('f', real=True)
         __dict__.update({'is_' + arg: val for arg, val in kwargs.items() if arg in _assume_defined})
         # You can add other attributes, although they do have to be hashable
         # (but seriously, if you want to add anything other than assumptions,
         # just subclass Function)
+        if 'etype' in kwargs:
+            kwargs['type'] = kwargs['etype'].set
+            kwargs['is_set'] = True
         __dict__.update(kwargs)
         # Save these for __eq__
         __dict__.update({'_extra_kwargs': kwargs})
         __dict__['__module__'] = None  # For pickling
-        ret = super(UndefinedFunction, mcl).__new__(mcl, name, bases, __dict__)
+        ret = super(UndefinedFunction, self).__new__(self, name, bases, __dict__)
         ret.name = name
         return ret
 
@@ -1786,7 +1952,7 @@ class Derivative(Expr):
             rv.append(o / x)
         return Add(*rv)
 
-    def _eval_as_leading_term(self, x):
+    def _eval_as_leading_term(self, x, cdir=0):
         series_gen = self.expr.lseries(x)
         d = S.Zero
         for leading_term in series_gen:
@@ -1918,7 +2084,7 @@ class Derivative(Expr):
         return Expr.__new__(self.func, dependent, *self.variable_count) * independent
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
 
@@ -2723,17 +2889,6 @@ class Difference(Expr):
 
         return self.func(dependent, x, n) * independent
 
-    def as_Sum(self):
-        from sympy import Sum
-        if isinstance(self.expr, Sum):
-            return self.expr.func(self.func(self.expr.function, *self.variable_count).simplify(), *self.expr.limits)
-        return self
-
-    def as_Add(self):
-        if self.expr.is_Add:
-            return self.expr.func(*(self.func(arg, *self.variable_count).simplify() for arg in self.expr.args))
-        return self
-
     def as_one_term(self):
         if isinstance(self.expr, self.func) and self.expr._wrt_variable == self._wrt_variable:
             n = self.variable_count[1] + self.expr.variable_count[1]
@@ -2742,7 +2897,7 @@ class Difference(Expr):
         return self
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         if self.expr.is_integer:
             return dtype.integer
@@ -2850,14 +3005,15 @@ class Lambda(Expr):
         n = len(args)
         if n == 1:
             args = args[0]
-            from sympy.tensor.indexed import Slice
-            if isinstance(args, Slice):
+            if args.shape:
                 n = args.shape
                 if len(n) > 1:
                     raise TypeError('lambda only allows 1 dimentional args')
                 n = n[0]
 
-        if n not in self.nargs:  # Lambda only ever has 1 value in nargs
+        if n not in self.nargs:
+              
+            # Lambda only ever has 1 value in nargs
             # XXX: exception message must be in exactly this format to
             # make it work with NumPy's functions like vectorize(). See,
             # for example, https://github.com/numpy/numpy/issues/1697.
@@ -3211,7 +3367,7 @@ class Subs(Expr):
             rv += o.subs(other, x)
         return rv
 
-    def _eval_as_leading_term(self, x):
+    def _eval_as_leading_term(self, x, cdir=0):
         if x in self.point:
             ipos = self.point.index(x)
             xvar = self.variables[ipos]
@@ -3227,6 +3383,9 @@ class Subs(Expr):
 def diff(f, *symbols, **kwargs):
     """
     Differentiate f with respect to symbols.
+
+    Explanation
+    ===========
 
     This is just a wrapper to unify .diff() and the Derivative class; its
     interface is similar to that of integrate().  You can use the same

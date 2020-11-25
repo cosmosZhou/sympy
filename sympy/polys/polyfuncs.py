@@ -1,7 +1,5 @@
 """High-level polynomials manipulation functions. """
 
-from __future__ import print_function, division
-
 from sympy.core import S, Basic, Add, Mul, symbols
 from sympy.core.compatibility import range
 from sympy.functions.combinatorial.factorials import factorial

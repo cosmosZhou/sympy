@@ -10,6 +10,7 @@ from mpmath.libmp import mpf_log, prec_to_dps
 
 from collections import defaultdict
 
+
 class Expr(Basic, EvalfMixin):
     """
     Base class for algebraic expressions.
@@ -43,14 +44,6 @@ class Expr(Basic, EvalfMixin):
     def _coeff_isneg(self):
         return False
     
-    def as_Ref(self):
-        from sympy import Interval
-        from sympy.concrete.expr_with_limits import LAMBDA
-        k = []
-        for size in self.shape:             
-            k.append(self.generate_free_symbol(excludes={*k}, domain=Interval(0, size - 1, integer=True)))
-        return LAMBDA(self[k], *k) 
-        
     def intersect(self, other):
         from sympy.sets.sets import Intersection
         return Intersection(self, other)
@@ -110,12 +103,11 @@ class Expr(Basic, EvalfMixin):
         return False
 
     @property
-    def element_type(self):
-        set_type = self.dtype
+    def etype(self):
+        set_type = self.type
         from sympy.core.symbol import DtypeSet
         if isinstance(set_type, DtypeSet) :
-            return set_type.dtype
-        return None
+            return set_type.etype
 
     @cacheit
     def sort_key(self, order=None):
@@ -228,7 +220,6 @@ class Expr(Basic, EvalfMixin):
             assert other.is_set
             return other.complement(self)
         return self + (-other)
-#         return Add(self, -other)
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__sub__')
@@ -340,6 +331,12 @@ class Expr(Basic, EvalfMixin):
     def __rdivmod__(self, other):
         from sympy.functions.elementary.integers import floor
         return floor(other / self), Mod(other, self)
+
+    # implement matrix power ^ operator
+#     see https://docs.python.org/3/reference/datamodel.html#specialnames
+    def __xor__(self, other):
+        from sympy import MatPow
+        return MatPow(self, other)
 
     def __int__(self):
         # Although we only need to round to the units position, we'll
@@ -3251,7 +3248,7 @@ class Expr(Basic, EvalfMixin):
         return s.as_leading_term(x)
 
     @cacheit
-    def as_leading_term(self, *symbols):
+    def as_leading_term(self, *symbols, cdir=0):
         """
         Returns the leading (nonzero) term of the series expansion of self.
 
@@ -3272,7 +3269,7 @@ class Expr(Basic, EvalfMixin):
         if len(symbols) > 1:
             c = self
             for x in symbols:
-                c = c.as_leading_term(x)
+                c = c.as_leading_term(x, cdir=cdir)
             return c
         elif not symbols:
             return self
@@ -3281,12 +3278,16 @@ class Expr(Basic, EvalfMixin):
             raise ValueError('expecting a Symbol but got %s' % x)
         if x not in self.free_symbols:
             return self
-        obj = self._eval_as_leading_term(x)
+        try:
+            obj = self._eval_as_leading_term(x, cdir=cdir)
+        except:
+            print(type(self))
+        obj = self._eval_as_leading_term(x, cdir=cdir)
         if obj is not None:
             return powsimp(obj, deep=True, combine='exp')
         raise NotImplementedError('as_leading_term(%s, %s)' % (self, x))
 
-    def _eval_as_leading_term(self, x):
+    def _eval_as_leading_term(self, x, cdir=0):
         return self
 
     def as_coeff_exponent(self, x):
@@ -3301,7 +3302,7 @@ class Expr(Basic, EvalfMixin):
                 return c, e
         return s, S.Zero
 
-    def leadterm(self, x):
+    def leadterm(self, x, cdir=0):
         """
         Returns the leading term a*x**b as a tuple (a, b).
 
@@ -3316,7 +3317,7 @@ class Expr(Basic, EvalfMixin):
 
         """
         from sympy import Dummy, log
-        l = self.as_leading_term(x)
+        l = self.as_leading_term(x, cdir=cdir)
         d = Dummy('logx')
         if l.has(log(x)):
             l = l.subs(log(x), d)
@@ -3325,7 +3326,7 @@ class Expr(Basic, EvalfMixin):
             from sympy.utilities.misc import filldedent
             raise ValueError(filldedent("""
                 cannot compute leadterm(%s, %s). The coefficient
-                should have been free of x but got %s""" % (self, x, c)))
+                should have been free of %s but got %s""" % (self, x, x, c)))
         c = c.subs(d, log(x))
         return c, e
 
@@ -3823,8 +3824,8 @@ class Expr(Basic, EvalfMixin):
     
     @property
     def domain(self):
-        if self.atomic_dtype.is_set:
-            return S.UniversalSet
+        if self.dtype.is_set:
+            return self.universalSet
         shape = self.shape
         
         if self.is_integer:
@@ -3841,127 +3842,6 @@ class Expr(Basic, EvalfMixin):
         from sympy.sets.sets import CartesianSpace
         return CartesianSpace(interval, *shape)
 
-    def domain_conditioned(self, condition):
-        from sympy.core.numbers import oo
-        from sympy.sets.sets import Interval
-
-        domain = self.domain & condition.domain_defined(self)
-
-        from sympy.logic.boolalg import BooleanTrue, BooleanFalse
-
-        if isinstance(condition, BooleanTrue):
-            return domain
-
-        if isinstance(condition, BooleanFalse):
-            return S.EmptySet
-
-        if not condition.has(self):
-            return domain
-        from sympy.sets.conditionset import conditionset
-        if condition.is_Contains:
-            if self == condition.lhs:
-                return condition.rhs
-            interval = condition.rhs
-            if interval.is_Interval:                
-                poly = condition.lhs.as_poly(self)
-                if poly.degree() == 1:
-                    c1 = poly.nth(1)
-                    c0 = poly.nth(0)
-                    if interval.is_integer:
-                        if c1 == 1:
-                            interval = interval.copy(start=interval.start - c0, stop=interval.stop - c0)
-                            return domain & interval
-                        elif c1 == -1:
-                            interval = interval.copy(start=c0 - interval.stop, stop=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
-                            return domain & interval                            
-                    else:
-                        if c1 > 0:
-                            interval.func(start=(interval.start - c0) / c1, stop=(interval.stop - c0) / c1)
-                            return domain & interval
-                        elif c1 < 0:
-                            interval.func(start=(interval.stop - c0) / c1, stop=(interval.start - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
-                            return domain & interval
-                        
-            return conditionset(self, condition, domain)
-        
-        if condition.is_NotContains:
-            if condition.lhs == self:
-                return self.domain_conditioned(condition.invert_type(self, self.domain - condition.rhs))
-            return conditionset(self, condition, domain)
-
-        if condition.is_And:
-            sol = domain
-            for eq in condition.args:
-                sol &= self.domain_conditioned(eq)
-            return sol
-
-        if condition.is_Or:
-            sol = S.EmptySet
-            for eq in condition.args:
-                sol |= self.domain_conditioned(eq)
-            return domain & sol
-
-        if condition.lhs.is_set:
-            return conditionset(self, condition, domain)
-
-        from sympy import solve
-        equation = condition.lhs - condition.rhs
-        if self.is_integer and not self.is_random:
-            from sympy import Dummy
-            x = Dummy('x', real=True)
-            equation = equation._subs(self, x)
-        else:
-            x = self
-            
-        try:
-            solution = solve(equation, x)
-        except:
-            solution = []
-        if len(solution) != 1:
-#             solution = solve(equation, self)
-            return conditionset(self, condition, domain)
-#             return domain
-        solution = solution[0]
-        from sympy.core.relational import LessThan, GreaterThan, StrictLessThan, StrictGreaterThan, Unequality, Equality
-        from sympy.sets.sets import FiniteSet
-
-        op = type(condition)
-
-        from sympy import limit
-        b = limit(equation, x, oo)
-        a = limit(equation, x, -oo)
-
-        if b < 0:
-            b = -b
-            a = -a
-            dic = {Equality: Equality, StrictGreaterThan: StrictLessThan, GreaterThan: LessThan, StrictLessThan: StrictGreaterThan, LessThan: GreaterThan, Unequality: Unequality}
-            op = dic[op]
-
-        if b > 0:
-            if a > 0:
-                # equation >= 0
-                if op in (LessThan, Equality):  # <=
-                    domain &= FiniteSet(solution)
-                elif op == StrictLessThan:
-                    domain = S.EmptySet
-                elif op == (StrictGreaterThan, Unequality):  # >
-                    domain -= FiniteSet(solution)
-            else :
-                if op == LessThan:
-                    domain &= Interval(-oo, solution)
-                elif op == GreaterThan:
-                    domain &= Interval(solution, oo)
-                elif op == StrictLessThan:
-                    domain &= Interval(-oo, solution, right_open=True)
-                elif op == StrictGreaterThan:
-                    domain &= Interval(solution, oo, left_open=True)
-                elif op == Unequality:
-                    domain -= FiniteSet(solution)
-                elif op == Equality:
-                    domain &= FiniteSet(solution)
-
-        return domain
-
     def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
@@ -3977,13 +3857,10 @@ class Expr(Basic, EvalfMixin):
     def as_coeff_Sum(self):
         return None, None
 
-    def as_Integral(self):
-        return None, None
-
-    def domain_latex(self, domain=None):
+    def domain_latex(self, domain=None, baseset=None):
         if domain is None:
             domain = self.domain
-        if self.dtype == domain.dtype:
+        if self.type == domain.type:
             return r"%s = %s" % (self.latex, domain.latex)
 
         from sympy.sets.sets import Interval
@@ -4012,8 +3889,11 @@ class Expr(Basic, EvalfMixin):
                 if domain.right_open:
                     return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
                 return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
-        elif domain.dtype == dtype.condition :
-            return r"%s \left| %s \right." % (self.latex, domain.latex)
+        elif domain.is_boolean:
+            if baseset is None:
+                return r"%s \left| %s \right." % (self.latex, domain.latex)
+            else:
+                return r"%s \in %s \left| %s \right." % (self.latex, baseset.latex, domain.latex)
         else:
             return r"%s \in %s" % (self.latex, domain.latex)
 
@@ -4026,7 +3906,7 @@ class Expr(Basic, EvalfMixin):
             return Or(self, exp)
         
         assert self.is_random or exp.is_random
-            #overload given operator in probability theorems
+            # overload given operator in probability theorems
         from sympy.stats.rv import given
         return given(self, exp)
             
@@ -4089,27 +3969,6 @@ class Expr(Basic, EvalfMixin):
 
     def _eval_determinant(self):
         ...
-      
-    def as_Matrix(self):
-        from sympy import Matrix
-        if len(self.shape) == 1:
-            n = self.shape[0]
-            if isinstance(n, int) or n.is_Number:  
-                array = []
-                for i in range(n):
-                    array.append(self[sympify(i)])                
-                return Matrix(tuple(array))
-            return self
-
-        i_shape, j_shape = self.shape
-        if isinstance(i_shape, int) or i_shape.is_Number:
-            if isinstance(j_shape, int) or j_shape.is_Number:  
-                array = []
-                for i in range(i_shape):
-                    for j in range(j_shape):
-                        array.append(self[sympify(i), sympify(j)])
-                return Matrix(i_shape, j_shape, tuple(array))
-        return self
 
     def generate_int_limit(self, index, excludes=None, generator=None, free_symbol=None):
         x = generator.generate_free_symbol(excludes, free_symbol=free_symbol, integer=True)
@@ -4127,6 +3986,37 @@ class Expr(Basic, EvalfMixin):
             return self.func(*self.args, **kwargs)
         return self
 
+    def inverse(self):
+        inverse = self._eval_inverse()
+        if inverse is not None:
+            return inverse
+        if self.shape:            
+            from sympy import Inverse
+            return Inverse(self)
+        return Pow(self, S.NegativeOne)
+
+    def det(self):        
+        det = self._eval_determinant()
+        if det is not None:
+            return det
+        from sympy import Determinant
+        return Determinant(self)
+
+    def _eval_inverse(self):
+        ...
+
+    def domain_conditioned(self, condition):
+        assert not self.is_boolean
+        assert condition.is_boolean
+        if not condition._has(self):
+            return self.domain
+        
+        domain = condition.domain_conditioned(self)
+        if domain is None:
+            from sympy.sets.conditionset import conditionset       
+            return conditionset(self, condition, self.domain)
+        return domain
+      
 class AtomicExpr(Atom, Expr):
     """
     A parent class for object which are both atoms and Exprs.

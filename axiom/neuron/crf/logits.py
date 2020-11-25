@@ -8,6 +8,8 @@ from sympy import Symbol
 from sympy.concrete.products import Product
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
+from sympy.core.add import Plus
+from sympy.concrete.summations import Sum
 
 
 @plausible
@@ -46,15 +48,15 @@ def prove(Eq):
     
     Eq.s_definition, Eq.G_definition, Eq.x_definition, Eq.given, Eq.logits_recursion = apply(G, x, s, given=given)
 
-    Eq << Eq.s_definition.subs(Eq.given)
+    Eq << Eq.s_definition.this.rhs.subs(Eq.given)
     
-    Eq << Eq[-1].this.rhs.args[1].as_Add()
+    Eq << Eq[-1].this.rhs.args[1].astype(Plus)
     
     Eq << Eq[-1].subs(Eq.x_definition.subs(i, 0).reversed)    
     
-    Eq << Eq[-1].this.rhs.args[-1].args[1].as_Add()    
+    Eq << Eq[-1].this.rhs.args[-1].args[1].astype(Sum)    
     
-    Eq << Eq[-1].this.rhs.args[-1].args[1].function.as_Add()
+    Eq << Eq[-1].this.rhs.args[-1].args[1].function.astype(Plus)
     
     Eq << Eq[-1].this.rhs.args[-1].args[1].as_two_terms()
     

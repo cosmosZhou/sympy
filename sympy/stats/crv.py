@@ -530,7 +530,7 @@ class ContinuousPSpace(PSpace):
             # Integrate out all other random variables
             pdf = self.compute_density(rv, **kwargs)
             # return S.Zero if `domain` is empty set
-            if domain.set is S.EmptySet or isinstance(domain.set, FiniteSet):
+            if domain.set.is_EmptySet or isinstance(domain.set, FiniteSet):
                 return S.Zero if not cond_inv else S.One
             if isinstance(domain.set, Union):
                 return sum(

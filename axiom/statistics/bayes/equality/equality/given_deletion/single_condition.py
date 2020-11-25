@@ -5,7 +5,7 @@ from axiom.utility import plausible
 from axiom.utility import check
 from sympy import Symbol
 from axiom.statistics import bayes
-from axiom import algebre
+from axiom import algebre, statistics
 from sympy.stats.rv import pspace
 
 
@@ -43,15 +43,15 @@ def prove(Eq):
     
     Eq << Eq[0].domain_definition()
     
-    Eq.y_nonzero, Eq.z_nonzero = bayes.inequality.et.apply(Eq[-1]).split()
+    Eq.y_nonzero, Eq.z_nonzero = bayes.is_nonzero.et.apply(Eq[-1]).split()
     
-    Eq.xy_probability = bayes.theorem.apply(Eq.y_nonzero, var=x)
+    Eq.xy_probability = bayes.corollary.apply(Eq.y_nonzero, var=x)
     
-    Eq << bayes.theorem.apply(Eq[2], var=x)
+    Eq << bayes.corollary.apply(Eq[2], var=x)
     
     Eq << Eq[-1].subs(Eq[0])
     
-    Eq <<= Eq[-1].lhs.total_probability_theorem(z), Eq[-1].rhs.args[0].total_probability_theorem(z), Eq[-1].integral((pspace(z).symbol,))
+    Eq <<= statistics.total_probability_theorem.apply(Eq[-1].lhs, z), statistics.total_probability_theorem.apply(Eq[-1].rhs.args[0], z), Eq[-1].integral((pspace(z).symbol,))
     
     Eq << Eq[-3].subs(Eq.xy_probability)
     
@@ -59,7 +59,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[-4])
     
-    Eq << algebre.scalar.inequality.equality.apply(Eq[-1], Eq.y_nonzero)
+    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq.y_nonzero)
     
     Eq << Eq[-1].reversed
 

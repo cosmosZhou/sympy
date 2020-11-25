@@ -3189,16 +3189,16 @@ def _invert(eq, *symbols, **kwargs):
             lhs = powsimp(powdenest(lhs))
 
         if lhs.is_Function:
-            if hasattr(lhs, 'inverse') and len(lhs.args) == 1:
-                #                    -1
-                # f(x) = g  ->  x = f  (g)
-                #
-                # /!\ inverse should not be defined if there are multiple values
-                # for the function -- these are handled in _tsolve
-                #
-                rhs = lhs.inverse()(rhs)
-                lhs = lhs.args[0]
-            elif isinstance(lhs, atan2):
+#             if hasattr(lhs, 'inverse') and len(lhs.args) == 1:
+#                 #                    -1
+#                 # f(x) = g  ->  x = f  (g)
+#                 #
+#                 # /!\ inverse should not be defined if there are multiple values
+#                 # for the function -- these are handled in _tsolve
+#                 #
+#                 rhs = lhs.inverse()(rhs)
+#                 lhs = lhs.args[0]
+            if isinstance(lhs, atan2):
                 y, x = lhs.args
                 lhs = 2 * atan(y / (sqrt(x ** 2 + y ** 2) + x))
             elif lhs.func == rhs.func:

@@ -477,7 +477,7 @@ class KroneckerDelta(Function):
         return ()
 
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.integer
 
@@ -492,6 +492,12 @@ class KroneckerDelta(Function):
     def enumerate_KroneckerDelta(self):
         yield self
         
-    def as_Piecewise(self):
-        from sympy import Piecewise, Equality
-        return Piecewise((1, Equality(*self.args)), (0, True))
+    @classmethod
+    def simplifyEqual(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a KroneckerDelta object!
+        """
+        if rhs.is_One:        
+            return self.func(*lhs.args, equivalent=self).simplify()
+        return Function.simplifyEqual(self, lhs, rhs)
+            

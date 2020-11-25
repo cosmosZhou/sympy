@@ -51,9 +51,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.bisect(Slice[-1:])
     
-    Eq << Eq[-1].this.lhs.args[1].simplify(deep=True)
+    Eq << Eq[-1].this.lhs.args[1]().function.args[1].simplify()
     
-    Eq << Eq[-1].this.lhs.args[0].simplify(deep=True) 
+    Eq << Eq[-1].this.lhs.args[0].args[1].arg().function.simplify() 
     
     Eq.deduction = (Eq[-1] - Eq[-1].lhs.args[0]).subs(Eq[0])
     
@@ -75,12 +75,15 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.args[1].bisect(Slice[-1:])
     
-    Eq << (Eq[-1].rhs.args[1].function.args[3].this.simplify(deep=True), Eq[-1].rhs.args[1].function.args[2].this.simplify(deep=True)) 
+    Eq << Eq[-1].rhs.args[1].function.args[3].this().function.args[1].simplify()
+    
+    Eq << Eq[-2].rhs.args[1].function.args[2].this().function.args[1].simplify() 
     
     Eq << Eq[-3].this.rhs.subs(Eq[-2] + Eq[-1])
     
+#     Eq.column_transformation = Eq[-1].this.rhs.args[0]().function.simplify()
     Eq.column_transformation = Eq[-1].this.rhs.simplify(deep=True)
-
+#     Eq << expansion_by_minors.apply(Eq.column_transformation.rhs, i=i).this.rhs.args[-1].arg().function.simplify()
     Eq << expansion_by_minors.apply(Eq.column_transformation.rhs, i=i).this.rhs.simplify(deep=True)
 
     Eq << Eq[-1].this.rhs.args[1].doit()

@@ -6,7 +6,7 @@ from axiom.utility import check
 from sympy import Symbol
 from axiom.statistics import bayes
 from sympy.stats.rv import pspace
-from axiom import algebre
+from axiom import algebre, statistics
 
 
 # given: x | y & z = x | y
@@ -49,31 +49,31 @@ def prove(Eq):
     
     Eq.yz_nonzero, Eq.y_nonzero = Eq[0].domain_definition().split()
     
-    _, Eq.z_nonzero = bayes.inequality.et.apply(Eq.yz_nonzero).split()
+    _, Eq.z_nonzero = bayes.is_nonzero.et.apply(Eq.yz_nonzero).split()
     
-    Eq << bayes.theorem.apply(Eq.yz_nonzero, var=x)
+    Eq << bayes.corollary.apply(Eq.yz_nonzero, var=x)
     
     Eq << Eq[-1].subs(Eq[0])
     
-    Eq << bayes.theorem.apply(Eq.y_nonzero, var=z)
+    Eq << bayes.corollary.apply(Eq.y_nonzero, var=z)
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq.xy_probability = bayes.theorem.apply(Eq.y_nonzero, var=x)
+    Eq.xy_probability = bayes.corollary.apply(Eq.y_nonzero, var=x)
     
     Eq << Eq[-1].subs(Eq.xy_probability.reversed)
     
     Eq << Eq[-1].subs(Eq[1])
     
-    Eq << Eq[-1].lhs.total_probability_theorem(y).subs(bayes.theorem.apply(Eq.z_nonzero, var=x))
+    Eq << statistics.total_probability_theorem.apply(Eq[-1].lhs, y).subs(bayes.corollary.apply(Eq.z_nonzero, var=x))
     
     Eq << Eq[-2].integrate((pspace(y).symbol,)).subs(Eq[-1])
     
-    Eq << Eq.xy_probability.lhs.total_probability_theorem(y)
+    Eq << statistics.total_probability_theorem.apply(Eq.xy_probability.lhs, y)
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq << algebre.scalar.inequality.equality.apply(Eq[-1], Eq.z_nonzero)
+    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq.z_nonzero)
 
 
 if __name__ == '__main__':

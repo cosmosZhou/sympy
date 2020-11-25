@@ -47,7 +47,7 @@ def prove(Eq):
         
     Eq << apply(x.is_independent_of(z), y.is_independent_of(z), Unequal(P(x, y), 0))
     
-    Eq << bayes.inequality.et.apply(Eq[2]).split()
+    Eq << bayes.is_nonzero.et.apply(Eq[2]).split()
     
     Eq << bayes.equality.equality.conditional_joint_probability.nonzero.apply(Eq[0], Eq[1], Eq[-1])
     

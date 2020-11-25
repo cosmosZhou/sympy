@@ -4,52 +4,62 @@ from sympy.core.relational import Equality, Unequal
 from axiom.utility import plausible
 from axiom.utility import check
 from sympy import Symbol
-from sympy.stats.symbolic_probability import Probability as P
+from sympy.stats.symbolic_probability import Probability as P, Probability
 from sympy.stats.rv import pspace
+from sympy.concrete.expr_with_limits import ForAll
+from sympy.logic.boolalg import And
 
 
 # given: P(x) ! =0
 # imply: P(x, y) = P(y | x) P(x) 
 @plausible
-def apply(given, var):
-    assert given.is_Unequality
-    x_probability, zero = given.args
+def apply(self, *given):
+    assert self.is_Probability
+    if len(given) == 1:
+        given = given[0]
+        marginal_prob = self.marginalize(given)
     
-    assert zero.is_zero
-    eq = x_probability.arg    
-    if eq.is_Equality:
-        x, _x = eq.args
-        assert x.is_random and _x == pspace(x).symbol
-        
-        if var.is_Probability:
-            joint_probability = var
-            marginal_probability = joint_probability.marginalize(x)
-            if marginal_probability is None:
-                var = joint_probability.arg
-                joint_probability = P(joint_probability.arg, x)                  
-            else:
-                var = marginal_probability.arg
-            
-            assert not var.is_Conditioned        
-            return Equality(joint_probability, P(var | x) * P(x), given=given)
+        expr = marginal_prob.arg
+        if expr.is_Conditioned and self.arg.is_Conditioned:
+            given_probability = self.func(given, given=expr.rhs)
         else:
-            return Equality(P(x, var), P(var | x) * P(x), given=given)
-    elif eq.is_Conditioned:
-        x, _x = eq.lhs.args
-        assert x.is_random and _x == pspace(x).symbol
+            given_probability = self.func(given)
         
-        assert var.is_Probability
-        joint_probability = var
-        var = joint_probability.marginalize(x).arg
-        assert var.is_Conditioned    
-        assert var.rhs == eq.rhs 
-        return Equality(joint_probability, P(var | x) * P(x, given=eq.rhs), given=given)
+        given_marginal_prob = self.func(expr, given=given)
+        assert given_marginal_prob.arg.is_Conditioned
+        
+        if given_marginal_prob.arg.rhs.is_And:
+            given_additions = given_marginal_prob.arg.rhs._argset - {given.as_boolean()}                    
+            inequality = Unequal(self.func(given_probability.arg, given=And(*given_additions)), 0)
+        else:
+            inequality = Unequal(given_probability, 0)
+        
+        return ForAll[given: inequality](Equality(self, given_probability * given_marginal_prob))
     else:
-        assert eq.is_And       
-        assert var.is_random and var.is_symbol
-        assert var.as_boolean() not in eq._argset 
-        return Equality(P(eq, var), P(var | eq) * P(eq), given=given)
+        from sympy import S
+        marginal_prob = self
+        cond = S.true
+        for g in given:
+            marginal_prob = marginal_prob.marginalize(g)
+            cond &= g.as_boolean()            
         
+        expr = marginal_prob.arg
+        if expr.is_Conditioned and self.arg.is_Conditioned:
+            given_probability = self.func(cond, given=expr.rhs)
+        else:
+            given_probability = self.func(cond)
+        
+        given_marginal_prob = self.func(expr, given=cond)
+        assert given_marginal_prob.arg.is_Conditioned
+        
+        if given_marginal_prob.arg.rhs.is_And:
+            given_additions = given_marginal_prob.arg.rhs._argset - cond._argset                    
+            inequality = Unequal(self.func(given_probability.arg, given=And(*given_additions)), 0)
+        else:
+            inequality = Unequal(given_probability, 0)
+        
+        return ForAll[given: inequality](Equality(self, given_probability * given_marginal_prob))
+
     
 
 @check
@@ -57,15 +67,7 @@ def prove(Eq):
     x = Symbol.x(real=True, random=True)    
     y = Symbol.y(real=True, random=True)
     
-    given = Unequal(P(x), 0)
-    
-    Eq << apply(given, y)
-    
-    Eq << Eq[-1].lhs.bayes_theorem(x)
-    
-    Eq << Eq[-1].as_Or()
-    
-    Eq << (Eq[-1] & Eq[0]).split()
+    Eq << apply(Probability(x, y), y)
 
 
 if __name__ == '__main__':

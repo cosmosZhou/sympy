@@ -6,6 +6,7 @@ from axiom.utility import check
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.statistics import bayes
+from axiom import algebre
 
 
 # given: P(x, y) = P(x) P(y)
@@ -42,7 +43,7 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()
     
-    Eq << bayes.theorem.apply(Eq[1], var=y)
+    Eq << bayes.corollary.apply(Eq[1], var=y)
     
     Eq << Eq[-1].subs(Eq[0])
     
@@ -50,7 +51,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.collect(P(x))
     
-    Eq << Eq[-1].as_Or()
+    Eq << algebre.is_zero.imply.ou.apply(Eq[-1])
     
     Eq << (Eq[-1] & Eq[1]).split()
     

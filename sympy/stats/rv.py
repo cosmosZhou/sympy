@@ -299,8 +299,8 @@ class RandomSymbol(Expr):
     """
 
     @property
-    def atomic_dtype(self):
-        return self.symbol.atomic_dtype
+    def dtype(self):
+        return self.symbol.dtype
 
     @property
     def shape(self):
@@ -1006,7 +1006,7 @@ class PDFInvoker(Expr):
         return result(*self.args[1:])
     
     @property
-    def atomic_dtype(self):
+    def dtype(self):
         from sympy.core.symbol import dtype
         return dtype.real
 
@@ -1762,7 +1762,7 @@ class Distribution(Basic):
         return self.pdf(*args)
     
     @property
-    def dtype(self):
+    def type(self):
         return dtype.distribution   
 
     def _latex(self, p):

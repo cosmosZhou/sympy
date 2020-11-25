@@ -369,7 +369,7 @@ class DiscretePSpace(PSpace):
             condition = Eq(condition.args[0], condition.args[1])
         try:
             _domain = self.value.domain_conditioned(condition)
-            if condition == False or _domain is S.EmptySet:
+            if condition == False or _domain.is_EmptySet:
                 return S.Zero
             if condition == True or _domain == self.domain:
                 return S.One
