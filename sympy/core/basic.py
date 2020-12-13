@@ -11,11 +11,12 @@ from .singleton import S
 
 from inspect import getmro
 
+
 def as_Basic(expr):
     """Return expr as a Basic instance using strict sympify
     or raise a TypeError; this is just a wrapper to _sympify,
     raising a TypeError instead of a SympifyError."""
-    from sympy.utilities.misc import func_name
+    from sympy.utilities.miscellany import func_name
     try:
         return _sympify(expr)
     except SympifyError:
@@ -141,10 +142,9 @@ class Basic(with_metaclass(ManagedProperties)):
         
         from sympy.stats.rv import given
         return given(other, self)
-        
 
     def union_sets(self, b):
-        return
+        ...
 
     def __new__(cls, *args, **kwargs):
         obj = object.__new__(cls)
@@ -158,7 +158,6 @@ class Basic(with_metaclass(ManagedProperties)):
             if name not in obj._assumptions:
                 if value is not None:
                     obj._assumptions[name] = value
-        
                     
         obj._domain_defined = {}
         for arg in args:
@@ -2045,10 +2044,28 @@ class Basic(with_metaclass(ManagedProperties)):
         if self.is_UniversalSet:
             return True
         if other.is_UniversalSet:
-            return             
+            if self.is_FiniteSet:
+                return False
             
         if other.type in self.type or self.type in other.type:
             return other.is_subset(self)
+
+    def _contains(self, other):
+        ...
+        
+    def contains(self, other):
+        other = sympify(other, strict=True)
+        ret = sympify(self._contains(other))
+        if ret is not None and ret.is_BooleanAtom:
+            return ret
+            
+        domain_assumed = other.domain_assumed
+        if domain_assumed :
+            intersect = domain_assumed & self
+            if not intersect:
+                return S.false
+            if intersect == domain_assumed:
+                return S.true
 
     def infimum(self):
         return self
@@ -2190,36 +2207,26 @@ class Basic(with_metaclass(ManagedProperties)):
     def domain_definition(self):
         return S.true
       
-    def simplify_forall(self, forall):
-        ...        
-      
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
-        """
-        precondition: self.lhs is a Basic object!
-        """
-        if rhs.is_zero:
-            if lhs._coeff_isneg():
-                return self.func(-lhs, 0, equivalent=self)
-            elif lhs.is_Add:
-                cls = lhs.func
-                _lhs = []
-                _rhs = []
-                for arg in lhs.args:
-                    if arg._coeff_isneg():
-                        _rhs.append(-arg)
-                    else:
-                        _lhs.append(arg)
-                if _rhs:
-                    return self.func(cls(*_lhs), cls(*_rhs), equivalent=self).simplify()
-            elif lhs.is_KroneckerDelta:
-                return self.invert_type(*lhs.args, equivalent=self).simplify()
-        elif rhs.is_Plus and lhs in rhs.args:
-            cls = rhs.func
-            args = [*rhs.args]
-            args.remove(lhs)
-            return self.func(0, cls(*args), equivalent=self).simplify()
+    def simplify_ForAll(cls, self, *args):
+        ...
 
+    @classmethod
+    def simplify_Unequal(cls, self, lhs, rhs):
+        ...
+
+    @classmethod
+    def simplify_Contains(cls, self, lhs, rhs):
+        ...
+
+    @classmethod
+    def simplify_NotContains(cls, self, lhs, rhs):
+        ...
+        
+    @classmethod
+    def simplify_Equal(cls, self, lhs, rhs):
+        ...
+        
     def domain_defined(self, x):
         domain_defined = self._domain_defined
         if x in domain_defined:
@@ -2246,6 +2253,13 @@ class Basic(with_metaclass(ManagedProperties)):
     @classmethod
     def rewrite_from_Minimize(cls, self):
         return cls.rewrite_from_Maximize(self)
+    
+    def _eval_Subset_reversed(self, lhs):
+        ...
+    
+    def _eval_Subset(self, rhs):
+        ...
+
     
 class Atom(Basic):
     """

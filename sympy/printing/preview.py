@@ -15,7 +15,7 @@ except ImportError:
 from sympy.core.compatibility import unicode, u_decode, string_types
 from sympy.utilities.decorator import doctest_depends_on
 from sympy.utilities.exceptions import SymPyDeprecationWarning
-from sympy.utilities.misc import find_executable
+from sympy.utilities.miscellany import find_executable
 from .latex import latex
 
 __doctest_requires__ = {('preview',): ['pyglet']}

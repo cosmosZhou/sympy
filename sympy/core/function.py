@@ -50,7 +50,7 @@ from sympy.core.parameters import global_parameters
 from sympy.core.logic import fuzzy_and
 from sympy.core.compatibility import string_types, with_metaclass, PY3, range
 from sympy.utilities import default_sort_key
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 from sympy.utilities.iterables import has_dups, sift
 
 import mpmath
@@ -637,7 +637,7 @@ class Function(Application, Expr):
         be called directly; derived classes can overwrite this to implement
         asymptotic expansions.
         """
-        from sympy.utilities.misc import filldedent
+        from sympy.utilities.miscellany import filldedent
         raise PoleError(filldedent('''
             Asymptotic expansion of %s around %s is
             not implemented.''' % (type(self), args0)))
@@ -704,7 +704,8 @@ class Function(Application, Expr):
             s = s.removeO()
             s = s.subs(v, zi).expand() + Order(o.expr.subs(v, zi), x)
             return s
-        if (self.func.nargs is S.Naturals0
+        from sympy.sets import NonnegativeIntegers
+        if (self.func.nargs == NonnegativeIntegers
                 or (self.func.nargs == FiniteSet(1) and args0[0])
                 or any(c > 1 for c in self.func.nargs)):
             e = self
@@ -1032,7 +1033,17 @@ class AppliedUndef(Function):
     @property
     def dtype(self):
         if self.is_set:
-            return self.dtype
+            return self.etype.set
+        assumptions = self._assumptions
+        from sympy import dtype
+        if 'integer' in assumptions:
+            return dtype.integer
+        if 'rational' in assumptions:
+            return dtype.rational
+        if 'real' in assumptions:
+            return dtype.real
+        if 'complex' in assumptions:
+            return dtype.complex
         return super(AppliedUndef, self).dtype
     
 class UndefinedFunction(FunctionClass):
@@ -1367,7 +1378,7 @@ class Derivative(Expr):
         from sympy.matrices.common import MatrixCommon
         from sympy import Integer, MatrixExpr
         from sympy.tensor.array import NDimArray
-        from sympy.utilities.misc import filldedent
+        from sympy.utilities.miscellany import filldedent
 
         expr = sympify(expr)
         symbols_or_none = getattr(expr, "free_symbols", None)
@@ -2316,7 +2327,8 @@ class Difference(Expr):
         return self.expr._diff_wrt and isinstance(self.doit(), Difference)
 
     def __new__(cls, expr, variable, count=1, **kwargs):
-        assert count >= 0 and (isinstance(count, int) or count.is_integer)
+#         assert count >= 0
+        assert isinstance(count, int) or count.is_integer
         from sympy.core.relational import Equality
         if isinstance(expr, Equality):
             lhs = Difference.__new__(cls, expr.lhs, variable, count)
@@ -4067,7 +4079,7 @@ def count_ops(expr, visual=False):
     from sympy.core.relational import Relational
     from sympy.simplify.radsimp import fraction
     from sympy.logic.boolalg import BooleanFunction
-    from sympy.utilities.misc import func_name
+    from sympy.utilities.miscellany import func_name
 
     expr = sympify(expr)
     if isinstance(expr, Expr) and not expr.is_Relational:

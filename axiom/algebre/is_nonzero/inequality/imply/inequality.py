@@ -11,7 +11,7 @@ def apply(*given):
     unequality.rhs.is_zero
     
     divisor = unequality.lhs
-    return Unequal(eq.lhs / divisor, eq.rhs / divisor, given=given)
+    return Unequal(eq.lhs / divisor, eq.rhs / divisor)
 
 
 from axiom.utility import check

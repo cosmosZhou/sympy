@@ -5,7 +5,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 from sympy import Symbol
 
 

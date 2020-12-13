@@ -4,7 +4,7 @@ from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy import Symbol
 
-from sympy.concrete.expr_with_limits import Exists, ForAll, MAX, MIN
+from sympy import Exists, ForAll, MAX, MIN
 
 from sympy.sets.sets import Interval
 from sympy.core.function import Function
@@ -25,9 +25,7 @@ def apply(given):
     assert given.function.rhs == _f
 
     y = Symbol.y(real=True)
-    return ForAll(Exists(Equality(f, y), (z, a, b)),
-            (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))),
-            given=given)               
+    return ForAll(Exists(Equality(f, y), (z, a, b)), (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))))               
 
 
 from axiom.utility import check

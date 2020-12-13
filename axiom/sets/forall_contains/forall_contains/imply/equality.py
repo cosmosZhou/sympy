@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 from axiom import sets
 from sympy.sets.contains import Contains
 
@@ -24,7 +24,7 @@ def apply(*given):
     _x, _A = forall_B.function.args
     assert x == _x and A == _A
     
-    return Equality(A, B, given=given)
+    return Equality(A, B)
 
 from axiom.utility import check
 

@@ -4,7 +4,7 @@ from sympy.sets.contains import Contains
 from sympy.core.relational import Equality, LessThan
 from sympy import Symbol
 from sympy.functions.elementary.complexes import Abs
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 from axiom import sets
 from sympy.core.function import Function
 from axiom.sets.forall_contains.forall_contains.forall_equality.imply.equality import analyze
@@ -16,7 +16,7 @@ from axiom.sets.forall_contains.forall_contains.forall_equality.imply.equality i
 @plausible
 def apply(*given):
     A, B, a, b, fa, gb = analyze(*given)
-    return LessThan(Abs(A), Abs(B), given=given)
+    return LessThan(Abs(A), Abs(B))
 
 
 from axiom.utility import check

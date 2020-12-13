@@ -1,7 +1,7 @@
 from sympy.core.relational import Unequality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
+from sympy import ForAll, LAMBDA
 from sympy import Symbol
 from sympy.core.numbers import oo
 from axiom import sets
@@ -47,7 +47,7 @@ def apply(given):
     assert x[n] == lhs
     assert x[i] == rhs
     
-    return ForAll[j:i, i:n + 1](Unequality(x[i], x[j]), given=given)
+    return ForAll[j:i, i:n + 1](Unequality(x[i], x[j]))
 
 
 from axiom.utility import check

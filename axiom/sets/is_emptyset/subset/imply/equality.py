@@ -30,7 +30,7 @@ def apply(*given):
         assert B == C
         C = _B
 
-    return Equality(C - A, C, given=given)
+    return Equality(C - A, C)
 
 
 from axiom.utility import check

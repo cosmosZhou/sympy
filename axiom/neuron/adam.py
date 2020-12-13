@@ -3,6 +3,7 @@ from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy.concrete.summations import Sum
 from sympy import Symbol
+from sympy.core.add import Plus
 
 def extract(recurrence):
     lhs, rhs = recurrence.args
@@ -31,8 +32,7 @@ def apply(*given):
 
     k = Symbol.k(integer=True, nonnegative=True)
 
-    return Equality(m[k], beta ** k * (1 - beta) * Sum[t:1:k](beta ** (-t) * g[t]),
-                    given=given)
+    return Equality(m[k], beta ** k * (1 - beta) * Sum[t:1:k](beta ** (-t) * g[t]))
 
 
 from axiom.utility import check
@@ -61,7 +61,7 @@ def prove(Eq):
 
     Eq << Eq[-1].sum((t, 1, k))
 
-    Eq << Eq[-1].this.rhs.as_two_terms()
+    Eq << Eq[-1].this.rhs.astype(Plus)
 
     Eq << Eq[-1] - Eq[-1].rhs.args[0]
 

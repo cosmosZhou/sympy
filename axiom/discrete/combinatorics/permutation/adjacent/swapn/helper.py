@@ -4,10 +4,11 @@ from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 from sympy.concrete.products import MatProduct
-from axiom.algebre.matrix import elementary
+from axiom.discrete.matrix import elementary
 from sympy import Symbol
+from axiom import algebre
 
 
 @plausible
@@ -43,25 +44,29 @@ def prove(Eq):
     Eq << apply(x, d[:m])    
     
     k = Eq[-1].lhs.variable
-    Eq << Eq[-1][k]
-    
-    Eq << Eq[-1].subs(m, 1)
-    
-    w = Eq[0].lhs.base
     i, j = Eq[0].lhs.indices
+    w = Eq[0].lhs.base
+    multiplier = MatProduct[i:m](w[i, d[i]])
+    Eq.hypothesis = Equality(x[(LAMBDA[k:n](k) @ multiplier)[k]], (x @ multiplier)[k], plausible=True)
+    
+    Eq.initial = Eq.hypothesis.subs(m, 1)
+    
     d = Eq[1].rhs.args[1].function.indices[1].base
     Eq << elementary.swap.identity.apply(x, w, left=False, reference=None).subs(i, 0).subs(j, d[0])
     
-    Eq << Eq[2].subs(m, m + 1)
+    Eq.induction = Eq.hypothesis.subs(m, m + 1)
     
     Eq << elementary.swap.identity_general.apply(x, LAMBDA[k](Eq[1].lhs.function.indices[0]).simplify(), w)
     
     Eq << Eq[-1].subs(i, m).subs(j, d[m])
     
-    Eq << Eq[2].reference((k, 0, n - 1))
+    Eq << Eq.hypothesis.reference((k, 0, n - 1))
     
     Eq << Eq[-1].subs(Eq[1])
+    
+    Eq << Eq.induction.induct()
 
+    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
     
 if __name__ == '__main__':
     prove(__file__)

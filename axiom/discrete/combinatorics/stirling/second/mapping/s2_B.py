@@ -5,11 +5,10 @@ from sympy.functions.combinatorial.numbers import Stirling
 from sympy.sets.sets import image_set, Interval, Union
 from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
-from axiom import sets
+from axiom import sets, algebre
 from sympy.sets.conditionset import conditionset
-from sympy.concrete.expr_with_limits import UNION, ForAll, LAMBDA
+from sympy import UNION, ForAll, LAMBDA
 from sympy.core.numbers import oo
-from sympy.logic.boolalg import Or
 
 @plausible
 def apply(n, k, s2=None, B=None):
@@ -62,8 +61,9 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq.s2_definition)
     s0_plausible = Eq[-1]
 
-    Eq.s2_quote_definition = s2_quote.assertion()
-    Eq << s0_quote.assertion()
+    Eq.s2_quote_definition = sets.imply.forall.conditionset.apply(s2_quote)
+    
+    Eq << sets.imply.forall.conditionset.apply(s0_quote)
 
     Eq << Eq[-1].split()
     x_abs_positive = Eq[-3]
@@ -144,7 +144,7 @@ def prove(Eq):
 
     Eq.s2_n_definition = s2_n.this.definition
 
-    Eq << s2_n.assertion()
+    Eq << sets.imply.forall.given.baseset.apply(s2_n)
 
     Eq << Eq[-1].subs(Eq.s2_definition).split()
 
@@ -181,7 +181,8 @@ def prove(Eq):
 
     Eq.x_tilde_abs_sum = Eq[-1].subs(Eq.x_abs_sum_s2, Eq.x_j_definition.abs())
 
-    Eq << Eq.x_tilde_abs.astype(Or)
+    Eq << algebre.equality.imply.ou.two.apply(Eq.x_tilde_abs)
+    
     Eq << Eq[-1].forall((i, i < j))
     
     Eq << Eq[-2].forall((i, i >= j))
@@ -216,7 +217,7 @@ def prove(Eq):
     Eq << Eq[-1].this.limits[0].subs(Eq.s2_n_definition)
     
     Eq.subset_B_plausible = Eq.subset_B_definition.union({n.set})
-    Eq << sets.imply.forall.apply(Eq.subset_B_plausible, simplify=False)
+    Eq << sets.imply.forall.limits_assert.apply(Eq.subset_B_plausible.limits, simplify=False)
         
     Eq << Eq[-1].definition.split()[1]    
     Eq << Eq[-1].apply(sets.contains.imply.equality.union)    

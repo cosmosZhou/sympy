@@ -20,9 +20,9 @@ def apply(given, reverse=False):
     A, B = AB.args
 
     if reverse:
-        return Equality(B - A, B, given=given)
+        return Equality(B - A, B)
 
-    return Equality(A - B, A, given=given)
+    return Equality(A - B, A)
 
 
 from axiom.utility import check

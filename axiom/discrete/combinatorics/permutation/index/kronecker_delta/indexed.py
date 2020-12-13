@@ -3,8 +3,8 @@ from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import LAMBDA
-from axiom import sets
+from sympy import LAMBDA
+from axiom import sets, algebre
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
@@ -28,7 +28,7 @@ def apply(given, i=None, j=None):
     assert j >= 0 and j < n
     assert i >= 0 and i < n
         
-    return Equality(KroneckerDelta(x[i], x[j]), KroneckerDelta(i, j), given=given)
+    return Equality(KroneckerDelta(x[i], x[j]), KroneckerDelta(i, j))
 
 
 @check
@@ -45,13 +45,21 @@ def prove(Eq):
     
     Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
     
-    Eq << Eq[-1].bisect(Equality(i, j))
+    Eq << Eq[-1].bisect(Equality(i, j)).split()
     
-    Eq << Eq[-1].this().function.simplify()
+    Eq <<= ~Eq[-1], ~Eq[-2]
+    
+    Eq << Eq[-2].apply(algebre.equality.inequality.imply.inequality)
+    
+    Eq << Eq[-1].apply(algebre.inequality.inequality.imply.et)
     
     Eq << sets.equality.imply.forall_equality.nonoverlapping.apply(Eq[0].abs())
-    
+
     Eq << Eq[-1].subs(Eq[-1].rhs.indices[0], j)
+    
+    Eq << Eq[-1].subs(Eq[-1].variable, i)
+    
+    Eq << ~Eq[-1]
     
 if __name__ == '__main__':
     prove(__file__)

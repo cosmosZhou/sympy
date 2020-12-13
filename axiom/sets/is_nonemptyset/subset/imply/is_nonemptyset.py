@@ -23,7 +23,7 @@ def apply(*given, evaluate=False):
             return
                          
     assert A == _A and B == _B or A == _B and B == _A
-    return Unequality(B - A, A.etype.emptySet, given=given, evaluate=evaluate)
+    return Unequality(B - A, A.etype.emptySet, evaluate=evaluate)
 
 
 from axiom.utility import check

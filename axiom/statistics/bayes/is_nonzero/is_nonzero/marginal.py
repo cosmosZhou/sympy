@@ -17,7 +17,7 @@ def apply(given):
     assert given.rhs.is_zero
     eq = given.lhs.arg
     assert eq.is_Conditioned     
-    return Unequal(P(eq.lhs), 0, given=given)
+    return Unequal(P(eq.lhs), 0)
 
 
 @check

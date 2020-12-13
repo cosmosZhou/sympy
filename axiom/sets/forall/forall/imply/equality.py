@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy import Symbol
 from sympy.core.function import Function
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 from axiom import sets
 from sympy.sets.contains import Contains
 from sympy.sets.conditionset import conditionset
@@ -21,7 +21,7 @@ def apply(*given):
     assert forall_A.function == B.image_set()[-1]
     assert forall_B.function == A.image_set()[-1]
 
-    return Equality(A, B, given=given)
+    return Equality(A, B)
 
 from axiom.utility import check
 
@@ -39,9 +39,9 @@ def prove(Eq):
     assert f.shape == g.shape == ()
     
     Eq << apply(ForAll[x:A](Equality(g(x), 1)), ForAll[x:B](Equality(f(x), 1)))
-    Eq << sets.imply.conditionset.apply(A)
+    Eq << sets.imply.forall.conditionset.apply(A)
     
-    Eq << sets.imply.conditionset.apply(B)
+    Eq << sets.imply.forall.conditionset.apply(B)
     
     Eq << ForAll[x:A](Contains(x, B), plausible=True)
     

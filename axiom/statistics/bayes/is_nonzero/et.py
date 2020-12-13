@@ -29,9 +29,9 @@ def apply(given, wrt=None):
                 lhs.append(eq)
         lhs = And(*lhs)
         rhs = And(*rhs)
-        return And(Unequal(P(lhs), 0), Unequal(P(rhs), 0), given=given)            
+        return And(Unequal(P(lhs), 0), Unequal(P(rhs), 0))            
     else:
-        return And(*[Unequal(P(eq), 0) for eq in eqs.args], given=given)
+        return And(*[Unequal(P(eq), 0) for eq in eqs.args])
 
 
 @check

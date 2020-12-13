@@ -313,6 +313,20 @@ class LatexPrinter(Printer):
     _print_BooleanTrue = _print_bool
     _print_BooleanFalse = _print_bool
 
+    def conditions_wrapper(self, cond, right_brace=True):
+        if cond.is_And:
+            delimiter = r'\\'
+            center = 'c'
+
+            array = ["{%s}" % self._print(cond) for cond in cond.args]
+            if right_brace:
+                return r"{\left.\begin{array}{%s}%s\end{array}\right\}}" % (center, delimiter.join(array))
+            else:
+                return r"{\left\{\begin{array}{%s}%s\end{array}\right.}" % (center, delimiter.join(array))
+#                 A = r"{\left.\begin{array}{%s}%s\end{array}\right}}" % (center, delimiter.join(array))
+        else:
+            return "{%s}" % self._print(cond)
+
     def _print_NoneType(self, e):
         return r"\text{%s}" % e
 
@@ -609,11 +623,11 @@ class LatexPrinter(Printer):
         return self._do_exponent(tex, exp)
 
     def _print_Not(self, e):
-        from sympy import Equivalent, Implies
+        from sympy import Equivalent, Sufficient
         if isinstance(e.args[0], Equivalent):
             return self._print_Equivalent(e.args[0], r"\not\Leftrightarrow")
-        if isinstance(e.args[0], Implies):
-            return self._print_Implies(e.args[0], r"\not\Rightarrow")
+        if isinstance(e.args[0], Sufficient):
+            return self._print_Imply(e.args[0], r"\not\Rightarrow")
         if (e.args[0].is_Boolean):
             return r"\neg (%s)" % self._print(e.args[0])
         else:
@@ -638,13 +652,6 @@ class LatexPrinter(Printer):
     def _print_Xor(self, e):
         args = sorted(e.args, key=default_sort_key)
         return self._print_LogOp(args, r"\veebar")
-
-    def _print_Implies(self, e, altchar=None):
-        return self._print_LogOp(e.args, altchar or r"\Rightarrow")
-
-    def _print_Equivalent(self, e, altchar=None):
-        args = sorted(e.args, key=default_sort_key)
-        return self._print_LogOp(args, altchar or r"\Leftrightarrow")
 
     def _print_conjugate(self, expr, exp=None):
         tex = r"\overline{%s}" % self._print(expr.args[0])
@@ -1348,17 +1355,6 @@ class LatexPrinter(Printer):
         tex = r"\theta\left(%s\right)" % self._print(expr.args[0])
         if exp:
             tex = r"\left(%s\right)^{%s}" % (tex, exp)
-        return tex
-
-    def _print_KroneckerDelta(self, expr, exp=None):
-        i = self._print(expr.args[0])
-        j = self._print(expr.args[1])
-        if expr.args[0].is_Atom and expr.args[1].is_Atom:
-            tex = r'\delta_{%s %s}' % (i, j)
-        else:
-            tex = r'\delta_{%s, %s}' % (i, j)
-        if exp is not None:
-            tex = r'\left(%s\right)^{%s}' % (tex, exp)
         return tex
 
     def _print_LeviCivita(self, expr, exp=None):

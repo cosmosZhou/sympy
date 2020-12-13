@@ -44,7 +44,7 @@ from sympy.core.symbol import Symbol, Wild, symbols
 from sympy.functions import exp
 from sympy.integrals.integrals import Integral
 from sympy.utilities.iterables import has_dups
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 from sympy.solvers.deutils import _preprocess, ode_order, _desolve
 from sympy.solvers.solvers import solve

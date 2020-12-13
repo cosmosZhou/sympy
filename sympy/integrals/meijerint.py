@@ -46,7 +46,7 @@ from sympy.functions.elementary.hyperbolic import \
 from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.functions.special.hyper import meijerg
 from sympy.utilities.iterables import multiset_partitions, ordered
-from sympy.utilities.misc import debug as _debug
+from sympy.utilities.miscellany import debug as _debug
 from sympy.utilities import default_sort_key
 
 # keep this at top for easy reference

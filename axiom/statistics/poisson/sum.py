@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << Eq[0].lhs.this.doit(evaluate=False)
 
-    Eq << Eq[-1].subs(Eq[0])
+    Eq << Eq[0].reversed + Eq[-1]
 
     Eq << Eq[-1].this.rhs.powsimp()
 
@@ -52,7 +52,7 @@ def prove(Eq):
 
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(lamda0, lamda1, y)
 
-    Eq << Eq[-1].subs(Eq[-2])
+    Eq << Eq[-2].reversed + Eq[-1]
 
     Eq << Eq[-1].this.rhs.combsimp()
 

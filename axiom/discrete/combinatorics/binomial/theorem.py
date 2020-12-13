@@ -5,6 +5,8 @@ from axiom.utility import plausible
 from sympy import Symbol
 from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
+from sympy.core.add import Plus
+from axiom import algebre
 
 @plausible
 def apply(x, y, n=None, free_symbol=None):
@@ -31,29 +33,34 @@ def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(x, y, n)
 
-    Eq << Eq[-1].subs(n, n + 1)
+    Eq.induction = Eq[-1].subs(n, n + 1)
 
-    Eq << (Eq[-2] * (x + y)).powsimp()
+    Eq << (Eq[-1] * (x + y)).powsimp()
 
-    Eq << Eq[-1].subs(Eq[-2])
+#     Eq << Eq[-1].subs(Eq.induction)
 
-    Eq << Eq[-1].this.rhs.distribute()
-
+    Eq << Eq[-1].this.rhs.astype(Sum)
+    
     Eq << Eq[-1].this.rhs.function.expand()
 
     Eq << Eq[-1].this.rhs.function.powsimp()
-
+    
     (k, *_), *_ = Eq[-1].rhs.limits
-    Eq << Eq[-1].this.rhs.as_two_terms()
-
+    Eq << Eq[-1].this.rhs.astype(Plus)
+    
     Eq << Eq[-1].this.rhs.args[1].limits_subs(k, k - 1)
-
-    Eq << Eq[-1].subs(Pascal.apply(n + 1, k))
-
-    Eq << Eq[-1].this.lhs.expand()
-
-    Eq << Eq[0].subs(n, 0)
-
+    
+    Eq << Eq.induction.subs(Pascal.apply(n + 1, k))
+    
+    Eq << Eq[-1].this.rhs.astype(Plus)
+    
+    Eq << Eq[-1].this.rhs.args[0].simplify()
+    
+    Eq << Eq[-1].this.rhs.args[1].simplify()
+    
+    Eq << Eq.induction.induct()
+    
+    Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=n)
 
 if __name__ == '__main__':
     prove(__file__)

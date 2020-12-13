@@ -19,7 +19,7 @@ def apply(given, wrt):
     probability = given.lhs
     p = probability.marginalize(wrt)
     
-    return Unequal(P(p.arg | wrt), 0, given=given)
+    return Unequal(P(p.arg | wrt), 0)
 
 
 @check

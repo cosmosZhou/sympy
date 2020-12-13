@@ -608,7 +608,7 @@ class Plus(Expr, AssocOp):
                 break
             
         if delta is not None:
-            #to prevent infinite loop!
+            # to prevent infinite loop!
             this = self._subs(delta, S.Zero)
             if this is self:
                 return 
@@ -639,12 +639,17 @@ class Plus(Expr, AssocOp):
     def _eval_is_extended_positive(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            return self.clear_infinitesimal().is_extended_nonnegative
+            return self.clear_infinitesimal()[0].is_extended_nonnegative
         elif is_infinitesimal is False:
-            return self.clear_infinitesimal().is_extended_positive
+            return self.clear_infinitesimal()[0].is_extended_positive
         
         if self.is_number:
             return Expr._eval_is_extended_positive(self)
+        
+#         from sympy import Infinitesimal, NegativeInfinitesimal
+#         if self.has(Infinitesimal, NegativeInfinitesimal):
+#             print(self.args)
+#         assert not self.has(Infinitesimal, NegativeInfinitesimal), self.args
         
         f = self.min()
         if f is not self and f.is_extended_positive:
@@ -660,12 +665,17 @@ class Plus(Expr, AssocOp):
     def _eval_is_extended_negative(self):
         is_infinitesimal = self.is_infinitesimal
         if is_infinitesimal is True:
-            return self.clear_infinitesimal().is_extended_negative
+            return self.clear_infinitesimal()[0].is_extended_negative
         elif is_infinitesimal is False:
-            return self.clear_infinitesimal().is_extended_nonpositive
+            return self.clear_infinitesimal()[0].is_extended_nonpositive
             
         if self.is_number:            
             return Expr._eval_is_extended_negative(self)
+        
+#         from sympy import Infinitesimal, NegativeInfinitesimal
+#         if self.has(Infinitesimal, NegativeInfinitesimal):
+#             print(self.args)        
+#         assert not self.has(Infinitesimal, NegativeInfinitesimal), self.args
         
         f = self.max()
         if f is not self and f.is_extended_negative:
@@ -1018,7 +1028,7 @@ class Plus(Expr, AssocOp):
             yield from arg.enumerate_KroneckerDelta()
 
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
+    def simplify_Equal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a Plus object!
         """
@@ -1037,9 +1047,22 @@ class Plus(Expr, AssocOp):
             args.remove(rhs)
             return self.func(cls(*args), 0, equivalent=self).simplify()
         elif rhs.is_zero:
-            return Basic.simplifyEqual(self, lhs, rhs)
+            return Basic.simplify_Equal(self, lhs, rhs)
             
-            
+    @classmethod
+    def simplify_Unequal(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Plus object!
+        """
+        if len(lhs.args) == 2:
+            if rhs.is_zero:
+                lhs, rhs = lhs.args
+                if lhs._coeff_isneg():
+                    rhs, lhs = -lhs, rhs
+                    return self.func(lhs, rhs, equivalent=self).simplify()
+                if rhs._coeff_isneg():
+                    rhs = -rhs
+                    return self.func(lhs, rhs, equivalent=self).simplify()
 
     def simplifyKroneckerDelta(self):        
         dic = {}
@@ -1339,9 +1362,8 @@ class Plus(Expr, AssocOp):
             return False
 
     def clear_infinitesimal(self):
-        if self.is_infinitesimal is not None:
-            return self.func(*self.args[:-1])
-        return self
+        assert self.is_infinitesimal is not None
+        return self.func(*self.args[:-1]), self.args[-1]        
 
     def __iter__(self):
         raise TypeError
@@ -1349,7 +1371,7 @@ class Plus(Expr, AssocOp):
     def __getitem__(self, index, **_):
         shape = self.shape
         len_shape = len(shape)
-        if isinstance(index, (tuple,list)):
+        if isinstance(index, (tuple, list)):
             len_subtracted = len(index)
         else:
             len_subtracted = 1
@@ -1458,7 +1480,55 @@ class Plus(Expr, AssocOp):
             return self.expr.func(*(self.func(arg, *self.variable_count).simplify() for arg in self.expr.args))
         return self
 
+    @classmethod
+    def rewrite_from_AddWithLimits(cls, self):
+        if isinstance(self.function, cls):
+            function = self.function
+            function = self.function.args
+        elif self.function.is_Times:
+            function = self.function.astype(cls)
+            if isinstance(function, cls):
+                function = function.args
+        else:
+            return self                   
+        return cls(*(self.func(f, *self.limits) for f in function))
+
+    @classmethod
+    def rewrite_from_Sum(cls, self):
+        return cls.rewrite_from_AddWithLimits(self)
         
+    @classmethod
+    def rewrite_from_Integrate(cls, self):
+        return cls.rewrite_from_AddWithLimits(self)
+
+    @classmethod
+    def rewrite_from_MatMul(cls, self):
+        for i, arg in enumerate(self.args):
+            if isinstance(arg, cls):
+                args = [*self.args]
+                if i > 0:
+                    left = arg.func(*(self.func(*args[:i]) @ a for a in arg.args))
+                    right = args[i + 1:]
+                    if right:
+                        return left @ self.func(*right)
+                    else:
+                        return left
+                else:
+                    return self
+        return self
+        
+    @classmethod
+    def rewrite_from_Times(cls, self):
+        for i, arg in enumerate(self.args):
+            if isinstance(arg, cls):                
+                summand = []
+                for e in arg.args:
+                    args = [*self.args]
+                    args[i] = e 
+                    summand.append(self.func(*args))
+                return cls(*summand)    
+        return self
+    
 Add = Plus
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

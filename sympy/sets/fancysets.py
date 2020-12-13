@@ -7,7 +7,7 @@ from sympy.core.symbol import Dummy, symbols, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
 from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 class Reals(with_metaclass(Singleton, Interval)):
     """
@@ -1155,7 +1155,8 @@ class ComplexRegion(Set):
 
 
 class Complexes(with_metaclass(Singleton, ComplexRegion)):
-
+    is_UniversalSet = True
+    
     def __new__(cls):
         return ComplexRegion.__new__(cls, S.Reals @ S.Reals)
 

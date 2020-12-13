@@ -29,7 +29,7 @@ def apply(*given):
     assert x == _x
     assert rhs == P(x) * P(y)
    
-    return Equality(P(y, given=x), P(y), given=given)
+    return Equality(P(y, given=x), P(y))
 
 
 @check
@@ -54,8 +54,6 @@ def prove(Eq):
     Eq << algebre.is_zero.imply.ou.apply(Eq[-1])
     
     Eq << (Eq[-1] & Eq[1]).split()
-    
-    Eq << Eq[-1].reversed
     
 
 if __name__ == '__main__':

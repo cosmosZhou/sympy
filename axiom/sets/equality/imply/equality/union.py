@@ -13,7 +13,7 @@ def apply(given):
     A, B = given.lhs.args
     _A, _B = given.rhs.args
     assert A == _A and B == _B
-    return Equality(A, B, given=given)
+    return Equality(A, B)
 
 
 from axiom.utility import check

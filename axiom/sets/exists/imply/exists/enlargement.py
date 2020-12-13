@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.core.function import Function
 
 
@@ -26,7 +26,7 @@ def apply(given, domain=None, wrt=None):
         assert S in domain
         limit = (x, domain)
     limits[i] = limit 
-    return Exists(given.function, *limits, given=given)
+    return Exists(given.function, *limits)
 
 
 from axiom.utility import check

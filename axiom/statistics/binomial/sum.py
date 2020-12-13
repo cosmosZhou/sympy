@@ -7,7 +7,8 @@ from axiom.utility import check
 from axiom.utility import plausible
 from sympy import Symbol
 from sympy import Interval
-from axiom import algebre
+from axiom import algebre, discrete
+from sympy.matrices.expressions.matmul import MatMul
 
 @plausible
 def apply(x0, x1):
@@ -63,7 +64,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.powsimp()
     
-    Eq << Eq[-1].subs(Eq[0])    
+    Eq << Eq[-1] + Eq[0].reversed    
     
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n0)
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(p, 1, n1)
@@ -79,9 +80,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.as_separate_limits()
 
-    Eq << Eq[-1].as_two_terms()
+    Eq << Eq[-1].this.lhs.astype(MatMul)
     
-    Eq << algebre.vector.independence.matmul_equality.apply(Eq[-1])
+    Eq << Eq[-1].this.rhs.astype(MatMul)
+    
+    Eq << discrete.vector.independence.matmul_equality.apply(Eq[-1])
 
     Eq << Eq[-1].limits_subs(k, Eq[0].lhs.symbol)
     

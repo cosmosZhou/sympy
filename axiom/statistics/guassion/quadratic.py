@@ -64,7 +64,7 @@ def prove(Eq):
 
     Eq << apply(exp(-y), x)
 
-    Eq << Eq[0].this.lhs.subs(x, x - b / (2 * a))
+    Eq << Eq[0].this.lhs.limits_subs(x, x - b / (2 * a))
 
     Eq << Eq[-1].this.lhs.powsimp()
 

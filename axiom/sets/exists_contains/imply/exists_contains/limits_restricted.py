@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.sets.contains import Contains
 
 
@@ -16,7 +16,7 @@ def apply(given):
     assert given.function.is_Contains
     _x, S = given.function.args
     assert x == _x
-    return Exists(Contains(x, S), (x, S), *limits, given=given)
+    return Exists(Contains(x, S), (x, S), *limits)
 
 
 from axiom.utility import check

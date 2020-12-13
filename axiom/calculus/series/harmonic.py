@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq.mean_value_theorem = axiom.calculus.integral.mean_value_theorem.apply(Eq[-1])
 
-    Eq << sets.imply.forall.apply(Eq[-1], simplify=False)
+    Eq << sets.imply.forall.limits_assert.apply(Eq[-1].limits, simplify=False)
 
     Eq << Eq[-1].inverse().split()
 

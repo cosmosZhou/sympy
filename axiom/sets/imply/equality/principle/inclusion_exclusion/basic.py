@@ -24,11 +24,11 @@ def prove(Eq):
 
     Eq << sets.imply.equality.principle.addition.apply(B, A)
     
-    Eq << Eq[-1].subs(Eq[-2])
+    Eq << Eq[-1].reversed + Eq[-2]
     
-    Eq << Eq[-1] - Eq[-1].lhs.args[1]
+    Eq << Eq[-1] - Eq[-1].rhs.args[1]
     
-    Eq << sets.imply.equality.principle.addition.apply(B - A, A & B)
+    Eq << sets.imply.equality.principle.addition.apply(B - A, A & B).reversed
 
 
 if __name__ == '__main__':

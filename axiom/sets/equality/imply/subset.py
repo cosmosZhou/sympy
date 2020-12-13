@@ -10,7 +10,7 @@ def apply(given):
     assert given.is_Equality
     A, B = given.args
     assert A.is_set and B.is_set
-    return Subset(A, B, given=given)
+    return Subset(A, B)
 
 
 from axiom.utility import check

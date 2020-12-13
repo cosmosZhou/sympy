@@ -36,7 +36,7 @@ def apply(*given):
     assert z == _z
     
     assert x.is_random and y.is_random and z.is_random
-    return Equality(P(x, y, given=z), P(x, y), given=given)
+    return Equality(P(x, y, given=z), P(x, y))
 
 
 @check

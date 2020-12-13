@@ -6,7 +6,7 @@ from sympy.core.compatibility import range
 from sympy.strategies import typed, exhaust, condition, do_one, unpack
 from sympy.strategies.traverse import bottom_up
 from sympy.utilities import sift
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 from sympy.matrices.expressions.matexpr import MatrixExpr, ZeroMatrix, Identity
 from sympy.matrices.expressions.matmul import MatMul

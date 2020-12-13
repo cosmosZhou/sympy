@@ -20,7 +20,7 @@ def apply(given, var=None):
     if var is None:
         var = S.element_symbol()
         assert not var.is_set
-    return Contains(Sum[var:S](var), S, given=given)
+    return Contains(Sum[var:S](var), S)
 
 
 from axiom.utility import check

@@ -3,16 +3,14 @@ from axiom.utility import plausible
 from sympy.core.relational import Equality
 import sympy
 from sympy import log, exp, Slice
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 from sympy.concrete.summations import Sum
 from sympy import Symbol
 from sympy.stats.rv import pspace
 from sympy.stats.symbolic_probability import Probability as P
-from axiom.neuron import crf
 from axiom.neuron.crf.markov import assumptions, process_assumptions
 from axiom.statistics import bayes
-from sympy.functions.elementary.piecewise import Piecewise
-from axiom import statistics
+from axiom import statistics, neuron
 from sympy.sets.sets import Interval
 from sympy.core.add import Plus
 
@@ -46,8 +44,8 @@ def apply(*given):
     x_quote = Symbol.x_quote(definition=-LAMBDA[t](sympy.log(z[t])))
     assert x_quote.shape == (n, d)
     
-    return Equality(x_quote[t + 1], -log(Sum(exp(-x_quote[t] - G))) + x[t + 1], given=given), \
-        Equality(-log(y_given_x_probability), log(Sum(exp(-x_quote[n - 1]))) + s[n - 1], given=given)
+    return Equality(x_quote[t + 1], -log(Sum(exp(-x_quote[t] - G))) + x[t + 1]), \
+        Equality(-log(y_given_x_probability), log(Sum(exp(-x_quote[n - 1]))) + s[n - 1])
 
 
 from axiom.utility import check
@@ -63,9 +61,9 @@ def prove(Eq):
     s, t = Eq.s_definition.lhs.args
     Eq.z_definition = Eq.z_definition.reference((Eq.z_definition.lhs.indices[-1],))
     
-    Eq << crf.markov.apply(*given)
+    Eq << neuron.crf.markov.apply(*given)
 
-    Eq << crf.logits.apply(Eq.G_definition.lhs.base, Eq.x_definition.lhs.base, s, Eq[-1])
+    Eq << neuron.crf.logits.apply(Eq.G_definition.lhs.base, Eq.x_definition.lhs.base, s, Eq[-1])
     
     Eq << Eq.z_definition.subs(t, t + 1)
     

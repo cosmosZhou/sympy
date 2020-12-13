@@ -11,7 +11,7 @@ def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return Equality(A | B, B, given=given)
+    return Equality(A | B, B)
 
 
 from axiom.utility import check

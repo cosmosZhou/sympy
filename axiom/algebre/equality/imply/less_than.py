@@ -6,7 +6,7 @@ from sympy import Symbol
 @plausible
 def apply(given):    
     assert given.is_Equality
-    return LessThan(*given.args, given=given)
+    return LessThan(*given.args)
 
 
 from axiom.utility import check

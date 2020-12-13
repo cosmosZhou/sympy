@@ -1,7 +1,7 @@
 from sympy.core import (Function, Pow, sympify, Expr)
 from sympy.core.relational import Relational
 from sympy.polys import Poly, decompose
-from sympy.utilities.misc import func_name
+from sympy.utilities.miscellany import func_name
 
 
 def decompogen(f, symbol):

@@ -7,7 +7,7 @@ from __future__ import print_function, division
 import warnings
 
 from sympy.core.compatibility import string_types
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 
 class SymPyDeprecationWarning(DeprecationWarning):

@@ -4,7 +4,7 @@ from sympy.sets.contains import Contains
 from sympy.core.relational import Equality
 from sympy import Symbol
 from sympy.functions.elementary.complexes import Abs
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 from axiom import sets
 from sympy.core.function import Lambda, Function
 from axiom.sets.forall_contains.forall_contains.forall_equality.imply.equality import analyze
@@ -28,7 +28,7 @@ def apply(*given):
     assert equality_b.is_Equal        
     assert equality_b == eqs or equality_b.reversed == eqs        
     
-    return Equality(Abs(A), Abs(B), given=given)
+    return Equality(Abs(A), Abs(B))
 
 
 from axiom.utility import check

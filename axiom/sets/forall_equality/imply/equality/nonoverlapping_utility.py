@@ -1,12 +1,12 @@
 from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy.concrete.expr_with_limits import ForAll, UNION
+from sympy import ForAll, UNION
 from sympy import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.concrete.summations import Sum
-from axiom import sets
+from axiom import sets, algebre
 from sympy.sets.contains import Contains
 
 # given: x[i] & x[j] = {}
@@ -36,9 +36,8 @@ def apply(given):
         
     eq = Equality(abs(UNION[i:0:n - 1](xi)), Sum[i:0:n - 1](abs(xi)))
     if limits:
-        return ForAll(eq, *limits, given=given)
+        return ForAll(eq, *limits)
     else:
-        eq.given = given
         return eq
 
 
@@ -65,7 +64,9 @@ def prove(Eq):
     
     Eq << apply(ForAll(Equality(x[i] & x[j], x[i].etype.emptySet), (j, i_domain - {i})))
     
-    Eq << Eq[-1].subs(n, 2).doit()
+    Eq.initial = Eq[-1].subs(n, 2)
+    
+    Eq << Eq.initial.doit()
     
     Eq << Eq[0].subs(i, 1)
     
@@ -73,9 +74,9 @@ def prove(Eq):
     
     Eq << sets.imply.equality.principle.inclusion_exclusion.basic.apply(*Eq[-1].lhs.args).subs(Eq[-1])
     
-    Eq.plausible = Eq[1].subs(n, n + 1)
+    Eq.induction = Eq[1].subs(n, n + 1)
     
-    Eq << Eq.plausible.lhs.arg.this.bisect({n})
+    Eq << Eq.induction.lhs.arg.this.bisect({n})
     
     Eq << sets.imply.equality.principle.inclusion_exclusion.basic.apply(*Eq[-1].rhs.args)
     
@@ -87,9 +88,14 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[1])
     
-    Eq << Eq.plausible.rhs.this.bisect({n})
+    Eq << Eq.induction.rhs.this.bisect({n})
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
+    
+    Eq << Eq.induction.induct()
+    
+    Eq << algebre.condition.sufficient.imply.condition.induction.apply(Eq.initial, Eq[-1], n=n, start=2)    
+
 
     
 if __name__ == '__main__':

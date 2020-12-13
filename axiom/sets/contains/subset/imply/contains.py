@@ -15,7 +15,7 @@ def apply(*given):
     x, A = contains.args
     _A, B = subset.args
     assert A == _A
-    return Contains(x, B, given=given)
+    return Contains(x, B)
 
 
 from axiom.utility import check

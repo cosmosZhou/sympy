@@ -10,7 +10,7 @@ def apply(x, y, given):
     W_T, W = given.args
     assert W_T == W.T
     
-    return Equality(x @ W @ y, y @ W @ x, given=given)
+    return Equality(x @ W @ y, y @ W @ x)
 
 
 from axiom.utility import check

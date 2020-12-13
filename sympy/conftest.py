@@ -28,7 +28,7 @@ def process_split(config, items):
 
 
 def pytest_report_header(config):
-    from sympy.utilities.misc import ARCH
+    from sympy.utilities.miscellany import ARCH
     s = "architecture: %s\n" % ARCH
     from sympy.core.cache import USE_CACHE
     s += "cache:        %s\n" % USE_CACHE

@@ -13,7 +13,7 @@ def apply(given):
     assert A_abs.is_Abs and zero.is_extended_nonnegative
     A = A_abs.arg
 
-    return Unequality(A, A.etype.emptySet, given=given)
+    return Unequality(A, A.etype.emptySet)
 
 
 from axiom.utility import check

@@ -98,7 +98,7 @@ class TautologicalHandler(AskHandler):
         return result
 
     @staticmethod
-    def Implies(expr, assumptions):
+    def Sufficient(expr, assumptions):
         p, q = expr.args
         return ask(~p | q, assumptions=assumptions)
 

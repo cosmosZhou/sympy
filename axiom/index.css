@@ -1,0 +1,28 @@
+a {
+    text-decoration: none;
+}
+
+body {
+    background-color: rgb(199, 237, 204);
+    /*  color: #FFFFFF; */
+}
+
+input[type="file"] {
+    color: transparent;
+}
+
+.non-arrowed {
+    /* padding: 5px 10px; */
+    /* border: 1px solid #dcd8d8; */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* appearance: none; */
+    background-color: rgb(199, 237, 204);
+    border: 0;
+}
+
+button {
+    background-color: rgb(199, 237, 204);
+    border-style: none;
+    outline: none;
+}

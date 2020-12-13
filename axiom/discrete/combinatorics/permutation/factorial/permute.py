@@ -5,7 +5,7 @@ from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import UNION, ForAll, LAMBDA
+from sympy import UNION, ForAll, LAMBDA
 from sympy.sets.contains import Contains, Subset
 from sympy import Symbol
 from axiom import discrete, sets
@@ -14,7 +14,7 @@ from sympy.sets.conditionset import conditionset
 
 
 @plausible
-def apply(given):
+def apply(*given):
     assert len(given) == 2
     assert given[0].is_ForAll and len(given[0].limits) == 2
     j, a, n_munis_1 = given[0].limits[0]
@@ -54,8 +54,7 @@ def apply(given):
     equality = given[1].function
     assert equality.is_Equality and {*equality.args} == {abs(x.set_comprehension()), n}
         
-    return Equality(abs(S), factorial(n) * abs(UNION[x:S]({x.set_comprehension()})),
-                    given=given)
+    return Equality(abs(S), factorial(n) * abs(UNION[x:S]({x.set_comprehension()})))
 
 
 @check
@@ -68,10 +67,8 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    given = [ForAll[j:1:n - 1, x:S](Contains(LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
-             ForAll[x:S](Equality(abs(x.set_comprehension()), n))]
-    
-    Eq << apply(given)
+    Eq << apply(ForAll[j:1:n - 1, x:S](Contains(LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
+                ForAll[x:S](Equality(abs(x.set_comprehension()), n)))
     
     Eq << discrete.combinatorics.permutation.adjacent.swap2.general.apply(Eq[0])
     
@@ -99,18 +96,18 @@ def prove(Eq):
     Eq << Eq.forall_x.definition.split()
     
     P = Eq[-1].limits[0][1]
-    Eq << sets.imply.conditionset.apply(P)
+    Eq << sets.imply.forall.conditionset.apply(P)
     Eq << Eq[-1].apply(sets.equality.imply.equality.permutation, x)
     
     Eq.equality_e = Eq[-3] & Eq[-1]
     
-    Eq << sets.imply.conditionset.apply(F(e)).reversed
+    Eq << sets.imply.forall.conditionset.apply(F(e)).reversed
     
     hat_S = Symbol("\hat{S}", definition=Eq[2].rhs.args[0].arg)
     Eq.hat_S_definition = hat_S.this.definition
     
     Eq << Equality(S, UNION[e:hat_S](F(e)), plausible=True)
-#     return
+
     Eq << Eq[-1].subs(Eq.hat_S_definition)
     
     Eq << Eq[-1].this.rhs.function.definition

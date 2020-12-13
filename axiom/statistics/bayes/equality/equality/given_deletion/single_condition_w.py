@@ -36,8 +36,8 @@ def apply(given, wrt=None):
             z = z.lhs
             
         assert wrt in {y, z}
-        return Equality(x | wrt.as_boolean() & w, x | w, given=given)
-    return Equality(x | y & w, x | w, given=given)
+        return Equality(x | wrt.as_boolean() & w, x | w)
+    return Equality(x | y & w, x | w)
 
 
 @check
@@ -58,7 +58,8 @@ def prove(Eq):
     Eq << bayes.is_nonzero.is_nonzero.conditioned.apply(Eq.xyz_nonzero, wrt=w)
     
     Eq << statistics.bayes.theorem.apply(P(x | w, y, z), y, z)
-    Eq << Eq[-1].astype(Or)
+    
+    Eq << algebre.forall.imply.ou.apply(Eq[-1])
     
     Eq << (Eq[-1] & Eq[-3]).split()
     
@@ -72,7 +73,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[-4])
     
-    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq.y_nonzero)
+    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq.y_nonzero)
     
     Eq << Eq[-1].reversed
 

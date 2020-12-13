@@ -4,10 +4,9 @@ from axiom.utility import plausible
 from sympy.functions.combinatorial.numbers import Stirling
 from sympy.sets.contains import NotContains
 from sympy.functions.elementary.piecewise import Piecewise
-from axiom import sets
-from sympy.concrete.expr_with_limits import UNION, ForAll, LAMBDA
+from axiom import sets, algebre
+from sympy import UNION, ForAll, LAMBDA
 from sympy.core.numbers import oo
-from sympy.logic.boolalg import Or
 
 @plausible
 def apply(n, k, s0=None, B=None):
@@ -45,7 +44,7 @@ def prove(Eq):
     assert e.is_integer
     assert e.is_extended_real
     
-    Eq << s0_quote.assertion()
+    Eq << sets.imply.forall.given.baseset.apply(s0_quote)
 
     *_, Eq.x_union_s0 = Eq[-1].split()
 
@@ -81,7 +80,8 @@ def prove(Eq):
 
     Eq.x_hat_definition = x_hat.equality_defined()
 
-    Eq << Eq.x_hat_definition.astype(Or)
+    Eq << algebre.equality.imply.ou.two.apply(Eq.x_hat_definition)
+    
     Eq << Eq[-1].forall((i, Unequality(i, j)))
     
     Eq.B_assertion = B.assertion()
@@ -107,7 +107,7 @@ def prove(Eq):
 
 if __name__ == '__main__':
     
-#     python run.py axiom.algebre.matrix.determinant.expansion_by_minors axiom.discrete.combinatorics.permutation.index.swap axiom.algebre.matrix.elementary.swap.concatenate axiom.discrete.combinatorics.stirling.second.nonoverlapping axiom.algebre.matrix.vandermonde.matmul_equality axiom.discrete.difference.definition axiom.neuron.softmax.relative_position_representation axiom.discrete.combinatorics.stirling.second.recurrence axiom.calculus.trigonometry.cosine.theorem axiom.discrete.combinatorics.stirling.second.mapping.s0_B
-# python run.py axiom.algebre.matrix.elementary.shift.left axiom.discrete.combinatorics.stirling.second.mapping.s2_B axiom.discrete.combinatorics.stirling.second.definition axiom.algebre.matrix.determinant.abc axiom.discrete.combinatorics.stirling.second.mapping.s0_B
+#     python run.py axiom.discrete.matrix.determinant.expansion_by_minors axiom.discrete.combinatorics.permutation.index.swap axiom.discrete.matrix.elementary.swap.concatenate axiom.discrete.combinatorics.stirling.second.nonoverlapping axiom.discrete.matrix.vandermonde.matmul_equality axiom.discrete.difference.definition axiom.neuron.softmax.relative_position_representation axiom.discrete.combinatorics.stirling.second.recurrence axiom.calculus.trigonometry.cosine.theorem axiom.discrete.combinatorics.stirling.second.mapping.s0_B
+# python run.py axiom.discrete.matrix.elementary.shift.left axiom.discrete.combinatorics.stirling.second.mapping.s2_B axiom.discrete.combinatorics.stirling.second.definition axiom.discrete.matrix.determinant.abc axiom.discrete.combinatorics.stirling.second.mapping.s0_B
     prove(__file__)
 

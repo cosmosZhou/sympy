@@ -1,10 +1,7 @@
 from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.piecewise import Piecewise
 from sympy import Symbol
-from sympy.sets.sets import EmptySet, Intersection
 from axiom import sets
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 

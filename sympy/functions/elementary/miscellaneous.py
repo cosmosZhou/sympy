@@ -1,6 +1,4 @@
 
-from __future__ import print_function, division
-
 from sympy.core import Function, S, sympify
 from sympy.core.add import Add
 from sympy.core.containers import Tuple

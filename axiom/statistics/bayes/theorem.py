@@ -6,7 +6,7 @@ from axiom.utility import check
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P, Probability
 from sympy.stats.rv import pspace
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 from sympy.logic.boolalg import And
 
 

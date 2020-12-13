@@ -16,7 +16,7 @@ def apply(given):
     assert given.lhs.is_Probability
     assert given.rhs.is_zero
         
-    return StrictGreaterThan(given.lhs, 0, given=given)
+    return StrictGreaterThan(given.lhs, 0)
 
 
 @check

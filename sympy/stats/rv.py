@@ -24,7 +24,7 @@ from sympy.core.sympify import _sympify
 from sympy.sets.sets import FiniteSet, ProductSet, Intersection
 from sympy.solvers.solveset import solveset
 from sympy.external import import_module
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 import warnings
 from sympy.core.symbol import dtype
 from sympy.matrices.expressions.matexpr import Concatenate

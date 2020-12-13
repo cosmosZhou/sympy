@@ -2,7 +2,7 @@ from sympy.core.symbol import dtype
 from sympy.core.relational import Equality
 from axiom.utility import plausible
 
-from sympy.concrete.expr_with_limits import ForAll, Exists
+from sympy import ForAll, Exists
 from sympy import Symbol
 from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
@@ -32,7 +32,7 @@ def prove(Eq):
     
     Eq << Eq[1].subs(Eq[0])
     
-    Eq << sets.imply.forall.apply(Eq[-1], simplify=False)
+    Eq << sets.imply.forall.limits_assert.apply(Eq[-1].limits, simplify=False)
     
     Eq << Contains(n - 1, Eq[-1].rhs, plausible=True)
     

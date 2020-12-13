@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy import S
 from sympy.core.basic import Basic
 from sympy.core.containers import Tuple
@@ -11,7 +9,7 @@ from sympy.logic.boolalg import And, as_Boolean
 from sympy.sets.contains import Contains
 from sympy.sets.sets import Set, EmptySet, Union, FiniteSet
 from sympy.utilities.iterables import sift
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 
 # by definition, we have
@@ -213,17 +211,6 @@ class ConditionSet(Set):
     condition = property(lambda self: self.args[1])
     base_set = property(lambda self: self.args[2])
 
-#     def __contains__(self, other):
-#         variableb = self.contains(other)
-#         if not (symb is S.true or symb is S.false):
-#             return False
-# #             raise TypeError('contains did not evaluate to a bool: %r' % symb)
-#         return bool(symb)
-
-    def assertion(self):
-        from sympy.concrete.expr_with_limits import ForAll
-        return ForAll(self.condition, (self.variable, self))
-
     def __invert__(self):
         condition = ~self.condition
         condition.counterpart = None
@@ -336,7 +323,7 @@ def image_set_definition(self, reverse=False):
     expr, variables, base_set = image_set
     from sympy.tensor.indexed import Slice
     from sympy.core.relational import Equality
-    from sympy.concrete.expr_with_limits import ForAll, Exists
+    from sympy import ForAll, Exists
 
     if isinstance(base_set, Symbol):
         if reverse:

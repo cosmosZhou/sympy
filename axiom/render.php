@@ -131,14 +131,13 @@ $patternOfYield = "(?:((?:\w+\.)*\w+)\s*(?:$balancedBrackets\s*)?$balancedParant
 
 function numOfYields($statement)
 {
-    assert($statement[strlen($statement) - 1] != '\\');
     global $patternOfYield;
 
-    if (preg_match("/^$patternOfYield$/", $statement, $matches)) {
+    if (preg_match("/^$patternOfYield,?$/", $statement, $matches)) {
         // error_log("match one yield: " . $matches[1]);
         return 1;
     } else {
-        // error_log('return ' . $statement);
+//         error_log('return ' . $statement);
         if (preg_match("/^$patternOfYield,\s*([\s\S]+)$/", $statement, $matches)) {
             // error_log("match one yield: " . $matches[1]);
             // error_log("try to match the next yield from: " . $matches[2]);
@@ -167,7 +166,7 @@ function analyze_apply($py, &$i)
     $count = count($py);
     for (; $i < $count; ++ $i) {
         $statement = $py[$i];
-        if (preg_match('/^def +prove\(Eq(, *\w+)?\) *: */', $statement, $matches)) {
+        if (preg_match('/^def +prove\(Eq(, *(\w+|\w+=\w+))*\) *: */', $statement, $matches)) {
 //             error_log('prove begins: ' . $statement);
             break;
         }
@@ -189,6 +188,7 @@ function analyze_apply($py, &$i)
                 continue;
 //             error_log('return statement: ' . $statement);
             $yield = $matches[1];
+//             error_log('matches[1]=' . $yield);
             if (! strcmp($yield, 'None'))
                 continue;
 
@@ -314,7 +314,7 @@ function render($php)
     $counterOfLengths = 0;
     for (++ $i; $i < count($py); ++ $i) {
         $statement = $py[$i];
-        // error_log("$statement");
+//         error_log("$statement");
         $statement = rtrim($statement);
         // remove comments starting with #
         if (preg_match('/^\s*#.*/', $statement, $matches) || ! $statement) {
@@ -380,7 +380,7 @@ function render($php)
         }
     }
 
-//     error_log("indexOfYield = $indexOfYield");
+    error_log("indexOfYield = $indexOfYield");
 
     $numOfReturnsFromApply = $lengths[$indexOfYield];
 //     error_log("numOfReturnsFromApply = " . $numOfReturnsFromApply);
@@ -399,7 +399,7 @@ function render($php)
             if ($lengths[$i] == 0) {
 
                 if ($numOfReturnsFromApply == 1) {
-                    if (preg_match_all('/\\\\[(].+?\\\\[)]/', $statements, $matches, PREG_SET_ORDER)) {
+                    if (is_latex($statement, $matches)) {
                         // error_log("matches = ".jsonify($matches));
                         $numOfReturnsFromApply = count($matches);
                         // error_log("count(matches) = ".$numOfReturnsFromApply);

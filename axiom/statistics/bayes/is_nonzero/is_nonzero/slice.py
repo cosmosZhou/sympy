@@ -24,7 +24,7 @@ def apply(given):
     assert _x == pspace(x).symbol
     n = x.shape[0]
     t = Symbol.t(integer=True, domain=[1, n - 1])
-    return Unequal(P(x[:t]), 0, given=given)
+    return Unequal(P(x[:t]), 0)
 
 
 @check

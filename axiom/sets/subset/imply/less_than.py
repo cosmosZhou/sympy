@@ -12,7 +12,7 @@ def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return LessThan(abs(A), abs(B), given=given)
+    return LessThan(abs(A), abs(B))
 
 
 from axiom.utility import check

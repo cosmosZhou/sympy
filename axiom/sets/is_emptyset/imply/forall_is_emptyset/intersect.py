@@ -2,7 +2,7 @@ from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from axiom import sets
-from sympy.concrete.expr_with_limits import ForAll, UNION
+from sympy import ForAll, UNION
 from sympy import Symbol
 
 # given: A & Union[i](x[i]) = {}
@@ -28,7 +28,7 @@ def apply(given):
         A = tmp
     assert x_union.is_UNION
 
-    return ForAll(Equality(x_union.function & A, A.etype.emptySet), *x_union.limits, given=given)
+    return ForAll(Equality(x_union.function & A, A.etype.emptySet), *x_union.limits)
 
 
 from axiom.utility import check

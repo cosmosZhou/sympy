@@ -33,7 +33,7 @@ import inspect
 from sympy import sympify, Function, Set, Symbol
 from sympy.core.compatibility import string_types
 from sympy.printing import StrPrinter
-from sympy.utilities.misc import debug
+from sympy.utilities.miscellany import debug
 
 class RubiStrPrinter(StrPrinter):
     def _print_Not(self, expr):

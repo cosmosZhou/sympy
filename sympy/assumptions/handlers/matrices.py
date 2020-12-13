@@ -39,7 +39,7 @@ class AskSymmetricHandler(CommonHandler):
         if all(ask(Q.symmetric(arg), assumptions) for arg in mmul.args):
             return True
         # TODO: implement sathandlers system for the matrices.
-        # Now it duplicates the general fact: Implies(Q.diagonal, Q.symmetric).
+        # Now it duplicates the general fact: Sufficient(Q.diagonal, Q.symmetric).
         if ask(Q.diagonal(expr), assumptions):
             return True
         if len(mmul.args) >= 2 and mmul.args[0] == mmul.args[-1].T:
@@ -69,7 +69,7 @@ class AskSymmetricHandler(CommonHandler):
         if not expr.is_square:
             return False
         # TODO: implement sathandlers system for the matrices.
-        # Now it duplicates the general fact: Implies(Q.diagonal, Q.symmetric).
+        # Now it duplicates the general fact: Sufficient(Q.diagonal, Q.symmetric).
         if ask(Q.diagonal(expr), assumptions):
             return True
         if Q.symmetric(expr) in conjuncts(assumptions):
@@ -88,7 +88,7 @@ class AskSymmetricHandler(CommonHandler):
     @staticmethod
     def MatrixSlice(expr, assumptions):
         # TODO: implement sathandlers system for the matrices.
-        # Now it duplicates the general fact: Implies(Q.diagonal, Q.symmetric).
+        # Now it duplicates the general fact: Sufficient(Q.diagonal, Q.symmetric).
         if ask(Q.diagonal(expr), assumptions):
             return True
         if not expr.on_diag:

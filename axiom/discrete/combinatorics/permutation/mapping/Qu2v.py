@@ -1,11 +1,10 @@
 from sympy.core.relational import Equality
 from axiom.utility import plausible
-from sympy.logic.boolalg import Or
 from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import Interval
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import LAMBDA, ForAll
+from sympy import LAMBDA, ForAll
 from axiom import discrete, algebre, sets
 from sympy.sets.contains import Contains, Subset
 from sympy.matrices.expressions.matexpr import Swap
@@ -51,13 +50,13 @@ def prove(Eq):
     w, i, j = Eq[0].lhs.args
     Q = Eq[2].lhs.base
     
-    Eq.x_slice_last, Eq.x_slice_domain = sets.imply.conditionset.apply(Q[u]).split()
+    Eq.x_slice_last, Eq.x_slice_domain = sets.imply.forall.conditionset.apply(Q[u]).split()
     
     Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.equality, v)
     Eq.h_domain, Eq.x_h_equality = Eq[-1].split()
     
     hv = Eq.x_h_equality.function.lhs.indices[0]
-    Eq << algebre.matrix.elementary.swap.invariant.permutation.apply(n + 1, w=w)
+    Eq << discrete.matrix.elementary.swap.invariant.permutation.apply(n + 1, w=w)
     
     Eq << Subset(Eq[-2].limits[0][1], Eq[-1].rhs, plausible=True)    
     
@@ -86,7 +85,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.x_h_equality)
     
-    Eq << Eq[-1].this.function.astype(Or)
+    Eq << Eq[-1].apply(algebre.equality.imply.ou.two)
     
     Eq << (Eq[-1] & Eq.h_domain).split()
     
@@ -95,7 +94,7 @@ def prove(Eq):
     Eq.Xv_in_Qv, Eq.x_eq_swap_Xv = Eq[3].split()
     
     Eq << Eq.Xv_in_Qv.definition
-
+    
     Eq.indexu_eq_indexu = Eq.x_eq_swap_Xv.function.rhs.args[0].indices[1].this.subs(Eq.Xv_definition)
     
     Eq.indexu_eq_indexv = Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.swap, u, v, w=w)
@@ -108,10 +107,10 @@ def prove(Eq):
     j = Symbol.j(domain=Interval(0, n, integer=True))
     
     Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.kronecker_delta.indexOf, i, j)
-    
+        
     x = Eq[-1].variable.base
     Eq << Eq[-1].subs(i, x[n]).split()
-
+    
     Eq << Eq[-2].subs(Eq.x_slice_last)
     
     m = Symbol.m(domain=Interval(0, n, integer=True))
@@ -123,14 +122,18 @@ def prove(Eq):
     Eq << Eq[-1].subs(j, Eq.equality_of_indexu_and_n.function.lhs).split()
     
     Eq << Eq[-2].subs(Eq.x_indexu_equality)
-
-    Eq << Eq.indexOf_indexed.subs(m, Eq.equality_of_indexu_and_n.function.lhs.indices[0]).split()
     
-    Eq <<= Eq.indexu_contains & Eq[-2]
-    Eq << Eq[-3].subs(Eq[-1])
+    Eq.notcontains, Eq.index_equality = Eq.indexOf_indexed.subs(m, Eq.equality_of_indexu_and_n.function.lhs.indices[0]).split()
+    
+    Eq <<= Eq.indexu_contains & Eq.notcontains
+    
+    Eq << discrete.combinatorics.permutation.is_nonemptyset.Qu.apply(n, u)
+    Eq <<= Eq[-1] & Eq[-2]
+    
+    Eq << Eq[-3].subs(Eq.index_equality)
     
     Eq << Eq[-1].subs(Eq.equality_of_indexu_and_n)
-    
+
     Eq << Eq.indexu_eq_indexv.subs(Eq[-1].reversed)
     
     Eq << Eq.indexu_eq_indexu.subs(Eq[-1])
@@ -139,8 +142,8 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.Xv_definition)
     
-    Eq << algebre.matrix.elementary.swap.multiply.left.apply(x[:n + 1], i=n, j=Eq.h_domain.lhs, w=w)    
-    
+    Eq << discrete.matrix.elementary.swap.multiply.left.apply(x[:n + 1], i=n, j=Eq.h_domain.lhs, w=w)    
+
     Eq << Eq[-2].subs(Eq[-1])
     
     

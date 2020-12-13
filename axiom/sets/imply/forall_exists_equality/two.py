@@ -1,7 +1,7 @@
 from sympy.core.relational import Unequality, Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy.concrete.expr_with_limits import Exists, UNION, ForAll
+from sympy import Exists, UNION, ForAll
 from sympy import Symbol
 from sympy.core.numbers import oo
 from axiom import sets, algebre
@@ -34,7 +34,7 @@ def prove(Eq):
     S = Symbol.S(etype=dtype.integer * k)    
     Eq << apply(set=S)
     
-    Eq << sets.imply.forall.apply(Eq[0], simplify=False)
+    Eq << sets.imply.forall.limits_assert.apply(Eq[0].limits, simplify=False)
     
     Eq << Eq[-1].apply(sets.equality.imply.exists_equality.two)
 

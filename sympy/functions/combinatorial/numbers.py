@@ -2047,7 +2047,7 @@ class Stirling(Function):
             x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
         from sympy import Sum
         from sympy.core.relational import Equality
-        from sympy.concrete.expr_with_limits import UNION, ForAll
+        from sympy import UNION, ForAll
         from sympy.sets.conditionset import conditionset
         from sympy.sets.sets import Interval
         i = Symbol.i(integer=True)

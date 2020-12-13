@@ -1,7 +1,7 @@
 from sympy.core.relational import Unequality, Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy import Symbol
 from axiom import sets, algebre
 
@@ -18,7 +18,7 @@ def apply(given, x=None, y=None):
         x = S.generate_free_symbol(**S.etype.dict)
     if y is None:
         y = S.generate_free_symbol(excludes={x}, **S.etype.dict)
-    return Exists[x: Unequality(x, y), y](Equality(S, {x, y}), given=given)
+    return Exists[x: Unequality(x, y), y](Equality(S, {x, y}))
 
 
 from axiom.utility import check

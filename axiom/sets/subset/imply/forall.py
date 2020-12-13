@@ -5,7 +5,7 @@ from sympy.core.relational import Equality
 from sympy import Symbol
 from axiom import sets
 from sympy.core.function import Function
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 
 
 @plausible
@@ -14,7 +14,7 @@ def apply(given):
     B, A = given.args
     x = B.element_symbol()
    
-    return ForAll[x:B](Contains(x, A), given=given)
+    return ForAll[x:B](Contains(x, A))
 
 
 from axiom.utility import check

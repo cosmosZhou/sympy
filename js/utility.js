@@ -27,3 +27,26 @@ function changeInputlength(input) {
 	input.css("width", text_length + "em");
 }
 
+function toggle_expansion_button() {
+	$('button').click(function() {
+		var div = $(this)[0].nextElementSibling;
+		if ($(this).text() == '>>>>') {
+			
+			div.style.display = 'block';
+			
+			$(this).text('<<<<');
+			
+		} else {
+			
+			div.style.display = null;
+			
+			$(this).text('>>>>');
+			
+		}
+	});
+}
+
+function click_first_expansion_button() {
+	var first_button = document.querySelector("button");
+	first_button.click();
+}

@@ -212,6 +212,17 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if b.is_ConditionSet:
             from sympy.sets.conditionset import conditionset
             return conditionset(b.variable, b.condition, b.base_set & self)
+        definition = self.definition
+        if definition is not None:
+            if definition in b:
+                return self
+
+    def union_sets(self, b):
+        definition = self.definition
+        if definition is not None:
+            if definition in b:
+                return b
+
 
     @staticmethod
     def process_slice(index, self_start, self_stop):
@@ -540,13 +551,20 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return True
         if 'shape' in self._assumptions:
             return False
-        if  'positive' in self._assumptions and self.is_positive is not None:
+        
+        if  self._assumptions.get('positive') is not None:
             return True
-        if  'negative' in self._assumptions and self.is_negative is not None:
+        if  self._assumptions.get('negative') is not None:
             return True
-        if  'nonpositive' in self._assumptions and self.is_nonpositive is not None:
+        if  self._assumptions.get('nonpositive') is not None:
             return True
-        if  'nonnegative' in self._assumptions and self.is_nonnegative is not None:
+        if  self._assumptions.get('nonnegative') is not None:
+            return True
+        if  self._assumptions.get('odd') is not None:
+            return True
+        if  self._assumptions.get('even') is not None:
+            return True
+        if  self._assumptions.get('prime') is not None:
             return True
 
     @property
@@ -689,16 +707,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return self.generate_free_symbol(excludes=excludes, free_symbol=free_symbol, **etype.dict)
 
     def assertion(self, reverse=False):
-        definition = self.definition       
-        if definition.is_ConditionSet:
-            sym = definition.variable
-            condition = definition.condition
-            from sympy.concrete.expr_with_limits import ForAll
-            if not definition.base_set.is_UniversalSet:
-                from sympy.sets.contains import Contains
-                condition &= Contains(sym, definition.base_set)
-            return ForAll(condition, (sym, self))
-
         from sympy.sets.conditionset import image_set_definition
         return image_set_definition(self, reverse=reverse)
 
@@ -1060,7 +1068,11 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     
     @property
     def is_given(self):
-        return self._assumptions.get('given')
+        if self._assumptions.get('given'):
+            return True
+        definition = self.definition
+        if definition is not None:
+            return True
     
     def __hash__(self):
         return super(Symbol, self).__hash__()        
@@ -1740,8 +1752,8 @@ class Dtype:
     
     @property
     def universalSet(self):
-        from sympy.sets.sets import UniversalSet
-        return UniversalSet(etype=self)
+        from sympy.sets.sets import Set, UniversalSet        
+        return Set.__new__(UniversalSet, etype=self)
 
     def __mul__(self, length):
         if isinstance(length, (tuple, Tuple, list)):
@@ -1777,6 +1789,7 @@ class Dtype:
 
 
 class DtypeComplex(Dtype):
+    
     is_complex = True
 
     def as_Set(self):
@@ -1800,6 +1813,9 @@ class DtypeComplex(Dtype):
             return self
         return DtypeComplexConditional(**kwargs)
 
+    @property
+    def universalSet(self):        
+        return S.Complexes
 
 class DtypeComplexConditional(DtypeComplex):
     
@@ -1863,6 +1879,10 @@ class DtypeReal(DtypeComplex):
     
     is_real = True
     
+    @property
+    def universalSet(self):        
+        return S.Reals
+    
     def as_Set(self):
         return S.Reals
 
@@ -1915,6 +1935,11 @@ class DtypeRational(DtypeReal):
 
     is_rational = True
 
+    @property
+    def universalSet(self):
+        from sympy import Interval        
+        return Interval(S.NegativeInfinity, S.Infinity, rational=True)
+
     def as_Set(self):
         return S.Rationals
 
@@ -1966,6 +1991,11 @@ class DtypeRationalConditional(DtypeRational):
 class DtypeInteger(DtypeRational):
     
     is_integer = True
+    
+    @property
+    def universalSet(self):
+        from sympy import Interval        
+        return Interval(S.NegativeInfinity, S.Infinity, integer=True)
     
     def as_Set(self):
         from sympy.sets import Integers
@@ -2100,6 +2130,11 @@ class DtypeSet(Dtype):
 
 
 class DtypeVector(Dtype):
+        
+    @property
+    def universalSet(self):
+        from sympy import CartesianSpace
+        return CartesianSpace(self.dtype.universalSet, *self.shape)
     
     @property
     def is_integer(self):
@@ -2189,6 +2224,11 @@ class DtypeMatrix(Dtype):
     @property
     def is_integer(self):
         return self.dtype.is_integer
+    
+    @property
+    def universalSet(self):
+        from sympy import CartesianSpace
+        return CartesianSpace(self.dtype.universalSet, *self.shape)
     
     @property
     def is_rational(self):

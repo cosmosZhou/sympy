@@ -6,6 +6,7 @@ from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
 from sympy import Symbol, Slice
 from sympy.core.add import Add
+from axiom import algebre
 
 @plausible
 def apply(fx, x, n):
@@ -26,16 +27,21 @@ def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(fx, x, n)
 
-    Eq << Eq[-1].subs(n, 0).doit()
-    Eq << Eq[-1].subs(n, n + 1)
+    Eq.initial = Eq[0].subs(n, 0)
+    
+    Eq << Eq.initial.doit()
+    
+    Eq.induction = Eq[0].subs(n, n + 1)
 
-    Eq << Eq[-1].this.lhs.bisect(Slice[:1])
+    Eq << Eq.induction.this.lhs.bisect(Slice[:1])
 
     Eq << Eq[-1].this.lhs.expr.doit()
 
     Eq << Eq[-1].this.lhs.astype(Add)
 
-    Eq << Eq[0].subs(x, x + 1) - Eq[0]
+    Eq.hypothesis = Eq[0].subs(x, x + 1)
+    
+    Eq << Eq.hypothesis - Eq[0]
 
     Eq << Eq[-1].subs(Eq[-2])
 
@@ -55,6 +61,15 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.simplify()
     
     Eq << Eq[-1].this.lhs.expand()
+    
+    if Eq.induction.given is not None:
+        Eq << Eq.induction.induct()
+    elif Eq.hypothesis.given is not None:
+        Eq << Eq.hypothesis.induct(reverse=True).split()[0]
+    elif Eq[0].given is not None:
+        Eq << Eq[0].induct(reverse=True).split()[0]        
+        
+    Eq << algebre.equality.sufficient.imply.et.induction.apply(Eq.initial, Eq[-1], n=n, x=x).split()
 
 
 if __name__ == '__main__':

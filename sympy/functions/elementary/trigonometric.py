@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core.add import Add
 from sympy.core.basic import sympify, cacheit
 from sympy.core.compatibility import range
@@ -95,6 +93,22 @@ class TrigonometricFunction(Function):
         if is_extended_real is None:
             return True
         return is_extended_real
+
+    def _sympystr(self, p):
+        return self.func.__name__.lower() + "(%s)" % p.stringify(self.args, ", ")
+
+    def _latex(self, p, exp=None):
+        func = self.func.__name__.lower()
+        if exp is not None:
+            exp = '^{%s}' % exp
+        else:
+            exp = ' '
+        if self.arg.is_symbol:
+            latex = r"\%s%s%s"
+        else:
+            latex = r"\%s%s\(%s\)"
+        return latex % (func, exp, p._print(self.arg))
+
 
 def _peeloff_pi(arg):
     """
@@ -527,7 +541,10 @@ class Sin(TrigonometricFunction):
             return False
         if b < 2 and a > 1:
             return True
+
+
 sin = Sin
+
         
 class Cos(TrigonometricFunction):
     """
@@ -1015,7 +1032,9 @@ class Cos(TrigonometricFunction):
         if b < 3 and a > 1:
             return True
 
+
 cos = Cos
+
 
 class tan(TrigonometricFunction):
     """
@@ -1315,6 +1334,7 @@ class tan(TrigonometricFunction):
         if arg.is_imaginary:
             return True
         return fuzzy_not((arg / pi - S.Half).is_integer)
+
 
 class cot(TrigonometricFunction):
     """

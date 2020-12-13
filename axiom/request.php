@@ -198,64 +198,208 @@ function process_py($py)
 
 global $sagemath;
 
-function depict(&$dict, $module, $multiplier)
+class Set
 {
-    // https://www.php.net/manual/en/function.str-repeat.php
-    echo str_repeat("&nbsp;", $multiplier) . to_a_tag($module) . "<br>";
-    if (array_key_exists($module, $dict)) {
-        foreach ($dict[$module] as $module => $value) {
-            depict($dict, $module, $multiplier + 8);
+
+    private $set;
+
+    public function __construct()
+    {
+        $this->set = [];
+    }
+
+    public function add($element)
+    {
+        $this->set[$element] = true;
+    }
+
+    public function remove($element)
+    {
+        unset($this->set[$element]);
+    }
+
+    public function enumerate()
+    {
+        foreach ($this->set as $key => &$_) {
+            yield $key;
+        }
+    }
+
+    public function contains($element)
+    {
+        return array_key_exists($element, $this->set);
+    }
+}
+
+class Node
+{
+
+    private $descendent;
+
+    public function __construct()
+    {
+        $this->descendent = [];
+    }
+}
+
+class Graph
+{
+
+    private $graph;
+
+    private $permanent_mark;
+
+    private $temporary_mark;
+
+    function visit($n)
+    {
+        // error_log("visiting key = $n");
+        if ($this->permanent_mark->contains($n))
+            return null;
+
+        if ($this->temporary_mark->contains($n))
+            return $n;
+
+        if (array_key_exists($n, $this->graph)) {
+
+            $this->temporary_mark->add($n);
+            // error_log("this->graph[n] = " . jsonify($this->graph[$n]));
+
+            foreach ($this->graph[$n] as $m) {
+                $node = $this->visit($m);
+                if ($node != null)
+                    return $node;
+            }
+
+            $this->temporary_mark->remove($n);
+        }
+
+        $this->permanent_mark->add($n);
+        return null;
+    }
+
+    function initialize_topology()
+    {
+        $this->permanent_mark = new Set();
+        $this->temporary_mark = new Set();
+    }
+
+    function &topological_sort_depth_first()
+    {
+        $this->initialize_topology();
+        foreach ($this->graph as $n => $_) {
+            if ($this->visit($n))
+                return null;
+        }
+
+        return $this->L;
+    }
+
+    function detect_cyclic_proof($key)
+    {
+        $this->initialize_topology();
+        return $this->visit($key);
+    }
+
+    public function __construct()
+    {
+        $this->graph = [];
+    }
+
+    function convert_set_to_list()
+    {
+        foreach ($this->graph as $key => &$value) {
+            $this->graph[$key] = iterator_to_array($value->enumerate());
+        }
+    }
+
+    function add_edge($from, $to)
+    {
+        if (! array_key_exists($from, $this->graph)) {
+            $this->graph[$from] = new Set();
+        }
+
+        $this->graph[$from]->add($to);
+    }
+
+    function depict($module, $multiplier)
+    {
+        // https://www.php.net/manual/en/function.str-repeat.php
+        echo str_repeat("&nbsp;", $multiplier) . to_a_tag($module);
+
+        if (array_key_exists($module, $this->graph)) {
+            echo "<button onmouseover=\"this.style.backgroundColor='red';\" onmouseout=\"this.style.backgroundColor='rgb(199, 237, 204)';\">>>>></button>";
+            echo "<div class=hidden>";
+            foreach ($this->graph[$module] as $module) {
+                $this->depict($module, $multiplier + 8);
+            }
+            echo "</div>";
+        }
+        echo "<br>";
+    }
+
+    function depict_topology()
+    {
+        foreach ($this->permanent_mark->enumerate() as $module) {
+            echo str_repeat("&nbsp;", 8) . to_a_tag($module) . "<br>";
         }
     }
 }
 
-if (array_key_exists('callee', $_GET)) {    
-    echo "the axiom in question is a callee in the following hierarchy:<br>";
-    $dict = [];
-    foreach (read_all_axioms(dirname(__file__)) as $py) {
-        $caller = to_python_module($py);
-        $modules = process_py($py);
+$mapping = new Graph();
 
-        foreach ($modules as $callee) {
-            if (! array_key_exists($callee, $dict)) {
-                $dict[$callee] = [];
-            }
+$key_input = array_keys($_GET)[0];
 
-            if (! array_key_exists($caller, $dict[$callee])) {
-                $dict[$callee][$caller] = 0;
-            }
-            ++ $dict[$callee][$caller];
-        }
-    }
-    
-    $callee = $_GET['callee'];
-    depict($dict, $callee, 2);    
-    echo "<br><br>switch to <a href='request.php?caller=$callee'>caller hierarchy</a>";
-} else if (array_key_exists('caller', $_GET)) {
-    
-    echo "the axiom in question is a caller in the following hierarchy:<br>";
-    $dict = [];
-    foreach (read_all_axioms(dirname(__file__)) as $py) {
-        $caller = to_python_module($py);
-        $modules = process_py($py);
+switch ($key_input) {
+    case "callee":
+        $key = 'caller';
+        $invert = true;
+        break;
 
-        foreach ($modules as $callee) {
-            if (! array_key_exists($caller, $dict)) {
-                $dict[$caller] = [];
-            }
-
-            if (! array_key_exists($callee, $dict[$caller])) {
-                $dict[$caller][$callee] = 0;
-            }
-            ++ $dict[$caller][$callee];
-        }
-    }
-    
-    $caller = $_GET['caller'];
-    depict($dict, $caller, 2);
-    echo "<br><br>switch to <a href='request.php?callee=$caller'>callee hierarchy</a>";
+    case "caller":
+        $key = 'callee';
+        $invert = false;
+        break;
 }
 
-// exit(0);
+foreach (read_all_axioms(dirname(__file__)) as $py) {
+    $from = to_python_module($py);
+    $modules = process_py($py);
+
+    foreach ($modules as $to) {
+        if ($invert)
+            $mapping->add_edge($to, $from);
+        else
+            $mapping->add_edge($from, $to);
+    }
+}
+
+$module = $_GET[$key_input];
+
+echo "the axiom in question is a $key_input in the following hierarchy, would you switch to <a href='request.php?$key=$module'>$key hierarchy</a>?<br>";
+
+$mapping->convert_set_to_list();
+
+$pinpoint = $mapping->detect_cyclic_proof($module);
+if ($pinpoint) {
+    echo "<font color=red>cyclic proof detected in :</font><br>";
+    echo to_a_tag($module) . "<br>";
+    if (strcmp($pinpoint, $module)) {
+        echo str_repeat("&nbsp;", 8) . to_a_tag($pinpoint) . "<br>";
+    } else {
+        // $mapping->depict_topology();
+    }
+} else {
+    $mapping->depict($module, 2);
+}
+
+function javaScript($js)
+{
+    echo "<script>" . $js . "</script>";
+}
+
+javaScript("toggle_expansion_button();");
+
+javaScript("click_first_expansion_button();");
 
 ?>

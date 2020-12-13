@@ -16,7 +16,7 @@ from sympy.matrices import Matrix
 from sympy.polys.polytools import cancel
 from sympy.solvers import solve, linsolve
 from sympy.utilities.iterables import uniq
-from sympy.utilities.misc import filldedent, func_name, Undecidable
+from sympy.utilities.miscellany import filldedent, func_name, Undecidable
 
 from .entity import GeometryEntity
 from .point import Point, Point3D

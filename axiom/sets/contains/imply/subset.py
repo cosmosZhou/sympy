@@ -9,7 +9,7 @@ def apply(given):
     assert given.is_Contains
     e, s = given.args
     
-    return Subset(e.set, s, given=given)
+    return Subset(e.set, s)
 
 
 from axiom.utility import check

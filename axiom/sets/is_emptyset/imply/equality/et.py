@@ -22,7 +22,7 @@ def apply(given):
     assert AB.is_Union
     A, B = AB.args
     emptySet = A.etype.emptySet
-    return And(Equality(A, emptySet), Equality(B, emptySet), given=given)
+    return And(Equality(A, emptySet), Equality(B, emptySet))
 
 
 from axiom.utility import check
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq[-1].abs()
 
-    Eq << Eq[-2].lhs.assertion()
+    Eq << sets.imply.equality.principle.addition.apply(*Eq[-2].lhs.args)
 
     Eq << Eq[-1].subs(Eq[-2], Eq.AB_union_empty)
 
@@ -59,7 +59,7 @@ def prove(Eq):
 
     Eq << Eq[-1].abs()
 
-    Eq << Eq[-2].lhs.assertion()
+    Eq << sets.imply.equality.principle.addition.apply(*Eq[-2].lhs.args)
 
     Eq << Eq[-1].subs(Eq[-2], Eq.AB_union_empty)
 

@@ -2,7 +2,7 @@ from sympy.core.relational import Equality, Unequal
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.sets.contains import Contains
 
 @plausible

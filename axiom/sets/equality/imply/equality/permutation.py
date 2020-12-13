@@ -4,7 +4,7 @@ from sympy.core.relational import Equality
 from sympy import Symbol
 from axiom import discrete
 from sympy.sets.sets import Interval
-from sympy.concrete.expr_with_limits import UNION
+from sympy import UNION
 
 
 @plausible
@@ -18,10 +18,10 @@ def apply(given, x):
     assert p_set_comprehension.function.is_FiniteSet 
     p = p_set_comprehension.function.arg.base
     assert p_set_comprehension == p[:n].set_comprehension()
-    zero, _n, _ = interval.args
+    zero, _n = interval.args
     assert zero.is_zero 
     assert _n == n and interval.right_open
-    return Equality(UNION[i:n](x[p[i]].set), x[:n].set_comprehension(), given=given)
+    return Equality(UNION[i:n](x[p[i]].set), x[:n].set_comprehension())
 
 
 from axiom.utility import check

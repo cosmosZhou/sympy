@@ -3,7 +3,7 @@ from sympy.core.symbol import dtype
 from sympy.sets.contains import NotContains
 from sympy import Symbol
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import UNION, ForAll
+from sympy import UNION, ForAll
 from sympy.sets.sets import Interval
 from axiom import sets
 
@@ -16,7 +16,7 @@ def apply(given):
     assert S.is_UNION
     limits = S.limits
     
-    return ForAll(NotContains(e, S.function).simplify(), *limits, given=given)
+    return ForAll(NotContains(e, S.function).simplify(), *limits)
 
 
 from axiom.utility import check

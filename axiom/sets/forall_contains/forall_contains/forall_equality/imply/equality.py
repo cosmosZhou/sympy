@@ -3,7 +3,7 @@ from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
 from sympy.core.relational import Equality
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import ForAll, Exists, UNION
+from sympy import ForAll, Exists, UNION
 from axiom import sets
 from sympy.core.function import Lambda, Function
 from axiom import algebre
@@ -43,7 +43,7 @@ def analyze(*given):
 def apply(*given):    
     A, B, a, b, fa, gb = analyze(*given)
     
-    return Equality(UNION[b:B](gb.set), A, given=given)
+    return Equality(UNION[b:B](gb.set), A)
 
 
 from axiom.utility import check
@@ -82,7 +82,7 @@ def prove(Eq):
     Eq << ForAll[a:A](Exists[b:B](Equality(f(a), b)), plausible=True)
     Eq << Eq[-1].this.function.simplify()
     
-    Eq << Eq[-1].apply(algebre.equality.imply.invoke, g)
+    Eq << Eq[-1].apply(algebre.equality.imply.equality.invoke, g)
     
     Eq <<= Eq.supset_A & Eq.subset_A
 

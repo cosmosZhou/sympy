@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from axiom import sets
 from sympy import Symbol, Slice
-from sympy.concrete.expr_with_limits import UNION, LAMBDA, INTERSECTION, ForAll
+from sympy import UNION, LAMBDA, INTERSECTION, ForAll
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.sets.sets import Interval, CartesianSpace

@@ -1,7 +1,7 @@
 from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy.concrete.expr_with_limits import ForAll, UNION, LAMBDA
+from sympy import ForAll, UNION, LAMBDA
 from sympy import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -45,7 +45,7 @@ def apply(given):
         xi, xj = xj, xi
                         
     assert xi._subs(i, j) == xj
-    return Equality(abs(UNION(xi, i_limit).simplify()), summation(abs(xi), i_limit), given=given)
+    return Equality(abs(UNION(xi, i_limit).simplify()), summation(abs(xi), i_limit))
 
 
 from axiom.utility import check

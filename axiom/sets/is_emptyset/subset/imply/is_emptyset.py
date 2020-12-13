@@ -32,7 +32,7 @@ def apply(*given):
         assert B == C
         C = _B
 
-    return Equality(C & A, A.etype.emptySet, given=given)
+    return Equality(C & A, A.etype.emptySet)
 
 
 from axiom.utility import check

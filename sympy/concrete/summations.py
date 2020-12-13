@@ -802,15 +802,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
         return Sum(e * self.function, *limits)
 
-    def as_two_terms(self):
-        first, second = self.function.as_two_terms()
-
-        if isinstance(self.function, self.operator):
-            return self.operator(self.func(first, *self.limits), self.func(second, *self.limits))            
-        
-        from sympy.concrete.expr_with_limits import LAMBDA
-        return LAMBDA(first, *self.limits) @ LAMBDA(second, *self.limits)
-
     def _subs(self, old, new, **hints):
         this = self._subs_utility(old, new, **hints)
         if this is not None:
@@ -823,12 +814,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if ab:
                 if len(ab) == 1:
                     domain = ab[0]
-                    if old._has(x):
-                        if domain.is_set:
-                            _domain = domain._subs(old, new)
-                            if _domain != domain:
-                                return self.func(self.function, (x, _domain)).simplify()
-                    else:
+                    if not old._has(x) or new._has(x):
                         _domain = domain._subs(old, new)
                         function = self.function._subs(old, new)
                         if _domain != domain or function != self.function:                            
@@ -838,6 +824,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                                     x = x.func(x.base, *indices)                
 
                             return self.func(function, (x, _domain)).simplify()
+                    else:
+                        if domain.is_set:
+                            _domain = domain._subs(old, new)
+                            if _domain != domain:
+                                return self.func(self.function, (x, _domain)).simplify()
 
                     return self
 

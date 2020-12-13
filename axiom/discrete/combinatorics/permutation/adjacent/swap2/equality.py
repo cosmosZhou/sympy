@@ -3,7 +3,7 @@ from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
+from sympy import ForAll, LAMBDA
 from axiom.discrete.combinatorics.permutation.adjacent import swap2
 from sympy import Symbol
 

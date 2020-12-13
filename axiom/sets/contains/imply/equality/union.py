@@ -11,7 +11,7 @@ def apply(given):
     assert given.is_Contains
     A, B = given.args
     
-    return Equality(A.set | B, B, given=given)
+    return Equality(A.set | B, B)
 
 
 from axiom.utility import check

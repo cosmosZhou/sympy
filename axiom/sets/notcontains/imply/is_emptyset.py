@@ -11,7 +11,7 @@ from axiom import sets
 def apply(given):
     assert given.is_NotContains
     e, s = given.args
-    return Equality(e.set & s, e.emptySet, given=given)
+    return Equality(e.set & s, e.emptySet)
 
 
 from axiom.utility import check

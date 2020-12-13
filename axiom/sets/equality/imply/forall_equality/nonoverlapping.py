@@ -1,8 +1,8 @@
 from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy import S
-from sympy.concrete.expr_with_limits import ForAll, UNION
+
+from sympy import ForAll, UNION
 from axiom import sets
 from sympy import Symbol
 # given: |Union x[i]| = Sum |x[i]|
@@ -43,7 +43,7 @@ def apply(given, excludes=None):
     i_domain = limits_dict[i] or i.domain
 
     limits = [(j, i_domain - {i})] + [*x_union.limits]
-    return ForAll(Equality(xi & xj, xi.etype.emptySet).simplify(), *limits, given=given)
+    return ForAll(Equality(xi & xj, xi.etype.emptySet).simplify(), *limits)
 
 
 from axiom.utility import check

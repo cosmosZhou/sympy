@@ -7,7 +7,7 @@ from sympy import Symbol
 def apply(given):
     assert given.is_StrictGreaterThan
     
-    return Unequal(*given.args, given=given)
+    return Unequal(*given.args)
 
 
 from axiom.utility import check

@@ -1,5 +1,5 @@
 from axiom.utility import plausible
-from sympy.core.relational import Unequal, Equality, Equal
+from sympy.core.relational import Equal
 from sympy import Symbol
 import axiom
 from sympy.logic.boolalg import Or
@@ -11,7 +11,7 @@ def apply(given):
     multiply = axiom.is_zero(given)
     args = axiom.is_Times(multiply)
     
-    return Or(*(Equal(arg, 0).simplify() for arg in args), given=given)
+    return Or(*(Equal(arg, 0).simplify() for arg in args))
 
 
 from axiom.utility import check

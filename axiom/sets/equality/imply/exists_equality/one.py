@@ -2,7 +2,7 @@ from sympy.core.relational import Equality , StrictGreaterThan
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from axiom import sets
 # given: |S| = 1
 # Exists[x:S] ({x}) = S
@@ -16,7 +16,7 @@ def apply(given):
     assert S_abs.is_Abs and n.is_extended_positive
     S = S_abs.arg
     x = S.element_symbol()
-    return Exists[x](Equality(x.set, S), given=given)
+    return Exists[x](Equality(x.set, S))
 
 
 from axiom.utility import check

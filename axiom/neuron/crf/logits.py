@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.relational import Equality
 import sympy
 from sympy import log
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 from sympy import Symbol
 from sympy.concrete.products import Product
 from sympy.stats.symbolic_probability import Probability as P
@@ -16,7 +16,7 @@ from sympy.concrete.summations import Sum
 def apply(G, x, s, given):
     t = s.definition.variable
     y = x.definition.variable.base
-    return Equality(s[t + 1], G[y[t + 1], y[t]] + s[t] + x[t + 1, y[t + 1]], given=given)
+    return Equality(s[t + 1], G[y[t + 1], y[t]] + s[t] + x[t + 1, y[t + 1]])
 
 
 from axiom.utility import check
@@ -46,7 +46,7 @@ def prove(Eq):
     s = Symbol.s(shape=(n,), definition=LAMBDA[t](-log(joint_probability_t)))
     x = Symbol.x(shape=(n, d), definition=LAMBDA[y[i], i](-sympy.log(emission_probability)))
     
-    Eq.s_definition, Eq.G_definition, Eq.x_definition, Eq.given, Eq.logits_recursion = apply(G, x, s, given=given)
+    Eq.s_definition, Eq.G_definition, Eq.x_definition, Eq.given, Eq.logits_recursion = apply(G, x, s, given)
 
     Eq << Eq.s_definition.this.rhs.subs(Eq.given)
     
@@ -58,7 +58,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[-1].args[1].function.astype(Plus)
     
-    Eq << Eq[-1].this.rhs.args[-1].args[1].as_two_terms()
+    Eq << Eq[-1].this.rhs.args[-1].args[1].astype(Plus)
     
     Eq << Eq[-1].subs(Eq.x_definition.reversed).subs(Eq.G_definition.reversed)
     

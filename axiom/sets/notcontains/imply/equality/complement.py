@@ -13,7 +13,7 @@ from axiom import sets
 def apply(given):
     assert given.is_NotContains    
     e, S = given.args
-    return Equality(S - {e}, S, given=given)
+    return Equality(S - {e}, S)
 
 
 from axiom.utility import check

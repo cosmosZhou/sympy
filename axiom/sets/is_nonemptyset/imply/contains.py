@@ -20,7 +20,7 @@ def apply(given):
     
     e, *_ = e_set.args
     
-    return Contains(e, s, given=given)
+    return Contains(e, s)
 
 
 from axiom.utility import check

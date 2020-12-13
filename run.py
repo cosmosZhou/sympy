@@ -4,8 +4,41 @@ import sys
 # to run this script, please install:
 # pip install mpmath==1.1.0
 # pip install oauthlib
-from axiom import prove
-import os
+try:
+    from axiom import prove
+except ImportError as e:
+#     traceback.print_exc()
+    from traceback import TracebackException
+    etype, value, tb = sys.exc_info() 
+    lines = [*TracebackException(type(value), value, tb, limit=None).format(chain=None)]
+    error_source = lines[-2]
+    
+    print(error_source, file=sys.stderr)
+    error_source = error_source.strip()
+    error_message, line = error_source.split('\n')
+    
+    import re
+    m = re.compile(r'File "([^"]+(?:\\|/)__init__\.py)", line (\d+), in <module>').fullmatch(error_message)
+    assert m
+    file, line_number = m.groups()
+    print(file)
+    line_number = int(line_number) - 1
+    
+    from sympy.utilities.miscellany import Text
+    lines = [*Text(file)]
+    del lines[line_number]
+    
+    Text(file).write(lines)
+    
+    import os
+    command = 'python ' + ' '.join(sys.argv)
+    print(command)
+    exit_code = os.system(command)
+    print('exit_code =', exit_code)
+    exit(exit_code)
+    
+from axiom.prove import import_module, project_directory
+
 
 def listdir(rootdir, sufix='.php'):
     for name in os.listdir(rootdir):
@@ -26,12 +59,14 @@ def listdir_recursive(rootdir, sufix='.php'):
         elif os.path.isdir(path):
             yield from listdir_recursive(path, sufix)
 
+
 def clean():    
     for php in listdir(os.path.abspath(os.path.dirname(__file__)) + '/axiom'):
         py = php.replace('.php', '.py')
         if not os.path.exists(py):
             print(php)
             os.remove(php)
+
     
 def args_kwargs(argv):
     args = []
@@ -45,12 +80,16 @@ def args_kwargs(argv):
             args.append(arg)
     return args, kwargs
 
+
 if __name__ == '__main__':
     args, kwargs = args_kwargs(sys.argv[1:])
     if kwargs:
         if 'clean' in kwargs:
             clean()
-
+ 
+    debug = kwargs.get('debug', False)
+    
+#     args = ['axiom.discrete.combinatorics.permutation.index.kronecker_delta.indexed', 'axiom.discrete.combinatorics.permutation.index_general.kronecker_delta.indexed']
     if not args:         
         prove.prove()
     else:            
@@ -61,16 +100,31 @@ if __name__ == '__main__':
         websites = []
 
         import axiom  # @UnusedImport
+
         def generator():
             for package in args:
                 package = package.replace('/', '.').replace('\\', '.')
-                package = eval(package)
-                ret = package.prove(package.__file__)
-                yield package.__file__, ret
+                module = import_module(package)
+                if isinstance(module, int):                    
+                    ret = None if module < 0 else bool(module)
+                    file = project_directory() + '/' + package.replace('.', '/') + '.py'        
+                else:
+                    ret = module.prove(module.__file__, debug=debug)
+                    file = module.__file__
+                yield file, ret
                 
         prove.post_process(generator())
-#         print('prove.print_summary()')
         prove.print_summary()
+        
+        if prove.unproved:        
+            exit_code = 0
+        elif prove.failures:
+            exit_code = -1
+        else:
+            exit_code = 1
+            
+        print('exit_code =', exit_code)            
+        exit(exit_code)
 #     cd D:/Program Files/Wolfram Research/Mathematica/12.1/SystemFiles/Components/WolframClientForPython
 #     pip install .
 

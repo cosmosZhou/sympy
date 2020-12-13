@@ -1,14 +1,8 @@
 from axiom.utility import plausible
-from sympy.core.relational import Equal, Unequal
+from sympy.core.relational import Unequal
 from sympy import Symbol
 
-from sympy.core.numbers import oo
-
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
 import axiom
-from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.matrices.expressions.matexpr import Identity
-
 
 
 @plausible
@@ -16,7 +10,7 @@ def apply(*given):
     is_nonzero_x, is_nonzero_y = given
     x = axiom.is_nonzero(is_nonzero_x)
     y = axiom.is_nonzero(is_nonzero_y)
-    return Unequal(x * y, 0, given=given)
+    return Unequal(x * y, 0)
 
 
 from axiom.utility import check

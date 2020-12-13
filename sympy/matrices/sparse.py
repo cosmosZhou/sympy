@@ -10,7 +10,7 @@ from sympy.core.singleton import S
 from sympy.functions import Abs
 from sympy.functions.elementary.miscellaneous import sqrt
 from sympy.utilities.iterables import uniq
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 from .common import a2idx
 from .dense import Matrix

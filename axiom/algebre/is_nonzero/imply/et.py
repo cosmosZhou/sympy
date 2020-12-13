@@ -1,16 +1,16 @@
 from axiom.utility import plausible
-from sympy.core.relational import Unequal, Equality
+from sympy.core.relational import Unequal
 from sympy import Symbol
 import axiom
 from sympy.logic.boolalg import And
+from sympy.matrices.expressions.matexpr import ZeroMatrix
 
 
 @plausible
 def apply(given):
     multiply = axiom.is_nonzero(given)
     args = axiom.is_Times(multiply)
-    
-    return And(*(Unequal(arg, 0) for arg in args), given=given)
+    return And(*(Unequal(arg, ZeroMatrix(*arg.shape)).simplify() for arg in args))
 
 
 from axiom.utility import check

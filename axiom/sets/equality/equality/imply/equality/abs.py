@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy import Symbol
 from sympy.core.function import Function
-from sympy.concrete.expr_with_limits import UNION
+from sympy import UNION
 from sympy.functions.elementary.complexes import Abs
 from axiom import sets
 
@@ -20,7 +20,7 @@ def apply(*given):
     
     assert A == _A and B == _B
     
-    return Equality(Abs(A), Abs(B), given=given)
+    return Equality(Abs(A), Abs(B))
 
 
 from axiom.utility import check

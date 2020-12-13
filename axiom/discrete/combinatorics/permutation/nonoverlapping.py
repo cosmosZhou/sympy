@@ -6,7 +6,7 @@ from sympy import Symbol
 from sympy.functions.elementary.complexes import Abs
 from axiom import sets
 from axiom.discrete.combinatorics.permutation import mapping
-from sympy.concrete.expr_with_limits import UNION, ForAll
+from sympy import UNION, ForAll
 from sympy.concrete.summations import Sum
 
 
@@ -45,7 +45,7 @@ def prove(Eq):
     
     Eq << Eq[-1].split()[0]
     
-    Eq << sets.imply.conditionset.apply(Q[t]).split()[0]
+    Eq << sets.imply.forall.conditionset.apply(Q[t]).split()[0]
     
     Eq << Eq[-2].subs(Eq[-1])
     

@@ -22,7 +22,7 @@ def apply(given):
     
     B, A = A_minus_B.args
 
-    return Subset(B, A, given=given)
+    return Subset(B, A)
 
 
 from axiom.utility import check

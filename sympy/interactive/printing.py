@@ -9,7 +9,7 @@ from io import BytesIO
 from sympy import latex as default_latex
 from sympy import preview
 from sympy.core.compatibility import integer_types
-from sympy.utilities.misc import debug
+from sympy.utilities.miscellany import debug
 
 
 def _init_python_printing(stringify_func, **settings):

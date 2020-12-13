@@ -2,7 +2,7 @@ import os
 import subprocess
 import glob
 
-from sympy.utilities.misc import debug
+from sympy.utilities.miscellany import debug
 
 here = os.path.dirname(__file__)
 grammar_file = os.path.abspath(os.path.join(here, "LaTeX.g4"))

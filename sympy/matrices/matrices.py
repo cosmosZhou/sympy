@@ -25,7 +25,7 @@ from sympy.simplify import nsimplify
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 from sympy.utilities.iterables import flatten, numbered_symbols
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 from .common import MatrixCommon, MatrixError, NonSquareMatrixError, ShapeError
 

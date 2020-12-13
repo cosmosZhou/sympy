@@ -8,7 +8,7 @@ from sympy.functions.elementary.miscellaneous import Max, Min
 from sympy.logic.boolalg import (And, Boolean, distribute_and_over_or,
     true, false, Or, ITE, simplify_logic)
 from sympy.utilities.iterables import uniq, ordered, product, sift
-from sympy.utilities.misc import filldedent, func_name
+from sympy.utilities.miscellany import filldedent, func_name
 
 Undefined = S.NaN  # Piecewise()
 
@@ -1116,9 +1116,53 @@ class Piecewise(Function):
         if e.is_Piecewise:
             e = e.as_KroneckerDelta()
         return ((e * eq).simplify() + (rest * (1 - eq)).simplify()).simplify()
+        
+    @classmethod
+    def simplify_Equal(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Basic object!
+        """
+        if len(lhs.args) == 2:
+            (e0, c0), (e1, _) = lhs.args
+            if e0 == rhs:
+                if Equality(e1, rhs) == False:
+                    return c0.copy(equivalent=self)
+            elif e1 == rhs:
+                if Equality(e0, rhs) == False:
+                    c1 = c0.invert()
+                    c1.equivalent = self
+                    return c1                
+                
+        elif rhs.is_Plus and lhs in rhs.args:
+            cls = rhs.func
+            args = [*rhs.args]
+            args.remove(lhs)
+            return self.func(0, cls(*args), equivalent=self).simplify()
                  
+    @classmethod
+    def simplify_Unequal(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Basic object!
+        """
+        if len(lhs.args) == 2:
+            (e0, c0), (e1, _) = lhs.args
+            if e0 == rhs:
+                if Equality(e1, rhs) == False:
+                    c1 = c0.invert()
+                    c1.equivalent = self
+                    return c1
+            elif e1 == rhs:
+                if Equality(e0, rhs) == False:
+                    return c0.copy(equivalent=self)
+                
+        elif rhs.is_Plus and lhs in rhs.args:
+            cls = rhs.func
+            args = [*rhs.args]
+            args.remove(lhs)
+            return self.func(0, cls(*args), equivalent=self).simplify()
+        
     @staticmethod
-    def simplifyEquality(e0, e1, lhs, rhs):
+    def simplify_Equality(e0, e1, lhs, rhs):
         from sympy.functions.special.tensor_functions import KroneckerDelta
         if lhs.is_integer and rhs.is_integer:
             eq = KroneckerDelta(lhs, rhs)
@@ -1331,12 +1375,12 @@ class Piecewise(Function):
                 e0 = e0.simplify(deep=deep)
                 e1 = e1.simplify(deep=deep)
             if c0.is_Equality:
-                res = Piecewise.simplifyEquality(e0, e1, *c0.args)
+                res = Piecewise.simplify_Equality(e0, e1, *c0.args)
                 if res is not None:
                     return res                
                                          
             if c0.is_Unequality:
-                res = Piecewise.simplifyEquality(e1, e0, *c0.args)
+                res = Piecewise.simplify_Equality(e1, e0, *c0.args)
                 if res is not None:
                     return res     
                 
@@ -1550,7 +1594,11 @@ class Piecewise(Function):
         return cls((1, Equality(*self.args)), (0, True))
 
     @classmethod
-    def rewrite_from_Plus(cls, self):
+    def rewrite_from_Boole(cls, self):
+        return cls((1, self.arg), (0, True))
+
+    @classmethod
+    def rewrite_from_Plus(cls, self, simplify=True):
         piecewise = []
         delta = []
         for arg in self.args:
@@ -1565,15 +1613,57 @@ class Piecewise(Function):
         delta = self.func(*delta, evaluate=False)
         if len(piecewise) == 1:
             result, *_ = piecewise            
-            return result.func(*((e + delta, c) for e, c in result.args))
-        
-        result = piecewise[0]
-        for i in range(1, len(piecewise)):            
-            result = result.add(piecewise[i])
-            
-        if delta:
-            return result.func(*((e + delta, c) for e, c in result.args))
+            result = result.func(*((e + delta, c) for e, c in result.args))
+        else:            
+            result = piecewise[0]
+            for i in range(1, len(piecewise)):            
+                result = result.add(piecewise[i])
+                
+            if delta:
+                result = result.func(*((e + delta, c) for e, c in result.args))
+        if simplify:
+            result = result.simplify()
         return result
+
+    @classmethod
+    def rewrite_from_Times(cls, self, simplify=True):
+        piecewise = []
+        delta = []
+        for arg in self.args:
+            if arg.is_Piecewise:
+                piecewise.append(arg)       
+            else:
+                delta.append(arg)
+                
+        if not piecewise:
+            return self
+        
+        delta = self.func(*delta, evaluate=False)
+        if len(piecewise) == 1:
+            result, *_ = piecewise            
+            result = result.func(*((e * delta, c) for e, c in result.args))
+        else:            
+            result = piecewise[0]
+            for i in range(1, len(piecewise)):            
+                result = result.mul(piecewise[i])
+                
+            if delta:
+                result = result.func(*((e * delta, c) for e, c in result.args))
+        if simplify:
+            result = result.simplify()
+        return result
+    
+    @classmethod
+    def rewrite_from_Max(cls, self):
+        arg, *args = self.args        
+        self = self.func(*args)
+        return cls((arg, arg >= self), (self, True))
+
+    @classmethod
+    def rewrite_from_Min(cls, self):
+        arg, *args = self.args        
+        self = self.func(*args)
+        return cls((arg, arg >= self), (self, True))
     
 def piecewise_fold(expr):
     """

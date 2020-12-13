@@ -12,7 +12,7 @@ def apply(given):
     assert given.is_Supset
     A, B = given.args
 
-    return GreaterThan(abs(A), abs(B), given=given)
+    return GreaterThan(abs(A), abs(B))
 
 
 from axiom.utility import check

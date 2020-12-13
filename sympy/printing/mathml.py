@@ -1272,7 +1272,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
         args = sorted(expr.args, key=default_sort_key)
         return self._print_LogOp(args, '&#x22BB;')
 
-    def _print_Implies(self, expr):
+    def _print_Imply(self, expr):
         return self._print_LogOp(expr.args, '&#x21D2;')
 
     def _print_Equivalent(self, expr):

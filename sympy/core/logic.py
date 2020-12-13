@@ -150,7 +150,7 @@ def fuzzy_and(args):
 
 def fuzzy_not(v):
     """
-    Not in fuzzy logic
+    LogicNot in fuzzy logic
 
     Return None if `v` is None else `not v`.
 
@@ -173,7 +173,7 @@ def fuzzy_not(v):
 
 def fuzzy_or(args):
     """
-    Or in fuzzy logic. Returns True (any True), False (all False), or None
+    LogicOr in fuzzy logic. Returns True (any True), False (all False), or None
 
     See the docstrings of fuzzy_and and fuzzy_not for more info.  fuzzy_or is
     related to the two by the standard De Morgan's law.
@@ -282,7 +282,7 @@ class Logic:
             if term[0] == '!':
                 if len(term) == 1:
                     raise ValueError('do not include space after "!"')
-                term = Not(term[1:])
+                term = LogicNot(term[1:])
 
             # already scheduled operation, e.g. '&'
             if schedop:
@@ -321,7 +321,7 @@ class AndOr_Base(Logic):
         args = sorted(set(cls.flatten(bargs)), key=hash)
 
         for a in args:
-            if Not(a) in args:
+            if LogicNot(a) in args:
                 return cls.op_x_notx
 
         if len(args) == 1:
@@ -333,7 +333,7 @@ class AndOr_Base(Logic):
 
     @classmethod
     def flatten(cls, args):
-        # quick-n-dirty flattening for And and Or
+        # quick-n-dirty flattening for LogicAnd and LogicOr
         args_queue = list(args)
         res = []
 
@@ -352,28 +352,28 @@ class AndOr_Base(Logic):
         return args
 
 
-class And(AndOr_Base):
+class LogicAnd(AndOr_Base):
     op_x_notx = False
 
     def _eval_propagate_not(self):
         # !(a&b&c ...) == !a | !b | !c ...
-        return Or(*[Not(a) for a in self.args])
+        return LogicOr(*[LogicNot(a) for a in self.args])
 
     # (a|b|...) & c == (a&c) | (b&c) | ...
     def expand(self):
 
-        # first locate Or
+        # first locate LogicOr
         for i in range(len(self.args)):
             arg = self.args[i]
-            if isinstance(arg, Or):
+            if isinstance(arg, LogicOr):
                 arest = self.args[:i] + self.args[i + 1:]
 
-                orterms = [And(*(arest + (a,))) for a in arg.args]
+                orterms = [LogicAnd(*(arest + (a,))) for a in arg.args]
                 for j in range(len(orterms)):
                     if isinstance(orterms[j], Logic):
                         orterms[j] = orterms[j].expand()
 
-                res = Or(*orterms)
+                res = LogicOr(*orterms)
                 return res
 
         return self
@@ -382,17 +382,17 @@ class And(AndOr_Base):
         return ' & '.join(str(a) for a in self.args)
 
 
-class Or(AndOr_Base):
+class LogicOr(AndOr_Base):
     op_x_notx = True
 
     def _eval_propagate_not(self):
         # !(a|b|c ...) == !a & !b & !c ...
-        return And(*[Not(a) for a in self.args])
+        return LogicAnd(*[LogicNot(a) for a in self.args])
 
     def __str__(self):
         return ' | '.join(str(a) for a in self.args)
 
-class Not(Logic):
+class LogicNot(Logic):
 
     def __new__(cls, arg):
         if isinstance(arg, str):
@@ -400,7 +400,7 @@ class Not(Logic):
 
         elif isinstance(arg, bool):
             return not arg
-        elif isinstance(arg, Not):
+        elif isinstance(arg, LogicNot):
             return arg.args[0]
 
         elif isinstance(arg, Logic):
@@ -409,7 +409,7 @@ class Not(Logic):
             return arg
 
         else:
-            raise ValueError('Not: unknown argument %r' % (arg,))
+            raise ValueError('LogicNot: unknown argument %r' % (arg,))
 
     @property
     def arg(self):
@@ -420,6 +420,6 @@ class Not(Logic):
             return '!(%s)' % str(self.arg) 
         return '!' + str(self.arg)
 
-Logic.op_2class['&'] = And
-Logic.op_2class['|'] = Or
-Logic.op_2class['!'] = Not
+Logic.op_2class['&'] = LogicAnd
+Logic.op_2class['|'] = LogicOr
+Logic.op_2class['!'] = LogicNot

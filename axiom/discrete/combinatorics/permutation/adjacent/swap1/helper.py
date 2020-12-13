@@ -7,7 +7,7 @@ from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.permutation.adjacent import swap1
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 
 
 @plausible

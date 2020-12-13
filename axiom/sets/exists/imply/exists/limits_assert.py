@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.core.function import Function
 
 
@@ -13,7 +13,7 @@ from axiom import sets
 @plausible
 def apply(given):
     assert given.is_Exists
-    return Exists(given.limits_condition, *given.limits, given=given)
+    return Exists(given.limits_condition, *given.limits)
 
 
 from axiom.utility import check

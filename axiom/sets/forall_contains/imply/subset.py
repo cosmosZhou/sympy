@@ -1,7 +1,7 @@
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 from axiom import sets
 from sympy.sets.contains import Contains, Subset
 
@@ -16,7 +16,7 @@ def apply(given):
     _x, B = given.function.args
     
     assert x == _x    
-    return Subset(A, B, given=given)
+    return Subset(A, B)
 
 from axiom.utility import check
 

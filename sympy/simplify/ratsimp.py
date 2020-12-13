@@ -6,7 +6,7 @@ from sympy.core.numbers import Rational
 from sympy.polys import cancel, ComputationFailed, parallel_poly_from_expr, reduced, Poly
 from sympy.polys.monomials import Monomial, monomial_div
 from sympy.polys.polyerrors import DomainError, PolificationFailed
-from sympy.utilities.misc import debug
+from sympy.utilities.miscellany import debug
 
 def ratsimp(expr):
     """

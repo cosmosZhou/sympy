@@ -5,7 +5,7 @@ from axiom.utility import check
 from sympy import Symbol, Slice
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.concrete.products import Product
-from sympy.concrete.expr_with_limits import ArgMax
+from sympy import ArgMax
 from axiom.statistics import bayes
 from axiom import algebre, statistics
 from sympy.logic.boolalg import Or
@@ -42,7 +42,7 @@ def apply(*given):
     assert t.is_positive
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-    return Equality(ArgMax[i](P(y[i] | x)), ArgMax[i](P(y[i]) * Product[j](P(x[j] | y[i]))), given=given)
+    return Equality(ArgMax[i](P(y[i] | x)), ArgMax[i](P(y[i]) * Product[j](P(x[j] | y[i]))))
     
 
 @check
@@ -61,7 +61,7 @@ def prove(Eq):
     Eq << bayes.is_nonzero.et.apply(Eq[1]).split()
     Eq << bayes.corollary.apply(Eq[-2], var=y[i])
     
-    Eq.y_given_x = algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq[-3]).reversed
+    Eq.y_given_x = algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq[-3]).reversed
     
     Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], [j, i])
     
@@ -79,12 +79,15 @@ def prove(Eq):
     
     Eq.xt_given_yi_nonzero = bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
     
-    Eq << statistics.bayes.theorem.apply(P(x[:t + 1] | y[i]), x[:t]).astype(Or)
+    Eq << statistics.bayes.theorem.apply(P(x[:t + 1] | y[i]), x[:t])
+    
+    Eq << algebre.forall.imply.ou.apply(Eq[-1])
+    
     Eq << (Eq[-1] & Eq.xt_given_yi_nonzero).split()
     
     Eq << Eq[-1].subs(Eq.xt_given_x_historic)
     
-    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq.xt_given_yi_nonzero)
+    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq.xt_given_yi_nonzero)
     
     Eq << Eq[-1].product((t, 1, n - 1))
     

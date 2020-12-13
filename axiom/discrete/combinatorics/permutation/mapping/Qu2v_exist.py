@@ -5,27 +5,17 @@ from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import Interval
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import LAMBDA, ForAll, Exists
+from sympy import LAMBDA, ForAll, Exists
 from axiom import discrete, algebre, sets
 from sympy.sets.contains import Contains, Subset
-from sympy.matrices.expressions.matexpr import Swap
+from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
 
 
-def predefined_symbols(n):
-    x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
-    t = Symbol.t(integer=True)
-    Q = Symbol.Q(definition=LAMBDA[t:n + 1](conditionset(x[:n + 1], Equality(x[:n + 1].set_comprehension(), Interval(0, n, integer=True)) & Equality(x[n], t))))
-    j = Symbol.j(integer=True)
-    i = Symbol.i(integer=True)    
-    w = Symbol.w(definition=LAMBDA[j:n + 1, i:n + 1](Swap(n + 1, i, j)))
-    
-    x_quote = Symbol("x'", definition=w[n, j] @ x[:n + 1])
-    return Q, w, x, x_quote, j
-
-    
 @plausible
 def apply(n, u, v):
-    Q, w, x, x_quote, j = predefined_symbols(n)
+    Q, w, x = predefined_symbols(n)
+    j = w.definition.variables[0]
+    x_quote = Symbol("x'", definition=w[n, j] @ x[:n + 1])
     return ForAll[x[:n + 1]:Q[u]](Exists[j:0:n](Contains(x_quote, Q[v])))
 
 
@@ -42,13 +32,13 @@ def prove(Eq):
     w, i, j = Eq[0].lhs.args
     Q = Eq[2].lhs.base
     
-    Eq << sets.imply.conditionset.apply(Q[u]).split()
+    Eq << sets.imply.forall.conditionset.apply(Q[u]).split()
     
     Eq.x_j_equality = Eq[-1].apply(discrete.combinatorics.permutation.index.exists, v)    
     
     Eq << Eq.x_j_equality.this.function.limits_subs(Eq.x_j_equality.function.variable, j)
     
-    Eq << algebre.matrix.elementary.swap.invariant.permutation.apply(n + 1, w=w)
+    Eq << discrete.matrix.elementary.swap.invariant.permutation.apply(n + 1, w=w)
     
     Eq << Subset(Eq[-2].limits[0][1], Eq[-1].rhs, plausible=True)    
     

@@ -35,7 +35,7 @@ def apply(*given):
         assert abs(a) > 0
         
     
-    return Contains(e, s, given=given)
+    return Contains(e, s)
 
 
 from axiom.utility import check

@@ -27,7 +27,7 @@ from mpmath.libmp.libmpf import (
     finf as _mpf_inf, fninf as _mpf_ninf,
     fnan as _mpf_nan, fzero, _normalize as mpf_normalize,
     prec_to_dps, fone, fnone)
-from sympy.utilities.misc import debug, filldedent
+from sympy.utilities.miscellany import debug, filldedent
 from .parameters import global_parameters
 
 from sympy.utilities.exceptions import SymPyDeprecationWarning
@@ -2705,12 +2705,12 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         return EmptySet()
 
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
+    def simplify_Equal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a Zero object!
         """
         if rhs._coeff_isneg():
-            return self.func(0, -rhs, equivalent=self)
+            return self.func(lhs, -rhs, equivalent=self)
         elif rhs.is_Plus:
             _lhs = []
             _rhs = []
@@ -2724,6 +2724,15 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         elif rhs.is_KroneckerDelta:
             return self.invert_type(*rhs.args, equivalent=self).simplify()
     
+    @classmethod
+    def simplify_Unequal(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Zero object!
+        """
+        if rhs._coeff_isneg():
+            return self.func(-rhs, lhs, equivalent=self)
+        return self.func(rhs, lhs, equivalent=self)
+        
 class One(with_metaclass(Singleton, IntegerConstant)):
     """The number one.
 
@@ -4190,10 +4199,11 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
 
     @classmethod
     def class_key(cls):
-        return 4, 50, 'Number'
+        # this value should be big enough, bigger than ExprWithLimits, so that Infinitesimal will be put at the rear of the _argset        
+        return 6, 1, 'Number'
 
     def clear_infinitesimal(self):
-        return S.Zero
+        return S.Zero, self
 
     def __new__(cls):
         return AtomicExpr.__new__(cls)
@@ -4411,10 +4421,10 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     @classmethod
     def class_key(cls):
         # this value should be big enough so that Infinitesimal will be put at the rear of the _argset
-        return 4, 50, 'Number'
+        return 6, 1, 'Number'
 
     def clear_infinitesimal(self):
-        return S.Zero
+        return S.Zero, self
 
     def __new__(cls):
         return AtomicExpr.__new__(cls)

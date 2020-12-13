@@ -128,6 +128,7 @@ class KroneckerDelta(Function):
     ==========
 
     .. [1] https://en.wikipedia.org/wiki/Kronecker_delta
+    https://encyclopediaofmath.org/wiki/Legendre%E2%80%93Jacobi%E2%80%93Kronecker_symbol
     """
     is_extended_nonnegative = True
     is_integer = True
@@ -484,6 +485,17 @@ class KroneckerDelta(Function):
     def _sympystr(self, p):
         return 'δ[%s]' % ', '.join(p._print(arg) for arg in self.args)
         
+    def _latex(self, p, exp=None):
+        i = p._print(self.args[0])
+        j = p._print(self.args[1])
+        if self.args[0].is_Atom and self.args[1].is_Atom:
+            tex = r'\delta_{%s %s}' % (i, j)
+        else:
+            tex = r'\delta_{%s, %s}' % (i, j)
+        if exp is not None:
+            tex = r'\left(%s\right)^{%s}' % (tex, exp)
+        return tex
+        
     @property
     def domain(self):
         from sympy.sets.sets import FiniteSet
@@ -493,11 +505,63 @@ class KroneckerDelta(Function):
         yield self
         
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
+    def simplify_Equal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a KroneckerDelta object!
         """
         if rhs.is_One:        
             return self.func(*lhs.args, equivalent=self).simplify()
-        return Function.simplifyEqual(self, lhs, rhs)
+        return Function.simplify_Equal(self, lhs, rhs)
             
+    @classmethod
+    def simplify_Unequal(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a KroneckerDelta object!
+        """
+        if rhs.is_zero:
+            return self.func.invert_type(*lhs.args, equivalent=self)
+        elif rhs.is_One:
+            return self.func(*lhs.args, equivalent=self)
+            
+
+class Boole(Function):
+    """IversonBracket function
+    https://en.wikipedia.org/wiki/Iverson_bracket     
+    """
+    is_extended_nonnegative = True
+    is_integer = True
+
+    @classmethod
+    def eval(cls, cond):
+        """
+        Evaluates IversonBracket function
+        """
+        ...
+
+    def domain_nonzero(self, x):
+        domain = x.domain_conditioned(self.arg)
+        if domain.is_ConditionSet:
+            return x.domain
+        return domain
+
+    @property
+    def shape(self):
+        return ()
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+
+    def _sympystr(self, p):
+        return '|%s|' % p._print(self.arg)
+        
+        
+    def _latex(self, p, exp=None):
+        cond = p._print(self.arg)
+        return r'\left|%s\right|' % cond        
+        
+    @property
+    def domain(self):
+        from sympy.sets.sets import FiniteSet
+        return FiniteSet(0, 1)

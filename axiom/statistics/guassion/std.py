@@ -25,21 +25,17 @@ def prove(Eq):
     y = Symbol.y(real=True)
 
     assert Eq[-1].lhs.is_extended_real    
-    Eq << Eq[-1].this.lhs.limits_subs(x, y) * Eq[-1]
+    
+    Eq << Eq[-1].lhs.this.limits_subs(x, y)
+    
+    Eq << Eq[-1] * Eq[-1].lhs
 
-    assert Eq[-1].lhs.is_extended_real
-    Eq << Eq[-1].this.lhs.as_multiple_limits()
+    Eq << Eq[-1].this.rhs.as_multiple_limits()
+    
+    Eq << Eq[-1].this.rhs.as_polar_coordinate()
 
-    assert Eq[-1].lhs.is_extended_real
-    Eq << Eq[-1].this.lhs.as_polar_coordinate()
+    Eq << Eq[-1].this.rhs.doit()
     
-    assert Eq[-1].lhs.is_extended_real
-    Eq << Eq[-1].this.lhs.doit()
-    
-    assert Eq[-1].lhs.is_extended_real
-    Eq << Eq[-3].this.lhs.args[1].limits_subs(y, x)
-    
-    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[-1].sqrt()
 
 

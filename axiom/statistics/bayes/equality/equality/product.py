@@ -21,7 +21,7 @@ def apply(given):
     
     assert x == rhs
     
-    return Equality(P(x, y), P(x) * P(y), given=given)
+    return Equality(P(x, y), P(x) * P(y))
 
 
 @check

@@ -9,7 +9,7 @@ def apply(given):
     assert given.is_Unequality
     assert given.rhs.is_zero
     assert given.lhs.is_KroneckerDelta
-    return Equality(*given.lhs.args, given=given)
+    return Equality(*given.lhs.args)
 
 
 from axiom.utility import check

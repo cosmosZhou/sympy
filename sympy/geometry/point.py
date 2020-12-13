@@ -31,7 +31,7 @@ from sympy.core.numbers import Float
 from sympy.core.parameters import global_parameters
 from sympy.core.add import Add
 from sympy.utilities.iterables import uniq
-from sympy.utilities.misc import filldedent, func_name, Undecidable
+from sympy.utilities.miscellany import filldedent, func_name, Undecidable
 
 from .entity import GeometryEntity
 

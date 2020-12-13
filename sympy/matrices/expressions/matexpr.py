@@ -911,6 +911,8 @@ class ZeroMatrix(MatrixExpr):
     is_zero = True
     
     def __new__(cls, *shape):
+        if not shape:
+            return S.Zero
         return super(ZeroMatrix, cls).__new__(cls, shape=shape)
 
     @_sympifyit('other', NotImplemented)

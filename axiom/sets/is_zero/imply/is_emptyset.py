@@ -15,7 +15,7 @@ def apply(given):
     assert A.is_Abs
     A = A.arg
 
-    return Equality(A, A.etype.emptySet, given=given)
+    return Equality(A, A.etype.emptySet)
 
 
 from axiom.utility import check

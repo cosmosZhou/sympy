@@ -692,40 +692,16 @@ class Power(Expr):
             coeff1, terms1 = ct1
             coeff2, terms2 = ct2
             if terms1 == terms2:
-                if old.is_commutative:
-                    # Allow fractional powers for commutative objects
-                    pow = coeff1 / coeff2
-                    try:
-                        as_int(pow, strict=False)
-                        combines = True
-                    except ValueError:
-                        combines = isinstance(Pow._eval_power(
-                            Pow(*old.as_base_exp(), evaluate=False),
-                            pow), (Pow, exp, Symbol))
-                    return combines, pow, None
-                else:
-                    # With noncommutative symbols, substitute only integer powers
-                    if not isinstance(terms1, tuple):
-                        terms1 = (terms1,)
-                    if not all(term.is_integer for term in terms1):
-                        return False, None, None
-
-                    try:
-                        # Round pow toward zero
-                        pow, remainder = divmod(as_int(coeff1), as_int(coeff2))
-                        if pow < 0 and remainder != 0:
-                            pow += 1
-                            remainder -= as_int(coeff2)
-
-                        if remainder == 0:
-                            remainder_pow = None
-                        else:
-                            remainder_pow = Mul(remainder, *terms1)
-
-                        return True, pow, remainder_pow
-                    except ValueError:
-                        # Can't substitute
-                        pass
+                # Allow fractional powers for commutative objects
+                pow = coeff1 / coeff2
+                try:
+                    as_int(pow, strict=False)
+                    combines = True
+                except ValueError:
+                    combines = isinstance(Pow._eval_power(
+                        Pow(*old.as_base_exp(), evaluate=False),
+                        pow), (Pow, exp, Symbol))
+                return combines, pow, None
 
             return False, None, None
 

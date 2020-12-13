@@ -37,9 +37,9 @@ def apply(*given):
     assert _y == y    
     
     if x.is_symbol:
-        return Equality(x | y & z, x | z, given=given)
+        return Equality(x | y & z, x | z)
     else:
-        return Equality(P(x, given=y & z), P(x, given=z), given=given)
+        return Equality(P(x, given=y & z), P(x, given=z))
 
 
 @check

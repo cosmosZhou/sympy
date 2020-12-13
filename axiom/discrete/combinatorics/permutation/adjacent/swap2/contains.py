@@ -2,11 +2,11 @@ from sympy.core.symbol import dtype
 from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
+from sympy import ForAll, LAMBDA
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.permutation.adjacent import swap2
-from axiom.algebre.matrix import elementary
+from axiom.discrete.matrix import elementary
 from sympy import Symbol
 from axiom import sets
 
@@ -23,7 +23,7 @@ def apply(given):
     _, j = contains.lhs.args[0].indices
     i = Symbol.i(integer=True)
     
-    return ForAll[x:S](Contains(w[i, j] @ x, S), given=given)
+    return ForAll[x:S](Contains(w[i, j] @ x, S))
 
 
 @check
@@ -38,19 +38,23 @@ def prove(Eq):
     
     w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
     
-    given = ForAll[x:S](Contains(w[0, j] @ x, S))
+    Eq << apply(ForAll[x:S](Contains(w[0, j] @ x, S)))
     
-    Eq << apply(given)
+    j_ = j.copy(domain=Interval(0, n - 1, integer=True))
+    Eq.given = Eq[1].subs(j, j_)
     
-    Eq.given_i = given.subs(j, i)    
+    i_ = i.copy(domain=Interval(0, n - 1, integer=True))
+    Eq.given_i = Eq.given.subs(j_, i_)    
     
-    Eq << given.subs(x, Eq.given_i.function.lhs)
+    Eq << Eq.given.subs(x, Eq.given_i.function.lhs)
     
     Eq << (Eq.given_i & Eq[-1]).split()[-1]
     
     Eq << Eq.given_i.subs(x, Eq[-1].function.lhs)
     
-    Eq.final_statement = (Eq[-2] & Eq[-1]).split()[0]
+    Eq << (Eq[-2] & Eq[-1]).split()[0]
+    
+    Eq.final_statement = Eq[-1].forall((i_,), (j_,))
     
     Eq << swap2.equality.apply(n, w)
     
@@ -72,9 +76,10 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(w[i, i].equality_defined())
     
-    Eq << (Eq.i_complement & Eq.i_intersection)
-    
     Eq << elementary.swap.transpose.apply(w).subs(j, 0)
+    
+    Eq.given_i = Eq.given_i.forall((i_,))
+    
     Eq << Eq.given_i.subs(Eq[-1].reversed)
     
     Eq << (Eq[-1] & Eq.plausible)

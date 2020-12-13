@@ -4,11 +4,10 @@ from axiom.utility import plausible
 from sympy.functions.combinatorial.numbers import Stirling
 from sympy.sets.sets import Interval
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.logic.boolalg import Or
-from sympy.concrete.expr_with_limits import UNION, ForAll, LAMBDA
+from sympy import UNION, ForAll, LAMBDA
 from sympy.core.numbers import oo
 from sympy.concrete.summations import Sum
-from axiom import sets
+from axiom import sets, algebre
 
 
 @plausible
@@ -34,18 +33,14 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n, k)
     s1_quote = Eq[1].lhs 
-
-    Eq.s1_quote_definition = s1_quote.assertion()
+    
+    Eq.s1_quote_definition = sets.imply.forall.conditionset.apply(s1_quote)
 
     i = Eq[0].lhs.indices[0]
     
-    x_tuple = Eq.s1_quote_definition.limits[0][0]
-
     Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = Eq.s1_quote_definition.split()
 
     j = Symbol.j(domain=Interval(0, k, integer=True))
-
-    x_quote = Eq[0].lhs.base
 
     Eq << Eq[0].union_comprehension((i, 0, k))
 
@@ -64,7 +59,6 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq.x_abs_sum_s1)
 
     Eq << x_quote_union.abs()
-    x_quote_union_abs = Eq[-1]
 
     u = Eq[-1].lhs.arg
     Eq << sets.imply.less_than.union_comprehension.apply(u.function, *u.limits)
@@ -74,8 +68,8 @@ def prove(Eq):
     Eq << Eq[-4].subs(Eq[-1])
     SqueezeTheorem = Eq[-1]
 
-    Eq << x_quote_abs.astype(Or)
-    
+    Eq << algebre.equality.imply.ou.two.apply(x_quote_abs)
+
     Eq << Eq[-1].subs(i, j)
     
     Eq << Eq[-2].forall((i, Unequality(i, j)))
@@ -128,7 +122,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.x_quote_definition)
 
-    Eq << Eq[-1].this.function.astype(Or)
+    Eq << Eq[-1].apply(algebre.equality.imply.ou.two)
 
     Eq << Eq[-1].split()
     
@@ -154,8 +148,6 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.x_abs_positive_s1.subs(i, j))
     
-#     assert len(Eq.plausibles_dict) == 4
-
     Eq << Eq.nonoverlapping.union_comprehension(Eq.nonoverlapping.limits[1])
 
     Eq << Eq[-1].this.function.lhs.as_two_terms()

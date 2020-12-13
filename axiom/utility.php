@@ -139,8 +139,35 @@ function read_directory($dir)
             while (($fl = readdir($handle)) !== false) {
                 $temp = $dir . DIRECTORY_SEPARATOR . $fl;
 
-                if (is_dir($temp) && $fl != '.' && $fl != '..') {
+                if ($fl == '.' || $fl == '..') {
+                    continue;
+                }
+
+                if (is_dir($temp)) {
                     yield $temp;
+                }
+            }
+        }
+    }
+}
+
+function read_files($dir, $ext = null)
+{
+    if (is_dir($dir)) {
+
+        $handle = opendir($dir);
+
+        if ($handle) {
+            while (($fl = readdir($handle)) !== false) {
+                $temp = $dir . DIRECTORY_SEPARATOR . $fl;
+                if ($fl == '.' || $fl == '..') {
+                    continue;
+                }
+
+                if (! is_dir($temp)) {
+                    if ($ext == null || ! strcmp(get_extension($temp), $ext)) {
+                        yield $temp;
+                    }
                 }
             }
         }
@@ -163,16 +190,18 @@ function read_all_files($dir, $ext)
 
         if ($handle) {
             while (($fl = readdir($handle)) !== false) {
+                if ($fl == '.' || $fl == '..') {
+                    continue;
+                }
+
                 $temp = $dir . DIRECTORY_SEPARATOR . $fl;
 
-                if (is_dir($temp) && $fl != '.' && $fl != '..') {
+                if (is_dir($temp)) {
                     // echo 'directory : ' . $temp . '<br>';
                     yield from read_all_files($temp, $ext);
                 } else {
-                    if ($fl != '.' && $fl != '..') {
-                        if (! strcmp(get_extension($temp), $ext)) {
-                            yield $temp;
-                        }
+                    if (! strcmp(get_extension($temp), $ext)) {
+                        yield $temp;
                     }
                 }
             }
@@ -180,4 +209,23 @@ function read_all_files($dir, $ext)
     }
 }
 
+function removedir($dir)
+{
+    foreach (read_files($dir) as $file) {
+        unlink($file);
+    }
+
+    foreach (read_directory($dir) as $subdir) {
+        removedir($subdir);
+    }
+    rmdir($dir);
+}
+
+function is_latex($latex, &$matches)
+{
+    if (preg_match_all('/\\\\\[.+?\\\\\]/', $latex, $matches, PREG_SET_ORDER)) {
+        return true;
+    }
+    return false;
+}
 ?>

@@ -12,7 +12,7 @@ it's still still worth a read to understand the underlying ideas.
 In short, every rule in a system of rules is one of two forms:
 
  - atom                     -> ...      (alpha rule)
- - And(atom1, atom2, ...)   -> ...      (beta rule)
+ - LogicAnd(atom1, atom2, ...)   -> ...      (beta rule)
 
 
 The major complexity is in efficient beta-rules processing and usually for an
@@ -49,23 +49,23 @@ from __future__ import print_function, division
 
 from collections import defaultdict
 
-from .logic import Logic, And, Or, Not
+from .logic import Logic, LogicAnd, LogicOr, LogicNot
 from sympy.core.compatibility import string_types, range
 
 
 def _base_fact(atom):
     """Return the literal fact of an atom.
 
-    Effectively, this merely strips the Not around a fact.
+    Effectively, this merely strips the LogicNot around a fact.
     """
-    if isinstance(atom, Not):
+    if isinstance(atom, LogicNot):
         return atom.arg
     else:
         return atom
 
 
 def _as_pair(atom):
-    if isinstance(atom, Not):
+    if isinstance(atom, LogicNot):
         return (atom.arg, False)
     else:
         return (atom, True)
@@ -113,7 +113,7 @@ def deduce_alpha_implications(implications):
        implications: [] of (a,b)
        return:       {} of a -> set([b, c, ...])
     """
-    implications = implications + [(Not(j), Not(i)) for (i, j) in implications]
+    implications = implications + [(LogicNot(j), LogicNot(i)) for (i, j) in implications]
     res = defaultdict(set)
     full_implications = transitive_closure(implications)
     for a, b in full_implications:
@@ -125,7 +125,7 @@ def deduce_alpha_implications(implications):
     # Clean up tautologies and check consistency
     for a, impl in res.items():
         impl.discard(a)
-        na = Not(a)
+        na = LogicNot(a)
         if na in impl:
             raise ValueError(
                 'implications are inconsistent: %s -> %s %s' % (a, na, impl))
@@ -134,7 +134,7 @@ def deduce_alpha_implications(implications):
 
 
 def apply_beta_to_alpha_route(alpha_implications, beta_rules):
-    """apply additional beta-rules (And conditions) to already-built
+    """apply additional beta-rules (LogicAnd conditions) to already-built
     alpha implication tables
 
        TODO: write about
@@ -177,8 +177,8 @@ def apply_beta_to_alpha_route(alpha_implications, beta_rules):
         seen_static_extension = False
 
         for bcond, bimpl in beta_rules:
-            if not isinstance(bcond, And):
-                raise TypeError("Cond is not And")
+            if not isinstance(bcond, LogicAnd):
+                raise TypeError("Cond is not LogicAnd")
             bargs = set(bcond.args)
             for x, (ximpls, bb) in x_impl.items():
                 x_all = ximpls | {x}
@@ -203,7 +203,7 @@ def apply_beta_to_alpha_route(alpha_implications, beta_rules):
                 continue
             # A: x -> a...  B: &(!a,...) -> ... (will never trigger)
             # A: x -> a...  B: &(...) -> !a     (will never trigger)
-            if any(Not(xi) in bargs or Not(xi) == bimpl for xi in x_all):
+            if any(LogicNot(xi) in bargs or LogicNot(xi) == bimpl for xi in x_all):
                 continue
 
             if bargs & x_all:
@@ -237,10 +237,10 @@ def rules_2prereq(rules):
     """
     prereq = defaultdict(set)
     for (a, _), impl in rules.items():
-        if isinstance(a, Not):
+        if isinstance(a, LogicNot):
             a = a.args[0]
         for (i, _) in impl:
-            if isinstance(i, Not):
+            if isinstance(i, LogicNot):
                 i = i.args[0]
             prereq[i].add(a)
     return prereq
@@ -293,7 +293,7 @@ class Prover(object):
         rules_alpha = []  # a      -> b
         rules_beta = []  # &(...) -> b
         for a, b in self.proved_rules:
-            if isinstance(a, And):
+            if isinstance(a, LogicAnd):
                 rules_beta.append((a, b))
             else:
                 rules_alpha.append((a, b))
@@ -329,37 +329,37 @@ class Prover(object):
 
         # a -> b & c    -->  a -> b  ;  a -> c
         # (?) FIXME this is only correct when b & c != null !
-        if isinstance(b, And):
+        if isinstance(b, LogicAnd):
             for barg in b.args:
                 self.process_rule(a, barg)
 
         # a -> b | c    -->  !b & !c -> !a
         #               -->   a & !b -> c
         #               -->   a & !c -> b
-        elif isinstance(b, Or):
+        elif isinstance(b, LogicOr):
             # detect tautology first
             if not isinstance(a, Logic):  # Atom
                 # tautology:  a -> a|c|...
                 if a in b.args:
                     raise TautologyDetected(a, b, 'a -> a|c|...')
-            self.process_rule(And(*[Not(barg) for barg in b.args]), Not(a))
+            self.process_rule(LogicAnd(*[LogicNot(barg) for barg in b.args]), LogicNot(a))
 
             for bidx in range(len(b.args)):
                 barg = b.args[bidx]
                 brest = b.args[:bidx] + b.args[bidx + 1:]
-                self.process_rule(And(a, Not(barg)), Or(*brest))
+                self.process_rule(LogicAnd(a, LogicNot(barg)), LogicOr(*brest))
 
         # left part
 
         # a & b -> c    -->  IRREDUCIBLE CASE -- WE STORE IT AS IS
         #                    (this will be the basis of beta-network)
-        elif isinstance(a, And):
+        elif isinstance(a, LogicAnd):
             if b in a.args:
                 raise TautologyDetected(a, b, 'a & b -> a')
             self.proved_rules.append((a, b))
             # XXX NOTE at present we ignore  !c -> !a | !b
 
-        elif isinstance(a, Or):
+        elif isinstance(a, LogicOr):
             if b in a.args:
                 raise TautologyDetected(a, b, 'a | b -> a')
             for aarg in a.args:
@@ -368,7 +368,7 @@ class Prover(object):
         else:
             # both `a` and `b` are atoms
             self.proved_rules.append((a, b))  # a  -> b
-            self.proved_rules.append((Not(b), Not(a)))  # !b -> !a
+            self.proved_rules.append((LogicNot(b), LogicNot(a)))  # !b -> !a
 
 ########################################
 

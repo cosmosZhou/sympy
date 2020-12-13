@@ -14,7 +14,7 @@ def apply(given):
     A, B = given.lhs.args
     assert given.rhs == A
 
-    return Equality(A & B, A.etype.emptySet, given=given)
+    return Equality(A & B, A.etype.emptySet)
 
 
 from axiom.utility import check

@@ -123,7 +123,7 @@ class Transpose(MatrixExpr):
         return [i.transpose() for i in lines]
 
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
+    def simplify_Equal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a Transpose object!
         """

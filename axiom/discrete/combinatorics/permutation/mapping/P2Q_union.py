@@ -5,7 +5,7 @@ from sympy.sets.sets import Interval
 from sympy import Symbol
 from axiom import sets
 from axiom.discrete.combinatorics.permutation import mapping
-from sympy.concrete.expr_with_limits import UNION
+from sympy import UNION
 from sympy.sets.conditionset import conditionset
 from sympy.sets.contains import Subset
 
@@ -46,7 +46,7 @@ def prove(Eq):
     
     Eq << Eq[-1].definition
     
-    Eq << sets.imply.conditionset.apply(Eq[2].rhs)
+    Eq << sets.imply.forall.conditionset.apply(Eq[2].rhs)
 
     Eq <<= Eq.subset_P & Eq.subset_Q    
 if __name__ == '__main__':

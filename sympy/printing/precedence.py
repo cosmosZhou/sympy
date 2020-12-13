@@ -26,7 +26,7 @@ PRECEDENCE = {
 PRECEDENCE_VALUES = {
     "Equivalent": PRECEDENCE["Xor"],
     "Xor": PRECEDENCE["Xor"],
-    "Implies": PRECEDENCE["Xor"],
+    "Sufficient": PRECEDENCE["Xor"],
     "Or": PRECEDENCE["Or"],
     "And": PRECEDENCE["And"],
     "Plus": PRECEDENCE["Plus"],
@@ -44,8 +44,8 @@ PRECEDENCE_VALUES = {
     "HadamardProduct": PRECEDENCE["Times"],
     "HadamardPower": PRECEDENCE["Power"],
     "KroneckerProduct": PRECEDENCE["Times"],
-    "Equality": PRECEDENCE["Times"],
-    "Unequality": PRECEDENCE["Times"],
+    "Equal": PRECEDENCE["Times"],
+    "Unequal": PRECEDENCE["Times"],
 }
 
 # Sometimes it's not enough to assign a fixed precedence value to a

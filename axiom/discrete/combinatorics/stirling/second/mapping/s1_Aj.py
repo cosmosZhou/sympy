@@ -3,7 +3,7 @@ from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.functions.combinatorial.numbers import Stirling
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import UNION, LAMBDA
+from sympy import UNION, LAMBDA
 from sympy.core.numbers import oo
 from sympy.sets.sets import Interval
 

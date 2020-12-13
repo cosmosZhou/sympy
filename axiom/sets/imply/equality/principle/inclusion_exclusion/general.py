@@ -2,8 +2,8 @@ from sympy.core.relational import Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from axiom import sets
-from sympy import Symbol, Slice
-from sympy.concrete.expr_with_limits import UNION, LAMBDA, INTERSECTION, ForAll
+from sympy import Symbol
+from sympy import UNION, LAMBDA, INTERSECTION, ForAll
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.sets.sets import Interval, CartesianSpace
@@ -44,7 +44,7 @@ def prove(Eq):
     
     Eq << Eq[-1] - Eq[-1].lhs.args[1]
     
-    Eq << Eq[-1].this.rhs.distribute()
+    Eq << Eq[-1].this.rhs.astype(Sum)
     
     Eq << Eq[0].subs(_k, 0)
     

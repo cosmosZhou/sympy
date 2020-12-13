@@ -2,7 +2,7 @@ from __future__ import division, print_function
 
 from sympy.core.compatibility import range, as_int
 from sympy.utilities.iterables import is_sequence
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 from .sparse import SparseMatrix
 

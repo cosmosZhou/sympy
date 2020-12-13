@@ -82,13 +82,16 @@ class AssocOp(Basic):
         if len(args) == 1:
             return args[0]
 
-        c_part, nc_part, order_symbols = cls.flatten(args)
+        c_part, nc_part, other_symbols = cls.flatten(args)
         is_commutative = not nc_part
         obj = cls._from_args(c_part + nc_part, is_commutative)
 #         obj = cls._exec_constructor_postprocessors(obj)
 
-        if order_symbols is not None:
-            return Order(obj, *order_symbols)
+        if other_symbols is not None:
+            if isinstance(other_symbols, tuple):
+                return Order(obj, *other_symbols)
+            assert other_symbols.is_infinitesimal is not None
+            return obj + other_symbols
         return obj
 
     @property
@@ -578,8 +581,22 @@ class LatticeOp(AssocOp):
             # passed along, but the expectation here is for _args
             obj = super(AssocOp, cls).__new__(cls, _args, **options)
             obj._argset = _args
-            return obj
+            return cls.ensure_correctness_of_assumptions(obj, **options)
 
+    @classmethod
+    def ensure_correctness_of_assumptions(cls, obj, **options):
+        if cls.is_Boolean:
+            if 'equivalent' in options:
+                if obj.equivalent is not options['equivalent']:
+                    obj = obj.copy(**options)
+            elif 'given' in options:
+                if obj.given is not options['given']:
+                    obj = obj.copy(**options)
+            elif 'imply' in options:
+                if obj.imply is not options['imply']:
+                    obj = obj.copy(**options)
+        return obj
+        
     @classmethod
     def _new_args_filter(cls, arg_sequence, call_cls=None):
         """Generator filtering args"""

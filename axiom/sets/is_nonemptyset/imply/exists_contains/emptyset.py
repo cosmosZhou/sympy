@@ -2,7 +2,7 @@ from sympy.core.relational import Unequality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy import Symbol
 from axiom import sets
 # given: A != {}
@@ -17,7 +17,7 @@ def apply(given):
         assert A.is_EmptySet
         A = B
     x = A.element_symbol()
-    return Exists[x](Contains(x, A), given=given)
+    return Exists[x](Contains(x, A))
 
 
 from axiom.utility import check

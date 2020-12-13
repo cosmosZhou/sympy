@@ -36,7 +36,7 @@ def apply(*given):
     assert z == _z
     
     assert x.is_random and y.is_random and z.is_random
-    return Equality(P(x, y, given=z), P(x, y), given=given)
+    return Equality(P(x, y, given=z), P(x, y))
 
 
 @check
@@ -65,7 +65,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.bayes_yz)
     
-    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq[0].domain_definition())
+    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq[0].domain_definition())
     
     Eq << Eq[-1].subs(Eq.given_addition)
     

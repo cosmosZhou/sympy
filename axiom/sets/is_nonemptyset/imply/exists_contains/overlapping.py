@@ -4,7 +4,7 @@ from sympy.core.symbol import dtype
 from sympy import Symbol
 
 from sympy.sets.contains import Contains
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from axiom import sets
 
 
@@ -30,7 +30,7 @@ def apply(given, wrt=None, domain=None):
     if wrt is None:
         wrt = B.element_symbol(A.free_symbols)
     assert wrt.type == B.etype
-    return Exists[wrt:B](Contains(wrt, A), given=given)
+    return Exists[wrt:B](Contains(wrt, A))
 
 
 from axiom.utility import check

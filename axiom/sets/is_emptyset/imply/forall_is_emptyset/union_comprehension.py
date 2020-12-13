@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy.sets.sets import Interval
 from axiom import sets
-from sympy.concrete.expr_with_limits import ForAll, UNION
+from sympy import ForAll, UNION
 from sympy import Symbol
 # given: Union[i](x[i]) = {}
 # x[i] = {}
@@ -20,7 +20,7 @@ def apply(given):
         assert emptyset.is_EmptySet
 
     assert x_union.is_UNION
-    return ForAll(Equality(x_union.function, emptyset), *x_union.limits, given=given)
+    return ForAll(Equality(x_union.function, emptyset), *x_union.limits)
 
 
 from axiom.utility import check
@@ -48,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-1].abs()
 
-    Eq << Eq[-2].lhs.assertion()
+    Eq << sets.imply.equality.principle.addition.apply(*Eq[-2].lhs.args)
 
     Eq << Eq[-1].subs(Eq[-2], Eq.union_empty)
 

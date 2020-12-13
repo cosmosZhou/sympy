@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.core.function import Function
 from sympy.core.relational import Unequal
 from sympy.sets.contains import Contains
@@ -14,7 +14,7 @@ def apply(given):
     assert given.is_Exists
     assert len(given.limits) == 1
     x, S = given.limits[0]
-    return Unequal(S, x.emptySet, given=given)
+    return Unequal(S, x.emptySet)
 
 
 from axiom.utility import check

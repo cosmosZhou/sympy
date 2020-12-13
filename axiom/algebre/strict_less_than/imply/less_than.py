@@ -1,10 +1,10 @@
 from axiom.utility import plausible
-from sympy.core.relational import LessThan, Equal
+from sympy.core.relational import LessThan
 from sympy import Symbol
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.sets.contains import Contains
-from axiom import algebre, sets
+from axiom import sets
 
 
 @plausible
@@ -12,7 +12,7 @@ def apply(given):
     assert given.is_StrictLessThan
     lhs, rhs = given.args
     assert lhs.is_integer and rhs.is_integer
-    return LessThan(lhs, rhs - 1, given=given)
+    return LessThan(lhs, rhs - 1)
 
 
 from axiom.utility import check

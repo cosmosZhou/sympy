@@ -8,7 +8,7 @@ from .iterables import (flatten, group, take, subsets,
     has_dups, has_variety, reshape, default_sort_key, ordered,
     rotations)
 
-from .misc import filldedent
+from .miscellany import filldedent
 
 from .lambdify import lambdify
 

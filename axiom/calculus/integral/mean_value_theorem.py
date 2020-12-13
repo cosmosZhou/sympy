@@ -3,7 +3,7 @@ from sympy.core.numbers import oo
 from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists, MIN, MAX
+from sympy import Exists, MIN, MAX
 from sympy.integrals.integrals import Integral
 from sympy.sets.sets import Interval
 from sympy.core.function import Function
@@ -24,7 +24,7 @@ def apply(given):
     _f = f._subs(z, xi)
     assert given.function.rhs == _f
 
-    return Exists(Equality(Integral(f, (z, a, b)), (b - a) * _f), limit, given=given)
+    return Exists(Equality(Integral(f, (z, a, b)), (b - a) * _f), limit)
 
 
 from axiom.utility import check

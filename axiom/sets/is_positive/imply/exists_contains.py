@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 
 from sympy.sets.contains import Contains
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy import Symbol
 from axiom import sets
 # given: A >= 1
@@ -18,7 +18,7 @@ def apply(given):
     assert abs_S.is_Abs
     S = abs_S.arg
     x = S.element_symbol()
-    return Exists[x](Contains(x, S), given=given)
+    return Exists[x](Contains(x, S))
 
 
 from axiom.utility import check

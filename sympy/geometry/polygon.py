@@ -12,7 +12,7 @@ from sympy.matrices import Matrix
 from sympy.simplify import simplify
 from sympy.utilities import default_sort_key
 from sympy.utilities.iterables import has_dups, has_variety, uniq, rotate_left, least_rotation
-from sympy.utilities.misc import func_name
+from sympy.utilities.miscellany import func_name
 
 from .entity import GeometryEntity, GeometrySet
 from .point import Point

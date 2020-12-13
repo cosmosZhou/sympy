@@ -7,7 +7,7 @@ from sympy.concrete.products import Product
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.statistics import bayes
 from sympy.core.numbers import oo
-from axiom import algebre, sets, statistics
+from axiom import algebre, statistics
 from sympy.logic.boolalg import Or
 
 
@@ -46,8 +46,7 @@ def apply(*given):
     i = Symbol.i(integer=True)
     
     return Equality(P(x[:t + 1], y[:t + 1]),
-                    P(x[0] | y[0]) * P(y[0]) * Product[i:1:t](P(y[i] | y[i - 1]) * P(x[i] | y[i])),
-                    given=given)
+                    P(x[0] | y[0]) * P(y[0]) * Product[i:1:t](P(y[i] | y[i - 1]) * P(x[i] | y[i])))
 
 
 from axiom.utility import check
@@ -75,7 +74,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.xy_joint_probability.reversed)
     
-    Eq.recursion = algebre.is_nonzero.equality.imply.equality.apply(Eq[0], Eq[-1])
+    Eq.recursion = algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[0], Eq[-1])
     
     Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq.xy_nonzero_assumption, [k, k])
     
@@ -87,11 +86,13 @@ def prove(Eq):
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
-    Eq.or_statement = statistics.bayes.theorem.apply(Eq.recursion.rhs, y[k]).astype(Or)
+    Eq << statistics.bayes.theorem.apply(Eq.recursion.rhs, y[k])
+    
+    Eq.or_statement = algebre.forall.imply.ou.apply(Eq[-1])    
     
     Eq << Eq[2].subs(k, k + 1)
     
-    Eq << sets.ou.imply.forall.apply(Eq[-1], wrt=k)
+    Eq << algebre.ou.imply.forall.apply(Eq[-1], pivot=1)
     
     _, Eq.y_nonzero_assumption = bayes.is_nonzero.et.apply(Eq.xy_nonzero_assumption).split()
     Eq <<= Eq[-1] & Eq.y_nonzero_assumption
@@ -125,7 +126,7 @@ def prove(Eq):
     t = Eq.factorization.rhs.args[-1].limits[0][2]
     Eq << Eq[-1].subs(k, t)    
     
-    Eq << sets.ou.imply.forall.apply(Eq[-1])
+    Eq << algebre.ou.imply.forall.apply(Eq[-1], pivot=-1)
     
     Eq <<= Eq[-1] & Eq.first
 

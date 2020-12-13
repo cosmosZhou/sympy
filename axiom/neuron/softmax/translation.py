@@ -4,7 +4,7 @@ from sympy.core.relational import Equality
 
 from sympy.functions.elementary.exponential import softmax, log, exp
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import MAX
+from sympy import MAX
 from sympy.concrete.summations import Sum
 from sympy.core.mul import Times
 

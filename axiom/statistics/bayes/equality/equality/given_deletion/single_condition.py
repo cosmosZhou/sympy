@@ -29,8 +29,8 @@ def apply(given, wrt=None):
             z = z.lhs
             
         assert wrt in {y, z}
-        return Equality(x | wrt, x, given=given)
-    return Equality(x | y, x, given=given)
+        return Equality(x | wrt, x)
+    return Equality(x | y, x)
 
 
 @check
@@ -59,7 +59,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[-4])
     
-    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq.y_nonzero)
+    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq.y_nonzero)
     
     Eq << Eq[-1].reversed
 

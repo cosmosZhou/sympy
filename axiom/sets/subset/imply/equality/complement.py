@@ -12,7 +12,7 @@ def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return Equality(abs(B - A), abs(B) - abs(A), given=given)
+    return Equality(abs(B - A), abs(B) - abs(A))
 
 
 from axiom.utility import check
@@ -29,8 +29,8 @@ def prove(Eq):
 
     Eq << sets.imply.equality.principle.addition.apply(B - A, B & A)
 
-    Eq << Eq[-1].subs(Eq[-2])
-
+    Eq << Eq[-1] + Eq[-2]
+    
     Eq << subset.intersect(A)
 
     Eq << Supset(*Eq[-1].args, plausible=True)

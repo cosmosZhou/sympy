@@ -8,7 +8,7 @@ from axiom.utility import check, plausible
 from sympy.core.numbers import oo
 from sympy.concrete import summations
 from sympy.concrete.summations import Sum
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 from sympy import Symbol
 
 @plausible
@@ -30,7 +30,7 @@ def apply(given):
     
     L = Symbol.L(definition=-t @ sympy.log(y))
     
-    return Equality(Derivative(L, x), y - t, given=given)
+    return Equality(Derivative(L, x), y - t)
 
 
 @check

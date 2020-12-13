@@ -25,13 +25,13 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
     
-    Eq << sets.imply.conditionset.apply(Eq[-1].lhs).split()
+    Eq << sets.imply.forall.conditionset.apply(Eq[-1].lhs).split()
         
     Eq << Eq[-1].apply(discrete.combinatorics.permutation.pop_back, Eq[-2])
     
     Eq.forall_P_quote = Eq[-1] & Eq[-3]
     
-    Eq << sets.imply.conditionset.apply(Eq[1].lhs).split()
+    Eq << sets.imply.forall.conditionset.apply(Eq[1].lhs).split()
     
     Eq << Eq[-1].apply(discrete.combinatorics.permutation.push_back, Eq[-2])
     

@@ -31,7 +31,7 @@ def apply(given):
 
     assert {A, B} == {_A, _B}
 
-    return Equality(A & B, A.etype.emptySet, given=given)
+    return Equality(A & B, A.etype.emptySet)
 
 
 from axiom.utility import check

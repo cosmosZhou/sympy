@@ -34,7 +34,7 @@ def apply(given):
     a, *_ = A.args
     
     
-    return NotContains(a, B, given=given)
+    return NotContains(a, B)
 
 
 from axiom.utility import check

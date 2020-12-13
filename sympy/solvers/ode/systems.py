@@ -19,7 +19,7 @@ from sympy.solvers.deutils import ode_order
 from sympy.solvers.solveset import NonlinearError, solveset
 from sympy.utilities import default_sort_key
 from sympy.utilities.iterables import ordered
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 from sympy.integrals.integrals import Integral, integrate
 
 

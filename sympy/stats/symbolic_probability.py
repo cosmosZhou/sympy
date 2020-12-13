@@ -11,7 +11,7 @@ from sympy.stats import variance, covariance, rv
 from sympy.stats.rv import (RandomSymbol, pspace, dependent,
                             given, sampling_E, RandomIndexedSymbol, is_random,
                             PSpace, sampling_P, random_symbols)
-from sympy.concrete.expr_with_limits import ExprWithLimits, ForAll
+from sympy.concrete.expr_with_limits import ExprWithLimits
 
 __all__ = ['Probability', 'Expectation', 'Variance', 'Covariance']
 
@@ -349,7 +349,7 @@ class Probability(Expr):
         return Expr._subs(self, old, new, **hints)
 
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
+    def simplify_Equal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a Probability object!
         """

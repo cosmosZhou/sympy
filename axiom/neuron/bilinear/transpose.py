@@ -1,8 +1,8 @@
-
 from axiom.utility import plausible
 from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
 from sympy import Symbol
+from sympy.concrete.summations import Sum
 
 @plausible
 def apply(x, y, W):    
@@ -30,7 +30,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq.expansion = Eq[-1].this.rhs.function.distribute()
+    Eq.expansion = Eq[-1].this.rhs.function.astype(Sum)
     
     Eq << Eq.expansion.subs(W, W.T)
     

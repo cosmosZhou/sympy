@@ -5,11 +5,10 @@ from sympy.functions.combinatorial.numbers import Stirling
 from sympy.sets.sets import image_set, Interval
 from sympy.sets.contains import Subset, Supset, Contains, NotContains
 from sympy.functions.elementary.piecewise import Piecewise
-from axiom import sets
+from axiom import sets, algebre
 from sympy.sets.conditionset import conditionset
-from sympy.concrete.expr_with_limits import UNION, LAMBDA
+from sympy import UNION, LAMBDA
 from sympy.core.numbers import oo
-from sympy.logic.boolalg import Or
 
 @plausible
 def apply(n, k, s2=None, A=None):
@@ -45,7 +44,7 @@ def prove(Eq):
 
     s1_quote = Eq[2].lhs 
 
-    Eq << s1_quote.assertion()
+    Eq << sets.imply.forall.conditionset.apply(s1_quote)
 
     i = Eq[1].lhs.indices[0]
     x_slice = Eq[-1].limits[0][0]
@@ -93,7 +92,7 @@ def prove(Eq):
     Eq << Eq[-4].subs(Eq[-1])
     SqueezeTheorem = Eq[-1]
 
-    Eq << x_quote_abs.astype(Or)
+    Eq << algebre.equality.imply.ou.two.apply(x_quote_abs)
     
     Eq << Eq[-1].subs(i, j)
     
@@ -145,9 +144,9 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1]) + Eq.set_size_inequality
     
-    Eq << Eq[-1].this().function.rhs.args[-1].simplify()
+    Eq << Eq[-1].this(shape=()).function.rhs.args[-1].simplify()
     
-    Eq << Eq[-1].this().function.rhs.args[0].arg.simplify()
+    Eq << Eq[-1].this(shape=()).function.rhs.args[0].arg.simplify()
 
     Eq << Eq[-1].subs(x_quote_union_abs)
 
@@ -176,7 +175,7 @@ def prove(Eq):
 
     Eq.s2_hat_n_hypothesis = Eq.s2_hat_n_assertion.this.limits[0].subs(Eq[-1])
 
-    Eq << s2_quote_n.assertion()
+    Eq << sets.imply.forall.conditionset.apply(s2_quote_n)
 
     Eq.n_not_in_x, Eq.x_abs_positive_s2_n, Eq.x_abs_sum_s2_n, Eq.x_union_s2_n = Eq[-1].split()
 
@@ -205,7 +204,8 @@ def prove(Eq):
 
     Eq.x_hat_abs = Eq.x_hat_definition.abs()
 
-    Eq << Eq.x_hat_abs.astype(Or)
+    Eq << algebre.equality.imply.ou.two.apply(Eq.x_hat_abs)
+    
     Eq << Eq[-1].subs(i, j)
     Eq << Eq[-2].forall((i, Unequality(i, j)))
     
@@ -245,7 +245,8 @@ def prove(Eq):
 
     Eq << Eq.x_hat_in_s1.definition
 
-    Eq << Eq.x_hat_definition.astype(Or)
+    Eq << algebre.equality.imply.ou.two.apply(Eq.x_hat_definition)    
+    
     Eq << Eq[-1].subs(i, j)
     Eq << Eq[-2].forall((i, Unequality(i, j)))
     

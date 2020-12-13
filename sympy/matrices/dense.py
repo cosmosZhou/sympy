@@ -14,7 +14,7 @@ from sympy.matrices.common import a2idx, classof
 from sympy.matrices.matrices import MatrixBase, ShapeError
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.decorator import doctest_depends_on
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 def _iszero(x):
     """Returns True if x is zero."""

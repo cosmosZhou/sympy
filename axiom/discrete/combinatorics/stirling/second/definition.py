@@ -7,8 +7,9 @@ from sympy.functions.combinatorial.numbers import Stirling
 from axiom.discrete.combinatorics import stirling
 from axiom.discrete import combinatorics
 from sympy.concrete.summations import Sum
-from sympy.concrete.expr_with_limits import LAMBDA
-from sympy import Symbol, Slice
+from sympy import LAMBDA
+from sympy import Symbol, Slice, oo
+from axiom import algebre
 
 
 @plausible
@@ -24,17 +25,14 @@ from axiom.utility import check
 def prove(Eq):
     k = Symbol.k(integer=True, nonnegative=True)
     n = Symbol.n(integer=True, nonnegative=True)
-    Eq << apply(n, k)
+    Eq.hypothesis = apply(n, k)
 
-    i = Eq[-1].rhs.args[1].variable
+    i = Eq.hypothesis.rhs.args[1].variable
     
-    Eq << Eq[-1].subs(k, 0).doit()
-
     Eq << stirling.second.recurrence.apply(n, k)
 
-    Eq << Eq[-1].subs(Eq[0])
+    Eq << Eq[-1].subs(Eq.hypothesis)
 
-    from sympy import oo
     y = Symbol.y(shape=(oo,), definition=LAMBDA[n](Stirling(n, k + 1)))
 
     Eq << y.equality_defined()
@@ -49,7 +47,7 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq.stirling_solution = Eq[-1].subs(Eq[3])
+    Eq.stirling_solution = Eq[-1].subs(Eq[2])
     
     Eq << Eq.stirling_solution.subs(n, k + 1)
 
@@ -72,7 +70,7 @@ def prove(Eq):
     
     Eq << Eq[-1] * (-1) ** (k + 1)
     
-    Eq << Eq[-1].this.rhs.distribute()
+    Eq << Eq[-1].this.rhs.astype(Sum)
     
     Eq << Eq[-1].this.rhs.bisect(Slice[-1:]).reversed
     
@@ -96,15 +94,23 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.ratsimp()    
     
-    Eq << Eq[0].subs(k, k + 1) * factorial(k + 1)
+    Eq << Eq[-1] - Eq[-1].lhs.args[1]
+    
+    Eq << Eq[-1].this.lhs.astype(Sum)
+    
+    Eq.induction = Eq.hypothesis.subs(k, k + 1)
+    
+    Eq << Eq.induction * factorial(k + 1)
 
     Eq << Eq[-1].this.rhs.bisect(Slice[-1:])
     
-    Eq << Eq[-3].subs(Eq[-1])
+    Eq << -Eq[-1].reversed + Eq[-1].rhs.args[0]
     
-    Eq << Eq[-1] - Eq[-1].lhs.args[0]
+    Eq << Eq[-1].this.lhs.astype(Sum)
     
-    Eq << Eq[-1].this.rhs.distribute()
+    Eq << Eq.induction.induct()
+    
+    Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=k)
 
 
 if __name__ == '__main__':

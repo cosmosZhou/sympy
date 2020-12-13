@@ -3,7 +3,7 @@ from sympy.core.symbol import dtype
 from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA, Exists
+from sympy import ForAll, LAMBDA, Exists
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
 from sympy.concrete.products import MatProduct
@@ -12,8 +12,8 @@ from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.matrices import Matrix
 import axiom
 from sympy.matrices.expressions.matmul import MatMul
-from axiom.algebre.matrix import elementary
-from axiom import discrete, sets
+from axiom.discrete.matrix import elementary
+from axiom import discrete, sets, algebre
 
 
 @plausible
@@ -35,19 +35,22 @@ def prove(Eq):
     
     Eq << apply(n)
     
-    Eq << Eq[-1].subs(Eq[0])
+    i = Symbol.i(integer=True)    
+    p = Eq[1].variable.base
+    b = Eq[1].function.variable.base
     
-    Eq << Eq[-1].subs(n, 2)
+    Eq.hypothesis = Eq[1].subs(Eq[0]).copy(plausible=True)
+    
+    Eq.initial = Eq.hypothesis.subs(n, 2)
         
-    Eq << Eq[-1].doit(deep=True)    
-#     b[0] = 0, b[1] = KroneckerDelta[p[0], 0]
-    b = Eq[-2].function.variable
+    Eq << Eq.initial.doit(deep=True)    
+
     p0 = Eq[-1].variable
-    Eq << Eq[-1].subs(b, Matrix((0, KroneckerDelta(p0, 0))))
+    Eq << Eq[-1].subs(b[:2], Matrix((0, KroneckerDelta(p0, 0))))
     
     Eq.equation = Eq[-1].this.function.rhs.expand()
     
-    Eq.limits_assertion = sets.imply.forall.apply(Eq.equation, simplify=False)
+    Eq.limits_assertion = sets.imply.forall.limits_assert.apply(Eq.equation.limits, simplify=False)
     
     Eq << Eq.limits_assertion.sum()
     
@@ -65,15 +68,15 @@ def prove(Eq):
     
     Eq << Eq.premier.subs(Eq.second.reversed)
     
-    Eq.plausible = Eq[2].subs(n, n + 1)
+    Eq.induction = Eq.hypothesis.subs(n, n + 1)
     
-    Eq << Eq.plausible.function.function.rhs.args[1].this.bisect(Slice[-1:])
+    Eq << Eq.induction.function.function.rhs.args[1].this.bisect(Slice[-1:])
 
-    Eq << axiom.algebre.matrix.elementary.swap.concatenate_product.apply(n, n, b)
+    Eq << axiom.discrete.matrix.elementary.swap.concatenate_product.apply(n, n, b)
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
-    Eq << Eq.plausible.subs(Eq[-1])
+    Eq << Eq.induction.subs(Eq[-1])
     
     Eq << Eq[-1].this.function.function.rhs.args[0].bisect(Slice[-1:])
     
@@ -119,8 +122,8 @@ def prove(Eq):
     
     Eq << Eq.exists_n_plausible.apply(discrete.combinatorics.permutation.pop_back, Eq[-1])
     
-    Eq << Eq[2].subs(Eq[2].variable, p_quote[:n])
-    
+    Eq << Eq.hypothesis.subs(Eq.hypothesis.variable, p_quote[:n])
+
     Eq << Eq[-1].subs(Eq[-2].reversed)
     
     Eq << Eq.p_quote_definition.lhs.this.bisect(Slice[-1:])
@@ -130,6 +133,12 @@ def prove(Eq):
 #     assert Eq[-1].equivalent[1].equivalent[0].given.equivalent.equivalent[0] is Eq[1]
 #     assert Eq[-1].equivalent[1].equivalent[1].equivalent.given.equivalent[0] is Eq.exists_n_plausible
     Eq << Eq[-1].subs(Eq.exists_n_plausible)   
+    
+    Eq << Eq.induction.induct()
+    
+    Eq << algebre.condition.sufficient.imply.condition.induction.apply(Eq.initial, Eq[-1], n=n, start=2)
+    
+    Eq << Eq[1].subs(Eq[0])
 
     
 if __name__ == '__main__':

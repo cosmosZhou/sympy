@@ -23,7 +23,7 @@ from sympy.functions import Abs
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 from sympy.utilities.iterables import flatten
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 
 class MatrixError(Exception):
@@ -770,7 +770,7 @@ class MatrixSpecial(MatrixRequired):
         keyword.
 
         >>> from sympy.matrices import ImmutableMatrix
-        >>> from sympy.utilities.misc import func_name
+        >>> from sympy.utilities.miscellany import func_name
         >>> func_name(Matrix.diag(1, cls=ImmutableMatrix))
         'ImmutableDenseMatrix'
 

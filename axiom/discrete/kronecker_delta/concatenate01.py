@@ -3,7 +3,7 @@ from axiom.utility import check, plausible
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Concatenate, ZeroMatrix
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 from sympy import Symbol
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
@@ -44,7 +44,8 @@ def prove(Eq):
 
     Eq << Eq[-1].reference((i,))
     
-    Eq << Eq[-1].subs(Eq[1]).subs(Eq[2])
+    Eq << Eq[-1].subs(Eq[1]).subs(Eq[2]).reversed
+    
 if __name__ == '__main__':
     prove(__file__)
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

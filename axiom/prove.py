@@ -3,12 +3,16 @@
 import os
 import re
 import axiom  # @UnusedImport
-from sympy.utilities.misc import Text
+from sympy.utilities.miscellany import Text
 import time
 from os.path import getsize
 from multiprocessing import cpu_count
 from queue import PriorityQueue
 from functools import singledispatch 
+import random
+
+def axiom_directory():
+    return os.path.dirname(__file__)
 
 count = 0
 
@@ -18,8 +22,8 @@ failures = []
 
 websites = []
 
-insurmountable = {*Text(os.path.dirname(__file__) + '/insurmountable.txt')}
-unprovable = {*Text(os.path.dirname(__file__) + '/unprovable.txt')}
+insurmountable = {*Text(axiom_directory() + '/insurmountable.txt')}
+unprovable = {*Text(axiom_directory() + '/unprovable.txt')}
 
 insurmountable |= unprovable
 
@@ -39,12 +43,10 @@ def readFolder(rootdir, sufix='.py'):
             index = paths.index('axiom')
 
             package = '.'.join(paths[index:])
-#             if package in insurmountable:
-#                 continue                
+
             global count
             count += 1
-            path += '.php'
-            timing = 0
+            path += '.php'            
             if os.path.isfile(path):                
                 with open(path, "r", encoding='utf8') as file:
                     line = file.readline()                    
@@ -53,6 +55,8 @@ def readFolder(rootdir, sufix='.py'):
                         timing = float(m.group(1))
                     else:
                         timing = getsize(path) / 500
+            else:
+                timing = random.random()    
             
             yield package, timing
 
@@ -60,43 +64,67 @@ def readFolder(rootdir, sufix='.py'):
             yield from readFolder(path, sufix)
 
 
-@singledispatch    
-def process(package, debug=False):
-    is_insurmountable = package in insurmountable
+def project_directory():
+    return os.path.dirname(axiom_directory())
+
+
+def working_directory():
+    return os.path.dirname(project_directory())
+
+
+def create_module(package, module):
+    sep = os.path.sep
+    dirname = project_directory()
+    __init__ = dirname + sep + package.replace('.', sep) + sep + '__init__.py'
+    print('editing', __init__)
+    
+    hit = False
+    for line in Text(__init__):
+        m = re.compile('from \. import (\w+)').match(line)        
+        if m and m.group(1) == module:
+            hit = True
+            break
         
+    if not hit:
+        Text(__init__).append('from . import %s' % module)
+
+
+def run(package):   
+    command = 'python %s %s debug=True' % (project_directory() + os.path.sep + 'run.py', package)
+    return os.system(command)
+#     for line in os.popen(cmd).readlines():
+#         print(line) 
+
+    
+def import_module(package):
     try:    
-        if debug:
-            print(package)
-        package = eval(package)
+        return eval(package)
     except AttributeError as e:   
         print(e)
         s = str(e)
-
-        m = re.compile("module '([\w\.]+)' has no attribute '(\w+)'").fullmatch(s)
-        assert m
-        apply_package = package
-        package, module = m.groups()
-
-        sep = os.path.sep
-        dirname = os.path.dirname(os.path.dirname(__file__))
-        __init__ = dirname + sep + package.replace('.', sep) + sep + '__init__.py'
-        print('editing', __init__)
         
-        hit = False
-        for line in Text(__init__):
-            m = re.compile('from \. import (\w+)').match(line)
-            assert m
-            if m.group(1) == module:
-                hit = True
-                break
-        if not hit:
-            Text(__init__).append('from . import %s' % module)
-
-        return dirname + sep + apply_package.replace('.', sep) + '.py', None
-    file = package.__file__
-    ret = package.prove(file, debug=debug)
-    if is_insurmountable:
-        ret = True
+        m = re.compile("module '([\w\.]+)' has no attribute '(\w+)'").fullmatch(s)
+        assert m 
+        create_module(*m.groups())
+        print(package, 'is created newly')
+        return run(package)
+        
+@singledispatch    
+def process(package, debug=False):
+    if debug:
+        print(package)
+        
+    module = import_module(package)
+    if isinstance(module, int):
+        sep = os.path.sep
+        ret = None if module < 0 else bool(module)
+        file = project_directory() + sep + package.replace('.', sep) + '.py'
+    else:        
+        file = module.__file__
+        ret = module.prove(file, debug=debug)
+        if package in insurmountable:
+            ret = True
+            
     return file, ret
 
 
@@ -109,7 +137,7 @@ start = time.time()
 
 
 def prove(debug=False, parallel=True):
-    rootdir = os.path.dirname(__file__)
+    rootdir = axiom_directory()
     
     def generator(): 
         for name in os.listdir(rootdir):
@@ -127,6 +155,8 @@ def prove(debug=False, parallel=True):
     average_timing = total_timing / len(packages)
     print('total_timing =', total_timing)
     print('average_timing =', average_timing)
+    
+#     tasks = {'axiom.algebre.inequality.equality.imply.equality': 0}
     
     tasks = [*tasks.items()]
     tasks.sort(key=lambda pair : pair[1], reverse=True)
@@ -186,19 +216,20 @@ def post_process(result):
             continue
         
 #         print('__file__ =', __file__)
-#         print('os.path.dirname(os.path.dirname(os.path.dirname(__file__))) =', os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+#         print('working_directory() =', working_directory())
 #         print('package =', package)
         
-        websites.append("http://localhost" + package[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php")
+        websites.append("http://localhost" + package[len(working_directory()):-3] + ".php")
+    return count
 
 
-def process_dubug(packages):
+def process_debug(packages):
     return process(packages, debug=True)
 
 
 @process.register(tuple) 
 def _(items, debug=False, parallel=True):  # @DuplicatedSignature
-    proc = process_dubug if debug else process 
+    proc = process_debug if debug else process 
     if parallel:        
         from multiprocessing import Pool
         

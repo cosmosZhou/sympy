@@ -5,7 +5,7 @@ from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import Interval
 from sympy import Symbol, Slice
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
+from sympy import ForAll, LAMBDA
 from sympy.sets.contains import Contains
 from sympy.functions.elementary.complexes import Abs
 from sympy.functions.elementary.piecewise import Piecewise
@@ -51,7 +51,7 @@ def prove(Eq):
     
     Eq.x_quote_n_definition = Eq[-2].subs(i, n)
     
-    Eq << sets.imply.conditionset.apply(P)
+    Eq << sets.imply.forall.conditionset.apply(P)
     
     Eq << Eq[-2].subs(Eq[-1])
     
@@ -59,7 +59,7 @@ def prove(Eq):
     
     Eq << Eq.P2P_quote.definition.split()
     
-    Eq << sets.imply.conditionset.apply(P_quote)
+    Eq << sets.imply.forall.conditionset.apply(P_quote)
     
     Eq << Eq[-1].split()
     

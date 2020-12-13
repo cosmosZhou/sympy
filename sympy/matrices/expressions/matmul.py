@@ -306,7 +306,7 @@ class MatMul(MatrixExpr):
         return lines
 
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
+    def simplify_Equal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a MatMul object!
         """
@@ -626,25 +626,12 @@ class MatMul(MatrixExpr):
                     return self.func(*self.args[:i] + (new.args if new.is_MatMul else (new,)) + self.args[i + len(args):]).simplify()
         return MatrixExpr._subs(self, old, new, **hints)
 
-    def distribute(self):
-        for i, arg in enumerate(self.args):
-            if arg.is_Sum or arg.is_Integral:
-                args = [*self.args]
-                args[i] = arg.function 
-                function = self.func(*args).powsimp()
-                return arg.func(function, *arg.limits)
-            if arg.is_Plus:
-                args = [*self.args]
-                if i > 0:
-                    left = arg.func(*(self.func(*args[:i]) @ a for a in arg.args))
-                    right = args[i + 1:]
-                    if right:
-                        return left @ self.func(*right)
-                    else:
-                        return left
-                else:
-                    return self
-        return self
+    @classmethod
+    def rewrite_from_Sum(cls, self):
+        first, second = self.function.as_two_terms() 
+        from sympy.concrete.expr_with_limits import LAMBDA
+        return LAMBDA(first, *self.limits) @ LAMBDA(second, *self.limits)
+
 
     
 def validate(*matrices):

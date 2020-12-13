@@ -6,7 +6,7 @@ from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import Interval
 from sympy import Symbol
-from axiom import discrete
+from axiom import discrete, algebre
 
 
 @plausible
@@ -24,11 +24,11 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
     
-    Eq << Eq[-1].subs(n, 1)
+    Eq.initial = Eq[-1].subs(n, 1)
     
-    Eq << Eq[-1].this.lhs.arg.limits[0][1].simplify()
+    Eq << Eq.initial.this.lhs.arg.limits[0][1].simplify()
     
-    Eq << Eq[0].subs(n, n + 1)
+    Eq.induction = Eq[0].subs(n, n + 1)
     
     Eq << discrete.combinatorics.permutation.mapping.P2Q_union.apply(n)
     
@@ -54,11 +54,15 @@ def prove(Eq):
     
     Eq << Eq[0].subs(Eq.P_definition.reversed)
 
-    Eq << Eq[2].subs(Eq.Pn1_definition.reversed)
+    Eq << Eq.induction.subs(Eq.Pn1_definition.reversed)
     
     Eq << Eq.recursion.subs(Eq[-1], Eq[-2])
     
     Eq << discrete.combinatorics.permutation.factorial.expand.apply(n + 1)
+    
+    Eq << Eq.induction.induct()
+    
+    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
 
     
 if __name__ == '__main__':

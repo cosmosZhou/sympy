@@ -13,7 +13,6 @@ from .expr import Expr
 from .parameters import global_parameters
 
 
-
 # internal marker to indicate:
 #   "there are still non-commutative objects -- don't forget to process them"
 class NC_Marker:
@@ -27,6 +26,8 @@ class NC_Marker:
 
 # Key for sorting commutative args in canonical order
 _args_sortkey = cmp_to_key(Basic.compare)
+
+
 def _mulsort(args):
     # in-place sorting of args
     args.sort(key=_args_sortkey)
@@ -92,8 +93,8 @@ class Times(Expr, AssocOp):
 
     is_Mul = True
     
-    is_commutative = True
-    
+    is_commutative = True    
+
     def __neg__(self):
         c, args = self.as_coeff_mul()
         c = -c
@@ -218,24 +219,47 @@ class Times(Expr, AssocOp):
         from sympy.calculus.util import AccumBounds
         from sympy.matrices.expressions import MatrixExpr
         rv = None
+        
+        infinitesimals = [x for x in seq if x.is_infinitesimal is not None]
+        infinitesimal = None
+        if infinitesimals:
+            noninfinitesimals = [x for x in seq if x.is_infinitesimal is None]
+            if len(infinitesimals) == 1:
+                infinitesimal, *_ = infinitesimals
+                noninfinitesimal, infinitesimal = infinitesimal.clear_infinitesimal()
+                sign = 1
+                for coeff in noninfinitesimals:
+                    if coeff.is_extended_positive:
+                        continue
+                    if coeff.is_extended_negative:
+                        sign *= -1
+                        continue
+                    raise Exception('could not determine the final infinitesimal value in the expression: ', seq)
+                infinitesimal *= sign
+                if noninfinitesimal.is_zero:                   
+                    return [noninfinitesimal], [], infinitesimal
+                seq = noninfinitesimals + [noninfinitesimal]
+            else:
+                raise Exception('could not determine the final infinitesimal value in the expression: ', seq)
+                
         if len(seq) == 2:
             a, b = seq
             if b.is_Rational:
                 a, b = b, a
                 seq = [a, b]
-            assert not a is S.One
+                
             if not a.is_zero and a.is_Rational:
                 r, b = b.as_coeff_Mul()
                 if b.is_Add:
                     if r is not S.One:  # 2-arg hack
                         # leave the Mul as a Mul?
-                        ar = a*r
+                        ar = a * r
                         if ar is S.One:
                             arb = b
                         else:
-                            arb = cls(a*r, b, evaluate=False)
+                            arb = cls(a * r, b, evaluate=False)
                         rv = [arb], [], None
-                    elif global_parameters.distribute:# and b.is_commutative:
+                    elif global_parameters.distribute:  # and b.is_commutative:
                         r, b = b.as_coeff_Add()
                         bargs = [_keep_coeff(a, bi) for bi in Add.make_args(b)]
                         _addsort(bargs)
@@ -681,6 +705,8 @@ class Times(Expr, AssocOp):
             coeff = c_part[0]
             c_part = [Add(*[coeff * f for f in c_part[1].args])]
 
+        if infinitesimal:
+            return c_part, nc_part, infinitesimal 
         return c_part, nc_part, order_symbols
 
     def _eval_power(self, e):
@@ -1985,7 +2011,7 @@ class Times(Expr, AssocOp):
         return 1, self
 
     @classmethod
-    def simplifyEqual(cls, self, lhs, rhs):
+    def simplify_Equal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a Times object!
         """
@@ -2003,8 +2029,7 @@ class Times(Expr, AssocOp):
                 if hit:
                     return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
         elif rhs.is_zero:
-            return Basic.simplifyEqual(self, lhs, rhs)
-
+            return Basic.simplify_Equal(self, lhs, rhs)
 
     def simplifyKroneckerDelta(self):
         for arg in self.args:
@@ -2287,15 +2312,6 @@ class Times(Expr, AssocOp):
 
         return self.func(*args)
 
-    def distribute(self):
-        for i, arg in enumerate(self.args):
-            if arg.is_Sum or arg.is_Integral:
-                args = [*self.args]
-                args[i] = arg.function 
-                function = self.func(*args).powsimp()
-                return arg.func(function, *arg.limits)
-        return self
-        
     def _latex(self, p):
         from sympy.core.power import Pow
         include_parens = False
@@ -2363,7 +2379,8 @@ class Times(Expr, AssocOp):
             elif ratio is not None and len(snumer.split()) > ratio * ldenom:
                 # handle long fractions
                 if p._needs_mul_brackets(numer, last=True):
-                    tex += r"\displaystyle\frac{1}{%s}%s\left(%s\right)" % (sdenom, separator, snumer)
+                    tex += r"\frac{1}{%s}%s\left(%s\right)" % (sdenom, separator, snumer)
+#                     tex += r"\displaystyle\frac{1}{%s}%s\left(%s\right)" % (sdenom, separator, snumer)
                 elif numer.is_Mul:
                     # split a long numerator
                     a = S.One
@@ -2374,13 +2391,13 @@ class Times(Expr, AssocOp):
                         else:
                             a *= x
                     if p._needs_mul_brackets(b, last=True):
-                        tex += r"\displaystyle\frac{%s}{%s}%s\left(%s\right)" % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\frac{%s}{%s}%s\left(%s\right)" % (convert(a), sdenom, separator, convert(b))
                     else:
-                        tex += r"\displaystyle\frac{%s}{%s}%s%s" % (convert(a), sdenom, separator, convert(b))
+                        tex += r"\frac{%s}{%s}%s%s" % (convert(a), sdenom, separator, convert(b))
                 else:
-                    tex += r"\displaystyle\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
+                    tex += r"\frac{1}{%s}%s%s" % (sdenom, separator, snumer)
             else:
-                tex += r"\displaystyle\frac{%s}{%s}" % (snumer, sdenom)
+                tex += r"\frac{%s}{%s}" % (snumer, sdenom)
 
         if include_parens:
             tex += ")"
@@ -2443,7 +2460,6 @@ class Times(Expr, AssocOp):
         else:
             return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
 
-
     @property
     def is_lower(self):
         for arg in self.args :
@@ -2480,6 +2496,7 @@ class Times(Expr, AssocOp):
         if self.arg.is_Plus:
             return cls(*(self.func(arg) for arg in self.args[0].args))
         return self
+
     
 mul = AssocOpDispatcher('mul')
 
@@ -2573,12 +2590,14 @@ def _keep_coeff(coeff, factors, clear=True, sign=False):
 
 def expand_2arg(e):
     from sympy.simplify.simplify import bottom_up
+
     def do(e):
         if e.is_Mul:
             c, r = e.as_coeff_Mul()
             if c.is_Number and r.is_Add:
                 return _unevaluated_Add(*[c * ri for ri in r.args])
         return e
+
     return bottom_up(e, do)
 
 

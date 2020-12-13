@@ -4,7 +4,7 @@ from sympy.sets.contains import Contains
 from sympy.core.relational import Equality
 from sympy import Symbol
 from sympy.core.function import Function
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 
 
 # given: A in B 
@@ -29,9 +29,9 @@ def apply(*given):
     limits = [*forall.limits]
     del limits[index]
     if limits:
-        return ForAll(function, *limits, given=given)
+        return ForAll(function, *limits)
     
-    return function.copy(given=given)
+    return function
 
 from axiom.utility import check
 

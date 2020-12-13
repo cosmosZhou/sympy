@@ -36,7 +36,7 @@ def apply(*given):
     assert _z == z or _z == z.as_boolean()
     assert _y == y    
     
-    return Equality(x | z, x, given=given)
+    return Equality(x | z, x)
 
 
 @check
@@ -73,7 +73,7 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq.z_nonzero)
+    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq.z_nonzero)
 
 
 if __name__ == '__main__':

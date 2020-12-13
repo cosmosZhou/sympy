@@ -27,7 +27,7 @@ def apply(given):
         x_historic, y_historic = y_historic, x_historic
     assert y[:k].as_boolean() == y_historic
     
-    return Equality(y[k] | y_historic, y[k] | y[k - 1], given=given)
+    return Equality(y[k] | y_historic, y[k] | y[k - 1])
 
 
 @check

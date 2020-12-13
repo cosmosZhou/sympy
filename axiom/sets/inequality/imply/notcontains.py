@@ -10,7 +10,7 @@ from sympy import Symbol
 def apply(given):
     assert given.is_Unequality
     x, y = given.args
-    return NotContains(x, y.set, given=given)
+    return NotContains(x, y.set)
 
 
 from axiom.utility import check

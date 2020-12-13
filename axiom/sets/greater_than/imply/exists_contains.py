@@ -2,7 +2,7 @@ from sympy.core.relational import GreaterThan
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.sets.contains import Contains
 from axiom import algebre, sets
 # given: |A| >= 1
@@ -18,7 +18,7 @@ def apply(given):
 
     x = S.element_symbol()
 
-    return Exists[x](Contains(x, S), given=given)
+    return Exists[x](Contains(x, S))
 
 
 from axiom.utility import check
@@ -30,7 +30,7 @@ def prove(Eq):
     
     Eq << apply(abs(S) >= 1)
     
-    Eq << algebre.greater_than.imply.strict_greater_than.apply(Eq[0], 0)
+    Eq << algebre.greater_than.imply.strict_greater_than.transit.apply(Eq[0], 0)
     
     Eq << sets.is_positive.imply.exists_contains.apply(Eq[-1], simplify=False)
     

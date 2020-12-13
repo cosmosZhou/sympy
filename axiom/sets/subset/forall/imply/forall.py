@@ -5,7 +5,7 @@ from sympy.core.relational import Equality
 from sympy import Symbol
 from axiom import sets
 from sympy.core.function import Function
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 
 
 @plausible
@@ -28,7 +28,7 @@ def apply(*given):
     function = forall.function
     limits = [*forall.limits]
     limits[index] = (x, B)
-    return ForAll(function, *limits, given=given)
+    return ForAll(function, *limits)
 
 
 from axiom.utility import check

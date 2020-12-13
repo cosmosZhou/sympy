@@ -1,7 +1,7 @@
 from .sets import (Set, Interval, Union, EmptySet, FiniteSet, ProductSet,
-        Intersection, imageset, Complement, SymmetricDifference)
+        Intersection, imageset, Complement, SymmetricDifference, CartesianSpace)
 from .fancysets import ImageSet, Range, ComplexRegion, Reals
-from .contains import Contains
+from .contains import Contains, NotContains, Subset, Supset, NotSubset, NotSupset
 from .conditionset import ConditionSet
 from .ordinals import Ordinal, OmegaPower, ord0
 from ..core.singleton import S

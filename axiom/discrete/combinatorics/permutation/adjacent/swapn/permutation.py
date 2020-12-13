@@ -3,7 +3,7 @@ from sympy.core.symbol import dtype
 from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
+from sympy import ForAll, LAMBDA
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
@@ -29,7 +29,7 @@ def apply(given):
     
     P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
-    return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S), given=given)
+    return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S))
 
 
 @check
@@ -52,7 +52,7 @@ def prove(Eq):
     
     * _, b_i = Eq[-1].rhs.args[1].function.args
     b, _i = b_i.args
-    Eq << Eq.w_definition.subs(j, b[_i]).subs(i, _i)
+    Eq << Eq.w_definition.subs(j, b[_i])
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     

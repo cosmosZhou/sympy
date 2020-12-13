@@ -206,7 +206,7 @@ class Indexed(Expr):
         return False
 
     def __new__(cls, base, *args, **kw_args):
-        from sympy.utilities.misc import filldedent
+        from sympy.utilities.miscellany import filldedent
         from sympy.tensor.array.ndim_array import NDimArray
         from sympy.matrices.matrices import MatrixBase
 
@@ -220,11 +220,14 @@ class Indexed(Expr):
         elif not hasattr(base, '__getitem__') and not base.is_Symbol:
             raise TypeError(filldedent("Indexed expects string, Symbol as base."))
         args = list(map(sympify, args))
+        
         if isinstance(base, (NDimArray, Tuple, MatrixBase)) and all([i.is_number for i in args]):
             if len(args) == 1:
                 return base[args[0]]
             else:
                 return base[args]
+        if base.is_LAMBDA:
+            return base[args]
             
         if len(args) == 1 and args[0].is_Piecewise:
             piecewise = args[0]
@@ -623,6 +626,9 @@ class Indexed(Expr):
     @property
     def is_given(self):        
         return self.base.is_given
+#         if self.base.is_given:
+#             return True
+#         return all(index.is_given for index in self.indices)
 
     def as_boolean(self):
         if self.is_random:
@@ -724,7 +730,7 @@ class Slice(Expr):
         return UNION({self.base[i]}, (i, start, stop - 1))
 
     def __new__(cls, base, *args, **kw_args):
-        from sympy.utilities.misc import filldedent
+        from sympy.utilities.miscellany import filldedent
 
         if not args:
             raise IndexException("Indexed needs at least one index.")
@@ -1400,7 +1406,7 @@ class Idx(Expr):
     _diff_wrt = True
 
     def __new__(cls, label, range=None, **kw_args):
-        from sympy.utilities.misc import filldedent
+        from sympy.utilities.miscellany import filldedent
 
         if isinstance(label, string_types):
             label = Symbol(label, integer=True)

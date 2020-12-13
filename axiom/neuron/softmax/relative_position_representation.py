@@ -6,10 +6,11 @@ from sympy import Symbol
 from sympy.functions.elementary.miscellaneous import sqrt, Min, Max
 from sympy.matrices.expressions.matmul import MatMul
 from sympy.concrete.summations import Sum
-from sympy.concrete.expr_with_limits import LAMBDA
+from sympy import LAMBDA
 from sympy.core.function import Function
 from sympy.sets.contains import Contains
 from sympy.sets.sets import Interval
+from sympy.core.add import Plus
 
 clip = Function.clip(nargs=(3,), shape=(), eval=lambda a, a_min, a_max: Min(a_max, Max(a, a_min)))
 
@@ -69,7 +70,8 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.subs(Eq.V_definition.reversed)
 
-    Eq << Eq[-1].this.rhs.distribute()    
+    Eq << Eq[-1].this.rhs.astype(Plus)
+        
     k = Symbol.k(integer=True)
     Eq << Eq[-1].this.rhs.args[0].expand(free_symbol={k})
     

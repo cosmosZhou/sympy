@@ -2,15 +2,14 @@ from sympy import Symbol, Slice
 from axiom.utility import plausible
 from sympy.core.relational import Equality
 
-from sympy.concrete.expr_with_limits import LAMBDA, MIN, MAX, Minimize
+from sympy import LAMBDA, MIN, MAX, Minimize
 import sympy
 from sympy.functions.elementary.exponential import log, exp
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
-from axiom.neuron import crf
 from axiom.neuron.crf.markov import process_assumptions, assumptions
 from sympy.sets.sets import Interval
-from sympy.functions.elementary.miscellaneous import Min
+from axiom import neuron
 
 
 @plausible
@@ -37,8 +36,8 @@ def apply(*given):
     assert x_quote.shape == (n, d)
 
     assert x_quote.is_real
-    return Equality(x_quote[t + 1], x[t + 1] + MIN(x_quote[t] + G), given=given), \
-        Equality(MAX[y](joint_probability), exp(-MIN(x_quote[n - 1])), given=given)
+    return Equality(x_quote[t + 1], x[t + 1] + MIN(x_quote[t] + G)), \
+        Equality(MAX[y](joint_probability), exp(-MIN(x_quote[n - 1])))
 
 
 from axiom.utility import check
@@ -55,9 +54,9 @@ def prove(Eq):
     s, t = Eq.s_definition.lhs.args
     Eq.x_quote_definition = Eq.x_quote_definition.reference((Eq.x_quote_definition.lhs.indices[-1],))
     
-    Eq << crf.markov.apply(*given)
+    Eq << neuron.crf.markov.apply(*given)
     
-    Eq << crf.logits.apply(Eq.G_definition.lhs.base, Eq.x_definition.lhs.base, s, Eq[-1])
+    Eq << neuron.crf.logits.apply(Eq.G_definition.lhs.base, Eq.x_definition.lhs.base, s, Eq[-1])
     
     Eq << Eq.x_quote_definition.subs(t, t + 1)
     y = Eq[-1].rhs.variable.base

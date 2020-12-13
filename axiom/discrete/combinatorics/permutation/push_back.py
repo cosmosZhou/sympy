@@ -20,7 +20,7 @@ def apply(*given):
     assert set_comprehension_equality.lhs._dummy_eq(p[:n].set_comprehension())
     assert set_comprehension_equality.rhs == Interval(0, n - 1, integer=True)
     
-    return Equality(p[:n + 1].set_comprehension(), Interval(0, n, integer=True), given=given)
+    return Equality(p[:n + 1].set_comprehension(), Interval(0, n, integer=True))
 
 
 from axiom.utility import check

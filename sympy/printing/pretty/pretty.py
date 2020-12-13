@@ -223,14 +223,14 @@ class PrettyPrinter(Printer):
         return pform
 
     def _print_Not(self, e):
-        from sympy import Equivalent, Implies
+        from sympy import Equivalent, Sufficient
         if self._use_unicode:
             arg = e.args[0]
             pform = self._print(arg)
             if isinstance(arg, Equivalent):
                 return self._print_Equivalent(arg, altchar=u"\N{LEFT RIGHT DOUBLE ARROW WITH STROKE}")
-            if isinstance(arg, Implies):
-                return self._print_Implies(arg, altchar=u"\N{RIGHTWARDS ARROW WITH STROKE}")
+            if isinstance(arg, Sufficient):
+                return self._print_Imply(arg, altchar=u"\N{RIGHTWARDS ARROW WITH STROKE}")
 
             if arg.is_Boolean and not arg.is_Not:
                 pform = prettyForm(*pform.parens())
@@ -290,7 +290,7 @@ class PrettyPrinter(Printer):
         else:
             return self._print_Function(e, sort=True)
 
-    def _print_Implies(self, e, altchar=None):
+    def _print_Imply(self, e, altchar=None):
         if self._use_unicode:
             return self.__print_Boolean(e, altchar or u"\N{RIGHTWARDS ARROW}", sort=False)
         else:

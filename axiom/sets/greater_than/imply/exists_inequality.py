@@ -2,7 +2,7 @@ from sympy.core.relational import Unequality, GreaterThan
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from axiom import sets
 from sympy.sets.contains import Contains
 # given: |A| >= 1
@@ -19,7 +19,7 @@ def apply(given):
     x = S.element_symbol()
     y = S.element_symbol({x})
 
-    return Exists[x:S, y:S](Unequality(x, y), given=given)
+    return Exists[x:S, y:S](Unequality(x, y))
 
 
 from axiom.utility import check

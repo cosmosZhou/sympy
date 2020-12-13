@@ -3,7 +3,7 @@ from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
 from sympy import Symbol
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.core.containers import Tuple
 
 
@@ -20,7 +20,7 @@ def apply(given, *limits):
             domain = domain[0]
             assert domain in given.domain_defined(var) 
         
-    return Exists(given, *limits, given=given)
+    return Exists(given, *limits)
 
 
 from axiom.utility import check

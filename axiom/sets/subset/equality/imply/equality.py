@@ -25,7 +25,7 @@ def apply(*given):
     else:
         assert _B_abs == A_abs
     
-    return Equality(A, B, given=given)
+    return Equality(A, B)
 
 
 from axiom.utility import check
@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << apply(Subset(A, B), Equality(abs(A), abs(B)))
     
-    Eq << (B - A).assertion()
+    Eq << sets.imply.equality.principle.addition.apply(B, A)    
     
     Eq.union_AB = Eq[-1].subs(Eq[1])
     

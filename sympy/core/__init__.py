@@ -9,7 +9,7 @@ from .expr import Expr, AtomicExpr, UnevaluatedExpr
 from .symbol import Symbol, Wild, Dummy, symbols, var, dtype
 from .numbers import Number, Float, Rational, Integer, NumberSymbol, \
     RealNumber, igcd, ilcm, seterr, E, I, nan, oo, pi, zoo, \
-    AlgebraicNumber, comp, mod_inverse
+    AlgebraicNumber, comp, mod_inverse, Infinitesimal, NegativeInfinitesimal
 from .power import Pow, integer_nthroot, integer_log, Power
 from .mul import Mul, prod, Times
 from .add import Add, Plus

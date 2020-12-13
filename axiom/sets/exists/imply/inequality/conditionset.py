@@ -3,7 +3,7 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import Exists
+from sympy import Exists
 from sympy.core.function import Function
 from sympy.sets.conditionset import conditionset
 from sympy.core.relational import Unequal
@@ -15,7 +15,7 @@ def apply(given):
     assert given.is_Exists
     assert len(given.limits) == 1
     x, S = given.limits[0]
-    return Unequal(conditionset(x, given.function, S), x.emptySet, given=given)
+    return Unequal(conditionset(x, given.function, S), x.emptySet)
 
 
 from axiom.utility import check

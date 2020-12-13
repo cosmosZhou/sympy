@@ -1,5 +1,4 @@
 from axiom.utility import plausible
-from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
 from sympy import Symbol
 from sympy.sets.sets import Interval
@@ -11,9 +10,9 @@ def apply(given, t):
     
     e, interval = given.args    
     
-    a, b, _ = interval.args
+    a, b = interval.args
         
-    return Contains(e + t, interval.copy(start=a + t, stop=b + t), given=given)
+    return Contains(e + t, interval.copy(start=a + t, stop=b + t))
 
 
 from axiom.utility import check

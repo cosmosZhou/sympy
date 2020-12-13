@@ -26,7 +26,7 @@ from sympy.matrices import Matrix
 from sympy.ntheory import isprime, totient, primitive_root
 from sympy.polys.domains import FF
 from sympy.polys.polytools import gcd, Poly
-from sympy.utilities.misc import filldedent, translate
+from sympy.utilities.miscellany import filldedent, translate
 from sympy.utilities.iterables import uniq
 from sympy.utilities.randtest import _randrange, _randint
 from sympy.utilities.exceptions import SymPyDeprecationWarning

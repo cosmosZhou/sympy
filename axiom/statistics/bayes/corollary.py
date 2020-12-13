@@ -6,7 +6,7 @@ from axiom.utility import check
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
-from axiom import statistics
+from axiom import statistics, algebre
 
 
 # given: P(x) ! =0
@@ -32,9 +32,9 @@ def apply(given, var):
                 var = marginal_probability.arg
             
             assert not var.is_Conditioned        
-            return Equality(joint_probability, P(var | x) * P(x), given=given)
+            return Equality(joint_probability, P(var | x) * P(x))
         else:
-            return Equality(P(x, var), P(var | x) * P(x), given=given)
+            return Equality(P(x, var), P(var | x) * P(x))
     elif eq.is_Conditioned:
         x, _x = eq.lhs.args
         assert x.is_random and _x == pspace(x).symbol
@@ -44,12 +44,12 @@ def apply(given, var):
         var = joint_probability.marginalize(x).arg
         assert var.is_Conditioned    
         assert var.rhs == eq.rhs 
-        return Equality(joint_probability, P(var | x) * P(x, given=eq.rhs), given=given)
+        return Equality(joint_probability, P(var | x) * P(x, given=eq.rhs))
     else:
         assert eq.is_And       
         assert var.is_random and var.is_symbol
         assert var.as_boolean() not in eq._argset 
-        return Equality(P(eq, var), P(var | eq) * P(eq), given=given)
+        return Equality(P(eq, var), P(var | eq) * P(eq))
         
     
 
@@ -64,7 +64,7 @@ def prove(Eq):
     
     Eq << statistics.bayes.theorem.apply(Eq[-1].lhs, x)
     
-    Eq << Eq[-1].astype(Or)
+    Eq << algebre.forall.imply.ou.apply(Eq[-1])
     
     Eq << (Eq[-1] & Eq[0]).split()
 

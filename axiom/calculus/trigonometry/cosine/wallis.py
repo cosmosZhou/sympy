@@ -9,6 +9,8 @@ from sympy.functions.elementary.miscellaneous import sqrt
 
 from sympy import S, Symbol
 from sympy.integrals.integrals import Integral
+from axiom import algebre, geometry
+from sympy.core.add import Plus
 
 
 @plausible
@@ -28,27 +30,49 @@ def prove(Eq):
     Eq << apply(n)
     (x, *_), *_ = Eq[0].lhs.limits
 
-    Eq << Eq[0].subs(n, 1).doit()
-    Eq << Eq[0].subs(n, 2).doit()
-    Eq << Eq[0].subs(n, n + 2)
-#     Integration by parts
-    Eq << Eq[-1].this.lhs.by_parts(dv=cos(x))
-    Eq << Eq[-1].this.lhs.args[1].function.powsimp()
-
-    Eq << Eq[0] - Eq[-1] / n
-
-    Eq << Eq[-1].this.lhs.astype(Integral)
-
-    Eq << Eq[-1].this.lhs.trigsimp()
-
-    Eq << Eq[-1].this.lhs.function.powsimp()
-
-    Eq << Eq[1].this.lhs.function.powsimp().subs(Eq[-1])
-
-    Eq << Eq[-1].expand(func=True)
-    Eq << Eq[-1] + Eq[-1].rhs / n
+    Eq << Eq[0].subs(n, 1)
     
-    Eq << Eq[-1].this.rhs.ratsimp()
+    Eq << Eq[-1].doit()
+        
+    Eq << Eq[0].subs(n, 2)
+    
+    Eq << Eq[-1].doit()
+
+    Eq.induction = Eq[0].subs(n, n + 2)
+
+#     Integration by parts
+
+    Eq << Eq.induction.lhs.this.expand()
+
+    Eq << Eq[-1].this.rhs.by_parts(dv=cos(x)) / n
+
+    Eq << Eq[-1].this.lhs.args[1].function.powsimp()
+    
+    Eq << Eq[-1].this.rhs.function.powsimp()
+    
+    Eq << geometry.plane.trigonometry.sine.squared.apply(x)
+
+    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+    
+    Eq << Eq[-1].this.rhs.function.astype(Plus)
+
+    Eq << Eq[-1].this.rhs.function.args[0].powsimp()
+    
+    Eq << Eq[-1].this.rhs.astype(Plus)
+    
+    Eq << Eq[-1].this.rhs.args[1].simplify()
+    
+    Eq << Eq[-1].solve(-Eq[-1].rhs.args[1])
+    
+    Eq << Eq[-1].subs(Eq[0])
+    
+    Eq << Eq[-1].this.rhs.expand()
+    
+    Eq << Eq.induction.this.rhs.expand(func=True)
+
+    Eq << Eq.induction.induct()
+    
+    Eq << algebre.equality.equality.sufficient.imply.equality.induction.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':

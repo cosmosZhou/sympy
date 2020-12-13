@@ -5,7 +5,7 @@ from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
+from sympy import ForAll, LAMBDA
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.permutation.adjacent import swap1
@@ -48,7 +48,7 @@ def apply(given):
     
     w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
     
-    return ForAll(Contains(w[i, j] @ x, S), (x, S), given=given)
+    return ForAll(Contains(w[i, j] @ x, S), (x, S))
 
 
 @check
@@ -73,15 +73,13 @@ def prove(Eq):
     
     Eq.given = Eq[1].subs(Eq[-1].reversed)
     
-    Eq << axiom.algebre.matrix.elementary.swap.identity.apply(x, w)
+    Eq << axiom.discrete.matrix.elementary.swap.identity.apply(x, w)
     
     Eq << Eq[-1].subs(Eq[-1].rhs.args[0].indices[0], 0)
     
     Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, i)
     
     Eq << Eq[-1].this.lhs.function.indices[0].args[1].limits_subs(Eq[-1].lhs.function.indices[0].args[1].variable, i)
-    
-    Eq << Eq[-1].subs(Eq[-1].rhs.args[0].indices[1], j)
     
     Eq.given = Eq.given.subs(Eq[-1])
     

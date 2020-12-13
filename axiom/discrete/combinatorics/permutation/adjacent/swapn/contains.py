@@ -3,12 +3,12 @@ from sympy.core.symbol import dtype
 from axiom.utility import check, plausible
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import ForAll, LAMBDA
+from sympy import ForAll, LAMBDA
 from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
 from sympy import Symbol
-from axiom import algebre
+from axiom import algebre, discrete
 from axiom.discrete.combinatorics.permutation.adjacent import swapn
 
 
@@ -51,7 +51,7 @@ def apply(given):
     
     P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
-    return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S), given=given)
+    return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S))
 
 
 @check
@@ -72,7 +72,7 @@ def prove(Eq):
     
     Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(given)
 
-    Eq << algebre.matrix.elementary.swap.identity.apply(x, w)
+    Eq << discrete.matrix.elementary.swap.identity.apply(x, w)
     
     Eq << Eq.swap.subs(Eq[-1])
     

@@ -15,7 +15,7 @@ def apply(given):
         assert A.is_EmptySet
         A = B
 
-    return GreaterThan(abs(A), 1, given=given)
+    return GreaterThan(abs(A), 1)
 
 
 from axiom.utility import check

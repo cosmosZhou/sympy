@@ -5,7 +5,7 @@ signatures common to SymPy objects. For general use of logic constructs
 please refer to sympy.logic classes And, Or, Not, etc.
 """
 from itertools import combinations, product
-from sympy import S, Nor, Nand, Xor, Implies, Equivalent, ITE
+from sympy import S, Nor, Nand, Xor, Sufficient, Equivalent, ITE
 from sympy.logic.boolalg import Or, And, Not, Xnor
 from itertools import zip_longest
 
@@ -164,7 +164,7 @@ def to_NNF(expr):
                 cnfs.append(OR(*clause))
         return ~AND(*cnfs)
 
-    if isinstance(expr, Implies):
+    if isinstance(expr, Sufficient):
         L, R = to_NNF(expr.args[0]), to_NNF(expr.args[1])
         return OR(~L, R)
 

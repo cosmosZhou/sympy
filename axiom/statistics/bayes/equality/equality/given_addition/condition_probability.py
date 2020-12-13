@@ -31,7 +31,7 @@ def apply(*given):
         
     assert _y == y    
     
-    return Equality(x | y & z, x | z, given=given)
+    return Equality(x | y & z, x | z)
 
 
 @check
@@ -42,8 +42,9 @@ def prove(Eq):
     
     Eq << apply(Equality(x | y, x), Unequal(P(z | y), 0))
     
-    Eq << statistics.bayes.theorem.apply(P(x | y, z), z)    
-    Eq << Eq[-1].astype(Or)
+    Eq << statistics.bayes.theorem.apply(P(x | y, z), z)
+    
+    Eq << algebre.forall.imply.ou.apply(Eq[-1])
 
     Eq << (Eq[-1] & Eq[1]).split()
 
@@ -55,7 +56,7 @@ def prove(Eq):
     
     Eq << Eq[-3].subs(Eq[-1])
     
-    Eq << algebre.is_nonzero.equality.imply.equality.apply(Eq[-1], Eq[-3])
+    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq[-3])
     
     Eq << Eq[-1].reversed
 

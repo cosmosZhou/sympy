@@ -4,7 +4,7 @@ from axiom.utility import plausible
 from sympy.sets.conditionset import conditionset
 
 from sympy import Symbol
-from sympy.concrete.expr_with_limits import ForAll
+from sympy import ForAll
 
 from sympy.core.function import Function
 from sympy.core.symbol import dtype, Wild
@@ -22,7 +22,7 @@ def apply(given, P):
     res = f_gx.match(pattern)
     gx, *_ = res.values()
 
-    return given.func(Contains(gx, P), *given.limits, given=given)
+    return given.func(Contains(gx, P), *given.limits)
 
 
 from axiom.utility import check

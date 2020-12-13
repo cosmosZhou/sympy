@@ -3,7 +3,7 @@ from sympy.core.backend import (diff, expand, sin, cos, sympify,
 from sympy import (trigsimp, solve, Symbol, Dummy)
 from sympy.core.compatibility import string_types, range
 from sympy.physics.vector.vector import Vector, _check_vector
-from sympy.utilities.misc import translate
+from sympy.utilities.miscellany import translate
 
 __all__ = ['CoordinateSym', 'ReferenceFrame']
 

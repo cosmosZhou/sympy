@@ -2,9 +2,6 @@ from axiom.utility import plausible
 from sympy.core.symbol import dtype
 from sympy.sets.contains import NotContains
 from sympy import Symbol
-from sympy.core.numbers import oo
-from sympy.concrete.expr_with_limits import UNION
-from sympy.sets.sets import Interval
 
 
 @plausible
@@ -18,7 +15,7 @@ def apply(given, s=None):
     else:
         assert s in S.args
     
-    return NotContains(e, s, given=given)
+    return NotContains(e, s)
 
 
 from axiom.utility import check

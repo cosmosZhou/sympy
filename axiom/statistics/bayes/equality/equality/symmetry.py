@@ -26,7 +26,7 @@ def apply(*given):
     if y.is_Equality:
         y = y.lhs
     assert y.is_random and y.is_symbol
-    return Equality(y | x, y, given=given)
+    return Equality(y | x, y)
 
 
 @check

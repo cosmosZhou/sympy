@@ -13,8 +13,8 @@ from . import ou
 from . import forall_et
 from . import exists_contains
 from . import exists
-from . import exists_et
 from . import is_zero
 from . import is_emptyset
 from . import is_positive
 from . import forall_inequality
+from . import exists_et

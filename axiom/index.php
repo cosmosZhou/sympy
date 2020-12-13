@@ -6,6 +6,40 @@ the whole math theory is composed of the following sections:
 <br>
 <?php
 
+function yield_empty_directory($dir)
+{
+    $empty = true;
+    foreach (read_files($dir, 'py') as $py) {
+        if (! strcmp(basename($py), '__init__.py')) {
+            continue;
+        }
+
+        $empty = false;
+    }
+
+    foreach (read_directory($dir) as $directory) {
+        if (! strcmp(basename($directory), '__pycache__')) {
+            continue;
+        }
+
+        $array = iterator_to_array(yield_empty_directory($directory));
+        if (empty($array)) {
+            $empty = false;
+        } else {
+            if (strcmp(end($array), $directory)) {
+                $empty = false;
+            }
+            // is not empty;
+            foreach ($array as $directory) {
+                yield $directory;
+            }
+        }
+    }
+
+    if ($empty)
+        yield $dir;
+}
+
 function read_all_php($dir)
 {
     foreach (read_directory($dir) as $directory) {
@@ -22,10 +56,14 @@ function read_from($file, $trim = true)
         $handle = fopen($file, "r");
 
         while (($buffer = fgets($handle, 4096)) !== false) {
-            if ($trim)
-                yield trim($buffer);
-            else
-                yield $buffer;
+            if ($trim) {
+                $buffer = trim($buffer);
+                if (empty($buffer)){
+                    continue;
+                }
+            }
+
+            yield $buffer;
         }
 
         if (! feof($handle)) {
@@ -39,7 +77,7 @@ function read_from($file, $trim = true)
 function is_axiom_plausible($php)
 {
     foreach (yield_from_php($php) as &$statement) {
-        if (preg_match_all('/\\\\[(].+?\\\\[)]/', $statement, $matches, PREG_SET_ORDER)) {
+        if (is_latex($statement, $matches)) {
             foreach ($matches as list ($match)) {
                 if (preg_match("/.+tag\*\{(.+=>.+)\}.+/", $match, $result)) {
                     return true;
@@ -81,14 +119,16 @@ foreach (read_from(dirname(__file__) . '/unprovable.txt') as $axiom) {
 
 $count = 0;
 foreach (read_all_php(dirname(__file__)) as $php) {
-//     https://www.php.net/manual/en/function.substr.php
-    $py = substr($php, 0, -3).'py';
-    if (!file_exists($py)) {
+    // https://www.php.net/manual/en/function.substr.php
+    $py = substr($php, 0, - 3) . 'py';
+    if (! file_exists($py)) {
         echo "$php is an obsolete file since its py file is deleted!<br>";
+        // if error of Permission denied ocurrs, run the following command:
+        // chmod -R 777 axiom
         unlink($php);
         continue;
     }
-    
+
     ++ $count;
     if (is_axiom_plausible($php)) {
         $axiom = to_python_module($php);
@@ -136,6 +176,13 @@ foreach (read_directory(dirname(__file__)) as $directory) {
             echo "$tab$tab$tab" . to_a_tag($axiom) . "<br>";
         }
     }
+}
+
+foreach (yield_empty_directory(dirname(__file__)) as $directory) {
+    echo "$directory is an obsolete folder since there is no py file in it!<br>";
+    // if error of Permission denied ocurrs, run the following command:
+    // chmod -R 777 axiom
+    removedir($directory);
 }
 
 echo "in summary:<br>";

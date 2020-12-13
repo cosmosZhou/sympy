@@ -26,7 +26,7 @@ from sympy.series import limit
 from sympy.series.order import Order
 from sympy.series.formal import FormalPowerSeries
 from sympy.simplify.fu import sincos_to_sum
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 
@@ -1198,7 +1198,7 @@ class Integrate(AddWithLimits):
             return new
 
         if len(self.limits) == 1:
-            from sympy import sin, cos
+
             limit = self.limits[0]
             if len(limit) == 1:
                 # deal with indefinite integrals
@@ -1208,10 +1208,6 @@ class Integrate(AddWithLimits):
                 return self.func(function, (x,))
 
             function = self.function.subs(old, new)
-            if isinstance(new, (Mul, Add)):
-                function = function.expand()
-            if new.has(sin, cos):
-                function = function.trigsimp()
 
             if len(limit) == 3:
                 x, a, b = limit

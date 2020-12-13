@@ -28,7 +28,7 @@ def apply(given, indices):
         assert _x == pspace(x).symbol
         args.append(x[t])
         
-    return Unequal(P(*args), 0, given=given)
+    return Unequal(P(*args), 0)
 
 
 @check

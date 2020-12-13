@@ -25,7 +25,7 @@ class Eq:
     slots = {'list', 'file', 'timing', 'debug'}    
 
     def __init__(self, php_file, debug=True):
-        from sympy.utilities.misc import Text
+        from sympy.utilities.miscellany import Text
         
         self.__dict__['list'] = []
         self.__dict__['file'] = Text(php_file)
@@ -125,8 +125,6 @@ render(__FILE__);
             return eq.given
         elif eq.imply is not None:
             return eq.imply
-        elif eq.substituent is not None:
-            return eq.substituent
         
     def get_index(self, equivalent):
         if equivalent is None:
@@ -189,21 +187,23 @@ render(__FILE__);
         if isinstance(rhs, Boolean):
             index = self.add_to_list(rhs, index)
             if index != -1:
-                
                 if isinstance(index, int):
                     index = 'Eq[%d]' % index
                 else:
                     index = 'Eq.%s' % index
 
                 tag = r'\tag*{%s}' % index
-
+                    
                 latex += tag
                 infix = '%s : %s' % (index, infix)
-                            
+            
         if self.debug:
             print(infix)
-            
-        latex = r'\(%s\)' % latex
+                        
+        latex = r'\[%s\]' % latex
+        #             latex = r'\(%s\)' % latex
+#         http://www.public.asu.edu/~rjansen/latexdoc/ltx-421.html
+        
         if flush:
             self.file.append('//' + latex)
         else:
@@ -228,22 +228,22 @@ render(__FILE__);
                 return index
             return self.append(rhs)
         else:
-            eq = self[old_index]
+            lhs = self[old_index]
             plausible = rhs.plausible
             if plausible is False:
-                eq.plausible = False
+                lhs.plausible = False
             elif plausible is None:
-                if eq.plausible:
-                    eq.plausible = True
+                if lhs.plausible:
+                    lhs.plausible = True
             else:
-                if eq.plausible is None:
+                if lhs.plausible is None:
                     given = rhs.given
                     equivalent = rhs.equivalent
                     rhs.plausible = True
                     if given is None:
                         if equivalent is not None:
                             if not isinstance(equivalent, (list, tuple)):
-                                equivalent.equivalent = eq
+                                equivalent.equivalent = lhs
                                                     
                     elif not isinstance(given, (list, tuple)):
                         derivative = given.derivative     
@@ -251,58 +251,99 @@ render(__FILE__);
                             if all(eq.plausible is None for eq in derivative):
                                 given.plausible = True
                                 
-                elif eq.plausible is False:
+                elif lhs.plausible is False:
                     rhs.plausible = False
                 else:
                     if isinstance(rhs.equivalent, (list, tuple)):
-                        if any(id(eq) == id(_eq) for _eq in rhs.equivalent):
+                        if any(lhs is _eq for _eq in rhs.equivalent):
                             return old_index
                         
                     if rhs.given is not None:
                         if isinstance(rhs.given, (list, tuple)):
-                            if any(id(eq) == id(_eq) for _eq in rhs.given):
+                            if any(lhs is _eq for _eq in rhs.given):
                                 return old_index
                         else:
                             if rhs.given.plausible is False:
-                                eqs = [eq for eq in rhs.given.derivative if eq.plausible is not None]
+                                eqs = [eq for eq in rhs.given.derivative if lhs.plausible is not None]
                                 if len(eqs) == 1:
                                     eqs[0].plausible = False
                     
-#                     if eq.counterpart is not None and rhs.counterpart is None:
-#                         rhs.counterpart = eq.counterpart
+                    if rhs.equivalent is not lhs and rhs is not lhs:
+                        lhs_is_plausible = 'plausible' in lhs._assumptions
                         
-                    if id(rhs.equivalent) != id(eq) and id(rhs) != id(eq):
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
                             rhs_equivalent, *_ = rhs_equivalent
-                            if eq != rhs_equivalent or rhs.given is not None:
-#                                 consider the complex case : rhs_equivalent.substituent.equivalent.equivalent == eq.substituent                                
-                                hypothesis = rhs_equivalent.hypothesis
-                                if hypothesis:
-                                    rhs_equivalent.equivalent = eq
-                                    for h in hypothesis:
-                                        h.derivative = None
-                                else:
-                                    hypothesis = eq.hypothesis
-                                    if hypothesis:
-                                        if eq.equivalent is None:
-                                            eq.equivalent = rhs_equivalent
-                                        else:
-                                            eq = equivalent_ancestor(eq)
-                                            if len(eq) == 1:
-                                                eq, *_ = eq
-                                                eq.equivalent = rhs_equivalent
+                                        
+                            if lhs != rhs_equivalent or rhs.given is not None:
+                                rhs_plausibles, rhs_is_equivalent = rhs_equivalent.plausibles_set()
+                                if len(rhs_plausibles) == 1:
+                                    rhs_plausible, *_ = rhs_plausibles
+                                    if rhs_plausible is not lhs:
+                                        if rhs_is_equivalent:
+                                            lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set()
+                                            if len(lhs_plausibles) == 1:
+                                                lhs_plausible, *_ = lhs_plausibles
+                                                if lhs_is_equivalent:
+                                                    lhs_plausible.equivalent = rhs_plausible
+                                                else:
+                                                    rhs_plausible.given = lhs_plausible
                                             else:
-                                                eq = None
-                                        if eq is not None:
-                                            for h in hypothesis:
-                                                h.derivative = None
+                                                rhs_plausible.equivalent = lhs
+                                        else:                
+                                            lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set()
+                                            if lhs_is_equivalent:
+                                                assert rhs_plausible not in lhs_plausibles, 'cyclic proof detected'
+                                                
+                                                lhs_plausibles = [*lhs_plausibles]
+                                                if len(lhs_plausibles) == 1:
+                                                    lhs_plausible, *_ = lhs_plausibles
+                                                    lhs_plausible.given = rhs_plausible
+                                                else:                                                    
+                                                    rhs_plausible.imply = lhs_plausibles                                            
+                                else:
+                                    plausibles_set, is_equivalent = lhs.plausibles_set()
+                                    if len(plausibles_set) == 1:
+                                        lhs_plausible, *_ = plausibles_set
+                                        if is_equivalent:                                            
+                                            if rhs_is_equivalent:
+                                                rhs_plausibles.discard(lhs_plausible)
+                                                lhs_plausible.equivalent = [*rhs_plausibles]                                                
+                                            else:        
+                                                assert lhs_plausible not in rhs_plausibles, 'cyclic proof detected'
+                                                lhs_plausible.given = [*rhs_plausibles]
+                                        else:                                        
+                                            lhs_plausible.imply = rhs_equivalent
+                        else:
+                            rhs_plausibles, rhs_is_equivalent = rhs.plausibles_set()
+                            if len(rhs_plausibles) == 1:
+                                rhs_plausible, *_ = rhs_plausibles
+                            else: 
+                                lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set()
+                                if len(lhs_plausibles) == 1:
+                                    lhs_plausible, *_ = lhs_plausibles
+                                    if rhs_is_equivalent and lhs_is_equivalent:
+                                        ...
+                                    else:
+                                        if lhs_plausible not in rhs_plausibles: 
+                                            lhs_plausible.given = [*rhs_plausibles]
+                        if lhs_is_plausible:
+                            if 'imply' not in rhs._assumptions:                                
+                                rhs = lhs                
+                                                               
             if isinstance(old_index, int):
                 self.list[old_index] = rhs
             else:
                 self.__dict__[old_index] = rhs
             return old_index
 
+    def return_index(self, index, rhs):
+        if isinstance(index, int):
+            self.list[index] = rhs
+        else:
+            self.__dict__[index] = rhs
+        return index
+        
     def __lshift__(self, rhs):
         if isinstance(rhs, (list, tuple)):    
             self.file.append('//' + ''.join([self.process(arg, flush=False) for arg in rhs]))
@@ -311,11 +352,7 @@ render(__FILE__);
         return self
 
     def __ilshift__(self, rhs):
-        if isinstance(rhs, (list, tuple)):    
-            self.file.append('//' + ''.join([self.process(arg, flush=False) for arg in rhs]))
-        else:
-            self.process(rhs)
-        return self
+        return self << rhs
 
 
 def show_latex():
@@ -409,60 +446,58 @@ def plausible(apply=None):
             return None        
         return True
 
-    def add_to_set(given, given_set, given_list):
-
-        def add_to_set(given, given_set, given_list):
-            if given not in given_set:
-                given_list.append(given)
-                given_set.add(given)
-                     
-        if given is not None:
-            if isinstance(given, (tuple, list)):
-                for g in given:
-                    add_to_set(g, given_set, given_list)
-            else:
-                add_to_set(given, given_set, given_list)
-        
-    def add(statement):
-        given_set = set()
-        given_list = []
-        if isinstance(statement, tuple):            
+    def add(given, statement):
+        if isinstance(statement, tuple):
+            if given is None:
+                return statement
             
-            for s in statement:
-                add_to_set(s.given, given_set, given_list)
-                assert s.equivalent is None
-                                
-            if given_list:
-                return tuple(given_list) + statement
+            if isinstance(given, list):
+                return tuple(given) + statement
+            
+            return (given,) + statement
+        
+        if given is None:
             return statement
         
-        add_to_set(statement.given, given_set, given_list)
-        assert statement.equivalent is None
+        if isinstance(given, list):
+            return tuple(given) + (statement,)
         
-        if given_list:
-            return tuple(given_list) + (statement,)
-        return statement
+        return (given, statement)
 
     def process(s, dependency):
         s.definition_set(dependency)
                 
-        assert 'plausible' not in s._assumptions
-        s._assumptions['plausible'] = True
-        
-        if s.given is not None:
-            if isinstance(s.given, (tuple, list)):
-                for g in s.given:
-                    g.definition_set(dependency)
-            else:
-                s.given.definition_set(dependency)
+        if 'plausible' not in s._assumptions:
+            s._assumptions['plausible'] = True
 
     def plausible(*args, simplify=True, **kwargs): 
-        statement = apply(*args, **kwargs)
+        statement = apply(*args, **kwargs)        
+        
+        if isinstance(statement, tuple):
+            for s in statement:
+                if s.equivalent is not None:
+                    s.equivalent = None
+        elif statement.equivalent is not None:
+            statement.equivalent = None
+            
+        given = [eq for eq in args if isinstance(eq, Boolean)]
+        if len(given) == 1:
+            given = given[0]
+        elif not given:
+            given = None        
+            
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]:
+            
+            if given is not None:
+                if isinstance(statement, tuple):                    
+                    statement = [s.copy(given=given) for s in statement]
+                else:
+                    statement = statement.copy(given=given)
+                
             if not simplify:
                 return statement
-            if isinstance(statement, tuple):
+            if isinstance(statement, list):
                 return [*(s.simplify() for s in statement)]
             return statement.simplify()
         
@@ -472,17 +507,25 @@ def plausible(apply=None):
                 process(s, dependency)
         else:
             process(statement, dependency)
+            
+        if given is not None:
+            if isinstance(given, (tuple, list)):
+                for g in given:
+                    g.definition_set(dependency)
+            else:
+                given.definition_set(dependency)
+            
         G = topological_sort_depth_first(dependency)
         if G:
             definition = [s.equality_defined() for s in G]
             
-            statement = add(statement)
+            statement = add(given, statement)
             if isinstance(statement, tuple):
                 return definition + [*statement]
             return definition + [statement]
             
         else:
-            return add(statement)
+            return add(given, statement)
 
     return plausible
 

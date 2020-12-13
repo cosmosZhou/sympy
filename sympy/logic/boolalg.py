@@ -15,7 +15,7 @@ from sympy.core.operations import LatticeOp
 from sympy.core.singleton import Singleton, S
 from sympy.core.sympify import converter, _sympify, sympify
 from sympy.utilities.iterables import sift, ibin
-from sympy.utilities.misc import filldedent
+from sympy.utilities.miscellany import filldedent
 
 
 def as_Boolean(e):
@@ -210,6 +210,8 @@ class Boolean(Basic):
     def bfn(bfn, eq):
         function = bfn(eq.function)
         kwargs = {}
+        if function is bfn.__self__:
+            return function 
         if function.equivalent is not None:
             kwargs['equivalent'] = [bfn.__self__, eq]
             function.equivalent = None
@@ -224,7 +226,7 @@ class Boolean(Basic):
             x, *args = limits[0]
             if not self._has(x):                
                 return self
-            from sympy.concrete.expr_with_limits import ForAll
+            from sympy import ForAll
             if len(args) == 2:
                 from sympy.sets.sets import Interval
     
@@ -280,7 +282,7 @@ class Boolean(Basic):
             x, *args = limits[0]
             if not self._has(x):                
                 return self
-            from sympy.concrete.expr_with_limits import Exists
+            from sympy import Exists
             if len(args) == 2:
                 from sympy.sets.sets import Interval
     
@@ -339,7 +341,7 @@ class Boolean(Basic):
         free_symbols = {*self.free_symbols}
         for symbol in self.free_symbols:
             if symbol.is_given:
-                free_symbols.remove(symbol)
+                free_symbols.discard(symbol)
                 continue
                         
             if isinstance(symbol, (RandomSymbol, Indexed, Slice)):
@@ -384,7 +386,7 @@ class Boolean(Basic):
         invert |= self.domain_definition().invert()
         
         if limits_exists:
-            from sympy.concrete.expr_with_limits import Exists
+            from sympy import Exists
             return Exists(invert, *limits_exists, counterpart=self).simplify()
         
         invert.counterpart = self
@@ -405,11 +407,11 @@ class Boolean(Basic):
 
     def __rshift__(self, other):
         """Overloading for >>"""
-        return Implies(self, other)
+        return Sufficient(self, other)
 
     def __lshift__(self, other):
         """Overloading for <<"""
-        return Implies(other, self)
+        return Sufficient(other, self)
 
     __rrshift__ = __lshift__
     __rlshift__ = __rshift__
@@ -609,12 +611,18 @@ class Boolean(Basic):
         elif self.imply is not None:
             return 'imply'
 
-    def set_clause(self, clue, eqs):
+    def set_clause(self, clue, eqs, force=False):
         if clue == 'equivalent':
+            if force:
+                self.equivalent = None
             self.equivalent = eqs
         elif clue == 'given':
+            if force:
+                self.given = None
             self.given = eqs
         elif clue == 'imply':
+            if force:
+                self.imply = None
             self.imply = eqs
 
     @property
@@ -645,6 +653,7 @@ class Boolean(Basic):
         if given is not None:
             if isinstance(given, (tuple, list)):
                 for parent in given:
+                    assert parent is not self, self
                     if parent.plausible:
                         return True
 
@@ -653,10 +662,6 @@ class Boolean(Basic):
                 return True
             return 
         
-        substituent = self.substituent
-        if substituent is not None:
-            return substituent.plausible
-
         imply = self.imply
         if imply is not None:            
             return True
@@ -684,7 +689,7 @@ class Boolean(Basic):
         if equivalent is not None:
             self.equivalent = None
             process_equivalent(equivalent, value)
-            return
+            return            
 
         given = self.given
         if given is not None:
@@ -714,33 +719,6 @@ class Boolean(Basic):
                     assert plausible is None
 
     @property
-    def substituent(self):
-        if 'substituent' in self._assumptions:
-            return self._assumptions['substituent']
-
-    @property
-    def hypothesis(self):
-        substituent = self.substituent
-        if substituent is not None:
-            if max(len(dic) for dic in substituent.derivative.values()) > 1:
-                return {substituent}
-            return set()
-
-        given = self.equivalent
-        if given is None:
-            given = self.given
-
-        if given is not None:
-            if isinstance(given, (tuple, list)):
-                res = set()
-                for eq in given:
-                    res |= eq.hypothesis
-                return res
-            return given.hypothesis
-
-        return set()
-
-    @property
     def equivalent(self):
         if 'equivalent' in self._assumptions:
             return self._assumptions['equivalent']
@@ -749,7 +727,8 @@ class Boolean(Basic):
     def equivalent(self, eq):
         if eq is not None:
             assert 'equivalent' not in self._assumptions
-            assert not self.is_BooleanFalse and not self.is_BooleanTrue 
+            assert not self.is_BooleanFalse and not self.is_BooleanTrue
+            assert self is not eq 
             self._assumptions['equivalent'] = eq
             if 'plausible' in self._assumptions:
                 del self._assumptions['plausible']
@@ -779,6 +758,92 @@ class Boolean(Basic):
         if 'derivative' in self._assumptions:
             return self._assumptions['derivative']
 
+    def plausibles_set(self):
+        find_plausibles = self.find_plausibles()        
+        result = [*zip(*find_plausibles)]
+        if result:
+            plausibles_set, is_equivalent = result       
+            return {*plausibles_set}, all(is_equivalent)
+        return set(), False
+        
+    def set_equivalence_relationship(self, other):
+        plausibles_set, is_equivalent = self.plausibles_set()
+        if len(plausibles_set) == 1:
+            if is_equivalent:
+                eq, *_ = plausibles_set
+                if isinstance(other, list):
+                    is_equivalent = True
+                    plausibles_set = set()
+                    for other in other:
+                        _plausibles_set, _is_equivalent = other.plausibles_set()
+                        plausibles_set |= _plausibles_set
+                        is_equivalent &= _is_equivalent
+                else:
+                    plausibles_set, is_equivalent = other.plausibles_set()
+                
+                assert eq not in plausibles_set, 'cyclic proof detected'
+                    
+                equivalent = [*plausibles_set]
+                if len(equivalent) == 1:
+                    equivalent, *_ = equivalent
+                elif not equivalent:
+                    return
+                
+                if is_equivalent:
+                    from sympy.core.compatibility import default_sort_key
+                    if isinstance(equivalent, list):
+                        p, *q = sorted((eq, *equivalent), key=default_sort_key)                    
+                    else:
+                        p, q = sorted((eq, equivalent), key=default_sort_key)
+                    p.equivalent = q
+                else:
+                    del eq._assumptions['plausible']
+                    eq.given = equivalent
+                return True
+            else:
+                eq, *_ = plausibles_set
+                if isinstance(other, list):
+                    plausibles_set = set()
+                    for other in other:
+                        _plausibles_set, is_equivalent = other.plausibles_set()
+                        plausibles_set |= _plausibles_set
+                        if not is_equivalent:
+                            return 
+                else:
+                    plausibles_set, is_equivalent = other.plausibles_set()
+                    if not is_equivalent:
+                        return 
+                
+                assert eq not in plausibles_set, 'cyclic proof detected'
+                    
+                equivalent = [*plausibles_set]
+                if len(equivalent) == 1:
+                    equivalent, *_ = equivalent
+                elif not equivalent:
+                    return
+                
+                del eq._assumptions['plausible']
+                eq.given = equivalent
+                return True                
+        
+    def find_plausibles(self, is_equivalent=True):
+        if 'plausible' in self._assumptions:
+            yield self, is_equivalent
+        else:
+            equivalent = self.equivalent        
+            if equivalent is None:
+                given = self.given
+                is_equivalent = False
+            else:
+                given = equivalent
+    
+            if given is not None:
+                if isinstance(given, (tuple, list)):                
+                    for given in given:
+                        yield from given.find_plausibles(is_equivalent)
+                else:
+                    yield from given.find_plausibles(is_equivalent)
+        
     @derivative.setter
     def derivative(self, dic):
         if dic is not None:
@@ -788,7 +853,7 @@ class Boolean(Basic):
         derivative = self.derivative
         if derivative is None:
             return
-# perform mathematical induction
+
         if isinstance(derivative, list):
             if self.is_Equality or self.is_And or \
             self.is_ForAll and (self.function.is_Equality or self.function.is_And) or \
@@ -798,178 +863,7 @@ class Boolean(Basic):
                     del self._assumptions['derivative']
                     self.plausible = True
             return
-                 
-        self_equivalent = equivalent_ancestor(self)
-        if len(self_equivalent) > 1:
-            return
         
-        self_equivalent, *_ = self_equivalent
-        if self_equivalent.substituent == self:
-            self_equivalent.equivalent = self
-            self.equivalent = None
-            self_equivalent = self
-            
-        for var, replacement in derivative.items():
-            initial = []
-            step = None
-
-            for rep, substituent in replacement.items():
-                if hasattr(rep, 'has') and rep.has(var):
-                    if step is not None:
-                        continue
-
-                    from sympy.core.numbers import Integer
-                    step = rep - var
-                    if not isinstance(step, Integer):
-                        step = None
-                        continue
-                    equivalent = substituent.equivalent
-
-                    if equivalent is None:
-                        given = substituent.given
-                    else:
-                        given = equivalent
-
-                    if given is not None:
-                        if isinstance(given, (tuple, list)):
-                            given = [*given]
-                            index = -1
-                            for i, g in enumerate(given):
-                                if g == self_equivalent:
-                                    index = i
-                                    break
-
-                            if index < 0:
-                                step = None
-                                continue
-                            del given[index]
-
-                            for g in given:
-                                found = False
-                                for key in derivative.keys() - {var}:
-                                    for _, _self in derivative[key].items():
-                                        if g == _self:
-                                            found = True
-                                            break
-                                    if found:
-                                        break
-                                if found:
-                                    continue
-
-                                for key, _self in derivative[var].items():
-                                    if g == _self or g.given == _self:
-                                        if key < var:
-                                            found = True
-                                        else:
-                                            found = False
-                                            step = None
-                                g = g.given
-                                if isinstance(g, (list, tuple)):
-                                    g = [g for g in g if g.plausible is not None]
-                                    if len(g) == 1:
-                                        g, *_ = g
-                                    else:
-                                        g = None
-                                if g is not None:                                    
-                                    g = equivalent_ancestor(g)
-                                    if len(g) == 1:
-                                        g, *_ = g
-                                        if g == self_equivalent:
-                                            found = True
-                                            
-                                if not found:
-                                    step = None
-                        else:
-
-                            def is_valid_given(given):
-                                if given == self_equivalent:
-                                    return True
-                                if given.given is not None:
-                                    given = given.given                               
-                                elif given.equivalent is not None:
-                                    given = given.equivalent
-                                elif given.substituent is not None:
-                                    given = given.substituent
-                                else:
-                                    return False
-                                
-                                if isinstance(given, (list, tuple)):
-                                    given = [g for g in given if g.plausible is not None]                                     
-                                    if len(given) != 1:
-                                        return all(is_valid_given(g) for g in given)
-                                    given, *_ = given
-                                
-                                return is_valid_given(given)
-                            
-                            if is_valid_given(given):
-                                continue
-                            else:
-                                step = None
-                                continue
-                        continue
-
-                    recurrence = False
-                    for key in derivative.keys() - {var}:
-                        if recurrence:
-                            break
-
-                        for _, _self in derivative[key].items():
-                            equivalent = _self.equivalent
-
-                            if equivalent is None:
-                                continue
-
-                            if isinstance(equivalent, (list, tuple)):
-#                                 equivalent = [*equivalent]
-                                if substituent in equivalent and self_equivalent in equivalent:
-                                    recurrence = True
-                                    break
-                            else:
-                                equivalent = equivalent_ancestor(equivalent)
-                                if len(equivalent) == 1:
-                                    equivalent, *_ = equivalent
-                                    if substituent == equivalent:
-                                        recurrence = True
-                                        break
-                    if not recurrence:
-                        step = None
-
-                else :
-                    if substituent.plausible is None:
-                        initial.append(rep)
-
-            if len(initial) != step:
-                return
-
-            initial.sort()
-
-            for i in range(1, len(initial)):
-                if initial[i] != initial[i - 1] + 1:
-                    return
-
-            if var >= initial[0]:
-                del self._assumptions['derivative']
-                self.plausible = True
-                return
-
-    @staticmethod
-    def clause_equals(exists, _exists):
-        if type(exists) == type(_exists):
-            if exists == _exists:
-                return True
-
-            if isinstance(exists, (tuple, list)):
-                exists = set(exists)
-                _exists = set(_exists)
-
-                if exists == _exists:
-                    return True
-
-        return False
-
-    def clauses_equals(self, other):
-        return self.clause_equals(self.exists, other.exists) and self.clause_equals(self.forall, other.forall)
-
     @property
     def given(self):
         if 'given' in self._assumptions:
@@ -978,7 +872,11 @@ class Boolean(Basic):
     @given.setter
     def given(self, eq):
         if eq is not None:
+            assert self is not eq
             self._assumptions['given'] = eq
+            if 'plausible' in self._assumptions:
+                del self._assumptions['plausible']
+            
             return
 
         if 'given' in self._assumptions:
@@ -992,6 +890,7 @@ class Boolean(Basic):
     @imply.setter
     def imply(self, eq):
         if eq is not None:
+            assert self is not eq
             self._assumptions['imply'] = eq
             return
 
@@ -1021,6 +920,48 @@ class Boolean(Basic):
         for arg in self.args:
             if arg.is_random:
                 return True
+
+    def induct(self, **kwargs):
+        if self.given is not None:
+            given = self.given
+            if isinstance(given, list):
+                given = And(*given)
+                
+            if kwargs.get('given'):
+                return Sufficient(self, given)
+            return Sufficient(given, self)
+        if self.equivalent is not None:
+            equivalent = self.equivalent
+            if isinstance(equivalent, list):
+                equivalent = And(*equivalent)
+                
+            if kwargs.get('given'):
+                return Necessary(equivalent, self)
+            
+            if kwargs.get('imply', True):
+                if kwargs.get('reverse'):
+                    if self.plausible:
+                        self._assumptions['plausible'] = True
+                        equivalent.equivalent = self
+                    
+                    return Sufficient(self, equivalent)
+                return Sufficient(equivalent, self)
+            
+            return Equivalent(equivalent, self)
+        if self.imply is not None:
+            imply = self.imply
+            if isinstance(imply, list):
+                imply = And(*imply)
+
+            if kwargs.get('given'):
+                return Necessary(imply, self)
+                
+            return Sufficient(self, imply)
+        
+    @property    
+    def wrt(self):
+        wrt, *_ = self.free_symbols
+        return wrt
 
 
 class BinaryCondition(Boolean):
@@ -1093,9 +1034,78 @@ class BinaryCondition(Boolean):
                 else:
                     return evaluated
 
-#         obj = super(BinaryCondition, cls).__new__(cls, *args, **options)
         return BinaryCondition.__new__(cls, *args, **options)
+    
+    def bisect(self, *args, **kwargs):
+        if len(args) == 1:
+            eq = args[0]
+            if not isinstance(eq, slice) and eq.is_boolean:
+                from sympy import ForAll
+                wrt = kwargs.get('wrt')
+                if wrt is None:
+                    wrt = eq.wrt
+                if wrt.is_given:
+                    _eq = eq.invert()
+                    return And(Or(eq, self), Or(_eq, self), equivalent=self)
+                else:
+                    if wrt.is_bounded:
+                        self = self.forall((wrt,), simplify=False)
+                    else:
+                        self = ForAll(self.copy(equivalent=None), (wrt,), equivalent=self)
+                    assert self.function is not self.equivalent
+                    assert self.is_ForAll
+                    return self.bisect(wrt.domain_conditioned(eq))
+                                        
+        lhs = self.lhs.bisect(*args, **kwargs)
+        rhs = self.rhs.bisect(*args, **kwargs)
+        if lhs.is_Concatenate and rhs.is_Concatenate:
+            return And(*[self.func(lhs, rhs) for lhs, rhs in zip(lhs.args, rhs.args)], equivalent=self)
+                
+        return self
 
+    @property
+    def wrt(self):
+        free_symbols = self.lhs.free_symbols
+        if not free_symbols:
+            free_symbols = self.rhs.free_symbols
+        wrt, *_ = free_symbols
+        return wrt
+    
+    def subs(self, *args, **kwargs):
+        old, new = args
+        if not old.is_symbol:
+            return self
+        new = sympify(new)
+        
+        if self.plausible:
+            lhs, rhs = self.lhs._subs(old, new), self.rhs._subs(old, new)
+            if new._has(old):
+                assumptions = {'plausible':True}
+            else:
+                assumptions = {'given' : self}
+            eq = self.func(lhs, rhs, **assumptions)
+            if not new._has(old):
+                return eq
+            return eq
+        else:
+            if new in old.domain:
+                lhs = self.lhs._subs(old, new)
+                rhs = self.rhs._subs(old, new)            
+                return self.func(lhs, rhs, given=self)
+            
+            if old.domain_assumed is not None:
+                if new in old.domain_assumed:
+                    ...
+                else:
+                    
+                    self = self.forall((old,))
+                    old = old.unbounded
+                    if old != new:
+                        self = self.subs(old, new)
+                    return self
+
+            return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify())
+ 
     
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
@@ -1203,50 +1213,11 @@ def given_ancestor(a):
         a = given
 
 
-def set_equivalence_relationship(a, b):
-    a = equivalent_ancestor(a)    
-        
-    b = equivalent_ancestor(b)
-    
-    s = a | b
-    
-    found = False
-    
-    for eq in s:
-        if eq.derivative is not None:
-            continue
-
-        equivalent = [*(s - {eq})]
-        if len(equivalent) == 0:
-            continue
-
-        if len(equivalent) == 1:
-            equivalent = equivalent[0]
-
-            if eq.given is not None:
-#                 eq <=> equivalent <= eq.given
-                equivalent.given = eq.given
-                found = True
-                break
-        else:
-            if eq.given is not None:
-                continue
-
-        if eq.equivalent is not None:
-            eq = equivalent_ancestor(eq)
-            if len(eq) == 1:
-                eq, *_ = eq
-                eq.equivalent = equivalent
-                found = True
-                break
-        else:
-            eq.equivalent = equivalent
-            found = True
-            break
-
-    if found:
-        for h in set().union(*(b.hypothesis for b in s)):
-            h.derivative = None
+def set_equivalence_relationship(lhs, rhs):
+    if lhs.set_equivalence_relationship(rhs):
+        return
+    if rhs.set_equivalence_relationship(lhs):
+        return
 
 
 def process_equivalent(equivalent, value):
@@ -1255,7 +1226,7 @@ def process_equivalent(equivalent, value):
             plausibility_array = plausibles(equivalent)
             if len(plausibility_array) == 1:
                 plausibility_array[0].plausible = True
-                return
+                return                 
 
             if len(plausibility_array) == 2:
                 set_equivalence_relationship(*plausibility_array)
@@ -1263,6 +1234,7 @@ def process_equivalent(equivalent, value):
             return
 
         equivalent.plausible = True
+        return 
     else:
         if isinstance(equivalent, list):
             plausibility_array = plausibles(equivalent)
@@ -1332,7 +1304,7 @@ def process_options(equivalent=None, given=None, imply=None, value=True, **_):
 
     if equivalent is not None:
         process_equivalent(equivalent, value)
-        return
+        return        
 
     if given is not None:
         process_given(given, value)
@@ -1382,7 +1354,7 @@ class BooleanAtom(Boolean):
 
     # /// drop when Py2 is no longer supported
     def __lt__(self, other):
-        from sympy.utilities.misc import filldedent
+        from sympy.utilities.miscellany import filldedent
         raise TypeError(filldedent('''
             A Boolean argument can only be used in
             Eq and Ne; all other relationals expect
@@ -1690,7 +1662,7 @@ class BooleanFunction(Application, Boolean):
 
     # /// drop when Py2 is no longer supported
     def __lt__(self, other):
-        from sympy.utilities.misc import filldedent
+        from sympy.utilities.miscellany import filldedent
         raise TypeError(filldedent('''
             A Boolean argument can only be used in
             Eq and Ne; all other relationals expect
@@ -1958,7 +1930,7 @@ class And(LatticeOp, BooleanFunction):
                     eqs.append(eq.apply(axiom, **kwargs))
                 return self.func(*eqs, given=self)
 
-            from sympy.concrete.expr_with_limits import ConditionalBoolean
+            from sympy.concrete.conditional_boolean import ConditionalBoolean
             axiom = axiom[0]
             args = []
             funcs = []
@@ -1973,8 +1945,11 @@ class And(LatticeOp, BooleanFunction):
             clue = function.clue
             for func, limits in funcs:
                 function = func(function, *limits)
-    
-            function.set_clause(clue, self)
+            
+            function.set_clause(clue, self, force=True)
+            
+            if kwargs.get('simplify', True):
+                function = function.simplify()
             return function
         else:
             assert len(axiom) == 1
@@ -1982,27 +1957,36 @@ class And(LatticeOp, BooleanFunction):
             return Boolean.apply(self, axiom, **kwargs)
 
     def subs(self, *args, **kwargs):
-        result = LatticeOp.subs(self, *args, **kwargs)
         if all(isinstance(arg, Boolean) for arg in args):
+            result = LatticeOp.subs(self, *args, **kwargs)
             if result.is_BooleanAtom:
                 result = result.copy(equivalent=[self, *args])
             else:
                 result.equivalent = [self, *args]
+            return result
+                
+        old, new = args
+        new = sympify(new)
+        if self.plausible:
+            eqs = [eq._subs(old, new) for eq in self.args]
+            return self.func(*eqs, plausible=True)
         else:
+            result = self._subs(old, new)
             if result.is_BooleanAtom:
                 result = result.copy(equivalent=self)
             else:
                 result.equivalent = self
-            
-        return result
+        
+            return result
+        return self
 
     def __new__(cls, *args, **options):
-        valuable = {*()}
+        valuable = set()
         for arg in args:
             if arg:
                 continue            
             if arg == False:
-                return S.BooleanFalse
+                return S.BooleanFalse.copy(**options)
             valuable.add(arg)
 
         args = valuable
@@ -2023,83 +2007,6 @@ class And(LatticeOp, BooleanFunction):
     identity = S.true
 
     nargs = None
-
-    def rewrite(self, *args, **hints):
-        if 'exists' in hints:
-            exists = self.exists
-            if exists is None:
-                return self
-
-            if hints['exists'] == False:
-                eqs = [eq.func(*eq.args, exists=eq.combine_clause(eq.exists, exists), forall=eq.forall) for eq in self.args]
-                return self.func(*eqs, forall=self.forall, equivalent=self)
-            if hints['exists'] == True:
-                eqs = []
-                for eq in self.args:
-                    eqs.append(eq.func(*eq.args, forall=eq.forall))
-                    exists = eq.combine_clause(eq.exists, exists)
-
-                return self.func(*eqs, exists=exists, forall=self.forall, equivalent=self)
-
-            exists = self.exists
-            and_expr = []
-            for condition in exists.values():
-                if condition is not None:
-                    and_expr.append(condition)
-            exists = list(exists.keys())
-            for var in self.exists.keys():
-                from sympy.tensor.indexed import Slice
-                if isinstance(var, Slice):
-                    start, stop = var.indices
-                    if var.base[stop] in exists:
-                        exists.remove(var.base[stop])
-                        exists[exists.index(var)] = var.base[start : stop + 1]
-                    elif var.base[start - 1] in exists:
-                        exists.remove(var.base[start - 1])
-                        exists[exists.index(var)] = var.base[start - 1: stop]
-
-            if len(exists) == 1:
-                exists = exists[0]
-            and_expr.append(self.func(*self.args))
-            return And(*and_expr, forall=self.forall, exists=exists, equivalent=self)
-
-        if 'forall' in hints:
-            forall = self.forall
-            if forall is None:
-                return self
-
-            if hints['forall'] == False:
-                if 'var' in hints:
-                    var = hints['var']
-                    subforall = {}
-                    from _collections_abc import dict_keys
-                    forall = forall.copy()
-                    if isinstance(var, (set, dict_keys, list, tuple)):
-                        for v in var:
-                            subforall[v] = forall[v]
-                            del forall[v]
-                    else:
-                        subforall[var] = forall[var]
-                        del forall[var]
-
-                    eqs = [eq.func(*eq.args, forall=eq.combine_forall(subforall), exists=eq.exists) for eq in self.args]
-                    return self.func(*eqs, exists=self.exists, forall=forall, equivalent=self)
-
-                else:
-                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, forall), exists=eq.exists) for eq in self.args]
-                    return self.func(*eqs, exists=self.exists, equivalent=self)
-
-            if hints['forall'] == True:
-                eqs = []
-                for eq in self.args:
-                    eqs.append(eq.func(*eq.args, exists=eq.exists))
-                    forall = eq.combine_clause(eq.forall, forall)
-
-                return self.func(*eqs, forall=forall, exists=self.exists, equivalent=self)
-            ...
-            return self
-
-        return self
 
     @classmethod
     def _new_args_filter(cls, args):
@@ -2189,16 +2096,38 @@ class And(LatticeOp, BooleanFunction):
             self.derivative = eqs
         return eqs
 
-    def distribute(self):
-        for i, logic_or in enumerate(self.args):
-            if logic_or.is_Or:
-                args = [*self.args]
-                del args[i]
-                this = self.func(*args)
-                return logic_or.func(*((arg & this).simplify() for arg in logic_or.args), equivalent=self)
-        return self
-
     def simplify(self, deep=False):
+        dict_contains = defaultdict(set)        
+        dict_notcontains = defaultdict(set)
+        for eq in self._argset:
+            if eq.is_Contains:
+                e, S = eq.args
+                dict_contains[e].add(eq)
+            elif eq.is_NotContains:
+                e, S = eq.args
+                dict_notcontains[e].add(eq)
+        from sympy.sets import Intersection, Contains, NotContains, Union
+        for e, eqs in dict_contains.items():            
+            if len(eqs) > 1:                
+                sets = [contains.rhs for contains in eqs] 
+                contains = Contains(e, Intersection(*sets))
+                argset = self._argset - eqs
+                return self.func(*argset, contains, equivalent=self)
+            if e in dict_notcontains:
+                _eqs = dict_notcontains[e]
+                sets = [contains.rhs for contains in eqs]
+                _sets = [contains.rhs for contains in _eqs]
+                contains = Contains(e, Intersection(*sets) - Union(*_sets))                
+                argset = self._argset - eqs - _eqs
+                return self.func(*argset, contains, equivalent=self)                
+                
+        for e, eqs in dict_notcontains.items():            
+            if len(eqs) > 1:                
+                sets = [contains.rhs for contains in eqs] 
+                eq = NotContains(e, Union(*sets))
+                argset = self._argset - eqs
+                return self.func(*argset, eq, equivalent=self)
+                            
         return self
 
     def as_KroneckerDelta(self):
@@ -2235,14 +2164,31 @@ class And(LatticeOp, BooleanFunction):
             sol &= x.domain_conditioned(eq)
         return sol
 
-    def simplify_forall(self, forall):        
-        function, self = self, forall
-        res = forall.simplify_int_limits(function)
+    @classmethod
+    def simplify_ForAll(cls, self, function, *limits):
+        res = self.simplify_int_limits(function)
         if res:
             function, limits = res
             return self.func(function, *limits, equivalent=self).simplify()
 
+    @classmethod
+    def rewrite_from_Or(cls, self):
+        for i, eq in enumerate(self.args):
+            if isinstance(eq, cls):
+                args = [*self.args]
+                del args[i]
+                this = self.func(*args)
+                return cls(*((arg | this).simplify() for arg in eq.args), equivalent=self)
+        
+    def copy(self, **kwargs):
+        obj = Basic.__new__(self.func, self._argset, **kwargs)
+        obj._argset = self._argset
+        return obj
 
+    def bisect(self, *args, **kwargs):
+        return self
+
+        
 class Or(LatticeOp, BooleanFunction):
     """
     Logical OR function
@@ -2279,7 +2225,7 @@ class Or(LatticeOp, BooleanFunction):
         return p._print_LogOp(self.args, r"\vee")
 
     def __new__(cls, *args, **options):
-        valuable = {*()}
+        valuable = set()
         for arg in args:
             if arg.is_BooleanFalse:
                 continue
@@ -2287,6 +2233,9 @@ class Or(LatticeOp, BooleanFunction):
                 return S.BooleanTrue.copy(**options)
             valuable.add(arg)
 
+        if not valuable:
+            return S.BooleanFalse.copy(**options)
+        
         args = valuable
         if len(args) == 1:
             eq, *_ = args
@@ -2317,115 +2266,6 @@ class Or(LatticeOp, BooleanFunction):
             newargs.append(x)
         return LatticeOp._new_args_filter(newargs, Or)
 
-# needs to be improved!
-    def rewrite(self, *args, **hints):
-        if 'exists' in hints:
-            exists = self.exists
-            if exists is None:
-                return self
-
-            if hints['exists'] == False:
-                eqs = [eq.func(*eq.args, exists=eq.combine_clause(eq.exists, exists), forall=eq.forall) for eq in self.args]
-                return self.func(*eqs, forall=self.forall, equivalent=self)
-            if hints['exists'] == True:
-                eqs = []
-                for eq in self.args:
-                    eqs.append(eq.func(*eq.args, forall=eq.forall))
-                    exists = eq.combine_clause(eq.exists, exists)
-
-                return self.func(*eqs, exists=exists, forall=self.forall, equivalent=self)
-
-            if isinstance(hints['exists'], int):
-                index = hints['exists']
-                args = [*self.args]
-                condition = args.pop(index)
-                exists = self.exists.copy()
-                if isinstance(exists, dict):
-                    for k, v in exists.items():
-                        if v is None and condition.has(k):
-                            exists[k] = condition
-                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
-                elif isinstance(exists, (list, tuple, set)):
-                    for k in exists:
-                        if condition.has(k):
-                            exists = {e : None for e in exists}
-                            exists[k] = condition
-                            return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
-                elif condition.has(exists):
-                    exists = {exists : condition}
-                    return self.func(*args, exists=exists, forall=self.forall, equivalent=self)
-
-                return self
-
-            exists = self.exists
-            and_expr = []
-            for condition in exists.values():
-                if condition is not None:
-                    and_expr.append(condition)
-            exists = list(exists.keys())
-            for var in self.exists.keys():
-                from sympy.tensor.indexed import Slice
-                if isinstance(var, Slice):
-                    start, stop = var.indices
-                    if var.base[stop] in exists:
-                        exists.remove(var.base[stop])
-                        exists[exists.index(var)] = var.base[start : stop + 1]
-                    elif var.base[start - 1] in exists:
-                        exists.remove(var.base[start - 1])
-                        exists[exists.index(var)] = var.base[start - 1: stop]
-
-            if len(exists) == 1:
-                exists = exists[0]
-            and_expr.append(self.func(*self.args))
-            return And(*and_expr, forall=self.forall, exists=exists, equivalent=self)
-
-        if 'forall' in hints:
-            forall = self.forall
-            if forall is None:
-                return self
-
-            if hints['forall'] == False:
-                if 'var' in hints:
-                    var = hints['var']
-                    subforall = {}
-                    from _collections_abc import dict_keys
-                    forall = forall.copy()
-                    if isinstance(var, (set, dict_keys, list, tuple)):
-                        for v in var:
-                            subforall[v] = forall[v]
-                            del forall[v]
-                    else:
-                        subforall[var] = forall[var]
-                        del forall[var]
-
-                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, subforall), exists=eq.exists) for eq in self.args]
-                    return self.func(*eqs, exists=self.exists, forall=forall, equivalent=self)
-
-                else:
-                    eqs = [eq.func(*eq.args, forall=eq.combine_clause(eq.forall, forall), exists=eq.exists) for eq in self.args]
-                    return self.func(*eqs, exists=self.exists, equivalent=self)
-
-            if hints['forall'] == True:
-                if 'expr' in hints:
-                    expr = hints['expr']
-                    if expr not in self._argset:
-                        return self
-                    index = self.args.index(expr)
-                    args = [*self.args]
-                    del args[index]
-                    forall
-
-                eqs = []
-                for eq in self.args:
-                    eqs.append(eq.func(*eq.args, exists=eq.exists))
-                    forall = eq.combine_clause(eq.forall, forall)
-
-                return self.func(*eqs, forall=forall, exists=self.exists, equivalent=self)
-            ...
-            return self
-
-        return self
-
     def _eval_as_set(self):
         from sympy.sets.sets import Union
         return Union(*[arg.as_set() for arg in self.args])
@@ -2455,7 +2295,7 @@ class Or(LatticeOp, BooleanFunction):
             from sympy import Contains, FiniteSet
             rhs -= lhs
             return Contains(*lhs, FiniteSet(*rhs), equivalent=self)
-           
+        
         return self
 
     def split(self, *args, **kwargs):
@@ -2528,7 +2368,7 @@ class Or(LatticeOp, BooleanFunction):
 
     def bisect(self, eq, **kwargs):
         if eq.is_boolean:
-            from sympy.concrete.expr_with_limits import ForAll
+            from sympy import ForAll
             wrt = kwargs.get('wrt')
             if wrt is None:
                 wrt, *_ = eq.lhs.free_symbols
@@ -2541,53 +2381,29 @@ class Or(LatticeOp, BooleanFunction):
         return self
 
     @classmethod
-    def rewrite_from_ForAll(cls, self):
-        limits_dict = self.limits_dict
-        from sympy.sets.contains import Contains
-        eqs = []
-        for var, domain in limits_dict.items():
-            if domain.is_set:
-                cond = Contains(var, domain).simplify()
-            else:
-                assert domain.is_boolean
-                cond = domain
-            eqs.append(cond.invert().simplify())
+    def rewrite_from_And(cls, self):
+        for i, eq in enumerate(self.args):
+            if isinstance(eq, cls):
+                args = [*self.args]
+                del args[i]
+                this = self.func(*args)
+                return cls(*((arg & this).simplify() for arg in eq.args), equivalent=self)
 
-        if self.function.is_Or:
-            eqs += self.function.args
-        else:
-            eqs.append(self.function)
-
-        return cls(*eqs, equivalent=self)
-    
     @classmethod
-    def rewrite_from_Equal(cls, self):        
-        if self.rhs.is_Piecewise:
-            piecewise = self.rhs
-            lhs = self.lhs
-        elif self.lhs.is_Piecewise:
-            piecewise = self.lhs
-            lhs = self.rhs
-        else:
-            return
-        
-        univeralSet = S.BooleanTrue
-        args = []
+    def rewrite_from_Sufficient(cls, self):
+        p, q = self.args
+        return cls(p.invert(), q, equivalent=self)
+            
+    @classmethod
+    def rewrite_from_Necessary(cls, self):
+        p, q = self.args
+        return cls(p, q.invert(), equivalent=self)
+    
+    def copy(self, **kwargs):
+        obj = Basic.__new__(self.func, self._argset, **kwargs)
+        obj._argset = self._argset
+        return obj
 
-        for expr, cond in piecewise.args:
-            condition = cond & univeralSet
-            condition.equivalent = None
-            
-            if not cond:
-                invert = condition.invert()
-                univeralSet &= invert
-                univeralSet.equivalent = None
-            
-            eq = condition & self.func(lhs, expr).simplify()                
-            eq.equivalent = None
-            args.append(eq)
-                    
-        return cls(*args, equivalent=self).simplify()
     
 And.invert_type = Or
 Or.invert_type = And
@@ -2691,7 +2507,7 @@ class Not(BooleanFunction):
         if func == Or:
             return And._to_nnf(*[~arg for arg in args], simplify=simplify)
 
-        if func == Implies:
+        if func == Sufficient:
             a, b = args
             return And._to_nnf(a, ~b, simplify=simplify)
 
@@ -2926,12 +2742,12 @@ class Xnor(BooleanFunction):
     def eval(cls, *args):
         return Not(Xor(*args))
 
-
-class Implies(BooleanFunction):
+       
+class Sufficient(BinaryCondition):
     """
     Logical implication.
 
-    A implies B is equivalent to !A v B
+    A is Sufficient for B is equivalent to !A v B
 
     Accepts two Boolean arguments; A and B.
     Returns False if A is True and B is False
@@ -2940,29 +2756,29 @@ class Implies(BooleanFunction):
     Examples
     ========
 
-    >>> from sympy.logic.boolalg import Implies
+    >>> from sympy.logic.boolalg import Sufficient
     >>> from sympy import symbols
     >>> x, y = symbols('x y')
 
-    >>> Implies(True, False)
+    >>> Sufficient(True, False)
     False
-    >>> Implies(False, False)
+    >>> Sufficient(False, False)
     True
-    >>> Implies(True, True)
+    >>> Sufficient(True, True)
     True
-    >>> Implies(False, True)
+    >>> Sufficient(False, True)
     True
     >>> x >> y
-    Implies(x, y)
+    Sufficient(x, y)
     >>> y << x
-    Implies(x, y)
+    Sufficient(x, y)
 
     Notes
     =====
 
     The ``>>`` and ``<<`` operators are provided as a convenience, but note
     that their use here is different from their normal use in Python, which is
-    bit shifts. Hence, ``Implies(a, b)`` and ``a >> b`` will return different
+    bit shifts. Hence, ``Sufficient(a, b)`` and ``a >> b`` will return different
     things if ``a`` and ``b`` are integers.  In particular, since Python
     considers ``True`` and ``False`` to be integers, ``True >> True`` will be
     the same as ``1 >> 1``, i.e., 0, which has a truth value of False.  To
@@ -2976,6 +2792,9 @@ class Implies(BooleanFunction):
 
     """
 
+    def __new__(cls, *args, **assumptions):
+        return BinaryCondition.eval(cls, *args, **assumptions)
+
     @classmethod
     def eval(cls, *args):
         try:
@@ -2988,7 +2807,7 @@ class Implies(BooleanFunction):
             A, B = newargs
         except ValueError:
             raise ValueError(
-                "%d operand(s) used for an Implies "
+                "%d operand(s) used for an Sufficient "
                 "(pairs are required): %s" % (len(args), str(args)))
         if A == True or A == False or B == True or B == False:
             return Or(Not(A), B)
@@ -2997,17 +2816,102 @@ class Implies(BooleanFunction):
         elif A.is_Relational and B.is_Relational:
             if A.canonical == B.canonical:
                 return S.true
-            if (~A).canonical == B.canonical:
+            if A.invert().canonical == B.canonical:
                 return B
-        else:
-            return Basic.__new__(cls, *args)
 
     def to_nnf(self, simplify=True):
         a, b = self.args
         return Or._to_nnf(~a, b, simplify=simplify)
 
+    def _sympystr(self, p):        
+        return "%s =>> %s" % (p._print(self.lhs), p._print(self.rhs))
+    
+    def _latex(self, p, altchar='\Rightarrow'):
+        A = p.conditions_wrapper(self.lhs)
+        B = p.conditions_wrapper(self.rhs)
+        return "%s %s %s" % (A, altchar, B)
 
-class Equivalent(BooleanFunction):
+    def __and__(self, other):
+        """Overloading for & operator"""
+        if other.is_Sufficient:
+            if self.lhs == other.lhs:
+                return self.func(self.lhs, self.rhs & other.rhs, equivalent=[self, other])
+
+        return BinaryCondition.__and__(self, other)
+
+    def split(self, *args, **kwargs):
+        if self.rhs.is_And:
+            eqs = [self.func(self.lhs, eq, given=self) for eq in self.rhs.args]    
+        elif self.lhs.is_Or:
+            eqs = [self.func(eq, self.rhs, given=self) for eq in self.lhs.args]
+        else:
+            return self
+        if self.plausible:
+            self.derivative = eqs
+        return eqs
+
+
+class Necessary(BinaryCondition):
+    """
+    Logical implication.
+
+    A is Necessary for B is equivalent to A v !B
+
+    Accepts two Boolean arguments; A and B.
+    Returns False if A is True and B is False
+    Returns True otherwise.
+
+    """
+
+    @classmethod
+    def eval(cls, *args):
+        try:
+            newargs = []
+            for x in args:
+                if isinstance(x, Number) or x in (0, 1):
+                    newargs.append(True if x else False)
+                else:
+                    newargs.append(x)
+            B, A = newargs
+        except ValueError:
+            raise ValueError(
+                "%d operand(s) used for an Sufficient "
+                "(pairs are required): %s" % (len(args), str(args)))
+        if A == True or A == False or B == True or B == False:
+            return Or(Not(A), B)
+        elif A == B:
+            return S.true
+        elif A.is_Relational and B.is_Relational:
+            if A.canonical == B.canonical:
+                return S.true
+            if A.invert().canonical == B.canonical:
+                return B
+        else:
+            return Basic.__new__(cls, *args)
+
+    def to_nnf(self, simplify=True):
+        b, a = self.args
+        return Or._to_nnf(a.invert(), b, simplify=simplify)
+
+    def _sympystr(self, p):        
+        return "%s << %s" % (p._print(self.lhs), p._print(self.rhs))
+
+    def _latex(self, p):
+        return Sufficient._latex(self, p, '\Leftarrow')
+
+    def split(self, *args, **kwargs):
+        if self.rhs.is_Or:
+            eqs = [self.func(self.lhs, eq, given=self) for eq in self.rhs.args]    
+        elif self.lhs.is_And:
+            eqs = [self.func(eq, self.rhs, given=self) for eq in self.lhs.args]
+        else:
+            return self
+        if self.plausible:
+            self.derivative = eqs
+        return eqs
+
+
+class Equivalent(BinaryCondition):
     """
     Equivalence relation.
 
@@ -3041,7 +2945,7 @@ class Equivalent(BooleanFunction):
         rel = []
         for r in argset:
             if isinstance(r, Relational):
-                rel.append((r, r.canonical, (~r).canonical))
+                rel.append((r, r.canonical, r.invert().canonical))
         remove = []
         for i, (r, c, nc) in enumerate(rel):
             for j in range(i + 1, len(rel)):
@@ -3056,22 +2960,14 @@ class Equivalent(BooleanFunction):
             argset.remove(b)
             argset.add(True)
         if len(argset) <= 1:
-            return true
+            return S.true.copy(**options)
         if True in argset:
             argset.discard(True)
             return And(*argset)
         if False in argset:
             argset.discard(False)
-            return And(*[~arg for arg in argset])
-        _args = frozenset(argset)
-        obj = super(Equivalent, cls).__new__(cls, _args)
-        obj._argset = _args
-        return obj
-
-    @property
-    @cacheit
-    def args(self):
-        return tuple(ordered(self._argset))
+            return And(*[arg.invert() for arg in argset])
+        return super(Equivalent, cls).__new__(cls, *args)
 
     def to_nnf(self, simplify=True):
         args = []
@@ -3079,6 +2975,17 @@ class Equivalent(BooleanFunction):
             args.append(Or(~a, b))
         args.append(Or(~self.args[-1], self.args[0]))
         return And._to_nnf(*args, simplify=simplify)
+
+    def _sympystr(self, p):        
+        return "%s <<=>> %s" % (p._print(self.lhs), p._print(self.rhs))
+
+    def _latex(self, p):
+        return Sufficient._latex(self, p, '\Leftrightarrow')
+
+
+Sufficient.reversed_type = Necessary
+Necessary.reversed_type = Sufficient
+Equivalent.reversed_type = Equivalent
 
 
 class ITE(BooleanFunction):
@@ -3523,10 +3430,10 @@ def eliminate_implications(expr):
     Examples
     ========
 
-    >>> from sympy.logic.boolalg import Implies, Equivalent, \
+    >>> from sympy.logic.boolalg import Sufficient, Equivalent, \
          eliminate_implications
     >>> from sympy.abc import A, B, C
-    >>> eliminate_implications(Implies(A, B))
+    >>> eliminate_implications(Sufficient(A, B))
     B | ~A
     >>> eliminate_implications(Equivalent(A, B))
     (A | ~B) & (B | ~A)
@@ -4377,29 +4284,30 @@ class Invoker:
     def source(self):
         return self._objs[0]
     
-    def result(self, obj, equivalent=True, simplify=True):
-        kwargs = {}
+    def determine_assumptions(self, obj):
         if obj.is_Boolean:
-            if obj.equivalent is not None:
-                if isinstance(obj.equivalent, (list, tuple)):
-                    clue = 'equivalent'
-                else:
-                    # in case of result of simplify 
-                    clue = obj.equivalent.clue
-                    if clue is None:
-                        clue = 'equivalent'                    
-            elif obj.given is not None:
-                clue = 'given'
+            equivalent = obj.equivalent
+            if equivalent is not None:
+                if isinstance(equivalent, Boolean):
+                    # in case of result of simplify                    
+                    if equivalent is not self.target:
+                        clue = equivalent.clue
+                        if clue is not None:                        
+                            return clue                    
+            elif obj.given is not None:                
+                parent = self._objs[-2]
+                if parent.is_Sufficient:
+                    # in case of using imply
+                    index = self.index[-1]
+                    if index == 0:
+                        return 'imply'                    
+                return 'given'
             elif obj.imply is not None:
-                clue = 'imply'
-            else:
-                clue = 'equivalent'
-            kwargs[clue] = self.source
-        else:
-            if equivalent:
-                kwargs['equivalent'] = self.source
-            else:
-                kwargs['given'] = self.source
+                return 'imply'
+        return 'equivalent'
+        
+    def result(self, obj, simplify=True):
+        kwargs = {self.determine_assumptions(obj) : self.source}
 
         for i in range(-1, -len(self.index) - 1, -1):
             this = self._objs[i - 1]
@@ -4421,74 +4329,62 @@ class Invoker:
     # simplify = True by default, use simplify = False in invoke, use simplify = None in simplification process after invoking!
     def __call__(self, *args, **kwargs):
         if self.callable is None:
-            return self.enter(*args)
+            return self.enter(*args, **kwargs)
         
         funcname = self.callable.__name__
         if funcname == 'subs':
-            from sympy.concrete.summations import Sum
-            from sympy.integrals.integrals import Integral
-            from sympy.core.relational import Equality
-            if isinstance(self.callable.__self__, Sum) or isinstance(self.callable.__self__, Integral):
-                if len(args) == 2:
-                    (x, *_), *_ = self.callable.__self__.limits
-                    # domain might be different!
-                    assert args[0].name == x.name
-            elif self.callable.__self__.is_ConditionalBoolean:
-                ...
-            else:
-                assert all(isinstance(arg, Equality) for arg in args)
+            if not self.callable.__self__.is_ConditionalBoolean:
+                assert all(arg.is_Equal for arg in args)
+                assert all(arg.plausible is None for arg in args)
 
+        assert funcname not in ('abs',), "%s is not allowed in this context!" % funcname
         obj = self.invoke(*args, **kwargs)
-        return self.result(obj, funcname not in ('abs',), simplify=kwargs.get('simplify', True) is not None)
+        
+        return self.result(obj, simplify=kwargs.get('simplify', True) is not None)
 
     def invoke(self, *args, **kwargs):
         if self._context:
-            try:
-                this = self.callable.__self__
-                reps = []
-                from sympy import Interval
-                outer_context = {}
-                for _, limits in self._context:
-                    for x, *ab in limits:
-                        if x.shape:
-                            continue
-                        if len(ab) == 1:
-                            domain, *_ = ab
-                            if domain.is_Boolean:
-                                domain = x.domain_conditioned(domain)                                                    
-                        else:
-                            domain = Interval(*ab, integer=x.is_integer)
+            this = self.callable.__self__
+            reps = []
+            from sympy import Interval
+            outer_context = {}
+            for _, limits in self._context:
+                for x, *ab in limits:
+                    if len(ab) == 1:
+                        domain, *_ = ab
+                        if domain.is_Boolean:
+                            domain = x.domain_conditioned(domain)                                                    
+                    else:
+                        domain = Interval(*ab, integer=x.is_integer)
+                        
+                    if x in outer_context:
+                        x, _domain = outer_context[x]
+                        keys = domain.free_symbols & outer_context.keys()
+                        if keys:
+                            for key in keys:
+                                domain = domain._subs(key, outer_context[key][0])
+                        domain &= _domain
                             
-                        if x in outer_context:
-                            x, _domain = outer_context[x]
-                            keys = domain.free_symbols & outer_context.keys()
-                            if keys:
-                                for key in keys:
-                                    domain = domain._subs(key, outer_context[key][0])
-                            domain &= _domain
-                                
-                        _x = x.copy(domain=domain)
-                        this = this._subs(x, _x).simplify()
-                        reps.append((x, _x))
-                        outer_context[x] = (_x, domain)
-                
-                obj = getattr(this, self.callable.__name__)(*args, **kwargs)  # .simplify()
-                reps.reverse()
-                for x, _x in reps:
-                    _obj = obj._subs(_x, x)
-                    if obj.is_boolean:
-                        if _obj.equivalent is not None:
-                            if _obj.equivalent is not obj:
-                                _obj.equivalent = None
-                                _obj.equivalent = obj 
+                    _x = x.copy(domain=domain)
+                    this = this._subs(x, _x).simplify()
+                    reps.append((x, _x))
+                    outer_context[x] = (_x, domain)
+            
+            obj = getattr(this, self.callable.__name__)(*args, **kwargs)  # .simplify()
+            reps.reverse()
+            for x, _x in reps:
+                _obj = obj._subs(_x, x)
+                if obj.is_boolean:
+                    if _obj.equivalent is not None:
+                        if _obj.equivalent is not obj:
+                            _obj.equivalent = None
+                            _obj.equivalent = obj 
+                    else:
+                        if _obj.is_BooleanAtom:
+                            _obj = _obj.copy(equivalent=obj)
                         else:
                             _obj.equivalent = obj
-                    obj = _obj
-                    
-            except Exception as e:
-                print(e)
-                import traceback
-                traceback.print_exc()
+                obj = _obj                    
         else:                    
             obj = self.callable(*args, **kwargs)
         return obj
@@ -4529,6 +4425,11 @@ class Invoker:
             self.callable = self.target.__truediv__
             return self.__call__(rhs)
 
+    def __mul__(self, rhs):
+        if self.target.is_Equality:
+            self.callable = self.target.__mul__
+            return self.__call__(rhs)
+
     def __matmul__(self, rhs):
         if self.target.is_Equality:
             self.callable = self.target.__matmul__
@@ -4560,7 +4461,7 @@ class Invoker:
     def __iter__(self):
         return iter(self.obj)
 
-    def enter(self, *args):
+    def enter(self, *args, **kwargs):
         target = self.target
         limits = ()
         
@@ -4583,7 +4484,11 @@ class Invoker:
             limits = (limit,)
         if args:
             limits += tuple((x, target.domain_defined(x)) for x in args)
-                            
+        if kwargs:
+            shape = kwargs.get('shape', None)
+            if shape is not None:
+                limits = tuple(limit for limit in limits if limit[0].shape == shape)
+                          
         self._context.append((target, limits))
         return self
 

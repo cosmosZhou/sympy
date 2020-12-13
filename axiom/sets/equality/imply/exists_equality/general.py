@@ -1,13 +1,10 @@
 from sympy.core.relational import Unequality, Equality
 from axiom.utility import plausible
 from sympy.core.symbol import dtype
-from sympy.concrete.expr_with_limits import Exists, UNION, ForAll
+from sympy import Exists, UNION, ForAll
 from sympy import Symbol
 from sympy.core.numbers import oo
 from axiom import sets
-# given: A != {}
-# Exists[x] (x in A)
-
 
 @plausible
 def apply(given):
@@ -22,9 +19,9 @@ def apply(given):
         shape = (oo,) + kwargs['shape']
     else:
         shape = (oo,)
-    kwargs.pop('shape')
+    kwargs.pop('shape', None)
     x = S.generate_free_symbol(shape=shape, **kwargs)
-    return Exists[x[:n]:ForAll[j:i, i:n](Unequality(x[i], x[j]))](Equality(S, UNION[i:n]({x[i]})), given=given)
+    return Exists[x[:n]:ForAll[j:i, i:n](Unequality(x[i], x[j]))](Equality(S, UNION[i:n]({x[i]})))
 
 
 from axiom.utility import check
