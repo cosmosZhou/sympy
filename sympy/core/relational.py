@@ -2354,14 +2354,6 @@ class StrictGreaterThan(_Greater):
                     return StrictGreaterThan(self.lhs * other.lhs, self.rhs * other.rhs, given=[self, other])
         return Relational.__mul__(self, other)
 
-    def _latex(self, p):
-        if self.rhs.is_Zero:
-            if self.lhs.is_Power:
-                if self.lhs.base.is_NegativeOne:
-                    return "{%s}\ is\ even" % p._print(self.lhs.exp)
-        return Relational._latex(self, p)
-
-
 Gt = StrictGreaterThan
 LessThan.invert_type = StrictGreaterThan
 
@@ -2534,13 +2526,6 @@ class StrictLessThan(_Less):
             return self
 
         return Relational.__mul__(self, other)
-
-    def _latex(self, p):
-        if self.rhs.is_Zero:
-            if self.lhs.is_Power:
-                if self.lhs.base.is_NegativeOne:
-                    return "{%s}\ is\ odd" % p._print(self.lhs.exp)
-        return Relational._latex(self, p)
 
 Lt = StrictLessThan
 GreaterThan.invert_type = StrictLessThan

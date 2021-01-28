@@ -1128,16 +1128,6 @@ class LatexPrinter(Printer):
         else:
             return r"%s^{\dagger}" % self._print(mat)
 
-    def _print_Mod(self, expr, exp=None):
-        if exp is not None:
-            return r'\left(%s\bmod{%s}\right)^{%s}' % \
-                (self.parenthesize(expr.args[0], PRECEDENCE['Times'],
-                                   strict=True), self._print(expr.args[1]),
-                 self._print(exp))
-        return r'%s\bmod{%s}' % (self.parenthesize(expr.args[0],
-                                 PRECEDENCE['Times'], strict=True),
-                                 self._print(expr.args[1]))
-
     def _print_HadamardProduct(self, expr):
         args = expr.args
         prec = PRECEDENCE['Pow']

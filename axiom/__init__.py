@@ -19,43 +19,55 @@ def is_zero(eq):
 
 
 def is_odd(eq):
-    power = None
+    expr = None
     if eq.is_StrictLessThan:
         assert eq.rhs.is_zero
-        power = eq.lhs        
+        expr = eq.lhs        
     elif eq.is_Equal:
         if eq.rhs.is_NegativeOne:
-            power = eq.lhs
+            expr = eq.lhs
         elif eq.lhs.is_NegativeOne:
-            power = eq.rhs
+            expr = eq.rhs
     elif eq.is_Unequal:
         if eq.rhs.is_One:
-            power = eq.lhs
+            expr = eq.lhs
         elif eq.lhs.is_One:
-            power = eq.rhs
+            expr = eq.rhs
 
-    base, exponent = is_Power(power)
+    if expr.is_Mod:
+        n, d = expr
+        assert d == 2
+        return n
+
+    base, exponent = is_Power(expr)
     assert base.is_NegativeOne
     return exponent
 
 
 def is_even(eq):
-    power = None
+    expr = None
     if eq.is_StrictGreaterThan:
         assert eq.rhs.is_zero
-        power = eq.lhs        
+        expr = eq.lhs        
     elif eq.is_Equal:
         if eq.rhs.is_One:
-            power = eq.lhs
+            expr = eq.lhs
         elif eq.lhs.is_One:
-            power = eq.rhs
+            expr = eq.rhs
+        elif eq.rhs.is_Zero:
+            expr = eq.lhs            
     elif eq.is_Unequal:
         if eq.rhs.is_NegativeOne:
-            power = eq.lhs
+            expr = eq.lhs
         elif eq.lhs.is_NegativeOne:
-            power = eq.rhs
+            expr = eq.rhs
 
-    base, exponent = is_Power(power)
+    if expr.is_Mod:
+        n, d = expr.args
+        assert d == 2
+        return n
+    
+    base, exponent = is_Power(expr)
     assert base.is_NegativeOne
     return exponent
 
@@ -364,6 +376,9 @@ def is_Equal(self):
     assert self.is_Equal
     return self.args
 
+def is_Mod(self):
+    assert self.is_Mod
+    return self.args
 
 def is_BinaryCondition(self):
     assert self.is_BinaryCondition

@@ -21,7 +21,7 @@ def prove(Eq):
     
     Eq << apply(Equal(Limit(x[n], n, oo), a))
 
-    Eq << algebre.equal.imply.exists.apply(Eq[0])
+    Eq << algebre.equal.imply.exists.definition.limit.apply(Eq[0])
     
     ε = Eq[-1].function.function.rhs
     

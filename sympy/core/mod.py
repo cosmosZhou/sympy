@@ -1,14 +1,22 @@
-from __future__ import print_function, division
-
 from sympy.core.numbers import nan
-from sympy.core.compatibility import integer_types
 from .function import Function
+from .kind import NumberKind
 
 
 class Mod(Function):
     """Represents a modulo operation on symbolic expressions.
 
-    Receives two arguments, dividend p and divisor q.
+    Parameters
+    ==========
+
+    p : Expr
+        Dividend.
+
+    q : Expr
+        Divisor.
+
+    Notes
+    =====
 
     The convention used is the same as Python's: the remainder always has the
     same sign as the divisor.
@@ -24,6 +32,8 @@ class Mod(Function):
 
     """
 
+    kind = NumberKind
+
     @classmethod
     def eval(cls, p, q):
         from sympy.core.add import Add
@@ -37,16 +47,16 @@ class Mod(Function):
             to be less than or equal q.
             """
 
-            if q == S.Zero:
+            if q.is_zero:
                 raise ZeroDivisionError("Modulo by zero")
-            if p.is_infinite or q.is_infinite or p is nan or q is nan:
+            if p.is_finite == False or q.is_finite == False or p is nan or q is nan:
                 return nan
-            if p == S.Zero or p == q or p == -q or (p.is_integer and q == 1):
+            if p is S.Zero or p == q or p == -q or (p.is_integer and q == 1):
                 return S.Zero
 
             if q.is_Number:
                 if p.is_Number:
-                    return p%q
+                    return p % q
                 if q == 2:
                     if p.is_even:
                         return S.Zero
@@ -59,15 +69,17 @@ class Mod(Function):
                     return rv
 
             # by ratio
-            r = p/q
+            r = p / q
+            if r.is_integer:
+                return S.Zero
             try:
                 d = int(r)
             except TypeError:
                 pass
             else:
-                if isinstance(d, integer_types):
-                    rv = p - d*q
-                    if (rv*q < 0) == True:
+                if isinstance(d, int):
+                    rv = p - d * q
+                    if (rv * q < 0) == True:
                         rv += q
                     return rv
 
@@ -98,14 +110,14 @@ class Mod(Function):
             qinner = p.args[1]
             if qinner % q == 0:
                 return cls(p.args[0], q)
-            elif (qinner*(q - qinner)).is_nonnegative:
+            elif (qinner * (q - qinner)).is_nonnegative:
                 # |qinner| < |q| and have same sign
                 return p
         elif isinstance(-p, cls):
             qinner = (-p).args[1]
             if qinner % q == 0:
                 return cls(-(-p).args[0], q)
-            elif (qinner*(q + qinner)).is_nonpositive:
+            elif (qinner * (q + qinner)).is_nonpositive:
                 # |qinner| < |q| and have different sign
                 return p
         elif isinstance(p, Add):
@@ -137,14 +149,14 @@ class Mod(Function):
                 prod_mod = Mul(*mod)
                 prod_non_mod = Mul(*non_mod)
                 prod_mod1 = Mul(*[i.args[0] for i in mod_l])
-                net = prod_mod1*prod_mod
-                return prod_non_mod*cls(net, q)
+                net = prod_mod1 * prod_mod
+                return prod_non_mod * cls(net, q)
 
             if q.is_Integer and q is not S.One:
                 _ = []
                 for i in non_mod_l:
                     if i.is_Integer and (i % q is not S.Zero):
-                        _.append(i%q)
+                        _.append(i % q)
                     else:
                         _.append(i)
                 non_mod_l = _
@@ -157,7 +169,7 @@ class Mod(Function):
         G = gcd(p, q)
         if G != 1:
             p, q = [
-                gcd_terms(i/G, clear=False, fraction=False) for i in (p, q)]
+                gcd_terms(i / G, clear=False, fraction=False) for i in (p, q)]
         pwas, qwas = p, q
 
         # simplify terms
@@ -184,11 +196,11 @@ class Mod(Function):
                 r = cp % cq
                 if r == 0:
                     G *= cq
-                    p *= int(cp/cq)
+                    p *= int(cp / cq)
                     ok = True
             if not ok:
-                p = cp*p
-                q = cq*q
+                p = cp * p
+                q = cq * q
 
         # simple -1 extraction
         if p.could_extract_minus_sign() and q.could_extract_minus_sign():
@@ -197,16 +209,16 @@ class Mod(Function):
         # check again to see if p and q can now be handled as numbers
         rv = doit(p, q)
         if rv is not None:
-            return rv*G
+            return rv * G
 
         # put 1.0 from G on inside
         if G.is_Float and G == 1:
             p *= G
             return cls(p, q, evaluate=False)
         elif G.is_Mul and G.args[0].is_Float and G.args[0] == 1:
-            p = G.args[0]*p
+            p = G.args[0] * p
             G = Mul._from_args(G.args[1:])
-        return G*cls(p, q, evaluate=(p, q) != (pwas, qwas))
+        return G * cls(p, q, evaluate=(p, q) != (pwas, qwas))
 
     def _eval_is_integer(self):
         from sympy.core.logic import fuzzy_and, fuzzy_not
@@ -222,6 +234,23 @@ class Mod(Function):
         if self.args[1].is_extended_negative:
             return False
 
-    def _eval_rewrite_as_floor(self, a, b, **kwargs):
-        from sympy.functions.elementary.integers import floor
-        return a - b*floor(a/b)
+    @property
+    def definition(self):
+        a, b = self.args
+        return a - a // b * b 
+
+    def _latex(self, p, exp=None):
+#         https://www.cnblogs.com/javajava/articles/13627588.html
+        from sympy.printing.precedence import PRECEDENCE
+        if exp is not None:
+            return r'\left(%s\bmod{%s}\right)^{%s}' % \
+                (self.parenthesize(self.args[0], PRECEDENCE['Times'],
+                                   strict=True), p._print(self.args[1]),
+                 self._print(exp))
+        return r'%s\bmod{%s}' % (p.parenthesize(self.args[0],
+                                 PRECEDENCE['Times'], strict=True),
+                                 p._print(self.args[1]))
+
+    def _sympystr(self, p):
+        return '%s %% %s' % (p._print(self.args[0]),
+                             p._print(self.args[1]))

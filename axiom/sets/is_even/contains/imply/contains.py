@@ -28,7 +28,7 @@ def prove(Eq):
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
 
-    Eq << apply((-1) ** n > 0, Contains(n, Interval(a, b, integer=True)))
+    Eq << apply(Equal(n % 2, 0), Contains(n, Interval(a, b, integer=True)))
 
     
 if __name__ == '__main__':
