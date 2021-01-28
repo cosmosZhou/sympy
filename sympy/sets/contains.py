@@ -2,8 +2,6 @@ from sympy.core import S
 from sympy.core.relational import Eq, Ne, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan, Equality, Unequality
 from sympy.logic.boolalg import And, Or, BinaryCondition
-from sympy.utilities.miscellany import func_name
-from sympy.core.sympify import _sympify, sympify
 
 
 class Contains(BinaryCondition):
@@ -28,6 +26,7 @@ class Contains(BinaryCondition):
 
     .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
     """
+
     def __new__(cls, *args, **assumptions):
         if len(args) == 1 and isinstance(args[0], frozenset):
             _args = args[0]
@@ -40,7 +39,9 @@ class Contains(BinaryCondition):
             eq, *_ = args
             if isinstance(eq, Equality):
                 args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify(), equivalent=[self, eq]).simplify()
+                result = self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs))
+            
+                return self.subs_assumptions_for_equality(eq, result)
             if isinstance(eq, dict):
                 return self
             if eq.is_ConditionalBoolean:
@@ -48,7 +49,6 @@ class Contains(BinaryCondition):
             return self
         
         return BinaryCondition.subs(self, *args, **kwargs)
-
 
     def _latex(self, p):
         return r"%s \in %s" % tuple(p._print(a) for a in self.args)
@@ -59,6 +59,7 @@ class Contains(BinaryCondition):
     @classmethod
     def eval(cls, x, s):
         if not s.is_set:
+            from sympy.utilities.miscellany import func_name
             raise TypeError('expecting Set, not %s' % func_name(s))
 
         ret = s.contains(x)
@@ -72,7 +73,10 @@ class Contains(BinaryCondition):
 
     def split(self, *args, **kwargs):
         if self.rhs.is_Union:
-            return [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
+            args = [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
+#             if self.plausible:
+#                 self.derivative = args
+            return args
         if self.rhs.is_Intersection:
             args = [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
             if self.plausible:
@@ -156,6 +160,8 @@ class Contains(BinaryCondition):
 
     @property
     def definition(self):
+        print("Contains.definition should be axiomatized!")
+        
         e, S = self.args
 
         from sympy import Exists
@@ -190,34 +196,23 @@ class Contains(BinaryCondition):
             assert not e._has(variables)
             return Exists(Equality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
 
-        if S.is_UNION:
-            for v in S.variables:
-                if self.lhs._has(v):
-                    _v = v.generate_free_symbol(self.free_symbols, **v.type.dict)
-                    S = S.limits_subs(v, _v)
-
-            contains = Contains(self.lhs, S.function).simplify()
-            contains.equivalent = None
-            return Exists(contains, *S.limits, equivalent=self).simplify()
-
         return self
 
     def __and__(self, other):
         """Overloading for & operator"""
         if other.is_NotContains:
             if self.element == other.element:
-                s = self.set - other.set
+                from sympy import Complement
+                s = Complement(self.set, other.set)
                 return self.func(self.element, s, equivalent=[self, other])
         elif other.is_Contains:
             if self.element == other.element:
                 s = self.set & other.set
                 return self.func(self.element, s, equivalent=[self, other])
-            elif self.rhs == other.rhs:                
+            elif self.rhs == other.rhs:
+                from sympy import Subset                
                 return Subset(self.lhs.set | other.lhs.set, self.rhs, equivalent=[self, other])
-        elif other.is_Subset:
-            if self.rhs == other.lhs:
-                return self.func(self.lhs, other.rhs, equivalent=[self, other])
-
+            
         return BinaryCondition.__and__(self, other)
 
     def __or__(self, other):
@@ -287,9 +282,11 @@ class Contains(BinaryCondition):
         limits_dict = self.limits_dict
         if x in limits_dict:
             domain = limits_dict[x]
-            if domain.is_set:
-                if domain in function.rhs:
-                    return S.BooleanTrue.copy(equivalent=self)
+            if not isinstance(domain, list):
+                if domain.is_set:
+                    if domain in function.rhs:
+                        return S.BooleanTrue.copy(equivalent=self)
+
 
 class NotContains(BinaryCondition):
     """
@@ -314,6 +311,7 @@ class NotContains(BinaryCondition):
     .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
     """
     invert_type = Contains
+
     def __new__(cls, *args, **assumptions):
         if len(args) == 1 and isinstance(args[0], frozenset):
             _args = args[0]
@@ -326,7 +324,8 @@ class NotContains(BinaryCondition):
             eq, *_ = args
             if isinstance(eq, Equality):
                 args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
+                result = self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
+                return self.subs_assumptions_for_equality(eq, result)
             if isinstance(eq, dict):
                 return self
             if eq.is_ConditionalBoolean:
@@ -344,12 +343,14 @@ class NotContains(BinaryCondition):
     @classmethod
     def eval(cls, x, s):
         if not s.is_set:
+            from sympy.utilities.miscellany import func_name
             raise TypeError('expecting Set, not %s' % func_name(s))
 
         ret = s.contains(x)
         if ret is None:
             return
         if not isinstance(ret, Contains) and (ret in (S.true, S.false) or ret.is_set):
+            from sympy.core.sympify import sympify
             return sympify(not ret)
 
     def as_set(self):
@@ -377,6 +378,7 @@ class NotContains(BinaryCondition):
 
     @property
     def definition(self):
+        print("NotContains.definition should be axiomatized!")
         e, S = self.args
 
         from sympy import ForAll
@@ -417,7 +419,8 @@ class NotContains(BinaryCondition):
                 return self.func(self.element, s, equivalent=[self, other])
         elif other.is_Contains:
             if self.element == other.element:
-                s = other.set - self.set
+                from sympy import Complement
+                s = Complement(other.set, self.set)
                 return other.func(self.element, s, equivalent=[self, other])
         
         elif other.is_Unequality:
@@ -492,535 +495,3 @@ class NotContains(BinaryCondition):
 
         
 Contains.invert_type = NotContains
-
-
-class Subset(BinaryCondition):
-    """
-    Asserts that A is a subset of the set S
-
-    """
-    def __new__(cls, *args, **assumptions):
-        if len(args) == 1 and isinstance(args[0], frozenset):
-            _args = args[0]
-        else:
-            _args = args
-        return BinaryCondition.eval(cls, *args, **assumptions)
-
-    def simplify(self, deep=False):
-        from sympy import ForAll
-        if self.lhs.is_UNION:
-            return ForAll(self.func(self.lhs.function, self.rhs).simplify(), *self.lhs.limits, equivalent=self).simplify()
-        if self.lhs.is_FiniteSet:
-            eqs = []
-            for e in self.lhs.args:
-                eqs.append(Contains(e, self.rhs))
-            return And(*eqs, equivalent=self)
-
-        return self
-
-    def union(self, exp):
-        if isinstance(exp, Subset):
-            return self.func(self.lhs | exp.lhs, self.rhs | exp.rhs, given=[self, exp])
-        else:
-            return self.func(self.lhs | exp, self.rhs | exp, given=self)
-
-    def intersect(self, exp):
-        if isinstance(exp, Subset):
-            return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
-        else:
-            return self.func(self.lhs & exp, self.rhs & exp, given=self)
-            
-    def _sympystr(self, p):
-#                 ⊂
-        return '%s ⊆ %s' % tuple(p._print(x) for x in self.args)
-    
-    def _latex(self, printer):
-        return r'%s \subset %s' % tuple(printer._print(x) for x in self.args)
-
-    @classmethod
-    def eval(cls, lhs, rhs):
-        assert lhs.is_set and rhs.is_set, 'expecting Set, not %s' % func_name(rhs)
-        if lhs.is_symbol and lhs.definition is not None:
-            lhs = lhs.definition
-        if rhs.is_symbol and rhs.definition is not None:
-            rhs = rhs.definition
-
-        if lhs == rhs:
-            return S.true
-        ret = rhs._eval_Subset_reversed(lhs)
-        if ret is not None:
-            return ret
-
-        ret = lhs._eval_Subset(rhs)
-        if ret is not None:
-            return ret        
-                
-    @property
-    def definition(self):
-        A, B = self.args
-        from sympy import ForAll
-        e = B.element_symbol(A.free_symbols)
-        return ForAll(Contains(e, B), (e, A), equivalent=self).simplify()
-
-    def as_set(self):
-        return self
-
-    @property
-    def set(self):
-        return self.args[1]
-
-    @property
-    def element(self):
-        return self.args[0]
-
-    def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
-            return self
-
-        res = [None] * 2
-
-        kwargs = self.clauses()
-        kwargs['given'] = self if self.plausible else None
-        kwargs['evaluate'] = False
-
-        if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
-        else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
-
-        if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
-        else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
-        return res
-
-    def cos(self):
-        x, s = self.args
-        from sympy import cos
-        return self.func(cos(x), s.cos(), given=self)
-
-    def acos(self):
-        x, s = self.args
-        from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
-
-    def subs(self, *args, **kwargs):
-        if len(args) == 1:
-            eq, *_ = args
-            if isinstance(eq, Equality):
-                args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            elif isinstance(eq, Subset):
-                A, B = self.args
-                _B, _A = eq.args
-                if _B == B:
-                    if A == _A: 
-                        return Equality(A, B, equivalent=[self, eq])
-                    else:
-                        return self.func(A, _A, given=[self, eq])
-            elif isinstance(eq, Supset):
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _A == A:
-                    return Equality(A, B, equivalent=[self, eq])
-            elif eq.is_ConditionalBoolean:
-                return self.bfn(self.subs, eq)
-            return self
-
-        return BinaryCondition.subs(self, *args, **kwargs)
-        
-
-    def __and__(self, other):
-        if other.is_Supset:
-            if self.args == other.args:
-                print('information loss!')
-                return Equality(*self.args, equivalent=[self, other])
-        elif other.is_Subset:
-            lhs, rhs = self.args
-            if (rhs, lhs) == other.args:
-                print('information loss!')
-                return Equality(*self.args, equivalent=[self, other])
-            elif rhs == other.rhs:
-                print('information loss!')
-                return self.func(lhs | other.lhs, rhs, equivalent=[self, other])
-            elif rhs == other.lhs:
-                print('information loss!')
-                return self.func(lhs, other.rhs, equivalent=[self, other]).simplify()
-        elif other.is_Contains:
-            if other.rhs == self.lhs:
-                print('information loss!')
-                return other.func(other.lhs, self.rhs, equivalent=[self, other]).simplify()
-        return BinaryCondition.__and__(self, other)
-
-    def domain_conditioned(self, x):
-        if self.lhs.is_FiniteSet:
-            if x.type in self.lhs.etype:
-                if x in self.lhs:
-                    return Contains(x, self.rhs).domain_conditioned(x)
-
-    @classmethod
-    def simplify_ForAll(cls, self, function, *limits):
-        if function.lhs.is_FiniteSet:
-            function, S = function.lhs, function.rhs
-            res = self.simplify_int_limits(function)
-            if res:
-                function, limits = res            
-                function = Subset(function, S).simplify()
-                return self.func(function, *limits, equivalent=self).simplify()
-
-
-class NotSubset(BinaryCondition):
-    """
-    Asserts that A is a subset of the set S
-
-    """
-    invert_type = Subset
-    def __new__(cls, *args, **assumptions):
-        if len(args) == 1 and isinstance(args[0], frozenset):
-            _args = args[0]
-        else:
-            _args = args
-        return BinaryCondition.eval(cls, *args, **assumptions)
-
-    def simplify(self, deep=False):
-        if self.lhs.is_UNION:
-            from sympy import Exists
-            return Exists(self.func(self.lhs.function, self.rhs), *self.lhs.limits, equivalent=self)
-
-        if self.lhs.is_FiniteSet and len(self.lhs) == 1:
-            return NotContains(self.lhs.arg, self.rhs, equivalent=self).simplify()            
-             
-        return self
-
-    def union(self, exp):
-        return self
-
-    def intersect(self, exp):
-        if isinstance(exp, Subset):
-            return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
-        else:
-            return self.func(self.lhs & exp, self.rhs & exp, given=self)
-
-    def _sympystr(self, p):
-#         ⊊        
-        return r'%s ⊄ %s' % tuple(p._print(x) for x in self.args)
-
-    def _latex(self, printer):
-        return r'%s \not\subset %s' % tuple(printer._print(x) for x in self.args)
-
-    @classmethod
-    def eval(cls, x, s):
-        assert x.is_set and s.is_set, 'expecting Set, not %s' % func_name(s)
-        if x.is_Symbol and x.definition is not None:
-            x = x.definition
-        if s.is_Symbol and s.definition is not None:
-            s = s.definition
-        b = cls.invert_type.eval(x, s)
-        if b is not None:
-            return b.invert()
-
-    @property
-    def definition(self):
-        A, B = self.args
-        from sympy import Exists
-        e = B.element_symbol(A.free_symbols)
-        return Exists(NotContains(e, B), (e, A), equivalent=self).simplify()
-
-    def as_set(self):
-        return self
-
-    @property
-    def set(self):
-        return self.args[1]
-
-    @property
-    def element(self):
-        return self.args[0]
-
-    def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
-            return self
-
-        res = [None] * 2
-
-        kwargs = self.clauses()
-        kwargs['given'] = self if self.plausible else None
-        kwargs['evaluate'] = False
-
-        if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
-        else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
-
-        if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
-        else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
-        return res
-
-    def cos(self):
-        x, s = self.args
-        from sympy import cos
-        return self.func(cos(x), s.cos(), given=self)
-
-    def acos(self):
-        x, s = self.args
-        from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
-
-    def subs(self, *args, **kwargs):
-        if len(args) == 1:
-            eq, *_ = args
-            if isinstance(eq, Equality):
-                args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            if isinstance(eq, Subset):
-                A, B = self.args
-                _B, _A = eq.args
-                if A == _A and _A == A:
-                    return Equality(A, B, equivalent=[self, eq])
-            if isinstance(eq, Supset):
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _A == A:
-                    return Equality(A, B, equivalent=[self, eq])
-
-        return self
-
-
-Subset.invert_type = NotSubset
-
-
-class Supset(BinaryCondition):
-    """
-    Asserts that A is a super set of the set S
-
-    """
-    def __new__(cls, *args, **assumptions):
-        if len(args) == 1 and isinstance(args[0], frozenset):
-            _args = args[0]
-        else:
-            _args = args
-        return BinaryCondition.eval(cls, *args, **assumptions)
-    
-    def subs(self, *args, **kwargs):
-        if len(args) == 1:
-            eq, *_ = args
-            if isinstance(eq, Equality):
-                args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            if isinstance(eq, Subset):
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-            if isinstance(eq, Supset):
-                A, B = self.args
-                _B, _A = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-
-            return self
-        return BinaryCondition.subs(self, *args, **kwargs)
-    
-    def __and__(self, other):
-        if other.is_Subset:
-            if self.args == other.args:
-                print('information loss!')
-                return Equality(*self.args, equivalent=[self, other])
-        elif other.is_Supset:
-            lhs, rhs = self.args
-            if (rhs, lhs) == other.args:
-                print('information loss!')
-                return Equality(*self.args, equivalent=[self, other])
-            elif lhs == other.lhs:                
-                return self.func(lhs, rhs | other.rhs, equivalent=[self, other])
-            
-        return BinaryCondition.__and__(self, other)
-    
-    def simplify(self, deep=False):
-        from sympy import ForAll
-        if self.rhs.is_UNION:
-            return ForAll(self.func(self.lhs, self.rhs.function).simplify(), *self.rhs.limits, equivalent=self).simplify()
-        if self.rhs.is_FiniteSet:
-            eqs = []
-            for e in self.rhs.args:
-                eqs.append(Contains(e, self.lhs))
-            return And(*eqs, equivalent=self)
-        return self
-
-    def _sympystr(self, p):
-#         ⊃        
-        return '%s ⊇ %s' % tuple(p._print(x) for x in self.args)
-
-    def _latex(self, printer):
-        return r'%s\supset %s' % tuple(printer._print(x) for x in self.args)
-
-    @classmethod
-    def eval(cls, x, s):
-        return Subset.eval(s, x)
-
-    def as_set(self):
-        return self
-
-    @property
-    def set(self):
-        return self.args[1]
-
-    @property
-    def element(self):
-        return self.args[0]
-
-    def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
-            return self
-
-        res = [None] * 2
-
-        kwargs = self.clauses()
-        kwargs['given'] = self if self.plausible else None
-        kwargs['evaluate'] = False
-
-        if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
-        else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
-
-        if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
-        else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
-        return res
-
-    def cos(self):
-        x, s = self.args
-        from sympy import cos
-        return self.func(cos(x), s.cos(), given=self)
-
-    def acos(self):
-        x, s = self.args
-        from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
-
-    @property
-    def definition(self):
-        A, B = self.args
-        e = A.element_symbol(B.free_symbols)
-        from sympy import ForAll
-        return ForAll(Contains(e, A), (e, B), equivalent=self).simplify()
-
-class NotSupset(BinaryCondition):
-    """
-    Asserts that A is a super set of the set S
-
-    """
-    invert_type = Supset
-
-    def __new__(cls, *args, **assumptions):
-        if len(args) == 1 and isinstance(args[0], frozenset):
-            _args = args[0]
-        else:
-            _args = args
-        return BinaryCondition.eval(cls, *args, **assumptions)
-
-    def subs(self, *args, **kwargs):
-        if len(args) == 1:
-            eq, *_ = args
-            if isinstance(eq, Equality):
-                args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            if isinstance(eq, Subset):
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-            if isinstance(eq, Supset):
-                A, B = self.args
-                _B, _A = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-
-        return self
-
-    def simplify(self, deep=False):
-        from sympy import Exists
-        if self.rhs.is_UNION:
-            return Exists(self.func(self.lhs, self.rhs.function), *self.rhs.limits, equivalent=self).simplify()
-        return self
-
-    def _sympystr(self, p):
-#         ⊋
-        return r'%s ⊅ %s' % tuple(p._print(x) for x in self.args)
-
-    def _latex(self, printer):
-        return r'%s\not\supset %s' % tuple(printer._print(x) for x in self.args)
-
-    @classmethod
-    def eval(cls, x, s):
-        return NotSubset.eval(s, x)
-
-    def as_set(self):
-        return self
-
-    @property
-    def set(self):
-        return self.args[1]
-
-    @property
-    def element(self):
-        return self.args[0]
-
-    def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
-            return self
-
-        res = [None] * 2
-
-        kwargs = self.clauses()
-        kwargs['given'] = self if self.plausible else None
-        kwargs['evaluate'] = False
-
-        if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
-        else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
-
-        if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
-        else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
-        return res
-
-    def cos(self):
-        x, s = self.args
-        from sympy import cos
-        return self.func(cos(x), s.cos(), given=self)
-
-    def acos(self):
-        x, s = self.args
-        from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
-
-    @property
-    def definition(self):
-        A, B = self.args
-        e = A.element_symbol(B.free_symbols)
-        from sympy import Exists
-        return Exists(NotContains(e, A), (e, B), equivalent=self)
-
-
-Supset.invert_type = NotSupset
-
-Supset.reversed_type = Subset
-Subset.reversed_type = Supset
-NotSubset.reversed_type = NotSupset
-NotSupset.reversed_type = NotSubset
-

@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -12,7 +12,7 @@ import axiom
 from axiom import algebre, discrete
 
 
-@plausible
+@apply(imply=True)
 def apply(a, free_symbol=None):
     matmul = axiom.is_definition(a)
     lhs, rhs = axiom.is_MatMul(matmul)
@@ -29,7 +29,7 @@ def apply(a, free_symbol=None):
     return Equality(a.set_comprehension(free_symbol=free_symbol), x.set_comprehension(free_symbol=free_symbol).simplify())
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
     x = Symbol.x(shape=(n,), integer=True)    
@@ -39,7 +39,7 @@ def prove(Eq):
     a = Symbol.a(definition=x @ Swap(n, i, j))
     Eq << apply(a, free_symbol=k)
     
-    w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     
     Eq << w[i, j].this.definition
     

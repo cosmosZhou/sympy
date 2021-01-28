@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equal, StrictGreaterThan
 from sympy import Symbol, Wild
 
@@ -10,7 +10,7 @@ from sympy.core.sympify import sympify
 from sympy.core.function import Function
 
 
-@plausible
+@apply(imply=True)
 def apply(*given, n=None, x=None, start=0, hypothesis=False):
     start = sympify(start)
     f0, sufficient = given
@@ -34,10 +34,9 @@ def apply(*given, n=None, x=None, start=0, hypothesis=False):
     
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
     f = Function.f(nargs=(), shape=(), real=True)
@@ -50,7 +49,7 @@ def prove(Eq):
     
     Eq << algebre.sufficient.imply.forall.rewrite.apply(Eq[1], wrt=n)
     
-#     Eq << algebre.equality.forall_equality.imply.equality.induction.apply(Eq[0], Eq[-1])
+#     Eq << algebre.equal.forall_equal.imply.equal.induction.apply(Eq[0], Eq[-1])
 
         
 if __name__ == '__main__':

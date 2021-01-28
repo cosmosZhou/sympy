@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy.core.function import Function
 import axiom
@@ -11,17 +11,16 @@ from axiom.sets.ou.imply.contains.two import expr_cond_pair
 from sympy.core.relational import StrictGreaterThan
 
     
-@plausible
+@apply(imply=True)
 def apply(given, wrt=None):
     or_eqs = axiom.is_Or(given)
     
     return StrictGreaterThan(Piecewise(*expr_cond_pair(StrictGreaterThan, or_eqs, wrt)).simplify(), wrt)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
@@ -35,9 +34,9 @@ def prove(Eq):
     
     Eq << apply(StrictGreaterThan(f(x), p) & Contains(x, A) | StrictGreaterThan(g(x), p) & Contains(x, B - A) | StrictGreaterThan(h(x), p) & NotContains(x, A | B), wrt=p)
     
-    Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.given.complement, simplify=None)
+    Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.where.complement, simplify=None)
     
-    Eq << Eq[-1].this.args[2].args[1].apply(sets.notcontains.imply.et, simplify=None)
+    Eq << Eq[-1].this.args[2].args[1].apply(sets.notcontains.imply.et.where.union, simplify=None)
     
     Eq << Eq[-1].apply(algebre.ou.imply.ou.collect, factor=NotContains(x, A))
     

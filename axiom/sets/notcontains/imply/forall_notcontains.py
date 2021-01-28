@@ -1,14 +1,9 @@
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
-from sympy.core.numbers import oo
-from sympy import UNION, ForAll
-from sympy.sets.sets import Interval
+from axiom.utility import prove, apply
+from sympy import *
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_NotContains    
     
@@ -19,10 +14,7 @@ def apply(given):
     return ForAll(NotContains(e, S.function).simplify(), *limits)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(integer=True)

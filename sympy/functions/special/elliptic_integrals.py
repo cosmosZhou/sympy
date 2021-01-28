@@ -6,7 +6,7 @@ from sympy.core import S, pi, I
 from sympy.core.function import Function, ArgumentIndexError
 from sympy.functions.elementary.complexes import sign
 from sympy.functions.elementary.hyperbolic import atanh
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.functions.elementary.trigonometric import sin, tan
 from sympy.functions.special.gamma_functions import gamma
 from sympy.functions.special.hyper import hyper, meijerg

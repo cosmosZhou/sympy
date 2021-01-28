@@ -1,10 +1,10 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan, StrictLessThan
 from sympy import Symbol
 import axiom
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     a_less_than_x, x_less_than_b = given
     a, x = axiom.is_LessThan(a_less_than_x)    
@@ -13,10 +13,9 @@ def apply(*given):
     return StrictLessThan(a, b)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     a = Symbol.a(real=True)
     x = Symbol.x(real=True)

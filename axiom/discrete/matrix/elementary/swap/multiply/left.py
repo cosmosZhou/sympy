@@ -1,15 +1,16 @@
 
 from sympy.core.relational import Equality
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Swap
 from sympy import LAMBDA
 from sympy import Symbol
+from sympy.functions.elementary.piecewise import Piecewise
 
 
-@plausible
+@apply(imply=True)
 def apply(x, i=None, j=None, w=None):
     n = x.shape[0]
     if i is None:
@@ -24,7 +25,7 @@ def apply(x, i=None, j=None, w=None):
     return Equality(w[i, j] @ w[i, j] @ x, x)
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     x = Symbol.x(shape=(n,), real=True)
@@ -40,6 +41,8 @@ def prove(Eq):
     Eq << (w[i, j] @ Eq[-1]).this.rhs.subs(Eq[0])
     
     Eq << Eq[-1].this.rhs.expand()
+    
+    Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Piecewise)
         
 
 if __name__ == '__main__':

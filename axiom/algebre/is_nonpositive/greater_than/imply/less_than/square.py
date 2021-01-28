@@ -1,10 +1,10 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan, GreaterThan
 from sympy import Symbol
 import axiom
 from axiom import algebre
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     is_nonpositive, greater_than = given
     x = axiom.is_nonpositive(is_nonpositive)
@@ -14,10 +14,9 @@ def apply(*given):
     return LessThan(x * x, m * m)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     m = Symbol.m(real=True)

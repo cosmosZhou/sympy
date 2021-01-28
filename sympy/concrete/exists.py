@@ -10,51 +10,6 @@ class Exists(ConditionalBoolean):
     
     operator = Or
     
-#     def __invert__(self):
-#         eqs = []
-#         from sympy import Equal
-#         for limit in self.limits:
-#             if len(limit) == 2:
-#                 x, domain = limit
-#                 if domain.is_set:
-#                     eqs.append(Equal(domain, domain.etype.emptySet))
-#                     
-#         function = self.function.invert()
-#         function = self.invert_type(function, *self.limits)
-#         invert = Or(function, *eqs)
-#         invert.counterpart = self
-#         return invert
-
-    def exists(self, *limits):
-        limits_dict = self.limits_dict
-        if len(limits) == 1:
-            x, *args = limits[0]
-            if x in self.variables_set:
-                x_domain = limits_dict[x]
-        
-                if len(args) == 2:
-                    domain = Interval(*args, integer=x.is_integer)
-                elif not args:
-                    domain = []
-                else:
-                    domain = args[0]
-                    if not domain.is_set:
-                        domain = x.domain_conditioned(domain)
-        
-                if not isinstance(x_domain, list) and isinstance(domain, list) or x_domain in domain and domain not in x_domain:
-                    limits = self.limits_update({x : domain})
-                    function = self.function
-                    if not isinstance(domain, list):
-                        _x = x.copy(domain=domain)
-                        function = function._subs(x, _x)
-                        function = function._subs(_x, x)
-#                     else:#expand the domain to None yield a given condition!
-                    return self.func(function, *limits, given=self).simplify()
-        
-                return self
-                
-        return self
-
     def combine_clauses(self, rhs):
         if rhs.is_Exists:
             func = []
@@ -126,7 +81,7 @@ class Exists(ConditionalBoolean):
                     if rhs_limits:
                         func.append([ForAll, rhs_limits])
                     func.append([Exists, self.limits])
-                    return 'given', func, self.function, rhs.function
+                    return 'given' if rhs.plausible else None, func, self.function, rhs.function
     
                 func.append([ForAll, rhs.limits])
                 func.append([Exists, self.limits])
@@ -156,83 +111,7 @@ class Exists(ConditionalBoolean):
                         function = self.function.subs(eq.function)
                         return self.func(function, *self.limits, given=self).simplify()
                 
-            return ConditionalBoolean.subs(self, *args, **kwargs)
-
-        if len(args) != 2:
-            return Expr.subs(self, *args, **kwargs)
-        
-        from sympy.sets.contains import Contains
-        
-        old, new = args
-        exists = self.limits_dict        
-        if old in exists:
-            domain = exists[old]
-            eqs = []
-
-            if not isinstance(domain, list):
-                if not domain.is_set:
-                    domain = old.domain_conditioned(domain)
-                if new.is_symbol:
-                    _eval_domain_defined = self.function.domain_defined(new)
-                    if _eval_domain_defined in domain:
-                        ...
-                    else:
-                        eqs.append(Contains(new, domain))
-                else:
-                    eqs.append(Contains(new, domain))
-
-            if self.function.is_And:
-                for equation in self.function.args:
-                    eqs.append(equation._subs(old, new))
-            else:
-                eqs.append(self.function._subs(old, new))
-            limits = self.limits_delete(old)
-            if new.is_symbol and new.definition is None:
-                limits = limits_intersect(limits, [(new,)])
-                        
-            if limits:
-                return self.func(And(*eqs), *limits, imply=self).simplify()
-            else:
-                return And(*eqs, imply=self)
-            
-        if old.is_Tuple and all(sym in exists for sym in old):            
-            domains = [exists[sym] for sym in old]
-            eqs = []
-
-            for domain in domains:
-                if not isinstance(domain, list):
-                    if not domain.is_set:
-                        domain = old.domain_conditioned(domain)                    
-                    eqs.append(Contains(new, domain))
-
-            if self.function.is_And:
-                for equation in self.function.args:
-                    eqs.append(equation._subs(old, new))
-            else:
-                if old.is_Tuple:
-                    function = self.function
-                    for i in range(len(old)):
-                        function = function._subs(old[i], new[i])
-                    eqs.append(function)
-                else:
-                    eqs.append(self.function._subs(old, new))
-            limits = self.limits_delete(old)
-            if new.is_symbol:
-                limits = limits_intersect(limits, [(new,)])
-            
-            if limits:
-                return self.func(And(*eqs), *limits, imply=self).simplify()
-            else:
-                return And(*eqs, imply=self)
-
         return ConditionalBoolean.subs(self, *args, **kwargs)
-
-    def swap(self):
-        if not self.function.is_ForAll:
-            return self
-        forall = self.function
-
-        return forall.func(self.func(forall.function, *self.limits).simplify(), *forall.limits, given=self)
 
     def delete_independent_variables(self):
         limits_dict = self.limits_dict
@@ -268,7 +147,7 @@ class Exists(ConditionalBoolean):
             return function.copy(equivalent=self)
         
     def simplify(self, **kwargs):
-        from sympy.sets.contains import Contains
+        from sympy.sets.contains import Contains, NotContains
         if self.function.is_Equality:
             limits_dict = self.limits_dict
             x = None
@@ -283,7 +162,7 @@ class Exists(ConditionalBoolean):
                 domain = limits_dict[x]
                 if isinstance(domain, list):
                     if len(self.limits) == 1:
-                        if not y.is_given:                        
+                        if all(not var.is_given for var in y.free_symbols):
                             return BooleanTrue().copy(equivalent=self)
                 elif domain.is_set:
                     t = self.variables.index(x)
@@ -296,14 +175,15 @@ class Exists(ConditionalBoolean):
                             return self.func(function, *limits, equivalent=self)
                         function.equivalent = self
                         return function
+                    
+        from sympy import Unequal, Equal
         if self.function.is_Contains:            
             limits_dict = self.limits_dict
             x = None
             if self.function.lhs in limits_dict:
                 x = self.function.lhs
-                S = self.function.rhs
-                
-            from sympy import Unequal
+                S = self.function.rhs                
+            
             if x is not None:
                 domain = limits_dict[x]
                 if isinstance(domain, list):                          
@@ -321,9 +201,41 @@ class Exists(ConditionalBoolean):
                     if limits:
                         return self.func(function, *limits, equivalent=self).simplify()
                     else:
+                        if function.is_BooleanAtom:
+                            return function.copy(equivalent=self)
+                        
                         function.equivalent = self
                         return function
 
+        elif self.function.is_NotContains:            
+            limits_dict = self.limits_dict
+            x = None
+            if self.function.lhs in limits_dict:
+                x = self.function.lhs
+                S = self.function.rhs
+                
+            if x is not None:
+                domain = limits_dict[x]
+                if isinstance(domain, list):                          
+                    function = Equal(S, x.emptySet)
+                elif domain.is_set:
+                    if domain.is_FiniteSet:
+                        function = NotContains(domain.arg, S)
+                    else:
+                        function = Unequal(domain - S, x.emptySet)                        
+                else:
+                    function = None
+                
+                if function is not None:
+                    limits = self.limits_delete((x,))
+                    if limits:
+                        return self.func(function, *limits, equivalent=self).simplify()
+                    else:
+                        if function.is_BooleanAtom:
+                            return function.copy(equivalent=self)
+                        function.equivalent = self
+                        return function
+                    
         if self.function.is_And:
             limits_dict = self.limits_dict
             for i, eq in enumerate(self.function.args):
@@ -347,6 +259,7 @@ class Exists(ConditionalBoolean):
                     else:
                         continue
                     
+                    print("this simplification should be aximatized!")
                     limits = self.limits_delete(old)
                     if any(limit._has(old) for limit in limits):
                         continue
@@ -402,6 +315,30 @@ class Exists(ConditionalBoolean):
                      
                     return self.func(And(*eqs), *limits, equivalent=self).simplify()
                 
+        if self.function.is_Equality:
+            limits_dict = self.limits_dict
+            x = None
+            if self.function.lhs in limits_dict:
+                x = self.function.lhs
+                y = self.function.rhs
+            elif self.function.rhs in limits_dict:
+                x = self.function.rhs
+                y = self.function.lhs
+
+            if x is not None and not y._has(x):
+                domain = limits_dict[x]
+                if isinstance(domain, Boolean):
+                    print('this should be axiomatized!')
+                    function = domain._subs(x, y)
+                    if function.is_BooleanAtom:
+                        return function.copy(equivalent=self)
+                    
+                    limits = self.limits_delete(x)
+                    if limits:
+                        return self.func(function, *limits, equivalent=self)
+                    function.equivalent = self
+                    return function
+                
         return ConditionalBoolean.simplify(self, **kwargs)
 
     def union_sets(self, expr):
@@ -415,7 +352,7 @@ class Exists(ConditionalBoolean):
                     return self.func(self.function, (i, a - 1 , b))
             elif len(args) == 1:
                 domain = args[0]
-                if isinstance(domain, Complement):
+                if domain.is_Complement:
                     A, B = domain.args
                     if isinstance(B, FiniteSet):
                         deletes = set()
@@ -429,7 +366,7 @@ class Exists(ConditionalBoolean):
                                 return self.func(self.function, (i, domain))
                             domain = A
                             if isinstance(domain, Interval) and domain.is_integer:
-                                return self.func(self.function, (i, domain.min(), domain.max()))
+                                return self.func(self.function, (i, domain.min(), domain.max() + 1))
                             return self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
@@ -475,7 +412,7 @@ class Exists(ConditionalBoolean):
                 elif len(args) == 1:
                     limit = var.domain_latex(args[0])
                 else:
-                    limit = var.domain_latex(Interval(*args, integer=True))
+                    limit = var.domain_latex(Interval(*args, right_open=var.is_integer, integer=var.is_integer))
 
                 limits.append(limit)
 
@@ -504,9 +441,59 @@ class Exists(ConditionalBoolean):
                 exists = exists.func(forall, *exists.limits)
 
                 return self.func(exists, *limits_delete(limits, dic), equivalent=self)
-
         
-     
+    def apply(self, axiom, *args, **kwargs):
+        for arg in args:
+            if isinstance(arg, tuple):
+                x, *_ = arg
+                from sympy import Basic
+                if isinstance(x, Basic) and x.is_symbol:
+                    if x in self.variables_set:
+                        print('variables are given in Exists context!')
+                        return self
+        
+        return ConditionalBoolean.apply(self, axiom, *args, **kwargs)
+
+    def split(self, *args, **kwargs):
+        arr = self.function.split(*args, **kwargs)
+        if isinstance(arr, list):
+            clue = None
+            for eq in arr:
+                if eq.given is None:
+                    if eq.equivalent is None:
+                        assert eq.imply is not None
+                        if clue is None:
+                            clue = 'imply'
+                            self.function.derivative = None 
+                        eq.imply = None
+                        continue
+                    if eq.equivalent.given is None:
+                        print('eq.equivalent.given is None')
+                    else:
+                        eq.equivalent.given = None
+                        eq.equivalent = None
+                else:
+                    eq.given = None
+                    if clue is None:
+                        clue = 'given'
+                assert eq.equivalent is None 
+            eqs = [self.func(eq, *self.limits, **{clue: self}) for eq in arr]
+            if kwargs.get('simplify', True):
+                eqs = [eq.simplify() for eq in eqs]
+                
+            if self.function.is_Or:
+                self.derivative = eqs
+# exists with and structure is not deductive, only deductive for or structure!
+            return eqs
+        elif isinstance(arr, tuple):
+            for eq in arr:
+                assert eq.parent is not None
+                eq.parent = None
+
+            return [self.func(eq, *self.limits, parent=self).simplify() for eq in arr]
+        return self
+
+    
 from sympy.concrete.forall import ForAll     
 Exists.invert_type = ForAll
 ForAll.invert_type = Exists

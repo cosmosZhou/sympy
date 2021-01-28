@@ -1,29 +1,16 @@
-from axiom.utility import plausible
-from sympy.core.relational import Equality
-from sympy import Symbol, Slice
-from sympy.matrices.expressions.determinant import Det
-from sympy.concrete.products import Product
-from sympy import LAMBDA
-from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.concrete.summations import Sum 
-from sympy.core.numbers import oo
-from sympy.matrices.expressions.matexpr import Identity
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.sets.sets import Interval
+from sympy import *
+from axiom.utility import prove, apply
 from axiom import discrete, algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(n, a):
     i = Symbol.i(integer=True)
-    return Equality(Det(1 + a[:n] * Identity(n)), (1 + Sum[i:0:n - 1](1 / a[i])) * Product[i:0:n - 1](a[i]))
-
-
-from axiom.utility import check
+    return Equality(Det(1 + a[:n] * Identity(n)), (1 + Sum[i:0:n](1 / a[i])) * Product[i:0:n](a[i]))
 
 
 def column_transformation(*limits):
-    n = limits[0][-1] + 1
+    n = limits[0][-1]
     (i, *_), (j, *_) = limits    
 #     return Identity(n) + LAMBDA[j:n, i:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
 #     return Identity(n) + LAMBDA[j:n, i:n](Piecewise((KroneckerDelta(j, n - 1) - 1, Equality(i, n - 1)), (0, True)))
@@ -31,7 +18,7 @@ def column_transformation(*limits):
     return LAMBDA(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     a = Symbol.a(shape=(oo,), complex=True, zero=False)
@@ -46,7 +33,7 @@ def prove(Eq):
     Eq.induction = Eq[0].subs(n, n + 1)
     
     Eq << discrete.matrix.determinant.expansion_by_minors.apply(Eq.induction.lhs.arg, i=n)
-    
+
     Eq << Eq.induction.subs(Eq[-1])
     
     Eq << Eq[-1].this.lhs.bisect(Slice[-1:])
@@ -54,6 +41,8 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.args[1]().function.args[1].simplify()
     
     Eq << Eq[-1].this.lhs.args[0].args[1].arg().function.simplify() 
+    
+    Eq << Eq[-1].this.lhs.args[0].args[1].arg.args[1].args[1].apply(algebre.imply.equal.lamda.astype.identity)
     
     Eq.deduction = (Eq[-1] - Eq[-1].lhs.args[0]).subs(Eq[0])
     
@@ -73,18 +62,38 @@ def prove(Eq):
     D = D._subs(Eq.deduction.lhs.variable, i)
     Eq << (D @ column_transformation(*D.limits)).this.expand()
     
-    Eq << Eq[-1].this.rhs.function.args[1].bisect(Slice[-1:])
+    Eq << Eq[-1].this.rhs.function.args[0].bisect(Slice[-1:])
     
-    Eq << Eq[-1].rhs.args[1].function.args[3].this().function.args[1].simplify()
-    
-    Eq << Eq[-2].rhs.args[1].function.args[2].this().function.args[1].simplify() 
+    Eq << Eq[-1].rhs.args[1].function.args[2].this().function.args[1].simplify()
+
+    Eq << Eq[-2].rhs.args[1].function.args[3].this().function.args[1].simplify() 
     
     Eq << Eq[-3].this.rhs.subs(Eq[-2] + Eq[-1])
     
-#     Eq.column_transformation = Eq[-1].this.rhs.args[0]().function.simplify()
-    Eq.column_transformation = Eq[-1].this.rhs.simplify(deep=True)
+    Eq << Eq[-1].this.rhs.simplify(deep=True)
+    
+    Eq << Eq[-1].this.rhs.args[1].function.astype(Piecewise)
+    
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.swap.front)
+    
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.swap.back)
+    
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.invert)
+    
+    Eq << Eq[-1].this.rhs.args[1]().function.args[1].cond.simplify()
+    
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.subs, index=1)
+    
+    Eq << Eq[-1].this.rhs.args[1]().function.args[0]().expr.simplify()
+    
+    Eq.column_transformation = Eq[-1].this.rhs.args[1].function.args[2]().expr.simplify()    
+   
 #     Eq << expansion_by_minors.apply(Eq.column_transformation.rhs, i=i).this.rhs.args[-1].arg().function.simplify()
     Eq << discrete.matrix.determinant.expansion_by_minors.apply(Eq.column_transformation.rhs, i=i).this.rhs.simplify(deep=True)
+    
+    Eq << Eq[-1].this.rhs.args[1].arg.function.args[0].expr.astype(Piecewise)
+
+    Eq << Eq[-1].this.rhs.args[1].arg.function.args[1].expr.astype(Piecewise)
 
     Eq << Eq[-1].this.rhs.args[1].doit()
     
@@ -96,13 +105,16 @@ def prove(Eq):
     
     Eq << Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
 
-    Eq << Eq.column_transformation.det().subs(Eq[-1]).forall((i,))
+    Eq << Eq.column_transformation.apply(algebre.equal.imply.equal.det)
+    
+    Eq << Eq[-1].subs(Eq[-2]).forall((i,))
          
     Eq << Eq.deduction.subs(Eq[-1])
     
     Eq << Eq[0].induct(reverse=True)
     
-    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
+
     
 if __name__ == '__main__':
     prove(__file__)

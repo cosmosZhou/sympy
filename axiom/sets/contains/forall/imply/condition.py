@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
 from sympy.core.relational import Equality
@@ -9,7 +9,7 @@ from sympy import ForAll
 
 # given: A in B 
 # => A | B = B
-@plausible
+@apply(imply=True)
 def apply(*given):
     contains, forall = given
     assert contains.is_Contains and forall.is_ForAll
@@ -33,10 +33,9 @@ def apply(*given):
     
     return function
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(complex=True, positive=True)
     A = Symbol.A(etype=dtype.complex * n)

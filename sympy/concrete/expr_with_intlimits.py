@@ -304,16 +304,35 @@ class ExprWithIntLimits(ExprWithLimits):
                 if limit[1].is_boolean:
                     tex += r"\limits_{{%s \in %s} \left| %s \right.}" % (limit[0].latex, limit[2].latex, limit[1].latex)
                 else:
-                    tex += r"\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in limit])
+                    x, a, b = limit
+                    if a.is_Zero and x.is_integer and b.is_symbol:
+                        tex += r"\limits_{%s:%s}" % tuple([p._print(s) for s in (x, b)])
+                    else:
+                        b -= 1
+                        tex += r"\limits_{%s=%s}^{%s} " % tuple([p._print(i) for i in (x, a, b)])
         else:
 
             def _format_ineq(limit):
                 if len(limit) == 1:
                     return p._print(limit[0])
                 elif len(limit) == 2:
-                    return r"%s \in %s" % tuple([p._print(i) for i in limit])
+                    var, domain = limit
+                    if domain.is_boolean:
+    #                     "\right." here is necessary to match the previous \left
+                        return r"%s\left|%s\right." % tuple([p._print(i) for i in limit])
+                    else:
+                        return r"%s \in %s" % tuple([p._print(i) for i in limit])
                 else:
-                    return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (limit[1], limit[0], limit[2])])
+                    x, a, b = limit
+                    if x.is_integer:
+                        if b.is_Plus and b.args[0].is_One:
+                            b -= 1                            
+                            cmp = r"\leq"
+                        else:
+                            cmp = r"\lt"
+                    else:
+                        cmp = r"\leq"
+                    return r"%s \leq %s %s %s" % (p._print(a), p._print(x), cmp, p._print(b))
                 
             if all(len(limit) == 1 for limit in self.limits):
                 tex += r"_{%s} " % str.join(', ', [p._print(l[0]) for l in self.limits])

@@ -1,8 +1,7 @@
 
 from sympy.core.relational import Equality, Unequal
 from sympy.logic.boolalg import Or
-from axiom.utility import plausible
-from axiom.utility import check
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
@@ -11,7 +10,7 @@ from axiom import statistics, algebre
 
 # given: P(x) ! =0
 # imply: P(x, y) = P(y | x) P(x) 
-@plausible
+@apply(imply=True)
 def apply(given, var):
     assert given.is_Unequality
     x_probability, zero = given.args
@@ -53,7 +52,7 @@ def apply(given, var):
         
     
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, random=True)    
     y = Symbol.y(real=True, random=True)

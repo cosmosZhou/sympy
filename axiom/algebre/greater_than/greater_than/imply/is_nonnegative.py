@@ -1,10 +1,10 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan, GreaterThan
 from sympy import Symbol
 import axiom
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     greater_than, less_than = given
     x, a = axiom.is_GreaterThan(greater_than)
@@ -13,10 +13,9 @@ def apply(*given):
     return GreaterThan((x - a) * (y - b), 0)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)

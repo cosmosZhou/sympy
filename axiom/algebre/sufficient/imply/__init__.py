@@ -1,4 +1,4 @@
 from . import forall
 from . import condition
-from . import equality
-from . import forall_equality
+from . import equal
+from . import forall_equal

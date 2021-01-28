@@ -1,7 +1,7 @@
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
 from sympy.core.symbol import dtype
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy import ForAll, LAMBDA, Exists
@@ -9,8 +9,9 @@ from sympy.sets.contains import Contains
 from sympy import Symbol
 from sympy.core.function import Function
 from sympy.sets.conditionset import conditionset
-from axiom import sets
+from axiom import sets, algebre
 from sympy.functions.special.tensor_functions import KroneckerDelta
+
 
 def index_function(n):    
     k = Symbol.k(integer=True)
@@ -24,8 +25,7 @@ def index_function(n):
     return f
 
 
-
-@plausible
+@apply(imply=True)
 def apply(*given):
     forall_x, forall_p, equality = given
     assert forall_x.is_ForAll and forall_p.is_ForAll
@@ -68,7 +68,7 @@ def apply(*given):
     return Equality(abs(S), factorial(n))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n)    
@@ -84,14 +84,14 @@ def prove(Eq):
     p = Symbol.p(shape=(n,), integer=True, nonnegative=True)
     
     P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
-
+    
     Eq << apply(ForAll[x:S](Equality(x.set_comprehension(), e)),
                 ForAll[x:S, p[:n]:P](Contains(LAMBDA[k:n](x[p[k]]), S)),
                 Equality(abs(e), n))
 
-    Eq << sets.equality.imply.exists_equality.general.apply(Eq[3])
+    Eq << sets.equal.imply.exists_equal.general.apply(Eq[3])
     
-    Eq <<= Eq[1] & Eq[-1]
+    Eq << Eq[1].apply(algebre.equal.equal.imply.equal.transit, Eq[-1])
     
     a, cond = Eq[-1].limits[0]
     index = index_function(n)
@@ -99,14 +99,17 @@ def prove(Eq):
 #     p= LAMBDA[j:n](index[j](x, a))
     
 #     x[index[j](x, a)] = a[j]
-    Eq << Exists[a:cond](ForAll[p:P](Contains(LAMBDA[k:n](a[p[k]]), S)))
+    Eq << Exists[a:cond](ForAll[p:P](Contains(LAMBDA[k:n](a[p[k]]),
+                                              S)))
     
-    Eq << Exists[a:cond](ForAll[p:P](Equality(p, LAMBDA[j:n](index[j](LAMBDA[k:n](a[p[k]]), a)))))   
+    Eq << Exists[a:cond](ForAll[p:P](Equality(p, LAMBDA[j:n](index[j](LAMBDA[k:n](a[p[k]]),
+                                                                      a)))))   
         
-    Eq << Exists[a:cond](ForAll[x:S](Contains(LAMBDA[j:n](index[j](x, a)), P)))
+    Eq << Exists[a:cond](ForAll[x:S](Contains(LAMBDA[j:n](index[j](x,
+                                                                   a)), P)))
     
-    Eq << Exists[a:cond](ForAll[x:S](Equality(x, LAMBDA[k:n](a[LAMBDA[j:n](index[j](x, a))[k]]))))
-    
+    Eq << Exists[a:cond](ForAll[x:S](Equality(x,
+                                              LAMBDA[k:n](a[LAMBDA[j:n](index[j](x, a))[k]]))))
     
 
 if __name__ == '__main__':

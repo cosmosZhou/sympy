@@ -1,5 +1,5 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 
 from sympy.sets.contains import Contains
@@ -10,7 +10,7 @@ from axiom import sets
 # Exists[x] (x in A)
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_StrictGreaterThan
     abs_S, size = given.args
@@ -21,10 +21,9 @@ def apply(given):
     return Exists[x](Contains(x, S))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     Eq << apply(abs(A) > 0)

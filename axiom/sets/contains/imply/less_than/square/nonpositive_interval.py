@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.sets.contains import Contains
 from sympy import Symbol
 import axiom
@@ -9,7 +9,7 @@ from axiom import algebre
 
 # given: A in B 
 # => {A} subset B
-@plausible
+@apply(imply=True)
 def apply(given):
     x, interval = axiom.is_Contains(given)
     axiom.is_real_Interval(interval)
@@ -22,10 +22,9 @@ def apply(given):
     return LessThan(x * x, m * m)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     m = Symbol.m(real=True)

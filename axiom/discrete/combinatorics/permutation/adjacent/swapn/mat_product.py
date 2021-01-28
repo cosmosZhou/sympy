@@ -1,17 +1,10 @@
-from sympy.core.symbol import dtype
-from axiom.utility import check, plausible
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA
-from sympy.sets.contains import Contains
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
-from sympy import Symbol, Slice
-
-from sympy.concrete.products import MatProduct
 from axiom import algebre, sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given, m=None, b=None):
     assert given.is_ForAll
     S = given.rhs
@@ -30,7 +23,7 @@ def apply(given, m=None, b=None):
     return ForAll[x:S](Contains(x @ MatProduct[i:m](w[i, b[i]]), S))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n, given=True)    
@@ -40,14 +33,13 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     
     given = ForAll[x[:n]:S](Contains(x[:n] @ w[i, j], S))
     
     Eq.w_definition, Eq.swap, Eq.hypothesis = apply(given)
     
-    i, _, m_1 = Eq.hypothesis.function.lhs.args[1].limits[0]
-    m = m_1 + 1
+    i, _, m = Eq.hypothesis.function.lhs.args[1].limits[0]
     
     b = Eq.hypothesis.function.lhs.args[1].function.indices[1].base
         
@@ -61,7 +53,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(x, Eq[1].rhs.func(*Eq[1].rhs.args[:2]))
     
-    Eq << Eq[-1].forall((x, S))
+    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (x, S))
     
     Eq << (Eq[-1] & Eq.hypothesis).split()
     
@@ -70,6 +62,7 @@ def prove(Eq):
     Eq << Eq.induction.induct()
     
     Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=m)
+
     
 if __name__ == '__main__':
     prove(__file__)

@@ -1,4 +1,4 @@
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 
 from sympy.sets.sets import Interval, CartesianSpace
 from sympy.core.numbers import oo
@@ -12,14 +12,14 @@ from sympy.sets.contains import Contains
 from axiom import discrete
 
 
-@plausible
+@apply(imply=True)
 def apply(given, w=None):
     e, S = axiom.is_Contains(given)
     x, i = e.args
     n = x.shape[0]
     j = Symbol.j(integer=True)
     if w is None:    
-        w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap        
@@ -27,7 +27,7 @@ def apply(given, w=None):
     return Contains(w[i, j] @ x[:n], CartesianSpace(S, n))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
     x = Symbol.x(shape=(n,), integer=True)    

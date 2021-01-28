@@ -128,11 +128,3 @@ evalf._create_evalf_table()
 # import abc
 
 from .deprecated import *
-
-class Slice(type):    
-
-    def __getitem__(self, indices):
-        return indices
-        
-class Slice(metaclass=Slice):  # @DuplicatedSignature
-    ...

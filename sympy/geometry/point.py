@@ -24,7 +24,7 @@ from sympy.core.compatibility import is_sequence
 from sympy.core.containers import Tuple
 from sympy.simplify import nsimplify, simplify
 from sympy.geometry.exceptions import GeometryError
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.functions.elementary.complexes import im
 from sympy.matrices import Matrix
 from sympy.core.numbers import Float

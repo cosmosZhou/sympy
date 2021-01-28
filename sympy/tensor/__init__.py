@@ -1,7 +1,7 @@
 """A module to manipulate symbolic objects with indices including tensors
 
 """
-from .indexed import IndexedBase, Idx, Indexed
+from .indexed import IndexedBase, Idx, Indexed, SliceIndexed, Slice
 from .index_methods import get_contraction_structure, get_indices
 from .array import (MutableDenseNDimArray, ImmutableDenseNDimArray,
     MutableSparseNDimArray, ImmutableSparseNDimArray, NDimArray, tensorproduct,
@@ -9,7 +9,7 @@ from .array import (MutableDenseNDimArray, ImmutableDenseNDimArray,
     SparseNDimArray,)
 
 __all__ = [
-    'IndexedBase', 'Idx', 'Indexed',
+    'IndexedBase', 'Idx', 'Indexed', 'Slice',
 
     'get_contraction_structure', 'get_indices',
 

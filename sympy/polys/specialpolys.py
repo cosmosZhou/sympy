@@ -5,7 +5,7 @@ from __future__ import print_function, division
 from sympy.core import Add, Mul, Symbol, sympify, Dummy, symbols
 from sympy.core.compatibility import range, string_types
 from sympy.core.singleton import S
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.ntheory import nextprime
 from sympy.polys.densearith import (
     dmp_add_term, dmp_neg, dmp_mul, dmp_sqr

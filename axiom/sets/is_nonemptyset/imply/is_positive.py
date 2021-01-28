@@ -1,13 +1,15 @@
 from sympy.core.relational import Unequality, StrictGreaterThan, GreaterThan
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import S
 from sympy import Symbol
 from sympy.sets.sets import EmptySet
+from axiom import sets, algebre
 # given: A != {}
 # |A| > 0
 
-@plausible
+
+@apply(imply=True)
 def apply(given):
     assert given.is_Unequality
     A, B = given.args
@@ -18,21 +20,16 @@ def apply(given):
     return StrictGreaterThan(abs(A), 0)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
-    A = Symbol.A(etype=dtype.integer)
+    A = Symbol.A(etype=dtype.integer, given=True)
     inequality = Unequality(A, EmptySet(), evaluate=False)
 
     Eq << apply(inequality)
 
-    Eq << inequality.abs()
-
-    Eq << GreaterThan(*Eq[-1].args, plausible=True)
-
-    Eq << Eq[-1].subs(inequality)
+    Eq << sets.is_nonemptyset.imply.is_nonzero.apply(Eq[0])
+    
+    Eq << algebre.is_nonzero.imply.is_positive.apply(Eq[-1])
 
 
 if __name__ == '__main__':

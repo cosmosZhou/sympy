@@ -1,14 +1,12 @@
 from . import discrete
 from . import sets
-from . import neuron
+from . import keras
 from . import statistics
 from . import algebre
 from . import calculus
 from . import geometry
 
 from sympy.core.numbers import oo
-from sympy.logic.boolalg import BooleanTrue
-from sympy import Contains
 
 
 def is_zero(eq):
@@ -71,6 +69,15 @@ def is_nonzero(eq):
         return lhs    
 
 
+def is_infinite_series(fx):
+    f, *limits = is_Sum(fx)
+    n, a, b = limit_is_Interval(limits, integer=True)
+    assert b.is_infinite
+    if not a.is_zero:
+        f = f._subs(n, n + a)
+    return f
+
+
 def is_nonnegative(eq):
     assert eq.is_GreaterThan
     lhs, rhs = eq.args
@@ -107,6 +114,16 @@ def is_nonemptyset(eq):
     if rhs.is_EmptySet:
         return lhs    
 
+
+def is_ConditionSet(s):
+    assert s.is_UNION
+    assert s.is_ConditionSet
+    return s.variable, s.condition, s.base_set    
+
+def is_ImageSet(s):
+    assert s.is_UNION
+    expr, sym, cond = s.image_set()    
+    return expr, sym, cond    
     
 def is_emptyset(eq):
     assert eq.is_Equal
@@ -133,10 +150,12 @@ def is_Interval(domain, integer=True, end=oo):
     assert domain.is_Interval
     if integer:
         assert domain.is_integer
-    if end.is_Infinity:
+    if end is not None and end.is_Infinity:
         assert domain.max().is_Infinity
         return domain.min()
-    return domain.min(), domain.max()
+    if integer:
+        return domain.min(), domain.max() + 1
+    return domain.args
 
 
 def is_real_Interval(domain):
@@ -145,29 +164,54 @@ def is_real_Interval(domain):
     return domain
 
     
-def limits_is_nonzero_baseset(limits):
-    assert len(limits) == 1
-    limit = limits[0]
-    x, cond, baseset = limit        
+def limit_is_nonzero_baseset(limits):
+    x, cond, baseset = limit_is_baseset(limits)    
     return x, is_nonzero(cond), baseset
 
 
-def limits_is_zero_baseset(limits):
-    assert len(limits) == 1
-    limit = limits[0]
-    x, cond, baseset = limit        
+def limit_is_zero_baseset(limits):
+    x, cond, baseset = limit_is_baseset(limits)
     return x, is_zero(cond), baseset
 
 
-def limits_is_set(limits):
+def limit_is_baseset(limits):
     assert len(limits) == 1
     limit = limits[0]
-    x, S = limit
-    assert S.is_set 
+    x, cond, baseset = limit        
+    return x, cond, baseset
+
+def limit_is_even(limits):
+    n, cond, baseset = limit_is_baseset(limits)
+    _n = is_even(cond)
+    assert n == _n
+    a, b = is_Interval(baseset, integer=True, end=None)
+    return n, a, b
+
+def limit_is_odd(limits):
+    n, cond, baseset = limit_is_baseset(limits)
+    _n = is_odd(cond)
+    assert n == _n
+    a, b = is_Interval(baseset, integer=True, end=None)
+    return n, a, b
+
+def limit_is_set(limits):
+    assert len(limits) == 1
+    limit = limits[0]
+    from sympy import Contains
+    
+    if len(limit) == 3:
+        x, a, b = limit
+        from sympy import Interval
+        S = Interval(a, b, right_open=x.is_integer, integer=x.is_integer)
+
+    else:
+        x, S = limit
+        assert S.is_set 
+
     return Contains(x, S)
 
 
-def limits_is_Interval(limits, integer=True):
+def limit_is_Interval(limits, integer=True):
     assert len(limits) == 1
     limit = limits[0]
     x, *ab = limit
@@ -176,7 +220,15 @@ def limits_is_Interval(limits, integer=True):
     return [x, *ab]
 
 
-def limits_is_symbol(limits):
+def limits_are_Interval(limits, integer=True):
+    for limit in limits:
+        x, *ab = limit
+        if integer:
+            assert x.is_integer     
+    return limits
+
+
+def limit_is_symbol(limits):
     assert len(limits) == 1
     limit = limits[0]
     assert len(limit) == 1
@@ -185,7 +237,7 @@ def limits_is_symbol(limits):
     return x
 
 
-def limits_is_Boolean(limits):
+def limit_is_Boolean(limits):
     assert len(limits) == 1
     limit = limits[0]            
     x, cond = limit
@@ -219,21 +271,21 @@ def limits_are_Contains(limits):
     return tuple(array)
 
 
-def limits_is_nonzero(limits):
+def limit_is_nonzero(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit        
     return x, is_nonzero(cond)
 
 
-def limits_is_zero(limits):
+def limit_is_zero(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit        
     return x, is_zero(cond)
 
 
-def limits_is_Equal(limits):
+def limit_is_Equal(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit
@@ -241,7 +293,7 @@ def limits_is_Equal(limits):
     return x, cond
 
 
-def limits_is_LessThan(limits):
+def limit_is_LessThan(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit
@@ -249,7 +301,7 @@ def limits_is_LessThan(limits):
     return x, cond
 
 
-def limits_is_ForAll(limits):
+def limit_is_ForAll(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit
@@ -257,7 +309,7 @@ def limits_is_ForAll(limits):
     return x, cond
 
 
-def limits_is_Contains(limits):
+def limit_is_Contains(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit
@@ -270,9 +322,30 @@ def is_Times(self):
     return self.args
 
 
-def is_And(self):
+def is_Plus(self):
+    assert self.is_Plus
+    return self.args
+
+
+def is_Substract(self):
+    assert self.is_Plus
+    lhs, rhs = self.args
+    if rhs.is_Times:
+        if rhs.args[0].is_NegativeOne:
+            rhs = rhs.func(*rhs.args[1:])
+            return lhs, rhs
+    if lhs.is_Times:        
+        if lhs.args[0].is_NegativeOne:
+            lhs = lhs.func(*lhs.args[1:])
+            return rhs, lhs
+    assert False
+        
+
+def is_And(self, copy=True):
     assert self.is_And
-    return [*self.args]
+    if copy:
+        return [*self.args]    
+    return self.args
 
 
 def is_Or(self, copy=True):
@@ -290,6 +363,35 @@ def is_Unequal(self):
 def is_Equal(self):
     assert self.is_Equal
     return self.args
+
+
+def is_BinaryCondition(self):
+    assert self.is_BinaryCondition
+    return self.args
+
+
+def is_Subset(self):
+    assert self.is_Subset
+    return self.args
+
+
+def is_Supset(self):
+    assert self.is_Supset
+    return self.args
+
+
+def is_Boole(self):
+    assert self.is_Boole
+    return self.arg
+
+
+def is_set_comprehension(self):    
+    function, *limits = is_UNION(self)
+    element_k = is_FiniteSet(function)
+    k, a, b = limit_is_Interval(limits)
+    assert a.is_zero
+    from sympy.concrete.expr_with_limits import LAMBDA
+    return LAMBDA[k:a:b](element_k).simplify()
 
 
 def is_LessThan(self):
@@ -313,13 +415,8 @@ def is_GreaterThan(self):
 
 
 def is_Equivalent(self):
-    if self.is_Equivalent:
-        return self.args
-    assert self.is_Equal
-    lhs, rhs = self.args
-    assert lhs.is_Function and lhs.func.name == 'bool'
-    assert rhs.is_Function and rhs.func.name == 'bool'    
-    return lhs.arg, rhs.arg
+    assert self.is_Equivalent
+    return self.args
 
 
 def is_Exists(self):
@@ -342,8 +439,10 @@ def is_NotContains(self):
     return self.args
 
 
-def is_Piecewise(self):
+def is_Piecewise(self, copy=False):
     assert self.is_Piecewise
+    if copy:
+        return [*self.args]
     return self.args
 
 
@@ -351,9 +450,45 @@ def is_Abs(self):
     assert self.is_Abs
     return self.arg
 
+def is_Floor(self):
+    assert self.is_Floor
+    return self.arg
 
+def is_Norm(self):
+    assert self.is_Norm
+    return self.arg
+
+
+def is_Log(self):
+    assert self.is_Log
+    return self.arg
+
+
+def is_Exp(self):
+    assert self.is_Exp
+    return self.arg
+
+
+def is_KroneckerDelta(self):
+    assert self.is_KroneckerDelta
+    return self.args
+
+    
 def is_LAMBDA(self):
     assert self.is_LAMBDA
+    return self.args 
+
+
+def is_Sum(self):
+    assert self.is_Sum
+    return self.args 
+
+def is_Product(self):
+    assert self.is_Product
+    return self.args 
+
+def is_UNION(self):
+    assert self.is_UNION
     return self.args 
 
 
@@ -362,9 +497,36 @@ def is_MatMul(self):
     return self.args
 
 
+def is_Maximize(self):
+    assert self.is_Maximize
+    return self.args
+
+
+def is_Minimize(self):
+    assert self.is_Minimize
+    return self.args
+
+
+def is_Max(self):
+    assert self.is_Max
+    return self.args
+
+
+def is_Min(self):
+    assert self.is_Min
+    return self.args
+
+
 def is_Power(self):
     assert self.is_Power
     return self.args
+
+
+def is_Squared(self):
+    assert self.is_Power
+    base, exp = self.args
+    assert exp == 2
+    return base
 
 
 def is_Complement(self):
@@ -378,6 +540,16 @@ def is_FiniteSet(self, size=1):
         assert len(self) == size
         if size == 1:
             return self.arg
+    return self.args
+
+
+def is_Indexed(self):
+    assert self.is_Indexed
+    return self.args
+
+
+def is_Slice(self):
+    assert self.is_Slice
     return self.args
 
 
@@ -398,10 +570,24 @@ def is_definition(self):
     return definition
 
 
-def forall_equality(eq):
+def forall_equal(eq):
     assert eq.is_ForAll
     limits = eq.limits
     is_Equal(eq.function)
+    return (eq.function, *limits)
+
+
+def forall_subset(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    is_Subset(eq.function)
+    return (eq.function, *limits)
+
+
+def forall_supset(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    is_Supset(eq.function)
     return (eq.function, *limits)
 
 
@@ -409,6 +595,27 @@ def forall_less_than(eq):
     assert eq.is_ForAll
     limits = eq.limits
     is_LessThan(eq.function)
+    return (eq.function, *limits)
+
+
+def forall_strict_less_than(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    is_StrictLessThan(eq.function)
+    return (eq.function, *limits)
+
+
+def forall_strict_greater_than(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    is_StrictGreaterThan(eq.function)
+    return (eq.function, *limits)
+
+
+def forall_greater_than(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    is_GreaterThan(eq.function)
     return (eq.function, *limits)
 
 
@@ -428,3 +635,9 @@ def forall_contains(eq):
     is_Contains(eq.function)    
     return (eq.function, *limits)
 
+
+def forall_notcontains(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    is_NotContains(eq.function)    
+    return eq.args

@@ -1,4 +1,3 @@
-
 # coding=utf-8
 import os
 import re
@@ -11,8 +10,10 @@ from queue import PriorityQueue
 from functools import singledispatch 
 import random
 
+
 def axiom_directory():
     return os.path.dirname(__file__)
+
 
 count = 0
 
@@ -79,14 +80,19 @@ def create_module(package, module):
     print('editing', __init__)
     
     hit = False
-    for line in Text(__init__):
+    file = Text(__init__)
+    for line in file:
         m = re.compile('from \. import (\w+)').match(line)        
         if m and m.group(1) == module:
             hit = True
             break
         
     if not hit:
-        Text(__init__).append('from . import %s' % module)
+        addition = 'from . import %s' % module
+        last_char = file.get_last_char()
+        if last_char and last_char != '\n':
+            addition = '\n' + addition  
+        file.append(addition)
 
 
 def run(package):   
@@ -108,6 +114,7 @@ def import_module(package):
         create_module(*m.groups())
         print(package, 'is created newly')
         return run(package)
+
         
 @singledispatch    
 def process(package, debug=False):
@@ -156,7 +163,7 @@ def prove(debug=False, parallel=True):
     print('total_timing =', total_timing)
     print('average_timing =', average_timing)
     
-#     tasks = {'axiom.algebre.inequality.equality.imply.equality': 0}
+#     tasks = {'axiom.algebre.unequal.equal.imply.equal': 0}
     
     tasks = [*tasks.items()]
     tasks.sort(key=lambda pair : pair[1], reverse=True)
@@ -232,8 +239,8 @@ def _(items, debug=False, parallel=True):  # @DuplicatedSignature
     proc = process_debug if debug else process 
     if parallel:        
         from multiprocessing import Pool
-        
-        with Pool(processes=cpu_count() * 2) as pool:
+        with Pool(processes=cpu_count()) as pool:
+#         with Pool(processes=cpu_count() * 2) as pool:
             return pool.map(proc, items)
     else:
         return map(proc, items)

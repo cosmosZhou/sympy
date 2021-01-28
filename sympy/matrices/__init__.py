@@ -27,4 +27,4 @@ from .expressions import (
     Transpose, ZeroMatrix, OneMatrix, blockcut, block_collapse, matrix_symbols, Adjoint,
     hadamard_product, HadamardProduct, HadamardPower, Det, Determinant, det,
     diagonalize_vector, DiagonalizeVector, DiagonalMatrix, DiagonalOf, trace,
-    DotProduct, kronecker_product, KroneckerProduct, Concatenate, MatrixSet)
+    DotProduct, kronecker_product, KroneckerProduct, MatrixSet)

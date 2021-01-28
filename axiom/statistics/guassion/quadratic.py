@@ -1,5 +1,5 @@
 from sympy.core.numbers import oo
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy import sqrt, pi, exp, log, Symbol
 from sympy.integrals.integrals import Integral
@@ -19,13 +19,14 @@ def coefficient(y, x):
 
 
 def doit(a, b, c):
-    delta = (b ** 2 - 4 * a * c) / (4 * a)
+    delta = (b ** 2) / (4 * a) - c
+#     delta = (b ** 2 - 4 * a * c) / (4 * a)
     delta = delta.ratsimp()
 
     return sqrt(pi) * exp(delta) / sqrt(a)
 
 
-@plausible
+@apply(imply=True)
 def apply(y, x=None):
     if x is None:
         if not isinstance(y, Integral):
@@ -51,10 +52,9 @@ def apply(y, x=None):
     return Equality(Integral(y, (x, -oo, oo)), doit(a, b, c))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     a = Symbol.a(positive=True)
     b = Symbol.b(real=True)

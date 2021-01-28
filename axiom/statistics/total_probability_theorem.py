@@ -1,5 +1,5 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy.concrete.summations import Sum
 from sympy.core.symbol import Symbol
@@ -8,7 +8,7 @@ from sympy.integrals.integrals import Integral
 from sympy.stats.symbolic_probability import Probability
 
 
-@plausible
+@apply(imply=True)
 def apply(self, given):
     marginal_probability = self.marginalize(given)
     x = pspace(given).symbol
@@ -19,10 +19,9 @@ def apply(self, given):
         
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)

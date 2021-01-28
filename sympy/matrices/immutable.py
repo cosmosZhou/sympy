@@ -68,7 +68,7 @@ class ImmutableDenseMatrix(DenseMatrix, MatrixExpr):
         # so return the internal tuple.
         return self.args[2].args
 
-    def _entry(self, i, j, **kwargs):
+    def _entry(self, i, j=None, **kwargs):
         return DenseMatrix.__getitem__(self, (i, j))
 
     def __setitem__(self, *args):

@@ -1954,8 +1954,7 @@ class MatrixOperations(MatrixRequired):
         >>> _.simplify()
         Matrix([[x]])
         """
-        return self.applyfunc(lambda x: x.simplify(ratio=ratio, measure=measure,
-                                                   rational=rational, inverse=inverse))
+        return self.applyfunc(lambda x: x.simplify())
 
     def subs(self, *args, **kwargs):  # should mirror core.basic.subs
         """Return a new matrix with subs applied to each entry.

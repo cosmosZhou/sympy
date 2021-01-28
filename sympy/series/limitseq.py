@@ -10,7 +10,7 @@ from sympy.core.symbol import Dummy
 from sympy.core.sympify import sympify
 from sympy.functions.combinatorial.numbers import fibonacci
 from sympy.functions.elementary.complexes import Abs
-from sympy.functions.elementary.miscellaneous import Max, Min
+from sympy.functions.elementary.extremum import Max, Min
 from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.series.limits import Limit
 

@@ -1,12 +1,13 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
+from axiom import sets
 # given: |A| = 0
 # A == {}
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Equality
     A, B = given.args
@@ -18,21 +19,19 @@ def apply(given):
     return Equality(A, A.etype.emptySet)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
-    A = Symbol.A(etype=dtype.integer)
+    A = Symbol.A(etype=dtype.integer, given=True)
 
     Eq << apply(Equality(abs(A), 0))
 
     Eq << ~Eq[-1]
-
-    Eq << Eq[-1].abs()
-
-    Eq << Eq[-1].subs(Eq[0])
-
+    
+    Eq << sets.is_nonemptyset.imply.is_nonzero.apply(Eq[-1])
+    
+    Eq << ~Eq[0]
 
 if __name__ == '__main__':
     prove(__file__)

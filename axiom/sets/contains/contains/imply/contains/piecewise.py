@@ -1,5 +1,5 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains, NotContains
 from sympy import Symbol, Or, Boole
@@ -10,7 +10,7 @@ from sympy.core.relational import Equal
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(*given, piecewise=None):
     S = None
     elements = set()
@@ -28,10 +28,9 @@ def apply(*given, piecewise=None):
     return Contains(piecewise, S)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(integer=True, given=True)
     
@@ -50,15 +49,15 @@ def prove(Eq):
              Equal(Boole(Contains(g(x), S)), 1) & Contains(x, B - A),
              Equal(Boole(Contains(h(x), S)), 1) & NotContains(x, A | B), plausible=True)
     
-    Eq.bool_fx = sets.contains.imply.equality.bool.contains.apply(Eq[0])
-    Eq.bool_gx = sets.contains.imply.equality.bool.contains.apply(Eq[1])
-    Eq.bool_hx = sets.contains.imply.equality.bool.contains.apply(Eq[2])
+    Eq.bool_fx = sets.contains.imply.equal.bool.contains.apply(Eq[0])
+    Eq.bool_gx = sets.contains.imply.equal.bool.contains.apply(Eq[1])
+    Eq.bool_hx = sets.contains.imply.equal.bool.contains.apply(Eq[2])
     
     Eq << Eq.plausible.subs(Eq.bool_fx).subs(Eq.bool_gx).subs(Eq.bool_hx)
     
     Eq << ~Eq[-1]
     
-    Eq << Eq[-1].this.args[0].apply(sets.contains.imply.ou, complement=True)
+    Eq << Eq[-1].this.args[0].apply(sets.contains.imply.ou.where.union, complement=True)
     
     Eq << Eq[-1].astype(Or)
 

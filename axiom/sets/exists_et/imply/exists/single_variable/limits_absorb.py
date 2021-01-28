@@ -1,18 +1,12 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.function import Function
-from sympy.logic.boolalg import And
-from sympy.core.numbers import oo
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
+from sympy import *
 import axiom
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given, index):
     assert given.is_Exists and given.function.is_And
     
@@ -27,17 +21,17 @@ def apply(given, index):
 
     limits = [*given.limits]
     A = given.limits_dict[wrt]
-    assert A.is_set
-    
-    limits[i] = (wrt, A & B)
+    if A:
+        limits[i] = (wrt, A & B)
+    else:
+        limits[i] = (wrt, B)
 
     return Exists(function, *limits)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)    
     x = Symbol.x(real=True, shape=(oo,))

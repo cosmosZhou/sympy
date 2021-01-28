@@ -1,6 +1,6 @@
 from sympy.core.symbol import Symbol, dtype
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.functions.combinatorial.numbers import Stirling
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy import UNION, LAMBDA
@@ -8,7 +8,7 @@ from sympy.core.numbers import oo
 from sympy.sets.sets import Interval
 
 
-@plausible
+@apply(imply=True)
 def apply(n, k, s1=None, A=None):    
     j = Symbol.j(domain=Interval(0, k, integer=True))
             
@@ -25,10 +25,9 @@ def apply(n, k, s1=None, A=None):
     return Equality(abs(s1), abs(A[j]))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)

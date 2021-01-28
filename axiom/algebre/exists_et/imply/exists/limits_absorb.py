@@ -1,17 +1,12 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
-from sympy import Symbol, Slice
-from sympy import Exists, ForAll
-from sympy.core.function import Function
-from sympy.logic.boolalg import And
-from sympy.core.numbers import oo
+from sympy import *
 from sympy.sets.conditionset import conditionset
-from sympy.sets.contains import Contains
 from axiom import sets, algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given, index):
     assert given.is_Exists and given.function.is_And
     
@@ -53,10 +48,9 @@ def apply(given, index):
     return Exists(function, *limits)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)    
     x = Symbol.x(real=True, shape=(oo,))

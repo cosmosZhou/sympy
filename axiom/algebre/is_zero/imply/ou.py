@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equal
 from sympy import Symbol
 import axiom
@@ -6,7 +6,7 @@ from sympy.logic.boolalg import Or
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     multiply = axiom.is_zero(given)
     args = axiom.is_Times(multiply)
@@ -14,10 +14,9 @@ def apply(given):
     return Or(*(Equal(arg, 0).simplify() for arg in args))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)

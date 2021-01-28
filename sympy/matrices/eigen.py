@@ -9,7 +9,7 @@ from sympy.core.evalf import DEFAULT_MAXPREC, PrecisionExhausted
 from sympy.core.logic import fuzzy_and, fuzzy_or
 from sympy.core.numbers import Float
 from sympy.core.sympify import _sympify
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.polys import roots
 from sympy.simplify import nsimplify, simplify as _simplify
 from sympy.utilities.exceptions import SymPyDeprecationWarning

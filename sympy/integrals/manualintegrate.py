@@ -722,11 +722,11 @@ def trig_rule(integral):
         rewritten = sympy.cos(*integrand.args) / sympy.sin(*integrand.args)
     elif isinstance(integrand, sympy.sec):
         arg = integrand.args[0]
-        rewritten = ((sympy.sec(arg) ** 2 + sympy.tan(arg) * sympy.sec(arg)) /
+        rewritten = ((sympy.sec(arg) ** 2 + sympy.tan(arg) * sympy.sec(arg)) / 
                      (sympy.sec(arg) + sympy.tan(arg)))
     elif isinstance(integrand, sympy.csc):
         arg = integrand.args[0]
-        rewritten = ((sympy.csc(arg) ** 2 + sympy.cot(arg) * sympy.csc(arg)) /
+        rewritten = ((sympy.csc(arg) ** 2 + sympy.cot(arg) * sympy.csc(arg)) / 
                      (sympy.csc(arg) + sympy.cot(arg)))
     else:
         return
@@ -843,9 +843,9 @@ def cotcsc_pattern(symbol):
 
 @sympy.cacheit
 def heaviside_pattern(symbol):
-    m = sympy.Wild('m', exclude=[symbol])
-    b = sympy.Wild('b', exclude=[symbol])
-    g = sympy.Wild('g')
+    m = sympy.Wild('m', real=True, exclude=[symbol])
+    b = sympy.Wild('b', real=True, exclude=[symbol])
+    g = sympy.Wild('g', real=True)
     pattern = sympy.Heaviside(m * symbol + b) * g
 
     return pattern, m, b, g
@@ -878,33 +878,33 @@ sincos_botheven_condition = uncurry(
     m.is_nonnegative and n.is_nonnegative)
 
 sincos_botheven = trig_rewriter(
-    lambda a, b, m, n, i, symbol: ((((1 - sympy.cos(2 * a * symbol)) / 2) ** (m / 2)) *
+    lambda a, b, m, n, i, symbol: ((((1 - sympy.cos(2 * a * symbol)) / 2) ** (m / 2)) * 
                                     (((1 + sympy.cos(2 * b * symbol)) / 2) ** (n / 2))))
 
 sincos_sinodd_condition = uncurry(lambda a, b, m, n, i, s: m.is_odd and m >= 3)
 
 sincos_sinodd = trig_rewriter(
-    lambda a, b, m, n, i, symbol: ((1 - sympy.cos(a * symbol) ** 2) ** ((m - 1) / 2) *
-                                    sympy.sin(a * symbol) *
+    lambda a, b, m, n, i, symbol: ((1 - sympy.cos(a * symbol) ** 2) ** ((m - 1) / 2) * 
+                                    sympy.sin(a * symbol) * 
                                     sympy.cos(b * symbol) ** n))
 
 sincos_cosodd_condition = uncurry(lambda a, b, m, n, i, s: n.is_odd and n >= 3)
 
 sincos_cosodd = trig_rewriter(
-    lambda a, b, m, n, i, symbol: ((1 - sympy.sin(b * symbol) ** 2) ** ((n - 1) / 2) *
-                                    sympy.cos(b * symbol) *
+    lambda a, b, m, n, i, symbol: ((1 - sympy.sin(b * symbol) ** 2) ** ((n - 1) / 2) * 
+                                    sympy.cos(b * symbol) * 
                                     sympy.sin(a * symbol) ** m))
 
 tansec_seceven_condition = uncurry(lambda a, b, m, n, i, s: n.is_even and n >= 4)
 tansec_seceven = trig_rewriter(
-    lambda a, b, m, n, i, symbol: ((1 + sympy.tan(b * symbol) ** 2) ** (n / 2 - 1) *
-                                    sympy.sec(b * symbol) ** 2 *
+    lambda a, b, m, n, i, symbol: ((1 + sympy.tan(b * symbol) ** 2) ** (n / 2 - 1) * 
+                                    sympy.sec(b * symbol) ** 2 * 
                                     sympy.tan(a * symbol) ** m))
 
 tansec_tanodd_condition = uncurry(lambda a, b, m, n, i, s: m.is_odd)
 tansec_tanodd = trig_rewriter(
-    lambda a, b, m, n, i, symbol: ((sympy.sec(a * symbol) ** 2 - 1) ** ((m - 1) / 2) *
-                                     sympy.tan(a * symbol) *
+    lambda a, b, m, n, i, symbol: ((sympy.sec(a * symbol) ** 2 - 1) ** ((m - 1) / 2) * 
+                                     sympy.tan(a * symbol) * 
                                      sympy.sec(b * symbol) ** n))
 
 tan_tansquared_condition = uncurry(lambda a, b, m, n, i, s: m == 2 and n == 0)
@@ -913,14 +913,14 @@ tan_tansquared = trig_rewriter(
 
 cotcsc_csceven_condition = uncurry(lambda a, b, m, n, i, s: n.is_even and n >= 4)
 cotcsc_csceven = trig_rewriter(
-    lambda a, b, m, n, i, symbol: ((1 + sympy.cot(b * symbol) ** 2) ** (n / 2 - 1) *
-                                    sympy.csc(b * symbol) ** 2 *
+    lambda a, b, m, n, i, symbol: ((1 + sympy.cot(b * symbol) ** 2) ** (n / 2 - 1) * 
+                                    sympy.csc(b * symbol) ** 2 * 
                                     sympy.cot(a * symbol) ** m))
 
 cotcsc_cotodd_condition = uncurry(lambda a, b, m, n, i, s: m.is_odd)
 cotcsc_cotodd = trig_rewriter(
-    lambda a, b, m, n, i, symbol: ((sympy.csc(a * symbol) ** 2 - 1) ** ((m - 1) / 2) *
-                                    sympy.cot(a * symbol) *
+    lambda a, b, m, n, i, symbol: ((sympy.csc(a * symbol) ** 2 - 1) ** ((m - 1) / 2) * 
+                                    sympy.cot(a * symbol) * 
                                     sympy.csc(b * symbol) ** n))
 
 
@@ -938,7 +938,7 @@ def trig_sincos_rule(integral):
             sincos_sinodd_condition: sincos_sinodd,
             sincos_cosodd_condition: sincos_cosodd
         })(tuple(
-            [match.get(i, ZERO) for i in (a, b, m, n)] +
+            [match.get(i, ZERO) for i in (a, b, m, n)] + 
             [integrand, symbol]))
 
 
@@ -960,7 +960,7 @@ def trig_tansec_rule(integral):
             tansec_seceven_condition: tansec_seceven,
             tan_tansquared_condition: tan_tansquared
         })(tuple(
-            [match.get(i, ZERO) for i in (a, b, m, n)] +
+            [match.get(i, ZERO) for i in (a, b, m, n)] + 
             [integrand, symbol]))
 
 
@@ -982,7 +982,7 @@ def trig_cotcsc_rule(integral):
             cotcsc_cotodd_condition: cotcsc_cotodd,
             cotcsc_csceven_condition: cotcsc_csceven
         })(tuple(
-            [match.get(i, ZERO) for i in (a, b, m, n)] +
+            [match.get(i, ZERO) for i in (a, b, m, n)] + 
             [integrand, symbol]))
 
 
@@ -1518,7 +1518,7 @@ def eval_gegenbauer(n, a, integrand, symbol):
 
 @evaluates(ChebyshevTRule)
 def eval_chebyshevt(n, integrand, symbol):
-    return Piecewise(((sympy.chebyshevt(n + 1, symbol) / (n + 1) -
+    return Piecewise(((sympy.chebyshevt(n + 1, symbol) / (n + 1) - 
         sympy.chebyshevt(n - 1, symbol) / (n - 1)) / 2, Ne(sympy.Abs(n), 1)),
         (symbol ** 2 / 2, True))
 
@@ -1578,23 +1578,23 @@ def eval_shi(a, b, integrand, symbol):
 @evaluates(ErfRule)
 def eval_erf(a, b, c, integrand, symbol):
     return Piecewise(
-        (sympy.sqrt(sympy.pi / (-a)) / 2 * sympy.exp(c - b ** 2 / (4 * a)) *
+        (sympy.sqrt(sympy.pi / (-a)) / 2 * sympy.exp(c - b ** 2 / (4 * a)) * 
             sympy.erf((-2 * a * symbol - b) / (2 * sympy.sqrt(-a))), a < 0),
-        (sympy.sqrt(sympy.pi / a) / 2 * sympy.exp(c - b ** 2 / (4 * a)) *
+        (sympy.sqrt(sympy.pi / a) / 2 * sympy.exp(c - b ** 2 / (4 * a)) * 
             sympy.erfi((2 * a * symbol + b) / (2 * sympy.sqrt(a))), True))
 
 
 @evaluates(FresnelCRule)
 def eval_fresnelc(a, b, c, integrand, symbol):
     return sympy.sqrt(sympy.pi / (2 * a)) * (
-        sympy.cos(b ** 2 / (4 * a) - c) * sympy.fresnelc((2 * a * symbol + b) / sympy.sqrt(2 * a * sympy.pi)) +
+        sympy.cos(b ** 2 / (4 * a) - c) * sympy.fresnelc((2 * a * symbol + b) / sympy.sqrt(2 * a * sympy.pi)) + 
         sympy.sin(b ** 2 / (4 * a) - c) * sympy.fresnels((2 * a * symbol + b) / sympy.sqrt(2 * a * sympy.pi)))
 
 
 @evaluates(FresnelSRule)
 def eval_fresnels(a, b, c, integrand, symbol):
     return sympy.sqrt(sympy.pi / (2 * a)) * (
-        sympy.cos(b ** 2 / (4 * a) - c) * sympy.fresnels((2 * a * symbol + b) / sympy.sqrt(2 * a * sympy.pi)) -
+        sympy.cos(b ** 2 / (4 * a) - c) * sympy.fresnels((2 * a * symbol + b) / sympy.sqrt(2 * a * sympy.pi)) - 
         sympy.sin(b ** 2 / (4 * a) - c) * sympy.fresnelc((2 * a * symbol + b) / sympy.sqrt(2 * a * sympy.pi)))
 
 

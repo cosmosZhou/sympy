@@ -21,8 +21,7 @@ class ZeroMatrix(MatrixExpr):
     >>> Z*A.T
     0
     """
-    is_ZeroMatrix = True
-
+    
     def __new__(cls, m, n):
         m, n = _sympify(m), _sympify(n)
         cls._check_dim(m)
@@ -55,7 +54,7 @@ class ZeroMatrix(MatrixExpr):
     def conjugate(self):
         return self
 
-    def _entry(self, i, j, **kwargs):
+    def _entry(self, i, j=None, **kwargs):
         return S.Zero
 
 
@@ -144,7 +143,7 @@ class Identity(MatrixExpr):
     def conjugate(self):
         return self
 
-    def _entry(self, i, j, **kwargs):
+    def _entry(self, i, j=None, **kwargs):
         eq = Eq(i, j)
         if eq is S.true:
             return S.One

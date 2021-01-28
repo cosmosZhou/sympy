@@ -8,7 +8,7 @@ from sympy.core.numbers import pi, I, oo
 from sympy.core.relational import Eq
 from sympy.functions.elementary.exponential import exp, exp_polar, log
 from sympy.functions.elementary.integers import ceiling
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.functions.elementary.trigonometric import atan, atan2
 
@@ -473,50 +473,12 @@ class Abs(Function):
             obj = arg._eval_Abs()
             if obj is not None:
                 return obj
-#         if not isinstance(arg, Expr):
-#             raise TypeError("Bad argument type for Abs(): %s" % type(arg))
         # handle what we can
         arg = signsimp(arg, evaluate=False)
-        if arg.is_Mul:
-            known = []
-            unk = []
-            for t in arg.args:
-                tnew = cls(t)
-                if isinstance(tnew, cls):
-                    unk.append(tnew.args[0])
-                else:
-                    known.append(tnew)
-            known = Mul(*known)
-            unk = cls(Mul(*unk), evaluate=False) if unk else S.One
-            return known * unk
         if arg is S.NaN:
             return S.NaN
         if arg is S.ComplexInfinity:
             return S.Infinity
-#         if arg.is_Power:
-#             base, exponent = arg.as_base_exp()
-#             if base.is_extended_real:
-#                 if exponent.is_integer:
-#                     if exponent.is_even:
-#                         return arg
-#                     if base is S.NegativeOne:
-#                         return S.One
-#                     if isinstance(base, cls) and exponent is S.NegativeOne:
-#                         return arg
-#                     return Abs(base) ** exponent
-#                 if base.is_extended_nonnegative:
-#                     return base ** re(exponent)
-#                 if base.is_extended_negative:
-#                     return (-base) ** re(exponent) * exp(-S.Pi * im(exponent))
-#                 return
-#             elif not base.has(Symbol):  # complex base
-#                 # express base**exponent as exp(exponent*log(base))
-#                 a, b = log(base).as_real_imag()
-#                 z = a + I * b
-#                 return exp(re(exponent * z))
-#             elif not arg.is_complex and not exponent.is_integer:
-#                 return arg
-
         if isinstance(arg, exp):
             return exp(re(arg.args[0]))
         if isinstance(arg, AppliedUndef) or arg.is_set:
@@ -633,6 +595,118 @@ class Abs(Function):
     def _sympystr(self, p):
         return "|%s|" % p._print(self.arg)
 
+
+class Norm(Function):
+    """
+    Return the norm value of a vector.
+
+    """
+
+    is_extended_real = True
+    is_extended_negative = False
+    is_extended_nonnegative = True
+    unbranched = True
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.real(nonnegative=True)
+
+    @property
+    def shape(self):
+        return self.arg.shape[:-1]
+    
+    def fdiff(self, argindex=1):
+        """
+        Get the first derivative of the argument to Abs().
+
+        Examples
+        ========
+
+        >>> from sympy.abc import x
+        >>> from sympy.functions import Abs
+        >>> Abs(-x).fdiff()
+        sign(x)
+        """
+        if argindex == 1:
+            return sign(self.args[0])
+        else:
+            raise ArgumentIndexError(self, argindex)
+
+    @classmethod
+    def eval(cls, arg):
+        if hasattr(arg, '_eval_Norm'):
+            obj = arg._eval_Norm()
+            if obj is not None:
+                return obj
+
+    def _eval_is_integer(self):
+        if self.args[0].is_extended_real:
+            return self.args[0].is_integer
+
+    def _eval_is_zero(self):
+        return self._args[0].is_zero
+
+    def _eval_is_extended_positive(self):
+        is_z = self.is_zero
+        if is_z is not None:
+            return not is_z
+
+    def _eval_is_rational(self):
+        if self.arg.is_set:
+            return True                
+        return self.args[0].is_rational
+
+    def _eval_is_finite(self):
+        return self.arg.is_finite
+
+    def _eval_is_even(self):
+        if self.args[0].is_extended_real:
+            return self.args[0].is_even
+
+    def _eval_is_algebraic(self):
+        return self.args[0].is_algebraic
+
+    def _eval_derivative(self, x):
+        ...
+
+    def _eval_rewrite_as_Heaviside(self, arg, **kwargs):
+        ...
+
+    def _eval_rewrite_as_Piecewise(self, arg, **kwargs):
+        ...
+
+    def _eval_rewrite_as_sign(self, arg, **kwargs):
+        ...
+
+    def _sympystr(self, p):
+        return "||%s||" % p._print(self.arg)
+
+    def _latex(self, p, exp=None):
+        left_vert = r"\left|\kern-0.25ex" * 2
+#         left_vert = r"\left\vert\kern-0.25ex" * 2
+        right_vert = r"\right|\kern-0.25ex" * 2
+#         right_vert = r"\right\vert\kern-0.25ex" * 2
+
+        latex = r"%s{%s}%s" % (left_vert, p._print(self.arg), right_vert)
+        if exp is not None:
+            latex = "{%s}^{%s}" % (latex, p._print(exp))
+        return latex
+
+    def simplify(self, deep=False, **kwargs):
+        if self.arg.is_Times:
+            coeff = []
+            args = []
+            for arg in self.arg.args:
+                if arg.shape:
+                    args.append(arg)
+                else:
+                    coeff.append(arg)
+            if coeff:
+                Times = self.arg.func
+                return abs(Times(*coeff)) * self.func(Times(*args))
+        return Function.simplify(self, deep=deep, **kwargs)  
+    
 class arg(Function):
     """
     Returns the argument (in radians) of a complex number. For a positive

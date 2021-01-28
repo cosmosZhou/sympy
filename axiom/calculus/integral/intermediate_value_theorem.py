@@ -1,6 +1,6 @@
 
 from sympy.core.numbers import oo
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy import Symbol
 
@@ -9,8 +9,13 @@ from sympy import Exists, ForAll, MAX, MIN
 from sympy.sets.sets import Interval
 from sympy.core.function import Function
 
+def continuity(f, a, b):    
+    from sympy import Limit
+    xi = Symbol('xi', real=True)
+    z = Symbol('z', real=True)
+    return ForAll(Equality(Limit(f(z), z, xi, '+-'), f(xi)), (xi, a, b))
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_ForAll
     assert given.function.is_Equality
@@ -28,16 +33,15 @@ def apply(given):
     return ForAll(Exists(Equality(f, y), (z, a, b)), (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))))               
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):    
 
     a = Symbol.a(real=True)
     b = Symbol.b(real=True, domain=Interval(a, oo, left_open=True))
     f = Function.f(shape=(), real=True)
-    Eq << apply(Equality.continuity(f, a, b))
+    Eq << apply(continuity(f, a, b))
 
 
 if __name__ == '__main__':

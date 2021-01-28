@@ -12,9 +12,9 @@ from sympy.functions.combinatorial.factorials import Binomial  # , Factorial, Fa
 
 from sympy.functions.combinatorial.numbers import (carmichael, fibonacci, lucas, tribonacci,
         harmonic, bernoulli, bell, euler, catalan, genocchi, partition)
-from sympy.functions.elementary.miscellaneous import (sqrt, root, Min, Max,
-        Id, real_root, cbrt)
-from sympy.functions.elementary.complexes import (re, im, sign, Abs,
+from sympy.core.power import sqrt, cbrt, root, real_root
+from sympy.functions.elementary.extremum import (Min, Max, Id)
+from sympy.functions.elementary.complexes import (re, im, sign, Abs, Norm,
         conjugate, arg, polar_lift, periodic_argument, unbranched_argument,
         principal_branch, transpose, adjoint, polarify, unpolarify)
 from sympy.functions.elementary.trigonometric import (sin, cos, tan,

@@ -1,24 +1,18 @@
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from axiom.utility import plausible
-from sympy.core.relational import Equality
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.stats.crv_types import ChiSquaredDistribution, NormalDistribution    
 from sympy.stats.rv import PDF, pspace
-from sympy import pi
-from sympy import LAMBDA
-from sympy.concrete.summations import Sum
-from sympy import Symbol, sin
 from axiom import calculus, algebre
 import axiom
 
 
-@plausible
+@apply(imply=True)
 def apply(_Y, Y):
     X_squared_Sum = _Y.definition
     
     X_squared_Sum, *limits = axiom.is_LAMBDA(X_squared_Sum)
     
-    k = axiom.limits_is_symbol(limits)
+    k = axiom.limit_is_symbol(limits)
     
     assert X_squared_Sum.is_Sum
     i = X_squared_Sum.variable
@@ -39,10 +33,7 @@ def apply(_Y, Y):
     return Equality(PDF(_Y[k])(y), PDF(Y)(y).doit())
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     i = Symbol.i(integer=True, nonnegative=True)
     X = Symbol.X(shape=(oo,), distribution=NormalDistribution(0, 1))
@@ -115,7 +106,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
 
-    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.initial, Eq[-1], n=k, start=1)
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=k, start=1)
 
 
 # https://www.asmeurer.com/blog/

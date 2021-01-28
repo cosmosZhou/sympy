@@ -1,16 +1,12 @@
-from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality, StrictGreaterThan
-from axiom.utility import plausible
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.functions.combinatorial.numbers import Stirling
-from sympy.sets.sets import image_set, Interval, Union
-from sympy.sets.contains import Subset, Supset, Contains, NotContains
-from sympy.functions.elementary.piecewise import Piecewise
+from sympy.sets.sets import image_set
 from axiom import sets, algebre
 from sympy.sets.conditionset import conditionset
-from sympy import UNION, ForAll, LAMBDA
-from sympy.core.numbers import oo
 
-@plausible
+
+@apply(imply=True)
 def apply(n, k, s2=None, B=None):
     if s2 is None:    
         x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
@@ -26,10 +22,7 @@ def apply(n, k, s2=None, B=None):
     return Equality(conditionset(e, Contains({n}, e), s2), B)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
@@ -65,41 +58,40 @@ def prove(Eq):
     
     Eq << sets.imply.forall.conditionset.apply(s0_quote)
 
-    Eq << Eq[-1].split()
-    x_abs_positive = Eq[-3]
-    x_abs_sum = Eq[-2]
-    x_union_s0 = Eq[-1]
+    Eq.x_abs_positive, Eq.x_abs_sum, Eq.x_union_s0 = Eq[-1].split()
 
-    i = Eq[-1].lhs.limits[0][0]
-    x = Eq[-1].variable.base
+    i = Eq.x_union_s0.lhs.limits[0][0]
+    x = Eq.x_union_s0.variable.base
 
-    Eq << Equality.define(x[k], {n})
-    x_k_definition = Eq[-1]
-
-    Eq << Eq[-1].union(Eq[-2])
+    Eq.x_k_definition = Exists[x[k]](Equality(x[k], {n}), plausible=True)
+    
+    Eq << Eq.x_k_definition.simplify()
+    
+    Eq << Eq.x_union_s0.apply(sets.equal.imply.equal.union, x[k])
+    
+    Eq << Eq[-1].subs(Eq.x_k_definition)
+    
     x_union = Eq[-1]
 
-    Eq << x_k_definition.set
+    Eq << Eq.x_k_definition.apply(sets.equal.imply.equal.set, simplify=False)    
 
-    Eq << Eq[-1].union(x[:k].set_comprehension())
+    Eq << Eq[-1].apply(sets.equal.imply.equal.union, x[:k].set_comprehension())
 
     Eq << s0_plausible.subs(Eq[-1].reversed)
 
     Eq << Eq[-1].definition.definition
 
-    Eq << x_k_definition.abs()
+    Eq << Eq.x_k_definition.apply(algebre.equal.imply.equal.abs)    
 
     Eq << Eq[-1].subs(StrictGreaterThan(1, 0, plausible=True))    
     
-    Eq << x_abs_sum + Eq[-2]
+    Eq << Eq.x_abs_sum + Eq[-2]
 
-    Eq << (x_abs_positive & Eq[-2])
+    Eq <<= Eq.x_abs_positive & Eq[-2]
 
-    Eq << (x_union & Eq[-1] & Eq[-2])
+    Eq <<= x_union & Eq[-1] & Eq[-2]
 
     j = Symbol.j(domain=Interval(0, k, integer=True))
-
-    B = Eq[2].lhs 
 
     Eq << plausible0.subs(Eq[2].reversed)
    
@@ -126,25 +118,25 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)    
 
-    Eq << x_union_s0.union(Eq[-1].reversed).this().function.lhs.simplify()
+    Eq << Eq.x_union_s0.apply(sets.equal.equal.imply.equal.union, Eq[-1].reversed).this().function.lhs.simplify()
     
-    Eq << Eq[-1].subs(x_union_s0)
+    Eq << Eq[-1].subs(Eq.x_union_s0)
 
     assert num_plausibles == len(Eq.plausibles_dict)
 
     Eq << Eq.plausible_notcontains.apply(sets.notcontains.imply.is_emptyset)
 
-    Eq.s0_complement_n = Eq[-1].apply(sets.is_emptyset.imply.equality.complement)
+    Eq << Eq[-1].apply(sets.is_emptyset.imply.equal.complement).limits_subs(Eq[-1].variable, Eq.subset_B_definition.function.variable)
 
-    Eq << Eq.subset_B_definition.subs(Eq.s0_complement_n)
+    Eq << Eq.subset_B_definition.subs(Eq[-1])
 
-    s2_n = Symbol('s_{2, n}', definition=Eq[-1].limits[0][1])
+    s2_n = Symbol("s_{2, n}", definition=conditionset(*Eq[-1].limits[0]))
 
     Eq.s2_n_definition = s2_n.this.definition
 
-    Eq << sets.imply.forall.given.baseset.apply(s2_n)
+    Eq << sets.imply.forall.where.baseset.apply(s2_n)
 
     Eq << Eq[-1].subs(Eq.s2_definition).split()
 
@@ -152,7 +144,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.s2_n_assertion)
 
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)    
 
     Eq.x_j_definition = Eq[-1].limits_subs(Eq[-1].variable, j).reversed
 
@@ -161,31 +153,34 @@ def prove(Eq):
     Eq << Eq.x_union_s2 - Eq.x_j_definition
 
     Eq << Eq[-1].this.function.lhs.args[0].bisect({j})
+    return
 
     x_tilde = Symbol(r"\tilde{x}", shape=(k,), etype=dtype.integer,
                      definition=LAMBDA[i:k](Piecewise((x[i], i < j), (x[i + 1], True))))
 
     Eq.x_tilde_definition = x_tilde.equality_defined()
-
-    Eq << Eq.x_tilde_definition.union_comprehension((i, 0, k - 1))
+    
+    Eq << sets.equal.imply.equal.union_comprehension.apply(Eq.x_tilde_definition, (i, 0, k - 1))
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
 
     Eq.x_tilde_union = Eq[-1].subs(Eq[-3])
 
-    Eq.x_tilde_abs = Eq.x_tilde_definition.abs()
+    Eq.x_tilde_abs = Eq.x_tilde_definition.apply(algebre.equal.imply.equal.abs)
 
-    Eq << Eq.x_tilde_abs.sum((i, 0, k - 1))
+    Eq << Eq.x_tilde_abs.apply(algebre.equal.imply.equal.sum, (i, 0, k - 1))
 
     Eq << Eq[-1].this.rhs.args[0].limits_subs(i, i - 1)
 
-    Eq.x_tilde_abs_sum = Eq[-1].subs(Eq.x_abs_sum_s2, Eq.x_j_definition.abs())
+    Eq << Eq.x_j_definition.apply(algebre.equal.imply.equal.abs)
+    
+    Eq.x_tilde_abs_sum = Eq[-2].subs(Eq.x_abs_sum_s2, Eq[-1])
 
-    Eq << algebre.equality.imply.ou.two.apply(Eq.x_tilde_abs)
+    Eq << algebre.equal.imply.ou.two.apply(Eq.x_tilde_abs)
     
-    Eq << Eq[-1].forall((i, i < j))
+    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (i, i < j))
     
-    Eq << Eq[-2].forall((i, i >= j))
+    Eq << Eq[-2].apply(algebre.condition.imply.forall.minify, (i, i >= j))
     
     Eq << Eq[-2].subs(Eq.x_abs_positive_s2)    
 
@@ -206,7 +201,7 @@ def prove(Eq):
 
     Eq << Eq[-1].definition
 
-    Eq << Eq.x_tilde_definition.set.union_comprehension((i, 0, k - 1))
+    Eq << sets.equal.imply.equal.set_comprehension.apply(Eq.x_tilde_definition, (i, 0, k - 1))
 
     Eq << Eq[-1].subs(Eq.x_j_definition)
 
@@ -216,11 +211,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.limits[0].subs(Eq.s2_n_definition)
     
-    Eq.subset_B_plausible = Eq.subset_B_definition.union({n.set})
-    Eq << sets.imply.forall.limits_assert.apply(Eq.subset_B_plausible.limits, simplify=False)
+    Eq.subset_B_plausible = Eq.subset_B_definition.apply(sets.equal.imply.equal.union, {n.set})    
+    
+    Eq << ForAll(Eq.subset_B_plausible.limits[0][1], *Eq.subset_B_plausible.limits, plausible=True)
+    
+    Eq << Eq[-1].simplify()    
         
-    Eq << Eq[-1].definition.split()[1]    
-    Eq << Eq[-1].apply(sets.contains.imply.equality.union)    
+    Eq << Eq[-1].apply(sets.contains.imply.equal.union)    
     Eq << Eq.subset_B_plausible.subs(Eq[-1])
     
     Eq << Eq.supset_B.subs(Eq.subset_B)

@@ -14,7 +14,8 @@ from sympy.core.numbers import Rational, oo
 from sympy.core.compatibility import ordered
 from sympy.core.symbol import Dummy, _uniquely_named_symbol, _symbol
 from sympy.simplify import simplify, trigsimp
-from sympy.functions.elementary.miscellaneous import sqrt, Max
+from sympy.core.power import sqrt
+from sympy.functions.elementary.extremum import Max
 from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.functions.special.elliptic_integrals import elliptic_e
 from sympy.geometry.exceptions import GeometryError

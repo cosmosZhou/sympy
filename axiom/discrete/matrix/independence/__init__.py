@@ -1,2 +1,2 @@
-from . import matmul_equality
-from . import rmatmul_equality
+from . import matmul_equal
+from . import rmatmul_equal

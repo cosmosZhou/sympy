@@ -1507,7 +1507,7 @@ def _rewrite_single(f, x, recursive=True):
                 simplify(cancel(expand(F))), s, x, strip,
                 as_meijerg=True, needeval=True)
     f = f_
-    s = _dummy('s', 'rewrite-single', f)
+    s = _dummy('s', 'rewrite-single', f, real=True)
     # to avoid infinite recursion, we have to force the two g functions case
 
     def my_integrator(f, x):
@@ -1668,7 +1668,7 @@ def _meijerint_indefinite_1(f, x):
         # [R, section 5]
         # (Note that this dummy will immediately go away again, so we
         #  can safely pass S(1) for ``expr``.)
-        t = _dummy('t', 'meijerint-indefinite', S(1))
+        t = _dummy('t', 'meijerint-indefinite', S(1), real=True)
 
         def tr(p):
             return [a + rho + 1 for a in p]

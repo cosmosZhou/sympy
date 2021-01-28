@@ -1,12 +1,12 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan
 from sympy import Symbol
 import axiom
-from sympy.functions.elementary.miscellaneous import Max
+from sympy.functions.elementary.extremum import Max
 from axiom import algebre, sets
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     greater_than, less_than = given
     x, m = axiom.is_GreaterThan(greater_than)
@@ -16,10 +16,9 @@ def apply(*given):
     return LessThan(x * x, Max(m * m, M * M))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, given=True)
     m = Symbol.m(real=True, given=True)
@@ -33,7 +32,7 @@ def prove(Eq):
     
     Eq << algebre.ou.imply.ou.invert.apply(Eq[-2])
     
-    Eq << Eq[-1].this.args[1].apply(sets.contains.imply.less_than.square.nonnegative_interval)
+    Eq << Eq[-1].this.args[0].apply(algebre.is_nonnegative.less_than.imply.less_than.square)
     
     Eq << Eq[-1].this.args[1].apply(algebre.less_than.imply.less_than.transit, Eq[2].rhs)
     
@@ -45,7 +44,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.args[1].apply(algebre.less_than.imply.less_than.transit, Eq[2].rhs)
     
-    Eq << Eq[-1].this.args[0].apply(algebre.strict_greater_than.imply.greater_than)
+    Eq << Eq[-1].this.args[0].apply(algebre.strict_greater_than.imply.greater_than.rewrite)
 
     
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ from sympy.core.relational import LessThan, StrictGreaterThan
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.functions.elementary.exponential import log
 from sympy.functions.elementary.integers import floor
-from sympy.functions.elementary.miscellaneous import sqrt, cbrt
+from sympy.core.power import sqrt, cbrt
 from sympy.functions.elementary.trigonometric import sin, cos, cot
 from sympy.ntheory import isprime
 from sympy.ntheory.primetest import is_square

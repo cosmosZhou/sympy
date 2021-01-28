@@ -286,7 +286,7 @@ def closest_points(*args):
     """
     from collections import deque
     from math import hypot, sqrt as _sqrt
-    from sympy.functions.elementary.miscellaneous import sqrt
+    from sympy.core.power import sqrt
 
     p = [Point2D(i) for i in set(args)]
     if len(p) < 2:

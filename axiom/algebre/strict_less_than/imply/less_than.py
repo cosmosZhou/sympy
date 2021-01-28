@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan
 from sympy import Symbol
 from sympy.sets.sets import Interval
@@ -7,18 +7,16 @@ from sympy.sets.contains import Contains
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_StrictLessThan
     lhs, rhs = given.args
-    assert lhs.is_integer and rhs.is_integer
-    return LessThan(lhs, rhs - 1)
+    if lhs.is_integer and rhs.is_integer:
+        return LessThan(lhs, rhs - 1)
+    return LessThan(lhs, rhs)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
@@ -28,7 +26,7 @@ def prove(Eq):
     
     Eq << Eq[-1].split()
     
-    Eq << sets.contains.imply.contains.interval.apply(Eq[-1], 1, simplify=False)
+    Eq << sets.contains.imply.contains.interval.add.apply(Eq[-1], 1, simplify=False)
     
     Eq << Eq[-1].split()
     

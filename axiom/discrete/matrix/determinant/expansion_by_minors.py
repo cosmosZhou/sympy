@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 
 from sympy.matrices.expressions.determinant import Det
@@ -8,7 +8,7 @@ from sympy.core.sympify import sympify
 from sympy import Symbol
 from sympy.matrices import Matrix
 
-@plausible
+@apply(imply=True)
 def apply(A, i=None, j=None):
 #         https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html    
     n = A.shape[0]
@@ -24,10 +24,9 @@ def apply(A, i=None, j=None):
     return Equality(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]).simplify())
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):    
     print('this is a validation, not a proof in', __file__)
     n = Symbol.n(integer=True, positive=True)
@@ -36,8 +35,9 @@ def prove(Eq):
     i = 4
     A = Symbol.A(shape=(n, n), complex=True, zero=False)
     Eq << apply(A, i=i)
+
     Eq << Eq[-1].this.rhs.doit()
-    
+
     Eq << Eq[-1].this.rhs.args[0].args[1].arg.astype(Matrix)
     
     Eq << Eq[-1].this.rhs.args[1].args[2].arg.astype(Matrix)

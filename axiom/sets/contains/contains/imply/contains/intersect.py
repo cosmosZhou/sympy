@@ -1,11 +1,11 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
 from sympy import Symbol
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     contains1, contains2 = given
     assert contains1.is_Contains    
@@ -18,10 +18,9 @@ def apply(*given):
     return Contains(e, A & B)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     e = Symbol.e(integer=True)
     A = Symbol.A(etype=dtype.integer)

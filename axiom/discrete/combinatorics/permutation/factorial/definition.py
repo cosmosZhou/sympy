@@ -1,6 +1,6 @@
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
@@ -9,17 +9,16 @@ from sympy import Symbol
 from axiom import discrete, algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(n):
     x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     
     return Equality(abs(conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)))), factorial(n))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
@@ -34,7 +33,7 @@ def prove(Eq):
     
     Q = Eq[-1].lhs.function.base
     
-    Eq << Eq[-1].abs()
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
     
     Eq << discrete.combinatorics.permutation.nonoverlapping.apply(n, Q=Q)
     
@@ -62,7 +61,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
 
     
 if __name__ == '__main__':

@@ -1,22 +1,16 @@
-from sympy.core.relational import Equality
-
-from axiom.utility import check, plausible
-
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
-from sympy import LAMBDA
-from sympy import Symbol
+from axiom import algebre, sets
 
 
-@plausible
+@apply(imply=True)
 def apply(x, w=None, right=None, free_symbol=None):
     n = x.shape[0]
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     if w is None:    
-        w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap        
@@ -28,7 +22,7 @@ def apply(x, w=None, right=None, free_symbol=None):
     return Equality(lhs, x.set_comprehension(free_symbol=free_symbol))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
     x = Symbol.x(shape=(n,), integer=True)    
@@ -39,16 +33,13 @@ def prove(Eq):
     
     k = Eq[1].lhs.variable.copy(domain=Interval(0, n - 1, integer=True))
     
-    Eq << Eq[0][k]
+    Eq << Eq[0].lhs[k].this.definition
     
-    Eq << Eq[0][k] @ x
+    Eq << (Eq[0].lhs[k] @ x).this.args[0].definition
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].set
-    
-    Eq << Eq[-1].this(i, j).union_comprehension((k, 0, n - 1))
-
+    Eq << Eq[-1].this(i, j).apply(sets.equal.imply.equal.set_comprehension, (k, 0, n))
         
 if __name__ == '__main__':
     prove(__file__)

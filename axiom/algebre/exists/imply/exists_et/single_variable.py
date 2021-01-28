@@ -1,26 +1,18 @@
-
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.function import Function
+from sympy import *
+from axiom.utility import prove, apply
 import axiom
 from sympy.sets.conditionset import conditionset
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     function, *limits = axiom.is_Exists(given)
-    variable = axiom.limits_is_Boolean(limits)
+    variable = axiom.limit_is_Boolean(limits)
     return Exists[variable]((function & given.limits_condition).simplify())
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):    
     e = Symbol.e(real=True)
     f = Function.f(nargs=(), shape=(), integer=True)

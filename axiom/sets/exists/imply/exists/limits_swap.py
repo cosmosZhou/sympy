@@ -1,5 +1,5 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
@@ -10,7 +10,7 @@ from sympy.sets.contains import Contains
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Exists
     limits = [(x,) for x, *_ in given.limits]
@@ -18,10 +18,9 @@ def apply(given):
     return Exists(given.limits_condition, *limits)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.real)
     e = Symbol.e(real=True)

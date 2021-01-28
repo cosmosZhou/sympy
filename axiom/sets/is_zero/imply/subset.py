@@ -1,15 +1,14 @@
-from sympy.core.relational import Equality
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Subset
 
-from sympy import Symbol
+from axiom.utility import prove, apply
+
+
+from sympy import *
 from axiom import sets
 # given: B - A = {} 
 # B in A
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Equality
     abs_A_minus_B, zero = given.args
@@ -25,10 +24,9 @@ def apply(given):
     return Subset(B, A)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)

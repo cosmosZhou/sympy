@@ -1,19 +1,10 @@
-from axiom.utility import plausible
-from sympy.core.relational import Equal, Unequal
-from sympy import Symbol
-
-from sympy.core.numbers import oo 
-from sympy import ForAll, Sufficient, Or
-from sympy import LAMBDA
+from sympy import *
+from axiom.utility import prove, apply
 import axiom
-from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.matrices.expressions.matexpr import Identity
 from axiom import algebre
-from sympy.concrete.products import Product
-from sympy.functions.elementary.piecewise import Piecewise
 
 
-@plausible
+@apply(imply=True)
 def apply(*given, n=None):
     f0, sufficient = given
     axiom.is_nonzero(f0)
@@ -26,10 +17,7 @@ def apply(*given, n=None):
     return fn
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
     f = Symbol.f(integer=True, shape=(oo,))
@@ -67,6 +55,16 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs().function.simplify()
     
+    Eq << Eq[-1].this.rhs.astype(LAMBDA)
+    
+    Eq << Eq[-1].this.rhs.function.astype(Piecewise)
+    
+    Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.swap.front)    
+    
+    Eq << Eq[-1].this.rhs().function.args[0].cond.simplify()
+    
+    Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.subs)    
+    
     Eq << Eq[-1].subs(Eq.D0_is_zero)
 
     Eq << Eq.is_multiplication_zero.this.lhs.expand()
@@ -76,7 +74,7 @@ def prove(Eq):
     Eq << Eq[-3].subs(Eq[-1].reversed)
 
     k = Symbol.k(integer=True)    
-    E_quote = Symbol("E'", definition=LAMBDA[j:m, i:m](Piecewise((Product[k:i + 1:j](D[k]), j >= i), (0, True))))
+    E_quote = Symbol("E'", definition=LAMBDA[j:m, i:m](Piecewise((Product[k:i + 1:j + 1](D[k]), j >= i), (0, True))))
     
     Eq.D_is_zero = Eq[-1] @ E_quote
     
@@ -98,11 +96,13 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs().function.simplify(wrt=True)
     
-    Eq << algebre.imply.equality.piecewise.apply(Eq[-1].rhs.function)
+    Eq << algebre.imply.equal.piecewise.swap.front.apply(Eq[-1].rhs.function)
     
     Eq << Eq[-2].subs(Eq[-1])
     
     Eq << Eq[-1].this.rhs().function.simplify()
+    
+    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.lamda.astype.identity)
 
     Eq << Eq.D_is_zero.subs(Eq[-1])
     

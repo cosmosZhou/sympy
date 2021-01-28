@@ -1,20 +1,20 @@
 from sympy.core.numbers import oo
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy import sqrt, pi, exp, Symbol
 from sympy.integrals.integrals import Integral
+from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply():
     x = Symbol.x(real=True)
     return Equality(1 / sqrt(2 * pi) * Integral(exp(-x * x / 2), (x, -oo, oo)), 1, evaluate=False)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     Eq << apply()
     
@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.doit()
     
-    Eq << Eq[-1].sqrt()
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.sqrt)
 
 
 # https://ccjou.wordpress.com/2012/11/26/jacobian-矩陣與行列式/

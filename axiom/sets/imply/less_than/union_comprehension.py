@@ -1,27 +1,19 @@
-from sympy.core.relational import LessThan
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
+from sympy import *
+from axiom.utility import prove, apply
 from axiom import sets, algebre
-from sympy import UNION
-from sympy.core.numbers import oo
-from sympy import Symbol, Slice
-from sympy.concrete.summations import Sum
 
 
-@plausible
+@apply(imply=True)
 def apply(expr, *limits):
     return LessThan(abs(UNION(expr, *limits)), Sum(abs(expr), *limits).simplify())
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     k = Symbol.k(integer=True)
     A = Symbol.A(shape=(oo,), etype=dtype.integer)
-    Eq << apply(A[k], (k, 0, n))
+    Eq << apply(A[k], (k, 0, n + 1))
 
     Eq << Eq[0].subs(n, 1)
     

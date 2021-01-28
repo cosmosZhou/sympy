@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality, Unequal
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy import Symbol
 
@@ -8,7 +8,7 @@ import axiom
 
 from sympy import And
 
-@plausible
+@apply(imply=True)
 def apply(given, index=0):
     and_eqs = axiom.is_And(given)
 
@@ -17,10 +17,9 @@ def apply(given, index=0):
     return And(*and_eqs)            
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     a = Symbol.a(integer=True)

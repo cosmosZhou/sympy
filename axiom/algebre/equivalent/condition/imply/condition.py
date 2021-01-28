@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equal
 from sympy import Symbol
 
@@ -10,17 +10,16 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.functions.special.tensor_functions import Boole
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     equivalent, condition = given
     fn, fn1 = axiom.is_Equivalent(equivalent)        
     return condition._subs(fn, fn1)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
     f = Symbol.f(integer=True, shape=(oo,))
@@ -29,7 +28,7 @@ def prove(Eq):
     
     Eq << apply(Equivalent(f[n] > 0, g[n] > 0), ForAll[n:f[n] > 0](h[n] > 0))
     
-    Eq << Eq[0].astype(Equal)
+    Eq << algebre.equivalent.imply.equal.apply(Eq[0])
     
     Eq << ForAll[n:Equal(Boole(f[n] > 0), 1)](h[n] > 0, plausible=True)
     

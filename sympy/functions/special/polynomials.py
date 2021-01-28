@@ -16,7 +16,7 @@ from sympy.functions.combinatorial.factorials import binomial, factorial, Rising
 from sympy.functions.elementary.complexes import re
 from sympy.functions.elementary.exponential import exp
 from sympy.functions.elementary.integers import floor
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.functions.elementary.trigonometric import cos
 from sympy.functions.special.gamma_functions import gamma
 from sympy.functions.special.hyper import hyper
@@ -182,7 +182,7 @@ class jacobi(OrthogonalPolynomial):
             f1 = 1 / (a + b + n + k + 1)
             f2 = ((a + b + 2*k + 1) * RisingFactorial(b + k + 1, n - k) /
                   ((n - k) * RisingFactorial(a + b + k + 1, n - k)))
-            return Sum(f1 * (jacobi(n, a, b, x) + f2*jacobi(k, a, b, x)), (k, 0, n - 1))
+            return Sum(f1 * (jacobi(n, a, b, x) + f2*jacobi(k, a, b, x)), (k, 0, n))
         elif argindex == 3:
             # Diff wrt b
             n, a, b, x = self.args
@@ -190,7 +190,7 @@ class jacobi(OrthogonalPolynomial):
             f1 = 1 / (a + b + n + k + 1)
             f2 = (-1)**(n - k) * ((a + b + 2*k + 1) * RisingFactorial(a + k + 1, n - k) /
                   ((n - k) * RisingFactorial(a + b + k + 1, n - k)))
-            return Sum(f1 * (jacobi(n, a, b, x) + f2*jacobi(k, a, b, x)), (k, 0, n - 1))
+            return Sum(f1 * (jacobi(n, a, b, x) + f2*jacobi(k, a, b, x)), (k, 0, n))
         elif argindex == 4:
             # Diff wrt x
             n, a, b, x = self.args
@@ -397,7 +397,7 @@ class gegenbauer(OrthogonalPolynomial):
             factor2 = 2*(k + 1) / ((k + 2*a) * (2*k + 2*a + 1)) + \
                 2 / (k + n + 2*a)
             kern = factor1*gegenbauer(k, a, x) + factor2*gegenbauer(n, a, x)
-            return Sum(kern, (k, 0, n - 1))
+            return Sum(kern, (k, 0, n))
         elif argindex == 3:
             # Diff wrt x
             n, a, x = self.args
@@ -1222,7 +1222,7 @@ class assoc_laguerre(OrthogonalPolynomial):
             # Diff wrt alpha
             n, alpha, x = self.args
             k = Dummy("k")
-            return Sum(assoc_laguerre(k, alpha, x) / (n - alpha), (k, 0, n - 1))
+            return Sum(assoc_laguerre(k, alpha, x) / (n - alpha), (k, 0, n))
         elif argindex == 3:
             # Diff wrt x
             n, alpha, x = self.args

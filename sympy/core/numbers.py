@@ -31,6 +31,7 @@ from sympy.utilities.miscellany import debug, filldedent
 from .parameters import global_parameters
 
 from sympy.utilities.exceptions import SymPyDeprecationWarning
+from sympy.core.basic import Basic
 
 rnd = mlib.round_nearest
 
@@ -767,14 +768,16 @@ class Number(AtomicExpr):
                 return S.NaN
             elif other is S.Infinity:
                 if self.is_zero:
-                    return S.NaN
+                    return self
+#                     return S.NaN
                 elif self.is_positive:
                     return S.Infinity
                 else:
                     return S.NegativeInfinity
             elif other is S.NegativeInfinity:
                 if self.is_zero:
-                    return S.NaN
+                    return self
+#                     return S.NaN
                 elif self.is_positive:
                     return S.NegativeInfinity
                 else:
@@ -893,6 +896,15 @@ class Number(AtomicExpr):
 
     def _dummy_eq(self, other):
         return self == other
+
+    @classmethod
+    def simplify_Relational(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Number object!
+        """
+        from sympy import Symbol
+        if rhs._has(Symbol):
+            return self.reversed_type(rhs, lhs, equivalent=self)
 
     
 class Float(Number):
@@ -1356,7 +1368,7 @@ class Float(Number):
             return Float(Rational.__mod__(Rational(self), other),
                          precision=self._prec)
         if isinstance(other, Float) and global_parameters.evaluate:
-            r = self/other
+            r = self / other
             if r == int(r):
                 return Float(0, precision=max(self._prec, other._prec))
         if isinstance(other, Number) and global_parameters.evaluate:
@@ -1746,27 +1758,29 @@ class Rational(Number):
             else:
                 return Number.__add__(self, other)
         return Number.__add__(self, other)
+
     __radd__ = __add__
 
     @_sympifyit('other', NotImplemented)
     def __sub__(self, other):
         if global_parameters.evaluate:
             if isinstance(other, Integer):
-                return Rational(self.p - self.q*other.p, self.q, 1)
+                return Rational(self.p - self.q * other.p, self.q, 1)
             elif isinstance(other, Rational):
-                return Rational(self.p*other.q - self.q*other.p, self.q*other.q)
+                return Rational(self.p * other.q - self.q * other.p, self.q * other.q)
             elif isinstance(other, Float):
                 return -other + self
             else:
                 return Number.__sub__(self, other)
         return Number.__sub__(self, other)
+
     @_sympifyit('other', NotImplemented)
     def __rsub__(self, other):
         if global_parameters.evaluate:
             if isinstance(other, Integer):
-                return Rational(self.q*other.p - self.p, self.q, 1)
+                return Rational(self.q * other.p - self.p, self.q, 1)
             elif isinstance(other, Rational):
-                return Rational(self.q*other.p - self.p*other.q, self.q*other.q)
+                return Rational(self.q * other.p - self.p * other.q, self.q * other.q)
             elif isinstance(other, Float):
                 return -self + other
             else:
@@ -2668,6 +2682,18 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
     def __neg__():
         return S.Zero
 
+    def __mul__(self, other):
+        if isinstance(other, Basic) and other.shape:
+            from sympy import ZeroMatrix
+            return ZeroMatrix(*other.shape)
+        return self
+
+    def __rmul__(self, lhs):
+        if isinstance(lhs, Basic) and lhs.shape:
+            from sympy import ZeroMatrix
+            return ZeroMatrix(*lhs.shape)
+        return self
+    
     def _eval_power(self, expt):
         if expt > 0:
             return self
@@ -2686,6 +2712,10 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
             return S.ComplexInfinity ** terms
         if coeff is not S.One:  # there is a Number to discard
             return self ** terms
+        
+        if expt.is_extended_nonnegative:
+            from sympy import KroneckerDelta
+            return KroneckerDelta(expt, 0)
 
     def _eval_order(self, *symbols):
         # Order(0,x) -> 0
@@ -2720,10 +2750,28 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
                 else:
                     _rhs.append(arg)
             if _lhs:
-                return self.func(Add(*_lhs), Add(*_rhs), equivalent=self)
+                return self.func(Add(*_lhs), Add(*_rhs), equivalent=self).simplify()
         elif rhs.is_KroneckerDelta:
             return self.invert_type(*rhs.args, equivalent=self).simplify()
     
+    @classmethod
+    def simplify_Relational(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Zero object!
+        """
+        if rhs._coeff_isneg():
+            return self.func(-rhs, lhs, equivalent=self)
+        elif rhs.is_Plus:
+            _lhs = []
+            _rhs = []
+            for arg in rhs.args:
+                if arg._coeff_isneg():
+                    _lhs.append(-arg)
+                else:
+                    _rhs.append(arg)
+            if _lhs:
+                return self.func(Add(*_lhs), Add(*_rhs), equivalent=self).simplify()
+        
     @classmethod
     def simplify_Unequal(cls, self, lhs, rhs):
         """
@@ -2732,6 +2780,10 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         if rhs._coeff_isneg():
             return self.func(-rhs, lhs, equivalent=self)
         return self.func(rhs, lhs, equivalent=self)
+        
+#     def __add__(self, other):
+#         return other
+
         
 class One(with_metaclass(Singleton, IntegerConstant)):
     """The number one.
@@ -3145,6 +3197,7 @@ class Infinity(with_metaclass(Singleton, Number)):
     def _eval_is_integer(self):
         return True
 
+
 oo = S.Infinity
 
 
@@ -3358,6 +3411,7 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
     def _eval_is_integer(self):
         return True
 
+
 class NaN(with_metaclass(Singleton, Number)):
     """
     Not a Number.
@@ -3562,6 +3616,7 @@ class ComplexInfinity(with_metaclass(Singleton, AtomicExpr)):
 
     def _eval_exp(self):
         return S.NaN
+
         
 zoo = S.ComplexInfinity
 
@@ -4063,8 +4118,9 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
 
     __slots__ = []
 
-    def _latex(self, printer):
-        return printer._settings['imaginary_unit_latex']
+    def _latex(self, p):
+#         return printer._settings['imaginary_unit_latex']
+        return r"{\color{blue} i}"
 
     @staticmethod
     def __abs__():
@@ -4098,6 +4154,10 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
                 if expt == 2:
                     return -S.One
                 return -S.ImaginaryUnit
+        if expt.is_even:
+            return (-1) ** (expt / 2)
+        elif expt.is_odd:
+            return (-1) ** ((expt - 1) / 2) * self
         return
 
     def as_base_exp(self):
@@ -4114,6 +4174,11 @@ class ImaginaryUnit(with_metaclass(Singleton, AtomicExpr)):
     @property
     def shape(self):
         return ()
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.complex
 
 
 I = S.ImaginaryUnit

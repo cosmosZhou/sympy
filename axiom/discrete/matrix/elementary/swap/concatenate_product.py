@@ -1,27 +1,23 @@
-from sympy.core.relational import Equality
-from axiom.utility import check, plausible
-from sympy.core.numbers import oo
-
-from sympy.matrices.expressions.matexpr import Swap, Concatenate, ZeroMatrix
-from sympy import Symbol, Slice
-from sympy.concrete.products import MatProduct
+from axiom.utility import prove, apply
+from sympy import *
 import axiom
 from axiom import algebre
+from sympy.matrices.expressions.matexpr import Swap
 
 
-@plausible
+@apply(imply=True)
 def apply(n, m, b):
     i = Symbol.i(integer=True)    
     
-    return Equality(Concatenate(Concatenate(MatProduct[i:m](Swap(n, i, b[i])), ZeroMatrix(n)).T,
-                                Concatenate(ZeroMatrix(n), 1)).T,
+    return Equality(BlockMatrix(BlockMatrix(MatProduct[i:m](Swap(n, i, b[i])), ZeroMatrix(n)).T,
+                                BlockMatrix(ZeroMatrix(n), 1)).T,
                     MatProduct[i:m](Swap(n + 1, i, b[i])))
 
 
-@check
+@prove
 def prove(Eq):
-    n = Symbol.n(domain=[2, oo], integer=True)
-    m = Symbol.m(domain=[1, oo], integer=True)
+    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    m = Symbol.m(positive=True, integer=True)
     b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
     
     Eq << apply(n, m, b)
@@ -53,7 +49,7 @@ def prove(Eq):
     else:
         Eq << Eq.induction.induct()
     
-    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
     
 if __name__ == '__main__':
     prove(__file__)

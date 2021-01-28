@@ -12,7 +12,7 @@ from sympy.core.numbers import Rational
 from sympy.core.power import Pow
 from sympy.core.singleton import S
 from sympy.functions.elementary.exponential import exp, log
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 
 
 def _expm1(x):
@@ -365,7 +365,7 @@ def _Sqrt(x):
     return Pow(x, S.Half)
 
 
-class Sqrt(Function):  # 'sqrt' already defined in sympy.functions.elementary.miscellaneous
+class Sqrt(Function):  # 'sqrt' already defined in sympy.functions.elementary.extremum
     """
     Represents the square root function.
 
@@ -412,7 +412,7 @@ def _Cbrt(x):
     return Pow(x, Rational(1, 3))
 
 
-class Cbrt(Function):  # 'cbrt' already defined in sympy.functions.elementary.miscellaneous
+class Cbrt(Function):  # 'cbrt' already defined in sympy.functions.elementary.extremum
     """
     Represents the cube root function.
 

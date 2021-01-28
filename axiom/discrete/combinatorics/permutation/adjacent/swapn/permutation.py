@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import dtype
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy import ForAll, LAMBDA
@@ -12,7 +12,7 @@ from sympy import Symbol
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_ForAll
     S = given.rhs
@@ -32,7 +32,7 @@ def apply(given):
     return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n, given=True)    
@@ -42,7 +42,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     
     given = ForAll[x[:n]:S](Contains(w[i, j] @ x[:n], S))
     
@@ -69,7 +69,7 @@ def prove(Eq):
     
     Eq << swapn.mat_product.apply(Eq.swap.T, n, b)
     
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains, (b[:n],))
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.intlimits, (b[:n],))
 
 
 if __name__ == '__main__':

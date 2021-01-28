@@ -1,5 +1,5 @@
 from sympy.core.relational import Unequal, Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy import ForAll
 from sympy.core.function import Function
@@ -12,7 +12,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 
 # given: f(a) != f(b) or a = b
 # ForAll[a: a!=b](f(a) != f(b)) 
-@plausible
+@apply(imply=True)
 def apply(given, pivot=0, wrt=None):
     conds = axiom.is_Or(given)
     
@@ -28,10 +28,9 @@ def apply(given, pivot=0, wrt=None):
     return ForAll[wrt:cond](given.func(*conds))            
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(complex=True, shape=(n,))
@@ -46,7 +45,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.imply.forall.limits_assert.apply(Eq[-1].limits, simplify=False)
+    Eq << algebre.imply.forall.limits_assert.apply(Eq[-1].limits)
     
     Eq << Eq[-1].this.function.simplify()
     
@@ -54,7 +53,7 @@ def prove(Eq):
     
     Eq << sets.is_nonemptyset.forall.imply.exists.apply(Eq[-1], Eq[-2])
     
-    Eq << sets.imply.equivalent.apply(x, y)
+    Eq << sets.imply.equivalent.unequal.contains.apply(x, y)
     
     Eq << ForAll[x : Equality(Boole(Contains(x, Eq[2].limits[0][1])), 1)](Eq[2].function, plausible=True)
     

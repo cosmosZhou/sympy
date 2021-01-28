@@ -1,7 +1,8 @@
 from . import subset
-from . import equality
+from . import equal
 from . import contains
 from . import exists_contains
+from . import is_nonemptyset
 from . import notcontains
 from . import ou
 from . import less_than
@@ -9,4 +10,4 @@ from . import strict_greater_than
 from . import strict_less_than
 from . import greater_than
 from . import et
-from . import inequality
+from . import unequal

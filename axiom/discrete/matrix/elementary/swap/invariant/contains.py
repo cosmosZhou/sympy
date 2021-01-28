@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -14,7 +14,7 @@ from sympy.sets.contains import Contains
 from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(given, w=None, n=None):
     e, S = axiom.is_Contains(given)
     x, i = e.args
@@ -24,7 +24,7 @@ def apply(given, w=None, n=None):
         
     j = Symbol.j(integer=True)
     if w is None:    
-        w = Symbol.w(definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap        
@@ -33,7 +33,7 @@ def apply(given, w=None, n=None):
     return Contains(w[i, j, k] @ x[:n], S)
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
     x = Symbol.x(shape=(n,), integer=True)    
@@ -44,7 +44,7 @@ def prove(Eq):
     
     i, j, k = Eq[-1].lhs.args[0].indices
     
-    Eq << Eq[0][k] @ x
+    Eq << (Eq[0].lhs[k] @ x).this.args[0].definition
 
     Eq << Eq[-1].this.rhs.expand()
     

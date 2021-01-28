@@ -1,25 +1,24 @@
 from sympy.core.relational import LessThan
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.sets import Union
 from axiom import sets
 from sympy import Symbol
 
-@plausible
+@apply(imply=True)
 def apply(A, B):
     return LessThan(abs(Union(A, B)), abs(A) + abs(B))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
     Eq << apply(A, B)
     
-    Eq << sets.imply.equality.principle.inclusion_exclusion.basic.apply(A, B).reversed
+    Eq << sets.imply.equal.principle.inclusion_exclusion.basic.apply(A, B).reversed
     
     Eq << Eq[-1] + Eq[-2]
     

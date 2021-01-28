@@ -97,7 +97,7 @@ class Plus(Expr, AssocOp):
 
         """
         from sympy.calculus.util import AccumBounds
-        from sympy.matrices.expressions import MatrixExpr
+#         from sympy.matrices.expressions import MatrixExpr
         from sympy.tensor.tensor import TensExpr
         rv = None
         if len(seq) == 2:
@@ -119,7 +119,6 @@ class Plus(Expr, AssocOp):
                         # e.g. 3 + ...
         order_factors = []
 
-        extra = []
         infinitesimal = None
         for o in seq:
 
@@ -138,7 +137,7 @@ class Plus(Expr, AssocOp):
             # 3 or NaN
             elif o.is_Number:
                 if (o is S.NaN or coeff is S.ComplexInfinity and
-                        o.is_finite == False) and not extra:
+                        o.is_finite == False):
                     # we know for sure the result will be nan
                     return [S.NaN], [], None
                 if coeff.is_Number:
@@ -147,7 +146,7 @@ class Plus(Expr, AssocOp):
                         infinitesimal = o
                         continue
                     coeff += o
-                    if coeff is S.NaN and not extra:
+                    if coeff is S.NaN:
                         # we know for sure the result will be nan
                         return [S.NaN], [], None
                 continue
@@ -156,17 +155,12 @@ class Plus(Expr, AssocOp):
                 coeff = o.__add__(coeff)
                 continue
 
-            elif isinstance(o, MatrixExpr):
-                # can't add 0 to Matrix so make sure coeff is not 0                
-                extra.append(o)
-                continue
-
             elif isinstance(o, TensExpr):
                 coeff = o.__add__(coeff) if coeff else o
                 continue
 
             elif o is S.ComplexInfinity:
-                if coeff.is_finite == False and not extra:
+                if coeff.is_finite == False:
                     # we know for sure the result will be nan
                     return [S.NaN], [], None
                 coeff = S.ComplexInfinity
@@ -191,6 +185,12 @@ class Plus(Expr, AssocOp):
                     continue
                 c, s = S.One, o
 
+            elif o.is_zero:
+                if o.shape:
+                    from sympy import OneMatrix
+                    coeff *= OneMatrix(*o.shape) 
+                # skipping any zero values
+                continue
             else:
                 # everything else
                 c = S.One
@@ -205,7 +205,7 @@ class Plus(Expr, AssocOp):
             # 2*x**2 + 3*x**2  ->  5*x**2
             if s in terms:
                 terms[s] += c
-                if terms[s] is S.NaN and not extra:
+                if terms[s] is S.NaN:
                     # we know for sure the result will be nan
                     return [S.NaN], [], None
             else:
@@ -283,32 +283,37 @@ class Plus(Expr, AssocOp):
         _addsort(newseq)
 
         # current code expects coeff to be first
-        if coeff is not S.Zero:
+        if coeff.is_zero:
+            if coeff.shape:
+                if len(coeff.shape) > max((len(arg.shape) for arg in newseq)):
+                    ones = OneMatrix(*coeff.shape)
+#                     expand dimensions here
+                    newseq = [arg * ones for arg in newseq]
+        else:        
             newseq.insert(0, coeff)
-
-        if extra:
-            _extra = [mat for mat in extra if not mat.is_zero]            
-            newseq += _extra
-            if not newseq:
-                from sympy.matrices.expressions.matexpr import Concatenate 
-                shapes = [mat.shape for mat in extra]
-                Concatenate.broadcast(shapes)
-                for shape in shapes:
-                    if shape[0] > 1:
-                        break
-                if shape[0] == 1:
-                    shape = shape[1:]
-                from sympy import ZeroMatrix
-                newseq.append(ZeroMatrix(*shape))
-
+        
         if infinitesimal is not None:
             newseq.append(infinitesimal)
 
         # we are done
         if noncommutative:
             return [], newseq, None
-        else:
-            return newseq, [], None
+
+        if not newseq:
+            from sympy import ZeroMatrix
+            from sympy.matrices.expressions.blockmatrix import BlockMatrix
+
+            shapes = [mat.shape for mat in seq if mat.shape]
+            if shapes:
+                BlockMatrix.broadcast(shapes)
+                for shape in shapes:
+                    if shape[0] > 1:
+                        break
+                if shape[0] == 1:
+                    shape = shape[1:]
+                newseq.append(ZeroMatrix(*shape))
+        
+        return newseq, [], None
 
     @classmethod
     def class_key(cls):
@@ -394,7 +399,7 @@ class Plus(Expr, AssocOp):
             from sympy.core.exprtools import factor_terms
             from sympy.core.function import expand_multinomial
             from sympy.functions.elementary.complexes import sign
-            from sympy.functions.elementary.miscellaneous import sqrt
+            from sympy.core.power import sqrt
             ri = pure_complex(self)
             if ri:
                 r, i = ri
@@ -599,29 +604,6 @@ class Plus(Expr, AssocOp):
                     return False
                 if self.max().is_extended_negative:
                     return False    
-        
-        from sympy import preorder_traversal, KroneckerDelta 
-        delta = None
-        for arg in preorder_traversal(self):
-            if isinstance(arg, KroneckerDelta):
-                delta = arg
-                break
-            
-        if delta is not None:
-            # to prevent infinite loop!
-            this = self._subs(delta, S.Zero)
-            if this is self:
-                return 
-            delta0 = this.is_zero
-            
-            this = self._subs(delta, S.One)
-            if this is self:
-                return             
-            delta1 = this.is_zero
-            if delta0 and delta1:
-                return True
-            if delta0 == False and delta1 == False:
-                return False
 
     def _eval_is_irrational(self):
         for t in self.args:
@@ -671,11 +653,6 @@ class Plus(Expr, AssocOp):
             
         if self.is_number:            
             return Expr._eval_is_extended_negative(self)
-        
-#         from sympy import Infinitesimal, NegativeInfinitesimal
-#         if self.has(Infinitesimal, NegativeInfinitesimal):
-#             print(self.args)        
-#         assert not self.has(Infinitesimal, NegativeInfinitesimal), self.args
         
         f = self.max()
         if f is not self and f.is_extended_negative:
@@ -1050,6 +1027,28 @@ class Plus(Expr, AssocOp):
             return Basic.simplify_Equal(self, lhs, rhs)
             
     @classmethod
+    def simplify_Relational(cls, self, lhs, rhs):
+        """
+        precondition: self.lhs is a Plus object!
+        """
+        if rhs.is_Plus:
+            lhs_args = [*lhs.args]
+            rhs_args = [*rhs.args]
+            intersect = set(lhs_args) & set(rhs_args)
+            if intersect:
+                for arg in intersect:
+                    lhs_args.remove(arg)
+                    rhs_args.remove(arg)
+                return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
+
+        elif rhs in lhs.args:
+            args = [*lhs.args]
+            args.remove(rhs)
+            return self.func(cls(*args), 0, equivalent=self).simplify()
+        elif rhs.is_zero:
+            return Basic.simplify_Relational(self, lhs, rhs)
+        
+    @classmethod
     def simplify_Unequal(cls, self, lhs, rhs):
         """
         precondition: self.lhs is a Plus object!
@@ -1150,6 +1149,10 @@ class Plus(Expr, AssocOp):
         if this is not self:
             return this
 
+        this = self.simplify_OneMatrix()
+        if this is not self:
+            return this
+        
         return self             
             
     def simplifyPiecewise(self):     
@@ -1158,6 +1161,7 @@ class Plus(Expr, AssocOp):
             return self
         
         if len(piecewise) == 1:
+            return self
             piecewise, *_ = piecewise
             args = [*self.args]
             args.remove(piecewise)
@@ -1183,6 +1187,19 @@ class Plus(Expr, AssocOp):
         
         return self.func(*matrix) + self.func(*scalar)
 
+    def simplify_OneMatrix(self):        
+        max_len = self.max_len_shape()
+        
+        for i, times in enumerate(self.args):
+            if times.is_Times and any(t.is_OneMatrix for t in times.args):
+                if len(times.shape) < max_len or \
+                len(times.shape) == max_len and max_len == max(len(arg.shape) for j, arg in enumerate(self.args) if j != i):
+                    args = [*self.args]
+                    args[i] = times.squeeze()
+                    return self.func(*args).simplify()
+                                    
+        return self
+    
     def simplifySummations(self):
         from sympy.concrete.summations import Sum 
         from sympy import Wild
@@ -1395,6 +1412,8 @@ class Plus(Expr, AssocOp):
         else:
             terms = p._as_ordered_terms(self, order=order)
 
+        terms = sorted(terms, key=lambda term: term._coeff_isneg())
+        
         tex = ""
         for i, term in enumerate(terms):
             if i == 0:
@@ -1467,9 +1486,12 @@ class Plus(Expr, AssocOp):
             return False
         return True
 
+    def _eval_Abs(self):
+        if all(arg.is_nonnegative for arg in self.args):
+            return self
+
     @classmethod
     def rewrite_from_Log(cls, self):
-        assert self.is_Log
         if self.arg.is_Mul:
             return cls(*(self.func(arg).simplify() for arg in self.arg.args))        
         return self
@@ -1493,6 +1515,39 @@ class Plus(Expr, AssocOp):
             return self                   
         return cls(*(self.func(f, *self.limits) for f in function))
 
+    @classmethod
+    def rewrite_from_LAMBDA(cls, self):
+        if isinstance(self.function, cls):
+            function = self.function
+            function = self.function.args
+            return cls(*(self.func(f, *self.limits).simplify() for f in function))
+        return self
+    
+    @classmethod
+    def rewrite_from_Piecewise(cls, self):
+        common_terms = None
+        for e, c in self.args:            
+            if isinstance(e, cls):
+                if common_terms is None:
+                    common_terms = {*e.args}
+                else:
+                    common_terms &= {*e.args}
+            else:
+                if common_terms is None:
+                    common_terms = {e}
+                else:
+                    common_terms &= {e}
+        if common_terms:
+            args = []
+            for e, c in self.args:
+                if isinstance(e, cls):
+                    e = cls(*{*e.args} - common_terms)
+                else:
+                    e = 0 
+                args.append((e, c))
+            return cls(*common_terms, self.func(*args))
+        return self
+    
     @classmethod
     def rewrite_from_Sum(cls, self):
         return cls.rewrite_from_AddWithLimits(self)
@@ -1526,9 +1581,45 @@ class Plus(Expr, AssocOp):
                     args = [*self.args]
                     args[i] = e 
                     summand.append(self.func(*args))
-                return cls(*summand)    
+                return cls(*summand).simplify()
+        return self
+
+    @classmethod
+    def rewrite_from_MinMaxBase(cls, self):
+        common_terms = None
+        
+        for plus in self.args:
+            if isinstance(plus, cls):
+                if common_terms is None:
+                    common_terms = {*plus.args}
+                else:
+                    common_terms &= {*plus.args}
+            else:
+                if common_terms is None:
+                    common_terms = {plus}
+                else:
+                    common_terms &= {plus}
+        if common_terms:
+            args = []
+            for e in self.args:
+                if isinstance(e, cls):
+                    e = cls(*{*e.args} - common_terms)
+                elif e.is_Zero:
+                    ...
+                else:
+                    e = 0
+                args.append(e)
+            return cls(*common_terms, self.func(*args))
         return self
     
+    @classmethod
+    def rewrite_from_Min(cls, self):
+        return cls.rewrite_from_MinMaxBase(self)
+    
+    @classmethod
+    def rewrite_from_Max(cls, self):
+        return cls.rewrite_from_MinMaxBase(self)
+        
 Add = Plus
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 
 from sympy.matrices.expressions.determinant import Determinant
@@ -8,16 +8,15 @@ from sympy import Symbol
 from sympy.matrices.expressions.matexpr import Identity
 
 
-@plausible
+@apply(imply=True)
 def apply(A):    
     n = A.shape[0]        
     return Equality(A @ Cofactors(A).T, Determinant(A) * Identity(n))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     A = Symbol.A(complex=True, shape=(n, n))

@@ -1,17 +1,10 @@
-from sympy.core.relational import Equality, Unequal
-from axiom.utility import plausible
-from sympy.logic.boolalg import Or
-from sympy.sets.sets import Interval
-from sympy import Symbol
-from sympy import LAMBDA, ForAll, Exists
-from axiom import discrete, algebre, sets
-from sympy.sets.contains import Contains, Subset
-from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
+from axiom.utility import prove, apply
+from sympy import *
 from sympy.sets.conditionset import conditionset
-from sympy.core.numbers import oo
+from axiom import algebre
 
     
-@plausible
+@apply(imply=True)
 def apply(n):    
     assert n > 0
     x = Symbol.x(integer=True, nonnegative=True, shape=(oo,))
@@ -19,12 +12,9 @@ def apply(n):
     return Unequal(P, P.etype.emptySet) 
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):    
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol.n(integer=True, positive=True, given=True)
     Eq << apply(n)
     
     x = Eq[0].rhs.variable.base
@@ -37,14 +27,9 @@ def prove(Eq):
     
     i = Symbol.i(integer=True)
     
-    Eq << Eq[-1].subs(x[:n], LAMBDA[i:n](i))
+    Eq << algebre.exists.given.exists.subs.apply(Eq[-1], x[:n], LAMBDA[i:n](i))
     
     Eq << Eq[-1].this.lhs.simplify()
-    
-
-    
-    
-    
     
     
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equal, Unequal
 from sympy import Symbol
 
@@ -10,7 +10,7 @@ from axiom import algebre
 from sympy.logic.boolalg import Sufficient
 
 
-@plausible
+@apply(imply=True)
 def apply(*given, n=None):
     f0, sufficient = given
     axiom.is_zero(f0)
@@ -24,10 +24,9 @@ def apply(*given, n=None):
     return fn
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
     f = Symbol.f(integer=True, shape=(oo,))
@@ -39,7 +38,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.subs(Eq[0])
     
-    Eq.is_nonzero = algebre.equality.imply.is_nonzero.apply(Eq[-1])
+    Eq.is_nonzero = algebre.equal.imply.is_nonzero.apply(Eq[-1])
 
     Eq.sufficient = Sufficient(Unequal(g[n], 0), Unequal(g[n + 1], 0), plausible=True)
 

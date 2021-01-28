@@ -270,9 +270,9 @@ class SingleDiscreteDistribution(DiscreteDistribution, NamedArgsMixin):
         """ Expectation of expression over distribution """
         # TODO: support discrete sets with non integer stepsizes
 
-        return Sum[var:self.domain.min(): self.domain.max()](expr * self.pdf(var)).doit(evaluate=evaluate)
+        return Sum[var:self.domain.min(): self.domain.max() + 1](expr * self.pdf(var)).doit(evaluate=evaluate)
         if evaluate:
-            return Sum[var:self.domain.min(): self.domain.max()](expr * self.pdf(var)).doit()
+            return Sum[var:self.domain.min(): self.domain.max() + 1](expr * self.pdf(var)).doit()
             try:
                 p = poly(expr, var)
 

@@ -1,19 +1,9 @@
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from axiom.utility import plausible
-from sympy.core.relational import Equality
-from sympy import LAMBDA
-from sympy.matrices.expressions.determinant import Det
-from sympy.concrete.products import Product
-from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.matrices.expressions.matexpr import Identity
-
-from sympy import Symbol, Slice
-from sympy.matrices.dense import Matrix
+from sympy import *
+from axiom.utility import prove, apply
 from axiom import discrete, algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(a):
     n = a.shape[0]
     i = Symbol.i(integer=True)
@@ -22,16 +12,13 @@ def apply(a):
     return Equality(Det(LAMBDA[j:n, i:n](a[j] ** i)), Product[j:i, i:n](a[i] - a[j]))
 
 
-from axiom.utility import check
-
-
 def row_transformation(a, *limits):
-    n = limits[0][-1] + 1
+    n = limits[0][-1]
     (i, *_), (j, *_) = limits
     return Identity(n) - LAMBDA[j:n, i:n](a[0] * KroneckerDelta(i, j + 1))
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     a = Symbol.a(shape=(oo,), zero=False, complex=True)
@@ -76,9 +63,9 @@ def prove(Eq):
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
-    Eq << Eq.recursion.rhs.args[0].arg.this.as_two_terms()
+    Eq << Eq.recursion.rhs.args[0].arg.this.astype(Times)
     
-    Eq << Eq[-1].det()
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.det)
     
     i = Eq[-1].rhs.args[1].variable
     Eq.determinant = Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
@@ -111,7 +98,9 @@ def prove(Eq):
     
     Eq << Eq.recursion.subs(Eq[-1])
     
-    Eq << Eq.expand.det().subs(Eq[-1])
+    Eq << Eq.expand.apply(algebre.equal.imply.equal.det)
+    
+    Eq << Eq[-1].subs(Eq[-2])
 
     Eq << Eq.induction.induct()
     

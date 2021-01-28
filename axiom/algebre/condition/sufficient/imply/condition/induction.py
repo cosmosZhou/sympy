@@ -1,17 +1,10 @@
-from axiom.utility import plausible
-from sympy.core.relational import Equal, LessThan
-from sympy import Symbol
-
-from sympy.core.numbers import oo
-from sympy import ForAll, Boole, LAMBDA
+from sympy import *
+from axiom.utility import prove, apply
 import axiom
 from axiom import algebre
-from sympy.core.sympify import sympify
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.logic.boolalg import Sufficient
 
 
-@plausible
+@apply(imply=True)
 def apply(*given, n=None, start=0):
     start = sympify(start)
     f0, sufficient = given
@@ -32,10 +25,7 @@ def apply(*given, n=None, start=0):
             return fn
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
     f = Symbol.f(integer=True, shape=(oo,))
@@ -47,7 +37,7 @@ def prove(Eq):
     
     Eq << h[0].this.definition
     
-    Eq << algebre.less_than.imply.equality.bool.apply(Eq[0])
+    Eq << algebre.less_than.imply.equal.bool.apply(Eq[0])
     
     Eq.equality = Eq[-1] + Eq[-2]
     
@@ -61,7 +51,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.lhs.astype(Piecewise)
     
-    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.equality, Eq.sufficient, n=n)
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.equality, Eq.sufficient, n=n)
     
     Eq << Eq[-1].this.lhs.definition
     

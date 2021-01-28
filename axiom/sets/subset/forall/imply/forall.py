@@ -1,14 +1,10 @@
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Subset
-from sympy.core.relational import Equality
-from sympy import Symbol
+from axiom.utility import prove, apply
+
+from sympy import *
 from axiom import sets
-from sympy.core.function import Function
-from sympy import ForAll
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     subset, forall = given
     if subset.is_ForAll:
@@ -31,10 +27,9 @@ def apply(*given):
     return ForAll(function, *limits)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(complex=True, positive=True)
     A = Symbol.A(etype=dtype.complex * n)

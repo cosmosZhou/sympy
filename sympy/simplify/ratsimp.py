@@ -5,7 +5,8 @@ from sympy.core import symbols, Add, Dummy
 from sympy.core.numbers import Rational
 from sympy.polys import cancel, ComputationFailed, parallel_poly_from_expr, reduced, Poly
 from sympy.polys.monomials import Monomial, monomial_div
-from sympy.polys.polyerrors import DomainError, PolificationFailed
+from sympy.polys.polyerrors import DomainError, PolificationFailed,\
+    PolynomialError
 from sympy.utilities.miscellany import debug
 
 def ratsimp(expr):
@@ -26,6 +27,8 @@ def ratsimp(expr):
         Q, r = reduced(f, [g], field=True, expand=False)
     except ComputationFailed:
         return f/g
+    except PolynomialError:
+        return expr
 
     return Add(*Q) + cancel(r/g)
 

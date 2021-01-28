@@ -1,5 +1,5 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
@@ -9,7 +9,7 @@ from sympy.core.relational import Unequal
 from sympy.sets.contains import Contains
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Exists
     assert len(given.limits) == 1
@@ -17,10 +17,9 @@ def apply(given):
     return Unequal(S, x.emptySet)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.real)
     e = Symbol.e(real=True)

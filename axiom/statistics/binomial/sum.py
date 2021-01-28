@@ -1,16 +1,14 @@
+from sympy import *
 import axiom
-from sympy.core.relational import Equality
 from sympy.stats.drv import SingleDiscretePSpace
 from sympy.stats.drv_types import BinomialDistribution
 from sympy.stats.rv import pspace, PDF
-from axiom.utility import check
-from axiom.utility import plausible
-from sympy import Symbol
-from sympy import Interval
-from axiom import algebre, discrete
-from sympy.matrices.expressions.matmul import MatMul
+from axiom.utility import prove, apply
 
-@plausible
+from axiom import discrete
+
+
+@apply(imply=True)
 def apply(x0, x1):
     if not x0.is_random or not x1.is_random:
         return
@@ -31,14 +29,13 @@ def apply(x0, x1):
     return Equality(PDF(x0 + x1)(y), PDF(Y)(y).doit())
 
 
-@check
+@prove
 def prove(Eq):
     n0 = Symbol.n0(integer=True, positive=True)
     n1 = Symbol.n1(integer=True, positive=True)
     
     y = Symbol.y(integer=True, nonnegative=True)
 
-    from sympy.functions.elementary.miscellaneous import Min, Max
     lhs = y + 1
     rhs = Max(-1, -n0 + y - 1)
     assert lhs > rhs
@@ -84,7 +81,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(MatMul)
     
-    Eq << discrete.vector.independence.matmul_equality.apply(Eq[-1])
+    Eq << discrete.vector.independence.matmul_equal.apply(Eq[-1])
 
     Eq << Eq[-1].limits_subs(k, Eq[0].lhs.symbol)
     

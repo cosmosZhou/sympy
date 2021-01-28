@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Unequal
 from sympy import Symbol
 import axiom
@@ -6,17 +6,16 @@ from sympy.logic.boolalg import And
 from sympy.matrices.expressions.matexpr import ZeroMatrix
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     multiply = axiom.is_nonzero(given)
     args = axiom.is_Times(multiply)
     return And(*(Unequal(arg, ZeroMatrix(*arg.shape)).simplify() for arg in args))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)

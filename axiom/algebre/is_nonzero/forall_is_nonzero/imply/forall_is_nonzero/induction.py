@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Unequal
 from sympy import Symbol
 from sympy.sets.sets import Interval
@@ -10,12 +10,12 @@ import axiom
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     is_nonzero, forall_is_nonzero = given
     fa = axiom.is_nonzero(is_nonzero)
     fn1, limits = axiom.forall_is_nonzero(forall_is_nonzero)    
-    n, fn, baseset = axiom.limits_is_nonzero_baseset(limits)    
+    n, fn, baseset = axiom.limit_is_nonzero_baseset(limits)    
     assert fn._subs(n, n + 1) == fn1
     a = axiom.is_Interval(baseset, integer=True, end=oo)
     assert fn._subs(n, a) == fa
@@ -23,10 +23,9 @@ def apply(*given):
     return ForAll[n:a:oo](Unequal(fn, 0))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True)    
     a = Symbol.a(integer=True)

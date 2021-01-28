@@ -1,11 +1,11 @@
 from sympy.core.relational import Equality, Unequal
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
 from sympy import Exists
 from sympy.sets.contains import Contains
 
-@plausible
+@apply(imply=True)
 def apply(S):
     assert S.is_set
     
@@ -13,10 +13,9 @@ def apply(S):
     return Exists(Contains(e, S), (e,)) | Equality(S, e.emptySet)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.real)
 

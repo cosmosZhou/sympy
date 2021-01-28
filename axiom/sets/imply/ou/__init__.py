@@ -1,2 +1,2 @@
 from . import contains
-from . import inequality
+from . import unequal

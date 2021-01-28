@@ -101,7 +101,7 @@ def get_math_macros():
     """
     from sympy.codegen.cfunctions import log2, Sqrt
     from sympy.functions.elementary.exponential import log
-    from sympy.functions.elementary.miscellaneous import sqrt
+    from sympy.core.power import sqrt
 
     return {
         S.Exp1: 'M_E',

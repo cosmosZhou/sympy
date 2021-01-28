@@ -1,14 +1,13 @@
 
 from sympy.core.relational import Equality
-from axiom.utility import check
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy.stats.drv_types import DieDistribution
 from sympy.stats.symbolic_probability import Expectation
 from sympy.functions.elementary.integers import floor
 
 
-@plausible
+@apply(imply=True)
 def apply(n):
     X = Symbol.X(integer=True, random=True)
     if n.is_even:
@@ -19,7 +18,7 @@ def apply(n):
         return Equality(Expectation[X:DieDistribution(n)](X | (X > n / 2)), n / 2 + floor(n / 2) / 2)
 
 
-@check
+@prove
 def prove(Eq):    
     n = Symbol.n(integer=True, positive=True)
     if n.is_even:

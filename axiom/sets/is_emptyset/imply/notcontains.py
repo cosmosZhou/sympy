@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
 from sympy.sets.contains import NotContains
@@ -7,7 +7,7 @@ from axiom import sets
 
 
 # given A & B = {} => A - B = A
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Equality
     AB, emptyset = given.args
@@ -37,10 +37,9 @@ def apply(given):
     return NotContains(a, B)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     a = Symbol.a(integer=True, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
@@ -49,9 +48,9 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(sets.contains.imply.equality.union)
+    Eq << Eq[-1].apply(sets.contains.imply.equal.union)
     
-    Eq << Eq[-1].intersect(a.set)
+    Eq << Eq[-1].apply(sets.equal.imply.equal.intersect, a.set)
     
     Eq << Eq[-1].subs(Eq[0])
 

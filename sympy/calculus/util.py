@@ -5,7 +5,7 @@ from sympy.core.compatibility import iterable
 from sympy.core.expr import AtomicExpr, Expr
 from sympy.core.numbers import _sympifyit, oo
 from sympy.core.sympify import _sympify
-from sympy.functions.elementary.miscellaneous import Min, Max
+from sympy.functions.elementary.extremum import Min, Max
 from sympy.logic.boolalg import And
 from sympy.polys.rationaltools import together
 from sympy.sets.sets import (Interval, Intersection, FiniteSet, Union,
@@ -1269,7 +1269,7 @@ class AccumulationBounds(AtomicExpr):
 
     @_sympifyit('other', NotImplemented)
     def __pow__(self, other):
-        from sympy.functions.elementary.miscellaneous import real_root
+        from sympy.functions.elementary.extremum import real_root
         if isinstance(other, Expr):
             if other is S.Infinity:
                 if self.min.is_extended_nonnegative:

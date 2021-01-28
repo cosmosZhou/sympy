@@ -1,14 +1,14 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan
 from sympy import Symbol, Or
 import axiom
-from sympy.functions.elementary.miscellaneous import Max
+from sympy.functions.elementary.extremum import Max
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.logic.boolalg import And
 from axiom import algebre, sets
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     x_less_than_a, y_less_than_a = given
     x, a = axiom.is_LessThan(x_less_than_a)    
@@ -17,10 +17,7 @@ def apply(*given):
     return LessThan(Max(x, y), a)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     a = Symbol.a(real=True, given=True)
     x = Symbol.x(real=True, given=True)
@@ -34,9 +31,7 @@ def prove(Eq):
     
     Eq << Eq[0].bisect(x >= y).split()
     
-    Eq << algebre.ou.imply.ou.invert.apply(Eq[-2])
-    
-    Eq.ou = Eq[-1].this.args[1].apply(sets.contains.imply.et.interval, simplify=False)
+    Eq.ou = algebre.ou.imply.ou.invert.apply(Eq[-2])
     
     Eq << Eq[1].bisect(x >= y).split()
     
@@ -54,9 +49,10 @@ def prove(Eq):
     
     Eq << algebre.ou.imply.less_than.two.apply(Eq[4], wrt=a)
     
-    Eq << algebre.imply.equality.piecewise.apply(Eq[-1].lhs)
+    Eq << algebre.imply.equal.piecewise.swap.front.apply(Eq[-1].lhs)
     
     Eq << Eq[-2].subs(Eq[-1])
+
     
 if __name__ == '__main__':
     prove(__file__)

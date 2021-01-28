@@ -31,17 +31,17 @@ function toggle_expansion_button() {
 	$('button').click(function() {
 		var div = $(this)[0].nextElementSibling;
 		if ($(this).text() == '>>>>') {
-			
+
 			div.style.display = 'block';
-			
+
 			$(this).text('<<<<');
-			
+
 		} else {
-			
+
 			div.style.display = null;
-			
+
 			$(this).text('>>>>');
-			
+
 		}
 	});
 }
@@ -49,4 +49,11 @@ function toggle_expansion_button() {
 function click_first_expansion_button() {
 	var first_button = document.querySelector("button");
 	first_button.click();
+}
+
+function click_all_expansion_buttons() {
+	var buttons = document.querySelectorAll("button");
+	for (let button of buttons){
+		button.click();	
+	}	
 }

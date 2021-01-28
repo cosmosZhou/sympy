@@ -1,19 +1,18 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
 from sympy import Symbol
 
-@plausible
+@apply(imply=True)
 def apply(x, y):
     assert x.shape == y.shape
     assert len(x.shape) == 1
     return Equality(x @ y, y @ x)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True)
     x = Symbol.x(shape=(n,), real=True)

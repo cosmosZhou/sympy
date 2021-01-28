@@ -1,19 +1,11 @@
-from sympy.functions.combinatorial.factorials import factorial
-from sympy.core.relational import Equality
-from sympy.core.symbol import dtype
-from axiom.utility import check, plausible
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy import UNION, ForAll, LAMBDA
-from sympy.sets.contains import Contains, Subset
-from sympy import Symbol
-from axiom import discrete, sets
-from sympy.core.function import Function
+from axiom.utility import prove, apply
+
+from sympy import *
+from axiom import discrete, sets, algebre
 from sympy.sets.conditionset import conditionset
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     assert len(given) == 2
     assert given[0].is_ForAll and len(given[0].limits) == 2
@@ -43,7 +35,7 @@ def apply(*given):
     xi, conditioni = piecewise.args[2]
     assert conditioni
     
-    n = n_munis_1 + 1
+    n = n_munis_1
     
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.type
     
@@ -57,7 +49,7 @@ def apply(*given):
     return Equality(abs(S), factorial(n) * abs(UNION[x:S]({x.set_comprehension()})))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n)    
@@ -67,7 +59,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    Eq << apply(ForAll[j:1:n - 1, x:S](Contains(LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
+    Eq << apply(ForAll[j:1:n, x:S](Contains(LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
                 ForAll[x:S](Equality(abs(x.set_comprehension()), n)))
     
     Eq << discrete.combinatorics.permutation.adjacent.swap2.general.apply(Eq[0])
@@ -80,7 +72,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.arg.limits_subs(Eq[-1].lhs.arg.variable, Eq[-2].rhs.variable)
     
-    Eq <<= Eq[-1] & Eq[-2].abs()
+    Eq << Eq[-2].apply(algebre.equal.imply.equal.abs)
+    
+    Eq <<= Eq[-2] & Eq[-1]
     
     F = Function.F(nargs=(), etype=dtype.integer * n)
     F.eval = lambda e: conditionset(x, Equality(x.set_comprehension(), e), S)
@@ -97,7 +91,7 @@ def prove(Eq):
     
     P = Eq[-1].limits[0][1]
     Eq << sets.imply.forall.conditionset.apply(P)
-    Eq << Eq[-1].apply(sets.equality.imply.equality.permutation, x)
+    Eq << Eq[-1].apply(sets.equal.imply.equal.permutation, x)
     
     Eq.equality_e = Eq[-3] & Eq[-1]
     

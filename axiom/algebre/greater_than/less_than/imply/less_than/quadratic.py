@@ -1,8 +1,8 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan
 from sympy import Symbol
 import axiom
-from sympy.functions.elementary.miscellaneous import Max
+from sympy.functions.elementary.extremum import Max
 from axiom import algebre
 
 
@@ -16,7 +16,7 @@ def quadratic_coefficient(fx, x):
     return a, b, c
 
 
-@plausible
+@apply(imply=True)
 def apply(*given, quadratic=None):
     greater_than, less_than = given
     x, m = axiom.is_GreaterThan(greater_than)
@@ -28,10 +28,7 @@ def apply(*given, quadratic=None):
     return LessThan(quadratic, Max(a * m * m + b * m + c, a * M * M + b * M + c))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     m = Symbol.m(real=True)
@@ -69,9 +66,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1] - b*b/(4*a) + c
+    Eq << Eq[-1] - b * b / (4 * a) + c
     
-    
+    Eq << Eq[-1].this.rhs.astype(Max)
 
     
 if __name__ == '__main__':

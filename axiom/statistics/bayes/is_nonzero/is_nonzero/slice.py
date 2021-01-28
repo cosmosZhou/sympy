@@ -1,19 +1,13 @@
-
-from sympy.core.relational import Unequal
-
-from axiom.utility import plausible
-from axiom.utility import check
-from sympy import Symbol, Slice
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.statistics import bayes
-
 from sympy.stats.rv import pspace
-from sympy.core.numbers import oo
 
 
 # given: P(x) != 0
 # imply: P(x[:t]) != 0
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Unequality
     assert given.lhs.is_Probability
@@ -23,18 +17,18 @@ def apply(given):
     x, _x = eq.args
     assert _x == pspace(x).symbol
     n = x.shape[0]
-    t = Symbol.t(integer=True, domain=[1, n - 1])
+    t = Symbol.t(domain=Interval(1, n - 1, integer=True))
     return Unequal(P(x[:t]), 0)
 
 
-@check
+@prove
 def prove(Eq):
-    n = Symbol.n(integer=True, domain=[2, oo])
+    n = Symbol.n(domain=Interval(2, oo, integer=True))
     x = Symbol.x(real=True, shape=(n,), random=True)
     
     Eq << apply(Unequal(P(x), 0))
     
-    t = Symbol.t(integer=True, domain=[1, n - 1])
+    t = Symbol.t(domain=Interval(1, n - 1, integer=True))
     
     Eq << Eq[0].this.lhs.arg.bisect(Slice[:t])
      

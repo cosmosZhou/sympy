@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan, Unequal
 
@@ -48,7 +48,7 @@ def extract(x_constraint, y_constraint, z_constraint):
     return None
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     x, y, z = extract(*given)
 
@@ -56,10 +56,9 @@ def apply(*given):
     return Exists[theta:Interval(pi / 3, pi, right_open=True)](Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(positive=True)
     y = Symbol.y(positive=True)
@@ -110,11 +109,13 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[-3]
     
+    Eq << Eq[-1].apply(sets.less_than.strict_greater_than.imply.contains)
+    
     Eq << Eq[-1] / (2 * x * y)
     
     Eq << Eq[-1].subs(Eq.cos.reversed)
 
-    Eq << sets.imply.forall.limits_assert.apply(Eq[-1].limits, simplify=False)
+    Eq << algebre.imply.forall.limits_assert.apply(Eq[-1].limits)
     
     Eq << Eq[-1].this.function.cos()
     

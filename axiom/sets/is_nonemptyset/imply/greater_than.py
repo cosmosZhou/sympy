@@ -1,5 +1,5 @@
 from sympy.core.relational import Unequality, GreaterThan
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype 
 from axiom import sets
 from sympy import Symbol
@@ -7,7 +7,7 @@ from sympy import Symbol
 # |A| >= 1
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Unequality
     A, B = given.args
@@ -18,10 +18,9 @@ def apply(given):
     return GreaterThan(abs(A), 1)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     inequality = Unequality(A, A.etype.emptySet)

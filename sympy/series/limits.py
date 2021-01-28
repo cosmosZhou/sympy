@@ -171,6 +171,8 @@ class Limit(Expr):
             direction = "-"
         elif z0 is S.NegativeInfinity:
             direction = "+"
+        elif z.shape:
+            direction = "+-"
 
         if isinstance(direction, string_types):
             direction = Symbol(direction)
@@ -287,6 +289,14 @@ class Limit(Expr):
     def shape(self):         
         return self.args[0].shape
 
+    @property
+    def expr(self):
+        return self.args[0]
+
+    @property
+    def limits(self):
+        return self.args[1:]
+
     def _sympystr(self, p):
         e, z, z0, direction = self.args
         if str(direction) == "+":
@@ -295,4 +305,10 @@ class Limit(Expr):
             return "lim[%s<%s](%s)" % tuple(map(p._print, (z, z0, e)))
         else:
             return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
+
+    def simplify(self, **kwargs):
+        expr, x, *_ = self.args
+        if not expr._has(x):
+            return expr
+        return self
 

@@ -15,6 +15,81 @@ from mpmath.libmp import sqrtrem as mpmath_sqrtrem
 
 from math import sqrt as _sqrt
 
+###############################################################################
+############################# ROOT and SQUARE ROOT FUNCTION ###################
+###############################################################################
+
+
+def sqrt(arg, evaluate=None):
+    """The square root function
+
+    sqrt(x) -> Returns the principal square root of x.
+
+    The parameter evaluate determines if the expression should be evaluated.
+    If None, its value is taken from global_evaluate
+
+    Examples
+    ========
+
+    >>> from sympy import sqrt, Symbol
+    >>> x = Symbol('x')
+
+    >>> sqrt(x)
+    sqrt(x)
+
+    >>> sqrt(x)**2
+    x
+
+    Note that sqrt(x**2) does not simplify to x.
+
+    >>> sqrt(x**2)
+    sqrt(x**2)
+
+    This is because the two are not equal to each other in general.
+    For example, consider x == -1:
+
+    >>> from sympy import Eq
+    >>> Eq(sqrt(x**2), x).subs(x, -1)
+    False
+
+    This is because sqrt computes the principal square root, so the square may
+    put the argument in a different branch.  This identity does hold if x is
+    positive:
+
+    >>> y = Symbol('y', positive=True)
+    >>> sqrt(y**2)
+    y
+
+    You can force this simplification by using the powdenest() function with
+    the force option set to True:
+
+    >>> from sympy import powdenest
+    >>> sqrt(x**2)
+    sqrt(x**2)
+    >>> powdenest(sqrt(x**2), force=True)
+    x
+
+    To get both branches of the square root you can use the rootof function:
+
+    >>> from sympy import rootof
+
+    >>> [rootof(x**2-3,i) for i in (0,1)]
+    [-sqrt(3), sqrt(3)]
+
+    See Also
+    ========
+
+    sympy.polys.rootoftools.rootof, root, real_root
+
+    References
+    ==========
+
+    .. [1] https://en.wikipedia.org/wiki/Square_root
+    .. [2] https://en.wikipedia.org/wiki/Principal_value
+    """
+    # arg = sympify(arg) is handled by Pow
+    return Pow(arg, S.Half, evaluate=evaluate)
+
 
 def isqrt(n):
     """Return the largest integer less than or equal to sqrt(n)."""
@@ -261,7 +336,8 @@ class Power(Expr):
             if e is S.ComplexInfinity:
                 return S.NaN
             if e is S.Zero:
-                return S.One
+                from sympy import OneMatrix                
+                return OneMatrix(*b.shape)
             elif e is S.One:
                 return b
             elif e == -1 and not b:
@@ -303,6 +379,19 @@ class Power(Expr):
 #         obj.is_commutative = (b.is_commutative and e.is_commutative)
         return obj
 
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices):
+        base, exp = self.args
+        if base.shape:
+            base = base[indices]
+            
+        if exp.shape:
+            exp = exp[indices]                
+            
+        return self.func(base, exp, evaluate=False)
+    
     @property
     def base(self):
         return self._args[0]
@@ -512,7 +601,7 @@ class Power(Expr):
                     return self.exp.is_extended_positive
                 elif (1 - abs(self.base)).is_extended_negative:
                     return self.exp.is_extended_negative
-            if self.base.is_extended_positive:
+            if self.base.is_extended_positive or self.base.is_NegativeOne:
                 return False
         else:
             if self.base.is_nonzero:
@@ -740,10 +829,6 @@ class Power(Expr):
                         if remainder_pow is not None:
                             o_al.append(remainder_pow)
                         continue
-                    elif not old.is_commutative and not newa.is_integer:
-                        # If any term in the exponent is non-integer,
-                        # we do not do any substitutions in the noncommutative case
-                        return
                     o_al.append(newa)
                 if new_l:
                     expo = Add(*o_al)
@@ -1802,6 +1887,12 @@ class Power(Expr):
             if arg.is_random:
                 return True
     
+    def domain_definition(self):
+        if self.exp.is_extended_negative:
+            from sympy import Unequal
+            return Unequal(self.base, 0)
+        return S.true
+    
     def simplify(self, deep=False, **kwargs):
         if deep:
             return Expr.simplify(self, deep)
@@ -1811,11 +1902,238 @@ class Power(Expr):
             if {*base.enumerate_KroneckerDelta()}:
                 return self.expand()
             
+        elif exp == S.Half:
+            if base.is_Times:
+                if all(b.is_Power and b.exp.is_even for b in base.args):
+                    return abs(base.func(*(b.base ** (b.exp // 2) for b in base.args)))
+                    
         return self
 
-
+    @classmethod
+    def rewrite_from_LAMBDA(cls, self):
+        if isinstance(self.function, cls):
+            base, exponent = self.function.args
+            if exponent.has(*self.variables):
+                if base.has(*self.variables):
+                    return cls(self.func(base, *self.limits), self.func(exponent, *self.limits))
+                else:
+                    return cls(base, self.func(exponent, *self.limits))
+            else:
+                return cls(self.func(base, *self.limits), exponent)
+        return self
+    
 Pow = Power    
 from .add import Add
 from .numbers import Integer
 from .mul import Mul, _keep_coeff
 from .symbol import Symbol, Dummy, symbols
+
+
+def cbrt(arg, evaluate=None):
+    """This function computes the principal cube root of `arg`, so
+    it's just a shortcut for `arg**Rational(1, 3)`.
+
+    The parameter evaluate determines if the expression should be evaluated.
+    If None, its value is taken from global_evaluate.
+
+    Examples
+    ========
+
+    >>> from sympy import cbrt, Symbol
+    >>> x = Symbol('x')
+
+    >>> cbrt(x)
+    x**(1/3)
+
+    >>> cbrt(x)**3
+    x
+
+    Note that cbrt(x**3) does not simplify to x.
+
+    >>> cbrt(x**3)
+    (x**3)**(1/3)
+
+    This is because the two are not equal to each other in general.
+    For example, consider `x == -1`:
+
+    >>> from sympy import Eq
+    >>> Eq(cbrt(x**3), x).subs(x, -1)
+    False
+
+    This is because cbrt computes the principal cube root, this
+    identity does hold if `x` is positive:
+
+    >>> y = Symbol('y', positive=True)
+    >>> cbrt(y**3)
+    y
+
+    See Also
+    ========
+
+    sympy.polys.rootoftools.rootof, root, real_root
+
+    References
+    ==========
+
+    * https://en.wikipedia.org/wiki/Cube_root
+    * https://en.wikipedia.org/wiki/Principal_value
+
+    """
+    from sympy import Rational
+    return Pow(arg, Rational(1, 3), evaluate=evaluate)
+
+
+def root(arg, n, k=0, evaluate=None):
+    """root(x, n, k) -> Returns the k-th n-th root of x, defaulting to the
+    principal root (k=0).
+
+    The parameter evaluate determines if the expression should be evaluated.
+    If None, its value is taken from global_evaluate.
+
+    Examples
+    ========
+
+    >>> from sympy import root, Rational
+    >>> from sympy.abc import x, n
+
+    >>> root(x, 2)
+    sqrt(x)
+
+    >>> root(x, 3)
+    x**(1/3)
+
+    >>> root(x, n)
+    x**(1/n)
+
+    >>> root(x, -Rational(2, 3))
+    x**(-3/2)
+
+    To get the k-th n-th root, specify k:
+
+    >>> root(-2, 3, 2)
+    -(-1)**(2/3)*2**(1/3)
+
+    To get all n n-th roots you can use the rootof function.
+    The following examples show the roots of unity for n
+    equal 2, 3 and 4:
+
+    >>> from sympy import rootof, I
+
+    >>> [rootof(x**2 - 1, i) for i in range(2)]
+    [-1, 1]
+
+    >>> [rootof(x**3 - 1,i) for i in range(3)]
+    [1, -1/2 - sqrt(3)*I/2, -1/2 + sqrt(3)*I/2]
+
+    >>> [rootof(x**4 - 1,i) for i in range(4)]
+    [-1, 1, -I, I]
+
+    SymPy, like other symbolic algebra systems, returns the
+    complex root of negative numbers. This is the principal
+    root and differs from the text-book result that one might
+    be expecting. For example, the cube root of -8 does not
+    come back as -2:
+
+    >>> root(-8, 3)
+    2*(-1)**(1/3)
+
+    The real_root function can be used to either make the principal
+    result real (or simply to return the real root directly):
+
+    >>> from sympy import real_root
+    >>> real_root(_)
+    -2
+    >>> real_root(-32, 5)
+    -2
+
+    Alternatively, the n//2-th n-th root of a negative number can be
+    computed with root:
+
+    >>> root(-32, 5, 5//2)
+    -2
+
+    See Also
+    ========
+
+    sympy.polys.rootoftools.rootof
+    sympy.core.power.integer_nthroot
+    sqrt, real_root
+
+    References
+    ==========
+
+    * https://en.wikipedia.org/wiki/Square_root
+    * https://en.wikipedia.org/wiki/Real_root
+    * https://en.wikipedia.org/wiki/Root_of_unity
+    * https://en.wikipedia.org/wiki/Principal_value
+    * http://mathworld.wolfram.com/CubeRoot.html
+
+    """
+    from sympy import sympify
+    n = sympify(n)
+    if k:
+        return Mul(Pow(arg, S.One / n, evaluate=evaluate), S.NegativeOne ** (2 * k / n), evaluate=evaluate)
+    return Pow(arg, 1 / n, evaluate=evaluate)
+
+
+def real_root(arg, n=None, evaluate=None):
+    """Return the real nth-root of arg if possible. If n is omitted then
+    all instances of (-n)**(1/odd) will be changed to -n**(1/odd); this
+    will only create a real root of a principal root -- the presence of
+    other factors may cause the result to not be real.
+
+    The parameter evaluate determines if the expression should be evaluated.
+    If None, its value is taken from global_evaluate.
+
+    Examples
+    ========
+
+    >>> from sympy import root, real_root, Rational
+    >>> from sympy.abc import x, n
+
+    >>> real_root(-8, 3)
+    -2
+    >>> root(-8, 3)
+    2*(-1)**(1/3)
+    >>> real_root(_)
+    -2
+
+    If one creates a non-principal root and applies real_root, the
+    result will not be real (so use with caution):
+
+    >>> root(-8, 3, 2)
+    -2*(-1)**(2/3)
+    >>> real_root(_)
+    -2*(-1)**(2/3)
+
+
+    See Also
+    ========
+
+    sympy.polys.rootoftools.rootof
+    sympy.core.power.integer_nthroot
+    root, sqrt
+    """
+    from sympy.functions.elementary.complexes import Abs, im, sign
+    from sympy.functions.elementary.piecewise import Piecewise
+    from sympy import Or, Eq, And, Mod, sympify 
+    from sympy.core.rules import Transform
+    if n is not None:
+        return Piecewise(
+            (root(arg, n, evaluate=evaluate), Or(Eq(n, S.One), Eq(n, S.NegativeOne))),
+            (Mul(sign(arg), root(Abs(arg), n, evaluate=evaluate), evaluate=evaluate),
+            And(Eq(im(arg), S.Zero), Eq(Mod(n, 2), S.One))),
+            (root(arg, n, evaluate=evaluate), True))
+    rv = sympify(arg)
+    n1pow = Transform(lambda x:-(-x.base) ** x.exp,
+                      lambda x:
+                      x.is_Power and
+                      x.base.is_negative and
+                      x.exp.is_Rational and
+                      x.exp.p == 1 and x.exp.q % 2)
+    return rv.xreplace(n1pow)
+
+###############################################################################
+############################# MINIMUM and MAXIMUM #############################
+###############################################################################
+

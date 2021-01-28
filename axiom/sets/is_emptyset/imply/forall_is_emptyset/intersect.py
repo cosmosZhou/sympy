@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from axiom import sets
 from sympy import ForAll, UNION
@@ -9,7 +9,7 @@ from sympy import Symbol
 # A & x[i] = {}
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Equality
     x_union_intersect_A, emptyset = given.args
@@ -31,10 +31,9 @@ def apply(given):
     return ForAll(Equality(x_union.function & A, A.etype.emptySet), *x_union.limits)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     i = Symbol.i(integer=True)

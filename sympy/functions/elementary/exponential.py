@@ -120,7 +120,7 @@ class ExpBase(Function):
 
     def _latex(self, p, exp=None):
         # TODO should exp_polar be printed differently? what about exp_polar(0), exp_polar(1)?
-        tex = r"{\color{blue} e}^{%s}" % p._print(self.args[0])
+        tex = r"{\color{RoyalBlue} e}^{%s}" % p._print(self.args[0])
 #         tex = r"\textcolor{blue} {e}^{%s}" % self._print(expr.args[0])
         return p._do_exponent(tex, exp)
 
@@ -450,6 +450,21 @@ class Exp(ExpBase):
         func = self.function.func
         function = self.function.arg
         return func(self.func(function, *self.limits).simplify())
+    
+    @classmethod
+    def rewrite_from_LAMBDA(cls, self):
+        if isinstance(self.function, cls):
+            function = self.function.arg
+            return cls(self.func(function, *self.limits).simplify())
+        return self
+    
+    @classmethod
+    def rewrite_from_MatMul(cls, self):
+        if len(self.args) == 2 and all(isinstance(arg, cls) for arg in self.args):
+            if len(self.args[0].shape) < len(self.args[1].shape):
+                from sympy.concrete.summations import ReducedSum
+                return ReducedSum(cls(self.args[0].arg + self.args[1].arg.T))
+        return self
     
 exp = Exp
     
@@ -899,10 +914,24 @@ class Log(Function):
 
     def _latex(self, p):
         arg = p._print(self.arg)
-        if self.arg.is_Mul:
+        if self.arg.is_Mul or self.arg.is_MatMul:
             return r"\log \left(%s\right)" % arg
         return r"\log {%s}" % arg
 
+    def domain_definition(self):
+        from sympy import Unequal
+        return Unequal(self.arg, 0)
+
+    @classmethod
+    def rewrite_from_Times(cls, self):        
+        for i, arg in enumerate(self.args):
+            if isinstance(arg, cls):
+                args = [*self.args]
+                del args[i]
+                self = self.func(*args)
+                return cls(arg.arg ** self)
+                
+        return self
     
 log = Log    
 
@@ -1016,50 +1045,3 @@ class LambertW(Function):
                 return False
         else:
             return s.is_algebraic
-
-class Softmax(Function):
-    r"""
-    x is a vector
-    softmax(x) = exp(x) / Sum(exp(x))
-    Sum(softmax(x)) = 1
-    """
-    is_positive = True
-    
-    def fdiff(self, argindex=1):
-        """
-        Returns the first derivative of the function.
-        """
-        if argindex == 1:
-            return 1 / self.args[0]
-        else:
-            raise ArgumentIndexError(self, argindex)
-
-    @classmethod
-    def eval(cls, arg):
-        ...
-
-    def simplify(self, **_):
-        return self
-
-    def __getitem__(self, indices):
-        if len(self.shape) == 1:
-            return self.definition[indices]
-        if isinstance(indices, tuple):
-            i, *indices = indices
-            return self.func(self.arg[i])[indices]
-        else:
-            return self.func(self.arg[indices])
-
-    def __iter__(self):
-        raise TypeError
-
-    @property
-    def definition(self):
-        from sympy.concrete.summations import Sum
-        x = self.arg
-        return exp(x) / Sum(exp(x))
-
-    def _latex(self, p):
-        return r"softmax\left(%s\right)" % p._print(self.arg)
-    
-softmax = Softmax

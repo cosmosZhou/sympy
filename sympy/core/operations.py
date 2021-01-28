@@ -495,6 +495,9 @@ class AssocOp(Basic):
             if arg.is_random:
                 return True
 
+    def max_len_shape(self):
+        return max(len(arg.shape) for arg in self.args)    
+
     def as_KroneckerDelta(self):
         return self.func(*(arg.as_KroneckerDelta() for arg in self.args))
 
@@ -575,7 +578,10 @@ class LatticeOp(AssocOp):
         if not _args:
             return sympify(cls.identity)
         elif len(_args) == 1:
-            return set(_args).pop()
+            obj = set(_args).pop()
+            if obj.is_BooleanAtom:
+                obj = obj.copy(**options)
+            return obj
         else:
             # XXX in almost every other case for __new__, *_args is
             # passed along, but the expectation here is for _args

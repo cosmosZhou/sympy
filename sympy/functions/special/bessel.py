@@ -9,7 +9,7 @@ from sympy.core.compatibility import range
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.functions.elementary.trigonometric import sin, cos, csc, cot
 from sympy.functions.elementary.complexes import Abs
-from sympy.functions.elementary.miscellaneous import sqrt, root
+from sympy.core.power import sqrt, root
 from sympy.functions.elementary.complexes import re, im
 from sympy.functions.special.gamma_functions import gamma
 from sympy.functions.special.hyper import hyper

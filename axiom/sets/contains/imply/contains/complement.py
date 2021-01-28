@@ -1,12 +1,10 @@
-from axiom.utility import plausible
-from sympy.sets.contains import Contains, Subset
-from sympy import Symbol
+from axiom.utility import prove, apply
+from sympy import *
 import axiom
-from sympy.core.symbol import dtype
+
 from axiom import sets
 
-
-@plausible
+@apply(imply=True)
 def apply(given, U):
     e, domain = axiom.is_Contains(given)
     S, s = axiom.is_Complement(domain)
@@ -14,10 +12,9 @@ def apply(given, U):
     return Contains(e, U - s)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(integer=True)
     U = Symbol.U(etype=dtype.integer)

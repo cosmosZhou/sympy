@@ -1,7 +1,6 @@
 from sympy.core.relational import  Unequal
 
-from axiom.utility import plausible
-from axiom.utility import check
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.statistics import bayes
@@ -9,7 +8,7 @@ from axiom.statistics import bayes
 
 # given: P(x | y) != 0
 # imply: P(x, y) != 0
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Unequality
     assert given.lhs.is_Probability
@@ -19,7 +18,7 @@ def apply(given):
     return Unequal(P(eq.lhs, eq.rhs), 0)
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)

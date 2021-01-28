@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import S, Integer
 from sympy.core.compatibility import range, SYMPY_INTS
 from sympy.core.function import Function
@@ -156,38 +154,46 @@ class KroneckerDelta(Function):
         # indirect doctest
 
         """
-        diff = i - j
-        if diff.is_zero:
-            return S.One
-        if fuzzy_not(diff.is_zero):
-            return S.Zero
-        if diff.is_nonzero:
-            return S.Zero
-        from sympy import Contains
-        if Contains(i, j.domain).is_BooleanFalse or Contains(j, i.domain).is_BooleanFalse:
-            return S.Zero
-        
-        if i.assumptions0.get("below_fermi") and j.assumptions0.get("above_fermi"):
-            return S.Zero
-        if j.assumptions0.get("below_fermi") and i.assumptions0.get("above_fermi"):
-            return S.Zero
-        
-        if i.is_Add and j.is_Add:
-            i_args = set(i.args)
-            j_args = set(j.args)
-            intersect = i_args & j_args
-            if intersect:
-                i_args -= intersect 
-                j_args -= intersect
-                i = i.func(*i_args)
-                j = j.func(*j_args)                        
-                return cls(i, j)
+        if i.is_set:
+            from sympy import Equal
+            delta = Equal(i, j)
+            if delta == True:
+                return S.One
+            if delta == False:
+                return S.Zero
+        else:
+            diff = i - j
+            if diff.is_zero:
+                return S.One
+            if fuzzy_not(diff.is_zero):
+                return S.Zero
+            if diff.is_nonzero:
+                return S.Zero
+            from sympy import Contains
+            if Contains(i, j.domain).is_BooleanFalse or Contains(j, i.domain).is_BooleanFalse:
+                return S.Zero
             
-        if j.is_KroneckerDelta:
-            if i == 1:
-                return j
-            if i == 0:
-                return 1 - j
+            if i.assumptions0.get("below_fermi") and j.assumptions0.get("above_fermi"):
+                return S.Zero
+            if j.assumptions0.get("below_fermi") and i.assumptions0.get("above_fermi"):
+                return S.Zero
+            
+            if i.is_Add and j.is_Add:
+                i_args = set(i.args)
+                j_args = set(j.args)
+                intersect = i_args & j_args
+                if intersect:
+                    i_args -= intersect 
+                    j_args -= intersect
+                    i = i.func(*i_args)
+                    j = j.func(*j_args)                        
+                    return cls(i, j)
+                
+            if j.is_KroneckerDelta:
+                if i == 1:
+                    return j
+                if i == 0:
+                    return 1 - j
         # to make KroneckerDelta canonical
         # following lines will check if inputs are in order
         # if not, will return KroneckerDelta with correct order
@@ -501,6 +507,18 @@ class KroneckerDelta(Function):
         from sympy.sets.sets import FiniteSet
         return FiniteSet(0, 1)
 
+    @classmethod
+    def rewrite_from_Plus(cls, self):
+        return self.as_KroneckerDelta()
+
+    @classmethod
+    def rewrite_from_Times(cls, self):
+        return self.as_KroneckerDelta()
+    
+    @classmethod
+    def rewrite_from_Piecewise(cls, self):
+        return self.as_KroneckerDelta()
+    
     def enumerate_KroneckerDelta(self):
         yield self
         
@@ -536,7 +554,10 @@ class Boole(Function):
         """
         Evaluates IversonBracket function
         """
-        ...
+        if cond:
+            return S.One
+        if cond.is_BooleanFalse:
+            return S.Zero
 
     def domain_nonzero(self, x):
         domain = x.domain_conditioned(self.arg)
@@ -559,7 +580,10 @@ class Boole(Function):
         
     def _latex(self, p, exp=None):
         cond = p._print(self.arg)
-        return r'\left|%s\right|' % cond        
+        cond = r'\left|%s\right|' % cond
+        if exp is not None:
+            cond = "{%s}^{%s}" % (cond, p._print(exp))
+        return cond        
         
     @property
     def domain(self):

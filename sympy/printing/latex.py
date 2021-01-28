@@ -566,22 +566,6 @@ class LatexPrinter(Printer):
 
     _print_Min = _print_Max = _hprint_variadic_function
 
-    def _print_floor(self, expr, exp=None):
-        tex = r"\left\lfloor{%s}\right\rfloor" % self._print(expr.args[0])
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
-        else:
-            return tex
-
-    def _print_ceiling(self, expr, exp=None):
-        tex = r"\left\lceil{%s}\right\rceil" % self._print(expr.args[0])
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
-        else:
-            return tex
-
     def _print_log(self, expr, exp=None):
         if not self._settings["ln_notation"]:
             from sympy import MatMul, Mul

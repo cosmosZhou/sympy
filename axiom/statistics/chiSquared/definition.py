@@ -1,6 +1,6 @@
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy.stats.crv_types import ChiSquaredDistribution, NormalDistribution    
 from sympy.stats.rv import PDF, pspace
@@ -11,7 +11,7 @@ from sympy import Symbol
 from axiom import calculus, statistics
 
 
-@plausible
+@apply(imply=True)
 def apply(X, Y):
     i = Symbol.i(integer=True)
 
@@ -26,10 +26,9 @@ def apply(X, Y):
     return Equality(PDF(Sum[i:k](X[i] * X[i]))(y), PDF(Y)(y).doit())
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     i = Symbol.i(integer=True, nonnegative=True)
     X = Symbol.X(shape=(oo,), distribution=NormalDistribution(0, 1))

@@ -1,15 +1,9 @@
-from sympy.core.relational import Equality
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy.sets.sets import Interval
-from axiom import sets
-from sympy import ForAll, UNION
-from sympy import Symbol
-# given: Union[i](x[i]) = {}
-# x[i] = {}
+from sympy import *
+from axiom.utility import prove, apply
+from axiom import sets, algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Equality
     x_union, emptyset = given.args
@@ -23,16 +17,13 @@ def apply(given):
     return ForAll(Equality(x_union.function, emptyset), *x_union.limits)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     i = Symbol.i(integer=True)
     k = Symbol.k(integer=True, positive=True, given=True)
     x = Symbol.x(shape=(k + 1,), etype=dtype.integer, given=True)
 
-    Eq << apply(Equality(UNION[i:0:k](x[i]), x[i].etype.emptySet))
+    Eq << apply(Equality(UNION[i:0:k + 1](x[i]), x[i].etype.emptySet))
 
     j = Symbol.j(domain=Interval(0, k, integer=True))
     
@@ -42,13 +33,13 @@ def prove(Eq):
 
     Eq.positive = Eq.paradox.apply(sets.is_nonemptyset.imply.is_positive)
 
-    Eq.union_empty = Eq[0].abs()
+    Eq.union_empty = Eq[0].apply(algebre.equal.imply.equal.abs)
 
     Eq << Eq[0] - Eq.paradox.lhs
 
-    Eq << Eq[-1].abs()
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
 
-    Eq << sets.imply.equality.principle.addition.apply(*Eq[-2].lhs.args)
+    Eq << sets.imply.equal.principle.addition.apply(*Eq[-2].lhs.args)
 
     Eq << Eq[-1].subs(Eq[-2], Eq.union_empty)
 

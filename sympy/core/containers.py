@@ -14,6 +14,7 @@ from sympy.core.sympify import sympify, converter
 from sympy.utilities.iterables import iterable
 from sympy.core.logic import fuzzy_or
 
+
 class Tuple(Basic):
     """
     Wrapper around the builtin tuple object
@@ -149,7 +150,13 @@ class Tuple(Basic):
     def _format_ineq(self, p):
         if p.printmethod == '_latex':
             if len(self) == 3:
-                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (self[1], self[0], self[2])])
+                x, a, b = self
+                if x.is_integer:
+                    if b.is_Plus and b.args[0].is_One:
+                        return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b - 1)])
+                    else:
+                        return r"%s \leq %s \lt %s" % tuple([p._print(s) for s in (a, x, b)])
+                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b)])
             elif len(self) == 2:
                 return r"%s \in %s" % tuple([p._print(s) for s in (self[0], self[1])])
             else:
@@ -157,7 +164,7 @@ class Tuple(Basic):
         else:
             if len(self) == 3:
                 if self[1].is_zero:
-                    return r"%s:%s" % tuple([p._print(s) for s in (self[0], self[2] + 1)])
+                    return r"%s:%s" % tuple([p._print(s) for s in (self[0], self[2])])
                 else:
                     return r"%s:%s:%s" % tuple([p._print(s) for s in (self[0], self[1], self[2])])
             elif len(self) == 2:
@@ -231,7 +238,7 @@ class Tuple(Basic):
         x, *ab = self
         if len(ab) == 2 and not ab[1].is_set:
             from sympy.sets.sets import Interval
-            return (x, Interval(*ab, integer=x.is_integer))
+            return (x, Interval(*ab, right_open=x.is_integer, integer=x.is_integer))
         return self
     
     @classmethod
@@ -239,8 +246,9 @@ class Tuple(Basic):
         x, *ab = self
         if len(ab) == 2 and not ab[1].is_set:
             from sympy.sets.sets import Interval
-            return (x, Interval(*ab, integer=x.is_integer))
+            return (x, Interval(*ab, right_open=x.is_integer, integer=x.is_integer))
         return self
+
 
 converter[tuple] = lambda tup: Tuple(*tup)
 

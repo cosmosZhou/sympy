@@ -23,6 +23,7 @@ from sympy.simplify.powsimp import powsimp
 from sympy.solvers import solve
 from sympy.solvers.solveset import solveset
 import itertools
+from sympy.core.expr import Function
 
 
 class Sum(AddWithLimits, ExprWithIntLimits):
@@ -193,10 +194,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 a, b = b + 1, a - 1
                 f = -f
 
-            newf = eval_sum(f, (i, a, b))
+            newf = eval_sum(f, limit)
             if newf is None:
                 if f == self.function:
-                    zeta_function = self.eval_zeta_function(f, (i, a, b))
+                    zeta_function = self.eval_zeta_function(f, limit)
                     if zeta_function is not None:
                         return zeta_function
                     return self
@@ -679,7 +680,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         s = S.Zero
         if m:
             if b.is_Integer and a.is_Integer:
-                m = min(m, b - a + 1)
+                m = min(m, b - a)
             if not eps or f.is_polynomial(i):
                 for k in range(m):
                     s += f.subs(i, a + k)
@@ -698,11 +699,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     if abs(term.evalf(3)) < eps and term != 0:
                         return s, abs(term)
                     s += term
-            if b - a + 1 == m:
+            if b - a == m:
                 return s, S.Zero
             a += m
         x = Dummy('x')
-        I = Integral(f.subs(i, x), (x, a, b))
+        I = Integral(f.subs(i, x), (x, a, b - 1))
         if eval_integral:
             I = I.doit()
         s += I
@@ -954,16 +955,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 a_diff = a - _a
                 b_diff = b - _b
                 if a_diff.is_nonnegative:  # a >= _a
-                    a = -Sum[x:_a:a - 1](self.function).simplify()
+                    a = -Sum[x:_a:a](self.function).simplify()
                 elif a_diff.is_nonpositive:  # a <= _a
-                    a = Sum[x:a:_a - 1](self.function).simplify()
+                    a = Sum[x:a:_a](self.function).simplify()
                 else:
                     return
                     
                 if b_diff.is_nonnegative:  # b >= _b
-                    b = Sum[x:_b + 1:b](self.function).simplify()
+                    b = Sum[x:_b:b](self.function).simplify()
                 elif b_diff.is_nonpositive:  # b <= _b
-                    b = -Sum[x:b + 1:_b](self.function).simplify()
+                    b = -Sum[x:b:_b](self.function).simplify()
                 else:
                     return
                 return a + b
@@ -979,15 +980,15 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             i, *ab = self.limits[0]
             if len(ab) == 2 and expr:
                 a, b = ab
-                b1 = b + 1
-                if self.function.subs(i, b1) == expr:
-                    return self.func(self.function, (i, a, b1))
-                a -= 1
-                try:
-                    if self.function.subs(i, a) == expr:
-                        return self.func(self.function, (i, a, b))
-                except:
-                    ...
+                if not b.is_set:
+                    if self.function.subs(i, b) == expr:
+                        return self.func(self.function, (i, a, b + 1))
+                    a -= 1
+                    try:
+                        if self.function.subs(i, a) == expr:
+                            return self.func(self.function, (i, a, b))
+                    except:
+                        ...
 
         return AddWithLimits.__add__(self, expr)        
 
@@ -1026,7 +1027,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             function = self.function
             reps = {}
             for x, domain in self.limits_dict.items():
-                if domain.is_set and domain.is_integer:
+                if not isinstance(domain, list) and domain.is_set and domain.is_integer:
                     _x = x.copy(domain=domain)
                     function = function._subs(x, _x)                  
                     if 'wrt' in kwargs:
@@ -1082,6 +1083,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         if len(limit) == 2:
             x, domain = limit
             if domain.is_Boolean:
+                if domain.is_Contains:
+                    if domain.lhs == x:
+                        return self.func(self.function, (x, domain.rhs)).simplify()
                 return self
             
             if domain.is_Piecewise:
@@ -1094,6 +1098,13 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if this is not None:
                 return this
                 
+            if not domain.is_symbol:
+                image_set = domain.image_set()
+                if image_set:
+                    expr, sym, base_set = image_set
+                    function = self.function._subs(x, expr)
+                    return self.func(function, (sym, base_set)).simplify()
+                    
             domain_nonzero = self.function.domain_nonzero(x)
             domain &= domain_nonzero
             
@@ -1125,7 +1136,7 @@ domain & limit[1] = %s
             if isinstance(domain, Complement):
                 A, B = domain.args
                 if isinstance(A, Interval) and A.is_integer and B in A:
-                    A = self.func(self.function, (x, A.min(), A.max())).simplify()
+                    A = self.func(self.function, (x, A.min(), A.max() + 1)).simplify()
                     if isinstance(B, FiniteSet):
                         B = Add(*[self.function.subs(x, b) for b in B])
                     else:
@@ -1147,14 +1158,17 @@ domain & limit[1] = %s
                
             if domain.is_FiniteSet:
                 return self.simplify_finiteset(x, domain)
-                
+            
+            if domain.is_ConditionSet:
+                if x == domain.variable:
+                    return Sum[x:domain.condition:domain.base_set](self.function)
             return self
 
         if len(limit) == 1:
             x = limit[0]
             domain = x.domain
             if domain.is_Interval: 
-                limit = x, domain.min(), domain.max() 
+                limit = x, domain.min(), domain.max() + 1 
         
         if len(limit) > 1:
             x, a, b = limit
@@ -1164,7 +1178,7 @@ domain & limit[1] = %s
                     return self.func(self.function, limit).simplify()
                 return self
 
-            universe = Interval(a, b, integer=True)
+            universe = Interval(a, b, right_open=True, integer=True)
             if universe.is_FiniteSet:
                 return self.simplify_finiteset(x, universe)
 
@@ -1289,7 +1303,7 @@ domain & limit[1] = %s
                         
             _a, _b = domain.min(), domain.max()
             if not _b.is_Min:
-                b = _b
+                b = _b + 1
             if not _a.is_Max:
                 a = _a                
             limit = x, a, b
@@ -1311,7 +1325,7 @@ domain & limit[1] = %s
 
         if dependent == S.One:
             if len(limit) > 1:
-                return self.function * (b - a + 1)
+                return self.function * (b - a)
             else:
                 return self.function * x.dimension
         if len(self.limits[0]) == 1:
@@ -1351,7 +1365,7 @@ domain & limit[1] = %s
             if len(ab) == 1:
                 universe = ab[0]
             elif len(ab) == 2:
-                universe = Interval(*ab, integer=True)
+                universe = Interval(*ab, right_open=True, integer=True)
             else:
                 universe = x.domain
                 
@@ -1378,10 +1392,10 @@ domain & limit[1] = %s
         return self.func(function, *self.limits, limit).simplify()
 
     def limits_swap(self):
-        if isinstance(self.function, Mul):
+        if self.function.is_Times:
             index = -1
             for i in range(len(self.function.args)):
-                if isinstance(self.function.args[i], Sum):
+                if self.function.args[i].is_Sum:
                     index = i
                     break
             if index >= 0:                
@@ -1444,17 +1458,30 @@ domain & limit[1] = %s
 
     @classmethod
     def rewrite_from_LAMBDA(cls, self):
-        if self.function.is_Sum:
+        if isinstance(self.function, cls):
             sigmar = self.function
             function = sigmar.function
-            return sigmar.func(self.func(function, *self.limits).simplify(), *sigmar.limits)
+            return cls(self.func(function, *self.limits).simplify(), *sigmar.limits)
         return self
     
     @classmethod
+    def rewrite_from_ReducedSum(cls, self):
+        i = self.arg.generate_free_symbol(integer=True)
+        n = self.arg.shape[-1]
+        return Sum[i:n](self.arg[i])
+    
+    @classmethod
     def rewrite_from_Difference(cls, self):
-        if self.expr.is_Sum:
-            return self.expr.func(self.func(self.expr.function, *self.variable_count).simplify(), *self.expr.limits)
+        if isinstance(self.expr, cls):
+            return cls(self.func(self.expr.function, *self.variable_count).simplify(), *self.expr.limits)
         return self
+
+    @classmethod
+    def rewrite_from_Limit(cls, self):
+        if isinstance(self.expr, cls):
+            return cls(self.func(self.expr.function, *self.limits).simplify(), *self.expr.limits)
+        return self
+
 
 def summation(f, *symbols, **kwargs):
     r"""
@@ -1568,9 +1595,9 @@ def telescopic(L, R, limits):
         s = sol[0]
 
     if s < 0:
-        return telescopic_direct(R, L, abs(s), (i, a, b))
+        return telescopic_direct(R, L, abs(s), limits)
     elif s > 0:
-        return telescopic_direct(L, R, s, (i, a, b))
+        return telescopic_direct(L, R, s, limits)
 
 
 def eval_sum(f, limits):
@@ -1581,8 +1608,8 @@ def eval_sum(f, limits):
     if f is S.Zero:
         return S.Zero
     if i not in f.free_symbols:
-        return f * (b - a + 1)
-    if a == b:
+        return f * (b - a)
+    if a == b - 1:
         return f.subs(i, a)
     if isinstance(f, Piecewise):
         if not any(i in arg.args[1].free_symbols for arg in f.args):
@@ -1604,18 +1631,18 @@ def eval_sum(f, limits):
     definite = dif.is_Integer
     # Doing it directly may be faster if there are very few terms.
     if definite and (dif < 100):
-        return eval_sum_direct(f, (i, a, b))
+        return eval_sum_direct(f, limits)
     if isinstance(f, Piecewise):
         return None
     # Try to do it symbolically. Even when the number of terms is known,
     # this can save time when b-a is big.
     # We should try to transform to partial fractions
-    value = eval_sum_symbolic(f.expand(), (i, a, b))
+    value = eval_sum_symbolic(f.expand(), limits)
     if value is not None:
         return value
     # Do it directly
     if definite:
-        return eval_sum_direct(f, (i, a, b))
+        return eval_sum_direct(f, limits)
 
 
 def eval_sum_direct(expr, limits):
@@ -1623,7 +1650,7 @@ def eval_sum_direct(expr, limits):
     (i, a, b) = limits
 
     dif = b - a
-    return Add(*[expr.subs(i, a + j) for j in range(dif + 1)])
+    return Add(*[expr.subs(i, a + j) for j in range(dif)])
 
 
 def eval_sum_symbolic(f, limits):
@@ -1632,19 +1659,19 @@ def eval_sum_symbolic(f, limits):
     f_orig = f
     (i, a, b) = limits
     if not f.has(i):
-        return f * (b - a + 1)
+        return f * (b - a)
 
     # Linearity
     if f.is_Mul:
         L, R = f.as_two_terms()
 
         if not L.has(i):
-            sR = eval_sum_symbolic(R, (i, a, b))
+            sR = eval_sum_symbolic(R, limits)
             if sR:
                 return L * sR
 
         if not R.has(i):
-            sL = eval_sum_symbolic(L, (i, a, b))
+            sL = eval_sum_symbolic(L, limits)
             if sL:
                 return R * sL
 
@@ -1655,13 +1682,13 @@ def eval_sum_symbolic(f, limits):
 
     if f.is_Add:
         L, R = f.as_two_terms()
-        lrsum = telescopic(L, R, (i, a, b))
+        lrsum = telescopic(L, R, limits)
 
         if lrsum:
             return lrsum
 
-        lsum = eval_sum_symbolic(L, (i, a, b))
-        rsum = eval_sum_symbolic(R, (i, a, b))
+        lsum = eval_sum_symbolic(L, limits)
+        rsum = eval_sum_symbolic(R, limits)
 
         if None not in (lsum, rsum):
             r = lsum + rsum
@@ -1680,12 +1707,12 @@ def eval_sum_symbolic(f, limits):
                 if (b is S.Infinity and not a is S.NegativeInfinity) or \
                    (a is S.NegativeInfinity and not b is S.Infinity):
                     return S.Infinity
-                return ((bernoulli(n + 1, b + 1) - bernoulli(n + 1, a)) / (n + 1)).expand()
+                return ((bernoulli(n + 1, b) - bernoulli(n + 1, a)) / (n + 1)).expand()
             elif a.is_Integer and a >= 1:
                 if n == -1:
-                    return harmonic(b) - harmonic(a - 1)
+                    return harmonic(b - 1) - harmonic(a - 1)
                 else:
-                    return harmonic(b, abs(n)) - harmonic(a - 1, abs(n))
+                    return harmonic(b - 1, abs(n)) - harmonic(a - 1, abs(n))
 
     if not (a.has(S.Infinity, S.NegativeInfinity) or
             b.has(S.Infinity, S.NegativeInfinity)):
@@ -1708,12 +1735,12 @@ def eval_sum_symbolic(f, limits):
             p = (c1 ** c3).subs(e)
             q = (c1 ** c2).subs(e)
 
-            r = p * (q ** a - q ** (b + 1)) / (1 - q)
-            l = p * (b - a + 1)
+            r = p * (q ** a - q ** b) / (1 - q)
+            l = p * (b - a)
 
             return Piecewise((l, Eq(q, S.One)), (r, True))
 
-        r = gosper_sum(f, (i, a, b))
+        r = gosper_sum(f, limits)
 
         if isinstance(r, (Mul, Add)):
             from sympy import ordered, Tuple
@@ -1737,13 +1764,13 @@ def eval_sum_symbolic(f, limits):
         if not r in (None, S.NaN):
             return r
 
-    h = eval_sum_hyper(f_orig, (i, a, b))
+    h = eval_sum_hyper(f_orig, limits)
     if h is not None:
         return h
 
     factored = f_orig.factor()
     if factored != f_orig:
-        return eval_sum_symbolic(factored, (i, a, b))
+        return eval_sum_symbolic(factored, limits)
 
 
 def _eval_sum_hyper(f, i, a):
@@ -1809,7 +1836,7 @@ def eval_sum_hyper(f, i_a_b):
         # We are never going to do better than doing the sum in the obvious way
         return None
 
-    old_sum = Sum(f, (i, a, b))
+    old_sum = Sum(f, i_a_b)
 
     if b != S.Infinity:
         if a == S.NegativeInfinity:
@@ -1818,7 +1845,7 @@ def eval_sum_hyper(f, i_a_b):
                 return Piecewise(res, (old_sum, True))
         else:
             res1 = _eval_sum_hyper(f, i, a)
-            res2 = _eval_sum_hyper(f, i, b + 1)
+            res2 = _eval_sum_hyper(f, i, b)
             if res1 is None or res2 is None:
                 return None
             (res1, cond1), (res2, cond2) = res1, res2
@@ -1852,3 +1879,148 @@ def eval_sum_hyper(f, i_a_b):
                     return S.NegativeInfinity
             return None
         return Piecewise(res, (old_sum, True))
+
+
+class ReducedSum(Function):
+    r"""Represents unevaluated reduced summation.
+    input must be a multi-dimensional tensor
+    """
+    is_complex = True
+    
+    def _eval_is_zero(self):
+        # a Sum is only zero if its function is zero or if all terms
+        # cancel out. This only answers whether the summand is zero; if
+        # not then None is returned since we don't analyze whether all
+        # terms cancel out.
+        if self.arg.is_zero:
+            return True
+        
+        if self.arg.is_extended_positive or self.arg.is_extended_negative:
+            return False
+
+    def doit(self, **hints):
+        deep = hints.get('deep', True)
+        if deep:
+            f = self.arg.doit(**hints)
+        else:
+            f = self.arg
+
+        if f.is_FiniteSet:
+            x, *args = f.args
+            rest = f.func(*args)
+            from sympy import NotContains, Boole
+            sgm = x * Boole(NotContains(x, rest).simplify()).simplify()
+            if not rest:
+                return sgm             
+            return self.func(rest).doit(deep=deep) + sgm
+        else:
+            return self
+        return f
+
+    @property
+    def shape(self):
+        return self.arg.shape[:-1]
+
+    @property
+    def dtype(self):
+        return self.arg.dtype
+
+    def _sympystr(self, p):
+        return '∑(%s)' % p._print(self.arg)
+
+    def _latex(self, p, exp=None):
+        expr = p._print(self.arg)
+        if self.arg.is_Plus or self.arg.is_MatMul:
+            expr = r"\left(%s\right)" % expr
+        expr = r"\sum{%s}" % expr
+        if exp is None:
+            return expr
+        return r"\left(%s\right)^{%s}" % (expr, exp)
+    
+    def _eval_is_finite(self):
+        return self.arg.is_finite
+
+    def _eval_is_extended_real(self):
+        return self.arg.is_extended_real
+
+    def _eval_is_extended_positive(self):
+        return self.arg.is_extended_positive
+    
+    def _eval_is_extended_negative(self):
+        return self.arg.is_extended_negative
+
+    def _eval_exp(self):
+        from sympy import log
+        from sympy.concrete.products import Product
+        if isinstance(self.arg, log):
+            return Product(self.arg.arg, *self.limits)
+
+    def _eval_derivative(self, x):
+        return Derivative(self.astype(Sum), x, evaluate=True).simplify()
+        
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, indices):
+        return self.func(self.arg[indices])
+        
+    def simplify(self, deep=False, **kwargs):
+        if self.arg.is_LAMBDA:
+            if len(self.arg.limits) == 1 and not self.arg.variable.shape:
+                function = self.arg.function
+                self = Sum(function, *self.arg.limits).simplify(**kwargs)
+        elif self.arg.is_Piecewise:
+            self = self.arg.func(*((self.func(e).simplify(), c) for e, c in self.arg.args)).simplify()
+        elif self.arg.is_Mul:
+            args = []
+            coeff = []
+            for arg in self.arg.args:
+                if arg.shape:
+                    args.append(arg)
+                else:
+                    coeff.append(arg)
+                                
+            if coeff:
+                coeff = self.arg.func(*coeff)
+                function = self.arg.func(*args)
+                return coeff * self.func(function)
+        return self
+
+    @classmethod
+    def rewrite_from_Log(cls, self):
+        if self.arg.is_Product:
+            product = self.arg
+            return cls(self.func(product.function), *product.limits)
+        return self
+
+    @classmethod
+    def rewrite_from_LAMBDA(cls, self):
+        if isinstance(self.function, cls):
+            sigmar = self.function
+            function = sigmar.arg
+            return cls(self.func(function, *self.limits).simplify())
+        return self
+    
+    @classmethod
+    def rewrite_from_Sum(cls, self):
+        limit, *limits = self.limits
+        if limit[0].is_integer:
+            from sympy import LAMBDA
+            sigmar = ReducedSum(LAMBDA(self.function, limit).simplify())
+            if not limits:
+                return sigmar
+            return self.func(sigmar, *limits)
+        return self
+    
+    @classmethod
+    def rewrite_from_Difference(cls, self):
+        if isinstance(self.expr, cls):
+            return cls(self.func(self.expr.function, *self.variable_count).simplify(), *self.expr.limits)
+        return self
+
+    @classmethod
+    def rewrite_from_Limit(cls, self):
+        if isinstance(self.expr, cls):
+            return cls(self.func(self.expr.function, *self.limits).simplify(), *self.expr.limits)
+        return self
+

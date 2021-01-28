@@ -1,15 +1,13 @@
-from sympy.core.relational import Unequality
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
+from axiom.utility import prove, apply
 
-from sympy.sets.contains import Subset
-from sympy import Symbol
+from sympy import *
+from axiom import sets
 
 
 # given0: A != B 
 # given1: A in B
 # B - A != {}
-@plausible
+@apply(imply=True)
 def apply(*given, evaluate=False):
     assert len(given) == 2
     A = None
@@ -26,13 +24,10 @@ def apply(*given, evaluate=False):
     return Unequality(B - A, A.etype.emptySet, evaluate=evaluate)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A = Symbol.A(etype=dtype.integer, given=True)
+    B = Symbol.B(etype=dtype.integer, given=True)
     inequality = Unequality(A, B)
     subset = Subset(A, B, evaluate=False) 
     
@@ -40,7 +35,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << Eq[-1].union(A)
+    Eq << sets.equal.imply.equal.union.apply(Eq[-1], A)
     
     Eq << Subset(B, A | B, plausible=True)
     

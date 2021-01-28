@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import Interval
@@ -9,7 +9,7 @@ from axiom import discrete, sets
 from axiom.discrete.combinatorics.permutation import mapping
 
 
-@plausible
+@apply(imply=True)
 def apply(n, Q=None):
     if Q is None:
         Q, w, x = mapping.Qu2v.predefined_symbols(n)
@@ -21,10 +21,9 @@ def apply(n, Q=None):
     return Equality(Abs(Q[t]), Abs(P_quote))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):    
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
@@ -38,7 +37,7 @@ def prove(Eq):
     
     Eq << mapping.Qu2v.apply(n, u, n)
     
-    Eq << sets.forall_et.forall_et.imply.equality.apply(Eq[-1], Eq[-2])
+    Eq << sets.forall_et.forall_et.imply.equal.apply(Eq[-1], Eq[-2])
     
     
 if __name__ == '__main__':

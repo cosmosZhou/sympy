@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import NotContains
 from sympy import Symbol
@@ -8,30 +8,29 @@ from sympy.sets.sets import Interval
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given, limit):
     assert given.is_NotContains    
     
     k, a, b = limit
     e, A = given.args
     
-    assert Interval(a, b, integer=True) in A.domain_defined(k)
+    assert Interval(a, b, right_open=True, integer=True) in A.domain_defined(k)
     
     return NotContains(e, UNION[k:a:b](A))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
-    n = Symbol.n(domain=[1, oo], integer=True)
+    n = Symbol.n(positive=True, integer=True)
     x = Symbol.x(integer=True)
     k = Symbol.k(integer=True)
     
     A = Symbol.A(shape=(oo,), etype=dtype.integer)
 
-    Eq << apply(NotContains(x, A[k]), (k, 0, n - 1))
+    Eq << apply(NotContains(x, A[k]), (k, 0, n))
     
     Eq.initial = Eq[-1].subs(n, 1)
     

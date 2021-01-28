@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality, Unequal
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy import Symbol
 
@@ -10,7 +10,7 @@ from sympy import Or
 from sympy.logic.boolalg import And
 
 
-@plausible
+@apply(imply=True)
 def apply(given, *, factor=None):
     or_eqs = axiom.is_Or(given)
     
@@ -34,10 +34,9 @@ def apply(given, *, factor=None):
         return Or(*new_or_eqs)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)

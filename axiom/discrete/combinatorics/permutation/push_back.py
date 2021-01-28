@@ -1,12 +1,12 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy import Symbol, Slice
 from sympy.core.numbers import oo
 from sympy.sets.sets import Interval
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     assert len(given) == 2    
     set_comprehension_equality, last_element_equality = given
@@ -23,10 +23,9 @@ def apply(*given):
     return Equality(p[:n + 1].set_comprehension(), Interval(0, n, integer=True))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True, given=True)
     p = Symbol.p(shape=(oo,), integer=True, nonnegative=True, given=True)

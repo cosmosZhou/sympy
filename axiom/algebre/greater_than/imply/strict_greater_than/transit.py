@@ -1,9 +1,9 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Unequal, StrictGreaterThan
 from sympy import Symbol
 
 
-@plausible
+@apply(imply=True)
 def apply(given, lower_bound):
     assert given.is_GreaterThan
     lhs, rhs = given.args
@@ -11,10 +11,9 @@ def apply(given, lower_bound):
     return StrictGreaterThan(lhs, lower_bound)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, given=True)
     y = Symbol.y(real=True, given=True)

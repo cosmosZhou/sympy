@@ -1,11 +1,11 @@
 from sympy.core.relational import  Unequality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
 from axiom import sets
 from sympy import Symbol
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Unequality
     A, emptyset = given.args
@@ -23,13 +23,12 @@ def apply(given):
     return Contains(e, s)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
-    s = Symbol.s(etype=dtype.integer)
-    e = Symbol.e(integer=True)
+    s = Symbol.s(etype=dtype.integer, given=True)
+    e = Symbol.e(integer=True, given=True)
 
     Eq << apply(Unequality(e.set & s, e.emptySet))
     

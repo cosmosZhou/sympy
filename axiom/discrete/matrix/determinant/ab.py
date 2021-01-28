@@ -1,15 +1,10 @@
-from axiom.utility import plausible
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy.matrices.expressions.determinant import Det
-from sympy.functions.elementary.miscellaneous import Min, Max
-from sympy.concrete.products import Product
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Multiplication
-from sympy import LAMBDA
-from sympy.matrices import Matrix
+from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(a, b):
     n = a.shape[0]
     
@@ -17,13 +12,10 @@ def apply(a, b):
     j = Symbol.j(integer=True)
     
     return Equality(Det(LAMBDA[j:n, i:n](a[Min(i, j)] * b[Max(i, j)])),
-                    a[0] * b[n - 1] * Product(a[i] * b[i - 1] - a[i - 1] * b[i], (i, 1, n - 1)))
+                    a[0] * b[n - 1] * Product(a[i] * b[i - 1] - a[i - 1] * b[i], (i, 1, n)))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = 5
     a = Symbol.a(shape=(n,), complex=True, zero=False)
@@ -42,7 +34,7 @@ def prove(Eq):
     
     Eq << Multiplication(n, n - 1, b[n - 2]) @ Eq[-1] 
 
-    Eq << Eq[-1].det()
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.det)
     
     Eq << Eq[-1].subs(Eq[1])
     

@@ -29,9 +29,9 @@ def _expand_delta(expr, index):
         if delta is None and h.is_Add and _has_simple_delta(h, index):
             delta = True
             func = h.func
-            terms = [terms[0]*t for t in h.args]
+            terms = [terms[0] * t for t in h.args]
         else:
-            terms = [t*h for t in terms]
+            terms = [t * h for t in terms]
     return func(*terms)
 
 
@@ -194,14 +194,14 @@ def deltaproduct(f, limit):
         k = Dummy("kprime", integer=True)
         if isinstance(limit[1], int) and isinstance(limit[2], int):
             result = deltaproduct(newexpr, limit) + sum([
-                deltaproduct(newexpr, (limit[0], limit[1], ik - 1)) *
-                delta.subs(limit[0], ik) *
+                deltaproduct(newexpr, (limit[0], limit[1], ik - 1)) * 
+                delta.subs(limit[0], ik) * 
                 deltaproduct(newexpr, (limit[0], ik + 1, limit[2])) for ik in range(int(limit[1]), int(limit[2] + 1))]
             )
         else:
             result = deltaproduct(newexpr, limit) + deltasummation(
-                deltaproduct(newexpr, (limit[0], limit[1], k - 1)) *
-                delta.subs(limit[0], k) *
+                deltaproduct(newexpr, (limit[0], limit[1], k - 1)) * 
+                delta.subs(limit[0], k) * 
                 deltaproduct(newexpr, (limit[0], k + 1, limit[2])),
                 (k, limit[1], limit[2]),
                 no_piecewise=_has_simple_delta(newexpr, limit[0])
@@ -222,8 +222,8 @@ def deltaproduct(f, limit):
 
     from sympy import Eq
     c = Eq(limit[2], limit[1] - 1)
-    return _remove_multiple_delta(f.subs(limit[0], limit[1])*KroneckerDelta(limit[2], limit[1])) + \
-        S.One*_simplify_delta(KroneckerDelta(limit[2], limit[1] - 1))
+    return _remove_multiple_delta(f.subs(limit[0], limit[1]) * KroneckerDelta(limit[2], limit[1])) + \
+        S.One * _simplify_delta(KroneckerDelta(limit[2], limit[1] - 1))
 
 
 @cacheit
@@ -294,13 +294,13 @@ def deltasummation(f, limit, no_piecewise=False):
     from sympy.concrete.summations import summation
     from sympy.solvers import solve
 
-    if ((limit[2] - limit[1]) < 0) == True:
+    x, a, b = limit
+    b -= 1
+    if ((b - a) < 0) == True:
         return S.Zero
 
     if not f.has(KroneckerDelta):
         return summation(f, limit)
-
-    x = limit[0]
 
     g = _expand_delta(f, x)
     if g.is_Add:
@@ -323,6 +323,6 @@ def deltasummation(f, limit, no_piecewise=False):
     if no_piecewise:
         return expr.subs(x, value)
     return Piecewise(
-        (expr.subs(x, value), Interval(*limit[1:3]).as_relational(value)),
+        (expr.subs(x, value), Interval(a, b).as_relational(value)),
         (S.Zero, True)
     )

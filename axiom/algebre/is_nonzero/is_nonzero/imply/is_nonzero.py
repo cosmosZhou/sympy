@@ -1,11 +1,11 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Unequal
 from sympy import Symbol
 
 import axiom
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     is_nonzero_x, is_nonzero_y = given
     x = axiom.is_nonzero(is_nonzero_x)
@@ -13,10 +13,9 @@ def apply(*given):
     return Unequal(x * y, 0)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):    
     x = Symbol.x(complex=True)
     y = Symbol.y(complex=True)

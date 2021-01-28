@@ -1,3 +1,4 @@
 from . import greater_than
 from . import supset
-from . import equality
+from . import equal
+from . import forall_supset

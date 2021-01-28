@@ -1,12 +1,13 @@
 from sympy.core.relational import Unequality, StrictGreaterThan
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
+from axiom import algebre
 # given: |A| > 0
 # A != {}
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert isinstance(given, StrictGreaterThan)
     A_abs, zero = given.args
@@ -16,10 +17,9 @@ def apply(given):
     return Unequality(A, A.etype.emptySet)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     
@@ -27,7 +27,7 @@ def prove(Eq):
     
     Eq << ~Eq[1]
     
-    Eq << Eq[-1].abs()
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
     
     Eq << Eq[0].subs(Eq[-1])
 

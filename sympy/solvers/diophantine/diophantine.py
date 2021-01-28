@@ -16,7 +16,7 @@ from sympy.core.symbol import Symbol, symbols
 from sympy.core.sympify import _sympify
 from sympy.functions.elementary.complexes import sign
 from sympy.functions.elementary.integers import floor
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.matrices.dense import MutableDenseMatrix as Matrix
 from sympy.ntheory.factor_ import (
     divisors, factorint, multiplicity, perfect_power)

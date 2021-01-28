@@ -1,15 +1,16 @@
 from sympy.core.relational import Equality
 
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 from sympy.matrices.expressions.matexpr import Swap
 from sympy import LAMBDA
 from sympy import Symbol
+from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(x, w=None, left=True, reference=True):
     n = x.shape[0]
     i = Symbol.i(integer=True)
@@ -17,7 +18,7 @@ def apply(x, w=None, left=True, reference=True):
     k = Symbol.k(integer=True)
     
     if w is None:
-        w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     
@@ -33,7 +34,7 @@ def apply(x, w=None, left=True, reference=True):
             return Equality(x[LAMBDA[k:n](k) @ w[i, j, k]], x @ w[i, j, k])
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     x = Symbol.x(shape=(n,), real=True)
@@ -44,8 +45,7 @@ def prove(Eq):
     
     k = Eq[1].lhs.variable
     
-    Eq << Eq[0][k]  
-    Eq << Eq[-1] @ LAMBDA[k:n](k)
+    Eq << (Eq[0].lhs[k] @ LAMBDA[k:n](k)).this.args[0].definition  
     
     Eq << Eq[-1].this.rhs.expand()
     
@@ -63,7 +63,7 @@ def prove(Eq):
     
     Eq << Eq.lhs_assertion.subs(Eq[-1].reversed)
     
-    Eq << Eq[-1].reference((k, 0, n - 1))
+    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (k, 0, n))
 
 
 if __name__ == '__main__':

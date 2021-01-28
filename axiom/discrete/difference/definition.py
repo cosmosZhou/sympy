@@ -1,6 +1,6 @@
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.function import Difference, Function
 from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
@@ -8,17 +8,15 @@ from sympy import Symbol, Slice
 from sympy.core.add import Add
 from axiom import algebre
 
-@plausible
+
+@apply(imply=True)
 def apply(fx, x, n):
     k = fx.generate_free_symbol(x.free_symbols | n.free_symbols, integer=True)
     return Equality(Difference(fx, x, n),
-                    Sum[k:0:n]((-1) ** (n - k) * binomial(n, k) * fx.subs(x, x + k)))
+                    Sum[k:0:n + 1]((-1) ** (n - k) * binomial(n, k) * fx.subs(x, x + k)))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     f = Function('f', real=True)
     x = Symbol.x(real=True)
@@ -62,14 +60,14 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.expand()
     
-    if Eq.induction.given is not None:
-        Eq << Eq.induction.induct()
-    elif Eq.hypothesis.given is not None:
-        Eq << Eq.hypothesis.induct(reverse=True).split()[0]
-    elif Eq[0].given is not None:
-        Eq << Eq[0].induct(reverse=True).split()[0]        
+#     if Eq.induction.given is not None:
+    Eq << Eq.induction.induct()
+#     elif Eq.hypothesis.given is not None:
+#         Eq << Eq.hypothesis.induct(reverse=True).split()[0]
+#     elif Eq[0].given is not None:
+#         Eq << Eq[0].induct(reverse=True).split()[0]        
         
-    Eq << algebre.equality.sufficient.imply.et.induction.apply(Eq.initial, Eq[-1], n=n, x=x).split()
+    Eq << algebre.equal.sufficient.imply.et.induction.apply(Eq.initial, Eq[-1], n=n, x=x).split()
 
 
 if __name__ == '__main__':

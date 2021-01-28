@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.sets.contains import Contains
 from sympy import Symbol
 from sympy.logic.boolalg import And
@@ -6,7 +6,7 @@ from axiom import sets
 from sympy.sets.sets import Interval
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Contains
     x, interval = given.args
@@ -24,10 +24,9 @@ def apply(given):
             return And(x >= a, x <= b)
         
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, given=True)
     a = Symbol.a(real=True, given=True)
@@ -36,8 +35,8 @@ def prove(Eq):
     
     Eq << Eq[-1].split()
     
-    Eq << sets.contains.imply.less_than.given.interval.apply(Eq[0])
-    Eq << sets.contains.imply.greater_than.given.interval.apply(Eq[0])
+    Eq << sets.contains.imply.less_than.where.interval.apply(Eq[0])
+    Eq << sets.contains.imply.greater_than.where.interval.apply(Eq[0])
 
 if __name__ == '__main__':
     prove(__file__)

@@ -13,12 +13,12 @@ from sympy.core.decorators import deprecated
 from sympy.core.expr import Expr
 from sympy.core.function import expand_mul
 from sympy.core.numbers import Float, Integer, mod_inverse
-from sympy.core.power import Pow
+from sympy.core.power import Pow, sqrt
 from sympy.core.singleton import S
 from sympy.core.symbol import Dummy, Symbol, _uniquely_named_symbol, symbols
 from sympy.core.sympify import sympify
 from sympy.functions import exp, factorial
-from sympy.functions.elementary.miscellaneous import Max, Min, sqrt
+from sympy.functions.elementary.extremum import Max, Min
 from sympy.polys import PurePoly, cancel, roots
 from sympy.printing import sstr
 from sympy.simplify import nsimplify
@@ -1448,7 +1448,25 @@ class MatrixBase(MatrixCommon):
                         flat_list.extend(flat)
                         rows += r
                     cols = ncol.pop() if ncol else 0
+                    flat_list = tuple(flat_list)
+        elif len(args) == 2:
+            shape = args[0]
+            if len(shape) == 1:
+                rows = 1
+                cols = shape[0]
+            else:
+                rows, cols = shape
 
+            if rows < 0 or cols < 0:
+                raise ValueError("Cannot create a {} x {} matrix. "
+                                 "Both dimensions must be positive".format(rows, cols))
+
+            # Matrix(2, 2, [1, 2, 3, 4])
+            if is_sequence(args[1]):
+                flat_list = args[1]
+                if len(flat_list) != rows * cols:
+                    raise ValueError('List length should be equal to rows*columns')
+                flat_list = type(flat_list)(cls._sympify(i) for i in flat_list)
         elif len(args) == 3:
             rows = as_int(args[0])
             cols = as_int(args[1])

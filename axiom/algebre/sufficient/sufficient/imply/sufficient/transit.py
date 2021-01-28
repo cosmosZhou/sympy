@@ -1,12 +1,11 @@
-from axiom.utility import plausible
-from sympy.core.relational import GreaterThan, StrictGreaterThan
+from axiom.utility import prove, apply
 from sympy import Symbol, Or
 import axiom
 from sympy.logic.boolalg import Sufficient
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     is_imply_P, is_imply_Q = given
     p, q = axiom.is_Sufficient(is_imply_P)    
@@ -18,10 +17,9 @@ def apply(*given):
     return Sufficient(p, r)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     p = Symbol.p(real=True, given=True)
     q = Symbol.q(real=True, given=True)

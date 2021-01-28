@@ -3,17 +3,17 @@ from sympy.core.relational import Equality
 from sympy.core.numbers import pi
 from sympy.functions.elementary.trigonometric import cos
 from sympy.functions.special.gamma_functions import gamma
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.sympify import sympify
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 
 from sympy import S, Symbol
 from sympy.integrals.integrals import Integral
-from axiom import algebre, geometry
+from axiom import algebre, geometry, calculus
 from sympy.core.add import Plus
 
 
-@plausible
+@apply(imply=True)
 def apply(n):
     n = sympify(n)
     x = Symbol.x(real=True)
@@ -21,10 +21,7 @@ def apply(n):
                     sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
@@ -40,11 +37,9 @@ def prove(Eq):
 
     Eq.induction = Eq[0].subs(n, n + 2)
 
-#     Integration by parts
-
     Eq << Eq.induction.lhs.this.expand()
-
-    Eq << Eq[-1].this.rhs.by_parts(dv=cos(x)) / n
+#     Integration by parts
+    Eq << Eq[-1].this.rhs.apply(calculus.integral.by_parts, dv=cos(x)) / n
 
     Eq << Eq[-1].this.lhs.args[1].function.powsimp()
     
@@ -72,7 +67,7 @@ def prove(Eq):
 
     Eq << Eq.induction.induct()
     
-    Eq << algebre.equality.equality.sufficient.imply.equality.induction.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
+    Eq << algebre.equal.equal.sufficient.imply.equal.induction.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':

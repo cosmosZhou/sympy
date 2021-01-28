@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
     LessThan, GreaterThan, Unequal
 
@@ -10,15 +10,14 @@ from sympy import Exists
 from axiom import algebre, sets
 from sympy.core.symbol import dtype
 
-@plausible
+@apply(imply=True)
 def apply(x):    
     return Equality(cos(x) ** 2, 1 - sin(x) ** 2)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
         

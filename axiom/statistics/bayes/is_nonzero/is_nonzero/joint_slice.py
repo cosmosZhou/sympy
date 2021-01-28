@@ -1,19 +1,14 @@
-
-from sympy.core.relational import Unequal
-
-from axiom.utility import plausible
-from axiom.utility import check
-from sympy import Symbol, Slice
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.stats.symbolic_probability import Probability as P
-from axiom.statistics import bayes
 
 from sympy.stats.rv import pspace
-from sympy.core.numbers import oo
+from axiom import statistics
 
 
 # given: P(x, y) != 0
 # imply: P(x[:t], y[:t]) != 0
-@plausible
+@apply(imply=True)
 def apply(given, indices):
     assert given.is_Unequality
     assert given.lhs.is_Probability
@@ -31,20 +26,20 @@ def apply(given, indices):
     return Unequal(P(*args), 0)
 
 
-@check
+@prove
 def prove(Eq):
-    n = Symbol.n(integer=True, domain=[2, oo])
+    n = Symbol.n(domain=Interval(2, oo, integer=True))
     x = Symbol.x(real=True, shape=(n,), random=True)
     y = Symbol.y(real=True, shape=(n,), random=True)
-    t = Symbol.t(integer=True, domain=[1, n - 1])
+    t = Symbol.t(domain=Interval(1, n - 1, integer=True))
     
     Eq << apply(Unequal(P(x, y), 0), Slice[:t, :t])
     
     Eq << Eq[0].this.lhs.arg.args[-1].bisect(Slice[:t])
     
     Eq << Eq[-1].this.lhs.arg.args[0].bisect(Slice[:t])
- 
-    Eq << bayes.is_nonzero.et.apply(Eq[-1], wrt={x[:t], y[:t]}).split()
+     
+    Eq << statistics.bayes.is_nonzero.et.apply(Eq[-1], wrt={x[:t], y[:t]}).split()
     
     
 if __name__ == '__main__':

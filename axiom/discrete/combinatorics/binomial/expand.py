@@ -1,18 +1,17 @@
 from sympy.functions.combinatorial.factorials import Binomial
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy import Symbol
 
-@plausible
+@apply(imply=True)
 def apply(n, k):
     return Equality(Binomial(n, k), n / k * Binomial(n - 1, k - 1))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True)
     

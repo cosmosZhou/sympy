@@ -1,18 +1,10 @@
-from sympy.core.relational import Equality
-from axiom.utility import plausible
-
-from sympy.core.numbers import oo
+from sympy import *
+from axiom.utility import prove, apply
+from axiom import sets, algebre
 from sympy.sets.conditionset import conditionset
-from sympy.sets.sets import Interval
-from sympy import Symbol, Slice
-from sympy import ForAll, LAMBDA
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.complexes import Abs
-from sympy.functions.elementary.piecewise import Piecewise
-from axiom import sets
 
 
-@plausible
+@apply(imply=True)
 def apply(n, P_quote=None):    
     
     if P_quote is None:
@@ -25,10 +17,7 @@ def apply(n, P_quote=None):
     return Equality(Abs(P), Abs(P_quote))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):    
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
@@ -47,7 +36,7 @@ def prove(Eq):
     
     Eq << Eq.x_quote_definition[i]
     
-    Eq << Eq[-1].set.union_comprehension((i, 0, n - 1))
+    Eq << sets.equal.imply.equal.set_comprehension.apply(Eq[-1], (i, 0, n))
     
     Eq.x_quote_n_definition = Eq[-2].subs(i, n)
     
@@ -75,7 +64,7 @@ def prove(Eq):
 
     Eq << Eq[-1].definition
     
-    Eq << sets.forall_contains.forall_contains.forall_equality.forall_equality.imply.equality.apply(Eq[-1], Eq.P2P_quote, Eq.mapping_quote, Eq.mapping)
+    Eq << sets.forall_contains.forall_contains.forall_equal.forall_equal.imply.equal.apply(Eq[-1], Eq.P2P_quote, Eq.mapping_quote, Eq.mapping)
     
     Eq << Eq[-1].reversed
 

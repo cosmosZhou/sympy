@@ -1,18 +1,12 @@
-from sympy.core.relational import Equality, Unequal, Equal
+from sympy import *
+from axiom.utility import prove, apply
 
-from axiom.utility import plausible
-from axiom.utility import check
-from sympy import Symbol, Slice
 from sympy.stats.symbolic_probability import Probability as P
-from sympy.concrete.products import Product
-from sympy import ArgMax
-from axiom.statistics import bayes
 from axiom import algebre, statistics
-from sympy.logic.boolalg import Or
 
 # given: x[t] | x[:t] = x[t], y[t] | y[:t] = y[t]
 # imply: max[i]P(y[i] | x) = max[i](P(y[i]) * ∏[j:n](P(x[j] | y[i]))) 
-@plausible
+@apply(imply=True)
 def apply(*given):
     x_equality, inequality = given
     
@@ -45,7 +39,7 @@ def apply(*given):
     return Equality(ArgMax[i](P(y[i] | x)), ArgMax[i](P(y[i]) * Product[j](P(x[j] | y[i]))))
     
 
-@check
+@prove
 def prove(Eq):
     t = Symbol.t(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
@@ -58,26 +52,26 @@ def prove(Eq):
     i = Eq[-1].lhs.variable
     j = Eq[-1].rhs.function.args[-1].variable
     
-    Eq << bayes.is_nonzero.et.apply(Eq[1]).split()
-    Eq << bayes.corollary.apply(Eq[-2], var=y[i])
+    Eq << statistics.bayes.is_nonzero.et.apply(Eq[1]).split()
+    Eq << statistics.bayes.corollary.apply(Eq[-2], var=y[i])
     
-    Eq.y_given_x = algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq[-3]).reversed
+    Eq.y_given_x = algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[-1], Eq[-3]).reversed
     
-    Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], [j, i])
+    Eq << statistics.bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], [j, i])
     
-    Eq << bayes.is_nonzero.et.apply(Eq[-1]).split()
+    Eq << statistics.bayes.is_nonzero.et.apply(Eq[-1]).split()
     
-    Eq << bayes.corollary.apply(Eq[-1], var=x)
+    Eq << statistics.bayes.corollary.apply(Eq[-1], var=x)
     
     Eq.y_given_x = Eq.y_given_x.subs(Eq[-1])
     
-    Eq << Eq.y_given_x.argmax((i,))
+    Eq << algebre.equal.imply.equal.argmax.apply(Eq.y_given_x, (i,))
     
-    Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], Slice[:t, i]) 
+    Eq << statistics.bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], Slice[:t, i]) 
     
-    Eq.xt_given_x_historic = bayes.equality.equality.given_addition.joint_probability.apply(Eq[0], Eq[-1])
+    Eq.xt_given_x_historic = statistics.bayes.equal.equal.given_addition.joint_probability.apply(Eq[0], Eq[-1])
     
-    Eq.xt_given_yi_nonzero = bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
+    Eq.xt_given_yi_nonzero = statistics.bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
     
     Eq << statistics.bayes.theorem.apply(P(x[:t + 1] | y[i]), x[:t])
     
@@ -87,9 +81,9 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.xt_given_x_historic)
     
-    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[-1], Eq.xt_given_yi_nonzero)
+    Eq << algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[-1], Eq.xt_given_yi_nonzero)
     
-    Eq << Eq[-1].product((t, 1, n - 1))
+    Eq << algebre.equal.imply.equal.product.apply(Eq[-1], (t, 1, n))
     
     t = Eq[-1].rhs.variable
     Eq << Eq[-1] / Eq[-1].lhs.args[-1]

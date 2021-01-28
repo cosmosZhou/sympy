@@ -649,7 +649,7 @@ def rsolve_hyper(coeffs, f, n, **hints):
                         return None
                     elif (n0 < (n_root + 1)) == True:
                         n0 = n_root + 1
-                K = product(ratio, (n, n0, n - 1))
+                K = product(ratio, (n, n0, n))
                 if K.has(factorial, FallingFactorial, RisingFactorial):
                     K = simplify(K)
 

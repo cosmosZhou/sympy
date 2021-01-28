@@ -1,5 +1,5 @@
 from sympy.core.relational import GreaterThan
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
 from sympy import Exists
@@ -9,7 +9,7 @@ from axiom import algebre, sets
 # A != {}
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert isinstance(given, GreaterThan)
     S_abs, positive = given.args
@@ -21,10 +21,9 @@ def apply(given):
     return Exists[x](Contains(x, S))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.integer, given=True)
     

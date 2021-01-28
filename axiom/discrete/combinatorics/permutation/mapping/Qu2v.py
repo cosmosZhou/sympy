@@ -1,14 +1,11 @@
-from sympy.core.relational import Equality
-from axiom.utility import plausible
-from sympy.core.numbers import oo
-from sympy.sets.conditionset import conditionset
-from sympy.sets.sets import Interval
-from sympy import Symbol
-from sympy import LAMBDA, ForAll
+from axiom.utility import prove, apply
+
+from sympy import *
 from axiom import discrete, algebre, sets
-from sympy.sets.contains import Contains, Subset
+
 from sympy.matrices.expressions.matexpr import Swap
-from axiom.discrete.combinatorics.permutation.index.equality import index_function
+from axiom.discrete.combinatorics.permutation.index.equal import index_function
+from sympy.sets.conditionset import conditionset
 
 
 def predefined_symbols(n):
@@ -17,7 +14,7 @@ def predefined_symbols(n):
     Q = Symbol.Q(definition=LAMBDA[t:n + 1](conditionset(x[:n + 1], Equality(x[:n + 1].set_comprehension(), Interval(0, n, integer=True)) & Equality(x[n], t))))
     j = Symbol.j(integer=True)
     i = Symbol.i(integer=True)    
-    w = Symbol.w(definition=LAMBDA[j:n + 1, i:n + 1](Swap(n + 1, i, j)))
+    w = Symbol.w(definition=LAMBDA[j, i](Swap(n + 1, i, j)))
     
     return Q, w, x
 
@@ -30,17 +27,14 @@ def X_definition(n, w, x):
     return Symbol("X", definition=LAMBDA[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
 
     
-@plausible
+@apply(imply=True)
 def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     X, index = X_definition(n, w, x)
     return ForAll[x[:n + 1]:Q[u]](Contains(X[v], Q[v]) & Equality(x[:n + 1], w[n, index[u](X[v])] @ X[v])) 
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):    
     n = Symbol.n(integer=True, positive=True)
     u = Symbol.u(domain=Interval(0, n, integer=True))
@@ -52,11 +46,11 @@ def prove(Eq):
     
     Eq.x_slice_last, Eq.x_slice_domain = sets.imply.forall.conditionset.apply(Q[u]).split()
     
-    Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.equality, v)
+    Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.equal, v)
     Eq.h_domain, Eq.x_h_equality = Eq[-1].split()
     
     hv = Eq.x_h_equality.function.lhs.indices[0]
-    Eq << discrete.matrix.elementary.swap.invariant.permutation.apply(n + 1, w=w)
+    Eq << discrete.matrix.elementary.swap.invariant.permutation.basic.apply(n + 1, w=w)
     
     Eq << Subset(Eq[-2].limits[0][1], Eq[-1].rhs, plausible=True)    
     
@@ -71,7 +65,7 @@ def prove(Eq):
     k = Eq[-1].function.lhs.function.arg.args[0].indices[-1]
     Eq.Xv_definition = Eq[1].subs(j, v)
     
-    Eq << Eq.Xv_definition[k].set.union_comprehension((k, 0, n))
+    Eq << Eq.Xv_definition[k].apply(sets.equal.imply.equal.set_comprehension, (k, 0, n + 1))
     
     Eq.x_n1_set_comprehension = Eq[-2].subs(Eq[-1].reversed)
     
@@ -85,7 +79,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.x_h_equality)
     
-    Eq << Eq[-1].apply(algebre.equality.imply.ou.two)
+    Eq << Eq[-1].apply(algebre.equal.imply.ou.two)
     
     Eq << (Eq[-1] & Eq.h_domain).split()
     
@@ -99,7 +93,7 @@ def prove(Eq):
     
     Eq.indexu_eq_indexv = Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.swap, u, v, w=w)
     
-    Eq.indexu_contains, Eq.x_indexu_equality = Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.equality, u).split()
+    Eq.indexu_contains, Eq.x_indexu_equality = Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.equal, u).split()
     
     Eq.equality_of_indexu_and_n = Eq.x_indexu_equality + Eq.x_slice_last.reversed
 

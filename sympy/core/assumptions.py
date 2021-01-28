@@ -549,6 +549,8 @@ class ManagedProperties(BasicMeta):
             break
         
     def __getitem__(self, limits):
+        if self.is_Slice:
+            return limits
         from sympy.core.symbol import dtype
         if isinstance(limits, tuple):
             limits = [*limits]
@@ -558,17 +560,17 @@ class ManagedProperties(BasicMeta):
                     if b is not None:
                         limits[i] = (x, a, b)
                     elif isinstance(a, int) or a.type in dtype.integer:
-                        limits[i] = (x, 0, a - 1)
+                        limits[i] = (x, 0, a)
                     else:
                         limits[i] = (x, a)
                 else:
-                    limits[i] = limit
+                    limits[i] = (limit,)
         elif isinstance(limits, slice):
             x, a, b = limits.start, limits.stop, limits.step
             if limits.step is not None:
                 limits = [(x, a, b)]
             elif isinstance(a, int) or a.type in dtype.integer or a.is_Infinity:
-                limits = [(x, 0, a - 1)]
+                limits = [(x, 0, a)]
             else:
                 limits = [(x, a)]
         else:

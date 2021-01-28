@@ -1,8 +1,7 @@
 
 from sympy.core.relational import Unequal
 
-from axiom.utility import plausible
-from axiom.utility import check
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.statistics import bayes
@@ -12,7 +11,7 @@ from axiom import algebre, statistics
 
 # given: P(x, y) != 0
 # imply: P(y) != 0
-@plausible
+@apply(imply=True)
 def apply(given, wrt=None):
     assert given.is_Unequality
     assert given.lhs.is_Probability
@@ -34,7 +33,7 @@ def apply(given, wrt=None):
         return And(*[Unequal(P(eq), 0) for eq in eqs.args])
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
@@ -48,11 +47,12 @@ def prove(Eq):
     
     Eq << bayes.is_nonzero.is_positive.apply(Eq[0])
     
-    Eq <<= Eq[-1].integrate((_y,)), Eq[-1].integrate((_x,))
+    Eq <<= algebre.strict_greater_than.imply.strict_greater_than.integrate.apply(Eq[-1], (_y,)), \
+        algebre.strict_greater_than.imply.strict_greater_than.integrate.apply(Eq[-1], (_x,))
     
     Eq <<= Eq[-2].subs(Eq.x_marginal_probability), Eq[-1].subs(Eq.y_marginal_probability)
     
-    Eq <<= algebre.strict_greater_than.imply.inequality.apply(Eq[-1]) & algebre.strict_greater_than.imply.inequality.apply(Eq[-2])
+    Eq <<= algebre.strict_greater_than.imply.unequal.apply(Eq[-1]) & algebre.strict_greater_than.imply.unequal.apply(Eq[-2])
     
     
 if __name__ == '__main__':

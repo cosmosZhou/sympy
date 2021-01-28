@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy.sets.conditionset import conditionset
 
@@ -11,7 +11,7 @@ from sympy.core.symbol import dtype, Wild
 from sympy.sets.contains import Contains
 
 
-@plausible
+@apply(imply=True)
 def apply(given, P):
     assert given.is_ForAll
     assert P.is_ConditionSet or P.definition.is_ConditionSet
@@ -25,10 +25,9 @@ def apply(given, P):
     return given.func(Contains(gx, P), *given.limits)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):    
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)

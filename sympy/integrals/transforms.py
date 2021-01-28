@@ -230,7 +230,7 @@ def _mellin_transform(f, x, s_, integrator=_default_integrator, simplify=True):
     from sympy import re, Max, Min, count_ops
     # We use a fresh dummy, because assumptions on s might drop conditions on
     # convergence of the integral.
-    s = _dummy('s', 'mellin-transform', f)
+    s = _dummy('s', 'mellin-transform', f, real=True)
     F = integrator(x ** (s - 1) * f, x)
 
     if not F.has(Integral):

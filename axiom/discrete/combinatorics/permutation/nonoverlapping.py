@@ -1,17 +1,10 @@
-from sympy.core.relational import Equality
-from axiom.utility import plausible
-
-from sympy.sets.sets import Interval
-from sympy import Symbol
-from sympy.functions.elementary.complexes import Abs
+from sympy import *
+from axiom.utility import prove, apply
 from axiom import sets
 from axiom.discrete.combinatorics.permutation import mapping
-from sympy import UNION, ForAll
-from sympy.concrete.summations import Sum
 
 
-
-@plausible
+@apply(imply=True)
 def apply(n, Q=None):
     if Q is None:
         Q, w, x = mapping.Qu2v.predefined_symbols(n)    
@@ -20,11 +13,7 @@ def apply(n, Q=None):
     return Equality(Abs(UNION[t](Q[t])), Sum[t](Abs(Q[t])))
 
 
-from axiom.utility import check
-from sympy import S
-
-
-@check
+@prove
 def prove(Eq):    
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
@@ -49,7 +38,7 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq << sets.forall_equality.imply.equality.nonoverlapping.apply(Eq.nonoverlapping)    
+    Eq << sets.forall_equal.imply.equal.nonoverlapping.apply(Eq.nonoverlapping)    
 
     
 if __name__ == '__main__':

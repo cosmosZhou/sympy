@@ -221,7 +221,7 @@ class Product(ExprWithIntLimits):
                     
                 if b.free_symbols & reps.keys():
                     b = b.subs(reps)
-                _x = x.copy(domain=Interval(a, b, integer=True))
+                _x = x.copy(domain=Interval(a, b, right_open=True, integer=True))
                 function = function._subs(x, _x)
                 reps[x] = _x
                 
@@ -235,7 +235,7 @@ class Product(ExprWithIntLimits):
                 i = limit[0]
                 domain = self.function.domain_defined(i)
                 if domain.is_Interval:                    
-                    a, b = domain.min(), domain.max()
+                    a, b = domain.min(), domain.max() + 1
                 else:
                     return self 
             else:
@@ -254,7 +254,7 @@ class Product(ExprWithIntLimits):
                     if dif.is_Integer:
                         limits = self.limits[index:-1]
                         args = []
-                        for index in range(dif + 1):
+                        for index in range(dif):
                             _i = a + index                            
                             args.append(self.func(f._subs(i, _i), *[limit._subs(i, _i) for limit in limits]).simplify())
                             
@@ -284,22 +284,22 @@ class Product(ExprWithIntLimits):
         from sympy.concrete.summations import summation
         from sympy.functions import KroneckerDelta, RisingFactorial
 
-        (k, a, n) = limits
+        (k, a, n1) = limits
 
         if k not in term.free_symbols:
             if (term - 1).is_zero:
                 return S.One
-            return term ** (n - a + 1)
+            return term ** (n1 - a)
 
-        if a == n:
+        if a == n1 - 1:
             return term.subs(k, a)
 
         if term.has(KroneckerDelta) and _has_simple_delta(term, limits[0]):
             return deltaproduct(term, limits)
 
-        dif = n - a
+        dif = n1 - a
         if dif.is_Integer:
-            return Mul(*[term.subs(k, a + i) for i in range(dif + 1)])
+            return Mul(*[term.subs(k, a + i) for i in range(dif)])
 
         elif term.is_polynomial(k):
             poly = term.as_poly(k)
@@ -311,25 +311,25 @@ class Product(ExprWithIntLimits):
             M = 0
             for r, m in all_roots.items():
                 M += m
-                A *= RisingFactorial(a - r, n - a + 1) ** m
-                Q *= (n - r) ** m
+                A *= RisingFactorial(a - r, n1 - a) ** m
+                Q *= (n1 - 1 - r) ** m
 
             if M < poly.degree():
                 arg = quo(poly, Q.as_poly(k))
-                B = self.func(arg, (k, a, n)).doit()
+                B = self.func(arg, limits).doit()
 
-            return poly.LC() ** (n - a + 1) * A * B
+            return poly.LC() ** (n1 - a) * A * B
 
         elif term.is_Add:
             factored = factor_terms(term, fraction=True)
             if factored.is_Mul:
-                return self._eval_product(factored, (k, a, n))
+                return self._eval_product(factored, limits)
 
         elif term.is_Mul:
             exclude, include = [], []
 
             for t in term.args:
-                p = self._eval_product(t, (k, a, n))
+                p = self._eval_product(t, limits)
 
                 if p is not None:
                     exclude.append(p)
@@ -341,16 +341,16 @@ class Product(ExprWithIntLimits):
             else:
                 arg = term._new_rawargs(*include)
                 A = Mul(*exclude)
-                B = self.func(arg, (k, a, n)).doit()
+                B = self.func(arg, limits).doit()
                 return A * B
 
         elif term.is_Power:
             if not term.base.has(k):
-                s = summation(term.exp, (k, a, n))
+                s = summation(term.exp, limits)
 
                 return term.base ** s
             elif not term.exp.has(k):
-                p = self._eval_product(term.base, (k, a, n))
+                p = self._eval_product(term.base, limits)
 
                 if p is not None:
                     return p ** term.exp
@@ -373,7 +373,7 @@ class Product(ExprWithIntLimits):
     def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
-            if domain is not None:
+            if not isinstance(domain, list):
                 if domain.is_infinite:
                     return None
                     
@@ -381,16 +381,37 @@ class Product(ExprWithIntLimits):
                 function = function._subs(x, _x)
         return function.is_finite
 
+    def _eval_is_extended_real(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list):
+                _x = x.copy(domain=domain)
+                if _x != x:
+                    function = function._subs(x, _x)
+                
+        return function.is_extended_real
+
     def _eval_is_extended_positive(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
-            if domain is not None:
+            if not isinstance(domain, list):
                 if domain.is_infinite:
-                    return None
+                    return
                     
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
         return function.is_extended_positive
+
+    def _eval_is_extended_negative(self):
+        function = self.function                
+        for x, domain in self.limits_dict.items():
+            if not isinstance(domain, list):
+                if domain.is_infinite:
+                    return 
+                    
+                _x = x.copy(domain=domain)
+                function = function._subs(x, _x)
+        return function.is_extended_negative
 
     def is_convergent(self):
         r"""
@@ -553,15 +574,21 @@ class Product(ExprWithIntLimits):
                 function = self.func(self.function, *self.limits[:-1])
                 x, a, b = limit
                 if not function._has(x):
-                    return function ** (b - a + 1)
+                    return function ** (b - a)
                 
-                if a == b:                
+                if a == b - 1:                
                     return function._subs(x, a).simplify(deep=deep)
-                if a > b:
+                if a >= b:
                     return S.One            
             return self
         
         limit = self.limits[0]
+        if len(limit) == 1:
+            x = limit[0]
+            domain = x.domain
+            if domain.is_Interval: 
+                limit = x, domain.min(), domain.max() + 1 
+
         if len(limit) == 2:
             x, domain = limit
             if domain.is_FiniteSet:
@@ -573,10 +600,10 @@ class Product(ExprWithIntLimits):
             x, a, b = limit
             if self.function.is_Piecewise:
                 from sympy.sets.sets import Interval
-                domain = Interval(a, b, integer=True)
+                domain = Interval(a, b, right_open=True, integer=True)
                 return Mul(*self.as_multiple_terms(x, domain))
             if not self.function._has(x):
-                return self.function ** (b - a + 1)
+                return self.function ** (b - a)
             
             if self.function.is_Mul:
                 if len(self.function.args) == 2:
@@ -590,10 +617,10 @@ class Product(ExprWithIntLimits):
                         if res:
                             x_, *_ = res.values()
                             if x_ == x + 1:
-                                return fx1._subs(x, b) / fx._subs(x, a)
-            if a == b:                
+                                return fx1._subs(x, b - 1) / fx._subs(x, a)
+            if a == b - 1:                
                 return self.function._subs(x, a)
-            if a > b:
+            if a >= b:
                 return S.One
         else:
             x, *_ = limit
@@ -608,11 +635,11 @@ class Product(ExprWithIntLimits):
 
         if dependent == S.One:
             if len(limit) > 1:
-                return self.function ** (b - a + 1)
+                return self.function ** (b - a)
             else:
                 return self.function ** x.dimension
         if len(limit) > 1:
-            return self.func(dependent, limit).doit() * independent ** (b - a + 1)
+            return self.func(dependent, limit).doit() * independent ** (b - a)
         else:
             return self.func(dependent, limit).doit() * independent ** x.dimension
 
@@ -629,7 +656,7 @@ class Product(ExprWithIntLimits):
             i, *ab = self.limits[0]
             if len(ab) == 2 and expr:
                 a, b = ab
-                if self.function.subs(i, b + 1) == expr:
+                if self.function.subs(i, b) == expr:
                     return self.func(self.function, (i, a, b + 1)).simplify()
                 if self.function.subs(i, a - 1) == expr:
                     return self.func(self.function, (i, a - 1 , b)).simplify()
@@ -657,7 +684,7 @@ class Product(ExprWithIntLimits):
                 return prod
         
         return self
-        
+
         
 class MatProduct(ExprWithIntLimits, MatrixExpr):
     r"""Represents unevaluated products of matrices.
@@ -724,7 +751,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         else:
             function = self.function
         from sympy import sympify
-        return MatMul(*[function._subs(x, sympify(i)) for i in range(dif + 1)])    
+        return MatMul(*[function._subs(x, sympify(i)) for i in range(dif)])    
 
     def _eval_adjoint(self):
         return self.func(self.function.adjoint(), *self.limits)        
@@ -769,20 +796,20 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
             if M < poly.degree():
                 arg = quo(poly, Q.as_poly(k))
-                B = self.func(arg, (k, a, n)).doit()
+                B = self.func(arg, limits).doit()
 
             return poly.LC() ** (n - a + 1) * A * B
 
         elif term.is_Add:
             factored = factor_terms(term, fraction=True)
             if factored.is_Mul:
-                return self._eval_product(factored, (k, a, n))
+                return self._eval_product(factored, limits)
 
         elif term.is_Mul:
             exclude, include = [], []
 
             for t in term.args:
-                p = self._eval_product(t, (k, a, n))
+                p = self._eval_product(t, limits)
 
                 if p is not None:
                     exclude.append(p)
@@ -794,16 +821,16 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
             else:
                 arg = term._new_rawargs(*include)
                 A = Mul(*exclude)
-                B = self.func(arg, (k, a, n)).doit()
+                B = self.func(arg, limits).doit()
                 return A * B
 
         elif term.is_Power:
             if not term.base.has(k):
-                s = summation(term.exp, (k, a, n))
+                s = summation(term.exp, limits)
 
                 return term.base ** s
             elif not term.exp.has(k):
-                p = self._eval_product(term.base, (k, a, n))
+                p = self._eval_product(term.base, limits)
 
                 if p is not None:
                     return p ** term.exp
@@ -827,7 +854,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
             if len(ab) != 2:
                 return None
             a, b = ab
-            function = function._subs(x, a + b - x)
+            function = function._subs(x, a + b - 1 - x)
             
         return self.func(function.T, *limits)
 
@@ -980,11 +1007,11 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                 function = self.func(self.function, *self.limits[:-1])
                 x, a, b = limit
                 if not function._has(x):
-                    return function ^ (b - a + 1)
+                    return function ^ (b - a)
                 
-                if a == b:                
+                if a == b - 1:
                     return function._subs(x, a).simplify(deep=deep)
-                if a > b:
+                if a >= b:
                     return S.One            
             return self
         
@@ -1001,15 +1028,15 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
             x, a, b = limit
             if isinstance(self.function, Piecewise):
                 from sympy.sets.sets import Interval
-                domain = Interval(a, b, integer=True)
+                domain = Interval(a, b, right_open=True, integer=True)
                 return Mul(*self.as_multiple_terms(x, domain))
             if not self.function._has(x):
-                return self.function ^ (b - a + 1)
+                return self.function ^ (b - a)
             
-            if a == b:                
+            if a == b - 1:
                 return self.function._subs(x, a)
             from sympy import Identity
-            if a > b:
+            if a >= b:
                 return Identity(self.shape[0])
         else:
             x, *_ = limit
@@ -1024,11 +1051,11 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
         if dependent == S.One:
             if len(limit) > 1:
-                return self.function ^ (b - a + 1)
+                return self.function ^ (b - a)
             else:
                 return self.function ^ x.dimension
         if len(limit) > 1:
-            return self.func(dependent, limit).doit() @ (independent ^ (b - a + 1))
+            return self.func(dependent, limit).doit() @ (independent ^ (b - a))
         else:
             return self.func(dependent, limit).doit() @ (independent ^ x.dimension)
 
@@ -1053,7 +1080,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
             i, *ab = self.limits[0]
             if len(ab) == 2 and expr:
                 a, b = ab
-                if self.function.subs(i, b + 1) == expr:
+                if self.function.subs(i, b) == expr:
                     return self.func(self.function, (i, a, b + 1))
 
     def _entry(self, i, j=None):
@@ -1066,8 +1093,8 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                             return 
                         limit = self.limits[0]
                         x, a, b = limit
-                        if a <= b:
-                            return self.func[x:a:b - 1](self.function) @ self.function._subs(x, b)[:, j]
+                        if a < b:
+                            return self.func[x:a:b - 1](self.function) @ self.function._subs(x, b - 1)[:, j]
                         else:
                             return
                 start = 0
@@ -1119,7 +1146,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
             if old.is_Slice and len(ab) == 2:
                 from sympy import Interval
-                _x = x.copy(domain=Interval(*ab, integer=x.is_integer))
+                _x = x.copy(domain=Interval(*ab, right_open=True, integer=True))
                 function = self.function.subs(x, _x)
                 _function = function.subs(old, new)
                 if _function != function:
@@ -1224,6 +1251,26 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
             limits[index] = limit
             return self.func(function, *limits)
 
+        return self
+
+    @classmethod
+    def rewrite_from_MatMul(cls, self):
+        function_limits_coeff = self._detect_multiple_products()
+        if function_limits_coeff is not None:
+            before, product, after = function_limits_coeff
+            if before is not None:
+                prod = product.try_absorb_forward(before)
+                if prod is not None:
+                    if after is not None:
+                        return prod @ after
+                    return prod
+            elif after is not None:
+                prod = product.try_absorb_backward(after)
+                if prod is not None:
+                    if before is not None:
+                        return before @ prod
+                    return prod
+        
         return self
 
 

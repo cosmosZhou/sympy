@@ -2,15 +2,14 @@
 from sympy.core.relational import Unequal, StrictGreaterThan, \
     GreaterThan
 
-from axiom.utility import plausible
-from axiom.utility import check
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 
 
 # given: x | y = x
 # imply: y | x = y
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Unequality
     assert given.lhs.is_Probability
@@ -19,7 +18,7 @@ def apply(given):
     return StrictGreaterThan(given.lhs, 0)
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, random=True)
  

@@ -1,12 +1,9 @@
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy import ForAll
+from axiom.utility import prove, apply
+from sympy import *
+
 from axiom import sets
-from sympy.sets.contains import Contains, Subset
 
-
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_ForAll
     assert len(given.limits) == 1
@@ -18,10 +15,9 @@ def apply(given):
     assert x == _x    
     return Subset(A, B)
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(complex=True, shape=(n,))
@@ -32,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[0].apply(sets.contains.imply.subset, simplify=False)
     
-    Eq << Eq[-1].apply(sets.subset.imply.subset, *Eq[-1].limits)    
+    Eq << Eq[-1].apply(sets.subset.imply.subset.union_comprehension.lhs, *Eq[-1].limits)    
     
 if __name__ == '__main__':
     prove(__file__)

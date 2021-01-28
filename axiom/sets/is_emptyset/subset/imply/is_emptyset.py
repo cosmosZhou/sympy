@@ -1,15 +1,11 @@
-from sympy.core.relational import Equality
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-
-from sympy.sets.contains import Subset, Supset
-from sympy import Symbol
+from axiom.utility import prove, apply
+from sympy import *
 
 
 # given0: A in B
 # given1: B & C = {}
 # and C & A = {}
-@plausible
+@apply(imply=True)
 def apply(*given):
     assert len(given) == 2
     A = None
@@ -35,10 +31,9 @@ def apply(*given):
     return Equality(C & A, A.etype.emptySet)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)

@@ -48,7 +48,7 @@ render(__FILE__);
         self.file.write(php_code)
 
     def __del__(self):
-#         print('calling destructor')
+#         print('calling destructor')        
         self.file.home()
 #         sep = os.sep        
         lines = []
@@ -129,7 +129,7 @@ render(__FILE__);
     def get_index(self, equivalent):
         if equivalent is None:
             return -1
-        if isinstance(equivalent, (list, tuple)):
+        if isinstance(equivalent, (list, tuple, set)):
             _index = []
             for eq in equivalent:
                 if eq.plausible:
@@ -175,13 +175,9 @@ render(__FILE__);
             return self.list[index]
         return self.__dict__[index]
 
-    def process(self, rhs, index=None, flush=True):
-        try:
-            latex = rhs.latex
-        except:
-            traceback.print_exc()
-            latex = ''
-
+    def process(self, rhs, index=None, flush=True):        
+        latex = rhs.latex
+    
         infix = str(rhs)
             
         if isinstance(rhs, Boolean):
@@ -346,7 +342,13 @@ render(__FILE__);
         
     def __lshift__(self, rhs):
         if isinstance(rhs, (list, tuple)):    
-            self.file.append('//' + ''.join([self.process(arg, flush=False) for arg in rhs]))
+            def yield_from(container):
+                for e in container:
+                    if isinstance(e, (list, tuple)):
+                        yield from yield_from(e)
+                    else:
+                        yield self.process(e, flush=False)
+            self.file.append('//' + ''.join(yield_from(rhs)))
         else:
             self.process(rhs)
         return self
@@ -399,15 +401,9 @@ def wolfram_decorator(py, func, debug=True, **kwargs):
     eqs = Eq(py.replace('.py', '.php'), debug=debug)
     website = "http://localhost" + func.__code__.co_filename[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php"
     try: 
-        if 'wolfram' in kwargs:
-            wolfram = kwargs['wolfram']
-            if wolfram is not None:
-                with wolfram:                
-                    func(eqs, wolfram)
-            else:
-                func(eqs, wolfram)
-        else:
-            func(eqs)
+        wolfram = kwargs['wolfram']
+        with wolfram:                
+            func(eqs, wolfram)
     except Exception as e:
         print(e)
         traceback.print_exc()
@@ -423,29 +419,62 @@ def wolfram_decorator(py, func, debug=True, **kwargs):
     return True
 
 
-from wolframclient.evaluation.cloud import cloudsession
-session = cloudsession.session
-# from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
-# session = WolframLanguageSession()
+def prove(func):    
+
+    def prove(py, func, debug=True):
+        eqs = Eq(py.replace('.py', '.php'), debug=debug)
+        website = "http://localhost" + func.__code__.co_filename[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php"
+        try: 
+            func(eqs)
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
+            print(website)
+            return
+        
+        if debug:
+            print(website)
+        plausibles = eqs.plausibles_dict
+        if plausibles:
+            return False
+    
+        return True
+
+    return lambda py, **kwargs: prove(py, func, **kwargs)
 
 
-def check(func=None, wolfram=None):
-    if func is not None:
-        return lambda py, **kwargs: wolfram_decorator(py, func, **kwargs)
+def wolfram(func):
 
     def decorator(func):
-        return lambda py, **kwargs: wolfram_decorator(py, func, wolfram=session if wolfram else None, **kwargs)
+        from wolframclient.evaluation.cloud import cloudsession
+        session = cloudsession.session
+# from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
+# session = WolframLanguageSession()
+        
+        return lambda py, **kwargs: wolfram_decorator(py, func, wolfram=session, **kwargs)
 
     return decorator
 
 
-def plausible(apply=None):
-    if apply is None:
-        s = traceback.extract_stack()
-        if s[-2][0] != s[-3][0]:
-            return None        
-        return True
+def apply(**kwargs):
+    if 'imply' in kwargs:        
+        is_imply = kwargs['imply']
+        if is_imply is True:
+            if 'given' in kwargs: 
+                return lambda apply : imply(apply, given=kwargs['given'])
+            if 'simplify' in kwargs: 
+                return lambda apply : imply(apply, simplify=kwargs['simplify'])
+            return lambda apply : imply(apply)
+    elif 'given' in kwargs:
+        is_given = kwargs['given']        
+        if is_given is True:
+            return lambda apply : given(apply)
 
+
+def imply(apply, **kwargs):
+    is_given = kwargs['given'] if 'given' in kwargs else True
+    simplify = kwargs['simplify'] if 'simplify' in kwargs else True
+    
     def add(given, statement):
         if isinstance(statement, tuple):
             if given is None:
@@ -470,8 +499,10 @@ def plausible(apply=None):
         if 'plausible' not in s._assumptions:
             s._assumptions['plausible'] = True
 
-    def plausible(*args, simplify=True, **kwargs): 
-        statement = apply(*args, **kwargs)        
+    def imply(*args, **kwargs):
+        nonlocal simplify
+        simplify = kwargs.pop('simplify', True) and simplify
+        statement = apply(*args, **kwargs)
         
         if isinstance(statement, tuple):
             for s in statement:
@@ -480,11 +511,14 @@ def plausible(apply=None):
         elif statement.equivalent is not None:
             statement.equivalent = None
             
-        given = [eq for eq in args if isinstance(eq, Boolean)]
-        if len(given) == 1:
-            given = given[0]
-        elif not given:
-            given = None        
+        if is_given:
+            given = [eq for eq in args if isinstance(eq, Boolean)]
+            if len(given) == 1:
+                given = given[0]
+            elif not given:
+                given = None        
+        else:
+            given = None            
             
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]:
@@ -527,7 +561,82 @@ def plausible(apply=None):
         else:
             return add(given, statement)
 
-    return plausible
+    return imply
+
+
+def given(apply):
+
+    def add(given, statement):
+        if isinstance(statement, tuple):
+            if given is None:
+                return statement
+            
+            if isinstance(given, tuple):
+                return tuple(given) + statement
+            
+            return (given,) + statement
+        
+        if given is None:
+            return statement
+        
+        if isinstance(given, tuple):
+            return tuple(given) + (statement,)
+        
+        return (given, statement)
+
+    def process(s, dependency):
+        s.definition_set(dependency)
+                
+        if 'plausible' in s._assumptions:
+            del s._assumptions['plausible']
+
+    def given(*args, **kwargs):
+        simplify = kwargs.pop('simplify', True) 
+        statement = apply(*args, **kwargs)        
+        
+        assert not isinstance(statement, tuple)        
+        if statement.equivalent is not None:
+            statement.equivalent = None
+            
+        imply, *args = args
+        given = tuple(eq for eq in args if isinstance(eq, Boolean))
+        
+        assert all(g.plausible is None for g in given)
+            
+        assert imply.is_Boolean
+        
+        s = traceback.extract_stack()
+        if apply.__code__.co_filename != s[-2][0]:            
+            statement = statement.copy(imply=imply)
+            
+            if not simplify:
+                return statement
+            if isinstance(statement, list):
+                return [*(s.simplify() for s in statement)]
+            return statement.simplify()
+        
+        dependency = {}
+        process(statement, dependency)
+        
+        for g in given:
+            g.definition_set(dependency)
+        
+        imply.definition_set(dependency)
+        imply._assumptions['plausible'] = True
+            
+        G = topological_sort_depth_first(dependency)
+        if G:
+            definition = [s.equality_defined() for s in G]
+            
+            statement = add((imply,) + given, statement)
+            if isinstance(statement, tuple):
+                return definition + [*statement]
+            return definition + [statement]
+            
+        else:
+            return add((imply,) + given, statement)
+
+    return given
 
 
 import inspect
@@ -564,6 +673,9 @@ def get_function_body(func):
 
 # http://www.sagemath.org/download-source.html
 # https://www.sagemath.org/
+
+def assert_hashly_equal(lhs, rhs):
+    assert lhs._hashable_content() == rhs._hashable_content(), "hash(%s) != hash(%s), \nsince %s \n!= \n%s" % (lhs, rhs, lhs._hashable_content(), rhs._hashable_content())
 
 
 if __name__ == '__main__':

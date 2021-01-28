@@ -355,6 +355,9 @@ class Times(Expr, AssocOp):
                 neg1e += S.Half
                 continue
 
+            elif o.is_ZeroMatrix or o.is_OneMatrix:
+                coeff *= o
+                continue
             else:
                 #      e
                 # o = b
@@ -695,7 +698,12 @@ class Times(Expr, AssocOp):
         _mulsort(c_part)
 
         # current code expects coeff to be always in slot-0
-        if coeff is not S.One:
+        if coeff.is_One:
+            ...
+        elif coeff.is_OneMatrix:
+            if len(coeff.shape) > max((len(arg.shape) for arg in c_part)):
+                c_part.insert(0, coeff)
+        else:
             c_part.insert(0, coeff)
 
         # we are done
@@ -2104,11 +2112,15 @@ class Times(Expr, AssocOp):
                     except:
                         ...
                         
-        a = self.args[0]
-        b = self.args[1]
+        a = self.args[0]        
         # dissolve the initial minus sign
-        if a.is_Number and a._coeff_isneg() and isinstance(b, Add):
-            return self.func(*(b.func(*(arg * a for arg in b.args)),) + self.args[2:])
+        if a.is_Number and a._coeff_isneg():
+            b = self.args[1]
+            if isinstance(b, Add):
+                if a.is_infinite:
+                    return self.func(*(-a, b.func(*(-arg for arg in b.args))) + self.args[2:])
+                else:
+                    return self.func(*(b.func(*(arg * a for arg in b.args)),) + self.args[2:])
 
         infinity = []
         coeff = []
@@ -2229,7 +2241,9 @@ class Times(Expr, AssocOp):
         return self
 
     def _eval_transpose(self):
-        return self.func(*(arg.T for arg in self.args[::-1]))
+        max_len_shape = self.max_len_shape()
+        if all(not arg.shape or len(arg.shape) == max_len_shape for arg in self.args):
+            return self.func(*(arg.T for arg in self.args))
 
     def domain_nonzero(self, x):
         from sympy.sets.sets import Interval
@@ -2301,11 +2315,23 @@ class Times(Expr, AssocOp):
 
     def __getitem__(self, index, **kwargs):
         args = []
+        max_len_shape = self.max_len_shape()
+        
         for arg in self.args:
             shape_length = len(arg.shape)
             if shape_length == 0:
                 args.append(arg)
-            elif hasattr(index, "__len__"):
+            elif shape_length < max_len_shape:
+                if isinstance(index, tuple):
+                    diff = max_len_shape - shape_length
+                    indices = index[diff:]
+                    if indices:
+                        args.append(arg[indices])
+                    else:
+                        args.append(arg)
+                else:
+                    args.append(arg)
+            elif isinstance(index, tuple):
                 args.append(arg[index[:shape_length]])
             else:
                 args.append(arg[index])
@@ -2342,7 +2368,7 @@ class Times(Expr, AssocOp):
                     args = list(expr.args)
 
                 # If quantities are present append them at the back
-                args = sorted(args, key=lambda x: x.is_Quantity or (isinstance(x, Pow) and x.base.is_Quantity))
+                args = sorted(args, key=lambda x: x.is_Quantity is True or (isinstance(x, Pow) and x.base.is_Quantity is True))
 
                 for i, term in enumerate(args):
                     term_tex = p._print(term)
@@ -2491,11 +2517,125 @@ class Times(Expr, AssocOp):
     def _eval_inverse(self):
         return self.func(*[arg.inverse() for arg in self.args])        
 
+    def _eval_Abs(self):
+        from sympy import signsimp, Abs
+        arg = signsimp(self, evaluate=False)
+        known = []
+        unk = []
+        for t in arg.args:
+            tnew = Abs(t)
+            if isinstance(tnew, Abs):
+                unk.append(tnew.args[0])
+            else:
+                known.append(tnew)
+        known = Mul(*known)
+        unk = Abs(Mul(*unk), evaluate=False) if unk else S.One
+        return known * unk
+        
+        if all(arg.is_nonnegative for arg in self.args):
+            return self
+
     @classmethod
     def rewrite_from_Exp(cls, self):
         if self.arg.is_Plus:
             return cls(*(self.func(arg) for arg in self.args[0].args))
         return self
+
+    @classmethod
+    def rewrite_from_Power(cls, self):
+        if self.exp.is_Plus:
+            return cls(*(self.base ** exp for exp in self.exp.args))
+        return self
+    
+    @classmethod
+    def rewrite_from_Abs(cls, self):
+        if isinstance(self.arg, cls):
+            return cls(*(self.func(arg) for arg in self.arg.args))
+        return self
+
+    @classmethod
+    def rewrite_from_Tan(cls, self):
+        from sympy import sin, cos 
+        return cls(sin(self.arg), 1 / cos(self.arg))
+
+    @classmethod
+    def rewrite_from_LAMBDA(cls, self):
+        if isinstance(self.function, cls):
+            first, second = self.function.as_two_terms()
+            first = self.func(first, *self.limits).simplify(squeeze=True)
+            second = self.func(second, *self.limits).simplify(squeeze=True)
+             
+            function = self.function.func(first, second)
+            max_len = max(len(first.shape), len(second.shape))
+            if max_len < len(self.shape):
+                return self.func(function, *self.limits[:len(self.shape) - max_len])
+             
+            return function
+
+        return self
+
+    @classmethod
+    def rewrite_from_Sum(cls, self):
+        if isinstance(self.function, cls):
+            coefficient = []
+            factors = []
+            variables = self.variables
+            for arg in self.function.args:
+                if not arg.has(*variables):
+                    coefficient.append(arg)
+                elif arg.is_Power and arg.exp.is_Plus and any(not exp.has(*variables) for exp in arg.exp.args):
+                    base = arg.base
+                    for exp in arg.exp.args:
+                        if exp.has(*variables):
+                            factors.append(base ** exp)
+                        else:
+                            coefficient.append(base ** exp)
+                else:
+                    factors.append(arg)
+                    
+            if coefficient:
+                return cls(*coefficient, self.func(cls(*factors), *self.limits))                              
+        return self
+    
+    @classmethod
+    def rewrite_from_Piecewise(cls, self):
+        common_terms = None
+        for e, c in self.args:            
+            if isinstance(e, cls):
+                if common_terms is None:
+                    common_terms = {*e.args}
+                else:
+                    common_terms &= {*e.args}
+            else:
+                if common_terms is None:
+                    if e.is_Zero:
+                        continue
+                    else:
+                        common_terms = {e}
+                else:
+                    common_terms &= {e}
+        if common_terms:
+            args = []
+            for e, c in self.args:
+                if isinstance(e, cls):
+                    e = cls(*{*e.args} - common_terms)
+                elif e.is_Zero:
+                    ...
+                else:
+                    e = 1 
+                args.append((e, c))
+            return cls(*common_terms, self.func(*args))
+        return self
+    
+    @property
+    def dtype(self):
+        if self.is_integer:
+            from sympy import dtype
+            return dtype.integer
+        return super(Times, self).dtype()
+
+    def squeeze(self):
+        return self.func(*[t for t in self.args if not t.is_OneMatrix])
 
     
 mul = AssocOpDispatcher('mul')

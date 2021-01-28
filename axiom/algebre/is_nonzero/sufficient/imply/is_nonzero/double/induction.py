@@ -1,16 +1,16 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equal, Unequal
 from sympy import Symbol
 
 from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA, Or, Sufficient
+from sympy import LAMBDA, Or, Sufficient
 import axiom
 from sympy.functions.special.tensor_functions import KroneckerDelta
 from axiom import algebre
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@plausible
+@apply(imply=True)
 def apply(*given, n=None, m=None):
     f0, sufficient = given
     axiom.is_nonzero(f0)
@@ -24,10 +24,9 @@ def apply(*given, n=None, m=None):
     return fn
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
     m = Symbol.m(integer=True, nonnegative=True)
@@ -38,7 +37,7 @@ def prove(Eq):
     
     Eq << B[m, 0].this.definition
     
-    Eq << algebre.inequality.imply.is_zero.apply(Eq[0], var=0, simplify=False)
+    Eq << algebre.unequal.imply.is_zero.kronecker_delta.single.apply(Eq[0], simplify=False)
     
     Eq.initial_B = Eq[-1] + Eq[-2]
     
@@ -67,6 +66,8 @@ def prove(Eq):
     Eq.equality = Equal((D[m, n] - 1) * D[m, n + 1], 0, plausible=True)
     
     Eq << Eq.equality.this.lhs.args[1].args[1].definition
+    
+    Eq << Eq[-1].this.lhs.args[1].astype(Piecewise)
     
     Eq << Eq[-1].this.lhs.args[0].definition
     

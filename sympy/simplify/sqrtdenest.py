@@ -18,7 +18,7 @@ def is_sqrt(expr):
 def sqrt_depth(p):
     """Return the maximum depth of any square root argument of p.
 
-    >>> from sympy.functions.elementary.miscellaneous import sqrt
+    >>> from sympy.core.power import sqrt
     >>> from sympy.simplify.sqrtdenest import sqrt_depth
 
     Neither of these square roots contains any other square roots
@@ -51,7 +51,7 @@ def is_algebraic(p):
     Examples
     ========
 
-    >>> from sympy.functions.elementary.miscellaneous import sqrt
+    >>> from sympy.core.power import sqrt
     >>> from sympy.simplify.sqrtdenest import is_algebraic
     >>> from sympy import cos
     >>> is_algebraic(sqrt(2)*(3/(sqrt(7) + sqrt(5)*sqrt(2))))
@@ -144,7 +144,7 @@ def _sqrt_match(p):
     Examples
     ========
 
-    >>> from sympy.functions.elementary.miscellaneous import sqrt
+    >>> from sympy.core.power import sqrt
     >>> from sympy.simplify.sqrtdenest import _sqrt_match
     >>> _sqrt_match(1 + sqrt(2) + sqrt(2)*sqrt(3) +  2*sqrt(1+sqrt(5)))
     [1 + sqrt(2) + sqrt(6), 2, 1 + sqrt(5)]

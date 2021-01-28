@@ -1045,7 +1045,9 @@ class Binomial(CombinatorialFunction):
             beta = p.coeff_monomial(S.One)
             if alpha.is_number:
                 if alpha == S.One:
-                    return Interval(-beta, n - beta, integer=True)
+                    #consider binomial(2*n, n), x = n
+                    if not n._has(x):
+                        return Interval(-beta, n - beta, integer=True)
                 elif alpha == S.NegativeOne:
                     return Interval(beta - n, beta, integer=True)
         return Interval(-oo, oo, integer=True)

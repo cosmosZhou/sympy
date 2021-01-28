@@ -11,12 +11,11 @@ from sympy.core.function import _mexpand
 from sympy.core.logic import fuzzy_not
 from sympy.core.mul import expand_2arg, Mul
 from sympy.core.numbers import Rational, igcd, comp
-from sympy.core.power import Pow
+from sympy.core.power import Pow, root
 from sympy.core.relational import Eq
 from sympy.core.symbol import Dummy, Symbol, symbols
 from sympy.core.sympify import sympify
 from sympy.functions import exp, sqrt, im, cos, acos, Piecewise
-from sympy.functions.elementary.miscellaneous import root
 from sympy.ntheory import divisors, isprime, nextprime
 from sympy.polys.polyerrors import (PolynomialError, GeneratorsNeeded,
     DomainError)

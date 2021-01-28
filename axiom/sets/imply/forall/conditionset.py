@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.sets.contains import Contains
 from sympy.sets.sets import Interval
 from sympy import Symbol
@@ -9,7 +9,7 @@ from sympy.sets.conditionset import conditionset
 # P is condition set;
 
 
-@plausible
+@apply(imply=True)
 def apply(P):
     definition = P.definition
     assert definition.is_ConditionSet    
@@ -17,10 +17,9 @@ def apply(P):
     return ForAll[x:P](definition.limits[0][1])
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)

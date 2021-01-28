@@ -85,7 +85,7 @@ class RoundFunction(Function):
         return self.args[0].is_real
 
 
-class floor(RoundFunction):
+class Floor(RoundFunction):
     """
     Floor is a univariate function which returns the largest integer
     value not greater than its argument. This implementation
@@ -226,12 +226,23 @@ class floor(RoundFunction):
 
         return Lt(self, other, evaluate=False)
 
+    def _latex(self, p, exp=None):
+        tex = r"\left\lfloor{%s}\right\rfloor" % p._print(self.args[0])
+
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+
+floor = Floor
+
 @dispatch(floor, Expr)
 def _eval_is_eq(lhs, rhs): # noqa:F811
-   return is_eq(lhs.rewrite(ceiling), rhs) or \
+    return is_eq(lhs.rewrite(ceiling), rhs) or \
         is_eq(lhs.rewrite(frac),rhs)
 
-class ceiling(RoundFunction):
+
+class Ceiling(RoundFunction):
     """
     Ceiling is a univariate function which returns the smallest integer
     value not less than its argument. This implementation
@@ -375,7 +386,17 @@ class ceiling(RoundFunction):
                     return arg + (den - rem) / den
                 
         return self
-		
+
+    def _latex(self, p, exp=None):
+        tex = r"\left\lceil{%s}\right\rceil" % p._print(self.args[0])
+
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+
+ceiling = Ceiling
+        
 @dispatch(ceiling, Basic)  # type:ignore
 def _eval_is_eq(lhs, rhs): # noqa:F811
     return is_eq(lhs.rewrite(floor), rhs) or is_eq(lhs.rewrite(frac),rhs)
@@ -471,8 +492,6 @@ class frac(Function):
 
     def _eval_rewrite_as_ceiling(self, arg, **kwargs):
         return arg + ceiling(-arg)
-
-
 
     def _eval_is_finite(self):
         return True

@@ -19,9 +19,9 @@ class Determinant(Expr):
     is_complex = True
 
     def __new__(cls, mat):
-        from sympy.matrices.expressions.matexpr import Concatenate
+        from sympy.matrices.expressions.blockmatrix import BlockMatrix
         if isinstance(mat, (list, tuple)):
-            mat = Concatenate(*mat)
+            mat = BlockMatrix(*mat)
 
         mat = sympify(mat)
         assert mat.is_square, "Det of a non-square matrix"

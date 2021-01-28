@@ -223,14 +223,18 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             if definition in b:
                 return b
 
-
     @staticmethod
     def process_slice(index, self_start, self_stop):
         start, stop = index.start, index.stop
         if start is None:
-            start = self_start            
+            start = self_start
+        else:
+            start = sympify(start)
+            
         if stop is None:
             stop = self_stop
+        else:
+            stop = sympify(stop)
 
         if stop == self_stop:
             if start == self_start:
@@ -248,7 +252,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return mid        
 
     def slice(self, index, self_start, self_stop, allow_empty=False):
-        from sympy import Concatenate
+        from sympy import BlockMatrix
         mid = Symbol.process_slice(index, self_start, self_stop)
         if mid is None:
             return self
@@ -263,9 +267,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if isinstance(mid, tuple):
             start, stop = mid
             assert start < stop, "start < stop => %s" % (start < stop)
-            return Concatenate(self[self_start: start], self[start: stop], self[stop:self_stop])
+            return BlockMatrix(self[self_start: start], self[start: stop], self[stop:self_stop])
         
-        return Concatenate(self[self_start:mid], self[mid:self_stop])
+        return BlockMatrix(self[self_start:mid], self[mid:self_stop])
         
     def bisect(self, indices):
         from sympy import Union
@@ -289,7 +293,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def _dummy_eq(self, other):
         return self == other
 
-    def structure_eq(self, other):
+    def structurally_equal(self, other):
         from sympy.tensor.indexed import Slice, Indexed
         if isinstance(other, (Symbol, Indexed, Slice)):
             return self.shape == other.shape
@@ -338,6 +342,13 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def copy(self, **kwargs):
         if not kwargs:
             return self
+        
+        if 'domain' in kwargs and len(kwargs) == 1 and kwargs['domain'] is not None:
+            domain = kwargs['domain']
+            kwargs.update(self.assumptions_hashable())
+            kwargs['domain'] = domain
+            return self.func(self.name, **kwargs)        
+        
         integer, rational, real, shape, dtype = self.is_integer, self.is_rational, self.is_real, self.shape, self.etype
         kwargs['integer'] = integer
         kwargs['rational'] = rational
@@ -534,7 +545,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     @property
     def free_symbols(self):
-        return {self}
+        definition = self.definition
+        if definition is None:
+            return {self}
+        return definition.free_symbols
 
     binary_symbols = free_symbols  # in this case, not always
 
@@ -595,7 +609,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if 'domain' in self._assumptions:
             domain = self._assumptions['domain']
             if self.is_integer and domain.is_Interval and not domain.is_integer:
-                return domain.copy(integer=True)
+                domain = domain.copy(integer=True)
+            if self.shape:
+                from sympy import CartesianSpace
+                domain = CartesianSpace(domain, *self.shape)
             return domain
          
         if self.dtype.is_set:
@@ -1759,10 +1776,8 @@ class Dtype:
         if isinstance(length, (tuple, Tuple, list)):
             if not length:
                 return self
-            if len(length) == 1:
-                return DtypeVector(self, length[0])
-            return DtypeMatrix(self, length)
-        return DtypeVector(self, length)
+            return DtypeMatrix(self, tuple(length))
+        return DtypeMatrix(self, (length,))
 
     def __contains__(self, x):
         if isinstance(x, Symbol):
@@ -1816,6 +1831,7 @@ class DtypeComplex(Dtype):
     @property
     def universalSet(self):        
         return S.Complexes
+
 
 class DtypeComplexConditional(DtypeComplex):
     
@@ -2129,96 +2145,6 @@ class DtypeSet(Dtype):
         return self.etype.is_complex
 
 
-class DtypeVector(Dtype):
-        
-    @property
-    def universalSet(self):
-        from sympy import CartesianSpace
-        return CartesianSpace(self.dtype.universalSet, *self.shape)
-    
-    @property
-    def is_integer(self):
-        return self.dtype.is_integer
-    
-    @property
-    def is_rational(self):
-        return self.dtype.is_rational
-
-    @property
-    def is_real(self):
-        return self.dtype.is_real
-
-    @property
-    def is_complex(self):
-        return self.dtype.is_complex
-    
-    def as_Set(self):
-        from sympy.sets.sets import CartesianSpace
-        return CartesianSpace(self.dtype.as_Set(), self.length)
-
-    def __init__(self, dtype, length, **kwargs):
-        self.dtype = dtype
-        self.length = length
-        self.assumptions = kwargs
-
-    def __str__(self):
-        if self.assumptions:
-            return '%s[%s]%s' % (self.dtype, self.length, str(self.assumptions))
-        return '%s[%s]' % (self.dtype, self.length)
-    
-    def __getitem__(self, indices):
-        if isinstance(indices, slice):
-            start, stop = indices.start, indices.stop
-            return DtypeVector(self.dtype, stop - start)
-        else:
-            return self.dtype
-
-    def __mul__(self, length):
-        if isinstance(length, (tuple, Tuple, list)):
-            return DtypeMatrix(self.dtype, (self.length,) + length)
-        return DtypeMatrix(self, (self.length, length))
-
-    @property
-    def shape(self):
-        return (self.length,)
-
-    @property
-    def dict(self):
-        dic = self.dtype.dict
-        dic['shape'] = (self.length,)
-        dic.update(self.assumptions)
-        return dic
-
-    def __eq__(self, other):
-        return isinstance(other, DtypeVector) and self.length == other.length and self.dtype == other.dtype
-
-    def __hash__(self):
-        return hash((type(self).__name__, self.dtype, self.length))
-
-    def __call__(self, **kwargs):
-        if not kwargs:
-            return self
-        return DtypeVector(self.dtype, self.length, **kwargs)
-
-    def _has(self, pattern):
-        return self.length._has(pattern)
-
-    def _subs(self, old, new, **hints):
-        hit = False
-        dtype = self.dtype._subs(old, new)
-        if dtype is not self.dtype:
-            hit = True
-            
-        length = self.length._subs(old, new)
-        if length != self.length:
-            hit = True            
-        
-        if hit:
-            return type(self)(dtype, length)
-        
-        return self
-
-
 class DtypeMatrix(Dtype):
     
     @property
@@ -2246,34 +2172,35 @@ class DtypeMatrix(Dtype):
         from sympy.sets.sets import CartesianSpace
         return CartesianSpace(self.dtype.as_Set(), *self.lengths)
 
-    def __init__(self, dtype, shape):
+    def __init__(self, dtype, shape, **kwargs):
         self.dtype = dtype
         self.lengths = tuple(shape)
+        self.assumptions = kwargs
 
     @property
     def shape(self):
         return self.lengths
 
     def __str__(self):
+        if self.assumptions:
+            return '%s[%s]%s' % (self.dtype, ', '.join(str(s) for s in self.shape), str(self.assumptions))
         return '%s[%s]' % (self.dtype, ', '.join(str(length) for length in self.shape))
     
     def __getitem__(self, indices):
         if isinstance(indices, (tuple, Tuple, list)):
             diff = len(self.shape) - len(indices)
-            if diff == 0:
-                return self.dtype
-            if diff == 1:
-                return DtypeVector(self.dtype, self.shape[-1])
-            return DtypeMatrix(self.dtype, self.shape[-diff:])
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
             shape = (stop - start,) + self.shape[1:]
             return Basic.__new__(DtypeMatrix, self.dtype, shape)
         else:
             diff = len(self.shape) - 1
-            if diff == 1:
-                return DtypeVector(self.dtype, self.shape[-1])
-            return DtypeMatrix(self.dtype, self.shape[-diff:])
+            
+        if diff == 1:
+            return DtypeMatrix(self.dtype, (self.shape[-1],))
+        if diff == 0:
+            return self.dtype
+        return DtypeMatrix(self.dtype, self.shape[-diff:])
 
     def __mul__(self, length):
         if isinstance(length, (tuple, Tuple, list)):
@@ -2285,6 +2212,7 @@ class DtypeMatrix(Dtype):
     def dict(self):
         dic = self.dtype.dict
         dic['shape'] = self.shape
+        dic.update(self.assumptions)
         return dic
 
     def __eq__(self, other):
@@ -2295,6 +2223,32 @@ class DtypeMatrix(Dtype):
     
     def transpose(self):         
         return DtypeMatrix(self.dtype, (*self.lengths[:-2], self.lengths[-1], self.lengths[-2]))
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeMatrix(self.dtype, self.lengths, **kwargs)
+
+    def _has(self, pattern):
+        return any(l._has(pattern) for l in self.lengths)
+
+    def _subs(self, old, new, **hints):
+        hit = False
+        dtype = self.dtype._subs(old, new)
+        if dtype is not self.dtype:
+            hit = True
+            
+        lengths = []
+        for l in self.lengths:
+            _l = l._subs(old, new)
+            if _l != l:
+                hit = True            
+            lengths.append(_l)
+            
+        if hit:
+            return type(self)(dtype, tuple(lengths))
+        
+        return self
 
 
 dtype = Dtype()

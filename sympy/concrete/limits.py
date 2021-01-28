@@ -29,7 +29,7 @@ def limits_update(limits, *args):
             new = old
 
         if isinstance(domain, Interval) and (not new.is_integer) == (not domain.is_integer):
-            limit = (new, domain.min(), domain.max())
+            limit = (new, domain.min(), domain.max() + 1)
         elif isinstance(domain, (tuple, list)):
             limit = (new, *domain)
         else:
@@ -116,6 +116,25 @@ def limits_intersect(limits, _limits, clue=None):
             _limits = type(limits)(_limits)
         return limits + _limits
 
+def limits_complement(limits, _limits):
+    new_limits = []
+    for limit, _limit in zip(limits, _limits):
+        if len(limit) == len(_limit) == 3:
+            x, a, b = limit
+            _x, _a, _b = _limit
+            if x == _x:
+                if a == _a:
+                    if _b <= b:
+                        new_limits.append((x, _b, b))
+                    else:
+                        return
+                else:
+                    return
+            else:
+                return
+        else:
+            return 
+    return new_limits
 
 def limits_empty(limits):
     for _, *ab in limits:
@@ -164,7 +183,7 @@ def limits_sort(limits):
     for x in g:
         domain = forall[x]
         if domain.is_Interval and domain.is_integer:
-            limit = (x, domain.min(), domain.max())
+            limit = (x, domain.min(), domain.max() + 1)
         else:
             limit = (x, domain)
         limits.append(limit)
@@ -177,13 +196,16 @@ def limits_condition(limits):
     eqs = []
     from sympy.sets.contains import Contains
     limitsdict = limits_dict(limits)
-    for x, domain in limitsdict.items():
-        if isinstance(domain, list):
-            continue
-        if domain.is_set:
-            eqs.append(Contains(x, domain))
-        else:
-            eqs.append(domain)
+    for x, cond in limitsdict.items():
+        if isinstance(cond, list):
+            if not cond:
+                continue
+            cond, baseset = cond
+            cond &= Contains(x, baseset)
+        elif cond.is_set:
+            cond = Contains(x, cond)
+        
+        eqs.append(cond)
     return And(*eqs)
 
 '''

@@ -1,17 +1,10 @@
-from sympy.core.relational import Equality
-from axiom.utility import check, plausible
-
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
-from sympy import LAMBDA
-from sympy.concrete.products import MatProduct
-from axiom.discrete.matrix import elementary
-from sympy import Symbol
-from axiom import algebre
+from axiom import algebre, discrete
 
 
-@plausible
+@apply(imply=True)
 def apply(x, d, w=None):
     n = x.shape[0]
     m = d.shape[0]
@@ -21,7 +14,7 @@ def apply(x, d, w=None):
     k = Symbol.k(integer=True)
 
     if w is None:
-        w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
@@ -30,7 +23,7 @@ def apply(x, d, w=None):
     return Equality(LAMBDA[k:n](x[(LAMBDA[k:n](k) @ multiplier)[k]]), x @ multiplier)
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
     assert n.is_integer    
@@ -52,21 +45,22 @@ def prove(Eq):
     Eq.initial = Eq.hypothesis.subs(m, 1)
     
     d = Eq[1].rhs.args[1].function.indices[1].base
-    Eq << elementary.swap.identity.apply(x, w, left=False, reference=None).subs(i, 0).subs(j, d[0])
+    Eq << discrete.matrix.elementary.swap.identity.apply(x, w, left=False, reference=None).subs(i, 0).subs(j, d[0])
     
     Eq.induction = Eq.hypothesis.subs(m, m + 1)
     
-    Eq << elementary.swap.identity_general.apply(x, LAMBDA[k](Eq[1].lhs.function.indices[0]).simplify(), w)
+    Eq << discrete.matrix.elementary.swap.identity_general.apply(x, LAMBDA[k](Eq[1].lhs.function.indices[0]).simplify(), w)
     
     Eq << Eq[-1].subs(i, m).subs(j, d[m])
     
-    Eq << Eq.hypothesis.reference((k, 0, n - 1))
+    Eq << algebre.equal.imply.equal.lamda.apply(Eq.hypothesis, (k, 0, n))
     
     Eq << Eq[-1].subs(Eq[1])
     
     Eq << Eq.induction.induct()
 
-    Eq << algebre.equality.sufficient.imply.equality.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
+
     
 if __name__ == '__main__':
     prove(__file__)

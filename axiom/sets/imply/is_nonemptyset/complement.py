@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality, Unequal
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.sets import Union, Intersection
 from sympy import Symbol
@@ -14,16 +14,15 @@ from sympy.concrete.forall import ForAll
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@plausible
+@apply(imply=True)
 def apply(a):
     U = a.universalSet
     return Unequal(U - a.set, a.emptySet)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True, given=True)
     x = Symbol.x(complex=True, shape=(n,), given=True)

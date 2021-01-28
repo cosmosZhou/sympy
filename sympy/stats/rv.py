@@ -27,7 +27,7 @@ from sympy.external import import_module
 from sympy.utilities.miscellany import filldedent
 import warnings
 from sympy.core.symbol import dtype
-from sympy.matrices.expressions.matexpr import Concatenate
+from sympy.matrices.expressions.blockmatrix import BlockMatrix
 # x = Symbol('x')
 
 
@@ -228,9 +228,9 @@ class SinglePSpace(PSpace):
         if distribution is None:
             value = symbol
             if value.shape:
-                symbol = value.copy(domain=value.domain_assumed)
+                symbol = value.copy(domain=value.domain_assumed, random=None)
             else:
-                symbol = value.copy(nonnegative=value.is_nonnegative, domain=value.domain)
+                symbol = value.copy(nonnegative=value.is_nonnegative, domain=value.domain, random=None)
             distribution = value.distribution
         else:
             if isinstance(symbol, str):
@@ -802,7 +802,7 @@ def given(expr, condition, **kwargs):
     """
     from sympy.stats.symbolic_probability import Conditioned
     if isinstance(expr, list):        
-        return Conditioned(Concatenate(*expr), condition)
+        return Conditioned(BlockMatrix(*expr), condition)
         
     if not condition.is_random or pspace_independent(expr, condition):
         return expr

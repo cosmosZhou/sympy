@@ -1,12 +1,10 @@
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, Subset
-from sympy import Symbol
+from axiom.utility import prove, apply
+from sympy import *
 
-
+from axiom import sets
 # given: A in B 
 # => {A} subset B
-@plausible
+@apply(imply=True)
 def apply(*given):
     contains, subset = given
     if contains.is_Subset:
@@ -18,21 +16,21 @@ def apply(*given):
     return Contains(x, B)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(complex=True, shape=(n,))
+    x = Symbol.x(complex=True, shape=(n,), given=True)
     A = Symbol.A(etype=dtype.complex * n)
-    B = Symbol.B(etype=dtype.complex * n)
+    B = Symbol.B(etype=dtype.complex * n, given=True)
     Eq << apply(Contains(x, A), Subset(A, B))
     
-#     Eq <<= Eq[0] & Eq[1]
-    Eq <<= Eq[1] & Eq[0]
+    Eq << sets.contains.imply.contains.amplify.apply(Eq[0], B)
     
+    Eq << sets.subset.imply.equal.union.apply(Eq[1])
+    
+    Eq << Eq[-2].subs(Eq[-1])
 
+    
 if __name__ == '__main__':
     prove(__file__)
 

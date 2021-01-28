@@ -1,35 +1,33 @@
-from axiom.utility import plausible
-from sympy.logic.boolalg import Or
+from axiom.utility import prove, apply
+from sympy.logic.boolalg import Or, And
 from sympy import Symbol
 from sympy.core.function import Function
 import axiom
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains, NotContains
-from axiom import sets
+from axiom import algebre
 
 def expr_cond_pair(cls, or_eqs, wrt, reverse=None):
     expr = []
     cond = []
     for eq in or_eqs:
         and_eqs = axiom.is_And(eq)
-        eq, condition = and_eqs
-        if not isinstance(eq, cls):
-            condition, eq = and_eqs         
+        
+        for i, eq in enumerate(and_eqs):
+            if isinstance(eq, cls):
+                if wrt == eq.rhs:
+                    expr.append(eq.lhs)
+                    break         
+                elif reverse and wrt == eq.lhs:
+                    expr.append(eq.rhs)
+                    break
+                    
+        assert eq is and_eqs[i]
         assert isinstance(eq, cls)
-        if wrt == eq.rhs:
-            expr.append(eq.lhs)
-        elif reverse and wrt == eq.lhs:
-            expr.append(eq.rhs)
-        else:
-            assert isinstance(cond, cls)
-            if wrt == cond.rhs:
-                expr.append(cond.lhs)
-            elif reverse and wrt == cond.lhs:
-                expr.append(cond.rhs)
-            else:
-                return
-            condition = eq
+        del and_eqs[i]
+        condition = And(*and_eqs)
+        
         for c in cond:
             assert (condition & c).is_BooleanFalse
 
@@ -38,7 +36,7 @@ def expr_cond_pair(cls, or_eqs, wrt, reverse=None):
     ec[-1][1] = True
     return ec
 
-@plausible
+@apply(imply=True)
 def apply(given, wrt=None):
     or_eqs = axiom.is_Or(given)
     
@@ -46,10 +44,9 @@ def apply(given, wrt=None):
     return Contains(Piecewise(*expr_cond_pair(Contains, or_eqs, wrt)).simplify(), wrt)            
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
@@ -65,7 +62,7 @@ def prove(Eq):
     
     Eq <<= ~Eq[-2], ~Eq[-1]
     
-    Eq <<= Eq[-2].apply(sets.notcontains.notcontains.imply.et, invert=True, swap=True), Eq[-1].apply(sets.contains.notcontains.imply.et) 
+    Eq <<= Eq[-2].apply(algebre.condition.condition.imply.et, invert=True, swap=True), Eq[-1].apply(algebre.condition.condition.imply.et, swap=True) 
     
     Eq <<= Eq[-2] & Eq[0], Eq[-1] & Eq[0]
     

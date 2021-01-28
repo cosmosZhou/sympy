@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy import Exists
 from sympy.core.function import Function
@@ -7,19 +7,16 @@ from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     function, *limits = axiom.is_Exists(given)
     variable = axiom.limits_are_Boolean(limits)
     return Exists[variable]((function & given.limits_condition).simplify())
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
-    from axiom.sets.contains.imply.equality.piecewise.expr_swap import bool
+    from sympy import Boole
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
     f = Function.f(nargs=(), shape=(), integer=True)
@@ -35,10 +32,12 @@ def prove(Eq):
     Eq << Eq[-1].this.limits[1][1].definition
     
     Eq << sets.exists.imply.exists_et.multiple_variables.apply(Eq[-2], simplify=False)
-    Eq << bool(Eq[-1].function).this.arg.args[1].rhs.definition
+    Eq << Boole(Eq[-1].function).this.arg.args[1].rhs.definition
     Eq << Eq[-1].this.rhs.arg.args[2].rhs.definition
     
-    Eq << algebre.equality.exists.imply.exists.apply(Eq[-1], Eq[-3])
+    Eq << algebre.equal.imply.equivalent.apply(Eq[-1])
+    
+    Eq << algebre.equivalent.condition.imply.condition.apply(Eq[-1], Eq[-4])
 
     
 if __name__ == '__main__':

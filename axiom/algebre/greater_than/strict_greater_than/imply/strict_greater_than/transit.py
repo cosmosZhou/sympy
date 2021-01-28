@@ -1,10 +1,10 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import GreaterThan, StrictGreaterThan
 from sympy import Symbol
 import axiom
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     b_greater_than_x, x_greater_than_a = given
     b, x = axiom.is_GreaterThan(b_greater_than_x)    
@@ -13,10 +13,9 @@ def apply(*given):
     return StrictGreaterThan(b, a)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     a = Symbol.a(real=True)
     x = Symbol.x(real=True)

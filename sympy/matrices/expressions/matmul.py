@@ -5,7 +5,8 @@ from sympy.functions import adjoint
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
 from sympy.matrices.expressions.matexpr import (MatrixExpr, ShapeError,
-        Identity, ZeroMatrix, GenericIdentity, Concatenate)
+        Identity, ZeroMatrix, GenericIdentity)
+from sympy.matrices.expressions.blockmatrix import BlockMatrix
 from sympy.matrices.expressions.matpow import MatPow
 from sympy.matrices.matrices import MatrixBase
 from sympy.core.logic import fuzzy_and
@@ -70,11 +71,16 @@ class MatMul(MatrixExpr):
                         matrices[-1] = last.func(last.base, last.exp + 1)
                         return
                 elif last == mat:
-                    if mat._eval_inverse() == last:
-                        matrices.pop()
-                    else:
-                        matrices[-1] = MatPow(last, 2)
-                    return
+                    if mat.is_square:
+                        if mat._eval_inverse() == last:
+                            matrices.pop()
+                        else:
+                            matrices[-1] = MatPow(last, 2)
+                        return
+            
+            if mat.is_ZeroMatrix:
+                from sympy import S
+                coeffs.append(S.Zero)
             
             matrices.append(mat)
                 
@@ -329,12 +335,6 @@ class MatMul(MatrixExpr):
         if this != self:
             return this
         
-        from sympy import exp
-        if len(self.args) == 2 and all(isinstance(arg, exp) for arg in self.args):
-            if len(self.args[0].shape) < len(self.args[1].shape):
-                from sympy.concrete import summations
-                return summations.Sum(exp(self.args[0].arg + self.args[1].arg.T))
-            
         this = self.simplifyProduct()
         if this is not self:
             return this
@@ -342,10 +342,8 @@ class MatMul(MatrixExpr):
         return self
 
     def simplifyProduct(self):
-        from sympy.concrete.products import MatProduct        
-        
         for i, prod in enumerate(self.args):
-            if isinstance(prod, MatProduct):
+            if prod.is_MatProduct:
                 before = self.func(*self.args[:i])
                 after = self.func(*self.args[i + 1:])
                 
@@ -365,13 +363,16 @@ class MatMul(MatrixExpr):
         from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.concrete.summations import Sum
         if len(self.args) > 2:
-            return MatrixExpr.expand(self)
+            matmul = self.func(*self.args[:-1]).expand(free_symbol=free_symbol, deep=deep) @ self.args[-1]
+            if matmul.is_MatMul:
+                matmul = matmul.expand(free_symbol=free_symbol, deep=deep)            
+            return matmul
         
         A, B = self.args
         if A.is_MatPow:
             return self
-        if A.is_Concatenate:
-            if B.is_Concatenate and len(A.shape) == 1:
+        if A.is_BlockMatrix:
+            if B.is_BlockMatrix and len(A.shape) == 1:
                 if len(A.args) == len(B.args):
                     sgm = None
                     for a, b in zip(A.args, B.args):
@@ -397,7 +398,7 @@ class MatMul(MatrixExpr):
         if A.is_Transpose:
             if B.is_Transpose:
                 return (B.arg @ A.arg).expand().T
-            if A.arg.is_Concatenate and B.is_Concatenate:
+            if A.arg.is_BlockMatrix and B.is_BlockMatrix:
                 A_T = A.arg
                 if len(A_T.args) == len(B.args):
                     B_T = B._eval_transpose()
@@ -422,7 +423,7 @@ class MatMul(MatrixExpr):
                                 product = (a.T @ b).simplify()
                                 if product.is_MatMul and len(product.args) == 2:
                                     X = product.args[1]
-                                    if X.is_Transpose and X.arg.is_Concatenate:
+                                    if X.is_Transpose and X.arg.is_BlockMatrix:
                                         product = product.expand()
                             else:
                                 return self
@@ -433,10 +434,10 @@ class MatMul(MatrixExpr):
                     return sgm
             return self
             
-        if B.is_Concatenate:
+        if B.is_BlockMatrix:
             return self     
              
-        if B.is_Transpose and B.arg.is_Concatenate:
+        if B.is_Transpose and B.arg.is_BlockMatrix:
             return (B.arg @ A.T).expand().T
               
         if A.is_MatProduct:
@@ -479,16 +480,22 @@ class MatMul(MatrixExpr):
                 assert i != k                            
                 return LAMBDA(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
         else:
-#             print('A.shape =', A.shape)
+
             if len(B.shape) > 1:
                 if B.shape[-1].is_Integer:
                     k_limit = generate_k_limit(A, B, **kwargs)
                     k, *_ = k_limit
   
-                    args = []
-                    for j in range(B.shape[-1]):
-                        args.append(Sum(A[k] * B[k, j], k_limit).simplify())
-                    return Concatenate(*args)
+                    args = []                    
+                    if A.shape[0].is_Integer:
+                        for j in range(B.shape[-1]):
+                            args.append(Sum(A[k] * B[k, j], k_limit).doit())
+                        from sympy import Matrix
+                        return Matrix(args)
+                    else:
+                        for j in range(B.shape[-1]):
+                            args.append(Sum(A[k] * B[k, j], k_limit).simplify())
+                        return BlockMatrix(*args)
                 else:   
 #                     print('B.shape =', B.shape)                 
                     j_limit = B.generate_int_limit(0, **kwargs)
@@ -628,10 +635,62 @@ class MatMul(MatrixExpr):
 
     @classmethod
     def rewrite_from_Sum(cls, self):
-        first, second = self.function.as_two_terms() 
-        from sympy.concrete.expr_with_limits import LAMBDA
-        return LAMBDA(first, *self.limits) @ LAMBDA(second, *self.limits)
+        first, second = self.function.as_two_terms()
+        if self.limits:
+            from sympy.concrete.expr_with_limits import LAMBDA
+            return LAMBDA(first, *self.limits).simplify() @ LAMBDA(second, *self.limits).simplify()
+        else:
+            return first @ second
 
+    @classmethod
+    def rewrite_from_ReducedSum(cls, self):
+        first, second = self.arg.as_two_terms()
+        return first @ second
+
+    @classmethod
+    def rewrite_from_LAMBDA(cls, self):
+        if isinstance(self.function, cls):
+            if len(self.function.args) == 2:
+                first, second = self.function.args
+                if second._has(*self.variables):
+                    if not first._has(*self.variables):
+                        if len(second.shape) == 1:                            
+                            n = second.shape[0]
+                            j = self.generate_free_symbol(excludes=self.variables_set, integer=True)                                                    
+                            second = self.func(second[j], *self.limits, (j, 0, n)).simplify()
+                            return first @ second
+                    else:
+                        ...                                        
+                else:
+                    first = self.func(first, *self.limits).simplify()
+                    return first @ second
+
+        return self
+    
+    def _detect_multiple_products(self):
+        product = None
+        function = []
+        limits = None
+        coeff = []
+        for i, arg in enumerate(self.args):
+            if arg.is_MatProduct:
+                product = arg
+                break      
+                      
+        if product is None:
+            return 
+        
+        if i > 0:
+            before = self.func(*self.args[:i])
+        else:
+            before = None
+            
+        if i < len(self.args) - 1:
+            after = self.func(*self.args[i + 1:])
+        else:
+            after = None
+            
+        return before, product, after
 
     
 def validate(*matrices):

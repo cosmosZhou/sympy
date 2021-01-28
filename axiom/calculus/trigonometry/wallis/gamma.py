@@ -1,30 +1,26 @@
-
+from sympy import Symbol, Interval, S
 from sympy.core.relational import Equality
-from sympy.core.singleton import S
 from sympy.functions.elementary.trigonometric import cos, sin
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.sympify import sympify
 from sympy.functions.special.gamma_functions import gamma
 from sympy.integrals.integrals import Integral
-import axiom
-from sympy import Symbol
-from axiom import algebre
+
+from axiom import algebre, calculus
 
 
-@plausible
+@apply(imply=True)
 def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)
 
     x = Symbol.x(real=True)
-    return Equality(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)), 
+    return Equality(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
                     gamma(m / 2) * gamma(n / 2) / (2 * gamma((m + n) / 2)))
 
 
-from axiom.utility import check
-
-@check
-def prove(Eq, wolfram=None):
+@prove
+def prove(Eq):
     m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
 
@@ -34,13 +30,13 @@ def prove(Eq, wolfram=None):
 
     Eq.one = Eq[0].subs(m, 1)
 
-    Eq << axiom.calculus.trigonometry.sine.wallis.apply(n)
+    Eq << calculus.trigonometry.sine.wallis.apply(n)
 
     Eq.induction = Eq[0].subs(m, m + 2)
     
     Eq << Eq.induction.this.lhs.function.expand()
 
-    Eq << Eq[-1].this.lhs.by_parts(u=cos(x) ** m, wolfram=wolfram)
+    Eq << Eq[-1].this.lhs.apply(calculus.integral.by_parts, u=cos(x) ** m)
 
     Eq << Eq[-1] / (m / n)
 
@@ -52,13 +48,18 @@ def prove(Eq, wolfram=None):
 
     Eq.two = Eq[0].subs(m, 2)
 
-    Eq << Eq.two.this.lhs.doit(manul=True, wolfram=wolfram)
+    t = Symbol.t(domain=Interval(0, 1)) 
+    Eq << Eq.two.this.lhs.limits_subs(sin(x), t)
+    
+    Eq << calculus.integral.power.apply(n - 1, b=1, x=t)
 
+    Eq << Eq[-2] - Eq[-1]
+    
     Eq << Eq[-1].this.rhs.expand(func=True)
     
     Eq << Eq.induction.induct(imply=True)
     
-    Eq << algebre.equality.equality.sufficient.imply.equality.double.induction.apply(Eq.one, Eq.two, Eq[-1], n=n, m=m, start=1)
+    Eq << algebre.equal.equal.sufficient.imply.equal.double.induction.apply(Eq.one, Eq.two, Eq[-1], n=n, m=m, start=1)
    
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy import Symbol
 
@@ -11,7 +11,7 @@ from sympy.matrices.expressions.matexpr import ZeroMatrix
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     or_eqs = axiom.is_Or(given)
     
@@ -25,10 +25,9 @@ def apply(given):
     return Equality(mul, zero)            
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)

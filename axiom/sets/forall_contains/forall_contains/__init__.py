@@ -1,2 +1,2 @@
 from . import imply
-from . import forall_equality
+from . import forall_equal

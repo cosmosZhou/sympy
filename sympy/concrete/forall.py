@@ -4,6 +4,7 @@ from sympy.concrete.conditional_boolean import ConditionalBoolean
 from sympy.core.sympify import sympify
 from sympy.sets.sets import FiniteSet
 
+
 class ForAll(ConditionalBoolean):
     """
     ForAll[p] q <=> !p | q
@@ -29,40 +30,9 @@ class ForAll(ConditionalBoolean):
             return function.copy(**assumptions)
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
-    def forall(self, *limits, simplify=True):
-        limits_dict = self.limits_dict
-        if len(limits) == 1:
-            x, *args = limits[0]
-            if x in self.variables_set:
-                x_domain = limits_dict[x]
-        
-                if len(args) == 2:
-                    domain = Interval(*args, integer=x.is_integer)
-                else:
-                    domain = args[0]
-                    if not domain.is_set:
-                        domain = x.domain_conditioned(domain)
-        
-                if isinstance(x_domain, list) and not isinstance(domain, list) or domain in x_domain and x_domain not in domain:
-                    limits = self.limits_update({x : domain})
-                    function = self.function
-                    _x = x.copy(domain=domain)
-                    function = function._subs(x, _x)
-                    function = function._subs(_x, x)
-                    self = self.func(function, *limits, given=self)
-                    if simplify:
-                        self = self.simplify()
-                    return self
-        
-                return self
-                
-        return ConditionalBoolean.forall(self, *limits, simplify=simplify)
-
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
             return ConditionalBoolean.subs(self, *args, **kwargs)
-        if len(args) != 2:
-            return Expr.subs(self, *args, **kwargs)
         old, new = args
         new = sympify(new)        
         if old in self.variables:
@@ -74,7 +44,7 @@ class ForAll(ConditionalBoolean):
                 if b.is_set:
                     domain = b & old.domain_conditioned(a)
                 else:
-                    domain = Interval(a, b, integer=wrt.is_integer)
+                    domain = Interval(a, b, right_open=wrt.is_integer, integer=wrt.is_integer)
                             
             eqs = []
             if not domain.is_set:
@@ -99,24 +69,6 @@ class ForAll(ConditionalBoolean):
                 return self.func(Or(*eqs), *limits, given=self)
             else:
                 return Or(*eqs, given=self).simplify()
-
-        if self.function.is_Exists:
-            exists = self.function.limits_dict
-            hit = False
-            if old in exists:
-                function = self.function.subs(old, new)
-                hit = True                
-            elif old.is_Slice:
-                from sympy import Matrix
-                old = old.astype(Matrix)
-                if old.is_DenseMatrix:
-                    old = Tuple(*old._mat)                    
-                    if old in exists or all(sym in exists for sym in old):
-                        hit = True
-            if hit:
-                function = self.function.subs(old, new)
-                if function.clue == 'imply':                                        
-                    return self.func(function, *self.limits, imply=self)
                 
         return ConditionalBoolean.subs(self, *args, **kwargs)
         
@@ -141,7 +93,7 @@ class ForAll(ConditionalBoolean):
                 if _needsToDelete:
                     needsToDelete = True
                     domain = limits_dict[x]
-                    if domain.is_boolean:
+                    if not isinstance(domain, list) and domain.is_boolean:
                         free_symbols = domain.free_symbols & function.free_symbols
                         if free_symbols:
                             free_symbols = {sym for sym in free_symbols if not sym.is_given}
@@ -167,7 +119,7 @@ class ForAll(ConditionalBoolean):
 
             return function.copy(equivalent=self)
         
-    def simplify(self, **kwargs):
+    def simplify(self, local=None, **kwargs):
         deletes = []
         for i in range(len(self.limits) - 1, -1, -1):
             x, *ab = self.limits[i]
@@ -180,7 +132,7 @@ class ForAll(ConditionalBoolean):
                 a, b = ab
                 if b.is_set:
                     continue
-                domain = Interval(a, b, integer=x.is_integer)
+                domain = Interval(a, b, right_open=True, integer=x.is_integer)
                 
             if self.function._has(x) and domain.is_set:
                 _eval_domain_defined = self.function.domain_defined(x)
@@ -210,6 +162,9 @@ class ForAll(ConditionalBoolean):
             if limits:
                 return self.func(self.function, *limits, equivalent=self).simplify()
 
+            if local:
+                limits = [(x,) for x, *_ in self.limits if self.function._has(x)]
+                return self.func(self.function, *limits, equivalent=self)
             return self.function.copy(equivalent=self)
 
         this = self.function.func.simplify_ForAll(self, *self.args)
@@ -291,7 +246,7 @@ class ForAll(ConditionalBoolean):
                                 return self.func(self.function, (i, domain))
                             domain = A
                             if isinstance(domain, Interval) and domain.is_integer:
-                                return self.func(self.function, (i, domain.min(), domain.max()))
+                                return self.func(self.function, (i, domain.min(), domain.max() + 1))
                             return self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
@@ -330,7 +285,7 @@ class ForAll(ConditionalBoolean):
                     if b.is_set:
                         limit = var.domain_latex(a, baseset=b)
                     else:
-                        limit = var.domain_latex(Interval(*args, integer=var.is_integer))
+                        limit = var.domain_latex(Interval(*args, right_open=var.is_integer, integer=var.is_integer))
 
                 limits.append(limit)
 
@@ -468,6 +423,63 @@ class ForAll(ConditionalBoolean):
                         return self.func(self.function, *limits, equivalent=[self, eq]).simplify()                        
                     
         return ConditionalBoolean.__and__(self, eq)
+
+    def apply(self, axiom, *args, **kwargs):
+        for arg in args:
+            if isinstance(arg, tuple):
+                x, *_ = arg
+                from sympy import Basic
+                if isinstance(x, Basic) and x.is_symbol:
+                    if x in self.free_symbols:
+                        return self
+                    elif x in self.variables_set:
+                        index = self.variables.index(x)
+                        x, domain = Tuple.as_setlimit(arg)
+                        x, domain_given = Tuple.as_setlimit(self.limits[index])
+                        if domain.is_set and domain_given.is_set:
+                            if domain in domain_given:
+                                ...
+                            else:
+                                print("variables' are beyond the bound given in ForAll context!")
+                                return self
+        
+        return ConditionalBoolean.apply(self, axiom, *args, **kwargs)
+
+    def split(self, *args, **kwargs):
+        arr = self.function.split(*args, **kwargs)
+        if isinstance(arr, list):
+            clue = None
+            for eq in arr:
+                if eq.given is None:
+                    if eq.equivalent is None:
+                        assert eq.imply is not None
+                        if clue is None:
+                            clue = 'imply'
+                            self.function.derivative = None 
+                        eq.imply = None
+                        continue
+                    if eq.equivalent.given is None:
+                        print('eq.equivalent.given is None')
+                    else:
+                        eq.equivalent.given = None
+                        eq.equivalent = None
+                else:
+                    eq.given = None
+                    if clue is None:
+                        clue = 'given'
+                assert eq.equivalent is None 
+            eqs = [self.func(eq, *self.limits, **{clue: self}) for eq in arr]
+            if kwargs.get('simplify', True):
+                eqs = [eq.simplify() for eq in eqs]
+            self.derivative = eqs
+            return eqs
+        elif isinstance(arr, tuple):
+            for eq in arr:
+                assert eq.parent is not None
+                eq.parent = None
+
+            return [self.func(eq, *self.limits, parent=self).simplify() for eq in arr]
+        return self
 
 
 from sympy.concrete.limits import *

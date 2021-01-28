@@ -162,7 +162,8 @@ class MatrixExpr(Expr):
         ...
 
     def _eval_power(self, exp):
-        return MatPow(self, exp)
+#         return MatPow(self, exp)
+        ...
 
     def _eval_simplify(self, **kwargs):
         if self.is_Atom:
@@ -229,9 +230,8 @@ class MatrixExpr(Expr):
                 (0 <= j) != False and (j < self.cols) != False)
 
     def __getitem__(self, key):
-        from sympy.matrices.expressions.slice import MatrixSlice
-        if not isinstance(key, tuple) and isinstance(key, slice):            
-            return MatrixSlice(self, key, (0, None, 1))
+        if not isinstance(key, tuple) and isinstance(key, slice):
+            return self._entry(key)
         if isinstance(key, tuple): 
             if len(key) == 1:
                 key = key[0]
@@ -787,9 +787,8 @@ class Identity(MatrixExpr):
     """
     is_upper = True
     is_lower = True
-    
+    is_singular = False
     is_Identity = True
-    is_ElementaryMatrix = True
 #     is_zero = False
 #     def __new__(cls, *args):
 #         return super(Identity, cls).__new__(cls, args)
@@ -840,8 +839,8 @@ class Identity(MatrixExpr):
     def _entry(self, i, j=None, **kwargs):
         if j is None:
             from sympy.concrete.expr_with_limits import LAMBDA
-            j = self.generate_free_symbol(integer=True)
-            return LAMBDA(KroneckerDelta(i, j), (j, 0, self.n - 1))
+            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+            return LAMBDA[j:self.n](KroneckerDelta(i, j))
         else:
             eq = Eq(i, j)
             if eq is S.true:
@@ -907,7 +906,6 @@ class ZeroMatrix(MatrixExpr):
     >>> Z*A.T
     0
     """
-    is_ZeroMatrix = True
     is_zero = True
     
     def __new__(cls, *shape):
@@ -941,8 +939,20 @@ class ZeroMatrix(MatrixExpr):
         return self
 
     def _entry(self, i, j=None, **kwargs):
-        if j is None and len(self.shape) > 1:
-            return self.func(self.shape[1])            
+        if j is None:
+            if len(self.shape) > 1:
+                return self.func(self.shape[1])
+            else:
+                return S.Zero
+        elif isinstance(i, slice):
+            if isinstance(j, slice):
+                raise Exception('unimplemented slice object %s' % i)
+            else:
+                start, stop = i.start, i.stop
+                if start is None:
+                    if stop is None:
+                        return self.func(self.shape[0])
+            raise Exception('unimplemented slice object %s' % i)
         return S.Zero
 
     def __nonzero__(self):
@@ -962,11 +972,28 @@ class ZeroMatrix(MatrixExpr):
     def _sympystr(self, p):
         return "0"
 
-    def __rmul__(self, other):
-        if len(other.shape) > len(self.shape):
+    def __rmul__(self, other):        
+        if isinstance(other, Basic) and len(other.shape) > len(self.shape):
             return self.func(*other.shape)
         return self
 
+    def __mul__(self, lhs):
+        if isinstance(lhs, Basic) and len(lhs.shape) > len(self.shape):
+            return self.func(*lhs.shape)
+        return self
+    
+    def __add__(self, other):
+        if len(other.shape) < len(self.shape):
+            return OneMatrix(*self.shape) * other        
+        return other
+
+    def __radd__(self, other):
+        if len(other.shape) < len(self.shape):
+            return OneMatrix(*self.shape) * other        
+        return other
+    
+    def doit(self, **hints):
+        return self
     
 class GenericZeroMatrix(ZeroMatrix):
     """
@@ -1009,9 +1036,10 @@ class OneMatrix(MatrixExpr):
     Matrix whose all entries are ones.
     """
 
-    def __new__(cls, m, n):
-        obj = super(OneMatrix, cls).__new__(cls, m, n)
-        return obj
+    def __new__(cls, *shape):
+        if not shape:
+            return S.One
+        return super(OneMatrix, cls).__new__(cls, *shape)
 
     @property
     def shape(self):
@@ -1037,10 +1065,46 @@ class OneMatrix(MatrixExpr):
     def conjugate(self):
         return self
 
-    def _entry(self, i, j, **kwargs):
+    def _entry(self, i, j=None, **kwargs):
+        if isinstance(i, slice):
+            if isinstance(j, slice):
+                raise Exception('unimplemented slice object %s' % j)
+            else:
+                start, stop = i.start, i.stop
+                if start is None:
+                    if stop is None:
+                        return self.func(self.shape[0])
+                raise Exception('unimplemented slice object %s' % j)        
         return S.One
 
+    def _latex(self, p):
+        return r"\mathbf{1}"
+#         return r"\mathbb{0}" if p._settings['mat_symbol_style'] == 'plain' else r"\mathbf{0}"
 
+    def _sympystr(self, p):
+        return "1"
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.integer
+
+    def __mul__(self, rhs):
+        if len(rhs.shape) >= len(self.shape):
+            return rhs
+        return MatrixExpr.__mul__(self, rhs)
+    
+    def __rmul__(self, lhs):
+        if len(lhs.shape) >= len(self.shape):
+            return lhs
+        return MatrixExpr.__mul__(self, lhs)
+    
+    def _eval_power(self, exp):
+        return self
+    
+    def doit(self, **hints):
+        return self
+    
 def matrix_symbols(expr):
     return [sym for sym in expr.free_symbols if sym.is_Matrix]
 
@@ -1200,420 +1264,8 @@ def _make_matrix(x):
     return ImmutableDenseMatrix([[x]])
 
 
-class Concatenate(MatrixExpr):
-    is_Concatenate = True
-    
-    @property
-    def dtype(self):
-        dtype = None
-        for arg in self.args:
-            _dtype = arg.dtype
-            if dtype is None or dtype in _dtype:
-                dtype = _dtype
-        return dtype
-
-    def __new__(cls, *args, **kwargs):
-        _args = []
-        from sympy import sympify
-        args = [*map(sympify, args)]
-        length = max(len(arg.shape) for arg in args)
-        for arg in args:            
-            if isinstance(arg, Concatenate) and len(arg.shape) == length:
-                _args += arg.args
-            else:
-                _args.append(arg)
-        if all(not arg.shape for arg in _args):
-            from sympy import Matrix
-            return Matrix(tuple(_args))
-        return Basic.__new__(cls, *_args, **kwargs)
-    
-    @staticmethod
-    def broadcast(shapes):
-        length = 0
-        cols = 0
-        for i, shape in enumerate(shapes):
-            if not shape:
-                shapes[i] = (1,)
-                shape = shapes[i]
-            if shape[-1] > cols:
-                cols = shape[-1]
-            if len(shape) > length:
-                length = len(shape)
-                
-        if all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes):
-            length += 1
-            
-        for i, shape in enumerate(shapes):
-            if shape[-1] < cols and len(shape) > 1:
-                shape = shape[:-1] + (cols,)
-            if len(shape) < length:
-                shape = (1,) * (length - len(shape)) + shape
-            shapes[i] = shape
-        return shapes
-    
-    def _eval_shape(self):
-        shapes = [arg.shape for arg in self.args]
-        self.broadcast(shapes)
-        rows = sum(s[0] for s in shapes)
-        if len(shapes[0]) > 1:
-            return rows, shapes[0][1]
-        else:
-            return (rows,)
-        
-    @property
-    def shape(self):
-        if 'shape' in self._assumptions:
-            return self._assumptions['shape']
-        shape = self._eval_shape()
-        self._assumptions['shape'] = shape
-        return shape
-
-    def __getitem__(self, key):
-        from sympy.functions.elementary.piecewise import Piecewise
-        if isinstance(key, slice):
-            start, stop = key.start, key.stop
-            if start is None:
-                start = 0
-            if stop is None:
-                stop = self.shape[0]
-                
-            rows = 0
-            args = []
-            for arg in self.args:
-                if start >= stop:
-                    break
-                index = rows
-                if len(arg.shape) == 1:
-                    rows += 1
-                else:
-                    rows += arg.shape[0]
-
-                if start < rows:
-                    if len(arg.shape) == 1:
-                        args.append(arg)
-                        start += 1
-                    else:
-                        if arg.shape[0] <= stop - start:
-                            args.append(arg)
-                            start += arg.shape[0]
-                        else:
-                            args.append(arg[start - index : stop - index])
-                            start += stop - start
-            if len(args) == 1:
-                return args[0]
-            if len(args) == 0:
-                return ZeroMatrix(*self.shape)
-            return self.func(*args)
-        if isinstance(key, tuple):
-            if len(key) == 1:
-                key = key[0]
-                
-            elif len(key) == 2:
-                i, j = key
-                if isinstance(i, slice) or isinstance(j, slice):
-                    from sympy.matrices.expressions.slice import MatrixSlice
-                    return MatrixSlice(self, i, j)
-                i, j = _sympify(i), _sympify(j)
-                if self.valid_index(i, j) != False:                
-                    args = []
-                    length = 0
-                    for arg in self.args:
-                        _length = length
-                        length += arg.rows
-                        cond = i < length
-                        if len(arg.shape) == 1:
-                            args.append([arg[j], cond])
-                        else:                        
-                            if cond.is_BooleanFalse:
-                                continue                         
-                            args.append([arg[i - _length, j], cond])
-                            
-                    args[-1][-1] = True
-                    return Piecewise(*args)
-                else:
-                    raise IndexError("Invalid indices (%s, %s)" % (i, j))
-                
-        if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
-            rows = 0
-            args = []
-            for arg in self.args:
-                index = rows
-                if len(arg.shape) < len(self.shape):
-                    rows += 1
-                else:
-                    rows += arg.shape[0]
-                    
-                cond = key < rows
-                if cond.is_BooleanFalse:
-                    continue
-                
-                if len(arg.shape) < len(self.shape):
-                    args.append([arg, cond])
-                else:
-                    args.append([arg[key - index], cond]) 
-            args[-1][-1] = True
-            return Piecewise(*args)
-
-        raise IndexError("Invalid index, wanted %s[i,j]" % self)
-
-    def _eval_determinant(self):
-        from sympy.concrete.products import Product
-        if self.is_upper or self.is_lower:
-            i = self.generate_free_symbol(integer=True)
-            return Product(self[i, i], (i, 0, self.cols - 1)).doit()
-
-    @property
-    def is_lower(self):
-        """Check if matrix is a lower triangular matrix. True can be returned
-        even if the matrix is not square.
-
-        Examples
-        ========
-
-        >>> from sympy import Matrix
-        >>> m = Matrix(2, 2, [1, 0, 0, 1])
-        >>> m
-        Matrix([
-        [1, 0],
-        [0, 1]])
-        >>> m.is_lower
-        True
-
-        >>> m = Matrix(4, 3, [0, 0, 0, 2, 0, 0, 1, 4 , 0, 6, 6, 5])
-        >>> m
-        Matrix([
-        [0, 0, 0],
-        [2, 0, 0],
-        [1, 4, 0],
-        [6, 6, 5]])
-        >>> m.is_lower
-        True
-
-        >>> from sympy.abc import x, y
-        >>> m = Matrix(2, 2, [x**2 + y, y**2 + x, 0, x + y])
-        >>> m
-        Matrix([
-        [x**2 + y, x + y**2],
-        [       0,    x + y]])
-        >>> m.is_lower
-        False
-
-        See Also
-        ========
-
-        is_upper
-        is_diagonal
-        is_lower_hessenberg
-        """
-        from sympy.sets.sets import Interval
-        from sympy.functions.elementary.miscellaneous import Min
-
-        i = self.generate_free_symbol(domain=Interval(0, Min(self.rows, self.cols - 1), right_open=True, integer=True))
-        j = i.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(i + 1, self.cols, right_open=True, integer=True))
-        assert i < j
-        return self[i, j] == 0
-
-    @property
-    def is_upper(self):
-        """Check if matrix is an upper triangular matrix. True can be returned
-        even if the matrix is not square.
-
-        Examples
-        ========
-
-        >>> from sympy import Matrix
-        >>> m = Matrix(2, 2, [1, 0, 0, 1])
-        >>> m
-        Matrix([
-        [1, 0],
-        [0, 1]])
-        >>> m.is_upper
-        True
-
-        >>> m = Matrix(4, 3, [5, 1, 9, 0, 4 , 6, 0, 0, 5, 0, 0, 0])
-        >>> m
-        Matrix([
-        [5, 1, 9],
-        [0, 4, 6],
-        [0, 0, 5],
-        [0, 0, 0]])
-        >>> m.is_upper
-        True
-
-        >>> m = Matrix(2, 3, [4, 2, 5, 6, 1, 1])
-        >>> m
-        Matrix([
-        [4, 2, 5],
-        [6, 1, 1]])
-        >>> m.is_upper
-        False
-
-        See Also
-        ========
-
-        is_lower
-        is_diagonal
-        is_upper_hessenberg
-        """
-        from sympy.sets.sets import Interval
-        from sympy.functions.elementary.miscellaneous import Min
-
-        j = self.generate_free_symbol(domain=Interval(0, Min(self.cols, self.rows - 1), right_open=True, integer=True))
-        i = j.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(j + 1, self.rows, right_open=True, integer=True))
-        assert i > j
-        return self[i, j] == 0
-
-    def __add__(self, other):
-        if isinstance(other, Concatenate):
-            if len(self.args) == len(other.args):
-                if all(x.shape == y.shape for x, y in zip(self.args, other.args)):
-                    return self.func(*[x + y for x, y in zip(self.args, other.args)])
-        return Expr.__add__(self, other)
-
-    def simplify(self, deep=False, **kwargs):
-        if deep:
-            return MatrixExpr.simplify(self, deep=deep, **kwargs)
-        if self.shape[0] == len(self.args):
-            from sympy import Indexed
-            start = None
-            for i, arg in enumerate(self.args):
-                if not isinstance(arg, Indexed):
-                    return self
-                diff = arg.indices[-1] - i
-                if start is None:
-                    start = diff
-                else:
-                    if start != diff:
-                        return self
-                
-            return arg.base[start:len(self.args)]
-        return self
-    
-    def matrixblock(self):
-        cols = None
-        blocks = []
-        for X in self.args:            
-            if X.is_Transpose and X.arg.is_Concatenate:
-                if cols is None:
-                    cols = len(X.arg.args)
-                else:
-                    if cols != len(X.arg.args):
-                        return
-                blocks.append([x.T for x in X.arg.args])
-                continue
-            if len(X.shape) == 1 and X.is_Concatenate:
-                if cols is None:
-                    cols = len(X.args)
-                else:
-                    if cols != len(X.args):
-                        return
-                blocks.append([x for x in X.args])
-                continue                
-                
-            return
-        
-        for i in range(cols):
-            cols = None
-            block = [block[i] for block in blocks]
-            matrix = [b for b in block if len(b.shape) == 2]           
-            
-            if matrix:
-                cols = matrix[0].cols
-                if any(m.cols != cols for m in matrix):
-                    return
-                
-                vector = [b for b in block if len(b.shape) == 1]
-                if any(v.shape[0] != cols for v in vector):
-                    return
-                
-                scalar = [b for b in block if len(b.shape) == 0]
-                if scalar:
-                    return
-                
-        return blocks
-        
-    @property
-    def is_BlockMatrix(self):
-        return self.matrixblock() is not None
-
-    # {c} means center, {l} means left, {r} means right
-    def _latex(self, p):
-#         return r'\begin{pmatrix}%s\end{pmatrix}' % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-
-        blocks = self.matrixblock()
-        if blocks is not None:
-            cols = len(blocks[0])
-            array = (' & '.join('{%s}' % p._print(X) for X in block) for block in blocks)
-            return r"\left(\begin{array}{%s}%s\end{array}\right)" % ('c' * cols, r'\\'.join(array))
-            
-        array = []
-        for X in self.args:            
-            if X.is_Transpose and X.arg.is_Concatenate:                
-                X = X.arg       
-                latex = r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args),
-                                                                            ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
-            else:
-                latex = '{%s}' % p._print(X)   
-            array.append(latex)
-
-        if len(self.shape) == 1:
-            delimiter = ' & '
-            center = 'c' * len(self.args)
-        else:
-            delimiter = r'\\'
-            center = 'c'
-            
-        return r"\left(\begin{array}{%s}%s\end{array}\right)" % (center, delimiter.join(array))
-#         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
-
-    def _sympystr(self, p):
-        return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
-
-    def _eval_domain_defined(self, x):
-        if x.dtype.is_set:
-            return x.universalSet
-        
-        domain = x.domain
-        for arg in self.args:
-            domain &= arg.domain_defined(x)
-        return domain
-
-    def _eval_transpose(self):
-        blocks = self.matrixblock()
-        if blocks is None:
-            if len(self.shape) == 1:
-                return self
-            return
-        rows = len(blocks)
-        cols = len(blocks[0])
-        
-        blocks_T = [[None] * rows for _ in range(cols)]
-        for i in range(rows):
-            for j in range(cols):
-                blocks_T[j][i] = blocks[i][j]
-        return self.func(*[self.func(*block).T for block in blocks_T])
-
-    def __rmul__(self, other):        
-        if not other.shape:
-            return self.func(*(other * arg for arg in self.args))
-        return MatrixExpr.__rmul__(self, other)
-
-    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self.args), quick_exit=True)
-
-    @classmethod
-    def rewrite_from_Slice(cls, self):
-        i_shape = self.shape[0]        
-        if isinstance(i_shape, int) or i_shape.is_Number:
-            from sympy import sympify
-            array = []
-            for i in range(i_shape):
-                array.append(self[sympify(i)])
-            return Concatenate(*array)
-            
-        return self
-
 # precondition: i > j or i < j
-class Swap(Identity):    
+class Swap(Identity):        
     is_Identity = False
     
     def _latex(self, p):
@@ -1738,8 +1390,7 @@ class Multiplication(Identity):
         return piecewise
 
     def __matmul__(self, rhs):
-        from sympy.matrices.dense import DenseMatrix        
-        if isinstance(rhs, Concatenate):
+        if rhs.is_BlockMatrix:
             other_i = rhs[self.i]
             if not other_i.is_Indexed:
                 args = []
@@ -1749,8 +1400,8 @@ class Multiplication(Identity):
                 if self.i + 1 != self.shape[0]:
                     args.append(rhs[self.i + 1:])
                 
-                return Concatenate(*args)  
-        elif isinstance(rhs, DenseMatrix):
+                return rhs.func(*args)  
+        elif rhs.is_DenseMatrix:
             d = rhs.shape[0]
             _mat = [*rhs._mat]
             for i in range(self.i * d, self.i * d + d):
@@ -1832,7 +1483,7 @@ class Addition(Multiplication):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rmatmul__')
     def __matmul__(self, other):
-        if isinstance(other, Concatenate):
+        if other.is_BlockMatrix:
             other_i = other[self.i]
             other_j = other[self.j]
             args = []
@@ -1849,7 +1500,7 @@ class Addition(Multiplication):
                     args.append(other[self.i + 1:])                    
             else:
                 return MatrixExpr.__matmul__(self, other)
-            return Concatenate(*args).simplify()  
+            return other.func(*args).simplify()  
             
         return MatrixExpr.__matmul__(self, other)
 
@@ -1945,13 +1596,13 @@ class Shift(Identity):
         if self.j == self.i:
             return other
 
-        if isinstance(other, Concatenate):
+        if other.is_BlockMatrix:
             if self.j > self.i:
                 A = other[self.i]
                 B = other[self.i + 1:self.j + 1]
 
                 args = []
-                if isinstance(B, Concatenate):
+                if B.is_BlockMatrix:
                     args += B.args
                 else:
                     args.append(B)
@@ -1959,18 +1610,18 @@ class Shift(Identity):
 
                 if self.i > 0:
                     C = other[:self.i]
-                    if isinstance(C, Concatenate):
+                    if C.is_BlockMatrix:
                         args += C.args
                     else:
                         args.append(C)
                 if self.j + 1 < self.n:
                     C = other[self.j + 1:]
-                    if isinstance(C, Concatenate):
+                    if C.is_BlockMatrix:
                         args += C.args
                     else:
                         args.append(C)
 
-                return Concatenate(*args)
+                return other.func(*args)
 
             elif self.j < self.i:
                 ...

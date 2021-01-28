@@ -3,14 +3,13 @@ from sympy.core.relational import Equality
 from sympy.stats.drv import SingleDiscretePSpace
 from sympy.stats.drv_types import PoissonDistribution
 from sympy.stats.rv import PDF, pspace
-from axiom.utility import plausible
-from axiom.utility import check
+from axiom.utility import prove, apply
 import axiom
 from sympy.core.symbol import Symbol
 from sympy.sets import NonnegativeIntegers
 
 
-@plausible
+@apply(imply=True)
 def apply(x0, x1):
     assert x0.is_random and x1.is_random
     pspace0 = pspace(x0)
@@ -28,7 +27,7 @@ def apply(x0, x1):
     return Equality(PDF(x0 + x1)(y), PDF(Y)(y).doit())
 
 
-@check
+@prove
 def prove(Eq):
     assert NonnegativeIntegers.is_extended_negative == False
     assert NonnegativeIntegers.is_extended_nonnegative

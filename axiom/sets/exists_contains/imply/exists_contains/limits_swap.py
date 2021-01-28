@@ -1,5 +1,5 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
@@ -7,7 +7,7 @@ from sympy import Exists
 from sympy.sets.contains import Contains
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Exists
     assert len(given.limits) == 1
@@ -19,10 +19,9 @@ def apply(given):
     return Exists[x:B](Contains(x, A))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     
     A = Symbol.A(etype=dtype.real)

@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy import Symbol, Or
 
@@ -7,7 +7,7 @@ from sympy.concrete.forall import ForAll
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_ForAll
     limits = given.limits
@@ -18,10 +18,9 @@ def apply(given):
     return ForAll(given.limits_condition.invert().simplify(), limit)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     e = Symbol.e(real=True)
     f = Function.f(nargs=(), shape=(), integer=True)

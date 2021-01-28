@@ -1,7 +1,7 @@
 
 from sympy.core.relational import Equality
 
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
@@ -9,15 +9,15 @@ from sympy.matrices.expressions.matexpr import Addition
 from sympy import LAMBDA
 from sympy import Symbol
 
-@plausible
+@apply(imply=True)
 def apply(x, lamda, w=None):
     n = x.shape[0]
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j, i](Addition(n, i, j, lamda)))
-        w_quote = Symbol.w_quote(integer=True, shape=(n, n, n, n), definition=LAMBDA[j, i](Addition(n, i, j, -lamda)))
+        w = Symbol.w(definition=LAMBDA[j, i](Addition(n, i, j, lamda)))
+        w_quote = Symbol.w_quote(definition=LAMBDA[j, i](Addition(n, i, j, -lamda)))
     else:
         assert w[i, j] == Addition(n, i, j, lamda)
         assert w_quote[i, j] == Addition(n, i, j, -lamda)
@@ -25,7 +25,7 @@ def apply(x, lamda, w=None):
     return Equality(w_quote[i, j] @ w[i, j] @ x, x)
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     x = Symbol.x(shape=(n,), real=True)

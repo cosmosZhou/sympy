@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equal
 from sympy import Symbol
 
@@ -8,16 +8,15 @@ import axiom
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     fn1, *limits = axiom.is_ForAll(given)
     return Sufficient(given.limits_condition, fn1)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
     f = Symbol.f(integer=True, shape=(oo,))

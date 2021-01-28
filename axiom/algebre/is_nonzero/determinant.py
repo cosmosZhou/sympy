@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality, Unequal
 
 from sympy.matrices.expressions.determinant import Determinant
@@ -9,7 +9,7 @@ from sympy.matrices.expressions.inverse import Inverse
 from axiom import algebre, discrete
 
 
-@plausible
+@apply(imply=True)
 def apply(given):   
     assert given.is_Unequality
     A_det, zero = given.args
@@ -19,10 +19,9 @@ def apply(given):
     return Equality(Cofactors(A).T / Determinant(A), Inverse(A))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     A = Symbol.A(complex=True, shape=(n, n))
@@ -30,11 +29,11 @@ def prove(Eq):
     
     Eq << discrete.matrix.determinant.adjugate.apply(A)
     
-    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[0], Eq[-1])
+    Eq << algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[0], Eq[-1])
     
     Eq << Eq[-1].inverse()
     
-    Eq << algebre.is_nonzero.equality.imply.equality.scalar.apply(Eq[0], Eq[-1])
+    Eq << algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[0], Eq[-1])
     
     Eq << Eq[-1].lhs.args[0].base @ Eq[-1] 
     

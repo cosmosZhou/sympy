@@ -39,22 +39,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     def inverse(self):
         return self.this.function.inverse()
 
-    def strip(self):
-        return self.this.function.strip()
-
-    def assertion(self):
-        return self.this.function.assertion()
-
-    def comprehension(self, operator, *limits):
-        func, function = self.funcs()
-        if any(op.is_Exists for op, _ in func):
-            return self
-
-        if function.is_Equality or function.is_Inequality and operator.is_AddWithLimits:
-            return function.comprehension(operator, *limits, func=func)
-        
-        return self
-
     @staticmethod
     def merge_func(funcs, _funcs):
         array = []
@@ -102,17 +86,20 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
 
     def apply(self, axiom, *args, **kwargs):
         given = self
-        if 'join' in kwargs:
+        
+        if axiom.apply.__name__ == 'given':
+            join = False
+        elif 'join' in kwargs:
             join = kwargs['join']
             del kwargs['join']
         else:
             join = True
             
-        if join:
-            if args and all(isinstance(eq, Boolean) for eq in args):
-                for eq in args:
-                    given &= eq
-                return given.apply(axiom, split=True, **kwargs)
+        if join and args and all(isinstance(eq, Boolean) for eq in args):
+            for eq in args:
+                given &= eq
+            return given.apply(axiom, split=True, **kwargs)
+        
         if 'depth' in kwargs:
             depth = kwargs['depth']
             if not depth:           
@@ -131,12 +118,12 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     def reversed(self):
         return self.this.function.reversed
 
+    def __neg__(self):
+        return self.this.function.__neg__()
+
     @property
     def definition(self):
         return self.this.function.definition
-
-    def as_two_terms(self):
-        return self.this.function.as_two_terms()
 
     def limits_include(self, eq):
         variables = self.variables_set
@@ -249,14 +236,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     def rhs(self):
         return self.function.rhs
 
-    def union(self, eq):
-        eq = sympify(eq)
-        return self.bfn('union', eq)
-
-    def intersect(self, eq):
-        eq = sympify(eq)
-        return self.bfn('intersect', eq)
-
     def __add__(self, eq):
         eq = sympify(eq)
         return self.bfn('__add__', eq)
@@ -268,7 +247,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     def __bool__(self):
         return False
 
-    def subs(self, *args, **kwargs):
+    def subs(self, *args, simplify=True, **kwargs):
         args = tuple(map(sympify, args))
         
         def _subs_with_Equality(limits, old, new):
@@ -292,7 +271,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
         clue = None
         if len(args) == 1:
             clue, funcs, lhs, rhs = self.combine_clauses(args[0])
-            function = lhs.subs(rhs).simplify()
+            function = lhs.subs(rhs, simplify=simplify)
             if not clue:
                 clue = function.clue
                 if not clue and function == lhs:
@@ -352,49 +331,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             return function.copy(**kwargs)
 
         return func(function, *limits, **kwargs).simplify()
-
-    def split(self, *args, **kwargs):
-        arr = self.function.split(*args, **kwargs)
-        if isinstance(arr, list):
-            clue = None
-            for eq in arr:
-                if eq.given is None:
-                    if eq.equivalent is None:
-                        assert eq.imply is not None
-                        if clue is None:
-                            clue = 'imply'
-                            self.function.derivative = None 
-                        eq.imply = None
-                        continue
-                    if eq.equivalent.given is None:
-                        print('eq.equivalent.given is None')
-                    else:
-                        eq.equivalent.given = None
-                        eq.equivalent = None
-                else:
-                    eq.given = None
-                    if clue is None:
-                        clue = 'given'
-                assert eq.equivalent is None 
-            eqs = [self.func(eq, *self.limits, **{clue: self}) for eq in arr]
-            if kwargs.get('simplify', True):
-                eqs = [eq.simplify() for eq in eqs]
-            self.derivative = eqs
-            return eqs
-        elif isinstance(arr, tuple):
-            for eq in arr:
-                assert eq.parent is not None
-                eq.parent = None
-
-            return [self.func(eq, *self.limits, parent=self).simplify() for eq in arr]
-        return self
-
-    @property
-    def set(self):
-        return self.func(self.function.set, *self.limits, equivalent=self)
-
-    def abs(self):
-        return self.func(self.function.abs(), *self.limits, equivalent=self)
 
     def simplify(self, deep=False):
         if self.function.equivalent is not None:
@@ -482,7 +418,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                 if function != self.function:
                     return self.func(function, *self.limits, equivalent=self).simplify()
 
-        for x, *domain in self.limits:
+        for i, (x, *domain) in enumerate(self.limits):
             if len(domain) == 1:
                 domain = domain[0]
                 if domain.is_FiniteSet: 
@@ -492,109 +428,107 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                         domain = domain.rhs
                         limits = self.limits_update({x:domain})
                         return self.func(self.function, *limits, equivalent=self).simplify()
+                elif domain.is_ConditionSet:
+                    if x == domain.variable:                        
+                        condition = domain.condition
+                    else:
+                        condition = domain.condition._subs(domain.variable, x)                        
+                        
+                    limits = [*self.limits]
+                    if domain.base_set.is_UniversalSet:
+                        limits[i] = (x, condition)
+                    else:
+                        limits[i] = (x, condition, domain.base_set)
+                    return self.func(self.function, *limits, equivalent=self).simplify()
+                elif domain.is_UniversalSet:
+                    limits = [*self.limits]
+                    limits[i] = (x,)
+                    return self.func(self.function, *limits, equivalent=self).simplify()
 
         for i, limit in enumerate(self.limits):
-            if len(limit) != 2:
-                continue
-            
-            e, s = limit
-            if s.is_set:
-                if s.is_Symbol or s.is_Indexed:
-                    continue
-                
-                if s.is_Piecewise:
-                    if s.args[-1][0].is_EmptySet:
-                        s = s.func(*s.args[:-2], (s.args[-2][0], True))                            
+            if len(limit) == 1:
+                continue            
+            if len(limit) == 3:
+                e, cond, baseset = limit
+                if baseset.is_set:
+                    if cond == self.function:
+                        return BooleanTrue().copy(equivalent=self)
+            else:
+                e, s = limit
+                if s.is_set:
+                    if s.is_Symbol or s.is_Indexed:
+                        continue
                     
-                        limits = [*self.limits]
-                        limits[i] = (e, s)
-                        return self.func(self.function, *limits, equivalent=self).simplify()
-                    continue
-                
-                image_set = s.image_set()
-                if image_set is not None:
-                    expr, sym, base_set = image_set
-                    if self.function.is_ExprWithLimits:
-                        if sym in self.function.bound_symbols:
-                            _sym = base_set.element_symbol(self.function.variables_set)
-                            assert sym.shape == _sym.shape
-                            _expr = expr._subs(sym, _sym)
-                            if _expr == expr:
-                                for var in postorder_traversal(expr):
-                                    if var._has(sym):
-                                        break
-                                expr = expr._subs(var, var.definition)
+                    if s.is_Piecewise:
+                        if s.args[-1][0].is_EmptySet:
+                            s = s.func(*s.args[:-2], (s.args[-2][0], True))                            
+                        
+                            limits = [*self.limits]
+                            limits[i] = (e, s)
+                            return self.func(self.function, *limits, equivalent=self).simplify()
+                        continue
+                    
+                    image_set = s.image_set()
+                    if image_set is not None:
+                        expr, sym, base_set = image_set
+                        if self.function.is_ExprWithLimits:
+                            if sym in self.function.bound_symbols:
+                                _sym = base_set.element_symbol(self.function.variables_set)
+                                assert sym.shape == _sym.shape
                                 _expr = expr._subs(sym, _sym)
-
-                            expr = _expr
-                            sym = _sym
-                        assert sym not in self.function.bound_symbols
-                    
-                    function = self.function
-                    if e != expr:
-                        if sym.type == e.type:
-                            _expr = expr._subs(sym, e)                        
-                            if _expr != e:
+                                if _expr == expr:
+                                    for var in postorder_traversal(expr):
+                                        if var._has(sym):
+                                            break
+                                    expr = expr._subs(var, var.definition)
+                                    _expr = expr._subs(sym, _sym)
+    
+                                expr = _expr
+                                sym = _sym
+                            assert sym not in self.function.bound_symbols
+                        
+                        function = self.function
+                        if e != expr:
+                            if sym.type == e.type:
+                                _expr = expr._subs(sym, e)                        
+                                if _expr != e:
+                                    _function = function._subs(e, expr)
+                                    if _function == function:
+                                        return self
+                                    limits = self.limits_update({e : (sym, base_set)})
+                                    function = _function          
+                                else:
+                                    base_set = base_set._subs(sym, e)
+                                    limits = self.limits_update(e, base_set)
+                            else:
                                 _function = function._subs(e, expr)
                                 if _function == function:
                                     return self
                                 limits = self.limits_update({e : (sym, base_set)})
                                 function = _function          
-                            else:
-                                base_set = base_set._subs(sym, e)
-                                limits = self.limits_update(e, base_set)
                         else:
-                            _function = function._subs(e, expr)
-                            if _function == function:
-                                return self
-                            limits = self.limits_update({e : (sym, base_set)})
-                            function = _function          
-                    else:
-                        limits = self.limits_update({e : (sym, base_set)})                            
-                    return self.func(function, *limits, equivalent=self).simplify()
-            else:  # s.type.is_condition: 
-                if s.is_Equality:
-                    if e == s.lhs:
-                        y = s.rhs
-                    elif e == s.rhs:
-                        y = s.lhs
-                    else:
-                        y = None
-                    if y is not None and not y.has(e):
-                        function = function._subs(e, y)
-                        if function.is_BooleanAtom:
-                            return function.copy(equivalent=self) 
-                        limits = self.limits_delete(e)
-                        if limits:
-                            return self.func(function, equivalent=self)
-                        function.equivalent = self
-                        return function
-                if s == self.function or s.dummy_eq(self.function):  # s.invert() | self.function
-                    return BooleanTrue().copy(equivalent=self)
+                            limits = self.limits_update({e : (sym, base_set)})                            
+                        return self.func(function, *limits, equivalent=self).simplify()
+                else:  # s.type.is_condition: 
+                    if s.is_Equality:
+                        if e == s.lhs:
+                            y = s.rhs
+                        elif e == s.rhs:
+                            y = s.lhs
+                        else:
+                            y = None
+                        if y is not None and not y.has(e):
+                            function = function._subs(e, y)
+                            if function.is_BooleanAtom:
+                                return function.copy(equivalent=self) 
+                            limits = self.limits_delete(e)
+                            if limits:
+                                return self.func(function, equivalent=self)
+                            function.equivalent = self
+                            return function
+                    if s == self.function or s.dummy_eq(self.function):  # s.invert() | self.function
+                        return BooleanTrue().copy(equivalent=self)
 
-        if self.function.is_Equality:
-            limits_dict = self.limits_dict
-            x = None
-            if self.function.lhs in limits_dict:
-                x = self.function.lhs
-                y = self.function.rhs
-            elif self.function.rhs in limits_dict:
-                x = self.function.rhs
-                y = self.function.lhs
-
-            if x is not None and not y.has(x):
-                domain = limits_dict[x]
-                if isinstance(domain, Boolean):
-                    function = domain._subs(x, y)
-                    if function.is_BooleanAtom:
-                        return function.copy(equivalent=self)
-                    
-                    limits = self.limits_delete(x)
-                    if limits:
-                        return self.func(function, *limits, equivalent=self)
-                    function.equivalent = self
-                    return function
-                
         return ExprWithLimits.simplify(self, deep=deep)
 
     def limits_swap(self):
@@ -611,7 +545,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             limit = self.limits[i]            
             if limit.is_intlimit:
                 x, a, b = limit
-                diff = b - a + 1
+                diff = b - a
                 if diff.is_Number:
                     limits_behind = limits[::-1]
                     functions = []
@@ -627,11 +561,16 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                 x, *ab = limit
                 if x.is_Matrix:
                     if ab:
-                        for arg in x.args[:0:-1]:
+                        if x.is_BlockMatrix:
+                            flat_list = x.args
+                        else:
+                            flat_list = x._mat
+                            
+                        for arg in flat_list[:0:-1]:
                             limits.append((arg,))
-                        limits.append((x.args[0], *ab))
+                        limits.append((flat_list[0], *ab))
                     else:
-                        for arg in x.args[::-1]:
+                        for arg in x._mat[::-1]:
                             limits.append((arg,))
                     continue
             

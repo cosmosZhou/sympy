@@ -49,7 +49,7 @@ class Transpose(MatrixExpr):
         return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Power"])
 
     def _latex(self, p): 
-        if self.arg.is_Concatenate:
+        if self.arg.is_BlockMatrix:
             X = self.arg
             return r"{\left(\begin{array}{%s}%s\end{array}\right)}" % ('c' * len(X.args),
                                                                         ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
@@ -83,7 +83,13 @@ class Transpose(MatrixExpr):
         if j is None:
             if len(self.shape) > 2:
                 return self.arg[i].T
-            raise Exception('unimplemented method')
+            
+            if isinstance(i, slice):
+                start, stop = i.start, i.stop
+                if start is None:
+                    if stop is None:
+                        return self
+            return self.arg[:, i]            
         if hasattr(self.arg, '_entry'):
             return self.arg._entry(j, i, expand=expand, **kwargs)
         else:
@@ -155,9 +161,8 @@ class Transpose(MatrixExpr):
         return domain
 
     def __getitem__(self, key):
-        from sympy.matrices.expressions.slice import MatrixSlice
-        if not isinstance(key, tuple) and isinstance(key, slice):            
-            return MatrixSlice(self, key, (0, None, 1))
+        if not isinstance(key, tuple) and isinstance(key, slice):
+            return self._entry(key)
         if isinstance(key, tuple): 
             if len(key) == 1:
                 key = key[0]

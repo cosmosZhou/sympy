@@ -546,8 +546,8 @@ class MultivariateEwensDistribution(JointDistribution):
         syms = syms[0]
         j, k = symbols('j, k', positive=True, integer=True)
         term_2 = Product(theta**syms[j]/((j+1)**syms[j]*factorial(syms[j])),
-                            (j, 0, n - 1))
-        cond = Eq(Sum((k + 1)*syms[k], (k, 0, n - 1)), n)
+                            (j, 0, n))
+        cond = Eq(Sum((k + 1)*syms[k], (k, 0, n)), n)
         return Piecewise((term_1 * term_2, cond), (0, True))
 
 

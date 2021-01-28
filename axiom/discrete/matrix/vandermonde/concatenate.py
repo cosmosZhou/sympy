@@ -1,19 +1,19 @@
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy.matrices.expressions.determinant import Det
 from sympy import Symbol
 from sympy.matrices.expressions.matexpr import Shift
-from axiom import discrete
+from axiom import discrete, algebre
 from sympy import LAMBDA
 from sympy.concrete.products import Product
 from sympy.concrete.summations import Sum
 
 
 # n = Symbol.n(integer=True, positive=True)
-@plausible
+@apply(imply=True)
 def apply(r, n):
     if not n >= 2:
         return None
@@ -26,10 +26,7 @@ def apply(r, n):
 # note : [A, B].T = (A.T, B.T)
 # [R, A] = (R.T, A.T).T
 
-    return Equality(Det([R, A]), (1 - r) ** n * Product[k:1:n - 1](factorial(k)))
-
-
-from axiom.utility import check
+    return Equality(Det([R, A]), (1 - r) ** n * Product[k:1:n](factorial(k)))
 
 
 def numeric_prove():
@@ -64,7 +61,7 @@ def numeric_prove():
     print(A_)
 
 
-@check
+@prove
 def prove(Eq):
     r = Symbol.r(real=True)
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
@@ -81,7 +78,7 @@ def prove(Eq):
 
     (k, *_), *_ = Eq[-1].rhs.args[1].function.limits
 
-    _i = i.copy(domain=Interval(*iab, integer=True))
+    _i = i.copy(domain=Interval(*iab, right_open=True, integer=True))
     Eq << discrete.combinatorics.stirling.second.definition.apply(_i + 1, j + 1)
 
     Eq << Eq[-1] * factorial(j + 1)
@@ -130,7 +127,7 @@ def prove(Eq):
 
     Eq << Shift(n, 0, n - 1) @ Eq[-1]
 
-    Eq << Eq[-1].det() 
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.det) 
 
     Eq << Eq[-1] * (-1) ** (n - 1) 
 

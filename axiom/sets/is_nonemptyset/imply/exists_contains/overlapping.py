@@ -1,5 +1,5 @@
 from sympy.core.relational import Unequality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
 
@@ -10,7 +10,7 @@ from axiom import sets
 
 # given A & B != Ø
 # then Exists[e:B] e in A
-@plausible
+@apply(imply=True)
 def apply(given, wrt=None, domain=None):
     assert given.is_Unequality
     AB, emptyset = given.args
@@ -33,10 +33,9 @@ def apply(given, wrt=None, domain=None):
     return Exists[wrt:B](Contains(wrt, A))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)

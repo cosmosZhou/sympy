@@ -223,7 +223,7 @@ class Probability(Expr):
                                 continue                                                       
                                                                                                   
                             lhs = lhs.bisect(Slice[start:stop])
-                            if not lhs.is_Concatenate:
+                            if not lhs.is_BlockMatrix:
                                 hit = True
                             else:
                                 rhs = rhs.bisect(Slice[start:stop])                                

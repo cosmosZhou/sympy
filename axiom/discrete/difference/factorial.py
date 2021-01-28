@@ -1,26 +1,22 @@
 from sympy.functions.combinatorial.factorials import factorial, binomial
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy.sets.sets import Interval
 from axiom import discrete, algebre
 from sympy.core.function import Difference
 from sympy import Symbol, Slice
 from sympy.concrete.summations import Sum
-from sympy.logic.boolalg import Sufficient
 
 
-@plausible
+@apply(imply=True)
 def apply(x, n):
     if not x.is_Symbol:
         return
-    return Equality(Difference[x, n](x ** n), factorial(n))
+    return Equality(Difference(x ** n, x, n), factorial(n))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     
@@ -60,12 +56,12 @@ def prove(Eq):
     
     Eq << Eq[0].subs(n, _k)
     
-    Eq << Difference[x, n - _k](Eq[-1])
+    Eq << Difference(Eq[-1], x, n - _k)
     Eq << Eq[-1].this.lhs.as_one_term()
         
     Eq << Eq[-1] * binomial(n + 1, _k)
     
-    Eq << Eq[-1].sum((_k,))
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.sum, (_k,))    
     
     Eq << Eq[-1].this.lhs.limits_subs(_k, k)
     
@@ -77,7 +73,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.forall((_k,))
     
-    Eq << algebre.equality.sufficient.imply.equality.second.induction.apply(Eq.initial, Eq[-1], n=n)
+    Eq << algebre.equal.sufficient.imply.equal.second.induction.where.forall.apply(Eq.initial, Eq[-1], n=n)
     
     Eq << Eq[0].subs(n, _k)
     

@@ -1,10 +1,10 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy import Symbol
 import axiom
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     is_nonnegative, is_nonpositive = given
     x = axiom.is_nonnegative(is_nonnegative)
@@ -13,10 +13,9 @@ def apply(*given):
     return Equality(x, 0)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     

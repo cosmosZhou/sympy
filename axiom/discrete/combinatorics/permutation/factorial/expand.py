@@ -1,19 +1,18 @@
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 
 from sympy.functions.special.gamma_functions import gamma
 from sympy import Symbol
 
-@plausible
+@apply(imply=True)
 def apply(n):
     return Equality(factorial(n), n * factorial(n - 1))
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(n)

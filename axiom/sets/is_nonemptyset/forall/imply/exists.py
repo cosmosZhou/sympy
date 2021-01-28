@@ -1,27 +1,20 @@
-from sympy.core.relational import Unequality
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy import Exists, ForAll
-from sympy import Symbol
+from sympy import *
+from axiom.utility import prove, apply
 import axiom
-from sympy.core.function import Function
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     is_nonemptyset, forall = given
     S = axiom.is_nonemptyset(is_nonemptyset)
     function, *limits = axiom.is_ForAll(forall)
-    e, _S = axiom.limits_is_set(limits).args
+    e, _S = axiom.limit_is_set(limits).args
     assert S == _S
      
     return Exists[e:S](function)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.integer)
     e = Symbol.e(integer=True)

@@ -8,13 +8,14 @@ from sympy.core.function import count_ops, expand_mul
 from sympy.core.singleton import S
 from sympy.core.symbol import Symbol
 from sympy.core.sympify import sympify
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.matrices.common import a2idx, classof
 from sympy.matrices.matrices import MatrixBase, ShapeError
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.decorator import doctest_depends_on
 from sympy.utilities.miscellany import filldedent
+
 
 def _iszero(x):
     """Returns True if x is zero."""
@@ -112,7 +113,7 @@ class DenseMatrix(MatrixBase):
                 from sympy import Equal
                 args = []
                 for i in range(len(self._mat)):
-                    args.append([self._mat[i], Equal(key,i)])
+                    args.append([self._mat[i], Equal(key, i)])
                 args[-1][1] = True
                 return Piecewise(*args).simplify()
             return self._mat[a2idx(key)]
@@ -173,15 +174,19 @@ class DenseMatrix(MatrixBase):
         self_rows, self_cols = self.rows, self.cols
         other_rows, other_cols = other.rows, other.cols
         other_len = other_rows * other_cols
-        new_mat_rows = self.rows
-        new_mat_cols = other.cols
+        new_mat_rows = self_rows
+        if other.rows == 1:
+            new_mat_cols = other.rows
+            other_rows, other_cols = other_cols, other_rows 
+        else:
+            new_mat_cols = other.cols
 
         # preallocate the array
         new_mat = [self.zero] * new_mat_rows * new_mat_cols
 
         # if we multiply an n x 0 with a 0 x m, the
         # expected behavior is to produce an n x m matrix of zeros
-        if self.cols != 0 and other.rows != 0:
+        if self_cols != 0 and other_rows != 0:
             # cache self._mat and other._mat for performance
             mat = self._mat
             other_mat = other._mat
@@ -473,23 +478,37 @@ class MutableDenseMatrix(DenseMatrix):
         # if the `copy` flag is set to False, the input
         # was rows, cols, [list].  It should be used directly
         # without creating a copy.
+        from sympy import Tuple
         if kwargs.get('copy', True) is False:
             if len(args) != 3:
                 raise TypeError("'copy=False' requires a matrix be initialized as rows,cols,[list]")
-            *shape, flat_list = args
+            * shape, flat_list = args
         else:
-            *shape, flat_list = cls._handle_creation_inputs(*args, **kwargs)
+            if 'shape' in kwargs:
+                shape = kwargs['shape']
+                flat_list = args
+                if not all(isinstance(arg, Basic) for arg in args):
+                    print(flat_list)
+            elif isinstance(args[0], (tuple, Tuple)) and len(args) > 1:
+                shape = args[0]
+                flat_list = args[1:]
+            else:
+                *shape, flat_list = cls._handle_creation_inputs(*args, **kwargs)
         while shape and shape[0] == 1:
             shape = shape[1:]
         if shape:
-            self = Basic.__new__(cls, shape=tuple(shape))
-            self._args = flat_list
+            self = Basic.__new__(cls)            
+            self._args = (Tuple(*shape), *flat_list)
             return self
         return flat_list[0]
 
     @property
+    def _mat(self):
+        return self.args[1:]
+    
+    @property
     def shape(self):        
-        return self._assumptions['shape']        
+        return tuple(self._args[0])
 
     @property
     def rows(self):
@@ -502,10 +521,6 @@ class MutableDenseMatrix(DenseMatrix):
     def cols(self):
         return self.shape[-1]
     
-    @property
-    def _mat(self):
-        return self.args
-
     @property
     def is_number(self):
         return all(a.is_number for a in self._mat)
@@ -553,7 +568,8 @@ class MutableDenseMatrix(DenseMatrix):
         rv = self._setitem(key, value)
         if rv is not None:
             i, j, value = rv
-            self._mat[i * self.cols + j] = value
+#             self._mat[i * self.cols + j] = value
+            self._args[i * self.cols + j + 1] = value
 
     def as_mutable(self):
         return self.copy()
@@ -823,7 +839,7 @@ class MutableDenseMatrix(DenseMatrix):
         sympy.simplify.simplify.simplify
         """
         if isinstance(self._mat, tuple):
-            return self.func(tuple(_simplify(self._mat[i]) for i in range(len(self._mat))), shape=self.shape)
+            return self.func(*(_simplify(self._mat[i]) for i in range(len(self._mat))), shape=self.shape)
         for i in range(len(self._mat)):
             self._mat[i] = _simplify(self._mat[i], ratio=ratio, measure=measure, rational=rational, inverse=inverse)
             
@@ -890,11 +906,8 @@ class MutableDenseMatrix(DenseMatrix):
         i_shape, j_shape = self.shape
         if isinstance(i_shape, int) or i_shape.is_Number:
             if isinstance(j_shape, int) or j_shape.is_Number:  
-                array = []
-                for i in range(i_shape):
-                    for j in range(j_shape):
-                        array.append(self[sympify(i), sympify(j)])
-                return cls(i_shape, j_shape, tuple(array))            
+                array = tuple(tuple(self[sympify(i), sympify(j)] for j in range(j_shape)) for i in range(i_shape))
+                return cls(array)            
         return self
     
     # Utility functions
@@ -1547,4 +1560,6 @@ def zeros(*args, **kwargs):
     if 'c' in kwargs:
         kwargs['cols'] = kwargs.pop('c')
 
-    return Matrix.zeros(*args, **kwargs)
+    matrix = Matrix.zeros(*args, **kwargs)
+    matrix._args = [*matrix._args]
+    return matrix

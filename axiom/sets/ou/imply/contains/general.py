@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy import Symbol
 from sympy.core.function import Function
 import axiom
@@ -8,18 +8,16 @@ from sympy.sets.contains import Contains, NotContains
 from axiom import sets, algebre
 
 from axiom.sets.ou.imply.contains.two import expr_cond_pair
+
     
-@plausible
+@apply(imply=True)
 def apply(given, wrt=None):
     or_eqs = axiom.is_Or(given)
     
     return Contains(Piecewise(*expr_cond_pair(Contains, or_eqs, wrt)).simplify(), wrt)            
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
@@ -33,15 +31,16 @@ def prove(Eq):
     
     Eq << apply(Contains(f(x), S) & Contains(x, A) | Contains(g(x), S) & Contains(x, B - A) | Contains(h(x), S) & NotContains(x, A | B), wrt=S)
     
-    Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.given.complement, simplify=None)
+    Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.where.complement, simplify=None)
     
-    Eq << Eq[-1].this.args[2].args[1].apply(sets.notcontains.imply.et, simplify=None)
+    Eq << Eq[-1].this.args[2].args[1].apply(sets.notcontains.imply.et.where.union, simplify=None)
     
     Eq << Eq[-1].apply(algebre.ou.imply.ou.collect, factor=NotContains(x, A))
     
     Eq << Eq[-1].this.args[0].args[0].apply(sets.ou.imply.contains.two, wrt=S)
     
     Eq << Eq[-1].apply(sets.ou.imply.contains.two, wrt=S)    
+
         
 if __name__ == '__main__':
     prove(__file__)

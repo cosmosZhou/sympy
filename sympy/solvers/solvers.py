@@ -1801,8 +1801,8 @@ def _solve_system(exprs, symbols, **flags):
     else:
         if all(p.is_linear for p in polys):
             n, m = len(polys), len(symbols)
-            matrix = zeros(n, m + 1)
-
+            matrix = zeros(n, m + 1)            
+            
             if n == 1:
                 poly, *_ = polys
                 for monom, coeff in polys[0].terms():

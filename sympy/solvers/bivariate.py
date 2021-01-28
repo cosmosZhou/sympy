@@ -3,11 +3,10 @@ from __future__ import print_function, division
 from sympy.core.add import Add
 from sympy.core.compatibility import ordered, range
 from sympy.core.function import expand_log
-from sympy.core.power import Pow
+from sympy.core.power import Pow, root
 from sympy.core.singleton import S
 from sympy.core.symbol import Dummy
-from sympy.functions.elementary.exponential import (LambertW, exp, log)
-from sympy.functions.elementary.miscellaneous import root
+from sympy.functions.elementary.exponential import (LambertW, exp, log) 
 from sympy.polys.polytools import Poly, factor
 from sympy.core.function import _mexpand
 from sympy.simplify.simplify import separatevars

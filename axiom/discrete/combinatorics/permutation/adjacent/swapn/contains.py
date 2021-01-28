@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 from sympy.core.symbol import dtype
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 from sympy import ForAll, LAMBDA
@@ -12,7 +12,7 @@ from axiom import algebre, discrete
 from axiom.discrete.combinatorics.permutation.adjacent import swapn
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_ForAll
     S = given.rhs
@@ -33,10 +33,15 @@ def apply(given):
     
     assert w.definition.is_LAMBDA
     
-    (_j, zero, n_1), (_i, _zero, _n_1) = w.definition.limits
-    assert zero.is_zero and _zero.is_zero
-    
-    assert n_1 == _n_1 == n - 1
+    (_j, *j_limits), (_i, *i_limits) = w.definition.limits
+    if j_limits:
+        zero, n_1 = j_limits
+        assert zero.is_zero and n_1 == n - 1
+        
+    if i_limits:
+        zero, n_1 = i_limits
+        assert zero.is_zero and n_1 == n - 1
+
     assert _k == k and _i == i and _j == j
     assert isinstance(w.definition.function, Swap)
     _n, _i, _j = w.definition.function.args
@@ -54,7 +59,7 @@ def apply(given):
     return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n)    
@@ -64,7 +69,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     
     k = Symbol.k(integer=True)
     
@@ -77,6 +82,7 @@ def prove(Eq):
     Eq << Eq.swap.subs(Eq[-1])
     
     Eq << swapn.permutation.apply(Eq[-1])
+
     
 if __name__ == '__main__':
     prove(__file__)

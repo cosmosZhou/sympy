@@ -5,7 +5,7 @@ from sympy.core.add import Add
 from sympy.core.function import Function, ArgumentIndexError
 from sympy.functions.combinatorial.factorials import factorial, RisingFactorial
 from sympy.functions.elementary.exponential import exp, log
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 
 
 def _rewrite_hyperbolics_as_exp(expr):

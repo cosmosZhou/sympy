@@ -1,5 +1,5 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 
 from sympy import Symbol
@@ -9,17 +9,16 @@ import axiom
 from sympy.logic.boolalg import And
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     function, *limits = axiom.is_Exists(given)
     variables = axiom.limits_are_Contains(limits)    
     return Exists[variables](And(function, given.limits_condition).simplify())
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):    
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)

@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 
 from sympy.stats.crv_types import NormalDistribution
@@ -7,8 +7,9 @@ from sympy import sqrt
 from sympy.stats.crv import SingleContinuousPSpace
 from axiom.statistics.guassion import quadratic
 from sympy.core.symbol import Symbol
+from axiom import algebre
 
-@plausible
+@apply(imply=True)
 def apply(x0, x1):
     assert x0.is_random and x1.is_random
 
@@ -27,10 +28,9 @@ def apply(x0, x1):
     return Equality(PDF(x0 + x1)(y), PDF(Y)(y).doit())
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
 
     mu0 = Symbol.mu0(real=True)
@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / Eq[-1].rhs
 
-    Eq << Eq[-1].log()
+    Eq << Eq[-1].apply(algebre.equal.given.equal.log)    
 
     Eq << Eq[-1].this.lhs.simplify()
 
@@ -65,7 +65,6 @@ def prove(Eq):
 
 
 # https://www.asmeurer.com/blog/
-if __name__ == '__main__':
-# python run.py axiom.statistics.guassion.sum axiom.calculus.trigonometry.sine.wallis axiom.discrete.combinatorics.permutation.adjacent.swapn.permutation axiom.statistics.bayes.argmax axiom.discrete.combinatorics.permutation.index.indexOf_indexed axiom.discrete.combinatorics.permutation.adjacent.swap2.general axiom.neuron.bilinear.transpose axiom.sets.contains.imply.equality.piecewise axiom.sets.equality.imply.equality.permutation axiom.statistics.die.expectation axiom.statistics.guassion.quadratic axiom.discrete.kronecker_delta.concatenate01 axiom.sets.forall_contains.forall_contains.forall_equality.imply.equality axiom.statistics.bayes.is_nonzero.et axiom.statistics.bayes.is_nonzero.is_nonzero.slice axiom.algebre.vector.cosine_similarity axiom.sets.contains.imply.equality.equality1 axiom.sets.equality.imply.exists_equality.size_deduction axiom.statistics.bayes.equality.equality.product axiom.calculus.integral.intermediate_value_theorem axiom.sets.forall_et.imply.forall_inequality axiom.sets.contains.contains.imply.subset axiom.statistics.bayes.theorem axiom.sets.is_emptyset.imply.notcontains axiom.sets.notcontains.imply.notcontains.union_comprehension axiom.sets.supset.imply.supset axiom.algebre.is_nonzero.is_nonzero.imply.is_nonzero axiom.sets.contains.imply.equality.union axiom.sets.contains.imply.equality.intersection axiom.sets.forall_contains.forall_contains.imply.equality axiom.sets.contains.imply.exists_contains axiom.sets.equality.imply.subset axiom.sets.equality.imply.supset    
+if __name__ == '__main__':    
     prove(__file__)
 

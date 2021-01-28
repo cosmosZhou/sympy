@@ -426,11 +426,11 @@ class Basic(with_metaclass(ManagedProperties)):
         """
         return not self == other
 
-    def structure_eq(self, other):
+    def structurally_equal(self, other):
         if other.func != self.func or len(self.args) != len(other.args):
             return False
         for x, y in zip(self.args, other.args):
-            if not x.structure_eq(y):
+            if not x.structurally_equal(y):
                 return False
         return True
 
@@ -466,7 +466,7 @@ class Basic(with_metaclass(ManagedProperties)):
         False
 
         """
-        return self.structure_eq(other) and self._dummy_eq(other)
+        return self.structurally_equal(other) and self._dummy_eq(other)
     
     # Note, we always use the default ordering (lex) in __str__ and __repr__,
     # regardless of the global setting.  See issue 5487.
@@ -1163,7 +1163,8 @@ class Basic(with_metaclass(ManagedProperties)):
               on any of its summation variables.
         """
         
-        assert old != new
+        if old == new:
+            return self
 
         if old.is_Slice:
             indices = set()
@@ -1994,6 +1995,7 @@ class Basic(with_metaclass(ManagedProperties)):
         else:
             excludes |= self.free_symbols
             
+        from sympy import Symbol
         if free_symbol is not None and free_symbol not in excludes:
             if isinstance(free_symbol, set):
                 free_symbol = free_symbol - excludes
@@ -2002,6 +2004,8 @@ class Basic(with_metaclass(ManagedProperties)):
                 
             if free_symbol:
                 free_symbol, *_ = free_symbol
+                if isinstance(free_symbol, str):
+                    free_symbol = Symbol(free_symbol, **kwargs)
                 return free_symbol
             
         excludes = set(symbol.name for symbol in excludes)
@@ -2026,8 +2030,7 @@ class Basic(with_metaclass(ManagedProperties)):
             symbols = 'ijkhtdlmnabcefgopqrsuvwxyz'
         else:
             symbols = 'xyzabcdefghijklmnopqrstuvw'
-                        
-        from sympy import Symbol
+        
         for name in symbols:
             if name not in excludes:                
                 return Symbol(name, **kwargs)
@@ -2198,7 +2201,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
     @property
     def this(self):
-        from sympy.logic.boolalg import Identity
+        from sympy.logic.invoker import Identity
         return Identity(self)
       
     def as_KroneckerDelta(self):
@@ -2227,6 +2230,10 @@ class Basic(with_metaclass(ManagedProperties)):
     def simplify_Equal(cls, self, lhs, rhs):
         ...
         
+    @classmethod
+    def simplify_Relational(cls, self, lhs, rhs):
+        ...
+        
     def domain_defined(self, x):
         domain_defined = self._domain_defined
         if x in domain_defined:
@@ -2235,7 +2242,8 @@ class Basic(with_metaclass(ManagedProperties)):
                 domain = self._eval_domain_defined(x)
                 domain_defined[x] = domain
             return domain
-        return x.domain
+        return self._eval_domain_defined(x)
+#         return x.domain
     
     @property
     def emptySet(self):
@@ -2247,8 +2255,8 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.sets.sets import UniversalSet
         return UniversalSet(etype=self.type)
     
-    def astype(self, cls):
-        return getattr(cls, 'rewrite_from_' + self.__class__.__name__)(self)    
+    def astype(self, cls, *args, **kwargs):
+        return getattr(cls, 'rewrite_from_' + self.__class__.__name__)(self, *args, **kwargs)    
     
     @classmethod
     def rewrite_from_Minimize(cls, self):
@@ -2259,6 +2267,12 @@ class Basic(with_metaclass(ManagedProperties)):
     
     def _eval_Subset(self, rhs):
         ...
+
+    def apply(self, axiom, *args, **kwargs):
+        eq = axiom.apply(self, *args, **kwargs)
+        assert eq.is_Equal
+        assert eq.lhs is self
+        return eq.rhs
 
     
 class Atom(Basic):

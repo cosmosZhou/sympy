@@ -8,7 +8,7 @@ from sympy.core.containers import Dict
 from sympy.core.expr import Expr
 from sympy.core.singleton import S
 from sympy.functions import Abs
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 from sympy.utilities.iterables import uniq
 from sympy.utilities.miscellany import filldedent
 

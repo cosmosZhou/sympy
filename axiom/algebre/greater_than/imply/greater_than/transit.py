@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Unequal, StrictGreaterThan, GreaterThan
 from sympy import Symbol
 from sympy.sets.sets import Interval
@@ -6,7 +6,7 @@ from sympy.core.numbers import oo
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given, lower):
     assert given.is_GreaterThan
     lhs, rhs = given.args
@@ -14,10 +14,9 @@ def apply(given, lower):
     return GreaterThan(lhs, lower)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True, given=True)
     y = Symbol.y(real=True, given=True)

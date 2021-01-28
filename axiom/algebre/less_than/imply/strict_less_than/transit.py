@@ -1,4 +1,4 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan, GreaterThan, StrictLessThan
 from sympy import Symbol
 import axiom
@@ -7,7 +7,7 @@ from sympy.core.numbers import oo
 from axiom import algebre
 
 
-@plausible
+@apply(imply=True)
 def apply(given, upper=None):    
     x, a = axiom.is_LessThan(given)
     assert a < upper
@@ -15,10 +15,9 @@ def apply(given, upper=None):
     return StrictLessThan(x, upper)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     a = Symbol.a(real=True)

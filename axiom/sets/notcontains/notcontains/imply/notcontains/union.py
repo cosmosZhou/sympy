@@ -1,14 +1,11 @@
 
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import NotContains
 from sympy import Symbol
 
 
-# given e not in S
-
-# => S - {e} = S
-@plausible
+@apply(imply=True)
 def apply(*given):
     notcontains1, notcontains2 = given
     assert notcontains1.is_NotContains    
@@ -21,10 +18,9 @@ def apply(*given):
     return NotContains(e, (A | B).simplify())
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     e = Symbol.e(integer=True)
     A = Symbol.A(etype=dtype.integer)

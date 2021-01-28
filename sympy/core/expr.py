@@ -29,17 +29,9 @@ class Expr(Basic, EvalfMixin):
     __slots__ = []
 
     is_scalar = True  # self derivative is 1
-    is_Identity = False
-    is_ElementaryMatrix = False
-    is_ZeroMatrix = False
     is_square = False
     is_infinitesimal = None
-    is_FiniteSet = False
-    is_Minimize = None
-    is_Maximize = None
     is_Quantity = False
-    is_Concatenate = False
-    is_MatProduct = False
     
     def _coeff_isneg(self):
         return False
@@ -53,7 +45,7 @@ class Expr(Basic, EvalfMixin):
         return Complement(universe, self)
 
     def is_subset(self, other):
-        from sympy.sets.contains import Subset
+        from sympy import Subset
         return Subset(self, other)
 
     def _complement(self, other):
@@ -395,7 +387,7 @@ class Expr(Basic, EvalfMixin):
 
     def __ge__(self, other):
         from sympy import GreaterThan
-        from sympy.functions.elementary.miscellaneous import Min, Max
+        from sympy.functions.elementary.extremum import Min, Max
         if isinstance(other, Min):
             for arg in other.args:
                 if self >= arg:
@@ -437,7 +429,7 @@ class Expr(Basic, EvalfMixin):
 
     def __le__(self, other):
         from sympy import LessThan
-        from sympy.functions.elementary.miscellaneous import Max, Min
+        from sympy.functions.elementary.extremum import Max, Min
         if isinstance(other, Max):
             for arg in other.args:
                 if self <= arg:
@@ -479,7 +471,7 @@ class Expr(Basic, EvalfMixin):
 
     def __gt__(self, other):
         from sympy import StrictGreaterThan
-        from sympy.functions.elementary.miscellaneous import Min, Max
+        from sympy.functions.elementary.extremum import Min, Max
         if isinstance(other, Min):
             for arg in other.args:
                 if self > arg:
@@ -522,7 +514,7 @@ class Expr(Basic, EvalfMixin):
 
     def __lt__(self, other):
         from sympy import StrictLessThan
-        from sympy.functions.elementary.miscellaneous import Max, Min
+        from sympy.functions.elementary.extremum import Max, Min
         if isinstance(other, Max):
             for arg in other.args:
                 if self < arg:
@@ -3794,6 +3786,17 @@ class Expr(Basic, EvalfMixin):
             domain_assumed = y.domain_assumed
             if domain_assumed is None:
                 continue
+            
+            if y.is_Indexed:
+#                 x[k] is always dependent on x
+                if y.base in graph:
+                    graph[y.base].add(y)
+                
+                for index in y.indices:
+#                 x[k] is always dependent on k                    
+                    if index in graph:
+                        graph[index].add(y)
+                
             for x in domain_assumed.free_symbols:
                 # y is dependent on x, so x is a parent of y
                 if x in graph:
@@ -3834,7 +3837,7 @@ class Expr(Basic, EvalfMixin):
         elif self.is_extended_real:
             interval = S.Reals
         else:
-            assert self.is_complex, type(self)
+            assert self.is_complex, "%s(of type %s) is not complex!" % (self, type(self))
             interval = S.Complexes
 
         if not shape:
@@ -3915,7 +3918,7 @@ class Expr(Basic, EvalfMixin):
 
         i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)
 #         assert self.shape[0] > 1         
-        return UNION({self[i]}, (i, 0, self.shape[0] - 1))
+        return UNION({self[i]}, (i, 0, self.shape[0]))
 
     @property
     def is_square(self):
@@ -3973,8 +3976,8 @@ class Expr(Basic, EvalfMixin):
     def generate_int_limit(self, index=-1, excludes=None, generator=None, free_symbol=None):
         x = generator.generate_free_symbol(excludes, free_symbol=free_symbol, integer=True)
         domain = x.domain_assumed
-        start, end = 0, self.shape[-index - 1] - 1
-        if domain is not None and domain.is_Interval and domain.min() == start and domain.max() == end:
+        start, end = 0, self.shape[-index - 1] 
+        if domain is not None and domain.is_Interval and domain.min() == start and domain.max() + 1 == end:
             return (x,)   
         return (x, start, end)
 

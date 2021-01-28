@@ -156,4 +156,4 @@ if __name__ == '__main__':
 # http://www.gigamonkeys.com/book/
 # https://common-lisp.net/downloads
 
-# python run.py axiom.sets.contains.imply.equality.union axiom.sets.contains.imply.subset
+# python run.py axiom.sets.contains.imply.equal.union axiom.sets.contains.imply.subset

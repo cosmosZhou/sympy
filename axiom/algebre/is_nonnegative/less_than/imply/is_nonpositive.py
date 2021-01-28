@@ -1,10 +1,10 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import LessThan
 from sympy import Symbol
 import axiom
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     is_nonnegative, less_than = given
     x = axiom.is_nonnegative(is_nonnegative)
@@ -13,10 +13,9 @@ def apply(*given):
     return LessThan(x * (x - a), 0)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     a = Symbol.a(real=True, nonnegative=True)

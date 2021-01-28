@@ -1,10 +1,10 @@
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, Subset
-from sympy import Symbol
+from axiom.utility import prove, apply
+from sympy import *
+
+
 # given: A in B 
 # => {A} subset B
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_Contains
     e, s = given.args
@@ -12,10 +12,7 @@ def apply(given):
     return Subset(e.set, s)
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     e = Symbol.e(integer=True)
     s = Symbol.s(etype=dtype.integer)
@@ -23,8 +20,7 @@ def prove(Eq):
     
     Eq << apply(contains)
     
-    assert Eq[0].plausible is None
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].simplify()
 
 
 if __name__ == '__main__':

@@ -1,22 +1,21 @@
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy.core.relational import Equality
 from sympy import S
 from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
 from sympy.matrices.expressions.determinant import det
 from sympy.concrete.summations import Sum
 from sympy import Symbol
+from axiom import algebre, sets
 
-@plausible
+
+@apply(imply=True)
 def apply(A):
     n = A.shape[0]
     k = Symbol.k(integer=True)    
-    return Equality(det(Sum[k:1:n-1]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
+    return Equality(det(Sum[k:1:n]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     n = 6
     A = Symbol.A(shape=(n, n), complex=True)
@@ -29,6 +28,11 @@ def prove(Eq):
     Eq.L_definition = Eq[-1].this.rhs.doit()
     
     Eq << (shift @ A).this.expand()
+    
+#     Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.flatten, index=1)
+    
+#     Eq << Eq[-1].this.rhs.function.args[1].cond.args[0].apply(sets.contains.imply.contains.interval.substract, 1)
+    
     Eq << Eq[-1].this.rhs.doit()
     
     Eq << shift @ Eq[-1]    
@@ -45,7 +49,7 @@ def prove(Eq):
     Eq << Addition(n, 0, 4) @ Eq[-1]
     Eq << Addition(n, 0, 5) @ Eq[-1]
 
-    Eq << Multiplication(n, 0, S.One / (n-1)) @ Eq[-1]
+    Eq << Multiplication(n, 0, S.One / (n - 1)) @ Eq[-1]
 
     Eq << Multiplication(n, 1, -1) @ (Addition(n, 1, 0, -1) @ Eq[-1])    
     Eq << Multiplication(n, 2, -1) @ (Addition(n, 2, 0, -1) @ Eq[-1])    
@@ -59,7 +63,10 @@ def prove(Eq):
     Eq << Addition(n, 0, 4, -1) @ Eq[-1]
     Eq << Addition(n, 0, 5, -1) @ Eq[-1]
     
-    Eq << Eq[-1].det() * (n - 1)
+    Eq << Eq[-1].apply(algebre.equal.imply.equal.det)
+    
+    Eq << Eq[-1] * (n - 1)
+    
     Eq << -Eq[-1].subs(Eq[1])
 
 

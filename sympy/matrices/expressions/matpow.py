@@ -35,7 +35,7 @@ class MatPow(MatrixExpr):
     def shape(self):
         return self.base.shape
 
-    def _entry(self, i, j, **kwargs):
+    def _entry(self, i, j=None, **kwargs):
         from sympy.matrices.expressions import MatMul
         A = self.doit()
         if isinstance(A, MatPow):
@@ -43,6 +43,8 @@ class MatPow(MatrixExpr):
             if not A.base.is_square:
                 raise ShapeError("Power of non-square matrix %s" % A.base)
             elif A.exp.is_Integer and A.exp.is_positive:
+                if j is None:
+                    return A.func(A.base, A.exp - 1)[i] @ A.base
                 A = MatMul(*[A.base for k in range(A.exp)])
             # elif A.exp.is_Integer and self.exp.is_negative:
             # Note: possible future improvement: in principle we can take

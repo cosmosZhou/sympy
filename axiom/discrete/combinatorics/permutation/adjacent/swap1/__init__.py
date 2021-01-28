@@ -1,2 +1,2 @@
 from . import helper
-from . import equality
+from . import equal

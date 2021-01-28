@@ -441,7 +441,7 @@ class Function(Application, Expr):
             if arg.shape:
                 if len(arg.shape) > 1:
                     if not cls.allow_variable_argslist():
-                        raise TypeError('function only allows 1 dimentional args')
+                        print('function of multi-dimentional variables may not be supported')
                 else:
                     n = arg.shape[0]
             
@@ -453,14 +453,7 @@ class Function(Application, Expr):
             # The ideal solution would be just to attach metadata to
             # the exception and change NumPy to take advantage of this.
             if not cls.allow_variable_argslist():
-                temp = ('%(name)s takes %(qual)s %(args)s '
-                        'argument%(plural)s (%(given)s given)')
-                raise TypeError(temp % {
-                    'name': cls,
-                    'qual': 'exactly' if len(cls.nargs) == 1 else 'at least',
-                    'args': min(cls.nargs),
-                    'plural': 's' * (min(cls.nargs) != 1),
-                    'given': n})
+                print('input shape mistaken %s' % args)
 
         evaluate = options.get('evaluate', global_parameters.evaluate)
         result = super(Function, cls).__new__(cls, *args, *limits, **options)
@@ -831,7 +824,7 @@ class Function(Application, Expr):
 
     @property
     def shape(self):
-        return self.arg.shape
+        return self.args[0].shape
 
     @property
     def T(self):
@@ -969,15 +962,15 @@ class AppliedUndef(Function):
         """
         return True
 
-    @property
-    def limits(self):
-        index_of_limits = -1
+    def index_of_limits(self):
         for i, arg in enumerate(self.args):
             if arg.is_Tuple:
-                index_of_limits = i
-        if index_of_limits >= 0:
-            return self.args[index_of_limits:]
-        return ()
+                return i
+        return len(self.args)
+        
+    @property
+    def limits(self):        
+        return self.args[self.index_of_limits():]
         
     @property
     def arg(self):
@@ -986,14 +979,8 @@ class AppliedUndef(Function):
         return inputs[0]
         
     @property
-    def inputs(self):
-        index_of_limits = -1
-        for i, arg in enumerate(self.args):
-            if arg.is_Tuple:
-                index_of_limits = i
-        if index_of_limits >= 0:
-            return self.args[:index_of_limits]
-        return self.args
+    def inputs(self):        
+        return self.args[:self.index_of_limits()]
         
     def _sympystr(self, p):
         limits = self.limits
@@ -1002,12 +989,12 @@ class AppliedUndef(Function):
             return self.func.__name__ + "[%s](%s)" % (p.stringify(limits, ", "), p.stringify(self.inputs, ", "))
         return Function._sympystr(self, p)
 
-    def _latex(self, p):
+    def _latex(self, p, exp=None):
         limits = self.limits
         if limits:            
             limits = [x for x, *_ in limits]
             return self.func.__name__ + "_{%s}(%s)" % ((", ".join(map(p._print, limits))), ", ".join(map(p._print, self.inputs)))
-        return Function._latex(self, p)
+        return Function._latex(self, p, exp=exp)
     
     @property
     def definition(self):
@@ -1045,6 +1032,7 @@ class AppliedUndef(Function):
         if 'complex' in assumptions:
             return dtype.complex
         return super(AppliedUndef, self).dtype
+
     
 class UndefinedFunction(FunctionClass):
     """
@@ -1764,21 +1752,26 @@ class Derivative(Expr):
             if rv.has(Derivative):
                 rv = rv.doit(**hints)
         else:
-            from sympy import log, Mul, Pow, Sum        
-            if isinstance(self.expr, log):
+            from sympy import log, Mul
+            if self.expr.is_Log:
                 return 1 / self.expr.arg * Expr.__new__(self.func, self.expr.arg, *self.variable_count)
-            elif isinstance(self.expr, Mul):
+            elif self.expr.is_Times:
                 args = []
                 for i, factor in enumerate(self.expr.args):
                     args.append(Mul(*self.expr.args[:i] + self.expr.args[i + 1:]) * Expr.__new__(self.func, factor, *self.variable_count).doit(deep=False))
                 return Add(*args)
-            elif isinstance(self.expr, Pow):
+            elif self.expr.is_Power:
                 base, exponent = self.expr.args
                 if not exponent.has(*self._wrt_variables):
                     return exponent * base ** (exponent - 1) * Expr.__new__(self.func, base, *self.variable_count).doit(deep=False)
                 if not base.has(self._wrt_variables):
                     return self.expr * log(base) * Expr.__new__(self.func, exponent, *self.variable_count)
-            elif isinstance(self.expr, Sum):
+            elif self.expr.is_Sum:
+                if self.expr.limits:
+                    return self.swap(evaluate=True)
+                else:                    
+                    return Expr.__new__(self.func, self.expr.as_Sum(), *self.variable_count).doit(deep=False)
+            elif self.expr.is_ReducedSum:
                 if self.expr.limits:
                     return self.swap(evaluate=True)
                 else:                    
@@ -2055,8 +2048,7 @@ class Derivative(Expr):
         return _as_finite_diff(self, points, x0, wrt)
 
     def swap(self, evaluate=False):
-        from sympy.concrete.summations import Sum
-        if isinstance(self.expr, Sum):
+        if self.expr.is_Sum:
             _wrt_variables = self._wrt_variables
             for limit in self.expr.limits:
                 for bound in limit[1:]:
@@ -2068,7 +2060,20 @@ class Derivative(Expr):
                 derivative = derivative.doit(deep=False)
             else:
                 derivative = derivative.simplify()
-            return Sum(derivative, *self.expr.limits).simplify()
+            return self.expr.func(derivative, *self.expr.limits).simplify()
+        elif self.expr.is_ReducedSum:
+            _wrt_variables = self._wrt_variables
+            for limit in self.expr.limits:
+                for bound in limit[1:]:
+                    if bound.has(*_wrt_variables):
+                        return self
+            
+            derivative = Expr.__new__(self.func, self.expr.function, *self.variable_count)
+            if evaluate:
+                derivative = derivative.doit(deep=False)
+            else:
+                derivative = derivative.simplify()
+            return self.expr.func(derivative, *self.expr.limits).simplify()
 
         return self
 
@@ -2093,6 +2098,13 @@ class Derivative(Expr):
                 return S.Zero
          
         return Expr.__new__(self.func, dependent, *self.variable_count) * independent
+
+    @classmethod
+    def simplify_Equal(cls, self, lhs, rhs):
+        if isinstance(rhs, cls):
+            if lhs.variable_count == rhs.variable_count:
+                C = self.generate_free_symbol(real=True, given=True, free_symbol="C")
+                return self.func(lhs.expr, rhs.expr + C, equivalent=self)
 
     @property
     def dtype(self):
@@ -2326,7 +2338,7 @@ class Difference(Expr):
         """
         return self.expr._diff_wrt and isinstance(self.doit(), Difference)
 
-    def __new__(cls, expr, variable, count=1, **kwargs):
+    def __new__(cls, expr, variable, count=S.One, **kwargs):
 #         assert count >= 0
         assert isinstance(count, int) or count.is_integer
         from sympy.core.relational import Equality
@@ -2874,8 +2886,8 @@ class Difference(Expr):
         return r'{\color{blue} \Delta}_{%s}^{%s}\ {%s}' % (printer._print(x), printer._print(n), expr)
 
     def bisect(self, index):
-        x, n = self.variable_count
-        mid = Symbol.process_slice(index, 0, n)
+        x, n = self.variable_count        
+        mid = Symbol.process_slice(index, S.Zero, n)
         assert mid >= 0, "mid >= 0 => %s" % (mid >= 0)        
         assert mid <= n, "mid <= n => %s" % (mid <= n)
 

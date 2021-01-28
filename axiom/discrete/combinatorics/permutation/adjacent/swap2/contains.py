@@ -1,17 +1,11 @@
-from sympy.core.symbol import dtype
-from axiom.utility import check, plausible
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA
-from sympy.sets.contains import Contains
+from sympy import *
+from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.permutation.adjacent import swap2
-from axiom.discrete.matrix import elementary
-from sympy import Symbol
-from axiom import sets
+from axiom import sets, algebre, discrete
 
 
-@plausible
+@apply(imply=True)
 def apply(given):
     assert given.is_ForAll and len(given.limits) == 1
     x, S = given.limits[0]
@@ -26,7 +20,7 @@ def apply(given):
     return ForAll[x:S](Contains(w[i, j] @ x, S))
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n)    
@@ -36,7 +30,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     
     Eq << apply(ForAll[x:S](Contains(w[0, j] @ x, S)))
     
@@ -54,13 +48,13 @@ def prove(Eq):
     
     Eq << (Eq[-2] & Eq[-1]).split()[0]
     
-    Eq.final_statement = Eq[-1].forall((i_,), (j_,))
+    Eq.final_statement = algebre.condition.imply.forall.minify.apply(Eq[-1], (i_,), (j_,))
     
-    Eq << swap2.equality.apply(n, w)
+    Eq << swap2.equal.apply(n, w)
     
     Eq << Eq[-1] @ x
     
-    Eq << Eq[-1].forall((Eq[-1].limits[0].args[1].args[1].arg,))
+    Eq << algebre.condition.imply.forall.minify.apply(Eq[-1], (Eq[-1].limits[0].args[1].args[1].arg,))
     
     Eq.i_complement = Eq.final_statement.subs(Eq[-1])
     
@@ -68,21 +62,21 @@ def prove(Eq):
     
     Eq << Eq.plausible.bisect(i.set, wrt=j)
     
-    Eq.i_complement, Eq.i_intersection = Eq[-1].split()
+    Eq << Eq[-1].split()
     
-    Eq << sets.imply.equality.intersection.apply(i, Interval(1, n - 1, integer=True))
+    Eq << sets.imply.equal.intersection.apply(i, Interval(1, n - 1, integer=True))
     
-    Eq << Eq.i_intersection.this.limits[1].subs(Eq[-1])
+    Eq << Eq[-2].this.limits[1].subs(Eq[-1])
     
     Eq << Eq[-1].subs(w[i, i].equality_defined())
     
-    Eq << elementary.swap.transpose.apply(w).subs(j, 0)
+    Eq << discrete.matrix.elementary.swap.transpose.apply(w).subs(j, 0)
     
-    Eq.given_i = Eq.given_i.forall((i_,))
+    Eq.given_i = algebre.condition.imply.forall.minify.apply(Eq.given_i, (i_,))
     
     Eq << Eq.given_i.subs(Eq[-1].reversed)
     
-    Eq << (Eq[-1] & Eq.plausible)
+    Eq <<= Eq[-1] & Eq.plausible
 
     
 if __name__ == '__main__':

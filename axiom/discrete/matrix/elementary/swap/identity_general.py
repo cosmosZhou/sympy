@@ -1,6 +1,6 @@
 from sympy.core.relational import Equality
 
-from axiom.utility import check, plausible
+from axiom.utility import prove, apply
 
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -9,7 +9,7 @@ from sympy import LAMBDA
 from sympy import Symbol
 
 
-@plausible
+@apply(imply=True)
 def apply(x, d, w=None):
     n = x.shape[0]
     assert d.shape == (n,)
@@ -18,7 +18,7 @@ def apply(x, d, w=None):
     k = Symbol.k(integer=True)
 
     if w is None:
-        w = Symbol.w(integer=True, shape=(n, n, n, n), definition=LAMBDA[j:n, i:n](Swap(n, i, j)))
+        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
@@ -26,7 +26,7 @@ def apply(x, d, w=None):
     return Equality(x[d @ w[i, j, k]], LAMBDA[k:n](x[d[k]]) @ w[i, j, k])
 
 
-@check
+@prove
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
     x = Symbol.x(complex=True, shape=(n,))

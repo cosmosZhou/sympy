@@ -1,11 +1,10 @@
 
-from axiom.utility import plausible
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, Subset
-from sympy import Symbol
+from axiom.utility import prove, apply
+
+from sympy import *
 
 
-@plausible
+@apply(imply=True)
 def apply(*given):
     contains1, contains2 = given
     assert contains1.is_Contains    
@@ -18,10 +17,9 @@ def apply(*given):
     return Subset({x, y}, A)
 
 
-from axiom.utility import check
 
 
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)

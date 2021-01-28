@@ -535,6 +535,7 @@ class Text:
         except FileNotFoundError:
             createNewFile(path)
             self.file = open(path, "w+", encoding=encoding)
+        self.home()
 
     def __del__(self):
         self.file.close()
@@ -549,8 +550,8 @@ class Text:
                 self.home()
                 raise StopIteration
             line = line.strip()
-
-            if len(line) != 0:
+            
+            if line:
                 return line
 
     def prepend(self, s):
@@ -621,6 +622,41 @@ class Text:
 
         self.file.flush()
 
+    def __getitem__(self, index):
+        if index < 0:
+            self.end()
+            index = -index
+            offset = self.f.tell() - 1
+            while index > 0:
+                index -= 1
+                offset -= 1
+                while True:
+                    offset -= 1
+                    _offset = self.f.seek(offset, os.SEEK_SET)
+                    assert _offset == offset
+                    char = self.f.read(1)
+    #                     print('char =', char)
+                    if char == '\n' or char == '\r':
+                        break
+        else:
+            self.home()
+            offset = self.f.tell()
+            while index > 0:
+                index -= 1
+                while True:
+                    offset += 1
+                    _offset = self.f.seek(offset, os.SEEK_SET)
+                    assert _offset == offset
+                    char = self.f.read(1)
+#                     print('char =', char)
+                    if char == '\n' or char == '\r':
+                        break
+        current_pos = self.f.tell()
+
+        self.f.seek(current_pos, os.SEEK_SET)
+
+        return self.f.readline().strip()
+
     def write(self, s):
         self.home()
 
@@ -639,7 +675,11 @@ class Text:
         self.file.flush()
 
     def home(self):
+#         skip_byte_order_mark
         self.file.seek(0, os.SEEK_SET)
+        byteOrderMark = self.file.read(1)
+        if byteOrderMark and ord(byteOrderMark) != 0xFEFF:
+            self.file.seek(0, os.SEEK_SET)        
 
     def end(self):
         self.file.seek(0, os.SEEK_END)
@@ -675,3 +715,13 @@ class Text:
 
     def read(self):
         return self.file.read()
+    
+    def get_last_char(self):
+        self.end()
+        offset = self.file.tell() - 1
+        if offset < 0:
+            return ''
+        _offset = self.file.seek(offset, os.SEEK_SET)
+        assert _offset == offset
+        char = self.file.read(1)
+        return char        

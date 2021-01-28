@@ -16,7 +16,7 @@ from sympy.functions import Piecewise, sqrt, piecewise_fold, tan, cot, atan
 from sympy.functions.elementary.exponential import log
 from sympy.functions.elementary.integers import floor
 from sympy.functions.elementary.complexes import Abs, sign
-from sympy.functions.elementary.miscellaneous import Min, Max
+from sympy.functions.elementary.extremum import Min, Max
 from sympy.integrals.manualintegrate import manualintegrate
 from sympy.integrals.trigonometry import trigintegrate
 from sympy.integrals.meijerint import meijerint_definite, meijerint_indefinite
@@ -72,8 +72,8 @@ class Integrate(AddWithLimits):
 
         """
 
-        #This will help other classes define their own definitions
-        #of behaviour with Integral.
+        # This will help other classes define their own definitions
+        # of behaviour with Integral.
         if hasattr(function, '_eval_Integral'):
             return function._eval_Integral(*symbols, **assumptions)
 
@@ -318,7 +318,7 @@ class Integrate(AddWithLimits):
                 raise ValueError('no solution for solve(F(x) - f(u), u)')
             F = [fi.subs(xvar, d) for fi in soln]
 
-        newfuncs = {(self.function.subs(xvar, fi)*fi.diff(d)
+        newfuncs = {(self.function.subs(xvar, fi) * fi.diff(d)
                         ).subs(d, uvar) for fi in f}
         if len(newfuncs) > 1:
             raise ValueError(filldedent('''
@@ -368,24 +368,6 @@ class Integrate(AddWithLimits):
                 newlimits.append(xab)
 
         return self.func(newfunc, *newlimits)
-
-    def by_parts(self, u=None, dv=None, wolfram=None):
-        if len(self.limits) != 1:
-            return
-        (x, a, b), *_ = self.limits
-        if u is not None:
-            dv = self.function / u
-            v = self.func(dv, x).doit(wolfram=wolfram)
-            du = diff(u, x)
-        elif dv is not None:
-            u = self.function / dv
-            v = self.func(dv, x).doit(wolfram=wolfram)
-            du = diff(u, x)
-        else:
-            ...
-# u * dv = d(u v) - du * v
-        f = (u * v)._eval_interval(x, a, b) - self.func(du * v, *self.limits).simplify()
-        return f.simplify()
 
     def doit(self, **hints):
         """
@@ -594,7 +576,7 @@ class Integrate(AddWithLimits):
                         if x1 not in coeff.free_symbols:
                             a = tan_part.args[0]
                             antideriv = antideriv.subs(atan_term, Add(atan_term,
-                                sign(coeff)*pi*floor((a-pi/2)/pi)))
+                                sign(coeff) * pi * floor((a - pi / 2) / pi)))
                     for cot_part in atan_arg.atoms(cot):
                         x1 = Dummy('x1')
                         cot_exp1 = atan_arg.subs(cot_part, x1)
@@ -603,7 +585,7 @@ class Integrate(AddWithLimits):
                         if x1 not in coeff.free_symbols:
                             a = cot_part.args[0]
                             antideriv = antideriv.subs(atan_term, Add(atan_term,
-                                sign(coeff)*pi*floor((a)/pi)))
+                                sign(coeff) * pi * floor((a) / pi)))
 
             if antideriv is None:
                 undone_limits.append(xab)
@@ -639,6 +621,7 @@ class Integrate(AddWithLimits):
                         function = antideriv._eval_interval(x, a, b)
                         function = Poly(function, *gens)
                     else:
+
                         def is_indef_int(g, x):
                             return (isinstance(g, Integral) and
                                     any(i == (x,) for i in g.limits))
@@ -747,7 +730,7 @@ class Integrate(AddWithLimits):
                 limits = [(x, x) if (len(l) == 1 and l[0] == x) else l
                           for l in f.limits]
                 f = self.func(f.function, *limits)
-            return f.subs(x, ab)*dab_dsym
+            return f.subs(x, ab) * dab_dsym
 
         rv = S.Zero
         if b is not None:
@@ -901,7 +884,7 @@ class Integrate(AddWithLimits):
         # let's cut it short if `f` does not depend on `x`; if
         # x is only a dummy, that will be handled below
         if not f.has(x):
-            return f*x
+            return f * x
 
         # try to convert to poly(x) and then integrate if successful (fast)
         poly = f.as_poly(x)
@@ -948,7 +931,7 @@ class Integrate(AddWithLimits):
 
             # g(x) = const
             if g is S.One and not meijerg:
-                parts.append(coeff*x)
+                parts.append(coeff * x)
                 continue
 
             # g(x) = expr + O(x**n)
@@ -963,7 +946,7 @@ class Integrate(AddWithLimits):
                     if h_order_expr is not None:
                         h_order_term = order_term.func(
                             h_order_expr, *order_term.variables)
-                        parts.append(coeff*(h + h_order_term))
+                        parts.append(coeff * (h + h_order_term))
                         continue
 
                 # NOTE: if there is O(x**n) and we fail to integrate then
@@ -977,16 +960,16 @@ class Integrate(AddWithLimits):
                 a = Wild('a', exclude=[x])
                 b = Wild('b', exclude=[x])
 
-                M = g.base.match(a*x + b)
+                M = g.base.match(a * x + b)
 
                 if M is not None:
                     if g.exp == -1:
                         h = log(g.base)
                     elif conds != 'piecewise':
-                        h = g.base**(g.exp + 1) / (g.exp + 1)
+                        h = g.base ** (g.exp + 1) / (g.exp + 1)
                     else:
                         h1 = log(g.base)
-                        h2 = g.base**(g.exp + 1) / (g.exp + 1)
+                        h2 = g.base ** (g.exp + 1) / (g.exp + 1)
                         h = Piecewise((h2, Ne(g.exp, -1)), (h1, True))
 
                     parts.append(coeff * h / M[a])
@@ -1029,7 +1012,7 @@ class Integrate(AddWithLimits):
                         if i:
                             h = h + i.doit(risch=False)
 
-                        parts.append(coeff*h)
+                        parts.append(coeff * h)
                         continue
 
                 # fall back to heurisch
@@ -1131,7 +1114,7 @@ class Integrate(AddWithLimits):
         terms, order = expr.function.nseries(
             x=symb, n=n, logx=logx).as_coeff_add(Order)
         order = [o.subs(symb, x) for o in order]
-        return integrate(terms, *expr.limits) + Add(*order)*x
+        return integrate(terms, *expr.limits) + Add(*order) * x
 
     def _eval_as_leading_term(self, x, cdir=0):
         series_gen = self.args[0].lseries(x)
@@ -1207,7 +1190,14 @@ class Integrate(AddWithLimits):
                 function = self.function.subs(old, new)
                 return self.func(function, (x,))
 
-            function = self.function.subs(old, new)
+            if old in self.variables_set:
+                limits = []
+                for x, *ab in self.limits:
+                    ab = [t._subs(old, new) for t in ab]
+                    limits.append((x, *ab))
+                
+                return self.func(self.function, *limits)
+            function = self.function._subs(old, new)
 
             if len(limit) == 3:
                 x, a, b = limit
@@ -1229,7 +1219,7 @@ class Integrate(AddWithLimits):
         if len(self.limits) == 1:
             limit = self.limits[0]
             from sympy import sin, cos
-            function = self.function.subs(old, new)
+            function = self.function._subs(old, new)
 
             if isinstance(new, (Mul, Add)):
                 function = function.expand()
@@ -1254,6 +1244,12 @@ class Integrate(AddWithLimits):
                         self = self.func(function, *self.limits)
                         return self.simplify() if simplify else self
                     if len(res) != 1:
+                        assert new.is_symbol
+                        
+                        d_old = diff(old, x)
+                        function /= d_old
+                        if not function._has(x):
+                            return self.func(function, (new, new.domain)).simplify()
                         return self
 
                     new = res[0].subs(g, new)
@@ -1285,6 +1281,11 @@ class Integrate(AddWithLimits):
                         function *= diff(new, _x)
                     else:
                         if 'domain' in _x._assumptions:
+                            domain = _x.domain
+                            if domain.is_Interval:
+                                _a, _b = domain.min(), domain.max()
+                                if a == _a and b == _b:
+                                    return self.func(function, (_x,))
                             __x = _x.func(_x.name, real=_x.is_real)
                             function = function.subs(_x, __x)
                             _x = __x
@@ -1422,19 +1423,19 @@ class Integrate(AddWithLimits):
             n.is_finite == False):
             raise ValueError("n must be a positive integer, got %s" % n)
         x, a, b = limit
-        dx = (b - a)/n
+        dx = (b - a) / n
         k = Dummy('k', integer=True, positive=True)
         f = self.function
 
         if method == "left":
-            result = dx*Sum(f.subs(x, a + (k-1)*dx), (k, 1, n))
+            result = dx * Sum(f.subs(x, a + (k - 1) * dx), (k, 1, n))
         elif method == "right":
-            result = dx*Sum(f.subs(x, a + k*dx), (k, 1, n))
+            result = dx * Sum(f.subs(x, a + k * dx), (k, 1, n))
         elif method == "midpoint":
-            result = dx*Sum(f.subs(x, a + k*dx - dx/2), (k, 1, n))
+            result = dx * Sum(f.subs(x, a + k * dx - dx / 2), (k, 1, n))
         elif method == "trapezoid":
-            result = dx*((f.subs(x, a) + f.subs(x, b))/2 +
-                Sum(f.subs(x, a + k*dx), (k, 1, n - 1)))
+            result = dx * ((f.subs(x, a) + f.subs(x, b)) / 2 + 
+                Sum(f.subs(x, a + k * dx), (k, 1, n - 1)))
         else:
             raise ValueError("Unknown method %s" % method)
         return result.doit() if evaluate else result

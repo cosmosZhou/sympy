@@ -1,14 +1,15 @@
 
 from sympy.functions.combinatorial.factorials import binomial
 from sympy.core.relational import Equality
-from axiom.utility import plausible
+from axiom.utility import prove, apply
 from sympy import Symbol
 from axiom.discrete.combinatorics.binomial import Pascal
 from sympy.concrete.summations import Sum
 from sympy.core.add import Plus
 from axiom import algebre
 
-@plausible
+
+@apply(imply=True)
 def apply(x, y, n=None, free_symbol=None):
     if free_symbol is None:
         k = Symbol.k(integer=True)
@@ -16,17 +17,14 @@ def apply(x, y, n=None, free_symbol=None):
         k = free_symbol
     if n is None:
         n = Symbol.n(integer=True, nonnegative=True)
-        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)))
+        return Equality((x + y) ** n, Sum[k:0:n + 1](binomial(n, k) * x ** k * y ** (n - k)))
     elif n < 0:
         return None
     else:
-        return Equality((x + y) ** n, Sum[k:0:n](binomial(n, k) * x ** k * y ** (n - k)))
+        return Equality((x + y) ** n, Sum[k:0:n + 1](binomial(n, k) * x ** k * y ** (n - k)))
 
 
-from axiom.utility import check
-
-
-@check
+@prove
 def prove(Eq):
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
@@ -61,6 +59,7 @@ def prove(Eq):
     Eq << Eq.induction.induct()
     
     Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=n)
+
 
 if __name__ == '__main__':
     prove(__file__)

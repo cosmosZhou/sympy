@@ -6,7 +6,7 @@ from sympy.core.compatibility import range
 from sympy.core.function import ArgumentIndexError
 from sympy.functions.combinatorial.numbers import bernoulli, factorial, harmonic
 from sympy.functions.elementary.exponential import log, exp_polar
-from sympy.functions.elementary.miscellaneous import sqrt
+from sympy.core.power import sqrt
 
 ###############################################################################
 ###################### LERCH TRANSCENDENT #####################################

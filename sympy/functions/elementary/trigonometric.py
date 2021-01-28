@@ -12,7 +12,8 @@ from sympy.functions.elementary.exponential import log, exp
 from sympy.functions.elementary.integers import floor, ceiling
 from sympy.functions.elementary.hyperbolic import (acoth, asinh, atanh, cosh,
     coth, HyperbolicFunction, sinh, tanh)
-from sympy.functions.elementary.miscellaneous import sqrt, Min, Max
+from sympy.functions.elementary.extremum import Min, Max
+from sympy.core.power import sqrt
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.sets.sets import FiniteSet
 from sympy.utilities.iterables import numbered_symbols
@@ -106,8 +107,14 @@ class TrigonometricFunction(Function):
         if self.arg.is_symbol:
             latex = r"\%s%s%s"
         else:
-            latex = r"\%s%s\(%s\)"
+            latex = r"\%s%s\left(%s\right)"
         return latex % (func, exp, p._print(self.arg))
+
+    def __iter__(self):
+        raise TypeError
+
+    def __getitem__(self, index):
+        return self.func(self.arg[index])
 
 
 def _peeloff_pi(arg):
@@ -541,6 +548,12 @@ class Sin(TrigonometricFunction):
             return False
         if b < 2 and a > 1:
             return True
+
+    @property
+    def definition(self):
+        from sympy import Sum, oo
+        n = self.generate_free_symbol(integer=True, free_symbol='n')
+        return Sum[n:oo]((-1) ** n * self.arg ** (2 * n + 1) / factorial(2 * n + 1))
 
 
 sin = Sin
@@ -1032,11 +1045,17 @@ class Cos(TrigonometricFunction):
         if b < 3 and a > 1:
             return True
 
+    @property
+    def definition(self):
+        from sympy import Sum, oo
+        n = self.generate_free_symbol(integer=True, free_symbol='n')
+        return Sum[n:oo]((-1) ** n * self.arg ** (2 * n) / factorial(2 * n))
+
 
 cos = Cos
 
 
-class tan(TrigonometricFunction):
+class Tan(TrigonometricFunction):
     """
     The tangent function.
 
@@ -1334,6 +1353,9 @@ class tan(TrigonometricFunction):
         if arg.is_imaginary:
             return True
         return fuzzy_not((arg / pi - S.Half).is_integer)
+
+
+tan = Tan
 
 
 class cot(TrigonometricFunction):
