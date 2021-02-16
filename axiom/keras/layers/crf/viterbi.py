@@ -1,14 +1,8 @@
-from sympy import Symbol, Slice
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-
-from sympy import LAMBDA, MIN, MAX, Minimize
-import sympy
-from sympy.functions.elementary.exponential import log, exp
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
 from axiom.keras.layers.crf.markov import process_assumptions, assumptions
-from sympy.sets.sets import Interval
 from axiom import keras, algebre
 
 
@@ -26,11 +20,11 @@ def apply(*given):
     transition_probability = P(y[i] | y[i - 1])
     y = pspace(y).symbol
     
-    G = Symbol.G(definition=LAMBDA[y[i - 1], y[i]](-sympy.log(transition_probability)))
+    G = Symbol.G(definition=LAMBDA[y[i - 1], y[i]](-log(transition_probability)))
     assert G.shape == (d, d)
     s = Symbol.s(definition=LAMBDA[t](-log(joint_probability_t)))
     assert s.shape == (n,)
-    x = Symbol.x(definition=LAMBDA[y[i], i](-sympy.log(emission_probability)))
+    x = Symbol.x(definition=LAMBDA[y[i], i](-log(emission_probability)))
     assert x.shape == (n, d)
     x_quote = Symbol.x_quote(definition=LAMBDA[y[t], t](MIN[y[:t]](s[t])))
     assert x_quote.shape == (n, d)

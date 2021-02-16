@@ -1,8 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import LessThan
-from sympy import Symbol
 import axiom
-from sympy.functions.elementary.extremum import Max
 from axiom import algebre, sets
 
 
@@ -14,8 +12,6 @@ def apply(*given):
     assert x == _x
     
     return LessThan(x * x, Max(m * m, M * M))
-
-
 
 
 @prove
@@ -38,13 +34,13 @@ def prove(Eq):
     
     Eq << Eq[0].bisect(x > 0).split()
     
-    Eq << algebre.ou.imply.ou.invert.apply(Eq[-1])
+    Eq << algebre.ou.imply.ou.invert.apply(Eq[-2])
     
-    Eq << Eq[-1].this.args[1].apply(sets.contains.imply.less_than.square.nonpositive_interval)
+    Eq << Eq[-1].this.args[0].apply(algebre.is_nonpositive.greater_than.imply.less_than.square)
     
     Eq << Eq[-1].this.args[1].apply(algebre.less_than.imply.less_than.transit, Eq[2].rhs)
     
-    Eq << Eq[-1].this.args[0].apply(algebre.strict_greater_than.imply.greater_than.rewrite)
+    Eq << Eq[-1].this.args[0].apply(algebre.strict_greater_than.imply.greater_than.integer)
 
     
 if __name__ == '__main__':

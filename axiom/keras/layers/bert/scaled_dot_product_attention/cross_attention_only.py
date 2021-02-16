@@ -121,7 +121,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.swap.back)
     
-    Eq << Eq[-1].this(i).rhs.function.args[1]().cond.simplify()
+    Eq << Eq[-1].this.rhs.function.simplify(wrt=i)
     
     Eq << Eq[-1].this.rhs.function.astype(Plus)
     

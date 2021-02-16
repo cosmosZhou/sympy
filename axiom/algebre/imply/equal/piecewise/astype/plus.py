@@ -1,15 +1,6 @@
-from sympy import Symbol, Or
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.piecewise import Piecewise
-
-from sympy.core.function import Function
-from axiom import algebre
 import axiom
-from sympy.core.add import Plus
-
 
 @apply(imply=True)
 def apply(piecewise, additive=None):

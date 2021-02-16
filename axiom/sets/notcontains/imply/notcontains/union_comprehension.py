@@ -1,10 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
-from sympy.core.numbers import oo
-from sympy import UNION
-from sympy.sets.sets import Interval
 from axiom import algebre
 
 
@@ -18,8 +13,6 @@ def apply(given, limit):
     assert Interval(a, b, right_open=True, integer=True) in A.domain_defined(k)
     
     return NotContains(e, UNION[k:a:b](A))
-
-
 
 
 @prove
@@ -45,6 +38,7 @@ def prove(Eq):
     Eq << Eq.induction.induct()
     
     Eq << algebre.condition.sufficient.imply.condition.induction.apply(Eq.initial, Eq[-1], n=n, start=1)    
+
     
 if __name__ == '__main__':
     prove(__file__)

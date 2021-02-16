@@ -142,8 +142,7 @@ def prove(Eq):
     
     Eq << Subset(sj, Eq[2].rhs, plausible=True)
     
-    Eq <<= Eq[-1] & Eq.index_domain
-
+    Eq << sets.contains.subset.imply.contains.apply(Eq.index_domain, Eq[-1])
 
 if __name__ == '__main__':
     prove(__file__)

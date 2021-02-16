@@ -1,12 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol, Product
-from sympy.core.function import Function
 import axiom
-from sympy.sets.sets import Interval
 from axiom import algebre
-from sympy.core.sympify import sympify
-from sympy.core.numbers import oo
 
 
 @apply(imply=True)

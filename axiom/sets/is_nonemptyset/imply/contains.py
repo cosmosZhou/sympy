@@ -1,9 +1,7 @@
-from sympy.core.relational import  Unequality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
 from axiom import sets
-from sympy import Symbol
+
 
 @apply(imply=True)
 def apply(given):
@@ -36,7 +34,7 @@ def prove(Eq):
     
     Eq << Eq[-1].apply(sets.notcontains.imply.is_emptyset)
     
-    Eq << Eq[-1].subs(Eq[0])
+    Eq <<= Eq[-1] & Eq[0]
     
 
 if __name__ == '__main__':

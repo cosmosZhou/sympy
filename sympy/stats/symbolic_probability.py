@@ -217,7 +217,7 @@ class Probability(Expr):
                                 start = given.indices[0]
                                 stop = start + 1
                             elif given.is_Slice:
-                                start, stop = given.indices
+                                start, stop = given.index
                             else:
                                 expr.append(eq)
                                 continue                                                       
@@ -242,7 +242,7 @@ class Probability(Expr):
             return self.func(self.arg, given=condition.rhs)
         elif condition.is_Equal:
             if given.is_Slice:
-                start, stop = given.indices
+                start, stop = given.index
                 condition = condition.bisect(Slice[start:stop])
             elif given.is_Indexed:
                 condition = condition.bisect(Slice[given.indices])

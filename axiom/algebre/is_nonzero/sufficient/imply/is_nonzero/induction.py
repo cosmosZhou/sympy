@@ -6,6 +6,8 @@ from axiom import algebre
 
 @apply(imply=True)
 def apply(*given, n=None):
+    assert n.is_given == False
+    
     f0, sufficient = given
     axiom.is_nonzero(f0)
     fn, fn1 = axiom.is_Sufficient(sufficient)    
@@ -19,7 +21,7 @@ def apply(*given, n=None):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, nonnegative=True)    
+    n = Symbol.n(integer=True, nonnegative=True, given=False)    
     f = Symbol.f(integer=True, shape=(oo,))
     Eq << apply(Unequal(f[0], 0), Sufficient(Unequal(f[n], 0), Unequal(f[n + 1], 0)), n=n)
     

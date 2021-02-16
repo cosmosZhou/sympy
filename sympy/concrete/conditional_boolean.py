@@ -23,6 +23,9 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     def __mul__(self, rhs):
         return self.this.function.__mul__(rhs)
         
+    def __mod__(self, rhs):
+        return self.this.function.__mod__(rhs)
+    
     def __truediv__(self, rhs):
         return self.this.function.__truediv__(rhs)
 
@@ -133,7 +136,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                 _variables.remove(v)
             elif v.is_Slice:
                 for _v in _variables:
-                    if _v in v:
+                    if v.index_contains(_v):
                         _variables.remove(_v)
                         break
 

@@ -60,7 +60,7 @@ def prove(Eq):
     
     Eq <<= Eq.x_n1_set_comprehension & Eq[-1] 
     
-    Eq << Eq[3].definition
+    Eq << Eq[3].this.function.function.rhs.definition
 
     
 if __name__ == '__main__':

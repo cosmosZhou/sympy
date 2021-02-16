@@ -1,12 +1,6 @@
-from sympy.functions.combinatorial.factorials import factorial, binomial
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.sets.sets import Interval
 from axiom import discrete, algebre
-from sympy.core.function import Difference
-from sympy import Symbol, Slice
-from sympy.concrete.summations import Sum
 
 
 @apply(imply=True)

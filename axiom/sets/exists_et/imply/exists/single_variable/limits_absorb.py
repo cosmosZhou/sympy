@@ -1,4 +1,3 @@
-
 from axiom.utility import prove, apply
 
 from sympy import *

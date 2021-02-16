@@ -1,9 +1,5 @@
 from axiom.utility import prove, apply
-
-from sympy import Symbol, Or
-
-from sympy.core.function import Function
-from sympy.concrete.forall import ForAll
+from sympy import *
 from axiom import algebre
 
 
@@ -13,11 +9,9 @@ def apply(given):
     limits = given.limits
     assert len(limits) == 1
     
-    limit= limits[0][0], given.function.invert()
+    limit = limits[0][0], given.function.invert()
     
     return ForAll(given.limits_condition.invert().simplify(), limit)
-
-
 
 
 @prove
@@ -31,6 +25,7 @@ def prove(Eq):
     Eq << algebre.forall.imply.ou.apply(Eq[0])
     
     Eq << algebre.ou.imply.forall.apply(Eq[-1], pivot=0, wrt=e)
+
 
 if __name__ == '__main__':
     prove(__file__)

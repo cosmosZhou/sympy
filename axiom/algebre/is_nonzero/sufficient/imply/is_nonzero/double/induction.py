@@ -1,13 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal, Unequal
-from sympy import Symbol
-
-from sympy.core.numbers import oo
-from sympy import LAMBDA, Or, Sufficient
 import axiom
-from sympy.functions.special.tensor_functions import KroneckerDelta
 from axiom import algebre
-from sympy.functions.elementary.piecewise import Piecewise
 
 
 @apply(imply=True)
@@ -24,11 +18,9 @@ def apply(*given, n=None, m=None):
     return fn
 
 
-
-
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, nonnegative=True)    
+    n = Symbol.n(integer=True, nonnegative=True, given=False)    
     m = Symbol.m(integer=True, nonnegative=True)
     f = Symbol.f(integer=True, shape=(oo, oo))
     Eq << apply(Unequal(f[m, 0], 0), Sufficient(Unequal(f[m + 1, n], 0), Unequal(f[m, n + 1], 0)), n=n, m=m)

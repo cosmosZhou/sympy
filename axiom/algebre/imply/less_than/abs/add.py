@@ -1,15 +1,7 @@
-from sympy import Symbol, Boole, Or
-from sympy.core.relational import Equality, LessThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.piecewise import Piecewise
-
-from sympy.core.function import Function
 from axiom import algebre, sets
 import axiom
-from sympy.core.numbers import Number
-from sympy.core.mul import Times
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 

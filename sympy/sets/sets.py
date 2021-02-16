@@ -1382,7 +1382,12 @@ class Interval(Set, EvalfMixin):
 
         if self.start is S.NegativeInfinity and self.stop is S.Infinity:
             if not other.is_extended_real is None:
-                return other.is_extended_real
+                if self.is_integer:
+                    if other.is_integer:
+                        return S.true
+                    return
+                else:
+                    return other.is_extended_real
 
         if other.is_extended_real == False:
             return S.false
@@ -1694,6 +1699,23 @@ class Interval(Set, EvalfMixin):
             return dtype.integer
         return dtype.real
 
+    def _pretty(self, p):         
+        if self.start == self.stop:
+            return p._print_seq(self.args[:1], '{', '}')
+
+        else:
+            if self.left_open:
+                left = '('
+            else:
+                left = '['
+
+            if self.right_open:
+                right = ')'
+            else:
+                right = ']'
+
+            return p._print_seq(self.args[:2], left, right, delimiter='; ' if self.is_integer else ', ')
+
     def _sympystr(self, _): 
         return '{left_open}{start}{sep} {stop}{right_open}'.format(**{'start': self.start, 'stop': self.stop, 'sep': ';' if self.is_integer else ',',
                              'left_open': '(' if self.left_open else '[',
@@ -1820,6 +1842,9 @@ class Interval(Set, EvalfMixin):
                 e -= S.One
                 return self.func(e, s, evaluate=False, equivalent=self).simplify()
 
+    def _eval_Subset(self, rhs):
+        if rhs.is_UniversalSet:
+            return S.true
                             
 class Union(Set, LatticeOp, EvalfMixin):
     """
@@ -2814,7 +2839,7 @@ class EmptySet(Set):
         return other
 
     def _sympystr(self, _):
-        return 'Ø'
+        return '\N{LATIN CAPITAL LETTER O WITH STROKE}'
 
     def __add__(self, other):
         return other

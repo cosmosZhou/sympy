@@ -1167,35 +1167,36 @@ class Basic(with_metaclass(ManagedProperties)):
             return self
 
         if old.is_Slice:
-            indices = set()
-            for indexed in preorder_traversal(self):
-                if not isinstance(indexed, Basic):
-                    continue
-                if indexed.is_Indexed:
-                    if indexed.base == old.base:
-                        indices |= {*indexed.indices}
-                elif indexed.is_Slice:
-                    if indexed.base == old.base:
-                        indices |= {*indexed.indices}
-                    
-            if indices:
-                start, stop = old.indices
-                reps = {}            
-                this = self
-                for i in indices:
-                    if i.is_symbol:
-                        if i >= stop or i < start: 
-                            continue
-                        i_domain = self.domain_defined(i)
-                        if i.domain != i_domain:
-                            _i = i.copy(domain=i_domain)
-                            this = this._subs(i, _i)                            
-                            reps[i] = _i
-                if this != self:
-                    this = this._subs(old, new, **hints)
-                    for i, _i in reps.items():
-                        this = this._subs(_i, i)                            
-                    return this
+            if len(old.indices) == 1:
+                indices = set()
+                for indexed in preorder_traversal(self):
+                    if not isinstance(indexed, Basic):
+                        continue
+                    if indexed.is_Indexed:
+                        if indexed.base == old.base:
+                            indices |= {*indexed.indices}
+                    elif indexed.is_Slice:
+                        if indexed.base == old.base:
+                            indices |= {*indexed.index}
+                        
+                if indices:
+                    start, stop = old.index
+                    reps = {}            
+                    this = self
+                    for i in indices:
+                        if i.is_symbol:
+                            if i >= stop or i < start: 
+                                continue
+                            i_domain = self.domain_defined(i)
+                            if i.domain != i_domain:
+                                _i = i.copy(domain=i_domain)
+                                this = this._subs(i, _i)                            
+                                reps[i] = _i
+                    if this != self:
+                        this = this._subs(old, new, **hints)
+                        for i, _i in reps.items():
+                            this = this._subs(_i, i)                            
+                        return this
         
         def fallback(self, old, new):
             """

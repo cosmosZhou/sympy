@@ -1,14 +1,13 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
+from axiom import sets, algebre
 
 
 @apply(imply=True)
 def apply(given, S):
     lhs, rhs = axiom.is_Contains(given)    
     return Contains(lhs, rhs | S)
-
-
 
 
 @prove
@@ -20,7 +19,9 @@ def prove(Eq):
     
     Eq << apply(Contains(e, U), S)
     
-    Eq << Eq[-1].split()[1]
+    Eq << sets.contains.given.ou.apply(Eq[1])
+    
+    Eq << algebre.condition.imply.ou.apply(Eq[0], Contains(e, S))
     
 if __name__ == '__main__':
     prove(__file__)

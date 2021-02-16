@@ -30,6 +30,7 @@ class Transpose(MatrixExpr):
     B.T*A.T
 
     """
+
     @property
     def dtype(self):
         return self.arg.dtype
@@ -89,6 +90,8 @@ class Transpose(MatrixExpr):
                 if start is None:
                     if stop is None:
                         return self
+                from sympy import Slice                
+                return Slice(self.arg, slice(None, None), i)
             return self.arg[:, i]            
         if hasattr(self.arg, '_entry'):
             return self.arg._entry(j, i, expand=expand, **kwargs)
@@ -184,6 +187,7 @@ class Transpose(MatrixExpr):
             return self._entry(key)
 #             # row-wise decomposition of matrix
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
+
 
 def transpose(expr):
     """Matrix transpose"""

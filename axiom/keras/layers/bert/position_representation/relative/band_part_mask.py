@@ -41,9 +41,9 @@ def apply(seq_length, dx, dz, k, num_lower, num_upper):
     a_K_quote = Symbol("a^K'", definition=LAMBDA[j:Min(seq_length, gram_width), i:seq_length](w_K[k + tf.clip(j - Min(i, num_lower), -k, k)]))
     a_V_quote = Symbol("a^V'", definition=LAMBDA[j:Min(seq_length, gram_width), i:seq_length](w_V[k + tf.clip(j - Min(i, num_lower), -k, k)]))
     
-    β = Symbol.β(definition=LAMBDA[i:seq_length](tf.nn.relu(start)))
+    β = Symbol.beta(definition=LAMBDA[i:seq_length](tf.nn.relu(start)))
             
-    ζ = Symbol.ζ(definition=LAMBDA[i:seq_length](Min(stop, seq_length)))
+    ζ = Symbol.zeta(definition=LAMBDA[i:seq_length](Min(stop, seq_length)))
     
     indices = slice(β[i], ζ[i])
     indices0 = slice(0, ζ[i] - β[i])

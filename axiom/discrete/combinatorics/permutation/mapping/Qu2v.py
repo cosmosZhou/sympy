@@ -87,7 +87,7 @@ def prove(Eq):
     
     Eq.Xv_in_Qv, Eq.x_eq_swap_Xv = Eq[3].split()
     
-    Eq << Eq.Xv_in_Qv.definition
+    Eq << Eq.Xv_in_Qv.this.function.rhs.definition
     
     Eq.indexu_eq_indexu = Eq.x_eq_swap_Xv.function.rhs.args[0].indices[1].this.subs(Eq.Xv_definition)
     

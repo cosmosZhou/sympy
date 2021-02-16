@@ -46,7 +46,7 @@ def prove(Eq):
     
     Eq.P2P_quote = ForAll[x[:n]:P](Contains(x_quote, P_quote), plausible=True)
     
-    Eq << Eq.P2P_quote.definition.split()
+    Eq << Eq.P2P_quote.this.function.rhs.definition.split()
     
     Eq << sets.imply.forall.conditionset.apply(P_quote)
     
@@ -62,7 +62,7 @@ def prove(Eq):
     
     Eq << ForAll[x[:n + 1]:P_quote](Contains(x[:n], P), plausible=True)
 
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].this.function.rhs.definition
     
     Eq << sets.forall_contains.forall_contains.forall_equal.forall_equal.imply.equal.apply(Eq[-1], Eq.P2P_quote, Eq.mapping_quote, Eq.mapping)
     

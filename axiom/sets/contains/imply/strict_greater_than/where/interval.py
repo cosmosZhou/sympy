@@ -1,6 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
+from axiom import sets
 
 
 @apply(imply=True)
@@ -26,7 +27,7 @@ def prove(Eq):
     b = Symbol.b(real=True, given=True)
     Eq << apply(Contains(x, Interval(a, b, left_open=True)))
     
-    Eq << Eq[0].split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
 
     
 if __name__ == '__main__':

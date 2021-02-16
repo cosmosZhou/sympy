@@ -1,9 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, NotContains
-from sympy import Symbol
 import axiom
-from sympy.logic.boolalg import And
 from axiom import sets
 
 
@@ -14,8 +11,6 @@ def apply(given):
     A, B = axiom.is_Complement(domain)
     
     return And(Contains(e, A), NotContains(e, B))
-
-
 
 
 @prove

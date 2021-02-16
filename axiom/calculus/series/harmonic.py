@@ -30,23 +30,25 @@ def prove(Eq):
 
     Eq << algebre.imply.forall.limits_assert.apply(Eq[-1].limits)
 
-    Eq << Eq[-1].inverse().split()
-
-    Eq << (Eq.mean_value_theorem.subs(Eq[-1]), Eq.mean_value_theorem.subs(Eq[-2]))
+    Eq << Eq[-1].inverse()
+    
+    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.interval).split()
+    
+    Eq <<= Eq[-2].subs(Eq.mean_value_theorem.reversed), Eq[-1].subs(Eq.mean_value_theorem.reversed)
 
     Eq <<= Eq[-1].apply(algebre.greater_than.imply.greater_than.sum, (k, 1, n - 1)), Eq[-2].apply(algebre.less_than.imply.less_than.sum, (k, 1, n)) 
     
-    Eq << (Eq[-1].this.lhs.doit(), Eq[-2].this.lhs.doit().reversed)
+    Eq <<= Eq[-1].this.lhs.doit(), Eq[-2].this.lhs.doit().reversed
     
     k = Eq[-1].lhs.variable
     Eq << Eq[-1].this.lhs.limits_subs(k, k - 1) + 1
 
     assert Eq[-3].lhs > 0    
-    Eq << (Eq[-3] / Eq[-3].lhs, Eq[-1] / Eq[-3].lhs) 
+    Eq <<= Eq[-3] / Eq[-3].lhs, Eq[-1] / Eq[-3].lhs 
     
-    Eq << (Eq[-2].limit(n, oo), Eq[-1].limit(n, oo))
+    Eq <<= Eq[-2].limit(n, oo), Eq[-1].limit(n, oo)
     
-    Eq << Eq[-1].subs(Eq[-2])
+    Eq <<= Eq[-1] & Eq[-2]
 
 
 if __name__ == '__main__':

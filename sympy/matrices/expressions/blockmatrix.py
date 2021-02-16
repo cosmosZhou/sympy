@@ -170,12 +170,13 @@ class BlockMatrix(MatrixExpr):
                     raise IndexError("Invalid indices (%s, %s)" % (i, j))
                 
         if isinstance(key, int) or key.is_Integer or key.is_Symbol or key.is_Expr:
-            rows = 0
+            from sympy import S
+            rows = S.Zero
             args = []
             for arg in self.args:
                 index = rows
                 if len(arg.shape) < len(self.shape):
-                    rows += 1
+                    rows += S.One
                 else:
                     rows += arg.shape[0]
                     
@@ -402,6 +403,8 @@ class BlockMatrix(MatrixExpr):
     def _sympystr(self, p):
         return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
 
+    _pretty = _sympystr
+    
     def _eval_domain_defined(self, x):
         if x.dtype.is_set:
             return x.universalSet

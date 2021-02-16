@@ -1,14 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol
-
-from sympy.core.numbers import oo
-from sympy import ForAll
-from sympy import LAMBDA
 import axiom
 from axiom import algebre
-from sympy.core.sympify import sympify
-from sympy.logic.boolalg import Sufficient
 
 
 @apply(imply=True)
@@ -37,7 +30,7 @@ def prove(Eq):
     
     Eq << apply(Equal(f[1], g[1]), Equal(f[2], g[2]), Sufficient(Equal(f[n], g[n]), Equal(f[n + 2], g[n + 2])), n=n, start=1)
     
-    m = Symbol.m(integer=True, nonnegative=True)
+    m = Symbol.m(integer=True, nonnegative=True, given=False)
     h = Symbol.h(definition=LAMBDA[m](f[2 * m + 1] - g[2 * m + 1]))
     
     Eq << h[0].this.definition
@@ -93,9 +86,7 @@ def prove(Eq):
     Eq << Eq[-1].limits_subs(m, m - 2)
     
     Eq <<= Eq[-1] & Eq[-3]
-    
-    Eq << algebre.forall.imply.forall.limits_swap.apply(Eq[-1])
-    
+        
     Eq << Eq[-1].subs(m, n)
     
         

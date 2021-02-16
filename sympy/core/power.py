@@ -1857,8 +1857,8 @@ class Power(Expr):
         if self.exp is S.Half and not rational:
             arg = p._print(self.base)
             if re.compile('\w+').fullmatch(arg):
-                return "√" + arg
-            return "√(%s)" % arg
+                return "\N{SQUARE ROOT}" + arg
+            return "\N{SQUARE ROOT}(%s)" % arg
 
 #         if self.is_commutative:
         if -self.exp is S.Half and not rational:
@@ -1866,8 +1866,8 @@ class Power(Expr):
             # match -0.5, which we don't want.
             arg = p._print(self.base)
             if re.compile('\w+').fullmatch(arg):
-                return "1/√" + arg
-            return "1/√(%s)" % arg
+                return "1/\N{SQUARE ROOT}" + arg
+            return "1/\N{SQUARE ROOT}(%s)" % arg
         
         if self.exp is -S.One:
             # Similarly to the S.Half case, don't test with "==" here.

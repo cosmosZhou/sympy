@@ -1,9 +1,7 @@
-from sympy.core.relational import  Unequal
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
-from axiom.statistics import bayes
+from axiom import statistics
 
 
 # given: P(x | y) != 0
@@ -27,11 +25,11 @@ def prove(Eq):
     
     Eq << Eq[0].domain_definition()
     
-    Eq << bayes.corollary.apply(Eq[-1], var=x)
+    Eq << statistics.bayes.corollary.apply(Eq[-1], var=x)
     
     Eq << Eq[0] * Eq[2]
     
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-1].subs(Eq[-2].reversed)
     
 if __name__ == '__main__':
     prove(__file__)

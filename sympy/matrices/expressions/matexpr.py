@@ -769,7 +769,7 @@ class MatrixSymbol(MatrixExpr):
                 [first, second],
             )]
 
-    def _sympystr(self, _):   
+    def _sympystr(self, _): 
         return Symbol.sympystr(self.name)
 
 
@@ -972,7 +972,7 @@ class ZeroMatrix(MatrixExpr):
     def _sympystr(self, p):
         return "0"
 
-    def __rmul__(self, other):        
+    def __rmul__(self, other): 
         if isinstance(other, Basic) and len(other.shape) > len(self.shape):
             return self.func(*other.shape)
         return self
@@ -994,6 +994,7 @@ class ZeroMatrix(MatrixExpr):
     
     def doit(self, **hints):
         return self
+
     
 class GenericZeroMatrix(ZeroMatrix):
     """
@@ -1104,6 +1105,7 @@ class OneMatrix(MatrixExpr):
     
     def doit(self, **hints):
         return self
+
     
 def matrix_symbols(expr):
     return [sym for sym in expr.free_symbols if sym.is_Matrix]
@@ -1265,7 +1267,7 @@ def _make_matrix(x):
 
 
 # precondition: i > j or i < j
-class Swap(Identity):        
+class Swap(Identity): 
     is_Identity = False
     
     def _latex(self, p):
@@ -1320,7 +1322,7 @@ class Swap(Identity):
         
         return 2 * KroneckerDelta(self.i, self.j) - 1
 
-    def _eval_transpose(self):        
+    def _eval_transpose(self): 
         return self
 
     def _eval_inverse(self):
@@ -1337,7 +1339,9 @@ class Swap(Identity):
     def _eval_domain_defined(self, x): 
         return self.n.domain_defined(x) & x.domain_conditioned((self.i < self.n) & (self.i >= 0) & ((self.j < self.n) & (self.j >= 0)))
 
+    _eval_is_extended_real = lambda self: self.arg.is_extended_real
 
+    
 class Multiplication(Identity):
 
     def _latex(self, p):
@@ -1493,7 +1497,7 @@ class Addition(Multiplication):
                 args.append(other_i + other_j * self.multiplier)
                 if self.i + 1 != self.shape[0]:
                     args.append(other[self.i + 1:])
-            elif self.i > self.j:                    
+            elif self.i > self.j: 
                 args.append(other[:self.i])
                 args.append(other_i + other_j * self.multiplier)
                 if self.i + 1 != self.shape[0]:

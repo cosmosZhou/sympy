@@ -1,7 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
+from axiom import sets
 
 
 @apply(imply=True)
@@ -18,8 +17,6 @@ def apply(given, s=None):
     return NotContains(e, s)
 
 
-
-
 @prove
 def prove(Eq):
     x = Symbol.x(integer=True)
@@ -28,7 +25,7 @@ def prove(Eq):
 
     Eq << apply(NotContains(x, A | B))
     
-    Eq << Eq[0].split()
+    Eq << sets.notcontains.imply.et.where.union.apply(Eq[0], simplify=None).split()
     
 if __name__ == '__main__':
     prove(__file__)

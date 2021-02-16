@@ -48,7 +48,7 @@ def prove(Eq):
     plausible0 = Subset(s0_, s2, plausible=True)
     Eq << plausible0
 
-    Eq << Eq[-1].definition
+    Eq << sets.subset.given.forall_contains.apply(Eq[-1])
 
     Eq << Eq[-1].this.limits[0][1].subs(s0_definition)
     Eq << Eq[-1].subs(Eq.s2_definition)
@@ -79,11 +79,13 @@ def prove(Eq):
 
     Eq << s0_plausible.subs(Eq[-1].reversed)
 
-    Eq << Eq[-1].definition.definition
+    Eq << Eq[-1].this.function.function.apply(sets.contains.given.contains.where.imageset)
+    
+#     Eq << Eq[-1].this.function.rhs.definition
 
     Eq << Eq.x_k_definition.apply(algebre.equal.imply.equal.abs)    
 
-    Eq << Eq[-1].subs(StrictGreaterThan(1, 0, plausible=True))    
+    Eq << Eq[-1] + StrictGreaterThan(1, 0, plausible=True)    
     
     Eq << Eq.x_abs_sum + Eq[-2]
 
@@ -102,11 +104,15 @@ def prove(Eq):
 
     Eq << Eq.supset_B.subs(Eq[2])
 
-    Eq << Eq[-1].definition.definition    
+    Eq << sets.supset.given.forall_contains.apply(Eq[-1])    
+    
+    Eq << Eq[-1].this.function.simplify()    
 
     Eq << Eq.subset_B.subs(Eq[2])
 
-    Eq << Eq[-1].definition.definition
+    Eq << sets.subset.given.forall_contains.apply(Eq[-1])
+    
+    Eq << Eq[-1].this.function.apply(sets.contains.given.exists_equal.where.imageset)
 
     Eq.subset_B_definition = Eq[-1] - {n.set}
         
@@ -140,7 +146,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.s2_definition).split()
 
-    Eq.s2_n_assertion = Eq[-2].definition
+    Eq.s2_n_assertion = Eq[-2].this.function.apply(sets.contains.given.exists_equal.where.imageset)
 
     Eq << Eq[-1].subs(Eq.s2_n_assertion)
 

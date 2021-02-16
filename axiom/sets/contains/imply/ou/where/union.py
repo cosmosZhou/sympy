@@ -1,9 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy import Symbol
 import axiom
-from sympy.logic.boolalg import Or
 from axiom import sets
 
 

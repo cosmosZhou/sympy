@@ -13,10 +13,10 @@ def apply(given):
     n_, ab = axiom.is_Contains(contains_n)
     
     assert n == n_
-    a, b = axiom.is_Interval(ab, integer=True, end=None)
-    b -= 1
+    axiom.is_integer_Interval(ab)
+    a, b = ab.min(), ab.max()
     
-    return Equivalent(given, Contains(n, image_set(2 * n + 1, n, Interval(a // 2, (b + 1) // 2, right_open=True, integer=True))))
+    return Equivalent(given, Contains(n, image_set(2 * n + 1, n, Interval(a // 2, (b - 1) // 2, integer=True))))
 
 
 @prove
@@ -28,7 +28,7 @@ def prove(Eq):
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
 
-    Eq << apply(((-1) ** n < 0) & Contains(n, Interval(a, b, integer=True)))
+    Eq << apply(Equal(n % 2, 1) & Contains(n, Interval(a, b, integer=True)))
     
     Eq << Sufficient(*Eq[0].args, plausible=True)
     

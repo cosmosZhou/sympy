@@ -1,2 +1,2 @@
-from . import rewrite
+from . import integer
 from . import min

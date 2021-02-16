@@ -8,8 +8,11 @@ from axiom import sets
 @apply(imply=True)
 def apply(given):
     function, *limits = axiom.is_Exists(given)
-    variable = axiom.limit_is_Boolean(limits)
-    return Exists[variable]((function & given.limits_condition).simplify())
+    assert len(limits) == 1
+    variable = limits[0][0]
+    cond = given.limits_condition
+    assert not cond
+    return Exists[variable]((function & cond).simplify())
 
 
 @prove

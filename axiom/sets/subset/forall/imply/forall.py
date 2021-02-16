@@ -27,8 +27,6 @@ def apply(*given):
     return ForAll(function, *limits)
 
 
-
-
 @prove
 def prove(Eq):
     n = Symbol.n(complex=True, positive=True)
@@ -43,7 +41,7 @@ def prove(Eq):
     
     Eq << apply(Subset(B, A), ForAll[x:A](Equality(f(x), 1)))
     
-    Eq << Eq[0].definition
+    Eq << sets.subset.imply.forall_contains.apply(Eq[0])
     
     Eq << Eq[-1].limits_subs(Eq[-1].variable, x)
     

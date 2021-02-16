@@ -23,7 +23,7 @@ def prove(Eq):
     
     b = Symbol.b(integer=True)
     
-    Eq << apply(Sum[n:(-1) ** n < 0:Interval(a, b, integer=True)](f[n]))
+    Eq << apply(Sum[n:Equal(n % 2, 1):Interval(a, b, integer=True)](f[n]))
 
     Eq << Eq[-1].this.lhs.apply(algebre.imply.equal.sum.bool)
     
@@ -40,6 +40,8 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.function.args[1].arg.rhs.definition
     
     Eq << Eq[-1].this.lhs.function.args[1].arg.apply(sets.imply.equivalent.et.astype.contains.where.is_odd, split=False)
+    
+    Eq << Eq[-1].this.lhs.function.args[1].arg.rhs.limits[0][2].astype(Floor)
 
 
 if __name__ == '__main__':

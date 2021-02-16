@@ -23,3 +23,6 @@ from . import limit
 from . import series
 from . import maximize
 from . import minimize
+from . import divide
+from . import reversed
+from . import subs

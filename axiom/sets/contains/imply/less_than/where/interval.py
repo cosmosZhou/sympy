@@ -1,9 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy import Symbol
-
-from sympy.sets.sets import Interval
-from sympy.core.relational import LessThan
+from axiom import sets
 
 
 @apply(imply=True)
@@ -29,9 +26,9 @@ def prove(Eq):
     b = Symbol.b(real=True, given=True)
     Eq << apply(Contains(x, Interval(a, b, right_open=True)))
     
-    Eq << Eq[0].split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
     
-    Eq << Eq[-2].reversed
+    Eq << Eq[-1].reversed
 
     
 if __name__ == '__main__':

@@ -1,13 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal, StrictGreaterThan
-from sympy import Symbol, Wild
-
-from sympy.core.numbers import oo
-from sympy import ForAll, Sufficient, LAMBDA, Or
 import axiom
 from axiom import algebre
-from sympy.core.sympify import sympify
-from sympy.core.function import Function
 
 
 @apply(imply=True)
@@ -31,9 +25,6 @@ def apply(*given, n=None, x=None, start=0, hypothesis=False):
     if not hypothesis:
         return fn
     return fn, fn_hypothesis
-    
-
-
 
 
 @prove
@@ -47,9 +38,11 @@ def prove(Eq):
     
     Eq << apply(StrictGreaterThan(f[0](z), g[0](z)), Sufficient(StrictGreaterThan(f[n](x), g[n](x)), StrictGreaterThan(f[n + 1](y), g[n + 1](y))), n=n, x=x)
     
-    Eq << algebre.sufficient.imply.forall.rewrite.apply(Eq[1], wrt=n)
+    Eq << Eq[0].subs(z, y)
     
-#     Eq << algebre.equal.forall_equal.imply.equal.induction.apply(Eq[0], Eq[-1])
+    Eq << Eq[1].subs(x, y)
+    
+    Eq << algebre.condition.sufficient.imply.condition.induction.apply(Eq[-2], Eq[-1], n=n)
 
         
 if __name__ == '__main__':

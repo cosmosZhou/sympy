@@ -34,13 +34,13 @@ def prove(Eq):
     
     Eq << Eq[-1].split()
     
-    Eq <<= Eq[-2].split(), Eq[-1].split()
+    Eq <<= sets.contains.given.et.apply(Eq[-2]).split(), sets.contains.given.et.apply(Eq[-1]).split()
     
-    Eq <<= Eq[0].split(), Eq[1].split()
+    Eq <<= sets.contains.imply.et.interval.apply(Eq[0]).split(), sets.contains.imply.et.interval.apply(Eq[1]).split()
     
     Eq << Eq[-2] + d
     
-    Eq << algebre.less_than.strict_less_than.imply.strict_less_than.transit.apply(Eq[-1], Eq[-6]) - d
+    Eq << algebre.less_than.strict_less_than.imply.strict_less_than.transit.apply(Eq[-1], Eq[5]) - d
     
     Eq << Eq[-1].reversed
 

@@ -1,7 +1,5 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
 from axiom import sets
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
@@ -9,8 +7,6 @@ from axiom import sets
 @apply(imply=True)
 def apply(A, B):
     return Equality(abs(A | B), abs(A - B) + abs(B))
-
-
 
 
 @prove
@@ -29,6 +25,7 @@ def prove(Eq):
     Eq << sets.is_emptyset.imply.equal.addition_principle.apply(Eq[-1])
     
     Eq << Eq[-1].subs(C.this.definition)
+
 
 if __name__ == '__main__':
     prove(__file__)

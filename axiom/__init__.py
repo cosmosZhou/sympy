@@ -28,6 +28,8 @@ def is_odd(eq):
             expr = eq.lhs
         elif eq.lhs.is_NegativeOne:
             expr = eq.rhs
+        elif eq.rhs.is_One:
+            expr = eq.lhs   
     elif eq.is_Unequal:
         if eq.rhs.is_One:
             expr = eq.lhs
@@ -35,7 +37,7 @@ def is_odd(eq):
             expr = eq.rhs
 
     if expr.is_Mod:
-        n, d = expr
+        n, d = expr.args
         assert d == 2
         return n
 
@@ -169,6 +171,10 @@ def is_Interval(domain, integer=True, end=oo):
         return domain.min(), domain.max() + 1
     return domain.args
 
+def is_integer_Interval(domain):
+    assert domain.is_Interval
+    assert domain.is_integer
+    return domain.args
 
 def is_real_Interval(domain):
     assert domain.is_Interval
@@ -352,6 +358,19 @@ def is_Substract(self):
             return rhs, lhs
     assert False
         
+def is_Divide(self):
+    if self.is_Times:
+        d_inverse, n = self.args
+        if d_inverse.is_Power:
+            d, e = d_inverse.args
+            assert e.is_NegativeOne            
+        elif d_inverse.is_Rational:
+            num, d = d_inverse.as_numer_denom()
+            assert num.is_One
+    elif self.is_Plus:
+        n, d = self.as_numer_denom()
+        
+    return n, d
 
 def is_And(self, copy=True):
     assert self.is_And
@@ -465,8 +484,16 @@ def is_Abs(self):
     assert self.is_Abs
     return self.arg
 
+def is_FractionalPart(self):
+    assert self.is_FractionalPart
+    return self.arg
+
 def is_Floor(self):
     assert self.is_Floor
+    return self.arg
+
+def is_Ceiling(self):
+    assert self.is_Ceiling
     return self.arg
 
 def is_Norm(self):
@@ -591,6 +618,17 @@ def forall_equal(eq):
     is_Equal(eq.function)
     return (eq.function, *limits)
 
+def forall_unequal(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    is_Unequal(eq.function)
+    return (eq.function, *limits)
+
+def exists_equal(eq):
+    assert eq.is_Exists
+    limits = eq.limits
+    is_Equal(eq.function)
+    return (eq.function, *limits)
 
 def forall_subset(eq):
     assert eq.is_ForAll
@@ -619,6 +657,11 @@ def forall_strict_less_than(eq):
     is_StrictLessThan(eq.function)
     return (eq.function, *limits)
 
+def forall_ou(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    eqs = is_Or(eq.function)
+    return (eq.function, *limits)
 
 def forall_strict_greater_than(eq):
     assert eq.is_ForAll

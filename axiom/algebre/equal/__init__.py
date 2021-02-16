@@ -1,7 +1,10 @@
 from . import imply
 from . import equal
 from . import unequal
-
 from . import sufficient
 from . import given
 from . import condition
+from . import less_than
+from . import strict_less_than
+from . import strict_greater_than
+from . import greater_than

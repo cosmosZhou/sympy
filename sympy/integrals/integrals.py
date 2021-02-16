@@ -1552,7 +1552,7 @@ class Integrate(AddWithLimits):
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        return '∫[%s](%s)' % (limits, p._print(self.function))
+        return '\N{INTEGRAL}[%s](%s)' % (limits, p._print(self.function))
 
     def _latex(self, p):
         tex, symbols = "", []

@@ -1,12 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-
-from sympy.matrices.expressions.determinant import Det
 from sympy.matrices.expressions.cofactor import Cofactors
-from sympy.concrete.summations import Sum
-from sympy.core.sympify import sympify
-from sympy import Symbol
-from sympy.matrices import Matrix
+
 
 @apply(imply=True)
 def apply(A, i=None, j=None):
@@ -22,8 +17,6 @@ def apply(A, i=None, j=None):
         sigmar = Sum[i:n]
         
     return Equality(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]).simplify())
-
-
 
 
 @prove
@@ -53,6 +46,7 @@ def prove(Eq):
     Eq << Eq[-1].doit(deep=True)
     
     Eq << Eq[-1].this.rhs.expand()
+
     
 if __name__ == '__main__':
     prove(__file__)

@@ -1,13 +1,7 @@
-from sympy.core.relational import GreaterThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy import Exists
-from sympy.sets.contains import Contains
 from axiom import algebre, sets
 import axiom
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
 # given: |A| >= 1
 # A != {}
 
@@ -35,7 +29,7 @@ def prove(Eq):
     Eq << apply(b < x, x < a)    
 #     Eq << apply(x < b, a <= x)
     
-    Eq << Eq[-1].split()
+    Eq << sets.contains.given.et.apply(Eq[-1]).split()
     
     Eq << Eq[-1].reversed
     

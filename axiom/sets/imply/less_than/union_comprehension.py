@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << sets.imply.less_than.union.apply(*Eq[-1].lhs.arg.args)
 
-    Eq << Eq[-1].subs(Eq[0])
+    Eq << algebre.less_than.less_than.imply.less_than.subs.apply(Eq[-1], Eq[0])
 
     Eq << Eq[3].this.rhs.bisect(Slice[-1:])
     

@@ -109,7 +109,7 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[-3]
     
-    Eq << Eq[-1].apply(sets.less_than.strict_greater_than.imply.contains)
+    Eq << Eq[-1].apply(sets.strict_greater_than.less_than.imply.contains)
     
     Eq << Eq[-1] / (2 * x * y)
     

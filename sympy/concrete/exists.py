@@ -251,7 +251,7 @@ class Exists(ConditionalBoolean):
                         del eqs[i]                    
                         return self.func(And(*eqs), *self.limits, equivalent=self)
 
-                if eq.is_Equality:
+                if eq.is_Equality:                    
                     if eq.lhs in limits_dict:
                         old, new = eq.args
                     elif eq.rhs in limits_dict:
@@ -259,6 +259,7 @@ class Exists(ConditionalBoolean):
                     else:
                         continue
                     
+                    continue 
                     print("this simplification should be aximatized!")
                     limits = self.limits_delete(old)
                     if any(limit._has(old) for limit in limits):
@@ -325,20 +326,6 @@ class Exists(ConditionalBoolean):
                 x = self.function.rhs
                 y = self.function.lhs
 
-            if x is not None and not y._has(x):
-                domain = limits_dict[x]
-                if isinstance(domain, Boolean):
-                    print('this should be axiomatized!')
-                    function = domain._subs(x, y)
-                    if function.is_BooleanAtom:
-                        return function.copy(equivalent=self)
-                    
-                    limits = self.limits_delete(x)
-                    if limits:
-                        return self.func(function, *limits, equivalent=self)
-                    function.equivalent = self
-                    return function
-                
         return ConditionalBoolean.simplify(self, **kwargs)
 
     def union_sets(self, expr):
@@ -371,7 +358,7 @@ class Exists(ConditionalBoolean):
 
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])
-        return '∃［%s］(%s)' % (limits, p.doprint(self.function))
+        return '\N{THERE EXISTS}[%s](%s)' % (limits, p.doprint(self.function))
 
     def int_limit(self):
         if len(self.limits) != 1:

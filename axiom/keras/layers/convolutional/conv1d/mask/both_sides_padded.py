@@ -72,8 +72,6 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].expr.limits[0][2].astype(Min)
     
-    Eq << Eq[-1].this.rhs.args[0].cond.apply(sets.imply.equivalent.contains.astype.et)
-    
     Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.convolution_definition, Eq[-1])
         
     Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (i, 0, n), (k, 0, m))

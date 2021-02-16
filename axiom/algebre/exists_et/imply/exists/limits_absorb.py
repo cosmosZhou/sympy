@@ -32,7 +32,7 @@ def apply(given, index):
             x_slice, x_index = x_index, x_slice
              
         assert x_slice.is_Slice and x_index.is_Indexed
-        start, stop = x_slice.indices
+        start, stop = x_slice.index
         assert len(x_index.indices) == 1
         assert x_index.indices[0] == stop
         i = variables.index(x_slice)

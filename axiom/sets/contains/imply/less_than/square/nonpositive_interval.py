@@ -1,10 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy import Symbol
 import axiom
-from sympy.core.relational import LessThan
-from sympy.sets.sets import Interval
-from axiom import algebre
+from axiom import algebre, sets
 
 
 # given: A in B 
@@ -30,9 +27,9 @@ def prove(Eq):
     m = Symbol.m(real=True)
     Eq << apply(Contains(x, Interval(m, 0)))
     
-    Eq << Eq[0].split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
     
-    Eq << algebre.is_nonpositive.greater_than.imply.less_than.square.apply(Eq[-1], Eq[-2])
+    Eq << algebre.is_nonpositive.greater_than.imply.less_than.square.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':

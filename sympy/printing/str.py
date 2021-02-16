@@ -49,12 +49,6 @@ class StrPrinter(Printer):
     def _print_Not(self, expr):
         return '~%s' % (self.parenthesize(expr.args[0], PRECEDENCE["Not"]))
 
-    def _print_And(self, expr):
-        return self.stringify(expr.args, " & ", PRECEDENCE["BitwiseAnd"])
-
-    def _print_Or(self, expr):
-        return self.stringify(expr.args, " | ", PRECEDENCE["BitwiseOr"])
-
     def _print_AppliedPredicate(self, expr):
         return '%s(%s)' % (self._print(expr.func), self._print(expr.arg))
 
@@ -471,27 +465,6 @@ class StrPrinter(Printer):
             # e.g., +inf -> inf
             rv = rv[1:]
         return rv
-
-    def _print_Relational(self, expr):
-
-        charmap = {
-            "==": "Eq",
-            "!=": "Ne",
-            ":=": "Assignment",
-            '+=': "AddAugmentedAssignment",
-            "-=": "SubAugmentedAssignment",
-            "*=": "MulAugmentedAssignment",
-            "/=": "DivAugmentedAssignment",
-            "%=": "ModAugmentedAssignment",
-        }
-
-        if expr.rel_op in charmap:
-            return '%s(%s, %s)' % (charmap[expr.rel_op], self._print(expr.lhs),
-                                   self._print(expr.rhs))
-
-        return '%s %s %s' % (self.parenthesize(expr.lhs, precedence(expr)),
-                           self._relationals.get(expr.rel_op) or expr.rel_op,
-                           self.parenthesize(expr.rhs, precedence(expr)))
 
     def _print_ComplexRootOf(self, expr):
         return "CRootOf(%s, %d)" % (self._print_Add(expr.expr, order='lex'),

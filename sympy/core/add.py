@@ -1585,6 +1585,28 @@ class Plus(Expr, AssocOp):
         return self
 
     @classmethod
+    def rewrite_from_RoundFunction(cls, self):
+        if isinstance(self.arg, cls):                
+            integers = []
+            reals = []
+            for e in self.args:
+                if e.is_integer:
+                    integers.append(e)
+                else:
+                    reals.append(e)
+            if integers:
+                return cls(*integers) + self.func(cls(*reals))
+        return self
+    
+    @classmethod
+    def rewrite_from_Floor(cls, self):
+        return cls.rewrite_from_RoundFunction(self)
+    
+    @classmethod
+    def rewrite_from_Ceiling(cls, self):
+        return cls.rewrite_from_RoundFunction(self)
+    
+    @classmethod
     def rewrite_from_MinMaxBase(cls, self):
         common_terms = None
         

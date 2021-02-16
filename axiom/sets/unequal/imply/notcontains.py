@@ -1,7 +1,5 @@
-from sympy.core.relational import Unequality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import NotContains
-from sympy import Symbol
 # given: x != y
 # x not in {y}
 
@@ -13,8 +11,6 @@ def apply(given):
     return NotContains(x, y.set)
 
 
-
-
 @prove
 def prove(Eq):
     x = Symbol.x(integer=True, given=True)
@@ -24,7 +20,8 @@ def prove(Eq):
     Eq << ~Eq[-1]
     
     Eq << Eq[-1].simplify()
-    Eq << Eq[-1].subs(Eq[0])    
+    
+    Eq <<= Eq[-1] & Eq[0]    
     
 
 if __name__ == '__main__':

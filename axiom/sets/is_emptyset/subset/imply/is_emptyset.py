@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << Supset(*Eq[-1].args, plausible=True)
 
-    Eq << Eq[-1].subs(Eq[-2])
+    Eq <<= Eq[-1] & Eq[-2]
 
 
 if __name__ == '__main__':

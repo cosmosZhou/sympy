@@ -1,4 +1,3 @@
-
 from sympy import Basic, Expr
 
 from sympy.core import Add, S
@@ -32,7 +31,7 @@ class RoundFunction(Function):
         if arg.is_imaginary or (S.ImaginaryUnit * arg).is_real:
             i = im(arg)
             if not i.has(S.ImaginaryUnit):
-                return cls(i)*S.ImaginaryUnit
+                return cls(i) * S.ImaginaryUnit
             return cls(arg, evaluate=False)
 
         # Integral, numerical, symbolic part
@@ -68,8 +67,8 @@ class RoundFunction(Function):
         spart += npart
         if not spart:
             return ipart
-        elif spart.is_imaginary or (S.ImaginaryUnit*spart).is_real:
-            return ipart + cls(im(spart), evaluate=False)*S.ImaginaryUnit
+        elif spart.is_imaginary or (S.ImaginaryUnit * spart).is_real:
+            return ipart + cls(im(spart), evaluate=False) * S.ImaginaryUnit
         elif isinstance(spart, (floor, ceiling)):
             return ipart + spart
         else:
@@ -226,6 +225,9 @@ class Floor(RoundFunction):
 
         return Lt(self, other, evaluate=False)
 
+    def _sympystr(self, p):
+        return '\N{left floor}%s\N{right floor}' % p._print(self.arg)        
+    
     def _latex(self, p, exp=None):
         tex = r"\left\lfloor{%s}\right\rfloor" % p._print(self.args[0])
 
@@ -234,12 +236,25 @@ class Floor(RoundFunction):
         else:
             return tex
 
+    @classmethod
+    def rewrite_from_Plus(cls, self):
+        for i, f in enumerate(self.args):
+            if isinstance(f, cls):
+                args = [*self.args]
+                del args[i]
+                rest = self.func(*args)
+                if rest.is_integer:
+                    return cls(f.arg + rest)
+        return self
+
+
 floor = Floor
 
+
 @dispatch(floor, Expr)
-def _eval_is_eq(lhs, rhs): # noqa:F811
+def _eval_is_eq(lhs, rhs):  # noqa:F811
     return is_eq(lhs.rewrite(ceiling), rhs) or \
-        is_eq(lhs.rewrite(frac),rhs)
+        is_eq(lhs.rewrite(frac), rhs)
 
 
 class Ceiling(RoundFunction):
@@ -303,11 +318,9 @@ class Ceiling(RoundFunction):
         else:
             return r
 
-    def _eval_rewrite_as_floor(self, arg, **kwargs):
-        return -floor(-arg)
-
-    def _eval_rewrite_as_frac(self, arg, **kwargs):
-        return arg + frac(-arg)
+    @property
+    def definition(self):
+        return self.arg + frac(-self.arg)
 
     def _eval_is_extended_positive(self):
         return self.args[0].is_extended_positive
@@ -373,7 +386,7 @@ class Ceiling(RoundFunction):
             return S.true
 
         return Le(self, other, evaluate=False)
-		
+
     def simplify(self, deep=False, **kwargs):
         arg = self.arg
         if arg.is_Mul:
@@ -387,6 +400,9 @@ class Ceiling(RoundFunction):
                 
         return self
 
+    def _sympystr(self, p):
+        return '\N{left ceiling}%s\N{right ceiling}' % p._print(self.arg)        
+
     def _latex(self, p, exp=None):
         tex = r"\left\lceil{%s}\right\rceil" % p._print(self.args[0])
 
@@ -395,13 +411,16 @@ class Ceiling(RoundFunction):
         else:
             return tex
 
+
 ceiling = Ceiling
+
         
 @dispatch(ceiling, Basic)  # type:ignore
-def _eval_is_eq(lhs, rhs): # noqa:F811
-    return is_eq(lhs.rewrite(floor), rhs) or is_eq(lhs.rewrite(frac),rhs)
+def _eval_is_eq(lhs, rhs):  # noqa:F811
+    return is_eq(lhs.rewrite(floor), rhs) or is_eq(lhs.rewrite(frac), rhs)
 
-class frac(Function):
+
+class FractionalPart(Function):
     r"""Represents the fractional part of x
 
     For real numbers it is defined [1]_ as
@@ -474,7 +493,7 @@ class frac(Function):
         for t in terms:
             # Two checks are needed for complex arguments
             # see issue-7649 for details
-            if t.is_imaginary or (S.ImaginaryUnit*t).is_real:
+            if t.is_imaginary or (S.ImaginaryUnit * t).is_real:
                 i = im(t)
                 if not i.has(S.ImaginaryUnit):
                     imag += i
@@ -485,20 +504,18 @@ class frac(Function):
 
         real = _eval(real)
         imag = _eval(imag)
-        return real + S.ImaginaryUnit*imag
+        return real + S.ImaginaryUnit * imag
 
-    def _eval_rewrite_as_floor(self, arg, **kwargs):
-        return arg - floor(arg)
-
-    def _eval_rewrite_as_ceiling(self, arg, **kwargs):
-        return arg + ceiling(-arg)
+    @property
+    def definition(self):
+        return self.arg - floor(self.arg)
 
     def _eval_is_finite(self):
         return True
 
-    def _eval_is_real(self):
+    def _eval_is_extended_real(self):
         return self.args[0].is_extended_real
-
+    
     def _eval_is_imaginary(self):
         return self.args[0].is_imaginary
 
@@ -568,8 +585,23 @@ class frac(Function):
             if other.is_integer and other.is_positive:
                 return S.true
 
+    def _latex(self, p, exp=None):
+        tex = r"frac\left(%s\right)" % p._print(self.args[0])
+
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+
+    def _sympystr(self, p): 
+        return "frac(%s)" % p._print(self.args[0])
+
+        
+frac = FractionalPart
+
+
 @dispatch(frac, Basic)  # type:ignore
-def _eval_is_eq(lhs, rhs): # noqa:F811
+def _eval_is_eq(lhs, rhs):  # noqa:F811
     if (lhs.rewrite(floor) == rhs) or \
         (lhs.rewrite(ceiling) == rhs):
         return True

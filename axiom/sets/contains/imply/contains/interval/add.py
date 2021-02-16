@@ -22,13 +22,12 @@ def prove(Eq):
     t = Symbol.t(real=True)
     
     Eq << apply(Contains(x, Interval(a, b)), t)
-    Eq << Eq[0].split()
+    
+    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
     
     Eq <<= Eq[-1] + t, Eq[-2] + t
     
-    Eq <<= Eq[-1] & Eq[-2]
-    
-    Eq << Eq[-1].apply(sets.less_than.greater_than.imply.contains)
+    Eq << sets.less_than.greater_than.imply.contains.apply(Eq[-1], Eq[-2])
 
     
 if __name__ == '__main__':

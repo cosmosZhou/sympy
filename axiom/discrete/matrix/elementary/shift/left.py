@@ -1,14 +1,6 @@
-
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-
 from sympy.matrices.expressions.matexpr import Shift
-from sympy import LAMBDA
-from sympy import Symbol
-from sympy.functions.elementary.piecewise import Piecewise
 
 
 @apply(imply=True)
@@ -48,6 +40,8 @@ def prove(Eq):
      
     Eq << Eq[-1].this.rhs.expand()
 
+#     Eq << Eq[-1].this.rhs.function.args[1]().expr.args[0].cond.simplify()
+    
     Eq << Eq[-1].this.rhs.function.args[1].expr.astype(Piecewise)
     
     Eq << Eq[-1].this.rhs().function.args[2]().expr.simplify(wrt=Eq[-1].rhs.variable)

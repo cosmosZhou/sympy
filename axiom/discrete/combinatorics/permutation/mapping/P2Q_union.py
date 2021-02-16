@@ -34,13 +34,13 @@ def prove(Eq):
     
     Eq.subset_Q = Subset(Eq.subset_P.rhs, Eq.subset_P.lhs, plausible=True)
     
-    Eq << Eq.subset_Q.definition
+    Eq << sets.subset.given.forall_contains.apply(Eq.subset_Q)
     
     Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[0].rhs.variable)    
     
     Eq << Eq[-1].apply(sets.contains.given.exists_contains.where.union_comprehension)
     
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].this.function.function.rhs.definition
     
     Eq << sets.imply.forall.conditionset.apply(Eq[2].rhs)
 

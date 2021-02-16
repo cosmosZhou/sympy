@@ -42,8 +42,8 @@ class Subset(BinaryCondition):
             return self.func(self.lhs & exp, self.rhs & exp, given=self)
             
     def _sympystr(self, p):
-#                 ⊂
-        return '%s ⊆ %s' % tuple(p._print(x) for x in self.args)
+#                 \N{SUBSET OF}
+        return '%s \N{SUBSET OF OR EQUAL TO} %s' % tuple(p._print(x) for x in self.args)
     
     def _latex(self, printer):
         return r'%s \subset %s' % tuple(printer._print(x) for x in self.args)
@@ -66,14 +66,6 @@ class Subset(BinaryCondition):
         if ret is not None:
             return ret        
                 
-    @property
-    def definition(self):
-        print("Subset.definition should be axiomatized!")
-        A, B = self.args
-        from sympy import ForAll, Contains
-        e = B.element_symbol(A.free_symbols)
-        return ForAll(Contains(e, B), (e, A), equivalent=self).simplify()
-
     def as_set(self):
         return self
 
@@ -125,21 +117,6 @@ class Subset(BinaryCondition):
                 args = eq.args
                 result = self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
                 return self.subs_assumptions_for_equality(eq, result)                
-            elif isinstance(eq, Subset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _B, _A = eq.args
-                if _B == B:
-                    if A == _A: 
-                        return Equality(A, B, equivalent=[self, eq])
-                    else:
-                        return self.func(A, _A, given=[self, eq])
-            elif isinstance(eq, Supset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _A == A:
-                    return Equality(A, B, equivalent=[self, eq])
             elif eq.is_ConditionalBoolean:
                 return self.bfn(self.subs, eq)
             return self
@@ -158,13 +135,6 @@ class Subset(BinaryCondition):
                 return Equality(*self.args, equivalent=[self, other])
             elif rhs == other.rhs:
                 return self.func(lhs | other.lhs, rhs, equivalent=[self, other])
-            elif rhs == other.lhs:
-                print('information loss!')
-                return self.func(lhs, other.rhs, equivalent=[self, other]).simplify()
-        elif other.is_Contains:
-            if other.rhs == self.lhs:
-                print('information loss!')
-                return other.func(other.lhs, self.rhs, equivalent=[self, other]).simplify()
         return BinaryCondition.__and__(self, other)
 
     def domain_conditioned(self, x):
@@ -220,8 +190,9 @@ class NotSubset(BinaryCondition):
             return self.func(self.lhs & exp, self.rhs & exp, given=self)
 
     def _sympystr(self, p):
-#         ⊊        
-        return r'%s ⊄ %s' % tuple(p._print(x) for x in self.args)
+        #  NEITHER A SUBSET OF NOR EQUAL TO      
+#         \N{SUBSET OF WITH NOT EQUAL TO}
+        return r'%s \N{NOT A SUBSET OF} %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s \not\subset %s' % tuple(printer._print(x) for x in self.args)
@@ -236,14 +207,6 @@ class NotSubset(BinaryCondition):
         b = cls.invert_type.eval(x, s)
         if b is not None:
             return b.invert()
-
-    @property
-    def definition(self):
-        print("NotSubset.definition should be axiomatized!")
-        A, B = self.args
-        from sympy import Exists
-        e = B.element_symbol(A.free_symbols)
-        return Exists(NotContains(e, B), (e, A), equivalent=self).simplify()
 
     def as_set(self):
         return self
@@ -295,18 +258,6 @@ class NotSubset(BinaryCondition):
             if isinstance(eq, Equality):
                 args = eq.args
                 return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            if isinstance(eq, Subset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _B, _A = eq.args
-                if A == _A and _A == A:
-                    return Equality(A, B, equivalent=[self, eq])
-            if isinstance(eq, Supset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _A == A:
-                    return Equality(A, B, equivalent=[self, eq])
 
         return self
 
@@ -333,19 +284,6 @@ class Supset(BinaryCondition):
             if isinstance(eq, Equality):
                 args = eq.args
                 return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            if isinstance(eq, Subset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-            if isinstance(eq, Supset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _B, _A = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-
             return self
         return BinaryCondition.subs(self, *args, **kwargs)
     
@@ -356,9 +294,8 @@ class Supset(BinaryCondition):
         elif other.is_Supset:
             lhs, rhs = self.args
             if (rhs, lhs) == other.args:
-                print('information loss!')
                 return Equality(*self.args, equivalent=[self, other])
-            elif lhs == other.lhs:                
+            elif lhs == other.lhs: 
                 return self.func(lhs, rhs | other.rhs, equivalent=[self, other])
             
         return BinaryCondition.__and__(self, other)
@@ -373,8 +310,8 @@ class Supset(BinaryCondition):
         return self
 
     def _sympystr(self, p):
-#         ⊃        
-        return '%s ⊇ %s' % tuple(p._print(x) for x in self.args)
+#         \N{SUPERSET OF}
+        return '%s \N{SUPERSET OF OR EQUAL TO} %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\supset %s' % tuple(printer._print(x) for x in self.args)
@@ -427,14 +364,6 @@ class Supset(BinaryCondition):
         from sympy import acos
         return self.func(acos(x), s.acos(), equivalent=self)
 
-    @property
-    def definition(self):
-        print("Supset.definition should be axiomatized!")
-        A, B = self.args
-        e = A.element_symbol(B.free_symbols)
-        from sympy import ForAll, Contains
-        return ForAll(Contains(e, A), (e, B), equivalent=self).simplify()
-
 
 class NotSupset(BinaryCondition):
     """
@@ -456,19 +385,6 @@ class NotSupset(BinaryCondition):
             if isinstance(eq, Equality):
                 args = eq.args
                 return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
-            if isinstance(eq, Subset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _A, _B = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-            if isinstance(eq, Supset):
-                print("this should be axiomatized!")
-                A, B = self.args
-                _B, _A = eq.args
-                if A == _A and _B == B:
-                    return Equality(A, B, equivalent=[self, eq])
-
         return self
 
     def simplify(self, deep=False):
@@ -478,8 +394,9 @@ class NotSupset(BinaryCondition):
         return self
 
     def _sympystr(self, p):
-#         ⊋
-        return r'%s ⊅ %s' % tuple(p._print(x) for x in self.args)
+#  NEITHER A SUPERSET OF NOR EQUAL TO
+#         \N{SUPERSET OF WITH NOT EQUAL TO}
+        return r'%s \N{NOT A SUPERSET OF} %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\not\supset %s' % tuple(printer._print(x) for x in self.args)
@@ -531,14 +448,6 @@ class NotSupset(BinaryCondition):
         x, s = self.args
         from sympy import acos
         return self.func(acos(x), s.acos(), equivalent=self)
-
-    @property
-    def definition(self):
-        print("NotSupset.definition should be axiomatized!")
-        A, B = self.args
-        e = A.element_symbol(B.free_symbols)
-        from sympy import Exists
-        return Exists(NotContains(e, A), (e, B), equivalent=self)
 
 
 Supset.invert_type = NotSupset

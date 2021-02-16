@@ -81,9 +81,12 @@ def limits_common(limits, _limits, is_or=False, clue=None):
                 continue
             if _domain.is_set:
                 if isinstance(domain, list):
-                    domain = domain[0]
+                    if not domain:
+                        domain = None
+                    else:
+                        domain = domain[0]
                     
-                if not domain.is_set:
+                if domain is not None and not domain.is_set:
                     domain = x.domain_conditioned(domain)
             else:
                 if domain.is_set:
@@ -95,7 +98,10 @@ def limits_common(limits, _limits, is_or=False, clue=None):
                 if domain != _domain:
                     if clue is not None:
                         clue['given'] = True
-                dic[x] = domain & _domain
+                if domain is None:
+                    dic[x] = _domain
+                else:
+                    dic[x] = domain & _domain
         return dic
     for key in self_dict:
         if not key.is_Slice:

@@ -90,7 +90,7 @@ class Mod(Function):
                 d -= abs(q)
                 if d.is_negative:
                     if q.is_positive:
-                        if p.is_positive:
+                        if p.is_nonnegative:
                             return d + q
                         elif p.is_negative:
                             return -d
@@ -180,6 +180,8 @@ class Mod(Function):
                 a = cls(i, q)
                 if a.count(cls) > i.count(cls):
                     args.append(i)
+                elif a.is_Zero:
+                    ...
                 else:
                     args.append(a)
             if args != list(p.args):
@@ -243,14 +245,41 @@ class Mod(Function):
 #         https://www.cnblogs.com/javajava/articles/13627588.html
         from sympy.printing.precedence import PRECEDENCE
         if exp is not None:
-            return r'\left(%s\bmod{%s}\right)^{%s}' % \
+#             return r'\left(%s\bmod{%s}\right)^{%s}' % \
+            return r'\left(%s\%%{%s}\right)^{%s}' % \
                 (self.parenthesize(self.args[0], PRECEDENCE['Times'],
                                    strict=True), p._print(self.args[1]),
                  self._print(exp))
-        return r'%s\bmod{%s}' % (p.parenthesize(self.args[0],
+        return r'%s\%%{%s}' % (p.parenthesize(self.args[0],
                                  PRECEDENCE['Times'], strict=True),
                                  p._print(self.args[1]))
 
     def _sympystr(self, p):
-        return '%s %% %s' % (p._print(self.args[0]),
-                             p._print(self.args[1]))
+        n, d = self.args 
+        if n.is_Plus or n.is_Times:
+            n = '(%s)' % p._print(n)
+        else:
+            n = p._print(n)
+            
+        if d.is_Plus or d.is_Times:
+            d = '(%s)' % p._print(d)
+        else:
+            d = p._print(d)
+            
+        return '%s %% %s' % (n, d)
+
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm
+        pform = p._print(self.args[0])
+        if pform.binding > prettyForm.MUL or self.args[0].is_Plus:
+            pform = prettyForm(*pform.parens())
+        pform = prettyForm(*pform.right(' % '))
+        pform = prettyForm(*pform.right(p._print(self.args[1])))
+        pform.binding = prettyForm.OPEN
+        return pform
+
+    def __add__(self, other):
+        if other.is_Mod:
+            if self.args[1] == other.args[1]:
+                return self.func(self.args[0] + other.args[0], self.args[1])
+        return Function.__add__(self, other)

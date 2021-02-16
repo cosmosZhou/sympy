@@ -478,11 +478,25 @@ function yield_from_py($python_file)
 
             continue;
         }
-
+		
+        //@apply(imply=True, given=None)
+        if (preg_match('/^@apply\((.+)\)\s*$/', $statement, $matches)) {
+			$kwargs = $matches[1];
+			$kwargs = preg_split("/,\s*/", $kwargs, - 1, PREG_SPLIT_NO_EMPTY);
+			$dict = [];
+            foreach ($kwargs as $args) {
+				preg_match('/^(\w+)\s*=\s*(\w+)$/', $args, $matches);
+				$key = $matches[1];
+				$value = $matches[2];
+				$dict[$key] = $value;
+            }
+			//error_log('apply kwargs = ' . jsonify($dict));
+            yield $dict;
+		    continue;
+		}
         // $yield = [
         // 'line' => $i
-        // ];
-
+        // ];		
         if (is_def_start('apply', $statement, $matches)) {
             yield [
                 'axiom_prefix' => $axiom_prefix,

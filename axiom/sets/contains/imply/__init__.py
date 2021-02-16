@@ -11,3 +11,4 @@ from . import strict_less_than
 from . import greater_than
 from . import et
 from . import unequal
+from . import exists_equal

@@ -108,8 +108,6 @@ def prove(Eq):
     
     Eq << Eq.z_definition.apply(algebre.equal.imply.equal.sum)
     
-    Eq << Eq[-1].this.rhs.simplify(wrt=t)
-    
     Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
     
     Eq << Eq.y_given_x_log.subs(Eq[-1].reversed) 

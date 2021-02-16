@@ -150,7 +150,7 @@ class Piecewise(Function):
             # ec could be a ExprCondPair or a tuple
             pair = ExprCondPair(*getattr(ec, 'args', ec))
             cond = pair.cond
-            if cond is false:
+            if cond.is_BooleanFalse:
                 continue
             newargs.append(pair)
             if cond is true:
@@ -1307,7 +1307,10 @@ class Piecewise(Function):
 #                         union_second_last = union
                         union |= domain
                     if domain.is_EmptySet:
-                        args[-1] = (args[-1][0], True)
+                        if cond:
+                            args[-1] = (args[-1][0], True)
+                        else:
+                            args.append((f, False))
                         hit = True
                         continue
                     
@@ -1591,12 +1594,13 @@ class Piecewise(Function):
     def _eval_is_finite(self):
         return all(e.is_finite for e, _ in self.args)
 
-    def _latex(self, p):
-        ecpairs = [r"{%s} & \text{if}\ \: {%s}" % (p._print(e), p._print(c)) for e, c in self.args[:-1]]
+    def _latex(self, p):        
+        
+        ecpairs = [r"{%s} & {\color{7f0055} {\text{if}}}\ \: {%s}" % (p._print(e), p._print(c)) for e, c in self.args[:-1]]
         if self.args[-1].cond == true:
-            ecpairs.append(r"{%s} & \text{else}" % p._print(self.args[-1].expr))
+            ecpairs.append(r"{%s} & {\color{7f0055} {\text{else}}}" % p._print(self.args[-1].expr))
         else:
-            ecpairs.append(r"{%s} & \text{if}\ \: {%s}" % (p._print(self.args[-1].expr), p._print(self.args[-1].cond)))
+            ecpairs.append(r"{%s} & {\color{7f0055} {\text{if}}}\ \: {%s}" % (p._print(self.args[-1].expr), p._print(self.args[-1].cond)))
         tex = r"\begin{cases} %s \end{cases}"
         return tex % r" \\".join(ecpairs)
 

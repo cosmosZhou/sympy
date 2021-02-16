@@ -24,6 +24,8 @@ def prove(Eq):
         
     Eq << Eq[-1].apply(algebre.is_nonzero.imply.et)
     
+    Eq << algebre.exists_et.imply.exists.limits_delete.apply(Eq[-1])
+    
     Eq <<= Eq[-1] & Eq[0]
     
 

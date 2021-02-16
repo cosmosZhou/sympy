@@ -1,9 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy import Symbol
-from sympy.logic.boolalg import And
 from axiom import sets
-from sympy.sets.sets import Interval
 
 
 @apply(imply=True)
@@ -22,8 +19,6 @@ def apply(given):
             return And(x >= a, x < b)
         else:
             return And(x >= a, x <= b)
-        
-
 
 
 @prove
@@ -37,6 +32,7 @@ def prove(Eq):
     
     Eq << sets.contains.imply.less_than.where.interval.apply(Eq[0])
     Eq << sets.contains.imply.greater_than.where.interval.apply(Eq[0])
+
 
 if __name__ == '__main__':
     prove(__file__)

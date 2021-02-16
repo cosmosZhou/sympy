@@ -440,20 +440,9 @@ class Function(Application, Expr):
             arg = args[0]
             if arg.shape:
                 if len(arg.shape) > 1:
-                    if not cls.allow_variable_argslist():
-                        print('function of multi-dimentional variables may not be supported')
+                    ...
                 else:
                     n = arg.shape[0]
-            
-        if n not in cls.nargs:
-                
-            # XXX: exception message must be in exactly this format to
-            # make it work with NumPy's functions like vectorize(). See,
-            # for example, https://github.com/numpy/numpy/issues/1697.
-            # The ideal solution would be just to attach metadata to
-            # the exception and change NumPy to take advantage of this.
-            if not cls.allow_variable_argslist():
-                print('input shape mistaken %s' % args)
 
         evaluate = options.get('evaluate', global_parameters.evaluate)
         result = super(Function, cls).__new__(cls, *args, *limits, **options)
@@ -2119,10 +2108,10 @@ class Derivative(Expr):
         return shape
 
     def _sympystr(self, p):
-        # ∇▼▽
+        # \N{NABLA}, \N{BLACK DOWN-POINTING TRIANGLE},  \N{WHITE DOWN-POINTING TRIANGLE}
         dexpr = self.expr
         dvars = [i[0] if i[1] == 1 else i for i in self.variable_count]
-        return '▽[%s](%s)' % (", ".join(map(lambda arg: p._print(arg), dvars)), p._print(dexpr))
+        return '\N{NABLA}[%s](%s)' % (", ".join(map(lambda arg: p._print(arg), dvars)), p._print(dexpr))
 
              
 class Difference(Expr):
@@ -2934,9 +2923,9 @@ class Difference(Expr):
 
     def _sympystr(self, p):
         expr, x, n = self.args
-        if n == 1:  # Δ = delta， ∆ ▲ △
-            return '∆[%s](%s)' % (p._print(x), p._print(expr))
-        return '∆[%s, %s](%s)' % (p._print(x), p._print(n), p._print(expr))
+        if n == 1:  # '\N{GREEK CAPITAL LETTER DELTA}',  '\N{BLACK UP-POINTING TRIANGLE}', '\N{WHITE UP-POINTING TRIANGLE}'
+            return '\N{INCREMENT}[%s](%s)' % (p._print(x), p._print(expr))
+        return '\N{INCREMENT}[%s, %s](%s)' % (p._print(x), p._print(n), p._print(expr))
 
 
 class Lambda(Expr):

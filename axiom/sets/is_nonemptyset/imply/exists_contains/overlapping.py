@@ -1,10 +1,5 @@
-from sympy.core.relational import Unequality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-
-from sympy.sets.contains import Contains
-from sympy import Exists
 from axiom import sets
 
 
@@ -33,8 +28,6 @@ def apply(given, wrt=None, domain=None):
     return Exists[wrt:B](Contains(wrt, A))
 
 
-
-
 @prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
@@ -48,7 +41,9 @@ def prove(Eq):
     Eq << (Eq[-1] & inequality)
 
     Eq << Eq[-1].split()
-
+    
+    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.where.intersection, simplify=None)
+    
     Eq << Eq[-1].split(simplify=False)
 
     Eq << (~Eq[1]).limits_subs(Eq[1].variable, Eq[-1].variable)

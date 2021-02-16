@@ -1,11 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
 import axiom
-from sympy.concrete.forall import ForAll
-from sympy.core.symbol import Dummy
-from sympy import Or
-from sympy.core.numbers import oo
 from axiom import algebre
 
 
@@ -22,9 +17,7 @@ def apply(given, wrt):
     lhs = lhs._subs(x, wrt)
     rhs = rhs._subs(x, wrt)
     
-    return ForAll[wrt:(-1) ** wrt < 0](Equality(lhs, rhs))
-
-
+    return ForAll[wrt:Unequal(wrt % 2, 0)](Equality(lhs, rhs))
 
 
 @prove
@@ -36,19 +29,8 @@ def prove(Eq):
     
     Eq << apply(Equality(f[2 * n + 1], g[2 * n + 1]), wrt=n)
     
-    m = Symbol.m(integer=True, odd=True)
-    assert ((m - 1) / 2).is_integer
-    
-    Eq << Eq[0].subs(n, (m - 1) / 2)
-    
-    Eq << Eq[-1].forall((m,))
-    
-    return
-    Eq << Eq[-1].astype(Or)
-    
-    Eq << algebre.ou.imply.ou.invert.apply(Eq[-1])
-#     Eq << Eq[-1].bisect((-1) ** n < 0)
-    
-    
+    Eq << Eq[1].limits_subs(n, 2 * n + 1)    
+
+
 if __name__ == '__main__':
     prove(__file__)

@@ -8,6 +8,8 @@ def apply(*given):
     a_less_than_x, x_less_than_b = given
     a, x = axiom.is_StrictLessThan(a_less_than_x)    
     _x, b = axiom.is_StrictLessThan(x_less_than_b)
+    if b == a:
+        a, x, _x, b = _x, b, a, x    
     assert x == _x
     return StrictLessThan(a, b)
 

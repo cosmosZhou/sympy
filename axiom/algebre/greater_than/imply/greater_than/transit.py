@@ -1,8 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Unequal, StrictGreaterThan, GreaterThan
-from sympy import Symbol
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
 from axiom import algebre
 
 
@@ -12,8 +9,6 @@ def apply(given, lower):
     lhs, rhs = given.args
     assert rhs >= lower
     return GreaterThan(lhs, lower)
-
-
 
 
 @prove

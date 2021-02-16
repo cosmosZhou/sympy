@@ -818,7 +818,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     if not old._has(x) or new._has(x):
                         _domain = domain._subs(old, new)
                         function = self.function._subs(old, new)
-                        if _domain != domain or function != self.function:                            
+                        if _domain != domain or function != self.function: 
                             if x.is_Indexed or x.is_Slice:
                                 indices = tuple(index._subs(old, new) for index in x.indices)
                                 if x.indices != indices:
@@ -993,7 +993,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         return AddWithLimits.__add__(self, expr)        
 
 # precondition: domain.is_Complement        
-    def simplify_complement_domain(self, domain):        
+    def simplify_complement_domain(self, domain): 
         from sympy import Unequality, KroneckerDelta
         from sympy.sets.contains import NotContains, Contains
         if not domain.is_Complement:
@@ -1046,15 +1046,14 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if this is not self:
                 return this
         if len(self.limits) == 2:
-            from sympy.tensor.indexed import Indexed, Slice
             limit0, limit1 = self.limits
             if len(limit0) == 1 and len(limit1) == 1:
                 x_slice = limit0[0]
                 x = limit1[0]
-                if isinstance(x_slice, Slice) and isinstance(x, Indexed):
-                    start, stop = x_slice.indices
+                if x_slice.is_Slice and x.is_Indexed:
+                    start, stop = x_slice.index
                     if len(x.indices) == 1 and x.indices[0] == stop:
-                        x_slice = x_slice.base[start : stop + 1]
+                        x_slice = x_slice.base[start: stop + 1]
                         return self.func(self.function, (x_slice,))
             return self
 
@@ -1194,27 +1193,27 @@ domain & limit[1] = %s
                     index = has_x.index(False)
                     
                     independent_of_x = []
-                    for arg in self.function.args[index:]:                        
+                    for arg in self.function.args[index:]: 
                         independent_of_x.append(arg)
                     independent_of_x = self.function.func(*independent_of_x)
                     
                     dependent_on_x = []
-                    for arg in self.function.args[:index]:                        
+                    for arg in self.function.args[:index]: 
                         dependent_on_x.append(arg)
                                             
                     dependent_on_x.append((independent_of_x, True))
                     dependent_on_x = self.function.func(*dependent_on_x)
                     
                     return self.func(dependent_on_x, *self.limits).simplify()                    
-                else:                    
+                else: 
                     index = has_x.index(True)
                     dependent_on_x = []
-                    for arg in self.function.args[index:]:                        
+                    for arg in self.function.args[index:]: 
                         dependent_on_x.append(arg)
 
                     dependent_on_x = self.function.func(*dependent_on_x)                    
                     independent_of_x = []
-                    for arg in self.function.args[:index]:                        
+                    for arg in self.function.args[:index]: 
                         independent_of_x.append(arg)                        
                                             
                     independent_of_x.append((dependent_on_x, True))
@@ -1280,18 +1279,18 @@ domain & limit[1] = %s
                 else:
                     return self
                 
-            if domain.is_Intersection :
+            if domain.is_Intersection:
                 finiteset = [s for s in domain.args if s.is_FiniteSet and len(s) == 1]
                 if len(finiteset) == 1:
                     domain, *_ = finiteset
-                    if domain not in universe:                    
+                    if domain not in universe: 
                         e, *_ = domain
                         return Piecewise((self.function._subs(x, e), Contains(e, universe).simplify()), (0, True)).simplify()
 
             if domain.is_FiniteSet:
                 return self.simplify_finiteset(x, domain)
 
-            if domain.is_Intersection :
+            if domain.is_Intersection:
                 return self
                 
             if self.function.is_Add:
@@ -1379,7 +1378,7 @@ domain & limit[1] = %s
     def as_Sum(self):
         from sympy.concrete.expr_with_limits import LAMBDA
         function = self.function
-        if not function.is_LAMBDA:            
+        if not function.is_LAMBDA: 
             function = function.astype(LAMBDA)
 
         limit = function.limits[-1]
@@ -1398,7 +1397,7 @@ domain & limit[1] = %s
                 if self.function.args[i].is_Sum:
                     index = i
                     break
-            if index >= 0:                
+            if index >= 0: 
                 args = [*self.function.args]
                 sgm = args.pop(index)
                 if isinstance(sgm.function, Mul):
@@ -1427,8 +1426,8 @@ domain & limit[1] = %s
     def _sympystr(self, p):
         limits = ','.join((limit._format_ineq(p) for limit in self.limits))
         if limits:
-            return '∑[%s](%s)' % (limits, p._print(self.function))
-        return '∑(%s)' % p._print(self.function)
+            return '\N{N-ARY SUMMATION}[%s](%s)' % (limits, p._print(self.function))
+        return '\N{N-ARY SUMMATION}(%s)' % p._print(self.function)
 
     latex_name_of_operator = 'sum'
     
@@ -1926,7 +1925,7 @@ class ReducedSum(Function):
         return self.arg.dtype
 
     def _sympystr(self, p):
-        return '∑(%s)' % p._print(self.arg)
+        return '\N{N-ARY SUMMATION}(%s)' % p._print(self.arg)
 
     def _latex(self, p, exp=None):
         expr = p._print(self.arg)

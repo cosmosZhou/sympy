@@ -1,13 +1,8 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import GreaterThan
-
-from sympy import Symbol
-from sympy import Min
 from axiom import algebre
 
 import tensorflow as tf
-from sympy.functions.elementary.piecewise import Piecewise
 
 
 @apply(imply=True)
@@ -36,13 +31,13 @@ def prove(Eq):
     
     Eq <<= ~Eq[-2], ~Eq[-1]
     
-    Eq <<= Eq[-2].apply(algebre.condition.condition.imply.et, invert=True, swap=True), Eq[-1].apply(algebre.condition.condition.imply.et, swap=True)
+    Eq <<= Eq[-2].apply(algebre.condition.condition.imply.et, swap=True), Eq[-1].apply(algebre.condition.condition.imply.et, invert=True, swap=True)
     
-    Eq <<= Eq[-2].this.args[1] + z, Eq[-1].this.args[1] + y
+    Eq <<= Eq[-2].this.args[1] + y, Eq[-1].this.args[1] + z 
     
-    Eq << Eq[-2].this.args[1].apply(algebre.strict_greater_than.imply.greater_than.min, x)
+    Eq << Eq[-1].this.args[1].apply(algebre.strict_greater_than.imply.greater_than.min, x)
 
-    Eq << Eq[-1].this.args[1].apply(algebre.less_than.imply.less_than.min, z)
+    Eq << Eq[-2].this.args[1].apply(algebre.less_than.imply.less_than.min, z)
 
 
 if __name__ == '__main__':

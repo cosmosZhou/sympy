@@ -1,16 +1,6 @@
-
-from sympy.core.relational import Equality
-from sympy.core.numbers import pi
-from sympy.functions.elementary.trigonometric import cos
-from sympy.functions.special.gamma_functions import gamma
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.sympify import sympify
-from sympy.core.power import sqrt
-
-from sympy import S, Symbol
-from sympy.integrals.integrals import Integral
 from axiom import algebre, geometry, calculus
-from sympy.core.add import Plus
 
 
 @apply(imply=True)
@@ -23,7 +13,7 @@ def apply(n):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol.n(integer=True, positive=True, given=False)
     Eq << apply(n)
     (x, *_), *_ = Eq[0].lhs.limits
 

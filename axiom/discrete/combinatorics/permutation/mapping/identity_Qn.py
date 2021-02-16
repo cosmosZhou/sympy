@@ -1,9 +1,7 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
 
 from sympy.sets.conditionset import conditionset
-from sympy.sets.sets import Interval
-from sympy import Symbol
 from axiom import sets, discrete
 from axiom.discrete.combinatorics.permutation import mapping
 

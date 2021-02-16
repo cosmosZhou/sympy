@@ -23,7 +23,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << algebre.strict_greater_than.imply.greater_than.rewrite.apply(Eq[-1])
+    Eq << algebre.strict_greater_than.imply.greater_than.integer.apply(Eq[-1])
     
     Eq << sets.greater_than.imply.contains.apply(Eq[-1], simplify=False)
     

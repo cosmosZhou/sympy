@@ -1,7 +1,7 @@
-
 from axiom.utility import prove, apply
 
 from sympy import *
+from axiom import sets
 
 
 @apply(imply=True)
@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << apply(Contains(x, S), Contains(y, S))
     
-    Eq << Eq[-1].definition
+    Eq << sets.subset.given.forall_contains.apply(Eq[-1])
     
     Eq << Eq[-1].split()
     

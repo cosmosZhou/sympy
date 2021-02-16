@@ -34,11 +34,9 @@ class Invoker:
                             return clue                    
             elif obj.given is not None:                
                 parent = self.parent
-                if parent.is_Sufficient:
+                if parent.is_Sufficient and self.index[-1] == 0 or parent.is_Necessary and self.index[-1] == 1:
                     # in case of using imply
-                    index = self.index[-1]
-                    if index == 0:
-                        return 'imply'
+                    return 'imply'
                     
                 assert not parent.is_Equivalent and not parent.is_ExprCondPair, "boolean conditions within ExprCondPair and Equivalent are not applicable for application in proof!" 
                     
@@ -56,6 +54,9 @@ class Invoker:
             this = self._objs[i - 1]
             args = [*this.args]
             args[self.index[i]] = obj
+            
+            if this.is_Interval:
+                args += [this.left_open, this.right_open, this.is_integer]
 
             if i == -len(self.index):
                 obj = this.func(*args, **kwargs)
@@ -212,6 +213,11 @@ class Invoker:
             self.callable = self.target.__mul__
             return self.__call__(rhs)
 
+    def __mod__(self, rhs):
+        if self.target.is_Equality:
+            self.callable = self.target.__mod__
+            return self.__call__(rhs)
+        
     def __matmul__(self, rhs):
         if self.target.is_Equality:
             self.callable = self.target.__matmul__

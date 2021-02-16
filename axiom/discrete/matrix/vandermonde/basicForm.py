@@ -20,7 +20,7 @@ def row_transformation(a, *limits):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    n = Symbol.n(domain=Interval(2, oo, integer=True), given=False)
     a = Symbol.a(shape=(oo,), zero=False, complex=True)
     
     Eq << apply(a[:n])

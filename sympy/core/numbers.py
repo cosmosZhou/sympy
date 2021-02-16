@@ -2834,6 +2834,11 @@ class One(with_metaclass(Singleton, IntegerConstant)):
     is_nonnegative = True
     is_positive = True
 
+    def _eval_Mod(self, q):
+        if q.is_positive:
+            return self
+        if q.is_negative:
+            return self + q
                 
 class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     """The number negative one.
@@ -2931,6 +2936,11 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     def as_coeff_mmul(self):
         return 1, self
 
+    def _eval_Mod(self, q):
+        if q.is_positive:
+            return q + self
+        if q.is_negative:
+            return self
 
 class Half(with_metaclass(Singleton, RationalConstant)):
     """The rational number 1/2.
@@ -3015,6 +3025,9 @@ class Infinity(with_metaclass(Singleton, Number)):
     def _latex(self, printer):
         return r"\infty"
 
+    def _sympystr(self, p):
+        return '\N{INFINITY}'
+    
     def _eval_subs(self, old, new):
         if self == old:
             return new
@@ -3228,6 +3241,9 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
 
     def _latex(self, printer):
         return r"-\infty"
+
+    def _sympystr(self, p):
+        return '-\N{INFINITY}'
 
     def _eval_subs(self, old, new):
         if self == old:
@@ -3832,7 +3848,7 @@ class Pi(with_metaclass(Singleton, NumberSymbol)):
         return 1, self
 
     def _sympystr(self, _):
-        return 'π'
+        return '\N{GREEK SMALL LETTER PI}'
 
     def to_wolfram(self, _):        
         from wolframclient.language import wlexpr

@@ -1,13 +1,7 @@
-from sympy.core.relational import Equality
-from sympy.core.symbol import dtype
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA
-from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
 from sympy.sets.conditionset import conditionset
-from sympy import Symbol
 from axiom import discrete
 
 
@@ -46,7 +40,7 @@ def prove(Eq):
     
     Eq << discrete.matrix.elementary.swap.invariant.set_comprehension.union_comprehension.apply(x, w)
     
-    Eq << Eq[2].definition.subs(Eq[-1])
+    Eq << Eq[2].this.function.rhs.definition.subs(Eq[-1])
     
     Eq << Eq[-1].subs(Eq[1])
 

@@ -1,11 +1,6 @@
-from sympy import Symbol
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy.core.symbol import dtype
-
-from sympy.concrete.expr_with_limits import LAMBDA
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.core.function import Function
 
 
 def swap(p, *indices):
@@ -60,7 +55,7 @@ def prove(Eq):
     
     k = Eq[-1].rhs.args[1].indices[-1]
     
-    Eq << Eq[-2].lhs.function.indices[0].this.subs(Eq[-1])
+    Eq << Eq[-2].lhs.function.index.this.subs(Eq[-1])
      
     Eq << discrete.matrix.elementary.swap.square.apply(w)
     

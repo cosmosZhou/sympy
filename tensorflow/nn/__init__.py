@@ -66,4 +66,14 @@ relu = Function.relu(real=True,
                      )
 
 
+def sigmoid(x):
+    return Max(x, 0)
+
+
+sigmoid = Function.σ(real=True,
+                     extended_negative=False,
+                     eval=sigmoid
+                     )
+
 from . import convolutional
+from . import recurrent

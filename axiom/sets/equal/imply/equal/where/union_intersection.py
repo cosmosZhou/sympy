@@ -1,6 +1,7 @@
 from axiom.utility import prove, apply
 
 from sympy import *
+from axiom import sets
 # given : A & B = A | B => A = B
 
 
@@ -24,12 +25,16 @@ def prove(Eq):
     Eq << Subset(A, A | B, plausible=True).subs(Eq[0].reversed)    
     Eq << Subset(A & B, B, plausible=True)
     
-    Eq.subset = Eq[-2].subs(Eq[-1])
+    Eq.subset = sets.subset.subset.imply.subset.transit.apply(Eq[-2], Eq[-1])
 
     Eq << Subset(B, A | B, plausible=True).subs(Eq[0].reversed)    
     Eq << Subset(A & B, A, plausible=True)
     
-    Eq << Eq[-2].subs(Eq[-1]).subs(Eq.subset).reversed
+    Eq <<= sets.subset.subset.imply.subset.transit.apply(Eq[-2], Eq[-1])
+    
+    Eq <<= Eq[-1] & Eq.subset
+    
+    Eq << Eq[-1].reversed
 
 
 if __name__ == '__main__':

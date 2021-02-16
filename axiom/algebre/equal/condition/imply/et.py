@@ -1,10 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Unequal, Equal
-from sympy import Symbol
-import axiom
-from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.core.function import Function
-from sympy.logic.boolalg import And
 from axiom.algebre.equal.condition.imply.condition.kronecker_delta import process_given_conditions
 
 

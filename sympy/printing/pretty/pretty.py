@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 import itertools
 
 from sympy.core import S
@@ -320,14 +318,11 @@ class PrettyPrinter(Printer):
         else:
             return self._print_Function(e)
 
-    def _print_ceiling(self, e):
-        if self._use_unicode:
-            pform = self._print(e.args[0])
-            pform = prettyForm(*pform.parens('lceil', 'rceil'))
-            return pform
-        else:
-            return self._print_Function(e)
-
+    def _print_Ceiling(self, e):
+        pform = self._print(e.args[0])
+        pform = prettyForm(*pform.parens('lceil', 'rceil'))
+        return pform
+    
     def _print_Derivative(self, deriv):
         if requires_partial(deriv) and self._use_unicode:
             deriv_symbol = U('PARTIAL DIFFERENTIAL')
@@ -623,7 +618,7 @@ class PrettyPrinter(Printer):
         e, z, z0, dir = l.args
 
         E = self._print(e)
-        if precedence(e) <= PRECEDENCE["Mul"]:
+        if precedence(e) <= PRECEDENCE["Times"]:
             E = prettyForm(*E.parens('(', ')'))
         Lim = prettyForm('lim')
 
@@ -810,11 +805,6 @@ class PrettyPrinter(Printer):
         pform = pform**dag
         return pform
 
-    def _print_BlockMatrix(self, B):
-        if B.blocks.shape == (1, 1):
-            return self._print(B.blocks[0, 0])
-        return self._print(B.blocks)
-
     def _print_MatAdd(self, expr):
         s = None
         for item in expr.args:
@@ -831,18 +821,6 @@ class PrettyPrinter(Printer):
                 s = prettyForm(*stringPict.next(s, pform))
 
         return s
-
-    def _print_MatMul(self, expr):
-        args = list(expr.args)
-        from sympy import Add, MatAdd, HadamardProduct, KroneckerProduct
-        for i, a in enumerate(args):
-            if (isinstance(a, (Add, MatAdd, HadamardProduct, KroneckerProduct))
-                    and len(expr.args) > 1):
-                args[i] = prettyForm(*self._print(a).parens())
-            else:
-                args[i] = self._print(a)
-
-        return prettyForm.__mul__(*args)
 
     def _print_Identity(self, expr):
         if self._use_unicode:
@@ -1428,7 +1406,11 @@ class PrettyPrinter(Printer):
             arrow = u" \N{RIGHTWARDS ARROW FROM BAR} "
         else:
             arrow = " -> "
-        if len(vars) == 1:
+            
+        from sympy import Basic
+        if isinstance(vars, Basic):
+            var_form = self._print(vars)
+        elif len(vars) == 1:
             var_form = self._print(vars[0])
         else:
             var_form = self._print(tuple(vars))
@@ -1576,15 +1558,6 @@ class PrettyPrinter(Printer):
         if self._use_unicode:
             return prettyForm(pretty_symbol('gamma'))
         return self._print(Symbol("EulerGamma"))
-
-    def _print_Mod(self, expr):
-        pform = self._print(expr.args[0])
-        if pform.binding > prettyForm.MUL:
-            pform = prettyForm(*pform.parens())
-        pform = prettyForm(*pform.right(' mod '))
-        pform = prettyForm(*pform.right(self._print(expr.args[1])))
-        pform.binding = prettyForm.OPEN
-        return pform
 
     def _print_Add(self, expr, order=None):
         if self.order == 'none':
@@ -1847,23 +1820,6 @@ class PrettyPrinter(Printer):
             printset = tuple(s)
 
         return self._print_seq(printset, '{', '}', ', ' )
-
-    def _print_Interval(self, i):
-        if i.start == i.stop:
-            return self._print_seq(i.args[:1], '{', '}')
-
-        else:
-            if i.left_open:
-                left = '('
-            else:
-                left = '['
-
-            if i.right_open:
-                right = ')'
-            else:
-                right = ']'
-
-            return self._print_seq(i.args[:2], left, right)
 
     def _print_AccumulationBounds(self, i):
         left = '<'
@@ -2523,7 +2479,6 @@ class PrettyPrinter(Printer):
         r = self._print(e.rhs)
         pform = prettyForm(*stringPict.next(l, op, r))
         return pform
-
 
 def pretty(expr, **settings):
     """Returns a string containing the prettified form of expr.

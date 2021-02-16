@@ -23,9 +23,9 @@ def prove(Eq):
     
     Eq <<= ~Eq[-1], ~Eq[-2]
     
-    Eq << Eq[-2].apply(algebre.less_than.strict_greater_than.imply.strict_less_than.transit)
+    Eq << Eq[-1].apply(algebre.strict_greater_than.less_than.imply.strict_less_than.transit)
     
-    Eq << Eq[-1].this.args[0].apply(algebre.is_positive.imply.equal.abs)
+    Eq << Eq[-2].this.args[0].apply(algebre.is_positive.imply.equal.abs)
     
     Eq << Eq[-1].apply(algebre.strict_greater_than.equal.imply.strict_greater_than.transit)    
 

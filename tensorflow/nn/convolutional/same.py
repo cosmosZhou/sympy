@@ -8,7 +8,7 @@ def conv1d(x, w):
     assert embed_size == _embed_size == __embed_size
     
     def conv1d(x, w):
-        d0 = Symbol.d0(definition=(gram_width - 1) // 2)
+        d0 = (gram_width - 1) // 2
         i = Symbol.i(integer=True)
         j = Symbol.j(integer=True)
         return LAMBDA[i:seq_length](Sum[j:Max(i, d0):Min(gram_width + i, seq_length + d0)](x[j - d0] @ w[j - i]))        

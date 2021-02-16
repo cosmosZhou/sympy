@@ -53,7 +53,118 @@ function click_first_expansion_button() {
 
 function click_all_expansion_buttons() {
 	var buttons = document.querySelectorAll("button");
-	for (let button of buttons){
-		button.click();	
-	}	
+	for (let button of buttons) {
+		button.click();
+	}
+}
+
+window.onload = function() {
+	var currentFunctionKey = null;
+	// currentFunctionKey = window.currentFunctionKey;
+	// console.log('register: function (MainKey, value, func)');
+	document.onkeyup = function(event) {
+		console.log('onkeyup');
+		var key = event.key;
+		console.log('key = ' + key);
+		if (key == currentFunctionKey)
+			currentFunctionKey = null;
+	}
+
+	document.onkeydown = function(event) {
+		var key = event.key;
+		console.log('onkeydown');
+		console.log('key = ' + key);
+
+		console.log('currentFunctionKey = ' + currentFunctionKey);
+
+		if (currentFunctionKey == null) {
+			currentFunctionKey = key;
+			return;
+		}
+
+		switch (currentFunctionKey) {
+			case 'Alt':
+				switch (key) {
+					case 'c':
+						console.log("M-c");
+						var checkbox = $('input[type=checkbox][name=CaseSensitive]')[0];
+						checkbox.checked = !checkbox.checked;
+						break;
+					case 'd':
+						console.log("M-d");
+						break;
+					case 'l':
+						console.log("M-l");
+						break;
+					case 'r':
+						console.log("M-r");
+						break;
+					case 't':
+						console.log("M-t");
+						break;
+					case 'w':
+						console.log("M-w");
+						var checkbox = $('input[type=checkbox][name=WholeWord]')[0];
+						checkbox.checked = !checkbox.checked;						
+						break;
+					case 'x':
+						console.log("M-x");						
+						var checkbox = $('input[type=checkbox][name=RegularExpression]')[0];
+						checkbox.checked = !checkbox.checked;
+						break;
+					case '\r':
+					case '\n':
+						console.log("Alt + Enter");
+						break;
+				}
+				break;
+			case 'Control':
+				switch (key) {
+					case 'd':
+						console.log("C-d");
+						break;
+					case 'l':
+						console.log("C-l");
+						break;
+					case 'r':
+						console.log("C-r");
+						break;
+					case 't':
+						console.log("C-t");
+						break;
+					case 'Home':
+						$("input[type=text]")[0].focus();
+						console.log("C-Home");
+						break;
+					case 'Insert':
+						console.log("C-Insert");
+						break;
+					case 'Enter':
+						console.log("C-Enter");
+						//submit();
+						break;
+
+				}
+				break;
+
+			case 'Shift':
+				switch (key) {
+					case 'Enter':
+						console.log("Shift + Enter");
+						//submit();
+						break;
+				}
+				break;
+			default:
+				switch (key) {
+					case 40: // DownArrow
+						console.log("DownArrow");
+						break;
+					case 38: // UPArrow
+						console.log("UPArrow");
+						break;
+				}
+				break;
+		}
+	}
 }

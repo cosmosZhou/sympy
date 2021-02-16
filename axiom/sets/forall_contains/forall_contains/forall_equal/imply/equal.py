@@ -1,11 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy import ForAll, Exists, UNION
 from axiom import sets
-from sympy.core.function import Lambda, Function
 from axiom import algebre
 # given: ForAll[a:A] (f(a) in B)
 #        ForAll[b:B] (g(b) in A)
@@ -74,7 +69,9 @@ def prove(Eq):
     
     Eq.supset_A = Eq.subset_A.func.reversed_type(*Eq.subset_A.args, plausible=True)
     
-    Eq << Eq.supset_A.definition.definition
+    Eq << sets.supset.given.forall_contains.apply(Eq.supset_A)
+    
+    Eq << Eq[-1].this.function.apply(sets.contains.given.exists_equal.where.imageset)
     
     Eq << Eq[-1].subs(Eq[2])
     

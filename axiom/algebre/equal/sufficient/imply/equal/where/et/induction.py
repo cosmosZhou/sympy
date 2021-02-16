@@ -1,13 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol, Wild
-
-from sympy.core.numbers import oo
-from sympy import ForAll, Sufficient, LAMBDA, Or
 import axiom
 from axiom import algebre
-from sympy.core.sympify import sympify
-from sympy.core.function import Function
 
 
 @apply(imply=True)
@@ -37,8 +31,6 @@ def apply(*given, n=None, x=None, start=0, hypothesis=True):
     return fn
 
 
-
-
 @prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
@@ -49,27 +41,17 @@ def prove(Eq):
     
     Eq << apply(Equal(f[0](x), g[0](x)), Sufficient(Equal(f[n](x), g[n](x)) & Equal(f[n](t(x)), g[n](t(x))), Equal(f[n + 1](x), g[n + 1](x))), n=n, x=x)
     
-    Eq << algebre.sufficient.imply.forall.rewrite.apply(Eq[1], wrt=n)
+    Eq << algebre.imply.sufficient.subs.apply(Eq[2], x, t(x))
     
-    Eq << Eq[0].subs(x, t(x))
+    Eq << algebre.sufficient.imply.sufficient.et.apply(Eq[-1])
     
-    Eq <<= Eq[-1] & Eq[0]
+    Eq.induct = algebre.sufficient.sufficient.imply.sufficient.transit.apply(Eq[-1], Eq[1])
     
-#     h = Symbol.h(definition=LAMBDA[n](Eq[1].lhs))
-
-    Eq.imply_induct = Sufficient(Eq[1].lhs, Eq[1].lhs._subs(n, n + 1), plausible=True)
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq[0], Eq.induct, n=n)
     
-    Eq << Eq.imply_induct.split()
     
-    Eq << Eq[1].subs(x, t(x))
     
-    Eq << Sufficient(Eq.imply_induct.lhs, Eq[-1].lhs)
-#     Eq << Sufficient(Eq.imply_induct.lhs, Eq[-1].lhs, plausible=True)
     
-    Eq << algebre.sufficient.sufficient.imply.sufficient.transit.apply(Eq[-1], Eq[-2])
-    
-#     Eq << algebre.equal.forall_equal.imply.equal.induction.apply(Eq[0], Eq[-1])
-
         
 if __name__ == '__main__':
     prove(__file__)

@@ -22,7 +22,7 @@ class stringPict(object):
     """An ASCII picture.
     The pictures are represented as a list of equal length strings.
     """
-    #special value for stringPict.below
+    # special value for stringPict.below
     LINE = 'line'
 
     def __init__(self, s, baseline=0):
@@ -30,9 +30,9 @@ class stringPict(object):
         Multiline strings are centered.
         """
         self.s = s
-        #picture is a string that just can be printed
+        # picture is a string that just can be printed
         self.picture = stringPict.equalLengths(s.splitlines())
-        #baseline is the line number of the "base line"
+        # baseline is the line number of the "base line"
         self.baseline = baseline
         self.binding = None
 
@@ -58,14 +58,14 @@ class stringPict(object):
         """Put a string of stringPicts next to each other.
         Returns string, baseline arguments for stringPict.
         """
-        #convert everything to stringPicts
+        # convert everything to stringPicts
         objects = []
         for arg in args:
             if isinstance(arg, string_types):
                 arg = stringPict(arg)
             objects.append(arg)
 
-        #make a list of pictures, with equal height and baseline
+        # make a list of pictures, with equal height and baseline
         newBaseline = max(obj.baseline for obj in objects)
         newHeightBelowBaseline = max(
             obj.height() - obj.baseline
@@ -74,12 +74,12 @@ class stringPict(object):
 
         pictures = []
         for obj in objects:
-            oneEmptyLine = [' '*obj.width()]
+            oneEmptyLine = [' ' * obj.width()]
             basePadding = newBaseline - obj.baseline
             totalPadding = newHeight - obj.height()
             pictures.append(
-                oneEmptyLine * basePadding +
-                obj.picture +
+                oneEmptyLine * basePadding + 
+                obj.picture + 
                 oneEmptyLine * (totalPadding - basePadding))
 
         result = [''.join(lines) for lines in zip(*pictures)]
@@ -119,14 +119,14 @@ class stringPict(object):
         Strings are allowed.
         The special value stringPict.LINE is a row of '-' extended to the width.
         """
-        #convert everything to stringPicts; keep LINE
+        # convert everything to stringPicts; keep LINE
         objects = []
         for arg in args:
             if arg is not stringPict.LINE and isinstance(arg, string_types):
                 arg = stringPict(arg)
             objects.append(arg)
 
-        #compute new width
+        # compute new width
         newWidth = max(
             obj.width()
             for obj in objects
@@ -134,12 +134,12 @@ class stringPict(object):
 
         lineObj = stringPict(hobj('-', newWidth))
 
-        #replace LINE with proper lines
+        # replace LINE with proper lines
         for i, obj in enumerate(objects):
             if obj is stringPict.LINE:
                 objects[i] = lineObj
 
-        #stack the pictures, and center the result
+        # stack the pictures, and center the result
         newPicture = []
         for obj in objects:
             newPicture.extend(obj.picture)
@@ -207,12 +207,12 @@ class stringPict(object):
         # XXX not used anywhere ?
         height = max(
             self.baseline,
-            self.height() - 1 - self.baseline)*2 + 1
+            self.height() - 1 - self.baseline) * 2 + 1
         slash = '\n'.join(
-            ' '*(height - i - 1) + xobj('/', 1) + ' '*i
+            ' ' * (height - i - 1) + xobj('/', 1) + ' ' * i
             for i in range(height)
         )
-        return self.left(stringPict(slash, height//2))
+        return self.left(stringPict(slash, height // 2))
 
     def root(self, n=None):
         """Produce a nice root symbol.
@@ -220,31 +220,31 @@ class stringPict(object):
         """
         # XXX not used anywhere
         # XXX duplicate of root drawing in pretty.py
-        #put line over expression
-        result = self.above('_'*self.width())
-        #construct right half of root symbol
+        # put line over expression
+        result = self.above('_' * self.width())
+        # construct right half of root symbol
         height = self.height()
         slash = '\n'.join(
             ' ' * (height - i - 1) + '/' + ' ' * i
             for i in range(height)
         )
         slash = stringPict(slash, height - 1)
-        #left half of root symbol
+        # left half of root symbol
         if height > 2:
             downline = stringPict('\\ \n \\', 1)
         else:
             downline = stringPict('\\')
-        #put n on top, as low as possible
+        # put n on top, as low as possible
         if n is not None and n.width() > downline.width():
-            downline = downline.left(' '*(n.width() - downline.width()))
+            downline = downline.left(' ' * (n.width() - downline.width()))
             downline = downline.above(n)
-        #build root symbol
+        # build root symbol
         root = downline.right(slash)
-        #glue it on at the proper height
-        #normally, the root symbel is as high as self
-        #which is one less than result
-        #this moves the root symbol one down
-        #if the root became higher, the baseline has to grow too
+        # glue it on at the proper height
+        # normally, the root symbel is as high as self
+        # which is one less than result
+        # this moves the root symbol one down
+        # if the root became higher, the baseline has to grow too
         root.baseline = result.baseline - result.height() + root.height()
         return result.left(root)
 
@@ -267,7 +267,8 @@ class stringPict(object):
 
         ncols -= 2
         if ncols <= 0:
-            ncols = 78
+#             ncols = 78
+            ncols = 1024
 
         # If smaller than the terminal width, no need to correct
         if self.width() <= ncols:
@@ -376,7 +377,7 @@ class prettyForm(stringPict):
         OPEN this is an open object: parenthesize if added, multiplied, or
              powered (example: Piecewise)
     """
-    ATOM, FUNC, DIV, POW, MUL, ADD, NEG, OPEN = range(8)
+    ATOM, FUNC, DIV, POW, MUL, MATMUL, ADD, NEG, OPEN = range(9)
 
     def __init__(self, s, baseline=0, binding=0, unicode=None):
         """Initialize from stringPict and binding power."""
@@ -395,10 +396,10 @@ class prettyForm(stringPict):
             arg = stringPict(*arg.parens())
         result = [arg]
         for arg in others:
-            #add parentheses for weak binders
+            # add parentheses for weak binders
             if arg.binding > prettyForm.NEG:
                 arg = stringPict(*arg.parens())
-            #use existing minus sign if available
+            # use existing minus sign if available
             if arg.binding != prettyForm.NEG:
                 result.append(' + ')
             result.append(arg)
@@ -415,7 +416,7 @@ class prettyForm(stringPict):
         if den.binding == prettyForm.DIV:
             den = stringPict(*den.parens())
 
-        if num.binding==prettyForm.NEG:
+        if num.binding == prettyForm.NEG:
             num = num.right(" ")[0]
 
         return prettyForm(binding=prettyForm.DIV, *stringPict.stack(
@@ -435,7 +436,7 @@ class prettyForm(stringPict):
         }
 
         if len(others) == 0:
-            return self # We aren't actually multiplying... So nothing to do here.
+            return self  # We aren't actually multiplying... So nothing to do here.
         args = self
         if args.binding > prettyForm.MUL:
             arg = stringPict(*args.parens())
@@ -443,7 +444,7 @@ class prettyForm(stringPict):
         for arg in others:
             if arg.picture[0] not in quantity.values():
                 result.append(xsym('*'))
-            #add parentheses for weak binders
+            # add parentheses for weak binders
             if arg.binding > prettyForm.MUL:
                 arg = stringPict(*arg.parens())
             result.append(arg)
@@ -466,6 +467,46 @@ class prettyForm(stringPict):
             bin = prettyForm.MUL
         return prettyForm(binding=bin, *stringPict.next(*result))
 
+    def __matmul__(self, *others):
+        """Make a pretty matrix multiplication.
+        Parentheses are needed around +, - and neg.
+        """
+        quantity = {
+            'degree': u"\N{DEGREE SIGN}"
+        }
+
+        if len(others) == 0:
+            return self  # We aren't actually multiplying... So nothing to do here.
+        args = self
+        if args.binding > prettyForm.MATMUL:
+            arg = stringPict(*args.parens())
+        result = [args]
+        for arg in others:
+            if arg.picture[0] not in quantity.values():
+                result.append(" %s " % xsym('@'))
+            # add parentheses for weak binders
+            if arg.binding > prettyForm.MATMUL:
+                arg = stringPict(*arg.parens())
+            result.append(arg)
+        len_res = len(result)
+        for i in range(len_res):
+            if i < len_res - 1 and result[i] == '-1' and result[i + 1] == xsym('@'):
+                # substitute -1 by -, like in -1*x -> -x
+                result.pop(i)
+                result.pop(i)
+                result.insert(i, '-')
+        if result[0][0] == '-':
+            # if there is a - sign in front of all
+            # This test was failing to catch a prettyForm.__mul__(prettyForm("-1", 0, 6)) being negative
+            bin = prettyForm.NEG
+            if result[0] == '-':
+                right = result[1]
+                if right.picture[right.baseline][0] == '-':
+                    result[0] = '- '
+        else:
+            bin = prettyForm.MATMUL
+        return prettyForm(binding=bin, *stringPict.next(*result))
+    
     def __repr__(self):
         return "prettyForm(%r,%d,%d)" % (
             '\n'.join(self.picture),
@@ -497,8 +538,8 @@ class prettyForm(stringPict):
         else:
             #      2    <-- top
             # (x+y)     <-- bot
-            top = stringPict(*b.left(' '*a.width()))
-            bot = stringPict(*a.right(' '*b.width()))
+            top = stringPict(*b.left(' ' * a.width()))
+            bot = stringPict(*a.right(' ' * b.width()))
 
         return prettyForm(binding=prettyForm.POW, *bot.above(top))
 
@@ -509,12 +550,12 @@ class prettyForm(stringPict):
         """Functions of one or more variables.
         """
         if function in prettyForm.simpleFunctions:
-            #simple function: use only space if possible
+            # simple function: use only space if possible
             assert len(
                 args) == 1, "Simple function %s must have 1 argument" % function
             arg = args[0].__pretty__()
             if arg.binding <= prettyForm.DIV:
-                #optimization: no parentheses necessary
+                # optimization: no parentheses necessary
                 return prettyForm(binding=prettyForm.FUNC, *arg.left(function + ' '))
         argumentList = []
         for arg in args:

@@ -80,7 +80,6 @@ function render($php)
     assert(file_exists($py), "file_exists($py)");
 
     $lengths = [];
-    echo "<h3><font color=blue>given:</font></h3>";
 
     $indexOfYield = - 1;
     $counterOfLengths = 0;
@@ -101,14 +100,40 @@ function render($php)
             continue;
         }
 
+        if (array_key_exists('given', $dict)) {
+            $given = $dict['given'];
+            if (! strcmp($given, "True")) {
+                $given = "imply";
+                $imply = "given";
+                continue;
+            }
+        }
+
+        if (array_key_exists('imply', $dict)) {
+            $imply = $dict['imply'];
+            if (! strcmp($imply, "True")) {
+                $given = "given";
+                $imply = "imply";
+                continue;
+            }
+        }
+
         $statement = $dict['statement'];
 
         if (array_key_exists('pivot', $dict)) {
+//            error_log("dict: " . jsonify($dict));
             $pivot = $dict['pivot'];
             $a = $dict['a'];
             $first_statement = substr($statement, 0, $pivot);
             $second_statement = substr($statement, $pivot);
-            $input[] = create_a_tag($a[0], $first_statement, $axiom_prefix) . create_a_tag($a[1], $second_statement, $axiom_prefix);
+            $html = create_a_tag($a[0], $first_statement, $axiom_prefix);
+            
+            if ($a[1] == null) {
+                $html .= create_text_tag($second_statement);
+            } else {
+                $html .= create_a_tag($a[1], $second_statement, $axiom_prefix);
+            }
+            $input[] = $html;
         } else if (array_key_exists('module', $dict)) {
             $module = $dict['module'];
             $indexOfYield = $counterOfLengths;
@@ -122,8 +147,8 @@ function render($php)
                 $input[] = $a;
         } else {
             $text = create_text_tag($statement);
-            
-//             error_log("create_text_tag: " . $statement);            
+
+            // error_log("create_text_tag: " . $statement);
             if (startsWith($statement, '    ') && $input == null) {
                 // starting with more than 4 spaces indicates this line is a continuation of the previous line of code!
                 $inputs[count($inputs) - 1] .= "<br>$text";
@@ -141,7 +166,7 @@ function render($php)
             $lengths[] = 1;
         } else if (preg_match_u('/(Eq\.\w+ *(?:, *(?:Eq\.\w+|\w+|\*\w+) *)*)= */', $statement, $matches)) {
             $statement = $matches[1];
-//             error_log("parameter: " . $statement);
+            // error_log("parameter: " . $statement);
 
             // https://www.php.net/manual/en/function.preg-match-all.php
             preg_match_all('/Eq\.\w+/u', $statement, $matches, PREG_SET_ORDER);
@@ -154,7 +179,8 @@ function render($php)
         }
     }
 
-//     error_log("indexOfYield = $indexOfYield");
+    echo "<h3><font color=blue>$given:</font></h3>";
+    // error_log("indexOfYield = $indexOfYield");
 
     $numOfReturnsFromApply = $lengths[$indexOfYield];
     // error_log("numOfReturnsFromApply = " . $numOfReturnsFromApply);
@@ -197,7 +223,7 @@ function render($php)
                     }
                 }
 
-                $p[] = "<p>$statements_before_yield</p><h3><font color=blue>imply:</font></h3><p>$statements</p><h3><font color=blue>prove:</font></h3>";
+                $p[] = "<p>$statements_before_yield</p><h3><font color=blue>$imply:</font></h3><p>$statements</p><h3><font color=blue>prove:</font></h3>";
 
                 $statements = '';
                 $statements_before_yield = '';

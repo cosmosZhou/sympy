@@ -168,8 +168,8 @@ def _uniquely_named_symbol(xname, exprs=(), compare=str, modify=None, **assumpti
 
 class Symbol(ManagedProperties):
 
-    def __getattr__(self, attr):        
-        if attr.startswith('_'):             
+    def __getattr__(self, attr): 
+        if attr.startswith('_'): 
 #             println('skipping attr', attr, color=Foreground.RED)
             return
 #         from sympy import println, Foreground
@@ -259,7 +259,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
         if allow_empty:
             assert mid >= self_start, "mid >= self_start => %s" % (mid >= self_start)
-        else:            
+        else: 
             assert mid > self_start, "mid > self_start => %s" % (mid > self_start)
              
         assert mid < self_stop, "mid < self_stop => %s" % (mid < self_stop)
@@ -275,13 +275,13 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         from sympy import Union
         if self.is_set:
             return Union(self & indices, self - indices, evaluate=False)
-        if self.shape:            
+        if self.shape: 
             return self.slice(indices, 0, self.shape[0])
             
         return self
 
     # performing other in self
-    def __contains__(self, other):        
+    def __contains__(self, other): 
         contains = self.contains_with_subset(other)
         if contains is not None:
             return contains
@@ -381,7 +381,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     def image_set(self):
         definition = self.definition
-        if definition is not None:            
+        if definition is not None: 
             return definition.image_set()
 
     def condition_set(self):
@@ -510,10 +510,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     @property
     def assumptions0(self):
-        return {key : value for key, value in self._assumptions.items() if value is not None}
+        return {key: value for key, value in self._assumptions.items() if value is not None}
 
     def assumptions_hashable(self):
-        return {k : v for k, v in self._assumptions.items() if v is not None and not isinstance(v, BooleanAtom)}
+        return {k: v for k, v in self._assumptions.items() if v is not None and not isinstance(v, BooleanAtom)}
 
     @cacheit
     def sort_key(self, order=None):
@@ -626,7 +626,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             if 'integer' not in assumptions:
                 assumptions['integer'] = self.is_integer
             domain = Interval(**assumptions)
-        else:        
+        else: 
             domain = S.Complexes
         shape = self.shape
         if not shape:
@@ -790,25 +790,34 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             # Special case needed because M[*my_tuple] is a syntax error.
 #             if self.shape and len(self.shape) != len(indices):
 #                 raise IndexException("Rank mismatch.")
-            if len(indices) == 2 and isinstance(indices[0], slice):
-                start, stop = indices[0].start, indices[0].stop
-                if start is None:
+            if indices and isinstance(indices[0], slice):
+                if len(indices) == 2:
+                    start, stop = indices[0].start, indices[0].stop
+                    if start is None:
+                        if stop is None:
+                            return self.T[indices[1]]
+                        start = 0
                     if stop is None:
-                        return self.T[indices[1]]
-                    start = 0
-                if stop is None:
-                    stop = self.shape[0]                
-                return self[start:stop].T[indices[1]]
+                        stop = self.shape[0]                
+                    return self[start:stop].T[indices[1]]
+                if len(indices) == 1:
+                    return Slice(self, *indices, **kw_args)
+                raise Exception('unknown indices!')
             return Indexed(self, *indices, **kw_args)
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
             if start is None:
                 start = 0
+            if stop is None:
+                stop = self.shape[0]
+                
             if start == stop - 1:
                 return Indexed(self, start, **kw_args)
-            if start == 0 and stop == self.shape[-1]:
+            
+            if start == 0 and stop == self.shape[0]:
                 return self
-            return Slice(self, indices, **kw_args)
+            
+            return Slice(self, (start, stop), **kw_args)
         else:
             if self.definition is not None:
                 from sympy.concrete.expr_with_limits import LAMBDA
@@ -847,101 +856,34 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if len(self.shape) < 2:
             return self
 
-    greek_letters = {'Alpha': 'Α',
-                     'ALPHA': 'Α',
-                     'alpha': 'α',
-                     'Beta': 'Β',
-                     'BETA': 'Β',
-                     'beta': 'β',
-                     'Gamma': 'Γ',
-                     'GAMMA': 'Γ',
-                     'gamma': 'γ',
-                     'Delta': 'Δ',
-                     'DELTA': 'Δ',
-                     'delta': 'δ',
-                     'Epsilon': 'Ε',
-                     'EPSILON': 'Ε',
-                     'epsilon': 'ε',
-                     'Zeta': 'Ζ',
-                     'ZETA': 'Ζ',
-                     'zeta': 'ζ',
-                     'Eta': 'Η',
-                     'ETA': 'Η',
-                     'eta': 'η',
-                     'Theta': 'Θ',
-                     'THETA': 'Θ',
-                     'theta': 'θ',
-                     'Iota': 'Ι',
-                     'IOTA': 'Ι',
-                     'iota': 'ι',
-                     'Kappa': 'Κ',
-                     'KAPPA': 'Κ',
-                     'kappa': 'κ',
-                     'Lambda': 'Λ',
-                     'LAMBDA': 'Λ',
-                     'lamda': 'λ',
-                     'lambda': 'λ',
-                     'Mu': 'Μ',
-                     'MU': 'Μ',
-                     'mu': 'μ',
-                     'Nu': 'Ν',
-                     'NU': 'Ν',
-                     'nu': 'ν',
-                     'Xi': 'Ξ',
-                     'XI': 'Ξ',
-                     'xi': 'ξ',
-                     'Omicron': 'Ο',
-                     'OMICRON': 'Ο',
-                     'omicron': 'ο',
-                     'Pi': 'Π',
-                     'PI': 'Π',
-                     'pi': 'π',
-                     'Rho': 'Ρ',
-                     'RHO': 'Ρ',
-                     'rho': 'ρ',
-                     'Sigma': 'Σ',
-                     'SIGMA': 'Σ',
-                     'sigma': 'σ',
-                     'Tau': 'Τ',
-                     'TAU': 'Τ',
-                     'tau': 'τ',
-                     'Upsilon': 'Υ',
-                     'UPSILON': 'Υ',
-                     'upsilon': 'υ',
-                     'Phi': 'Φ',
-                     'PHI': 'Φ',
-                     'phi': 'φ',
-                     'Chi': 'Χ',
-                     'CHI': 'Χ',
-                     'chi': 'χ',
-                     'Psi': 'Ψ',
-                     'PSI': 'Ψ',
-                     'psi': 'ψ',
-                     'Omega': 'Ω',
-                     'OMEGA': 'Ω',
-                     'omega': 'ω'}
-            
+    @staticmethod
+    def ascii2greek(x):
+        if x.lower() in {'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'rho', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'}:
+            if x[0].isupper():
+                x = eval("'\\N{GREEK CAPITAL LETTER %s}'" % x)
+            else:
+                x = eval("'\\N{GREEK SMALL LETTER %s}'" % x)
+        return x
+        
     @staticmethod
     def sympystr(name):
         m = _re.compile("([a-zA-Z]+)(?:(\d+)|_(\w+))?").fullmatch(name)
         if m: 
             x = m.group(1)
-            if x in Symbol.greek_letters:
-                x = Symbol.greek_letters[x]
+            x = Symbol.ascii2greek(x)
             d = m.group(2)
             if d is not None:
                 x += d
             else:
                 a = m.group(3)
                 if a is not None:
-                    if a in Symbol.greek_letters:
-                        a = Symbol.greek_letters[a]
+                    a = Symbol.ascii2greek(a)
                     x += '_' + a                    
                 
             return x
         return name  
         
-    def _sympystr(self, _):   
+    def _sympystr(self, _): 
         return Symbol.sympystr(self.name)     
 
     def _latex(self, p):
@@ -1011,7 +953,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def _eval_is_finite(self):
         if 'domain' in self._assumptions:
             domain_assumed = self.domain_assumed
-            if domain_assumed.is_Interval:                
+            if domain_assumed.is_Interval: 
                 return True
             if domain_assumed.is_FiniteSet:
                 if all(arg.is_finite for arg in domain_assumed.args):
@@ -1080,13 +1022,17 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             
     @property
     def distribution(self):
-        if 'distribution' in self._assumptions:         
+        if 'distribution' in self._assumptions: 
             return self._assumptions['distribution']
     
+#    given = True, for counter-proposition purposes;
+#    given = False, for methematical-induction purposes;
+#    given = None, for others cases;
     @property
     def is_given(self):
-        if self._assumptions.get('given'):
-            return True
+        given = self._assumptions.get('given')
+        if given is not None:
+            return given
         definition = self.definition
         if definition is not None:
             return True
@@ -1099,7 +1045,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             other = sympify(other)
             if type(other) != type(self):
                 return False
-        except :
+        except:
             return False
         
         if self.name != other.name:
@@ -1114,7 +1060,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             if self._assumptions[fact] != other._assumptions[fact]:
                 return False
 
-        for fact in self._assumptions.keys() - other._assumptions.keys() - nonboolean_attributes:            
+        for fact in self._assumptions.keys() - other._assumptions.keys() - nonboolean_attributes: 
             if other._ask(fact) != self._assumptions[fact]:
 #                 other._mhash = None
                 return False
@@ -1151,7 +1097,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 return new
             if not old.shape and not old.is_set and hints.get('symbol') is not False:
                 etype = self.etype
-                if etype:        
+                if etype: 
                     _element_type = etype._subs(old, new)
                     if _element_type is not etype:
                         assumptions = self.assumptions_hashable()
@@ -1815,7 +1761,7 @@ class DtypeComplex(Dtype):
     
     @property
     def dict(self):
-        return {'complex' : True}
+        return {'complex': True}
 
     def __eq__(self, other):
         return isinstance(other, DtypeComplex)
@@ -1829,7 +1775,7 @@ class DtypeComplex(Dtype):
         return DtypeComplexConditional(**kwargs)
 
     @property
-    def universalSet(self):        
+    def universalSet(self): 
         return S.Complexes
 
 
@@ -1865,7 +1811,7 @@ class DtypeCondition(Dtype):
     
     @property
     def dict(self):
-        return {'condition' : True}
+        return {'condition': True}
 
     def __eq__(self, other):
         return isinstance(other, DtypeCondition)
@@ -1882,7 +1828,7 @@ class DtypeDistribution(Dtype):
     
     @property
     def dict(self):
-        return {'random' : True}
+        return {'random': True}
 
     def __eq__(self, other):
         return isinstance(other, DtypeDistribution)
@@ -1896,7 +1842,7 @@ class DtypeReal(DtypeComplex):
     is_real = True
     
     @property
-    def universalSet(self):        
+    def universalSet(self): 
         return S.Reals
     
     def as_Set(self):
@@ -1907,7 +1853,7 @@ class DtypeReal(DtypeComplex):
     
     @property
     def dict(self):
-        return {'real' : True}
+        return {'real': True}
 
     def __eq__(self, other):
         return isinstance(other, DtypeReal)
@@ -1964,7 +1910,7 @@ class DtypeRational(DtypeReal):
     
     @property
     def dict(self):
-        return {'rational' : True}
+        return {'rational': True}
 
     def __eq__(self, other):
         return isinstance(other, DtypeRational)
@@ -2022,7 +1968,7 @@ class DtypeInteger(DtypeRational):
     
     @property
     def dict(self):
-        return {'integer' : True}
+        return {'integer': True}
 
     def __eq__(self, other):
         return isinstance(other, DtypeInteger)
@@ -2103,7 +2049,7 @@ class DtypeSet(Dtype):
     
     @property
     def dict(self):
-        return {'etype' : self.etype}
+        return {'etype': self.etype}
 
     def __eq__(self, other):
         return isinstance(other, DtypeSet) and self.etype == other.etype
@@ -2221,7 +2167,7 @@ class DtypeMatrix(Dtype):
     def __hash__(self):
         return hash((type(self).__name__, self.dtype, self.shape))
     
-    def transpose(self):         
+    def transpose(self): 
         return DtypeMatrix(self.dtype, (*self.lengths[:-2], self.lengths[-1], self.lengths[-2]))
 
     def __call__(self, **kwargs):

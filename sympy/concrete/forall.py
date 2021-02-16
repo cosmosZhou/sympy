@@ -251,7 +251,7 @@ class ForAll(ConditionalBoolean):
 
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])        
-        return '∀［%s］(%s)' % (limits, p.doprint(self.function))
+        return '\N{FOR ALL}[%s](%s)' % (limits, p.doprint(self.function))
 
     def int_limit(self):
         if len(self.limits) != 1:
@@ -333,9 +333,9 @@ class ForAll(ConditionalBoolean):
                         func.append([ForAll, rhs_limits])
                     else:
                         if rhs.function.is_Exists:
-                            if self.function.limits_include(rhs.function):                                 
+                            if self.function.limits_include(rhs.function): 
                                 clue = relationship(self, rhs)                                
-                                if clue:                       
+                                if clue: 
                                     func.append([ForAll.invert_type, self.function.limits])                                        
                                     func.append([ForAll, self.limits])
                                     return None, func, self.function.function, rhs.function.function
@@ -343,7 +343,7 @@ class ForAll(ConditionalBoolean):
                                 return
                             elif rhs.function.limits_include(self.function):
                                 clue = relationship(self, rhs)                                
-                                if clue:                       
+                                if clue: 
                                     func.append([ForAll.invert_type, rhs.function.limits])
                                     func.append([ForAll, self.limits])
                                     return None, func, self.function.function, rhs.function.function
@@ -365,7 +365,7 @@ class ForAll(ConditionalBoolean):
                     func.append([ForAll, limits_intersect(self.limits_delete(dic), rhs.limits)])
                     return 'given', func, self.function, rhs.function.function
                 else:
-                    if self.limits_include(rhs):                        
+                    if self.limits_include(rhs): 
                         if any([limit.has(*rhs.function.variables) for limit in self.limits]):
                             dic = self.limits_common(rhs)                            
                             self_limits = self.limits_delete(dic)

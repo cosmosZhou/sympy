@@ -1,9 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
-from sympy.logic.boolalg import And
 import axiom
+from axiom import sets
 
 
 @apply(imply=True)
@@ -18,20 +16,15 @@ def apply(given):
     return And(*eqs)
 
 
-
-
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    x = Symbol.x(integer=True, given=True)
+    A = Symbol.A(etype=dtype.integer, given=True)
+    B = Symbol.B(etype=dtype.integer, given=True)
 
     Eq << apply(NotContains(x, A | B))
     
-    Eq << Eq[1].split()
-    
-    Eq << Eq[0].split()
-
+    Eq << Eq[-1].simplify()
     
 if __name__ == '__main__':
     prove(__file__)

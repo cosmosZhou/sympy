@@ -1,8 +1,5 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy import Symbol
 
 
 @apply(imply=True)
@@ -18,8 +15,6 @@ def apply(*given):
     return Contains(e, A & B)
 
 
-
-
 @prove
 def prove(Eq):
     e = Symbol.e(integer=True)
@@ -27,8 +22,9 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer)    
 
     Eq << apply(Contains(e, A), Contains(e, B))
-    
-    Eq << Eq[-1].split()
+        
+    Eq <<= Eq[0] & Eq[1]
+
     
 if __name__ == '__main__':
     prove(__file__)

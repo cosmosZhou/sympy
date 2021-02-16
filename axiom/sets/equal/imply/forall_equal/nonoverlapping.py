@@ -1,15 +1,9 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
+from axiom import sets, algebre
 
-from sympy import ForAll, UNION
-from axiom import sets
-from sympy import Symbol
 # given: |Union x[i]| = Sum |x[i]|
 # x[i] & x[j] = Ø
-
-from sympy.concrete.summations import summation, Sum
-from sympy.sets.sets import Interval
 
 
 @apply(imply=True)
@@ -27,7 +21,7 @@ def apply(given, excludes=None):
     if x_abs_sum.is_Sum:
         assert x_abs_sum.function.is_Abs
         assert x_abs_sum.function.arg == x_union.function        
-    else:        
+    else: 
         assert x_abs_sum == summation(abs(x_union.function), *x_union.limits)
 
     limits_dict = x_union.limits_dict
@@ -44,8 +38,6 @@ def apply(given, excludes=None):
 
     limits = [(j, i_domain - {i})] + [*x_union.limits]
     return ForAll(Equality(xi & xj, xi.etype.emptySet).simplify(), *limits)
-
-
 
 
 @prove
@@ -72,8 +64,8 @@ def prove(Eq):
 
     Eq << sets.imply.equal.principle.inclusion_exclusion.basic.apply(x[i], x[j])
 
-    Eq << Eq[-1].subs(Eq[-2])
-
+    Eq << Eq[-2].this.function.apply(algebre.equal.strict_greater_than.imply.strict_less_than.subs, Eq[-1])
+    
     Eq.strict_greater_than = Eq[0] - Eq[-1]
 
     Eq << Eq[0].lhs.arg.this.bisect({i, j})
@@ -82,11 +74,11 @@ def prove(Eq):
 
     Eq << sets.imply.less_than.union.apply(*Eq[-1].rhs.args)
 
-    Eq << Eq.strict_greater_than.subs(Eq[-1])
-
+    Eq << Eq.strict_greater_than.this.function.apply(algebre.strict_greater_than.less_than.imply.strict_greater_than.subs, Eq[-1])
+  
     Eq << Eq[-1].this().function.simplify()
 
-    Eq << Eq[-1].subs(Eq.union_less_than)
+    Eq << Eq[-1].this.function.apply(algebre.strict_greater_than.less_than.imply.strict_greater_than.subs, Eq.union_less_than)
 
     Eq << Eq[-1].this().function.lhs.simplify()
 

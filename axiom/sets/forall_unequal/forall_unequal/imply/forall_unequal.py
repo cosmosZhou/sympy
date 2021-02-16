@@ -1,10 +1,5 @@
-from sympy.core.relational import Unequality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import ForAll, LAMBDA
-from sympy import Symbol
-from sympy.core.numbers import oo
-
 
 # given: 
 #     ForAll[j:Interval(0, n - 1, integer=True) - {i}, i:n](Unequality(x[i], x[j]))
@@ -47,8 +42,6 @@ def apply(*given):
     return ForAll[j:i, i:n + 1](Unequality(x[i], x[j]))
 
 
-
-
 @prove
 def prove(Eq):
     i = Symbol.i(integer=True)
@@ -60,6 +53,7 @@ def prove(Eq):
                 ForAll[i:n](Unequality(x[n], x[i])))
 
     Eq << Eq[-1].bisect({n}, wrt=i).split()
+
     
 if __name__ == '__main__':
     prove(__file__)

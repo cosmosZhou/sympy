@@ -1,14 +1,7 @@
-
-from sympy.core.numbers import oo
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy import Exists, MIN, MAX
-from sympy.integrals.integrals import Integral
-from sympy.sets.sets import Interval
-from sympy.core.function import Function
+from sympy import *
 import axiom
-from axiom import algebre, calculus
+from axiom import algebre, calculus, sets
 
 
 @apply(imply=True)
@@ -28,10 +21,8 @@ def apply(given):
     return Exists(Equality(Integral(f, (z, a, b)), (b - a) * _f), limit)
 
 
-
-
 @prove
-def prove(Eq):    
+def prove(Eq): 
 
     a = Symbol.a(real=True)
     b = Symbol.b(real=True, domain=Interval(a, oo, left_open=True))
@@ -67,14 +58,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.max.reversed) / (b - a)
     
-    Eq <<= Eq[-1] & Eq[-4]
-#     Eq << (Eq[-1].reversed & Eq[-2])
-#     Eq << (Eq[-1] & Eq[-2].reversed)
-#     Eq << (Eq[-1].reversed & Eq[-2].reversed)
-#     Eq << (Eq[-2] & Eq[-1])
-#     Eq << (Eq[-2].reversed & Eq[-1])
-#     Eq << (Eq[-2] & Eq[-1].reversed)
-#     Eq << (Eq[-2].reversed & Eq[-1].reversed)
+    Eq <<= sets.less_than.greater_than.imply.contains.apply(Eq[-4], Eq[-1])
          
     Eq << Eq.intermediate_value.subs(Eq.intermediate_value.rhs, Eq[-1].lhs)
     
@@ -85,7 +69,6 @@ def prove(Eq):
     Eq << Eq[-1] * (b - a)
     
     Eq << Eq[-1].this.function.rhs.ratsimp().reversed
-    
     
     
 if __name__ == '__main__':

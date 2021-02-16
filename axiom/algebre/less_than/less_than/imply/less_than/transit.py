@@ -1,6 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import LessThan
-from sympy import Symbol
 import axiom
 
 
@@ -13,8 +12,6 @@ def apply(*given):
         a, x, _x, b = _x, b, a, x
     assert x == _x
     return LessThan(a, b)
-
-
 
 
 @prove

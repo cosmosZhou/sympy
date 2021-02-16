@@ -5,3 +5,4 @@ from . import complement
 from . import where
 from . import amplify
 from . import finiteset
+from . import imageset

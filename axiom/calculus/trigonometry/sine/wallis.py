@@ -1,18 +1,6 @@
-
-from sympy.core.relational import Equality
-from sympy.core.numbers import pi
-from sympy.functions.elementary.trigonometric import sin
-from sympy.functions.special.gamma_functions import gamma
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.sympify import sympify
-from sympy.core.power import sqrt
-
-from sympy import S
-from sympy.integrals.integrals import Integral
-from sympy.core.symbol import Symbol
 from axiom import algebre, geometry, calculus
-from sympy.core.add import Plus
-from sympy.core.mul import Times
 
 
 @apply(imply=True)
@@ -21,8 +9,6 @@ def apply(n):
     x = Symbol.x(real=True)
     return Equality(Integral[x:0:pi / 2](sin(x) ** (n - 1)),
                     sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
-
-
 
 
 @prove

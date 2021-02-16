@@ -27,7 +27,7 @@ def prove(Eq):
     k = Symbol.k(domain=Interval(0, n - 1, integer=True))
     Eq << Eq[0].this.rhs.bisect(k.set)
     
-    Eq << Eq[-1].split()
+    Eq << sets.notcontains.imply.et.where.union.apply(Eq[-1], simplify=None).split()
     
     Eq << Eq[-2].forall((k,))
 

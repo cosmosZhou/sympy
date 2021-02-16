@@ -4,3 +4,4 @@ from . import sum
 from . import product
 from . import sqrt
 from . import min
+from . import floor

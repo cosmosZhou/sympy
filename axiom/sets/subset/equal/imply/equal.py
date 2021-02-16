@@ -50,7 +50,9 @@ def prove(Eq):
     
     Eq << sets.is_emptyset.imply.subset.complement.apply(Eq[-1])
     
-    Eq << Eq[-1].subs(Eq[0]).reversed
+    Eq <<= Eq[-1] & Eq[0]
+    
+    Eq << Eq[-1].reversed
 
 
 if __name__ == '__main__':

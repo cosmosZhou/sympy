@@ -54,7 +54,7 @@ class Contains(BinaryCondition):
         return r"%s \in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return r"%s ∈ %s" % tuple(p._print(a) for a in self.args)
+        return "%s \N{ELEMENT OF} %s" % tuple(p._print(a) for a in self.args)
 
     @classmethod
     def eval(cls, x, s):
@@ -70,34 +70,6 @@ class Contains(BinaryCondition):
     def binary_symbols(self):
         binary_symbols = [i.binary_symbols for i in self.args[1].args if hasattr(i, 'binary_symbols') and (i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne)))]
         return set().union(*binary_symbols)
-
-    def split(self, *args, **kwargs):
-        if self.rhs.is_Union:
-            args = [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
-#             if self.plausible:
-#                 self.derivative = args
-            return args
-        if self.rhs.is_Intersection:
-            args = [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
-            if self.plausible:
-                self.derivative = args
-            return args
-        
-        if self.rhs.is_Interval:
-            if self.rhs.left_open:
-                lower_bound = self.lhs > self.rhs.start
-            else:
-                lower_bound = self.lhs >= self.rhs.start
-            if self.rhs.right_open:
-                upper_bound = self.lhs < self.rhs.stop
-            else:
-                upper_bound = self.lhs <= self.rhs.stop
-            upper_bound.given = lower_bound.given = self
-            args = [lower_bound, upper_bound]
-            if self.plausible:
-                self.derivative = args
-            return args
-        return self
 
     def as_set(self):
         return self
@@ -158,46 +130,6 @@ class Contains(BinaryCondition):
         assert x.type == e.type
         return Exists(Equality(x, e), (x, S), equivalent=self)
 
-    @property
-    def definition(self):
-        print("Contains.definition should be axiomatized!")
-        
-        e, S = self.args
-
-        from sympy import Exists
-
-        condition_set = S.condition_set()
-        if condition_set:
-            condition = condition_set.condition
-            if condition_set.variable != e:
-                condition = condition._subs(condition_set.variable, e)
-            return And(condition, self.func(e, condition_set.base_set), equivalent=self)
-
-        image_set = S.image_set()
-        if image_set is not None:
-            expr, variables, base_set = image_set
-            from sympy import Wild
-            variables_ = Wild(variables.name, **variables.type.dict)
-            assert variables_.shape == variables.shape
-            e = e.subs_limits_with_epitome(expr)
-            dic = e.match(expr.subs(variables, variables_))
-            if dic:
-                variables_ = dic[variables_]
-                if variables.type != variables_.type:
-                    assert len(variables.shape) == 1
-                    variables_ = variables_[:variables.shape[-1]]
-                return Contains(variables_, base_set, equivalent=self)
-
-            if e._has(variables):
-                _variables = base_set.element_symbol(e.free_symbols)
-                assert _variables.type == variables.type
-                expr = expr._subs(variables, _variables)
-                variables = _variables
-            assert not e._has(variables)
-            return Exists(Equality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
-
-        return self
-
     def __and__(self, other):
         """Overloading for & operator"""
         if other.is_NotContains:
@@ -212,6 +144,31 @@ class Contains(BinaryCondition):
             elif self.rhs == other.rhs:
                 from sympy import Subset                
                 return Subset(self.lhs.set | other.lhs.set, self.rhs, equivalent=[self, other])
+        elif self.rhs.is_Interval:
+            if other.is_LessThan:            
+                if self.lhs == other.lhs:
+                    if self.rhs.left_open:
+                        if other.rhs <= self.rhs.start:
+                            return S.false.copy(equivalent=[self, other])
+                    else: 
+                        if other.rhs < self.rhs.start:
+                            return S.false.copy(equivalent=[self, other])
+            elif other.is_StrictLessThan:
+                if self.lhs == other.lhs:
+                    if other.rhs <= self.rhs.start:
+                        return S.false.copy(equivalent=[self, other])
+            elif other.is_GreaterThan:
+                if self.lhs == other.lhs:
+                    if self.rhs.right_open:
+                        if other.rhs >= self.rhs.stop:
+                            return S.false.copy(equivalent=[self, other])
+                    else: 
+                        if other.rhs > self.rhs.stop:
+                            return S.false.copy(equivalent=[self, other])
+            elif other.is_StrictGreaterThan:
+                if self.lhs == other.lhs:
+                    if other.rhs >= self.rhs.stop:
+                        return S.false.copy(equivalent=[self, other])
             
         return BinaryCondition.__and__(self, other)
 
@@ -219,7 +176,7 @@ class Contains(BinaryCondition):
         if other.is_Contains:
             x, X = self.args
             y, Y = other.args
-            if x == y:                
+            if x == y: 
                 return self.func(x, X | Y, given=[self, other]).simplify()
             
         return BinaryCondition.__or__(self, other)
@@ -237,7 +194,7 @@ class Contains(BinaryCondition):
             return domain.as_KroneckerDelta(x)
     
         domain = x.domain - domain
-        if domain.is_FiniteSet:             
+        if domain.is_FiniteSet: 
             return 1 - domain.as_KroneckerDelta(x)
             
     def inverse(self):
@@ -256,7 +213,7 @@ class Contains(BinaryCondition):
         if x == self.lhs:
             return self.rhs
         interval = self.rhs
-        if interval.is_Interval:                
+        if interval.is_Interval: 
             poly = self.lhs.as_poly(x)
             if poly is not None and poly.degree() == 1:
                 c1 = poly.nth(1)
@@ -338,7 +295,7 @@ class NotContains(BinaryCondition):
         return r"%s \not\in %s" % tuple(p._print(a) for a in self.args)
 
     def _sympystr(self, p):
-        return r"%s ∉ %s" % tuple(p._print(a) for a in self.args)
+        return "%s \N{NOT AN ELEMENT OF} %s" % tuple(p._print(a) for a in self.args)
 
     @classmethod
     def eval(cls, x, s):
@@ -376,42 +333,6 @@ class NotContains(BinaryCondition):
         
         return self
 
-    @property
-    def definition(self):
-        print("NotContains.definition should be axiomatized!")
-        e, S = self.args
-
-        from sympy import ForAll
-
-        image_set = S.image_set()
-        if image_set is not None:
-            expr, variables, base_set = image_set
-            from sympy import Wild
-            variables_ = Wild(variables.name, **variables.type.dict)
-
-            e = e.subs_limits_with_epitome(expr)
-            dic = e.match(expr.subs(variables, variables_))
-            if dic:
-                variables_ = dic[variables_]
-                if variables.type != variables_.type:
-                    assert len(variables.shape) == 1
-                    variables_ = variables_[:variables.shape[-1]]
-                return self.func(variables_, base_set, equivalent=self)
-
-            if e.has(variables):
-                _variables = base_set.element_symbol(e.free_symbols)
-                assert _variables.type == variables.type
-                expr = expr._subs(variables, _variables)
-                variables = _variables
-            assert not e.has(variables)
-            return ForAll(Unequality(e, expr, evaluate=False), (variables, base_set), equivalent=self)
-
-        condition_set = S.condition_set()
-        if condition_set:
-            return Or(~condition_set.condition._subs(condition_set.variable, e), ~self.func(e, condition_set.base_set), equivalent=self)
-
-        return self
-
     def __and__(self, other):
         if other.is_NotContains:
             if self.element == other.element:
@@ -432,7 +353,22 @@ class NotContains(BinaryCondition):
             else:
                 X = None
             if X is not None:
-                return self.func(x, X, equivalent=[self, other])      
+                return self.func(x, X, equivalent=[self, other])
+        elif other.is_GreaterThan: 
+            if self.lhs == other.lhs:
+                interval = self.rhs
+                if interval.is_Interval:
+                    if interval.left_open:
+                        if interval.right_open:
+                            ...
+                        else:
+                            ...
+                    else:
+                        if interval.right_open:
+                            if interval.start == other.rhs:
+                                return other.func(other.lhs, interval.stop, equivalent=[self, other])
+                        else:
+                            ...
             
         return BinaryCondition.__and__(self, other)
 
@@ -440,7 +376,7 @@ class NotContains(BinaryCondition):
         if other.is_NotContains:
             x, X = self.args
             y, Y = other.args
-            if x == y:                
+            if x == y: 
                 return self.func(x, X & Y, given=[self, other])
             
         return BinaryCondition.__or__(self, other)
@@ -458,29 +394,7 @@ class NotContains(BinaryCondition):
         assert len(self.lhs.shape) <= 1
         return self.func(self.lhs.T, self.rhs, equivalent=self)
 
-    def split(self, *args, **kwargs):
-        if self.rhs.is_Union:
-            args = [self.func(self.lhs, rhs, given=self) for rhs in self.rhs.args]
-            if self.plausible:
-                self.derivative = args
-            return args
-        if self.rhs.is_Intersection:
-            return [self.func(self.lhs, rhs, imply=self) for rhs in self.rhs.args]
-        
-        if self.rhs.is_Interval:
-            if self.rhs.left_open:
-                lower_bound = self.lhs <= self.rhs.start
-            else:
-                lower_bound = self.lhs < self.rhs.start
-            if self.rhs.right_open:
-                upper_bound = self.lhs >= self.rhs.stop
-            else:
-                upper_bound = self.lhs > self.rhs.stop
-            upper_bound.imply = lower_bound.imply = self
-            return [lower_bound, upper_bound]
-        return self
-
-    def domain_conditioned(self, x):        
+    def domain_conditioned(self, x): 
         if self.lhs == x:
             domain = x.domain & self.domain_defined(x)
             return x.domain_conditioned(self.invert_type(x, domain - self.rhs))

@@ -20,7 +20,7 @@ def apply(*given, n=None, start=0):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, nonnegative=True)    
+    n = Symbol.n(integer=True, nonnegative=True, given=False)    
     f = Symbol.f(integer=True, shape=(oo,))
     g = Symbol.g(integer=True, shape=(oo,))
     

@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2], Eq.union_empty)
 
-    Eq << Eq[-1].subs(Eq.positive)
+    Eq << Eq.positive.subs(Eq[-1].reversed)
 
 
 if __name__ == '__main__':

@@ -646,8 +646,8 @@ class Product(ExprWithIntLimits):
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
         if limits:
-            return '∏[%s](%s)' % (limits, p._print(self.function))
-        return '∏(%s)' % p._print(self.function)
+            return '\N{N-ARY PRODUCT}[%s](%s)' % (limits, p._print(self.function))
+        return '\N{N-ARY PRODUCT}(%s)' % p._print(self.function)
 
     latex_name_of_operator = 'prod'
 
@@ -1062,8 +1062,8 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
         if limits:
-            return '∏[%s](%s)' % (limits, p._print(self.function))
-        return '∏(%s)' % p._print(self.function)
+            return '\N{N-ARY PRODUCT}[%s](%s)' % (limits, p._print(self.function))
+        return '\N{N-ARY PRODUCT}(%s)' % p._print(self.function)
 
     latex_name_of_operator = 'prod'
 

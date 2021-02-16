@@ -52,12 +52,7 @@ def prove(Eq):
     Eq << Eq.x_quote_union.apply(algebre.equal.imply.equal.abs)    
 
     u = Eq[-1].lhs.arg
-    Eq << sets.imply.less_than.union_comprehension.apply(u.function, *u.limits)
-
-    Eq << Eq[-2].subs(Eq[-1])
-
-    Eq << Eq[-4].subs(Eq[-1])
-    SqueezeTheorem = Eq[-1]
+    Eq.SqueezeTheorem = sets.imply.less_than.union_comprehension.apply(u.function, *u.limits)
 
     Eq << algebre.equal.imply.ou.two.apply(x_quote_abs)
 
@@ -67,15 +62,11 @@ def prove(Eq):
 
     Eq << sets.imply.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
 
-    Eq << Eq[-1].subs(Eq.x_abs_positive_s1.limits_subs(i, j))
-
-    Eq << Eq[-4].subs(Eq[-1])
-
-    Eq << Eq[-4].subs(Eq.x_abs_positive_s1)
+    Eq << Eq.x_abs_positive_s1.limits_subs(i, j).this.function.apply(algebre.strict_greater_than.greater_than.imply.strict_greater_than.transit, Eq[-1])
 
     Eq <<= Eq[-1] & Eq[-2]
 
-    Eq << (Eq.x_quote_union & SqueezeTheorem & Eq[-1])
+    Eq <<= Eq.x_quote_union & Eq.SqueezeTheorem & Eq[-1]
 
     Eq.x_quote_definition = algebre.equal.imply.equal.lamda.apply(Eq[0], (i, 0, k + 1))
 
@@ -119,11 +110,13 @@ def prove(Eq):
 
     Eq << Eq[-1].split()
     
-    Eq << Eq[-1].split()[1].apply(sets.equal.imply.equal.intersect, {n})
+    Eq << algebre.exists_et.imply.exists.limits_delete.apply(Eq[-2])
+    
+    Eq << Eq[-2].split()[1].apply(sets.equal.imply.equal.intersect, {n})
     
     Eq << Eq[-1].subs(Eq.nonoverlapping_s1_quote)
     
-    Eq << (Eq[-3] - n.set).limits_subs(j_quote, i)
+    Eq << (Eq[-2] - n.set).limits_subs(j_quote, i)
     
     Eq << Eq[-1].subs(Eq.xi_complement_n.subs(i, j)).subs(Eq.xi_complement_n)
     

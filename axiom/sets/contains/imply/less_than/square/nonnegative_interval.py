@@ -1,10 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy import Symbol
 import axiom
-from sympy.core.relational import LessThan
-from sympy.sets.sets import Interval
-from axiom import algebre
+from axiom import algebre, sets
 
 
 # given: A in B 
@@ -22,15 +19,13 @@ def apply(given):
     return LessThan(x * x, M * M)
 
 
-
-
 @prove
 def prove(Eq):
     x = Symbol.x(real=True)
     M = Symbol.M(real=True)
     Eq << apply(Contains(x, Interval(0, M)))
     
-    Eq << Eq[0].split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
     
     Eq << algebre.is_nonnegative.less_than.imply.less_than.square.apply(Eq[-2], Eq[-1])
 

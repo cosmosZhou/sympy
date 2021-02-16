@@ -87,7 +87,7 @@ def prove(Eq):
     
     Eq.forall_x = ForAll(Contains(Eq[-1].lhs, F(e)), *Eq[-1].limits, plausible=True)
     
-    Eq << Eq.forall_x.definition.split()
+    Eq << Eq.forall_x.this.function.rhs.definition.split()
     
     P = Eq[-1].limits[0][1]
     Eq << sets.imply.forall.conditionset.apply(P)

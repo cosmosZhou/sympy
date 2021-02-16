@@ -1,7 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol, Or
 import axiom
-from sympy.logic.boolalg import Sufficient
 from axiom import algebre
 
 

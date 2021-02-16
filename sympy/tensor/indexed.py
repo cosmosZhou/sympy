@@ -186,15 +186,13 @@ class Indexed(Expr):
 
         return self.generate_free_symbol(excludes=excludes, **etype.dict)
 
-    # performing other in self
-    def __contains__(self, other):
-        if other == self:
-            return True
+# performing other in self
+    def __contains__(self, other):        
         if self.base.definition is not None:
             return other in self.base.definition[self.indices]
-
+        
     def _eval_is_integer(self):
-        if self.base.definition is not None:
+        if not hasattr(self.base, 'is_integer') and self.base.definition is not None:
             return self.base.definition.is_integer
         return self.base.is_integer
 
@@ -207,7 +205,6 @@ class Indexed(Expr):
         return False
 
     def __new__(cls, base, *args, **kw_args):
-        from sympy.utilities.miscellany import filldedent
         from sympy.tensor.array.ndim_array import NDimArray
         from sympy.matrices.matrices import MatrixBase
 
@@ -219,7 +216,7 @@ class Indexed(Expr):
         elif isinstance(base, Symbol):
             assert base.shape
         elif not hasattr(base, '__getitem__') and not base.is_Symbol:
-            raise TypeError(filldedent("Indexed expects string, Symbol as base."))
+            assert len(base.shape) >= len(args)
         args = list(map(sympify, args))
         
         if isinstance(base, (NDimArray, Tuple, MatrixBase)) and all([i.is_number for i in args]):
@@ -269,40 +266,11 @@ class Indexed(Expr):
                 return S.NaN
             return S.Zero
 
-    @property
-    def base(self):
-        """Returns the ``IndexedBase`` of the ``Indexed`` object.
-
-        Examples
-        ========
-
-        >>> from sympy import Indexed, IndexedBase, Idx, symbols
-        >>> i, j = symbols('i j', cls=Idx)
-        >>> Indexed('A', i, j).base
-        A
-        >>> B = IndexedBase('B')
-        >>> B == B[i, j].base
-        True
-
-        """
-        return self.args[0]
-
-    @property
-    def indices(self):
-        """
-        Returns the indices of the ``Indexed`` object.
-
-        Examples
-        ========
-
-        >>> from sympy import Indexed, Idx, symbols
-        >>> i, j = symbols('i j', cls=Idx)
-        >>> Indexed('A', i, j).indices
-        (i, j)
-
-        """
-        return self.args[1:]
-
+    base = property(lambda self: self.args[0])
+    indices = property(lambda self: self.args[1:])
+    index = property(lambda self: self.args[1])
+    shape = property(lambda self: self.base.shape[len(self.indices):])
+    
     @property
     def rank(self):
         """
@@ -323,28 +291,6 @@ class Indexed(Expr):
 
         """
         return len(self.args) - 1
-
-    @property
-    def shape(self):
-        """Returns a list with dimensions of each index.
-
-        Dimensions is a property of the array, not of the indices.  Still, if
-        the ``IndexedBase`` does not define a shape attribute, it is assumed
-        that the ranges of the indices correspond to the shape of the array.
-
-        >>> from sympy import IndexedBase, Idx, symbols
-        >>> n, m = symbols('n m', integer=True)
-        >>> i = Idx('i', m)
-        >>> j = Idx('j', m)
-        >>> A = IndexedBase('A', shape=(n, n))
-        >>> B = IndexedBase('B')
-        >>> A[i, j].shape
-        (n, n)
-        >>> B[i, j].shape
-        (m, m)
-        """
-        
-        return self.base.shape[len(self.indices):]
 
     @property
     def ranges(self):
@@ -432,7 +378,7 @@ class Indexed(Expr):
         if exp.is_Slice:
             if exp.base == self.base:
                 if len(self.indices) == 1:
-                    start, stop = exp.indices
+                    start, stop = exp.index
                     index_fixed, *_ = self.indices
     
                     if isinstance(index_fixed, Wild):
@@ -485,6 +431,9 @@ class Indexed(Expr):
         from sympy.core.function import FunctionClass
         
         if not isinstance(pattern, (FunctionClass, ManagedProperties)):
+            if self.base.is_AppliedUndef:
+                return any(arg._has(pattern) for arg in self.base.args)
+                                
             definition = self.definition
             if definition is not None:
                 return definition._has(pattern)
@@ -499,7 +448,7 @@ class Indexed(Expr):
             return new[self.indices]
         if old.is_Slice and old.base == self.base and len(self.indices) == 1:
             k = self.indices[0]
-            start, stop = old.indices
+            start, stop = old.index
             if k >= start and k < stop:
                 assert new.shape
                 return new[k - start]
@@ -507,11 +456,14 @@ class Indexed(Expr):
         if this != self:
             return this
         if hints.get('symbol') is not False:
-            definition = self.definition
-            if definition is not None:
-                this = definition._subs(old, new, **hints)
-                if this != definition:
-                    return this
+            if self.base.is_AppliedUndef:
+                ...
+            else:
+                definition = self.definition
+                if definition is not None:
+                    this = definition._subs(old, new, **hints)
+                    if this != definition:
+                        return this
         return self             
 
     def _eval_is_random(self):
@@ -524,11 +476,11 @@ class Indexed(Expr):
             return distribution
                          
         definition = self.definition
-        if definition is not None:    
+        if definition is not None: 
             if self.is_integer:
                 from sympy.stats.drv_types import AbstractDiscreteDistribution
                 return AbstractDiscreteDistribution(definition.function)
-            else:                
+            else: 
                 from sympy.stats.crv_types import AbstractContinuousDistribution                
                 return AbstractContinuousDistribution(definition) 
 
@@ -611,7 +563,7 @@ class Indexed(Expr):
                 return self
 
     @property
-    def domain(self):        
+    def domain(self): 
         if self.is_set:
             return self.universalSet
         definition = self.definition
@@ -634,7 +586,7 @@ class Indexed(Expr):
         return self.base.domain_assumed
 
     @property
-    def is_given(self):        
+    def is_given(self): 
         return self.base.is_given
 #         if self.base.is_given:
 #             return True
@@ -667,8 +619,10 @@ class Slice(Expr):
     is_Atom = True
 
     base = property(lambda self: self.args[0])
-    start = property(lambda self: self.args[1])
-    stop = property(lambda self: self.args[2])
+    start = property(lambda self: self.args[1][0])
+    stop = property(lambda self: self.args[1][1])    
+    indices = property(lambda self: self.args[1:])
+    index = property(lambda self: self.args[1])
 
     def copy(self, **kwargs):
         return self.base.copy(**kwargs)[self.start:self.stop]
@@ -680,11 +634,11 @@ class Slice(Expr):
             return distribution
                          
         definition = self.definition
-        if definition is not None:    
+        if definition is not None: 
             if self.is_integer:
                 from sympy.stats.drv_types import AbstractDiscreteDistribution
                 return AbstractDiscreteDistribution(definition.function)
-            else:                
+            else: 
                 from sympy.stats.crv_types import AbstractContinuousDistribution                
                 return AbstractContinuousDistribution(definition) 
 
@@ -699,7 +653,7 @@ class Slice(Expr):
         return self.base.domain_assumed
 
     @property
-    def domain(self):    
+    def domain(self): 
         if self.dtype.is_set:
             return self.universalSet    
 
@@ -721,64 +675,78 @@ class Slice(Expr):
         if other.is_symbol:
             return self.shape == other.shape
         return False
-
-    # performing other in self
-    def __contains__(self, other):
-        if not (other.is_Indexed or other.is_Slice) or self.base != other.base:            
+# performing other.indices in self.indices
+    def index_contains(self, other):
+        if not (other.is_Indexed or other.is_Slice) or self.base != other.base: 
             return False
-
-        start, stop = self.indices
-        if other.is_Slice:            
-            _start, _stop = other.indices
-            return _start >= start and _stop <= stop
         
-        if len(other.indices) > 1:
+        if len(other.indices) != len(self.indices):
             return False
 
-        index = other.indices[0]
-        return index >= start and index < stop
+        if other.is_Slice:
+            return all(_start >= start and _stop <= stop for (start, stop), (_start, _stop) in zip(self.indices, other.indices)) 
+        else:
+            return all(index >= start and index < stop for (start, stop), index in zip(self.indices, other.indices))
 
     def set_comprehension(self, free_symbol=None):
         from sympy.concrete.expr_with_limits import UNION
         i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)
-        return UNION({self.base[i]}, (i, *self.indices))
+        return UNION({self.base[i]}, (i, *self.index))
 
-    def __new__(cls, base, *args, **kw_args):
-        from sympy.utilities.miscellany import filldedent
-
-        if not args:
+    def __new__(cls, base, *indices, **kw_args):
+        if not indices:
             raise IndexException("Indexed needs at least one index.")
 
-        if len(args) == 1:
-            args, *_ = args
-            start, stop = args.start, args.stop
+        indices = [*indices]
+        for i, index in enumerate(indices):
+            if isinstance(index, slice):
+                start, stop = index.start, index.stop
+            else:
+                start, stop = index
+                
             if start is None:
-                start = 0
+                start = S.Zero
+            elif start < 0:
+                start = base.shape[i] + start
+            else:
+                start = sympify(start)
+                    
             if stop is None:
-                stop = base.shape[0]
-            args = [sympify(start), sympify(stop)]
-        else:
-            start, stop = args
+                stop = base.shape[i]
+            elif stop < 0:
+                stop = base.shape[i] + stop
+            else: 
+                stop = sympify(stop)
+                
+            assert start != stop
+            indices[i] = Tuple(start, stop)
 
         if isinstance(base, string_types):
             from sympy import oo
             base = Symbol(base, shape=(oo,))
         elif base.is_Symbol:
             assert base.shape
-            start, stop = args
-            if start.is_zero and stop == base.shape[0]:
+            if start.is_zero and stop == base.shape[len(indices) - 1]:
+                indices = indices[:-1]
+                if indices:
+                    return base[indices]
                 return base
+            
+            start, stop = indices[0]
             if stop == start + 1:
-                return base[start]            
+                base = base[start]
+                indices = indices[1:]
+                if indices:
+                    return base[indices]
+                return base
+                    
         elif not hasattr(base, '__getitem__') and not isinstance(base, Symbol):
-            raise TypeError(filldedent("""
-                Indexed expects string, Symbol, or IndexedBase as base."""))
+            assert len(base.shape) >= len(indices)            
         elif base.is_LAMBDA:
-            start, stop = args
-            return base[start : stop]
-
-        assert start != stop
-        return Expr.__new__(cls, base, *args, **kw_args)
+            start, stop = indices
+            return base[start: stop]
+        
+        return Expr.__new__(cls, base, *indices, **kw_args)
 
     def __iter__(self):
         raise TypeError
@@ -796,7 +764,7 @@ class Slice(Expr):
         if is_sequence(indices):
             if len(indices) == 0:
                 return self
-            start, stop = self.indices
+            start, stop = self.index
             if len(indices) == 1:
                 return self.base[indices[0] + start]
             
@@ -814,12 +782,12 @@ class Slice(Expr):
                 start = 0
             if start == stop - 1:
                 return self[start]
-            self_start, self_stop = self.indices
+            self_start, self_stop = self.index
             start, stop = self_start + start, self_start + stop
 #             assert stop <= self_stop, "try to prove, %s <= %s" % (stop, self_stop)
             return self.base[start: stop]
         else:
-            start, stop = self.indices
+            start, stop = self.index
             return self.base[indices + start]
 
     def _eval_derivative(self, wrt):
@@ -841,22 +809,6 @@ class Slice(Expr):
             if Tuple(self.indices).has(wrt):
                 return S.NaN
             return S.Zero
-
-    @property
-    def indices(self):
-        """
-        Returns the indices of the ``Indexed`` object.
-
-        Examples
-        ========
-
-        >>> from sympy import Indexed, Idx, symbols
-        >>> i, j = symbols('i j', cls=Idx)
-        >>> Indexed('A', i, j).indices
-        (i, j)
-
-        """
-        return self.args[1:]
 
     @property
     def rank(self):
@@ -881,36 +833,12 @@ class Slice(Expr):
 
     @property
     def shape(self):
-        """Returns a list with dimensions of each index.
-
-        Dimensions is a property of the array, not of the indices.  Still, if
-        the ``IndexedBase`` does not define a shape attribute, it is assumed
-        that the ranges of the indices correspond to the shape of the array.
-
-        >>> from sympy import IndexedBase, Idx, symbols
-        >>> n, m = symbols('n m', integer=True)
-        >>> i = Idx('i', m)
-        >>> j = Idx('j', m)
-        >>> A = IndexedBase('A', shape=(n, n))
-        >>> B = IndexedBase('B')
-        >>> A[i, j].shape
-        (n, n)
-        >>> B[i, j].shape
-        (m, m)
-        """
-
-        sizes = []
-        start, stop = self.indices
-        sizes.append(stop - start)
-
+        sizes = [stop - start for start, stop in self.indices]
+        
         if len(self.base.shape) > len(sizes):
             sizes += [self.base.shape[i] for i in range(len(sizes), len(self.base.shape))]
 
-        return Tuple(*sizes)
-
-#     def __len__(self):
-#         start, stop = self.indices
-#         return stop - start
+        return tuple(sizes)
 
     @property
     def ranges(self):
@@ -943,36 +871,32 @@ class Slice(Expr):
                 ranges.append(None)
         return ranges
 
-    def _sympystr(self, p):
-        start, end = self.indices
-        if start.is_zero:
-            start = ''
-        else:
-            start = p._print(start)
-        end = p._print(end)
-        
-        return "%s[%s]" % (p.doprint(self.base), ':'.join([start, end]))
+    def index_generator(self, p):
+        base_shape = self.base.shape
+        for i, (start, stop) in enumerate(self.indices):
+            if start.is_zero:
+                start = ''
+            else:
+                start = p._print(start)
+                
+            if stop == base_shape[i]:
+                stop = ''
+            else:
+                stop = p._print(stop)
+                
+            yield ':'.join([start, stop])
+
+    def _sympystr(self, p): 
+        return "%s[%s]" % (p.doprint(self.base), ', '.join(self.index_generator(p)))
 
     def _latex(self, p):
-        start, end = self.indices
-        if start.is_zero:
-            start = ''
-        else:
-            start = p._print(start)
-            
-        if end == self.base.shape[0]:
-            end = ''
-        else:
-            end = p._print(end)
-            
-        slices = ':'.join([start, end])
         if self.base.is_Indexed:
             indices = [p._print(index) for index in self.base.indices]
-            indices.append(slices)
+            indices += [*self.index_generator(p)]
             
-            tex = '{%s}_{%s}' % (p._print(self.base.base), ','.join(indices))        
+            tex = '{%s}_{%s}' % (p._print(self.base.base), ', '.join(indices))        
         else:
-            tex = '{%s}_{%s}' % (p._print(self.base), slices)
+            tex = '{%s}_{%s}' % (p._print(self.base), ', '.join(self.index_generator(p)))
         return tex
 
     @property
@@ -993,12 +917,12 @@ class Slice(Expr):
         return self.base.slice(index, self.start, self.stop, allow_empty=allow_empty)
         
     # return exp._has(self)
-    def has_match(self, exp):
-        if exp.is_Indexed and exp.base == self.base:
-            if len(exp.indices) == 1:
+    def has_match(self, expr):
+        if expr.is_Indexed and expr.base == self.base:
+            if len(expr.indices) == 1:
 
-                index, *_ = exp.indices
-                start, stop = self.indices
+                index, *_ = expr.indices
+                start, stop = self.index
 
                 if index < start:
                     return False  # index < start
@@ -1006,19 +930,20 @@ class Slice(Expr):
                     return False  # index >= stop
 # it is possible for them to be equal!
                 return True
-        if exp.is_Slice:
-            if exp.base == self.base:
-                index_start, index_stop = exp.indices
-                start, stop = self.indices
-    
-                if index_stop <= start:
-                    return False  # index < start
-                if index_start >= stop:
-                    return False  # index >= stop
+        if expr.is_Slice:
+            if expr.base == self.base:
+                for _index, index in zip(expr.indices, self.indices):
+                    index_start, index_stop = _index
+                    start, stop = index
+        
+                    if index_stop <= start:
+                        return False  # index < start
+                    if index_start >= stop:
+                        return False  # index >= stop
     # it is still possible for them to be equal!
                 return True
             else:
-                base = exp.base.definition
+                base = expr.base.definition
                 if base is not None and base._has(self):
                     return True
         return False
@@ -1041,7 +966,7 @@ class Slice(Expr):
             return any(isinstance(arg, pattern) for arg in preorder_traversal(self))
 
         has_match = getattr(pattern, 'has_match', None)
-        if has_match is not None:            
+        if has_match is not None: 
             if has_match(self):
                 return True
             args = self.args[1:]
@@ -1054,13 +979,16 @@ class Slice(Expr):
             return True
         
         definition = self.base.definition
-        if definition is not None:            
-            from sympy.core.symbol import Dummy
-            from sympy.sets.sets import Interval
-            
-            k = Dummy('k', integer=True, domain=Interval(*self.indices, right_open=True))
-            
-            return definition[k]._has(pattern)
+        if definition is not None: 
+            if hasattr(definition, '__getitem__'):
+                from sympy.core.symbol import Dummy
+                from sympy.sets.sets import Interval
+                k = Dummy('k', integer=True, domain=Interval(*self.index, right_open=True))
+                return definition[k]._has(pattern)
+            else:
+                args = definition.args
+                if any(arg._has(pattern) for arg in args):
+                    return True                
         
         return False
 
@@ -1078,7 +1006,7 @@ class Slice(Expr):
     def dtype(self):
         return self.base.dtype
 
-    def _eval_is_integer(self):        
+    def _eval_is_integer(self): 
         return self.base.is_integer
 
     def _eval_is_extended_real(self):
@@ -1103,7 +1031,7 @@ class Slice(Expr):
         return self.base.is_random
     
     @property
-    def is_given(self):        
+    def is_given(self): 
         return self.base.is_given
 
     def as_boolean(self):
@@ -1113,14 +1041,14 @@ class Slice(Expr):
             return Equality(self, pspace(self).symbol)
 
     def _eval_domain_defined(self, x, allow_empty=False):
-        start, stop = self.indices
+        start, stop = self.index
         if allow_empty:
             return x.domain_conditioned(start <= stop)
         else:
             return x.domain_conditioned(start < stop)
 
     def domain_definition(self):
-        base, start, stop = self.args
+        base, (start, stop), *_ = self.args
         size = base.shape[-1]
         from sympy import And
         return And(start >= 0, start < stop, stop <= size)
@@ -1135,9 +1063,9 @@ class Slice(Expr):
         if self == old:
             return new
         if self.base == old:
-            return new[slice(*self.indices)]
+            return new[slice(*self.index)]
         if old.is_Slice and old.base == self.base:
-
+# let us suppose that:
 # base[      self_start : self_stop]       = self
 # 
 # base[start            :            stop] = old
@@ -1149,13 +1077,17 @@ class Slice(Expr):
 # base[self_stop - 1] = base[start:stop][self_stop - 1 - start] = old[self_stop - 1 - start] = new[self_stop - 1 - start]
 # 
 # new[self_start - start: self_stop - start]
+            indices = []
+            for (self_start, self_stop), (start, stop) in zip(self.indices, old.indices):
+                if start <= self_start and stop >= self_stop:
+                    indices.append(slice(self_start - start, self_stop - start))
+                else:
+                    indices = None
+                    break
+                
+            if indices:
+                return new[indices]
             
-            self_start, self_stop = self.indices
-            start, stop = old.indices
-            
-            if start <= self_start and stop >= self_stop:
-                assert new.shape
-                return new[self_start - start: self_stop - start]
         return Expr._subs(self, old, new, **kwargs)
     
     @classmethod
@@ -1181,7 +1113,8 @@ class Slice(Expr):
 
 
 class SliceIndexed(Expr):
-    """Represents a mathematical object with Slices.
+    """Represents a mathematical object with Slices and indices both.
+    in the form of x[start0:stop0, ..., start1:stop1, index0,..., index1]
 
     """
     is_symbol = True
@@ -1201,11 +1134,11 @@ class SliceIndexed(Expr):
             return distribution
                          
         definition = self.definition
-        if definition is not None:    
+        if definition is not None: 
             if self.is_integer:
                 from sympy.stats.drv_types import AbstractDiscreteDistribution
                 return AbstractDiscreteDistribution(definition.function)
-            else:                
+            else: 
                 from sympy.stats.crv_types import AbstractContinuousDistribution                
                 return AbstractContinuousDistribution(definition) 
 
@@ -1220,7 +1153,7 @@ class SliceIndexed(Expr):
         return self.base.domain_assumed
 
     @property
-    def domain(self):    
+    def domain(self): 
         if self.dtype.is_set:
             return self.universalSet    
 
@@ -1244,13 +1177,13 @@ class SliceIndexed(Expr):
         return False
 
     # performing other in self
-    def __contains__(self, other):
-        if not (other.is_Indexed or other.is_Slice) or self.base != other.base:            
+    def index_contains(self, other):
+        if not (other.is_Indexed or other.is_Slice) or self.base != other.base: 
             return False
 
-        start, stop = self.indices
-        if other.is_Slice:            
-            _start, _stop = other.indices
+        start, stop = self.index
+        if other.is_Slice: 
+            _start, _stop = other.index
             return _start >= start and _stop <= stop
         
         if len(other.indices) > 1:
@@ -1263,7 +1196,7 @@ class SliceIndexed(Expr):
         from sympy.concrete.expr_with_limits import UNION
 
         i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)
-        return UNION({self.base[i]}, (i, *self.indices))
+        return UNION({self.base[i]}, (i, *self.index))
 
     def __new__(cls, base, *args, **kw_args):
         from sympy.utilities.miscellany import filldedent
@@ -1295,7 +1228,7 @@ class SliceIndexed(Expr):
                 Indexed expects string, Symbol, or IndexedBase as base."""))
         elif base.is_LAMBDA:
             start, stop = args
-            return base[start : stop]
+            return base[start: stop]
 
         assert start != stop
         return Expr.__new__(cls, base, *args, **kw_args)
@@ -1318,7 +1251,7 @@ class SliceIndexed(Expr):
                 return self
 
             index = indices[0]
-            start, stop = self.indices
+            start, stop = self.index
             base = self.base[index - start]
 
             if len(indices) == 1:
@@ -1331,12 +1264,12 @@ class SliceIndexed(Expr):
                 start = 0
             if start == stop - 1:
                 return self[start]
-            self_start, self_stop = self.indices
+            self_start, self_stop = self.index
             start, stop = self_start + start, self_start + stop
 #             assert stop <= self_stop, "try to prove, %s <= %s" % (stop, self_stop)
             return self.base[start: stop]
         else:
-            start, stop = self.indices
+            start, stop = self.index
             return self.base[indices + start]
 
     def _eval_derivative(self, wrt):
@@ -1398,36 +1331,12 @@ class SliceIndexed(Expr):
 
     @property
     def shape(self):
-        """Returns a list with dimensions of each index.
-
-        Dimensions is a property of the array, not of the indices.  Still, if
-        the ``IndexedBase`` does not define a shape attribute, it is assumed
-        that the ranges of the indices correspond to the shape of the array.
-
-        >>> from sympy import IndexedBase, Idx, symbols
-        >>> n, m = symbols('n m', integer=True)
-        >>> i = Idx('i', m)
-        >>> j = Idx('j', m)
-        >>> A = IndexedBase('A', shape=(n, n))
-        >>> B = IndexedBase('B')
-        >>> A[i, j].shape
-        (n, n)
-        >>> B[i, j].shape
-        (m, m)
-        """
-
-        sizes = []
-        start, stop = self.indices
-        sizes.append(stop - start)
+        sizes = [stop - start for start, stop in self.indices]
 
         if len(self.base.shape) > len(sizes):
             sizes += [self.base.shape[i] for i in range(len(sizes), len(self.base.shape))]
 
-        return Tuple(*sizes)
-
-#     def __len__(self):
-#         start, stop = self.indices
-#         return stop - start
+        return tuple(sizes)
 
     @property
     def ranges(self):
@@ -1461,7 +1370,7 @@ class SliceIndexed(Expr):
         return ranges
 
     def _sympystr(self, p):
-        start, end = self.indices
+        start, end = self.index
         if start.is_zero:
             start = ''
         else:
@@ -1471,7 +1380,7 @@ class SliceIndexed(Expr):
         return "%s[%s]" % (p.doprint(self.base), ':'.join([start, end]))
 
     def _latex(self, p):
-        start, end = self.indices
+        start, end = self.index
         if start.is_zero:
             start = ''
         else:
@@ -1504,7 +1413,7 @@ class SliceIndexed(Expr):
             if len(exp.indices) == 1:
 
                 index, *_ = exp.indices
-                start, stop = self.indices
+                start, stop = self.index
 
                 if index < start:
                     return False  # index < start
@@ -1514,8 +1423,8 @@ class SliceIndexed(Expr):
                 return True
         if exp.is_Slice:
             if exp.base == self.base:
-                index_start, index_stop = exp.indices
-                start, stop = self.indices
+                index_start, index_stop = exp.index
+                start, stop = self.index
     
                 if index_stop <= start:
                     return False  # index < start
@@ -1547,7 +1456,7 @@ class SliceIndexed(Expr):
             return any(isinstance(arg, pattern) for arg in preorder_traversal(self))
 
         has_match = getattr(pattern, 'has_match', None)
-        if has_match is not None:            
+        if has_match is not None: 
             if has_match(self):
                 return True
             args = self.args[1:]
@@ -1560,11 +1469,11 @@ class SliceIndexed(Expr):
             return True
         
         definition = self.base.definition
-        if definition is not None:            
+        if definition is not None: 
             from sympy.core.symbol import Dummy
             from sympy.sets.sets import Interval
             
-            k = Dummy('k', integer=True, domain=Interval(*self.indices, right_open=True))
+            k = Dummy('k', integer=True, domain=Interval(*self.index, right_open=True))
             
             return definition[k]._has(pattern)
         
@@ -1584,7 +1493,7 @@ class SliceIndexed(Expr):
     def dtype(self):
         return self.base.dtype
 
-    def _eval_is_integer(self):        
+    def _eval_is_integer(self): 
         return self.base.is_integer
 
     def _eval_is_extended_real(self):
@@ -1609,7 +1518,7 @@ class SliceIndexed(Expr):
         return self.base.is_random
     
     @property
-    def is_given(self):        
+    def is_given(self): 
         return self.base.is_given
 
     def as_boolean(self):
@@ -1619,7 +1528,7 @@ class SliceIndexed(Expr):
             return Equality(self, pspace(self).symbol)
 
     def _eval_domain_defined(self, x, allow_empty=False):
-        start, stop = self.indices
+        start, stop = self.index
         if allow_empty:
             return x.domain_conditioned(start <= stop)
         else:
@@ -1656,8 +1565,8 @@ class SliceIndexed(Expr):
 # 
 # new[self_start - start: self_stop - start]
             
-            self_start, self_stop = self.indices
-            start, stop = old.indices
+            self_start, self_stop = self.index
+            start, stop = old.index
             
             if start <= self_start and stop >= self_stop:
                 assert new.shape

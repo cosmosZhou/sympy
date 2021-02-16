@@ -18,8 +18,6 @@ def apply(given, x=None, y=None):
     return Exists[x: Unequality(x, y), y](Equality(S, {x, y}))
 
 
-
-
 @prove
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
@@ -49,9 +47,11 @@ def prove(Eq):
     
     Eq << Eq[-1].apply(algebre.is_nonzero.imply.equal.kronecker_delta)
     
-    Eq << ~Eq[-1]
+    Eq << algebre.exists.imply.exists_et.multiple_variables.apply(Eq[-1])
     
-    Eq << Eq[-3].subs(Eq[-1])
+    Eq << ~Eq[-2]
+    
+    Eq << Eq[-4].subs(Eq[-1])
     
     Eq << Eq[-1].apply(sets.is_zero.imply.subset)
 

@@ -1,10 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import LessThan
-from sympy import Symbol, Or
 import axiom
-from sympy.functions.elementary.extremum import Max
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.logic.boolalg import And
 from axiom import algebre, sets
 
 
@@ -36,16 +32,12 @@ def prove(Eq):
     Eq << Eq[1].bisect(x >= y).split()
     
     Eq << algebre.ou.imply.ou.invert.apply(Eq[-1])
-    
-    Eq << Eq[-1].this.args[1].apply(sets.contains.imply.et.interval, simplify=False)    
 
     Eq <<= Eq.ou & Eq[-1]
     
     Eq << Eq[-1].astype(Or)
     
     Eq << Eq[-1].this.args[0].astype(Or)
-    
-    Eq << Eq[-1].this.args[0].args[-1].reversed
     
     Eq << algebre.ou.imply.less_than.two.apply(Eq[4], wrt=a)
     

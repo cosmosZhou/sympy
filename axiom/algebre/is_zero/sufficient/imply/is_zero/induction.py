@@ -1,17 +1,13 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal, Unequal
-from sympy import Symbol
-
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA
 import axiom
-from sympy.functions.special.tensor_functions import KroneckerDelta
 from axiom import algebre
-from sympy.logic.boolalg import Sufficient
 
 
 @apply(imply=True)
 def apply(*given, n=None):
+    assert n.is_given == False
+    
     f0, sufficient = given
     axiom.is_zero(f0)
     fn, fn1 = axiom.is_Sufficient(sufficient)
@@ -24,11 +20,9 @@ def apply(*given, n=None):
     return fn
 
 
-
-
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, nonnegative=True)    
+    n = Symbol.n(integer=True, nonnegative=True, given=False)    
     f = Symbol.f(integer=True, shape=(oo,))
     Eq << apply(Equal(f[0], 0), Sufficient(Equal(f[n], 0), Equal(f[n + 1], 0)), n=n)
     

@@ -46,6 +46,8 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.apply(algebre.imply.equal.piecewise.invert, index=0)
     
+    Eq << Eq[-1].this.lhs.args[1].cond.reversed
+    
 
 if __name__ == '__main__':
     prove(__file__)

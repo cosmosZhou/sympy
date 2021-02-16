@@ -1,12 +1,6 @@
-from sympy.functions.combinatorial.factorials import binomial
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.function import Difference, Function
-from axiom.discrete.combinatorics.binomial import Pascal
-from sympy.concrete.summations import Sum
-from sympy import Symbol, Slice
-from sympy.core.add import Add
-from axiom import algebre
+from axiom import algebre, discrete
 
 
 @apply(imply=True)
@@ -44,7 +38,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[-2])
 
     k = Eq[0].rhs.limits[0][0]
-    Eq << Pascal.apply(n + 1, k)
+    Eq << discrete.combinatorics.binomial.Pascal.apply(n + 1, k)
 
     Eq << Eq[-2].subs(Eq[-1])
 

@@ -1,13 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol
-
-from sympy.core.numbers import oo, Zero
-from sympy import ForAll, LAMBDA
 import axiom
 from axiom import algebre
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.logic.boolalg import Sufficient
 
 
 @apply(imply=True)
@@ -15,12 +9,10 @@ def apply(given, n=None):
     fn, fn1 = axiom.is_Sufficient(given)    
     assert fn._subs(n, n + 1) == fn1
 
-    assert fn._subs(n, Zero())
+    assert fn._subs(n, S.Zero)
     assert n.domain.min().is_zero
     
     return fn
-
-
 
 
 @prove

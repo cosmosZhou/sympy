@@ -461,6 +461,7 @@ _xsym = {
     '/=':  ('/=', '/='),
     '%=':  ('%=', '%='),
     '*':   ('*', U('DOT OPERATOR')),
+    '@':   ('@', '@'),
     '-->': ('-->', U('EM DASH') + U('EM DASH') +
             U('BLACK RIGHT-POINTING TRIANGLE') if U('EM DASH')
             and U('BLACK RIGHT-POINTING TRIANGLE') else None),

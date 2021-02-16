@@ -1,11 +1,6 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import Symbol
-from sympy import LAMBDA
 from axiom import sets, algebre
-from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
 @apply(imply=True)
@@ -62,6 +57,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[-1].variable, i)
     
     Eq << ~Eq[-1]
+
     
 if __name__ == '__main__':
     prove(__file__)

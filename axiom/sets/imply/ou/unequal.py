@@ -1,10 +1,5 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.relational import LessThan
-from sympy import Unequality
 from axiom import sets, algebre
 
 
@@ -15,8 +10,6 @@ def apply(S):
     x = S.element_symbol()
     y = S.element_symbol({x})
     return LessThan(abs(S), 1) | Exists[x:S, y:S](Unequality(x, y))
-
-
 
 
 @prove

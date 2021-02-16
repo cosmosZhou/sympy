@@ -1,17 +1,11 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol, Wild
-
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA, Sufficient
 import axiom
 from axiom import algebre
-from sympy.core.sympify import sympify
-from sympy.core.function import Function
 
 
 @apply(imply=True)
-def apply(*given, n=None, x=None, start=0, hypothesis=True):
+def apply(*given, n=None, x=None, start=0, return_hypothesis=True):
     start = sympify(start)
     f0, sufficient = given
     axiom.is_Equal(f0)
@@ -28,11 +22,9 @@ def apply(*given, n=None, x=None, start=0, hypothesis=True):
     assert n.domain.min() == start
     
     fn = fn._subs(x_wild, x_)
-    if hypothesis:
+    if return_hypothesis:
         return fn, fn_hypothesis
     return fn
-
-
 
 
 @prove
@@ -46,9 +38,13 @@ def prove(Eq):
     
     Eq << apply(Equal(f[0](z), g[0](z)), Sufficient(Equal(f[n](x), g[n](x)), Equal(f[n + 1](y), g[n + 1](y))), n=n, x=x)
     
-    Eq << algebre.sufficient.imply.forall.rewrite.apply(Eq[1], wrt=n)
+    Eq << Eq[0].subs(z, y)
     
-#     Eq << algebre.equal.forall_equal.imply.equal.induction.apply(Eq[0], Eq[-1])
+    Eq << Eq[1].subs(x, y)
+    
+    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq[-2], Eq[-1], n=n)
+    
+    Eq << Eq[2].subs(y, x)
 
         
 if __name__ == '__main__':

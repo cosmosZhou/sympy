@@ -414,7 +414,6 @@ def make_property(fact):
                 self._assumptions = self.default_assumptions.copy()
             return self._ask(fact)
 
-    _getit.func_name = as_property(fact)
     return property(_getit)
 
 

@@ -1,10 +1,6 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
-from sympy.core.function import Function
-from sympy import ForAll
 from axiom import sets
-from sympy.sets.contains import Contains
 from sympy.sets.conditionset import conditionset
 
 
@@ -22,7 +18,6 @@ def apply(*given):
     assert forall_B.function == A.image_set()[-1]
 
     return Equality(A, B)
-
 
 
 @prove
@@ -44,13 +39,14 @@ def prove(Eq):
     
     Eq << ForAll[x:A](Contains(x, B), plausible=True)
     
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].this.function.rhs.definition
     
     Eq << ForAll[x:B](Contains(x, A), plausible=True)
     
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].this.function.rhs.definition
 
     Eq << sets.forall_contains.forall_contains.imply.equal.apply(Eq[-2], Eq[-1])
+
 
 if __name__ == '__main__':
     prove(__file__)

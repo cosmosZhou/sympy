@@ -1,11 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy import Symbol
 import axiom
-from sympy.core.relational import LessThan
-from sympy.functions.elementary.extremum import Max
-from sympy.sets.sets import Interval
-from axiom import algebre
+from axiom import algebre, sets
 
 
 # given: A in B 
@@ -22,8 +18,6 @@ def apply(given):
     return LessThan(x * x, Max(m * m, M * M))
 
 
-
-
 @prove
 def prove(Eq):
     x = Symbol.x(real=True)
@@ -31,9 +25,10 @@ def prove(Eq):
     M = Symbol.M(real=True)
     Eq << apply(Contains(x, Interval(m, M)))
     
-    Eq << Eq[0].split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
     
-    Eq << algebre.greater_than.less_than.imply.less_than.square.apply(Eq[-2], Eq[-1])
+    Eq << algebre.greater_than.less_than.imply.less_than.square.apply(Eq[-1], Eq[-2])
+
 
 if __name__ == '__main__':
     prove(__file__)

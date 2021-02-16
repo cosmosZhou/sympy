@@ -168,9 +168,9 @@ class MatPow(MatrixExpr):
     def _latex(self, p):
         base, exp = self.base, self.exp
         if base.is_symbol:
-            return "%s^{%s}" % (p._print(base), p._print(exp))            
+            return r"%s^{\left[%s\right]}" % (p._print(base), p._print(exp))            
         else:
-            return r"\left(%s\right)^{%s}" % (p._print(base), p._print(exp))
+            return r"\left(%s\right)^{\left[%s\left]}" % (p._print(base), p._print(exp))
 
     def domain_definition(self):
         if self.exp.is_extended_negative:

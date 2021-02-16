@@ -1,5 +1,4 @@
-from sympy import Symbol, Or, And
-
+from sympy import *
 from axiom.utility import prove, apply
 
 import axiom

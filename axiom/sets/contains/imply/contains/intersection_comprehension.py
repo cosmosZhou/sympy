@@ -1,10 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy import Symbol
-from sympy.core.numbers import oo
-from sympy import INTERSECTION
-from sympy.sets.sets import Interval
 from axiom import algebre
 
 

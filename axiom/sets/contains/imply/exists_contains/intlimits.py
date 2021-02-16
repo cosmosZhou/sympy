@@ -1,17 +1,12 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy import Symbol
-from sympy.core.numbers import oo
-from sympy import Exists
-from sympy.core.containers import Tuple
 
 
 @apply(imply=True)
 def apply(given, *limits):
     assert given.is_Contains    
     
-    for limit in limits:        
+    for limit in limits: 
         limit = Tuple.as_setlimit(limit)
         var, *domain = limit
         assert given._has(var)

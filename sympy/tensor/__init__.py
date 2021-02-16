@@ -7,14 +7,3 @@ from .array import (MutableDenseNDimArray, ImmutableDenseNDimArray,
     MutableSparseNDimArray, ImmutableSparseNDimArray, NDimArray, tensorproduct,
     tensorcontraction, derive_by_array, permutedims, Array, DenseNDimArray,
     SparseNDimArray,)
-
-__all__ = [
-    'IndexedBase', 'Idx', 'Indexed', 'Slice',
-
-    'get_contraction_structure', 'get_indices',
-
-    'MutableDenseNDimArray', 'ImmutableDenseNDimArray',
-    'MutableSparseNDimArray', 'ImmutableSparseNDimArray', 'NDimArray',
-    'tensorproduct', 'tensorcontraction', 'derive_by_array', 'permutedims',
-    'Array', 'DenseNDimArray', 'SparseNDimArray',
-]

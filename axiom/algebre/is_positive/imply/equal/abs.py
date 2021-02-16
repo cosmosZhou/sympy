@@ -1,6 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
 import axiom
 from axiom import algebre
 
@@ -17,7 +16,7 @@ def prove(Eq):
     
     Eq << apply(x > 0)
     
-    Eq << algebre.strict_greater_than.imply.greater_than.rewrite.apply(Eq[0])
+    Eq << algebre.strict_greater_than.imply.greater_than.integer.apply(Eq[0])
     
     Eq << algebre.is_nonnegative.imply.equal.abs.apply(Eq[-1])
         

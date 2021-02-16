@@ -10,7 +10,7 @@ from sympy.sets.sets import image_set
 @apply(imply=True)
 def apply(n, k, s2=None, A=None):
     j = Symbol.j(domain=Interval(0, k, integer=True))
-    if s2 is None:    
+    if s2 is None: 
         x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
         s2 = Symbol.s2(definition=UNION[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
 
@@ -52,11 +52,14 @@ def prove(Eq):
 
     Eq.x_quote_set_in_s2 = Subset(image_set(UNION[i:k + 1](x_quote[i].set), x_slice, s1_quote), Eq[0].lhs, plausible=True)
 
-    Eq << Eq.x_quote_set_in_s2.definition
+    Eq << sets.subset.given.forall_contains.apply(Eq.x_quote_set_in_s2)
 
     Eq << Eq[-1].subs(Eq.s2_definition)
 
-    Eq << Eq[-1].definition.definition
+    Eq << Eq[-1].this.function.apply(sets.contains.given.contains.where.imageset)
+    
+    Eq << Eq[-1].this.function.rhs.definition
+    
     Eq << Eq[-1].this.function.args[0].simplify()
     
     Eq << sets.equal.imply.equal.union_comprehension.apply(Eq[1], (i, 0, k + 1))
@@ -70,8 +73,8 @@ def prove(Eq):
 
     Eq << sets.imply.less_than.union.apply(*Eq[-1].rhs.args[1].arg.args)
 
-    Eq << Eq[-2].subs(Eq[-1])
-
+    Eq << algebre.equal.less_than.imply.less_than.subs.apply(Eq[-2], Eq[-1])
+    
     Eq << Eq[-1].subs(Eq.x_abs_sum_s1)
 
     Eq << Eq.x_quote_union.apply(algebre.equal.imply.equal.abs)    
@@ -80,10 +83,9 @@ def prove(Eq):
     u = Eq[-1].lhs.arg
     Eq << sets.imply.less_than.union_comprehension.apply(u.function, *u.limits)
 
-    Eq << Eq[-2].subs(Eq[-1])
-
-    Eq << Eq[-4].subs(Eq[-1])
-    SqueezeTheorem = Eq[-1]
+    Eq << Eq[-2].this.function.apply(algebre.equal.less_than.imply.greater_than.subs, Eq[-1])
+    
+    Eq.SqueezeTheorem = Eq[-4] & Eq[-1]
 
     Eq << algebre.equal.imply.ou.two.apply(x_quote_abs)
     
@@ -93,15 +95,15 @@ def prove(Eq):
 
     Eq << sets.imply.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
 
-    Eq << Eq[-1].subs(Eq.x_abs_positive_s1.limits_subs(i, j))
+    Eq << Eq.x_abs_positive_s1.limits_subs(i, j).this.function.apply(algebre.strict_greater_than.greater_than.imply.strict_greater_than.transit, Eq[-1])
 
-    Eq << Eq[-4].subs(Eq[-1])
+    Eq << Eq[-1].subs(Eq[-4].reversed)
 
-    Eq << Eq[-4].subs(Eq.x_abs_positive_s1)
+    Eq << Eq.x_abs_positive_s1.subs(Eq[-4].reversed)
 
-    Eq << (Eq[-1] & Eq[-2])
+    Eq <<= Eq[-1] & Eq[-2]
 
-    Eq << (Eq.x_quote_union & SqueezeTheorem & Eq[-1])
+    Eq <<= Eq.x_quote_union & Eq.SqueezeTheorem & Eq[-1]
 
     Eq.x_quote_definition = Eq[1].apply(algebre.equal.imply.equal.lamda, (i, 0, k + 1), simplify=False)
 
@@ -110,11 +112,12 @@ def prove(Eq):
 
     Eq << Eq.supset_A.subs(Eq[3])
 
-    Eq << Eq[-1].definition.definition
+    Eq << sets.supset.given.forall_contains.apply(Eq[-1])
+    
+    Eq << Eq[-1].this.function.simplify()
 
     Eq << Eq[-1].split()
 
-    notContains = Eq[-1]
     Eq << ~Eq[-1]
 
     Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)
@@ -127,7 +130,7 @@ def prove(Eq):
   
     Eq << Eq[-1].subs(Eq[-2])
     
-    Eq.set_size_inequality = Eq[-1].subs(StrictLessThan(Eq[-1].function.rhs, Eq[-1].function.rhs + 1, plausible=True))
+    Eq.set_size_inequality = Eq[-1].this.function.apply(algebre.equal.strict_less_than.imply.strict_less_than.subs, StrictLessThan(Eq[-1].function.rhs, Eq[-1].function.rhs + 1, plausible=True))
     
     Eq << Eq.x_quote_union.this.function.lhs.bisect({i, j})
 
@@ -135,7 +138,9 @@ def prove(Eq):
 
     Eq << sets.imply.less_than.union_comprehension.apply(*Eq[-2].lhs.args[0].args)
 
-    Eq << Eq[-2].subs(Eq[-1]) + Eq.set_size_inequality
+    Eq << algebre.less_than.less_than.imply.less_than.subs.apply(Eq[-2], Eq[-1])
+    
+    Eq << Eq[-1] + Eq.set_size_inequality
     
     Eq << Eq[-1].this(shape=()).function.rhs.args[-1].simplify()
     
@@ -143,11 +148,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(x_quote_union_abs)
 
-    Eq << Eq[-1].subs(SqueezeTheorem)
+    Eq << Eq[-1].subs(Eq.SqueezeTheorem)
 
     Eq << Eq.subset_A.subs(Eq[3])
 
-    Eq << Eq[-1].definition
+    Eq << sets.subset.given.forall_contains.apply(Eq[-1])
 
     s2_hat_n = Symbol("\hat{s}_{2, n}", definition=conditionset(*Eq[-1].limits[0]))
 
@@ -205,10 +210,10 @@ def prove(Eq):
     
     Eq << Eq[-2].apply(algebre.condition.imply.forall.minify, (i, Unequality(i, j)))
     
-    Eq << Eq[-1].subs(Eq.x_abs_positive_s2_n)  # -1
-
-    Eq << Eq[-3].subs(Eq.x_j_abs_positive)
-
+    Eq << Eq.x_abs_positive_s2_n.subs(Eq[-1].reversed)  # -1
+    
+    Eq << Eq.x_j_abs_positive.subs(Eq[-3].reversed)
+    
     Eq.x_hat_abs_positive = Eq[-1] & Eq[-2]
 
     Eq.x_hat_union = sets.equal.imply.equal.union_comprehension.apply(Eq.x_hat_definition, (i, 0, k + 1))
@@ -244,7 +249,7 @@ def prove(Eq):
 
     Eq.x_hat_in_s1 = Eq[-1].func(function, *Eq[-1].limits, plausible=True)
 
-    Eq << Eq.x_hat_in_s1.definition
+    Eq << Eq.x_hat_in_s1.this.function.function.rhs.definition
 
     Eq << algebre.equal.imply.ou.two.apply(Eq.x_hat_definition)    
     
@@ -283,7 +288,7 @@ def prove(Eq):
     
     Eq.supset_A = sets.supset.imply.supset.union_comprehension.lhs.apply(Eq.supset_A, (j,), simplify=False)
 
-    Eq << Eq.supset_A.subs(Eq.subset_A)
+    Eq <<= Eq.supset_A & Eq.subset_A
 
 
 if __name__ == '__main__':

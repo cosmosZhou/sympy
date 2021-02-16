@@ -1,14 +1,7 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
 
 from sympy.sets.conditionset import conditionset
-
-from sympy import Symbol
-from sympy import ForAll
-
-from sympy.core.function import Function
-from sympy.core.symbol import dtype, Wild
-from sympy.sets.contains import Contains
 
 
 @apply(imply=True)
@@ -25,10 +18,8 @@ def apply(given, P):
     return given.func(Contains(gx, P), *given.limits)
 
 
-
-
 @prove
-def prove(Eq):    
+def prove(Eq): 
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
     x = Symbol.x(complex=True, shape=(n,))
@@ -40,7 +31,7 @@ def prove(Eq):
     P = Symbol.P(definition=conditionset(y, Equality(f(y), 1)))
     Eq << apply(ForAll[x:A](Equality(f(g(x)), 1)), P)
     
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].this.function.rhs.definition
 
 
 if __name__ == '__main__':

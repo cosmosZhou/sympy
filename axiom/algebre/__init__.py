@@ -26,3 +26,7 @@ from . import is_negative
 from . import forall_strict_greater_than
 from . import forall_greater_than
 from . import exists_forall
+from . import is_even
+from . import is_odd
+from . import forall_ou
+from . import exists_equal

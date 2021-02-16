@@ -1,7 +1,7 @@
 axiom.calculus.integral.intermediate_value_theorem
 axiom.calculus.series.infinite.binomial
 axiom.calculus.series.maclaurin.exp
-
+axiom.calculus.series.taylor
 
 axiom.discrete.matrix.determinant.adjugate
 axiom.discrete.fermat.last_theorem
@@ -18,15 +18,6 @@ axiom.statistics.kullback_leibler
 
 axiom.sets.imply.equal.principle.inclusion_exclusion.deduction
 
-
-axiom.algebre.condition.sufficient.imply.condition.double.induction
-axiom.algebre.equal.imply.forall_equal.limit_is_even
-axiom.algebre.equal.imply.forall_equal.limit_is_odd
-axiom.algebre.equal.sufficient.imply.equal.double.induction
-axiom.algebre.equal.sufficient.imply.equal.where.et.induction
-axiom.algebre.equal.sufficient.imply.et.induction
-axiom.algebre.equal.equal.sufficient.imply.equal.double.induction
 axiom.algebre.forall_greater_than.imply.greater_than.integrate
 axiom.algebre.forall_strict_greater_than.imply.strict_greater_than.integrate
-axiom.algebre.exists_forall.forall.imply.exists_forall
 

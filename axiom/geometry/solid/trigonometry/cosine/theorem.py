@@ -1,14 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
-    LessThan, GreaterThan, Unequal
-
-from sympy import Symbol
-
-from sympy import cos, pi
-from sympy.sets.sets import Interval, EmptySet
-from sympy import Exists
 from axiom import algebre, sets
-from sympy.core.symbol import dtype
 
 
 def extract(x_constraint, y_constraint, z_constraint):
@@ -54,8 +46,6 @@ def apply(*given):
 
     theta = Symbol.theta(real=True)
     return Exists[theta:Interval(pi / 3, pi, right_open=True)](Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
-
-
 
 
 @prove
@@ -109,7 +99,7 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[-3]
     
-    Eq << Eq[-1].apply(sets.less_than.strict_greater_than.imply.contains)
+    Eq << Eq[-1].apply(sets.strict_greater_than.less_than.imply.contains)
     
     Eq << Eq[-1] / (2 * x * y)
     

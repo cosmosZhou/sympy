@@ -1,11 +1,5 @@
-from sympy import Symbol, Interval, S
-from sympy.core.relational import Equality
-from sympy.functions.elementary.trigonometric import cos, sin
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.sympify import sympify
-from sympy.functions.special.gamma_functions import gamma
-from sympy.integrals.integrals import Integral
-
 from axiom import algebre, calculus
 
 

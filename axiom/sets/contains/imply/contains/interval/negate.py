@@ -1,7 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy import Symbol
-from sympy.sets.sets import Interval
+from axiom import sets
 
 
 @apply(imply=True)
@@ -19,11 +18,12 @@ def prove(Eq):
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
     Eq << apply(Contains(x, Interval(a, b)))
-    Eq << Eq[0].split()
+    
+    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()    
 
     Eq <<= -Eq[-1], -Eq[-2]
     
-    Eq << Eq[1].split()
+    Eq << sets.contains.given.et.apply(Eq[1]).split()    
 
     
 if __name__ == '__main__':

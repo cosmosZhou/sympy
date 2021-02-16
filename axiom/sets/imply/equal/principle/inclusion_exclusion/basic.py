@@ -1,8 +1,6 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
 from axiom import sets
-from sympy import Symbol
 
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
@@ -11,8 +9,6 @@ from sympy import Symbol
 @apply(imply=True)
 def apply(A, B):
     return Equality(abs(A | B), abs(A) + abs(B) - abs(A & B))
-
-
 
 
 @prove

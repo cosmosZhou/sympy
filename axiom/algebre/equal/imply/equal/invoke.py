@@ -1,18 +1,14 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy.core.function import Function
 
 
 @apply(imply=True)
-def apply(given, function):    
+def apply(given, function): 
     assert given.is_Equality    
     assert function(given.lhs).domain_definition()
     assert function(given.rhs).domain_definition()
     
     return Equality(function(given.lhs), function(given.rhs))
-
-
 
 
 @prove

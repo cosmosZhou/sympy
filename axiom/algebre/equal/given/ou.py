@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.logic.boolalg import BooleanTrue
-from axiom import algebre, sets
+from axiom import algebre
 import axiom
 
 

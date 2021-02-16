@@ -1,12 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Unequal, StrictGreaterThan
-from sympy import Symbol
 import axiom
-from sympy.logic.boolalg import And
-from sympy.matrices.expressions.matexpr import ZeroMatrix
-from sympy.sets.contains import Contains
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
 from axiom import sets
 
 
@@ -29,7 +23,7 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[-2]
     
-    Eq << Eq[-1].split()  
+    Eq << Eq[-1].simplify()  
 
 
 if __name__ == '__main__':

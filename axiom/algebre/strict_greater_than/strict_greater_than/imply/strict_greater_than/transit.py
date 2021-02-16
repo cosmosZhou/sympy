@@ -1,6 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import GreaterThan, StrictGreaterThan
-from sympy import Symbol
 import axiom
 
 
@@ -9,10 +8,10 @@ def apply(*given):
     b_greater_than_x, x_greater_than_a = given
     b, x = axiom.is_StrictGreaterThan(b_greater_than_x)    
     _x, a = axiom.is_StrictGreaterThan(x_greater_than_a)
+    if b == a:
+        b, x, _x, a = _x, a, b, x    
     assert x == _x
     return StrictGreaterThan(b, a)
-
-
 
 
 @prove
@@ -24,7 +23,6 @@ def prove(Eq):
     Eq << apply(b > x, x > a)
     
     Eq << Eq[0] + Eq[1]  
-       
     
     
 if __name__ == '__main__':

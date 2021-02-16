@@ -1,10 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
-from sympy.core.numbers import oo
-from sympy import UNION, ForAll
-from sympy.sets.sets import Interval
 from axiom import sets, algebre
 import axiom
 
@@ -16,8 +11,6 @@ def apply(given):
     e, S = notcontains.args
     
     return NotContains(e, UNION(S, *limits))
-
-
 
 
 @prove
@@ -50,6 +43,7 @@ def prove(Eq):
     Eq << Eq.hypothesis.subs(m, n - 1)
     
     Eq << Eq[-1].subs(n, n + 1)
+
     
 if __name__ == '__main__':
     prove(__file__)

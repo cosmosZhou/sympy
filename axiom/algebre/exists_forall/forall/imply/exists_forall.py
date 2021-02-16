@@ -22,11 +22,13 @@ def apply(*given):
 @prove
 def prove(Eq):
     N = Symbol.N(integer=True)
+    g = Function.g(shape=(), integer=True)
+    M = Symbol.M(definition=g(N))
     n = Symbol.n(integer=True)
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
     f = Function.f(shape=(), integer=True)
-    Eq << apply(Exists[N](ForAll[n:N](f(n) > N)), ForAll[n:N:oo](f(n) > N))
+    Eq << apply(Exists[N](ForAll[n:N:oo](f(n) <= M)), ForAll[n:N](f(n) <= M))
 
     
 if __name__ == '__main__':

@@ -59,7 +59,7 @@ class MatMul(MatrixExpr):
         coeffs = []        
         matrices = []
 
-        def append(mat):            
+        def append(mat): 
             if matrices:
                 last = matrices[-1]
                 if last.is_MatPow:
@@ -67,7 +67,7 @@ class MatMul(MatrixExpr):
                         if last.base == mat.base:
                             matrices[-1] = last.func(last.base, last.exp + mat.exp)
                             return
-                    elif last.base == mat:                    
+                    elif last.base == mat: 
                         matrices[-1] = last.func(last.base, last.exp + 1)
                         return
                 elif last == mat:
@@ -187,7 +187,7 @@ class MatMul(MatrixExpr):
                 stop = self.shape[0]
                 
             return
-        if expand:    
+        if expand: 
             from sympy import Dummy, Sum, ImmutableMatrix, Integer
     
             coeff, matrices = self.as_coeff_matrices()
@@ -389,7 +389,7 @@ class MatMul(MatrixExpr):
                     return sgm
                 else:
                     return self
-            else:                    
+            else: 
                 args = [self.func(arg, B).simplify() for arg in A.args]
                 if deep:
                     args = [arg.expand(deep=True) if arg.is_MatMul else arg for arg in args]
@@ -443,7 +443,7 @@ class MatMul(MatrixExpr):
         if A.is_MatProduct:
             return self
         
-        kwargs = {'free_symbol' : free_symbol, 'generator' : self}
+        kwargs = {'free_symbol': free_symbol, 'generator': self}
         
         def generate_k_limit(A, B, excludes=None, **kwargs):
             if A.is_LAMBDA or not B.is_LAMBDA:
@@ -496,7 +496,7 @@ class MatMul(MatrixExpr):
                         for j in range(B.shape[-1]):
                             args.append(Sum(A[k] * B[k, j], k_limit).simplify())
                         return BlockMatrix(*args)
-                else:   
+                else: 
 #                     print('B.shape =', B.shape)                 
                     j_limit = B.generate_int_limit(0, **kwargs)
                     j, *_ = j_limit
@@ -524,7 +524,7 @@ class MatMul(MatrixExpr):
         from sympy.sets.sets import CartesianSpace
         shape = self.shape
         interval = Interval(-oo, oo, integer=self.is_integer)
-        if shape:            
+        if shape: 
             return CartesianSpace(interval, *shape)
         return interval
 
@@ -542,6 +542,18 @@ class MatMul(MatrixExpr):
 
         return sign + ' @ '.join(p.parenthesize(arg, level) for arg in self.args)
 
+    def _pretty(self, p):
+        args = list(self.args)
+        from sympy import Add, KroneckerProduct
+        from sympy.printing.pretty.stringpict import prettyForm
+        for i, a in enumerate(args):
+            if (isinstance(a, (Add, KroneckerProduct)) and len(self.args) > 1):
+                args[i] = prettyForm(*p._print(a).parens())
+            else:
+                args[i] = p._print(a)
+
+        return prettyForm.__matmul__(*args)
+    
     def _latex(self, p):
         from sympy import MatMul
 
@@ -654,7 +666,7 @@ class MatMul(MatrixExpr):
                 first, second = self.function.args
                 if second._has(*self.variables):
                     if not first._has(*self.variables):
-                        if len(second.shape) == 1:                            
+                        if len(second.shape) == 1: 
                             n = second.shape[0]
                             j = self.generate_free_symbol(excludes=self.variables_set, integer=True)                                                    
                             second = self.func(second[j], *self.limits, (j, 0, n)).simplify()

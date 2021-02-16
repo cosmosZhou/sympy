@@ -6,3 +6,4 @@ from . import et
 from . import ou
 from . import less_than
 from . import unequal
+from . import forall_unequal

@@ -1,10 +1,6 @@
-from sympy.core.relational import Equality
-from sympy import Symbol
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
 from axiom import sets, algebre
-from sympy.logic.boolalg import And
-
 # given: A | B = {}
 # A = {} and B = {}
 
@@ -52,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2], Eq.AB_union_empty)
 
-    Eq << Eq[-1].subs(Eq.A_positive)
+    Eq << Eq.A_positive.subs(Eq[-1].reversed)
 
     Eq << Eq[0] - B
 
@@ -62,12 +58,13 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2], Eq.AB_union_empty)
 
-    Eq << Eq[-1].subs(Eq.B_positive)
+    Eq << Eq.B_positive.subs(Eq[-1].reversed)
 
     Eq << ~Eq.A_nonempty
+    
     Eq << ~Eq.B_nonempty
 
-    Eq << (Eq[-1] & Eq[-2])
+    Eq <<= Eq[-1] & Eq[-2]
 
 
 if __name__ == '__main__':

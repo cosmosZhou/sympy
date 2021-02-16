@@ -1,11 +1,6 @@
-from sympy.functions.combinatorial.factorials import factorial
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.core.numbers import oo
 from sympy.sets.conditionset import conditionset
-from sympy.sets.sets import Interval
-from sympy import Symbol
 from axiom import discrete, algebre
 
 
