@@ -1,8 +1,5 @@
-from sympy.core.relational import GreaterThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.sets import Union
-from sympy import Symbol
 from axiom import algebre
 
 
@@ -22,7 +19,7 @@ def prove(Eq):
     
     Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
 
-    Eq << Eq[-1].subs(Eq[-1].rhs.args[1], 0)
+    Eq << Eq[-1] + GreaterThan(Eq[-1].rhs.args[1], 0, plausible=True)
 
 
 if __name__ == '__main__':
