@@ -4,7 +4,7 @@ from sympy import *
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     subset, forall = given
     if subset.is_ForAll:

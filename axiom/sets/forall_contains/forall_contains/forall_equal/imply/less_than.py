@@ -13,7 +13,7 @@ from axiom.sets.forall_contains.forall_contains.forall_equal.imply.equal import 
 
  
 # |A| = |B|
-@apply(imply=True)
+@apply
 def apply(*given):
     A, B, a, b, fa, gb = analyze(*given)
     return LessThan(Abs(A), Abs(B))

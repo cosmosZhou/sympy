@@ -21,7 +21,7 @@ swap = Function.swap(eval=swap)
 from axiom import discrete
 
 
-@apply(imply=True)
+@apply
 def apply(x, i=None, j=None):
     assert len(x.shape) == 1
     

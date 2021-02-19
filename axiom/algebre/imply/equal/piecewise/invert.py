@@ -10,7 +10,7 @@ from axiom import algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(piecewise, index=0):
     ec = axiom.is_Piecewise(piecewise, copy=True)
     

@@ -5,7 +5,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(x, d):
     d = sympify(d)
     assert d.is_integer and d > 0

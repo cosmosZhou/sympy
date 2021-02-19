@@ -5,7 +5,7 @@ from axiom import sets
 
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
-@apply(imply=True, given=None)
+@apply(given=None)
 def apply(given):
     contains_i, contains_j = axiom.is_And(given)     
     i, Si = axiom.is_Contains(contains_i)

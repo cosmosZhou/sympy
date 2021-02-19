@@ -16,7 +16,7 @@ def quadratic_coefficient(fx, x):
     return a, b, c
 
 
-@apply(imply=True)
+@apply
 def apply(*given, quadratic=None):
     greater_than, less_than = given
     x, m = axiom.is_GreaterThan(greater_than)

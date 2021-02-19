@@ -7,7 +7,7 @@ import axiom
 # B in A
 
 
-@apply(given=True)
+@apply
 def apply(imply): 
     B, A = axiom.is_Subset(imply)
     return Equal(Complement(B, A), A.etype.emptySet)

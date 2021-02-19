@@ -6,7 +6,7 @@ from sympy.logic.boolalg import Or
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     multiply = axiom.is_zero(given)
     args = axiom.is_Times(multiply)

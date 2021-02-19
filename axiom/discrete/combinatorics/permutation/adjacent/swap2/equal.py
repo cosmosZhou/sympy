@@ -7,7 +7,7 @@ from sympy import ForAll, LAMBDA
 from sympy import Symbol
 from axiom import discrete
 
-@apply(imply=True)
+@apply
 def apply(n, w=None):
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     j = Symbol.j(domain=Interval(0, n - 1, integer=True))

@@ -11,7 +11,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.logic.boolalg import Sufficient
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     p, q = axiom.is_Equal(given)
     p = axiom.is_Boole(p)

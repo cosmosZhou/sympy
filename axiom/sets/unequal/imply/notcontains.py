@@ -4,7 +4,7 @@ from axiom.utility import prove, apply
 # x not in {y}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Unequality
     x, y = given.args

@@ -3,7 +3,7 @@ from sympy import *
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):    
     eq, f_eq = given
     lhs, rhs = axiom.is_Equal(eq)

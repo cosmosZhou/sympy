@@ -4,7 +4,7 @@ from axiom import algebre, sets
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given, S):
     lhs, rhs = axiom.is_Supset(given)    
     return Supset(lhs | S, rhs | S)

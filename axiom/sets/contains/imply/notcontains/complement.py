@@ -6,7 +6,7 @@ from sympy import Symbol
 
 # given: A in B 
 # => {A} subset B
-@apply(imply=True)
+@apply
 def apply(given, S):
     assert given.is_Contains
     e, s = given.args

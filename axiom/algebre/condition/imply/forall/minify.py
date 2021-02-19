@@ -8,7 +8,7 @@ from sympy.core.containers import Tuple
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     limits = [*limits]
     for i, (x, *ab) in enumerate(limits):

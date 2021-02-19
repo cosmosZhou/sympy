@@ -10,7 +10,7 @@ from sympy.core.symbol import dtype
 from sympy.core.numbers import oo
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     lhs, rhs = axiom.is_StrictGreaterThan(given)
     assert rhs.is_positive

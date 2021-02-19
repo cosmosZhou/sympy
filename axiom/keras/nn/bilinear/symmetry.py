@@ -4,7 +4,7 @@ from sympy.core.relational import Equality
 from sympy import Symbol
 from axiom import keras
 
-@apply(imply=True)
+@apply
 def apply(x, y, given):
     assert given.is_Equality
     W_T, W = given.args

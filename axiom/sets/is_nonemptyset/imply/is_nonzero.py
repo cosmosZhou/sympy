@@ -10,7 +10,7 @@ from axiom import sets, algebre
 # |A| > 0
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     A = axiom.is_nonemptyset(given)
     return Unequality(abs(A), 0)

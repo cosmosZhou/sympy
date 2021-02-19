@@ -3,7 +3,7 @@ from sympy import *
 import axiom
 
 from axiom import sets
-@apply(imply=True)
+@apply
 def apply(given, S):
     lhs, rhs = axiom.is_Subset(given)    
     return Subset(lhs | S, rhs | S)

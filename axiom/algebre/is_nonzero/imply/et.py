@@ -6,7 +6,7 @@ from sympy.logic.boolalg import And
 from sympy.matrices.expressions.matexpr import ZeroMatrix
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     multiply = axiom.is_nonzero(given)
     args = axiom.is_Times(multiply)

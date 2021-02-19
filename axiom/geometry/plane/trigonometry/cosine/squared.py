@@ -10,7 +10,7 @@ from sympy import Exists
 from axiom import algebre, sets
 from sympy.core.symbol import dtype
 
-@apply(imply=True)
+@apply
 def apply(x):    
     return Equality(cos(x) ** 2, 1 - sin(x) ** 2)
 

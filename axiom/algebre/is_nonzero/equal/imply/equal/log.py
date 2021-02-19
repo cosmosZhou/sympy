@@ -9,7 +9,7 @@ from sympy.concrete.expr_with_limits import LAMBDA
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_nonzero, equality = given
     lhs = axiom.is_nonzero(is_nonzero)

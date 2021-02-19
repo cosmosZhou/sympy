@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given, n=None):
     assert n.is_given == False
     

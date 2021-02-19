@@ -24,7 +24,7 @@ def rewrite_as_Or(given):
     return Or(*eqs)
 
     
-@apply(imply=True)
+@apply
 def apply(given):
     return rewrite_as_Or(given)
 

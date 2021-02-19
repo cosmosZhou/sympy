@@ -1,17 +1,10 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
-from sympy.core.relational import Equality, Equal
 from sympy.logic.boolalg import BooleanTrue, BooleanFalse
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.core.function import Function
-from sympy import Boole
 from axiom import algebre
 
 
-@apply(given=True)
+@apply
 def apply(imply, given, invert=None, reverse=False):
     assert given.plausible is None
     assert given.is_Boolean

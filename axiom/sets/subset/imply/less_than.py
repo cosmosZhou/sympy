@@ -4,7 +4,7 @@ from sympy import *
 from axiom import sets
 # given: A ⊂ B
 # |A| <= |B|
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Subset
     A, B = given.args

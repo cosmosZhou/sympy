@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, wrt):
     assert wrt.is_symbol    
     lhs, rhs = axiom.is_Equal(given)

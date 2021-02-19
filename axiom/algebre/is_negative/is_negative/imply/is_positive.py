@@ -6,7 +6,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_negative_x, is_negative_y = given
     x = axiom.is_negative(is_negative_x)

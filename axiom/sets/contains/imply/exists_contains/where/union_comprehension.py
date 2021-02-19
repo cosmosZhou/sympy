@@ -11,7 +11,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x, S = axiom.is_Contains(given)
     function, *limits = axiom.is_UNION(S)    

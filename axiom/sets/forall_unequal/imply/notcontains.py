@@ -4,7 +4,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     fn, *limits = axiom.forall_unequal(given)
     contains = axiom.limit_is_set(limits)

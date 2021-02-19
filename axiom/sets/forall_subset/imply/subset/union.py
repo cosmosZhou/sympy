@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     eq, *limits = axiom.forall_subset(given)
     lhs, rhs = eq.args

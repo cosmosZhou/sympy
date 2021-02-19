@@ -11,7 +11,7 @@ from sympy.core.numbers import oo
 from sympy.core.function import Derivative
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     lhs, rhs = axiom.is_Equal(given)
     

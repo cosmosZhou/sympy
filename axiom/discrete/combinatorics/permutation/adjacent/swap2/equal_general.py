@@ -6,7 +6,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from axiom import algebre, discrete, sets
 
 
-@apply(imply=True)
+@apply
 def apply(n, w=None):
     domain = Interval(0, n - 1, integer=True)
     t = Symbol.t(domain=domain)

@@ -4,7 +4,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(x, w=None, right=None, free_symbol=None):
     n = x.shape[0]
     i = Symbol.i(integer=True)

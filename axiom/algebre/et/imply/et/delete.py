@@ -8,7 +8,7 @@ import axiom
 
 from sympy import And
 
-@apply(imply=True)
+@apply
 def apply(given, index=0):
     and_eqs = axiom.is_And(given)
 

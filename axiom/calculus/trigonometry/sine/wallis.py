@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, geometry, calculus
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     n = sympify(n)
     x = Symbol.x(real=True)

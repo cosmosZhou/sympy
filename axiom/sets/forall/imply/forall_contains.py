@@ -4,7 +4,7 @@ from axiom.utility import prove, apply
 from sympy.sets.conditionset import conditionset
 
 
-@apply(imply=True)
+@apply
 def apply(given, P):
     assert given.is_ForAll
     assert P.is_ConditionSet or P.definition.is_ConditionSet

@@ -57,14 +57,16 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                     array.append((func, limits + _limits))
                     j -= 1
                 i -= 1
-            else:
-                if _func.is_ForAll:
+            elif _func.is_ForAll:
+                if func.is_ForAll and limits == _limits:
+                    array.append(funcs[i])
+                else:
                     array.append(funcs[i])
                     array.append(_funcs[j])
-                    i -= 1
-                else:
-                    array.append(_funcs[j])
-                j -= 1
+                i -= 1
+            else:
+                array.append(_funcs[j])
+            j -= 1
 
         array = array[::-1]
         if i >= 0:
@@ -99,8 +101,10 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             join = True
             
         if join and args and all(isinstance(eq, Boolean) for eq in args):
-            for eq in args:
-                given &= eq
+            args = [given, *args]
+            given = And(*args, evaluate=False, equivalent=args)
+#             for eq in args:
+#                 given &= eq
             return given.apply(axiom, split=True, **kwargs)
         
         if 'depth' in kwargs:

@@ -6,7 +6,7 @@ from axiom import algebre
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Unequal(given)
     assert rhs.is_One

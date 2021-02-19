@@ -5,7 +5,7 @@ from axiom import sets
 # given : A & B = A | B => A = B
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     assert given.lhs.is_Intersection and given.rhs.is_Union or given.lhs.is_Union and given.rhs.is_Intersection

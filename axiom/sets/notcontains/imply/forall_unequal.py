@@ -3,7 +3,7 @@ from sympy import *
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, reverse=False):
     assert given.is_NotContains    
     e, S = given.args

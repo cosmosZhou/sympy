@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 
 
-@apply(imply=True)
+@apply
 def apply(given, old, new): 
     assert given.is_Equality    
     assert old.is_symbol

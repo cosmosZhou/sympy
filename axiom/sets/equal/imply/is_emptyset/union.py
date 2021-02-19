@@ -8,7 +8,7 @@ from axiom import sets
 # A & B = {}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     x_union_abs, x_abs_sum = given.args

@@ -7,7 +7,7 @@ from sympy.stats.symbolic_probability import Expectation
 from sympy.functions.elementary.integers import floor
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     X = Symbol.X(integer=True, random=True)
     if n.is_even:

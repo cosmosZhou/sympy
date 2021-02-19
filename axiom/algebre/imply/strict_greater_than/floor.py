@@ -5,7 +5,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(x):
     return StrictGreaterThan(Floor(x), x - 1)
 

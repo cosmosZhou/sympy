@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, x):
     lhs, rhs = axiom.is_Equal(given)
     an = axiom.is_infinite_series(lhs)

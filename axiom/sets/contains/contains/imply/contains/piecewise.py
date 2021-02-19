@@ -10,7 +10,7 @@ from sympy.core.relational import Equal
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given, piecewise=None):
     S = None
     elements = set()

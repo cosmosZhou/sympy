@@ -4,7 +4,7 @@ from axiom import discrete, algebre, calculus, sets
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given, n=None):
     C0_definition, Cn1_definition = given
     

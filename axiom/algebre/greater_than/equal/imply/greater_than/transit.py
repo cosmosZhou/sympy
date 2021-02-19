@@ -4,7 +4,7 @@ from sympy import Symbol
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     b_greater_than_x, x_eq_a = given
     b, x = axiom.is_GreaterThan(b_greater_than_x)    

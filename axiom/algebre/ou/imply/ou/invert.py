@@ -9,7 +9,7 @@ import axiom
 from sympy import Or
 from sympy.logic.boolalg import And
 
-@apply(imply=True)
+@apply
 def apply(given, pivot=0):
     or_eqs = axiom.is_Or(given)
     

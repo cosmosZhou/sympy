@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, q=None):
     mod, r = axiom.is_Equal(given)
     n, d = axiom.is_Mod(mod)

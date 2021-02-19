@@ -6,7 +6,7 @@ from axiom import sets
 # B in A
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     A_minus_B, emptyset = given.args

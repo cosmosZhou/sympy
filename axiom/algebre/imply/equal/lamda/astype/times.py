@@ -11,7 +11,7 @@ from axiom import algebre
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
-@apply(imply=True)
+@apply
 def apply(lamda):
     function, *limits = axiom.is_LAMBDA(lamda)
     

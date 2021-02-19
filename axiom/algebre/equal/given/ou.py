@@ -5,7 +5,7 @@ from axiom import algebre
 import axiom
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     piecewise, sym = axiom.is_Equal(imply)
     if sym.is_Piecewise:

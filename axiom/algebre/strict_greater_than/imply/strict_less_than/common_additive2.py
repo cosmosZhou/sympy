@@ -13,7 +13,7 @@ from sympy.sets.sets import Interval
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(given, t, alpha, beta):
     abs_x_y = axiom.is_positive(given)
     x_y = axiom.is_Abs(abs_x_y)

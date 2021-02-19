@@ -4,7 +4,7 @@ from axiom import sets, algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     notcontains, *limits = axiom.forall_notcontains(given)
     

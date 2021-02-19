@@ -10,7 +10,7 @@ from axiom import statistics, keras, algebre
 import tensorflow as tf
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     x, y = process_assumptions(*given)
     n, d = x.shape

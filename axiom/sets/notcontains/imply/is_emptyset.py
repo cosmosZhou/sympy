@@ -7,7 +7,7 @@ from axiom import sets
 
 
 # given e not in S
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_NotContains
     e, s = given.args

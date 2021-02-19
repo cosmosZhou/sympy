@@ -4,7 +4,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x = axiom.is_nonzero(given)
     assert x.is_nonnegative

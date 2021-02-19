@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 from axiom.algebre.equal.less_than.imply.less_than.subs import ratsimp
 
-@apply(imply=True)
+@apply
 def apply(*given): 
     equal, less_than = given
         

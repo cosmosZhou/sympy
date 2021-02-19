@@ -10,7 +10,7 @@ from sympy.sets.contains import Contains
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Exists
     limits = [(x,) for x, *_ in given.limits]

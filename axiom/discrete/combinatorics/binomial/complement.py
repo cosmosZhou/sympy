@@ -3,7 +3,7 @@ from sympy.core.relational import Equality
 from axiom.utility import prove, apply
 
 from sympy import Symbol
-@apply(imply=True)
+@apply
 def apply(n, k):
     return Equality(binomial(n, k), binomial(n, n - k))
 

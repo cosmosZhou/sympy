@@ -4,7 +4,7 @@ from axiom import sets
 from axiom.discrete.combinatorics.permutation import mapping
 
 
-@apply(imply=True)
+@apply
 def apply(n, Q=None):
     if Q is None:
         Q, w, x = mapping.Qu2v.predefined_symbols(n)    

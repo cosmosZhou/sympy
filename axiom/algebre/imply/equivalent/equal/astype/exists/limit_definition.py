@@ -54,7 +54,7 @@ def exists(given, ε=None, δ=None):
     return Exists[δ](ForAll[x:cond](epsilon_constraint))
 
     
-@apply(imply=True, given=None)
+@apply(given=None)
 def apply(given, ε=None, δ=None):
     return Equivalent(given, exists(given, ε, δ))
 

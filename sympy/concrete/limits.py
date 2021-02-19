@@ -14,6 +14,25 @@ def limits_dict(limits):
     return dic
 
 
+# tests if limits include _limits
+def limits_include(limits, _limits):
+    dict_a = limits_dict(limits)
+    dict_b = limits_dict(_limits)
+    for var, domain in dict_b.items():
+        if var not in dict_a or domain != dict_a[var]:
+            return False
+    return True
+
+
+def limits_difference(limits, _limits):
+    dict_b = limits_dict(_limits)
+    newLimits = []
+    for limit in limits:        
+        if limit[0] in dict_b:
+            continue
+        newLimits.append(limit)    
+    return newLimits
+
 def limits_update(limits, *args):
     variables = [x for x, *_ in limits]
 
@@ -71,7 +90,7 @@ def limits_common(limits, _limits, is_or=False, clue=None):
     eq_dict = limits_dict(_limits)
     keys = eq_dict.keys() & self_dict.keys()
     dic = {}
-    if keys:        
+    if keys: 
         for x in keys:
             domain = self_dict[x]
             _domain = eq_dict[x]
@@ -122,6 +141,7 @@ def limits_intersect(limits, _limits, clue=None):
             _limits = type(limits)(_limits)
         return limits + _limits
 
+
 def limits_complement(limits, _limits):
     new_limits = []
     for limit, _limit in zip(limits, _limits):
@@ -141,6 +161,7 @@ def limits_complement(limits, _limits):
         else:
             return 
     return new_limits
+
 
 def limits_empty(limits):
     for _, *ab in limits:
@@ -195,7 +216,6 @@ def limits_sort(limits):
         limits.append(limit)
 
     return limits
-
 
 
 def limits_condition(limits):

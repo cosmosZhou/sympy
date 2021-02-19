@@ -5,7 +5,7 @@ from axiom import algebre, sets
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given, index=0):
     union, rhs = axiom.is_Subset(given)
     union = axiom.is_Union(union)

@@ -4,7 +4,7 @@ from axiom import algebre
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(piecewise, evaluate=False):
     ec0, ec1, *ec = piecewise.args
     

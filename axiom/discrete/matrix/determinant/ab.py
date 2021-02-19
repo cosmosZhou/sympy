@@ -4,7 +4,7 @@ from sympy.matrices.expressions.matexpr import Multiplication
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(a, b):
     n = a.shape[0]
     

@@ -1,13 +1,6 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
-from sympy.core.relational import Equality, Equal
 from sympy.logic.boolalg import BooleanTrue, BooleanFalse
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.core.function import Function
-from sympy import Boole
 
 def process_given_conditions(*given, invert=None, reverse=False, swap=False):
     if swap:
@@ -30,7 +23,7 @@ def process_given_conditions(*given, invert=None, reverse=False, swap=False):
         
     return eq_original, f_eq._subs(eq, substituent)
 
-@apply(imply=True)
+@apply
 def apply(*given, **kwargs):
     eq, f_eq = process_given_conditions(*given, **kwargs)
     return f_eq

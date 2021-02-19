@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lim, a = axiom.is_Equal(given)
     expr, n, *_ = lim.args

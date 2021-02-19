@@ -5,7 +5,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(x, m, n, d, delta):
     i = Symbol.i(domain=Interval(0, m - d, right_open=True, integer=True))
     j = Symbol.j(domain=Interval(0, n, right_open=True, integer=True))

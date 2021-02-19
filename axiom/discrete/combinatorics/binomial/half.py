@@ -10,7 +10,7 @@ from axiom import algebre
 from sympy.core.numbers import Number
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     assert n.is_integer
     One = Number(1)

@@ -5,7 +5,7 @@ import axiom
 
 
 # given A & B = {} => A - B = A
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):
     AB = axiom.is_emptyset(given)
 

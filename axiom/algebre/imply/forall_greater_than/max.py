@@ -5,7 +5,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(maximize):
     function, *limits = axiom.is_Maximize(maximize)
     return ForAll(GreaterThan(maximize, function), *limits)

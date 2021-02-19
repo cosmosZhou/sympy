@@ -48,7 +48,7 @@ def extract(x_constraint, y_constraint, z_constraint):
     return None
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     x, y, z = extract(*given)
 

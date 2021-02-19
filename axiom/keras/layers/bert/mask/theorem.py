@@ -19,7 +19,7 @@ from sympy.core.function import Function
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(a, Ξ):
     assert a.shape == Ξ.shape
     if Ξ.is_LAMBDA:

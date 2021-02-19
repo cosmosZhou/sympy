@@ -12,7 +12,7 @@ import tensorflow as tf
 
 
 # log softmax(x) = x - max(x) - log∑exp(x - max(x))
-@apply(imply=True)
+@apply
 def apply(x, y):
     return Equality(y - tf.relu(-x + y), Min(x, y))
 

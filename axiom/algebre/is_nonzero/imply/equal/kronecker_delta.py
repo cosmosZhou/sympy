@@ -4,7 +4,7 @@ from sympy import Symbol
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Unequality
     assert given.rhs.is_zero

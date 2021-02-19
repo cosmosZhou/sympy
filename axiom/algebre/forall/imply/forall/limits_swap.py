@@ -3,7 +3,7 @@ from sympy import *
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     limits = given.limits
@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(ForAll[e:g(e) > 0](f(e) > 0))
     
-    Eq << algebre.forall.imply.ou.apply(Eq[0])
+    Eq << algebre.forall.imply.ou.rewrite.apply(Eq[0])
     
     Eq << algebre.ou.imply.forall.apply(Eq[-1], pivot=0, wrt=e)
 

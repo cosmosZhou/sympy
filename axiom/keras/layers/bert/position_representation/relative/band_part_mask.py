@@ -6,7 +6,7 @@ import tensorflow as tf
 from axiom import keras, algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(seq_length, dx, dz, k, num_lower, num_upper):
     x = Symbol.x(shape=(seq_length, dx), real=True)
     W_Q = Symbol("W^Q", shape=(dx, dz), real=True)

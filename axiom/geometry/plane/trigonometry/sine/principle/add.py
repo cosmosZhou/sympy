@@ -13,7 +13,7 @@ from sympy.core.symbol import dtype
 from sympy.core.numbers import Pi
 
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     return Equality(sin(x + y), sin(x) * cos(y) + cos(x) * sin(y))        
 

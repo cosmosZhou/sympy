@@ -10,7 +10,7 @@ from sympy import Symbol
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(x, w=None, left=True, reference=True):
     n = x.shape[0]
     i = Symbol.i(integer=True)

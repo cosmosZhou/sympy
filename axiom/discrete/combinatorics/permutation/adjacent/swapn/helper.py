@@ -4,7 +4,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from axiom import algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(x, d, w=None):
     n = x.shape[0]
     m = d.shape[0]

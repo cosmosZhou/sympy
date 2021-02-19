@@ -6,7 +6,7 @@ from axiom import calculus, algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(_Y, Y):
     X_squared_Sum = _Y.definition
     

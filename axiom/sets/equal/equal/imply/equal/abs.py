@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     equality_A, equality_B = given    
     assert equality_A.is_Equality and equality_B.is_Equality

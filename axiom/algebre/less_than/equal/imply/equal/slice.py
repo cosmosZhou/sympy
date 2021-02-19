@@ -4,7 +4,7 @@ from sympy import Symbol
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     less_than, equal = given
     k, n = axiom.is_LessThan(less_than)

@@ -6,12 +6,12 @@ from axiom import sets
 
 # given: A in B
 # |B \ A| = |B| - |A|
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return Equality(Complement(A, B), A.etype.emptySet)
+    return Equality(A // B, A.etype.emptySet)
 
 
 @prove

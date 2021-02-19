@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom.algebre.equal.condition.imply.condition.kronecker_delta import process_given_conditions
 
 
-@apply(imply=True)
+@apply
 def apply(*given, **kwargs):
     eq, f_eq = process_given_conditions(*given, **kwargs)    
     return And(eq, f_eq.simplify())

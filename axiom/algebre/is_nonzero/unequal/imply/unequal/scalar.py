@@ -3,7 +3,7 @@ from sympy.core.relational import Unequal
 from sympy import Symbol
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     unequality, eq = given
     assert eq.is_Unequality

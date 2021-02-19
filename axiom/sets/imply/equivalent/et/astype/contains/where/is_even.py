@@ -6,7 +6,7 @@ from sympy.sets.sets import image_set
 
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
-@apply(imply=True, given=None)
+@apply(given=None)
 def apply(given):
     is_even, contains_n = axiom.is_And(given)     
     n = axiom.is_even(is_even)

@@ -13,7 +13,7 @@ from sympy.core.function import Function
 # Exists[x] (x in A)
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     s = axiom.is_nonemptyset(imply)
     x, cond, baseset = axiom.is_ConditionSet(s)

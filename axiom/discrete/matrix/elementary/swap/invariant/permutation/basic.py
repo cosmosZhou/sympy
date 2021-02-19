@@ -5,7 +5,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import discrete
 
 
-@apply(imply=True)
+@apply
 def apply(n, w=None, left=True, P=None):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    

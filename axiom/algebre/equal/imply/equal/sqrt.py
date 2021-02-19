@@ -10,7 +10,7 @@ from axiom import algebre, sets
 from sympy.core.power import sqrt
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Equal(given)    
     return Equality(sqrt(lhs), sqrt(rhs))

@@ -100,34 +100,16 @@ function render($php)
             continue;
         }
 
-        if (array_key_exists('given', $dict)) {
-            $given = $dict['given'];
-            if (! strcmp($given, "True")) {
-                $given = "imply";
-                $imply = "given";
-                continue;
-            }
-        }
-
-        if (array_key_exists('imply', $dict)) {
-            $imply = $dict['imply'];
-            if (! strcmp($imply, "True")) {
-                $given = "given";
-                $imply = "imply";
-                continue;
-            }
-        }
-
         $statement = $dict['statement'];
 
         if (array_key_exists('pivot', $dict)) {
-//            error_log("dict: " . jsonify($dict));
+            // error_log("dict: " . jsonify($dict));
             $pivot = $dict['pivot'];
             $a = $dict['a'];
             $first_statement = substr($statement, 0, $pivot);
             $second_statement = substr($statement, $pivot);
             $html = create_a_tag($a[0], $first_statement, $axiom_prefix);
-            
+
             if ($a[1] == null) {
                 $html .= create_text_tag($second_statement);
             } else {
@@ -177,6 +159,15 @@ function render($php)
             $inputs[] = join("<br>", $input);
             unset($input);
         }
+    }
+
+    $pos = strpos(to_python_module($py), '.given.');
+    if ($pos >= 0) {
+        $given = "imply";
+        $imply = "given";
+    } else {
+        $given = "given";
+        $imply = "imply";
     }
 
     echo "<h3><font color=blue>$given:</font></h3>";

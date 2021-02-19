@@ -11,7 +11,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     lhs, rhs = given.args

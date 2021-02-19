@@ -7,7 +7,7 @@ from sympy import Symbol
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(e, s):
     return Equality(s & e.set, Piecewise((e.set, Contains(e, s)), (e.emptySet, True)))
 

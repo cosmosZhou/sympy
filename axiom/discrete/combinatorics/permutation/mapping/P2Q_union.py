@@ -7,7 +7,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     Q, w, x = mapping.Qu2v.predefined_symbols(n)    
     

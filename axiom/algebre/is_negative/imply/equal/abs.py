@@ -5,7 +5,7 @@ import axiom
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x = axiom.is_negative(given)
     return Equality(abs(x), -x)

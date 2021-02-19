@@ -17,7 +17,7 @@ def index_function(n):
     return f
 
 
-@apply(imply=True)
+@apply
 def apply(*given, j=None):
     a_size, xa_equality = given
     a_set_comprehension_abs, n = axiom.is_Equal(a_size)

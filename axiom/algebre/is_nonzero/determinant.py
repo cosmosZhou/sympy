@@ -9,7 +9,7 @@ from sympy.matrices.expressions.inverse import Inverse
 from axiom import algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(given):   
     assert given.is_Unequality
     A_det, zero = given.args

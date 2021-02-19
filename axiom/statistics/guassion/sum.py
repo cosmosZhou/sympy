@@ -9,7 +9,7 @@ from axiom.statistics.guassion import quadratic
 from sympy.core.symbol import Symbol
 from axiom import algebre
 
-@apply(imply=True)
+@apply
 def apply(x0, x1):
     assert x0.is_random and x1.is_random
 

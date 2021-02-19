@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     assert given.is_Contains    
     

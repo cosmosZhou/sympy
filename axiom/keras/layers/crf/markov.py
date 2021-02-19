@@ -1,8 +1,6 @@
-# coding=utf-8
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.stats.symbolic_probability import Probability as P
-from axiom.statistics import bayes
 from axiom import algebre, statistics
 
 
@@ -33,7 +31,7 @@ def process_assumptions(*given):
     return x, y
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     x, y = process_assumptions(*given)
     n, _ = x.shape
@@ -53,45 +51,45 @@ def prove(Eq):
     
     Eq << Eq.x_independence.domain_definition()
     
-    Eq << bayes.is_nonzero.et.apply(Eq[-1]).split()
-    Eq << bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-3], y[:k])
+    Eq << statistics.bayes.is_nonzero.et.apply(Eq[-1]).split()
+    Eq << statistics.bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-3], y[:k])
     
-    Eq << bayes.corollary.apply(Eq[-2], var=Eq[0].lhs.subs(k, k + 1))   
+    Eq << statistics.bayes.corollary.apply(Eq[-2], var=Eq[0].lhs.subs(k, k + 1))   
     
-    Eq << bayes.corollary.apply(Eq[-2], var=Eq[-1].rhs.args[0])
+    Eq << statistics.bayes.corollary.apply(Eq[-2], var=Eq[-1].rhs.args[0])
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq.xy_joint_probability = bayes.corollary.apply(Eq[2], var=Eq[0].lhs)
+    Eq.xy_joint_probability = statistics.bayes.corollary.apply(Eq[2], var=Eq[0].lhs)
     
     Eq << Eq[-1].subs(Eq.xy_joint_probability.reversed)
     
     Eq.recursion = algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[0], Eq[-1])
     
-    Eq << bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq.xy_nonzero_assumption, [k, k])
+    Eq << statistics.bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq.xy_nonzero_assumption, [k, k])
     
-    Eq << bayes.equal.equal.given_deletion.single_condition.apply(Eq.x_independence)
+    Eq << statistics.bayes.equal.equal.given_deletion.single_condition.apply(Eq.x_independence)
     
-    Eq << bayes.equal.equal.conditional_joint_probability.joint_nonzero.apply(Eq[-1], Eq.xy_independence, Eq[-2])
+    Eq << statistics.bayes.equal.equal.conditional_joint_probability.joint_nonzero.apply(Eq[-1], Eq.xy_independence, Eq[-2])
     
-    Eq << bayes.equal.equal.given_addition.joint_probability.apply(Eq[-1], Eq[0])
+    Eq << statistics.bayes.equal.equal.given_addition.joint_probability.apply(Eq[-1], Eq[0])
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     
     Eq << statistics.bayes.theorem.apply(Eq.recursion.rhs, y[k])
     
-    Eq.or_statement = algebre.forall.imply.ou.apply(Eq[-1])    
+    Eq.or_statement = algebre.forall.imply.ou.rewrite.apply(Eq[-1])    
     
     Eq << Eq[2].subs(k, k + 1)
     
     Eq << algebre.ou.imply.forall.apply(Eq[-1], pivot=1)
     
-    _, Eq.y_nonzero_assumption = bayes.is_nonzero.et.apply(Eq.xy_nonzero_assumption).split()
+    _, Eq.y_nonzero_assumption = statistics.bayes.is_nonzero.et.apply(Eq.xy_nonzero_assumption).split()
     Eq <<= Eq[-1] & Eq.y_nonzero_assumption
     
     Eq.y_joint_y_historic = Eq[-1].this.lhs.arg.bisect(Slice[-1:])
     
-    Eq << bayes.is_nonzero.is_nonzero.conditioned.apply(Eq.y_joint_y_historic, y[:k])
+    Eq << statistics.bayes.is_nonzero.is_nonzero.conditioned.apply(Eq.y_joint_y_historic, y[:k])
     
     Eq << (Eq[-1] & Eq.or_statement).split()
     
@@ -99,9 +97,9 @@ def prove(Eq):
     
     Eq.recursion = Eq.recursion.subs(Eq.y_independence)
     
-    Eq << bayes.equal.equal.given_deletion.single_condition.apply(Eq.x_independence, wrt=y[:k])
+    Eq << statistics.bayes.equal.equal.given_deletion.single_condition.apply(Eq.x_independence, wrt=y[:k])
     
-    Eq << bayes.equal.equal.given_addition.joint_probability.apply(Eq.y_joint_y_historic, Eq[-1])
+    Eq << statistics.bayes.equal.equal.given_addition.joint_probability.apply(Eq.y_joint_y_historic, Eq[-1])
     
     Eq.recursion = Eq.recursion.subs(Eq[-1])
     

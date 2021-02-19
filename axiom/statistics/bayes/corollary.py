@@ -1,8 +1,5 @@
-
-from sympy.core.relational import Equality, Unequal
-from sympy.logic.boolalg import Or
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
 from axiom import statistics, algebre
@@ -10,7 +7,7 @@ from axiom import statistics, algebre
 
 # given: P(x) ! =0
 # imply: P(x, y) = P(y | x) P(x) 
-@apply(imply=True)
+@apply
 def apply(given, var):
     assert given.is_Unequality
     x_probability, zero = given.args
@@ -63,7 +60,7 @@ def prove(Eq):
     
     Eq << statistics.bayes.theorem.apply(Eq[-1].lhs, x)
     
-    Eq << algebre.forall.imply.ou.apply(Eq[-1])
+    Eq << algebre.forall.imply.ou.rewrite.apply(Eq[-1])
     
     Eq << (Eq[-1] & Eq[0]).split()
 

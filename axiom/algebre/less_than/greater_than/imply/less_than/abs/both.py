@@ -6,7 +6,7 @@ import axiom
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     x_less_than_y, x_greater_than_y_minus = given
     x, y = axiom.is_LessThan(x_less_than_y)    

@@ -9,7 +9,7 @@ from axiom import algebre
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(piecewise):
     *ec, ec0, ec1 = piecewise.args
     

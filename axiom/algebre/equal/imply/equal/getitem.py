@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 import axiom
 from axiom import algebre, sets
 
-@apply(imply=True)
+@apply
 def apply(given, a, i=None):
     x, y = axiom.is_Equal(given)
     assert x.shape == y.shape    

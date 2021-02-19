@@ -25,7 +25,7 @@ def extract(recurrence):
     return m, g, beta, t
 
 
-@apply(imply=True)
+@apply
 def apply(*given):    
     initial_condition, recurrence = given
     m, g, beta, t = extract(recurrence)

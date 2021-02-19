@@ -8,7 +8,7 @@ from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x, a = axiom.is_LessThan(given)
     assert x >= a

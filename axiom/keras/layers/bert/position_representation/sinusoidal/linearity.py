@@ -4,7 +4,7 @@ from axiom import algebre, geometry
 from axiom.keras.layers.bert.position_representation.sinusoidal.definition import sinusoid_position_encoding
 
  
-@apply(imply=True)
+@apply
 def apply(n, d):
     PE = sinusoid_position_encoding(n, d)
     j, i = PE.definition.variables

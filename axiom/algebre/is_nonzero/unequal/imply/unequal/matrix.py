@@ -7,7 +7,7 @@ from sympy.matrices.expressions.cofactor import Cofactors
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     unequality, eq = given
     if not unequality.is_Unequality:

@@ -5,7 +5,7 @@ import axiom
 from sympy.core.symbol import dtype
 
 
-@apply(given=True)
+@apply
 def apply(imply, given):
     b_eq_x, x_eq_a = imply, given
     b, x = axiom.is_Equal(b_eq_x)    

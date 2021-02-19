@@ -78,13 +78,13 @@ render(__FILE__);
                 if index:
                     index = int(index)
                     eq = self[index]                
-                else:  
+                else: 
                     index = attr
                     eq = getattr(self, attr)                             
                 
                 res.append(line[m.start():m.start(1)])
                     
-                if eq.plausible:                    
+                if eq.plausible: 
                     _expr = Eq.reference(self.get_index(Eq.get_equivalent(eq)))
                     if self.debug:
                         print("%s=>%s : %s" % (_expr, expr, eq))
@@ -148,7 +148,7 @@ render(__FILE__);
         
     @property
     def plausibles_dict(self):
-        plausibles = {i : eq for i, eq in enumerate(self) if eq.plausible}
+        plausibles = {i: eq for i, eq in enumerate(self) if eq.plausible}
 
         for k in self.__dict__.keys() - self.slots:
             v = self.__dict__[k]
@@ -175,7 +175,7 @@ render(__FILE__);
             return self.list[index]
         return self.__dict__[index]
 
-    def process(self, rhs, index=None, flush=True):        
+    def process(self, rhs, index=None, flush=True): 
         latex = rhs.latex
     
         infix = str(rhs)
@@ -286,7 +286,7 @@ render(__FILE__);
                                                     rhs_plausible.given = lhs_plausible
                                             else:
                                                 rhs_plausible.equivalent = lhs
-                                        else:                
+                                        else: 
                                             lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set()
                                             if lhs_is_equivalent:
                                                 assert rhs_plausible not in lhs_plausibles, 'cyclic proof detected'
@@ -295,20 +295,20 @@ render(__FILE__);
                                                 if len(lhs_plausibles) == 1:
                                                     lhs_plausible, *_ = lhs_plausibles
                                                     lhs_plausible.given = rhs_plausible
-                                                else:                                                    
+                                                else: 
                                                     rhs_plausible.imply = lhs_plausibles                                            
                                 else:
                                     plausibles_set, is_equivalent = lhs.plausibles_set()
                                     if len(plausibles_set) == 1:
                                         lhs_plausible, *_ = plausibles_set
-                                        if is_equivalent:                                            
+                                        if is_equivalent: 
                                             if rhs_is_equivalent:
                                                 rhs_plausibles.discard(lhs_plausible)
                                                 lhs_plausible.equivalent = [*rhs_plausibles]                                                
-                                            else:        
+                                            else: 
                                                 assert lhs_plausible not in rhs_plausibles, 'cyclic proof detected'
                                                 lhs_plausible.given = [*rhs_plausibles]
-                                        else:                                        
+                                        else: 
                                             lhs_plausible.imply = rhs_equivalent
                         else:
                             rhs_plausibles, rhs_is_equivalent = rhs.plausibles_set()
@@ -324,7 +324,7 @@ render(__FILE__);
                                         if lhs_plausible not in rhs_plausibles: 
                                             lhs_plausible.given = [*rhs_plausibles]
                         if lhs_is_plausible:
-                            if 'imply' not in rhs._assumptions:                                
+                            if 'imply' not in rhs._assumptions: 
                                 rhs = lhs                
                                                                
             if isinstance(old_index, int):
@@ -341,13 +341,15 @@ render(__FILE__);
         return index
         
     def __lshift__(self, rhs):
-        if isinstance(rhs, (list, tuple)):    
+        if isinstance(rhs, (list, tuple)): 
+
             def yield_from(container):
                 for e in container:
                     if isinstance(e, (list, tuple)):
                         yield from yield_from(e)
                     else:
                         yield self.process(e, flush=False)
+
             self.file.append('//' + ''.join(yield_from(rhs)))
         else:
             self.process(rhs)
@@ -374,7 +376,7 @@ def test_latex_parser():
 
 
 def topological_sort(graph):
-    in_degrees = {u : 0 for u in graph}
+    in_degrees = {u: 0 for u in graph}
 
     vertex_num = len(in_degrees)
     for u in graph:
@@ -402,7 +404,7 @@ def wolfram_decorator(py, func, debug=True, **kwargs):
     website = "http://localhost" + func.__code__.co_filename[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php"
     try: 
         wolfram = kwargs['wolfram']
-        with wolfram:                
+        with wolfram: 
             func(eqs, wolfram)
     except Exception as e:
         print(e)
@@ -419,7 +421,7 @@ def wolfram_decorator(py, func, debug=True, **kwargs):
     return True
 
 
-def prove(func):    
+def prove(func): 
 
     def prove(py, func, debug=True):
         eqs = Eq(py.replace('.py', '.php'), debug=debug)
@@ -456,19 +458,21 @@ def wolfram(func):
     return decorator
 
 
-def apply(**kwargs):
-    if 'imply' in kwargs:        
-        is_imply = kwargs['imply']
-        if is_imply is True:
-            if 'given' in kwargs: 
-                return lambda apply : imply(apply, given=kwargs['given'])
-            if 'simplify' in kwargs: 
-                return lambda apply : imply(apply, simplify=kwargs['simplify'])
-            return lambda apply : imply(apply)
-    elif 'given' in kwargs:
-        is_given = kwargs['given']        
-        if is_given is True:
-            return lambda apply : given(apply)
+def apply(*args, **kwargs):
+    if args:
+        assert len(args) == 1
+        axiom = args[0]
+        if axiom.__module__ == '__main__':
+            paths = axiom.__code__.co_filename[len(os.path.dirname(__file__)):].split(os.sep)
+        else:
+            paths = axiom.__module__.split('.')
+            
+        if 'given' in paths:
+            return given(axiom, **kwargs)
+        else:
+            return imply(axiom, **kwargs)
+    else:
+        return lambda axiom: apply(axiom, **kwargs)
 
 
 def imply(apply, **kwargs):
@@ -524,7 +528,7 @@ def imply(apply, **kwargs):
         if apply.__code__.co_filename != s[-2][0]:
             
             if given is not None:
-                if isinstance(statement, tuple):                    
+                if isinstance(statement, tuple): 
                     statement = [s.copy(given=given) for s in statement]
                 else:
                     statement = statement.copy(given=given)
@@ -606,7 +610,7 @@ def given(apply):
         assert imply.is_Boolean
         
         s = traceback.extract_stack()
-        if apply.__code__.co_filename != s[-2][0]:            
+        if apply.__code__.co_filename != s[-2][0]: 
             statement = statement.copy(imply=imply)
             
             if not simplify:
@@ -673,6 +677,7 @@ def get_function_body(func):
 
 # http://www.sagemath.org/download-source.html
 # https://www.sagemath.org/
+
 
 def assert_hashly_equal(lhs, rhs):
     assert lhs._hashable_content() == rhs._hashable_content(), "hash(%s) != hash(%s), \nsince %s \n!= \n%s" % (lhs, rhs, lhs._hashable_content(), rhs._hashable_content())

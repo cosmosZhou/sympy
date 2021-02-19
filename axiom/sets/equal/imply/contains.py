@@ -10,7 +10,7 @@ from axiom import sets
 
 # given: |S| = 1
 # Sum[x:S](x) in S
-@apply(imply=True)
+@apply
 def apply(given, var=None):
     assert given.is_Equality
     S_abs, one = given.args

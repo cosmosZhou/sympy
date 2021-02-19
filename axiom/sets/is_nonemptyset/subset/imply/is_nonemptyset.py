@@ -7,7 +7,7 @@ from axiom import sets
 # given0: A != B 
 # given1: A in B
 # B - A != {}
-@apply(imply=True)
+@apply
 def apply(*given, evaluate=False):
     assert len(given) == 2
     A = None

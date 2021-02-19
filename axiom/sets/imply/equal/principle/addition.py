@@ -4,7 +4,7 @@ from axiom import sets
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(A, B):
     return Equality(abs(A | B), abs(A - B) + abs(B))
 

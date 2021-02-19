@@ -7,7 +7,7 @@ import axiom
 # x not in {y}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x, complement = axiom.is_Contains(given)
     U, y = axiom.is_Complement(complement)

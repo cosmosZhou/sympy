@@ -5,7 +5,7 @@ from axiom import algebre
 import tensorflow as tf
 
 
-@apply(imply=True)
+@apply
 def apply(x, y, z):
     return GreaterThan(tf.relu(x - y) + Min(y, z), Min(x, z))
 

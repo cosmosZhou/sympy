@@ -6,7 +6,7 @@ from axiom import sets, algebre
 from sympy.sets.sets import imageset, image_set
 
 
-@apply(imply=True)
+@apply
 def apply(given, f):
     x, s = axiom.is_Contains(given)
     S = image_set(f(x), x, s)

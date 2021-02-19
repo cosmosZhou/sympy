@@ -8,7 +8,7 @@ from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import Interval
 
 
-@apply(imply=True)
+@apply
 def apply(n, k):
     assert k < n
     return Equality(Stirling(n + 1, k + 1), Stirling(n, k) + (k + 1) * Stirling(n, k + 1))

@@ -5,7 +5,7 @@ from axiom import sets
 
 # given A & B != Ø
 # then Exists[e:B] e in A
-@apply(imply=True)
+@apply
 def apply(given, wrt=None, domain=None):
     assert given.is_Unequality
     AB, emptyset = given.args

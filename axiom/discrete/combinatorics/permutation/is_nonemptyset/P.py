@@ -4,7 +4,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import algebre
 
     
-@apply(imply=True)
+@apply
 def apply(n):    
     assert n > 0
     x = Symbol.x(integer=True, nonnegative=True, shape=(oo,))

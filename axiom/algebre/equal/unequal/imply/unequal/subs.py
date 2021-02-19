@@ -5,7 +5,7 @@ from sympy.core.function import Function
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):    
     eq, f_eq = given
     if not eq.is_Equal:

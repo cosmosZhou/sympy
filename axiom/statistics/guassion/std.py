@@ -6,7 +6,7 @@ from sympy.integrals.integrals import Integral
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply():
     x = Symbol.x(real=True)
     return Equality(1 / sqrt(2 * pi) * Integral(exp(-x * x / 2), (x, -oo, oo)), 1, evaluate=False)

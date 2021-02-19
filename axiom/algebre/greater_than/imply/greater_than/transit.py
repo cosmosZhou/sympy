@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, lower):
     assert given.is_GreaterThan
     lhs, rhs = given.args

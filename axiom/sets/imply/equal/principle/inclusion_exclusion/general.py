@@ -6,7 +6,7 @@ from axiom import sets, algebre
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@apply(imply=True)
+@apply
 def apply(A):
     n = A.shape[0]
     i = Symbol.i(integer=True)

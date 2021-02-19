@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(ceil):
     divide = axiom.is_Ceiling(ceil)
     n, d = axiom.is_Divide(divide)

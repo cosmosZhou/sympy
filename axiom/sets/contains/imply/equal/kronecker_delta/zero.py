@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Contains
     x, domain = given.args

@@ -27,7 +27,7 @@ def X_definition(n, w, x):
     return Symbol("X", definition=LAMBDA[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
 
     
-@apply(imply=True)
+@apply
 def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     X, index = X_definition(n, w, x)

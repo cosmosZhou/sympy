@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre, sets
 
 
-@apply(imply=True, simplify=False)
+@apply(simplify=False)
 def apply(given):
     lhs, rhs = axiom.is_Equal(given)    
     return Equality(rhs, lhs)

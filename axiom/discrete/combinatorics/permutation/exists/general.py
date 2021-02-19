@@ -5,7 +5,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(a):
     n = a.shape[0]
     

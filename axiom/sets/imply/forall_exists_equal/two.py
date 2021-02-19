@@ -6,7 +6,7 @@ from axiom import sets, algebre
 # Exists[x] (x in A)
 
 
-@apply(imply=True)
+@apply
 def apply(x=None, y=None, **kwargs):
     if 'etype' in kwargs:
         etype = kwargs['etype']

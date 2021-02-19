@@ -4,7 +4,7 @@ from axiom import sets, algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(contains_i, contains_j):
     i, Si = axiom.is_Contains(contains_i)
     j, Sj = axiom.is_Contains(contains_j)

@@ -7,7 +7,7 @@ from sympy.core.function import Function
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     return Equality(Boole(given), 1)

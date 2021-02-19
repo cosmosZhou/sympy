@@ -1799,13 +1799,38 @@ class And(LatticeOp, BooleanFunction):
             axiom = axiom[0]
             args = []
             funcs = []
-            for eq in self.args:
-                if eq.is_ConditionalBoolean:
-                    func, function = eq.funcs()
-                    funcs = ConditionalBoolean.merge_func(funcs, func)
-                    args.append(function)
-                else:
-                    args.append(eq)
+            
+            depth = kwargs.pop('depth', None)
+            if depth is None:
+                for eq in self.args:
+                    if eq.is_ConditionalBoolean:
+                        func, function = eq.funcs()
+                        funcs = ConditionalBoolean.merge_func(funcs, func)
+                        args.append(function)
+                    else:
+                        args.append(eq)
+            elif depth == 0:
+                args = [*self.args]
+            else:
+                def instantiate(eq):
+                    function = eq
+                    for i in range(depth):
+                        function = function.function
+                    return function
+                
+                for eq in self.args:                    
+                    if eq.is_ConditionalBoolean:
+                        _funcs, function = eq.funcs()
+                        _funcs = _funcs[-depth:]
+                        if funcs:
+                            assert _funcs == funcs
+                        else:                            
+                            funcs = _funcs
+                        function = instantiate(eq)
+                        args.append(function)
+                    else:
+                        args.append(eq)
+                        
             function = axiom.apply(*args, **kwargs)
             clue = function.clue
             for func, limits in funcs:
@@ -1820,9 +1845,7 @@ class And(LatticeOp, BooleanFunction):
                 function = function.simplify()
             return function
         else:
-            assert len(axiom) == 1
-            axiom = axiom[0]
-            return Boolean.apply(self, axiom, **kwargs)
+            return Boolean.apply(self, *axiom, **kwargs)
 
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):

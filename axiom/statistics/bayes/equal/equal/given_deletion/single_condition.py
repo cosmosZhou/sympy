@@ -10,7 +10,7 @@ from sympy.stats.rv import pspace
 
 # given: x | y & z = x
 # imply: x | y = x
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):    
         
     assert given.is_Equality

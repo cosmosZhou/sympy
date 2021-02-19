@@ -14,7 +14,7 @@ from sympy.sets.contains import Contains
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, w=None, n=None):
     e, S = axiom.is_Contains(given)
     x, i = e.args

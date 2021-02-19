@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 import axiom
 from axiom import algebre
 
-@apply(imply=True, given=None)
+@apply(given=None)
 def apply(given, old, new):
     assert old.is_symbol
     assert not old.is_given

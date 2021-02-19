@@ -8,7 +8,7 @@ from sympy.core.function import Function
 from sympy.core.containers import Tuple
 
 
-@apply(imply=True)
+@apply
 def apply(given, domain=None, wrt=None):
     assert given.is_Exists
     

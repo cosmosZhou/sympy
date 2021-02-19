@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     x_union, emptyset = given.args

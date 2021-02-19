@@ -5,7 +5,7 @@ import axiom
 
 
 # given e not in S
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_NotContains
     n, interval = given.args

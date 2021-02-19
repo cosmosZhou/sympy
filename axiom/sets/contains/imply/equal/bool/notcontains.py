@@ -5,7 +5,7 @@ from sympy.core.relational import Equality
 from sympy import Symbol, Boole
 from sympy.functions.elementary.piecewise import Piecewise
 
-@apply(imply=True)
+@apply
 def apply(given):
     return Equality(Boole(given.invert()), 0)
 

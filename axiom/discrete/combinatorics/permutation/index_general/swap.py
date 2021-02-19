@@ -9,7 +9,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from axiom import discrete, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, i=None, j=None, w=None):
     assert given.is_Equality
     x_set_comprehension, interval = given.args

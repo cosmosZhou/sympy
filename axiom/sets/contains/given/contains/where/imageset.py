@@ -3,10 +3,10 @@ from sympy import *
 import axiom
 
 from axiom import sets, algebre
-from sympy.sets.sets import imageset, image_set
+from sympy.sets.sets import image_set
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     e, S = axiom.is_Contains(imply)
     image_set = S.image_set()
@@ -19,8 +19,12 @@ def apply(imply):
     dic = e.match(expr.subs(variables, variables_))
     
     variables_ = dic[variables_]
+    if variables_.shape != variables.shape:
+        indices = [slice(0, length) for length in variables.shape]
+        variables_ = variables_[indices]
+            
+    assert variables_.shape == variables.shape
     return Contains(variables_, base_set)
-
 
 @prove
 def prove(Eq):

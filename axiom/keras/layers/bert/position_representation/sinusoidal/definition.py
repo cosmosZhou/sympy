@@ -19,7 +19,7 @@ def sinusoid_position_encoding(n, d, b=10000, inverse=False):
                                               (cos(i / b ** ((j - 1) / d)), True))))
 
 
-@apply(imply=True)
+@apply
 def apply(n, d):
     PE = sinusoid_position_encoding(n, d)
     j, i = PE.definition.variables

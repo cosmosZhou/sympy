@@ -11,7 +11,7 @@ from axiom.sets.ou.imply.contains.two import expr_cond_pair
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):
     or_eqs = axiom.is_Or(given)
     assert len(or_eqs) == 2

@@ -4,7 +4,7 @@ from axiom import algebre, sets
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     subset_ab, subset_xy = given
     a, b = axiom.is_Subset(subset_ab)

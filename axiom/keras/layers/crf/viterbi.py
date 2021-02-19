@@ -6,7 +6,7 @@ from axiom.keras.layers.crf.markov import process_assumptions, assumptions
 from axiom import keras, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     x, y = process_assumptions(*given)
 

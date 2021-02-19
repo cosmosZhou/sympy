@@ -7,7 +7,7 @@ from axiom import sets
 from sympy.sets.contains import Contains
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     forall_A, forall_B = given
     assert forall_A.is_ForAll and forall_B.is_ForAll

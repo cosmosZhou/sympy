@@ -5,7 +5,7 @@ from sympy.sets.sets import Interval
 from axiom import sets
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     assert imply.is_Contains    
     

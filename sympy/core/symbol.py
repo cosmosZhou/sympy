@@ -724,10 +724,12 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return self.generate_free_symbol(excludes=excludes, free_symbol=free_symbol, **etype.dict)
 
     def assertion(self, reverse=False):
+        print('this should be axiomatized')
         from sympy.sets.conditionset import image_set_definition
         return image_set_definition(self, reverse=reverse)
 
     def equality_defined(self):
+        print('this should be axiomatized')
         from sympy import Mul, Equality
         from sympy.concrete.expr_with_limits import LAMBDA
         if isinstance(self.definition, LAMBDA):

@@ -1,13 +1,11 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.function import Function
 import axiom
 from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     function, *limits = axiom.is_Exists(given)
     variable = axiom.limits_are_Boolean(limits)
@@ -16,7 +14,6 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from sympy import Boole
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
     f = Function.f(nargs=(), shape=(), integer=True)

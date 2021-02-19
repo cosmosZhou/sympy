@@ -5,7 +5,7 @@ from sympy import *
 # given0: A in B
 # given1: B & C = {}
 # and C & A = {}
-@apply(imply=True)
+@apply
 def apply(*given):
     assert len(given) == 2
     A = None

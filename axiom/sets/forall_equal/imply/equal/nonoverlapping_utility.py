@@ -6,7 +6,7 @@ from axiom import sets, algebre
 # |Union x[i]| = Sum |x[i]|
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     eq = given.function

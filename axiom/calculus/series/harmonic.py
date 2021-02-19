@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     k = Symbol.k(integer=True)
     return Equality(Limit(Sum[k:1:n](1 / k) / log(n + 1), n, oo), 1)

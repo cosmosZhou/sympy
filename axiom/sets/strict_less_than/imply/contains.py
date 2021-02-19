@@ -6,7 +6,7 @@ import axiom
 # A != {}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     n, b = axiom.is_StrictLessThan(given)
 

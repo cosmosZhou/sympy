@@ -9,7 +9,7 @@ from axiom import algebre
 
 # given: A = B
 # A >> B
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Equal(given)
     lhs = axiom.is_Boole(lhs) 

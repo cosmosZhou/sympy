@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     e, S = axiom.is_Contains(given)    
     

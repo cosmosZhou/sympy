@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, sets, calculus
 
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     return Equality(cos(x + y), cos(x) * cos(y) - sin(x) * sin(y))        
 

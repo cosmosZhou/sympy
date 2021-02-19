@@ -8,7 +8,7 @@ from axiom import sets
 # B in A
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     abs_A_minus_B, zero = given.args

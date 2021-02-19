@@ -5,7 +5,7 @@ from sympy.functions.combinatorial.numbers import Stirling
 from axiom import algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(n, k):
     i = n.generate_free_symbol(k.free_symbols, integer=True)
     return Equality(Stirling(n, k), Sum[i:0:k + 1]((-1) ** (k - i) * binomial(k, i) * i ** n) / factorial(k))

@@ -3,7 +3,7 @@ from sympy import *
 
 from axiom import sets
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     assert len(given.limits) == 1

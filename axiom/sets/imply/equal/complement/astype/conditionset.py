@@ -7,7 +7,7 @@ import axiom
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@apply(imply=True)
+@apply
 def apply(complement):
     U, C = axiom.is_Complement(complement)
     n = C.variable

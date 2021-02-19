@@ -3,14 +3,14 @@
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8" />
 <link href="style.css" rel="stylesheet" type="text/css" />
-<title>Axiom Computer Algebra System</title>
+<title>Axiomatized Mathematical Analysis System</title>
 </head>
 <body>
 	<div id='container'>
 
 		<div id='header' align='center'>
-			<a href="https://github.com/cosmosZhou/sympy"><font size=5 color=blue>sagemath.tech</font></a>
-			<br> <font size=200%> Axiomatized Mathematical Analysis System </font>
+			<a href="https://github.com/cosmosZhou/sympy" title='github address'><font
+				size=5 color=blue>axiom.top</font></a> <br> <font size=200%> Axiomatized Mathematical Analysis System </font>
 		</div>
 
 		<hr />
@@ -36,6 +36,9 @@
 				</div>
 				<div class='sidebar_body'>
 					<a href='index.php?section=contact'>Contact Us</a>
+				</div>
+				<div class='sidebar_body'>
+					<a href='index.php?section=roadMap'>Road Map</a>
 				</div>
 				<br>
 				<div class='sidebar_heading'>User Guide</div>

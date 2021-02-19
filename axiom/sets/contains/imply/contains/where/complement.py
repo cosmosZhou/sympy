@@ -3,7 +3,7 @@ from sympy import *
 import axiom
 
 from axiom import sets
-@apply(imply=True)
+@apply
 def apply(given):
     e, domain = axiom.is_Contains(given)
     S, s = axiom.is_Complement(domain)    

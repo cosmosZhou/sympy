@@ -11,7 +11,7 @@ from sympy.core.function import Function
 # P is condition set;
 
 
-@apply(imply=True)
+@apply
 def apply(P):
     definition = P.definition
     assert definition.is_ConditionSet    

@@ -5,7 +5,7 @@ from axiom.sets.ou.imply.contains.two import expr_cond_pair
 from axiom import sets, algebre
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     equal_positive, equal_negative = axiom.is_Or(imply)
     y, x = axiom.is_Equal(equal_positive)

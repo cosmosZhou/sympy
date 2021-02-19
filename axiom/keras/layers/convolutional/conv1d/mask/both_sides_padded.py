@@ -6,7 +6,7 @@ from axiom import algebre, sets
 from tensorflow.nn.convolutional.same import conv1d
 
 
-@apply(imply=True)
+@apply
 def apply(x, w, β, ζ):    
     k = Symbol.k(integer=True)
     i = Symbol.i(integer=True)

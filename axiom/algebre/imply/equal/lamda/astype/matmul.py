@@ -5,7 +5,7 @@ from axiom import algebre
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(lamda):
     function, *limits = axiom.is_LAMBDA(lamda)
     

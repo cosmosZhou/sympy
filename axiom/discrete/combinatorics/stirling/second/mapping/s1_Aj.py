@@ -8,7 +8,7 @@ from sympy.core.numbers import oo
 from sympy.sets.sets import Interval
 
 
-@apply(imply=True)
+@apply
 def apply(n, k, s1=None, A=None):    
     j = Symbol.j(domain=Interval(0, k, integer=True))
             

@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(x):    
     n = x.generate_free_symbol(integer=True, free_symbol='n')
     return Equality(E ** x, Sum[n:oo](x ** n / factorial(n)))

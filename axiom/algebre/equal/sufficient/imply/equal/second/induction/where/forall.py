@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given, n=None):    
     f0, sufficient = given
     axiom.is_Equal(f0)

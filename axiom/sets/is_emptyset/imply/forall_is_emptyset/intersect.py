@@ -9,7 +9,7 @@ from sympy import Symbol
 # A & x[i] = {}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     x_union_intersect_A, emptyset = given.args

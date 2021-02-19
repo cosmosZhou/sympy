@@ -5,7 +5,7 @@ from axiom import discrete, algebre
 from sympy.sets.conditionset import conditionset
 
 
-@apply(imply=True)
+@apply
 def apply(n, k):
     return Equality(Stirling(n + 1, k + 1), Stirling(n, k) + (k + 1) * Stirling(n, k + 1))
 

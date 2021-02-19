@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     greater_than, less_than = given
     x, m = axiom.is_GreaterThan(greater_than)

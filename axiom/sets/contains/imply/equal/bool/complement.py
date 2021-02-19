@@ -7,7 +7,7 @@ import axiom
 from axiom import sets
 from sympy.functions.elementary.piecewise import Piecewise
 
-@apply(imply=True)
+@apply
 def apply(given):
     e, domain = axiom.is_Contains(given)
     _, s = axiom.is_Complement(domain)

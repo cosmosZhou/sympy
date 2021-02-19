@@ -6,7 +6,7 @@ from axiom import sets
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@apply(imply=True)
+@apply
 def apply(A, B):
     return Equality(abs(A | B), abs(A) + abs(B) - abs(A & B))
 

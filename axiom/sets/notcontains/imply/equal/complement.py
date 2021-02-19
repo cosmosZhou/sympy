@@ -9,7 +9,7 @@ from axiom import sets
 
 
 # => S - {e} = S
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_NotContains    
     e, S = given.args

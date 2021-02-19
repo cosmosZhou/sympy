@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, index):
     x, S = axiom.is_Contains(given)   
     a = given.generate_free_symbol(**x.type.dict)

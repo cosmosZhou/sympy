@@ -5,7 +5,7 @@ from sympy import *
 from axiom import sets, discrete
 from axiom.discrete.combinatorics.permutation.index.equal import index_function
 
-@apply(imply=True)
+@apply
 def apply(given, j=None):
     assert given.is_Equality
     x_set_comprehension, interval = given.args

@@ -5,7 +5,7 @@ from tensorflow.nn import softmax
 from sympy import *
 
 
-@apply(imply=True)
+@apply
 def apply(n, d, index):
     Q = Symbol.Q(shape=(n, d), real=True)
     K = Symbol.K(shape=(n, d), real=True)

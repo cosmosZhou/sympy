@@ -5,7 +5,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import discrete, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(m, d, w=None):
     n = d.shape[0]
     i = Symbol.i(integer=True)

@@ -8,7 +8,7 @@ from axiom import sets, algebre
 # Exists[x:S] ({x}) = S
 
 
-@apply(imply=True)
+@apply
 def apply(given, var=None):
     assert given.is_Equality
     S_abs, n = given.args

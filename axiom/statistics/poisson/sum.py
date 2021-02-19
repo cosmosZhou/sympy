@@ -9,7 +9,7 @@ from sympy.core.symbol import Symbol
 from sympy.sets import NonnegativeIntegers
 
 
-@apply(imply=True)
+@apply
 def apply(x0, x1):
     assert x0.is_random and x1.is_random
     pspace0 = pspace(x0)

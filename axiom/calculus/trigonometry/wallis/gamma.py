@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, calculus
 
 
-@apply(imply=True)
+@apply
 def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)

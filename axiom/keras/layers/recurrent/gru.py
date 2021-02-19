@@ -7,7 +7,7 @@ from tensorflow.nn.recurrent.gru import GRU
 from tensorflow.nn import sigmoid
 
 
-@apply(imply=True)
+@apply
 def apply(x, Wx, Wh, b):
     h = Symbol.h(definition=GRU[Wx, Wh, b](x))
     t = Symbol.t(integer=True, positive=True)

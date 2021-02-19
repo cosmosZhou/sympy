@@ -9,7 +9,7 @@ from sympy.concrete.expr_with_limits import LAMBDA
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Equal(given)        
     return Or(Equal(log(lhs), log(rhs)), Equal(lhs, 0))

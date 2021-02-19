@@ -4,7 +4,7 @@ from sympy import *
 from axiom import keras, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(n, dz, h):    
     Q = Symbol.Q(shape=(n, dz), real=True)
     K = Symbol.K(shape=(n, dz), real=True)

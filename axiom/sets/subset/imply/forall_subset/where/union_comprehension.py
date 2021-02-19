@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Subset(given)
     assert lhs.is_UNION

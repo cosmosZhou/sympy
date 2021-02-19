@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(given=True)
+@apply
 def apply(imply, i=None):
     x, y = axiom.is_Equal(imply)
     assert x.shape == y.shape 

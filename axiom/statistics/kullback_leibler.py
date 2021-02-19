@@ -11,7 +11,7 @@ def KL(p, q, *limit):
     return summation(p * log(p / q), *limit)
 
 
-@apply(imply=True)
+@apply
 def apply(p, q):
     x = Symbol('x')
     y = Symbol('y')

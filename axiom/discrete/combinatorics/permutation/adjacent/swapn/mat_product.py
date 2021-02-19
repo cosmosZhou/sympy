@@ -4,7 +4,7 @@ from sympy.matrices.expressions.matexpr import Swap
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, m=None, b=None):
     assert given.is_ForAll
     S = given.rhs

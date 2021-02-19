@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from sympy.sets.conditionset import conditionset
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Exists
     assert len(given.limits) == 1

@@ -9,7 +9,7 @@ from axiom import sets
 from sympy.core.relational import Equal
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Contains
     e, finiteset = given.args

@@ -6,7 +6,7 @@ from axiom import algebre, sets
 
 # given: A in B 
 # => {A} subset B
-@apply(imply=True)
+@apply
 def apply(given):
     x, interval = axiom.is_Contains(given)
     axiom.is_real_Interval(interval)

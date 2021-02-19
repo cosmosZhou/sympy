@@ -5,7 +5,7 @@ from sympy.sets.sets import image_set
 from axiom import sets, algebre
 
 
-@apply(given=True, simplify=False)
+@apply
 def apply(imply):
     e, S = axiom.is_Contains(imply)
 
@@ -40,7 +40,6 @@ def prove(Eq):
     Eq << Eq[-1].this.function.apply(sets.contains.imply.contains.imageset, f=f)
     
     Eq << Eq[-1].subs(Eq[1].reversed)
-    
     
     
 if __name__ == '__main__':

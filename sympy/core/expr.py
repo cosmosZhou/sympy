@@ -98,7 +98,7 @@ class Expr(Basic, EvalfMixin):
     def etype(self):
         set_type = self.type
         from sympy.core.symbol import DtypeSet
-        if isinstance(set_type, DtypeSet) :
+        if isinstance(set_type, DtypeSet):
             return set_type.etype
 
     @cacheit
@@ -302,7 +302,10 @@ class Expr(Basic, EvalfMixin):
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rfloordiv__')
-    def __floordiv__(self, other):
+    def __floordiv__(self, other):        
+        if self.is_set:
+            from sympy import Complement
+            return Complement(self, other)
         from sympy.functions.elementary.integers import floor
         return floor(self / other)
 
@@ -3944,7 +3947,7 @@ class Expr(Basic, EvalfMixin):
         if m - 1 == I:
             if n - 1 == J:
                 ref = LAMBDA(self[i, j])
-            else:       
+            else: 
                 if J.is_zero:
                     ref = LAMBDA(self[i, j + 1])                    
                 else:
@@ -3993,12 +3996,12 @@ class Expr(Basic, EvalfMixin):
         inverse = self._eval_inverse()
         if inverse is not None:
             return inverse
-        if self.shape:            
+        if self.shape: 
             from sympy import Inverse
             return Inverse(self)
         return Pow(self, S.NegativeOne)
 
-    def det(self):        
+    def det(self): 
         det = self._eval_determinant()
         if det is not None:
             return det

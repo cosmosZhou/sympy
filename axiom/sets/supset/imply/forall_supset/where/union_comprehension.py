@@ -4,7 +4,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Supset(given)
     assert rhs.is_UNION

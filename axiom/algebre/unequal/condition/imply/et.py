@@ -9,7 +9,7 @@ from sympy.logic.boolalg import And, BooleanFalse, BooleanTrue
 from axiom.algebre.unequal.condition.imply.condition import process_given_conditions
 
 
-@apply(imply=True)
+@apply
 def apply(*given, **kwargs):
     eq, f_eq = process_given_conditions(*given, **kwargs)    
     return And(eq, f_eq.simplify())

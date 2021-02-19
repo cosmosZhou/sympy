@@ -11,7 +11,7 @@ import axiom
 from axiom import algebre, calculus
 
 
-@apply(imply=True)
+@apply
 def apply(integral, u=None, dv=None):
     if len(integral.limits) != 1:
         return

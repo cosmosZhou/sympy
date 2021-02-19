@@ -8,7 +8,7 @@ from sympy.core.symbol import dtype
 # x not in {y}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x, S = axiom.is_Contains(given)
     return Unequality(S, x.emptySet)

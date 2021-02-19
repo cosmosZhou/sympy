@@ -6,7 +6,7 @@ from sympy import Symbol
 from axiom import sets
 # given: A ∈ B 
 # => A ∪ B = B
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Contains
     A, B = given.args

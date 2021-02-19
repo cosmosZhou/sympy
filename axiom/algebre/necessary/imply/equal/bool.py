@@ -11,7 +11,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.logic.boolalg import Sufficient
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     q, p = axiom.is_Necessary(given)
         

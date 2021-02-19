@@ -9,7 +9,7 @@ from axiom.statistics import bayes
 
 # given: x | y = x
 # imply: y | x = y
-@apply(imply=True)
+@apply
 def apply(*given):
     given_equality, unequal = given
     assert unequal.is_Unequality

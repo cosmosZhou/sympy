@@ -10,7 +10,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.functions.special.tensor_functions import Boole
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     equivalent, condition = given
     fn, fn1 = axiom.is_Equivalent(equivalent)        

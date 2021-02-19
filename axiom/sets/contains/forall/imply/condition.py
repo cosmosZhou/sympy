@@ -9,7 +9,7 @@ from sympy import ForAll
 
 # given: A in B 
 # => A | B = B
-@apply(imply=True)
+@apply
 def apply(*given):
     contains, forall = given
     assert contains.is_Contains and forall.is_ForAll

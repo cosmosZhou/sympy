@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     contains1, contains2 = given
     assert contains1.is_Contains    

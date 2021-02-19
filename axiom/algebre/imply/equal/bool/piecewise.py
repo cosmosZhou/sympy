@@ -7,7 +7,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(boole):
     assert boole.is_Boole
     return Equality(boole, Piecewise((1, boole.arg), (0, True)))

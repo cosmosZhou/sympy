@@ -5,7 +5,7 @@ from sympy.logic.boolalg import Equivalent
 from sympy.sets.contains import Contains
 
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     return Equivalent(Unequality(x, y), Contains(x, y.universalSet - y.set))
 

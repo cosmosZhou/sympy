@@ -6,7 +6,7 @@ from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_sym
 from sympy.matrices.expressions.matexpr import Swap
 
     
-@apply(imply=True)
+@apply
 def apply(n, u=None):
     Q, w, x = predefined_symbols(n)
     if u is None:

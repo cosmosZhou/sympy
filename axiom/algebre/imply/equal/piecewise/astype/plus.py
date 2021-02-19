@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 import axiom
 
-@apply(imply=True)
+@apply
 def apply(piecewise, additive=None):
     ec = axiom.is_Piecewise(piecewise)
     ec = [(e + additive, c)for e, c in ec]

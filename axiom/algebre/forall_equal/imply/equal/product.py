@@ -6,7 +6,7 @@ import axiom
 from sympy.sets.sets import Interval
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     eq, *limits = axiom.forall_equal(given)
     lhs, rhs = eq.args

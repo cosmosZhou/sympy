@@ -5,7 +5,7 @@ from axiom import sets
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@apply(imply=True)
+@apply
 def apply(s, wrt=None):
     assert s.is_set
     if wrt is None:

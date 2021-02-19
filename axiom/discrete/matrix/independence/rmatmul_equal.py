@@ -9,7 +9,7 @@ from sympy.matrices.expressions.matmul import MatMul
 from sympy import Symbol
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     lhs, rhs = given.args

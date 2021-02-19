@@ -25,7 +25,7 @@ def index_function(n):
     return f
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     forall_x, forall_p, equality = given
     assert forall_x.is_ForAll and forall_p.is_ForAll

@@ -4,7 +4,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True, given=None)
+@apply(given=None)
 def apply(given):
     x, finiteset = axiom.is_Contains(given)
     finiteset = axiom.is_FiniteSet(finiteset, size=None)

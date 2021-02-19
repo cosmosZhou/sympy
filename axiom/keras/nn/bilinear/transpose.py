@@ -5,7 +5,7 @@ from sympy import Symbol
 from sympy.concrete.summations import Sum
 from axiom import algebre
 
-@apply(imply=True)
+@apply
 def apply(x, y, W):    
     return Equality(x @ W @ y, y @ W.T @ x)
 

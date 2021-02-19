@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 from axiom import sets, algebre
 
-@apply(imply=True)
+@apply
 def apply(n, **kwargs):
     if 'etype' in kwargs:
         etype = kwargs['etype']

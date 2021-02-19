@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, m):
     assert given.is_StrictGreaterThan
     lhs, rhs = given.args

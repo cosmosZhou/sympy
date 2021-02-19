@@ -3,7 +3,7 @@ from sympy.core.relational import Equality
 from sympy.sets.sets import Interval
 from sympy import Symbol
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     assert x.shape == y.shape
     assert len(x.shape) == 1

@@ -10,7 +10,7 @@ from sympy.core.symbol import dtype
 from sympy.core.numbers import oo
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_LessThan(given)
     

@@ -7,7 +7,7 @@ from sympy.functions.special.tensor_functions import KroneckerDelta
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Unequal(given)
     return Equal(KroneckerDelta(lhs, rhs), 0)

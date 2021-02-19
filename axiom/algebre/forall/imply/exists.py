@@ -4,7 +4,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     function, *limits = axiom.is_ForAll(given)
     for limit in limits:

@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     fx, fy = axiom.is_Sufficient(given)    
     return Sufficient(fx, fx & fy)

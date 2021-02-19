@@ -8,7 +8,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):
     fn1, fn = axiom.is_Necessary(given)        
     if wrt is None:

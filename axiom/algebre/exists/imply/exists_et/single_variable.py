@@ -5,7 +5,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     function, *limits = axiom.is_Exists(given)
     assert len(limits) == 1

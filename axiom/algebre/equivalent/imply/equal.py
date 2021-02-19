@@ -9,7 +9,7 @@ from axiom import algebre
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     fn, fn1 = axiom.is_Equivalent(given)        
     return Equal(Boole(fn), Boole(fn1))

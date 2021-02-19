@@ -7,7 +7,7 @@ from sympy import Symbol
 
 # given : e.set & s = a, |a| > 0 => e in s
 
-@apply(imply=True)
+@apply
 def apply(*given):
     equality = given[0]
     assert equality.is_Equality

@@ -6,7 +6,7 @@ from axiom import sets, algebre
 # given : A & B = A | B => A = B
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x_y, a = axiom.is_Equal(given)
     x, y = axiom.is_FiniteSet(x_y, 2)

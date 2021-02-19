@@ -5,7 +5,7 @@ from sympy.core.symbol import dtype
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     a_less_than_x, x_less_than_b = given
     A, X = axiom.is_Subset(a_less_than_x)    

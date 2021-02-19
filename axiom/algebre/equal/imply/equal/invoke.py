@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 
 
-@apply(imply=True)
+@apply
 def apply(given, function): 
     assert given.is_Equality    
     assert function(given.lhs).domain_definition()

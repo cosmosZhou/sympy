@@ -10,7 +10,7 @@ from axiom import algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(piecewise, index=None):
     if index is None:
         for index, (expr, cond) in enumerate(piecewise.args):

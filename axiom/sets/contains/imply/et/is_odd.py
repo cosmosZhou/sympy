@@ -6,7 +6,7 @@ from sympy.sets.sets import image_set
 
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
-@apply(imply=True)
+@apply
 def apply(given):
     n, image_set = axiom.is_Contains(given)     
     expr, _n, cond = axiom.is_ImageSet(image_set)

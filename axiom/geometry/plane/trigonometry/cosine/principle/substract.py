@@ -12,7 +12,7 @@ from axiom import algebre, sets, geometry
 from sympy.core.symbol import dtype
 
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     return Equality(cos(x - y), cos(x) * cos(y) + sin(x) * sin(y))        
 

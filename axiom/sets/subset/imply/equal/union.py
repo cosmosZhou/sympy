@@ -4,7 +4,7 @@ from sympy import *
 
 # given: A in B
 # A | B = B
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Subset
     A, B = given.args

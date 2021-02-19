@@ -8,7 +8,7 @@ from sympy.core.function import Function
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     function, *limits = axiom.is_Exists(given)
     contains = axiom.limit_is_set(limits)

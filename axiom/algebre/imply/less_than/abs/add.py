@@ -5,7 +5,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     assert not x.shape and not y.shape
     return LessThan(abs(x + y), abs(x) + abs(y))

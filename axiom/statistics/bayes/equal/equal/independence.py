@@ -10,7 +10,7 @@ from axiom import algebre
 
 # given: P(x, y) = P(x) P(y)
 # imply: x | y = x
-@apply(imply=True)
+@apply
 def apply(*given):
     equality, inequality = given    
     assert equality.is_Equality

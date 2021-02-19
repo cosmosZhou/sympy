@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, s=None):
     assert given.is_NotContains    
     

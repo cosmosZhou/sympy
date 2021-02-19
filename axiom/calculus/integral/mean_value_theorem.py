@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre, calculus, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     assert given.function.is_Equality

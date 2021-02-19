@@ -5,7 +5,7 @@ from sympy import Symbol
 from sympy import Exists
 from sympy.sets.contains import Contains
 
-@apply(imply=True)
+@apply
 def apply(S):
     assert S.is_set
     

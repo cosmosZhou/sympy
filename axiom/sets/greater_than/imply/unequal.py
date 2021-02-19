@@ -7,7 +7,7 @@ from axiom import algebre
 # A != {}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert isinstance(given, GreaterThan)
     A_abs, positive = given.args

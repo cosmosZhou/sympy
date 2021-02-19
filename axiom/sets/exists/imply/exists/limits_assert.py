@@ -9,7 +9,7 @@ from sympy.core.function import Function
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Exists
     return Exists(given.limits_condition, *given.limits)

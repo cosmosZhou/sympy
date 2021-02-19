@@ -11,7 +11,7 @@ from axiom import algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     piecewise, sym = axiom.is_Equal(given)
     if sym.is_Piecewise:

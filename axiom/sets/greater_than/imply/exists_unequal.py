@@ -9,7 +9,7 @@ from sympy.sets.contains import Contains
 # A != {}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert isinstance(given, GreaterThan)
     S_abs, positive = given.args

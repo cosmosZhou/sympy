@@ -3,7 +3,7 @@ from sympy import *
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     assert given.is_Subset
     fx, A = given.args

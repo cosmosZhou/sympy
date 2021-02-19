@@ -12,7 +12,7 @@ import axiom
 from axiom import algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(a, free_symbol=None):
     matmul = axiom.is_definition(a)
     lhs, rhs = axiom.is_MatMul(matmul)

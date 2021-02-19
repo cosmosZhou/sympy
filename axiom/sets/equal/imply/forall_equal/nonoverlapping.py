@@ -6,7 +6,7 @@ from axiom import sets, algebre
 # x[i] & x[j] = Ø
 
 
-@apply(imply=True)
+@apply
 def apply(given, excludes=None):
     assert given.is_Equality
     x_union_abs, x_abs_sum = given.args

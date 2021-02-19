@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, S):
     lhs, rhs = axiom.is_Contains(given)    
     return Contains(lhs, rhs | S)

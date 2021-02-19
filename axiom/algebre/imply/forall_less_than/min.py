@@ -5,7 +5,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(minimize):
     function, *limits = axiom.is_Minimize(minimize)
     return ForAll(LessThan(minimize, function), *limits)

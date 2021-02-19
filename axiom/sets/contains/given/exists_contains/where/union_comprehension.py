@@ -11,7 +11,7 @@ from axiom import sets
 from sympy.sets.sets import Interval
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     x, S = axiom.is_Contains(imply)
     function, *limits = axiom.is_UNION(S)    

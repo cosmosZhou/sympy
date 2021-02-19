@@ -11,7 +11,7 @@ from axiom import algebre, statistics
 
 # given: P(x, y) != 0
 # imply: P(y) != 0
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):
     assert given.is_Unequality
     assert given.lhs.is_Probability

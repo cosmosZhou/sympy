@@ -12,7 +12,7 @@ from sympy.sets.contains import Contains
 from axiom import discrete
 
 
-@apply(imply=True)
+@apply
 def apply(given, w=None):
     e, S = axiom.is_Contains(given)
     x, i = e.args

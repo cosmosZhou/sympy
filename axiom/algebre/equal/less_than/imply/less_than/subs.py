@@ -14,7 +14,7 @@ def ratsimp(equal, eq):
 
     return lhs, rhs, (delta / match).ratsimp()
     
-@apply(imply=True)
+@apply
 def apply(*given): 
     equal, less_than = given    
     assert equal.is_Equal

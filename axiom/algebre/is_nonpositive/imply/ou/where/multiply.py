@@ -5,7 +5,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     xy = axiom.is_nonpositive(given)
     x, y = axiom.is_Times(xy)

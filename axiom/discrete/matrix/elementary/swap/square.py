@@ -9,7 +9,7 @@ from sympy import Symbol
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(w):
     n = w.shape[0]
     i = w.generate_free_symbol(integer=True)

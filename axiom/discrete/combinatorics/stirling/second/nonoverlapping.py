@@ -4,7 +4,7 @@ from sympy.functions.combinatorial.numbers import Stirling
 from axiom import sets, algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(n, k, A=None):
     assert k < n
     j = Symbol.j(domain=Interval(0, k, integer=True))

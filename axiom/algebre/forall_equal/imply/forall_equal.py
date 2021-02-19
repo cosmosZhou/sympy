@@ -9,7 +9,7 @@ from sympy.core.function import Function
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     assert len(given.limits) == 1

@@ -9,7 +9,7 @@ import axiom
 from sympy.logic.boolalg import And
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     function, *limits = axiom.is_Exists(given)
     variables = axiom.limits_are_Contains(limits)    

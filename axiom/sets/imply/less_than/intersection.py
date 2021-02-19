@@ -6,7 +6,7 @@ from sympy import Symbol
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(A, B):
     return LessThan(abs(Intersection(A, B)), abs(A))
 

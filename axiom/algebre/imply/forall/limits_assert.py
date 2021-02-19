@@ -1,12 +1,9 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
-from sympy import ForAll, Exists
-from sympy.sets.sets import Interval
-from sympy.core.relational import Equality
 from sympy.concrete.limits import limits_condition
 
 
-@apply(imply=True, simplify=False)
+@apply(simplify=False)
 def apply(limits):
     return ForAll(limits_condition(limits), *limits)
 

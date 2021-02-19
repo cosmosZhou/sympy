@@ -10,7 +10,7 @@ from sympy import Or
 from sympy.logic.boolalg import And
 
 
-@apply(imply=True)
+@apply
 def apply(given, *, factor=None):
     or_eqs = axiom.is_Or(given)
     

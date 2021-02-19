@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(sub):
     y, x = axiom.is_Substract(sub)
     

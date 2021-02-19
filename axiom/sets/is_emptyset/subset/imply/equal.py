@@ -5,7 +5,7 @@ from axiom import sets
 # given0: A in B
 # given1: B & C = {}
 # C - A = C
-@apply(imply=True)
+@apply
 def apply(*given):
     assert len(given) == 2
     A = None

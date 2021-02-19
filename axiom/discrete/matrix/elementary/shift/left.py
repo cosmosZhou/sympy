@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Shift
 
 
-@apply(imply=True)
+@apply
 def apply(x, w=None):
     n = x.shape[0]
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))

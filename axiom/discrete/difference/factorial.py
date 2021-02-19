@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import discrete, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(x, n):
     if not x.is_Symbol:
         return

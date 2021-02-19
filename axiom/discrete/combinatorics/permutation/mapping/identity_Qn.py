@@ -6,7 +6,7 @@ from axiom import sets, discrete
 from axiom.discrete.combinatorics.permutation import mapping
 
 
-@apply(imply=True)
+@apply
 def apply(n, P_quote=None):
     Q, w, x = mapping.Qu2v.predefined_symbols(n)
     if P_quote is None:
@@ -15,10 +15,8 @@ def apply(n, P_quote=None):
     return Equality(Q[n], P_quote)
 
 
-
-
 @prove
-def prove(Eq):    
+def prove(Eq): 
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
     
@@ -35,6 +33,7 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq[-3]
     
     Eq << sets.forall.forall.imply.equal.apply(Eq.forall_P_quote, Eq[-1])
+
 
 if __name__ == '__main__':
     prove(__file__)

@@ -8,7 +8,7 @@ from sympy import Symbol
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(A):
     n = A.shape[0]
     k = Symbol.k(integer=True)    

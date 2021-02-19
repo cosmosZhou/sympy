@@ -6,7 +6,7 @@ import axiom
 # A != {}
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     greater_than, strict_greater_than = given
     a, x = axiom.is_GreaterThan(greater_than)

@@ -5,7 +5,7 @@ from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
 
 
-@apply(imply=True)
+@apply
 def apply(G, x, s, given):
     t = s.definition.variable
     y = x.definition.variable.base

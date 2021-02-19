@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):
     assert given._has(wrt)
     return Exists[wrt](given)

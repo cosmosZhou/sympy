@@ -13,7 +13,7 @@ from sympy.core.relational import LessThan
 from sympy.logic.boolalg import BooleanTrue
 
     
-@apply(given=True)
+@apply
 def apply(imply):
     piecewise, sym = axiom.is_BinaryCondition(imply)
      

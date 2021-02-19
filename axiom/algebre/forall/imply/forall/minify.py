@@ -8,7 +8,7 @@ from sympy.core.containers import Tuple
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given, domain=None, wrt=None):
     function, *limits = axiom.is_ForAll(given)
     

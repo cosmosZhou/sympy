@@ -4,7 +4,7 @@ from axiom import sets, algebre
 from sympy.sets.conditionset import conditionset
 
 
-@apply(imply=True)
+@apply
 def apply(n, P_quote=None):    
     
     if P_quote is None:

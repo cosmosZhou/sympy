@@ -1,16 +1,12 @@
-
-from sympy.core.relational import Equality
+from sympy import *
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.utility import prove, apply
-from sympy import Symbol
-from axiom.statistics import bayes
 from axiom import algebre, statistics
 from sympy.stats.rv import pspace
-from sympy.logic.boolalg import Or
 
 # given: x | y & z = x
 # imply: x | y = x
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):    
         
     assert given.is_Equality
@@ -50,15 +46,15 @@ def prove(Eq):
     
     Eq.xyz_nonzero, Eq.w_nonzero = Eq[0].domain_definition().split()
     
-    _, Eq.y_nonzero, Eq.z_nonzero = bayes.is_nonzero.et.apply(Eq.xyz_nonzero).split()
+    _, Eq.y_nonzero, Eq.z_nonzero = statistics.bayes.is_nonzero.et.apply(Eq.xyz_nonzero).split()
     
-    Eq.xy_probability = bayes.corollary.apply(Eq.y_nonzero, var=x | w)
+    Eq.xy_probability = statistics.bayes.corollary.apply(Eq.y_nonzero, var=x | w)
     
-    Eq << bayes.is_nonzero.is_nonzero.conditioned.apply(Eq.xyz_nonzero, wrt=w)
+    Eq << statistics.bayes.is_nonzero.is_nonzero.conditioned.apply(Eq.xyz_nonzero, wrt=w)
     
     Eq << statistics.bayes.theorem.apply(P(x | w, y, z), y, z)
     
-    Eq << algebre.forall.imply.ou.apply(Eq[-1])
+    Eq << algebre.forall.imply.ou.rewrite.apply(Eq[-1])
     
     Eq << (Eq[-1] & Eq[-3]).split()
     

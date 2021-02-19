@@ -8,7 +8,7 @@ from sympy.sets.sets import FiniteSet
 # given : A & B = A | B => A = B
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     A, B = axiom.is_Equal(given)
     return Equality(FiniteSet(A), FiniteSet(B))

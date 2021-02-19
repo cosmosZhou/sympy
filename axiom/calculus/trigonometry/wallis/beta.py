@@ -11,7 +11,7 @@ from sympy import Symbol
 from axiom import calculus
 
 
-@apply(imply=True)
+@apply
 def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)

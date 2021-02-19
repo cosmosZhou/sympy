@@ -5,7 +5,7 @@ from axiom.utility import prove, apply
 from sympy.functions.special.gamma_functions import gamma
 from sympy import Symbol
 
-@apply(imply=True)
+@apply
 def apply(n):
     return Equality(factorial(n), n * factorial(n - 1))
 

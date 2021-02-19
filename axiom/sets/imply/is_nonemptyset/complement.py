@@ -14,7 +14,7 @@ from sympy.concrete.forall import ForAll
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@apply(imply=True)
+@apply
 def apply(a):
     U = a.universalSet
     return Unequal(U - a.set, a.emptySet)

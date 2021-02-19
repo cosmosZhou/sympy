@@ -10,7 +10,7 @@ from axiom import algebre, sets
 from sympy.matrices.expressions.determinant import det
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     lhs, rhs = axiom.is_Equal(given)    
     return Equality(det(lhs), det(rhs))

@@ -11,7 +11,7 @@ from sympy import Symbol
 from axiom import calculus, statistics
 
 
-@apply(imply=True)
+@apply
 def apply(X, Y):
     i = Symbol.i(integer=True)
 

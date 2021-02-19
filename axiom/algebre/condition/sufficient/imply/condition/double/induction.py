@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given, n=None, x=None, start=0, hypothesis=False):
     start = sympify(start)
     f0, sufficient = given

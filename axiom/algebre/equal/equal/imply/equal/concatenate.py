@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):    
     eq_historic, eq_n = given
     lhs, rhs = axiom.is_Equal(eq_historic)

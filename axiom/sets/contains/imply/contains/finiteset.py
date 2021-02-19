@@ -4,7 +4,7 @@ from axiom import sets
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given, t):
     assert given.is_Contains    
     

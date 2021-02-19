@@ -3,7 +3,7 @@ from sympy.core.relational import Equality, GreaterThan
 from sympy import Symbol
 
 
-@apply(imply=True)
+@apply
 def apply(given):    
     assert given.is_Equality
     return GreaterThan(*given.args)

@@ -4,7 +4,7 @@ from sympy import Symbol
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_nonpositive, is_nonnegative = given
     x = axiom.is_nonnegative(is_nonnegative)

@@ -13,7 +13,7 @@ from sympy import Symbol
 from axiom import algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll and len(given.limits) == 2
     j, a, n_munis_1 = given.limits[0]

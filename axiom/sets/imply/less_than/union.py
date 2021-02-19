@@ -5,7 +5,7 @@ from sympy.sets.sets import Union
 from axiom import sets
 from sympy import Symbol
 
-@apply(imply=True)
+@apply
 def apply(A, B):
     return LessThan(abs(Union(A, B)), abs(A) + abs(B))
 

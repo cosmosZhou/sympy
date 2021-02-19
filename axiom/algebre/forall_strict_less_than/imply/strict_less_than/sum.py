@@ -9,7 +9,7 @@ from axiom import algebre, sets
 from sympy.core.symbol import dtype
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     eq, *limits = axiom.forall_strict_less_than(given)
     lhs, rhs = eq.args

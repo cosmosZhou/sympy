@@ -6,7 +6,7 @@ from sympy.core.relational import Unequality
 from sympy.core.symbol import Symbol
 
 
-@apply(imply=True)
+@apply
 def apply(x, y, z, n):
     return Unequality(x ** n + y ** n, z ** n)
 

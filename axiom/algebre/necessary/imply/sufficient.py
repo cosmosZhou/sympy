@@ -8,7 +8,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     fn, fn1 = axiom.is_Necessary(given)        
     return Sufficient(fn1, fn)

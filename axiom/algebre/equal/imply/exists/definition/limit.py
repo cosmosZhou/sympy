@@ -5,7 +5,7 @@ from axiom.algebre.imply.equivalent.equal.astype.exists.limit_definition import 
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, ε=None, δ=None):
     return exists(given, ε, δ)
 

@@ -26,7 +26,7 @@ def doit(a, b, c):
     return sqrt(pi) * exp(delta) / sqrt(a)
 
 
-@apply(imply=True)
+@apply
 def apply(y, x=None):
     if x is None:
         if not isinstance(y, Integral):

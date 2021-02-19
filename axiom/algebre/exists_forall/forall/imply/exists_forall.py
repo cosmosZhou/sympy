@@ -5,7 +5,7 @@ from axiom import sets, algebre
 from sympy.concrete.limits import limits_union
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     exists_forall, forall = given
     forall0, *limits_e = axiom.is_Exists(exists_forall)
@@ -29,6 +29,8 @@ def prove(Eq):
     y = Symbol.y(real=True)
     f = Function.f(shape=(), integer=True)
     Eq << apply(Exists[N](ForAll[n:N:oo](f(n) <= M)), ForAll[n:N](f(n) <= M))
+    
+    Eq << Eq[1].this.function.apply(algebre.forall.forall.imply.forall.limits_union, Eq[2], depth=0)
 
     
 if __name__ == '__main__':

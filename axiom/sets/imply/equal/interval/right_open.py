@@ -5,7 +5,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(self, evaluate=False):
     a, b = axiom.is_integer_Interval(self)
     assert not self.right_open

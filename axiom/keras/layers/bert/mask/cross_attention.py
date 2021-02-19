@@ -4,7 +4,7 @@ from sympy import *
 
 from axiom import keras, algebre
 
-@apply(imply=True)
+@apply
 def apply(a, h):    
     n = a.shape[0]
     Ξ = Symbol.Ξ(definition=Identity(n) + BlockMatrix([[ZeroMatrix(h, h), OneMatrix(h, n - h)],

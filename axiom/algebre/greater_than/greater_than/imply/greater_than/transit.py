@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     b_greater_than_x, x_greater_than_a = given
     b, x = axiom.is_GreaterThan(b_greater_than_x)    

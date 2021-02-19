@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, n=None, a=0):
     a = sympify(a)
     Zn1, rhs = axiom.is_Equal(given)

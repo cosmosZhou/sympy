@@ -6,7 +6,7 @@ from sympy.sets.sets import image_set
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(self):
     function, *limits = axiom.is_Sum(self)
     n, a, b = axiom.limit_is_even(limits)

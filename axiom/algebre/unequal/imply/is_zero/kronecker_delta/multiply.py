@@ -6,7 +6,7 @@ from axiom import algebre
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
-@apply(imply=True)
+@apply
 def apply(given, var=None):
     lhs, rhs = axiom.is_Unequal(given)
     if var is None:

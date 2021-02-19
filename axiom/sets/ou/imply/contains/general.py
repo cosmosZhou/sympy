@@ -10,7 +10,7 @@ from axiom import sets, algebre
 from axiom.sets.ou.imply.contains.two import expr_cond_pair
 
     
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):
     or_eqs = axiom.is_Or(given)
     

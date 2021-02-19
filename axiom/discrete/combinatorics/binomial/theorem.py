@@ -5,7 +5,7 @@ from axiom.discrete.combinatorics.binomial import Pascal
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(x, y, n=None, free_symbol=None):
     if free_symbol is None:
         k = Symbol.k(integer=True)

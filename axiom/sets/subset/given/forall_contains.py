@@ -4,7 +4,7 @@ from sympy import *
 from axiom import sets, algebre
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     assert imply.is_Subset
     B, A = imply.args
@@ -28,8 +28,6 @@ def prove(Eq):
     Eq << sets.is_nonemptyset.imply.exists_contains.emptyset.apply(Eq[-1], simplify=False)
     
     Eq <<= Eq[-1] & Eq[1]
-    
-    
     
 
 if __name__ == '__main__':

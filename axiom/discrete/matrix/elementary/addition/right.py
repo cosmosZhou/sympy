@@ -10,7 +10,7 @@ from sympy.matrices.expressions.matexpr import Addition
 from sympy import LAMBDA
 
 
-@apply(imply=True)
+@apply
 def apply(x, lamda, w=None):
     n = x.shape[0]
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))

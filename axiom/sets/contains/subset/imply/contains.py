@@ -4,7 +4,7 @@ from sympy import *
 from axiom import sets
 # given: A in B 
 # => {A} subset B
-@apply(imply=True)
+@apply
 def apply(*given):
     contains, subset = given
     if contains.is_Subset:

@@ -4,7 +4,7 @@ from sympy import Symbol, Or, log, Unequal
 from sympy.core.function import Function
 import axiom
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_nonzero, equality = given
     lhs = axiom.is_nonzero(is_nonzero)

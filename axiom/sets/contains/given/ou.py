@@ -4,7 +4,7 @@ import axiom
 from axiom import sets
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     assert imply.is_Contains
     e, domain = imply.args

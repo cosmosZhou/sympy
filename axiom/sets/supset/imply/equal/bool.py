@@ -6,7 +6,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from sympy.core.symbol import dtype
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Supset
     return Equality(Boole(given), 1)

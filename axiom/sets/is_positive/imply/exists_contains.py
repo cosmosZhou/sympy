@@ -10,7 +10,7 @@ from axiom import sets
 # Exists[x] (x in A)
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_StrictGreaterThan
     abs_S, size = given.args

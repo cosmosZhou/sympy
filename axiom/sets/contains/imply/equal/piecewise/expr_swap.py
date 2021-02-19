@@ -11,7 +11,7 @@ from axiom import algebre
 
 # given: A in B 
 # => A | B = B
-@apply(imply=True)
+@apply
 def apply(given, piecewise):
     assert given.is_Contains
     x, S = given.args

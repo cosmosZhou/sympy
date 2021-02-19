@@ -8,7 +8,7 @@ from sympy.core.numbers import oo
 from sympy.sets.sets import Interval
 
 
-@apply(imply=True)
+@apply
 def apply(*given, wrt=None):    
     eq_k, eq_n = given
     axiom.is_Equal(eq_k)

@@ -11,7 +11,7 @@ from sympy.logic.boolalg import And
 
 # given: P(x) ! =0
 # imply: P(x, y) = P(y | x) P(x) 
-@apply(imply=True)
+@apply
 def apply(self, *given):
     assert self.is_Probability
     if len(given) == 1:

@@ -1,13 +1,10 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol, Or
-from sympy.logic.boolalg import Equivalent, Sufficient, Necessary
-from sympy.sets.contains import Contains
 import axiom
-from sympy.sets.sets import Interval
 from axiom import sets
 
 
-@apply(imply=True, given=None)
+@apply(given=None)
 def apply(given):
     x, interval = axiom.is_Contains(given)
     interval.is_Interval

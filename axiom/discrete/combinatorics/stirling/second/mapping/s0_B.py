@@ -1,17 +1,13 @@
-from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality, Unequality
+from sympy import *
 from axiom.utility import prove, apply
 from sympy.functions.combinatorial.numbers import Stirling
-from sympy.sets.contains import NotContains
-from sympy.functions.elementary.piecewise import Piecewise
 from axiom import sets, algebre
-from sympy import UNION, ForAll, LAMBDA
-from sympy.core.numbers import oo
 
-@apply(imply=True)
+
+@apply
 def apply(n, k, s0=None, B=None):
     
-    if s0 is None:    
+    if s0 is None: 
         x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
         s0 = Symbol.s0(definition=UNION[x[:k]:Stirling.conditionset(n, k, x)](x[:k].set_comprehension().set))
     if B is None:
@@ -21,8 +17,6 @@ def apply(n, k, s0=None, B=None):
         
         assert B.definition.variable.is_extended_real        
     return Equality(abs(s0), abs(B))
-
-
 
 
 @prove
@@ -45,7 +39,7 @@ def prove(Eq):
     
     Eq << sets.imply.forall.where.baseset.apply(s0_quote)
 
-    *_, Eq.x_union_s0 = Eq[-1].split()
+    * _, Eq.x_union_s0 = Eq[-1].split()
 
     i = Symbol.i(integer=True)
     x = Eq[0].rhs.variable.base
@@ -66,7 +60,9 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)
     
-    Eq << Eq.x_union_s0.apply(sets.equal.equal.imply.equal.union, Eq[-1].reversed)
+    Eq << algebre.forall.exists.imply.exists_et.apply(Eq.x_union_s0, Eq[-1].reversed, simplify=None)
+    
+    Eq << Eq[-1].this.function.apply(sets.equal.equal.imply.equal.union)
     
     Eq << Eq[-1].this().function.lhs.simplify()
     
@@ -105,6 +101,7 @@ def prove(Eq):
                                                                                               Eq.forall_B_contains,
                                                                                               Eq.forall_s0_equality,
                                                                                               Eq.forall_B_equality)
+
 
 if __name__ == '__main__':
     

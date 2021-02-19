@@ -4,7 +4,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(given, t, alpha):
     abs_x_y = axiom.is_positive(given)
     x_y = axiom.is_Norm(abs_x_y)

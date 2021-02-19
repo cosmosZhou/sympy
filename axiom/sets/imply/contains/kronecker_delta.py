@@ -12,7 +12,7 @@ from sympy.functions.special.tensor_functions import KroneckerDelta
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(boole):
     assert boole.is_KroneckerDelta
     return Contains(boole, {0, 1})

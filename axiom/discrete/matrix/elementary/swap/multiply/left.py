@@ -10,7 +10,7 @@ from sympy import Symbol
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(x, i=None, j=None, w=None):
     n = x.shape[0]
     if i is None:

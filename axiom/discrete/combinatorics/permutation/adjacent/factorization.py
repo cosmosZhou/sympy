@@ -5,7 +5,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import discrete, sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     i = Symbol.i(integer=True)
     
@@ -124,8 +124,6 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[-2])
     
-#     assert Eq[-1].equivalent[1].equivalent[0].where.equivalent.equivalent[0] is Eq[1]
-#     assert Eq[-1].equivalent[1].equivalent[1].equivalent.where.equivalent[0] is Eq.exists_n_plausible
     Eq << Eq[-1].subs(Eq.exists_n_plausible)   
     
     Eq << Eq.induction.induct()

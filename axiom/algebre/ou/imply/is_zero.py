@@ -11,7 +11,7 @@ from sympy.matrices.expressions.matexpr import ZeroMatrix
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     or_eqs = axiom.is_Or(given)
     

@@ -7,7 +7,7 @@ from sympy.core.numbers import oo
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, upper=None):    
     x, a = axiom.is_LessThan(given)
     assert a < upper

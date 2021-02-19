@@ -13,7 +13,7 @@ from sympy.logic.boolalg import Sufficient
 
 # given: f(a) != f(b) or a = b
 # ForAll[a: a!=b](f(a) != f(b)) 
-@apply(imply=True)
+@apply
 def apply(given, pivot=0):
     conds = axiom.is_Or(given)
     

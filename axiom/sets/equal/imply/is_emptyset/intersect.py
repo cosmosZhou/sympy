@@ -8,7 +8,7 @@ from axiom import sets
 # => A & B = EmptySet
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     assert given.lhs.is_Complement

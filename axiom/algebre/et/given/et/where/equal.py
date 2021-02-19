@@ -4,7 +4,7 @@ from axiom.algebre.equal.condition.imply.condition.kronecker_delta import proces
 import axiom
 
 
-@apply(given=True)
+@apply
 def apply(imply, **kwargs):
     imply = axiom.is_And(imply)
     eq, cond = imply

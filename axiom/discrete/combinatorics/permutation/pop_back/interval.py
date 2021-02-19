@@ -10,7 +10,7 @@ import axiom
 from sympy.tensor.indexed import Slice
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     assert len(given) == 2    
     set_comprehension_equality, last_element_equality = given

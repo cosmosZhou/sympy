@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, geometry, calculus, sets
 
 
-@apply(imply=True)
+@apply
 def apply(sinx):
     i = S.ImaginaryUnit
     assert sinx.is_Sin

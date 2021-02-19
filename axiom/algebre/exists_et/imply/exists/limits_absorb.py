@@ -6,7 +6,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, index):
     assert given.is_Exists and given.function.is_And
     
@@ -24,7 +24,20 @@ def apply(given, index):
         wrt, *_ = wrt
         i = variables.index(wrt)        
         wrt, *ab = limits[i]
-        assert ab 
+        if ab:
+            if len(ab) == 1:
+                cond, *_ = ab
+                if cond.is_boolean:
+                    eq &= cond                    
+                else:
+                    eq &= Contains(wrt, cond)                    
+            else:
+                assert len(ab) == 2
+                a, b = ab
+                if a.is_boolean:
+                    eq &= a & Contains(wrt, b)
+                else:
+                    eq &= Contains(wrt, Interval(a, b, right_open=wrt.is_integer, integer=wrt.is_integer)) 
         limits[i] = (wrt, eq)
     elif len(wrt) == 2:
         x_slice, x_index = wrt
@@ -46,8 +59,6 @@ def apply(given, index):
         return 
         
     return Exists(function, *limits)
-
-
 
 
 @prove

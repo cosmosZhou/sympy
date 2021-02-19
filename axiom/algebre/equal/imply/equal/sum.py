@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):    
     lhs, rhs = axiom.is_Equal(given)
     if limits:

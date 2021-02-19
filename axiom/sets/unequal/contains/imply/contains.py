@@ -6,7 +6,7 @@ from axiom import sets
 # x not in {y}
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     inequality, contains = given
     _x, y = axiom.is_Unequal(inequality)

@@ -5,7 +5,7 @@ from sympy import Symbol
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_nonzero_x, is_nonzero_y = given
     x = axiom.is_nonzero(is_nonzero_x)

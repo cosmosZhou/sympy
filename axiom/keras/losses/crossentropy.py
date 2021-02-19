@@ -5,7 +5,7 @@ from axiom import algebre
 import tensorflow as tf
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert isinstance(given, Equality)
     lhs = given.lhs

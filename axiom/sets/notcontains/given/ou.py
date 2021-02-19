@@ -5,7 +5,7 @@ import axiom
 
 
 # given e not in S
-@apply(given=True)
+@apply
 def apply(imply):
     e, S = axiom.is_NotContains(imply)
     U, A = axiom.is_Complement(S)

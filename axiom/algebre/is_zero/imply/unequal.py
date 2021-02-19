@@ -6,7 +6,7 @@ from sympy.logic.boolalg import Or
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, y):
     x = axiom.is_zero(given)
     assert y.is_nonzero

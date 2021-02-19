@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     b_eq_x, x_eq_a = given
     b, x = axiom.is_Equal(b_eq_x)    

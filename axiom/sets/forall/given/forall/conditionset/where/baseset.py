@@ -5,7 +5,7 @@ from sympy.sets.conditionset import conditionset
 import axiom
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     function, *limits = axiom.is_ForAll(imply)
     x, cond, baseset = axiom.limit_is_baseset(limits)

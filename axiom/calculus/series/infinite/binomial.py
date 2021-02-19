@@ -10,7 +10,7 @@ from axiom import algebre
 from sympy.core.numbers import oo
 
 
-@apply(imply=True)
+@apply
 def apply(r, x=None, n=None):
     assert r.is_real
     if x is None:

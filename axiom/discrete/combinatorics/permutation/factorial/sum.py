@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import discrete
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     i = Symbol.i(integer=True)
     return Equality(factorial(n), Sum[i:n + 1]((-1) ** (n - i) * i ** n * binomial(n, i)))

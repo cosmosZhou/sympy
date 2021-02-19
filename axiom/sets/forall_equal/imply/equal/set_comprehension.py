@@ -11,7 +11,7 @@ from sympy.core.symbol import dtype
 from sympy.core.numbers import oo
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     eq, *limits = axiom.forall_equal(given)
     lhs, rhs = eq.args

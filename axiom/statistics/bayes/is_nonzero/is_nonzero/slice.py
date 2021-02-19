@@ -7,7 +7,7 @@ from sympy.stats.rv import pspace
 
 # given: P(x) != 0
 # imply: P(x[:t]) != 0
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Unequality
     assert given.lhs.is_Probability

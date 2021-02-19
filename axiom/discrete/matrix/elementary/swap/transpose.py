@@ -8,7 +8,7 @@ from axiom import algebre, discrete
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(w):
     n = w.shape[0]
     i = w.generate_free_symbol(integer=True)

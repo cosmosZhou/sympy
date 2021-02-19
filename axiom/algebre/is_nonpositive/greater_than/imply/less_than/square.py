@@ -4,7 +4,7 @@ from sympy import Symbol
 import axiom
 from axiom import algebre
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_nonpositive, greater_than = given
     x = axiom.is_nonpositive(is_nonpositive)

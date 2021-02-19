@@ -15,7 +15,7 @@ def continuity(f, a, b):
     z = Symbol('z', real=True)
     return ForAll(Equality(Limit(f(z), z, xi, '+-'), f(xi)), (xi, a, b))
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     assert given.function.is_Equality

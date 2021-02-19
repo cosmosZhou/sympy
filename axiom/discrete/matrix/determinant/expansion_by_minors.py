@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from sympy.matrices.expressions.cofactor import Cofactors
 
 
-@apply(imply=True)
+@apply
 def apply(A, i=None, j=None):
 #         https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html    
     n = A.shape[0]

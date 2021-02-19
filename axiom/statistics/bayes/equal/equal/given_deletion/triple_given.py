@@ -5,7 +5,7 @@ from axiom import algebre, statistics
 
 # given: x | y & z = x | y
 # imply: x | z = x
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equal
     lhs, rhs = given.args

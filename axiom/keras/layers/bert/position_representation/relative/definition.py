@@ -13,7 +13,7 @@ from sympy.core.add import Plus
 import tensorflow as tf
 
 
-@apply(imply=True)
+@apply
 def apply(n, dx, dz):
     x = Symbol.x(shape=(n, dx), real=True)
     W_Q = Symbol("W^Q", shape=(dx, dz), real=True)

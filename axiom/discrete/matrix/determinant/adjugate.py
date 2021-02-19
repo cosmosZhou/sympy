@@ -8,7 +8,7 @@ from sympy import Symbol
 from sympy.matrices.expressions.matexpr import Identity
 
 
-@apply(imply=True)
+@apply
 def apply(A):    
     n = A.shape[0]        
     return Equality(A @ Cofactors(A).T, Determinant(A) * Identity(n))

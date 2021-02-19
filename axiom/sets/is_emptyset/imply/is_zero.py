@@ -8,7 +8,7 @@ import axiom
 
 
 # given A & B = {} => A - B = A
-@apply(imply=True)
+@apply
 def apply(given):
     A = axiom.is_emptyset(given)
     return Equality(abs(A), 0)

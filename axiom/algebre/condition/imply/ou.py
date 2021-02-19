@@ -4,7 +4,7 @@ import axiom
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, cond=None):
     assert cond.is_boolean
     return Or(given, cond) 

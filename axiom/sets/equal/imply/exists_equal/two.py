@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, x=None, y=None):
     assert given.is_Equality
     abs_S, two = given.args

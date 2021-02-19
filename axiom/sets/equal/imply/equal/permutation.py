@@ -3,7 +3,7 @@ from sympy import *
 from axiom import sets, discrete, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, x):
     assert given.is_Equality
     p_set_comprehension, interval = given.args

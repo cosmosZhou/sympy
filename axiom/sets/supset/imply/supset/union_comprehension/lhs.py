@@ -4,7 +4,7 @@ from sympy import *
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     assert given.is_Supset
     A, fx = given.args

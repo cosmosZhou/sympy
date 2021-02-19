@@ -9,7 +9,7 @@ from sympy.core.mul import Times
 
 
 # log softmax(x) = x - max(x) - log∑exp(x - max(x))
-@apply(imply=True)
+@apply
 def apply(x, delta):
     assert len(x.shape) == 1
     assert not delta.shape

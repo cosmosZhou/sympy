@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, k=None):
     n = axiom.is_odd(given)
     if k is None:

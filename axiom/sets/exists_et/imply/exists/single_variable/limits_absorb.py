@@ -5,7 +5,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given, index):
     assert given.is_Exists and given.function.is_And
     

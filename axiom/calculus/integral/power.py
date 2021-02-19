@@ -5,7 +5,7 @@ from sympy import Symbol
 from sympy.integrals.integrals import Integral
 
 
-@apply(imply=True)
+@apply
 def apply(n, a=0, b=None, x=None):
     assert n.is_integer
     

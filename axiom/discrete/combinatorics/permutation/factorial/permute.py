@@ -5,7 +5,7 @@ from axiom import discrete, sets, algebre
 from sympy.sets.conditionset import conditionset
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     assert len(given) == 2
     assert given[0].is_ForAll and len(given[0].limits) == 2

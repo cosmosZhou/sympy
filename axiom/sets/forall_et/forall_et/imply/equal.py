@@ -13,7 +13,7 @@ from sympy.core.function import Lambda, Function
 
  
 # |A| = |B|
-@apply(imply=True)
+@apply
 def apply(*given):
     
     forall_a, forall_b = given

@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import discrete, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(a):
     n = a.shape[0]
     i = Symbol.i(integer=True)

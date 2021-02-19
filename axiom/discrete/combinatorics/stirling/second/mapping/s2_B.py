@@ -6,7 +6,7 @@ from axiom import sets, algebre
 from sympy.sets.conditionset import conditionset
 
 
-@apply(imply=True)
+@apply
 def apply(n, k, s2=None, B=None):
     if s2 is None:    
         x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
@@ -81,8 +81,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.function.apply(sets.contains.given.contains.where.imageset)
     
-#     Eq << Eq[-1].this.function.rhs.definition
-
+    Eq << Eq[-1].this.function.function.rhs.definition
+    
     Eq << Eq.x_k_definition.apply(algebre.equal.imply.equal.abs)    
 
     Eq << Eq[-1] + StrictGreaterThan(1, 0, plausible=True)    
@@ -126,7 +126,11 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)    
 
-    Eq << Eq.x_union_s0.apply(sets.equal.equal.imply.equal.union, Eq[-1].reversed).this().function.lhs.simplify()
+    Eq << algebre.forall.exists.imply.exists_et.apply(Eq.x_union_s0, Eq[-1].reversed, simplify=False)
+    
+    Eq << Eq[-1].this.function.apply(sets.equal.equal.imply.equal.union)
+    
+    Eq << Eq[-1].this().function.lhs.simplify()
     
     Eq << Eq[-1].subs(Eq.x_union_s0)
 
@@ -159,29 +163,31 @@ def prove(Eq):
     Eq << Eq.x_union_s2 - Eq.x_j_definition
 
     Eq << Eq[-1].this.function.lhs.args[0].bisect({j})
+    
+    Eq << Eq[-1].this.function.lhs.apply(sets.imply.equal.complement.astype.union, evaluate=True)
     return
 
     x_tilde = Symbol(r"\tilde{x}", shape=(k,), etype=dtype.integer,
                      definition=LAMBDA[i:k](Piecewise((x[i], i < j), (x[i + 1], True))))
 
-    Eq.x_tilde_definition = x_tilde.equality_defined()
-    
-    Eq << sets.equal.imply.equal.union_comprehension.apply(Eq.x_tilde_definition, (i, 0, k - 1))
+    Eq.x_tilde_definition = x_tilde[i].this.definition
+
+    Eq << sets.equal.imply.equal.union_comprehension.apply(Eq.x_tilde_definition, (i, 0, k))
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
 
-    Eq.x_tilde_union = Eq[-1].subs(Eq[-3])
-
+    Eq.x_tilde_union = Eq[-1].subs(Eq[-3])    
+    return
     Eq.x_tilde_abs = Eq.x_tilde_definition.apply(algebre.equal.imply.equal.abs)
-
-    Eq << Eq.x_tilde_abs.apply(algebre.equal.imply.equal.sum, (i, 0, k - 1))
-
+    
+    Eq << Eq.x_tilde_abs.apply(algebre.equal.imply.equal.sum, (i, 0, k))
+    
     Eq << Eq[-1].this.rhs.args[0].limits_subs(i, i - 1)
-
+    
     Eq << Eq.x_j_definition.apply(algebre.equal.imply.equal.abs)
     
     Eq.x_tilde_abs_sum = Eq[-2].subs(Eq.x_abs_sum_s2, Eq[-1])
-
+    
     Eq << algebre.equal.imply.ou.two.apply(Eq.x_tilde_abs)
     
     Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (i, i < j))
@@ -191,11 +197,11 @@ def prove(Eq):
     Eq << Eq[-2].subs(Eq.x_abs_positive_s2)    
 
     Eq << Eq[-2].subs(Eq.x_abs_positive_s2.limits_subs(i, i + 1))
+    
+    Eq <<= Eq[-1] & Eq[-2]
 
-    Eq << (Eq[-1] & Eq[-2])
-
-    Eq << (Eq[-1] & Eq.x_tilde_abs_sum & Eq.x_tilde_union)
-
+    Eq <<= Eq[-1] & Eq.x_tilde_abs_sum & Eq.x_tilde_union
+    return
     Eq << Eq[-1].func(Contains(x_tilde, s0_quote), *Eq[-1].limits, plausible=True)
 
     Eq << Eq[-1].definition

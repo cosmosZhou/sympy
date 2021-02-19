@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, n=None):
     fn, fn1 = axiom.is_Sufficient(given)    
     assert fn._subs(n, n + 1) == fn1

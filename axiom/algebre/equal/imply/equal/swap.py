@@ -9,7 +9,7 @@ from axiom import algebre, sets
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
-@apply(imply=True)
+@apply
 def apply(given, x, y):
     axiom.is_Equal(given)
     

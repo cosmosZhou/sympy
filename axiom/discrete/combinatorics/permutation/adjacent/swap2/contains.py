@@ -5,7 +5,7 @@ from axiom.discrete.combinatorics.permutation.adjacent import swap2
 from axiom import sets, algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll and len(given.limits) == 1
     x, S = given.limits[0]

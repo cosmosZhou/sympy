@@ -6,7 +6,7 @@ from sympy import Symbol, Boole
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     return Equality(Boole(given), 1)
 

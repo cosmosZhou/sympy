@@ -4,7 +4,7 @@ from axiom import algebre, sets
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(boole):
     assert boole.is_Boole
     return Equality(boole * boole, boole)

@@ -9,7 +9,7 @@ from axiom import algebre
 
 # given: P(x, y) != 0
 # imply: P(x | y) != 0
-@apply(imply=True)
+@apply
 def apply(given, wrt):
     assert given.is_Unequality
     assert given.lhs.is_Probability

@@ -5,7 +5,7 @@ import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(piecewise, index=-1):
     expr, cond = piecewise.args[index]
     _ec = axiom.is_Piecewise(expr)

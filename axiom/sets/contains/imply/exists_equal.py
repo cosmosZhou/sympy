@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 
 
-@apply(imply=True, simplify=False)
+@apply(simplify=False)
 def apply(given, reverse=False):
     assert given.is_Contains
     x = given.generate_free_symbol(**given.lhs.type.dict)

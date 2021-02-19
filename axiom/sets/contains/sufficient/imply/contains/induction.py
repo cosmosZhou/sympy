@@ -14,7 +14,7 @@ from sympy.core.sympify import sympify
 from sympy.logic.boolalg import Sufficient
 
 
-@apply(imply=True)
+@apply
 def apply(*given, n=None, start=0):
     start = sympify(start)
     f0, sufficient = given

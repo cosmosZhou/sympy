@@ -5,7 +5,7 @@ from axiom import algebre, sets
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     subset, *limits = axiom.forall_subset(given)
 

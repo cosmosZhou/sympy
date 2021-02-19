@@ -5,7 +5,7 @@ from sympy.core.relational import LessThan
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, m):
     assert given.is_LessThan
     lhs, rhs = given.args

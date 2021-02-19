@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_imply_P, is_imply_Q = given
     x, p = axiom.is_Sufficient(is_imply_P)    

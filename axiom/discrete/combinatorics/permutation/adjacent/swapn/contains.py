@@ -12,7 +12,7 @@ from axiom import algebre, discrete
 from axiom.discrete.combinatorics.permutation.adjacent import swapn
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_ForAll
     S = given.rhs

@@ -5,7 +5,7 @@ import axiom
 
 
 # given e not in S
-@apply(imply=True)
+@apply
 def apply(given, index=0):
     assert given.is_NotContains
     e, s = given.args

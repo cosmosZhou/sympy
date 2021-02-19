@@ -4,7 +4,7 @@ from axiom import algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x, y = axiom.is_LessThan(given)
     assert x.is_integer

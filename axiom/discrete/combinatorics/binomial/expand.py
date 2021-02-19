@@ -4,7 +4,7 @@ from axiom.utility import prove, apply
 
 from sympy import Symbol
 
-@apply(imply=True)
+@apply
 def apply(n, k):
     return Equality(Binomial(n, k), n / k * Binomial(n - 1, k - 1))
 

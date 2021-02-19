@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(expr, *limits):
     return LessThan(abs(UNION(expr, *limits)), Sum(abs(expr), *limits).simplify())
 

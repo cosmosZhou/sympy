@@ -3,7 +3,7 @@ from sympy.core.relational import Unequal, StrictGreaterThan
 from sympy import Symbol
 
 
-@apply(imply=True)
+@apply
 def apply(given, lower_bound):
     assert given.is_GreaterThan
     lhs, rhs = given.args

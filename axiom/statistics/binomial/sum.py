@@ -8,7 +8,7 @@ from axiom.utility import prove, apply
 from axiom import discrete
 
 
-@apply(imply=True)
+@apply
 def apply(x0, x1):
     if not x0.is_random or not x1.is_random:
         return

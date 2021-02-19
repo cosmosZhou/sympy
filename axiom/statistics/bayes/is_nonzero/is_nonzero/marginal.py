@@ -9,7 +9,7 @@ from axiom.statistics import bayes
 
 # given: P(x | y) != 0
 # imply: P(x) != 0
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Unequality
     assert given.lhs.is_Probability

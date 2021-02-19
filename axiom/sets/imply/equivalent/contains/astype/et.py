@@ -4,7 +4,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True, given=None)
+@apply(given=None)
 def apply(given):
     x, interval = axiom.is_Contains(given)
     

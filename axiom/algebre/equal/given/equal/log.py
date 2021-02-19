@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     lhs, rhs = axiom.is_Equal(imply)
     assert lhs.is_nonzero or rhs.is_nonzero

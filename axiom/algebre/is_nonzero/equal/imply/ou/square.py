@@ -5,7 +5,7 @@ import axiom
 from axiom.algebre.greater_than.less_than.imply.less_than.quadratic import quadratic_coefficient
 
 
-@apply(imply=True)
+@apply
 def apply(*given, x=None):
     is_nonzero, eq = given
     if not is_nonzero.is_Unequality:

@@ -7,7 +7,7 @@ import axiom
 # given : A & B = A | B => A = B
 
 
-@apply(imply=True)
+@apply
 def apply(given, S):
     A, B = axiom.is_Equal(given)
     return Equality(A | S, B | S)

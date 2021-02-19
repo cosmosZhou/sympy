@@ -5,7 +5,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(A, B, n=None, k=None, x=None):
     
     if x is None:

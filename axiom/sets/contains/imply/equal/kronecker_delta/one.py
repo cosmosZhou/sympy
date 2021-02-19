@@ -8,7 +8,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Contains
     x, domain = given.args

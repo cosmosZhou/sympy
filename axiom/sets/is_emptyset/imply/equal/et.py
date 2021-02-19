@@ -5,7 +5,7 @@ from axiom import sets, algebre
 # A = {} and B = {}
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     AB, emptyset = given.args

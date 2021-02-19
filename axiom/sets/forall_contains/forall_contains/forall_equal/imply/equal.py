@@ -5,6 +5,7 @@ from axiom import algebre
 # given: ForAll[a:A] (f(a) in B)
 #        ForAll[b:B] (g(b) in A)
 
+
 def analyze(*given):
     forall_a, forall_b, equality_a = given
         
@@ -33,18 +34,17 @@ def analyze(*given):
         
     return A, B, a, b, fa, gb
 
+
 # |A| = |B|
-@apply(imply=True)
-def apply(*given):    
+@apply
+def apply(*given): 
     A, B, a, b, fa, gb = analyze(*given)
     
     return Equality(UNION[b:B](gb.set), A)
 
 
-
-
 @prove
-def prove(Eq):    
+def prove(Eq): 
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
     A = Symbol.A(etype=dtype.integer * n)

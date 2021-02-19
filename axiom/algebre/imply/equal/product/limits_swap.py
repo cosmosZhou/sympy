@@ -5,7 +5,7 @@ from axiom import algebre, sets
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(self):
     function, *limits = axiom.is_Product(self)
     assert len(limits) == 2

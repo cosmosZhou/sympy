@@ -13,7 +13,7 @@ from sympy.concrete.summations import Sum
 
 
 # n = Symbol.n(integer=True, positive=True)
-@apply(imply=True)
+@apply
 def apply(r, n):
     if not n >= 2:
         return None

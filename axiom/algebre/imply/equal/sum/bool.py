@@ -4,7 +4,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(sgm):
     assert sgm.is_Sum
     

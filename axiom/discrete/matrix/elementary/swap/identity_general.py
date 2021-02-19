@@ -9,7 +9,7 @@ from sympy import LAMBDA
 from sympy import Symbol
 
 
-@apply(imply=True)
+@apply
 def apply(x, d, w=None):
     n = x.shape[0]
     assert d.shape == (n,)

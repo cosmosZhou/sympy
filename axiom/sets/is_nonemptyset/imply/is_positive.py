@@ -9,7 +9,7 @@ from axiom import sets, algebre
 # |A| > 0
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Unequality
     A, B = given.args

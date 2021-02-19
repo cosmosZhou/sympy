@@ -29,7 +29,7 @@ from mpmath import mpi, mpf
 def is_set(s):
     if isinstance(s, set):
         return True
-    if isinstance(s, Basic):        
+    if isinstance(s, Basic): 
         return s.is_set
 
 
@@ -206,7 +206,7 @@ class Set(Basic):
             return Union(*(p for p in product_sets if p != other))
 
         elif other.is_Interval:
-            if self.is_Interval :
+            if self.is_Interval:
                 if other.is_integer:
                     from sympy.sets import Integers
                     return Intersection(other, self.complement(Integers))
@@ -597,6 +597,9 @@ class Set(Basic):
         from sympy.functions.elementary.complexes import Abs
         return Abs(self)
 
+    def __floordiv__(self, other):
+        return Complement(self, other)
+    
     def conjugate(self):
         from sympy.functions.elementary.complexes import conjugate
         return conjugate(self)
@@ -675,7 +678,7 @@ class ProductSet(Set):
     def __new__(cls, *sets, **assumptions):
 
         def flatten(arg):
-            if isinstance(arg, Set) :
+            if isinstance(arg, Set):
                 if arg.is_ProductSet:
                     return sum(map(flatten, arg.args), [])
                 else:
@@ -799,7 +802,7 @@ class CartesianSpace(Set):
                 return domain
         return Set.__new__(cls, domain, *dimension)
 
-    def _eval_domain_defined(self, x):     
+    def _eval_domain_defined(self, x): 
         return self.space.domain_defined(x) & Intersection(*(x.domain_conditioned(d > 0) for d in self.space_shape))
 
     @property
@@ -951,7 +954,7 @@ class Interval(Set, EvalfMixin):
         if deep:
             hit = False
             args = [*self.args]
-            for i, arg in enumerate(self.args[:3]):                
+            for i, arg in enumerate(self.args[:3]): 
                 _arg = arg.simplify(deep=deep)                
 
                 if _arg != arg:
@@ -1127,7 +1130,7 @@ class Interval(Set, EvalfMixin):
                 if stop in b:
                     drapeau = True
                     right_open = False
-            else:                
+            else: 
                 if stop + 1 in b:
                     drapeau = True
                     stop += 1                                   
@@ -1138,7 +1141,7 @@ class Interval(Set, EvalfMixin):
                 if start in b:
                     drapeau = True
                     left_open = False
-            else:                
+            else: 
                 if start - 1 in b:
                     drapeau = True
                     start -= 1                                    
@@ -1188,7 +1191,7 @@ class Interval(Set, EvalfMixin):
         if right_open and stop <= start or not right_open and stop < start:
             return start.emptySet
 
-        if stop == start :
+        if stop == start:
             if left_open or right_open:
                 return start.emptySet
             else:
@@ -1219,13 +1222,13 @@ class Interval(Set, EvalfMixin):
                     start = floor(start + 1).simplify()
                     left_open = False
                 
-            if right_open:                
+            if right_open: 
                 if stop.is_finite and not stop.is_integer:
                     from sympy.functions.elementary.integers import ceiling
                     stop = ceiling(stop - 1).simplify()
                     left_open = False
                 
-                if left_open:                    
+                if left_open: 
                     if start == stop - 2:
                         return FiniteSet(start + 1)
                 else:
@@ -1418,7 +1421,7 @@ class Interval(Set, EvalfMixin):
             m = self.min()
             if m.is_Integer:
                 M = self.max()
-                if M.is_Integer:                    
+                if M.is_Integer: 
                     return FiniteSet(*range(m, M + 1))
         return self
 
@@ -1519,7 +1522,7 @@ class Interval(Set, EvalfMixin):
             if self.is_integer:
                 start = self.min()
                 stop = self.max()
-                if other.is_integer:                    
+                if other.is_integer: 
                     start += other.min()
                     stop += other.max()
                     left_open, right_open = False, False
@@ -1613,13 +1616,13 @@ class Interval(Set, EvalfMixin):
         if self.is_integer:
             if other.is_One:
                 return self
-            if other.is_NegativeOne:                
+            if other.is_NegativeOne: 
                 return self.func(self.stop / other, self.start / other,
                                  left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
         else:
-            if other.is_extended_positive:                            
+            if other.is_extended_positive: 
                 return self.copy(start=self.start / other, stop=self.stop / other)
-            if other.is_extended_negative:                
+            if other.is_extended_negative: 
                 return self.func(self.stop / other, self.start / other,
                                  left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
 
@@ -1699,7 +1702,7 @@ class Interval(Set, EvalfMixin):
             return dtype.integer
         return dtype.real
 
-    def _pretty(self, p):         
+    def _pretty(self, p): 
         if self.start == self.stop:
             return p._print_seq(self.args[:1], '{', '}')
 
@@ -1774,10 +1777,10 @@ class Interval(Set, EvalfMixin):
     def inverse(self):
         if self.is_integer:
             return
-        if self.min().is_positive:            
+        if self.min().is_positive: 
             return Interval(1 / self.stop, 1 / self.start,
                             left_open=self.right_open, right_open=self.left_open)
-        if self.max().is_negative:            
+        if self.max().is_negative: 
             return Interval(1 / self.stop, 1 / self.start,
                             left_open=self.right_open, right_open=self.left_open)
         return self
@@ -1816,7 +1819,7 @@ class Interval(Set, EvalfMixin):
                     e -= S.One
                     return self.func(e, s, evaluate=False, equivalent=self)
                 
-        if e.is_integer == s.is_integer:            
+        if e.is_integer == s.is_integer: 
             if s.start is S.NegativeInfinity:
                 from sympy import StrictLessThan, LessThan
                 func = StrictLessThan if s.right_open else LessThan
@@ -1837,7 +1840,7 @@ class Interval(Set, EvalfMixin):
                 e += S.One
                 return self.func(e, s, evaluate=False, equivalent=self).simplify()
                     
-            if S.One in e.args:                
+            if S.One in e.args: 
                 s -= S.One
                 e -= S.One
                 return self.func(e, s, evaluate=False, equivalent=self).simplify()
@@ -1845,6 +1848,7 @@ class Interval(Set, EvalfMixin):
     def _eval_Subset(self, rhs):
         if rhs.is_UniversalSet:
             return S.true
+
                             
 class Union(Set, LatticeOp, EvalfMixin):
     """
@@ -2120,6 +2124,10 @@ class Union(Set, LatticeOp, EvalfMixin):
         if lhs in self._argset:
             return S.true
 
+    def simplify(self, deep=False, **kwargs):
+        if deep:
+            return Set.simplify(self, deep=deep, **kwargs)
+        return self
 
 class Intersection(Set, LatticeOp):
     """
@@ -2186,8 +2194,8 @@ class Intersection(Set, LatticeOp):
 # (A & C) | (B & C) = (A | B) & C           
         if b.is_Intersection:
             C = self._argset & b._argset
-            if C:            
-                return (self.func(*self._argset - C, evaluate=False) | b.func(*b._argset - C, evaluate=False)) & self.func(*C)             
+            if C: 
+                return Intersection((self.func(*self._argset - C, evaluate=False) | b.func(*b._argset - C, evaluate=False)), self.func(*C), evaluate=False)
         
     @property
     def zero(self):
@@ -2437,7 +2445,7 @@ class Complement(Set, EvalfMixin):
             
         return r"%s \ %s" % (p._print(A), B)
 
-    def is_connected_interval(self):        
+    def is_connected_interval(self): 
         A, B = self.args
         
         if not A.is_Interval:
@@ -2457,7 +2465,7 @@ class Complement(Set, EvalfMixin):
         
         return B.is_integer and B.max() - B.min() == len(B) - 1
         
-    def min(self):        
+    def min(self): 
         from sympy.core.numbers import epsilon
         from sympy import floor
         from sympy.functions.elementary.piecewise import Piecewise
@@ -2471,7 +2479,7 @@ class Complement(Set, EvalfMixin):
             
         if self.is_connected_interval():
             M = B.max()        
-            if A.is_integer:            
+            if A.is_integer: 
                 M = floor(M) + 1
             else:
                 M += epsilon
@@ -2498,7 +2506,7 @@ class Complement(Set, EvalfMixin):
         
         if self.is_connected_interval():
             m = B.min()        
-            if A.is_integer:                         
+            if A.is_integer: 
                 m = ceiling(m) - 1
             else:
                 m -= epsilon
@@ -2756,7 +2764,7 @@ class Complement(Set, EvalfMixin):
         
     def _eval_Subset(self, rhs):
         A, s = self.args
-        if rhs.is_Complement:            
+        if rhs.is_Complement: 
             B, _s = rhs.args
             if s == _s:
                 from sympy import Subset
@@ -3062,9 +3070,9 @@ class FiniteSet(Set, EvalfMixin):
                 return
             
             if other.is_integer:
-                if other.min() in self:               
+                if other.min() in self: 
                     return other.copy(start=other.start + 1) - self.func(*{*self.args} - {other.min()})                
-                if other.max() in self:                
+                if other.max() in self: 
                     return other.copy(stop=other.stop - 1) - self.func(*{*self.args} - {other.max()})
             
         elif isinstance(other, FiniteSet):
@@ -3201,7 +3209,7 @@ class FiniteSet(Set, EvalfMixin):
             return is_integer
         return True
 
-    def _eval_is_extended_real(self):                        
+    def _eval_is_extended_real(self): 
         for arg in self.args:
             if arg.is_extended_real:
                 continue

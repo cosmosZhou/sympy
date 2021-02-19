@@ -9,7 +9,7 @@ from sympy.sets.conditionset import conditionset
 # P is condition set;
 
 
-@apply(imply=True)
+@apply
 def apply(P):
     definition = P.definition
     assert definition.is_ConditionSet    

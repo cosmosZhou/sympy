@@ -4,7 +4,7 @@ import axiom
 from sympy.concrete.limits import limits_condition
 
 
-@apply(imply=True, simplify=False)
+@apply(simplify=False)
 def apply(given):
     fn, *limits = axiom.exists_equal(given)
     x, y = fn.args

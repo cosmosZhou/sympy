@@ -10,7 +10,7 @@ from axiom import algebre
 
 # given: P(x | z) = P(x) and P(y | z) = P(y)
 # imply: P(x & y) | P(z) = P(x & y)
-@apply(imply=True)
+@apply
 def apply(*given):
     given_x, given_y, unequality = given
     assert given_x.is_Equality

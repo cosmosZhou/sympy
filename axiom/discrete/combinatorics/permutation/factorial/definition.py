@@ -4,7 +4,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import discrete, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     

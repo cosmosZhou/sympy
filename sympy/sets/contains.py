@@ -124,6 +124,7 @@ class Contains(BinaryCondition):
 
 # this assertion is useless!
     def assertion(self):
+        print('this should be axiomatized')
         from sympy import Exists
         e, S = self.args
         x = S.element_symbol(self.free_symbols)

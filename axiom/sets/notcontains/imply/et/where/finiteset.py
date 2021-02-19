@@ -5,7 +5,7 @@ import axiom
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):        
     e, S = axiom.is_NotContains(given)
     args = axiom.is_FiniteSet(S, size=None)

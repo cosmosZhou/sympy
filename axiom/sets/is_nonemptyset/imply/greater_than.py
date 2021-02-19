@@ -7,7 +7,7 @@ from sympy import Symbol
 # |A| >= 1
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Unequality
     A, B = given.args

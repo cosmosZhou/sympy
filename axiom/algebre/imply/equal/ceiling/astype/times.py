@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 import axiom
 
-@apply(imply=True)
+@apply
 def apply(ceil):
     x = axiom.is_Ceiling(ceil)
 

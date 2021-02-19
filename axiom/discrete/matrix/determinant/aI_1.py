@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import discrete, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(n, a):
     i = Symbol.i(integer=True)
     return Equality(Det(1 + a[:n] * Identity(n)), (1 + Sum[i:0:n](1 / a[i])) * Product[i:0:n](a[i]))

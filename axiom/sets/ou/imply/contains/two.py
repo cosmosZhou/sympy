@@ -36,7 +36,7 @@ def expr_cond_pair(cls, or_eqs, wrt, reverse=None):
     ec[-1][1] = True
     return ec
 
-@apply(imply=True)
+@apply
 def apply(given, wrt=None):
     or_eqs = axiom.is_Or(given)
     

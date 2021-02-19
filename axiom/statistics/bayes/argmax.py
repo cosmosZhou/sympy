@@ -6,7 +6,7 @@ from axiom import algebre, statistics
 
 # given: x[t] | x[:t] = x[t], y[t] | y[:t] = y[t]
 # imply: max[i]P(y[i] | x) = max[i](P(y[i]) * ∏[j:n](P(x[j] | y[i]))) 
-@apply(imply=True)
+@apply
 def apply(*given):
     x_equality, inequality = given
     
@@ -75,7 +75,7 @@ def prove(Eq):
     
     Eq << statistics.bayes.theorem.apply(P(x[:t + 1] | y[i]), x[:t])
     
-    Eq << algebre.forall.imply.ou.apply(Eq[-1])
+    Eq << algebre.forall.imply.ou.rewrite.apply(Eq[-1])
     
     Eq << (Eq[-1] & Eq.xt_given_yi_nonzero).split()
     

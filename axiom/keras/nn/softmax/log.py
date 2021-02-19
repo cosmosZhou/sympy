@@ -8,7 +8,7 @@ from axiom import keras, algebre
 
 
 # log softmax(x) = x - max(x) - log∑exp(x - max(x))
-@apply(imply=True)
+@apply
 def apply(x):
     assert len(x.shape) == 1
     return Equality(log(softmax(x)), x - MAX(x) - log(ReducedSum(exp(x - MAX(x)))))

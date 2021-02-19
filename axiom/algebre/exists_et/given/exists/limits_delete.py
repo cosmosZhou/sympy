@@ -6,7 +6,7 @@ from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     assert imply.function.is_And
     

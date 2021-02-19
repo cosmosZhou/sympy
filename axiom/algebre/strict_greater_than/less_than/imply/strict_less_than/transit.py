@@ -4,7 +4,7 @@ from axiom import algebre
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     b_greater_than_x, a_less_than_x = given
     b, x = axiom.is_StrictGreaterThan(b_greater_than_x)    

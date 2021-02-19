@@ -8,7 +8,7 @@ from sympy.integrals.integrals import Integral
 from sympy.stats.symbolic_probability import Probability
 
 
-@apply(imply=True)
+@apply
 def apply(self, given):
     marginal_probability = self.marginalize(given)
     x = pspace(given).symbol

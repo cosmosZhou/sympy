@@ -9,7 +9,7 @@ from sympy.stats.symbolic_probability import Probability as P
 
 # given: x | y = x
 # imply: y | x = y
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Unequality
     assert given.lhs.is_Probability

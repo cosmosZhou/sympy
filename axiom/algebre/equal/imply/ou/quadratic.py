@@ -6,7 +6,7 @@ import axiom
 from axiom.algebre.greater_than.less_than.imply.less_than.quadratic import quadratic_coefficient
 
 
-@apply(imply=True)
+@apply
 def apply(given, x=None):
     fx, rhs = axiom.is_Equal(given)
     if not rhs.is_Zero:

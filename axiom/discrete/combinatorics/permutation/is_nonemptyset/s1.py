@@ -4,7 +4,7 @@ from sympy.functions.combinatorial.numbers import Stirling
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(n, k=None):
     if k is None:
         k = Symbol.k(domain=Interval(1, n, integer=True))

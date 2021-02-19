@@ -1,16 +1,12 @@
-
-from sympy.core.relational import Equality, Unequal
-from sympy.logic.boolalg import Or
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
-from axiom.statistics import bayes
 from axiom import algebre, statistics
 
 
 # given: x | y = x
 # imply: x | y & z = x | z
-@apply(imply=True)
+@apply
 def apply(*given):
     equality, unequal = given
     assert unequal.is_Unequality
@@ -43,15 +39,15 @@ def prove(Eq):
     
     Eq << statistics.bayes.theorem.apply(P(x | y, z), z)
     
-    Eq << algebre.forall.imply.ou.apply(Eq[-1])
+    Eq << algebre.forall.imply.ou.rewrite.apply(Eq[-1])
 
     Eq << (Eq[-1] & Eq[1]).split()
 
     Eq << Eq[-1].subs(Eq[0])
     
-    Eq << bayes.is_nonzero.is_nonzero.marginal.apply(Eq[1])
+    Eq << statistics.bayes.is_nonzero.is_nonzero.marginal.apply(Eq[1])
     
-    Eq << bayes.corollary.apply(Eq[-1], var=x)
+    Eq << statistics.bayes.corollary.apply(Eq[-1], var=x)
     
     Eq << Eq[-3].subs(Eq[-1])
     

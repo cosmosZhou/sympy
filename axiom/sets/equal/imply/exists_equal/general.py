@@ -6,7 +6,7 @@ from sympy import Symbol
 from sympy.core.numbers import oo
 from axiom import sets
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Equality
     abs_S, n = given.args

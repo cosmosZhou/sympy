@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 import axiom
 
-@apply(imply=True)
+@apply
 def apply(fraction):
     x = axiom.is_FractionalPart(fraction)
      

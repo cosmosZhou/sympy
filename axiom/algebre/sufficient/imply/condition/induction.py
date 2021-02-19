@@ -11,7 +11,7 @@ from sympy.sets.contains import Contains
 from sympy.concrete.products import MatProduct
 
 
-@apply(imply=True)
+@apply
 def apply(given, n):    
     fn, fn1 = axiom.is_Sufficient(given)
 

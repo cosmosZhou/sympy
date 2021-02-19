@@ -7,7 +7,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     is_positive_x, strict_less_than = given
     x = axiom.is_positive(is_positive_x)

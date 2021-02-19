@@ -6,7 +6,7 @@ from axiom import discrete, sets
 from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
 
 
-@apply(imply=True)
+@apply
 def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     j = w.definition.variables[0]

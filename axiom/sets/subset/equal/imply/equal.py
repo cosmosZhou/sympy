@@ -5,7 +5,7 @@ from sympy import *
 from axiom import sets
 # given: A in B and |A| = |B|
 # A = B
-@apply(imply=True)
+@apply
 def apply(*given):
     if given[0].is_Equality and given[1].is_Subset:
         given = [*given]

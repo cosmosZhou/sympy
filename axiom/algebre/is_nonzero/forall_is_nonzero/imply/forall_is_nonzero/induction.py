@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given): 
     is_nonzero, forall_is_nonzero = given
     fa = axiom.is_nonzero(is_nonzero)

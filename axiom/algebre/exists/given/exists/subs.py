@@ -5,7 +5,7 @@ from axiom import sets, algebre
 from sympy.concrete.limits import limits_intersect
 
 
-@apply(given=True)
+@apply
 def apply(self, old, new):
     exists = self.limits_dict        
     if old in exists:

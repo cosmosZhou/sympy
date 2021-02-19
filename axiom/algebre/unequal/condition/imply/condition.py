@@ -19,7 +19,7 @@ def process_given_conditions(*given, swap=False):
     return eq, f_eq._subs(KroneckerDelta(lhs, rhs), Zero())
 
 
-@apply(imply=True)
+@apply
 def apply(*given, **kwargs):    
     eq, f_eq = process_given_conditions(*given, **kwargs)
     return f_eq

@@ -8,7 +8,7 @@ from axiom.sets.equal.imply.equal.swap import swap
 from axiom import sets, discrete, algebre
 
 
-@apply(given=True)
+@apply
 def apply(imply, i=None, j=None):
     x, y = axiom.is_Equal(imply)
     assert len(x.shape) == 1

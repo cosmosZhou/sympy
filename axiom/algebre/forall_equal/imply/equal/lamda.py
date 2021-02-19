@@ -5,7 +5,7 @@ from sympy.concrete.limits import limits_dict
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     function, *limits = axiom.is_ForAll(given)
     axiom.is_Equal(function)

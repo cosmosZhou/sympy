@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, geometry, calculus, sets
 
 
-@apply(imply=True)
+@apply
 def apply(x):
     i = S.ImaginaryUnit
     return Equality(E ** (i * x), cos(x) + i * sin(x))

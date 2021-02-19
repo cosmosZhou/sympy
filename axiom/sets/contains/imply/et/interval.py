@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Contains
     x, interval = given.args

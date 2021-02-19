@@ -9,7 +9,7 @@ from axiom import discrete, algebre
 from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
-@apply(imply=True)
+@apply
 def apply(given, i=None, j=None):
     assert given.is_Equality
     x_set_comprehension, interval = given.args

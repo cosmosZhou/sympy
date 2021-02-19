@@ -5,7 +5,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     less_than_0, greater_than = given
     x, a = axiom.is_LessThan(less_than_0)

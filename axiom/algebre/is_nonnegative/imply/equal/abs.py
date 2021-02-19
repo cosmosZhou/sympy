@@ -6,7 +6,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x = axiom.is_nonnegative(given)
     return Equality(abs(x), x)

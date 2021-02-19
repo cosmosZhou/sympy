@@ -4,7 +4,7 @@ from sympy import *
 
 # given: A in B 
 # => {A} subset B
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Contains
     e, s = given.args

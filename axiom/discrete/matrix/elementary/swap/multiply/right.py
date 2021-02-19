@@ -10,7 +10,7 @@ from sympy import Symbol
 from sympy.functions.elementary.piecewise import Piecewise
 
 
-@apply(imply=True)
+@apply
 def apply(x):
     n = x.shape[0]
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))

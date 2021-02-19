@@ -8,7 +8,7 @@ from axiom import sets
 # x not in {y}
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     inequality_a, inequality_b = given
     x, a = axiom.is_Unequal(inequality_a)

@@ -5,7 +5,7 @@ from axiom import algebre
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(x, negate=False):
     if negate:
         x = -x

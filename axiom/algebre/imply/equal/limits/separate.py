@@ -9,7 +9,7 @@ from sympy.core.numbers import oo
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(sgm):
     function, *limits = axiom.is_Sum(sgm)
     assert len(limits) > 1    

@@ -12,7 +12,6 @@ axiom.discrete.combinatorics.permutation.factorial.invariant_set_comprehension
 axiom.discrete.combinatorics.binomial.half
 axiom.discrete.combinatorics.permutation.adjacent.factorization_general
 axiom.discrete.combinatorics.permutation.pop_back.finiteset
-axiom.discrete.combinatorics.stirling.second.mapping.s2_B
 
 axiom.statistics.kullback_leibler
 

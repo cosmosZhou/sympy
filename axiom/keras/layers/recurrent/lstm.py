@@ -7,7 +7,7 @@ from tensorflow.nn.recurrent.lstm import LSTM, LSTMCell
 from tensorflow.nn import sigmoid
 
 
-@apply(imply=True)
+@apply
 def apply(x, W, Wh, b):
     h = Symbol.h(definition=LSTM[W, Wh, b](x))
     c = Symbol.c(definition=LSTMCell[W, Wh, b](x))

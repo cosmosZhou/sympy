@@ -9,7 +9,7 @@ from axiom import statistics, algebre
 
 # given: x | y = x
 # imply: P(x, y) = P(x) P(y)
-@apply(imply=True)
+@apply
 def apply(given):    
     assert given.is_Equality
     lhs, rhs = given.args

@@ -7,7 +7,7 @@ from sympy.sets.conditionset import conditionset
 from sympy.sets.sets import image_set
 
 
-@apply(imply=True)
+@apply
 def apply(n, k, s2=None, A=None):
     j = Symbol.j(domain=Interval(0, k, integer=True))
     if s2 is None: 
@@ -226,8 +226,10 @@ def prove(Eq):
 
     Eq << Eq[-1].limits_subs(Eq[-1].variables[1], j).limits_subs(Eq[-1].variable, i)
 
-    Eq.x_complement_n = Eq[-1].apply(sets.is_emptyset.subset.imply.equal, Eq.x_j_subset)
-
+    Eq << algebre.forall.forall_exists.imply.forall_exists.forall_et.apply(Eq[-1], Eq.x_j_subset)
+    
+    Eq.x_complement_n = Eq[-1].this.function.function.function.apply(sets.is_emptyset.subset.imply.equal)
+    
     Eq << Eq.x_complement_n.apply(sets.equal.imply.equal.union_comprehension, *Eq.x_complement_n.function.function.limits)
 
     Eq << Eq.x_hat_union.subs(Eq[-1].reversed)

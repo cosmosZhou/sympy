@@ -6,7 +6,7 @@ from sympy.sets.conditionset import conditionset
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
-@apply(imply=True)
+@apply
 def apply(a, wrt=None):
     if wrt is None:
         wrt = a.generate_free_symbol(**a.type.dict)

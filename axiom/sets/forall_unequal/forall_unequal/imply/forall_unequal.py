@@ -8,7 +8,7 @@ from axiom.utility import prove, apply
 # ForAll[j:Interval(0, n, integer=True) - {i}, i:n+1](Unequality(x[i], x[j]))
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     forall_historic, forall_n = given
     assert forall_historic.is_ForAll and forall_n.is_ForAll

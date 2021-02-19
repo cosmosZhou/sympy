@@ -9,7 +9,7 @@ from sympy.concrete.expr_with_limits import LAMBDA
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, *limits):
     lhs, rhs = axiom.is_Equal(given)
     

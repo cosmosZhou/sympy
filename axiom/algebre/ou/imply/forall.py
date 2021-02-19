@@ -12,7 +12,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 
 # given: f(a) != f(b) or a = b
 # ForAll[a: a!=b](f(a) != f(b)) 
-@apply(imply=True)
+@apply
 def apply(given, pivot=0, wrt=None):
     conds = axiom.is_Or(given)
     

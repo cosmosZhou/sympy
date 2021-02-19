@@ -1,10 +1,10 @@
 from sympy import *
 from axiom.utility import prove, apply
 from axiom import algebre
-from axiom.algebre.forall.imply.ou import rewrite_as_Or
+from axiom.algebre.forall.imply.ou.rewrite import rewrite_as_Or
 
 
-@apply(given=True)
+@apply
 def apply(imply):
     return rewrite_as_Or(imply)
 

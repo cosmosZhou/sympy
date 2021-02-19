@@ -13,7 +13,7 @@ from sympy.core.mul import Times
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     assert not x.shape and not y.shape
     return LessThan(abs(x), abs(x - y) + abs(y))

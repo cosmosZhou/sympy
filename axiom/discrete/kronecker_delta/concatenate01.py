@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(n):
     k = Symbol.k(integer=True)
     

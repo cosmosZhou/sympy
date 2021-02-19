@@ -10,7 +10,7 @@ from axiom import algebre, statistics
 
 # given: x | y & z = x | y
 # imply: x | z = x
-@apply(imply=True)
+@apply
 def apply(*given):
     eq_x_given_yz, z_given_y = given
     assert z_given_y.is_Equality

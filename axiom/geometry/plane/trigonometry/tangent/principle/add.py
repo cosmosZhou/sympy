@@ -14,7 +14,7 @@ from sympy.core.numbers import Pi
 from sympy.core.mul import Times
 
 
-@apply(imply=True)
+@apply
 def apply(x, y):
     return Equality(tan(x + y), (tan(x) + tan(y)) / (1 - tan(x) * tan(y)))        
 

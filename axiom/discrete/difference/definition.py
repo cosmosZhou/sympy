@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import algebre, discrete
 
 
-@apply(imply=True)
+@apply
 def apply(fx, x, n):
     k = fx.generate_free_symbol(x.free_symbols | n.free_symbols, integer=True)
     return Equality(Difference(fx, x, n),

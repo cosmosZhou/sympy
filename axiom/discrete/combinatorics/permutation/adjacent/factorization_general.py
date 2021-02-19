@@ -8,7 +8,7 @@ import axiom
 from axiom import discrete, sets, algebre
 from axiom.sets.imply.equal.swap import swap
 
-@apply(imply=True)
+@apply
 def apply(given):
     set_comprehension_abs, n = axiom.is_Equal(given)
     set_comprehension = axiom.is_Abs(set_comprehension_abs)

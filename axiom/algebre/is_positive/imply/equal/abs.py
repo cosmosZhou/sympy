@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     x = axiom.is_positive(given)
     return Equality(abs(x), x)

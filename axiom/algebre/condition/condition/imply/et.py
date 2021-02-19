@@ -1,17 +1,10 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import NotContains
-from sympy import Symbol
-from sympy.core.relational import Equal
-
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.core.function import Function
-from sympy import And
 from axiom.algebre.condition.condition.imply.condition import process_given_conditions
 from axiom import algebre
 
-@apply(imply=True)
+
+@apply
 def apply(*given, **kwargs):
     eq, f_eq = process_given_conditions(*given, **kwargs)    
     return And(eq, f_eq.simplify())

@@ -13,7 +13,7 @@ from axiom.sets.forall_contains.forall_contains.forall_equal.imply.equal import 
 
  
 # |A| = |B|
-@apply(imply=True)
+@apply
 def apply(*given):
     
     forall_a, forall_b, equality_a, equality_b = given

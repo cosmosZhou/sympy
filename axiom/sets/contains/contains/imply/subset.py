@@ -4,7 +4,7 @@ from sympy import *
 from axiom import sets
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     contains1, contains2 = given
     assert contains1.is_Contains    

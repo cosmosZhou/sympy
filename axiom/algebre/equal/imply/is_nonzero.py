@@ -4,7 +4,7 @@ from sympy import Symbol
 import axiom
 
 
-@apply(imply=True)
+@apply
 def apply(given):    
     lhs, rhs = axiom.is_Equal(given)
     if lhs.is_nonzero:

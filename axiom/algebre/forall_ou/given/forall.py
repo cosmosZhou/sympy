@@ -4,7 +4,7 @@ import axiom
 from axiom import algebre, sets
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     ou, *limits = axiom.forall_ou(given)
     eqs = ou.args

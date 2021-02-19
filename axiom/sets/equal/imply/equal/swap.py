@@ -10,7 +10,7 @@ from axiom.sets.imply.equal.swap import swap
 
 
 
-@apply(imply=True)
+@apply
 def apply(given, i=None, j=None):
     x, y = axiom.is_Equal(given)
     assert len(x.shape) == 1

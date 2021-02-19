@@ -6,7 +6,7 @@ from sympy.core.numbers import oo
 from sympy.sets.sets import Interval
 
 
-@apply(imply=True)
+@apply
 def apply(*given):
     assert len(given) == 2    
     set_comprehension_equality, last_element_equality = given

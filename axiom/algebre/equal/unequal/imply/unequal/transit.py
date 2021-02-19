@@ -6,7 +6,7 @@ import axiom
 from sympy.core.symbol import dtype
 
 
-@apply(imply=True)
+@apply
 def apply(*given):    
     eq, not_eq = given
     if not eq.is_Equal:

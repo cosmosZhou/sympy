@@ -7,7 +7,7 @@ from axiom import sets
 
 
 # given A & B = {} => A - B = A
-@apply(imply=True)
+@apply
 def apply(given, reverse=False):
     assert given.is_Equality
     AB, emptyset = given.args

@@ -6,7 +6,7 @@ import axiom
 from axiom import algebre
 
 
-@apply(imply=True)
+@apply
 def apply(given, piecewise, invert=None):
     assert given.is_NotContains    
     

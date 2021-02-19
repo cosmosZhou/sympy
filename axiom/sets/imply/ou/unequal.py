@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from axiom import sets, algebre
 
 
-@apply(imply=True)
+@apply
 def apply(S):
     assert S.is_set
     

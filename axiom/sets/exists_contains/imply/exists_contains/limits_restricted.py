@@ -7,7 +7,7 @@ from sympy import Exists
 from sympy.sets.contains import Contains
 
 
-@apply(imply=True)
+@apply
 def apply(given):
     assert given.is_Exists
     limit, *limits = given.limits
