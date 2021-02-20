@@ -53,5 +53,5 @@
 	<small>Last Site Update on 2021-2-16</small>
 </div>
 <div align="center">
-	<small>ICP: <a href=http://beian.miit.gov.cn>浙ICP备20017509号</a></small>
+	<small>ICP: <a href=http://beian.miit.gov.cn>浙ICP备20017509号-2</a></small>
 </div>

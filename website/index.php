@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8" />
 <link href="style.css" rel="stylesheet" type="text/css" />
-<title>Axiomatized Mathematical Analysis System</title>
+<title>机械化定理推导</title>
 </head>
 <body>
 	<div id='container'>
