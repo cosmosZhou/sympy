@@ -8,9 +8,9 @@ the whole math theory is composed of the following sections:
 	method="post" action="search.php">
 	<input type=text spellcheck=false name=keyword size="48" value=""
 		placeholder='input a hint for search of a theorem/axiom'><br> <input
-		type=checkbox name=CaseSensitive><u>C</u>ase sensitive <input
-		type=checkbox name=WholeWord><u>W</u>hole word <input type=checkbox
-		name=RegularExpression>Regular e<u>x</u>pression
+		type=checkbox name=caseSensitive><u>C</u>ase sensitive <input
+		type=checkbox name=wholeWord><u>W</u>hole word <input type=checkbox
+		name=regularExpression>Regular e<u>x</u>pression
 </form>
 <br>
 <?php
@@ -106,7 +106,7 @@ function accumulate($dict)
     return $sum;
 }
 
-global $sagemath;
+global $sympy;
 
 $unprovable = [];
 $insurmountable = [];
@@ -202,6 +202,9 @@ echo "${tab}there are " . accumulate($insurmountable) . " axioms insurmountable.
 
 ?>
 
+<script
+	src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="utility.js"></script>
 <script>
 	$("input[type=text]")[0].focus();
 </script>

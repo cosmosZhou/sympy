@@ -57,8 +57,6 @@ function process_py($py)
     return $axioms;
 }
 
-global $sagemath;
-
 class Set
 {
 
@@ -95,7 +93,7 @@ class Set
 class Graph
 {
 
-    private $graph;
+    public $graph;
 
     private $permanent_mark;
 
@@ -171,29 +169,6 @@ class Graph
 
         $this->graph[$from]->add($to);
     }
-
-    function depict($module, $multiplier)
-    {
-        // https://www.php.net/manual/en/function.str-repeat.php
-        echo str_repeat("&nbsp;", $multiplier) . to_a_tag($module);
-
-        if (array_key_exists($module, $this->graph)) {
-            echo "<button onmouseover=\"this.style.backgroundColor='red';\" onmouseout=\"this.style.backgroundColor='rgb(199, 237, 204)';\">>>>></button>";
-            echo "<div class=hidden>";
-            foreach ($this->graph[$module] as $module) {
-                $this->depict($module, $multiplier + 8);
-            }
-            echo "</div>";
-        }
-        echo "<br>";
-    }
-
-    function depict_topology()
-    {
-        foreach ($this->permanent_mark->enumerate() as $module) {
-            echo str_repeat("&nbsp;", 8) . to_a_tag($module) . "<br>";
-        }
-    }
 }
 
 $mapping = new Graph();
@@ -201,7 +176,7 @@ $mapping = new Graph();
 $array_keys = array_keys($_GET);
 
 if (count($array_keys) > 1) {
-//     print_r($_GET);
+    // print_r($_GET);
     $deep = json_decode($_GET['deep']);
     unset($_GET['deep']);
 } else {
@@ -238,33 +213,107 @@ $module = $_GET[$key_input];
 
 $deep_invert = jsonify(! $deep);
 
-echo "the axiom in question is a <a href='request.php?$key_input=$module&deep=$deep_invert'>$key_input</a> in the following hierarchy, would you switch to <a href='request.php?$key=$module'>$key</a> hierarchy?<br>";
-
 $mapping->convert_set_to_list();
-
-$pinpoint = $mapping->detect_cyclic_proof($module);
-if ($pinpoint) {
-    echo "<font color=red>cyclic proof detected in :</font><br>";
-    echo to_a_tag($module) . "<br>";
-    if (strcmp($pinpoint, $module)) {
-        echo str_repeat("&nbsp;", 8) . to_a_tag($pinpoint) . "<br>";
-    } else {
-        // $mapping->depict_topology();
-    }
-} else {
-    $mapping->depict($module, 2);
-}
-
-function javaScript($js)
-{
-    echo "<script>" . $js . "</script>";
-}
-
-javaScript("toggle_expansion_button();");
-
-if ($deep)
-    javaScript("click_all_expansion_buttons();");
-else
-    javaScript("click_first_expansion_button();");
+$cyclic_proof = $mapping->detect_cyclic_proof($module);
 
 ?>
+
+<div id=root>
+	<information></information>
+	<template v-if="cyclic_proof">
+		<font color=red>cyclic proof detected in :</font><br>
+		<href :module=module />
+	</template>
+	<template v-else>
+		<module :module=module />
+	</template>
+
+</div>
+
+<script
+	src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
+
+<script src="utility.js"></script>
+
+<script>	
+	var data = {
+		module : <?php echo jsonify($module)?>,
+		graph : <?php echo jsonify($mapping->graph)?>,
+		cyclic_proof: <?php echo jsonify($cyclic_proof)?>,
+		root : null		
+	};
+
+	var information = {
+        name: 'information',
+        data: function() {
+        	return {
+        		key_input : <?php echo jsonify($key_input)?>,
+        		key : <?php echo jsonify($key)?>,
+        		deep: <?php echo $deep_invert?>
+   	     	};
+   	    },
+        
+        props: [],
+        template:
+            `<div>
+				the axiom in question is a 
+				<a :href="'request.php?' + key_input + '=' + this.$parent.module + '&deep=' + deep" :title="'show ' + (deep?'deep':'only first-layer') + ' hierarchy'">{{key_input}}</a>
+				in the following hierarchy, would you switch to 
+				<a :href="'request.php?' + key + '=' + this.$parent.module">{{key}}</a> hierarchy?
+			</div>`
+    };
+	
+	
+	var href = {
+        name: 'href',
+        props: ['module'],        
+        template: 
+        	`<a :href="'/sympy/' + module.replaceAll('.', '/')">{{module}}</a>`
+    };
+	
+	var module = {
+        name: 'module',
+        data: function() {
+            	return {
+            		root: this.$parent.root == null ? this.$parent: this.$parent.root
+       	     	};
+       	     },
+        props: ['module'],        
+        template:
+        	`<li>
+        		<href :module=module />
+        		<template v-if="module in root.graph">        			
+        			<button onmouseover="this.style.backgroundColor='red'" onmouseout="this.style.backgroundColor='rgb(199, 237, 204)'">>>>></button>
+        		 	<ul class=hidden>    				     				
+        	 			<module :module=module v-for="module of root.graph[module]" />
+        			</ul>
+    			</template>				
+            </li>`,
+        components : {
+            href: href
+        }
+    };
+
+	var components = {
+		module : module,
+		href: href, 
+		information: information
+	};
+	
+	var app = new Vue({
+		el : '#root',
+		data : data, 
+		components : components
+	});
+
+	toggle_expansion_button();
+	
+	var deep = <?php echo jsonify($deep)?>;
+	if (deep)
+		click_all_expansion_buttons();
+	else
+		click_first_expansion_button();
+
+</script>
+

@@ -21,7 +21,7 @@ function replace_white_spaces($param)
 // use the following regex to remove error_log prints:^ +error_log
 // to speed up the .php page rendering, disable error_log!!
 
-global $sagemath;
+global $sympy;
 
 function create_text_tag(&$statement)
 {
@@ -34,8 +34,8 @@ function create_a_tag_with_this_module(&$statement, $module)
 {
     $length = strlen($statement);
     $statement_quote = quote($statement);
-    global $sagemath;
-    $request_url = "/$sagemath/axiom/request.php?callee=$module";
+    global $sympy;
+    $request_url = "/$sympy/axiom/request.php?callee=$module";
     return "<a href='$request_url'>$statement_quote</a>";
 }
 
@@ -54,12 +54,12 @@ function create_a_tag($theorem, &$statement, &$axiom_prefix)
     }
 
     $theorem = str_replace(".", "/", $theorem);
-    global $sagemath;
+    global $sympy;
     if (strlen($head)) {
         $prefix = $axiom_prefix[$head];
-        $full_theorem_path = "/$sagemath/$prefix";
+        $full_theorem_path = "/$sympy/$prefix";
     } else
-        $full_theorem_path = "/$sagemath";
+        $full_theorem_path = "/$sympy";
 
     $full_theorem_path .= "/$theorem.php";
 

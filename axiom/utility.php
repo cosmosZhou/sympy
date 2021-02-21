@@ -37,13 +37,13 @@ function quote($param)
 
 function to_python_module($py)
 {
-    global $sagemath;
+    global $sympy;
     $module = [];
     $pythonFile = $py;
     for (;;) {
         $dirname = dirname($pythonFile);
         $basename = basename($pythonFile);
-        if (! strcmp($basename, $sagemath)) {
+        if (! strcmp($basename, $sympy)) {
             break;
         }
 
@@ -176,9 +176,9 @@ function read_files($dir, $ext = null)
 function to_a_tag($module)
 {
     $href = str_replace('.', '/', $module);
-    global $sagemath;
-    $href = "/$sagemath/$href.php";
-    return "<a name=python[] href='$href'>$module</a>";
+    global $sympy;
+    $href = "/$sympy/$href.php";
+    return "<a href='$href'>$module</a>";
 }
 
 function read_all_files($dir, $ext)
@@ -565,7 +565,7 @@ function yield_from_py($python_file)
 }
 
 // global variables:
-$sagemath = basename(dirname(dirname(__file__)));
+$sympy = basename(dirname(dirname(__file__)));
 
 $balancedParanthesis = balancedParentheses(7);
 $balancedBrackets = balancedBrackets(4);
