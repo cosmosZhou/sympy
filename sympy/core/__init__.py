@@ -33,3 +33,5 @@ Catalan = S.Catalan
 EulerGamma = S.EulerGamma
 GoldenRatio = S.GoldenRatio
 TribonacciConstant = S.TribonacciConstant
+
+from .numbers import *

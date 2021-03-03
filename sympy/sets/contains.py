@@ -122,15 +122,6 @@ class Contains(BinaryCondition):
             return this
         return self
 
-# this assertion is useless!
-    def assertion(self):
-        print('this should be axiomatized')
-        from sympy import Exists
-        e, S = self.args
-        x = S.element_symbol(self.free_symbols)
-        assert x.type == e.type
-        return Exists(Equality(x, e), (x, S), equivalent=self)
-
     def __and__(self, other):
         """Overloading for & operator"""
         if other.is_NotContains:
@@ -328,7 +319,7 @@ class NotContains(BinaryCondition):
         if this is not None:
             return this
             
-        domain = e.domain - s
+        domain = e.domain // s
         if domain.is_FiniteSet:
             return self.invert_type(e, domain).simplify()
         
@@ -398,7 +389,7 @@ class NotContains(BinaryCondition):
     def domain_conditioned(self, x): 
         if self.lhs == x:
             domain = x.domain & self.domain_defined(x)
-            return x.domain_conditioned(self.invert_type(x, domain - self.rhs))
+            return x.domain_conditioned(self.invert_type(x, domain // self.rhs))
         
     @classmethod
     def simplify_ForAll(cls, self, function, *limits):

@@ -1,6 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import LessThan, GreaterThan, StrictGreaterThan
-from sympy import Symbol
 import axiom
 from axiom import algebre
 
@@ -12,8 +11,6 @@ def apply(*given):
     _x, b = axiom.is_LessThan(x_less_than_b)
     assert x == _x
     return StrictGreaterThan(b, a)
-
-
 
 
 @prove

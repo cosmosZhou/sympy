@@ -1,10 +1,5 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy.sets.contains import Contains
-from sympy import Exists
-from sympy import Symbol
 from axiom import sets
 # given: A >= 1
 # Exists[x] (x in A)
@@ -21,8 +16,6 @@ def apply(given):
     return Exists[x](Contains(x, S))
 
 
-
-
 @prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
@@ -30,7 +23,7 @@ def prove(Eq):
     
     Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[0])
     
-    Eq << sets.is_nonemptyset.imply.exists_contains.emptyset.apply(Eq[-1], simplify=False)
+    Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[-1], simplify=False)
     
 
 if __name__ == '__main__':

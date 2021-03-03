@@ -23,7 +23,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.is_nonemptyset.imply.exists_contains.emptyset.apply(Eq[-1], simplify=False)
+    Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[-1], simplify=False)
     
     Eq << Eq[-1].apply(sets.contains.imply.et.where.complement, simplify=None)
     

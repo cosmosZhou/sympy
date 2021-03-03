@@ -32,7 +32,7 @@ def prove(Eq):
     
     Eq << ~Eq[1]
     
-    Eq << Eq[-1].apply(sets.notcontains.imply.is_emptyset)
+    Eq << Eq[-1].apply(sets.notcontains.imply.is_emptyset.intersection)
     
     Eq <<= Eq[-1] & Eq[0]
     

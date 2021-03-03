@@ -1,25 +1,20 @@
-from sympy import Symbol, Or, Equality
+from sympy import *
 from axiom.utility import prove, apply
 
-from sympy.core.function import Function
 import axiom
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, NotContains
 from axiom import sets, algebre
-
-from axiom.sets.ou.imply.contains.two import expr_cond_pair
-from sympy.core.relational import LessThan
-from sympy.logic.boolalg import BooleanTrue
 
     
 @apply
 def apply(imply):
     piecewise, sym = axiom.is_BinaryCondition(imply)
+    if not piecewise.is_Piecewise:
+        imply = imply.reversed
+        piecewise, sym = imply.args
      
     piecewise = axiom.is_Piecewise(piecewise)
     
-    univeralSet = BooleanTrue()
+    univeralSet = S.BooleanTrue
     args = []
     
     for expr, cond in piecewise:
@@ -53,6 +48,7 @@ def prove(Eq):
     Eq << apply(LessThan(Piecewise((f(x), Contains(x, A)), (g(x), Contains(x, B)), (h(x), True)), p))
 
     Eq << algebre.ou.imply.less_than.general.apply(Eq[1], wrt=p)
+
         
 if __name__ == '__main__':
     prove(__file__)

@@ -27,3 +27,10 @@ from . import forall_notcontains
 from . import is_nonemptyset
 from . import is_even
 from . import is_odd
+from . import forall_is_emptyset
+from . import complement
+from . import et
+from . import conditionset
+from . import sufficient
+from . import imageset
+from . import union

@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << apply(x >= m, x <= M, quadratic=a * x * x + b * x + c)   
     
-    x = Symbol.x(definition=x + b / (2 * a))    
+    x = Symbol.x(x + b / (2 * a))    
     
     Eq.x_definition = x.this.definition
     

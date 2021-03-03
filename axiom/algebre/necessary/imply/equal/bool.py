@@ -1,14 +1,7 @@
-from sympy import ForAll, LAMBDA, Boole, Or, Necessary
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol
-
-from sympy.core.numbers import oo, Zero
-
 import axiom
 from axiom import algebre
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.logic.boolalg import Sufficient
 
 
 @apply
@@ -30,6 +23,7 @@ def prove(Eq):
     Eq << Eq[0].reversed
     
     Eq << algebre.sufficient.imply.equal.bool.apply(Eq[-1])
+
     
 if __name__ == '__main__':
     prove(__file__)

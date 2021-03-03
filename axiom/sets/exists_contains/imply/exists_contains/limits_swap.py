@@ -1,10 +1,5 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
-from sympy import Exists
-from sympy.sets.contains import Contains
 
 
 @apply
@@ -17,8 +12,6 @@ def apply(given):
     _x, B = given.function.args
     assert x == _x
     return Exists[x:B](Contains(x, A))
-
-
 
 
 @prove

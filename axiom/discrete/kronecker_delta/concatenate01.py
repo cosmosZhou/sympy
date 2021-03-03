@@ -16,8 +16,8 @@ def prove(Eq):
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     Eq << apply(n)
     
-    U = Symbol.U(definition=Eq[0].lhs)
-    V = Symbol.V(definition=Eq[0].rhs)
+    U = Symbol.U(Eq[0].lhs)
+    V = Symbol.V(Eq[0].rhs)
     
     assert V.is_complex
     assert V.is_real

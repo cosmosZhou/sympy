@@ -21,8 +21,8 @@ def prove(Eq):
     _i = i.copy(domain=Interval(0, n - 1, integer=True))
     _j = j.copy(domain=Interval(0, n - 1, integer=True))
     
-    W = Symbol.W(definition=Eq[0].lhs._subs(i, _i)._subs(j, _j))
-    V = Symbol.V(definition=Eq[0].rhs._subs(i, _i)._subs(j, _j))
+    W = Symbol.W(Eq[0].lhs._subs(i, _i)._subs(j, _j))
+    V = Symbol.V(Eq[0].rhs._subs(i, _i)._subs(j, _j))
     
     Eq << W.this.definition
     Eq << V.this.definition

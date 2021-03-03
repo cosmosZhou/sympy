@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 from axiom import sets, algebre
-from sympy.sets.conditionset import conditionset
 
 
 @apply
@@ -9,11 +8,11 @@ def apply(n, P_quote=None):
     
     if P_quote is None:
         x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
-        P_quote = Symbol("P'", definition=conditionset(x[:n + 1], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equality(x[n], n)))
+        P_quote = Symbol("P'", conditionset(x[:n + 1], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equality(x[n], n)))
     else:
         x = P_quote.definition.variable.base
     
-    P = Symbol.P(definition=conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True))))    
+    P = Symbol.P(conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True))))    
     return Equality(Abs(P), Abs(P_quote))
 
 
@@ -27,7 +26,7 @@ def prove(Eq):
     
     i = Symbol.i(integer=True)
     
-    x_quote = Symbol("x'", definition=LAMBDA[i:n + 1](Piecewise((n, Equality(i, n)), (x[i], True))))
+    x_quote = Symbol("x'", LAMBDA[i:n + 1](Piecewise((n, Equality(i, n)), (x[i], True))))
     Eq.x_quote_definition = x_quote.this.definition
     
     Eq << Eq.x_quote_definition[:n]

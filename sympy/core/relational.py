@@ -337,8 +337,8 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         elif other.is_ConditionalBoolean:
             return self.bfn(self.__sub__, other)
         else: 
-            kwargs = {'given' if other.is_set else 'equivalent': self}            
-            return self.func((self.lhs - other).simplify(), (self.rhs - other).simplify(), **kwargs)
+            assert not other.is_set
+            return self.func((self.lhs - other).simplify(), (self.rhs - other).simplify(), equivalent=self)
 
     def __mul__(self, other):
         if isinstance(other, Equality):
@@ -485,7 +485,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
                     elif op == StrictGreaterThan:
                         domain &= Interval(solution, S.Infinity, left_open=True)
                     elif op == Unequality:
-                        domain -= FiniteSet(solution)
+                        domain //= FiniteSet(solution)
                     elif op == Equality:
                         domain &= FiniteSet(solution)
     
@@ -1912,7 +1912,8 @@ class StrictGreaterThan(_Greater):
         return _sympify(lhs.__gt__(rhs))
 
     def __add__(self, other):
-        if isinstance(other, Equality): 
+        other = sympify(other)
+        if other.is_Equality: 
             return self.func(self.lhs + other.lhs, self.rhs + other.rhs, **other.add_sub_assumptions(self)).simplify()
         elif other.is__Greater:
             return self.func(self.lhs + other.lhs, self.rhs + other.rhs, given=[self, other]).simplify()
@@ -1920,7 +1921,6 @@ class StrictGreaterThan(_Greater):
             return self.func(self.lhs + other, self.rhs + other, equivalent=self)
 
     def subs(self, *args, **kwargs):
-        from sympy.simplify import simplify
         if len(args) == 1:
             eq, *_ = args
             if isinstance(eq, Equality):
@@ -2084,7 +2084,7 @@ class StrictLessThan(_Less):
     def __and__(self, other):
         if isinstance(other, StrictLessThan):
             if self.rhs == other.lhs:
-                if self.lhs <= other.rhs:                
+                if self.lhs <= other.rhs: 
                     return S.false.copy(given=[self, other])
         elif isinstance(other, GreaterThan):
             if self.lhs == other.lhs:
@@ -2094,7 +2094,7 @@ class StrictLessThan(_Less):
                     return Equal(*other.args, equivalent=[self, other])                
         elif isinstance(other, StrictGreaterThan):
             if self.lhs == other.lhs:
-                if self.rhs <= other.rhs:                
+                if self.rhs <= other.rhs: 
                     return S.false.copy(given=[self, other])
         elif isinstance(other, Unequality):
             if set(self.args) == set(other.args):

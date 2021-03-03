@@ -21,11 +21,11 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.bisect((-1) ** n > 0)
     
-    Eq << Eq[-1].this.rhs.args[0].limits[0][1].apply(sets.imply.equal.complement.astype.conditionset)
+    Eq << Eq[-1].this.rhs.args[0].limits[0][1].apply(sets.complement.astype.conditionset)
     
-    Eq << Eq[-1].this.rhs.args[0].apply(algebre.imply.equal.sum.even)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebre.sum.even)
     
-    Eq << Eq[-1].this.rhs.args[0].apply(algebre.imply.equal.sum.odd)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebre.sum.odd)
     
     Eq << Eq[-1].this.rhs.args[0].function.expand()
     

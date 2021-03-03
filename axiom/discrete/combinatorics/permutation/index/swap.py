@@ -1,9 +1,5 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import Symbol
-from sympy import LAMBDA
 from axiom.discrete.combinatorics.permutation.index.equal import index_function
 from sympy.matrices.expressions.matexpr import Swap
 from axiom import discrete, sets
@@ -33,7 +29,7 @@ def apply(given, i=None, j=None, w=None):
     if w is None:
         _i = Symbol.i(integer=True)
         _j = Symbol.j(integer=True)
-        w = Symbol.w(definition=LAMBDA[_j, _i](Swap(n, _i, _j)))
+        w = Symbol.w(LAMBDA[_j, _i](Swap(n, _i, _j)))
     
     return Equality(index[i](w[index[i](x[:n]), index[j](x[:n])] @ x[:n]), index[j](x[:n]))
 
@@ -53,8 +49,8 @@ def prove(Eq):
     Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
         
     _, di, dj = Eq[2].lhs.arg.args[0].args
-    dj = Symbol("d_j", definition=dj)
-    di = Symbol("d_i", definition=di)
+    dj = Symbol("d_j", dj)
+    di = Symbol("d_i", di)
     
     Eq.dj_definition = dj.this.definition
     Eq.di_definition = di.this.definition

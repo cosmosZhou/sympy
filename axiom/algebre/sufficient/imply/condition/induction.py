@@ -1,29 +1,23 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
 
-from sympy.core.numbers import oo, Zero
-from sympy import ForAll, Sufficient
 import axiom
 from axiom import algebre
-from sympy.core.symbol import dtype
-
-from sympy.sets.contains import Contains
-from sympy.concrete.products import MatProduct
 
 
 @apply
-def apply(given, n):    
+def apply(given, n, start=0):
+    start = sympify(start)
+        
     fn, fn1 = axiom.is_Sufficient(given)
 
     assert fn._subs(n, n + 1) == fn1
 
-    assert fn._subs(n, Zero()).simplify()
+    assert fn._subs(n, start).simplify()
     
-    assert n.domain.min().is_zero
+    assert n.domain.min() >= start
     
     return fn    
-
-
 
 
 @prove

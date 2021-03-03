@@ -1,9 +1,5 @@
-from sympy.core.relational import Unequality, StrictGreaterThan, GreaterThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import S
-from sympy import Symbol
-from sympy.sets.sets import EmptySet
 import axiom
 from axiom import sets, algebre
 # given: A != {}
@@ -22,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(Unequality(A, A.etype.emptySet))
 
-    Eq << sets.is_nonemptyset.imply.exists_contains.emptyset.apply(Eq[0], simplify=False)
+    Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[0], simplify=False)
     
     Eq << Eq[-1].apply(sets.contains.imply.equal.union)
     

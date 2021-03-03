@@ -1,7 +1,7 @@
+from . import astype
 from . import imply
-from . import forall
-from . import subset
+from . import given
 from . import contains
 from . import sufficient
-
-from . import given
+from . import subset
+from . import forall

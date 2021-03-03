@@ -10,8 +10,6 @@ This module contains functions to:
 
     - solve a system of Non Linear Equations with N variables and M equations
 """
-from __future__ import print_function, division
-
 from sympy.core.sympify import sympify
 from sympy.core import (S, Pow, Dummy, pi, Expr, Wild, Mul, Equality,
                         Add)
@@ -32,9 +30,9 @@ from sympy.functions import (log, Abs, tan, cot, sin, cos, sec, csc, exp,
 from sympy.functions.elementary.trigonometric import (TrigonometricFunction,
                                                       HyperbolicFunction)
 from sympy.logic.boolalg import And
-from sympy.sets import (FiniteSet, EmptySet, imageset, Interval, Intersection,
-                        Union, ConditionSet, ImageSet, Complement, Contains)
-from sympy.sets.sets import Set
+from sympy.sets import (FiniteSet, EmptySet, Interval, Intersection,
+                        Union, ImageSet, Complement, Contains)
+from sympy.sets.sets import Set, _imageset
 from sympy.matrices import Matrix, MatrixBase
 from sympy.polys import (roots, Poly, degree, together, PolynomialError,
                          RootOf, factor)
@@ -196,7 +194,7 @@ def _invert_real(f, g_ys, symbol):
         if len(f.args) > 1:
             raise ValueError("Only functions with one argument are supported.")
         return _invert_real(f.args[0],
-                            imageset(Lambda(n, f.inverse()(n)), g_ys),
+                            _imageset(Lambda(n, f.inverse()(n)), g_ys),
                             symbol)
 
     if isinstance(f, Abs):
@@ -206,14 +204,14 @@ def _invert_real(f, g_ys, symbol):
         # f = g + h
         g, h = f.as_independent(symbol)
         if g is not S.Zero:
-            return _invert_real(h, imageset(Lambda(n, n - g), g_ys), symbol)
+            return _invert_real(h, _imageset(Lambda(n, n - g), g_ys), symbol)
 
     if f.is_Mul:
         # f = g*h
         g, h = f.as_independent(symbol)
 
         if g is not S.One:
-            return _invert_real(h, imageset(Lambda(n, n / g), g_ys), symbol)
+            return _invert_real(h, _imageset(Lambda(n, n / g), g_ys), symbol)
 
     if f.is_Power:
         base, expo = f.args
@@ -221,12 +219,12 @@ def _invert_real(f, g_ys, symbol):
         expo_has_sym = expo.has(symbol)
 
         if not expo_has_sym:
-            res = imageset(Lambda(n, real_root(n, expo)), g_ys)
+            res = _imageset(Lambda(n, real_root(n, expo)), g_ys)
             if expo.is_rational:
                 numer, denom = expo.as_numer_denom()
                 if denom % 2 == 0:
                     base_positive = solveset(base >= 0, symbol, S.Reals)
-                    res = imageset(Lambda(n, real_root(n, expo)
+                    res = _imageset(Lambda(n, real_root(n, expo)
                         ), g_ys.intersect(
                         Interval.Ropen(S.Zero, S.Infinity)))
                     _inv, _set = _invert_real(base, res, symbol)
@@ -234,7 +232,7 @@ def _invert_real(f, g_ys, symbol):
 
                 elif numer % 2 == 0:
                         n = Dummy('n')
-                        neg_res = imageset(Lambda(n, -n), res)
+                        neg_res = _imageset(Lambda(n, -n), res)
                         return _invert_real(base, res | neg_res, symbol)
 
                 else:
@@ -249,7 +247,7 @@ def _invert_real(f, g_ys, symbol):
             rhs = g_ys.args[0]
             if base.is_positive:
                 return _invert_real(expo,
-                    imageset(Lambda(n, log(n, base, evaluate=False)), g_ys), symbol)
+                    _imageset(Lambda(n, log(n, base, evaluate=False)), g_ys), symbol)
             elif base.is_negative:
                 from sympy.core.power import integer_log
                 s, b = integer_log(rhs, base)
@@ -283,7 +281,7 @@ def _invert_real(f, g_ys, symbol):
             n = Dummy('n', integer=True)
             invs = S.Reals.etype.emptySet
             for L in inv(f):
-                invs += Union(*[imageset(Lambda(n, L(g)), S.Integers) for g in g_ys])
+                invs += Union(*[_imageset(Lambda(n, L(g)), S.Integers) for g in g_ys])
             return _invert_real(f.args[0], invs, symbol)
 
     return (f, g_ys)
@@ -301,7 +299,7 @@ def _invert_complex(f, g_ys, symbol):
         # f = g + h
         g, h = f.as_independent(symbol)
         if g is not S.Zero:
-            return _invert_complex(h, imageset(Lambda(n, n - g), g_ys), symbol)
+            return _invert_complex(h, _imageset(Lambda(n, n - g), g_ys), symbol)
 
     if f.is_Mul:
         # f = g*h
@@ -310,7 +308,7 @@ def _invert_complex(f, g_ys, symbol):
         if g is not S.One:
             if g in set([S.NegativeInfinity, S.ComplexInfinity, S.Infinity]):
                 return (h, S.Reals.etype.emptySet)
-            return _invert_complex(h, imageset(Lambda(n, n / g), g_ys), symbol)
+            return _invert_complex(h, _imageset(Lambda(n, n / g), g_ys), symbol)
 
     if hasattr(f, 'inverse') and \
        not isinstance(f, TrigonometricFunction) and \
@@ -319,11 +317,11 @@ def _invert_complex(f, g_ys, symbol):
         if len(f.args) > 1:
             raise ValueError("Only functions with one argument are supported.")
         return _invert_complex(f.args[0],
-                               imageset(Lambda(n, f.inverse()(n)), g_ys), symbol)
+                               _imageset(Lambda(n, f.inverse()(n)), g_ys), symbol)
 
     if isinstance(f, exp):
         if isinstance(g_ys, FiniteSet):
-            exp_invs = Union(*[imageset(Lambda(n, I * (2 * n * pi + arg(g_y)) + 
+            exp_invs = Union(*[_imageset(Lambda(n, I * (2 * n * pi + arg(g_y)) + 
                                                log(Abs(g_y))), S.Integers)
                                for g_y in g_ys if g_y != 0])
             return _invert_complex(f.args[0], exp_invs, symbol)
@@ -375,8 +373,8 @@ def _invert_abs(f, g_ys, symbol):
     # this is slightly different than above: instead of solving
     # +/-f on positive values, here we solve for f on +/- g_ys
     g_x, values = _invert_real(f, Union(
-        imageset(Lambda(n, n), g_ys),
-        imageset(Lambda(n, -n), g_ys)), symbol)
+        _imageset(Lambda(n, n), g_ys),
+        _imageset(Lambda(n, -n), g_ys)), symbol)
     return g_x, ConditionSet(g_x, conditions, values)
 
 
@@ -693,7 +691,7 @@ def _solve_as_poly(f, symbol, domain=S.Complexes):
             if all([s.atoms(Symbol, AppliedUndef) == set() and not isinstance(s, RootOf)
                     for s in result]):
                 s = Dummy('s')
-                result = imageset(Lambda(s, expand_complex(s)), result)
+                result = _imageset(Lambda(s, expand_complex(s)), result)
         if isinstance(result, FiniteSet):
             result = result.intersection(domain)
         return result
@@ -751,7 +749,7 @@ def _solve_radical(f, symbol, solveset_solver):
             y = yreal
         g_y_s = solveset_solver(yeq, symbol)
         f_y_sols = solveset_solver(eq, y)
-        result = Union(*[imageset(Lambda(y, g_y), f_y_sols)
+        result = Union(*[_imageset(Lambda(y, g_y), f_y_sols)
                          for g_y in g_y_s])
 
     if isinstance(result, Complement) or isinstance(result, ConditionSet):
@@ -834,7 +832,7 @@ def solve_decomposition(f, symbol, domain):
         if isinstance(y_s, FiniteSet):
             for y in y_s:
                 solutions = solveset(Eq(g, y), symbol, domain)
-                if not isinstance(solutions, ConditionSet):
+                if not solutions.is_ConditionSet:
                     result += solutions
 
         else:
@@ -967,7 +965,7 @@ def _solveset(f, symbol, domain, _check=False):
                         result += _solve_abs(f, symbol, domain)
                     else:
                         result_rational = _solve_as_rational(equation, symbol, domain)
-                        if isinstance(result_rational, ConditionSet):
+                        if result_rational.is_ConditionSet:
                             # may be a transcendental type equation
                             result += _transolve(equation, symbol, domain)
                         else:
@@ -978,16 +976,16 @@ def _solveset(f, symbol, domain, _check=False):
         elif not rhs_s.is_EmptySet:
             result = ConditionSet(symbol, Eq(f, 0), domain)
 
-    if isinstance(result, ConditionSet):
+    if result.is_ConditionSet:
         num, den = f.as_numer_denom()
         if den.has(symbol):
             _result = _solveset(num, symbol, domain)
-            if not isinstance(_result, ConditionSet):
+            if not _result.is_ConditionSet:
                 singularities = _solveset(den, symbol, domain)
                 result = _result - singularities
 
     if _check:
-        if isinstance(result, ConditionSet):
+        if result.is_ConditionSet:
             # it wasn't solved or has enumerated all conditions
             # -- leave it alone
             return result

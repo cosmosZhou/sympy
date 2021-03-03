@@ -187,7 +187,7 @@ class Indexed(Expr):
         return self.generate_free_symbol(excludes=excludes, **etype.dict)
 
 # performing other in self
-    def __contains__(self, other):        
+    def __contains__(self, other): 
         if self.base.definition is not None:
             return other in self.base.definition[self.indices]
         
@@ -675,6 +675,7 @@ class Slice(Expr):
         if other.is_symbol:
             return self.shape == other.shape
         return False
+
 # performing other.indices in self.indices
     def index_contains(self, other):
         if not (other.is_Indexed or other.is_Slice) or self.base != other.base: 
@@ -1090,6 +1091,46 @@ class Slice(Expr):
             
         return Expr._subs(self, old, new, **kwargs)
     
+    def detect_indexed(self, function):
+        indexed = set()
+        for expr in function.preorder_traversal():
+            if expr.is_Indexed and expr.base == self.base:
+                indexed.add(expr)
+        return indexed
+                
+    def _subs_helper(self, new, expr, **hints):
+        from sympy import Basic    
+        if len(self.indices) == 1:
+            indices = set()
+            for indexed in expr.preorder_traversal():
+                if not isinstance(indexed, Basic):
+                    continue
+                if indexed.is_Indexed:
+                    if indexed.base == self.base:
+                        indices |= {*indexed.indices}
+                elif indexed.is_Slice:
+                    if indexed.base == self.base:
+                        indices |= {*indexed.index}
+                    
+            if indices:
+                start, stop = self.index
+                reps = {}            
+                this = expr
+                for i in indices:
+                    if i.is_symbol:
+                        if i >= stop or i < start: 
+                            continue
+                        i_domain = expr.domain_defined(i)
+                        if i.domain != i_domain:
+                            _i = i.copy(domain=i_domain)
+                            this = this._subs(i, _i)                            
+                            reps[i] = _i
+                if this != expr:
+                    this = this._subs(self, new, **hints)
+                    for i, _i in reps.items():
+                        this = this._subs(_i, i)                            
+                    return this
+        
     @classmethod
     def rewrite_from_LAMBDA(cls, self):
         limits = self.limits

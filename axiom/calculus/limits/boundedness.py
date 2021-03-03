@@ -32,7 +32,7 @@ def prove(Eq):
     N = Eq.strict_less_than.variable
     
     a_max = Eq.strict_less_than.function.function.rhs
-    M = Symbol.M(definition=Max(a_max, Maximize[n:N + 1](abs(x[n]))))
+    M = Symbol.M(Max(a_max, Maximize[n:N + 1](abs(x[n]))))
     
     Eq << M.this.definition
     
@@ -42,7 +42,7 @@ def prove(Eq):
     
     Eq << Eq.strict_less_than.this.function.function.apply(algebre.strict_less_than.less_than.imply.strict_less_than.transit, Eq[-1])
     
-    Eq.less_than = Eq[-1].this.function.function.apply(algebre.strict_less_than.imply.less_than)
+    Eq.less_than = Eq[-1].this.function.function.apply(algebre.strict_less_than.imply.less_than.relaxed)
     
     Eq << algebre.imply.forall_greater_than.max.apply(Maximize[n:N + 1](abs(x[n])))
     

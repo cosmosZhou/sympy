@@ -23,8 +23,8 @@ def apply(given, t, alpha, beta):
     assert alpha > 0
     assert beta > 0
     
-    x_quote = Symbol("x'", definition=(x + t * alpha) / (1 + alpha))
-    y_quote = Symbol("y'", definition=(y + t * beta) / (1 + beta))
+    x_quote = Symbol("x'", (x + t * alpha) / (1 + alpha))
+    y_quote = Symbol("y'", (y + t * beta) / (1 + beta))
     return StrictLessThan(abs(x_quote - y_quote), abs(x - y))
 
 
@@ -40,7 +40,7 @@ def prove(Eq):
     b = Symbol.b(real=True)
     
     lamda = Symbol.lamda(domain=Interval(0, 1))
-    t = Symbol.t(definition=lamda * x + (1 - lamda) * y)
+    t = Symbol.t(lamda * x + (1 - lamda) * y)
     
     alpha = Symbol.alpha(real=True, positive=True)
     beta = Symbol.beta(real=True, positive=True)

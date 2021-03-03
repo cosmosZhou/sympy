@@ -12,7 +12,7 @@ def apply(x, w=None):
     j = Symbol.j(integer=True)
     
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j](Swap(n, 0, j)))
+        w = Symbol.w(LAMBDA[j](Swap(n, 0, j)))
 
     assert w.shape == (n, n, n)
     assert w[j].definition == Swap(n, 0, j)

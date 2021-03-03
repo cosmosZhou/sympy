@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.sets.conditionset import conditionset
 from axiom import discrete
 
 
@@ -11,7 +10,7 @@ def apply(n, w=None, left=True, P=None):
     j = Symbol.j(integer=True)    
     
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
@@ -20,7 +19,7 @@ def apply(n, w=None, left=True, P=None):
     x = x[:n]
     
     if P is None:
-        P = Symbol.P(etype=dtype.integer * n, definition=conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
+        P = Symbol.P(conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
     
     if left:
         return ForAll[x:P](Contains(w[i, j] @ x, P))

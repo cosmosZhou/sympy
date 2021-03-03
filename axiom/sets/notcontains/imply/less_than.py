@@ -9,7 +9,7 @@ import axiom
 def apply(given):
     assert given.is_NotContains
     n, interval = given.args
-    a, _n = axiom.is_Interval(interval, end=None)
+    a, _n = axiom.is_Interval(interval)
     assert n == _n - 1
     return LessThan(n, a - 1)
 

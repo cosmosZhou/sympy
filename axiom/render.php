@@ -35,8 +35,8 @@ function create_a_tag_with_this_module(&$statement, $module)
     $length = strlen($statement);
     $statement_quote = quote($statement);
     global $sympy;
-    $request_url = "/$sympy/axiom/request.php?callee=$module";
-    return "<a href='$request_url'>$statement_quote</a>";
+    $request_url = "/$sympy/axiom/hierarchy.php?callee=$module";
+    return "<a href='$request_url' title='callee hierarchy'>$statement_quote</a>";
 }
 
 function create_a_tag($theorem, &$statement, &$axiom_prefix)
@@ -162,12 +162,16 @@ function render($php)
     }
 
     $pos = strpos(to_python_module($py), '.given.');
-    if ($pos >= 0) {
-        $given = "imply";
-        $imply = "given";
-    } else {
+    // error_log("py = " . $py);
+    // error_log("to_python_module(py)= " . to_python_module($py));
+    // error_log("pos = " . $pos);
+    // https://www.php.net/manual/en/function.strpos.php
+    if ($pos === false) {
         $given = "given";
         $imply = "imply";
+    } else {
+        $given = "imply";
+        $imply = "given";
     }
 
     echo "<h3><font color=blue>$given:</font></h3>";

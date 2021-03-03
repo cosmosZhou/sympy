@@ -1,4 +1,3 @@
-
 from axiom.utility import prove, apply
 
 from tensorflow.nn import softmax
@@ -11,7 +10,7 @@ def apply(n, d, index):
     K = Symbol.K(shape=(n, d), real=True)
     V = Symbol.V(shape=(n, d), real=True)
     
-    z = Symbol.z(shape=(n, d), definition=softmax(Q @ K.T / sqrt(d)) @ V)
+    z = Symbol.z(softmax(Q @ K.T / sqrt(d)) @ V)
 
     return Equality(z[index], softmax(Q[index] @ K.T / sqrt(d)) @ V)
 
@@ -24,7 +23,7 @@ def prove(Eq):
     h = Symbol.h(domain=Interval(0, n, integer=True))
     Eq << apply(n, d, slice(0, h))
     
-    M = Symbol.M(shape=(n, n), definition=Eq[0].rhs.args[0].arg)
+    M = Symbol.M(Eq[0].rhs.args[0].arg)
     Eq << M.this.definition
     
     Eq << Eq[0].subs(Eq[-1].reversed)

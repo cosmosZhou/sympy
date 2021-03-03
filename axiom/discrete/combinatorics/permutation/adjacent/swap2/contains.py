@@ -30,7 +30,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     Eq << apply(ForAll[x:S](Contains(w[0, j] @ x, S)))
     

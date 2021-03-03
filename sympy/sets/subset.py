@@ -192,7 +192,7 @@ class NotSubset(BinaryCondition):
     def _sympystr(self, p):
         #  NEITHER A SUBSET OF NOR EQUAL TO      
 #         \N{SUBSET OF WITH NOT EQUAL TO}
-        return r'%s \N{NOT A SUBSET OF} %s' % tuple(p._print(x) for x in self.args)
+        return '%s \N{NOT A SUBSET OF} %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s \not\subset %s' % tuple(printer._print(x) for x in self.args)
@@ -396,7 +396,7 @@ class NotSupset(BinaryCondition):
     def _sympystr(self, p):
 #  NEITHER A SUPERSET OF NOR EQUAL TO
 #         \N{SUPERSET OF WITH NOT EQUAL TO}
-        return r'%s \N{NOT A SUPERSET OF} %s' % tuple(p._print(x) for x in self.args)
+        return '%s \N{NOT A SUPERSET OF} %s' % tuple(p._print(x) for x in self.args)
 
     def _latex(self, printer):
         return r'%s\not\supset %s' % tuple(printer._print(x) for x in self.args)

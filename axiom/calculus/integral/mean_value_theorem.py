@@ -37,8 +37,8 @@ def prove(Eq):
 
     Eq << apply(given)
     
-    m = Symbol.m(definition=MIN(f(z), (z, a, b)))
-    M = Symbol.M(definition=MAX(f(z), (z, a, b)))
+    m = Symbol.m(MIN(f(z), (z, a, b)))
+    M = Symbol.M(MAX(f(z), (z, a, b)))
     
     Eq.min, Eq.max = m.equality_defined(), M.equality_defined()
     

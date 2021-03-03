@@ -1,14 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol, ForAll, Slice, Or
-from sympy.core.function import Function
 import axiom
-from sympy.concrete.limits import limits_dict
-from sympy.sets.sets import Interval, FiniteSet
-from sympy.concrete.expr_with_limits import LAMBDA, UNION
 from axiom import algebre, sets
-from sympy.core.symbol import dtype
-from sympy.core.numbers import oo
 
 
 @apply
@@ -30,7 +23,7 @@ def prove(Eq):
     
     Eq << Eq[0].apply(sets.equal.imply.equal.set, simplify=False)
     
-    Eq << sets.forall_equal.imply.equal.union_comprehension.apply(Eq[-1])
+    Eq << sets.forall_equal.imply.equal.union.apply(Eq[-1])
 
 
 if __name__ == '__main__':

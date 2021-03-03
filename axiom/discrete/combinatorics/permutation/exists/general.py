@@ -1,7 +1,6 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
@@ -13,7 +12,7 @@ def apply(a):
     
     p = Symbol.p(shape=(oo,), etype=dtype.integer)
     
-    P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), a.set_comprehension())))
+    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), a.set_comprehension())))
     
     return ForAll[p[:n]:P](Exists[i:n](Equality(p[i], a[n - 1])))
 

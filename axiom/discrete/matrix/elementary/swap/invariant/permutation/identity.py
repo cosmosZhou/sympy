@@ -1,14 +1,6 @@
-from sympy.core.relational import Equality
-from sympy.core.symbol import dtype
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA
-from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.sets.conditionset import conditionset
-from sympy.concrete.products import MatProduct
-from sympy import Symbol
 from axiom import discrete, algebre
 
 
@@ -20,7 +12,7 @@ def apply(m, d, w=None):
     
     assert m >= 0
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
@@ -28,7 +20,7 @@ def apply(m, d, w=None):
     x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     x = x[:n]
     
-    P = Symbol.P(etype=dtype.integer * n, definition=conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
     
     return Contains(LAMBDA[i:n](i) @ MatProduct[i:m](w[i, d[i]]), P)
 

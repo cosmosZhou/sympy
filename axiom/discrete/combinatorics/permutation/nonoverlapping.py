@@ -22,11 +22,11 @@ def prove(Eq):
     t = Q.definition.variable
     j = Symbol.j(integer=True)
     
-    Eq.nonoverlapping = ForAll[j: Interval(0, n, integer=True) - t.set, t](Equality(Q[t] & Q[j], Q[t].etype.emptySet), plausible=True)
+    Eq.nonoverlapping = ForAll[j: Interval(0, n, integer=True) // {t}, t](Equality(Q[t] & Q[j], Q[t].etype.emptySet), plausible=True)
     
     Eq << ~Eq.nonoverlapping
     
-    Eq << Eq[-1].apply(sets.is_nonemptyset.imply.exists_contains.overlapping, wrt=Eq[0].rhs.variable, domain=Q[t], simplify=None)
+    Eq << Eq[-1].apply(sets.is_nonemptyset.imply.exists_contains.setlimit, wrt=Eq[0].rhs.variable, domain=Q[t], simplify=None)
     
     Eq.Qj_definition = Q[j].this.definition
     
@@ -38,7 +38,7 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq << sets.forall_equal.imply.equal.nonoverlapping.apply(Eq.nonoverlapping)    
+    Eq << sets.forall_is_emptyset.imply.equal.nonoverlapping.setlimit.apply(Eq.nonoverlapping)    
 
     
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ def prove(Eq):
         
     Eq << Eq[-1] - floor(y)
     
-    Eq << Eq[-1].this.lhs.apply(algebre.imply.equal.plus.astype.frac)
+    Eq << Eq[-1].this.lhs.apply(algebre.plus.astype.frac)
         
 if __name__ == '__main__':
     prove(__file__)

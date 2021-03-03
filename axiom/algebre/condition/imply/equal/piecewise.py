@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << apply(NotContains(x, S), Piecewise((f(x), Contains(x, S)), (g(x), True)), invert=True)
     
-    y = Symbol.y(definition=Eq[-1].lhs)
+    y = Symbol.y(Eq[-1].lhs)
     Eq << y.this.definition
     
     Eq << algebre.condition.condition.imply.condition.apply(Eq[0], Eq[-1], invert=True)

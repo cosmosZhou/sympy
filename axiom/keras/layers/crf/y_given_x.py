@@ -24,19 +24,19 @@ def apply(*given):
     y_given_x_probability = P(y | x)
     y = pspace(y).symbol
     
-    G = Symbol.G(definition=LAMBDA[y[i - 1], y[i]](-log(transition_probability)))    
+    G = Symbol.G(LAMBDA[y[i - 1], y[i]](-log(transition_probability)))    
     assert G.shape == (d, d)
     
-    s = Symbol.s(definition=LAMBDA[t](-log(joint_probability)))
+    s = Symbol.s(LAMBDA[t](-log(joint_probability)))
     assert s.shape == (n,)
     
-    x = Symbol.x(definition=LAMBDA[y[i], i](-log(emission_probability)))
+    x = Symbol.x(LAMBDA[y[i], i](-log(emission_probability)))
     assert x.shape == (n, d)
     
-    z = Symbol.z(definition=LAMBDA[y[t], t](Sum[y[:t]](E ** -s[t])))
+    z = Symbol.z(LAMBDA[y[t], t](Sum[y[:t]](E ** -s[t])))
     assert z.shape == (n, d)
     
-    x_quote = Symbol.x_quote(definition=-LAMBDA[t](log(z[t])))
+    x_quote = Symbol.x_quote(-LAMBDA[t](log(z[t])))
     assert x_quote.shape == (n, d)
     
     return Equality(x_quote[t + 1], -log(ReducedSum(exp(-x_quote[t] - G))) + x[t + 1]), \

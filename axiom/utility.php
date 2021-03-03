@@ -1,5 +1,4 @@
 <?php
-include_once 'index.html';
 
 // include_once dirname(dirname(__FILE__)) . '/index.html';
 
@@ -335,13 +334,13 @@ function analyze_apply($py, &$i)
             continue;
         }
 
-        if (preg_match('/^(?:    )+return +(.+) */', $statement, $matches)) {
+        if (preg_match('/^(?:    )+return\s+(.+) */', $statement, $matches)) {
             if ($numOfYields)
                 continue;
             // error_log('return statement: ' . $statement);
             $yield = $matches[1];
             // error_log('matches[1]=' . $yield);
-            if (! strcmp($yield, 'None'))
+            if (! strcmp($yield, 'None') || strlen(trim($yield)) == 0)
                 continue;
 
             do {
@@ -515,8 +514,12 @@ function yield_from_py($python_file)
             break;
         }
 
+        // stop analyzing if return statement is encountered.
         $statement = substr($statement, 4);
-
+        if (preg_match('/^return\s*$/', $statement, $matches)) {
+            break;
+        }
+        
         $yield = [
             'statement' => $statement,
             'line' => $i
@@ -561,6 +564,15 @@ function yield_from_py($python_file)
             }
         }
         yield $yield;
+    }
+}
+
+function read_all_php($dir)
+{
+    foreach (read_directory($dir) as $directory) {
+        foreach (read_all_files($directory, 'php') as $php) {
+            yield $php;
+        }
     }
 }
 

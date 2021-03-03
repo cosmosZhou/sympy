@@ -24,7 +24,7 @@ def prove(Eq):
     
     Eq << apply(Sufficient(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1])), n=n)
     
-    g = Symbol.g(definition=LAMBDA[n](Piecewise((f[0], Equal(n, 0)), (h[n], True))))
+    g = Symbol.g(LAMBDA[n](Piecewise((f[0], Equal(n, 0)), (h[n], True))))
     Eq.equality = g[0].this.definition.reversed
     
     Eq.sufficient = Sufficient(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1]), plausible=True)

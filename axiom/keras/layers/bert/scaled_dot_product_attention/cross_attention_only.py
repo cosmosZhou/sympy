@@ -10,29 +10,29 @@ def apply(n, dz, h):
     K = Symbol.K(shape=(n, dz), real=True)
     V = Symbol.V(shape=(n, dz), real=True)
     
-    a = Symbol.a(definition=Q @ K.T / sqrt(dz))
+    a = Symbol.a(Q @ K.T / sqrt(dz))
     
-    Ξ = Symbol.Ξ(definition=Identity(n) + BlockMatrix([[ZeroMatrix(h, h), OneMatrix(h, n - h)],
+    Ξ = Symbol.Ξ(Identity(n) + BlockMatrix([[ZeroMatrix(h, h), OneMatrix(h, n - h)],
                                                        [OneMatrix(n - h, h), ZeroMatrix(n - h, n - h)]]))
     
-    a_quote = Symbol("a'", definition=a - (1 - Ξ) * oo)
+    a_quote = Symbol("a'", a - (1 - Ξ) * oo)
     
-    s = Symbol.s(definition=softmax(a_quote))
+    s = Symbol.s(softmax(a_quote))
     
-    z = Symbol.z(definition=s @ V)
+    z = Symbol.z(s @ V)
     
     # diagonal part
-    D = Symbol.D(definition=(exp(ReducedSum(Q * K) / sqrt(dz)) * OneMatrix(dz, n)).T)
+    D = Symbol.D((exp(ReducedSum(Q * K) / sqrt(dz)) * OneMatrix(dz, n)).T)
     
     # upper part
-    Wu = Symbol("W^u", definition=exp(Q[:h] @ K[h:n].T / sqrt(dz)))
-    Vu = Symbol("V^u", definition=V[:h])
-    Du = Symbol("D^u", definition=D[:h])
+    Wu = Symbol("W^u", exp(Q[:h] @ K[h:n].T / sqrt(dz)))
+    Vu = Symbol("V^u", V[:h])
+    Du = Symbol("D^u", D[:h])
         
     # lower part
-    Wl = Symbol("W^l", definition=exp(Q[h:n] @ K[:h].T / sqrt(dz)))    
-    Vl = Symbol("V^l", definition=V[h:n])
-    Dl = Symbol("D^l", definition=D[h:n])
+    Wl = Symbol("W^l", exp(Q[h:n] @ K[:h].T / sqrt(dz)))    
+    Vl = Symbol("V^l", V[h:n])
+    Dl = Symbol("D^l", D[h:n])
 
     return Equality(z, BlockMatrix((Wu @ Vl + Du * Vu) / (ReducedSum(Wu) + Du), (Wl @ Vu + Dl * Vl) / (ReducedSum(Wl) + Dl)))
 

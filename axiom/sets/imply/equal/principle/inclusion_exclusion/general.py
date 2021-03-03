@@ -13,7 +13,7 @@ def apply(A):
     j = Symbol.j(integer=True)
     d = Symbol.d(shape=(oo,), integer=True)
     k = Symbol.k(domain=Interval(0, n, integer=True))
-    M = Symbol.M(definition=LAMBDA[k](Piecewise((Sum[d[:k]:ForAll[j:i, i:k](d[j] < d[i]):CartesianSpace(Interval(0, n - 1, integer=True), k)](abs(INTERSECTION[i:k](A[d[i]]))), k > 0),
+    M = Symbol.M(LAMBDA[k](Piecewise((Sum[d[:k]:ForAll[j:i, i:k](d[j] < d[i]):CartesianSpace(Interval(0, n - 1, integer=True), k)](abs(INTERSECTION[i:k](A[d[i]]))), k > 0),
                                                 (abs(UNION[i:n](A[i])), True))))
     
     assert M.shape[0] == n + 1

@@ -1,13 +1,7 @@
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
 from sympy.stats.crv_types import ChiSquaredDistribution, NormalDistribution    
 from sympy.stats.rv import PDF, pspace
-from sympy import pi
-from sympy import LAMBDA
-from sympy.concrete.summations import Sum
-from sympy import Symbol
 from axiom import calculus, statistics
 
 
@@ -42,7 +36,7 @@ def prove(Eq):
 
     Eq << apply(X, Y)
 
-    Eq << statistics.chiSquared.induction.apply(Symbol.Y(shape=(oo,), definition=LAMBDA[k](Sum[i:k](X[i] * X[i]))), Y)    
+    Eq << statistics.chiSquared.induction.apply(Symbol.Y(LAMBDA[k](Sum[i:k](X[i] * X[i]))), Y)    
     
     Eq << Eq[-1].this.lhs.args[0].args[0].definition
 

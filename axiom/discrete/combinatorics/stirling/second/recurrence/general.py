@@ -2,7 +2,6 @@ from sympy import *
 from axiom.utility import prove, apply
 from sympy.functions.combinatorial.numbers import Stirling
 from axiom import discrete, algebre
-from sympy.sets.conditionset import conditionset
 
 
 @apply

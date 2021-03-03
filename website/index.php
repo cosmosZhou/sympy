@@ -16,7 +16,6 @@ switch ($lang) {
         $title = 'Axiomatized Mathematics Analysis System';
         $home = 'Home';
         $faq = 'Frequently Asked Questions';
-        $download = 'Download';
         $bugReport = 'Bug Report';
 
         $userGuide = 'User Guide';
@@ -37,10 +36,9 @@ switch ($lang) {
         $userManual = 'User Manual';
         break;
     case 'cn':
-        $title = '机械化定理推导';
+        $title = '机械化定理库';
         $home = '网站主页';
         $faq = '常见问题';
-        $download = '软件下载';
         $bugReport = '故障报告';
 
         $userGuide = '用户指南';
@@ -94,9 +92,6 @@ switch ($lang) {
 				</div>
 				<br>
 				<div class='sidebar_body'>
-					<a href='index.php?lang=<?php echo $lang ?>&section=download'><?php echo $download ?></a>
-				</div>
-				<div class='sidebar_body'>
 					<a href='index.php?lang=<?php echo $lang ?>&section=bugReport'><?php echo $bugReport ?></a>
 				</div>
 				<div class='sidebar_body'>
@@ -114,6 +109,7 @@ switch ($lang) {
 
 				<br>
 				<div class='sidebar_heading'><?php echo $userGuide ?></div>
+				<br>
 				<div class='sidebar_body'>
 					<a href="index.php?lang=<?php echo $lang ?>&section=elementary"
 						title="<?php echo $elementaryExamples ?>">

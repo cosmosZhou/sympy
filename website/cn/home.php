@@ -3,7 +3,8 @@
 	<br>
 	<p>
 		<a href="../axiom">axiom.top</a>
-		是一个基于数学定理知识库、用于证明数学命题的网站，此工程主要依靠开源符号计算项目sympy和<a
+		是一个基于数学定理知识库、用于证明数学命题的网站，此工程主要依靠开源符号计算项目 <a
+			href="https://github.com/sympy/sympy"> sympy </a> 和<a
 			href="http://maxima.sourceforge.net"> Maxima </a>改写, 其中部分代码由商业性数学软件语言<a
 			href="https://reference.wolfram.com/language/index.html.en?source=footer">
 			Mathematica</a>写成。
@@ -22,7 +23,7 @@
 	<h1>数学定理库的建设</h1>
 	<br>
 	<p>
-		<bv> 目前积累了800个已知数学定理用于半机械化数学推导。主要涉及
+		<bv> 目前积累了<label id=count>____</label>个已知数学定理用于半机械化数学推导。主要涉及
 		<li><a href="../axiom/sets/">sets</a> 集合论, 即sets
 			theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语‘任意’（ForAll）,
 			‘存在’（Exists），‘属于’ （contains），‘包含’（subset）描述的命题，比如<a
@@ -74,5 +75,22 @@
 	<small>最近编辑于2021-2-20</small>
 </div>
 <div align="center">
-	<small>ICP: <a href=http://beian.miit.gov.cn>浙ICP备20017509号-2</a></small>
+	<small>ICP: <a href=http://beian.miit.gov.cn>浙ICP备20017509号-3</a></small>
 </div>
+
+<script
+	src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="../axiom/utility.js"></script>
+
+<script>
+	var count = document.querySelector('#count');
+	console.log('count = ' + count.textContent);
+
+	var request_url = "/sympy/axiom/request.php";
+	
+	request_post(request_url, {query: 'count'}).done(res => {
+		console.log('res = ' + res);
+		count.textContent = res;
+	});
+	
+</script>

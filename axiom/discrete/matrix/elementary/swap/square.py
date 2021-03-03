@@ -28,7 +28,7 @@ def prove(Eq):
     j = Symbol.j(integer=True)
     
     assert Identity(n).is_integer
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     Eq << apply(w)
     

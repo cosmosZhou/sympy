@@ -25,7 +25,7 @@ def prove(Eq):
     f = Symbol.f(integer=True, shape=(oo, oo))
     Eq << apply(Unequal(f[m, 0], 0), Sufficient(Unequal(f[m + 1, n], 0), Unequal(f[m, n + 1], 0)), n=n, m=m)
     
-    B = Symbol.B(definition=LAMBDA[n, m](KroneckerDelta(f[m, n], 0)))
+    B = Symbol.B(LAMBDA[n, m](KroneckerDelta(f[m, n], 0)))
     
     Eq << B[m, 0].this.definition
     
@@ -45,7 +45,7 @@ def prove(Eq):
     
     Eq.is_multiplication_zero = algebre.ou.imply.is_zero.apply(Eq.or_statement)
 
-    D = Symbol.D(definition=LAMBDA[n, m](Piecewise((B[m - n, n], m >= n), (0, True))))
+    D = Symbol.D(LAMBDA[n, m](Piecewise((B[m - n, n], m >= n), (0, True))))
     
     Eq << D[m, 0].this.definition
 

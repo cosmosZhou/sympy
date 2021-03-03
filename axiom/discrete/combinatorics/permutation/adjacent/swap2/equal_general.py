@@ -14,9 +14,9 @@ def apply(n, w=None):
     j = Symbol.j(domain=domain)
     assert n >= 2
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
-    return ForAll(Equality(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
+    return ForAll(Equality(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain // {i, t}))
 
 
 @prove
@@ -62,7 +62,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs().function.args[2].cond.simplify()
     
-    Eq << Eq[-1].this.rhs.function.args[2].cond.apply(sets.imply.equivalent.contains.astype.ou)
+    Eq << Eq[-1].this.rhs.function.args[2].cond.apply(sets.contains.astype.ou)
     
     Eq << Eq[-1].this.rhs().function.apply(algebre.imply.equal.piecewise.invert, index=1)
     

@@ -1,12 +1,7 @@
-from sympy.core.relational import Equality, Unequal
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy import Symbol
-
-from sympy.core.function import Function
 import axiom
 
-from sympy import And
 
 @apply
 def apply(given, index=0):
@@ -15,8 +10,6 @@ def apply(given, index=0):
     del and_eqs[index]
     
     return And(*and_eqs)            
-
-
 
 
 @prove

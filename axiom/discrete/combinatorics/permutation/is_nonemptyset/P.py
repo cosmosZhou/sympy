@@ -1,14 +1,13 @@
 from axiom.utility import prove, apply
 from sympy import *
-from sympy.sets.conditionset import conditionset
-from axiom import algebre
+from axiom import algebre, sets
 
     
 @apply
 def apply(n):    
     assert n > 0
     x = Symbol.x(integer=True, nonnegative=True, shape=(oo,))
-    P = Symbol("P", definition=conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol("P", conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     return Unequal(P, P.etype.emptySet) 
 
 
@@ -21,8 +20,8 @@ def prove(Eq):
     P = Eq[0].lhs
     Eq << Exists[x[:n]](Contains(x[:n] , P), plausible=True)
     
-    Eq << Eq[-1].simplify()
-    
+    Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[-1])
+
     Eq << Eq[-1].this.function.rhs.definition
     
     i = Symbol.i(integer=True)

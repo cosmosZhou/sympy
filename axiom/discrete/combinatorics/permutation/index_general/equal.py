@@ -74,16 +74,18 @@ def prove(Eq):
     
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
     
-    sj = Symbol.s_j(definition=conditionset.conditionset(k, Equal(a[j], x[k]), Interval(0, n - 1, integer=True)))
+    sj = Symbol.s_j(conditionset(k, Equal(a[j], x[k]), Interval(0, n - 1, integer=True)))
     
     Eq.sj_definition = sj.this.definition
     
     Eq << Sum[k:sj](k).this.limits[0][1].definition
     
-    Eq.crossproduct = algebre.equal.equal.imply.equal.transit.apply(Eq[-2], Eq[-1])
+    Eq << Eq[-1].this.rhs.bisect({0})
+    
+    Eq.crossproduct = algebre.equal.equal.imply.equal.transit.apply(Eq[-3], Eq[-1])
     
     Eq.sj_definition_reversed = Eq.sj_definition.this.rhs.limits[0][1].reversed.reversed
-
+    
     Eq << Eq[1].apply(sets.equal.imply.equal.intersect, {a[j]})
     
     Eq << Piecewise((x[k].set, Equality(x[k], a[j])), (x[k].emptySet, True)).this.simplify()
@@ -92,7 +94,7 @@ def prove(Eq):
     
     Eq.distribute = Eq[-1].subs(Eq[-3]).reversed
     
-    Eq << Eq.distribute.this.lhs.function.subs(Eq.distribute.lhs.limits[0][1].args[1][1])
+    Eq << Eq.distribute.this.lhs.apply(sets.imageset.inner_subs)
     
     Eq << Eq[-1].subs(Eq.sj_definition_reversed)
     
@@ -110,7 +112,7 @@ def prove(Eq):
     
     Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[-1], Eq[0])
     
-    Eq << sets.equal.imply.forall_equal.nonoverlapping.apply(Eq[-1], excludes=Eq.inequality_ab.variables_set)
+    Eq << sets.equal.imply.forall_is_emptyset.apply(Eq[-1], excludes=Eq.inequality_ab.variables_set)
     
     Eq << Eq[-1].subs(k, a)
     

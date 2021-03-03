@@ -1,4 +1,3 @@
-
 from axiom.utility import prove, apply
 from sympy import *
 
@@ -7,10 +6,10 @@ from axiom import keras, algebre
 @apply
 def apply(a, h):    
     n = a.shape[0]
-    Ξ = Symbol.Ξ(definition=Identity(n) + BlockMatrix([[ZeroMatrix(h, h), OneMatrix(h, n - h)],
+    Ξ = Symbol.Ξ(Identity(n) + BlockMatrix([[ZeroMatrix(h, h), OneMatrix(h, n - h)],
                                                        [OneMatrix(n - h, h), ZeroMatrix(n - h, n - h)]]))
     
-    a_quote = Symbol("a'", definition=a - (1 - Ξ) * oo)
+    a_quote = Symbol("a'", a - (1 - Ξ) * oo)
     
     return Equality(exp(a_quote), Ξ * exp(a))
 
@@ -22,7 +21,7 @@ def prove(Eq):
     dz = Symbol.d_z(integer=True, positive=True)
     Q = Symbol.Q(shape=(n, dz), real=True)
     K = Symbol.K(shape=(n, dz), real=True)
-#     a = Symbol.a(definition=Q @ K.T / sqrt(dz))
+#     a = Symbol.a(Q @ K.T / sqrt(dz))
     a = Symbol.a(shape=(n, n), real=True)
     dz = Symbol.d_z(integer=True, positive=True)
 
@@ -31,7 +30,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)    
     j = Symbol.j(integer=True)
     
-    Ξ_quote = Symbol("Ξ'", definition=LAMBDA[j:n, i:n](Boole(Equality(i, j) | (i < h) & (j >= h) | (i >= h) & (j < h))))
+    Ξ_quote = Symbol("Ξ'", LAMBDA[j:n, i:n](Boole(Equality(i, j) | (i < h) & (j >= h) | (i >= h) & (j < h))))
     
     Eq << Ξ_quote[i, j].this.definition
     

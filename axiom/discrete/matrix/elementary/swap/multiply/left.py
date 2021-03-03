@@ -20,7 +20,7 @@ def apply(x, i=None, j=None, w=None):
         j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     return Equality(w[i, j] @ w[i, j] @ x, x)
 

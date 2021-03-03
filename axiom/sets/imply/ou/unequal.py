@@ -22,7 +22,7 @@ def prove(Eq):
     
     Eq << algebre.imply.forall.limits_assert.apply(Eq.strict_less_than.limits)
     
-    Eq << Eq[-1].apply(algebre.strict_less_than.imply.less_than)
+    Eq << Eq[-1].apply(algebre.strict_less_than.imply.less_than.strengthen)
 
     Eq << Eq.strict_less_than.split()[0]
     

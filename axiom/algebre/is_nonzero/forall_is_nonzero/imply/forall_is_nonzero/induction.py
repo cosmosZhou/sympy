@@ -8,7 +8,7 @@ from axiom import algebre
 def apply(*given): 
     is_nonzero, forall_is_nonzero = given
     fa = axiom.is_nonzero(is_nonzero)
-    fn1, limits = axiom.forall_is_nonzero(forall_is_nonzero)    
+    fn1, *limits = axiom.forall_is_nonzero(forall_is_nonzero)    
     n, fn, baseset = axiom.limit_is_nonzero_baseset(limits)
     
     assert fn._subs(n, n + 1) == fn1

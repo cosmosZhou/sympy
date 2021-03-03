@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.sets.conditionset import conditionset
 
 import axiom
 
@@ -20,13 +19,13 @@ def apply(given):
     
     p = Symbol.p(shape=(oo,), **a.dtype.dict)
     
-    P = Symbol.P(etype=a.dtype * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), set_comprehension)))
+    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), set_comprehension)))
     
     b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
     
     k = Symbol.k(integer=True)
     
-    d = Symbol.d(definition=LAMBDA[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))
+    d = Symbol.d(LAMBDA[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))
     return ForAll[p[:n]:P](Exists[b[:n]](Equality(p[:n], LAMBDA[k:n](a[d[k]]))))
 
 
@@ -50,7 +49,7 @@ def prove(Eq):
         
     Eq.initial_doit = Eq[-1].doit(deep=True)
     
-    d0 = Symbol.d0(definition=Eq.initial_doit.rhs[0].indices[0])
+    d0 = Symbol.d0(Eq.initial_doit.rhs[0].indices[0])
     
     Eq << d0.this.definition
         
@@ -80,7 +79,7 @@ def prove(Eq):
     
     Eq.initial_doit = Eq.initial_doit.subs(Eq[-1])
 
-    d1 = Symbol.d1(definition=Eq.initial_doit.rhs[1].indices[0])
+    d1 = Symbol.d1(Eq.initial_doit.rhs[1].indices[0])
     Eq << d1.this.definition
 
     Eq.initial_doit = Eq.initial_doit.subs(Eq[-1].reversed)
@@ -150,7 +149,7 @@ def prove(Eq):
     
     Eq.deduction = Eq[-1] @ Eq[-1].rhs.args[1]
 
-    d_quote = Symbol.d_quote(definition=Eq.deduction.lhs)
+    d_quote = Symbol.d_quote(Eq.deduction.lhs)
     
     Eq.d_quote_definition = d_quote.this.definition
     

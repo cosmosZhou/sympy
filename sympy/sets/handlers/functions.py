@@ -6,8 +6,6 @@ from sympy.logic.boolalg import true
 from sympy.multipledispatch import dispatch
 from sympy.sets import (imageset, Interval, FiniteSet, Union, ImageSet,
                         EmptySet, Intersection, Range)
-from sympy.sets.conditionset import ConditionSet
-
 
 _x, _y = symbols("x y")
 
@@ -136,10 +134,6 @@ def _set_function(f, x):
 @dispatch(FunctionUnion, Set)
 def _set_function(f, x):
     return ImageSet(Lambda(_x, f(_x)), x)
-
-@dispatch(FunctionUnion, ConditionSet)
-def _set_function(f, x):
-    return ImageSet(f, x)
 
 @dispatch(FunctionUnion, Range)
 def _set_function(f, self):

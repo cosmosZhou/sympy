@@ -36,10 +36,10 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     k = Symbol.k(integer=True)
-    a = Symbol.a(definition=x @ Swap(n, i, j))
+    a = Symbol.a(x @ Swap(n, i, j))
     Eq << apply(a, free_symbol=k)
     
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     Eq << w[i, j].this.definition
     

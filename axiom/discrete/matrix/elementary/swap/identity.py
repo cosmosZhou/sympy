@@ -18,7 +18,7 @@ def apply(x, w=None, left=True, reference=True):
     k = Symbol.k(integer=True)
     
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     

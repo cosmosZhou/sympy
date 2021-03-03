@@ -157,13 +157,13 @@ render(__FILE__);
         return plausibles
 
     def index(self, eq, dummy_eq=True):
-        for i, _eq in enumerate(self.list):
-            if _eq == eq or (dummy_eq and eq.dummy_eq(_eq)):
-                return i
         for k in self.__dict__.keys() - self.slots:
             v = self.__dict__[k]
             if eq == v or (dummy_eq and eq.dummy_eq(v)):
                 return k
+        for i, _eq in enumerate(self.list):
+            if _eq == eq or (dummy_eq and eq.dummy_eq(_eq)):
+                return i
         return -1
 
     def append(self, eq):

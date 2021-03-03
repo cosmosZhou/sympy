@@ -32,9 +32,9 @@ def prove(Eq):
                     P(x[0] | y[0]) * P(y[0]) * Product[i:1:t + 1](transition_probability * emission_probability))
         
     y = pspace(y).symbol
-    G = Symbol.G(shape=(d, d), definition=LAMBDA[y[i - 1], y[i]](-log(transition_probability)))
-    s = Symbol.s(shape=(n,), definition=LAMBDA[t](-log(joint_probability_t)))
-    x = Symbol.x(shape=(n, d), definition=LAMBDA[y[i], i](-log(emission_probability)))
+    G = Symbol.G(LAMBDA[y[i - 1], y[i]](-log(transition_probability)))
+    s = Symbol.s(LAMBDA[t](-log(joint_probability_t)))
+    x = Symbol.x(LAMBDA[y[i], i](-log(emission_probability)))
     
     Eq.s_definition, Eq.G_definition, Eq.x_definition, Eq.given, Eq.logits_recursion = apply(G, x, s, given)
 

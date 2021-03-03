@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.hypothesis)
 
-    y = Symbol.y(shape=(oo,), definition=LAMBDA[n](Stirling(n, k + 1)))
+    y = Symbol.y(LAMBDA[n](Stirling(n, k + 1)))
 
     Eq << y.equality_defined()
 

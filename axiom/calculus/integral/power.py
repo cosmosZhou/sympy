@@ -23,8 +23,8 @@ def prove(Eq):
 
     Eq << apply(n, b=x)
     
-    f = Symbol.f(definition=Eq[0].lhs)
-    g = Symbol.g(definition=Eq[0].rhs)
+    f = Symbol.f(Eq[0].lhs)
+    g = Symbol.g(Eq[0].rhs)
     from sympy import diff
     Eq << diff(f, x).this.expr.definition
     

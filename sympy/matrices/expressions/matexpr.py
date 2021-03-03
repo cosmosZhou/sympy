@@ -1270,6 +1270,9 @@ def _make_matrix(x):
 class Swap(Identity): 
     is_Identity = False
     
+    def _pretty(self, p):
+        return p._helper_print_function(self.func, self.args, sort=False, func_name='Swap')
+    
     def _latex(self, p):
         return p._print_Basic(self)
     

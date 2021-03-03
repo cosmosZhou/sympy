@@ -45,7 +45,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[1])
     
-    Eq << Eq[-1] - a[n].set
+    Eq << sets.equal.imply.equal.complement.apply(Eq[-1], {a[n]}) 
     return
     Eq << Eq[2].subs(Eq[-1].reversed).reversed
     

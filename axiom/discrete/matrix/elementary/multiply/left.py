@@ -15,8 +15,8 @@ def apply(x, lamda, w=None):
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol.w(definition=LAMBDA[i](Multiplication(n, i, lamda)))
-        w_quote = Symbol.w_quote(definition=LAMBDA[i](Multiplication(n, i, 1 / lamda)))
+        w = Symbol.w(LAMBDA[i](Multiplication(n, i, lamda)))
+        w_quote = Symbol.w_quote(LAMBDA[i](Multiplication(n, i, 1 / lamda)))
     else:
         assert w[i] == Multiplication(n, i, lamda)
         assert w_quote[i] == Multiplication(n, i, 1 / lamda)

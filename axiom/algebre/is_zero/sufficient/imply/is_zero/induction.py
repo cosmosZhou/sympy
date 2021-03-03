@@ -26,7 +26,7 @@ def prove(Eq):
     f = Symbol.f(integer=True, shape=(oo,))
     Eq << apply(Equal(f[0], 0), Sufficient(Equal(f[n], 0), Equal(f[n + 1], 0)), n=n)
     
-    g = Symbol.g(definition=LAMBDA[n](KroneckerDelta(f[n], 0)))
+    g = Symbol.g(LAMBDA[n](KroneckerDelta(f[n], 0)))
     
     Eq << g[0].this.definition
     

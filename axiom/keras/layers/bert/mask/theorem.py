@@ -1,21 +1,6 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality, LessThan
-from tensorflow.nn import softmax
-from sympy import Symbol
-from sympy import sqrt, Min
-from sympy import LAMBDA
-
-import tensorflow as tf
-from sympy.matrices.expressions.matexpr import OneMatrix, Identity, ZeroMatrix
-from sympy.core.numbers import oo
 from axiom import keras, algebre
-from sympy.matrices.expressions.blockmatrix import BlockMatrix
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.functions.special.tensor_functions import KroneckerDelta, Boole
-from sympy.functions.elementary.exponential import exp
-
-from sympy.core.function import Function
 import axiom
 
 
@@ -40,17 +25,17 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     
-    Ξ = Symbol.Ξ(definition=LAMBDA[j:n, i:n](Boole(p(i, j) > 0)))
+    Ξ = Symbol.Ξ(LAMBDA[j:n, i:n](Boole(p(i, j) > 0)))
     Eq << apply(a, Ξ)
     
-    a_quote = Symbol.a(definition=a - (1 - Ξ) * oo)
+    a_quote = Symbol.a(a - (1 - Ξ) * oo)
     Eq << a_quote.this.definition
     
     Eq << Eq[-1][i, j]
     
     Eq << Eq[-1].this.rhs.args[1].args[1].args[1].args[1].definition
     
-    Eq << Eq[-1].this.rhs.args[1].args[1].args[1].apply(algebre.imply.equal.bool.piecewise, simplify=None)
+    Eq << Eq[-1].this.rhs.args[1].args[1].args[1].apply(algebre.bool.astype.piecewise, simplify=None)
     
     Eq << Eq[-1].this.rhs.args[1].args[1].astype(Piecewise)
     

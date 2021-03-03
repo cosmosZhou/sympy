@@ -23,7 +23,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.astype(Piecewise)
     
-    Eq << Or(And(x <= a, x >= y), And(y <= a, x < y), plausible=True)
+    Eq << algebre.condition.given.ou.apply(Eq[-1])
     
     Eq << Eq[0].bisect(x >= y).split()
     
@@ -38,12 +38,6 @@ def prove(Eq):
     Eq << Eq[-1].astype(Or)
     
     Eq << Eq[-1].this.args[0].astype(Or)
-    
-    Eq << algebre.ou.imply.less_than.two.apply(Eq[4], wrt=a)
-    
-    Eq << algebre.imply.equal.piecewise.swap.front.apply(Eq[-1].lhs)
-    
-    Eq << Eq[-2].subs(Eq[-1])
 
     
 if __name__ == '__main__':

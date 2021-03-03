@@ -1606,42 +1606,7 @@ class Plus(Expr, AssocOp):
     def rewrite_from_Ceiling(cls, self):
         return cls.rewrite_from_RoundFunction(self)
     
-    @classmethod
-    def rewrite_from_MinMaxBase(cls, self):
-        common_terms = None
-        
-        for plus in self.args:
-            if isinstance(plus, cls):
-                if common_terms is None:
-                    common_terms = {*plus.args}
-                else:
-                    common_terms &= {*plus.args}
-            else:
-                if common_terms is None:
-                    common_terms = {plus}
-                else:
-                    common_terms &= {plus}
-        if common_terms:
-            args = []
-            for e in self.args:
-                if isinstance(e, cls):
-                    e = cls(*{*e.args} - common_terms)
-                elif e.is_Zero:
-                    ...
-                else:
-                    e = 0
-                args.append(e)
-            return cls(*common_terms, self.func(*args))
-        return self
-    
-    @classmethod
-    def rewrite_from_Min(cls, self):
-        return cls.rewrite_from_MinMaxBase(self)
-    
-    @classmethod
-    def rewrite_from_Max(cls, self):
-        return cls.rewrite_from_MinMaxBase(self)
-        
+       
 Add = Plus
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

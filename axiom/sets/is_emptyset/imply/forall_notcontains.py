@@ -27,6 +27,8 @@ def prove(Eq):
     
     Eq << sets.exists.imply.exists_et.single_variable.apply(Eq[-1])
     
+    Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[-1])
+    
     Eq <<= Eq[-1] & Eq[0]
 
 

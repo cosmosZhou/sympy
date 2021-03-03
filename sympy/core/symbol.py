@@ -178,8 +178,8 @@ class Symbol(ManagedProperties):
 # replacement regex:        
 # \bvar\((([^()]+(?:\([^()]*(?:\([^()]*(?:\([^()]*(?:\([^()]*\)[^()]*)*\)[^()]*)*\)[^()]*)*\)))+[^()]*)\).(\w+)
 # Symbol.\3(\1)
-        def __new__(**kwargs):
-            return Symbol(attr, **kwargs)
+        def __new__(*args, **kwargs):
+            return Symbol(attr, *args, **kwargs)
 
         return __new__
 
@@ -210,7 +210,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     
     def intersection_sets(self, b):
         if b.is_ConditionSet:
-            from sympy.sets.conditionset import conditionset
+            from sympy.sets import conditionset
             return conditionset(b.variable, b.condition, b.base_set & self)
         definition = self.definition
         if definition is not None:
@@ -435,7 +435,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                          
         Symbol.process_assumptions(assumptions, integer)
         
-    def __new__(cls, name, **assumptions):
+    def __new__(cls, name, *args, **assumptions):
         """Symbols are identified by name and assumptions::
 
         >>> from sympy import Symbol
@@ -446,6 +446,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
         """
         cls._sanitize(assumptions, cls)
+        if args:
+            assert len(args) == 1
+            definition, *_ = args
+            assumptions['definition'] = definition
         return Symbol.__xnew__(cls, name, **assumptions)
 #         return Symbol.__xnew_cached_(cls, name, **assumptions)
 
@@ -641,7 +645,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     def domain_nonzero(self, x):
         if self == x:
-            return x.domain - {0}
+            return x.domain // {0}
         return Expr.domain_nonzero(self, x)
 
     @property
@@ -722,11 +726,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return
 
         return self.generate_free_symbol(excludes=excludes, free_symbol=free_symbol, **etype.dict)
-
-    def assertion(self, reverse=False):
-        print('this should be axiomatized')
-        from sympy.sets.conditionset import image_set_definition
-        return image_set_definition(self, reverse=reverse)
 
     def equality_defined(self):
         print('this should be axiomatized')
@@ -1117,13 +1116,13 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                     _definition = definition._subs(old, new)
                     if _definition != definition:
                         assumptions = self.assumptions_hashable()
-                        assumptions['definition'] = _definition
                         if 'shape' in assumptions:
                             del assumptions['shape']
         # rgb values for colors                 
         #                 https://www.917118.com/tool/color_3.html
         # darkyellow                
-                        return self.func(r"{\color{ADAD00} %s}" % self.name, **assumptions)
+                        assumptions.pop('definition')
+                        return self.func(r"{\color{ADAD00} %s}" % self.name, _definition, **assumptions)
         return self
 
         

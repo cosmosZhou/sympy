@@ -20,13 +20,13 @@ def apply(*given):
     transition_probability = P(y[i] | y[i - 1])
     y = pspace(y).symbol
     
-    G = Symbol.G(definition=LAMBDA[y[i - 1], y[i]](-log(transition_probability)))
+    G = Symbol.G(LAMBDA[y[i - 1], y[i]](-log(transition_probability)))
     assert G.shape == (d, d)
-    s = Symbol.s(definition=LAMBDA[t](-log(joint_probability_t)))
+    s = Symbol.s(LAMBDA[t](-log(joint_probability_t)))
     assert s.shape == (n,)
-    x = Symbol.x(definition=LAMBDA[y[i], i](-log(emission_probability)))
+    x = Symbol.x(LAMBDA[y[i], i](-log(emission_probability)))
     assert x.shape == (n, d)
-    x_quote = Symbol.x_quote(definition=LAMBDA[y[t], t](MIN[y[:t]](s[t])))
+    x_quote = Symbol.x_quote(LAMBDA[y[t], t](MIN[y[:t]](s[t])))
     assert x_quote.shape == (n, d)
 
     assert x_quote.is_real

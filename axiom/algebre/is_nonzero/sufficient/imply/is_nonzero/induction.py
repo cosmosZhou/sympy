@@ -25,7 +25,7 @@ def prove(Eq):
     f = Symbol.f(integer=True, shape=(oo,))
     Eq << apply(Unequal(f[0], 0), Sufficient(Unequal(f[n], 0), Unequal(f[n + 1], 0)), n=n)
     
-    D = Symbol.D(definition=LAMBDA[n](KroneckerDelta(f[n], 0)))
+    D = Symbol.D(LAMBDA[n](KroneckerDelta(f[n], 0)))
 
     Eq.D0_is_zero = Equal(D[0], 0, plausible=True)
     
@@ -46,7 +46,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     m = Symbol.m(integer=True, positive=True)
-    E = Symbol.E(definition=Identity(m) + LAMBDA[j:m, i:m](KroneckerDelta(i + 1, j) * -D[j]))
+    E = Symbol.E(Identity(m) + LAMBDA[j:m, i:m](KroneckerDelta(i + 1, j) * -D[j]))
     Eq << E.this.definition
     
     Eq << (D[:m] @ E).this.expand()
@@ -76,7 +76,7 @@ def prove(Eq):
     Eq << Eq[-3].subs(Eq[-1].reversed)
 
     k = Symbol.k(integer=True)    
-    E_quote = Symbol("E'", definition=LAMBDA[j:m, i:m](Piecewise((Product[k:i + 1:j + 1](D[k]), j >= i), (0, True))))
+    E_quote = Symbol("E'", LAMBDA[j:m, i:m](Piecewise((Product[k:i + 1:j + 1](D[k]), j >= i), (0, True))))
     
     Eq.D_is_zero = Eq[-1] @ E_quote
     
@@ -104,7 +104,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs().function.simplify()
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.lamda.astype.identity)
+    Eq << Eq[-1].this.rhs.apply(algebre.lamda.astype.identity)
 
     Eq << Eq.D_is_zero.subs(Eq[-1])
     

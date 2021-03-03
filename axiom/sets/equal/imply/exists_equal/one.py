@@ -1,8 +1,5 @@
-from sympy.core.relational import Equality , StrictGreaterThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy import Exists
 from axiom import sets
 # given: |S| = 1
 # Exists[x:S] ({x}) = S
@@ -19,8 +16,6 @@ def apply(given):
     return Exists[x](Equality(x.set, S))
 
 
-
-
 @prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.integer)
@@ -33,7 +28,7 @@ def prove(Eq):
     
     Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[-1])
     
-    Eq << sets.is_nonemptyset.imply.exists_contains.emptyset.apply(Eq[-1], simplify=False)
+    Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[-1], simplify=False)
     
     Eq << Eq[-1].apply(sets.contains.imply.subset, simplify=False)
     
@@ -42,5 +37,4 @@ def prove(Eq):
 
 if __name__ == '__main__':
     prove(__file__)
-
 

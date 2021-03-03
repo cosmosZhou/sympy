@@ -579,11 +579,7 @@ class Set(Basic):
         return ProductSet([self] * exp)
 
     def __sub__(self, other):
-        global is_set
-        if is_set(other):
-            return Complement(self, other)
-        else:
-            raise ValueError("can not substract %s, %s" % (self, other))
+        raise ValueError("can not substract %s, %s" % (self, other))
 
     # performing other in self
     def __contains__(self, other):
@@ -1076,10 +1072,10 @@ class Interval(Set, EvalfMixin):
                 if self.right_open:
                     if b.left_open:
                         if self.stop == b.start:
-                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) - FiniteSet(b.start)
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) // FiniteSet(b.start)
                     else:
                         if self.stop == b.start - 1:
-                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) - FiniteSet(self.stop)
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) // FiniteSet(self.stop)
                         if self.stop == b.start:
                             return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True)
                     
@@ -1088,10 +1084,10 @@ class Interval(Set, EvalfMixin):
                         if self.stop == b.start:
                             return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True)
                         if self.stop + 1 == b.start:
-                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) - FiniteSet(b.start)
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) // FiniteSet(b.start)
                     else:
                         if self.stop + 1 == b.start - 1:
-                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) - FiniteSet(self.stop + 1)
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True) // FiniteSet(self.stop + 1)
                         if self.stop + 1 == b.start:
                             return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open, integer=True)
 
@@ -1105,7 +1101,7 @@ class Interval(Set, EvalfMixin):
             if U.is_Interval and not A & self:
                 combined = self | U
                 if combined.is_Interval:
-                    return combined - A 
+                    return combined // A 
 
         # If I have open end points and these endpoints are contained in b
         # But only in case, when endpoints are finite. Because
@@ -1218,15 +1214,14 @@ class Interval(Set, EvalfMixin):
         if integer:
             if left_open:
                 if start.is_finite and not start.is_integer:
-                    from sympy.functions.elementary.integers import floor
-                    start = floor(start + 1).simplify()
-                    left_open = False
+                    start = start.floor().simplify()
+            else:
+                if start.is_finite and not start.is_integer:                    
+                    start = start.ceiling().simplify()                
                 
             if right_open: 
                 if stop.is_finite and not stop.is_integer:
-                    from sympy.functions.elementary.integers import ceiling
-                    stop = ceiling(stop - 1).simplify()
-                    left_open = False
+                    stop = stop.ceiling().simplify()
                 
                 if left_open: 
                     if start == stop - 2:
@@ -1246,6 +1241,9 @@ class Interval(Set, EvalfMixin):
                         ...
                     
             else:
+                if stop.is_finite and not stop.is_integer:
+                    stop = stop.floor().simplify()
+
                 if left_open:
                     if start == stop - 1:
                         return FiniteSet(stop)
@@ -1828,7 +1826,7 @@ class Interval(Set, EvalfMixin):
                 from sympy import StrictGreaterThan, GreaterThan
                 func = StrictGreaterThan if s.left_open else GreaterThan
                 return func(e, s.start, equivalent=self).simplify()
-            complement = e.domain - s
+            complement = e.domain // s
             if complement.is_FiniteSet:
                 return self.invert_type(e, complement, equivalent=self).simplify()                
             
@@ -2128,6 +2126,7 @@ class Union(Set, LatticeOp, EvalfMixin):
         if deep:
             return Set.simplify(self, deep=deep, **kwargs)
         return self
+
 
 class Intersection(Set, LatticeOp):
     """
@@ -2592,7 +2591,7 @@ class Complement(Set, EvalfMixin):
         if A.is_UNION:
             if A.is_ConditionSet:
                 if not B.is_ConditionSet:
-                    from sympy.sets.conditionset import conditionset
+                    from sympy.sets import conditionset
                     base_set = B._complement(A.base_set)
                     if base_set is not None:
                         if A.base_set == base_set:
@@ -3058,22 +3057,22 @@ class FiniteSet(Set, EvalfMixin):
                     if e == M:
                         args = [*self.args]
                         del args[i]
-                        return other.copy(stop=M, right_open=True) - self.func(*args)
+                        return other.copy(stop=M, right_open=True) // self.func(*args)
                     if e == m:
                         args = [*self.args]
                         del args[i]
-                        return other.copy(start=m, left_open=True).simplify() - self.func(*args)
+                        return other.copy(start=m, left_open=True).simplify() // self.func(*args)
                     if e > M or e < m:
                         args = [*self.args]
                         del args[i]
-                        return other - self.func(*args)
+                        return other // self.func(*args)
                 return
             
             if other.is_integer:
                 if other.min() in self: 
-                    return other.copy(start=other.start + 1) - self.func(*{*self.args} - {other.min()})                
+                    return other.copy(start=other.start + 1) // self.func(*{*self.args} - {other.min()})                
                 if other.max() in self: 
-                    return other.copy(stop=other.stop - 1) - self.func(*{*self.args} - {other.max()})
+                    return other.copy(stop=other.stop - 1) // self.func(*{*self.args} - {other.max()})
             
         elif isinstance(other, FiniteSet):
             s = set(self.args)
@@ -3360,19 +3359,40 @@ class SymmetricDifference(Set):
             return SymmetricDifference(A, B, evaluate=False)
 
 
-# image_set is to be substituted for imageset
-def image_set(expr, sym, condition):
+def imageset(sym, expr, baseset):
     from sympy.concrete.expr_with_limits import UNION
-    if condition.is_Interval and condition.is_integer:
-        limit = (sym, condition.min(), condition.max() + 1)
-    elif condition.is_Contains and condition.lhs == sym:
-        limit = (sym, condition.rhs)
+    if baseset.is_Interval and baseset.is_integer:
+        limit = (sym, baseset.min(), baseset.max() + 1)
+    elif baseset.is_Contains and baseset.lhs == sym:
+        limit = (sym, baseset.rhs)
     else:
-        limit = (sym, condition)
+        limit = (sym, baseset)
     return UNION({expr}, limit)
 
 
-def imageset(*args):
+# by definition, we have
+# ConditionSet(variable, condition, base_set) == Union[variable:condition:base_set]({variable})
+def conditionset(*limit):
+    from sympy.concrete.expr_with_limits import UNION
+    if len(limit) > 2 and (limit[2] is None or limit[2].is_UniversalSet):
+        limit = limit[:2]
+    variable, condition, *base_set = limit
+    if base_set:
+        base_set = base_set[0]
+        if not base_set:
+            return base_set        
+    else:
+        base_set = variable.universalSet
+       
+    if condition:
+        return base_set        
+    if condition.is_BooleanFalse:
+        return variable.emptySet
+
+    return UNION({variable}, limit)
+
+
+def _imageset(*args):
     r"""
     Return an image of the set under transformation ``f``.
 

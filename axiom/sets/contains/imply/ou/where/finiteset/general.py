@@ -26,7 +26,7 @@ def prove(Eq):
     c = Symbol.c(integer=True, given=True)
     Eq << apply(Contains(e, {a, b, c}))
     
-    u = Symbol.u(definition=FiniteSet(a, b))
+    u = Symbol.u(FiniteSet(a, b))
     Eq << u.this.definition
     
     Eq << (u | c.set).this.args[0].definition

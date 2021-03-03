@@ -1,10 +1,6 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap
-from sympy import ForAll, LAMBDA
-from sympy import Symbol
 from axiom import discrete
 
 @apply
@@ -14,11 +10,11 @@ def apply(n, w=None):
     
     assert n >= 2
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     
-    return ForAll(Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) - i.set))
+    return ForAll(Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) // {i}))
 
 
 @prove

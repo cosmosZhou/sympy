@@ -1,8 +1,5 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
 from axiom import sets
 
 
@@ -21,9 +18,9 @@ def apply(given, reverse=False):
     A, B = AB.args
 
     if reverse:
-        return Equality(B - A, B)
+        return Equality(B // A, B)
 
-    return Equality(A - B, A)
+    return Equality(A // B, A)
 
 
 
@@ -35,7 +32,7 @@ def prove(Eq):
 
     Eq << apply(Equality(A & B, A.etype.emptySet))
 
-    Eq << Eq[0].apply(sets.equal.imply.equal.union, A - B).reversed
+    Eq << Eq[0].apply(sets.equal.imply.equal.union, A // B).reversed
 
 
 if __name__ == '__main__':

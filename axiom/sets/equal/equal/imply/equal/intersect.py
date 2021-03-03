@@ -1,10 +1,5 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy.core.function import Function
-from sympy import UNION
-from sympy.functions.elementary.complexes import Abs
 from axiom import sets
 import axiom
 

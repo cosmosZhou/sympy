@@ -1,6 +1,5 @@
 from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.conditionset import conditionset
 
 
 @apply

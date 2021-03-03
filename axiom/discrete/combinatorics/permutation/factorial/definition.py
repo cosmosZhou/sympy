@@ -1,6 +1,5 @@
 from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.conditionset import conditionset
 from axiom import discrete, algebre
 
 
@@ -9,8 +8,6 @@ def apply(n):
     x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     
     return Equality(abs(conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)))), factorial(n))
-
-
 
 
 @prove

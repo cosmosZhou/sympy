@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.sets.conditionset import conditionset
 from axiom import discrete, sets, algebre
 
 
@@ -11,7 +10,7 @@ def apply(n):
     
     p = Symbol.p(shape=(oo,), integer=True, nonnegative=True)
     
-    P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
     b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
     
@@ -87,7 +86,7 @@ def prove(Eq):
     
     Eq.exists_n = Eq[-1].subs(Eq[-1].limits[0][1].this.definition)
     
-    p_quote = Symbol.p_quote(definition=Eq.deduction.function.function.lhs)
+    p_quote = Symbol.p_quote(Eq.deduction.function.function.lhs)
     
     Eq.p_quote_definition = p_quote.this.definition
     

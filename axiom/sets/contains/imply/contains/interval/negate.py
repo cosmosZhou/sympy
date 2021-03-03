@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq <<= -Eq[-1], -Eq[-2]
     
-    Eq << sets.contains.given.et.apply(Eq[1]).split()    
+    Eq << sets.contains.given.et.where.interval.apply(Eq[1]).split()    
 
     
 if __name__ == '__main__':

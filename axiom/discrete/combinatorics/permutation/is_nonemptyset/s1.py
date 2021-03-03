@@ -25,7 +25,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     x, (_, k), *_ = Eq[-1].variable.args
     
-    a = Symbol.a(definition=LAMBDA[i:k](Piecewise((Interval(k - 1, n - 1, integer=True),
+    a = Symbol.a(LAMBDA[i:k](Piecewise((Interval(k - 1, n - 1, integer=True),
                                                    Equality(i, k - 1)),
                                                    (i.set, True))))
     

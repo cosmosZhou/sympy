@@ -44,7 +44,7 @@ def prove(Eq):
     Y = Symbol.Y(distribution=ChiSquaredDistribution(k))
     assert Y.is_extended_real
     assert Y.is_random    
-    _Y = Symbol.Y(shape=(oo,), definition=LAMBDA[k](Sum[i:k](X[i] * X[i])))
+    _Y = Symbol.Y(LAMBDA[k](Sum[i:k](X[i] * X[i])))
     
     Eq << apply(_Y, Y)
     

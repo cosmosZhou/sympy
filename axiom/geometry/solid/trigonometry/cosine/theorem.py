@@ -59,8 +59,8 @@ def prove(Eq):
         
     Eq << apply(x_constraint, y_constraint, z_constraint)
     
-    x = Symbol("x", definition=x / z)
-    y = Symbol("y", definition=y / z)
+    x = Symbol("x", x / z)
+    y = Symbol("y", y / z)
     
     Eq << x.this.definition * z
     Eq.x_definition = Eq[-1].reversed

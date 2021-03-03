@@ -1,12 +1,5 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.function import Function
-from sympy.sets.conditionset import conditionset
-from sympy.sets.contains import Contains
 from axiom import sets
 
 
@@ -16,8 +9,6 @@ def apply(given):
     limits = [(x,) for x, *_ in given.limits]
     limits[0] = (limits[0][0], given.function)
     return Exists(given.limits_condition, *limits)
-
-
 
 
 @prove
@@ -30,8 +21,8 @@ def prove(Eq):
 
     Eq << apply(Exists[e:g(e) > 0](f(e) > 0))
     
-    A = Symbol.A(definition=conditionset(e, g(e) > 0))
-    B = Symbol.B(definition=conditionset(e, f(e) > 0))
+    A = Symbol.A(conditionset(e, g(e) > 0))
+    B = Symbol.B(conditionset(e, f(e) > 0))
     
     Eq.A_definition = A.this.definition
     Eq.B_definition = B.this.definition

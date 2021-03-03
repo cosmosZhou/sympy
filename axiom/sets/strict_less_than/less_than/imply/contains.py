@@ -34,7 +34,7 @@ def prove(Eq):
     Eq << apply(b < x, x <= a)    
 #     Eq << apply(x < b, a <= x)
     
-    Eq << sets.contains.given.et.apply(Eq[-1]).split()
+    Eq << sets.contains.given.et.where.interval.apply(Eq[-1]).split()
     
     Eq << Eq[-1].reversed
     

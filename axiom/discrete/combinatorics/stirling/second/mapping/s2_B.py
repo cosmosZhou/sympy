@@ -1,23 +1,21 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.functions.combinatorial.numbers import Stirling
-from sympy.sets.sets import image_set
 from axiom import sets, algebre
-from sympy.sets.conditionset import conditionset
 
 
 @apply
 def apply(n, k, s2=None, B=None):
     if s2 is None:    
         x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-        s2 = Symbol.s2(definition=UNION[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
+        s2 = Symbol.s2(UNION[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
     e = Symbol.e(**s2.etype.dict)
     
     if B is None:
         x = s2.definition.variable.base
-        s0 = Symbol.s0(definition=UNION[x[:k]:Stirling.conditionset(n, k, x)](x[:k].set_comprehension().set))
+        s0 = Symbol.s0(UNION[x[:k]:Stirling.conditionset(n, k, x)](x[:k].set_comprehension().set))
         
-        B = Symbol.B(definition=UNION[e:s0]({e | {n.set}}))       
+        B = Symbol.B(UNION[e:s0]({e | {n.set}}))       
     
     return Equality(conditionset(e, Contains({n}, e), s2), B)
 
@@ -28,22 +26,23 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n, k)
 
-    s2 = Eq[0].lhs
-    s2_quote = Symbol.s_quote_2(definition=Eq[0].rhs.limits[0][1])
-
+    s2 = Eq[0].lhs    
+    s2_quote = Symbol.s_quote_2(conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
     Eq << s2_quote.this.definition
-
-    Eq.s2_definition = Eq[0].subs(Eq[-1].reversed)
+    
+    Eq.s2_definition = imageset(Eq[0].rhs.variable, Eq[0].rhs.function.arg, s2_quote).this.subs(Eq[-1]).subs(Eq[0].reversed).reversed
 
     s0 = Eq[1].lhs    
-    s0_quote = Symbol.s_quote_0(definition=Eq[1].rhs.limits[0][1])
+    s0_quote = Symbol.s_quote_0(conditionset(Eq[1].rhs.variable, Eq[1].rhs.limits[0][1]))
 
     Eq << s0_quote.this.definition
-    Eq << Eq[1].subs(Eq[-1].reversed)
+    
+    Eq << imageset(Eq[1].rhs.variable, Eq[1].rhs.function.arg, s0_quote).this.subs(Eq[-1]).subs(Eq[1].reversed).reversed
+        
     s0_definition = Eq[-1]
 
     e = Symbol.e(etype=dtype.integer.set)
-    s0_ = image_set(Union(e, {n.set}), e, s0)
+    s0_ = imageset(e, Union(e, {n.set}), s0)
 
     plausible0 = Subset(s0_, s2, plausible=True)
     Eq << plausible0
@@ -114,7 +113,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.apply(sets.contains.given.exists_equal.where.imageset)
 
-    Eq.subset_B_definition = Eq[-1] - {n.set}
+    Eq.subset_B_definition = Eq[-1].this.function.function.apply(sets.equal.given.equal.complement, {n.set}) 
         
     num_plausibles = len(Eq.plausibles_dict)
 
@@ -136,13 +135,13 @@ def prove(Eq):
 
     assert num_plausibles == len(Eq.plausibles_dict)
 
-    Eq << Eq.plausible_notcontains.apply(sets.notcontains.imply.is_emptyset)
+    Eq << Eq.plausible_notcontains.apply(sets.notcontains.imply.is_emptyset.intersection)
 
     Eq << Eq[-1].apply(sets.is_emptyset.imply.equal.complement).limits_subs(Eq[-1].variable, Eq.subset_B_definition.function.variable)
 
     Eq << Eq.subset_B_definition.subs(Eq[-1])
 
-    s2_n = Symbol("s_{2, n}", definition=conditionset(*Eq[-1].limits[0]))
+    s2_n = Symbol("s_{2, n}", conditionset(*Eq[-1].limits[0]))
 
     Eq.s2_n_definition = s2_n.this.definition
 
@@ -159,16 +158,20 @@ def prove(Eq):
     Eq.x_j_definition = Eq[-1].limits_subs(Eq[-1].variable, j).reversed
 
     Eq.x_abs_positive_s2, Eq.x_abs_sum_s2, Eq.x_union_s2 = Eq.s2_quote_definition.split()
-
-    Eq << Eq.x_union_s2 - Eq.x_j_definition
-
+    
+    Eq << algebre.forall.exists.imply.exists_et.apply(Eq.x_union_s2, Eq.x_j_definition)
+    
+    Eq << Eq[-1].this.function.apply(sets.equal.equal.imply.equal.complement, swap=True)
+    
     Eq << Eq[-1].this.function.lhs.args[0].bisect({j})
     
-    Eq << Eq[-1].this.function.lhs.apply(sets.imply.equal.complement.astype.union, evaluate=True)
-    return
+    Eq << Eq[-1].this.function.lhs.apply(sets.complement.astype.union, evaluate=True)
+    
+    Eq << Eq.s2_quote_definition.this.function.apply(sets.equal.equal.forall_is_positive.imply.equal.stirling2, depth=0)
+    
+    Eq << Eq[-2].subs(Eq[-1])
 
-    x_tilde = Symbol(r"\tilde{x}", shape=(k,), etype=dtype.integer,
-                     definition=LAMBDA[i:k](Piecewise((x[i], i < j), (x[i + 1], True))))
+    x_tilde = Symbol(r"\tilde{x}", LAMBDA[i:k](Piecewise((x[i], i < j), (x[i + 1], True))))
 
     Eq.x_tilde_definition = x_tilde[i].this.definition
 
@@ -177,7 +180,7 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
 
     Eq.x_tilde_union = Eq[-1].subs(Eq[-3])    
-    return
+    
     Eq.x_tilde_abs = Eq.x_tilde_definition.apply(algebre.equal.imply.equal.abs)
     
     Eq << Eq.x_tilde_abs.apply(algebre.equal.imply.equal.sum, (i, 0, k))
@@ -201,19 +204,20 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq[-2]
 
     Eq <<= Eq[-1] & Eq.x_tilde_abs_sum & Eq.x_tilde_union
-    return
+    
     Eq << Eq[-1].func(Contains(x_tilde, s0_quote), *Eq[-1].limits, plausible=True)
 
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].this.function.rhs.definition
+    
     Eq << Eq[-1].this.function.args[0].simplify()
     
     Eq.x_tilde_set_in_s0 = Eq[-3].func(Contains(UNION.construct_finite_set(x_tilde), s0), *Eq[-3].limits, plausible=True)
 
     Eq << Eq.x_tilde_set_in_s0.subs(s0_definition)
 
-    Eq << Eq[-1].definition
+    Eq << Eq[-1].this.function.apply(sets.contains.given.exists_equal.where.imageset)
 
-    Eq << sets.equal.imply.equal.set_comprehension.apply(Eq.x_tilde_definition, (i, 0, k - 1))
+    Eq << sets.equal.imply.equal.set_comprehension.apply(Eq.x_tilde_definition, (i, 0, k))
 
     Eq << Eq[-1].subs(Eq.x_j_definition)
 
@@ -229,10 +233,11 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()    
         
-    Eq << Eq[-1].apply(sets.contains.imply.equal.union)    
+    Eq << Eq[-1].apply(sets.contains.imply.equal.union)
+        
     Eq << Eq.subset_B_plausible.subs(Eq[-1])
     
-    Eq << Eq.supset_B.subs(Eq.subset_B)
+    Eq <<= Eq.supset_B & Eq.subset_B
 
 
 if __name__ == '__main__':

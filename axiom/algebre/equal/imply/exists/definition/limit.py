@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from axiom.algebre.imply.equivalent.equal.astype.exists.limit_definition import exists
+from axiom.algebre.equal.astype.exists.limit_definition import exists
 from axiom import algebre
 
 
@@ -36,7 +36,7 @@ def prove(Eq):
     
     Eq << apply(Equal(Limit(f(x), x, x0, direction), a))
     
-    Eq << algebre.imply.equivalent.equal.astype.exists.limit_definition.apply(Eq[0])
+    Eq << algebre.equal.astype.exists.limit_definition.apply(Eq[0])
         
     Eq << algebre.condition.equivalent.imply.condition.transit.apply(Eq[0], Eq[-1])
     

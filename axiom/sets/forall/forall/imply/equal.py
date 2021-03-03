@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 from axiom import sets
-from sympy.sets.conditionset import conditionset
 
 
 @apply
@@ -26,8 +25,8 @@ def prove(Eq):
     x = Symbol.x(complex=True, shape=(n,))
     f = Function.f(nargs=(n,), integer=True, shape=())
     g = Function.g(nargs=(n,), integer=True, shape=())
-    A = Symbol.A(definition=conditionset(x, Equality(f(x), 1)))
-    B = Symbol.B(definition=conditionset(x, Equality(g(x), 1)))
+    A = Symbol.A(conditionset(x, Equality(f(x), 1)))
+    B = Symbol.B(conditionset(x, Equality(g(x), 1)))
     
     assert f.is_integer and g.is_integer
     assert f.shape == g.shape == ()

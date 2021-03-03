@@ -1,34 +1,133 @@
-<h1>设计文档</h1>
-<h2>主要设计理念</h2>
-<p>计算机本身并不会根据论据推导出新的论点，也不像人一样会使用自然语言进行推理，它并不会思考，只会作数值与符号计算
-	（当然如果我们把思考定义为逻辑计算，那么计算机也能思考，并且速度远超人类），
-	所以如果能设计一种算法把抽象推理问题转化成一个计算问题，那么计算机也可以进行抽象推理。
-	理性思辨能力不一定需要自然语言的辅助。只不过我们习惯使用自然语言来思考问题。
-	在不使用自然语言的前提下，想证明排列组合教科书上的几个基本的结论也会变得异常复杂。
-	不过作者找到了使用集合论作为理论基础的一般证明方法，证明了组合学教材中使用自然语言进行论证的例题。
-	事实上，严格的数学证明就不能使用自然语言来论证，使用自然语言证明的数学命题，看起来很直观易懂，其实很值得怀疑。
-	在公理化推导系统中，一切命题都是似是而非的，除非你能把这个命题分解成有限个公理来推导，那么这个命题就是真命题。
-	否则就只是个猜想，这也是公理化数学推导系统的基本原则。</p>
-<br>
+<h1>半机械化定理库操作手册</h1>
 <hr />
-<h2>软件主要功能</h2>
+<h2>线上操作手册</h2>
+<br>
+<h3>定理检索功能</h3>
+<p>
+	启动软件网站可视化定理库<a href='../axiom/'>sympy/axiom</a>，或者定理库搜索界面<a
+		href='../axiom/search'>sympy/axiom/search</a>如下图所示：
+</p>
+<img class=zoom src="png/search/panel.png" alt="搜索框" />
+<hr />
+<br>
+<p>在箭头所指搜索框中输入需要查找的数学定理的名称，或者定理名称的个别单词，比如binomial theorem
+	中的binomial关键词，如下图所示：</p>
+<img class=zoom src="png/search/keyword.png" alt="搜索关键词">
+<hr />
+<br>
+<p>键入回车(Enter)之后，就可前端打印出包含binomial单词的所有数学定理了：如下图所示：</p>
+<img class=zoom src="png/search/results.png" alt="搜索关键词" />
+<hr />
 <br>
 <p>
-	该软件的主要目的是为数学学生和教师，数学或算法研究员设计一个能摆脱重复、繁琐纸笔演算的半自动化数学证明工具，根据数学定理的题设（given）和结论（imply），
-	计算机，在人脑通过检索定理知识库，提供正确的预备已知定理的前提下，不断调用已知定理得到变换后的条件表达式，并不断逼近最终结论（imply）表达式，从而获得命题的证明。
-	数学证明过程（prove）就是将题设（given）表达式不断变换成结论（imply）表达式的过程，
-	这个证明过程（prove）由一系列已知定理调用命令和符号计算结果组成，一个已知定理调用命令对应一个符号计算结果。 命题证毕后使用 <a
-		href="https://www.latex-project.org/">latex</a>， <a
-		href="https://www.mathjax.org/">mathjax.js</a>， <a
-		href="https://vuejs.org/index.html/">vue.js</a>， <a
-		href="https://www.php.net">php</a> 等前端可视化技术打印出数学命题证明的全过程，方便日后参考学习。
+	按照箭头方向所指单击即可进入<a
+		href='../axiom/discrete/combinatorics/binomial/theorem.php'>牛顿二项式定理</a>的论证过程，
+	用户也可以直接访问get api: <a href='../axiom/search.php?keyword=binomial'>www.axiom.top/sympy/axiom/search.php?keyword=binomial</a>
+	来获取搜索结果。 图形界面和get api同时也支持<a
+		href='http://www.regular-expressions.info/tutorial.html'>正则表达式</a>以及全字(whole
+	word)匹配，比如： <a
+		href='../axiom/search.php?keyword=discrete.*binomial&regularExpression=true'>www.axiom.top/sympy/axiom/search.php?keyword=discrete.*binomial&amp;regularExpression=true</a>
+	表示搜索在同时包含discrete和binomial单词的定理。
 </p>
 <hr />
-<h2>算法实现原理</h2>
-此公理化定理推导工具工作原理如下：
-<li>1，首先制定一套公理化的数学推导理论，将所有数学命题使用严格的数学语法用公理，定理，运算法则推导出来，在推导过程中不使用自然语言的辅助；</li>
-<li>2，实现一个半机械化的推导系统。每个数学证明题由三部分组成：题设（given），结论（imply），证明过程（prove）；
-	计算机的工作就是给出这个数学证明题的完整证明过程。如果计算机在证明过程（prove）中,能根据题设（given）提供的信息，使用已知数学定理库中的知识（具体使用哪个定理由人脑决策给出），
-	对题设（given）中的条件表达式进行各种变换（比如恒等式变换，换元变换，不等式放缩变换，这个涉及数学技巧），
-	最终得出结论（imply）完全一致的条件表达式，则表明计算机完成了给定数学命题的证明过程。</li>
-<li>3，人脑通过对已知定理库进行知识检索，在推导过程中发挥了数学定理选择决定权，也就是告知计算机面对什么样数学命题使用什么样的已知定理进行下一步推理，计算机根据人输入的Python命令利用符号计算算法和既定的逻辑推导法则进行推理，得出一个更接近结论（imply）的表达式，并最终得出结论（imply），从而使数学命题获得证明。</li>
+<br>
+<h3>定理依存关系分析</h3>
+<br>
+<h4>上层定理引用关系</h4>
+以下以
+<a href='../axiom/discrete/combinatorics/binomial/theorem.php'>牛顿二项式定理</a>
+为例 ：
+<br>
+鼠标指向网页第一个超链接，会出现悬浮提示“callee hierarchy”。如图所示：
+<img class=zoom src="png/hierarchy/hyperlink.png" />
+<hr />
+<br>
+单击该超链接即可进入
+<a
+	href='../axiom/hierarchy.php?callee=axiom.discrete.combinatorics.binomial.theorem'>上层定理引用层级图</a>
+。如图所示：
+<img class=zoom src="png/hierarchy/callee.png" />
+<br>
+以上结果显示有以下几个定理在论证过程中引用了二项式定理：
+<ul>
+	<li><a href='../axiom/discrete/difference/factorial'>axiom.discrete.difference.factorial</a></li>
+	<li><a href='../axiom/discrete/matrix/vandermonde/concatenate'>axiom.discrete.matrix.vandermonde.concatenate</a></li>
+</ul>
+在“上层定理引用层级图”中单击>>>>(展开按钮)，可以进一步查看上层定理的更上一层定理。单击<<<<(隐藏按钮)，可以隐藏展开后的定理。
+<br>
+在“上层定理引用层级图”中单击
+<a
+	href='../axiom/hierarchy.php?callee=axiom.discrete.combinatorics.binomial.theorem&deep=true'>callee</a>
+超链接，可以展开所有上层定理引用关系图。如图所示：
+<img class=zoom src="png/hierarchy/deep/callee.png" />
+<hr />
+<br>
+<br>
+<h4>下层定理引用关系</h4>
+
+<br>
+在“上层定理引用层级图”中单击
+<a
+	href='../axiom/hierarchy.php?caller=axiom.discrete.combinatorics.binomial.theorem'>caller</a>
+超链接，可以查看下层定理引用关系图。如图所示：
+<img class=zoom src="png/hierarchy/caller.png" />
+<hr />
+以上结果显示在二项式定理的论证过程中引用了以下几个定理：
+<ul>
+	<li><a href='../axiom/discrete/combinatorics/binomial/Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>组合数学中的<a
+		href='https://en.wikipedia.org/wiki/Pascal%27s_rule'>Pascal法则</a>，以法国数学家Pascal命名。</li>
+	<li><a href='../axiom/algebre/sufficient/imply/condition/induction'>axiom.algebre.sufficient.imply.condition.induction</a>第一<a
+		href='https://en.wikipedia.org/wiki/Mathematical_induction'>数学归纳法</a>，一种递归证明方法。</li>
+</ul>
+<br>
+
+在“下层定理引用层级图”中单击
+<a
+	href='../axiom/hierarchy.php?caller=axiom.discrete.combinatorics.binomial.theorem&deep=true'>caller</a>
+超链接，可以展开所有下层定理引用关系图。如图所示：
+<img class=zoom src="png/hierarchy/deep/caller.png" />
+<hr />
+<br>
+<hr />
+<br>
+<br>
+<h2>线下使用指南</h2>
+线下使用该工具需要自己搭建本地php网站，具体php安装过程请参考安装部署文档
+<a href='../php installation.docx'>php installation.docx</a>
+。线下使用还必须安装python开发环境。建议使用python3.6版的。安装完python3.6之后需要安装一个python依赖包：
+<br>
+pip install mpmath
+<br>
+以下介绍python工程的使用方法：
+<br>
+<br>
+以线下windows版为例，
+<h4></h4>
+<li>指定一个网页文件夹，比如：E:\github，按照php installation.docx所提供的方法，
+	修改php网站的DOCUMENT_ROOT。然后进入该文件夹：<br>cd E:\github
+</li>
+<br>
+<li>使用git下载python工程源代码： <br> git clone --depth=1
+	https://github.com/cosmosZhou/sympy.git
+</li>
+<br>
+<li>进入sympy文件夹：<br>cd sympy
+</li>
+<br>
+<li>执行run命令，其中debug=1表示输出调试信息，debug=0表示不输出调试信息：<br>python run.py debug=1
+
+</li>
+<br>
+<li>执行run完毕后会打印执行耗时，以及整个定理库的自动化证明的情况，比如， <br> in all 868 axioms<br>
+	unproved:<br> (调试信息省略)....... <br> websites:<br> (调试信息省略)....... <br>
+	seconds costed = 45.13455533981323<br> minutes costed =
+	0.7522425889968872<br> total unproved = 22 <br> total failures = 0
+
+</li>
+<br>
+<li>打开Chrome或者Edge/IE浏览器，在浏览器地址栏输入：<br> <a href='../axiom'>http://localhost/sympy/axiom/</a>
+	<br>即可启动软件网站可视化定理库，这样就可以在本地环境下直接访问可视化定理库了
+</li>
+<br>
+<hr />
+<br>

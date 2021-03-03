@@ -30,7 +30,7 @@ def prove(Eq):
     Eq << apply(x >= b, x <= a)    
 #     Eq << apply(b >= x, a <= x)
     
-    Eq << sets.contains.given.et.apply(Eq[-1]).split()
+    Eq << sets.contains.given.et.where.interval.apply(Eq[-1]).split()
     
 #     Eq << Eq[-1].reversed
     

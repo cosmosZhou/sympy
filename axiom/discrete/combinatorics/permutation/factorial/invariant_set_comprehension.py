@@ -1,19 +1,9 @@
-from sympy.functions.combinatorial.factorials import factorial
-from sympy.core.relational import Equality
-from sympy.core.symbol import dtype
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA, Exists
-from sympy.sets.contains import Contains
-from sympy import Symbol
-from sympy.core.function import Function
-from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
-from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
-def index_function(n):    
+def index_function(n): 
     k = Symbol.k(integer=True)
     
     def index(x, a, *indices):
@@ -50,7 +40,7 @@ def apply(*given):
     k = lamda.variable
     assert lamda == LAMBDA[k:n](x[p[k]])
 
-    if P.is_set:    
+    if P.is_set: 
         P = P.condition_set().condition
         
     assert p.shape[0] == n
@@ -83,7 +73,7 @@ def prove(Eq):
     
     p = Symbol.p(shape=(n,), integer=True, nonnegative=True)
     
-    P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
     Eq << apply(ForAll[x:S](Equality(x.set_comprehension(), e)),
                 ForAll[x:S, p[:n]:P](Contains(LAMBDA[k:n](x[p[k]]), S)),

@@ -33,7 +33,7 @@ def prove(Eq):
     
     Eq << apply(LessThan(f[0], g[0]), Sufficient(LessThan(f[n], g[n]), LessThan(f[n + 1], g[n + 1])), n=n)
     
-    h = Symbol.h(definition=LAMBDA[n](Boole(f[n] <= g[n])))
+    h = Symbol.h(LAMBDA[n](Boole(f[n] <= g[n])))
     
     Eq << h[0].this.definition
     

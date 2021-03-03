@@ -1,13 +1,6 @@
-from sympy.core.relational import Equality
-from sympy.core.symbol import dtype
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import ForAll, LAMBDA
-from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
-from sympy.sets.conditionset import conditionset
-from sympy import Symbol
 from axiom import algebre, discrete
 from axiom.discrete.combinatorics.permutation.adjacent import swapn
 
@@ -54,7 +47,7 @@ def apply(given):
     
     p = Symbol.p(shape=(oo,), integer=True, nonnegative=True)
     
-    P = Symbol.P(etype=dtype.integer * n, definition=conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
     return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S))
 
@@ -69,7 +62,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     k = Symbol.k(integer=True)
     

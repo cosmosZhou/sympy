@@ -11,7 +11,7 @@ def apply(x, w=None):
     j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Shift(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Shift(n, i, j)))
     else:
         assert w[i, j] == Shift(n, i, j)
     

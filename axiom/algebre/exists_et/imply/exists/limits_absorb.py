@@ -1,8 +1,6 @@
-
 from axiom.utility import prove, apply
 
 from sympy import *
-from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
@@ -73,7 +71,7 @@ def prove(Eq):
 
     Eq << apply(Exists[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
     
-    S = Symbol.S(definition=conditionset(x[:n + 1], (g(x[n]) > f_quote(x[:n])) & (f(x[:n]) > 0)))
+    S = Symbol.S(conditionset(x[:n + 1], (g(x[n]) > f_quote(x[:n])) & (f(x[:n]) > 0)))
     
     Eq << algebre.exists.imply.exists_et.multiple_variables.apply(Eq[0])
     

@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 
@@ -21,8 +20,8 @@ def prove(Eq):
     h = Function.h(nargs=(2,), shape=(), integer=True)
     Eq << apply(Exists[x:f(x) > 0, y:g(y) > 0](h(x, y) > 0))
     
-    A = Symbol.A(definition=conditionset(x, f(x) > 0))
-    B = Symbol.B(definition=conditionset(y, g(y) > 0))
+    A = Symbol.A(conditionset(x, f(x) > 0))
+    B = Symbol.B(conditionset(y, g(y) > 0))
     
     Eq << Exists[x:A, y:B](h(x, y) > 0, plausible=True)
     Eq << Eq[-1].this.limits[0][1].definition

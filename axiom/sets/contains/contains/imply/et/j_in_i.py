@@ -13,8 +13,8 @@ def apply(contains_j, contains_i):
         i, Si, j, Sj = j, Sj, i, Si
     assert Sj._has(i)
     
-    a_d, n = axiom.is_Interval(Si, end=None) 
-    a, i_d = axiom.is_Interval(Sj, end=None)
+    a_d, n = axiom.is_Interval(Si) 
+    a, i_d = axiom.is_Interval(Sj)
     
     d = i - i_d + 1
     assert a_d == a + d
@@ -34,7 +34,7 @@ def prove(Eq):
     
     Eq << Eq[-1].split()
     
-    Eq <<= sets.contains.given.et.apply(Eq[-2]).split(), sets.contains.given.et.apply(Eq[-1]).split()
+    Eq <<= sets.contains.given.et.where.interval.apply(Eq[-2]).split(), sets.contains.given.et.where.interval.apply(Eq[-1]).split()
     
     Eq <<= sets.contains.imply.et.interval.apply(Eq[0]).split(), sets.contains.imply.et.interval.apply(Eq[1]).split()
     

@@ -1302,7 +1302,7 @@ class Piecewise(Function):
                 hit = False
                 need_swap = False
                 for f, cond in self.args:
-                    domain = (univeralSet - union) & wrt.domain_conditioned(cond)
+                    domain = (univeralSet // union) & wrt.domain_conditioned(cond)
                     if not cond:
 #                         union_second_last = union
                         union |= domain
@@ -1415,14 +1415,14 @@ class Piecewise(Function):
                     U, C = A.args
                     if domain in U:                        
                         return self.func((e0, NotContains(x, C)), (e1, True)).simplify(deep=deep)
-                    complement = domain - A
+                    complement = domain // A
                     if complement.is_FiniteSet:
                         return self.func((e1, Contains(x, complement)), (e0, True)).simplify(deep=deep)
                 if domain in A:
                     if e1._has(x):
                         universe = self.domain_defined(x)
                         if universe != domain:
-                            diff = universe - A
+                            diff = universe // A
                             if diff.is_FiniteSet:
                                 return self.func((e1, Contains(x, diff)), (e0, True)).simplify()
                             return self
@@ -1593,6 +1593,62 @@ class Piecewise(Function):
 
     def _eval_is_finite(self):
         return all(e.is_finite for e, _ in self.args)
+
+    def _pretty(pexpr, self):
+        from sympy.printing.pretty.stringpict import prettyForm
+        P = {}
+        for n, ec in enumerate(pexpr.args):
+            P[n, 0] = self._print(ec.expr)
+            if ec.cond == True:
+                P[n, 1] = prettyForm('else')
+            else:
+                P[n, 1] = prettyForm(
+                    *prettyForm('if ').right(self._print(ec.cond)))
+        hsep = 2
+        vsep = 1
+        len_args = len(pexpr.args)
+
+        # max widths
+        maxw = [max([P[i, j].width() for i in range(len_args)])
+                for j in range(2)]
+
+        # FIXME: Refactor this code and matrix into some tabular environment.
+        # drawing result
+        D = None
+
+        for i in range(len_args):
+            D_row = None
+            for j in range(2):
+                p = P[i, j]
+                assert p.width() <= maxw[j]
+
+                wdelta = maxw[j] - p.width()
+                wleft = wdelta // 2
+                wright = wdelta - wleft
+
+                p = prettyForm(*p.right(' '*wright))
+                p = prettyForm(*p.left(' '*wleft))
+
+                if D_row is None:
+                    D_row = p
+                    continue
+
+                D_row = prettyForm(*D_row.right(' '*hsep))  # h-spacer
+                D_row = prettyForm(*D_row.right(p))
+            if D is None:
+                D = D_row       # first row in a picture
+                continue
+
+            # v-spacer
+            for _ in range(vsep):
+                D = prettyForm(*D.below(' '))
+
+            D = prettyForm(*D.below(D_row))
+
+        D = prettyForm(*D.parens('{', ''))
+        D.baseline = D.height()//2
+        D.binding = prettyForm.OPEN
+        return D
 
     def _latex(self, p):        
         

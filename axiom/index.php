@@ -3,17 +3,8 @@ include_once 'index.html';
 require_once 'utility.php';
 ?>
 the whole math theory is composed of the following sections:
-
-<form style="float: right" name=search enctype="multipart/form-data"
-	method="post" action="search.php">
-	<input type=text spellcheck=false name=keyword size="48" value=""
-		placeholder='input a hint for search of a theorem/axiom'><br> <input
-		type=checkbox name=caseSensitive><u>C</u>ase sensitive <input
-		type=checkbox name=wholeWord><u>W</u>hole word <input type=checkbox
-		name=regularExpression>Regular e<u>x</u>pression
-</form>
-<br>
 <?php
+require_once 'searchBox.php';
 
 function yield_empty_directory($dir)
 {
@@ -47,15 +38,6 @@ function yield_empty_directory($dir)
 
     if ($empty)
         yield $dir;
-}
-
-function read_all_php($dir)
-{
-    foreach (read_directory($dir) as $directory) {
-        foreach (read_all_files($directory, 'php') as $php) {
-            yield $php;
-        }
-    }
 }
 
 function read_from($file, $trim = true)

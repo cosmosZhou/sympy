@@ -920,6 +920,12 @@ class BinaryCondition(Boolean):
         return wrt
     
     def subs(self, *args, **kwargs):
+        if all(isinstance(arg, Boolean) for arg in args):
+            res = self
+            for eq in args:
+                res = res.subs(eq)
+            return res
+        
         old, new = args
         if not old.is_symbol:
             return self
@@ -1125,6 +1131,11 @@ def process_imply(imply, value):
             elif all(eq.plausible is False for eq in derivative):
                 imply.plausible = False
 
+def process_counterpart(counterpart, value):
+    if value:
+        counterpart.plausible = False
+    else: 
+        counterpart.plausible = True
 
 def process_given(given, value):
     if value:
@@ -1151,20 +1162,26 @@ def process_given(given, value):
             given.plausible = False
 
 
-def process_options(equivalent=None, given=None, imply=None, value=True, **_):
-
+def process_options(value=True, **kwargs):
+    equivalent = kwargs.get('equivalent')
     if equivalent is not None:
         process_equivalent(equivalent, value)
         return        
 
+    given = kwargs.get('given')
     if given is not None:
         process_given(given, value)
         return
 
+    imply = kwargs.get('imply')
     if imply is not None:
         process_imply(imply, value)
         return
-
+    
+    counterpart = kwargs.get('counterpart')
+    if counterpart is not None:
+        process_counterpart(counterpart, value)
+        return
 
 class BooleanAtom(Boolean):
     """
@@ -2063,7 +2080,18 @@ class And(LatticeOp, BooleanFunction):
         if rhs is None:
             rhs = (other,)
 
-        return And(*lhs + rhs, equivalent=[self, other])
+        args = [*set((*lhs, *rhs))]
+        
+        args_invert = set()
+        for eq in args:
+            args_invert.add(eq.invert())
+                
+        for i, ou_expr in enumerate(args):
+            if ou_expr.is_Or:
+                if ou_expr._argset & args_invert:
+                    args[i] = Or(*ou_expr._argset - args_invert) 
+        
+        return And(*args, equivalent=[self, other])
 
     def domain_conditioned(self, x):
         sol = x.domain
@@ -2108,6 +2136,7 @@ class And(LatticeOp, BooleanFunction):
         return self
 
     def collect(self, term):
+        print('this should be axiomatized')
         matched = []
         unmatch = []
         for eq in self.args:
@@ -2271,13 +2300,21 @@ class Or(LatticeOp, BooleanFunction):
 
     def __and__(self, other):
         this = self
-        if not other.is_Or:
+        if other.is_Or:
+            args_intersection = self._argset & other._argset
+            if args_intersection:
+                lhs = Or(*self._argset - args_intersection)
+                rhs = Or(*other._argset - args_intersection)
+                
+                return Or(*args_intersection, And(lhs, rhs), equivalent=[self, other])
+        else:
             for eq in self._argset:
                 if (other & eq).is_BooleanFalse:
                     args = set(self._argset)
                     args.remove(eq)
                     this = self.func(*args)
                     break
+            
 
         if other.is_And:
             rhs = tuple(other._argset)
@@ -2340,6 +2377,7 @@ class Or(LatticeOp, BooleanFunction):
         return obj
 
     def collect(self, term):
+        print('this should be axiomatized')
         matched = []
         unmatch = []
         for eq in self.args:
@@ -2765,7 +2803,8 @@ class Sufficient(BinaryCondition):
             return A.invert()
         if A.is_BooleanTrue:
             return B
-        if A.is_BooleanFalse or B.is_BooleanTrue or A == B or A.is_And and B in A._argset:
+        
+        if A.is_BooleanFalse or B.is_BooleanTrue or A == B or A.is_And and B in A._argset or B.is_Or and A in B._argset:
             return S.true
         
         if A.is_Relational and B.is_Relational:
@@ -2831,27 +2870,7 @@ class Necessary(BinaryCondition):
 
     @classmethod
     def eval(cls, *args):
-        try:
-            newargs = []
-            for x in args:
-                if isinstance(x, Number) or x in (0, 1):
-                    newargs.append(True if x else False)
-                else:
-                    newargs.append(x)
-            B, A = newargs
-        except ValueError:
-            raise ValueError(
-                "%d operand(s) used for an Sufficient "
-                "(pairs are required): %s" % (len(args), str(args)))
-        if A == True or A == False or B == True or B == False:
-            return Or(Not(A), B)
-        elif A == B:
-            return S.true
-        elif A.is_Relational and B.is_Relational:
-            if A.canonical == B.canonical:
-                return S.true
-            if A.invert().canonical == B.canonical:
-                return B
+        return Sufficient.eval(*args[::-1])
 
     def to_nnf(self, simplify=True):
         b, a = self.args

@@ -21,7 +21,7 @@ def prove(Eq):
     Eq << apply(Equality(f(i), g(i)), (i, 0, n))
     
     Eq << Eq[0].forall((i,))
-    Eq << sets.forall_equal.imply.equal.union_comprehension.apply(Eq[-1])
+    Eq << sets.forall_equal.imply.equal.union.apply(Eq[-1])
 
 
 if __name__ == '__main__':

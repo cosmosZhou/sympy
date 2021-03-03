@@ -1,10 +1,6 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
-from sympy import Exists
-from sympy.sets.contains import Contains
+from axiom import sets
 
 
 @apply
@@ -19,8 +15,6 @@ def apply(given):
     return Exists(Contains(x, S), (x, S), *limits)
 
 
-
-
 @prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.real)
@@ -31,7 +25,7 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()
     
-    Eq << Eq[0].simplify()
+    Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[0], simplify=False)
 
 
 if __name__ == '__main__':

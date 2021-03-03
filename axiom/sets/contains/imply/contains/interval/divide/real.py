@@ -30,7 +30,7 @@ def prove(Eq):
     
     Eq <<= Eq[-2] / d, Eq[-1] / d
     
-    Eq << sets.contains.given.et.apply(Eq[1]).split()    
+    Eq << sets.contains.given.et.where.interval.apply(Eq[1]).split()    
 
     
 if __name__ == '__main__':

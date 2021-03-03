@@ -1,10 +1,6 @@
-from sympy.core.relational import Unequality, GreaterThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy import Exists
 from axiom import sets, algebre
-from sympy.sets.contains import Contains
 # given: |A| >= 1
 # A != {}
 
@@ -49,7 +45,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[-2].reversed)
     
-    Eq << Eq[-1].apply(sets.greater_than.imply.exists_contains, simplify=False)
+    Eq << Eq[-1].this.function.apply(sets.greater_than.imply.is_nonemptyset, simplify=False)
     
     i, j = Eq[1].variables
     Eq << Exists[i:S, j:S](Contains(j, Eq[-1].lhs), plausible=True)

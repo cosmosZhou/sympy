@@ -1,11 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy.core.function import Function
 import axiom
-
-from sympy.sets.sets import Interval
-from sympy.concrete.expr_with_limits import LAMBDA
 from axiom import algebre
 
 

@@ -1,9 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol
-
-from sympy.core.numbers import oo
-from sympy import ForAll, Necessary, Or
 import axiom
 from axiom import algebre
 
@@ -14,8 +10,6 @@ def apply(given, wrt=None):
     if wrt is None:
         wrt = fn.wrt
     return ForAll[wrt:fn](fn1)
-
-
 
 
 @prove

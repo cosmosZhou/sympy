@@ -21,7 +21,7 @@ def prove(Eq):
     b = Symbol.b(real=True, shape=(n,))
     Eq << apply(Equality(x * a, b), f)
     
-    y = Symbol.y(definition=f(a * x)) 
+    y = Symbol.y(f(a * x)) 
     Eq << y.this.definition
     
     Eq << Eq[-1].this.rhs.subs(Eq[0])

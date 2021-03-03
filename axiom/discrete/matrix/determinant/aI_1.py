@@ -42,7 +42,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.args[0].args[1].arg().function.simplify() 
     
-    Eq << Eq[-1].this.lhs.args[0].args[1].arg.args[1].args[1].apply(algebre.imply.equal.lamda.astype.identity)
+    Eq << Eq[-1].this.lhs.args[0].args[1].arg.args[1].args[1].apply(algebre.lamda.astype.identity)
     
     Eq.deduction = (Eq[-1] - Eq[-1].lhs.args[0]).subs(Eq[0])
     

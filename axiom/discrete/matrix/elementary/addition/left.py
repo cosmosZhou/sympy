@@ -16,8 +16,8 @@ def apply(x, lamda, w=None):
     j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
     if w is None:
-        w = Symbol.w(definition=LAMBDA[j, i](Addition(n, i, j, lamda)))
-        w_quote = Symbol.w_quote(definition=LAMBDA[j, i](Addition(n, i, j, -lamda)))
+        w = Symbol.w(LAMBDA[j, i](Addition(n, i, j, lamda)))
+        w_quote = Symbol.w_quote(LAMBDA[j, i](Addition(n, i, j, -lamda)))
     else:
         assert w[i, j] == Addition(n, i, j, lamda)
         assert w_quote[i, j] == Addition(n, i, j, -lamda)

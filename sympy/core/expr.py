@@ -389,6 +389,15 @@ class Expr(Basic, EvalfMixin):
         return complex(float(re), float(im))
 
     def __ge__(self, other):
+        if isinstance(self, Add) and isinstance(other, Add):
+            argset = {*self.args}
+            _argset = {*other.args}
+            common_additives = argset & _argset
+            if common_additives:
+                self = Add(*argset - common_additives)
+                other = Add(*_argset - common_additives)
+                return self >= other
+        
         from sympy import GreaterThan
         from sympy.functions.elementary.extremum import Min, Max
         if isinstance(other, Min):
@@ -431,6 +440,15 @@ class Expr(Basic, EvalfMixin):
         return GreaterThan(self, other, evaluate=False)
 
     def __le__(self, other):
+        if isinstance(self, Add) and isinstance(other, Add):
+            argset = {*self.args}
+            _argset = {*other.args}
+            common_additives = argset & _argset
+            if common_additives:
+                self = Add(*argset - common_additives)
+                other = Add(*_argset - common_additives)
+                return self <= other
+                
         from sympy import LessThan
         from sympy.functions.elementary.extremum import Max, Min
         if isinstance(other, Max):
@@ -473,6 +491,15 @@ class Expr(Basic, EvalfMixin):
         return LessThan(self, other, evaluate=False)
 
     def __gt__(self, other):
+        if isinstance(self, Add) and isinstance(other, Add):
+            argset = {*self.args}
+            _argset = {*other.args}
+            common_additives = argset & _argset
+            if common_additives:
+                self = Add(*argset - common_additives)
+                other = Add(*_argset - common_additives)
+                return self > other
+        
         from sympy import StrictGreaterThan
         from sympy.functions.elementary.extremum import Min, Max
         if isinstance(other, Min):
@@ -516,6 +543,15 @@ class Expr(Basic, EvalfMixin):
         return StrictGreaterThan(self, other, evaluate=False)
 
     def __lt__(self, other):
+        if isinstance(self, Add) and isinstance(other, Add):
+            argset = {*self.args}
+            _argset = {*other.args}
+            common_additives = argset & _argset
+            if common_additives:
+                self = Add(*argset - common_additives)
+                other = Add(*_argset - common_additives)
+                return self < other
+        
         from sympy import StrictLessThan
         from sympy.functions.elementary.extremum import Max, Min
         if isinstance(other, Max):
@@ -4019,7 +4055,7 @@ class Expr(Basic, EvalfMixin):
         
         domain = condition.domain_conditioned(self)
         if domain is None:
-            from sympy.sets.conditionset import conditionset       
+            from sympy.sets import conditionset       
             return conditionset(self, condition, self.domain)
         return domain
 

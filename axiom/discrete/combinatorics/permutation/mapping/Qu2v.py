@@ -5,16 +5,15 @@ from axiom import discrete, algebre, sets
 
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.permutation.index.equal import index_function
-from sympy.sets.conditionset import conditionset
 
 
 def predefined_symbols(n):
     x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     t = Symbol.t(integer=True)
-    Q = Symbol.Q(definition=LAMBDA[t:n + 1](conditionset(x[:n + 1], Equality(x[:n + 1].set_comprehension(), Interval(0, n, integer=True)) & Equality(x[n], t))))
+    Q = Symbol.Q(LAMBDA[t:n + 1](conditionset(x[:n + 1], Equality(x[:n + 1].set_comprehension(), Interval(0, n, integer=True)) & Equality(x[n], t))))
     j = Symbol.j(integer=True)
     i = Symbol.i(integer=True)    
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n + 1, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n + 1, i, j)))
     
     return Q, w, x
 
@@ -24,7 +23,7 @@ def X_definition(n, w, x):
     j = Symbol.j(integer=True)
     
     index = index_function(n + 1)
-    return Symbol("X", definition=LAMBDA[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
+    return Symbol("X", LAMBDA[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
 
     
 @apply

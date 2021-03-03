@@ -12,10 +12,10 @@ def sinusoid_position_encoding(n, d, b=10000, inverse=False):
     i = Symbol.i(integer=True)
 
     if inverse:
-        return Symbol("PE'", definition=LAMBDA[j:d, i:n](Piecewise((cos(i / b ** (j / d)), (-1) ** j > 0),
+        return Symbol("PE'", LAMBDA[j:d, i:n](Piecewise((cos(i / b ** (j / d)), (-1) ** j > 0),
                                               (-sin(i / b ** ((j - 1) / d)), True))))
     else:
-        return Symbol.PE(definition=LAMBDA[j:d, i:n](Piecewise((sin(i / b ** (j / d)), (-1) ** j > 0),
+        return Symbol.PE(LAMBDA[j:d, i:n](Piecewise((sin(i / b ** (j / d)), (-1) ** j > 0),
                                               (cos(i / b ** ((j - 1) / d)), True))))
 
 
@@ -24,7 +24,7 @@ def apply(n, d):
     PE = sinusoid_position_encoding(n, d)
     j, i = PE.definition.variables
     
-    half_dim = Symbol("d'", definition=d / 2)
+    half_dim = Symbol("d'", d / 2)
     assert half_dim.is_integer
     assert half_dim.type in dtype.integer
         
@@ -51,7 +51,7 @@ def prove(Eq):
     d = Symbol("d_model", integer=True, positive=True, even=True)
     Eq << apply(n, d)
     
-    PE = Symbol("PE'", definition=Eq[2].rhs)
+    PE = Symbol("PE'", Eq[2].rhs)
     j, i = Eq[2].rhs.variables
     
     Eq << PE[i, j].this.definition

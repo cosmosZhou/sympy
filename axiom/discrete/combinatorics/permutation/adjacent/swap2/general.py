@@ -46,7 +46,7 @@ def apply(given):
     
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.type    
     
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     return ForAll(Contains(w[i, j] @ x, S), (x, S))
 

@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import discrete, algebre
+from axiom import discrete, algebre, sets
 from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
 
 from sympy.matrices.expressions.matexpr import Swap
@@ -21,7 +21,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     Q, t = Eq[0].lhs.args
     _t = t.copy(domain=Interval(0, n, integer=True))
-    a = Symbol.a(definition=LAMBDA[i:n + 1](i) @ Swap(n + 1, n, _t))
+    a = Symbol.a(LAMBDA[i:n + 1](i) @ Swap(n + 1, n, _t))
     Eq << a.this.definition
     
     Eq << a[n].this.definition.this.rhs.expand()    
@@ -38,8 +38,8 @@ def prove(Eq):
     Eq << algebre.exists.given.exists.subs.apply(Eq[-1], x[:n + 1], a, simplify=None)
     
     Eq << algebre.exists.given.condition.apply(Eq[-1])
-    
-    Eq << Eq[-3].simplify()
+        
+    Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[-3])
     
     Eq << Eq[-1].forall((_t,))
 

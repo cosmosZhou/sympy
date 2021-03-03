@@ -24,6 +24,8 @@ def prove(Eq):
     
     Eq << algebre.exists.given.exists.subs.apply(Eq[-1], a, x)
     
+    Eq << sets.exists_contains.given.is_nonemptyset.apply(Eq[-1])
+    
     Eq << sets.contains.imply.is_nonemptyset.apply(Eq[0])
     
     

@@ -23,7 +23,7 @@ def apply(*given):
 def prove(Eq):
     N = Symbol.N(integer=True)
     g = Function.g(shape=(), integer=True)
-    M = Symbol.M(definition=g(N))
+    M = Symbol.M(g(N))
     n = Symbol.n(integer=True)
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)

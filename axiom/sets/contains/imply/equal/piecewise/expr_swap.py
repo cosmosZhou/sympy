@@ -1,11 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy.core.relational import Equality
-from sympy import Symbol, Boole
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.core.function import Function
 import axiom
-from sympy.core.symbol import dtype
 from axiom import algebre
 
 
@@ -24,14 +19,14 @@ def apply(given, piecewise):
     
     g = ec[1].expr
     
-    return Equality(piecewise, Piecewise((g, Contains(x, S - s)), (f, True)).simplify())
+    return Equality(piecewise, Piecewise((g, Contains(x, S // s)), (f, True)).simplify())
 
 @prove
 def prove(Eq):    
     x = Symbol.x(integer=True, given=True)
     S = Symbol.S(etype=dtype.integer, given=True)
     A = Symbol.A(etype=dtype.integer, given=True)
-    s = Symbol.s(definition=A & S)
+    s = Symbol.s(A & S)
     
     f = Function.f(nargs=(1,), shape=())
     g = Function.g(nargs=(1,), shape=())
@@ -40,10 +35,10 @@ def prove(Eq):
     Eq << algebre.imply.equal.piecewise.swap.front.apply(Eq[2].lhs)
 
     (gx, cond_contains), (fx, _) = Eq[-1].rhs.args
-    p = Symbol.p(definition=Piecewise((gx, Equality(Boole(cond_contains), 1)), (fx, _)))
+    p = Symbol.p(Piecewise((gx, Equality(Boole(cond_contains), 1)), (fx, _)))
 
     (gx, cond_notcontains), (fx, _) = Eq[2].rhs.args
-    q = Symbol.q(definition=Piecewise((gx, Equality(Boole(cond_notcontains), 1)), (fx, _)))
+    q = Symbol.q(Piecewise((gx, Equality(Boole(cond_notcontains), 1)), (fx, _)))
     
     Eq << p.this.definition
     

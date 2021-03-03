@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from sympy.sets.conditionset import conditionset
 from axiom import sets
 
 
@@ -23,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(Exists[e:g(e) > 0](f(e) > 0))
     
-    S = Symbol.S(definition=conditionset(e, g(e) > 0))
+    S = Symbol.S(conditionset(e, g(e) > 0))
     
     Eq << Exists[e:S](f(e) > 0, plausible=True)
     

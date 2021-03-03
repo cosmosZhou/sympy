@@ -31,7 +31,7 @@ def prove(Eq):
     Eq << apply(Equal(f[1], g[1]), Equal(f[2], g[2]), Sufficient(Equal(f[n], g[n]), Equal(f[n + 2], g[n + 2])), n=n, start=1)
     
     m = Symbol.m(integer=True, nonnegative=True, given=False)
-    h = Symbol.h(definition=LAMBDA[m](f[2 * m + 1] - g[2 * m + 1]))
+    h = Symbol.h(LAMBDA[m](f[2 * m + 1] - g[2 * m + 1]))
     
     Eq << h[0].this.definition
     
@@ -55,7 +55,7 @@ def prove(Eq):
     
     Eq.odd = Eq[-1].reversed
 
-    h = Symbol("h'", definition=LAMBDA[m](f[2 * m + 2] - g[2 * m + 2]))
+    h = Symbol("h'", LAMBDA[m](f[2 * m + 2] - g[2 * m + 2]))
     
     Eq << h[0].this.definition
     

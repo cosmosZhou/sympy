@@ -75,7 +75,7 @@ def args_kwargs(argv):
         arr = arg.split('=')
         if len(arr) == 2:
             key, value = arr
-            kwargs[key] = value
+            kwargs[key] = eval(value)
         else:
             args.append(arg)
     return args, kwargs
@@ -89,9 +89,8 @@ if __name__ == '__main__':
  
     debug = kwargs.get('debug', False)
     
-#     args = ['axiom.discrete.combinatorics.permutation.index.kronecker_delta.indexed', 'axiom.discrete.combinatorics.permutation.index_general.kronecker_delta.indexed']
     if not args:         
-        prove.prove()
+        prove.prove(debug=debug)
     else:            
         unproven = []
 

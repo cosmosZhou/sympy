@@ -1,15 +1,6 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy.sets.sets import Interval, CartesianSpace
-from sympy import Symbol
-from sympy import ForAll
-from sympy.core.numbers import oo
-from sympy.sets.conditionset import conditionset
-from sympy.core.symbol import dtype
-from sympy.core.function import Function
 # P is condition set;
-
 
 @apply
 def apply(P):
@@ -30,7 +21,7 @@ def prove(Eq):
     
     f = Function.f(nargs=(n,), shape=(), integer=True)
     
-    P = Symbol.P(definition=conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Interval(0, m - 1, integer=True), n)))
+    P = Symbol.P(conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Interval(0, m - 1, integer=True), n)))
     Eq << apply(P)
     
     Eq << Eq[-1].split()

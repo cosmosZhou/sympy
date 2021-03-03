@@ -1,7 +1,5 @@
 from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.sets.conditionset import conditionset
 from axiom import sets, discrete
 from axiom.discrete.combinatorics.permutation import mapping
 
@@ -10,7 +8,7 @@ from axiom.discrete.combinatorics.permutation import mapping
 def apply(n, P_quote=None):
     Q, w, x = mapping.Qu2v.predefined_symbols(n)
     if P_quote is None:
-        P_quote = Symbol("P'", definition=conditionset(x[:n + 1], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equality(x[n], n)))
+        P_quote = Symbol("P'", conditionset(x[:n + 1], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equality(x[n], n)))
     
     return Equality(Q[n], P_quote)
 

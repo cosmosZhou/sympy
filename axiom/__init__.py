@@ -130,14 +130,13 @@ def is_nonemptyset(eq):
 
 
 def is_ConditionSet(s):
-    assert s.is_UNION
     assert s.is_ConditionSet
     return s.variable, s.condition, s.base_set    
 
 def is_ImageSet(s):
     assert s.is_UNION
-    expr, sym, cond = s.image_set()    
-    return expr, sym, cond    
+    sym, expr, base_set = s.image_set()    
+    return sym, expr, base_set
     
 def is_emptyset(eq):
     assert eq.is_Equal
@@ -151,16 +150,35 @@ def is_emptyset(eq):
 def forall_is_nonzero(eq):
     assert eq.is_ForAll
     limits = eq.limits
-    return is_nonzero(eq.function), limits    
+    return (is_nonzero(eq.function), *limits)    
 
 
 def forall_is_zero(eq):
     assert eq.is_ForAll
     limits = eq.limits
-    return is_zero(eq.function), limits    
+    return (is_zero(eq.function), *limits)    
 
+def forall_is_positive(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    return (is_positive(eq.function), *limits)
 
-def is_Interval(domain, integer=True, end=oo):
+def forall_is_negative(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    return (is_negative(eq.function), *limits)
+
+def forall_is_nonpositive(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    return (*is_nonpositive(eq.function), *limits)
+
+def forall_is_nonnegative(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    return (*is_nonnegative(eq.function), *limits)
+
+def is_Interval(domain, integer=True, end=None):
     assert domain.is_Interval
     if integer:
         assert domain.is_integer
@@ -335,8 +353,10 @@ def limit_is_Contains(limits):
     return x, cond
 
 
-def is_Times(self):
+def is_Times(self, copy=False):
     assert self.is_Times
+    if copy:
+        return [*self.args]
     return self.args
 
 

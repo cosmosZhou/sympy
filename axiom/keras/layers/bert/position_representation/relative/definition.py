@@ -20,9 +20,9 @@ def apply(n, dx, dz):
     W_K = Symbol("W^K", shape=(dx, dz), real=True)
     W_V = Symbol("W^V", shape=(dx, dz), real=True)
     
-    Q = Symbol.Q(definition=x @ W_Q)
-    K = Symbol.K(definition=x @ W_K)
-    V = Symbol.V(definition=x @ W_V)
+    Q = Symbol.Q(x @ W_Q)
+    K = Symbol.K(x @ W_K)
+    V = Symbol.V(x @ W_V)
     
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
@@ -31,13 +31,13 @@ def apply(n, dx, dz):
     w_K = Symbol("w^K", shape=(2 * k + 1, dz), real=True)
     w_V = Symbol("w^V", shape=(2 * k + 1, dz), real=True)
     
-    a_K = Symbol("a^K", definition=LAMBDA[j:n, i:n](w_K[k + tf.clip(j - i, -k, k)]))
-    a_V = Symbol("a^V", definition=LAMBDA[j:n, i:n](w_V[k + tf.clip(j - i, -k, k)]))
+    a_K = Symbol("a^K", LAMBDA[j:n, i:n](w_K[k + tf.clip(j - i, -k, k)]))
+    a_V = Symbol("a^V", LAMBDA[j:n, i:n](w_V[k + tf.clip(j - i, -k, k)]))
     
-    a = Symbol.a(definition=Q @ (K + a_K).T / sqrt(dz))
-    s = Symbol.s(definition=softmax(a))
+    a = Symbol.a(Q @ (K + a_K).T / sqrt(dz))
+    s = Symbol.s(softmax(a))
     
-    z = Symbol.z(definition=s @ (V + a_V))
+    z = Symbol.z(s @ (V + a_V))
     
     return Contains(k + tf.clip(j - i, -k, k), Interval(0, 2 * k, integer=True)), \
         Equality(a[i, j], (x[i] @ W_Q @ (x[j] @ W_K + a_K[i, j])) / sqrt(dz)), \

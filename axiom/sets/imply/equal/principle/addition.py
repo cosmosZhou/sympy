@@ -6,7 +6,7 @@ from axiom import sets
 
 @apply
 def apply(A, B):
-    return Equality(abs(A | B), abs(A - B) + abs(B))
+    return Equality(abs(A | B), abs(A // B) + abs(B))
 
 
 @prove
@@ -16,7 +16,7 @@ def prove(Eq):
     
     Eq << apply(A, B)
     
-    C = Symbol.C(definition=A - B)
+    C = Symbol.C(A // B)
     
     Eq << Equality(C & B, B.etype.emptySet, plausible=True)
     

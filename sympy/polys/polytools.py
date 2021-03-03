@@ -5258,7 +5258,8 @@ def gcd(f, g=None, *gens, **args):
     x - 1
 
     """
-    if hasattr(f, '__iter__') and not (f.is_Symbol or f.is_Add or f.is_Mul):
+#     Indexed, Symbol types should also be excluded!
+    if hasattr(f, '__iter__') and not (f.is_symbol or f.is_Add or f.is_Mul):
         if g is not None:
             gens = (g,) + gens
 

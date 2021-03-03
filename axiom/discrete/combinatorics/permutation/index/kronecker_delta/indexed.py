@@ -50,7 +50,7 @@ def prove(Eq):
     
     Eq << Eq[0].apply(algebre.equal.imply.equal.abs)
     
-    Eq << sets.equal.imply.forall_equal.nonoverlapping.apply(Eq[-1])
+    Eq << sets.equal.imply.forall_is_emptyset.apply(Eq[-1])
 
     Eq << Eq[-1].subs(Eq[-1].rhs.indices[0], j)
     

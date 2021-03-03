@@ -2,8 +2,6 @@ from axiom.utility import prove, apply
 
 from sympy import *
 from axiom import discrete, sets, algebre
-from sympy.sets.conditionset import conditionset
-
 
 @apply
 def apply(*given):
@@ -94,14 +92,14 @@ def prove(Eq):
     Eq << Eq[-1].apply(sets.equal.imply.equal.permutation, x)
     
     Eq.equality_e = Eq[-3] & Eq[-1]
-    
+    return
     Eq << sets.imply.forall.conditionset.apply(F(e)).reversed
     
-    hat_S = Symbol("\hat{S}", definition=Eq[2].rhs.args[0].arg)
+    hat_S = Symbol("\hat{S}", Eq[2].rhs.args[0].arg)
     Eq.hat_S_definition = hat_S.this.definition
     
     Eq << Equality(S, UNION[e:hat_S](F(e)), plausible=True)
-
+    return
     Eq << Eq[-1].subs(Eq.hat_S_definition)
     
     Eq << Eq[-1].this.rhs.function.definition

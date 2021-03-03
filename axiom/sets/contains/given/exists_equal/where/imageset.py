@@ -1,7 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from sympy.sets.sets import image_set
 from axiom import sets, algebre
 
 
@@ -11,7 +10,7 @@ def apply(imply):
 
     image_set = S.image_set()
     
-    expr, variables, base_set = image_set
+    variables, expr, base_set = image_set
     e = e.subs_limits_with_epitome(expr)            
     if e._has(variables):
         _variables = base_set.element_symbol(e.free_symbols)
@@ -26,12 +25,11 @@ def apply(imply):
 def prove(Eq):
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
-    k = Symbol.k(integer=True)
     f = Function.f(integer=True)
     
     S = Symbol.S(etype=dtype.integer)
 
-    Eq << apply(Contains(y, image_set(f(x), x, S)))
+    Eq << apply(Contains(y, imageset(x, f(x), S)))
     
     Eq << Eq[1].simplify()
     

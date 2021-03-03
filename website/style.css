@@ -204,3 +204,8 @@ A:link {
 #top_right_img {
 	float: right;
 }
+
+img.zoom {
+	width: 800px;
+	height: 494.4px
+}

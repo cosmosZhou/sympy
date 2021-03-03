@@ -5,15 +5,15 @@ from axiom import algebre
 
 
 @apply
-def apply(piecewise, evaluate=False):
-    ec0, ec1, *ec = piecewise.args
+def apply(self, evaluate=False):
+    ec0, ec1, *ec = self.args
     
     e0, c0 = ec0
     e1, c1 = ec1
     if not ec:
-        return Equality(piecewise, Piecewise((e1, c0.invert()), (e0, True)), evaluate=evaluate) 
+        return Equality(self, Piecewise((e1, c0.invert()), (e0, True)), evaluate=evaluate) 
     
-    return Equality(piecewise, Piecewise((e1, c1 & c0.invert()), (e0, c0), *ec), evaluate=evaluate)
+    return Equality(self, Piecewise((e1, c1 & c0.invert()), (e0, c0), *ec), evaluate=evaluate)
 
 
 @prove
@@ -28,8 +28,8 @@ def prove(Eq):
      
     Eq << apply(Piecewise((f(x), Contains(x, A)), (g(x), Contains(x, B)), (h(x), True)))
     
-    p = Symbol.p(definition=Eq[0].lhs)
-    q = Symbol.q(definition=Eq[0].rhs)
+    p = Symbol.p(Eq[0].lhs)
+    q = Symbol.q(Eq[0].rhs)
     Eq << p.this.definition
     
     Eq << q.this.definition

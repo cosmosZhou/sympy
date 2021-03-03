@@ -34,7 +34,7 @@ def prove(Eq):
 #     Eq << apply(Piecewise((f(x), Contains(x, A)), (Piecewise((g(x), Contains(x, B)), (h(x), True)), True)))
     Eq << apply(Piecewise((Piecewise((g(x), Contains(x, B)), (h(x), True)), Contains(x, A)), (f(x), True)), index=0)
     
-    p = Symbol.p(definition=Eq[0].lhs)
+    p = Symbol.p(Eq[0].lhs)
 
     Eq << p.this.definition
     

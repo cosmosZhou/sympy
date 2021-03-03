@@ -26,7 +26,7 @@ def prove(Eq):
     
     Eq << apply(Equal(f[0], g[0]), Sufficient(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1])), n=n)
     
-    h = Symbol.h(definition=LAMBDA[n](f[n] - g[n]))
+    h = Symbol.h(LAMBDA[n](f[n] - g[n]))
     
     Eq << h[0].this.definition
     

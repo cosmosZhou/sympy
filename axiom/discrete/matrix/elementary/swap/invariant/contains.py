@@ -24,7 +24,7 @@ def apply(given, w=None, n=None):
         
     j = Symbol.j(integer=True)
     if w is None:    
-        w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap        

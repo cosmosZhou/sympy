@@ -8,7 +8,7 @@ from axiom.utility import prove, apply
 def apply(given):
     assert given.is_Unequality
     x, y = given.args
-    return Contains(x, y.universalSet - y.set)
+    return Contains(x, y.universalSet // {y})
 
 
 @prove

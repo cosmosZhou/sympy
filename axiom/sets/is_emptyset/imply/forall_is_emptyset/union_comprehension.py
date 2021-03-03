@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq.union_empty = Eq[0].apply(algebre.equal.imply.equal.abs)
 
-    Eq << Eq[0] - Eq.paradox.lhs
+    Eq << sets.equal.imply.equal.complement.apply(Eq[0], Eq.paradox.lhs)
 
     Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
 

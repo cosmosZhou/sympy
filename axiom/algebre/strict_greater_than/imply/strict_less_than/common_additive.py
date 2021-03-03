@@ -13,8 +13,8 @@ def apply(given, t, alpha):
     assert x.shape == y.shape == t.shape
     assert alpha > 0
     
-    x_quote = Symbol("x'", definition=(x + t * alpha) / (1 + alpha))
-    y_quote = Symbol("y'", definition=(y + t * alpha) / (1 + alpha))
+    x_quote = Symbol("x'", (x + t * alpha) / (1 + alpha))
+    y_quote = Symbol("y'", (y + t * alpha) / (1 + alpha))
     return StrictLessThan(Norm(x_quote - y_quote), Norm(x - y))
 
 

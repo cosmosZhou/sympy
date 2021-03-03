@@ -1,12 +1,8 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.logic.boolalg import Or, And
-from sympy import Symbol
-from sympy.core.function import Function
 import axiom
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, NotContains
 from axiom import algebre
+
 
 def expr_cond_pair(cls, or_eqs, wrt, reverse=None):
     expr = []
@@ -28,7 +24,7 @@ def expr_cond_pair(cls, or_eqs, wrt, reverse=None):
         del and_eqs[i]
         condition = And(*and_eqs)
         
-        for c in cond:
+        for c in cond: 
             assert (condition & c).is_BooleanFalse
 
         cond.append(condition)
@@ -36,14 +32,13 @@ def expr_cond_pair(cls, or_eqs, wrt, reverse=None):
     ec[-1][1] = True
     return ec
 
+
 @apply
 def apply(given, wrt=None):
     or_eqs = axiom.is_Or(given)
     
     assert len(or_eqs) == 2
     return Contains(Piecewise(*expr_cond_pair(Contains, or_eqs, wrt)).simplify(), wrt)            
-
-
 
 
 @prove
@@ -69,6 +64,7 @@ def prove(Eq):
     Eq << Eq[-1].astype(Or)
     
     Eq << Eq[-2].astype(Or)
+
         
 if __name__ == '__main__':
     prove(__file__)

@@ -39,8 +39,8 @@ def prove(Eq):
     Eq.B_positive = Eq.B_nonempty.apply(sets.is_nonemptyset.imply.is_positive)
 
     Eq.AB_union_empty = Eq[0].apply(algebre.equal.imply.equal.abs)
-
-    Eq << Eq[0] - A
+    
+    Eq << sets.equal.imply.equal.complement.apply(Eq[0], A)
 
     Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
 
@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << Eq.A_positive.subs(Eq[-1].reversed)
 
-    Eq << Eq[0] - B
+    Eq << sets.equal.imply.equal.complement.apply(Eq[0], B)
 
     Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
 

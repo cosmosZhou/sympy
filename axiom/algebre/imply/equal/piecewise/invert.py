@@ -1,11 +1,5 @@
-from sympy import Symbol, Or
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, NotContains
-from sympy.functions.elementary.piecewise import Piecewise
-
-from sympy.core.function import Function
 from axiom import algebre
 import axiom
 
@@ -36,7 +30,7 @@ def prove(Eq):
      
     Eq << apply(Piecewise((g(x), Contains(x, A)), (f(x), NotContains(x, B)), (h(x), True)))
     
-    p = Symbol.p(definition=Eq[0].lhs)    
+    p = Symbol.p(Eq[0].lhs)    
     Eq << p.this.definition
     
     Eq << algebre.equal.imply.ou.general.apply(Eq[-1])

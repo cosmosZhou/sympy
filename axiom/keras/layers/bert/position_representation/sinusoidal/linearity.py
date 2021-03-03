@@ -15,14 +15,14 @@ def apply(n, d):
     
     (e0, c0), (e1, _) = PE[k, j].definition.args
     
-    F = Symbol.F(definition=LAMBDA[j:d, k:n](Piecewise((cos(e0.arg), c0), (e1, True))))
+    F = Symbol.F(LAMBDA[j:d, k:n](Piecewise((cos(e0.arg), c0), (e1, True))))
 
-    F_quote = Symbol("F'", definition=LAMBDA[j:d, k:n](Piecewise((e0, c0), (sin(e1.arg), True))))
+    F_quote = Symbol("F'", LAMBDA[j:d, k:n](Piecewise((e0, c0), (sin(e1.arg), True))))
     
     I = S.ImaginaryUnit
-    z = Symbol.z(definition=F - I * F_quote)    
+    z = Symbol.z(F - I * F_quote)    
     
-    Z = Symbol.Z(definition=PE * I - PE_quote)
+    Z = Symbol.Z(PE * I - PE_quote)
     
     return Equality(Z[i + k], Z[i] * z[1] ** k)
 

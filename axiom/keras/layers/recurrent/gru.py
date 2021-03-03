@@ -9,25 +9,25 @@ from tensorflow.nn import sigmoid
 
 @apply
 def apply(x, Wx, Wh, b):
-    h = Symbol.h(definition=GRU[Wx, Wh, b](x))
+    h = Symbol.h(GRU[Wx, Wh, b](x))
     t = Symbol.t(integer=True, positive=True)
     
     d = h[t - 1].shape[-1]
-    Wxz = Symbol.W_xz(definition=Wx[:, :d])
-    Wxr = Symbol.W_xr(definition=Wx[:, d:2 * d])
-    Wxh = Symbol.W_xh(definition=Wx[:, -d:])
+    Wxz = Symbol.W_xz(Wx[:, :d])
+    Wxr = Symbol.W_xr(Wx[:, d:2 * d])
+    Wxh = Symbol.W_xh(Wx[:, -d:])
      
-    Whz = Symbol.W_hz(definition=Wh[:, :d])
-    Whr = Symbol.W_hr(definition=Wh[:, d:2 * d])
-    Whh = Symbol.W_hh(definition=Wh[:, -d:])
+    Whz = Symbol.W_hz(Wh[:, :d])
+    Whr = Symbol.W_hr(Wh[:, d:2 * d])
+    Whh = Symbol.W_hh(Wh[:, -d:])
      
-    bz = Symbol.b_z(definition=b[:d])
-    br = Symbol.b_r(definition=b[d:2 * d])
-    bh = Symbol.b_h(definition=b[-d:])
+    bz = Symbol.b_z(b[:d])
+    br = Symbol.b_r(b[d:2 * d])
+    bh = Symbol.b_h(b[-d:])
   
-    zt = Symbol.z_t(definition=sigmoid(x[t] @ Wxz + h[t - 1] @ Whz + bz)) 
-    rt = Symbol.r_t(definition=sigmoid(x[t] @ Wxr + h[t - 1] @ Whr + br))     
-    gh = Symbol(r"\tilde{h}_t", definition=tanh(x[t] @ Wxh + (rt * h[t - 1]) @ Whh + bh))
+    zt = Symbol.z_t(sigmoid(x[t] @ Wxz + h[t - 1] @ Whz + bz)) 
+    rt = Symbol.r_t(sigmoid(x[t] @ Wxr + h[t - 1] @ Whr + br))     
+    gh = Symbol(r"\tilde{h}_t", tanh(x[t] @ Wxh + (rt * h[t - 1]) @ Whh + bh))
     
     return Equality(h[t], (1 - zt) * gh + zt * h[t - 1])
 

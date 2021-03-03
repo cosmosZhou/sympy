@@ -8,7 +8,7 @@ def rewrite_as_Or(given):
     eqs = []
     for var, domain in limits_dict.items():
         if isinstance(domain, list):
-            cond = conditionset.conditionset(var, *domain).simplify()
+            cond = conditionset(var, *domain).simplify()
         elif domain.is_set:
             cond = Contains(var, domain).simplify()
         else:

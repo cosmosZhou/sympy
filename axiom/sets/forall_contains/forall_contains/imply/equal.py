@@ -1,10 +1,7 @@
-from sympy.core.relational import Equality
+from sympy import *
+
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy import ForAll
 from axiom import sets
-from sympy.sets.contains import Contains
 
 
 @apply
@@ -27,13 +24,12 @@ def apply(*given):
     return Equality(A, B)
 
 
-
 @prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(complex=True, shape=(n,))
-    A = Symbol.A(etype=dtype.integer*n)
-    B = Symbol.B(etype=dtype.integer*n)
+    A = Symbol.A(etype=dtype.integer * n)
+    B = Symbol.B(etype=dtype.integer * n)
     
     Eq << apply(ForAll[x:A](Contains(x, B)), ForAll[x:B](Contains(x, A)))
     
@@ -44,6 +40,7 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq[-2]
     
     Eq << Eq[-1].reversed
+
 
 if __name__ == '__main__':
     prove(__file__)

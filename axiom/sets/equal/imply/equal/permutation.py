@@ -28,8 +28,8 @@ def prove(Eq):
     
     Eq << apply(Equality(p.set_comprehension(), Interval(0, n - 1, integer=True)), x)
 
-    A = Symbol.A(definition=Eq[1].lhs)
-    B = Symbol.B(definition=Eq[1].rhs)
+    A = Symbol.A(Eq[1].lhs)
+    B = Symbol.B(Eq[1].rhs)
     Eq.A_definition = A.this.definition
     
     i = Eq[1].lhs.variable

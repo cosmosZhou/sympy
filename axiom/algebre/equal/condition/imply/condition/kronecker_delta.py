@@ -1,10 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Unequal, Equal
-from sympy import Symbol
 import axiom
-from sympy.functions.special.tensor_functions import KroneckerDelta
-from sympy.core.function import Function
-from sympy.core.numbers import One
 
 
 def process_given_conditions(*given, swap=False, delta=True):
@@ -22,13 +18,13 @@ def process_given_conditions(*given, swap=False, delta=True):
 
 
 @apply
-def apply(*given, **kwargs):    
+def apply(*given, **kwargs): 
     eq, f_eq = process_given_conditions(*given, **kwargs)
     return f_eq
 
 
 @prove
-def prove(Eq):    
+def prove(Eq): 
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
     f = Function.f(nargs=(2,), shape=(), integer=True)

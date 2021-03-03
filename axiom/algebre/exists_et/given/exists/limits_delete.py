@@ -2,7 +2,6 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from sympy.sets.conditionset import conditionset
 from axiom import sets, algebre
 
 

@@ -1,6 +1,5 @@
 from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.conditionset import conditionset
 
 from axiom import discrete, sets
 from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
@@ -10,7 +9,7 @@ from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_sym
 def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     j = w.definition.variables[0]
-    x_quote = Symbol("x'", definition=w[n, j] @ x[:n + 1])
+    x_quote = Symbol("x'", w[n, j] @ x[:n + 1])
     return ForAll[x[:n + 1]:Q[u]](Exists[j:0:n + 1](Contains(x_quote, Q[v])))
 
 

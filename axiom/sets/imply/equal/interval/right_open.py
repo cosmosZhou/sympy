@@ -19,7 +19,7 @@ def prove(Eq):
     
     Eq << apply(Interval(a, b - 2, integer=True))
     
-    b = Symbol.b(definition=b-1)
+    b = Symbol.b(b-1)
     Eq << b.this.definition
     
     Eq << Eq[-1].reversed + 1

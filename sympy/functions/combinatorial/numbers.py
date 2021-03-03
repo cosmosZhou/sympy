@@ -2027,17 +2027,14 @@ class Stirling(Function):
 
     @property
     def definition(self):        
-        from sympy.core.numbers import oo
-        from sympy.sets.sets import FiniteSet, image_set
-        from sympy.concrete.expr_with_limits import UNION
-        from sympy.core.symbol import dtype
+        from sympy import oo, FiniteSet, imageset, UNION, dtype
         x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
         assert x.type[0] == dtype.integer.set
         assert not x.is_set
         n, k = self.args
         i = Symbol('i', integer=True)
         
-        return abs(image_set(UNION[i:k](FiniteSet(x[i])), x[:k], self.conditionset(n, k, x)))
+        return abs(imageset(x[:k], UNION[i:k](FiniteSet(x[i])), self.conditionset(n, k, x)))
 
     @classmethod
     def conditionset(cls, n, k, x=None):
@@ -2048,7 +2045,7 @@ class Stirling(Function):
         from sympy import Sum
         from sympy.core.relational import Equality
         from sympy import UNION, ForAll
-        from sympy.sets.conditionset import conditionset
+        from sympy.sets import conditionset
         from sympy.sets.sets import Interval
         i = Symbol.i(integer=True)
         return conditionset(x[:k],
@@ -2320,7 +2317,7 @@ class Stirling1(Function):
         assert isinstance(x.type, DtypeVector)
         n, k = self.args
         i = Symbol('i', integer=True)
-        from sympy.sets.conditionset import conditionset
+        from sympy.sets import conditionset
         
         return abs(
             image_set(UNION(FiniteSet(x[i]), (i, 0, k - 1)),

@@ -264,8 +264,8 @@ class LatexPrinter(Printer):
             return True
         if expr.is_Piecewise:
             return True
-        if any([expr.has(x) for x in (Mod,)]):
-            return True
+#         if any([expr.has(x) for x in (Mod,)]):
+#             return True
         if expr.is_Determinant:
             return False
         if not last and any(expr.has(x) for x in (Integral, Product, Sum)):
@@ -281,8 +281,8 @@ class LatexPrinter(Printer):
         """
         if expr.is_Relational:
             return True
-        if any([expr.has(x) for x in (Mod,)]):
-            return True
+#         if any([expr.has(x) for x in (Mod,)]):
+#             return True
         if expr.is_Add:
             return True
         return False

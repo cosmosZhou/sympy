@@ -32,7 +32,7 @@ def prove(Eq):
     c = Symbol.c(complex=True, given=True)
     Eq << apply(Unequal(a, 0), Equality(a * x ** 2 + b * x + c, 0), x=x)
     
-    x = Symbol.x(definition=x + b / (2 * a))
+    x = Symbol.x(x + b / (2 * a))
     Eq << x.this.definition
     
     Eq << Eq[-1] - b / (2 * a)

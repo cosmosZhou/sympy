@@ -2,14 +2,12 @@ from axiom.utility import prove, apply
 from sympy import *
 import axiom
 from axiom import sets, algebre
-from sympy.sets.sets import image_set
-
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
 @apply
 def apply(given):
     n, image_set = axiom.is_Contains(given)     
-    expr, _n, cond = axiom.is_ImageSet(image_set)
+    _n, expr, cond = axiom.is_ImageSet(image_set)
     
     assert expr == 2 * n + 1
     
@@ -37,9 +35,9 @@ def prove(Eq):
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
 
-    Eq << apply(Contains(n, image_set(2 * n + 1, n, Interval(a // 2, (b - 1) // 2, integer=True))))
+    Eq << apply(Contains(n, imageset(n, 2 * n + 1, Interval(a // 2, (b - 1) // 2, integer=True))))
     
-    S = Symbol.S(definition=Eq[0].rhs)
+    S = Symbol.S(Eq[0].rhs)
     Eq << S.this.definition
     
     Eq << Eq[-1].this.rhs.limits_subs(n, (n - 1) / 2)

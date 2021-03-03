@@ -228,6 +228,8 @@ class Mod(Function):
         if fuzzy_and([p.is_integer, q.is_integer, fuzzy_not(q.is_zero)]):
             return True
 
+    is_extended_real = True
+        
     def _eval_is_extended_negative(self):
         if self.args[1].is_extended_positive:
             return False

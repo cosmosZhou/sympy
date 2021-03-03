@@ -48,7 +48,7 @@ def prove(Eq):
     
     Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), j)    
     
-    a = Symbol.a(definition=LAMBDA[k:n](k))
+    a = Symbol.a(LAMBDA[k:n](k))
     Eq.aj_definition = a.this.definition[j]
     
     Eq << a.set_comprehension().this.function.arg.base.definition

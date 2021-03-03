@@ -16,7 +16,7 @@ def prove(Eq):
     f = Function.f(integer=True, shape=())
     Eq << apply(f(e) > 0, wrt=e)
     
-    S = Symbol.S(definition=Integers)
+    S = Symbol.S(Integers)
     Eq << ForAll[e:S](f(e) > 0, plausible=True)
     
     Eq << Eq[-1].this.limits[0][1].definition

@@ -1,9 +1,5 @@
-from sympy.core.relational import GreaterThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy import Exists
-from sympy.sets.contains import Contains
 from axiom import algebre, sets
 # given: |A| >= 1
 # A != {}

@@ -27,7 +27,7 @@ def prove(Eq):
     j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
     assert Identity(n).is_integer
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     Eq << apply(w)
 
@@ -43,7 +43,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.astype(KroneckerDelta)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.lamda.astype.identity)
+    Eq << Eq[-1].this.rhs.apply(algebre.lamda.astype.identity)
     
     Eq << discrete.matrix.elementary.swap.square.apply(w)
     

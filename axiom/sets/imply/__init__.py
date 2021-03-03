@@ -5,5 +5,6 @@ from . import ou
 from . import forall
 from . import forall_exists_equal
 from . import is_nonemptyset
-from . import equivalent
 from . import contains
+from . import forall_contains
+from . import subset

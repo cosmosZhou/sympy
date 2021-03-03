@@ -1,10 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import S
 from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
-from sympy.matrices.expressions.determinant import det
-from sympy.concrete.summations import Sum
-from sympy import Symbol
 from axiom import algebre, sets
 
 
@@ -22,7 +18,7 @@ def prove(Eq):
     
     Eq << apply(A)
     
-    Eq << Symbol.L(shape=(n, n), definition=Eq[0].lhs.arg).this.definition
+    Eq << Symbol.L(Eq[0].lhs.arg).this.definition
     shift = Eq[-1].rhs.function.args[0].base
     
     Eq.L_definition = Eq[-1].this.rhs.doit()

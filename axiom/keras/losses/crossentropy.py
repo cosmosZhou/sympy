@@ -20,7 +20,7 @@ def apply(given):
     assert n >= 2
     
     x = Symbol.x(shape=(n,), real=True)    
-    y = Symbol.y(shape=(n,), definition=softmax(x))
+    y = Symbol.y(softmax(x))
     
     assert y.is_zero == False
     

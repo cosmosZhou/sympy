@@ -1,4 +1,3 @@
-
 from axiom.utility import prove, apply
 from tensorflow.nn import softmax
 from sympy import *
@@ -13,9 +12,9 @@ def apply(seq_length, dx, dz, k, num_lower, num_upper):
     W_K = Symbol("W^K", shape=(dx, dz), real=True)
     W_V = Symbol("W^V", shape=(dx, dz), real=True)
     
-    Q = Symbol.Q(definition=x @ W_Q)
-    K = Symbol.K(definition=x @ W_K)
-    V = Symbol.V(definition=x @ W_V)
+    Q = Symbol.Q(x @ W_Q)
+    K = Symbol.K(x @ W_K)
+    V = Symbol.V(x @ W_V)
     
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
@@ -23,27 +22,27 @@ def apply(seq_length, dx, dz, k, num_lower, num_upper):
     w_K = Symbol("w^K", shape=(2 * k + 1, dz), real=True)
     w_V = Symbol("w^V", shape=(2 * k + 1, dz), real=True)
     
-    a_K = Symbol("a^K", definition=LAMBDA[j:seq_length, i:seq_length](w_K[k + tf.clip(j - i, -k, k)]))
-    a_V = Symbol("a^V", definition=LAMBDA[j:seq_length, i:seq_length](w_V[k + tf.clip(j - i, -k, k)]))
+    a_K = Symbol("a^K", LAMBDA[j:seq_length, i:seq_length](w_K[k + tf.clip(j - i, -k, k)]))
+    a_V = Symbol("a^V", LAMBDA[j:seq_length, i:seq_length](w_V[k + tf.clip(j - i, -k, k)]))
     
-    a = Symbol.a(definition=Q @ (K + a_K).T / sqrt(dz))
+    a = Symbol.a(Q @ (K + a_K).T / sqrt(dz))
     
-    a_quote = Symbol("a'", definition=a - (1 - tf.linalg.band_part[num_lower, num_upper](OneMatrix(seq_length, seq_length))) * oo)
+    a_quote = Symbol("a'", a - (1 - tf.linalg.band_part[num_lower, num_upper](OneMatrix(seq_length, seq_length))) * oo)
     
-    s = Symbol.s(definition=softmax(a_quote))
+    s = Symbol.s(softmax(a_quote))
     
-    z = Symbol.z(definition=s @ (V + a_V))
+    z = Symbol.z(s @ (V + a_V))
     
     gram_width = num_lower + num_upper + 1
     start = i - num_lower
     stop = start + gram_width  # i + k_max + 1
     
-    a_K_quote = Symbol("a^K'", definition=LAMBDA[j:Min(seq_length, gram_width), i:seq_length](w_K[k + tf.clip(j - Min(i, num_lower), -k, k)]))
-    a_V_quote = Symbol("a^V'", definition=LAMBDA[j:Min(seq_length, gram_width), i:seq_length](w_V[k + tf.clip(j - Min(i, num_lower), -k, k)]))
+    a_K_quote = Symbol("a^K'", LAMBDA[j:Min(seq_length, gram_width), i:seq_length](w_K[k + tf.clip(j - Min(i, num_lower), -k, k)]))
+    a_V_quote = Symbol("a^V'", LAMBDA[j:Min(seq_length, gram_width), i:seq_length](w_V[k + tf.clip(j - Min(i, num_lower), -k, k)]))
     
-    β = Symbol.beta(definition=LAMBDA[i:seq_length](tf.nn.relu(start)))
+    β = Symbol.beta(LAMBDA[i:seq_length](tf.nn.relu(start)))
             
-    ζ = Symbol.zeta(definition=LAMBDA[i:seq_length](Min(stop, seq_length)))
+    ζ = Symbol.zeta(LAMBDA[i:seq_length](Min(stop, seq_length)))
     
     indices = slice(β[i], ζ[i])
     indices0 = slice(0, ζ[i] - β[i])
@@ -105,7 +104,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[4].reversed)
 
-    Ξ = Symbol.Ξ(definition=band_part)
+    Ξ = Symbol.Ξ(band_part)
     
     Eq.Ξ_definition = Ξ.this.definition
     
@@ -128,7 +127,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(Sum)
     
-    Eq << Eq[-1].this.rhs.function.args[0].cond.apply(sets.imply.equivalent.contains.astype.contains)
+    Eq << Eq[-1].this.rhs.function.args[0].cond.apply(sets.contains.astype.contains)
     
     Eq.start_definition = Eq[9].this.rhs.definition
     

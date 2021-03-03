@@ -2,7 +2,7 @@ from axiom.utility import prove, apply
 from sympy import *
 import axiom
 from axiom import sets, algebre
-from sympy.sets.sets import image_set
+
 
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
@@ -16,7 +16,7 @@ def apply(*given):
     axiom.is_integer_Interval(ab)
     a, b = ab.min(), ab.max()
     
-    return Contains(n, image_set(2 * n + 1, n, Interval(a // 2, (b - 1) // 2, integer=True)))
+    return Contains(n, imageset(n, 2 * n + 1, Interval(a // 2, (b - 1) // 2, integer=True)))
 
 
 @prove
@@ -42,9 +42,9 @@ def prove(Eq):
     
     Eq << Eq[-3].subs(Eq[-1])
     
-    Eq << Eq[-1].this.rhs.args[0].apply(algebre.imply.equal.ceiling.astype.floor)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebre.ceiling.astype.floor)
     
-    S = Symbol.S(definition=conditionset.conditionset(n, Eq[-1]))
+    S = Symbol.S(conditionset(n, Eq[-1]))
     Eq << S.this.definition
     
     Eq << Eq[-1].this.rhs.limits_subs(n, 2 * n + 1)

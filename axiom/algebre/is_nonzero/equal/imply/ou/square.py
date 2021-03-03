@@ -35,7 +35,7 @@ def prove(Eq):
     
     Eq << algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[0], Eq[-1])
     
-    t = Symbol.t(definition=sqrt(-c / a))
+    t = Symbol.t(sqrt(-c / a))
     Eq << t.this.definition
     
     Eq.t_squared = Eq[-1] ** 2

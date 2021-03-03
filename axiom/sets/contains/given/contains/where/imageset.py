@@ -3,7 +3,6 @@ from sympy import *
 import axiom
 
 from axiom import sets, algebre
-from sympy.sets.sets import image_set
 
 
 @apply
@@ -11,7 +10,7 @@ def apply(imply):
     e, S = axiom.is_Contains(imply)
     image_set = S.image_set()
     
-    expr, variables, base_set = image_set
+    variables, expr, base_set = image_set
 
     variables_ = Wild(variables.name, **variables.type.dict)
     assert variables_.shape == variables.shape
@@ -33,7 +32,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     s = Symbol.s(etype=dtype.integer)
     
-    Eq << apply(Contains(f(y), image_set(f(x), x, s)))
+    Eq << apply(Contains(f(y), imageset(x, f(x), s)))
     
     Eq << sets.contains.imply.contains.imageset.apply(Eq[1], f=f)
     

@@ -68,6 +68,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_Add = False
     is_Mul = False
     is_Pow = False   
+    is_ConditionSet = False
     
     is_Equality = False
     is_Unequality = False
@@ -99,6 +100,10 @@ class Basic(with_metaclass(ManagedProperties)):
     def intersection_sets(self, b):
         ...
 
+    def preorder_traversal(self):
+        from sympy import preorder_traversal
+        return preorder_traversal(self)
+    
     def subs_limits_with_epitome(self, epitome):
         return self
 
@@ -1167,36 +1172,9 @@ class Basic(with_metaclass(ManagedProperties)):
             return self
 
         if old.is_Slice:
-            if len(old.indices) == 1:
-                indices = set()
-                for indexed in preorder_traversal(self):
-                    if not isinstance(indexed, Basic):
-                        continue
-                    if indexed.is_Indexed:
-                        if indexed.base == old.base:
-                            indices |= {*indexed.indices}
-                    elif indexed.is_Slice:
-                        if indexed.base == old.base:
-                            indices |= {*indexed.index}
-                        
-                if indices:
-                    start, stop = old.index
-                    reps = {}            
-                    this = self
-                    for i in indices:
-                        if i.is_symbol:
-                            if i >= stop or i < start: 
-                                continue
-                            i_domain = self.domain_defined(i)
-                            if i.domain != i_domain:
-                                _i = i.copy(domain=i_domain)
-                                this = this._subs(i, _i)                            
-                                reps[i] = _i
-                    if this != self:
-                        this = this._subs(old, new, **hints)
-                        for i, _i in reps.items():
-                            this = this._subs(_i, i)                            
-                        return this
+            this = old._subs_helper(new, self, **hints)
+            if this is not None:
+                return this
         
         def fallback(self, old, new):
             """
@@ -2274,7 +2252,14 @@ class Basic(with_metaclass(ManagedProperties)):
         assert eq.is_Equal
         assert eq.lhs is self
         return eq.rhs
+    
+    def floor(self):
+        from sympy import Floor
+        return Floor(self)
 
+    def ceiling(self):
+        from sympy import Ceiling
+        return Ceiling(self)
     
 class Atom(Basic):
     """

@@ -30,7 +30,7 @@ def prove(Eq):
     S = Symbol.S(etype=dtype.real * (m, n))
     Eq << apply(Equality(a * OneMatrix(m, n), c), Contains(a * b, S))
     
-    a = Symbol.a(definition=a * OneMatrix(m, n))
+    a = Symbol.a(a * OneMatrix(m, n))
     
     Eq << a.this.definition
     

@@ -1,13 +1,7 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy import Symbol, Slice
-from sympy.core.numbers import oo
-from sympy.sets.sets import Interval
 from axiom import sets, algebre
-from sympy.sets.contains import NotContains
 import axiom
-from sympy.tensor.indexed import Slice
 
 
 @apply
@@ -17,7 +11,7 @@ def apply(*given):
     
     if last_element_equality.lhs.is_UNION:
         last_element_equality, set_comprehension_equality = set_comprehension_equality, last_element_equality
-        
+
     p, n = axiom.is_Indexed(last_element_equality.lhs)
     _n = last_element_equality.rhs
     assert _n == n
@@ -42,7 +36,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[1])
     
-    Eq << Eq[-1] - n.set
+    Eq << sets.equal.imply.equal.complement.apply(Eq[-1], {n}) 
     
     Eq << Eq[2].subs(Eq[-1].reversed).reversed
     

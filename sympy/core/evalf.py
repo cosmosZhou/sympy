@@ -2,8 +2,6 @@
 Adaptive numerical evaluation of SymPy expressions, using mpmath
 for mathematical functions.
 """
-from __future__ import print_function, division
-
 import math
 
 import mpmath.libmp as libmp

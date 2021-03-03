@@ -3,7 +3,6 @@ from axiom.utility import prove, apply
 from sympy import *
 
 from axiom.discrete.combinatorics.permutation import mapping
-from sympy.sets.conditionset import conditionset
 from axiom import sets
 
 
@@ -11,7 +10,7 @@ from axiom import sets
 def apply(n):
     Q, w, x = mapping.Qu2v.predefined_symbols(n)    
     
-    Pn1 = Symbol("P_{n+1}", definition=conditionset(x[:n + 1], Equality(x[:n + 1].set_comprehension(), Interval(0, n, integer=True))))
+    Pn1 = Symbol("P_{n+1}", conditionset(x[:n + 1], Equality(x[:n + 1].set_comprehension(), Interval(0, n, integer=True))))
 
     t = Q.definition.variable
     return Equality(UNION[t](Q[t]), Pn1)

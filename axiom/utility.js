@@ -105,10 +105,10 @@ window.onload = function() {
 					case 'w':
 						console.log("M-w");
 						var checkbox = $('input[type=checkbox][name=wholeWord]')[0];
-						checkbox.checked = !checkbox.checked;						
+						checkbox.checked = !checkbox.checked;
 						break;
 					case 'x':
-						console.log("M-x");						
+						console.log("M-x");
 						var checkbox = $('input[type=checkbox][name=regularExpression]')[0];
 						checkbox.checked = !checkbox.checked;
 						break;
@@ -167,4 +167,14 @@ window.onload = function() {
 				break;
 		}
 	}
+}
+
+function request_post(url, data, dataType, contentType) {
+	return $.ajax({
+		url: url,
+		type: 'post',
+		data: contentType == 'application/json' ? JSON.stringify(data) : data,
+		dataType: dataType ? dataType : 'json',
+		contentType: contentType ? contentType : "application/x-www-form-urlencoded",
+	});
 }

@@ -39,7 +39,7 @@ def prove(Eq):
     
     Eq << apply(Contains(f[0], g[0]), Sufficient(Contains(f[n], g[n]), Contains(f[n + 1], g[n + 1])), n=n)
     
-    h = Symbol.h(definition=LAMBDA[n](Boole(Contains(f[n], g[n]))))
+    h = Symbol.h(LAMBDA[n](Boole(Contains(f[n], g[n]))))
     
     Eq << h[0].this.definition
     

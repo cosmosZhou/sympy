@@ -7,6 +7,7 @@ from sympy.concrete.limits import limits_intersect
 
 @apply
 def apply(self, old, new):
+    assert not old.is_given
     exists = self.limits_dict        
     if old in exists:
         domain = exists[old]
@@ -30,7 +31,7 @@ def apply(self, old, new):
         else:
             eqs.append(self.function._subs(old, new))
         limits = self.limits_delete(old)
-        if new.is_symbol and new.definition is None:
+        if new.is_symbol and new.definition is None and not new.is_given:
             limits = limits_intersect(limits, [(new,)])
                     
         if limits:

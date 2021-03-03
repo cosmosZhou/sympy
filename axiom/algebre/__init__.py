@@ -21,6 +21,7 @@ from . import imply
 from . import forall_equal
 from . import forall_strict_less_than
 from . import forall_less_than
+from . import forall_exists
 from . import is_positive
 from . import is_negative
 from . import forall_strict_greater_than
@@ -30,3 +31,17 @@ from . import is_even
 from . import is_odd
 from . import forall_ou
 from . import exists_equal
+from . import ceiling
+from . import frac
+from . import piecewise
+from . import limits
+from . import sum
+from . import max
+from . import times
+from . import lamda
+from . import product
+from . import floor
+from . import min
+from . import plus
+from . import bool
+from . import power

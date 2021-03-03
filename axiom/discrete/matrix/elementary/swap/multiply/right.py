@@ -16,7 +16,7 @@ def apply(x):
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
-    w = Symbol.w(definition=LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
     return Equality(x @ w[i, j] @ w[i, j], x)
 

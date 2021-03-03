@@ -1,7 +1,5 @@
-from sympy.core.relational import Unequality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import NotContains, Contains
-from sympy import Symbol
 import axiom
 # given: x != y
 # x not in {y}
@@ -20,7 +18,7 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True, given=True)
     x = Symbol.x(complex=True, shape=(n,), given=True)
     y = Symbol.y(complex=True, shape=(n,), given=True)
-    Eq << apply(Contains(x, y.universalSet - y.set))
+    Eq << apply(Contains(x, y.universalSet // {y}))
     
     Eq << Eq[0].simplify()
         

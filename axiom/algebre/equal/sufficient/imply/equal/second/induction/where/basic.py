@@ -12,7 +12,7 @@ def apply(*given, n=None, k=None, hypothesis=False):
     
     assert fk.is_Equal
     
-    start, _n = axiom.is_Interval(k.domain, end=None)
+    start, _n = axiom.is_Interval(k.domain)
     
     assert fk._subs(k, _n) == fn
     assert fk._subs(k, start) == f0

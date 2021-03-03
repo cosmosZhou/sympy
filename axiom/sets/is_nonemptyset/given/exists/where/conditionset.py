@@ -1,14 +1,7 @@
-from sympy.core.relational import Unequality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy import Exists
-from sympy import Symbol
 from axiom import sets
 import axiom
-from sympy.sets.conditionset import conditionset
-from sympy.sets.sets import Interval
-from sympy.core.function import Function
 # given: A != {}
 # Exists[x] (x in A)
 
@@ -28,7 +21,7 @@ def prove(Eq):
     
     Eq << apply(Unequality(conditionset(x, f(x) > 1, S), x.emptySet))
     
-    A = Symbol.A(definition=Eq[0].lhs)
+    A = Symbol.A(Eq[0].lhs)
     
     Eq << A.this.definition
     

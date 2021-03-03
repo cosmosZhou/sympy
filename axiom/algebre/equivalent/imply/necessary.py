@@ -1,20 +1,13 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol
-
-from sympy.core.numbers import oo
-from sympy import ForAll, Sufficient, LAMBDA, Equivalent, Necessary
 import axiom
 from axiom import algebre
-from sympy.functions.elementary.piecewise import Piecewise
 
 
 @apply
 def apply(given):
     fn, fn1 = axiom.is_Equivalent(given)        
     return Necessary(fn, fn1)
-
-
 
 
 @prove

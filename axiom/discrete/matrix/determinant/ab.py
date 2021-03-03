@@ -22,7 +22,7 @@ def prove(Eq):
     b = Symbol.b(shape=(n,), complex=True, zero=False)
     Eq << apply(a, b)
  
-    Eq << Symbol.L(shape=(n, n), definition=Eq[0].lhs.arg).this.definition
+    Eq << Symbol.L(Eq[0].lhs.arg).this.definition
     
     Eq << Eq[-1].this.rhs.astype(Matrix)
 

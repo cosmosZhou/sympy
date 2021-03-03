@@ -1,9 +1,6 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-import sympy
 from tensorflow.nn import softmax
-from sympy import Symbol
 
 
 @apply
@@ -12,9 +9,9 @@ def apply(n, d, i):
     K = Symbol.K(shape=(n, d), real=True)
     V = Symbol.V(shape=(n, d), real=True)
     
-    z = Symbol.z(shape=(n, d), definition=softmax(Q @ K.T / sympy.sqrt(d)) @ V)
+    z = Symbol.z(softmax(Q @ K.T / sqrt(d)) @ V)
 
-    return Equality(z[i], softmax(Q[i] @ K.T / sympy.sqrt(d)) @ V)
+    return Equality(z[i], softmax(Q[i] @ K.T / sqrt(d)) @ V)
 
 
 @prove
@@ -24,7 +21,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     Eq << apply(n, d, i)
     
-    M = Symbol.M(shape=(n, n), definition=Eq[0].rhs.args[0].arg)
+    M = Symbol.M(Eq[0].rhs.args[0].arg)
     Eq << M.this.definition
     
     Eq << Eq[0].subs(Eq[-1].reversed)

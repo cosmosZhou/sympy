@@ -19,7 +19,7 @@ def prove(Eq):
     x = Symbol.x(integer=True)
     U = Symbol.U(etype=dtype.integer)
     A = Symbol.A(etype=dtype.integer)
-    S = Symbol.S(definition=A & U)
+    S = Symbol.S(A & U)
     s = Symbol.s(etype=dtype.integer)
     
     Eq << apply(Contains(x, S - s), U)

@@ -1,13 +1,7 @@
-from sympy.core.relational import Unequal, Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
-from sympy import ForAll
-from sympy.core.function import Function
 import axiom
 from axiom import sets, algebre
-from sympy.functions.special.tensor_functions import Boole
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.piecewise import Piecewise
 
 
 # given: f(a) != f(b) or a = b
@@ -26,8 +20,6 @@ def apply(given, pivot=0, wrt=None):
     cond = eq.invert()
     
     return ForAll[wrt:cond](given.func(*conds))            
-
-
 
 
 @prove
@@ -53,9 +45,9 @@ def prove(Eq):
     
     Eq << sets.is_nonemptyset.forall.imply.exists.apply(Eq[-1], Eq[-2])
     
-    Eq << sets.imply.equivalent.unequal.contains.apply(x, y)
+    Eq << sets.unequal.astype.contains.apply(x, y)
     
-    Eq << ForAll[x : Equality(Boole(Contains(x, Eq[2].limits[0][1])), 1)](Eq[2].function, plausible=True)
+    Eq << ForAll[x: Equality(Boole(Contains(x, Eq[2].limits[0][1])), 1)](Eq[2].function, plausible=True)
     
     Eq << Eq[-1].this.limits[0][1].lhs.astype(Piecewise)
     

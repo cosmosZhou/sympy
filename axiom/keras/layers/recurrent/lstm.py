@@ -9,31 +9,31 @@ from tensorflow.nn import sigmoid
 
 @apply
 def apply(x, W, Wh, b):
-    h = Symbol.h(definition=LSTM[W, Wh, b](x))
-    c = Symbol.c(definition=LSTMCell[W, Wh, b](x))
+    h = Symbol.h(LSTM[W, Wh, b](x))
+    c = Symbol.c(LSTMCell[W, Wh, b](x))
     t = Symbol.t(integer=True, positive=True)
     
     d = h.shape[-1]
     
-    Wi = Symbol.W_i(definition=W[:,:d])
-    Wf = Symbol.W_f(definition=W[:, d:2 * d])
-    Wc = Symbol.W_c(definition=W[:, 2 * d:3 * d])
-    Wo = Symbol.W_o(definition=W[:, -d:])
+    Wi = Symbol.W_i(W[:,:d])
+    Wf = Symbol.W_f(W[:, d:2 * d])
+    Wc = Symbol.W_c(W[:, 2 * d:3 * d])
+    Wo = Symbol.W_o(W[:, -d:])
 
-    Whi = Symbol.W_hi(definition=Wh[:,:d])
-    Whf = Symbol.W_hf(definition=Wh[:, d:2 * d])
-    Whc = Symbol.W_hc(definition=Wh[:, 2 * d:3 * d])
-    Who = Symbol.W_ho(definition=Wh[:, -d:])    
+    Whi = Symbol.W_hi(Wh[:,:d])
+    Whf = Symbol.W_hf(Wh[:, d:2 * d])
+    Whc = Symbol.W_hc(Wh[:, 2 * d:3 * d])
+    Who = Symbol.W_ho(Wh[:, -d:])    
     
-    bi = Symbol.b_i(definition=b[:d])
-    bf = Symbol.b_f(definition=b[d:2 * d])
-    bc = Symbol.b_c(definition=b[2 * d:3 * d])
-    bo = Symbol.b_o(definition=b[-d:])
+    bi = Symbol.b_i(b[:d])
+    bf = Symbol.b_f(b[d:2 * d])
+    bc = Symbol.b_c(b[2 * d:3 * d])
+    bo = Symbol.b_o(b[-d:])
 
-    it = Symbol.i_t(definition=sigmoid(x[t] @ Wi + h[t - 1] @ Whi + bi))
-    ft = Symbol.f_t(definition=sigmoid(x[t] @ Wf + h[t - 1] @ Whf + bf))
-    ct = Symbol.c_t(definition=ft * c[t - 1] + it * tanh(x[t] @ Wc + h[t - 1] @ Whc + bc))
-    ot = Symbol.o_t(definition=sigmoid(x[t] @ Wo + h[t - 1] @ Who + bo))    
+    it = Symbol.i_t(sigmoid(x[t] @ Wi + h[t - 1] @ Whi + bi))
+    ft = Symbol.f_t(sigmoid(x[t] @ Wf + h[t - 1] @ Whf + bf))
+    ct = Symbol.c_t(ft * c[t - 1] + it * tanh(x[t] @ Wc + h[t - 1] @ Whc + bc))
+    ot = Symbol.o_t(sigmoid(x[t] @ Wo + h[t - 1] @ Who + bo))    
      
     return Equality(h[t], ot * tanh(ct))
 

@@ -186,8 +186,9 @@ class Exists(ConditionalBoolean):
             
             if x is not None:
                 domain = limits_dict[x]
-                if isinstance(domain, list):                          
-                    function = Unequal(S, x.emptySet)
+                if isinstance(domain, list):
+                    return self                          
+#                     function = Unequal(S, x.emptySet)
                 elif domain.is_set:
                     if domain.is_FiniteSet:
                         function = Contains(domain.arg, S)
@@ -222,7 +223,7 @@ class Exists(ConditionalBoolean):
                     if domain.is_FiniteSet:
                         function = NotContains(domain.arg, S)
                     else:
-                        function = Unequal(domain - S, x.emptySet)                        
+                        function = Unequal(domain // S, x.emptySet)                        
                 else:
                     function = None
                 

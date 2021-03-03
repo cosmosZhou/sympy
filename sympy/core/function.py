@@ -813,6 +813,8 @@ class Function(Application, Expr):
 
     @property
     def shape(self):
+        if self.is_set:
+            return ()
         return self.args[0].shape
 
     @property

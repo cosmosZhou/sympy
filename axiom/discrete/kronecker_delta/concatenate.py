@@ -20,8 +20,8 @@ def prove(Eq):
     W = Symbol.W(shape=(n, n), complex=True)
     Eq << apply(W)
     
-    U = Symbol.U(definition=Eq[0].lhs)
-    V = Symbol.V(definition=Eq[0].rhs)
+    U = Symbol.U(Eq[0].lhs)
+    V = Symbol.V(Eq[0].rhs)
     
     Eq << U.this.definition
     Eq << V.this.definition

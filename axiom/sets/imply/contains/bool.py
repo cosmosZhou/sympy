@@ -1,7 +1,5 @@
-from sympy import Symbol, Boole, Or
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.piecewise import Piecewise
 from axiom import algebre, sets
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
@@ -21,7 +19,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.astype(Piecewise)
     
-    S = Symbol.S(definition=Eq[1].rhs)
+    S = Symbol.S(Eq[1].rhs)
     
     Eq << Or(Contains(1, S) & (x > y), Contains(0, S) & (x <= y), plausible=True)
     

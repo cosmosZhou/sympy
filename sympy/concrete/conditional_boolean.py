@@ -477,7 +477,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                     
                     image_set = s.image_set()
                     if image_set is not None:
-                        expr, sym, base_set = image_set
+                        sym, expr, base_set = image_set
                         if self.function.is_ExprWithLimits:
                             if sym in self.function.bound_symbols:
                                 _sym = base_set.element_symbol(self.function.variables_set)

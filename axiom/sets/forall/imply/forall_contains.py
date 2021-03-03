@@ -1,8 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
 
-from sympy.sets.conditionset import conditionset
-
 
 @apply
 def apply(given, P):
@@ -28,7 +26,7 @@ def prove(Eq):
     f = Function.f(nargs=(m,), shape=(), integer=True)
     g = Function.g(nargs=(n,), shape=(m,))
     
-    P = Symbol.P(definition=conditionset(y, Equality(f(y), 1)))
+    P = Symbol.P(conditionset(y, Equality(f(y), 1)))
     Eq << apply(ForAll[x:A](Equality(f(g(x)), 1)), P)
     
     Eq << Eq[-1].this.function.rhs.definition

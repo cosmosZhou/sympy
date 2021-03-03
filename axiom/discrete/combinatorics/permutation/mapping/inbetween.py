@@ -1,10 +1,5 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.sets.conditionset import conditionset
-from sympy.sets.sets import Interval
-from sympy import Symbol
-from sympy.functions.elementary.complexes import Abs
 from axiom import discrete, sets
 from axiom.discrete.combinatorics.permutation import mapping
 
@@ -15,7 +10,7 @@ def apply(n, Q=None):
         Q, w, x = mapping.Qu2v.predefined_symbols(n)
     else:
         x = Q.definition.function.variable
-    P_quote = Symbol("P'", definition=conditionset(x[:n + 1], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equality(x[n], n)))
+    P_quote = Symbol("P'", conditionset(x[:n + 1], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equality(x[n], n)))
     
     t = Q.definition.variable
     return Equality(Abs(Q[t]), Abs(P_quote))
