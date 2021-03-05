@@ -910,39 +910,24 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
             return self.func(function, *self.limits)
         else:
-            index = -1
-            for i, limit in enumerate(self.limits):
+            limits = [*self.limits]
+            hit = False
+            
+            for i, limit in enumerate(limits):
                 x, *ab = limit
-                if ab:
-                    a, b = ab
-
                 p = old.as_poly(x)
                 if p is None:
                     continue
-                if p.degree() != 1:
-                    continue
-                index = i
-
-                if new.has(x):
-                    diff = old - new
-                    if old != x:
-                        if diff.has(x):
-                            return self
-
-                        alpha = p.coeff_monomial(x)
-                        diff /= alpha
-
-                    function = self.function.subs(x, x - diff)
-                    if ab:
-                        limit = (x, a + diff, b + diff)
-                break
-
-            if index < 0:
-                return self.func(self.function._subs(old, new), *self.limits)
-
-            limits = [*self.limits]
-            limits[index] = limit
-            return self.func(function, *limits)
+                
+                if p.degree() == 0:
+                    limits[i] = (x, *[a._subs(old, new) for a in ab])
+                    hit |= limits[i] == self.limits[i] 
+            
+            function = self.function._subs(old, new)
+            hit |= function == self.function
+            
+            if hit:
+                return self.func(function, *limits)
 
         return self
 
@@ -1047,14 +1032,25 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return this
         if len(self.limits) == 2:
             limit0, limit1 = self.limits
-            if len(limit0) == 1 and len(limit1) == 1:
-                x_slice = limit0[0]
-                x = limit1[0]
-                if x_slice.is_Slice and x.is_Indexed:
-                    start, stop = x_slice.index
-                    if len(x.indices) == 1 and x.indices[0] == stop:
-                        x_slice = x_slice.base[start: stop + 1]
-                        return self.func(self.function, (x_slice,))
+            if len(limit0) == 1: 
+                if len(limit1) == 1:
+                    x_slice = limit0[0]
+                    x = limit1[0]
+                    if x_slice.is_Slice and x.is_Indexed:
+                        start, stop = x_slice.index
+                        if len(x.indices) == 1 and x.indices[0] == stop:
+                            x_slice = x_slice.base[start: stop + 1]
+                            return self.func(self.function, (x_slice,))
+            else:
+#                 sgm = self.func(self.function, limit0)
+#                 _sgm = sgm.simplify()
+#                 if _sgm != sgm:
+#                     self = self.func(_sgm, limit1)
+#                     sgm = self.simplify()
+#                     if sgm != self:
+#                         return sgm
+                ...
+                    
             return self
 
         if not self.limits:

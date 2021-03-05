@@ -42,7 +42,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.args[0].cond.lhs.astype(Piecewise)
     
-    Eq << Eq[-1].this.lhs.apply(algebre.imply.equal.piecewise.swap.front)
+    Eq << Eq[-1].this.lhs.apply(algebre.piecewise.swap.front)
     
     
 if __name__ == '__main__':

@@ -37,7 +37,7 @@ def prove(Eq):
     
     Eq << algebre.ou.imply.equal.general.apply(Eq[-1], wrt=p)
     
-    Eq << Eq[-1].this.lhs.apply(algebre.imply.equal.piecewise.swap.front)
+    Eq << Eq[-1].this.lhs.apply(algebre.piecewise.swap.front)
     
     Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[1], Eq[-1])
     

@@ -61,11 +61,11 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.astype(Piecewise)
     
-    Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.swap.front)    
+    Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.swap.front)    
     
     Eq << Eq[-1].this.rhs().function.args[0].cond.simplify()
     
-    Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.subs)    
+    Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.subs)    
     
     Eq << Eq[-1].subs(Eq.D0_is_zero)
 
@@ -98,7 +98,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs().function.simplify(wrt=True)
     
-    Eq << algebre.imply.equal.piecewise.swap.front.apply(Eq[-1].rhs.function)
+    Eq << algebre.piecewise.swap.front.apply(Eq[-1].rhs.function)
     
     Eq << Eq[-2].subs(Eq[-1])
     

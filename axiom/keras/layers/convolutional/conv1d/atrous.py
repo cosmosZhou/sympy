@@ -95,7 +95,7 @@ def prove(Eq):
     
     Eq << Eq[-1][i]
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.swap.front)
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.swap.front)
     
     Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[0].apply(algebre.times.astype.ceiling)
     

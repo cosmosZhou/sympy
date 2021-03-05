@@ -50,21 +50,21 @@ def prove(Eq):
     
     Eq << Eq.Ξ_definition.this.rhs.args[-1].expr.astype(Piecewise)
 
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.flatten)
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.flatten)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.flatten, index=0)    
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.flatten, index=0)    
     
     Eq << Eq[-1].this.rhs.args[0].expr.astype(Piecewise)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.flatten, index=0)
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.flatten, index=0)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.swap.back)
     
     Eq << Eq[-1].this.rhs.args[1].cond.collect(i < h)
     
     Eq << Eq[-1].this.rhs.args[1].cond.collect(j < h)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.swap.back)
     
     Eq << Eq[-1].this.rhs.args[0].cond.collect(Equality(i, j))
     

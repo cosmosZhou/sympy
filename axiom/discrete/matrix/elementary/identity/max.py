@@ -38,13 +38,13 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].expr.astype(Piecewise, simplify=False)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.flatten, index=0)
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.flatten, index=0)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.imply.equal.piecewise.swap.front)
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.swap.front)
     
-    Eq << Eq[-1].this.lhs.apply(algebre.imply.equal.piecewise.swap.back)
+    Eq << Eq[-1].this.lhs.apply(algebre.piecewise.swap.back)
     
-    Eq << Eq[-1].this.lhs.apply(algebre.imply.equal.piecewise.invert, index=0)
+    Eq << Eq[-1].this.lhs.apply(algebre.piecewise.invert, index=0)
     
     Eq << Eq[-1].this.lhs.args[1].cond.reversed
     

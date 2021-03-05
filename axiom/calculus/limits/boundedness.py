@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from axiom import sets, algebre
+from axiom import sets, algebre, calculus
 
 
 @apply
@@ -21,7 +21,7 @@ def prove(Eq):
     
     Eq << apply(Equal(Limit(x[n], n, oo), a))
 
-    Eq << algebre.equal.imply.exists.definition.limit.apply(Eq[0])
+    Eq << calculus.equal.imply.exists.definition.limit.apply(Eq[0])
     
     ε = Eq[-1].function.function.rhs
     

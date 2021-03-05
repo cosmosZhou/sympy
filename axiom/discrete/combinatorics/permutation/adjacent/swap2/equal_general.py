@@ -58,15 +58,15 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Plus)
     
-    Eq << Eq[-1].this.rhs().function.apply(algebre.imply.equal.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs().function.apply(algebre.piecewise.swap.back)
     
     Eq << Eq[-1].this.rhs().function.args[2].cond.simplify()
     
     Eq << Eq[-1].this.rhs.function.args[2].cond.apply(sets.contains.astype.ou)
     
-    Eq << Eq[-1].this.rhs().function.apply(algebre.imply.equal.piecewise.invert, index=1)
+    Eq << Eq[-1].this.rhs().function.apply(algebre.piecewise.invert, index=1)
     
-    Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.subs, index=2)
+    Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.subs, index=2)
     
     Eq << algebre.condition.imply.forall.minify.apply(Eq[-1], (j,))
 
@@ -80,7 +80,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this().function.rhs().function.simplify(wrt=True)
     
-    Eq << Eq[-1].this().function.rhs().function.args[-1].expr.args[1].apply(algebre.imply.equal.piecewise.swap.front)
+    Eq << Eq[-1].this().function.rhs().function.args[-1].expr.args[1].apply(algebre.piecewise.swap.front)
     
     Eq << Eq[-1].this.function.rhs.function.astype(KroneckerDelta)
     

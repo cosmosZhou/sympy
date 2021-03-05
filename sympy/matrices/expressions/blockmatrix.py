@@ -13,7 +13,7 @@ from sympy.matrices import Matrix, ShapeError
 from sympy.core.logic import _fuzzy_group
 
 
-class BlockMatrix(MatrixExpr):    
+class BlockMatrix(MatrixExpr): 
 
     @property
     def dtype(self):
@@ -25,6 +25,10 @@ class BlockMatrix(MatrixExpr):
         return dtype
 
     def __new__(cls, *args, **kwargs):
+        if len(args) > 1 and isinstance(args[-1], tuple):
+            *args, (axis,) = args
+        else:
+            axis = 0
         _args = []
         
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
@@ -35,14 +39,16 @@ class BlockMatrix(MatrixExpr):
         from sympy import sympify
         args = [*map(sympify, args)]
         length = max(len(arg.shape) for arg in args)
-        for arg in args:            
-            if isinstance(arg, BlockMatrix) and len(arg.shape) == length:
+        for arg in args: 
+            if isinstance(arg, BlockMatrix) and len(arg.shape) == length and arg.axis == axis:
                 _args += arg.args
             else:
                 _args.append(arg)
         if all(not arg.shape for arg in _args):
             return Matrix(tuple(_args))
-        return Basic.__new__(cls, *_args, **kwargs)
+        blocks = Basic.__new__(cls, *_args, **kwargs)
+        blocks.axis = sympify(axis)
+        return blocks
     
     @staticmethod
     def broadcast(shapes):
@@ -52,8 +58,11 @@ class BlockMatrix(MatrixExpr):
             if not shape:
                 shapes[i] = (1,)
                 shape = shapes[i]
-            if shape[-1] > cols:
-                cols = shape[-1]
+            if len(shape) > 2:
+                ...
+            else:
+                if shape[-1] > cols:
+                    cols = shape[-1]
             if len(shape) > length:
                 length = len(shape)
                 
@@ -61,21 +70,40 @@ class BlockMatrix(MatrixExpr):
             length += 1
             
         for i, shape in enumerate(shapes):
-            if shape[-1] < cols and len(shape) > 1:
-                shape = shape[:-1] + (cols,)
+            if len(shape) > 2:
+                ...
+            else:
+                if shape[-1] < cols and len(shape) > 1:
+                    shape = shape[:-1] + (cols,)
             if len(shape) < length:
                 shape = (1,) * (length - len(shape)) + shape
             shapes[i] = shape
         return shapes
     
     def _eval_shape(self):
-        shapes = [arg.shape for arg in self.args]
-        self.broadcast(shapes)
-        rows = sum(s[0] for s in shapes)
-        if len(shapes[0]) > 1:
-            return rows, shapes[0][1]
+        if self.axis:
+            shapes = [arg.shape for arg in self.args]
+            max_length = {len(s) for s in shapes}
+            assert len(max_length) == 1
+            max_length, *_ = max_length            
+            assert self.axis < max_length
+            
+            for axis in {*range(max_length)} - {self.axis}:
+                assert len({s[axis] for s in shapes}) == 1
+
+            shape = shapes[0]
+            dimension_axis = 0
+            for s in shapes:
+                dimension_axis += s[self.axis]
+            return shape[:self.axis] + (dimension_axis,) + shape[self.axis + 1:max_length]
         else:
-            return (rows,)
+            shapes = [arg.shape for arg in self.args]
+            self.broadcast(shapes)
+            rows = sum(s[0] for s in shapes)
+            if len(shapes[0]) > 1:
+                return (rows, *shapes[0][1:])
+            else:
+                return (rows,)
         
     @property
     def shape(self):
@@ -114,7 +142,7 @@ class BlockMatrix(MatrixExpr):
                             args.append(arg)
                             start += arg.shape[0]
                         else:
-                            args.append(arg[start - index : stop - index])
+                            args.append(arg[start - index: stop - index])
                             start += stop - start
             if len(args) == 1:
                 return args[0]
@@ -135,7 +163,7 @@ class BlockMatrix(MatrixExpr):
                         start, stop = i.start, i.stop                        
                         if start is None:
                             if stop is None:
-                                #v have the same columns
+                                # v have the same columns
                                 args = []
                                 for v in self.args:
                                     if len(v.shape) > 1:
@@ -150,7 +178,7 @@ class BlockMatrix(MatrixExpr):
                     raise Exception('unimplemented method') 
                 from sympy.core.sympify import _sympify
                 i, j = _sympify(i), _sympify(j)
-                if self.valid_index(i, j) != False:                
+                if self.valid_index(i, j) != False: 
                     args = []
                     length = 0
                     for arg in self.args:
@@ -159,7 +187,7 @@ class BlockMatrix(MatrixExpr):
                         cond = i < length
                         if len(arg.shape) == 1:
                             args.append([arg[j], cond])
-                        else:                        
+                        else: 
                             if cond.is_BooleanFalse:
                                 continue                         
                             args.append([arg[i - _length, j], cond])
@@ -330,7 +358,7 @@ class BlockMatrix(MatrixExpr):
     def blocks(self):
         cols = None
         blocks = []
-        for X in self.args:            
+        for X in self.args: 
             if X.is_Transpose and X.arg.is_BlockMatrix:
                 if cols is None:
                     cols = len(X.arg.args)
@@ -381,8 +409,8 @@ class BlockMatrix(MatrixExpr):
             return r"\left[\begin{array}{%s}%s\end{array}\right]" % ('c' * cols, r'\\'.join(array))
             
         array = []
-        for X in self.args:            
-            if X.is_Transpose and X.arg.is_BlockMatrix:                
+        for X in self.args: 
+            if X.is_Transpose and X.arg.is_BlockMatrix: 
                 X = X.arg       
                 latex = r"{\left[\begin{array}{%s}%s\end{array}\right]}" % ('c' * len(X.args),
                                                                             ' & '.join('{%s}' % p._print(arg.T) for arg in X.args))
@@ -390,20 +418,24 @@ class BlockMatrix(MatrixExpr):
                 latex = '{%s}' % p._print(X)   
             array.append(latex)
 
-        if len(self.shape) == 1:
+        if len(self.shape) == 1 or self.axis:
             delimiter = ' & '
             center = 'c' * len(self.args)
         else:
             delimiter = r'\\'
             center = 'c'
             
-        return r"\left[\begin{array}{%s}%s\end{array}\right]" % (center, delimiter.join(array))
+        latex = r"\left[\begin{array}{%s}%s\end{array}\right]" % (center, delimiter.join(array))
+        if self.axis:
+            latex = "%s_%s" % (latex, p._print(self.axis))
+        return latex
 #         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
 
     def _sympystr(self, p):
         return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
 
-    _pretty = _sympystr
+    def _pretty(self, p): 
+        return p._print_seq(self.args, '[', ']')
     
     def _eval_domain_defined(self, x):
         if x.dtype.is_set:
@@ -429,7 +461,7 @@ class BlockMatrix(MatrixExpr):
                 blocks_T[j][i] = blocks[i][j]
         return self.func(*[self.func(*block).T for block in blocks_T])
 
-    def __rmul__(self, other):        
+    def __rmul__(self, other): 
         if not other.shape:
             return self.func(*(other * arg for arg in self.args))
         return MatrixExpr.__rmul__(self, other)
@@ -450,7 +482,7 @@ class BlockMatrix(MatrixExpr):
 
     @classmethod
     def rewrite_from_LAMBDA(cls, self):
-        if self.function.is_Piecewise:            
+        if self.function.is_Piecewise: 
             piecewise = self.function
             i = self.variables[-1]
             n = self.shape[0]
@@ -458,7 +490,7 @@ class BlockMatrix(MatrixExpr):
             blocks = []     
             length = 0
             h = 0 
-            for expr, cond in piecewise.args:       
+            for expr, cond in piecewise.args: 
                 if cond.is_StrictLessThan:
                     if cond.lhs == i:
                         upper_bound = cond.rhs
@@ -756,7 +788,6 @@ def blockcut(expr, rowsizes, colsizes):
     return BlockMatrix([[MatrixSlice(expr, rowbound, colbound)
                          for colbound in colbounds]
                          for rowbound in rowbounds])
-
 
 # from sympy.core.sympify import converter
 # converter[list] = lambda l: BlockMatrix(l)

@@ -25,7 +25,7 @@ def prove(Eq):
     
     Eq << (shift @ A).this.expand()
     
-#     Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.flatten, index=1)
+#     Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.flatten, index=1)
     
 #     Eq << Eq[-1].this.rhs.function.args[1].cond.args[0].apply(sets.contains.imply.contains.interval.substract, 1)
     

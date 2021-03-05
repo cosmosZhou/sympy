@@ -1,4 +1,4 @@
-<h1>半机械化定理库操作手册</h1>
+<h1>半机械化数学定理库操作手册</h1>
 <hr />
 <h2>线上操作手册</h2>
 <br>
@@ -10,12 +10,12 @@
 <img class=zoom src="png/search/panel.png" alt="搜索框" />
 <hr />
 <br>
-<p>在箭头所指搜索框中输入需要查找的数学定理的名称，或者定理名称的个别单词，比如binomial theorem
+<p>在箭头所指的提示符（input a hint for search of a theorem/axiom）搜索框中输入需要查找的数学定理的名称，或者定理名称的个别单词，比如binomial theorem
 	中的binomial关键词，如下图所示：</p>
 <img class=zoom src="png/search/keyword.png" alt="搜索关键词">
 <hr />
 <br>
-<p>键入回车(Enter)之后，就可前端打印出包含binomial单词的所有数学定理了：如下图所示：</p>
+<p>键入回车(Enter)之后，就可在前端打印出包含binomial单词的所有数学定理了：如下图所示：</p>
 <img class=zoom src="png/search/results.png" alt="搜索关键词" />
 <hr />
 <br>

@@ -31,7 +31,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.definition
     
-    Eq << algebre.imply.equal.piecewise.swap.front.apply(Eq[-1].lhs)
+    Eq << algebre.piecewise.swap.front.apply(Eq[-1].lhs)
     
     Eq << Eq[-2].subs(Eq[-1])
 

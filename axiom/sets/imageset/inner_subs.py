@@ -30,7 +30,7 @@ def prove(Eq):
     
     Eq << Eq[0].this.lhs.apply(sets.union.bool)
     
-    Eq << Eq[-1].this.lhs.function.apply(algebre.imply.equal.piecewise.subs)
+    Eq << Eq[-1].this.lhs.function.apply(algebre.piecewise.subs)
 
 if __name__ == '__main__':
     prove(__file__)

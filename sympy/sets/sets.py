@@ -796,6 +796,8 @@ class CartesianSpace(Set):
             assert d, "dimension must be nonzero"
             if dimension[0] == 1:
                 return domain
+            if isinstance(d, int):
+                dimension = (sympify(d),)
         return Set.__new__(cls, domain, *dimension)
 
     def _eval_domain_defined(self, x): 
@@ -1216,7 +1218,7 @@ class Interval(Set, EvalfMixin):
                 if start.is_finite and not start.is_integer:
                     start = start.floor().simplify()
             else:
-                if start.is_finite and not start.is_integer:                    
+                if start.is_finite and not start.is_integer: 
                     start = start.ceiling().simplify()                
                 
             if right_open: 

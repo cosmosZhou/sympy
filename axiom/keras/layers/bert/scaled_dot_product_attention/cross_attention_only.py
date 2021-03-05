@@ -119,7 +119,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Piecewise)
     
-    Eq << Eq[-1].this.rhs.function.apply(algebre.imply.equal.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.swap.back)
     
     Eq << Eq[-1].this.rhs.function.simplify(wrt=i)
     

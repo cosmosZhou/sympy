@@ -32,7 +32,7 @@ def prove(Eq):
     g = Function.g(nargs=(1,), shape=())
     Eq << apply(Contains(x, S), Piecewise((f(x), Contains(x, s)), (g(x), True)))
     
-    Eq << algebre.imply.equal.piecewise.swap.front.apply(Eq[2].lhs)
+    Eq << algebre.piecewise.swap.front.apply(Eq[2].lhs)
 
     (gx, cond_contains), (fx, _) = Eq[-1].rhs.args
     p = Symbol.p(Piecewise((gx, Equality(Boole(cond_contains), 1)), (fx, _)))

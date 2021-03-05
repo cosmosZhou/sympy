@@ -1,8 +1,18 @@
 from sympy import *
 
+
+def initial_offset(r, w, i=0):
+    return (w.shape[i] - 1) // 2 * r[i] + (r[i] // 2) * (1 - w.shape[i] % 2)
+
+
+def limit(r, w, n0, di, i0, index=0):
+    return slice(di, Max(0, -(i0 // r[index])), Min(-1 // r[index] + w.shape[index], (n0 - i0 - 1) // r[index]) + 1)
+
+
 def shape(self):
     x, w, *limits = self.args
     return x.shape[:-1] + w.shape[-1:]
+
 
 def conv1d(x, w, *limits):
     if limits:
@@ -11,19 +21,19 @@ def conv1d(x, w, *limits):
         r = 1
         
     _, in_channels, out_channels = w.shape
-    * batch_size, seq_length, _in_channels = x.shape
+    * batch_size, n0, _in_channels = x.shape
     
     assert in_channels == _in_channels
     
-    def conv1d(x, w):
-        d0 = (w.shape[0] - 1) // 2
+    def conv1d(x, w): 
         i = Symbol.i(integer=True)
         di = Symbol.d_i(integer=True)
         
-        d0 = d0 * r + (r // 2) * (1 - w.shape[0] % 2)
+        d0 = initial_offset((r,), w)
+        
         i0 = i - d0
-        return LAMBDA[i:seq_length](Sum[di:Max(0, -(i0 // r)):Min(-1 // r + w.shape[0], (seq_length - i0 - 1) // r) + 1](x[i0 + di * r] @ w[di]))
-        return LAMBDA[i:seq_length](Sum[di:Max(0, -(i0 // r)):(Min(w.shape[0] * r, seq_length - i0) - 1) // r + 1](x[i0 + di * r] @ w[di]))
+        
+        return LAMBDA[i:n0](Sum[limit((r,), w, n0, di, i0)](x[i0 + di * r] @ w[di]))
             
     if batch_size:
         batch_size = batch_size[0]
@@ -35,26 +45,32 @@ def conv1d(x, w, *limits):
 
 conv1d = Function.conv1d(real=True, nargs=(2,), eval=conv1d, shape=property(shape))
 
+
 def conv2d(x, w, *limits):
     if limits:
         (r,), *_ = limits
     else:
         r = 1
         
-    _, embed_size, _embed_size = w.shape
-    * batch_size, seq_length, __embed_size = x.shape
+    l0, l1, in_channels, out_channels = w.shape
+    * batch_size, n0, n1, _in_channels = x.shape
     
-    assert embed_size == _embed_size == __embed_size
+    assert in_channels == _in_channels        
     
     def conv2d(x, w):
-        d0 = (w.shape[0] - 1) // 2
         i = Symbol.i(integer=True)
         di = Symbol.d_i(integer=True)
         
-        d0 = d0 * r + (r // 2) * (1 - w.shape[0] % 2)
+        j = Symbol.j(integer=True)
+        dj = Symbol.d_j(integer=True)
+        
+        d0 = initial_offset(r, w, 0)
+        d1 = initial_offset(r, w, 1)
+        
         i0 = i - d0
-        return LAMBDA[i:seq_length](Sum[di:Max(0, -(i0 // r)):Min(-1 // r + w.shape[0], (seq_length - i0 - 1) // r) + 1](x[i0 + di * r] @ w[di]))
-        return LAMBDA[i:seq_length](Sum[di:Max(0, -(i0 // r)):(Min(w.shape[0] * r, seq_length - i0) - 1) // r + 1](x[i0 + di * r] @ w[di]))
+        j0 = j - d1
+        
+        return LAMBDA[j:n1, i:n0](Sum[limit(r, w, n1, dj, j0, 1), limit(r, w, n0, di, i0, 0)](x[i0 + di * r[0], j0 + dj * r[1]] @ w[di, dj]))
             
     if batch_size:
         batch_size = batch_size[0]

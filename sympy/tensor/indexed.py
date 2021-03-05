@@ -146,13 +146,19 @@ class Indexed(Expr):
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
             if len(indices) == 2 and isinstance(indices[0], slice):
+                if isinstance(indices[1], slice):
+                    start, stop = indices[1].start, indices[1].stop
+                    if start is None and stop is None:
+                        return self[indices[0]].T
+                    return Slice(self, *indices)
+                
                 start, stop = indices[0].start, indices[0].stop
                 if start is None:
                     if stop is None:
                         return self.T[indices[1]]
                     start = 0
                 if stop is None:
-                    stop = self.shape[0]                
+                    stop = self.shape[0]
                 return self[start:stop].T[indices[1]]
                 
             indices = self.indices + tuple(indices)
@@ -763,20 +769,21 @@ class Slice(Expr):
 
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
-            if len(indices) == 0:
-                return self
-            start, stop = self.index
-            if len(indices) == 1:
-                return self.base[indices[0] + start]
-            
-            index = indices[0]
-            
-            base = self.base[index - start]
-
-            if len(indices) == 1:
-                return base
-
-            return base[indices[1:]]
+            if len(self.indices) > len(indices):
+                if len(indices) == 0:
+                    return self
+                return
+            elif len(self.indices) < len(indices):
+                return
+            else:                
+                base = self.base
+                for (start, stop), index in zip(self.indices, indices):
+                    if isinstance(index, slice):
+                        b, e = slice.start, slice.stop
+                        base = base[b + start: e + start]
+                    else: 
+                        base = base[index + start]
+                return base 
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
             if start is None:

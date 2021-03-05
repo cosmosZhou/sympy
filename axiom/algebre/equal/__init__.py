@@ -1,4 +1,3 @@
-from . import astype
 from . import sufficient
 from . import equal
 from . import imply

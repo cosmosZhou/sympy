@@ -74,15 +74,15 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[1].function.astype(Piecewise)
     
-    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.swap.front)
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.piecewise.swap.front)
     
-    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.piecewise.swap.back)
     
-    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.invert)
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.piecewise.invert)
     
     Eq << Eq[-1].this.rhs.args[1]().function.args[1].cond.simplify()
     
-    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.imply.equal.piecewise.subs, index=1)
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.piecewise.subs, index=1)
     
     Eq << Eq[-1].this.rhs.args[1]().function.args[0]().expr.simplify()
     
