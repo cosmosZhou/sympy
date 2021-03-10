@@ -62,7 +62,7 @@ def prove(Eq):
     
     Eq << sets.contains.subset.imply.contains.apply(Eq.contains, Eq[-1])
     
-    Eq << sets.contains.imply.exists_equal.apply(Eq[-1])
+    Eq << sets.contains.imply.exists_equal.definition.apply(Eq[-1])
     
     Eq << Eq[-1] * 2
     

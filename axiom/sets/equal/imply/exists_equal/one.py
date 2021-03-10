@@ -32,7 +32,7 @@ def prove(Eq):
     
     Eq << Eq[-1].apply(sets.contains.imply.subset, simplify=False)
     
-    Eq << Eq[-1].apply(sets.subset.equal.imply.equal, Eq[0])
+    Eq << Eq[-1].apply(sets.subset.equal.imply.equal.where.abs, Eq[0])
 
 
 if __name__ == '__main__':

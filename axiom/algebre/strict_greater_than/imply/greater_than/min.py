@@ -17,7 +17,7 @@ def prove(Eq):
     
     z = Symbol.z(real=True, given=True)
     Eq << apply(x > y, z)
-    Eq << algebre.strict_greater_than.imply.greater_than.integer.apply(Eq[0])
+    Eq << algebre.strict_greater_than.imply.greater_than.relax.apply(Eq[0])
     
     Eq << algebre.greater_than.imply.greater_than.min.apply(Eq[-1], z)    
 

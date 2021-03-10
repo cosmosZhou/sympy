@@ -1,9 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality, StrictGreaterThan, StrictLessThan,\
-    LessThan
-from sympy import Symbol
 import axiom
-from sympy.functions.elementary.piecewise import Piecewise
 from axiom import algebre, sets
 
 

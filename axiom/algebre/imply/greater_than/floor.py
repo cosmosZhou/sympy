@@ -6,11 +6,11 @@ import axiom
 
 
 @apply
-def apply(x, d):
+def apply(x, d=1, evaluate=False):
     d = sympify(d)
     assert d.is_integer and d > 0
     assert x.is_integer
-    return GreaterThan(Floor(x / d) * d, x - d + 1)
+    return GreaterThan(Floor(x / d) * d, x - d + 1, evaluate=evaluate)
 
 
 @prove
@@ -26,7 +26,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << algebre.strict_greater_than.imply.greater_than.integer.apply(Eq[-1])
+    Eq << algebre.strict_greater_than.imply.greater_than.strengthen.apply(Eq[-1])
     
 if __name__ == '__main__':
     prove(__file__)

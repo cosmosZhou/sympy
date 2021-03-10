@@ -1,10 +1,8 @@
-# coding=utf-8
 from axiom.utility import prove, apply
 from sympy import *
 from sympy.stats.rv import pspace
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.keras.layers.crf.markov import assumptions, process_assumptions
-from axiom.statistics import bayes
 from axiom import statistics, keras, algebre
 
 import tensorflow as tf
@@ -85,12 +83,12 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[1].args[1].arg.astype(exp)
     
-    Eq.xy_joint_nonzero = bayes.is_nonzero.is_nonzero.joint_slice.apply(given[-1], Slice[:t + 1, :t + 1])
+    Eq.xy_joint_nonzero = statistics.is_nonzero.is_nonzero.joint_slice.apply(given[-1], Slice[:t + 1, :t + 1])
     
-    Eq << bayes.is_nonzero.et.apply(Eq.xy_joint_nonzero).split()
+    Eq << statistics.is_nonzero.et.apply(Eq.xy_joint_nonzero).split()
     
     y = Eq[-1].lhs.arg.lhs.base
-    Eq << bayes.corollary.apply(Eq[-2], var=y[:t + 1])
+    Eq << statistics.bayes.corollary.apply(Eq[-2], var=y[:t + 1])
     
     Eq << statistics.total_probability_theorem.apply(Eq[-1].lhs, y[:t + 1])
     

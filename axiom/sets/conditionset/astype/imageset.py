@@ -43,14 +43,37 @@ def prove(Eq):
 
     Eq.sufficient = Sufficient(Contains(y, B), Contains(y, B_quote), plausible=True)
     
-    Eq << Eq.sufficient.this.lhs.rhs.definition
+    Eq << Eq.sufficient.this.rhs.rhs.definition
 
-    Eq << Eq[-1].this.rhs.rhs.definition
-    return
+    Eq << Eq[-1].this.rhs.apply(sets.contains.given.exists_equal.where.imageset)
+    
+    Eq << Eq[-1].this.lhs.rhs.definition
+    
+    Eq << Eq[-1].this.rhs.apply(algebre.exists.given.exists_et, depth=0)
+    
+    Eq << Eq[-1].this.lhs.args[1].apply(sets.contains.imply.exists_equal.where.imageset)
+    
+    Eq << Eq[-1].this.rhs.function.apply(algebre.et.given.et.where.equal, split=False, reverse=True)    
     
     Eq.necessary = Necessary(Contains(y, B), Contains(y, B_quote), plausible=True)
     
+    Eq << Eq.necessary.this.rhs.rhs.definition
+    
+    Eq << Eq[-1].this.rhs.apply(sets.contains.imply.exists_equal.where.imageset)
+    
+    Eq << Eq[-1].this.rhs.apply(algebre.exists.imply.exists_et.single_variable, depth=0)
+
+    Eq << Eq[-1].this.rhs.apply(algebre.et.imply.et.subs, split=False, reverse=True)
+    
+    Eq << Eq[-1].this.lhs.rhs.definition
+    
+    Eq << Eq[-1].this.lhs.args[1].apply(sets.contains.given.exists_equal.where.imageset)
+    
     Eq << sets.sufficient.necessary.imply.equal.apply(Eq.sufficient, Eq.necessary)
+    
+    Eq << Eq[-1].this.lhs.definition
+    
+    Eq << Eq[-1].this.rhs.definition
 
 
 if __name__ == '__main__':

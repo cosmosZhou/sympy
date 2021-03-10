@@ -50,7 +50,7 @@ def prove(Eq):
     
     Eq << algebre.equal.imply.ou.general.apply(Eq[-1])
     
-    Eq << Eq[-1].this.args[2].apply(algebre.et.imply.et.inner_subs, split=False, index=2)
+    Eq << Eq[-1].this.args[2].apply(algebre.et.imply.et.subs, split=False, index=2)
     
     Eq << algebre.ou.imply.equal.general.apply(Eq[-1], wrt=p)
     

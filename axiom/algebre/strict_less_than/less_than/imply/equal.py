@@ -1,6 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
+from axiom import algebre
 
 
 @apply
@@ -21,6 +22,14 @@ def prove(Eq):
     y = Symbol.y(integer=True)
 
     Eq << apply(x - 1 < y, y <= x)
+    
+    Eq << Eq[0] - y + 1
+    
+    Eq << (Eq[1] - y).reversed
+    
+    Eq << algebre.is_nonnegative.strict_less_than.imply.equal.frac.apply(Eq[-1], Eq[-2])
+    
+    Eq << Eq[-1].this.rhs.definition
     
     
 if __name__ == '__main__':

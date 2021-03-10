@@ -50,7 +50,7 @@ def conv2d(x, w, *limits):
     if limits:
         (r,), *_ = limits
     else:
-        r = 1
+        r = (1, 1)
         
     l0, l1, in_channels, out_channels = w.shape
     * batch_size, n0, n1, _in_channels = x.shape
@@ -81,4 +81,46 @@ def conv2d(x, w, *limits):
 
 
 conv2d = Function.conv2d(real=True, nargs=(2,), eval=conv2d, shape=property(shape))
+
+
+def conv3d(x, w, *limits):
+    if limits:
+        (r,), *_ = limits
+    else:
+        r = (1, 1, 1)
+        
+    l0, l1, l2, in_channels, out_channels = w.shape
+    * batch_size, n0, n1, n2, _in_channels = x.shape
+    
+    assert in_channels == _in_channels        
+    
+    def conv3d(x, w):
+        i = Symbol.i(integer=True)
+        di = Symbol.d_i(integer=True)
+        
+        j = Symbol.j(integer=True)
+        dj = Symbol.d_j(integer=True)
+        
+        t = Symbol.t(integer=True)
+        dt = Symbol.d_t(integer=True)
+        
+        d0 = initial_offset(r, w, 0)
+        d1 = initial_offset(r, w, 1)
+        d2 = initial_offset(r, w, 2)
+        
+        i0 = i - d0
+        j0 = j - d1
+        t0 = t - d2
+        
+        return LAMBDA[t:n2, j:n1, i:n0](Sum[limit(r, w, n2, dt, t0, 2), limit(r, w, n1, dj, j0, 1), limit(r, w, n0, di, i0, 0)](x[i0 + di * r[0], j0 + dj * r[1], t0 + dt * r[2]] @ w[di, dj, dt]))
+            
+    if batch_size:
+        batch_size = batch_size[0]
+        k = Symbol.k(integer=True)        
+        return LAMBDA[k:batch_size](conv3d(x[k], w))
+    else:
+        return conv3d(x, w)    
+
+
+conv3d = Function.conv3d(real=True, nargs=(2,), eval=conv3d, shape=property(shape))
 

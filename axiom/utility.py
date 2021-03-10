@@ -568,7 +568,8 @@ def imply(apply, **kwargs):
     return imply
 
 
-def given(apply):
+def given(apply, **kwargs):
+    is_given = kwargs['given'] if 'given' in kwargs else True
 
     def add(given, statement):
         if isinstance(statement, tuple):
@@ -603,9 +604,12 @@ def given(apply):
             statement.equivalent = None
             
         imply, *args = args
-        given = tuple(eq for eq in args if isinstance(eq, Boolean))
         
-        assert all(g.plausible is None for g in given)
+        if is_given:            
+            given = tuple(eq for eq in args if isinstance(eq, Boolean))        
+            assert all(g.plausible is None for g in given)
+        else:
+            given = ()
             
         assert imply.is_Boolean
         

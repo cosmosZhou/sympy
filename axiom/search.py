@@ -178,11 +178,12 @@ def search(keyword, caseSensitive=True, wholeWord=False, regularExpression=False
     
     
 if __name__ == '__main__':
-    keyword = 'astype.imageset'
+    keyword = 'given.equal.complement'
+
 #     keyword = ''
     caseSensitive = True
     wholeWord = False
-    regularExpression = False
+    regularExpression = True
     
     if keyword:
         search(keyword, caseSensitive, wholeWord, regularExpression)

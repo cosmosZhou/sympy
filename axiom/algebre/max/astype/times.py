@@ -36,6 +36,12 @@ def prove(Eq):
     
     Eq << Eq[0].this.lhs.astype(Piecewise)
     
+    Eq << Eq[-1].this.rhs.args[1].astype(Piecewise)
+    
+    Eq << Eq[-1].this.lhs.astype(Times)
+    
+    Eq << Eq[-1].this.lhs.args[0].cond / r
+    
     
     
 if __name__ == '__main__':

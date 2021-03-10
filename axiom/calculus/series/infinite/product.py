@@ -38,7 +38,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.limits_subs(n, n - k)
         
-    Eq << Eq[-1].this.rhs.apply(algebre.sum.limits_swap)
+    Eq << Eq[-1].this.rhs.apply(algebre.sum.limits.swap)
     
     Eq << Eq[-1].this.rhs.apply(algebre.limits.separate)    
 

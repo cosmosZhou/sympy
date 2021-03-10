@@ -1,8 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
 import axiom
-from sympy.functions.elementary.piecewise import Piecewise
 from axiom import algebre
 
 
@@ -20,7 +18,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.astype(Piecewise)
     
-    Eq << algebre.condition.condition.given.condition.apply(Eq[-1], Eq[0])
+    Eq << algebre.condition.given.et.apply(Eq[-1], Eq[0])
+    
+    Eq << algebre.et.given.et.subs.apply(Eq[-1])
         
     
 if __name__ == '__main__':

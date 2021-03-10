@@ -1848,8 +1848,12 @@ class Interval(Set, EvalfMixin):
     def _eval_Subset(self, rhs):
         if rhs.is_UniversalSet:
             return S.true
+               
+    @property
+    def kwargs(self):
+        return {'left_open': self.left_open, 'right_open': self.right_open, 'integer': self.is_integer}             
 
-                            
+    
 class Union(Set, LatticeOp, EvalfMixin):
     """
     Represents a union of sets as a :class:`Set`.

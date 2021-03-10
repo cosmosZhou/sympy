@@ -41,7 +41,7 @@ def prove(Eq):
     
     Eq << Eq[0].subs(_k, 0)
     
-    Eq << algebre.equal.equal.given.equal.transit.apply(Eq[-2], Eq[-1])     
+    Eq << Eq[-2].this.lhs.subs(Eq[-1]).reversed     
     
     Eq << Eq[0].subs(_k, k)
     

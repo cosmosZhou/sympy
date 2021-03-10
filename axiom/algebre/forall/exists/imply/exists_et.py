@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << apply(ForAll[e:g(e) > 0](f(e) > 0), Exists[e:g(e) > 0, x:f(x) > 0](g(x) > 0))
     
-    Eq << algebre.exists.given.exists_et.limits_absorb.apply(Eq[-1])
+    Eq << algebre.exists.given.exists_et.apply(Eq[-1])
     
     Eq << algebre.exists.imply.exists_et.multiple_variables.apply(Eq[1], simplify=False)
     

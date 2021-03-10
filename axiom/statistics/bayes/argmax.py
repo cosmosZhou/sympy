@@ -52,14 +52,14 @@ def prove(Eq):
     i = Eq[-1].lhs.variable
     j = Eq[-1].rhs.function.args[-1].variable
     
-    Eq << statistics.bayes.is_nonzero.et.apply(Eq[1]).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[1]).split()
     Eq << statistics.bayes.corollary.apply(Eq[-2], var=y[i])
     
     Eq.y_given_x = algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[-1], Eq[-3]).reversed
     
-    Eq << statistics.bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], [j, i])
+    Eq << statistics.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], [j, i])
     
-    Eq << statistics.bayes.is_nonzero.et.apply(Eq[-1]).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[-1]).split()
     
     Eq << statistics.bayes.corollary.apply(Eq[-1], var=x)
     
@@ -67,11 +67,11 @@ def prove(Eq):
     
     Eq << algebre.equal.imply.equal.argmax.apply(Eq.y_given_x, (i,))
     
-    Eq << statistics.bayes.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], Slice[:t, i]) 
+    Eq << statistics.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], Slice[:t, i]) 
     
-    Eq.xt_given_x_historic = statistics.bayes.equal.equal.given_addition.joint_probability.apply(Eq[0], Eq[-1])
+    Eq.xt_given_x_historic = statistics.equal.equal.given_addition.joint_probability.apply(Eq[0], Eq[-1])
     
-    Eq.xt_given_yi_nonzero = statistics.bayes.is_nonzero.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
+    Eq.xt_given_yi_nonzero = statistics.is_nonzero.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
     
     Eq << statistics.bayes.theorem.apply(P(x[:t + 1] | y[i]), x[:t])
     

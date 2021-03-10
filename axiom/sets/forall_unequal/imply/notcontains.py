@@ -25,7 +25,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.contains.imply.exists_equal.apply(Eq[-1], reverse=True)
+    Eq << sets.contains.imply.exists_equal.definition.apply(Eq[-1], reverse=True)
     
     Eq << ~Eq[-1]
 

@@ -6,3 +6,5 @@ from . import kullback_leibler
 from . import die
 from . import bayes
 from . import total_probability_theorem
+from . import equal
+from . import is_nonzero

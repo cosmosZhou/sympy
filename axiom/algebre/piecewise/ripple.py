@@ -19,8 +19,10 @@ def apply(piecewise, var):
         else:
             non_var_eqs.append(eq)
             
-    Piecewise((expr, var_eqs), (expr_else, True))
-    return Equality(piecewise, piecewise.func(*ec_before + _ec + ec_after))
+    var_eqs = And(*var_eqs)
+    non_var_eqs = And(*non_var_eqs)
+    
+    return Equality(piecewise, Piecewise((Piecewise((expr, non_var_eqs), (expr_else, True)), var_eqs), (expr_else, True)))
 
 
 @prove
@@ -36,9 +38,10 @@ def prove(Eq):
     h = Function.h(shape=(), real=True)
      
     Eq << apply(Piecewise((f(x) * g(y), Contains(x, A) & Contains(y, B)), (h(x, y), True)), var=y)
+    
+    Eq << Eq[0].this.rhs.apply(algebre.piecewise.flatten, index=0)
 
 
 if __name__ == '__main__':
     prove(__file__)
-
 

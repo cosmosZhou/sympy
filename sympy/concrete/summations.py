@@ -915,16 +915,16 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             
             for i, limit in enumerate(limits):
                 x, *ab = limit
-                p = old.as_poly(x)
-                if p is None:
-                    continue
-                
-                if p.degree() == 0:
-                    limits[i] = (x, *[a._subs(old, new) for a in ab])
-                    hit |= limits[i] == self.limits[i] 
+#                 p = old.as_poly(x)
+#                 if p is None:
+#                     continue
+#                 
+#                 if p.degree() == 0:
+                limits[i] = (x, *[a._subs(old, new) for a in ab])
+                hit |= limits[i] != self.limits[i] 
             
             function = self.function._subs(old, new)
-            hit |= function == self.function
+            hit |= function != self.function
             
             if hit:
                 return self.func(function, *limits)
@@ -1030,10 +1030,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             this = ExprWithIntLimits.simplify(self, deep=True, **kwargs)
             if this is not self:
                 return this
-        if len(self.limits) == 2:
-            limit0, limit1 = self.limits
-            if len(limit0) == 1: 
-                if len(limit1) == 1:
+        if len(self.limits) >= 2:
+            limit0, *limits = self.limits
+            if len(limit0) == 1:
+                limit1, *limits = limits 
+                if len(limit1) == 1 and not limits:
                     x_slice = limit0[0]
                     x = limit1[0]
                     if x_slice.is_Slice and x.is_Indexed:
@@ -1042,15 +1043,12 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                             x_slice = x_slice.base[start: stop + 1]
                             return self.func(self.function, (x_slice,))
             else:
-#                 sgm = self.func(self.function, limit0)
-#                 _sgm = sgm.simplify()
-#                 if _sgm != sgm:
-#                     self = self.func(_sgm, limit1)
-#                     sgm = self.simplify()
-#                     if sgm != self:
-#                         return sgm
-                ...
-                    
+                if not self.function._has(limit0[0]):
+                    if len(limit0) == 3:
+                        x, a, b = limit0
+                        if not b.is_set and x.is_integer:
+                            function = (b - a) * self.function
+                            return self.func(function, *limits).simplify() 
             return self
 
         if not self.limits:

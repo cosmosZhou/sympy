@@ -941,7 +941,7 @@ class ZeroMatrix(MatrixExpr):
     def _entry(self, i, j=None, **kwargs):
         if j is None:
             if len(self.shape) > 1:
-                return self.func(self.shape[1])
+                return self.func(*self.shape[1:])
             else:
                 return S.Zero
         elif isinstance(i, slice):
@@ -993,6 +993,21 @@ class ZeroMatrix(MatrixExpr):
         return other
     
     def doit(self, **hints):
+        return self
+    
+    def _hashable_content(self):
+        return self.shape
+    
+    def _subs(self, old, new, **hints):
+        shape = [*self.shape]
+        hit = False
+        for i, s in enumerate(shape):
+            _s = s._subs(old, new)
+            hit |= _s != s
+            shape[i] = _s
+            
+        if hit:
+            return self.func(*shape)
         return self
 
     

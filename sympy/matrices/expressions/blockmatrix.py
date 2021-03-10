@@ -27,6 +27,8 @@ class BlockMatrix(MatrixExpr):
     def __new__(cls, *args, **kwargs):
         if len(args) > 1 and isinstance(args[-1], tuple):
             *args, (axis,) = args
+        elif 'axis' in kwargs:
+            axis = kwargs.pop('axis')
         else:
             axis = 0
         _args = []
@@ -50,6 +52,11 @@ class BlockMatrix(MatrixExpr):
         blocks.axis = sympify(axis)
         return blocks
     
+    @property
+    def kwargs(self):
+        # return hyper parameter of this object
+        return {'axis': self.axis}
+
     @staticmethod
     def broadcast(shapes):
         length = 0
@@ -89,6 +96,8 @@ class BlockMatrix(MatrixExpr):
             assert self.axis < max_length
             
             for axis in {*range(max_length)} - {self.axis}:
+                if len({s[axis] for s in shapes}) > 1:
+                    print([s[axis] for s in shapes])
                 assert len({s[axis] for s in shapes}) == 1
 
             shape = shapes[0]
@@ -198,26 +207,29 @@ class BlockMatrix(MatrixExpr):
                     raise IndexError("Invalid indices (%s, %s)" % (i, j))
                 
         if isinstance(key, int) or key.is_Integer or key.is_Symbol or key.is_Expr:
-            from sympy import S
-            rows = S.Zero
-            args = []
-            for arg in self.args:
-                index = rows
-                if len(arg.shape) < len(self.shape):
-                    rows += S.One
-                else:
-                    rows += arg.shape[0]
+            if self.axis == 0:                
+                from sympy import S
+                rows = S.Zero
+                args = []
+                for arg in self.args:
+                    index = rows
+                    if len(arg.shape) < len(self.shape):
+                        rows += S.One
+                    else:
+                        rows += arg.shape[0]
+                        
+                    cond = key < rows
+                    if cond.is_BooleanFalse:
+                        continue
                     
-                cond = key < rows
-                if cond.is_BooleanFalse:
-                    continue
-                
-                if len(arg.shape) < len(self.shape):
-                    args.append([arg, cond])
-                else:
-                    args.append([arg[key - index], cond]) 
-            args[-1][-1] = True
-            return Piecewise(*args)
+                    if len(arg.shape) < len(self.shape):
+                        args.append([arg, cond])
+                    else:
+                        args.append([arg[key - index], cond]) 
+                args[-1][-1] = True
+                return Piecewise(*args)
+            else:
+                return self.func(*(a[key] for a in self.args), axis=self.axis-1)                
 
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
@@ -432,7 +444,10 @@ class BlockMatrix(MatrixExpr):
 #         return r"\begin{equation}\left(\begin{array}{c}%s\end{array}\right)\end{equation}" % r'\\'.join('{%s}' % self._print(arg) for arg in expr.args)
 
     def _sympystr(self, p):
-        return r"[%s]" % ','.join(p._print(arg) for arg in self.args)
+        tex = r"[%s]" % ','.join(p._print(arg) for arg in self.args)
+        if self.axis:
+            tex = '%s[%s]' % (tex, self.axis)
+        return tex
 
     def _pretty(self, p): 
         return p._print_seq(self.args, '[', ']')

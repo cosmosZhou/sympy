@@ -31,9 +31,9 @@ def is_odd(eq):
         elif eq.rhs.is_One:
             expr = eq.lhs   
     elif eq.is_Unequal:
-        if eq.rhs.is_One:
+        if eq.rhs == 0:
             expr = eq.lhs
-        elif eq.lhs.is_One:
+        elif eq.lhs == 0:
             expr = eq.rhs
 
     if expr.is_Mod:
@@ -133,10 +133,12 @@ def is_ConditionSet(s):
     assert s.is_ConditionSet
     return s.variable, s.condition, s.base_set    
 
+
 def is_ImageSet(s):
     assert s.is_UNION
     sym, expr, base_set = s.image_set()    
     return sym, expr, base_set
+
     
 def is_emptyset(eq):
     assert eq.is_Equal
@@ -158,25 +160,30 @@ def forall_is_zero(eq):
     limits = eq.limits
     return (is_zero(eq.function), *limits)    
 
+
 def forall_is_positive(eq):
     assert eq.is_ForAll
     limits = eq.limits
     return (is_positive(eq.function), *limits)
+
 
 def forall_is_negative(eq):
     assert eq.is_ForAll
     limits = eq.limits
     return (is_negative(eq.function), *limits)
 
+
 def forall_is_nonpositive(eq):
     assert eq.is_ForAll
     limits = eq.limits
     return (*is_nonpositive(eq.function), *limits)
 
+
 def forall_is_nonnegative(eq):
     assert eq.is_ForAll
     limits = eq.limits
     return (*is_nonnegative(eq.function), *limits)
+
 
 def is_Interval(domain, integer=True, end=None):
     assert domain.is_Interval
@@ -189,10 +196,12 @@ def is_Interval(domain, integer=True, end=None):
         return domain.min(), domain.max() + 1
     return domain.args
 
+
 def is_integer_Interval(domain):
     assert domain.is_Interval
     assert domain.is_integer
     return domain.args
+
 
 def is_real_Interval(domain):
     assert domain.is_Interval
@@ -216,6 +225,12 @@ def limit_is_baseset(limits):
     x, cond, baseset = limit        
     return x, cond, baseset
 
+def limit_is_condition(limits):
+    assert len(limits) == 1
+    limit = limits[0]
+    x, cond = limit        
+    return x, cond
+
 def limit_is_even(limits):
     n, cond, baseset = limit_is_baseset(limits)
     _n = is_even(cond)
@@ -223,12 +238,14 @@ def limit_is_even(limits):
     a, b = is_Interval(baseset, integer=True, end=None)
     return n, a, b
 
+
 def limit_is_odd(limits):
     n, cond, baseset = limit_is_baseset(limits)
     _n = is_odd(cond)
     assert n == _n
     a, b = is_Interval(baseset, integer=True, end=None)
     return n, a, b
+
 
 def limit_is_set(limits):
     assert len(limits) == 1
@@ -294,7 +311,7 @@ def limits_are_Boolean(limits):
     return tuple(variables)
 
 
-def limits_are_Contains(limits):    
+def limits_are_Contains(limits): 
     array = []
     for limit in limits:
         assert len(limit) <= 2
@@ -372,11 +389,12 @@ def is_Substract(self):
         if rhs.args[0].is_NegativeOne:
             rhs = rhs.func(*rhs.args[1:])
             return lhs, rhs
-    if lhs.is_Times:        
+    if lhs.is_Times: 
         if lhs.args[0].is_NegativeOne:
             lhs = lhs.func(*lhs.args[1:])
             return rhs, lhs
     assert False
+
         
 def is_Divide(self):
     if self.is_Times:
@@ -391,6 +409,16 @@ def is_Divide(self):
         n, d = self.as_numer_denom()
         
     return n, d
+
+
+def is_Negate(self):
+    from sympy import Times
+    arg, *args = is_Times(self)
+    if arg == -1: 
+        return Times(*args)
+    assert arg._coeff_isneg
+    return Times(-arg, *args)
+
 
 def is_And(self, copy=True):
     assert self.is_And
@@ -415,9 +443,11 @@ def is_Equal(self):
     assert self.is_Equal
     return self.args
 
+
 def is_Mod(self):
     assert self.is_Mod
     return self.args
+
 
 def is_BinaryCondition(self):
     assert self.is_BinaryCondition
@@ -439,7 +469,7 @@ def is_Boole(self):
     return self.arg
 
 
-def is_set_comprehension(self):    
+def is_set_comprehension(self): 
     function, *limits = is_UNION(self)
     element_k = is_FiniteSet(function)
     k, a, b = limit_is_Interval(limits)
@@ -504,17 +534,21 @@ def is_Abs(self):
     assert self.is_Abs
     return self.arg
 
+
 def is_FractionalPart(self):
     assert self.is_FractionalPart
     return self.arg
+
 
 def is_Floor(self):
     assert self.is_Floor
     return self.arg
 
+
 def is_Ceiling(self):
     assert self.is_Ceiling
     return self.arg
+
 
 def is_Norm(self):
     assert self.is_Norm
@@ -545,9 +579,11 @@ def is_Sum(self):
     assert self.is_Sum
     return self.args 
 
+
 def is_Product(self):
     assert self.is_Product
     return self.args 
+
 
 def is_UNION(self):
     assert self.is_UNION
@@ -638,17 +674,26 @@ def forall_equal(eq):
     is_Equal(eq.function)
     return (eq.function, *limits)
 
+
+def forall_exists(cond):
+    fn, *limits_f = is_ForAll(cond)
+    fn, *limits_e = is_Exists(fn)    
+    return ((fn, *limits_e), *limits_f)
+
+
 def forall_unequal(eq):
     assert eq.is_ForAll
     limits = eq.limits
     is_Unequal(eq.function)
     return (eq.function, *limits)
 
+
 def exists_equal(eq):
     assert eq.is_Exists
     limits = eq.limits
     is_Equal(eq.function)
     return (eq.function, *limits)
+
 
 def forall_subset(eq):
     assert eq.is_ForAll
@@ -677,11 +722,13 @@ def forall_strict_less_than(eq):
     is_StrictLessThan(eq.function)
     return (eq.function, *limits)
 
+
 def forall_ou(eq):
     assert eq.is_ForAll
     limits = eq.limits
     eqs = is_Or(eq.function)
     return (eq.function, *limits)
+
 
 def forall_strict_greater_than(eq):
     assert eq.is_ForAll

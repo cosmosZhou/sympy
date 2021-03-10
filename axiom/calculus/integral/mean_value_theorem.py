@@ -54,7 +54,7 @@ def prove(Eq):
     
     Eq << algebre.imply.forall_greater_than.max.apply(M.definition)
     
-    Eq << algebre.forall_greater_than.imply.greater_than.integrate.apply(Eq[-1])
+    Eq << calculus.forall_greater_than.imply.greater_than.integrate.apply(Eq[-1])
     
     Eq << Eq[-1].subs(Eq.max.reversed) / (b - a)
     

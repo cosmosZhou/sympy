@@ -44,7 +44,11 @@ def prove(Eq):
     
     Eq << apply(Max(x * r + 1, y * r + 1))    
     
+    Eq << Eq[-1].this.lhs.astype(Piecewise)
     
+    Eq << Eq[-1].this.lhs.astype(Plus)
+    
+    Eq << Eq[-1].this.rhs.astype(Piecewise)
     
 if __name__ == '__main__':
     prove(__file__)

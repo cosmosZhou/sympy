@@ -827,8 +827,13 @@ class Equal(Relational):
             elif isinstance(arg, Equality):
                 eq = arg
                 args = eq.args
-                lhs = self.lhs._subs(*args, **kwargs).simplify()
-                rhs = self.rhs._subs(*args, **kwargs).simplify()
+                
+                lhs = self.lhs._subs(*args, simplify=simplify, **kwargs)
+                rhs = self.rhs._subs(*args, simplify=simplify, **kwargs)
+                
+                if simplify:
+                    lhs = lhs.simplify()
+                    rhs = rhs.simplify()
                 if lhs == self.lhs and rhs == self.rhs:
                     return self
                 

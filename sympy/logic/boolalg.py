@@ -1131,11 +1131,13 @@ def process_imply(imply, value):
             elif all(eq.plausible is False for eq in derivative):
                 imply.plausible = False
 
+
 def process_counterpart(counterpart, value):
     if value:
         counterpart.plausible = False
     else: 
         counterpart.plausible = True
+
 
 def process_given(given, value):
     if value:
@@ -1182,6 +1184,7 @@ def process_options(value=True, **kwargs):
     if counterpart is not None:
         process_counterpart(counterpart, value)
         return
+
 
 class BooleanAtom(Boolean):
     """
@@ -1829,19 +1832,20 @@ class And(LatticeOp, BooleanFunction):
             elif depth == 0:
                 args = [*self.args]
             else:
+
                 def instantiate(eq):
                     function = eq
                     for i in range(depth):
                         function = function.function
                     return function
                 
-                for eq in self.args:                    
+                for eq in self.args: 
                     if eq.is_ConditionalBoolean:
                         _funcs, function = eq.funcs()
                         _funcs = _funcs[-depth:]
                         if funcs:
                             assert _funcs == funcs
-                        else:                            
+                        else: 
                             funcs = _funcs
                         function = instantiate(eq)
                         args.append(function)
@@ -2314,7 +2318,6 @@ class Or(LatticeOp, BooleanFunction):
                     args.remove(eq)
                     this = self.func(*args)
                     break
-            
 
         if other.is_And:
             rhs = tuple(other._argset)
@@ -2795,6 +2798,10 @@ class Sufficient(BinaryCondition):
                 else:
                     newargs.append(x)
             A, B = newargs
+            if A.plausible is not None:
+                A = A.copy(plausible=None)                
+            if B.plausible is not None:
+                B = B.copy(plausible=None)                
         except ValueError:
             raise ValueError(
                 "%d operand(s) used for an Sufficient "

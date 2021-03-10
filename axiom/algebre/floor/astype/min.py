@@ -31,7 +31,7 @@ def prove(Eq):
     z = Symbol.z(real=True)
 #     Eq << apply(Min(floor(x), floor(y), floor(z)))
     Eq << apply(floor(Min(x, y)))
-    return
+    
     Eq << Eq[0].apply(algebre.equal.given.et.where.floor)
     
     Eq <<= algebre.imply.strict_less_than.floor.apply(x), algebre.imply.strict_less_than.floor.apply(y)

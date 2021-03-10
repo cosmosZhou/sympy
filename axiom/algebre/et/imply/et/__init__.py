@@ -1,2 +1,2 @@
 from . import delete
-from . import inner_subs
+from . import subs

@@ -27,14 +27,14 @@ def prove(Eq):
     Eq << apply(Max(ceiling(x), ceiling(y)))
     
     Eq << Eq[0].apply(algebre.equal.given.et.where.ceiling)
-    return
-    Eq <<= algebre.imply.strict_less_than.floor.apply(x), algebre.imply.strict_less_than.floor.apply(y)
     
-    Eq << algebre.strict_less_than.strict_less_than.imply.strict_less_than.min.both.apply(Eq[-2], Eq[-1])
+    Eq <<= algebre.imply.strict_greater_than.ceiling.apply(x), algebre.imply.strict_greater_than.ceiling.apply(y)
     
-    Eq << Eq[-1].this.rhs.astype(Plus)
+    Eq << algebre.strict_greater_than.strict_greater_than.imply.strict_greater_than.max.both.apply(Eq[-2], Eq[-1])
+
+    Eq << Eq[-1].this.rhs.apply(algebre.max.astype.plus)
     
-    Eq << Eq[-1] - 1
+    Eq << Eq[-1] + 1
     
 if __name__ == '__main__':
     prove(__file__)

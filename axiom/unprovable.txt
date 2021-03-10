@@ -1,4 +1,4 @@
 axiom.statistics.total_probability_theorem
 axiom.statistics.bayes.theorem
 
-axiom.algebre.imply.equivalent.equal.astype.exists.limit_definition
+axiom.calculus.equal.astype.exists.limit_definition

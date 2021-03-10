@@ -82,21 +82,34 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[1].function.args[0].args[1].function.definition
     
     Eq << Eq[-1].this.rhs.args[1].function.args[1].astype(Piecewise)
-    return
+    
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.piecewise.ripple, var=i)
+    
+    Eq << Eq[-1].this.rhs.args[1].apply(algebre.sum.limits.split.piecewise)
     
     Eq << Eq[-1].this.rhs.args[1].limits[0][2].args[1].args[1].args[1].apply(algebre.ceiling.astype.plus.quotient)
     
+    Eq << Eq[-1].this.rhs.args[1].limits[1][2].args[1].args[1].args[1].apply(algebre.ceiling.astype.plus.quotient)
+    
     Eq << Eq[-1].this.rhs.args[1].limits[0][2].args[1].apply(algebre.min.astype.floor)
+    
+    Eq << Eq[-1].this.rhs.args[1].limits[1][2].args[1].apply(algebre.min.astype.floor)
     
     Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[0].apply(algebre.times.astype.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.expand()
-            
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.collect(1 / r)
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].args[0].apply(algebre.times.astype.ceiling)
+    
+    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.apply(algebre.times.distribute)    
+    
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].args[2].arg.apply(algebre.times.distribute)
     
     Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebre.max.astype.ceiling)
     
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].apply(algebre.max.astype.ceiling)
+    
     Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebre.ceiling.astype.max)
+    
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].apply(algebre.ceiling.astype.max)
     
     Eq << Eq[-1].this.rhs.args[0].definition
     
@@ -109,24 +122,34 @@ def prove(Eq):
     Eq << C_quote.this.definition
     
     Eq << Eq[-1][k]
-
+    
     Eq << Eq[-1].this.rhs.subs(Eq.conv2d)
     
     Eq << Eq[-1][i]
-    
+
     Eq << Eq[-1].this.rhs.apply(algebre.piecewise.swap.front)
+    
+    Eq << Eq[-1][j]
+    
+    Eq << Eq[-1].this.rhs.args[0].expr.apply(algebre.piecewise.swap.front)
+    
+    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.flatten, index=0)
     
     Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[0].apply(algebre.times.astype.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.expand()
-        
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.collect(1 / r)
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][1].args[0].apply(algebre.times.astype.ceiling)
+    
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.apply(algebre.times.distribute)
+    
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][1].args[1].arg.apply(algebre.times.distribute)        
     
     Eq << Eq[-1].this.rhs.args[0].expr.limits[0][2].args[1].apply(algebre.min.astype.floor)
     
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][2].args[1].apply(algebre.min.astype.floor)
+    
     Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.convolution_definition, Eq[-1])
         
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (i, 0, n), (k, 0, m))
+    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, n[1]), (i, 0, n[0]), (k, 0, m))
     
     Eq << Eq[-1].subs(C.this.definition, C_quote.this.definition)
 

@@ -1,9 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import LessThan
-from sympy import Symbol
 from axiom import algebre
 import axiom
-from sympy.functions.elementary.piecewise import Piecewise
 
 
 @apply
@@ -26,9 +24,17 @@ def prove(Eq):
     
     Eq << Eq[-1].apply(algebre.condition.given.ou)
     
-    Eq << algebre.condition.condition.given.condition.apply(Eq[-1], Eq[0])
+    Eq << algebre.condition.given.et.apply(Eq[-1], Eq[0])
     
-    Eq << algebre.condition.condition.given.condition.apply(Eq[-1], -Eq[1])
+    Eq << algebre.et.given.et.subs.apply(Eq[-1])
+    
+    Eq << Eq[-1].split()
+    
+    Eq << -Eq[1]
+    
+    Eq << algebre.condition.given.et.apply(Eq[-2], Eq[-1])
+    
+    Eq << algebre.et.given.et.subs.apply(Eq[-1])
     
     
 if __name__ == '__main__':

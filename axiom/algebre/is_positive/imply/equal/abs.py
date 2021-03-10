@@ -16,7 +16,7 @@ def prove(Eq):
     
     Eq << apply(x > 0)
     
-    Eq << algebre.strict_greater_than.imply.greater_than.integer.apply(Eq[0])
+    Eq << algebre.strict_greater_than.imply.greater_than.relax.apply(Eq[0])
     
     Eq << algebre.is_nonnegative.imply.equal.abs.apply(Eq[-1])
         

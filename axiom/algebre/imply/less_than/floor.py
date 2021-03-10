@@ -6,11 +6,10 @@ import axiom
 
 
 @apply
-def apply(x, d):
+def apply(x, d=1, evaluate=False):
     d = sympify(d)
     assert d.is_integer and d > 0
-    return LessThan(Floor(x / d) * d, x)
-
+    return LessThan(Floor(x / d) * d, x, evaluate=evaluate)
 
 @prove
 def prove(Eq):
@@ -20,6 +19,7 @@ def prove(Eq):
     Eq << apply(x, d)
     
     Eq << Eq[-1] / d
+
     
 if __name__ == '__main__':
     prove(__file__)

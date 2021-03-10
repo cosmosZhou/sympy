@@ -27,6 +27,8 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.apply(algebre.plus.astype.frac)
     
+    Eq << Eq[-1].this.lhs.apply(algebre.frac.half)
+    
     
 
     

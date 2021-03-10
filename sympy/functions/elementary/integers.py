@@ -489,6 +489,7 @@ class FractionalPart(Function):
             return cls(arg, evaluate=False)
 
         terms = Add.make_args(arg)
+        terms = [t for t in terms if not t.is_integer]
         real, imag = S.Zero, S.Zero
         for t in terms:
             # Two checks are needed for complex arguments

@@ -7,6 +7,8 @@ from axiom import algebre
 @apply
 def apply(given):
     y, floor_x = axiom.is_Equal(given)
+    if not floor_x.is_Floor:
+        y, floor_x = floor_x, y
     assert y.is_integer
     x = axiom.is_Floor(floor_x)
     return And(x - 1 < y, y <= x)

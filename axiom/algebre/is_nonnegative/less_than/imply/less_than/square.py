@@ -1,6 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import LessThan, GreaterThan
-from sympy import Symbol
 import axiom
 from axiom import algebre
 

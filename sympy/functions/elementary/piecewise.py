@@ -1784,7 +1784,7 @@ def piecewise_fold(expr):
 
     Piecewise
     """
-    if not isinstance(expr, Basic) or not expr.has(Piecewise) or expr.is_LAMBDA:
+    if not isinstance(expr, Basic) or not expr.has(Piecewise) or expr.is_ExprWithLimits:
         return expr
 
     new_args = []

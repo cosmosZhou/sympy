@@ -89,7 +89,7 @@ class Basic(with_metaclass(ManagedProperties)):
             if isinstance(arg, Symbol) and arg.definition is not None:
                 if arg not in hashset:
                     hashset.add(arg)   
-                    if arg not in dependency:                 
+                    if arg not in dependency: 
                         dependency[arg] = arg.definition.definition_set(dependency)                    
             
         return hashset
@@ -131,7 +131,7 @@ class Basic(with_metaclass(ManagedProperties)):
     __rand__ = __and__
 
     def __or__(self, other):
-        if self.is_boolean and other.is_boolean:        
+        if self.is_boolean and other.is_boolean: 
             from sympy.logic.boolalg import Or        
             """Overloading for |"""
             return Or(self, other)
@@ -169,7 +169,7 @@ class Basic(with_metaclass(ManagedProperties)):
             try:
                 for sym in arg.free_symbols:
                     obj._domain_defined[sym] = None
-            except :
+            except:
                 ...
         
         return obj
@@ -846,6 +846,11 @@ class Basic(with_metaclass(ManagedProperties)):
         return self._args
 
     @property
+    def kwargs(self):
+        # return hyper parameter of this object
+        return {}
+    
+    @property
     def arg(self):
 #         assert len(self._args) == 1, "illegal arg for %s" % type(self)
         return self._args[0]
@@ -1190,7 +1195,7 @@ class Basic(with_metaclass(ManagedProperties)):
                     hit = True
                     args[i] = arg
             if hit:
-                rv = self.func(*args)
+                rv = self.func(*args, **self.kwargs)
                 hack2 = hints.get('hack2', False)
                 if hack2 and self.is_Mul and not rv.is_Mul:  # 2-arg hack
                     coeff = S.One
@@ -1949,7 +1954,7 @@ class Basic(with_metaclass(ManagedProperties)):
         if deep:
             hit = False
             args = []
-            for arg in self.args:                
+            for arg in self.args: 
                 _arg = arg.simplify(deep=True, **kwargs)
                 if _arg != arg:
                     hit = True
@@ -1998,7 +2003,7 @@ class Basic(with_metaclass(ManagedProperties)):
             else:
                 kwargs['integer'] = definition.is_integer
             
-        if 'shape' in kwargs:      
+        if 'shape' in kwargs: 
             if len(kwargs['shape']) > 1:
                 symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
             else:
@@ -2011,7 +2016,7 @@ class Basic(with_metaclass(ManagedProperties)):
             symbols = 'xyzabcdefghijklmnopqrstuvw'
         
         for name in symbols:
-            if name not in excludes:                
+            if name not in excludes: 
                 return Symbol(name, **kwargs)
         raise Exception("run out of symbols")
 
@@ -2042,7 +2047,7 @@ class Basic(with_metaclass(ManagedProperties)):
             return ret
             
         domain_assumed = other.domain_assumed
-        if domain_assumed :
+        if domain_assumed:
             intersect = domain_assumed & self
             if not intersect:
                 return S.false
@@ -2174,7 +2179,7 @@ class Basic(with_metaclass(ManagedProperties)):
         global_variables = set()
         wlexpr = self.to_wolfram(global_variables)                
         wlexpr = session.evaluate(wlexpr)
-        global_variables = {'Global`' + x.name : x for x in global_variables}
+        global_variables = {'Global`' + x.name: x for x in global_variables}
         from wolframclient.language import expression        
         return expression.sympify(wlexpr, **global_variables)
 
@@ -2260,6 +2265,7 @@ class Basic(with_metaclass(ManagedProperties)):
     def ceiling(self):
         from sympy import Ceiling
         return Ceiling(self)
+
     
 class Atom(Basic):
     """

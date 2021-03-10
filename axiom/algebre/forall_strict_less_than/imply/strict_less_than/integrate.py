@@ -1,12 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality, StrictLessThan
-from sympy import Symbol, ForAll, Slice, Integrate
-from sympy.core.function import Function
 import axiom
-from sympy.concrete.limits import limits_dict
-from sympy.sets.sets import Interval
-from axiom import algebre, sets
-from sympy.core.symbol import dtype
+from axiom import algebre, sets, calculus
 
 
 @apply
@@ -30,7 +25,7 @@ def prove(Eq):
     
     Eq << Eq[0].reversed
     
-    Eq << algebre.forall_strict_greater_than.imply.strict_greater_than.integrate.apply(Eq[-1])
+    Eq << calculus.forall_strict_greater_than.imply.strict_greater_than.integrate.apply(Eq[-1])
     
     Eq << Eq[-1].reversed
     

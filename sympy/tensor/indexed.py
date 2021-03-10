@@ -145,7 +145,7 @@ class Indexed(Expr):
 
     def __getitem__(self, indices, **kw_args):
         if is_sequence(indices):
-            if len(indices) == 2 and isinstance(indices[0], slice):
+            if len(indices) >= 2 and isinstance(indices[0], slice):
                 if isinstance(indices[1], slice):
                     start, stop = indices[1].start, indices[1].stop
                     if start is None and stop is None:

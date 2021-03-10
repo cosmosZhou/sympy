@@ -42,7 +42,13 @@ def prove(Eq):
     y = Symbol.y(real=True)
     r = Symbol.r(real=True, positive=True)
     
-    Eq << apply(Min(x * r + 1, y * r + 1))    
+    Eq << apply(Min(x * r + 1, y * r + 1))
+    
+    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    
+    Eq << Eq[-1].this.lhs.astype(Plus)
+    
+    Eq << Eq[-1].this.rhs.astype(Piecewise)
     
     
     

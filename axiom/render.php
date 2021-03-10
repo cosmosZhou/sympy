@@ -175,10 +175,10 @@ function render($php)
     }
 
     echo "<h3><font color=blue>$given:</font></h3>";
-    // error_log("indexOfYield = $indexOfYield");
+//     error_log("indexOfYield = $indexOfYield");
 
     $numOfReturnsFromApply = $lengths[$indexOfYield];
-    // error_log("numOfReturnsFromApply = " . $numOfReturnsFromApply);
+//     error_log("numOfReturnsFromApply = " . $numOfReturnsFromApply);
 
     // error_log("lengths = " . jsonify($lengths));
 
@@ -197,9 +197,9 @@ function render($php)
 
                 if ($numOfReturnsFromApply == 1) {
                     if (is_latex($statement, $matches)) {
-                        // error_log("matches = ".jsonify($matches));
+//                         error_log("matches = ".jsonify($matches));
                         $numOfReturnsFromApply = count($matches);
-                        // error_log("count(matches) = ".$numOfReturnsFromApply);
+//                         error_log("count(matches) = ".$numOfReturnsFromApply);
 
                         $statements_before_yield = array_slice($matches, 0, $numOfReturnsFromApply - $numOfYields);
                         // error_log("statements_before_yield = ".jsonify($statements_before_yield));

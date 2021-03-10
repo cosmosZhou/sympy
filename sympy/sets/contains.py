@@ -166,11 +166,15 @@ class Contains(BinaryCondition):
 
     def __or__(self, other):
         if other.is_Contains:
+            print('this should be axiomatized!!!!')
             x, X = self.args
             y, Y = other.args
             if x == y: 
                 return self.func(x, X | Y, given=[self, other]).simplify()
             
+        elif other.is_Or:            
+            return other.func(self, *other.args, equivalent=[self, other])
+        
         return BinaryCondition.__or__(self, other)
 
     def __truediv__(self, other):

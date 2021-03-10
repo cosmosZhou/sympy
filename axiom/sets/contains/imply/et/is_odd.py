@@ -54,7 +54,7 @@ def prove(Eq):
     
     Eq << algebre.strict_greater_than.greater_than.imply.strict_greater_than.transit.apply(Eq.strict_greater_than, algebre.imply.greater_than.floor.apply(a, 2))    
     
-    Eq << algebre.strict_greater_than.imply.greater_than.integer.apply(Eq[-1])
+    Eq << algebre.strict_greater_than.imply.greater_than.strengthen.apply(Eq[-1])
     
     Eq << algebre.imply.less_than.floor.apply(b - 1, 2) + 1
 
@@ -66,7 +66,7 @@ def prove(Eq):
     
     Eq << sets.contains.subset.imply.contains.apply(Eq.contains, Eq[-1])
     
-    Eq << sets.contains.imply.exists_equal.apply(Eq[-1])
+    Eq << sets.contains.imply.exists_equal.definition.apply(Eq[-1])
     
     Eq << Eq[-1] * 2 + 1
     

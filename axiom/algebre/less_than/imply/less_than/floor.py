@@ -22,7 +22,7 @@ def prove(Eq):
     
     Eq << ~Eq[1]
     
-    Eq << algebre.strict_greater_than.imply.greater_than.integer.apply(Eq[-1])
+    Eq << algebre.strict_greater_than.imply.greater_than.strengthen.apply(Eq[-1])
     
     Eq << algebre.less_than.greater_than.imply.greater_than.transit.apply(Eq[0], Eq[-1])
         

@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 import axiom
 
 
-def process_given_conditions(*given, swap=False, delta=True):
+def process_given_conditions(*given, swap=False, delta=True, reverse=False):
     if swap:
         f_eq, eq = given
     else:
@@ -11,9 +11,10 @@ def process_given_conditions(*given, swap=False, delta=True):
         
     lhs, rhs = axiom.is_Equal(eq)    
     assert f_eq.is_Boolean
-    
-    if delta:
-        lhs, rhs = KroneckerDelta(lhs, rhs), One()
+    if reverse:
+        lhs, rhs = rhs, lhs    
+    elif delta:
+            lhs, rhs = KroneckerDelta(lhs, rhs), One()
     return eq, f_eq._subs(lhs, rhs)
 
 

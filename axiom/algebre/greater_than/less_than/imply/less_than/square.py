@@ -40,7 +40,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.args[1].apply(algebre.less_than.imply.less_than.transit, Eq[2].rhs)
     
-    Eq << Eq[-1].this.args[0].apply(algebre.strict_greater_than.imply.greater_than.integer)
+    Eq << Eq[-1].this.args[0].apply(algebre.strict_greater_than.imply.greater_than.relax)
 
     
 if __name__ == '__main__':

@@ -6,9 +6,11 @@ from axiom import algebre
 
 @apply
 def apply(given):
-    y, floor_x = axiom.is_Equal(given)
+    y, fx = axiom.is_Equal(given)
+    if not fx.is_Ceiling:
+        y, fx = fx, y    
     assert y.is_integer
-    x = axiom.is_Ceiling(floor_x)
+    x = axiom.is_Ceiling(fx)
     return And(x + 1 > y, y >= x)
 
 

@@ -17,6 +17,6 @@ axiom.statistics.kullback_leibler
 
 axiom.sets.imply.equal.principle.inclusion_exclusion.deduction
 
-axiom.algebre.forall_greater_than.imply.greater_than.integrate
-axiom.algebre.forall_strict_greater_than.imply.strict_greater_than.integrate
+axiom.calculus.forall_greater_than.imply.greater_than.integrate
+axiom.calculus.forall_strict_greater_than.imply.strict_greater_than.integrate
 

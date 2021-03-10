@@ -71,10 +71,8 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[0].apply(algebre.times.astype.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.expand()
+    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.apply(algebre.times.distribute)
             
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.collect(1 / r)
-    
     Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebre.max.astype.ceiling)
     
     Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebre.ceiling.astype.max)
@@ -99,10 +97,8 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[0].apply(algebre.times.astype.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.expand()
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.apply(algebre.times.distribute)
         
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.collect(1 / r)
-    
     Eq << Eq[-1].this.rhs.args[0].expr.limits[0][2].args[1].apply(algebre.min.astype.floor)
     
     Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.convolution_definition, Eq[-1])

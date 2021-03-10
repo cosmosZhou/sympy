@@ -113,8 +113,12 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.apply(sets.contains.given.exists_equal.where.imageset)
 
-    Eq.subset_B_definition = Eq[-1].this.function.function.apply(sets.equal.given.equal.complement, {n.set}) 
-        
+    Eq << algebre.forall.given.forall_et.conditionset.apply(Eq[-1], simplify=None)
+    
+    Eq << Eq[-1].this.function.apply(algebre.et.given.exists_et, split=False, simplify=None)
+    
+    Eq.subset_B_definition = Eq[-1].this.function.function.apply(sets.et.given.et.contains, split=False)
+
     num_plausibles = len(Eq.plausibles_dict)
 
     Eq.plausible_notcontains = ForAll(NotContains({n}, e), (e, s0), plausible=True)

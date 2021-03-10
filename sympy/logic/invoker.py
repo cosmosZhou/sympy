@@ -23,6 +23,23 @@ class Invoker:
         return self._objs[0]
     
     def determine_assumptions(self, obj):
+        
+        def process_given():
+            parent = self.parent
+            if parent.is_And or parent.is_Or :
+                if len(self._objs) >= 3:
+                    parent = self._objs[-3]
+                    if parent.is_Sufficient and self.index[-2] == 0 or parent.is_Necessary and self.index[-2] == 1:
+                        # in case of using imply within an 'And' / 'Or' structure
+                        return 'imply'
+            elif parent.is_Sufficient and self.index[-1] == 0 or parent.is_Necessary and self.index[-1] == 1:
+                # in case of using imply
+                return 'imply'
+                
+            assert not parent.is_Equivalent and not parent.is_ExprCondPair, "boolean conditions within ExprCondPair and Equivalent are not applicable for application in proof!" 
+                
+            return 'given'
+            
         if obj.is_Boolean:
             equivalent = obj.equivalent
             if equivalent is not None:
@@ -30,17 +47,12 @@ class Invoker:
                     # in case of result of simplify                    
                     if equivalent is not self.target:
                         clue = equivalent.clue
-                        if clue is not None:                        
+                        if clue is not None:
+                            if clue == 'given':
+                                return process_given()                        
                             return clue                    
-            elif obj.given is not None:                
-                parent = self.parent
-                if parent.is_Sufficient and self.index[-1] == 0 or parent.is_Necessary and self.index[-1] == 1:
-                    # in case of using imply
-                    return 'imply'
-                    
-                assert not parent.is_Equivalent and not parent.is_ExprCondPair, "boolean conditions within ExprCondPair and Equivalent are not applicable for application in proof!" 
-                    
-                return 'given'
+            elif obj.given is not None:               
+                return process_given() 
             elif obj.imply is not None:
                 parent = self.parent
                 assert not parent.is_Equivalent and not parent.is_ExprCondPair, "boolean conditions within ExprCondPair and Equivalent are not applicable for application in proof!"                
@@ -48,20 +60,17 @@ class Invoker:
         return 'equivalent'
         
     def result(self, obj, simplify=True):
-        kwargs = {self.determine_assumptions(obj) : self.source}
+        assumptions = {self.determine_assumptions(obj) : self.source}
 
         for i in range(-1, -len(self.index) - 1, -1):
             this = self._objs[i - 1]
             args = [*this.args]
             args[self.index[i]] = obj
             
-            if this.is_Interval:
-                args += [this.left_open, this.right_open, this.is_integer]
-
             if i == -len(self.index):
-                obj = this.func(*args, **kwargs)
+                obj = this.func(*args, **assumptions)
             else:
-                obj = this.func(*args)
+                obj = this.func(*args, **this.kwargs)
 
             if simplify:
                 obj = obj.simplify()
@@ -204,7 +213,7 @@ class Invoker:
             return self.__call__(rhs)
         
     def __truediv__(self, rhs):
-        if self.target.is_Equality:
+        if self.target.is_Relational:
             self.callable = self.target.__truediv__
             return self.__call__(rhs)
 

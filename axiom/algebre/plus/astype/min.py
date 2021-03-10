@@ -21,6 +21,12 @@ def prove(Eq):
     y = Symbol.y(real=True)
     z = Symbol.z(real=True)
     Eq << apply(Min(x, y) - z)
+    
+    Eq << Eq[-1].this.rhs.astype(Piecewise)
+    
+    Eq << Eq[-1].this.rhs.astype(Plus)
+    
+    Eq << Eq[-1].this.lhs.astype(Piecewise)
 
     
 if __name__ == '__main__':
