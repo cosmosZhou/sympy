@@ -8,13 +8,24 @@ from multiprocessing import cpu_count
 from queue import PriorityQueue
 from functools import singledispatch 
 import random
+from axiom.utility import RetCode
 
 
 def axiom_directory():
     return os.path.dirname(__file__)
 
 
-count = 0
+class Globals:
+    count = 0
+
+    @classmethod
+    def increment_count(cls):
+        cls.count += 1
+
+    @classmethod
+    def decrement_count(cls):
+        cls.count -= 1
+
 
 unproved = []
 
@@ -22,10 +33,8 @@ failures = []
 
 websites = []
 
-insurmountable = {*Text(axiom_directory() + '/insurmountable.txt')}
-unprovable = {*Text(axiom_directory() + '/unprovable.txt')}
-
-insurmountable |= unprovable
+insurmountable = set()
+unprovable = set()
 
 
 def readFolder(rootdir, sufix='.py'):
@@ -35,19 +44,19 @@ def readFolder(rootdir, sufix='.py'):
         if path.endswith(sufix):
             name = name[:-len(sufix)]
             if name == '__init__':
-                continue
-            
-            path = path[:-len(sufix)]
+                path = path[:-len(sufix) - len('/__init__')]
+            else: 
+                path = path[:-len(sufix)]
+                
             paths = re.compile(r'[\\/]+').split(path)
 #             print(path)
             index = paths.index('axiom')
 
             package = '.'.join(paths[index:])
 
-            global count
-            count += 1
+            Globals.increment_count()
             path += '.php'            
-            if os.path.isfile(path):                
+            if os.path.isfile(path): 
                 with open(path, "r", encoding='utf8') as file:
                     line = file.readline()                    
                     m = re.compile(r"<p style='display:none'>timing = ([\d.]+)</p>").match(line)
@@ -94,7 +103,7 @@ def create_module(package, module):
         file.append(addition)
 
 
-def run(package):   
+def run(package): 
     command = 'python %s %s debug=True' % (project_directory() + os.path.sep + 'run.py', package)
     return os.system(command)
 #     for line in os.popen(cmd).readlines():
@@ -102,9 +111,9 @@ def run(package):
 
     
 def import_module(package):
-    try:    
+    try: 
         return eval(package)
-    except AttributeError as e:   
+    except AttributeError as e: 
         print(e)
         s = str(e)
         
@@ -123,13 +132,23 @@ def process(package, debug=False):
     module = import_module(package)
     if isinstance(module, int):
         sep = os.path.sep
-        ret = None if module < 0 else bool(module)
+        
+        if module < 0:
+            ret = RetCode.failure
+        elif module:
+            ret = RetCode.success
+        else:
+            ret = RetCode.plausible
+            
         file = project_directory() + sep + package.replace('.', sep) + '.py'
-    else:        
+    else: 
         file = module.__file__
-        ret = module.prove(file, debug=debug)
-        if package in insurmountable:
-            ret = True
+        if hasattr(module, 'prove'):
+            ret = module.prove(file, debug=debug)
+            if package in insurmountable:
+                ret = RetCode.insurmountable
+        else:
+            ret = RetCode.nonexistent
             
     return file, ret
 
@@ -152,7 +171,7 @@ def prove(debug=False, parallel=True):
             if os.path.isdir(path):
                 yield from readFolder(path)
 
-    tasks = {task : timing for task, timing in generator()}
+    tasks = {task: timing for task, timing in generator()}
     packages = tuple([] for _ in range(cpu_count() * 2))
     timings = [0 for _ in range(cpu_count() * 2)]
     
@@ -162,10 +181,10 @@ def prove(debug=False, parallel=True):
     print('total_timing =', total_timing)
     print('average_timing =', average_timing)
     
-#     tasks = {'axiom.algebre.unequal.equal.imply.equal': 0}
+#     tasks = {'axiom.calculus.is_continuous.is_differentiable.eq.imply.exists_eq.Rolle': 0}
     
     tasks = [*tasks.items()]
-    tasks.sort(key=lambda pair : pair[1], reverse=True)
+    tasks.sort(key=lambda pair: pair[1], reverse=True)
     
     pq = PriorityQueue()
     for i, t in enumerate(timings):
@@ -186,7 +205,7 @@ def prove(debug=False, parallel=True):
     for array in process(packages, debug=debug, parallel=parallel):
         post_process(array)
         
-    print('in all %d axioms' % count)
+    print('in all %d axioms' % Globals.count)
     print_summary()
 
     
@@ -214,10 +233,15 @@ def print_summary():
         
 def post_process(result):
     for package, ret in result: 
-        if ret is False:                
+        if ret is RetCode.plausible: 
             unproved.append(package)
-        elif ret is None:
+        elif ret is RetCode.failure:
             failures.append(package)
+        elif ret is RetCode.nonexistent:
+            Globals.decrement_count()
+            continue
+        elif ret is RetCode.insurmountable:
+            continue
         else:
             continue
         
@@ -226,7 +250,7 @@ def post_process(result):
 #         print('package =', package)
         
         websites.append("http://localhost" + package[len(working_directory()):-3] + ".php")
-    return count
+    return Globals.count
 
 
 def process_debug(packages):
@@ -236,7 +260,7 @@ def process_debug(packages):
 @process.register(tuple) 
 def _(items, debug=False, parallel=True):  # @DuplicatedSignature
     proc = process_debug if debug else process 
-    if parallel:        
+    if parallel: 
         from multiprocessing import Pool
         with Pool(processes=cpu_count()) as pool:
 #         with Pool(processes=cpu_count() * 2) as pool:

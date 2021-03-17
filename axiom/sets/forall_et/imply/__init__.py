@@ -1,1 +1,1 @@
-from . import forall_unequal
+from . import forall_ne

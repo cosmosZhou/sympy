@@ -1,26 +1,23 @@
-
-from sympy.core.numbers import oo
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
 
-from sympy import Exists, ForAll, MAX, MIN
 
-from sympy.sets.sets import Interval
-from sympy.core.function import Function
+def is_continuous(f, a, b, x=None, xi=None): 
+    if xi is None:
+        xi = Symbol('xi', real=True)
+        
+    if x is None:
+        x = Symbol('x', real=True)
+        
+    return ForAll[xi:a:b](Equality(Limit[x:xi](f(x)), f(xi)))
 
-def continuity(f, a, b):    
-    from sympy import Limit
-    xi = Symbol('xi', real=True)
-    z = Symbol('z', real=True)
-    return ForAll(Equality(Limit(f(z), z, xi, '+-'), f(xi)), (xi, a, b))
 
 @apply
 def apply(given):
     assert given.is_ForAll
     assert given.function.is_Equality
     assert given.function.lhs.is_Limit
-    f, z, xi, direction = given.function.lhs.args
+    f, (z, xi, direction) = given.function.lhs.args
     assert direction.name == '+-'
     assert len(given.limits) == 1
     limit = given.limits[0]
@@ -33,15 +30,13 @@ def apply(given):
     return ForAll(Exists(Equality(f, y), (z, a, b)), (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))))               
 
 
-
-
-@prove
-def prove(Eq):    
+@prove(surmountable=False)
+def prove(Eq): 
 
     a = Symbol.a(real=True)
     b = Symbol.b(real=True, domain=Interval(a, oo, left_open=True))
     f = Function.f(shape=(), real=True)
-    Eq << apply(continuity(f, a, b))
+    Eq << apply(is_continuous(f, a, b))
 
 
 if __name__ == '__main__':

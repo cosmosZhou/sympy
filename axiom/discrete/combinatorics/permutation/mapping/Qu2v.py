@@ -4,7 +4,7 @@ from sympy import *
 from axiom import discrete, algebre, sets
 
 from sympy.matrices.expressions.matexpr import Swap
-from axiom.discrete.combinatorics.permutation.index.equal import index_function
+from axiom.discrete.combinatorics.permutation.index.eq import index_function
 
 
 def predefined_symbols(n):
@@ -34,7 +34,7 @@ def apply(n, u, v):
 
 
 @prove
-def prove(Eq):    
+def prove(Eq): 
     n = Symbol.n(integer=True, positive=True)
     u = Symbol.u(domain=Interval(0, n, integer=True))
     v = Symbol.v(domain=Interval(0, n, integer=True))
@@ -43,10 +43,13 @@ def prove(Eq):
     w, i, j = Eq[0].lhs.args
     Q = Eq[2].lhs.base
     
-    Eq.x_slice_last, Eq.x_slice_domain = sets.imply.forall.conditionset.apply(Q[u]).split()
+    Eq << sets.imply.forall.conditionset.apply(Q[u])
     
-    Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.equal, v)
-    Eq.h_domain, Eq.x_h_equality = Eq[-1].split()
+    Eq.x_slice_last, Eq.x_slice_domain = algebre.forall_et.imply.forall.apply(Eq[-1])
+    
+    Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.eq, v)
+    
+    Eq.h_domain, Eq.x_h_equality = algebre.forall_et.imply.forall.apply(Eq[-1])
     
     hv = Eq.x_h_equality.function.lhs.indices[0]
     Eq << discrete.matrix.elementary.swap.invariant.permutation.basic.apply(n + 1, w=w)
@@ -64,7 +67,7 @@ def prove(Eq):
     k = Eq[-1].function.lhs.function.arg.args[0].indices[-1]
     Eq.Xv_definition = Eq[1].subs(j, v)
     
-    Eq << Eq.Xv_definition[k].apply(sets.equal.imply.equal.set_comprehension, (k, 0, n + 1))
+    Eq << Eq.Xv_definition[k].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n + 1))
     
     Eq.x_n1_set_comprehension = Eq[-2].subs(Eq[-1].reversed)
     
@@ -78,13 +81,13 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.x_h_equality)
     
-    Eq << Eq[-1].apply(algebre.equal.imply.ou.two)
+    Eq << Eq[-1].apply(algebre.eq.imply.ou.two)
     
-    Eq << (Eq[-1] & Eq.h_domain).split()
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1] & Eq.h_domain)
     
     Eq <<= Eq.x_n1_set_comprehension & Eq[-1] 
     
-    Eq.Xv_in_Qv, Eq.x_eq_swap_Xv = Eq[3].split()
+    Eq.Xv_in_Qv, Eq.x_eq_swap_Xv = algebre.forall_et.given.forall.apply(Eq[3])
     
     Eq << Eq.Xv_in_Qv.this.function.rhs.definition
     
@@ -92,7 +95,9 @@ def prove(Eq):
     
     Eq.indexu_eq_indexv = Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.swap, u, v, w=w)
     
-    Eq.indexu_contains, Eq.x_indexu_equality = Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.equal, u).split()
+    Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.eq, u)
+    
+    Eq.indexu_contains, Eq.x_indexu_equality = algebre.forall_et.imply.forall.apply(Eq[-1], simplify=None)
     
     Eq.equality_of_indexu_and_n = Eq.x_indexu_equality + Eq.x_slice_last.reversed
 
@@ -102,26 +107,38 @@ def prove(Eq):
     Eq << Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.kronecker_delta.indexOf, i, j)
         
     x = Eq[-1].variable.base
-    Eq << Eq[-1].subs(i, x[n]).split()
+    Eq.ou = Eq[-1].subs(i, x[n])
     
-    Eq << Eq[-2].subs(Eq.x_slice_last)
+    Eq << Exists(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
+    
+    Eq << Eq[-1].subs(Eq.x_slice_last)
+    
+    Eq << algebre.forall_et.imply.forall.apply(Eq.ou & ~Eq[-1], index=1)
     
     m = Symbol.m(domain=Interval(0, n, integer=True))
     Eq.indexOf_indexed = Eq.x_slice_domain.apply(discrete.combinatorics.permutation.index.indexOf_indexed, j=m)
     
     Eq << Eq.indexOf_indexed.subs(m, n)
+    
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq << Eq[-1].subs(j, Eq.equality_of_indexu_and_n.function.lhs).split()
+    Eq.ou = Eq[-1].subs(j, Eq.equality_of_indexu_and_n.function.lhs)
     
-    Eq << Eq[-2].subs(Eq.x_indexu_equality)
+    Eq << Exists(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
     
-    Eq.notcontains, Eq.index_equality = Eq.indexOf_indexed.subs(m, Eq.equality_of_indexu_and_n.function.lhs.indices[0]).split()
+    Eq << Eq[-1].subs(Eq.x_indexu_equality)
     
-    Eq <<= Eq.indexu_contains & Eq.notcontains
+    Eq << algebre.forall_et.imply.forall.apply(Eq.ou & ~Eq[-1], index=1)
+    
+    Eq.ou = Eq.indexOf_indexed.subs(m, Eq.equality_of_indexu_and_n.function.lhs.indices[0])
+    
+    Eq << Exists(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)    
+    
+    Eq <<= Eq.indexu_contains & Eq[-1]
+    
+    Eq.index_equality = algebre.forall_et.imply.forall.apply(Eq.ou & ~Eq[-1], index=1)
     
     Eq << discrete.combinatorics.permutation.is_nonemptyset.Qu.apply(n, u)
-    Eq <<= Eq[-1] & Eq[-2]
     
     Eq << Eq[-3].subs(Eq.index_equality)
     

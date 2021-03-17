@@ -1,12 +1,7 @@
-
-from sympy.core.relational import Equality, Unequal
-
 from axiom.utility import prove, apply
-from sympy import Symbol
+from sympy import *
 from sympy.stats.symbolic_probability import Probability as P, Probability
 from sympy.stats.rv import pspace
-from sympy import ForAll
-from sympy.logic.boolalg import And
 
 
 # given: P(x) ! =0
@@ -58,10 +53,9 @@ def apply(self, *given):
             inequality = Unequal(given_probability, 0)
         
         return ForAll[given: inequality](Equality(self, given_probability * given_marginal_prob))
-
     
 
-@prove
+@prove(provable=False)
 def prove(Eq):
     x = Symbol.x(real=True, random=True)    
     y = Symbol.y(real=True, random=True)

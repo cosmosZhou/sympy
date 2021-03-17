@@ -34,6 +34,7 @@ def bitcount(n):
     """
     return mpmath_bitcount(abs(int(n)))
 
+
 # Used in a few places as placeholder values to denote exponents and
 # precision levels, e.g. of exact numbers. Must be careful to avoid
 # passing these to mpmath functions or returning them in final results.
@@ -237,7 +238,7 @@ def get_complex_part(expr, no, prec, options):
         # XXX is the last one correct? Consider re((1+I)**2).n()
         if (not value) or accuracy >= prec or -value[2] > prec:
             return value, None, accuracy, None
-        workprec += max(30, 2**i)
+        workprec += max(30, 2 ** i)
         i += 1
 
 
@@ -388,7 +389,7 @@ def get_integer_part(expr, no, options, return_ints=False):
                 if not re_im.equals(0):
                     raise PrecisionExhausted
                 x = fzero
-            nint += int(no*(mpf_cmp(x or fzero, fzero) == no))
+            nint += int(no * (mpf_cmp(x or fzero, fzero) == no))
         nint = from_int(nint)
         return nint, INF
 
@@ -459,7 +460,7 @@ def add_terms(terms, prec, target_prec):
         rv = evalf(Add(*special), prec + 4, {})
         return rv[0], rv[2]
 
-    working_prec = 2*prec
+    working_prec = 2 * prec
     sum_man, sum_exp, absolute_error = 0, 0, MINUS_INF
 
     for x, accuracy in terms:
@@ -514,7 +515,7 @@ def evalf_add(v, prec, options):
     i = 0
     target_prec = prec
     while 1:
-        options['maxprec'] = min(oldmaxprec, 2*prec)
+        options['maxprec'] = min(oldmaxprec, 2 * prec)
 
         terms = [evalf(arg, prec + 10, options) for arg in v.args]
         re, re_acc = add_terms(
@@ -530,7 +531,7 @@ def evalf_add(v, prec, options):
             if (prec - target_prec) > options['maxprec']:
                 break
 
-            prec = prec + max(10 + 2**i, target_prec - acc)
+            prec = prec + max(10 + 2 ** i, target_prec - acc)
             i += 1
             if options.get('verbose'):
                 print("ADD: restarting with prec", prec)
@@ -590,7 +591,7 @@ def evalf_mul(v, prec, options):
 
     for i, arg in enumerate(args):
         if i != last and pure_complex(arg):
-            args[-1] = (args[-1]*arg).expand()
+            args[-1] = (args[-1] * arg).expand()
             continue
         elif i == last and arg is S.One:
             continue
@@ -605,11 +606,11 @@ def evalf_mul(v, prec, options):
             direction += 1
         else:
             return None, None, None, None
-        direction += 2*s
+        direction += 2 * s
         man *= m
         exp += e
         bc += b
-        if bc > 3*working_prec:
+        if bc > 3 * working_prec:
             man >>= working_prec
             exp += working_prec
         acc = min(acc, w_acc)
@@ -826,7 +827,7 @@ def evalf_trig(v, prec, options):
 
 def evalf_log(expr, prec, options):
     from sympy import Abs, Add, log
-    if len(expr.args)>1:
+    if len(expr.args) > 1:
         expr = expr.doit()
         return evalf(expr, prec, options)
     arg = expr.args[0]
@@ -864,7 +865,7 @@ def evalf_atan(v, prec, options):
     arg = v.args[0]
     xre, xim, reacc, imacc = evalf(arg, prec + 5, options)
     if xre is xim is None:
-        return (None,)*4
+        return (None,) * 4
     if xim:
         raise NotImplementedError
     return mpf_atan(xre, prec, rnd), None, prec, None
@@ -947,7 +948,7 @@ def do_integral(expr, prec, options):
                 xlow, xhigh = 0, diff
 
     oldmaxprec = options.get('maxprec', DEFAULT_MAXPREC)
-    options['maxprec'] = min(oldmaxprec, 2*prec)
+    options['maxprec'] = min(oldmaxprec, 2 * prec)
 
     with workprec(prec + 5):
         xlow = as_mpmath(xlow, prec + 15, options)
@@ -982,13 +983,13 @@ def do_integral(expr, prec, options):
             A = Wild('A', exclude=[x])
             B = Wild('B', exclude=[x])
             D = Wild('D')
-            m = func.match(cos(A*x + B)*D)
+            m = func.match(cos(A * x + B) * D)
             if not m:
-                m = func.match(sin(A*x + B)*D)
+                m = func.match(sin(A * x + B) * D)
             if not m:
                 raise ValueError("An integrand of the form sin(A*x+B)*f(x) "
                   "or cos(A*x+B)*f(x) is required for oscillatory quadrature")
-            period = as_mpmath(2*S.Pi/m[A], prec + 15, options)
+            period = as_mpmath(2 * S.Pi / m[A], prec + 15, options)
             result = quadosc(f, [xlow, xhigh], period=period)
             # XXX: quadosc does not do error detection yet
             quadrature_error = MINUS_INF
@@ -1005,7 +1006,7 @@ def do_integral(expr, prec, options):
                 min(-prec, -max_real_term[0], -quadrature_error))
             re = scaled_zero(re)  # handled ok in evalf_integral
         else:
-            re_acc = -max(max_real_term[0] - fastlog(re) -
+            re_acc = -max(max_real_term[0] - fastlog(re) - 
                           prec, quadrature_error)
     else:
         re, re_acc = None, None
@@ -1017,7 +1018,7 @@ def do_integral(expr, prec, options):
                 min(-prec, -max_imag_term[0], -quadrature_error))
             im = scaled_zero(im)  # handled ok in evalf_integral
         else:
-            im_acc = -max(max_imag_term[0] - fastlog(im) -
+            im_acc = -max(max_imag_term[0] - fastlog(im) - 
                           prec, quadrature_error)
     else:
         im, im_acc = None, None
@@ -1046,7 +1047,7 @@ def evalf_integral(expr, prec, options):
             # to get to maxprec.
             workprec *= 2
         else:
-            workprec += max(prec, 2**i)
+            workprec += max(prec, 2 ** i)
         workprec = min(workprec, maxprec)
         i += 1
     return result
@@ -1087,7 +1088,7 @@ def check_convergence(numer, denom, n):
         return rate, constant, 0
     pc = npol.all_coeffs()[1]
     qc = dpol.all_coeffs()[1]
-    return rate, constant, (qc - pc)/dpol.LC()
+    return rate, constant, (qc - pc) / dpol.LC()
 
 
 def hypsum(expr, n, start, prec):
@@ -1135,7 +1136,7 @@ def hypsum(expr, n, start, prec):
     else:
         alt = g < 0
         if abs(g) < 1:
-            raise ValueError("Sum diverges like (%i)^n" % abs(1/g))
+            raise ValueError("Sum diverges like (%i)^n" % abs(1 / g))
         if p < 1 or (p == 1 and not alt):
             raise ValueError("Sum diverges like n^%i" % (-p))
         # We have polynomial convergence: use Richardson extrapolation
@@ -1145,7 +1146,7 @@ def hypsum(expr, n, start, prec):
             # Need to use at least quad precision because a lot of cancellation
             # might occur in the extrapolation process; we check the answer to
             # make sure that the desired precision has been reached, too.
-            prec2 = 4*prec
+            prec2 = 4 * prec
             term0 = (MPZ(term.p) << prec2) // term.q
 
             def summand(k, _term=[term0]):
@@ -1198,9 +1199,9 @@ def evalf_sum(expr, prec, options):
         return v, None, min(prec, delta), None
     except NotImplementedError:
         # Euler-Maclaurin summation for general series
-        eps = Float(2.0)**(-prec)
+        eps = Float(2.0) ** (-prec)
         for i in range(1, 5):
-            m = n = 2**i * prec
+            m = n = 2 ** i * prec
             s, err = expr.euler_maclaurin(m=m, n=n, eps=eps,
                 eval_integral=False)
             err = err.evalf()
@@ -1214,12 +1215,12 @@ def evalf_sum(expr, prec, options):
             im_acc = -err
         return re, im, re_acc, im_acc
 
-
 #----------------------------------------------------------------------------#
 #                                                                            #
 #                            Symbolic interface                              #
 #                                                                            #
 #----------------------------------------------------------------------------#
+
 
 def evalf_symbol(x, prec, options):
     val = options['subs'][x]
@@ -1237,6 +1238,7 @@ def evalf_symbol(x, prec, options):
         v = evalf(sympify(val), prec, options)
         cache[x] = (v, prec)
         return v
+
 
 evalf_table = None
 
@@ -1257,6 +1259,7 @@ def _create_evalf_table():
     from sympy.functions.elementary.piecewise import Piecewise
     from sympy.functions.elementary.trigonometric import atan, cos, sin
     from sympy.integrals.integrals import Integral
+    from sympy.core.numbers import NegativeInfinitesimal, Infinitesimal
     evalf_table = {
         Symbol: evalf_symbol,
         Dummy: evalf_symbol,
@@ -1297,6 +1300,9 @@ def _create_evalf_table():
         Piecewise: evalf_piecewise,
 
         bernoulli: evalf_bernoulli,
+
+        NegativeInfinitesimal: lambda x, prec, options: (fnone, None, prec, None),
+        Infinitesimal: lambda x, prec, options: (fone, None, prec, None),
     }
 
 
@@ -1314,7 +1320,7 @@ def evalf(x, prec, options):
             raise NotImplementedError
         as_real_imag = getattr(xe, "as_real_imag", None)
         if as_real_imag is None:
-            raise NotImplementedError # e.g. FiniteSet(-1.0, 1.0).evalf()
+            raise NotImplementedError  # e.g. FiniteSet(-1.0, 1.0).evalf()
         re, im = as_real_imag()
         if re.has(re_) or im.has(im_):
             raise NotImplementedError
@@ -1339,7 +1345,7 @@ def evalf(x, prec, options):
     if options.get("verbose"):
         print("### input", x)
         print("### output", to_str(r[0] or fzero, 50))
-        print("### raw", r) # r[0], r[2]
+        print("### raw", r)  # r[0], r[2]
         print()
     chop = options.get('chop', False)
     if chop:
@@ -1349,7 +1355,7 @@ def evalf(x, prec, options):
             # convert (approximately) from given tolerance;
             # the formula here will will make 1e-i rounds to 0 for
             # i in the range +/-27 while 2e-i will not be chopped
-            chop_prec = int(round(-3.321*math.log10(chop) + 2.5))
+            chop_prec = int(round(-3.321 * math.log10(chop) + 2.5))
             if chop_prec == 3:
                 chop_prec -= 1
         r = chop_parts(r, chop_prec)
@@ -1430,7 +1436,7 @@ class EvalfMixin(object):
         if not evalf_table:
             _create_evalf_table()
         prec = dps_to_prec(n)
-        options = {'maxprec': max(prec, int(maxn*LG10)), 'chop': chop,
+        options = {'maxprec': max(prec, int(maxn * LG10)), 'chop': chop,
                'strict': strict, 'verbose': verbose}
         if subs is not None:
             options['subs'] = subs
@@ -1460,7 +1466,7 @@ class EvalfMixin(object):
         if im:
             p = max(min(prec, im_acc), 1)
             im = Float._new(im, p)
-            return re + im*S.ImaginaryUnit
+            return re + im * S.ImaginaryUnit
         else:
             return re
 

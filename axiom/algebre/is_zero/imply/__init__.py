@@ -1,2 +1,2 @@
 from . import ou
-from . import unequal
+from . import ne

@@ -38,7 +38,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.notcontains.imply.et.where.finiteset.apply(Eq[-1])
+    Eq << sets.notcontains.imply.et.having.finiteset.apply(Eq[-1])
     
     Eq << ~Eq[-1]
     

@@ -1,12 +1,7 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy import Symbol
-from sympy import LAMBDA
-from axiom.discrete.combinatorics.permutation.index.equal import index_function
+from axiom.discrete.combinatorics.permutation.index.eq import index_function
 from axiom import discrete, algebre
-from sympy.functions.special.tensor_functions import KroneckerDelta
 
 
 @apply
@@ -51,23 +46,25 @@ def prove(Eq):
     
     Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
     
-    Eq << Eq[-1].bisect(Equality(i, j)).split()
+    Eq << Eq[-1].bisect(Equality(i, j))
+    
+    Eq << algebre.et.given.cond.apply(Eq[-1])
     
     Eq <<= ~Eq[-1], ~Eq[-2]
     
-    Eq << Eq[-2].apply(algebre.equal.unequal.imply.unequal.subs)
+    Eq << Eq[-2].apply(algebre.eq.ne.imply.ne.subs)
 
-    Eq << Eq[-1].apply(algebre.unequal.condition.imply.et)
+    Eq << Eq[-1].apply(algebre.ne.cond.imply.et)
 
-    Eq << discrete.combinatorics.permutation.index.equal.apply(Eq[0], j=j)[1]
+    Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[0], j=j)[1]
 
     Eq << Eq[-2].this.args[0].rhs.subs(Eq[-1].reversed)
     
-    Eq << discrete.combinatorics.permutation.index.equal.apply(Eq[0], j=i)[1]
+    Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[0], j=i)[1]
     
     Eq << Eq[-2].this.args[0].lhs.subs(Eq[-1].reversed)
 
-    Eq << Eq[-1].apply(algebre.equal.unequal.imply.unequal.subs)
+    Eq << Eq[-1].apply(algebre.eq.ne.imply.ne.subs)
     
 if __name__ == '__main__':
     prove(__file__)

@@ -39,13 +39,15 @@ def prove(Eq):
 
     Eq << apply(Contains(d * x, Interval(a, b, integer=True)), d)
     
-    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[0])
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq <<= Eq[-1] / d, Eq[-2] / d
     
-    Eq <<= algebre.greater_than.imply.greater_than.ceiling.apply(Eq[-2]), algebre.less_than.imply.less_than.floor.apply(Eq[-1])
+    Eq <<= algebre.ge.imply.ge.ceiling.apply(Eq[-2]), algebre.le.imply.le.floor.apply(Eq[-1])
     
-    Eq << sets.greater_than.less_than.imply.contains.apply(Eq[-2], Eq[-1])
+    Eq << sets.ge.le.imply.contains.apply(Eq[-2], Eq[-1])
 
     
 if __name__ == '__main__':

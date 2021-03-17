@@ -105,7 +105,7 @@ def prove(Eq):
     
     Eq << Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
 
-    Eq << Eq.column_transformation.apply(algebre.equal.imply.equal.det)
+    Eq << Eq.column_transformation.apply(algebre.eq.imply.eq.det)
     
     Eq << Eq[-1].subs(Eq[-2]).forall((i,))
          
@@ -113,7 +113,7 @@ def prove(Eq):
     
     Eq << Eq[0].induct(reverse=True)
     
-    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
 
     
 if __name__ == '__main__':

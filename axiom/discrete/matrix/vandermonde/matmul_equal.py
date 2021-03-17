@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq.distribute.this.rhs.subs(Eq[-1])
 
-    Eq << Eq[2].apply(algebre.equal.imply.equal.lamda, (j,), (i,), simplify=False)
+    Eq << Eq[2].apply(algebre.eq.imply.eq.lamda, (j,), (i,), simplify=False)
 
 
 if __name__ == '__main__':

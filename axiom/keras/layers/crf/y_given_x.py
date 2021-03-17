@@ -49,7 +49,7 @@ def prove(Eq):
     n = x.shape[0]
         
     s, t = Eq.s_definition.lhs.args
-    Eq.z_definition = Eq.z_definition.apply(algebre.equal.imply.equal.lamda, (Eq.z_definition.lhs.indices[-1],), simplify=False)
+    Eq.z_definition = Eq.z_definition.apply(algebre.eq.imply.eq.lamda, (Eq.z_definition.lhs.indices[-1],), simplify=False)
     
     Eq << keras.layers.crf.markov.apply(*given)
 
@@ -85,7 +85,7 @@ def prove(Eq):
     
     Eq.xy_joint_nonzero = statistics.is_nonzero.is_nonzero.joint_slice.apply(given[-1], Slice[:t + 1, :t + 1])
     
-    Eq << statistics.is_nonzero.et.apply(Eq.xy_joint_nonzero).split()
+    Eq << algebre.et.imply.cond.apply(statistics.is_nonzero.et.apply(Eq.xy_joint_nonzero))
     
     y = Eq[-1].lhs.arg.lhs.base
     Eq << statistics.bayes.corollary.apply(Eq[-2], var=y[:t + 1])
@@ -94,17 +94,17 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
-    Eq << Eq[-1].apply(algebre.equal.imply.ou.log)    
+    Eq << Eq[-1].apply(algebre.eq.imply.ou.log)    
     
-    Eq << (Eq[-1] & Eq.xy_joint_nonzero).split()
+    Eq << algebre.et.imply.cond.apply(Eq[-1] & Eq.xy_joint_nonzero)
     
     Eq << Eq[-1].this.rhs.astype(Plus)
     
-    Eq << algebre.equal.imply.equal.exp.apply(-Eq.s_definition.reversed)
+    Eq << algebre.eq.imply.eq.exp.apply(-Eq.s_definition.reversed)
     
     Eq.y_given_x_log = Eq[-2].subs(Eq[-1])
     
-    Eq << Eq.z_definition.apply(algebre.equal.imply.equal.sum)
+    Eq << Eq.z_definition.apply(algebre.eq.imply.eq.sum)
     
     Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
     

@@ -79,6 +79,18 @@ function is_axiom_plausible($php)
     return false;
 }
 
+function axiom_provability($py)
+{
+    $py = file($py);
+    foreach ($py as &$statement) {
+        if (preg_match("/^@prove\((\w+)=False\) *$/", $statement, $matches)) {
+            return $matches[1];
+        }
+    }
+
+    return "";
+}
+
 function accumulate($dict)
 {
     $sum = 0;
@@ -100,18 +112,16 @@ function section($axiom)
     return $section;
 }
 
-foreach (read_from(dirname(__file__) . '/insurmountable.txt') as $axiom) {
-    $insurmountable[section($axiom)][] = $axiom;
-}
-
-foreach (read_from(dirname(__file__) . '/unprovable.txt') as $axiom) {
-    $unprovable[section($axiom)][] = $axiom;
-}
-
 $count = 0;
 foreach (read_all_php(dirname(__file__)) as $php) {
     // https://www.php.net/manual/en/function.substr.php
-    $py = substr($php, 0, - 3) . 'py';
+    $path = substr($php, 0, - 3);
+    $py = $path . 'py';
+
+    if (! file_exists($py)) {
+        $py = $path . '/__init__.py';
+    }
+
     if (! file_exists($py)) {
         echo "$php is an obsolete file since its py file is deleted!<br>";
         // if error of Permission denied ocurrs, run the following command:
@@ -121,22 +131,33 @@ foreach (read_all_php(dirname(__file__)) as $php) {
     }
 
     ++ $count;
-    if (is_axiom_plausible($php)) {
-        $axiom = to_python_module($php);
+    switch (axiom_provability($py)) {
+        case "surmountable":
+            $axiom = to_python_module($php);
+            $insurmountable[section($axiom)][] = $axiom;
+            break;
+        case "provable":
+            $axiom = to_python_module($php);
+            $unprovable[section($axiom)][] = $axiom;
+            break;
+        default:
+            if (is_axiom_plausible($php)) {
+                $axiom = to_python_module($php);
 
-        $section = section($axiom);
-        if (array_key_exists($section, $insurmountable)) {
-            if (in_array($axiom, $insurmountable[$section]))
-                continue;
-        }
+                $section = section($axiom);
+                if (array_key_exists($section, $insurmountable)) {
+                    if (in_array($axiom, $insurmountable[$section]))
+                        break;
+                }
 
-        if (array_key_exists($section, $unprovable)) {
-            if (in_array($axiom, $unprovable[$section]))
-                continue;
-        }
-        // echo $axiom . " is plausible<br>";
+                if (array_key_exists($section, $unprovable)) {
+                    if (in_array($axiom, $unprovable[$section]))
+                        break;
+                }
+                // echo $axiom . " is plausible<br>";
 
-        $plausible[$section][] = $axiom;
+                $plausible[$section][] = $axiom;
+            }
     }
 }
 

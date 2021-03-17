@@ -45,7 +45,7 @@ def prove(Eq):
     
     j = Symbol.j(domain=Interval(0, k - 1, integer=True))
     
-    Eq << algebre.equal.given.equal.getitem.apply(Eq[0], j)
+    Eq << algebre.eq.given.eq.getitem.apply(Eq[0], j)
 
 
 if __name__ == '__main__':

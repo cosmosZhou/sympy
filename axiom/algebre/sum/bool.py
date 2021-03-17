@@ -27,7 +27,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(Times)
     
-    Eq << algebre.equal.imply.equal.sum.apply(Eq[-1], (y,))
+    Eq << algebre.eq.imply.eq.sum.apply(Eq[-1], (y,))
     
     Eq << Eq[1].this.rhs.subs(Eq[-1])
     

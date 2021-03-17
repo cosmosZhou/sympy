@@ -39,11 +39,11 @@ def prove(Eq):
     
     Eq << q.this.definition
         
-    Eq << algebre.equal.imply.ou.general.apply(Eq[-1])
+    Eq << algebre.eq.imply.ou.general.apply(Eq[-1])
     
-    Eq << algebre.ou.imply.equal.general.apply(Eq[-1], wrt=q)
+    Eq << algebre.ou.imply.eq.general.apply(Eq[-1], wrt=q)
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[-1], Eq[1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[1])
     
     Eq << Eq[-1].this.lhs.definition
     

@@ -26,7 +26,7 @@ def prove(Eq):
     
     Eq << sets.contains.imply.contains.amplify.apply(Eq[0], B)
     
-    Eq << sets.subset.imply.equal.union.apply(Eq[1])
+    Eq << sets.subset.imply.eq.union.apply(Eq[1])
     
     Eq << Eq[-2].subs(Eq[-1])
 

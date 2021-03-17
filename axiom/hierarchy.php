@@ -7,7 +7,15 @@ function read_all_axioms($dir)
     foreach (read_directory($dir) as $directory) {
         foreach (read_all_files($directory, 'py') as $py) {
             if (strcmp(basename($py), "__init__.py")) {
-                yield $py;
+                yield [
+                    $py,
+                    substr($py, 0, - 2) . 'php'
+                ];
+            } else {
+                yield [
+                    $py,
+                    substr($py, 0, - strlen('/__init__.py')) . '.php'
+                ];
             }
         }
     }
@@ -197,8 +205,8 @@ switch ($key_input) {
         break;
 }
 
-foreach (read_all_axioms(dirname(__file__)) as $py) {
-    $from = to_python_module($py);
+foreach (read_all_axioms(dirname(__file__)) as list ($py, $php)) {
+    $from = to_python_module($php);
     $modules = process_py($py);
 
     foreach ($modules as $to) {
@@ -272,7 +280,7 @@ $cyclic_proof = $mapping->detect_cyclic_proof($module);
         name: 'href',
         props: ['module'],        
         template: 
-        	`<a :href="'/sympy/' + module.replaceAll('.', '/')">{{module}}</a>`
+        	`<a :href="'/sympy/' + module.replaceAll('.', '/') + '.php'">{{module}}</a>`
     };
 	
 	var module = {

@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << apply(Equality(B - A, A.etype.emptySet))
     
-    Eq << Eq[0].apply(sets.equal.imply.equal.union, A).reversed
+    Eq << Eq[0].apply(sets.eq.imply.eq.union, A).reversed
     
     Eq << Eq[1].subs(Eq[-1])
 

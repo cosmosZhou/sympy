@@ -49,7 +49,7 @@ def prove(Eq):
     else:
         Eq << Eq.induction.induct()
     
-    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
+    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
     
 if __name__ == '__main__':
     prove(__file__)

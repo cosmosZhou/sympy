@@ -1,20 +1,13 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.function import Function
 import axiom
 
 
 @apply
 def apply(given):
     function, *limits = axiom.is_Exists(given)
-    contains = axiom.limit_is_set(limits)
-    return Exists[contains.lhs]((function & contains).simplify())
-
-
+    lhs, rhs = axiom.limit_is_set(limits)
+    return Exists[lhs]((function & Contains(lhs, rhs)).simplify())
 
 
 @prove

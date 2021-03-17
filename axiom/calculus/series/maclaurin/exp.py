@@ -10,7 +10,7 @@ def apply(x):
     return Equality(E ** x, Sum[n:oo](x ** n / factorial(n)))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     Eq << apply(x)

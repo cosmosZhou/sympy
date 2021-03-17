@@ -24,7 +24,7 @@ def prove(Eq):
     
     k = Eq[1].variable
     
-    Eq << algebre.equal.imply.exists.definition.mod.apply(Eq[0], q=k)
+    Eq << algebre.eq.imply.exists.definition.mod.apply(Eq[0], q=k)
     
     
 if __name__ == '__main__':

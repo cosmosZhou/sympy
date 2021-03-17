@@ -42,19 +42,23 @@ def prove(Eq):
     
     Eq << Eq.given.subs(x, Eq.given_i.function.lhs)
     
-    Eq << (Eq.given_i & Eq[-1]).split()[-1]
+    Eq <<= Eq.given_i & Eq[-1]
+    
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1], index=-1)
     
     Eq << Eq.given_i.subs(x, Eq[-1].function.lhs)
     
-    Eq << (Eq[-2] & Eq[-1]).split()[0]
+    Eq <<= Eq[-2] & Eq[-1]
     
-    Eq.final_statement = algebre.condition.imply.forall.minify.apply(Eq[-1], (i_,), (j_,))
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1], index=0)
     
-    Eq << swap2.equal.apply(n, w)
+    Eq.final_statement = algebre.cond.imply.forall.restrict.apply(Eq[-1], (i_,), (j_,))
+    
+    Eq << swap2.eq.apply(n, w)
     
     Eq << Eq[-1] @ x
     
-    Eq << algebre.condition.imply.forall.minify.apply(Eq[-1], (Eq[-1].limits[0].args[1].args[1].arg,))
+    Eq << algebre.cond.imply.forall.restrict.apply(Eq[-1], (Eq[-1].limits[0].args[1].args[1].arg,))
     
     Eq.i_complement = Eq.final_statement.subs(Eq[-1])
     
@@ -62,9 +66,9 @@ def prove(Eq):
     
     Eq << Eq.plausible.bisect(i.set, wrt=j)
     
-    Eq << Eq[-1].split()
+    Eq << algebre.et.given.cond.apply(Eq[-1])
     
-    Eq << sets.imply.equal.intersection.apply(i, Interval(1, n - 1, integer=True))
+    Eq << sets.imply.eq.intersection.apply(i, Interval(1, n - 1, integer=True))
     
     Eq << Eq[-2].this.limits[1].subs(Eq[-1])
     
@@ -72,7 +76,7 @@ def prove(Eq):
     
     Eq << discrete.matrix.elementary.swap.transpose.apply(w).subs(j, 0)
     
-    Eq.given_i = algebre.condition.imply.forall.minify.apply(Eq.given_i, (i_,))
+    Eq.given_i = algebre.cond.imply.forall.restrict.apply(Eq.given_i, (i_,))
     
     Eq << Eq.given_i.subs(Eq[-1].reversed)
     

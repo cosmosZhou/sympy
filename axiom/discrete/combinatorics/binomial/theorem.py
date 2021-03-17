@@ -54,7 +54,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=n)
+    Eq << algebre.sufficient.imply.cond.induction.apply(Eq[-1], n=n)
 
 
 if __name__ == '__main__':

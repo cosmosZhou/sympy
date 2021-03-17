@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets
+from axiom import sets, algebre
 
 
 # given A & B != Ø
@@ -38,17 +38,17 @@ def prove(Eq):
 
     Eq << sets.imply.ou.contains.apply(A & B)
 
-    Eq << (Eq[-1] & inequality)
+    Eq <<= Eq[-1] & inequality
 
-    Eq << Eq[-1].split()
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.where.intersection, simplify=None)
+    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.having.intersection, simplify=None)
     
-    Eq << Eq[-1].split(simplify=False)
+    Eq << algebre.exists_et.imply.exists.split.apply(Eq[-1], simplify=False)
 
     Eq << (~Eq[1]).limits_subs(Eq[1].variable, Eq[-1].variable)
     
-    Eq << (Eq[-1] & Eq[-3])
+    Eq <<= Eq[-1] & Eq[-3]
 
 
 if __name__ == '__main__':

@@ -24,9 +24,9 @@ def prove(Eq):
 
     Eq << apply((f(y) > 0) & Exists[x:A](g(x) > 0))
     
-    Eq << Eq[-1].split()
+    Eq << algebre.exists_et.imply.exists.split.apply(Eq[-1])
     
-    Eq << Eq[0].split()
+    Eq << algebre.et.given.cond.apply(Eq[0])
     
 if __name__ == '__main__':
     prove(__file__)

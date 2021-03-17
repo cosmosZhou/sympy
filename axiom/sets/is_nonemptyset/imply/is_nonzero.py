@@ -20,11 +20,11 @@ def prove(Eq):
 
     Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[0], simplify=False)
     
-    Eq << Eq[-1].apply(sets.contains.imply.equal.union)
+    Eq << Eq[-1].apply(sets.contains.imply.eq.union)
     
-    Eq.exists = Eq[-1].apply(algebre.equal.imply.equal.abs)
+    Eq.exists = Eq[-1].apply(algebre.eq.imply.eq.abs)
     
-    Eq << sets.imply.equal.principle.addition.apply(A, Eq[-1].variable.set)
+    Eq << sets.imply.eq.principle.addition.apply(A, Eq[-1].variable.set)
     
     Eq << Unequality(Eq[-1].rhs, 0, plausible=True)
     

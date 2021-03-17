@@ -616,6 +616,16 @@ class Indexed(Expr):
             return self
         return self.base[indices] 
 
+    def as_linear_function(self, wrt):
+        if self == wrt:
+            from sympy.polys.polytools import LinearFunction 
+            return LinearFunction(wrt, 1, 0)
+        return self
+
+    def linear_match(self, a):
+        for a in a.preorder_traversal():            
+            if a.is_Indexed and a.base == self.base:
+                return a.indices == self.indices
 
 class Slice(Expr):
     """Represents a mathematical object with Slices.
@@ -1641,7 +1651,6 @@ class SliceIndexed(Expr):
                         return base[indices][b - n + 1:b + 1]
             
         return self
-
 
 # Warning: the following class is obsolete!!! using Symbol.x(shape=(m,n,k)) instead
 class IndexedBase(Expr, NotIterable):

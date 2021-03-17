@@ -32,7 +32,7 @@ def prove(Eq):
     
     Eq << mapping.Qu2v.apply(n, u, n)
     
-    Eq << sets.forall_et.forall_et.imply.equal.apply(Eq[-1], Eq[-2])
+    Eq << sets.forall_et.forall_et.imply.eq.apply(Eq[-1], Eq[-2])
     
     
 if __name__ == '__main__':

@@ -19,7 +19,7 @@ def prove(Eq):
     
     Eq << Contains(a, Interval(0, oo), plausible=True)
     
-    Eq << sets.unequal.imply.notcontains.apply(Eq[0], simplify=False)
+    Eq << sets.ne.imply.notcontains.apply(Eq[0], simplify=False)
     
     Eq <<= Eq[-1] & Eq[-2]
     

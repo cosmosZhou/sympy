@@ -217,11 +217,14 @@ class ExprWithLimits(Expr):
 # precondition, self and other are structurally equal!
     def _dummy_eq(self, other):
         _self = other
-        for (x, *_), (_x, *_) in zip(other.limits, self.limits):
+        for (x, *ab), (_x, *_ab) in zip(other.limits, self.limits):
             if x != _x:
+                if not ab and x.domain != _x.domain:
+                    return False
                 _self = _self.limits_subs(x, _x)
                 if not _self.is_ExprWithLimits:
                     return False
+                    
         return _self.limits == self.limits and _self.function._dummy_eq(self.function)
 
     @property
@@ -701,7 +704,11 @@ class ExprWithLimits(Expr):
                                 limit = (new,)
                             else:
                                 limit = (new, domain)
-                        self = self.func(self.function._subs(old, new), limit)
+                        if self.is_boolean:
+                            self = self.func(self.function._subs(old, new), limit, equivalent=self)
+                        else:
+                            self = self.func(self.function._subs(old, new), limit)                                                            
+                        
                         return self.simplify() if simplify else self
                 if not new._has(x):
                     return self._subs_limits(x, domain, new, simplify=simplify)
@@ -1623,7 +1630,7 @@ class Minimize(MINMAXBase):
             domain = Interval(*domain, right_open=x.is_integer, integer=x.is_integer)
         else:
             domain = x.domain        
-            if domain.is_CartesianSpace:
+            if domain.is_CartesianSpace or domain.is_ComplexRegion:
                 return self
             
         if self.function.is_infinitesimal is not None:
@@ -1640,36 +1647,38 @@ class Minimize(MINMAXBase):
                     return a * domain.min() + b
                 elif a.is_negative:
                     return a * domain.max() + b
-            elif p.degree() == 2:
-                a = p.coeff_monomial(x * x)
-                if a.is_negative:
-                    return self.bounds(x, domain, Min)                        
-                elif a.is_positive:
-                    b = p.coeff_monomial(x)
-                    zero_point = -b / (2 * a)
-                    if zero_point in domain:
-                        c = p.nth(0)
-                        return (4 * a * c - b * b) / (4 * a)
-                    return self.bounds(x, domain, Min)
+#             elif p.degree() == 2:
+#                 a = p.coeff_monomial(x * x)
+#                 if a.is_negative:
+#                     return self.bounds(x, domain, Min)                        
+#                 elif a.is_positive:
+#                     b = p.coeff_monomial(x)
+#                     zero_point = -b / (2 * a)
+#                     if zero_point in domain:
+#                         c = p.nth(0)
+#                         return (4 * a * c - b * b) / (4 * a)
+#                     return self.bounds(x, domain, Min)
             elif p.degree() == 0:
                 return p.nth(0)
             elif p.degree() < 0:
                 return self.function
         elif self.function.is_MinMaxBase:
             return self.function.func(*(self.func(arg, *self.limits).doit() for arg in self.function.args))
-        else:
-            p = self.function.as_poly(1 / x)
-            if p.degree() == 1:
-#                 y = a / x + b
-                a = p.nth(1)
-                b = p.nth(0)
-                
-                if a.is_positive or a.is_nonnegative:
-                    if x.is_extended_positive or x.is_extended_negative:
-                        return a / domain.max() + b
-                elif a.is_negative or a.is_nonpositive:
-                    if x.is_extended_positive or x.is_extended_negative:
-                        return a / domain.min() + b
+#         else:
+#             p = self.function.as_inverse_proportional_function(x)
+#             if p is not None:
+# #                 y = a / x + b
+#                 a = p.ratio
+#                 b = p.height
+#                 
+#                 x = p.variable + p.offset
+#                 
+#                 if a.is_positive or a.is_nonnegative:
+#                     if x.is_extended_positive or x.is_extended_negative:
+#                         return a / domain.max() + b
+#                 elif a.is_negative or a.is_nonpositive:
+#                     if x.is_extended_positive or x.is_extended_negative:
+#                         return a / domain.min() + b
             
         return self
     
@@ -1727,7 +1736,7 @@ class Maximize(MINMAXBase):
             domain = Interval(*domain, right_open=x.is_integer, integer=x.is_integer)
         else:
             domain = x.domain
-            if domain.is_CartesianSpace:
+            if domain.is_CartesianSpace or domain.is_ComplexRegion:
                 return self
 
         if self.function.is_infinitesimal is not None:
@@ -1737,43 +1746,44 @@ class Maximize(MINMAXBase):
         p = self.function.as_poly(x)
 
         if p is not None:
-            if p.degree() == 1:
+            if p.degree() == 1:                
                 a = p.coeff_monomial(x)       
                 b = p.nth(0)         
                 if a.is_extended_positive:
                     return a * domain.max() + b
                 elif a.is_extended_negative:
                     return a * domain.min() + b                        
-            elif p.degree() == 2:
-                a = p.coeff_monomial(x * x)
-                if a.is_positive:
-                    return self.bounds(x, domain, Max)
-                elif a.is_negative:
-                    b = p.coeff_monomial(x)
-                    zero_point = -b / (2 * a)
-                    if zero_point in domain:
-                        c = p.nth(0)
-                        return (4 * a * c - b * b) / (4 * a)
-                    return self.bounds(x, domain, Max)
+#             elif p.degree() == 2:
+#                 a = p.coeff_monomial(x * x)
+#                 if a.is_positive:
+#                     return self.bounds(x, domain, Max)
+#                 elif a.is_negative:
+#                     b = p.coeff_monomial(x)
+#                     zero_point = -b / (2 * a)
+#                     if zero_point in domain:
+#                         c = p.nth(0)
+#                         return (4 * a * c - b * b) / (4 * a)
+#                     return self.bounds(x, domain, Max)
             elif p.degree() == 0:
                 return p.nth(0)
             elif p.degree() < 0:
                 return self.function
         elif self.function.is_MinMaxBase:
             return self.function.func(*(self.func(arg, *self.limits).doit() for arg in self.function.args))
-        else:
-            p = self.function.as_poly(1 / x)
-            if p.degree() == 1:
-#                 y = a / x + b
-                a = p.nth(1)
-                b = p.nth(0)
-                
-                if a.is_positive or a.is_nonnegative:
-                    if x.is_extended_positive or x.is_extended_negative:
-                        return a / domain.min() + b
-                elif a.is_negative or a.is_nonpositive:
-                    if x.is_extended_positive or x.is_extended_negative:
-                        return a / domain.max() + b
+#         else:
+#             p = self.function.as_inverse_proportional_function(x)
+#             if p is not None:
+# #                 y = a / (x + d) + b
+#                 a = p.ratio
+#                 b = p.height
+#                 
+#                 x = p.variable + p.offset
+#                 if a.is_positive or a.is_nonnegative:
+#                     if x.is_extended_positive or x.is_extended_negative:
+#                         return a / domain.min() + b
+#                 elif a.is_negative or a.is_nonpositive:
+#                     if x.is_extended_positive or x.is_extended_negative:
+#                         return a / domain.max() + b
                 
         return self
     
@@ -1914,19 +1924,19 @@ class ArgMin(ArgMinMaxBase):
                     return domain.min()
                 elif a.is_extended_negative:
                     return domain.max()
-            elif p.degree() == 2:
-                a = p.coeff_monomial(x * x)
-                if a.is_negative:
-                    return self.bounds(x, domain, Min)
-                elif a.is_positive:
-                    b = p.coeff_monomial(x)
-                    zero_point = -b / (2 * a)
-                    if zero_point in domain:
-                        c = p.nth(0)
-                        delta = 4 * a * c - b * b
-                        from sympy import sqrt
-                        return (-b + sqrt(delta)) / (2 * a)
-                    return self.bounds(x, domain, Min)
+#             elif p.degree() == 2:
+#                 a = p.coeff_monomial(x * x)
+#                 if a.is_negative:
+#                     return self.bounds(x, domain, Min)
+#                 elif a.is_positive:
+#                     b = p.coeff_monomial(x)
+#                     zero_point = -b / (2 * a)
+#                     if zero_point in domain:
+#                         c = p.nth(0)
+#                         delta = 4 * a * c - b * b
+#                         from sympy import sqrt
+#                         return (-b + sqrt(delta)) / (2 * a)
+#                     return self.bounds(x, domain, Min)
             elif p.degree() == 0:
                 return self
             elif p.degree() <= 0:
@@ -1978,19 +1988,19 @@ class ArgMax(ArgMinMaxBase):
                     return domain.max()
                 elif a.is_extended_negative:
                     return domain.min()
-            elif p.degree() == 2:
-                a = p.coeff_monomial(x * x)
-                if a.is_positive:
-                    return self.bounds(x, domain, Max)
-                elif a.is_negative:
-                    b = p.coeff_monomial(x)
-                    zero_point = -b / (2 * a)
-                    if zero_point in domain:
-                        c = p.nth(0)
-                        delta = 4 * a * c - b * b
-                        from sympy import sqrt
-                        return (-b + sqrt(delta)) / (2 * a)
-                    return self.bounds(x, domain, Max)
+#             elif p.degree() == 2:
+#                 a = p.coeff_monomial(x * x)
+#                 if a.is_positive:
+#                     return self.bounds(x, domain, Max)
+#                 elif a.is_negative:
+#                     b = p.coeff_monomial(x)
+#                     zero_point = -b / (2 * a)
+#                     if zero_point in domain:
+#                         c = p.nth(0)
+#                         delta = 4 * a * c - b * b
+#                         from sympy import sqrt
+#                         return (-b + sqrt(delta)) / (2 * a)
+#                     return self.bounds(x, domain, Max)
             elif p.degree() == 0:
                 return self                
             elif p.degree() <= 0:

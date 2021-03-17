@@ -42,12 +42,12 @@ def prove(Eq):
     
     Eq << statistics.is_nonzero.is_positive.apply(Eq[0])
     
-    Eq <<= calculus.strict_greater_than.imply.strict_greater_than.integrate.apply(Eq[-1], (_y,)), \
-        calculus.strict_greater_than.imply.strict_greater_than.integrate.apply(Eq[-1], (_x,))
+    Eq <<= calculus.gt.imply.gt.integrate.apply(Eq[-1], (_y,)), \
+        calculus.gt.imply.gt.integrate.apply(Eq[-1], (_x,))
     
     Eq <<= Eq[-2].subs(Eq.x_marginal_probability), Eq[-1].subs(Eq.y_marginal_probability)
     
-    Eq <<= algebre.strict_greater_than.imply.unequal.apply(Eq[-1]) & algebre.strict_greater_than.imply.unequal.apply(Eq[-2])
+    Eq <<= algebre.gt.imply.ne.apply(Eq[-1]) & algebre.gt.imply.ne.apply(Eq[-2])
     
     
 if __name__ == '__main__':

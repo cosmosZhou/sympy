@@ -22,7 +22,7 @@ def prove(Eq):
     
     Eq << ~Eq[0]
     
-    Eq << sets.notcontains.imply.et.where.union.apply(Eq[-1], simplify=None)
+    Eq << sets.notcontains.imply.et.having.union.apply(Eq[-1], simplify=None)
     
     Eq << ~Eq[-1]
         

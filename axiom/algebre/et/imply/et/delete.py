@@ -1,6 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
+from axiom import algebre
 
 
 @apply
@@ -26,7 +27,7 @@ def prove(Eq):
     
     Eq << apply(Unequal(x, y) & Equality(f(x), g(y)) & (a > b), index=0)
     
-    Eq << Eq[0].split()    
+    Eq << algebre.et.imply.cond.apply(Eq[0])
     
     Eq <<= Eq[-1] & Eq[-2]
 

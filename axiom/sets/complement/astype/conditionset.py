@@ -36,11 +36,11 @@ def prove(Eq):
     
     Eq << algebre.forall.given.ou.apply(Eq[-1])
     
-    Eq << Eq[-1].this.args[1].apply(sets.notcontains.given.ou)
+    Eq << Eq[-1].this.args[1].apply(sets.notcontains.given.ou.having.complement)
     
     Eq << ~Eq[-1]
     
-    Eq << Eq[-1].simplify()
+    Eq << Eq[-1].astype(Or)
     
     Eq.forall_contains_in_A = ForAll[n:B](Contains(n, A), plausible=True)
     
@@ -50,7 +50,7 @@ def prove(Eq):
     
     Eq << algebre.forall.given.ou.apply(Eq[-1])
 
-    Eq << sets.forall_contains.forall_contains.imply.equal.apply(Eq.forall_contains_in_A, Eq.forall_contains_in_B)
+    Eq << sets.forall_contains.forall_contains.imply.eq.apply(Eq.forall_contains_in_A, Eq.forall_contains_in_B)
     
     Eq << Eq[-1].this.lhs.definition
     

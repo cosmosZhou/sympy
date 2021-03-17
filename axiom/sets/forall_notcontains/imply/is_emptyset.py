@@ -8,8 +8,7 @@ import axiom
 def apply(given):
     notcontains, *limits = axiom.forall_notcontains(given)
     
-    contains = axiom.limit_is_set(limits)
-    e, B = contains.args
+    e, B = axiom.limit_is_set(limits)    
     _e, A = notcontains.args
     assert e == _e
     

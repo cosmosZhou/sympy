@@ -27,7 +27,7 @@ def prove(Eq):
     
     Eq << apply(Supset(f(i), g(i)), (i, 0, n))
 
-    Eq << Eq[0].apply(algebre.condition.imply.forall.minify, (i, 0, n))
+    Eq << Eq[0].apply(algebre.cond.imply.forall.restrict, (i, 0, n))
     
     Eq << sets.forall_supset.imply.supset.union.apply(Eq[-1], simplify=False)
 

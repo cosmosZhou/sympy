@@ -49,15 +49,15 @@ def prove(Eq):
              Equal(Boole(Contains(g(x), S)), 1) & Contains(x, B - A),
              Equal(Boole(Contains(h(x), S)), 1) & NotContains(x, A | B), plausible=True)
     
-    Eq.bool_fx = sets.contains.imply.equal.bool.contains.apply(Eq[0])
-    Eq.bool_gx = sets.contains.imply.equal.bool.contains.apply(Eq[1])
-    Eq.bool_hx = sets.contains.imply.equal.bool.contains.apply(Eq[2])
+    Eq.bool_fx = sets.contains.imply.eq.bool.contains.apply(Eq[0])
+    Eq.bool_gx = sets.contains.imply.eq.bool.contains.apply(Eq[1])
+    Eq.bool_hx = sets.contains.imply.eq.bool.contains.apply(Eq[2])
     
     Eq << Eq.plausible.subs(Eq.bool_fx).subs(Eq.bool_gx).subs(Eq.bool_hx)
     
     Eq << ~Eq[-1]
     
-    Eq << Eq[-1].this.args[0].apply(sets.contains.imply.ou.where.union, complement=True)
+    Eq << Eq[-1].this.args[0].apply(sets.contains.imply.ou.having.union, complement=True)
     
     Eq << Eq[-1].astype(Or)
 

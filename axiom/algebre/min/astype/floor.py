@@ -42,13 +42,13 @@ def prove(Eq):
 
     Eq << apply(Min(n + floor(x), floor(y)))
     
-    Eq << Eq[0].apply(algebre.equal.given.et.where.floor)
+    Eq << Eq[0].apply(algebre.eq.given.et.having.floor)
     
     assert n + floor(x) <= n + x
     
-    Eq <<= algebre.imply.strict_less_than.floor.apply(x) + n, algebre.imply.strict_less_than.floor.apply(y)
+    Eq <<= algebre.imply.lt.floor.apply(x) + n, algebre.imply.lt.floor.apply(y)
     
-    Eq << algebre.strict_less_than.strict_less_than.imply.strict_less_than.min.both.apply(Eq[-2], Eq[-1])
+    Eq << algebre.lt.lt.imply.lt.min.both.apply(Eq[-2], Eq[-1])
     
     Eq << Eq[-1].this.rhs.apply(algebre.min.astype.plus)
     

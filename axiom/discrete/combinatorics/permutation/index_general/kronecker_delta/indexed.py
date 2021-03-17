@@ -40,17 +40,19 @@ def prove(Eq):
     
     Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
 
-    Eq << Eq[-1].bisect(Equality(i, j)).split()
+    Eq << Eq[-1].bisect(Equality(i, j))
+    
+    Eq << algebre.et.given.cond.apply(Eq[-1])
 
     Eq <<= ~Eq[-1], ~Eq[-2]
 
-    Eq << Eq[-2].apply(algebre.equal.unequal.imply.unequal.subs)
+    Eq << Eq[-2].apply(algebre.eq.ne.imply.ne.subs)
     
-    Eq << Eq[-1].apply(algebre.unequal.condition.imply.et)
+    Eq << Eq[-1].apply(algebre.ne.cond.imply.et)
 
-    Eq << Eq[0].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[0].apply(algebre.eq.imply.eq.abs)
     
-    Eq << sets.equal.imply.forall_is_emptyset.apply(Eq[-1])
+    Eq << sets.eq.imply.forall_is_emptyset.apply(Eq[-1])
 
     Eq << Eq[-1].subs(Eq[-1].rhs.indices[0], j)
 

@@ -68,9 +68,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.subs, index=2)
     
-    Eq << algebre.condition.imply.forall.minify.apply(Eq[-1], (j,))
+    Eq << algebre.cond.imply.forall.restrict.apply(Eq[-1], (j,))
 
-    Eq << algebre.condition.imply.forall.minify.apply(Eq[-1], Eq[1].limits[0])
+    Eq << algebre.cond.imply.forall.restrict.apply(Eq[-1], Eq[1].limits[0])
     
     Eq << Eq[-1].this().function.simplify()
         

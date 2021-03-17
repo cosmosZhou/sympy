@@ -34,7 +34,7 @@ def prove(Eq):
     
     Eq << Multiplication(n, n - 1, b[n - 2]) @ Eq[-1] 
 
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.det)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.det)
     
     Eq << Eq[-1].subs(Eq[1])
     

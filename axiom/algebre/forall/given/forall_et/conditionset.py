@@ -21,7 +21,7 @@ def prove(Eq):
     
     Eq << apply(ForAll[x:g(x) > 0:A](f(x) > 0))  
     
-    Eq << Eq[1].split()    
+    Eq << algebre.forall_et.imply.forall.apply(Eq[1])    
 
 
 if __name__ == '__main__':

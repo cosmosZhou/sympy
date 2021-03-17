@@ -70,8 +70,8 @@ def limit(e, z, z0, direction="+"):
     """
 
     if direction == "+-":
-        llim = Limit(e, z, z0, direction="-").doit(deep=False)
-        rlim = Limit(e, z, z0, direction="+").doit(deep=False)
+        llim = Limit[z:z0:"-"](e).doit(deep=False)
+        rlim = Limit[z:z0:"+"](e).doit(deep=False)
         if llim == rlim:
             return rlim
         else:
@@ -80,7 +80,7 @@ def limit(e, z, z0, direction="+"):
                     "left hand limit = %s and right hand limit = %s"
                     % (llim, rlim))
     else:
-        return Limit(e, z, z0, direction).doit(deep=False)
+        return Limit[z:z0:direction](e).doit(deep=False)
 
 
 def heuristics(e, z, z0, direction):
@@ -162,7 +162,16 @@ class Limit(Expr):
     """
     is_complex = True
 
-    def __new__(cls, e, z, z0, direction="+"):
+    def __new__(cls, e, *limits):
+        assert len(limits) == 1
+        
+        limit = limits[0]
+        if len(limit) == 3: 
+            z, z0, direction = limit
+        else:
+            z, z0 = limit
+            direction = '+-'
+            
         e = sympify(e)
         z = sympify(z)
         z0 = sympify(z0)
@@ -184,15 +193,16 @@ class Limit(Expr):
                     "or '+-', not %s" % direction)
 
         obj = Expr.__new__(cls)
-        obj._args = (e, z, z0, direction)
+        from sympy import Tuple
+        obj._args = (e, Tuple(z, z0, direction))
         return obj
 
     @property
     def free_symbols(self):
-        e = self.args[0]
+        e, (z, z0, direction) = self.args
         isyms = e.free_symbols
-        isyms.difference_update(self.args[1].free_symbols)
-        isyms.update(self.args[2].free_symbols)
+        isyms.difference_update(z.free_symbols)
+        isyms.update(z0.free_symbols)
         return isyms
 
     def doit(self, **hints):
@@ -211,7 +221,7 @@ class Limit(Expr):
         from sympy.series.limitseq import limit_seq
         from sympy.functions import RisingFactorial
 
-        e, z, z0, direction = self.args
+        e, (z, z0, direction) = self.args
 
         if z0 is S.ComplexInfinity:
             raise NotImplementedError("Limits at complex "
@@ -260,7 +270,7 @@ class Limit(Expr):
                         pass
 
         if e.is_Order:
-            return Order(limit(e.expr, z, z0), *e.args[1:])
+            return Order(limit(e.expr, z, z0), *e.args[1])
 
         try:
             if str(direction) == '+-':
@@ -286,7 +296,7 @@ class Limit(Expr):
         return dtype.real
 
     @property
-    def shape(self):         
+    def shape(self): 
         return self.args[0].shape
 
     @property
@@ -298,7 +308,7 @@ class Limit(Expr):
         return self.args[1:]
 
     def _sympystr(self, p):
-        e, z, z0, direction = self.args
+        e, (z, z0, direction) = self.args
         if str(direction) == "+":
             return "lim[%s>%s](%s)" % tuple(map(p._print, (z, z0, e)))
         elif str(direction) == "-":
@@ -306,8 +316,23 @@ class Limit(Expr):
         else:
             return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
 
+    def _latex(expr, self):
+        e, (z, z0, dir) = expr.args
+
+        tex = r"\lim\limits_{%s \to " % self._print(z)
+        if str(dir) == '+-' or z0 in (S.Infinity, S.NegativeInfinity):
+            tex += r"%s}" % self._print(z0)
+        else:
+            tex += r"%s^%s}" % (self._print(z0), self._print(dir))
+
+        if isinstance(e, Add):
+#         if isinstance(e, AssocOp):
+            return r"%s\left(%s\right)" % (tex, self._print(e))
+        else:
+            return r"%s %s" % (tex, self._print(e))
+
     def simplify(self, **kwargs):
-        expr, x, *_ = self.args
+        expr, (x, *_) = self.args
         if not expr._has(x):
             return expr
         return self

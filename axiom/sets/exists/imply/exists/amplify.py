@@ -1,11 +1,6 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.function import Function
-from sympy.core.containers import Tuple
+from axiom import algebre
 
 
 @apply
@@ -32,8 +27,6 @@ def apply(given, domain=None, wrt=None):
     return Exists(given.function, *limits)
 
 
-
-
 @prove
 def prove(Eq):
     S = Symbol.S(etype=dtype.real)
@@ -45,7 +38,7 @@ def prove(Eq):
     
     Eq << Eq[-1].bisect({t})
     
-    Eq << Eq[-1].split()[0]
+    Eq << algebre.ou.given.cond.apply(Eq[-1], index=0)   
 
 
 if __name__ == '__main__':

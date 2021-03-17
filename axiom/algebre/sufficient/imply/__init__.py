@@ -1,4 +1,4 @@
 from . import forall
-from . import condition
-from . import equal
+from . import cond
+from . import eq
 from . import sufficient

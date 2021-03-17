@@ -1,4 +1,3 @@
-# coding=utf-8
 import os
 import regex as re
 from sympy.utilities.miscellany import Text
@@ -98,15 +97,8 @@ def is_latex(latex):
     
 sympy = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
 
-insurmountable = defaultdict(list) 
-
-for axiom in Text(axiom_directory() + '/insurmountable.txt'):
-    insurmountable[section(axiom)].append(axiom)
-
+insurmountable = defaultdict(list)
 unprovable = defaultdict(list)
-for axiom in Text(axiom_directory() + '/unprovable.txt'):
-    unprovable[section(axiom)].append(axiom)
-
     
 def get_extension(file):
     return os.path.splitext(file)[-1]    
@@ -178,12 +170,13 @@ def search(keyword, caseSensitive=True, wholeWord=False, regularExpression=False
     
     
 if __name__ == '__main__':
-    keyword = 'given.equal.complement'
+    keyword = 'having.basic'
 
 #     keyword = ''
     caseSensitive = True
     wholeWord = False
-    regularExpression = True
+    regularExpression = False
+#     regularExpression = True
     
     if keyword:
         search(keyword, caseSensitive, wholeWord, regularExpression)

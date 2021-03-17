@@ -37,7 +37,7 @@ def prove(Eq):
     
     Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[0].rhs.variable)    
     
-    Eq << Eq[-1].apply(sets.contains.given.exists_contains.where.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.given.exists_contains.having.union_comprehension)
     
     Eq << Eq[-1].this.function.function.rhs.definition
     

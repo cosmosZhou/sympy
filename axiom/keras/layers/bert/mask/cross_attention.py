@@ -72,9 +72,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].cond.args[1].args[1].reversed
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.Ξ_quote_definition, Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.Ξ_quote_definition, Eq[-1])
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, n), (i, 0, n))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, n), (i, 0, n))
 
     a = Eq[1].rhs.args[0]
     Eq << keras.layers.bert.mask.theorem.apply(a, Ξ_quote)

@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets
+from axiom import sets, algebre
 
 
 @apply
@@ -22,15 +22,17 @@ def prove(Eq):
     x = Symbol.x(integer=True)
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
-    t = Symbol.t(real=True)
+#     t = Symbol.t(real=True)
     d = 2
     Eq << apply(Contains(x, Interval(a, b)), d)
     
-    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
+    Eq << algebre.et.imply.cond.apply(sets.contains.imply.et.interval.apply(Eq[0]))
     
     Eq <<= Eq[-2] / d, Eq[-1] / d
     
-    Eq << sets.contains.given.et.where.interval.apply(Eq[1]).split()    
+    Eq << sets.contains.given.et.having.interval.apply(Eq[1])    
+    
+    Eq << algebre.et.given.cond.apply(Eq[-1])
 
     
 if __name__ == '__main__':

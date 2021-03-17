@@ -35,7 +35,7 @@ def prove(Eq):
     
     Eq << Eq.x_quote_definition[i]
     
-    Eq << sets.equal.imply.equal.set_comprehension.apply(Eq[-1], (i, 0, n))
+    Eq << sets.eq.imply.eq.set_comprehension.apply(Eq[-1], (i, 0, n))
     
     Eq.x_quote_n_definition = Eq[-2].subs(i, n)
     
@@ -45,17 +45,21 @@ def prove(Eq):
     
     Eq.P2P_quote = ForAll[x[:n]:P](Contains(x_quote, P_quote), plausible=True)
     
-    Eq << Eq.P2P_quote.this.function.rhs.definition.split()
+    Eq << Eq.P2P_quote.this.function.rhs.definition
+    
+    Eq << algebre.et.given.cond.apply(Eq[-1])
     
     Eq << sets.imply.forall.conditionset.apply(P_quote)
     
-    Eq << Eq[-1].split()
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
     
     Eq << Eq[-2].reversed + Eq.x_quote_n_definition
     
     Eq.mapping_quote = ForAll[x[:n + 1]:P_quote](Equality(x_quote, x[:n + 1]), plausible=True)
     
-    Eq << Eq.mapping_quote.this.function.bisect(Slice[-1:]).split()
+    Eq << Eq.mapping_quote.this.function.bisect(Slice[-1:])
+    
+    Eq << algebre.forall_et.given.forall.apply(Eq[-1])
     
     Eq << Eq[-1].subs(Eq.mapping)
     
@@ -63,7 +67,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.rhs.definition
     
-    Eq << sets.forall_contains.forall_contains.forall_equal.forall_equal.imply.equal.apply(Eq[-1], Eq.P2P_quote, Eq.mapping_quote, Eq.mapping)
+    Eq << sets.forall_contains.forall_contains.forall_eq.forall_eq.imply.eq.apply(Eq[-1], Eq.P2P_quote, Eq.mapping_quote, Eq.mapping)
     
     Eq << Eq[-1].reversed
 

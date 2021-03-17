@@ -65,7 +65,7 @@ def prove(Eq):
     
     Eq << Eq.recursion.rhs.args[0].arg.this.astype(Times)
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.det)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.det)
     
     i = Eq[-1].rhs.args[1].variable
     Eq.determinant = Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
@@ -98,13 +98,13 @@ def prove(Eq):
     
     Eq << Eq.recursion.subs(Eq[-1])
     
-    Eq << Eq.expand.apply(algebre.equal.imply.equal.det)
+    Eq << Eq.expand.apply(algebre.eq.imply.eq.det)
     
     Eq << Eq[-1].subs(Eq[-2])
 
     Eq << Eq.induction.induct()
     
-    Eq << algebre.condition.sufficient.imply.condition.double.induction.apply(Eq.initial, Eq[-1], n=n, start=2, x=a[1:n + 1], hypothesis=True)
+    Eq << algebre.cond.sufficient.imply.cond.double.induction.apply(Eq.initial, Eq[-1], n=n, start=2, x=a[1:n + 1], hypothesis=True)
 
             
 if __name__ == '__main__':

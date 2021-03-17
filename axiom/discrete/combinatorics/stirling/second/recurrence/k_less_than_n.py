@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << s2.this.bisect(conditionset(e, Contains({n}, e), s2))
 
-    Eq.s2_abs = Eq[-1].apply(algebre.equal.imply.equal.abs)    
+    Eq.s2_abs = Eq[-1].apply(algebre.eq.imply.eq.abs)    
 
     Eq.s2_abs_plausible = Eq[0].subs(Eq.stirling2, Eq.stirling0, Eq.stirling1)
 
@@ -63,7 +63,7 @@ def prove(Eq):
     
     Eq << discrete.combinatorics.stirling.second.mapping.s1_Aj.apply(n, k, s1, A).reversed
 
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.sum, *Eq[-2].lhs.limits)    
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.sum, *Eq[-2].lhs.limits)    
 
 
 if __name__ == '__main__':

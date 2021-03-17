@@ -21,7 +21,7 @@ def prove(Eq):
     
     Eq << apply(Equal(f[n](x), g[n](x)), x, t(x))
     
-    Eq << Eq[0].this.lhs.apply(algebre.equal.imply.equal.subs, x, t(x))
+    Eq << Eq[0].this.lhs.apply(algebre.eq.imply.eq.subs, x, t(x))
 
 
 if __name__ == '__main__':

@@ -29,15 +29,15 @@ def prove(Eq):
     
     w = Eq[0].lhs.base
     
-    Eq << discrete.combinatorics.permutation.adjacent.swap1.equal.apply(x, w)
+    Eq << discrete.combinatorics.permutation.adjacent.swap1.eq.apply(x, w)
     
     i, j = Eq[-1].rhs.args[0][1].args
-    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (i,), (j,))
+    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (i,), (j,))
     
     _i = i.unbounded
     Eq << Eq[-1].this.lhs.args[1].args[1].limits_subs(i, _i)
 
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (_i, 0, n), simplify=False)   
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (_i, 0, n), simplify=False)   
     
 
 if __name__ == '__main__':

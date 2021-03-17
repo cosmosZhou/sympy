@@ -22,7 +22,7 @@ def prove(Eq):
     
     Eq << keras.nn.softmax.translation.apply(x, -MAX(x)).reversed
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.log)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.log)
     
     Eq << Eq[-1].this.rhs.arg.definition
 

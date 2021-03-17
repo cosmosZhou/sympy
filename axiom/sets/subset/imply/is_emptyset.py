@@ -25,7 +25,7 @@ def prove(Eq):
     
     Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[-1], simplify=False)
     
-    Eq << Eq[-1].apply(sets.contains.imply.et.where.complement, simplify=None)
+    Eq << Eq[-1].apply(sets.contains.imply.et.having.complement, simplify=None)
     
     Eq << sets.exists_et.imply.exists.single_variable.limits_absorb.apply(Eq[-1], index=0, simplify=None)
 

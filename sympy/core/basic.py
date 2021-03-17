@@ -892,6 +892,12 @@ class Basic(with_metaclass(ManagedProperties)):
         except PolynomialError:
             return None
 
+    def as_inverse_proportional_function(self, wrt):
+        return self
+        
+    def as_linear_function(self, wrt):
+        return self
+        
     def as_content_primitive(self, radical=False, clear=True):
         """A stub to allow Basic args (like Tuple) to be skipped when computing
         the content and primitive components of an expression.

@@ -35,7 +35,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.equal.imply.equal.union.apply(Eq[-1], A)
+    Eq << sets.eq.imply.eq.union.apply(Eq[-1], A)
     
     Eq << Subset(B, A | B, plausible=True)
     

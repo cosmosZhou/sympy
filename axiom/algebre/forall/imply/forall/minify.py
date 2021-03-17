@@ -1,11 +1,7 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol, ForAll
-from sympy.core.function import Function
-from sympy.core.containers import Tuple
 import axiom
+from axiom import algebre
 
 
 @apply
@@ -44,7 +40,7 @@ def prove(Eq):
     
     Eq << Eq[0].bisect({t})
     
-    Eq << Eq[-1].split()[0]
+    Eq << algebre.et.imply.cond.apply(Eq[-1], 0)
 
 
 if __name__ == '__main__':

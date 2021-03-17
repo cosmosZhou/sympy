@@ -842,15 +842,15 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if exp.is_Indexed and exp.base == self:
             return True
         if exp.is_Slice and exp.base == self:
-            index_start, index_stop = exp.indices
-            start, stop = 0, self.shape[-1]
-
-            if index_stop <= start:
-                return False  # index < start
-            if index_start >= stop:
-                return False  # index >= stop
-    # it is possible for them to be equal!
-            return True
+            for index_start, index_stop in exp.indices:            
+                start, stop = 0, self.shape[-1]
+    
+                if index_stop <= start:
+                    return False  # index < start
+                if index_start >= stop:
+                    return False  # index >= stop
+        # it is possible for them to be equal!
+                return True
         return False
     
     def _eval_transpose(self):
@@ -1125,6 +1125,14 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                         return self.func(r"{\color{ADAD00} %s}" % self.name, _definition, **assumptions)
         return self
 
+    def as_linear_function(self, wrt):
+        if self == wrt:
+            from sympy.polys.polytools import LinearFunction 
+            return LinearFunction(wrt, 1, 0)
+        return self
+    
+    def linear_match(self, a):
+        return a._has(self)
         
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:

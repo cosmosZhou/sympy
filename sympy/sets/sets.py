@@ -1788,7 +1788,11 @@ class Interval(Set, EvalfMixin):
     def _latex(self, p):
         if self.start == self.stop:
             return r"\left\{%s\right\}" % self._print(self.start)
-
+        elif self.is_UniversalSet:
+            if self.is_integer:
+                return r"\mathbb{Z}"
+            else:
+                return r"\mathbb{R}"
         else:
             if self.left_open:
                 left = '('
@@ -1823,11 +1827,15 @@ class Interval(Set, EvalfMixin):
             if s.start is S.NegativeInfinity:
                 from sympy import StrictLessThan, LessThan
                 func = StrictLessThan if s.right_open else LessThan
-                return func(e, s.stop, equivalent=self)
+                if e.is_extended_real:
+                    return func(e, s.stop, equivalent=self)
+                return
             if s.stop is S.Infinity:
                 from sympy import StrictGreaterThan, GreaterThan
                 func = StrictGreaterThan if s.left_open else GreaterThan
-                return func(e, s.start, equivalent=self).simplify()
+                if e.is_extended_real:
+                    return func(e, s.start, equivalent=self).simplify()
+                return
             complement = e.domain // s
             if complement.is_FiniteSet:
                 return self.invert_type(e, complement, equivalent=self).simplify()                
@@ -1848,7 +1856,16 @@ class Interval(Set, EvalfMixin):
     def _eval_Subset(self, rhs):
         if rhs.is_UniversalSet:
             return S.true
-               
+        if self.left_open == rhs.left_open:
+            if rhs.start == self.start:
+                if self.right_open == rhs.right_open:
+                    if self.stop <= rhs.stop:
+                        return S.true
+        if self.right_open == rhs.right_open:
+            if rhs.stop == self.stop:
+                if self.left_open == rhs.left_open:
+                    if self.start >= rhs.start:
+                        return S.true               
     @property
     def kwargs(self):
         return {'left_open': self.left_open, 'right_open': self.right_open, 'integer': self.is_integer}             
@@ -2853,6 +2870,9 @@ class EmptySet(Set):
 
     def _sympystr(self, _):
         return '\N{LATIN CAPITAL LETTER O WITH STROKE}'
+
+    def _latex(self, p):
+        return r"\emptyset"
 
     def __add__(self, other):
         return other

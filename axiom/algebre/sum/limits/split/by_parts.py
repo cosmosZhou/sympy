@@ -40,7 +40,7 @@ def prove(Eq):
     
     Eq << Sum[j](Eq[0].lhs.function).this.simplify()
     
-    Eq << algebre.equal.imply.equal.sum.apply(Eq[-1], (i, C))
+    Eq << algebre.eq.imply.eq.sum.apply(Eq[-1], (i, C))
     
 
 if __name__ == '__main__':

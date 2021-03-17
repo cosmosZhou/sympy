@@ -70,7 +70,7 @@ def prove(Eq):
     
     Eq << Eq[-4].this.rhs.subs(Eq[-1])
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, d), (i, 0, n))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d), (i, 0, n))
     
     Eq << Eq[0].this.rhs.args[1].expr.arg.args[0].args[1].expand()
     
@@ -78,7 +78,7 @@ def prove(Eq):
     
     Eq << PE.this.definition
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[-2], Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':

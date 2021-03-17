@@ -18,7 +18,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.astype(Piecewise)
     
-    Eq << algebre.condition.given.et.apply(Eq[-1], Eq[0])
+    Eq << algebre.cond.given.et.apply(Eq[-1], Eq[0])
     
     Eq << algebre.et.given.et.subs.apply(Eq[-1], reverse=True)
         

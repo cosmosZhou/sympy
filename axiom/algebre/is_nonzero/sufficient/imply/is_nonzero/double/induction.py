@@ -29,7 +29,7 @@ def prove(Eq):
     
     Eq << B[m, 0].this.definition
     
-    Eq << algebre.unequal.imply.is_zero.kronecker_delta.single.apply(Eq[0], simplify=False)
+    Eq << algebre.ne.imply.is_zero.kronecker_delta.single.apply(Eq[0], simplify=False)
     
     Eq.initial_B = Eq[-1] + Eq[-2]
     

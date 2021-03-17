@@ -1,6 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
+from axiom import algebre
 
 
 @apply
@@ -42,7 +43,7 @@ def prove(Eq):
     
     Eq << apply(Unequal(x, y) & Unequal(f(x), g(y)) & Equal(f(x), b))
     
-    Eq << Eq[0].split()    
+    Eq << algebre.et.imply.cond.apply(Eq[0])    
     
     Eq << Eq[-2].subs(Eq[2])
     

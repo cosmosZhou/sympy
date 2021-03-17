@@ -31,9 +31,9 @@ def prove(Eq):
     
     Eq << apply(Contains(f(x), S) & Contains(x, A) | Contains(g(x), S) & Contains(x, B - A) | Contains(h(x), S) & NotContains(x, A | B), wrt=S)
     
-    Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.where.complement, simplify=None)
+    Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.having.complement, simplify=None)
     
-    Eq << Eq[-1].this.args[2].args[1].apply(sets.notcontains.imply.et.where.union, simplify=None)
+    Eq << Eq[-1].this.args[2].args[1].apply(sets.notcontains.imply.et.having.union, simplify=None)
     
     Eq << Eq[-1].apply(algebre.ou.imply.ou.collect, factor=NotContains(x, A))
     

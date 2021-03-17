@@ -106,7 +106,7 @@ class Exists(ConditionalBoolean):
                         kwargs[clue] = self
                         return self.func(function, *self.limits, **kwargs).simplify()
                     
-                if eq.is_Exists and eq.limits == self.limits:                    
+                if eq.is_Exists and eq.limits == self.limits: 
                     if eq.is_given_by(self):
                         function = self.function.subs(eq.function)
                         return self.func(function, *self.limits, given=self).simplify()
@@ -177,7 +177,7 @@ class Exists(ConditionalBoolean):
                         return function
                     
         from sympy import Unequal, Equal
-        if self.function.is_Contains:            
+        if self.function.is_Contains: 
             limits_dict = self.limits_dict
             x = None
             if self.function.lhs in limits_dict:
@@ -208,7 +208,7 @@ class Exists(ConditionalBoolean):
                         function.equivalent = self
                         return function
 
-        elif self.function.is_NotContains:            
+        elif self.function.is_NotContains: 
             limits_dict = self.limits_dict
             x = None
             if self.function.lhs in limits_dict:
@@ -217,7 +217,7 @@ class Exists(ConditionalBoolean):
                 
             if x is not None:
                 domain = limits_dict[x]
-                if isinstance(domain, list):                          
+                if isinstance(domain, list): 
                     function = Equal(S, x.emptySet)
                 elif domain.is_set:
                     if domain.is_FiniteSet:
@@ -240,19 +240,19 @@ class Exists(ConditionalBoolean):
         if self.function.is_And:
             limits_dict = self.limits_dict
             for i, eq in enumerate(self.function.args):
-                if eq.is_Contains and eq.lhs in limits_dict :
+                if eq.is_Contains and eq.lhs in limits_dict:
                     domain = limits_dict[eq.lhs]
                     if isinstance(domain, list):
                         eqs = [*self.function.args]
                         del eqs[i]  
-                        if not eq.rhs.has(*self.variables[:i]):                  
+                        if not eq.rhs.has(*self.variables[:i]): 
                             return self.func(And(*eqs), *self.limits_update(eq.lhs, eq.rhs), equivalent=self).simplify()
                     elif domain == eq.rhs:
                         eqs = [*self.function.args]
                         del eqs[i]                    
                         return self.func(And(*eqs), *self.limits, equivalent=self)
 
-                if eq.is_Equality:                    
+                if eq.is_Equality: 
                     if eq.lhs in limits_dict:
                         old, new = eq.args
                     elif eq.rhs in limits_dict:
@@ -283,7 +283,7 @@ class Exists(ConditionalBoolean):
         if self.function.is_Or:
             limits_dict = self.limits_dict
             for i, eq in enumerate(self.function.args):
-                if eq.is_NotContains and eq.lhs in limits_dict :
+                if eq.is_NotContains and eq.lhs in limits_dict:
                     domain = limits_dict[eq.lhs]
                     if not isinstance(domain, list) and domain in eq.rhs:
                         eqs = [*self.function.args]
@@ -441,45 +441,6 @@ class Exists(ConditionalBoolean):
                         return self
         
         return ConditionalBoolean.apply(self, axiom, *args, **kwargs)
-
-    def split(self, *args, **kwargs):
-        arr = self.function.split(*args, **kwargs)
-        if isinstance(arr, list):
-            clue = None
-            for eq in arr:
-                if eq.given is None:
-                    if eq.equivalent is None:
-                        assert eq.imply is not None
-                        if clue is None:
-                            clue = 'imply'
-                            self.function.derivative = None 
-                        eq.imply = None
-                        continue
-                    if eq.equivalent.given is None:
-                        print('eq.equivalent.given is None')
-                    else:
-                        eq.equivalent.given = None
-                        eq.equivalent = None
-                else:
-                    eq.given = None
-                    if clue is None:
-                        clue = 'given'
-                assert eq.equivalent is None 
-            eqs = [self.func(eq, *self.limits, **{clue: self}) for eq in arr]
-            if kwargs.get('simplify', True):
-                eqs = [eq.simplify() for eq in eqs]
-                
-            if self.function.is_Or:
-                self.derivative = eqs
-# exists with and structure is not deductive, only deductive for or structure!
-            return eqs
-        elif isinstance(arr, tuple):
-            for eq in arr:
-                assert eq.parent is not None
-                eq.parent = None
-
-            return [self.func(eq, *self.limits, parent=self).simplify() for eq in arr]
-        return self
 
     
 from sympy.concrete.forall import ForAll     

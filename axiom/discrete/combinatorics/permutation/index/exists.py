@@ -42,7 +42,7 @@ def prove(Eq):
     
     Eq << ~Eq[-1] 
     
-    Eq << Eq[-1].reversed.apply(sets.unequal.imply.notcontains, simplify=False)
+    Eq << Eq[-1].reversed.apply(sets.ne.imply.notcontains, simplify=False)
       
     Eq << Eq[-1].apply(sets.notcontains.imply.notcontains.union_comprehension, limit=(k, 0, n))
     

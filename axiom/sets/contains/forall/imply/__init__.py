@@ -1,1 +1,1 @@
-from . import condition
+from . import cond

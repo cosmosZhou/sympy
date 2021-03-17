@@ -27,7 +27,7 @@ def prove(Eq):
     
     Eq << ~Eq[1]
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
     
     Eq << Eq[0].subs(Eq[-1])
 

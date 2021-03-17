@@ -53,15 +53,17 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(x, Eq[1].rhs.func(*Eq[1].rhs.args[:2]))
     
-    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (x, S))
+    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (x, S))
     
-    Eq << (Eq[-1] & Eq.hypothesis).split()
+    Eq <<= Eq[-1] & Eq.hypothesis
+    
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
     
     Eq << Eq[-1].subs(Eq[1].reversed)
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=m)
+    Eq << algebre.sufficient.imply.cond.induction.apply(Eq[-1], n=m)
 
     
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.args[1].arg.rhs.definition
     
-    Eq << Eq[-1].this.lhs.function.args[1].arg.apply(sets.et.astype.contains.where.is_odd, split=False)
+    Eq << Eq[-1].this.lhs.function.args[1].arg.apply(sets.et.astype.contains.having.is_odd, split=False)
     
     Eq << Eq[-1].this.lhs.function.args[1].arg.rhs.limits[0][2].astype(Floor)
 

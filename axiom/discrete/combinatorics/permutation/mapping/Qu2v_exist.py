@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 
-from axiom import discrete, sets
+from axiom import discrete, sets, algebre
 from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
 
 
@@ -23,7 +23,9 @@ def prove(Eq):
     w, i, j = Eq[0].lhs.args
     Q = Eq[2].lhs.base
     
-    Eq << sets.imply.forall.conditionset.apply(Q[u]).split()
+    Eq << sets.imply.forall.conditionset.apply(Q[u])
+    
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
     
     Eq.x_j_equality = Eq[-1].apply(discrete.combinatorics.permutation.index.exists, v)    
     
@@ -41,7 +43,7 @@ def prove(Eq):
     
     k = Eq[-1].function.lhs.function.arg.args[0].indices[-1]
     
-    Eq << Eq[1][k].apply(sets.equal.imply.equal.set_comprehension, (k, 0, n + 1))
+    Eq << Eq[1][k].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n + 1))
     
     Eq.x_n1_set_comprehension = Eq[-2].subs(Eq[-1].reversed)
     

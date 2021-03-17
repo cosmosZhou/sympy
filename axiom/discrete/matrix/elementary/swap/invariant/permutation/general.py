@@ -43,15 +43,15 @@ def prove(Eq):
     
     Eq << Eq[-1].this.args[0].lhs.simplify()
     
-    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, Eq[-3].limits[0])
+    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, Eq[-3].limits[0])
     
     Eq <<= Eq[-1] & Eq[2]
     
-    Eq << Eq[-1].split()  
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])  
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=m)    
+    Eq << algebre.sufficient.imply.cond.induction.apply(Eq[-1], n=m)    
 
         
 if __name__ == '__main__':

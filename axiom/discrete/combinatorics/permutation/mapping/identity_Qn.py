@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, discrete
+from axiom import sets, discrete, algebre
 from axiom.discrete.combinatorics.permutation import mapping
 
 
@@ -18,19 +18,23 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
     
-    Eq << sets.imply.forall.conditionset.apply(Eq[-1].lhs).split()
+    Eq << sets.imply.forall.conditionset.apply(Eq[-1].lhs)
+    
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
         
     Eq << Eq[-1].apply(discrete.combinatorics.permutation.pop_back.interval, Eq[-2])
     
     Eq.forall_P_quote = Eq[-1] & Eq[-3]
     
-    Eq << sets.imply.forall.conditionset.apply(Eq[1].lhs).split()
+    Eq << sets.imply.forall.conditionset.apply(Eq[1].lhs)
+    
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
     
     Eq << Eq[-1].apply(discrete.combinatorics.permutation.push_back, Eq[-2])
     
     Eq <<= Eq[-1] & Eq[-3]
     
-    Eq << sets.forall.forall.imply.equal.apply(Eq.forall_P_quote, Eq[-1])
+    Eq << sets.forall.forall.imply.eq.apply(Eq.forall_P_quote, Eq[-1])
 
 
 if __name__ == '__main__':

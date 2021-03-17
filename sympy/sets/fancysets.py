@@ -9,6 +9,7 @@ from sympy.logic.boolalg import And
 from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet
 from sympy.utilities.miscellany import filldedent
 
+
 class Reals(with_metaclass(Singleton, Interval)):
     """
     Represents all real numbers
@@ -55,6 +56,10 @@ class Reals(with_metaclass(Singleton, Interval)):
             return S.Complexes
 
         raise Exception("could not multiply %s, %s" % (self, other))
+    
+    def _latex(self, p):
+        return r"\mathbb{R}"
+    
     
 # class Integers(Reals):
 #     """
@@ -153,6 +158,7 @@ class Reals(with_metaclass(Singleton, Interval)):
 #             return S.Reals
 #         if other.is_complex:
 #             return S.Complexes
+
 
 class ImageSet(Set):
     """
@@ -1168,6 +1174,9 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
 
     def __str__(self):
         return "S.Complexes"
+
+    def _latex(self, p):
+        return r"\mathbb{C}"
 
     def __repr__(self):
         return "S.Complexes"

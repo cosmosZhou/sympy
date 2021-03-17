@@ -32,13 +32,13 @@ def prove(Eq):
     
     Eq << algebre.is_odd.imply.exists.apply(Eq[0])
     
-    Eq << Eq[-1].this.function.apply(algebre.equal.condition.imply.condition.subs, Eq[1])
+    Eq << Eq[-1].this.function.apply(algebre.eq.cond.imply.cond.subs, Eq[1])
     
     Eq << Eq[-1].this.function.apply(sets.contains.imply.contains.interval.divide.integer, 2, simplify=None)
     
-    Eq << (Eq[-3] - 1).this.function.apply(algebre.equal.imply.equal.divide, 2, simplify=None)
+    Eq << (Eq[-3] - 1).this.function.apply(algebre.eq.imply.eq.divide, 2, simplify=None)
         
-    Eq << Eq[-1].this.function.apply(algebre.equal.imply.equal.reversed, simplify=None)
+    Eq << Eq[-1].this.function.apply(algebre.eq.imply.eq.reversed, simplify=None)
     
     Eq << Eq[-3].subs(Eq[-1])
     

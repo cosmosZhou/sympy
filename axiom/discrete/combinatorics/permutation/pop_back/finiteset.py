@@ -1,11 +1,6 @@
-from sympy import Symbol, Slice, dtype
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.core.numbers import oo
-from sympy.sets.sets import Interval
 from axiom import sets, algebre
-from sympy.sets.contains import NotContains
 import axiom
 
 
@@ -30,7 +25,7 @@ def apply(*given):
     return Equality(p[:n].set_comprehension(), a[:n].set_comprehension())
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True, given=True)
     p = Symbol.p(shape=(oo,), etype=dtype.integer, given=True)
@@ -45,7 +40,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[1])
     
-    Eq << sets.equal.imply.equal.complement.apply(Eq[-1], {a[n]}) 
+    Eq << sets.eq.imply.eq.complement.apply(Eq[-1], {a[n]}) 
     return
     Eq << Eq[2].subs(Eq[-1].reversed).reversed
     
@@ -53,7 +48,7 @@ def prove(Eq):
     
     Eq << ~Eq.plausible
     
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.having.union_comprehension)
     
     i = Eq[-1].variable
     _i = i.copy(domain=Interval(0, n - 1, integer=True))
@@ -63,19 +58,19 @@ def prove(Eq):
     
     Eq.paradox = Eq[-1].subs(Eq[-2].reversed).subs(Eq[1])
     
-    Eq << sets.imply.less_than.union.apply(*Eq.paradox.function.rhs.args)
+    Eq << sets.imply.le.union.apply(*Eq.paradox.function.rhs.args)
     
-    Eq << sets.imply.less_than.union_comprehension.apply(*Eq.paradox.function.rhs.args[1].args)
+    Eq << sets.imply.le.union_comprehension.apply(*Eq.paradox.function.rhs.args[1].args)
     
     Eq << Eq[-2] + Eq[-1]
     
-    Eq << Eq.paradox.apply(algebre.equal.imply.equal.abs)
+    Eq << Eq.paradox.apply(algebre.eq.imply.eq.abs)
     
     Eq << Eq[-1].subs(Eq[0])
     
     Eq << Eq[-3].subs(Eq[-1].reversed)
     
-    Eq << sets.notcontains.imply.equal.complement.apply(Eq.plausible)
+    Eq << sets.notcontains.imply.eq.complement.apply(Eq.plausible)
 
         
 if __name__ == '__main__':

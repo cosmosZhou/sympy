@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom.discrete.combinatorics.permutation.index.equal import index_function
+from axiom.discrete.combinatorics.permutation.index.eq import index_function
 from sympy.matrices.expressions.matexpr import Swap
 from axiom import discrete, sets
 
@@ -66,19 +66,19 @@ def prove(Eq):
     
     Eq.expand = Eq.definition.lhs.args[0].function.args[1].this.expand()
     
-    Eq << discrete.combinatorics.permutation.index.equal.apply(Eq[1], j=j)
+    Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[1], j=j)
         
     Eq.dj_domain, Eq.x_dj_eqaulity = Eq[-2].subs(Eq.dj_definition.reversed), Eq[-1].subs(Eq.dj_definition.reversed)
 
     Eq.expand = Eq.expand.subs(Eq.x_dj_eqaulity)
     
-    Eq << discrete.combinatorics.permutation.index.equal.apply(Eq[1], j=i)
+    Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[1], j=i)
     Eq.di_domain, Eq.x_di_eqaulity = Eq[-2].subs(Eq.di_definition.reversed), Eq[-1].subs(Eq.di_definition.reversed)
     
     Eq <<= Eq.dj_domain & Eq.di_domain
     Eq << Eq.expand.subs(Eq.x_di_eqaulity)
     
-    Eq.union_equality, Eq.piecewise_equality = sets.subset.imply.equal.union.apply(Eq[-2]), Eq.definition.subs(Eq[-1])
+    Eq.union_equality, Eq.piecewise_equality = sets.subset.imply.eq.union.apply(Eq[-2]), Eq.definition.subs(Eq[-1])
     
     Eq.piecewise_equality = Eq.piecewise_equality.this.lhs.expand()
     
@@ -94,11 +94,11 @@ def prove(Eq):
 
     Eq.piecewise_equality = Eq.piecewise_equality.subs(Eq[-1])
 
-    Eq << sets.contains.imply.equal.piecewise.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
+    Eq << sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
     
-    Eq << sets.contains.imply.equal.piecewise.expr_swap.apply(Eq.di_domain, Eq.piecewise_equality.lhs.args[-1])
+    Eq << sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.di_domain, Eq.piecewise_equality.lhs.args[-1])
 
-    Eq << sets.contains.imply.equal.intersection.apply(Eq.dj_domain)
+    Eq << sets.contains.imply.eq.intersection.apply(Eq.dj_domain)
     
     Eq << Eq[-2].subs(Eq[-1])
     

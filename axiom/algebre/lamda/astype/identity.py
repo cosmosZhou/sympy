@@ -34,7 +34,7 @@ def prove(Eq):
     
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     
-    Eq << algebre.equal.given.equal.getitem.apply(Eq[0], i)
+    Eq << algebre.eq.given.eq.getitem.apply(Eq[0], i)
 
 
 if __name__ == '__main__':

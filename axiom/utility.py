@@ -6,6 +6,7 @@ import traceback
 from sympy.logic import boolalg
 from sympy.utilities.iterables import topological_sort_depth_first
 import time
+from enum import unique, Enum
 
 
 def init(func):
@@ -236,6 +237,7 @@ render(__FILE__);
                     given = rhs.given
                     equivalent = rhs.equivalent
                     rhs.plausible = True
+                    
                     if given is None:
                         if equivalent is not None:
                             if not isinstance(equivalent, (list, tuple)):
@@ -421,29 +423,74 @@ def wolfram_decorator(py, func, debug=True, **kwargs):
     return True
 
 
-def prove(func): 
+@unique
+class RetCode(Enum):
+    success = ()  # 0
+    failure = ()  # 1
+    plausible = ()  # 2    
+    insurmountable = ()  # 3 
+    unprovable = ()  # 4
+    nonexistent = ()  # 5
+
+    def __new__(cls):
+        value = len(cls.__members__)
+        obj = object.__new__(cls)
+        obj._value_ = value
+        return obj
+
+
+def prove(*args, **kwargs):
 
     def prove(py, func, debug=True):
         eqs = Eq(py.replace('.py', '.php'), debug=debug)
-        website = "http://localhost" + func.__code__.co_filename[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3] + ".php"
+        website = "http://localhost" + func.__code__.co_filename[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3]
+        if website.endswith('__init__'):
+            website = os.path.dirname(website)
+        website += ".php"
         try: 
             func(eqs)
         except Exception as e:
             print(e)
             traceback.print_exc()
             print(website)
-            return
+            return RetCode.failure
         
         if debug:
             print(website)
         plausibles = eqs.plausibles_dict
         if plausibles:
-            return False
+            return RetCode.plausible
     
-        return True
+        return RetCode.success
 
-    return lambda py, **kwargs: prove(py, func, **kwargs)
+    if args:
+        return lambda py, **kwargs: prove(py, *args, **kwargs)
+    
+    surmountable = kwargs.pop('surmountable', True)
+    if surmountable is False:
 
+        def insurmountable(func):
+
+            def insurmountable(py, **kwargs):
+                prove(py, func, **kwargs)
+                return RetCode.insurmountable
+
+            return insurmountable
+
+        return insurmountable
+
+    provable = kwargs.pop('provable', True)
+    if provable is False:
+
+        def unprovable(func):
+
+            def unprovable(py, **kwargs):
+                prove(py, func, **kwargs)
+                return RetCode.unprovable
+
+            return unprovable
+
+        return unprovable
 
 def wolfram(func):
 
@@ -570,7 +617,8 @@ def imply(apply, **kwargs):
 
 def given(apply, **kwargs):
     is_given = kwargs['given'] if 'given' in kwargs else True
-
+    simplify = kwargs['simplify'] if 'simplify' in kwargs else True
+    
     def add(given, statement):
         if isinstance(statement, tuple):
             if given is None:
@@ -596,16 +644,20 @@ def given(apply, **kwargs):
             del s._assumptions['plausible']
 
     def given(*args, **kwargs):
-        simplify = kwargs.pop('simplify', True) 
+        nonlocal simplify
+        simplify = kwargs.pop('simplify', True) and simplify
         statement = apply(*args, **kwargs)        
         
-        assert not isinstance(statement, tuple)        
-        if statement.equivalent is not None:
+        if isinstance(statement, tuple):
+            for s in statement:
+                if s.equivalent is not None:
+                    s.equivalent = None
+        elif statement.equivalent is not None:
             statement.equivalent = None
             
         imply, *args = args
         
-        if is_given:            
+        if is_given: 
             given = tuple(eq for eq in args if isinstance(eq, Boolean))        
             assert all(g.plausible is None for g in given)
         else:
@@ -615,16 +667,24 @@ def given(apply, **kwargs):
         
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]: 
-            statement = statement.copy(imply=imply)
+            if isinstance(statement, tuple):
+                statement = tuple(s.copy(imply=imply) for s in statement)
+                imply.given = statement
+            else:
+                statement = statement.copy(imply=imply)
             
             if not simplify:
                 return statement
-            if isinstance(statement, list):
-                return [*(s.simplify() for s in statement)]
+            if isinstance(statement, tuple):
+                return tuple((s.simplify() for s in statement))
             return statement.simplify()
         
         dependency = {}
-        process(statement, dependency)
+        if isinstance(statement, tuple):
+            for s in statement:
+                process(s, dependency)
+        else: 
+            process(statement, dependency)
         
         for g in given:
             g.definition_set(dependency)

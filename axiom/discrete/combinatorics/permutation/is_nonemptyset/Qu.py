@@ -37,7 +37,7 @@ def prove(Eq):
     
     Eq << algebre.exists.given.exists.subs.apply(Eq[-1], x[:n + 1], a, simplify=None)
     
-    Eq << algebre.exists.given.condition.apply(Eq[-1])
+    Eq << algebre.exists.given.cond.apply(Eq[-1])
         
     Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[-3])
     

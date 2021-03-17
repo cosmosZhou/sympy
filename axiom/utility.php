@@ -380,13 +380,13 @@ function detect_axiom_given_theorem(&$theorem, &$statement)
 {
     if (startsWith($theorem, '.')) {
         // consider the case
-        // Eq << Eq[-1].reversed.apply(discrete.sets.unequal.notcontains, evaluate=False)
+        // Eq << Eq[-1].reversed.apply(discrete.sets.ne.notcontains, evaluate=False)
         return detect_axiom($statement);
     }
 
     if (startsWith($theorem, 'Eq')) {
         // consider the case
-        // Eq[-2].this.args[0].apply(algebre.condition.condition.imply.et, invert=True, swap=True)
+        // Eq[-2].this.args[0].apply(algebre.cond.cond.imply.et, invert=True, swap=True)
         return detect_axiom($statement);
     }
 
@@ -519,7 +519,7 @@ function yield_from_py($python_file)
         if (preg_match('/^return\s*$/', $statement, $matches)) {
             break;
         }
-        
+
         $yield = [
             'statement' => $statement,
             'line' => $i
@@ -554,7 +554,8 @@ function yield_from_py($python_file)
         } else if (preg_match('/(=|<<) *apply\(/', $statement, $matches)) {
             // error_log('yield statement: ' . $statement);
             // error_log("php = $php");
-            $yield['module'] = to_python_module($python_file);
+
+            $yield['module'] = to_python_module(endsWith($python_file, '__init__.py') ? substr($python_file, 0, - strlen('/__init__.py')) . '.php' : $python_file);
         } else {
             // error_log("statement = $statement");
             $a = detect_axiom($statement);

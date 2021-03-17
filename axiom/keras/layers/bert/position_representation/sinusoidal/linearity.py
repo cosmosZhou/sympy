@@ -49,7 +49,7 @@ def prove(Eq):
     
     Eq <<= geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-1].rhs.arg.args)
  
-    Eq <<= algebre.equal.equal.imply.equal.transit.apply(Eq[-4], Eq[-2]), algebre.equal.equal.imply.equal.transit.apply(Eq[-3], Eq[-1])
+    Eq <<= algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
      
     Eq << Eq.PE_definition.this.rhs.args[0].expr.subs(Eq[-2])
      
@@ -67,9 +67,9 @@ def prove(Eq):
      
     Eq << Eq[-1].this.rhs.astype(Piecewise)
      
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.cossin, Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.cossin, Eq[-1])
      
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, d))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
      
     Eq.PE_equality = Eq[-1].this.rhs.astype(Plus)
      
@@ -79,7 +79,7 @@ def prove(Eq):
      
     Eq <<= geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-1].rhs.arg.args)
      
-    Eq <<= algebre.equal.equal.imply.equal.transit.apply(Eq[-4], Eq[-2]), algebre.equal.equal.imply.equal.transit.apply(Eq[-3], Eq[-1])
+    Eq <<= algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
      
     Eq << Eq.PE_quote_definition.this.rhs.args[0].expr.subs(Eq[-2])
      
@@ -97,9 +97,9 @@ def prove(Eq):
  
     Eq << Eq[-1].this.rhs.astype(Piecewise)
      
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.coscos, Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.coscos, Eq[-1])
      
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, d))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
      
     Eq << Eq[-1].this.rhs.astype(Plus)
  
@@ -134,11 +134,11 @@ def prove(Eq):
      
     Eq << Z[k + i].this.definition 
      
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[-1], Eq[-2])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[-2])
     
     Eq << Eq[-1].subs(k, 1)
     
-    Eq << algebre.equal.imply.equal.geometric_progression.apply(Eq[-1], n=i)
+    Eq << algebre.eq.imply.eq.geometric_progression.apply(Eq[-1], n=i)
     
     Eq << Eq[-1].subs(i, i + k)
     
@@ -146,7 +146,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.powsimp()
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[-3], Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
 
 
 if __name__ == '__main__':

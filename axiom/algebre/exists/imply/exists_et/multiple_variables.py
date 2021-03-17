@@ -31,9 +31,9 @@ def prove(Eq):
     Eq << Boole(Eq[-1].function).this.arg.args[1].rhs.definition
     Eq << Eq[-1].this.rhs.arg.args[2].rhs.definition
     
-    Eq << algebre.equal.imply.equivalent.apply(Eq[-1])
+    Eq << algebre.eq.imply.equivalent.apply(Eq[-1])
     
-    Eq << algebre.equivalent.condition.imply.condition.apply(Eq[-1], Eq[-4])
+    Eq << algebre.equivalent.cond.imply.cond.apply(Eq[-1], Eq[-4])
 
     
 if __name__ == '__main__':

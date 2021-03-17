@@ -20,7 +20,7 @@ def prove(Eq):
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))    
     j = Symbol.j(domain=Interval(0, n - 1, integer=True))
     
-    Eq << algebre.equal.given.equal.getitem.apply(Eq[0], (i, j))
+    Eq << algebre.eq.given.eq.getitem.apply(Eq[0], (i, j))
     
     Eq << Eq[-1].this.rhs.args[1].astype(Piecewise)
     

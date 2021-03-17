@@ -1,4 +1,4 @@
-from . import equal
+from . import eq
 from . import forall
 from . import exists
 from . import ou

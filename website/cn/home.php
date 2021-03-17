@@ -31,13 +31,13 @@
 	<li><a href="../axiom/sets/">sets</a> 集合论, 即sets
 		theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语‘任意’（ForAll）,
 		‘存在’（Exists），‘属于’ （contains），‘包含’（subset）描述的命题，比如<a
-		href="../axiom/sets/imply/equal/principle/inclusion_exclusion/basic.php">容斥原理</a>的证明。可以说，集合论是数学推理的根本语法。</li>
+		href="../axiom/sets/imply/eq/principle/inclusion_exclusion/basic.php">容斥原理</a>的证明。可以说，集合论是数学推理的根本语法。</li>
 	<li><a href="../axiom/geometry/">geometry</a>几何学，主要分为初中<a
 		href="../axiom/geometry/plane">平面几何学，中学三角函数学</a>与高中<a
 		href="../axiom/geometry/solid">立体几何学</a>； 包含不少三角函数恒等式，比如<a
 		href="../axiom/geometry/plane/trigonometry/cosine/principle/add.php">和差化积</a>，积化和差，等等。</li>
 	<li><a href="../axiom/calculus/">calculus</a>微积分，主要包含以下内容： <a
-		href="../axiom/calculus/equal/astype/exists/limit_definition.php">极限定义</a>
+		href="../axiom/calculus/eq/astype/exists/limit_definition.php">极限定义</a>
 		及其理论，它是微积分的理论基础； <a href="../axiom/calculus/series/infinite/">无穷级数</a>的运算性质；
 		<a href="../axiom/calculus/integral/by_parts.php">分部积分</a>定理；
 		三角函数及其它少数超越函数的积分；</li>

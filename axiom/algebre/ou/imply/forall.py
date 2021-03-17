@@ -33,25 +33,21 @@ def prove(Eq):
 
     Eq << apply(Unequal(f(x), g(y)) | Equality(x, y), pivot=1)
     
-    Eq << Eq[0].bisect(Equality(x, y)).split()
+    Eq << Eq[0].bisect(Equality(x, y))
     
-    Eq << ~Eq[-1]
+    Eq << sets.imply.forall.complement.apply(y, x=x)
     
-    Eq << algebre.imply.forall.limits_assert.apply(Eq[-1].limits)
+    Eq <<= Eq[-2] & Eq[-1]
     
-    Eq << Eq[-1].this.function.simplify()
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1], index=0)
     
-    Eq << sets.imply.is_nonemptyset.complement.apply(y, simplify=False)
-    
-    Eq << sets.is_nonemptyset.forall.imply.exists.apply(Eq[-1], Eq[-2])
-    
-    Eq << sets.unequal.astype.contains.apply(x, y)
+    Eq << sets.ne.astype.contains.apply(x, y)
     
     Eq << ForAll[x: Equality(Boole(Contains(x, Eq[2].limits[0][1])), 1)](Eq[2].function, plausible=True)
     
     Eq << Eq[-1].this.limits[0][1].lhs.astype(Piecewise)
     
-    Eq << algebre.equivalent.condition.imply.condition.apply(Eq[-2].reversed, Eq[-1])
+    Eq << algebre.equivalent.cond.imply.cond.apply(Eq[-2].reversed, Eq[-1])
     
     Eq << Eq[-1].this.limits[0][1].lhs.astype(Piecewise)
 

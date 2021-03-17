@@ -48,9 +48,9 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(sets.contains.imply.equal.union)
+    Eq << Eq[-1].apply(sets.contains.imply.eq.union)
     
-    Eq << Eq[-1].apply(sets.equal.imply.equal.intersect, a.set)
+    Eq << Eq[-1].apply(sets.eq.imply.eq.intersect, a.set)
     
     Eq << Eq[-1].subs(Eq[0])
 

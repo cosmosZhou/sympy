@@ -20,7 +20,7 @@ def prove(Eq):
     k = Symbol.k(domain=Interval(1, n, integer=True), given=True)
     Eq << apply(n, k=k)    
     
-    Eq << sets.is_nonemptyset.given.exists.where.conditionset.apply(Eq[0])
+    Eq << sets.is_nonemptyset.given.exists.having.conditionset.apply(Eq[0])
     
     i = Symbol.i(integer=True)
     x, (_, k), *_ = Eq[-1].variable.args
@@ -31,9 +31,9 @@ def prove(Eq):
     
     Eq << algebre.exists.given.exists.subs.apply(Eq[-1], x[:k], a)
     
-    Eq.is_positive, Eq.sum, Eq.union = Eq[-1].split()
+    Eq.is_positive, Eq.sum, Eq.union = algebre.et.given.cond.apply(Eq[-1])
     
-    Eq << Eq.is_positive.this.function.lhs.arg.definition
+    Eq << Eq.is_positive.this.lhs.arg.definition
     
     Eq << Eq.sum.this.lhs.function.arg.definition
     
@@ -42,4 +42,3 @@ def prove(Eq):
 
 if __name__ == '__main__':
     prove(__file__)
-

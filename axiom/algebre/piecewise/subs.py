@@ -48,11 +48,11 @@ def prove(Eq):
     p = Symbol.p(Eq[0].lhs)
     Eq << p.this.definition
     
-    Eq << algebre.equal.imply.ou.general.apply(Eq[-1])
+    Eq << algebre.eq.imply.ou.general.apply(Eq[-1])
     
     Eq << Eq[-1].this.args[2].apply(algebre.et.imply.et.subs, split=False, index=2)
     
-    Eq << algebre.ou.imply.equal.general.apply(Eq[-1], wrt=p)
+    Eq << algebre.ou.imply.eq.general.apply(Eq[-1], wrt=p)
     
     Eq << Eq[-1].this.lhs.apply(algebre.piecewise.swap.back)
     

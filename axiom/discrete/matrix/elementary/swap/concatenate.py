@@ -36,11 +36,11 @@ def prove(Eq):
     
     Eq << Eq[-2] - Eq[-1] 
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.lamda, (k,), (h,), simplify=False)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.lamda, (k,), (h,), simplify=False)
     
     Eq << Eq[-1].subs(Eq[1]).subs(Eq[2])
     
-    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (_i,), (_j,))
+    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (_i,), (_j,))
     
     Eq << Eq[-1].reversed
     

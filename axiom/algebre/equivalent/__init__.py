@@ -1,2 +1,2 @@
 from . import imply
-from . import condition
+from . import cond

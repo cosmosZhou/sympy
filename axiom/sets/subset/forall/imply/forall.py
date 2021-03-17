@@ -45,7 +45,7 @@ def prove(Eq):
     
     Eq << Eq[-1].limits_subs(Eq[-1].variable, x)
     
-    Eq << Eq[-1].apply(sets.contains.forall.imply.condition, Eq[1], join=False)
+    Eq << Eq[-1].apply(sets.contains.forall.imply.cond, Eq[1], join=False)
 
 
 if __name__ == '__main__':

@@ -5,4 +5,4 @@ from . import contains
 from . import sufficient
 from . import subset
 from . import forall
-from . import equal
+from . import eq

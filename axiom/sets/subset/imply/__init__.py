@@ -1,5 +1,5 @@
-from . import less_than
-from . import equal
+from . import le
+from . import eq
 from . import subset
 from . import forall_contains
 from . import is_emptyset

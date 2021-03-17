@@ -59,7 +59,7 @@ def prove(Eq):
 
     Eq << apply(Equal(Piecewise((f(x), NotContains(x, S)), (g(x), True)), h(x)) & NotContains(x, S))
     
-    Eq << Eq[-1].split()
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq << Equality(Boole(NotContains(x, S)), 1, plausible=True)
     

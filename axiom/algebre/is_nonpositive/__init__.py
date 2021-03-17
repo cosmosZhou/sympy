@@ -1,4 +1,4 @@
-from . import greater_than
+from . import ge
 from . import is_nonnegative
 from . import imply
 from . import is_positive

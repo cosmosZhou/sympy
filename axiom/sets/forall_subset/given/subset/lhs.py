@@ -24,7 +24,7 @@ def prove(Eq):
    
     Eq << apply(ForAll[i:0:m](Subset(x[i], A)))
     
-    Eq << sets.subset.imply.forall_subset.where.union_comprehension.apply(Eq[1])
+    Eq << sets.subset.imply.forall_subset.having.union_comprehension.apply(Eq[1])
     
 if __name__ == '__main__':
     prove(__file__)

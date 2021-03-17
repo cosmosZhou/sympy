@@ -44,17 +44,22 @@ def prove(Eq):
     
     Eq.limits_assertion = algebre.imply.forall.limits_assert.apply(Eq.equation.limits)
     
-    Eq << Eq.limits_assertion.apply(sets.equal.imply.equal.where.finiteset.add)
+    Eq << Eq.limits_assertion.apply(sets.eq.imply.eq.having.finiteset.add)
     
     Eq.p1_equality = Eq[-1].this.function - p0
     
     Eq << Eq.equation.subs(Eq.p1_equality) 
     
-    Eq.premier, Eq.second = Eq[-1].split()
+    Eq << Eq[-1].this.function.apply(algebre.eq.given.et.split)
     
-    Eq << Eq.limits_assertion.split()
+    Eq.premier, Eq.second = algebre.forall_et.given.forall.apply(Eq[-1])
     
-    Eq << Eq[-2].apply(sets.contains.imply.equal.kronecker_delta.zero).reversed
+    Eq << Eq.limits_assertion.this.function.apply(sets.eq.imply.et.having.finiteset)
+    return
+
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
+    
+    Eq << Eq[-2].apply(sets.contains.imply.eq.kronecker_delta.zero).reversed
     
     Eq << Eq[-1].subs(Eq.p1_equality)
     
@@ -127,7 +132,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.condition.sufficient.imply.condition.induction.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=2)
     
     Eq << Eq[1].subs(Eq[0])
 

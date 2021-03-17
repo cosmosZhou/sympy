@@ -55,7 +55,7 @@ def prove(Eq):
         
     Eq << Eq[-1] * binomial(n + 1, _k)
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.sum, (_k,))    
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.sum, (_k,))    
     
     Eq << Eq[-1].this.lhs.limits_subs(_k, k)
     
@@ -67,7 +67,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.forall((_k,))
     
-    Eq << algebre.equal.sufficient.imply.equal.second.induction.where.forall.apply(Eq.initial, Eq[-1], n=n)
+    Eq << algebre.eq.sufficient.imply.eq.second.induction.having.forall.apply(Eq.initial, Eq[-1], n=n)
     
     Eq << Eq[0].subs(n, _k)
     

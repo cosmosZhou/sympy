@@ -1,15 +1,10 @@
-from sympy.core.symbol import Symbol, dtype
-from sympy.core.relational import Equality
 from axiom.utility import prove, apply
 from sympy.functions.combinatorial.numbers import Stirling
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy import UNION, LAMBDA
-from sympy.core.numbers import oo
-from sympy.sets.sets import Interval
+from sympy import *
 
 
 @apply
-def apply(n, k, s1=None, A=None):    
+def apply(n, k, s1=None, A=None): 
     j = Symbol.j(domain=Interval(0, k, integer=True))
             
     if s1 is None:
@@ -25,9 +20,7 @@ def apply(n, k, s1=None, A=None):
     return Equality(abs(s1), abs(A[j]))
 
 
-
-
-@prove
+@prove(surmountable=False)
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
@@ -43,6 +36,7 @@ def prove(Eq):
     x_quote = Eq[1].lhs.base
     Aj = Eq[3].lhs    
     e = Symbol.e(**s1.etype.dict)
+
     
 if __name__ == '__main__':
     prove(__file__)

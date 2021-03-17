@@ -39,7 +39,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.args[1].arg.rhs.definition
     
-    Eq << Eq[-1].this.lhs.function.args[1].arg.apply(sets.et.astype.contains.where.is_even, split=False)
+    Eq << Eq[-1].this.lhs.function.args[1].arg.apply(sets.et.astype.contains.having.is_even, split=False)
 
 
 if __name__ == '__main__':

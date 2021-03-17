@@ -75,8 +75,11 @@ function render($php)
     // error_log("php file = $php");
     $py = str_replace('.php', '.py', $php);
     // $py = str_replace('latex', 'sympy', $py);
-    // error_log("python file = $py");
 
+    if (!file_exists($py)){
+        $py = str_replace('.php', '/__init__.py', $php);
+    }    
+//     error_log("python file = $py");    
     assert(file_exists($py), "file_exists($py)");
 
     $lengths = [];

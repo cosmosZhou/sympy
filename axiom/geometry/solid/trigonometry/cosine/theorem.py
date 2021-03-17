@@ -91,7 +91,7 @@ def prove(Eq):
     
     Eq.cos = Eq[-1] / (2 * x * y)
 
-    Eq << algebre.less_than.less_than.imply.less_than.quadratic.apply(Eq.x_bound, Eq.y_bound)
+    Eq << algebre.le.le.imply.le.quadratic.apply(Eq.x_bound, Eq.y_bound)
     
     Eq << Eq.xy_bound * Eq.xy_bound
     
@@ -99,7 +99,7 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[-3]
     
-    Eq << Eq[-1].apply(sets.strict_greater_than.less_than.imply.contains)
+    Eq << Eq[-1].apply(sets.gt.le.imply.contains)
     
     Eq << Eq[-1] / (2 * x * y)
     

@@ -37,9 +37,9 @@ def prove(Eq):
     assert e.is_integer
     assert e.is_extended_real
     
-    Eq << sets.imply.forall.where.baseset.apply(s0_quote)
+    Eq << sets.imply.forall.baseset.apply(s0_quote)
 
-    * _, Eq.x_union_s0 = Eq[-1].split()
+    * _, Eq.x_union_s0 = algebre.forall_et.imply.forall.apply(Eq[-1])
 
     i = Symbol.i(integer=True)
     x = Eq[0].rhs.variable.base
@@ -58,11 +58,11 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.having.union_comprehension)
     
     Eq << algebre.forall.exists.imply.exists_et.apply(Eq.x_union_s0, Eq[-1].reversed, simplify=None)
     
-    Eq << Eq[-1].this.function.apply(sets.equal.equal.imply.equal.union)
+    Eq << Eq[-1].this.function.apply(sets.eq.eq.imply.eq.union)
     
     Eq << Eq[-1].this().function.lhs.simplify()
     
@@ -70,33 +70,33 @@ def prove(Eq):
 
     Eq << Eq.plausible_notcontains.apply(sets.notcontains.imply.is_emptyset.intersection)
 
-    Eq.forall_s0_equality = Eq[-1].apply(sets.is_emptyset.imply.equal.complement)
+    Eq.forall_s0_equality = Eq[-1].apply(sets.is_emptyset.imply.eq.complement)
 
     x_hat = Symbol(r"\hat{x}", LAMBDA[i](Piecewise((x[i] - {n} , Equality(i, j)), (x[i], True))))
 
     Eq.x_hat_definition = x_hat.equality_defined()
 
-    Eq << algebre.equal.imply.ou.two.apply(Eq.x_hat_definition)
+    Eq << algebre.eq.imply.ou.two.apply(Eq.x_hat_definition)
     
     Eq << Eq[-1].forall((i, Unequality(i, j)))
         
-    Eq.B_assertion = sets.imply.forall_exists_equal.where.imageset.apply(B)
+    Eq.B_assertion = sets.imply.forall_exists_eq.having.imageset.apply(B)
 
     assert Eq.B_assertion.lhs.args[0].is_zero is None
     assert Eq.B_assertion.lhs.args[0].is_integer
     assert Eq.B_assertion.lhs.args[0].is_extended_real
-    Eq << Eq.B_assertion.apply(sets.equal.imply.equal.complement, {n.set})
+    Eq << Eq.B_assertion.apply(sets.eq.imply.eq.complement, {n.set})
 
     assert Eq[-1].lhs.args[0].is_zero is None
     Eq.forall_B_contains = Eq[-1].subs(Eq.forall_s0_equality).limits_subs(Eq[-1].variable, Eq[-1].function.variable)
 
-    Eq.forall_s0_contains = sets.imply.forall_contains.where.imageset.apply(B)
+    Eq.forall_s0_contains = sets.imply.forall_contains.having.imageset.apply(B)
     
-    Eq << Eq.B_assertion.apply(sets.equal.imply.equal.intersect, {n.set}).limits_subs(Eq.B_assertion.variable, Eq.B_assertion.function.variable)
+    Eq << Eq.B_assertion.apply(sets.eq.imply.eq.intersect, {n.set}).limits_subs(Eq.B_assertion.variable, Eq.B_assertion.function.variable)
 
-    Eq.forall_B_equality = Eq[-1].apply(sets.equal.imply.equal.union, Eq[-1].variable)
+    Eq.forall_B_equality = Eq[-1].apply(sets.eq.imply.eq.union, Eq[-1].variable)
      
-    Eq << sets.forall_contains.forall_contains.forall_equal.forall_equal.imply.equal.apply(Eq.forall_s0_contains,
+    Eq << sets.forall_contains.forall_contains.forall_eq.forall_eq.imply.eq.apply(Eq.forall_s0_contains,
                                                                                               Eq.forall_B_contains,
                                                                                               Eq.forall_s0_equality,
                                                                                               Eq.forall_B_equality)

@@ -26,7 +26,7 @@ def prove(Eq):
     
     Eq << sets.imply.contains.bool.apply(Eq[0].lhs)
     
-    Eq << sets.contains.imply.ou.where.finiteset.two.apply(Eq[-1])
+    Eq << sets.contains.imply.ou.having.finiteset.two.apply(Eq[-1])
     
     Eq << algebre.ou.imply.is_zero.apply(Eq[1])
     

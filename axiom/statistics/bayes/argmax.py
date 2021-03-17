@@ -52,24 +52,29 @@ def prove(Eq):
     i = Eq[-1].lhs.variable
     j = Eq[-1].rhs.function.args[-1].variable
     
-    Eq << statistics.is_nonzero.et.apply(Eq[1]).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[1])
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
+    
     Eq << statistics.bayes.corollary.apply(Eq[-2], var=y[i])
     
-    Eq.y_given_x = algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[-1], Eq[-3]).reversed
+    Eq.y_given_x = algebre.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq[-3]).reversed
     
     Eq << statistics.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], [j, i])
     
-    Eq << statistics.is_nonzero.et.apply(Eq[-1]).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[-1])
+
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq << statistics.bayes.corollary.apply(Eq[-1], var=x)
     
     Eq.y_given_x = Eq.y_given_x.subs(Eq[-1])
     
-    Eq << algebre.equal.imply.equal.argmax.apply(Eq.y_given_x, (i,))
+    Eq << algebre.eq.imply.eq.argmax.apply(Eq.y_given_x, (i,))
     
     Eq << statistics.is_nonzero.is_nonzero.joint_slice.apply(Eq[1], Slice[:t, i]) 
     
-    Eq.xt_given_x_historic = statistics.equal.equal.given_addition.joint_probability.apply(Eq[0], Eq[-1])
+    Eq.xt_given_x_historic = statistics.eq.eq.given_addition.joint_probability.apply(Eq[0], Eq[-1])
     
     Eq.xt_given_yi_nonzero = statistics.is_nonzero.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
     
@@ -77,13 +82,15 @@ def prove(Eq):
     
     Eq << algebre.forall.imply.ou.rewrite.apply(Eq[-1])
     
-    Eq << (Eq[-1] & Eq.xt_given_yi_nonzero).split()
+    Eq <<= Eq[-1] & Eq.xt_given_yi_nonzero
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq << Eq[-1].subs(Eq.xt_given_x_historic)
     
-    Eq << algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[-1], Eq.xt_given_yi_nonzero)
+    Eq << algebre.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.xt_given_yi_nonzero)
     
-    Eq << algebre.equal.imply.equal.product.apply(Eq[-1], (t, 1, n))
+    Eq << algebre.eq.imply.eq.product.apply(Eq[-1], (t, 1, n))
     
     t = Eq[-1].rhs.variable
     Eq << Eq[-1] / Eq[-1].lhs.args[-1]

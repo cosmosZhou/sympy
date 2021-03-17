@@ -1,6 +1,6 @@
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import sets
+from axiom import sets, algebre
 
 
 @apply
@@ -27,7 +27,9 @@ def prove(Eq):
     k = Symbol.k(domain=Interval(0, n - 1, integer=True))
     Eq << Eq[0].this.rhs.bisect(k.set)
     
-    Eq << sets.notcontains.imply.et.where.union.apply(Eq[-1], simplify=None).split()
+    Eq << sets.notcontains.imply.et.having.union.apply(Eq[-1], simplify=None)
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq << Eq[-2].forall((k,))
 

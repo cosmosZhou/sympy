@@ -46,7 +46,7 @@ def prove(Eq):
     
     s, t = Eq.s_definition.lhs.args
     
-    Eq.x_quote_definition = Eq.x_quote_definition.apply(algebre.equal.imply.equal.lamda, (Eq.x_quote_definition.lhs.indices[-1],), simplify=False)
+    Eq.x_quote_definition = Eq.x_quote_definition.apply(algebre.eq.imply.eq.lamda, (Eq.x_quote_definition.lhs.indices[-1],), simplify=False)
     
     Eq << keras.layers.crf.markov.apply(*given)
     
@@ -69,13 +69,13 @@ def prove(Eq):
     
     Eq << -Eq.s_definition.reversed
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.exp)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.exp)
     
-    Eq << algebre.equal.imply.equal.maximize.apply(Eq[-1], (y[:t + 1],))
+    Eq << algebre.eq.imply.eq.maximize.apply(Eq[-1], (y[:t + 1],))
     
     Eq << Eq[-1].this.rhs.astype(exp)
     
-    Eq << algebre.equal.imply.equal.minimize.apply(Eq.x_quote_definition).this.rhs.simplify(wrt=t)
+    Eq << algebre.eq.imply.eq.minimize.apply(Eq.x_quote_definition).this.rhs.simplify(wrt=t)
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     

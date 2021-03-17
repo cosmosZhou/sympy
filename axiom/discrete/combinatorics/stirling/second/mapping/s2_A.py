@@ -42,7 +42,7 @@ def prove(Eq):
     x_slice = Eq[-1].limits[0][0]
     x = x_slice.base
 
-    Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = Eq[-1].split()
+    Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = algebre.forall_et.imply.forall.apply(Eq[-1])
 
     j = Symbol.j(domain=Interval(0, k, integer=True))
 
@@ -54,46 +54,46 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.s2_definition)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.given.contains.where.imageset)
+    Eq << Eq[-1].this.function.apply(sets.contains.given.contains.having.imageset)
     
     Eq << Eq[-1].this.function.rhs.definition
     
     Eq << Eq[-1].this.function.args[0].simplify()
     
-    Eq << sets.equal.imply.equal.union_comprehension.apply(Eq[1], (i, 0, k + 1))
+    Eq << sets.eq.imply.eq.union_comprehension.apply(Eq[1], (i, 0, k + 1))
 
     Eq.x_quote_union = Eq[-1].subs(Eq.x_union_s1)
 
-    Eq << Eq[1].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[1].apply(algebre.eq.imply.eq.abs)
     x_quote_abs = Eq[-1]
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.sum, (i, 0, k + 1))
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.sum, (i, 0, k + 1))
 
-    Eq << sets.imply.less_than.union.apply(*Eq[-1].rhs.args[1].arg.args)
+    Eq << sets.imply.le.union.apply(*Eq[-1].rhs.args[1].arg.args)
 
-    Eq << algebre.equal.less_than.imply.less_than.subs.apply(Eq[-2], Eq[-1])
+    Eq << algebre.eq.le.imply.le.subs.apply(Eq[-2], Eq[-1])
     
     Eq << Eq[-1].subs(Eq.x_abs_sum_s1)
 
-    Eq << Eq.x_quote_union.apply(algebre.equal.imply.equal.abs)    
+    Eq << Eq.x_quote_union.apply(algebre.eq.imply.eq.abs)    
     x_quote_union_abs = Eq[-1]
 
     u = Eq[-1].lhs.arg
-    Eq << sets.imply.less_than.union_comprehension.apply(u.function, *u.limits)
+    Eq << sets.imply.le.union_comprehension.apply(u.function, *u.limits)
 
-    Eq << Eq[-2].this.function.apply(algebre.equal.less_than.imply.greater_than.subs, Eq[-1])
+    Eq << Eq[-2].this.function.apply(algebre.eq.le.imply.ge.subs, Eq[-1])
     
     Eq.SqueezeTheorem = Eq[-4] & Eq[-1]
 
-    Eq << algebre.equal.imply.ou.two.apply(x_quote_abs)
+    Eq << algebre.eq.imply.ou.two.apply(x_quote_abs)
     
     Eq << Eq[-1].subs(i, j)
     
-    Eq << Eq[-2].apply(algebre.condition.imply.forall.minify, (i, Unequality(i, j)))
+    Eq << Eq[-2].apply(algebre.cond.imply.forall.restrict, (i, Unequality(i, j)))
 
-    Eq << sets.imply.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
+    Eq << sets.imply.ge.apply(*Eq[-2].rhs.arg.args[::-1])
 
-    Eq << Eq.x_abs_positive_s1.limits_subs(i, j).this.function.apply(algebre.strict_greater_than.greater_than.imply.strict_greater_than.transit, Eq[-1])
+    Eq << Eq.x_abs_positive_s1.limits_subs(i, j).this.function.apply(algebre.gt.ge.imply.gt.transit, Eq[-1])
 
     Eq << Eq[-1].subs(Eq[-4].reversed)
 
@@ -103,7 +103,7 @@ def prove(Eq):
 
     Eq <<= Eq.x_quote_union & Eq.SqueezeTheorem & Eq[-1]
 
-    Eq.x_quote_definition = Eq[1].apply(algebre.equal.imply.equal.lamda, (i, 0, k + 1), simplify=False)
+    Eq.x_quote_definition = Eq[1].apply(algebre.eq.imply.eq.lamda, (i, 0, k + 1), simplify=False)
 
     Eq.subset_A = Subset(Eq[4].lhs, Eq[4].rhs, plausible=True)
     Eq.supset_A = Supset(Eq[4].lhs, Eq[3].lhs, plausible=True)
@@ -114,29 +114,29 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.simplify()
 
-    Eq << Eq[-1].split()
+    Eq << algebre.forall_et.given.forall.apply(Eq[-1])
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.having.union_comprehension)
     
     Eq << Eq.x_quote_definition[j]
 
-    Eq << Eq[-2].reversed.apply(sets.equal.equal.imply.equal.intersect, Eq[-1])
+    Eq << Eq[-2].reversed.apply(sets.eq.eq.imply.eq.intersect, Eq[-1])
     
-    Eq << sets.imply.equal.principle.inclusion_exclusion.basic.apply(*Eq[-1].lhs.args)
+    Eq << sets.imply.eq.principle.inclusion_exclusion.basic.apply(*Eq[-1].lhs.args)
   
     Eq << Eq[-1].subs(Eq[-2])
     
-    Eq.set_size_inequality = Eq[-1].this.function.apply(algebre.equal.strict_less_than.imply.strict_less_than.subs, StrictLessThan(Eq[-1].function.rhs, Eq[-1].function.rhs + 1, plausible=True))
+    Eq.set_size_inequality = Eq[-1].this.function.apply(algebre.eq.lt.imply.lt.subs, StrictLessThan(Eq[-1].function.rhs, Eq[-1].function.rhs + 1, plausible=True))
     
     Eq << Eq.x_quote_union.this.function.lhs.bisect({i, j})
 
-    Eq << sets.imply.less_than.union.apply(*Eq[-1].lhs.args)
+    Eq << sets.imply.le.union.apply(*Eq[-1].lhs.args)
 
-    Eq << sets.imply.less_than.union_comprehension.apply(*Eq[-2].lhs.args[0].args)
+    Eq << sets.imply.le.union_comprehension.apply(*Eq[-2].lhs.args[0].args)
 
-    Eq << algebre.less_than.less_than.imply.less_than.subs.apply(Eq[-2], Eq[-1])
+    Eq << algebre.le.le.imply.le.subs.apply(Eq[-2], Eq[-1])
     
     Eq << Eq[-1] + Eq.set_size_inequality
     
@@ -154,9 +154,9 @@ def prove(Eq):
 
     s2_hat_n = Symbol("\hat{s}_{2, n}", conditionset(*Eq[-1].limits[0]))
 
-    Eq << sets.forall.given.forall.conditionset.where.baseset.apply(Eq[-1], simplify=False, s=s2_hat_n)
+    Eq << sets.forall.given.forall.conditionset.having.baseset.apply(Eq[-1], simplify=False, s=s2_hat_n)
 
-    Eq.s2_hat_n_assertion = Eq[-1].apply(sets.contains.given.exists_contains.where.union_comprehension)
+    Eq.s2_hat_n_assertion = Eq[-1].apply(sets.contains.given.exists_contains.having.union_comprehension)
     
     Eq << s2_hat_n.this.definition
     
@@ -175,11 +175,11 @@ def prove(Eq):
     
     Eq << sets.imply.forall.conditionset.apply(s2_quote_n)
     
-    Eq << Eq[-1].this.function.apply(sets.equal.equal.forall_is_positive.notcontains.imply.equal.stirling2, s1=s1_quote, depth=0)
+    Eq << Eq[-1].this.function.apply(sets.eq.eq.forall_is_positive.notcontains.imply.eq.stirling2, s1=s1_quote, depth=0)
     
     Eq << algebre.forall_exists.imply.forall_exists.limits_swap.apply(Eq[-1])
 
-    Eq << Eq.s2_hat_n_hypothesis.apply(sets.equal.given.equal.set_comprehension)
+    Eq << Eq.s2_hat_n_hypothesis.apply(sets.eq.given.eq.set_comprehension)
 
     Eq << Eq[-1].subs(Eq.x_quote_definition)
     

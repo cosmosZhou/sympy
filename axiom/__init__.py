@@ -225,11 +225,13 @@ def limit_is_baseset(limits):
     x, cond, baseset = limit        
     return x, cond, baseset
 
+
 def limit_is_condition(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit        
     return x, cond
+
 
 def limit_is_even(limits):
     n, cond, baseset = limit_is_baseset(limits)
@@ -261,7 +263,8 @@ def limit_is_set(limits):
         x, S = limit
         assert S.is_set 
 
-    return Contains(x, S)
+    return x, S
+#     return Contains(x, S)
 
 
 def limit_is_Interval(limits, integer=True):
@@ -468,6 +471,9 @@ def is_Boole(self):
     assert self.is_Boole
     return self.arg
 
+def is_Subs(self):
+    assert self.is_Subs
+    return self.args
 
 def is_set_comprehension(self): 
     function, *limits = is_UNION(self)
@@ -681,7 +687,7 @@ def forall_exists(cond):
     return ((fn, *limits_e), *limits_f)
 
 
-def forall_unequal(eq):
+def forall_ne(eq):
     assert eq.is_ForAll
     limits = eq.limits
     is_Unequal(eq.function)
@@ -730,6 +736,20 @@ def forall_ou(eq):
     return (eq.function, *limits)
 
 
+def forall_et(eq):
+    assert eq.is_ForAll
+    limits = eq.limits
+    eqs = is_And(eq.function)
+    return (eq.function, *limits)
+
+
+def exists_et(eq):
+    assert eq.is_Exists
+    limits = eq.limits
+    eqs = is_And(eq.function)
+    return (eq.function, *limits)
+
+
 def forall_strict_greater_than(eq):
     assert eq.is_ForAll
     limits = eq.limits
@@ -766,3 +786,43 @@ def forall_notcontains(eq):
     limits = eq.limits
     is_NotContains(eq.function)    
     return eq.args
+
+
+def is_Derivative(self):
+    assert self.is_Derivative
+    return self.args
+
+
+def is_Limit(self):
+    assert self.is_Limit
+    return self.args
+
+    
+def is_continuous(cond):
+    eq, *limits = forall_equal(cond)    
+    xi, a, b = limit_is_Interval(limits, integer=False)
+    limit, fxi = is_Equal(eq)
+    fz, (z, xi, dirt) = is_Limit(limit)
+    
+    assert fz._subs(z, xi) == fxi
+    assert str(dirt) == '+-'
+    return fz, (z, a, b)
+
+    
+def is_differentiable(cond):
+    contains, *limits_f = forall_contains(cond)
+    x, ab = limit_is_set(limits_f)
+    assert ab.is_Interval
+    assert ab.left_open and ab.right_open
+    a, b = ab.args
+    
+    derivative, R = contains.args
+    assert R.is_UniversalSet
+    
+    fx, *limits_d = is_Derivative(derivative)
+    assert len(limits_d) == 1
+    _x, one = limits_d[0]
+    assert _x == x
+    assert one == 1
+    
+    return fx, (x, a, b)

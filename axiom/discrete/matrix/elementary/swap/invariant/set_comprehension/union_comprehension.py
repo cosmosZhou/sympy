@@ -39,7 +39,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].this(i, j).apply(sets.equal.imply.equal.set_comprehension, (k, 0, n))
+    Eq << Eq[-1].this(i, j).apply(sets.eq.imply.eq.set_comprehension, (k, 0, n))
         
 if __name__ == '__main__':
     prove(__file__)

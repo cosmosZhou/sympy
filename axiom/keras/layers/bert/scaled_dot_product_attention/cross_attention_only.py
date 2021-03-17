@@ -95,13 +95,13 @@ def prove(Eq):
     
     Eq <<= Eq[-1][h:n], Eq[-1][:h], Eq[-1][i]
     
-    Eq <<= algebre.equal.imply.equal.exp.apply(Eq[-3]), algebre.equal.imply.equal.exp.apply(Eq[-2]), algebre.equal.imply.equal.exp.apply(Eq[-1])
+    Eq <<= algebre.eq.imply.eq.exp.apply(Eq[-3]), algebre.eq.imply.eq.exp.apply(Eq[-2]), algebre.eq.imply.eq.exp.apply(Eq[-1])
     
     Eq << Eq[-1] * OneMatrix(dz)
 
-    Eq.lower_part, Eq.upper_part, Eq.diagonal_part = algebre.equal.equal.imply.equal.transit.apply(Eq[-4], Eq[7][i]), \
-        algebre.equal.equal.imply.equal.transit.apply(Eq[-3], Eq[11][i - h]), \
-        algebre.equal.equal.imply.equal.transit.apply(Eq[-1], Eq.M_definition)
+    Eq.lower_part, Eq.upper_part, Eq.diagonal_part = algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[7][i]), \
+        algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[11][i - h]), \
+        algebre.eq.eq.imply.eq.transit.apply(Eq[-1], Eq.M_definition)
         
     Eq << Eq.divisor_definition * OneMatrix(dz)
     
@@ -109,7 +109,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.subs(Eq.lower_part, Eq.upper_part, Eq.diagonal_part)
     
-    Eq.z_definition = algebre.equal.condition.imply.condition.subs_with_expand_dims.apply(Eq[-1], Eq.z_definition)
+    Eq.z_definition = algebre.eq.cond.imply.cond.subs_with_expand_dims.apply(Eq[-1], Eq.z_definition)
     
     Eq << Eq.z_definition.rhs.args[0].this.expand()
     
@@ -151,7 +151,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.subs(Eq.lower_part, Eq.upper_part)
     
-    Eq << algebre.equal.condition.imply.condition.subs_with_expand_dims.apply(Eq.diagonal_part, Eq[-1])
+    Eq << algebre.eq.cond.imply.cond.subs_with_expand_dims.apply(Eq.diagonal_part, Eq[-1])
     
     Eq << Eq.z_definition.this.rhs.subs(Eq[-1])
     
@@ -161,7 +161,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(Piecewise)
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (i,))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (i,))
     
     Eq << Eq[-1].this.rhs.astype(BlockMatrix)
     

@@ -30,51 +30,51 @@ def prove(Eq):
 
     i = Eq[0].lhs.indices[0]
     
-    Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = Eq.s1_quote_definition.split()
+    Eq.x_abs_positive_s1, Eq.x_abs_sum_s1, Eq.x_union_s1 = algebre.forall_et.imply.forall.apply(Eq.s1_quote_definition)
 
     j = Symbol.j(domain=Interval(0, k, integer=True))
 
-    Eq << sets.equal.imply.equal.union_comprehension.apply(Eq[0], (i, 0, k + 1))
+    Eq << sets.eq.imply.eq.union_comprehension.apply(Eq[0], (i, 0, k + 1))
 
     Eq.x_quote_union = Eq[-1].subs(Eq.x_union_s1)
 
-    Eq << Eq[0].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[0].apply(algebre.eq.imply.eq.abs)
     x_quote_abs = Eq[-1]
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.sum, (i, 0, k + 1))
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.sum, (i, 0, k + 1))
 
-    Eq << sets.imply.less_than.union.apply(*Eq[-1].rhs.args[1].arg.args)
+    Eq << sets.imply.le.union.apply(*Eq[-1].rhs.args[1].arg.args)
 
     Eq << Eq[-2].subs(Eq[-1])
 
     Eq << Eq[-1].subs(Eq.x_abs_sum_s1)
 
-    Eq << Eq.x_quote_union.apply(algebre.equal.imply.equal.abs)    
+    Eq << Eq.x_quote_union.apply(algebre.eq.imply.eq.abs)    
 
     u = Eq[-1].lhs.arg
-    Eq.SqueezeTheorem = sets.imply.less_than.union_comprehension.apply(u.function, *u.limits)
+    Eq.SqueezeTheorem = sets.imply.le.union_comprehension.apply(u.function, *u.limits)
 
-    Eq << algebre.equal.imply.ou.two.apply(x_quote_abs)
+    Eq << algebre.eq.imply.ou.two.apply(x_quote_abs)
 
     Eq << Eq[-1].subs(i, j)
     
-    Eq << algebre.condition.imply.forall.minify.apply(Eq[-2], (i, Unequality(i, j)))
+    Eq << algebre.cond.imply.forall.restrict.apply(Eq[-2], (i, Unequality(i, j)))
 
-    Eq << sets.imply.greater_than.apply(*Eq[-2].rhs.arg.args[::-1])
+    Eq << sets.imply.ge.apply(*Eq[-2].rhs.arg.args[::-1])
 
-    Eq << Eq.x_abs_positive_s1.limits_subs(i, j).this.function.apply(algebre.strict_greater_than.greater_than.imply.strict_greater_than.transit, Eq[-1])
+    Eq << Eq.x_abs_positive_s1.limits_subs(i, j).this.function.apply(algebre.gt.ge.imply.gt.transit, Eq[-1])
 
     Eq <<= Eq[-1] & Eq[-2]
 
     Eq <<= Eq.x_quote_union & Eq.SqueezeTheorem & Eq[-1]
 
-    Eq.x_quote_definition = algebre.equal.imply.equal.lamda.apply(Eq[0], (i, 0, k + 1))
+    Eq.x_quote_definition = algebre.eq.imply.eq.lamda.apply(Eq[0], (i, 0, k + 1))
 
-    Eq << Eq.x_union_s1.apply(sets.equal.imply.equal.intersect, {n})    
+    Eq << Eq.x_union_s1.apply(sets.eq.imply.eq.intersect, {n})    
 
     Eq.nonoverlapping_s1_quote = Eq[-1].apply(sets.is_emptyset.imply.forall_is_emptyset.intersect)
 
-    Eq.xi_complement_n = Eq.nonoverlapping_s1_quote.apply(sets.is_emptyset.imply.equal.complement, reverse=True)
+    Eq.xi_complement_n = Eq.nonoverlapping_s1_quote.apply(sets.is_emptyset.imply.eq.complement, reverse=True)
 
     A_quote = Symbol.A_quote(LAMBDA[j](Eq[2].rhs.function))
 
@@ -96,27 +96,31 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.rhs.function.arg.definition
     
-    Eq << Eq[-1].apply(sets.equal.imply.supset)
+    Eq << Eq[-1].apply(sets.eq.imply.supset)
     
-    Eq << Eq[-1].apply(sets.supset.imply.forall_supset.where.union_comprehension)
+    Eq << Eq[-1].apply(sets.supset.imply.forall_supset.having.union_comprehension)
 
     Eq << Eq[-1].this.function.subs(Eq[-1].function.variable, Eq[-1].variable)
 
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.having.union_comprehension)
     
     Eq << Eq[-1].subs(Eq.x_quote_definition)
 
-    Eq << Eq[-1].apply(algebre.equal.imply.ou.two)
+    Eq << Eq[-1].apply(algebre.eq.imply.ou.two)
 
-    Eq << Eq[-1].split()
+    Eq << ~Eq[-1]
+    
+    Eq << algebre.forall_et.given.forall.apply(Eq[-1])
+    
+    Eq <<= ~Eq[-1], ~Eq[-2] 
     
     Eq << algebre.exists_et.imply.exists.limits_delete.apply(Eq[-2])
+        
+    Eq << algebre.exists_et.imply.exists.split.apply(Eq[-2], simplify=False, index=1).apply(sets.eq.imply.eq.intersect, {n})
     
-    Eq << Eq[-2].split()[1].apply(sets.equal.imply.equal.intersect, {n})
+    Eq << Eq[-1].subs(Eq.nonoverlapping_s1_quote)    
     
-    Eq << Eq[-1].subs(Eq.nonoverlapping_s1_quote)
-    
-    Eq << Eq[-2].this.function.apply(sets.equal.imply.equal.complement, {n})
+    Eq << Eq[-2].this.function.apply(sets.eq.imply.eq.complement, {n})
     
     Eq << Eq[-1].limits_subs(j_quote, i)
     
@@ -129,9 +133,9 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[-2].reversed)
     
-    Eq << sets.imply.less_than.union_comprehension.apply(*Eq[-1].rhs.args)
+    Eq << sets.imply.le.union_comprehension.apply(*Eq[-1].rhs.args)
     
-    Eq << Eq[-2].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[-2].apply(algebre.eq.imply.eq.abs)
     
     Eq << Eq[-1].subs(Eq.x_union_s1) + Eq[-2]
     
@@ -145,7 +149,7 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[-3]
     
-    Eq << Eq.nonoverlapping.apply(sets.equal.imply.equal.union_comprehension, Eq.nonoverlapping.limits[1])    
+    Eq << Eq.nonoverlapping.apply(sets.eq.imply.eq.union_comprehension, Eq.nonoverlapping.limits[1])    
 
     Eq << Eq[-1].this.function.lhs.astype(Intersection)
 
@@ -153,7 +157,7 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1].reversed, Eq.A_definition_simplified.reversed)
     
-    Eq << sets.forall_is_emptyset.imply.equal.nonoverlapping.setlimit.apply(Eq[-1])
+    Eq << sets.forall_is_emptyset.imply.eq.nonoverlapping.setlimit.apply(Eq[-1])
     
     Eq << Eq[-1].this.lhs.arg.limits_subs(j_quote, j)
     

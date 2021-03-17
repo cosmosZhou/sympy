@@ -175,7 +175,7 @@ class ForAll(ConditionalBoolean):
         
     def simplify_int_limits(self, function):
         for i, domain in self.limits_dict.items():
-            if not i.is_integer or i.shape:
+            if not i.is_integer or i.shape or isinstance(domain, Boolean):
                 continue
 
             i_expr = []
@@ -443,43 +443,6 @@ class ForAll(ConditionalBoolean):
                                 print("variables' are beyond the bound given in ForAll context!")
                                 return self
         
-        return ConditionalBoolean.apply(self, axiom, *args, **kwargs)
-
-    def split(self, *args, **kwargs):
-        arr = self.function.split(*args, **kwargs)
-        if isinstance(arr, list):
-            clue = None
-            for eq in arr:
-                if eq.given is None:
-                    if eq.equivalent is None:
-                        assert eq.imply is not None
-                        if clue is None:
-                            clue = 'imply'
-                            self.function.derivative = None 
-                        eq.imply = None
-                        continue
-                    if eq.equivalent.given is None:
-                        print('eq.equivalent.given is None')
-                    else:
-                        eq.equivalent.given = None
-                        eq.equivalent = None
-                else:
-                    eq.given = None
-                    if clue is None:
-                        clue = 'given'
-                assert eq.equivalent is None 
-            eqs = [self.func(eq, *self.limits, **{clue: self}) for eq in arr]
-            if kwargs.get('simplify', True):
-                eqs = [eq.simplify() for eq in eqs]
-            self.derivative = eqs
-            return eqs
-        elif isinstance(arr, tuple):
-            for eq in arr:
-                assert eq.parent is not None
-                eq.parent = None
-
-            return [self.func(eq, *self.limits, parent=self).simplify() for eq in arr]
-        return self
-
+        return ConditionalBoolean.apply(self, axiom, *args, **kwargs)    
 
 from sympy.concrete.limits import *

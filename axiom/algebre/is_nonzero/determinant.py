@@ -29,11 +29,11 @@ def prove(Eq):
     
     Eq << discrete.matrix.determinant.adjugate.apply(A)
     
-    Eq << algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[0], Eq[-1])
+    Eq << algebre.is_nonzero.eq.imply.eq.scalar.apply(Eq[0], Eq[-1])
     
     Eq << Eq[-1].inverse()
     
-    Eq << algebre.is_nonzero.equal.imply.equal.scalar.apply(Eq[0], Eq[-1])
+    Eq << algebre.is_nonzero.eq.imply.eq.scalar.apply(Eq[0], Eq[-1])
     
     Eq << Eq[-1].lhs.args[0].base @ Eq[-1] 
     

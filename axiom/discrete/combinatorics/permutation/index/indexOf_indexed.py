@@ -1,9 +1,8 @@
-from sympy.core.relational import Equality
-from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
 from sympy import *
-from axiom import sets, discrete
-from axiom.discrete.combinatorics.permutation.index.equal import index_function
+from axiom.utility import prove, apply
+from axiom import sets, discrete, algebre
+from axiom.discrete.combinatorics.permutation.index.eq import index_function
+
 
 @apply
 def apply(given, j=None):
@@ -41,28 +40,41 @@ def prove(Eq):
     
     t = Symbol.t(domain=Interval(0, n - 1, integer=True))
     
-    Eq << discrete.combinatorics.permutation.index.equal.apply(Eq[0], j=t)
+    Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[0], j=t)
     
-    Eq.equality, Eq.xj_notcontains = Eq[-1].subs(t, x[j]).split()
+    Eq.ou = Eq[-1].subs(t, x[j])
     
-    Eq << sets.equal.imply.subset.apply(Eq[0])
+    Eq.equality = Eq.ou.args[0].copy(plausible=True)
     
-    Eq << sets.subset.imply.forall_subset.where.union_comprehension.apply(Eq[-1])
+    Eq.xj_notcontains = Eq.ou.args[1].copy(plausible=True)
+    
+    Eq << sets.eq.imply.subset.apply(Eq[0])
+    
+    Eq << sets.subset.imply.forall_subset.having.union_comprehension.apply(Eq[-1])
     
     Eq <<= Eq[-1].subs(Eq[-1].variable, j) & Eq.xj_notcontains
     
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))
     Eq << discrete.combinatorics.permutation.index.kronecker_delta.indexed.apply(Eq[0], i, j)
     
-    Eq << Eq[-1].subs(i, Eq[1].lhs).split()
+    Eq.ou1 = Eq[-1].subs(i, Eq[1].lhs)
     
-    Eq << Eq[2].subs(t, x[j]).split()
+    Eq << Eq.ou1.args[1].copy(plausible=True)
     
-    Eq <<= Eq[-1] & Eq[-3]
+    Eq.ou2 = Eq[2].subs(t, x[j])
+    
+    Eq <<= Eq.ou2.args[0].copy(plausible=True), Eq.ou2.args[1].copy(plausible=True)
+    
+    Eq << algebre.et.imply.cond.apply(Eq.ou & ~Eq.xj_notcontains, index=0)
+    
+    Eq << algebre.et.imply.cond.apply(Eq.ou1 & Eq[-1], index=1)
+    
+    Eq << algebre.et.imply.cond.apply(Eq.ou2 & ~Eq.xj_notcontains, index=0)
     
     Eq << Eq[-2].subs(Eq.equality)
     
     Eq << Eq[-1].reversed
+
     
 if __name__ == '__main__':
     prove(__file__)

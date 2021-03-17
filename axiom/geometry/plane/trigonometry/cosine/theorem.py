@@ -1,14 +1,6 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
-    LessThan, GreaterThan, Unequal
-
-from sympy import Symbol
-
-from sympy import cos, pi
-from sympy.sets.sets import Interval, EmptySet
-from sympy import Exists
 from axiom import algebre, sets
-from sympy.core.symbol import dtype
 
 
 def extract(x_constraint, y_constraint, z_constraint):
@@ -56,8 +48,6 @@ def apply(*given):
     return Exists[theta:Interval(pi / 3, pi, right_open=True)](Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
 
 
-
-
 @prove
 def prove(Eq):
     x = Symbol.x(positive=True)
@@ -101,7 +91,7 @@ def prove(Eq):
     
     Eq.cos = Eq[-1] / (2 * x * y)
 
-    Eq << algebre.less_than.less_than.imply.less_than.quadratic.apply(Eq.x_bound, Eq.y_bound)
+    Eq << algebre.le.le.imply.le.quadratic.apply(Eq.x_bound, Eq.y_bound)
     
     Eq << Eq.xy_bound * Eq.xy_bound
     
@@ -109,7 +99,7 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[-3]
     
-    Eq << Eq[-1].apply(sets.strict_greater_than.less_than.imply.contains)
+    Eq << Eq[-1].apply(sets.gt.le.imply.contains)
     
     Eq << Eq[-1] / (2 * x * y)
     
@@ -122,6 +112,7 @@ def prove(Eq):
     Eq << Unequal(Eq[-2].function.rhs, EmptySet(etype=dtype.real), plausible=True)
     
     Eq << sets.is_nonemptyset.forall.imply.exists.apply(Eq[-1], Eq[-2])
+
     
 # https://baike.baidu.com/item/%E5%92%8C%E8%A7%92%E5%85%AC%E5%BC%8F
 if __name__ == '__main__':

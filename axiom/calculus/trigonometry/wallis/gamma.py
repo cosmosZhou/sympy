@@ -53,7 +53,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct(imply=True)
     
-    Eq << algebre.equal.equal.sufficient.imply.equal.double.induction.apply(Eq.one, Eq.two, Eq[-1], n=n, m=m, start=1)
+    Eq << algebre.eq.eq.sufficient.imply.eq.double.induction.apply(Eq.one, Eq.two, Eq[-1], n=n, m=m, start=1)
    
 
 if __name__ == '__main__':

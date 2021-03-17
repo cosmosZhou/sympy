@@ -1,4 +1,4 @@
-from . import equal
+from . import eq
 from . import imply
 from . import given
 from . import forall

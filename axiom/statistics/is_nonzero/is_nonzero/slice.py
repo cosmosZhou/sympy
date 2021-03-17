@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.stats.symbolic_probability import Probability as P
-from axiom import statistics
+from axiom import statistics, algebre
 from sympy.stats.rv import pspace
 
 
@@ -32,7 +32,9 @@ def prove(Eq):
     
     Eq << Eq[0].this.lhs.arg.bisect(Slice[:t])
      
-    Eq << statistics.is_nonzero.et.apply(Eq[-1]).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[-1])
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     
 if __name__ == '__main__':

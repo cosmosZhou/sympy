@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / Eq[-1].rhs
 
-    Eq << Eq[-1].apply(algebre.equal.given.equal.log)    
+    Eq << Eq[-1].apply(algebre.eq.given.eq.log)    
 
     Eq << Eq[-1].this.lhs.simplify()
 

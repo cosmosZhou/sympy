@@ -21,7 +21,7 @@ def prove(Eq):
     
     Eq << sets.contains.given.ou.apply(Eq[1])
     
-    Eq << algebre.condition.imply.ou.apply(Eq[0], Contains(e, S))
+    Eq << algebre.cond.imply.ou.apply(Eq[0], Contains(e, S))
     
 if __name__ == '__main__':
     prove(__file__)

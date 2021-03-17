@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets
+from axiom import sets, algebre
 from axiom.discrete.combinatorics.permutation import mapping
 
 
@@ -32,13 +32,15 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.Qj_definition)
     
-    Eq << Eq[-1].split()[0]
+    Eq << algebre.exists_et.imply.exists.split.apply(Eq[-1], index=0)
     
-    Eq << sets.imply.forall.conditionset.apply(Q[t]).split()[0]
+    Eq << sets.imply.forall.conditionset.apply(Q[t])
     
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << algebre.forall_et.imply.forall.apply(Eq[-1], index=0)
     
-    Eq << sets.forall_is_emptyset.imply.equal.nonoverlapping.setlimit.apply(Eq.nonoverlapping)    
+    Eq << Eq[-3].subs(Eq[-1])
+    
+    Eq << sets.forall_is_emptyset.imply.eq.nonoverlapping.setlimit.apply(Eq.nonoverlapping)    
 
     
 if __name__ == '__main__':

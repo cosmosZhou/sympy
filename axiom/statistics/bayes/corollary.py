@@ -62,7 +62,9 @@ def prove(Eq):
     
     Eq << algebre.forall.imply.ou.rewrite.apply(Eq[-1])
     
-    Eq << (Eq[-1] & Eq[0]).split()
+    Eq <<= Eq[-1] & Eq[0]
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
 
 
 if __name__ == '__main__':

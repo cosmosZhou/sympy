@@ -54,14 +54,11 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.expand()
     
-#     if Eq.induction.given is not None:
     Eq << Eq.induction.induct()
-#     elif Eq.hypothesis.given is not None:
-#         Eq << Eq.hypothesis.induct(reverse=True).split()[0]
-#     elif Eq[0].given is not None:
-#         Eq << Eq[0].induct(reverse=True).split()[0]        
         
-    Eq << algebre.equal.sufficient.imply.et.induction.apply(Eq.initial, Eq[-1], n=n, x=x).split()
+    Eq << algebre.eq.sufficient.imply.et.induction.apply(Eq.initial, Eq[-1], n=n, x=x)
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
 
 
 if __name__ == '__main__':

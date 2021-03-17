@@ -127,7 +127,7 @@ def prove(Eq):
 
     Eq << Shift(n, 0, n - 1) @ Eq[-1]
 
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.det) 
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.det) 
 
     Eq << Eq[-1] * (-1) ** (n - 1) 
 

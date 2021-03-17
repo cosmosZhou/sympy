@@ -39,7 +39,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].args[1].function.expand()
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.expand, Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.expand, Eq[-1])
     
     
 

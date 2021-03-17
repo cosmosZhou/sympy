@@ -53,11 +53,13 @@ def prove(Eq):
     
     Eq << apply(Contains(f(x), S) & Contains(x, A) | Contains(g(x), S) & NotContains(x, A), wrt=S)
     
-    Eq << Eq[1].bisect(Contains(x, A)).split()
+    Eq << Eq[1].bisect(Contains(x, A))
+    
+    Eq << algebre.et.given.cond.apply(Eq[-1])
     
     Eq <<= ~Eq[-2], ~Eq[-1]
     
-    Eq <<= Eq[-2].apply(algebre.condition.condition.imply.et, invert=True, swap=True), Eq[-1].apply(algebre.condition.condition.imply.et, swap=True) 
+    Eq <<= Eq[-2].apply(algebre.cond.cond.imply.et, invert=True, swap=True), Eq[-1].apply(algebre.cond.cond.imply.et, swap=True) 
     
     Eq <<= Eq[-2] & Eq[0], Eq[-1] & Eq[0]
     

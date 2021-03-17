@@ -15,14 +15,16 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n, k)
     
-    Eq << Eq[0].bisect(k < n).split()
+    Eq << Eq[0].bisect(k < n)
+    
+    Eq << algebre.et.given.cond.apply(Eq[-1])
     
     k_ = Symbol.k(domain=Interval(1, n - 1, integer=True))
     Eq << discrete.combinatorics.stirling.second.recurrence.k_less_than_n.apply(n, k_)
     
-    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (k_,))
+    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (k_,))
     
-    Eq << Eq[-2].bisect(n.set).split()
+    Eq << Eq[-2].bisect(n.set)
     
     Eq << Eq[-1].this().function.simplify()
 

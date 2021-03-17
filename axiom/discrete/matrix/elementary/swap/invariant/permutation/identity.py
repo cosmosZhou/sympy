@@ -35,11 +35,17 @@ def prove(Eq):
     
     Eq << discrete.matrix.elementary.swap.invariant.permutation.general.apply(m, d)
     
-    Eq << Eq[-1].subs(Eq[-1].variable, Eq[2].lhs.args[0]).split()
+    Eq.ou = Eq[-1].subs(Eq[-1].variable, Eq[2].lhs.args[0])
+    
+    Eq << Eq.ou.args[0].copy(plausible=True)
+    
+    Eq << Eq.ou.args[1].copy(plausible=True)
 
     Eq << Eq[-1].this.rhs.definition
     
     Eq << Eq[-1].this.lhs.simplify()
+    
+    Eq << algebre.et.imply.cond.apply(Eq.ou & ~Eq[-2], index=0)
     
     
             

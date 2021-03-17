@@ -8,7 +8,7 @@ def apply(*given):
     is_nonemptyset, forall = given
     S = axiom.is_nonemptyset(is_nonemptyset)
     function, *limits = axiom.is_ForAll(forall)
-    e, _S = axiom.limit_is_set(limits).args
+    e, _S = axiom.limit_is_set(limits)
     assert S == _S
      
     return Exists[e:S](function)

@@ -75,26 +75,26 @@ def prove(Eq):
     
     Eq <<= Eq[2].subs(j, j + β[i]), Eq[7].subs(j, j + β[i])
     
-    Eq <<= algebre.equal.equal.imply.equal.transit.apply(Eq[-4], Eq[-2]), algebre.equal.equal.imply.equal.transit.apply(Eq[-3], Eq[-1])
+    Eq <<= algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
     
     gram_width = l + u + 1 
-    Eq.K_equality = algebre.equal.imply.equal.lamda.apply(Eq[-2], (j, 0, Min(n, gram_width)))
+    Eq.K_equality = algebre.eq.imply.eq.lamda.apply(Eq[-2], (j, 0, Min(n, gram_width)))
     
-    Eq.V_equality = algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, Min(n, gram_width)))
+    Eq.V_equality = algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, Min(n, gram_width)))
 
-    Eq.less_than = LessThan(ζ[i], β[i] + Min(n, l + u + 1), plausible=True)
+    Eq.le = LessThan(ζ[i], β[i] + Min(n, l + u + 1), plausible=True)
     
-    Eq << Eq.less_than.this.lhs.definition
+    Eq << Eq.le.this.lhs.definition
     
     Eq << Eq[-1].this.rhs.args[0].definition.reversed
     
-    Eq << keras.nn.relu.min.greater_than.apply(i + u + 1, l + u + 1, n)
+    Eq << keras.nn.relu.min.ge.apply(i + u + 1, l + u + 1, n)
      
-    Eq.less_than = Eq.less_than - β[i]
+    Eq.le = Eq.le - β[i]
     
-    Eq << algebre.less_than.equal.imply.equal.slice.apply(Eq.less_than, Eq.K_equality)
+    Eq << algebre.le.eq.imply.eq.slice.apply(Eq.le, Eq.K_equality)
     
-    Eq << algebre.less_than.equal.imply.equal.slice.apply(Eq.less_than, Eq.V_equality)
+    Eq << algebre.le.eq.imply.eq.slice.apply(Eq.le, Eq.V_equality)
     
     Eq.objective = Eq[13].subs(Eq[-1], Eq[-2])    
     

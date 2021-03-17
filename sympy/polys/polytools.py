@@ -7145,3 +7145,62 @@ def poly(expr, *gens, **args):
     opt = options.build_options(gens, args)
 
     return _poly(expr, opt)
+
+
+class InverseProportionalFunction(Expr):
+    
+#     f(x) = a / (x + h) + b
+    def __new__(cls, x, a, h, b):
+        return Expr.__new__(cls, x, a, h, b)
+    
+    variable = property(lambda self: self.args[0])
+    
+    ratio = property(lambda self: self.args[1])
+    
+    offset = property(lambda self: self.args[2])
+    
+    height = property(lambda self: self.args[3])
+    
+    def __add__(self, other):
+        if other.is_InverseProportionalFunction:
+            if self.variable != other.variable or self.offset != other.offset:
+                return
+            
+            return self.func(self.variable, self.ratio + other.ratio, self.offset, self.height + other.height)
+        if not other._has(self.variable):
+            return self.func(self.variable, self.ratio, self.offset, self.height + other)
+
+    def __mul__(self, other):
+        if other.is_InverseProportionalFunction:            
+            return
+        
+        if not other._has(self.variable):
+            return self.func(self.variable, self.ratio * other, self.offset, self.height * other)
+
+class LinearFunction(Expr):
+    
+#     f(x) = a x + b
+    def __new__(cls, x, a, b):
+        return Expr.__new__(cls, x, a, b)
+    
+    variable = property(lambda self: self.args[0])
+    
+    ratio = property(lambda self: self.args[1])
+    
+    intercept = property(lambda self: self.args[2])
+    
+    def __add__(self, other):
+        if other.is_LinearFunction:
+            if self.variable != other.variable:
+                return
+            
+            return self.func(self.variable, self.ratio + other.ratio, self.intercept + other.intercept)
+        if not self.variable.linear_match(other):
+            return self.func(self.variable, self.ratio, self.intercept + other)
+
+    def __mul__(self, other):
+        if other.is_LinearFunction:            
+            return
+        
+        if not self.variable.linear_match(other):
+            return self.func(self.variable, self.ratio * other, self.intercept * other)

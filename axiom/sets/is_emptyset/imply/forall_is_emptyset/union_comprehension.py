@@ -33,13 +33,13 @@ def prove(Eq):
 
     Eq.positive = Eq.paradox.apply(sets.is_nonemptyset.imply.is_positive)
 
-    Eq.union_empty = Eq[0].apply(algebre.equal.imply.equal.abs)
+    Eq.union_empty = Eq[0].apply(algebre.eq.imply.eq.abs)
 
-    Eq << sets.equal.imply.equal.complement.apply(Eq[0], Eq.paradox.lhs)
+    Eq << sets.eq.imply.eq.complement.apply(Eq[0], Eq.paradox.lhs)
 
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
 
-    Eq << sets.imply.equal.principle.addition.apply(*Eq[-2].lhs.args)
+    Eq << sets.imply.eq.principle.addition.apply(*Eq[-2].lhs.args)
 
     Eq << Eq[-1].subs(Eq[-2], Eq.union_empty)
 

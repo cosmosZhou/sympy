@@ -481,20 +481,6 @@ class LatexPrinter(Printer):
         return r'\left. %s \right|_{\substack{ %s }}' % (latex_expr,
                                                          latex_subs)
 
-    def _print_Limit(self, expr):
-        e, z, z0, dir = expr.args
-
-        tex = r"\lim\limits_{%s \to " % self._print(z)
-        if str(dir) == '+-' or z0 in (S.Infinity, S.NegativeInfinity):
-            tex += r"%s}" % self._print(z0)
-        else:
-            tex += r"%s^%s}" % (self._print(z0), self._print(dir))
-
-        if isinstance(e, Add):
-#         if isinstance(e, AssocOp):
-            return r"%s\left(%s\right)" % (tex, self._print(e))
-        else:
-            return r"%s %s" % (tex, self._print(e))
 
     def _hprint_Function(self, func):
         r'''
@@ -1446,23 +1432,11 @@ class LatexPrinter(Printer):
     def _print_SymmetricDifference(self, u):
         return r" \triangle ".join([self._print(i) for i in u.args])
 
-    def _print_EmptySet(self, e):
-        return r"\emptyset"
-
     def _print_Naturals(self, n):
         return r"\mathbb{N}"
 
     def _print_Naturals0(self, n):
         return r"\mathbb{N}_0"
-
-    def _print_Integers(self, i):
-        return r"\mathbb{Z}"
-
-    def _print_Reals(self, i):
-        return r"\mathbb{R}"
-
-    def _print_Complexes(self, i):
-        return r"\mathbb{C}"
 
     def _print_ConditionSet(self, s):
         vars_print = ', '.join([self._print(var) for var in Tuple(s.variable)])

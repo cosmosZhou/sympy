@@ -1,12 +1,6 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-
-from sympy import Symbol
-from sympy import Exists
-from sympy.core.function import Function
-from sympy.core.relational import Unequal
-from sympy.sets.contains import Contains
+from axiom import algebre
 
 
 @apply
@@ -15,8 +9,6 @@ def apply(given):
     assert len(given.limits) == 1
     x, S = given.limits[0]
     return Unequal(S, x.emptySet)
-
-
 
 
 @prove
@@ -30,7 +22,9 @@ def prove(Eq):
     Eq << Exists[e:S](Contains(e, S) & Eq[0].function, plausible=True)
     
     Eq << Eq[-1].simplify()
-    Eq << Eq[-1].split()    
+    
+    Eq << algebre.exists_et.imply.exists.split.apply(Eq[-1])
+        
 
     
 if __name__ == '__main__':

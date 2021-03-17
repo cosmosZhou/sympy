@@ -19,13 +19,15 @@ def prove(Eq):
     n = Symbol.n(integer=True)
     Eq << apply(frac(-n / 2))
     
-    Eq << Eq[0].bisect(Equal(n % 2, 0)).split()
+    Eq << Eq[0].bisect(Equal(n % 2, 0))
+    
+    Eq << algebre.et.given.cond.apply(Eq[-1])
     
     Eq <<= algebre.imply.forall.limits_assert.apply(Eq[-2].limits).this.function.apply(algebre.is_even.imply.exists), algebre.imply.forall.limits_assert.apply(Eq[-1].limits).this.function.apply(algebre.is_odd.imply.exists)
     
-    Eq << Eq[1].subs(Eq[-2])     
+    Eq << Eq[2].subs(Eq[-2])     
     
-    Eq << Eq[2].subs(Eq[-1])
+    Eq << Eq[3].subs(Eq[-1])
     
 
     

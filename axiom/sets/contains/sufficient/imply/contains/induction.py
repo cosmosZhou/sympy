@@ -43,7 +43,7 @@ def prove(Eq):
     
     Eq << h[0].this.definition
     
-    Eq << sets.contains.imply.equal.bool.contains.apply(Eq[0])
+    Eq << sets.contains.imply.eq.bool.contains.apply(Eq[0])
     
     Eq.equality = Eq[-1] + Eq[-2]
     
@@ -57,7 +57,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.lhs.astype(Piecewise)
     
-    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.equality, Eq.sufficient, n=n)
+    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.equality, Eq.sufficient, n=n)
 
     Eq << Eq[-1].this.lhs.definition
     

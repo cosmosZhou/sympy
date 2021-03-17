@@ -1421,7 +1421,11 @@ class Derivative(Expr):
                             v, count = v
                             v = Array(v)
                     else:
-                        v, count = v
+                        if len(v) == 1:
+                            v = v[0]
+                            count = 1
+                        else:
+                            v, count = v
                     if count == 0:
                         continue
                 else:
@@ -1707,7 +1711,14 @@ class Derivative(Expr):
         return self.expr.is_commutative
 
     def _eval_is_extended_real(self):
+        from sympy.core.function import AppliedUndef
+        if self.expr._has(AppliedUndef):
+            return 
+               
         return self.expr.is_extended_real
+
+    def _eval_is_complex(self):
+        return self.expr.is_complex
 
     def _eval_derivative(self, v):
         # If v (the variable of differentiation) is not in
@@ -3151,6 +3162,8 @@ class Subs(Expr):
     (Subs(x, x, 0), Subs(y, y, 0))
     """
 
+    is_complex = True
+    
     def __new__(cls, expr, variables, point, **assumptions):
         from sympy import Symbol
 
@@ -3394,6 +3407,13 @@ class Subs(Expr):
         # The variable is independent of the substitution:
         return self.expr.as_leading_term(x)
 
+    @property
+    def dtype(self):
+        return self.expr.dtype
+
+    @property
+    def shape(self):
+        return self.expr.shape
 
 def diff(f, *symbols, **kwargs):
     """

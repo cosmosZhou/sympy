@@ -55,7 +55,7 @@ def prove(Eq):
 
     Eq << apply(Exists[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
     
-    Eq << Eq[0].split(simplify=False)
+    Eq << algebre.exists_et.imply.exists.split.apply(Eq[0], simplify=False)
     
     Eq << Eq[-2].subs(Eq[-1])
 

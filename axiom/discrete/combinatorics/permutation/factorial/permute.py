@@ -47,7 +47,7 @@ def apply(*given):
     return Equality(abs(S), factorial(n) * abs(UNION[x:S]({x.set_comprehension()})))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n)    
@@ -70,7 +70,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.arg.limits_subs(Eq[-1].lhs.arg.variable, Eq[-2].rhs.variable)
     
-    Eq << Eq[-2].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[-2].apply(algebre.eq.imply.eq.abs)
     
     Eq <<= Eq[-2] & Eq[-1]
     
@@ -85,11 +85,14 @@ def prove(Eq):
     
     Eq.forall_x = ForAll(Contains(Eq[-1].lhs, F(e)), *Eq[-1].limits, plausible=True)
     
-    Eq << Eq.forall_x.this.function.rhs.definition.split()
+    
+    Eq << Eq.forall_x.this.function.rhs.definition
+    
+    Eq << algebre.forall_et.given.forall.apply(Eq[-1])
     
     P = Eq[-1].limits[0][1]
     Eq << sets.imply.forall.conditionset.apply(P)
-    Eq << Eq[-1].apply(sets.equal.imply.equal.permutation, x)
+    Eq << Eq[-1].apply(sets.eq.imply.eq.permutation, x)
     
     Eq.equality_e = Eq[-3] & Eq[-1]
     return

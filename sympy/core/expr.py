@@ -302,7 +302,7 @@ class Expr(Basic, EvalfMixin):
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rfloordiv__')
-    def __floordiv__(self, other):        
+    def __floordiv__(self, other): 
         if self.is_set:
             from sympy import Complement
             return Complement(self, other)
@@ -389,14 +389,9 @@ class Expr(Basic, EvalfMixin):
         return complex(float(re), float(im))
 
     def __ge__(self, other):
-        if isinstance(self, Add) and isinstance(other, Add):
-            argset = {*self.args}
-            _argset = {*other.args}
-            common_additives = argset & _argset
-            if common_additives:
-                self = Add(*argset - common_additives)
-                other = Add(*_argset - common_additives)
-                return self >= other
+        cmp = Comparator('__ge__', self, other).cmp()
+        if cmp is not None:
+            return cmp
         
         from sympy import GreaterThan
         from sympy.functions.elementary.extremum import Min, Max
@@ -440,15 +435,10 @@ class Expr(Basic, EvalfMixin):
         return GreaterThan(self, other, evaluate=False)
 
     def __le__(self, other):
-        if isinstance(self, Add) and isinstance(other, Add):
-            argset = {*self.args}
-            _argset = {*other.args}
-            common_additives = argset & _argset
-            if common_additives:
-                self = Add(*argset - common_additives)
-                other = Add(*_argset - common_additives)
-                return self <= other
-                
+        cmp = Comparator('__le__', self, other).cmp()
+        if cmp is not None:
+            return cmp
+                            
         from sympy import LessThan
         from sympy.functions.elementary.extremum import Max, Min
         if isinstance(other, Max):
@@ -462,6 +452,7 @@ class Expr(Basic, EvalfMixin):
                     return S.true
 
             return LessThan(self, other, evaluate=False)
+        
         if isinstance(other, Min):
             bools = [self <= arg for arg in other.args] 
             if all(bools):
@@ -491,14 +482,9 @@ class Expr(Basic, EvalfMixin):
         return LessThan(self, other, evaluate=False)
 
     def __gt__(self, other):
-        if isinstance(self, Add) and isinstance(other, Add):
-            argset = {*self.args}
-            _argset = {*other.args}
-            common_additives = argset & _argset
-            if common_additives:
-                self = Add(*argset - common_additives)
-                other = Add(*_argset - common_additives)
-                return self > other
+        cmp = Comparator('__gt__', self, other).cmp()
+        if cmp is not None:
+            return cmp
         
         from sympy import StrictGreaterThan
         from sympy.functions.elementary.extremum import Min, Max
@@ -543,14 +529,9 @@ class Expr(Basic, EvalfMixin):
         return StrictGreaterThan(self, other, evaluate=False)
 
     def __lt__(self, other):
-        if isinstance(self, Add) and isinstance(other, Add):
-            argset = {*self.args}
-            _argset = {*other.args}
-            common_additives = argset & _argset
-            if common_additives:
-                self = Add(*argset - common_additives)
-                other = Add(*_argset - common_additives)
-                return self < other
+        cmp = Comparator('__lt__', self, other).cmp()
+        if cmp is not None:
+            return cmp
         
         from sympy import StrictLessThan
         from sympy.functions.elementary.extremum import Max, Min
@@ -4246,7 +4227,37 @@ class ExprBuilder(object):
                     return (i,) + ret
             elif id(arg) == id(elem):
                 return (i,)
-        return None
+        
+
+class Comparator:
+
+    def __init__(self, op, lhs, rhs):
+        self.lhs = lhs
+        self.rhs = rhs
+        self.op = op
+
+    def compare(self, lhs, rhs):
+        return getattr(lhs, self.op)(rhs)
+    
+    def cmp(self):
+        if isinstance(self.lhs, Add) and isinstance(self.rhs, Add):
+            argset = {*self.lhs.args}
+            _argset = {*self.rhs.args}
+            common_args = argset & _argset
+            if common_args:
+                lhs = Add(*argset - common_args)
+                rhs = Add(*_argset - common_args)
+                return self.compare(lhs, rhs)
+        elif isinstance(self.lhs, Mul) and isinstance(self.rhs, Mul):
+            argset = {*self.lhs.args}
+            _argset = {*self.rhs.args}
+            common_args = argset & _argset
+            if common_args:
+                factor = Mul(*common_args)
+                if factor.is_extended_positive:
+                    return self.compare(Mul(*argset - common_args), Mul(*_argset - common_args))
+                elif factor.is_extended_negative:
+                    return self.compare(Mul(*_argset - common_args), Mul(*argset - common_args)) 
 
 
 from .mul import Mul

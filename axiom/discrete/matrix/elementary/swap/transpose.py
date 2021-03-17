@@ -51,7 +51,7 @@ def prove(Eq):
     
     Eq << w[i, j].inverse() @ Eq[-1]
     
-    Eq << Eq[-1].apply(algebre.condition.imply.forall.minify, (i,), (j,))
+    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (i,), (j,))
 
 
 if __name__ == '__main__':

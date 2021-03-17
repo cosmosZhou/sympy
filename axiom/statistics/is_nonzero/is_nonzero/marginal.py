@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.stats.symbolic_probability import Probability as P
-from axiom import statistics
+from axiom import statistics, algebre
 
 
 # given: P(x | y) != 0
@@ -25,7 +25,9 @@ def prove(Eq):
     
     Eq << statistics.is_nonzero.is_nonzero.joint.apply(Eq[0])
 
-    Eq << statistics.is_nonzero.et.apply(Eq[-1]).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[-1])
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
 if __name__ == '__main__':
     prove(__file__)

@@ -10,7 +10,8 @@
 <img class=zoom src="png/search/panel.png" alt="搜索框" />
 <hr />
 <br>
-<p>在箭头所指的提示符（input a hint for search of a theorem/axiom）搜索框中输入需要查找的数学定理的名称，或者定理名称的个别单词，比如binomial theorem
+<p>在箭头所指的提示符（input a hint for search of a
+	theorem/axiom）搜索框中输入需要查找的数学定理的名称，或者定理名称的个别单词，比如binomial theorem
 	中的binomial关键词，如下图所示：</p>
 <img class=zoom src="png/search/keyword.png" alt="搜索关键词">
 <hr />
@@ -76,7 +77,7 @@
 <ul>
 	<li><a href='../axiom/discrete/combinatorics/binomial/Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>组合数学中的<a
 		href='https://en.wikipedia.org/wiki/Pascal%27s_rule'>Pascal法则</a>，以法国数学家Pascal命名。</li>
-	<li><a href='../axiom/algebre/sufficient/imply/condition/induction'>axiom.algebre.sufficient.imply.condition.induction</a>第一<a
+	<li><a href='../axiom/algebre/sufficient/imply/cond/induction'>axiom.algebre.sufficient.imply.cond.induction</a>第一<a
 		href='https://en.wikipedia.org/wiki/Mathematical_induction'>数学归纳法</a>，一种递归证明方法。</li>
 </ul>
 <br>
@@ -107,8 +108,8 @@ pip install mpmath
 	修改php网站的DOCUMENT_ROOT。然后进入该文件夹：<br>cd E:\github
 </li>
 <br>
-<li>使用git下载python工程源代码： <br> git clone --depth=1
-	https://github.com/cosmosZhou/sympy.git
+<li>使用git下载python工程源代码： <br> git clone --depth=1 <a
+	href=https://github.com/cosmosZhou/sympy.git>https://github.com/cosmosZhou/sympy.git</a>
 </li>
 <br>
 <li>进入sympy文件夹：<br>cd sympy

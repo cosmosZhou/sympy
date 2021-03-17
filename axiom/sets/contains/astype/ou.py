@@ -22,7 +22,7 @@ def prove(Eq):
     
     Eq << Sufficient(*Eq[0].args, plausible=True)
     
-    Eq << Eq[-1].this.lhs.apply(sets.contains.imply.ou.where.finiteset.two, simplify=False)
+    Eq << Eq[-1].this.lhs.apply(sets.contains.imply.ou.having.finiteset.two, simplify=False)
 
     Eq << Necessary(*Eq[0].args, plausible=True)
     

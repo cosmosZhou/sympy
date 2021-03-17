@@ -38,19 +38,19 @@ def prove(Eq):
 
     Eq << p.this.definition
     
-    Eq << algebre.equal.imply.ou.general.apply(Eq[-1])
+    Eq << algebre.eq.imply.ou.general.apply(Eq[-1])
     
-    Eq << Eq[-1].this.args[0].args[0].apply(algebre.equal.imply.ou.two)
+    Eq << Eq[-1].this.args[0].args[0].apply(algebre.eq.imply.ou.two)
     
     Eq << Eq[-1].this.args[0].astype(Or)
     
-    Eq << algebre.ou.imply.equal.general.apply(Eq[-1], wrt=p)
+    Eq << algebre.ou.imply.eq.general.apply(Eq[-1], wrt=p)
     
     Eq << Eq[-1].this.lhs.apply(algebre.piecewise.swap.front)
     
     Eq << Eq[-1].this.lhs.apply(algebre.piecewise.swap.back)
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[1], Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[1], Eq[-1])
     
 
 if __name__ == '__main__':

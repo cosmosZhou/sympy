@@ -43,7 +43,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(Piecewise)
     
-    Eq << algebre.equal.imply.equal.exp.apply(Eq[-1])
+    Eq << algebre.eq.imply.eq.exp.apply(Eq[-1])
     
     Eq.exp_a = Eq[-1].this.rhs.astype(Piecewise)
     
@@ -53,9 +53,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(Piecewise)
 
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.exp_a, Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.exp_a, Eq[-1])
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, n), (i, 0, n))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, n), (i, 0, n))
     
     Eq << Eq[-1].this.lhs.arg.definition
 

@@ -5,7 +5,7 @@ from sympy.matrices.expressions.matexpr import Swap
 import axiom
 
 from axiom import discrete, sets, algebre
-from axiom.sets.imply.equal.swap import swap
+from axiom.sets.imply.eq.swap import swap
 
 @apply
 def apply(given):
@@ -29,7 +29,7 @@ def apply(given):
     return ForAll[p[:n]:P](Exists[b[:n]](Equality(p[:n], LAMBDA[k:n](a[d[k]]))))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     
@@ -109,11 +109,11 @@ def prove(Eq):
     
     Eq << algebre.imply.forall.limits_assert.apply(Eq[-1].limits)
     
-    Eq << Eq[-1].apply(sets.equal.imply.equal.where.finiteset.indexed)
+    Eq << Eq[-1].apply(sets.eq.imply.eq.having.finiteset.indexed)
     
     Eq.induction = Eq.hypothesis.subs(n, n + 1)
     
-    Eq.induction_swap = Eq.induction.apply(sets.equal.given.equal.swap, n, b[n])
+    Eq.induction_swap = Eq.induction.apply(sets.eq.given.eq.swap, n, b[n])
     
     Eq << discrete.combinatorics.permutation.exists.general.apply(a[:n + 1])
     Eq << Eq[-1].this.limits[0][1].definition
@@ -155,12 +155,12 @@ def prove(Eq):
     
     Eq << Eq.d_swap.this.rhs.args[1].definition - Eq.d_quote_definition + Eq.d_quote_definition.lhs
     
-    Eq << algebre.equal.imply.equal.getitem.apply(Eq[-1], a, i=Eq[-1].lhs.variable, simplify=None)
+    Eq << algebre.eq.imply.eq.getitem.apply(Eq[-1], a, i=Eq[-1].lhs.variable, simplify=None)
     
     return
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.a_swap, Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.a_swap, Eq[-1])
     
-    Eq << Eq.induction_swap.apply(algebre.equal.equal.given.equal.transit, Eq[-1])
+    Eq << Eq.induction_swap.apply(algebre.eq.eq.given.eq.transit, Eq[-1])
     
     Eq.deduction = Eq.deduction.subs(Eq.d_quote_definition.reversed)
     
@@ -199,7 +199,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.condition.sufficient.imply.condition.induction.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=2)
     
     Eq << Eq[1].subs(Eq[0])
 

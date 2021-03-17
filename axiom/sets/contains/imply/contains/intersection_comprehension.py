@@ -37,7 +37,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.condition.sufficient.imply.condition.induction.apply(Eq.initial, Eq[-1], n=n, start=1)    
+    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=1)    
 
     
 if __name__ == '__main__':

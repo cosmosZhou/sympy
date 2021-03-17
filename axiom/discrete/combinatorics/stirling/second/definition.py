@@ -100,7 +100,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.sufficient.imply.condition.induction.apply(Eq[-1], n=k)
+    Eq << algebre.sufficient.imply.cond.induction.apply(Eq[-1], n=k)
 
 
 if __name__ == '__main__':

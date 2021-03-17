@@ -53,13 +53,13 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(i, m).subs(j, d[m])
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq.hypothesis, (k, 0, n))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq.hypothesis, (k, 0, n))
     
     Eq << Eq[-1].subs(Eq[1])
     
     Eq << Eq.induction.induct()
 
-    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
+    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
 
     
 if __name__ == '__main__':

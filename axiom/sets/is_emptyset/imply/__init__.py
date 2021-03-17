@@ -1,4 +1,4 @@
-from . import equal
+from . import eq
 from . import subset
 from . import notcontains
 from . import forall_is_emptyset

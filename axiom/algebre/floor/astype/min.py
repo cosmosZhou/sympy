@@ -32,11 +32,11 @@ def prove(Eq):
 #     Eq << apply(Min(floor(x), floor(y), floor(z)))
     Eq << apply(floor(Min(x, y)))
     
-    Eq << Eq[0].apply(algebre.equal.given.et.where.floor)
+    Eq << Eq[0].apply(algebre.eq.given.et.having.floor)
     
-    Eq <<= algebre.imply.strict_less_than.floor.apply(x), algebre.imply.strict_less_than.floor.apply(y)
+    Eq <<= algebre.imply.lt.floor.apply(x), algebre.imply.lt.floor.apply(y)
     
-    Eq << algebre.strict_less_than.strict_less_than.imply.strict_less_than.min.both.apply(Eq[-2], Eq[-1])
+    Eq << algebre.lt.lt.imply.lt.min.both.apply(Eq[-2], Eq[-1])
     
     Eq << Eq[-1].this.rhs.apply(algebre.min.astype.plus)
     

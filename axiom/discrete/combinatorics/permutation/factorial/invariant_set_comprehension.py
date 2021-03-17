@@ -58,7 +58,7 @@ def apply(*given):
     return Equality(abs(S), factorial(n))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True))
     S = Symbol.S(etype=dtype.integer * n)    
@@ -79,9 +79,9 @@ def prove(Eq):
                 ForAll[x:S, p[:n]:P](Contains(LAMBDA[k:n](x[p[k]]), S)),
                 Equality(abs(e), n))
 
-    Eq << sets.equal.imply.exists_equal.general.apply(Eq[3])
+    Eq << sets.eq.imply.exists_eq.general.apply(Eq[3])
     
-    Eq << Eq[1].apply(algebre.equal.equal.imply.equal.transit, Eq[-1])
+    Eq << Eq[1].apply(algebre.eq.eq.imply.eq.transit, Eq[-1])
     
     a, cond = Eq[-1].limits[0]
     index = index_function(n)

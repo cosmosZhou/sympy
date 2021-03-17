@@ -25,13 +25,15 @@ def prove(Eq):
     
     Eq << apply(Unequal(P(x, y), 0), y)
     
-    Eq << statistics.is_nonzero.et.apply(Eq[0]).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[0])
+
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq << statistics.bayes.corollary.apply(Eq[-1], var=Eq[0].lhs)
     
     Eq << Eq[0].subs(Eq[-1])
     
-    Eq << algebre.is_nonzero.unequal.imply.unequal.scalar.apply(Eq[-3], Eq[-1]) 
+    Eq << algebre.is_nonzero.ne.imply.ne.scalar.apply(Eq[-3], Eq[-1]) 
     
     
 if __name__ == '__main__':

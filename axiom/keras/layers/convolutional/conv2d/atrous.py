@@ -147,9 +147,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].expr.limits[1][2].args[1].apply(algebre.min.astype.floor)
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq.convolution_definition, Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.convolution_definition, Eq[-1])
         
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (j, 0, n[1]), (i, 0, n[0]), (k, 0, m))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, n[1]), (i, 0, n[0]), (k, 0, m))
     
     Eq << Eq[-1].subs(C.this.definition, C_quote.this.definition)
 

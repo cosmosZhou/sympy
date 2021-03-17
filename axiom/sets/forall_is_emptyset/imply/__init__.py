@@ -1,1 +1,1 @@
-from . import equal
+from . import eq

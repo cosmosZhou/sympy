@@ -935,22 +935,6 @@ class Equal(Relational):
                 if len(A) == len(B) == 1:
                     return Unequality(A.arg, B.arg, equivalent=self)
         
-    def split(self, *args, **kwargs):
-        if self.lhs.is_DenseMatrix and self.rhs.is_DenseMatrix: 
-            args = [self.func(lhs, rhs, given=self).simplify() for lhs, rhs in zip(self.lhs._mat, self.rhs._mat)]        
-        elif self.lhs.is_FiniteSet:
-            from sympy import Contains
-            args = [Contains(lhs, self.rhs, given=self).simplify() for lhs in self.lhs.args]                
-        else:
-            args = None
-            
-        if args is None:
-            return self
-            
-        if self.plausible:
-            self.derivative = args
-        return args
-        
     @property
     def T(self):
         return self.func(self.lhs.T, self.rhs.T, equivalent=self)
@@ -976,6 +960,14 @@ class Equal(Relational):
                     return S.false.copy(equivalent=[self, other])
             elif self.rhs == other.lhs:
                 if self.lhs in other.rhs:
+                    return S.false.copy(equivalent=[self, other])
+        elif other.is_Contains:
+            from sympy import Contains
+            if self.lhs == other.lhs:                
+                if Contains(self.rhs, other.rhs).is_BooleanFalse:
+                    return S.false.copy(equivalent=[self, other])
+            elif self.rhs == other.lhs:
+                if Contains(self.lhs, other.rhs).is_BooleanFalse:
                     return S.false.copy(equivalent=[self, other])
         return Relational.__and__(self, other)
 

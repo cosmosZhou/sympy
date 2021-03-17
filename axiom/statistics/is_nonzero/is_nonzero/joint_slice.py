@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from sympy.stats.symbolic_probability import Probability as P
 
 from sympy.stats.rv import pspace
-from axiom import statistics
+from axiom import statistics, algebre
 
 
 # given: P(x, y) != 0
@@ -39,7 +39,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.arg.args[0].bisect(Slice[:t])
      
-    Eq << statistics.is_nonzero.et.apply(Eq[-1], wrt={x[:t], y[:t]}).split()
+    Eq << statistics.is_nonzero.et.apply(Eq[-1], wrt={x[:t], y[:t]})
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     
 if __name__ == '__main__':

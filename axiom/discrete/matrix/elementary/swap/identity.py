@@ -63,7 +63,7 @@ def prove(Eq):
     
     Eq << Eq.lhs_assertion.subs(Eq[-1].reversed)
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (k, 0, n))
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (k, 0, n))
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 from sympy import *
 from tensorflow.nn import softmax
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebre, calculus
 import tensorflow as tf
 
 
@@ -46,7 +46,7 @@ def prove(Eq):
 
     assert Eq[-1].lhs.has(xi)
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.derive, (xi,), simplify=False)    
+    Eq << Eq[-1].apply(calculus.eq.imply.eq.derive, (xi,), simplify=False)    
     
     Eq.loss = Eq[-1].this.rhs.doit(deep=False)            
     
@@ -59,7 +59,7 @@ def prove(Eq):
     
     assert Eq[-1].lhs.is_zero == False
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.derive, (xi,), simplify=False)
+    Eq << Eq[-1].apply(calculus.eq.imply.eq.derive, (xi,), simplify=False)
     
     assert Eq[-1].lhs.expr.is_zero == False
     
@@ -77,7 +77,7 @@ def prove(Eq):
     
     Eq.loss = Eq.loss.subs(given)
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq.loss, (i,), simplify=False)
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq.loss, (i,), simplify=False)
 
     
 if __name__ == '__main__':

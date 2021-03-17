@@ -1,2 +1,2 @@
 from . import interval
-from . import where
+from . import having

@@ -91,10 +91,10 @@ in "Dependency Graph of Callee Theorems", click the hyperlink
 the results above shows that during the process of proving 'binomial
 theorem', we employed the following sub-theorems:
 <ul>
-	<li><a href='../axiom/discrete/combinatorics/binomial/Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>: <a
-		href='https://en.wikipedia.org/wiki/Pascal%27s_rule'>Pascal's Rule</a>
+	<li><a href='../axiom/discrete/combinatorics/binomial/Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>:
+		<a href='https://en.wikipedia.org/wiki/Pascal%27s_rule'>Pascal's Rule</a>
 		in Combinatorics, named after the French methematician Pascal.</li>
-	<li><a href='../axiom/algebre/sufficient/imply/condition/induction'>axiom.algebre.sufficient.imply.condition.induction</a>:
+	<li><a href='../axiom/algebre/sufficient/imply/cond/induction'>axiom.algebre.sufficient.imply.cond.induction</a>:
 		the first <a
 		href='https://en.wikipedia.org/wiki/Mathematical_induction'>mathematical
 			induction</a>, a method of recursively prooving mathematical theorems
@@ -136,7 +136,7 @@ Take windows system as an example:
 </li>
 <br>
 <li>use git to download the python source codes: <br> git clone
-	--depth=1 https://github.com/cosmosZhou/sympy.git
+	--depth=1 <a href=https://github.com/cosmosZhou/sympy.git>https://github.com/cosmosZhou/sympy.git</a>
 </li>
 <br>
 <li>enter the sympy folder: <br>cd sympy

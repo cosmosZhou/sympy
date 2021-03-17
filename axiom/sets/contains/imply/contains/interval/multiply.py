@@ -29,11 +29,13 @@ def prove(Eq):
 
     Eq << apply(Contains(x, Interval(a, b, right_open=True)), d)
     
-    Eq << sets.contains.imply.et.interval.apply(Eq[0]).split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[0])
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq <<= Eq[-1] * d, Eq[-2] * d
     
-    Eq << sets.greater_than.strict_less_than.imply.contains.apply(Eq[-2], Eq[-1])
+    Eq << sets.ge.lt.imply.contains.apply(Eq[-2], Eq[-1])
 
     
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ def apply(given):
     assert given.is_ForAll
     assert given.function.is_Equality
     assert given.function.lhs.is_Limit
-    f, z, xi, direction = given.function.lhs.args
+    f, (z, xi, direction) = given.function.lhs.args
     assert direction.name == '+-'
     assert len(given.limits) == 1
     limit = given.limits[0]
@@ -31,40 +31,41 @@ def prove(Eq):
     assert b - a > 0
     
     f = Function.f(shape=(), real=True)
-    given = calculus.integral.intermediate_value_theorem.continuity(f, a, b)
+    given = calculus.integral.intermediate_value_theorem.is_continuous(f, a, b)
     
-    z = given.lhs.args[1]
+    z = given.lhs.args[1][0]
 
     Eq << apply(given)
     
     m = Symbol.m(MIN(f(z), (z, a, b)))
     M = Symbol.M(MAX(f(z), (z, a, b)))
     
-    Eq.min, Eq.max = m.equality_defined(), M.equality_defined()
+    Eq.min = m.this.definition
+    Eq.max = M.this.definition
     
     Eq << axiom.calculus.integral.intermediate_value_theorem.apply(given)
     
     Eq.intermediate_value = Eq[-1].this.limits[0][2].subs(Eq.max.reversed).this.limits[0][1].subs(Eq.min.reversed)
     
-    Eq << algebre.imply.forall_less_than.min.apply(m.definition)
+    Eq << algebre.imply.forall_le.min.apply(m.definition)
     
-    Eq << algebre.forall_less_than.imply.less_than.integrate.apply(Eq[-1]) 
+    Eq << algebre.forall_le.imply.le.integrate.apply(Eq[-1]) 
     
     Eq << Eq[-1].subs(Eq.min.reversed) / (b - a)
     
-    Eq << algebre.imply.forall_greater_than.max.apply(M.definition)
+    Eq << algebre.imply.forall_ge.max.apply(M.definition)
     
-    Eq << calculus.forall_greater_than.imply.greater_than.integrate.apply(Eq[-1])
+    Eq << calculus.forall_ge.imply.ge.integrate.apply(Eq[-1])
     
     Eq << Eq[-1].subs(Eq.max.reversed) / (b - a)
     
-    Eq <<= sets.less_than.greater_than.imply.contains.apply(Eq[-4], Eq[-1])
+    Eq <<= sets.le.ge.imply.contains.apply(Eq[-4], Eq[-1])
          
     Eq << Eq.intermediate_value.subs(Eq.intermediate_value.rhs, Eq[-1].lhs)
     
     Eq <<= Eq[-1] & Eq[-2] 
     
-    Eq << Eq[-1].split()
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
     Eq << Eq[-1] * (b - a)
     

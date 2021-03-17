@@ -2269,6 +2269,37 @@ class Times(Expr, AssocOp):
 
         return self.func(*args), summation
 
+    def as_inverse_proportional_function(self, wrt):
+        f = S.One
+        for a in self.args:
+            if a._has(wrt):
+                a = a.as_inverse_proportional_function(wrt)
+                if a is None:
+                    return a
+            if a.is_InverseProportionalFunction:
+                f = a * f
+            else:
+                f *= a
+            if f is None:
+                return f
+        return f
+
+    def as_linear_function(self, wrt):
+        f = S.One
+        
+        for a in self.args:
+            if wrt.linear_match(a):
+                a = a.as_linear_function(wrt)
+                if a is None:
+                    return a
+            if a.is_LinearFunction:
+                f = a * f
+            else:
+                f *= a
+            if f is None:
+                return f
+        return f
+
     @property
     def domain(self):        
         if self.is_integer:

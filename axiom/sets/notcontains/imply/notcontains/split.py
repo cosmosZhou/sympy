@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets
+from axiom import sets, algebre
 
 
 @apply
@@ -25,7 +25,9 @@ def prove(Eq):
 
     Eq << apply(NotContains(x, A | B))
     
-    Eq << sets.notcontains.imply.et.where.union.apply(Eq[0], simplify=None).split()
+    Eq << sets.notcontains.imply.et.having.union.apply(Eq[0], simplify=None)
+    
+    Eq << algebre.et.imply.cond.apply(Eq[-1])
     
 if __name__ == '__main__':
     prove(__file__)

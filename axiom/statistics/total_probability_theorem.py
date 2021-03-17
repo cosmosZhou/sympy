@@ -1,10 +1,6 @@
-
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy.concrete.summations import Sum
-from sympy.core.symbol import Symbol
+from sympy import *
 from sympy.stats.rv import pspace
-from sympy.integrals.integrals import Integral
 from sympy.stats.symbolic_probability import Probability
 
 
@@ -16,12 +12,9 @@ def apply(self, given):
         return Equality(Sum[x](self), marginal_probability)
     else:
         return Equality(Integral[x](self), marginal_probability)
-        
 
 
-
-
-@prove
+@prove(provable=False)
 def prove(Eq):
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)

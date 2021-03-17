@@ -59,7 +59,7 @@ def prove(Eq):
 
     k = Eq[2].lhs.indices[0]
 
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.sum, (t, 1, k + 1))
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.sum, (t, 1, k + 1))
     
     Eq << Eq[-1].this.rhs.astype(Plus)
 

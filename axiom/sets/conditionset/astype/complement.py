@@ -42,7 +42,7 @@ def prove(Eq):
     
     Eq << algebre.forall.imply.forall.limits_swap.apply(Eq[-1])
 
-    Eq << sets.forall_contains.forall_contains.imply.equal.apply(Eq.forall_contains_in_A, Eq.forall_contains_in_B)
+    Eq << sets.forall_contains.forall_contains.imply.eq.apply(Eq.forall_contains_in_A, Eq.forall_contains_in_B)
     
     Eq << Eq[-1].this.lhs.definition
     

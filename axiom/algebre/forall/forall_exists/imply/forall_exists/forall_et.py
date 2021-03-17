@@ -47,7 +47,7 @@ def prove(Eq):
     et = Eq[-1].function.function.args[0]
     Eq << Sufficient(et, et.args[0], plausible=True)
     
-    Eq << Eq[-2].this.function.function.args[0].apply(algebre.condition.sufficient.imply.condition.transit, Eq[-1], split=False)
+    Eq << Eq[-2].this.function.function.args[0].apply(algebre.cond.sufficient.imply.cond.transit, Eq[-1], split=False)
     
 
 

@@ -15,16 +15,14 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    p = Symbol.p(real=True, given=True)
-    q = Symbol.q(real=True, given=True)
     x = Symbol.x(real=True, given=True)
     y = Symbol.y(real=True, given=True)
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)
 
     Eq << apply(Sufficient(x > 0, a > 0), Sufficient(y > 0, b > 0))
-
-    Eq << Eq[-1].split()
+    
+    Eq << algebre.sufficient.given.sufficient.apply(Eq[-1])
     
     Eq <<= Sufficient((x > 0) & (y > 0), x > 0, plausible=True), Sufficient((x > 0) & (y > 0), y > 0, plausible=True)
     

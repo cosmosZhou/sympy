@@ -1,9 +1,5 @@
-
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
 from axiom.utility import prove, apply
-from sympy.core.relational import Unequality
-from sympy.core.symbol import Symbol
+from sympy import *
 
 
 @apply
@@ -11,9 +7,7 @@ def apply(x, y, z, n):
     return Unequality(x ** n + y ** n, z ** n)
 
 
-
-
-@prove
+@prove(surmountable=False)
 def prove(Eq):
     n = Symbol.n(domain=Interval(3, oo, integer=True))
     x = Symbol.x(integer=True, nonnegative=True)

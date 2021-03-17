@@ -32,15 +32,17 @@ def prove(Eq):
     
     Eq << apply(Contains(j, Interval(a, i - d, integer=True)), Contains(i, Interval(a + d, n - 1, integer=True)))
     
-    Eq << Eq[-1].split()
+    Eq << algebre.et.given.cond.apply(Eq[-1])
     
-    Eq <<= sets.contains.given.et.where.interval.apply(Eq[-2]).split(), sets.contains.given.et.where.interval.apply(Eq[-1]).split()
+    Eq <<= algebre.et.given.cond.apply(sets.contains.given.et.having.interval.apply(Eq[-2])), \
+    algebre.et.given.cond.apply(sets.contains.given.et.having.interval.apply(Eq[-1]))
     
-    Eq <<= sets.contains.imply.et.interval.apply(Eq[0]).split(), sets.contains.imply.et.interval.apply(Eq[1]).split()
+    Eq <<= algebre.et.imply.cond.apply(sets.contains.imply.et.interval.apply(Eq[0])), \
+    algebre.et.imply.cond.apply(sets.contains.imply.et.interval.apply(Eq[1]))
     
     Eq << Eq[-2] + d
     
-    Eq << algebre.less_than.strict_less_than.imply.strict_less_than.transit.apply(Eq[-1], Eq[5]) - d
+    Eq << algebre.le.lt.imply.lt.transit.apply(Eq[-1], Eq[5]) - d
     
     Eq << Eq[-1].reversed
 

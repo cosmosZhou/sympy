@@ -38,7 +38,7 @@ def prove(Eq):
     
     Eq << algebre.sufficient.imply.sufficient.et.apply(Eq[-1])
     
-    Eq << Eq[-3].this.function.args[1].apply(algebre.condition.sufficient.imply.condition.transit, Eq[-1])
+    Eq << Eq[-3].this.function.args[1].apply(algebre.cond.sufficient.imply.cond.transit, Eq[-1])
     
 
 if __name__ == '__main__':

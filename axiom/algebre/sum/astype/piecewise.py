@@ -36,7 +36,7 @@ def prove(Eq):
     
     Eq << apply(Sum[j:D, i:C](Piecewise((f(i, j), Contains(x, A) & Contains(y, B)), (h(i, j), True))))
 
-    Eq << algebre.equal.given.ou.apply(Eq[0])
+    Eq << algebre.eq.given.ou.apply(Eq[0])
     
     Eq << Eq[-1].this.args[1].apply(algebre.et.given.et.subs, index=Slice[:2], split=False)
     

@@ -69,7 +69,7 @@ def prove(Eq):
     
     Eq << discrete.combinatorics.permutation.adjacent.swap1.helper.apply(x, w[0])
     
-    Eq << algebre.equal.imply.equal.lamda.apply(Eq[-1], (i, 0, n), simplify=False)
+    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (i, 0, n), simplify=False)
     
     Eq.given = Eq[1].subs(Eq[-1].reversed)
     

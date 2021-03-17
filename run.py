@@ -1,5 +1,4 @@
-# coding=utf-8
-
+import os
 import sys
 # to run this script, please install:
 # pip install mpmath==1.1.0
@@ -29,8 +28,7 @@ except ImportError as e:
     del lines[line_number]
     
     Text(file).write(lines)
-    
-    import os
+        
     command = 'python ' + ' '.join(sys.argv)
     print(command)
     exit_code = os.system(command)
@@ -124,6 +122,13 @@ if __name__ == '__main__':
             
         print('exit_code =', exit_code)            
         exit(exit_code)
+        
+    if os.sep == '/': #is Linux system
+        cmd = 'chmod -R 777 axiom'
+#         os.system(cmd)
+        for s in os.popen(cmd).readlines():
+            print(s)
+                    
 #     cd D:/Program Files/Wolfram Research/Mathematica/12.1/SystemFiles/Components/WolframClientForPython
 #     pip install .
 
@@ -155,4 +160,4 @@ if __name__ == '__main__':
 # http://www.gigamonkeys.com/book/
 # https://common-lisp.net/downloads
 
-# python run.py axiom.sets.contains.imply.equal.union axiom.sets.contains.imply.subset
+# python run.py axiom.sets.contains.imply.eq.union axiom.sets.contains.imply.subset

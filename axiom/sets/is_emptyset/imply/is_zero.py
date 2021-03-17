@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << apply(Equality(A, A.etype.emptySet))
     
-    Eq << algebre.equal.imply.equal.abs.apply(Eq[0])
+    Eq << algebre.eq.imply.eq.abs.apply(Eq[0])
     
 
 if __name__ == '__main__':

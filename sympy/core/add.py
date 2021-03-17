@@ -975,6 +975,36 @@ class Plus(Expr, AssocOp):
 
         return con, prim
 
+    def as_inverse_proportional_function(self, wrt):
+        f = S.Zero
+        for a in self.args:
+            if a._has(wrt):
+                a = a.as_inverse_proportional_function(wrt)
+                if a is None:
+                    return a
+            if a.is_InverseProportionalFunction:
+                f = a + f
+            else:
+                f += a
+            if f is None:
+                return f                
+        return f
+
+    def as_linear_function(self, wrt):
+        f = S.Zero
+        for a in self.args:
+            if wrt.linear_match(a):
+                a = a.as_linear_function(wrt)
+                if a is None:
+                    return a
+            if a.is_LinearFunction:
+                f = a + f
+            else:
+                f += a
+            if f is None:
+                return f                
+        return f
+    
     @property
     def _sorted_args(self):
         from sympy.core.compatibility import default_sort_key

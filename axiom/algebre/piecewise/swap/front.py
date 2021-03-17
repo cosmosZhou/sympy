@@ -34,9 +34,9 @@ def prove(Eq):
     
     Eq << q.this.definition
         
-    Eq << algebre.equal.imply.ou.general.apply(Eq[-1])
+    Eq << algebre.eq.imply.ou.general.apply(Eq[-1])
     
-    Eq << algebre.ou.imply.equal.general.apply(Eq[-1], wrt=q)
+    Eq << algebre.ou.imply.eq.general.apply(Eq[-1], wrt=q)
     
     Eq << Eq[-1].subs(Eq[1].reversed).reversed
     

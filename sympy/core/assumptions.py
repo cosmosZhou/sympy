@@ -569,7 +569,10 @@ class ManagedProperties(BasicMeta):
             if limits.step is not None:
                 limits = [(x, a, b)]
             elif isinstance(a, int) or a.type in dtype.integer or a.is_Infinity:
-                limits = [(x, 0, a)]
+                if self.is_Limit:
+                    limits = [(x, a)]
+                else:
+                    limits = [(x, 0, a)]
             else:
                 limits = [(x, a)]
         else:

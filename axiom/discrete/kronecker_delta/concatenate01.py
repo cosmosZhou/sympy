@@ -37,7 +37,7 @@ def prove(Eq):
     
     Eq << Eq[-2] - Eq[-1]
 
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.lamda, (i,), simplify=False)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.lamda, (i,), simplify=False)
     
     Eq << Eq[-1].subs(Eq[1]).subs(Eq[2]).reversed
     

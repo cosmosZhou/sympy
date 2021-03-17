@@ -20,7 +20,7 @@ def prove(Eq):
     
     Eq << apply(ForAll[x:A](f(x) > 0))  
     
-    Eq << Eq[1].split()    
+    Eq << algebre.forall_et.imply.forall.apply(Eq[1])    
     
 
 

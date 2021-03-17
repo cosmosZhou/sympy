@@ -1921,7 +1921,15 @@ class Power(Expr):
             else:
                 return cls(self.func(base, *self.limits), exponent)
         return self
-    
+
+    def as_inverse_proportional_function(self, wrt):
+        b, e = self.args
+        if e == -1:
+            h = b - wrt
+            if not h._has(wrt):
+                from sympy.polys.polytools import InverseProportionalFunction
+                return InverseProportionalFunction(wrt, 1, h, 0)
+
 Pow = Power    
 from .add import Add
 from .numbers import Integer

@@ -41,7 +41,7 @@ def prove(Eq):
         
     Eq << Eq.forall_contains.subs(x, y)
     
-    Eq << algebre.condition.ou.imply.condition.apply(Eq[0], Eq[-1])
+    Eq << algebre.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
 
     
 if __name__ == '__main__':

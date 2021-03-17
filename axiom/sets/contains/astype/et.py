@@ -36,7 +36,7 @@ def prove(Eq):
     
     Eq << Necessary(*Eq[0].args, plausible=True)
 
-    Eq << Eq[-1].this.rhs.apply(sets.less_than.greater_than.imply.contains)
+    Eq << Eq[-1].this.rhs.apply(sets.le.ge.imply.contains)
     
     Eq <<= Eq[2] & Eq[1]
 

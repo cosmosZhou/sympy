@@ -25,7 +25,7 @@ def prove(Eq):
     
     Q = Eq[-1].lhs.function.base
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.abs)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
     
     Eq << discrete.combinatorics.permutation.nonoverlapping.apply(n, Q=Q)
     
@@ -53,7 +53,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
 
     
 if __name__ == '__main__':

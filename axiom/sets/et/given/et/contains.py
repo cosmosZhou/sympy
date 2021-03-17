@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
-from axiom import sets
+from axiom import sets, algebre
 
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
@@ -30,13 +30,13 @@ def prove(Eq):
     
     Eq << apply(Contains(a, A) & Equal(B | a.set, A))
     
-    Eq << Eq[1].apply(sets.contains.equal.imply.equal)
+    Eq << Eq[1].apply(sets.contains.eq.imply.eq)
     
     Eq << Eq[-1].reversed
     
-    Eq << Eq[1].split()
+    Eq << algebre.et.imply.cond.apply(Eq[1])
     
-    Eq << Eq[0].split()
+    Eq << algebre.et.given.cond.apply(Eq[0])
     
     
 

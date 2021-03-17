@@ -50,29 +50,31 @@ def prove(Eq):
     
     Eq << sets.contains.imply.contains.interval.multiply.apply(Eq.contains, 2)
     
-    Eq.strict_greater_than, Eq.less_than = sets.contains.imply.et.interval.apply(Eq[-1]).split()
+    Eq << sets.contains.imply.et.interval.apply(Eq[-1])
     
-    Eq << algebre.strict_greater_than.greater_than.imply.strict_greater_than.transit.apply(Eq.strict_greater_than, algebre.imply.greater_than.floor.apply(a, 2))    
+    Eq.strict_greater_than, Eq.less_than = algebre.et.imply.cond.apply(Eq[-1])
     
-    Eq << algebre.strict_greater_than.imply.greater_than.strengthen.apply(Eq[-1])
+    Eq << algebre.gt.ge.imply.gt.transit.apply(Eq.strict_greater_than, algebre.imply.ge.floor.apply(a, 2))    
     
-    Eq << algebre.imply.less_than.floor.apply(b - 1, 2) + 1
+    Eq << algebre.gt.imply.ge.strengthen.apply(Eq[-1])
+    
+    Eq << algebre.imply.le.floor.apply(b - 1, 2) + 1
 
-    Eq << algebre.less_than.less_than.imply.less_than.transit.apply(Eq.less_than, Eq[-1])
+    Eq << algebre.le.le.imply.le.transit.apply(Eq.less_than, Eq[-1])
     
-    Eq << sets.greater_than.less_than.imply.contains.apply(Eq[-3], Eq[-1])
+    Eq << sets.ge.le.imply.contains.apply(Eq[-3], Eq[-1])
     
     Eq << Subset(Eq.contains.rhs, Integers, plausible=True)
     
     Eq << sets.contains.subset.imply.contains.apply(Eq.contains, Eq[-1])
     
-    Eq << sets.contains.imply.exists_equal.definition.apply(Eq[-1])
+    Eq << sets.contains.imply.exists_eq.definition.apply(Eq[-1])
     
     Eq << Eq[-1] * 2 + 1
     
     Eq << Eq[-1] % 2
     
-    Eq << Eq[1].split()
+    Eq << algebre.et.given.cond.apply(Eq[1])
 
     
 if __name__ == '__main__':

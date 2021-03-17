@@ -32,7 +32,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.subs(Eq[0])
     
-    Eq.is_nonzero = algebre.equal.imply.is_nonzero.apply(Eq[-1])
+    Eq.is_nonzero = algebre.eq.imply.is_nonzero.apply(Eq[-1])
 
     Eq.sufficient = Sufficient(Unequal(g[n], 0), Unequal(g[n + 1], 0), plausible=True)
 

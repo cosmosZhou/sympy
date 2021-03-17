@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.doit()
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.sqrt)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.sqrt)
 
 
 # https://ccjou.wordpress.com/2012/11/26/jacobian-矩陣與行列式/

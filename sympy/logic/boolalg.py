@@ -514,32 +514,23 @@ class Boolean(Basic):
             process_equivalent(equivalent, value)
             return            
 
-        given = self.given
-        if given is not None:
-            self.given = None
-            process_given(given, value)
-            return
-
         imply = self.imply
         if imply is not None:
             self.imply = None
             process_imply(imply, value)
             return
-
+        
         counterpart = self.counterpart
         if counterpart is not None:
             self.counterpart = None
-            plausible = counterpart.plausible
-            if value:
-                if plausible:
-                    counterpart.plausible = False
-                else:
-                    assert plausible is False
-            else:
-                if plausible:
-                    counterpart.plausible = True
-                else:
-                    assert plausible is None
+            process_counterpart(counterpart, value)            
+            return
+        
+        given = self.given
+        if given is not None:
+            self.given = None
+            process_given(given, value)
+            return
 
     @property
     def equivalent(self):
@@ -1109,7 +1100,12 @@ def process_imply(imply, value):
                 eq.plausible = True
             return
 
-        imply.plausible = True
+        if isinstance(imply.given, tuple):
+#                 imply will be true unless all of imply.given is proven true!            
+            if all(g.plausible is None for g in imply.given):
+                imply.plausible = True
+        else:
+            imply.plausible = True
     else: 
         if imply.plausible is None:
             derivative = imply.derivative
@@ -1133,10 +1129,17 @@ def process_imply(imply, value):
 
 
 def process_counterpart(counterpart, value):
+    plausible = counterpart.plausible
     if value:
-        counterpart.plausible = False
-    else: 
-        counterpart.plausible = True
+        if plausible:
+            counterpart.plausible = False
+        else:
+            assert plausible is False
+    else:
+        if plausible:
+            counterpart.plausible = True
+        else:
+            assert plausible is None
 
 
 def process_given(given, value):
@@ -2002,12 +2005,6 @@ class And(LatticeOp, BooleanFunction):
         from sympy.sets.sets import Intersection
         return Intersection(*[arg.as_set() for arg in self.args])
 
-    def split(self, *args, **kwargs):
-        eqs = [eq.func(*eq.args, given=self) for eq in self.args]
-        if self.plausible:
-            self.derivative = eqs
-        return eqs
-
     def simplify(self, deep=False):
         dict_contains = defaultdict(set)        
         dict_notcontains = defaultdict(set)
@@ -2261,7 +2258,7 @@ class Or(LatticeOp, BooleanFunction):
         
         return self
 
-    def split(self, *args, **kwargs):
+    def ou_given_condition(self, *args, **kwargs):
         args = [arg.func(*arg.args, imply=self) for arg in self.args]        
         self.derivative = args
         return args
@@ -2294,6 +2291,17 @@ class Or(LatticeOp, BooleanFunction):
         old, new = args
         if old.is_given:
             return self
+        
+        domain = self.domain_defined(old)
+        if new.is_Number:
+            assert new in domain
+        else:
+            if new.is_Symbol:
+                if new.is_real:
+                    if new.domain not in domain:
+                        from sympy import NotContains
+                        return Or(NotContains(new, domain), self._subs(old, new), equivalent=self)        
+        
         result = LatticeOp.subs(self, *args, **kwargs)
         if all(isinstance(arg, Boolean) for arg in args): 
             result = result.copy(equivalent=[self, *args])            
@@ -2848,17 +2856,6 @@ class Sufficient(BinaryCondition):
                  
         return BinaryCondition.__and__(self, other)
 
-    def split(self, *args, **kwargs):
-        if self.rhs.is_And:
-            eqs = [self.func(self.lhs, eq, given=self) for eq in self.rhs.args]    
-        elif self.lhs.is_Or:
-            eqs = [self.func(eq, self.rhs, given=self) for eq in self.lhs.args]
-        else:
-            return self
-        if self.plausible:
-            self.derivative = eqs
-        return eqs
-
 
 class Necessary(BinaryCondition):
     """
@@ -2897,17 +2894,6 @@ class Necessary(BinaryCondition):
                     return Equivalent(self.lhs, self.rhs, equivalent=[self, other])
 
         return BinaryCondition.__and__(self, other)
-
-    def split(self, *args, **kwargs):
-        if self.rhs.is_Or:
-            eqs = [self.func(self.lhs, eq, given=self) for eq in self.rhs.args]    
-        elif self.lhs.is_And:
-            eqs = [self.func(eq, self.rhs, given=self) for eq in self.lhs.args]
-        else:
-            return self
-        if self.plausible:
-            self.derivative = eqs
-        return eqs
 
 
 class Equivalent(BinaryCondition):

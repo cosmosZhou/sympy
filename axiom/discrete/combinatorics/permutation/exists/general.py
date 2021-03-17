@@ -33,7 +33,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2].reversed)
     
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.where.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.having.union_comprehension)
     
     Eq << Eq[-1].reversed    
 

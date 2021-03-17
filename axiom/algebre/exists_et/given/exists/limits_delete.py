@@ -1,4 +1,3 @@
-
 from axiom.utility import prove, apply
 
 from sympy import *
@@ -55,11 +54,11 @@ def prove(Eq):
 
     Eq << apply(Exists[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
 
-    Eq << Eq[-1].this.function.apply(algebre.condition.imply.exists_et, wrt=j)
+    Eq << Eq[-1].this.function.apply(algebre.cond.imply.exists_et, wrt=j)
     
-    Eq << Eq[-1].this.function.apply(algebre.equal.condition.imply.et, delta=False, simplify=None)
+    Eq << Eq[-1].this.function.apply(algebre.eq.cond.imply.et, delta=False, simplify=None)
     
-    Eq << Eq[0].this.function.apply(algebre.et.given.et.where.equal, delta=False, simplify=None, split=False)
+    Eq << Eq[0].this.function.apply(algebre.et.given.et.having.eq, delta=False, simplify=None, split=False)
     
     
 

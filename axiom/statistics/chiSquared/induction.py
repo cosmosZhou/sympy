@@ -106,7 +106,7 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
 
-    Eq << algebre.equal.sufficient.imply.equal.induction.apply(Eq.initial, Eq[-1], n=k, start=1)
+    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=k, start=1)
 
 
 # https://www.asmeurer.com/blog/

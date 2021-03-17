@@ -51,7 +51,7 @@ def prove(Eq):
     
     Eq << Eq[-1].forall((i,))
     
-    Eq << Eq[-1].apply(algebre.equal.imply.equal.lamda, *Eq[-1].limits, simplify=False)
+    Eq << Eq[-1].apply(algebre.eq.imply.eq.lamda, *Eq[-1].limits, simplify=False)
     
     Eq << Eq[-1].this.lhs.astype(MatMul)
     
@@ -72,7 +72,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.arg.limits_subs(j, i)
 
-    Eq << algebre.is_nonzero.equal.imply.equal.matrix.apply(Eq[-1], Eq.statement)
+    Eq << algebre.is_nonzero.eq.imply.eq.matrix.apply(Eq[-1], Eq.statement)
     
 
 if __name__ == '__main__':

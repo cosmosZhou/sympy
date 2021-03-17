@@ -33,13 +33,13 @@ def prove(Eq):
     p = Symbol.p(Eq[0].lhs)    
     Eq << p.this.definition
     
-    Eq << algebre.equal.imply.ou.general.apply(Eq[-1])
+    Eq << algebre.eq.imply.ou.general.apply(Eq[-1])
     
-    Eq << algebre.ou.imply.equal.general.apply(Eq[-1], wrt=p)
+    Eq << algebre.ou.imply.eq.general.apply(Eq[-1], wrt=p)
     
     Eq << Eq[-1].this.lhs.apply(algebre.piecewise.swap.front)
     
-    Eq << algebre.equal.equal.imply.equal.transit.apply(Eq[1], Eq[-1])
+    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[1], Eq[-1])
     
 
 if __name__ == '__main__':

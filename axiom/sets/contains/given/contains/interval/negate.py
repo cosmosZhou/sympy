@@ -1,7 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import Contains
-from sympy import Symbol
-from sympy.sets.sets import Interval
 from axiom import sets
 
 
