@@ -9,16 +9,16 @@ def is_continuous(f, a, b, x=None, xi=None):
     if x is None:
         x = Symbol('x', real=True)
         
-    return ForAll[xi:a:b](Equality(Limit[x:xi](f(x)), f(xi)))
+    return ForAll[xi:a:b](Equal(Limit[x:xi](f(x)), f(xi)))
 
 
 @apply
 def apply(given):
     assert given.is_ForAll
-    assert given.function.is_Equality
+    assert given.function.is_Equal
     assert given.function.lhs.is_Limit
     f, (z, xi, direction) = given.function.lhs.args
-    assert direction.name == '+-'
+    assert direction == 0
     assert len(given.limits) == 1
     limit = given.limits[0]
     _xi, a, b = limit
@@ -27,7 +27,7 @@ def apply(given):
     assert given.function.rhs == _f
 
     y = Symbol.y(real=True)
-    return ForAll(Exists(Equality(f, y), (z, a, b)), (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))))               
+    return ForAll(Exists(Equal(f, y), (z, a, b)), (y, MIN(f, (z, a, b)), MAX(f, (z, a, b))))               
 
 
 @prove(surmountable=False)
@@ -40,5 +40,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

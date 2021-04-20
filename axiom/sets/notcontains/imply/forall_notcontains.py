@@ -1,6 +1,6 @@
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
@@ -27,13 +27,13 @@ def prove(Eq):
     k = Symbol.k(domain=Interval(0, n - 1, integer=True))
     Eq << Eq[0].this.rhs.bisect(k.set)
     
-    Eq << sets.notcontains.imply.et.having.union.apply(Eq[-1], simplify=None)
+    Eq << sets.notcontains.imply.et.split.union.apply(Eq[-1], simplify=None)
     
-    Eq << algebre.et.imply.cond.apply(Eq[-1])
+    Eq << algebra.et.imply.cond.apply(Eq[-1])
     
     Eq << Eq[-2].forall((k,))
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

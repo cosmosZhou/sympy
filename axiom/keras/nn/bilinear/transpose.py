@@ -1,13 +1,13 @@
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy.sets.sets import Interval
 from sympy import Symbol
 from sympy.concrete.summations import Sum
-from axiom import algebre
+from axiom import algebra
 
 @apply
 def apply(x, y, W):    
-    return Equality(x @ W @ y, y @ W.T @ x)
+    return Equal(x @ W @ y, y @ W.T @ x)
 
 
 
@@ -34,7 +34,7 @@ def prove(Eq):
     
     Eq << Eq.expansion.subs(W, W.T)
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.swap, x, y)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.swap, x, y)
     
     Eq << Eq[-1].this.rhs.limits_subs(i, j)
     
@@ -44,4 +44,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

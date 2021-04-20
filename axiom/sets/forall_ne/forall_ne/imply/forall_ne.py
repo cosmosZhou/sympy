@@ -1,12 +1,12 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 
 # given: 
-#     ForAll[j:Interval(0, n - 1, integer=True) - {i}, i:n](Unequality(x[i], x[j]))
-#     ForAll[i:n](Unequality(x[n], x[i])))
+#     ForAll[j:Interval(0, n - 1, integer=True) - {i}, i:n](Unequal(x[i], x[j]))
+#     ForAll[i:n](Unequal(x[n], x[i])))
 
-# ForAll[j:Interval(0, n, integer=True) - {i}, i:n+1](Unequality(x[i], x[j]))
+# ForAll[j:Interval(0, n, integer=True) - {i}, i:n+1](Unequal(x[i], x[j]))
 
 
 @apply
@@ -26,7 +26,7 @@ def apply(*given):
     assert _n_1 == n_1
     n = n_1
     
-    assert forall_historic.function.is_Unequality and forall_n.function.is_Unequality
+    assert forall_historic.function.is_Unequal and forall_n.function.is_Unequal
     lhs, rhs = forall_historic.function.args
     if lhs._has(j):
         lhs, rhs = rhs, lhs     
@@ -40,7 +40,7 @@ def apply(*given):
     assert x[n] == lhs
     assert x[i] == rhs
     
-    return ForAll[j:i, i:n + 1](Unequality(x[i], x[j]))
+    return ForAll[j:i, i:n + 1](Unequal(x[i], x[j]))
 
 
 @prove
@@ -50,14 +50,14 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
  
-    Eq << apply(ForAll[j:i, i:n](Unequality(x[i], x[j])),
-                ForAll[i:n](Unequality(x[n], x[i])))
+    Eq << apply(ForAll[j:i, i:n](Unequal(x[i], x[j])),
+                ForAll[i:n](Unequal(x[n], x[i])))
 
-    Eq << Eq[-1].bisect({n}, wrt=i)
+    Eq << algebra.forall.given.et.apply(Eq[-1], cond={n}, wrt=i)
     
-    Eq << algebre.et.given.cond.apply(Eq[-1])
+    Eq << algebra.et.given.cond.apply(Eq[-1])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

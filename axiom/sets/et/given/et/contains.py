@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
@@ -34,13 +34,13 @@ def prove(Eq):
     
     Eq << Eq[-1].reversed
     
-    Eq << algebre.et.imply.cond.apply(Eq[1])
+    Eq << algebra.et.imply.cond.apply(Eq[1])
     
-    Eq << algebre.et.given.cond.apply(Eq[0])
+    Eq << algebra.et.given.cond.apply(Eq[0])
     
     
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

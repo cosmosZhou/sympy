@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
 from axiom.discrete.combinatorics.permutation.adjacent import swap2
-from axiom import sets, algebre, discrete
+from axiom import sets, algebra, discrete
 
 
 @apply
@@ -40,49 +40,54 @@ def prove(Eq):
     i_ = i.copy(domain=Interval(0, n - 1, integer=True))
     Eq.given_i = Eq.given.subs(j_, i_)    
     
-    Eq << Eq.given.subs(x, Eq.given_i.function.lhs)
+    Eq << algebra.forall.imply.ou.subs.apply(Eq.given, x, Eq.given_i.function.lhs)
     
-    Eq <<= Eq.given_i & Eq[-1]
+    Eq << algebra.cond.forall.imply.forall_et.apply(Eq[-1], Eq.given_i)
     
-    Eq << algebre.forall_et.imply.forall.apply(Eq[-1], index=-1)
+    Eq << algebra.forall_et.imply.forall.apply(Eq[-1], index=-1)
     
-    Eq << Eq.given_i.subs(x, Eq[-1].function.lhs)
+    Eq << algebra.forall.imply.ou.subs.apply(Eq.given_i, x, Eq[-1].function.lhs)
     
-    Eq <<= Eq[-2] & Eq[-1]
+    Eq << algebra.cond.forall.imply.forall_et.apply(Eq[-2], Eq[-1])
     
-    Eq << algebre.forall_et.imply.forall.apply(Eq[-1], index=0)
+    Eq << algebra.forall_et.imply.forall.apply(Eq[-1], index=0)
     
-    Eq.final_statement = algebre.cond.imply.forall.restrict.apply(Eq[-1], (i_,), (j_,))
+    Eq.final_statement = algebra.cond.imply.forall.restrict.apply(Eq[-1], (i_,), (j_,))
     
     Eq << swap2.eq.apply(n, w)
     
-    Eq << Eq[-1] @ x
+    Eq << Eq[-1].this.function @ x
     
-    Eq << algebre.cond.imply.forall.restrict.apply(Eq[-1], (Eq[-1].limits[0].args[1].args[1].arg,))
+    Eq << algebra.cond.imply.forall.restrict.apply(Eq[-1], (Eq[-1].limits[0].args[1].args[1].arg,))
     
-    Eq.i_complement = Eq.final_statement.subs(Eq[-1])
+    Eq << algebra.forall.forall.imply.forall_et.limits_intersect.apply(Eq.final_statement, Eq[-1])
+    
+    Eq.i_complement = Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
     
     Eq.plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, Interval(1, n - 1, integer=True)), plausible=True)    
     
-    Eq << Eq.plausible.bisect(i.set, wrt=j)
+    Eq << algebra.forall.given.et.apply(Eq.plausible, cond=i.set, wrt=j)
     
-    Eq << algebre.et.given.cond.apply(Eq[-1])
+    Eq << algebra.et.given.cond.apply(Eq[-1])
     
     Eq << sets.imply.eq.intersection.apply(i, Interval(1, n - 1, integer=True))
     
     Eq << Eq[-2].this.limits[1].subs(Eq[-1])
     
-    Eq << Eq[-1].subs(w[i, i].equality_defined())
+    Eq << Eq[-1].subs(w[i, i].this.definition).simplify()
     
     Eq << discrete.matrix.elementary.swap.transpose.apply(w).subs(j, 0)
     
-    Eq.given_i = algebre.cond.imply.forall.restrict.apply(Eq.given_i, (i_,))
+    Eq.given_i = algebra.cond.imply.forall.restrict.apply(Eq.given_i, (i_,))
     
     Eq << Eq.given_i.subs(Eq[-1].reversed)
     
-    Eq <<= Eq[-1] & Eq.plausible
+    Eq << algebra.forall.given.et.apply(Eq[2], cond=Equal(j, 0))
+
+    Eq << algebra.et.given.cond.apply(Eq[-1])    
+    
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

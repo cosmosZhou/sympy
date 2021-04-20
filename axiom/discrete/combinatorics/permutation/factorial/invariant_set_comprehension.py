@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 def index_function(n): 
@@ -23,7 +23,7 @@ def apply(*given):
     assert len(forall_x.limits) == 1
     x, S = forall_x.limits[0]
     
-    assert forall_x.function.is_Equality
+    assert forall_x.function.is_Equal
     x_set_comprehension, e = forall_x.function.args
     assert x_set_comprehension == x.set_comprehension()
     
@@ -49,13 +49,13 @@ def apply(*given):
     assert rhs == Interval(0, n - 1, integer=True)    
     assert lhs == p.set_comprehension()
     
-    assert equality.is_Equality
+    assert equality.is_Equal
     
     assert equality.rhs == n
     assert equality.lhs.is_Abs
     assert equality.lhs.arg == e
      
-    return Equality(abs(S), factorial(n))
+    return Equal(abs(S), factorial(n))
 
 
 @prove(surmountable=False)
@@ -73,15 +73,17 @@ def prove(Eq):
     
     p = Symbol.p(shape=(n,), integer=True, nonnegative=True)
     
-    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
-    Eq << apply(ForAll[x:S](Equality(x.set_comprehension(), e)),
+    Eq << apply(ForAll[x:S](Equal(x.set_comprehension(), e)),
                 ForAll[x:S, p[:n]:P](Contains(LAMBDA[k:n](x[p[k]]), S)),
-                Equality(abs(e), n))
+                Equal(abs(e), n))
 
-    Eq << sets.eq.imply.exists_eq.general.apply(Eq[3])
+    Eq << sets.eq.imply.exists_eq.apply(Eq[3])
     
-    Eq << Eq[1].apply(algebre.eq.eq.imply.eq.transit, Eq[-1])
+    Eq << algebra.forall.exists.imply.exists_forall_et.apply(Eq[1], Eq[-1])
+    
+    Eq << Eq[-1].this.function.function.apply(algebra.eq.eq.imply.eq.transit)
     
     a, cond = Eq[-1].limits[0]
     index = index_function(n)
@@ -92,16 +94,16 @@ def prove(Eq):
     Eq << Exists[a:cond](ForAll[p:P](Contains(LAMBDA[k:n](a[p[k]]),
                                               S)))
     
-    Eq << Exists[a:cond](ForAll[p:P](Equality(p, LAMBDA[j:n](index[j](LAMBDA[k:n](a[p[k]]),
+    Eq << Exists[a:cond](ForAll[p:P](Equal(p, LAMBDA[j:n](index[j](LAMBDA[k:n](a[p[k]]),
                                                                       a)))))   
         
     Eq << Exists[a:cond](ForAll[x:S](Contains(LAMBDA[j:n](index[j](x,
                                                                    a)), P)))
     
-    Eq << Exists[a:cond](ForAll[x:S](Equality(x,
+    Eq << Exists[a:cond](ForAll[x:S](Equal(x,
                                               LAMBDA[k:n](a[LAMBDA[j:n](index[j](x, a))[k]]))))
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

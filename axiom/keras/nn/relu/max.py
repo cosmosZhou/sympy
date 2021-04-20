@@ -1,6 +1,6 @@
 
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from sympy import Symbol
 from sympy import Max, Min
@@ -11,7 +11,7 @@ import tensorflow as tf
 # log softmax(x) = x - max(x) - log∑exp(x - max(x))
 @apply
 def apply(x, y):
-    return Equality(tf.relu(x - y) + y, Max(x, y))
+    return Equal(tf.relu(x - y) + y, Max(x, y))
 
 
 @prove
@@ -26,4 +26,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

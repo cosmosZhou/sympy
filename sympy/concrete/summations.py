@@ -979,7 +979,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 
 # precondition: domain.is_Complement        
     def simplify_complement_domain(self, domain): 
-        from sympy import Unequality, KroneckerDelta
+        from sympy import Unequal, KroneckerDelta
         from sympy.sets.contains import NotContains, Contains
         if not domain.is_Complement:
             return
@@ -994,7 +994,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     #                     f(a)*(1 - δ[a, b]) = f(a) - f(b)*δ[a, b], if f(b) = 0, then f(a) - f(a)*δ[a, b] = f(a)
                     return ((1 - KroneckerDelta(a, b)) * self.function._subs(self.variable, a)).simplify()
                 else:
-                    return Piecewise((self.function._subs(self.variable, a), Unequality(a, b)), (0, True))
+                    return Piecewise((self.function._subs(self.variable, a), Unequal(a, b)), (0, True))
             else:
                 return Piecewise((self.function._subs(self.variable, a), NotContains(a, B)), (0, True))
         elif A.is_Intersection:
@@ -1025,7 +1025,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 for _x, x in reps.items():
                     function = function._subs(_x, x)
                 if function != self.function:
-                    return self.func(function, *self.limits, equivalent=self).simplify()
+                    return self.func(function, *self.limits).simplify()
             
             this = ExprWithIntLimits.simplify(self, deep=True, **kwargs)
             if this is not self:
@@ -1165,7 +1165,7 @@ domain & limit[1] = %s
 
         if len(limit) == 1:
             x = limit[0]
-            domain = x.domain
+            domain = x.domain & self.function.domain_defined(x)
             if domain.is_Interval: 
                 limit = x, domain.min(), domain.max() + 1 
         
@@ -1180,8 +1180,8 @@ domain & limit[1] = %s
                         x0, *_ = b.args
                         cond = a._subs(x, x0)
                         function = self.function.subs(x, x0)
-                        from sympy import Boole
-                        return Boole(cond) * function
+                        from sympy import Bool
+                        return Bool(cond) * function
                     
                 return self
 
@@ -1195,7 +1195,7 @@ domain & limit[1] = %s
                     return self.function.func(*((self.func(e, (x, universe)).simplify(), c) for e, c in self.function.args)).simplify()
                 
                 if all(has_x):
-                    return self.operator(*self.as_multiple_terms(x, universe)).simplify()
+                    return self.function.as_multiple_terms(x, universe, self.func).simplify()
 
                 if has_x[0]:
                     index = has_x.index(False)
@@ -1307,7 +1307,11 @@ domain & limit[1] = %s
                         args = [*self.function.args]
                         del args[i]
                         return self.func(arg, limit).simplify() + self.func(self.function.func(*args), limit).simplify()
-                        
+            
+            if len(self.limits[0]) > 1:
+                if self.function.domain_defined(x) in domain:
+                    return self.func(self.function, (x,))
+            
             _a, _b = domain.min(), domain.max()
             if not _b.is_Min:
                 b = _b + 1
@@ -1399,7 +1403,7 @@ domain & limit[1] = %s
         return self.func(function, *self.limits, limit).simplify()
 
     def limits_swap(self):
-        if self.function.is_Times:
+        if self.function.is_Mul:
             index = -1
             for i in range(len(self.function.args)):
                 if self.function.args[i].is_Sum:
@@ -1493,21 +1497,21 @@ domain & limit[1] = %s
         max_upper = 0
         sign_height = 0
 
-        from sympy import Equality, Contains
+        from sympy import Equal, Contains
         for lim in self.limits:
             if len(lim) == 3:
                 if lim[2].is_set:
                     prettyUpper = p._print("")                    
                     prettyLower = p._print(':'.join((str(lim[0]), str(lim[1]), str(lim[2]))))
                 else:
-                    prettyUpper = p._print(lim[2])
-                    prettyLower = p._print(Equality(lim[0], lim[1], evaluate=False))
+                    prettyUpper = p._print(lim[2] - 1)
+                    prettyLower = p._print(Equal(lim[0], lim[1], evaluate=False))
             elif len(lim) == 2:
                 prettyUpper = p._print("")
                 if lim[1].is_set:
                     prettyLower = p._print(Contains(lim[0], lim[1], evaluate=False))
                 else:
-                    prettyLower = p._print(Equality(lim[0], lim[1], evaluate=False))
+                    prettyLower = p._print(Equal(lim[0], lim[1], evaluate=False))
             elif len(lim) == 1:
                 prettyUpper = p._print("")
                 prettyLower = p._print(lim[0])
@@ -1560,7 +1564,7 @@ domain & limit[1] = %s
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 if domain.is_infinite:
-                    return None
+                    return
                     
                 _x = x.copy(domain=domain)
                 function = function._subs(x, _x)
@@ -1604,6 +1608,11 @@ domain & limit[1] = %s
         if isinstance(self.expr, cls):
             return cls(self.func(self.expr.function, *self.limits).simplify(), *self.expr.limits)
         return self
+    
+    @classmethod
+    def identity(cls, self, **_):
+        from sympy import ZeroMatrix
+        return ZeroMatrix(*self.shape)
 
 
 def summation(f, *symbols, **kwargs):
@@ -1928,7 +1937,7 @@ def _eval_sum_hyper(f, i, a):
     for k in range(2):
         for fac in factors[k]:
             mul = 1
-            if fac.is_Power:
+            if fac.is_Pow:
                 mul = fac.exp
                 fac = fac.base
                 if not mul.is_Integer:
@@ -2031,8 +2040,8 @@ class ReducedSum(Function):
         if f.is_FiniteSet:
             x, *args = f.args
             rest = f.func(*args)
-            from sympy import NotContains, Boole
-            sgm = x * Boole(NotContains(x, rest).simplify()).simplify()
+            from sympy import NotContains, Bool
+            sgm = x * Bool(NotContains(x, rest).simplify()).simplify()
             if not rest:
                 return sgm             
             return self.func(rest).doit(deep=deep) + sgm
@@ -2053,7 +2062,7 @@ class ReducedSum(Function):
 
     def _latex(self, p, exp=None):
         expr = p._print(self.arg)
-        if self.arg.is_Plus or self.arg.is_MatMul:
+        if self.arg.is_Add or self.arg.is_MatMul:
             expr = r"\left(%s\right)" % expr
         expr = r"\sum{%s}" % expr
         if exp is None:

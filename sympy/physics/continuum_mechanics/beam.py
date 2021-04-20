@@ -947,7 +947,7 @@ class Beam(object):
                 (float("nan"), True))
 
         points = solve(moment_curve.rewrite(Piecewise), self.variable,
-                        domain=S.Reals)
+                        domain=Reals)
         return points
 
     def slope(self):
@@ -1162,7 +1162,7 @@ class Beam(object):
                 (float("nan"), True))
 
         points = solve(slope_curve.rewrite(Piecewise), self.variable,
-                        domain=S.Reals)
+                        domain=Reals)
         deflection_curve = self.deflection()
         deflections = [deflection_curve.subs(self.variable, x) for x in points]
         deflections = list(map(abs, deflections))

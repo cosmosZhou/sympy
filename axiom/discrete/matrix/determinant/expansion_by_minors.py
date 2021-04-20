@@ -1,6 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.cofactor import Cofactors
+from axiom import algebra
 
 
 @apply
@@ -16,7 +17,7 @@ def apply(A, i=None, j=None):
         i = A.generate_free_symbol(excludes=j.free_symbols, integer=True)
         sigmar = Sum[i:n]
         
-    return Equality(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]).simplify())
+    return Equal(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]).simplify())
 
 
 @prove
@@ -29,7 +30,7 @@ def prove(Eq):
     A = Symbol.A(shape=(n, n), complex=True, zero=False)
     Eq << apply(A, i=i)
 
-    Eq << Eq[-1].this.rhs.doit()
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.doit)
 
     Eq << Eq[-1].this.rhs.args[0].args[1].arg.astype(Matrix)
     
@@ -49,7 +50,7 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 
 # https://en.wikipedia.org/wiki/Minor_(linear_algebra)
 # https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html

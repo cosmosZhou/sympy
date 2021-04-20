@@ -904,7 +904,7 @@ class Number(AtomicExpr):
         """
         from sympy import Symbol
         if rhs._has(Symbol):
-            return self.reversed_type(rhs, lhs, equivalent=self)
+            return self.reversed_type(rhs, lhs)
 
     
 class Float(Number):
@@ -2740,8 +2740,8 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         precondition: self.lhs is a Zero object!
         """
         if rhs._coeff_isneg():
-            return self.func(lhs, -rhs, equivalent=self)
-        elif rhs.is_Plus:
+            return self.func(lhs, -rhs)
+        elif rhs.is_Add:
             _lhs = []
             _rhs = []
             for arg in rhs.args:
@@ -2750,9 +2750,9 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
                 else:
                     _rhs.append(arg)
             if _lhs:
-                return self.func(Add(*_lhs), Add(*_rhs), equivalent=self).simplify()
+                return self.func(Add(*_lhs), Add(*_rhs)).simplify()
         elif rhs.is_KroneckerDelta:
-            return self.invert_type(*rhs.args, equivalent=self).simplify()
+            return self.invert_type(*rhs.args).simplify()
     
     @classmethod
     def simplify_Relational(cls, self, lhs, rhs):
@@ -2760,8 +2760,8 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         precondition: self.lhs is a Zero object!
         """
         if rhs._coeff_isneg():
-            return self.func(-rhs, lhs, equivalent=self)
-        elif rhs.is_Plus:
+            return self.func(-rhs, lhs)
+        elif rhs.is_Add:
             _lhs = []
             _rhs = []
             for arg in rhs.args:
@@ -2770,7 +2770,7 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
                 else:
                     _rhs.append(arg)
             if _lhs:
-                return self.func(Add(*_lhs), Add(*_rhs), equivalent=self).simplify()
+                return self.func(Add(*_lhs), Add(*_rhs)).simplify()
         
     @classmethod
     def simplify_Unequal(cls, self, lhs, rhs):
@@ -2778,8 +2778,8 @@ class Zero(with_metaclass(Singleton, IntegerConstant)):
         precondition: self.lhs is a Zero object!
         """
         if rhs._coeff_isneg():
-            return self.func(-rhs, lhs, equivalent=self)
-        return self.func(rhs, lhs, equivalent=self)
+            return self.func(-rhs, lhs)
+        return self.func(rhs, lhs)
         
 #     def __add__(self, other):
 #         return other
@@ -4425,8 +4425,8 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
             return S.true
         if other < 0:
             return S.false
-        from sympy import StrictLessThan
-        return StrictLessThan(0, other, evaluate=False)
+        from sympy import Less
+        return Less(0, other, evaluate=False)
 
     def __le__(self, other):
         if isinstance(other, Infinitesimal):
@@ -4438,8 +4438,8 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
             return S.true
         if other < 0:
             return S.false
-        from sympy import StrictLessThan
-        return StrictLessThan(0, other, evaluate=False)
+        from sympy import Less
+        return Less(0, other, evaluate=False)
 
     def __gt__(self, other):
         if isinstance(other, Infinitesimal):
@@ -4451,8 +4451,8 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
             return S.false
         if other < 0:
             return S.true
-        from sympy.core.relational import GreaterThan
-        return GreaterThan(0, other, evaluate=False)
+        from sympy.core.relational import GreaterEqual
+        return GreaterEqual(0, other, evaluate=False)
 
     def __ge__(self, other):
         if isinstance(other, Infinitesimal):
@@ -4463,8 +4463,8 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
             return S.false
         if other < 0:
             return S.true
-        from sympy import GreaterThan
-        return GreaterThan(0, other, evaluate=False)
+        from sympy import GreaterEqual
+        return GreaterEqual(0, other, evaluate=False)
 
     def __mod__(self, other):
         return S.NaN
@@ -4647,8 +4647,8 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
         if other < 0:
             return S.false
 
-        from sympy import LessThan
-        return LessThan(0, other, evaluate=False)
+        from sympy import LessEqual
+        return LessEqual(0, other, evaluate=False)
 
     def __le__(self, other):
         if isinstance(other, NegativeInfinitesimal):
@@ -4660,8 +4660,8 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
         if other < 0:
             return S.false
 
-        from sympy import LessThan
-        return LessThan(0, other, evaluate=False)
+        from sympy import LessEqual
+        return LessEqual(0, other, evaluate=False)
 
     def __gt__(self, other):
         if isinstance(other, NegativeInfinitesimal):
@@ -4673,8 +4673,8 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
             return S.false
         if other < 0:
             return S.true
-        from sympy import StrictGreaterThan
-        return StrictGreaterThan(0, other, evaluate=False)
+        from sympy import Greater
+        return Greater(0, other, evaluate=False)
 
     def __ge__(self, other):
         if isinstance(other, NegativeInfinitesimal):
@@ -4686,8 +4686,8 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
             return S.false
         if other < 0:
             return S.true
-        from sympy import GreaterThan
-        return GreaterThan(0, other, evaluate=False)
+        from sympy import GreaterEqual
+        return GreaterEqual(0, other, evaluate=False)
 
     def __mod__(self, other):
         return S.NaN

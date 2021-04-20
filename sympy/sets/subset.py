@@ -1,6 +1,6 @@
 from sympy.core import S
-from sympy.core.relational import Eq, Ne, StrictLessThan, StrictGreaterThan, \
-    LessThan, GreaterThan, Equality, Unequality
+from sympy.core.relational import Eq, Ne, Less, Greater, \
+    LessEqual, GreaterEqual, Equal, Unequal
 from sympy.logic.boolalg import And, Or, BinaryCondition
 from sympy.utilities.miscellany import func_name
 from sympy.core.sympify import _sympify, sympify
@@ -25,28 +25,28 @@ class Subset(BinaryCondition):
             for e in self.lhs.args:
                 from sympy import Contains                
                 eqs.append(Contains(e, self.rhs))
-            return And(*eqs, equivalent=self)
+            return And(*eqs)
 
         return self
 
-    def union(self, exp):
-        if isinstance(exp, Subset):
-            return self.func(self.lhs | exp.lhs, self.rhs | exp.rhs, given=[self, exp])
-        else:
-            return self.func(self.lhs | exp, self.rhs | exp, given=self)
-
-    def intersect(self, exp):
-        if isinstance(exp, Subset):
-            return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
-        else:
-            return self.func(self.lhs & exp, self.rhs & exp, given=self)
-            
     def _sympystr(self, p):
 #                 \N{SUBSET OF}
         return '%s \N{SUBSET OF OR EQUAL TO} %s' % tuple(p._print(x) for x in self.args)
     
     def _latex(self, printer):
         return r'%s \subset %s' % tuple(printer._print(x) for x in self.args)
+
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm, stringPict
+        from sympy.printing.str import sstr
+        
+        var, s = self.args
+        if p._use_unicode:
+            el = u" \N{SUBSET OF OR EQUAL TO} "
+            return prettyForm(*stringPict.next(p._print(var),
+                                               el, p._print(s)), binding=8)
+        else:
+            return prettyForm(sstr(self))
 
     @classmethod
     def eval(cls, lhs, rhs):
@@ -90,14 +90,14 @@ class Subset(BinaryCondition):
         kwargs['evaluate'] = False
 
         if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = Greater(self.element, self.set.start, **kwargs)
         else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = GreaterEqual(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
+            res[1] = Less(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
+            res[1] = LessEqual(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -108,12 +108,12 @@ class Subset(BinaryCondition):
     def acos(self):
         x, s = self.args
         from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
+        return self.func(acos(x), s.acos())
 
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
-            if isinstance(eq, Equality):
+            if isinstance(eq, Equal):
                 args = eq.args
                 result = self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
                 return self.subs_assumptions_for_equality(eq, result)                
@@ -127,14 +127,17 @@ class Subset(BinaryCondition):
         if other.is_Supset:
             if self.args == other.args:
                 # apply squeeze theorem
-                return Equality(*self.args, equivalent=[self, other])
+                return Equal(*self.args)
         elif other.is_Subset:
             lhs, rhs = self.args
             if (rhs, lhs) == other.args:
                 # apply squeeze theorem
-                return Equality(*self.args, equivalent=[self, other])
+                return Equal(*self.args)
             elif rhs == other.rhs:
-                return self.func(lhs | other.lhs, rhs, equivalent=[self, other])
+                return self.func(lhs | other.lhs, rhs)
+            elif lhs == other.lhs:
+                return self.func(lhs, rhs & other.rhs)
+            
         return BinaryCondition.__and__(self, other)
 
     def domain_conditioned(self, x):
@@ -152,7 +155,7 @@ class Subset(BinaryCondition):
             if res:
                 function, limits = res            
                 function = Subset(function, S).simplify()
-                return self.func(function, *limits, equivalent=self).simplify()
+                return self.func(function, *limits).simplify()
 
 
 class NotSubset(BinaryCondition):
@@ -172,22 +175,13 @@ class NotSubset(BinaryCondition):
     def simplify(self, deep=False):
         if self.lhs.is_UNION:
             from sympy import Exists
-            return Exists(self.func(self.lhs.function, self.rhs), *self.lhs.limits, equivalent=self)
+            return Exists(self.func(self.lhs.function, self.rhs), *self.lhs.limits)
 
         if self.lhs.is_FiniteSet and len(self.lhs) == 1:
             from sympy import NotContains
-            return NotContains(self.lhs.arg, self.rhs, equivalent=self).simplify()            
+            return NotContains(self.lhs.arg, self.rhs).simplify()            
              
         return self
-
-    def union(self, exp):
-        return self
-
-    def intersect(self, exp):
-        if isinstance(exp, Subset):
-            return self.func(self.lhs & exp.lhs, self.rhs & exp.rhs, given=[self, exp])
-        else:
-            return self.func(self.lhs & exp, self.rhs & exp, given=self)
 
     def _sympystr(self, p):
         #  NEITHER A SUBSET OF NOR EQUAL TO      
@@ -196,6 +190,18 @@ class NotSubset(BinaryCondition):
 
     def _latex(self, printer):
         return r'%s \not\subset %s' % tuple(printer._print(x) for x in self.args)
+
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm, stringPict
+        from sympy.printing.str import sstr
+        
+        var, s = self.args
+        if p._use_unicode:
+            el = u" \N{NOT A SUBSET OF} "
+            return prettyForm(*stringPict.next(p._print(var),
+                                               el, p._print(s)), binding=8)
+        else:
+            return prettyForm(sstr(self))
 
     @classmethod
     def eval(cls, x, s):
@@ -232,14 +238,14 @@ class NotSubset(BinaryCondition):
         kwargs['evaluate'] = False
 
         if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = Greater(self.element, self.set.start, **kwargs)
         else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = GreaterEqual(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
+            res[1] = Less(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
+            res[1] = LessEqual(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -250,14 +256,14 @@ class NotSubset(BinaryCondition):
     def acos(self):
         x, s = self.args
         from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
+        return self.func(acos(x), s.acos())
 
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
-            if isinstance(eq, Equality):
+            if isinstance(eq, Equal):
                 args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
+                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
 
         return self
 
@@ -281,22 +287,26 @@ class Supset(BinaryCondition):
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
-            if isinstance(eq, Equality):
+            if isinstance(eq, Equal):
                 args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
+                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
             return self
         return BinaryCondition.subs(self, *args, **kwargs)
     
     def __and__(self, other):
         if other.is_Subset:
             if self.args == other.args:
-                return Equality(*self.args, equivalent=[self, other])
+                # apply squeeze theorem
+                return Equal(*self.args)
         elif other.is_Supset:
             lhs, rhs = self.args
             if (rhs, lhs) == other.args:
-                return Equality(*self.args, equivalent=[self, other])
+                # apply squeeze theorem
+                return Equal(*self.args)
             elif lhs == other.lhs: 
-                return self.func(lhs, rhs | other.rhs, equivalent=[self, other])
+                return self.func(lhs, rhs | other.rhs)
+            elif rhs == other.rhs: 
+                return self.func(lhs & other.lhs, rhs)
             
         return BinaryCondition.__and__(self, other)
     
@@ -306,7 +316,7 @@ class Supset(BinaryCondition):
             for e in self.rhs.args:
                 from sympy import Contains                
                 eqs.append(Contains(e, self.lhs))
-            return And(*eqs, equivalent=self)
+            return And(*eqs)
         return self
 
     def _sympystr(self, p):
@@ -315,6 +325,18 @@ class Supset(BinaryCondition):
 
     def _latex(self, printer):
         return r'%s\supset %s' % tuple(printer._print(x) for x in self.args)
+
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm, stringPict
+        from sympy.printing.str import sstr
+        
+        var, s = self.args
+        if p._use_unicode:
+            el = u" \N{SUPERSET OF OR EQUAL TO} "
+            return prettyForm(*stringPict.next(p._print(var),
+                                               el, p._print(s)), binding=8)
+        else:
+            return prettyForm(sstr(self))
 
     @classmethod
     def eval(cls, x, s):
@@ -344,14 +366,14 @@ class Supset(BinaryCondition):
         kwargs['evaluate'] = False
 
         if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = Greater(self.element, self.set.start, **kwargs)
         else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = GreaterEqual(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
+            res[1] = Less(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
+            res[1] = LessEqual(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -362,7 +384,7 @@ class Supset(BinaryCondition):
     def acos(self):
         x, s = self.args
         from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
+        return self.func(acos(x), s.acos())
 
 
 class NotSupset(BinaryCondition):
@@ -382,15 +404,15 @@ class NotSupset(BinaryCondition):
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
-            if isinstance(eq, Equality):
+            if isinstance(eq, Equal):
                 args = eq.args
-                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs), equivalent=[self, eq])
+                return self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
         return self
 
     def simplify(self, deep=False):
         from sympy import Exists
         if self.rhs.is_UNION:
-            return Exists(self.func(self.lhs, self.rhs.function), *self.rhs.limits, equivalent=self).simplify()
+            return Exists(self.func(self.lhs, self.rhs.function), *self.rhs.limits).simplify()
         return self
 
     def _sympystr(self, p):
@@ -400,6 +422,18 @@ class NotSupset(BinaryCondition):
 
     def _latex(self, printer):
         return r'%s\not\supset %s' % tuple(printer._print(x) for x in self.args)
+
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm, stringPict
+        from sympy.printing.str import sstr
+        
+        var, s = self.args
+        if p._use_unicode:
+            el = u" \N{NOT A SUPERSET OF} "
+            return prettyForm(*stringPict.next(p._print(var),
+                                               el, p._print(s)), binding=8)
+        else:
+            return prettyForm(sstr(self))
 
     @classmethod
     def eval(cls, x, s):
@@ -429,14 +463,14 @@ class NotSupset(BinaryCondition):
         kwargs['evaluate'] = False
 
         if self.set.left_open:
-            res[0] = StrictGreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = Greater(self.element, self.set.start, **kwargs)
         else:
-            res[0] = GreaterThan(self.element, self.set.start, **kwargs)
+            res[0] = GreaterEqual(self.element, self.set.start, **kwargs)
 
         if self.set.right_open:
-            res[1] = StrictLessThan(self.element, self.set.stop, **kwargs)
+            res[1] = Less(self.element, self.set.stop, **kwargs)
         else:
-            res[1] = LessThan(self.element, self.set.stop, **kwargs)
+            res[1] = LessEqual(self.element, self.set.stop, **kwargs)
         return res
 
     def cos(self):
@@ -447,7 +481,7 @@ class NotSupset(BinaryCondition):
     def acos(self):
         x, s = self.args
         from sympy import acos
-        return self.func(acos(x), s.acos(), equivalent=self)
+        return self.func(acos(x), s.acos())
 
 
 Supset.invert_type = NotSupset

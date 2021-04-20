@@ -9,7 +9,7 @@ from axiom import sets
 def apply(given):
     A, BC = axiom.is_Equal(given)
     B, C = axiom.is_Union(BC)
-    return Equality(Complement(A, C), Complement(B, C)) & Subset(C, A) 
+    return Equal(Complement(A, C), Complement(B, C)) & Subset(C, A) 
 
 
 @prove
@@ -19,12 +19,12 @@ def prove(Eq):
     
     C = Symbol.C(etype=dtype.integer)
     
-    Eq << apply(Equality(A, B | C))
+    Eq << apply(Equal(A, B | C))
     
-    Eq << Eq[1].apply(sets.subset.eq.imply.eq.having.complement)
+    Eq << Eq[1].apply(sets.subset.eq.imply.eq.split.complement)
     
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

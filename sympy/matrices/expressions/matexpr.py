@@ -230,9 +230,9 @@ class MatrixExpr(Expr):
                 (0 <= j) != False and (j < self.cols) != False)
 
     def __getitem__(self, key):
-        if not isinstance(key, tuple) and isinstance(key, slice):
+        if not isinstance(key, (tuple, list)) and isinstance(key, slice):
             return self._entry(key)
-        if isinstance(key, tuple): 
+        if isinstance(key, (tuple, list)): 
             if len(key) == 1:
                 key = key[0]
             elif len(key) == 2:
@@ -246,7 +246,7 @@ class MatrixExpr(Expr):
                 else:
                     raise IndexError("Invalid indices (%s, %s)" % (i, j))
                 
-        if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr)):
+        if isinstance(key, (SYMPY_INTS, Integer, Symbol, Expr, slice)):
             return self._entry(key)
 #             # row-wise decomposition of matrix
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
@@ -541,7 +541,7 @@ def get_postprocessor(cls):
 
     def _postprocessor(expr):
         # To avoid circular imports, we can't have MatMul/MatAdd on the top level
-        mat_class = {Mul: MatMul, Add: MatAdd}[cls]
+        mat_class = {Mul: MatMul, Add: Add}[cls]
         nonmatrices = []
         matrices = []
         for term in expr.args:
@@ -1302,7 +1302,7 @@ class Swap(Identity):
     def _entry(self, i, j=None, **_):
         from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.core.relational import Equality
+        from sympy.core.relational import Equal
         
         if isinstance(i, slice):
             if i.start in (0, None) and i.stop in (self.n, None):
@@ -1318,8 +1318,8 @@ class Swap(Identity):
             j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
         else:
             return_reference_j = False                        
-        piecewise = Piecewise((KroneckerDelta(j, self.i), Equality(i, self.j)),
-                              (KroneckerDelta(j, self.j), Equality(i, self.i)),
+        piecewise = Piecewise((KroneckerDelta(j, self.i), Equal(i, self.j)),
+                              (KroneckerDelta(j, self.j), Equal(i, self.i)),
                               (KroneckerDelta(j, i), True))
 
         if return_reference_j:
@@ -1471,7 +1471,7 @@ class Addition(Multiplication):
     def _entry(self, i, j=None, **_):
         from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.core.relational import Equality
+        from sympy.core.relational import Equal
         
 #     1   0   0   0   0   0
 #     0   1   0   0   0   0    
@@ -1489,10 +1489,10 @@ class Addition(Multiplication):
         else:
             return_reference = False                        
             
-        piecewise = Piecewise((KroneckerDelta(j, i), Equality(self.i, self.j)),
-                              (Piecewise((self.multiplier, Equality(j, self.i)),
+        piecewise = Piecewise((KroneckerDelta(j, i), Equal(self.i, self.j)),
+                              (Piecewise((self.multiplier, Equal(j, self.i)),
                                          (KroneckerDelta(j, self.j), True)),
-                                         Equality(i, self.j)),
+                                         Equal(i, self.j)),
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
@@ -1569,7 +1569,7 @@ class Shift(Identity):
     def _entry(self, i, j=None, **_):
         from sympy.concrete.expr_with_limits import LAMBDA
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.core.relational import Equality, StrictLessThan 
+        from sympy.core.relational import Equal, Less 
         from sympy.sets import Contains, Interval
         if j is None:
             return_reference = True
@@ -1586,7 +1586,7 @@ class Shift(Identity):
 #             |       |
 #            i col    j col      
 # delete i th row insert into after j th row        
-        piecewise_ij = Piecewise((KroneckerDelta(self.i, j), Equality(i, self.j)),
+        piecewise_ij = Piecewise((KroneckerDelta(self.i, j), Equal(i, self.j)),
                                  (KroneckerDelta(i + 1, j), Contains(i, Interval(self.i, self.j, right_open=True, integer=True))),
                                  (KroneckerDelta(i, j), True))
         
@@ -1600,12 +1600,12 @@ class Shift(Identity):
 #             |       |
 #            j col    i col      
 # delete i th row insert into before j th row        
-        piecewise_ji = Piecewise((KroneckerDelta(i, self.j), Equality(j, self.i)),
+        piecewise_ji = Piecewise((KroneckerDelta(i, self.j), Equal(j, self.i)),
                                  (KroneckerDelta(i, j + 1), Contains(j, Interval(self.j, self.i, right_open=True, integer=True))),
                                  (KroneckerDelta(i, j), True))
         
-        piecewise = Piecewise((KroneckerDelta(i, j), Equality(self.i, self.j)),
-                              (piecewise_ij, StrictLessThan(self.i, self.j)),
+        piecewise = Piecewise((KroneckerDelta(i, j), Equal(self.i, self.j)),
+                              (piecewise_ij, Less(self.i, self.j)),
                               (piecewise_ji, True))
 
         if return_reference:

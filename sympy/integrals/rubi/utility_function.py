@@ -674,7 +674,7 @@ def IndependentQ(u, x):
     return FreeQ(u, x)
 
 def PowerQ(expr):
-    return expr.is_Power or ExpQ(expr)
+    return expr.is_Pow or ExpQ(expr)
 
 def IntegerPowerQ(u):
     if isinstance(u, sym_exp): #special case for exp

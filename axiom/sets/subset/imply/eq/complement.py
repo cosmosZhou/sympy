@@ -1,9 +1,6 @@
 from axiom.utility import prove, apply
-from axiom import algebre
 from sympy import *
-
-from axiom import sets
-
+from axiom import algebra, sets
 
 # given: A in B
 # |B - A| = |B| - |A|
@@ -12,7 +9,7 @@ def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return Equality(abs(B - A), abs(B) - abs(A))
+    return Equal(abs(B - A), abs(B) - abs(A))
 
 
 @prove
@@ -20,23 +17,23 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
-    subset = Subset(A, B, evaluate=False)
-
-    Eq << apply(subset)
+    Eq << apply(Subset(A, B, evaluate=False))
 
     Eq << sets.imply.eq.principle.addition.apply(B - A, B & A)
 
-    Eq << Eq[-1] + Eq[-2]
+    Eq << Eq[1].subs(Eq[-1])
     
-    Eq << subset.intersect(A)
-
-    Eq << Supset(*Eq[-1].args, plausible=True)
-
-    Eq <<= Eq[-1] & Eq[-2]
-
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
+    
+    Eq << Eq[-1].apply(algebra.is_zero.given.eq)
+    
+    Eq << sets.subset.imply.eq.intersection.apply(Eq[0])
+    
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
+    
+    Eq << Eq[-1].reversed
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

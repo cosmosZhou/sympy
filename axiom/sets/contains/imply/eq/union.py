@@ -1,9 +1,8 @@
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy.core.relational import Equality
-from sympy import Symbol
+from sympy import *
 from axiom import sets
+
+
 # given: A ∈ B 
 # => A ∪ B = B
 @apply
@@ -11,9 +10,7 @@ def apply(given):
     assert given.is_Contains
     A, B = given.args
     
-    return Equality(A.set | B, B)
-
-
+    return Equal(A.set | B, B)
 
 
 @prove
@@ -28,6 +25,7 @@ def prove(Eq):
     
     Eq << sets.subset.imply.eq.union.apply(Eq[-1])
 
+
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

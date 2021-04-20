@@ -385,7 +385,7 @@ class PolyRing(DefaultPrinting, IPolys):
                 return reduce(add, list(map(_rebuild, expr.args)))
             elif expr.is_Mul:
                 return reduce(mul, list(map(_rebuild, expr.args)))
-            elif expr.is_Power and expr.exp.is_Integer and expr.exp >= 0:
+            elif expr.is_Pow and expr.exp.is_Integer and expr.exp >= 0:
                 return _rebuild(expr.base)**int(expr.exp)
             else:
                 return domain.convert(expr)
@@ -653,7 +653,7 @@ class PolyElement(DomainElement, DefaultPrinting, CantSympify, dict):
                 del self[k]
 
     def __eq__(p1, p2):
-        """Equality test for polynomials.
+        """Equal test for polynomials.
 
         Examples
         ========

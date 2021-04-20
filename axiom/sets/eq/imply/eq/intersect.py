@@ -1,8 +1,6 @@
-from sympy.core.relational import Equality
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
 
-from sympy import Symbol
+from sympy import *
 import axiom
 # given : A & B = A | B => A = B
 
@@ -10,7 +8,7 @@ import axiom
 @apply
 def apply(given, S):
     A, B = axiom.is_Equal(given)
-    return Equality(A & S, B & S)
+    return Equal(A & S, B & S)
 
 
 @prove
@@ -20,10 +18,11 @@ def prove(Eq):
     
     S = Symbol.S(etype=dtype.integer)
     
-    Eq << apply(Equality(A, B), S)
+    Eq << apply(Equal(A, B), S)
     
     Eq << Eq[-1].subs(Eq[0])
 
+
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

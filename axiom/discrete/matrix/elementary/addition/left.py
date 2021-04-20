@@ -1,5 +1,5 @@
 
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
@@ -22,7 +22,7 @@ def apply(x, lamda, w=None):
         assert w[i, j] == Addition(n, i, j, lamda)
         assert w_quote[i, j] == Addition(n, i, j, -lamda)
     
-    return Equality(w_quote[i, j] @ w[i, j] @ x, x)
+    return Equal(w_quote[i, j] @ w[i, j] @ x, x)
 
 
 @prove
@@ -51,5 +51,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

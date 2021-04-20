@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 # P is condition set;
 
 
@@ -24,7 +24,7 @@ def prove(Eq):
     P = Symbol.P(conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Interval(0, m - 1, integer=True), n)))
     Eq << apply(P)
     
-    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
+    Eq << algebra.forall_et.imply.forall.apply(Eq[-1])
     
     Eq << ForAll[x[:n]:P](Contains(x[:n], P), plausible=True)
     
@@ -34,5 +34,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

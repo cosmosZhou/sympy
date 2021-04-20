@@ -1,7 +1,6 @@
-
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import sets, algebre
+from axiom import sets, algebra
 # given: A != {}
 # Exists[x] (x in A)
 
@@ -19,9 +18,7 @@ def apply(x=None, y=None, **kwargs):
     if y is None:
         y = S.generate_free_symbol(excludes={x}, **S.etype.dict)
 
-    return ForAll[S:Equality(abs(S), 2)](Exists[x: Unequality(x, y), y](Equality(S, {x, y})))
-
-
+    return ForAll[S:Equal(abs(S), 2)](Exists[x: Unequal(x, y), y](Equal(S, {x, y})))
 
 
 @prove
@@ -30,11 +27,11 @@ def prove(Eq):
     S = Symbol.S(etype=dtype.integer * k)    
     Eq << apply(set=S)
     
-    Eq << algebre.imply.forall.limits_assert.apply(Eq[0].limits)
+    Eq << algebra.imply.forall.limits_assert.apply(Eq[0].limits)
     
-    Eq << Eq[-1].apply(sets.eq.imply.exists_eq.two)
+    Eq << Eq[-1].this.function.apply(sets.eq.imply.exists_eq.two)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

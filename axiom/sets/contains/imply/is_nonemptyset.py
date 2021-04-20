@@ -1,9 +1,6 @@
-from sympy.core.relational import Unequality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.contains import NotContains, Contains
-from sympy import Symbol
 import axiom
-from sympy.core.symbol import dtype
 # given: x != y
 # x not in {y}
 
@@ -11,7 +8,7 @@ from sympy.core.symbol import dtype
 @apply
 def apply(given):
     x, S = axiom.is_Contains(given)
-    return Unequality(S, x.emptySet)
+    return Unequal(S, x.emptySet)
 
 
 @prove
@@ -27,5 +24,5 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

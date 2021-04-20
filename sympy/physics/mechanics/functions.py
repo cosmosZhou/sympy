@@ -664,7 +664,7 @@ def _fraction_decomp(expr):
     num = []
     den = []
     for a in expr.args:
-        if a.is_Power and a.args[1] < 0:
+        if a.is_Pow and a.args[1] < 0:
             den.append(1 / a)
         else:
             num.append(a)

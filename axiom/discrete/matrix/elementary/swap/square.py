@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from axiom.utility import prove, apply
 from sympy.sets.sets import Interval
 from sympy.core.numbers import oo
@@ -6,7 +6,7 @@ from sympy.core.numbers import oo
 from sympy.matrices.expressions.matexpr import Swap, Identity
 from sympy import LAMBDA
 from sympy import Symbol
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -18,7 +18,7 @@ def apply(w):
     assert len(w.shape) == 4 and all(s == n for s in w.shape)
     assert w[i, j].is_Swap or w[i, j].definition.is_Swap 
     
-    return Equality(w[i, j] @ w[i, j], Identity(n))
+    return Equal(w[i, j] @ w[i, j], Identity(n))
 
 
 @prove
@@ -36,5 +36,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

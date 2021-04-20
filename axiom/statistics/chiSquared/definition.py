@@ -17,7 +17,7 @@ def apply(X, Y):
     k = Y.distribution.k
     assert Sum[i:k](X[i] * X[i]).is_random
     
-    return Equality(PDF(Sum[i:k](X[i] * X[i]))(y), PDF(Y)(y).doit())
+    return Equal(PDF(Sum[i:k](X[i] * X[i]))(y), PDF(Y)(y).doit())
 
 
 
@@ -43,4 +43,4 @@ def prove(Eq):
 
 # https://www.asmeurer.com/blog/
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

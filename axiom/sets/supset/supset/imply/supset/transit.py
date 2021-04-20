@@ -29,4 +29,4 @@ def prove(Eq):
     Eq << sets.subset.supset.imply.supset.transit.apply(Eq[-1], Eq[1])    
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

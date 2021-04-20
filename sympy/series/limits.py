@@ -1,5 +1,3 @@
-from __future__ import print_function, division
-
 from sympy.core import S, Symbol, Add, sympify, Expr, PoleError, Mul
 from sympy.core.compatibility import string_types
 from sympy.core.exprtools import factor_terms
@@ -15,7 +13,7 @@ from sympy.simplify.simplify import together
 from .gruntz import gruntz
 
 
-def limit(e, z, z0, direction="+"):
+def limit(e, z, z0, direction=1):
     """Computes the limit of ``e(z)`` at the point ``z0``.
 
     Parameters
@@ -69,9 +67,9 @@ def limit(e, z, z0, direction="+"):
      limit_seq : returns the limit of a sequence.
     """
 
-    if direction == "+-":
-        llim = Limit[z:z0:"-"](e).doit(deep=False)
-        rlim = Limit[z:z0:"+"](e).doit(deep=False)
+    if direction == 0:
+        llim = Limit[z:z0:-1](e).doit(deep=False)
+        rlim = Limit[z:z0:1](e).doit(deep=False)
         if llim == rlim:
             return rlim
         else:
@@ -94,10 +92,10 @@ def heuristics(e, z, z0, direction):
     from sympy.calculus.util import AccumBounds
     rv = None
     if abs(z0) is S.Infinity:
-        rv = limit(e.subs(z, 1 / z), z, S.Zero, "+" if z0 is S.Infinity else "-")
+        rv = limit(e.subs(z, 1 / z), z, S.Zero, 1 if z0 is S.Infinity else -1)
         if isinstance(rv, Limit):
             return
-    elif e.is_Mul or e.is_Add or e.is_Power or e.is_Function:
+    elif e.is_Mul or e.is_Add or e.is_Pow or e.is_Function:
         r = []
         for a in e.args:
             l = limit(a, z, z0, direction)
@@ -170,27 +168,20 @@ class Limit(Expr):
             z, z0, direction = limit
         else:
             z, z0 = limit
-            direction = '+-'
+            direction = S.Zero
             
         e = sympify(e)
         z = sympify(z)
         z0 = sympify(z0)
 
         if z0 is S.Infinity:
-            direction = "-"
+            direction = S.NegativeOne
         elif z0 is S.NegativeInfinity:
-            direction = "+"
+            direction = S.One
         elif z.shape:
-            direction = "+-"
+            direction = S.Zero
 
-        if isinstance(direction, string_types):
-            direction = Symbol(direction)
-        elif not isinstance(direction, Symbol):
-            raise TypeError("direction must be of type basestring or "
-                    "Symbol, not %s" % type(direction))
-        if str(direction) not in ('+', '-', '+-'):
-            raise ValueError("direction must be one of '+', '-' "
-                    "or '+-', not %s" % direction)
+        assert direction in (1, 0, -1), "direction must be one of 1, 0, -1, not %s" % direction
 
         obj = Expr.__new__(cls)
         from sympy import Tuple
@@ -261,7 +252,7 @@ class Limit(Expr):
                     else:
                         inve = e.subs(z, 1 / u)
                     try:
-                        r = limit(inve.as_leading_term(u), u, S.Zero, "+")
+                        r = limit(inve.as_leading_term(u), u, S.Zero, 1)
                         if isinstance(r, Limit):
                             return self
                         else:
@@ -273,9 +264,9 @@ class Limit(Expr):
             return Order(limit(e.expr, z, z0), *e.args[1])
 
         try:
-            if str(direction) == '+-':
-                r = gruntz(e, z, z0, '+')
-                _r = gruntz(e, z, z0, '-')
+            if direction == 0:
+                r = gruntz(e, z, z0, 1)
+                _r = gruntz(e, z, z0, -1)
                 if r != _r:
                     raise PoleError()
             else:
@@ -309,27 +300,57 @@ class Limit(Expr):
 
     def _sympystr(self, p):
         e, (z, z0, direction) = self.args
-        if str(direction) == "+":
+        if direction == 1:
             return "lim[%s>%s](%s)" % tuple(map(p._print, (z, z0, e)))
-        elif str(direction) == "-":
+        elif direction == -1:
             return "lim[%s<%s](%s)" % tuple(map(p._print, (z, z0, e)))
         else:
             return "lim[%s:%s](%s)" % tuple(map(p._print, (z, z0, e)))
 
-    def _latex(expr, self):
-        e, (z, z0, dir) = expr.args
+    def _latex(self, p):
+        e, (z, z0, dir) = self.args
 
-        tex = r"\lim\limits_{%s \to " % self._print(z)
-        if str(dir) == '+-' or z0 in (S.Infinity, S.NegativeInfinity):
-            tex += r"%s}" % self._print(z0)
+        tex = r"\lim\limits_{%s \to " % p._print(z)
+        if dir == 0 or z0 in (S.Infinity, S.NegativeInfinity):
+            tex += r"%s}" % p._print(z0)
         else:
-            tex += r"%s^%s}" % (self._print(z0), self._print(dir))
+            tex += r"%s^%s}" % (p._print(z0), p._print('+' if dir > 0 else '-'))
 
         if isinstance(e, Add):
 #         if isinstance(e, AssocOp):
-            return r"%s\left(%s\right)" % (tex, self._print(e))
+            return r"%s\left(%s\right)" % (tex, p._print(e))
         else:
-            return r"%s %s" % (tex, self._print(e))
+            return r"%s %s" % (tex, p._print(e))
+
+    def _pretty(self, p):
+        e, (z, z0, dir) = self.args
+        from sympy.printing.precedence import precedence, PRECEDENCE
+        from sympy.printing.pretty.stringpict import prettyForm
+
+        E = p._print(e)
+        if precedence(e) <= PRECEDENCE["Mul"]:
+            E = prettyForm(*E.parens('(', ')'))
+        Lim = prettyForm('lim')
+
+        LimArg = p._print(z)
+        if p._use_unicode:
+            LimArg = prettyForm(*LimArg.right(u'\N{BOX DRAWINGS LIGHT HORIZONTAL}\N{RIGHTWARDS ARROW}'))
+        else:
+            LimArg = prettyForm(*LimArg.right('->'))
+        LimArg = prettyForm(*LimArg.right(p._print(z0)))
+
+        if dir == 0 or z0 in (S.Infinity, S.NegativeInfinity):
+            dir = ""
+        else:
+            if p._use_unicode:
+                dir = u'\N{SUPERSCRIPT PLUS SIGN}' if dir == 1 else u'\N{SUPERSCRIPT MINUS}'
+
+        LimArg = prettyForm(*LimArg.right(p._print(dir)))
+
+        Lim = prettyForm(*Lim.below(LimArg))
+        Lim = prettyForm(*Lim.right(E), binding=prettyForm.MUL)
+
+        return Lim
 
     def simplify(self, **kwargs):
         expr, (x, *_) = self.args
@@ -337,3 +358,28 @@ class Limit(Expr):
             return expr
         return self
 
+
+    def _has(self, pattern):
+        """Helper for .has()"""        
+        from sympy.core.assumptions import BasicMeta
+        from sympy.core.function import UndefinedFunction
+        if isinstance(pattern, (BasicMeta, UndefinedFunction)):
+            return Expr._has(self, pattern)
+        
+        from sympy.tensor.indexed import Indexed, Slice
+        if not isinstance(pattern, (Symbol, Indexed, Slice)):
+            return Expr._has(self, pattern)
+
+        expr = self.expr
+        limits = []
+        
+        for limit in self.limits:
+            x, *_ = limit
+            if x == pattern:
+                return False
+            
+            limits.append(limit)
+                    
+        boolean = expr._has(pattern)
+
+        return boolean or any(arg._has(pattern) for arg in limits)

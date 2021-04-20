@@ -9,7 +9,7 @@ def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return Equality(A | B, B)
+    return Equal(A | B, B)
 
 
 @prove
@@ -17,9 +17,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
-    subset = Subset(A, B)
-
-    Eq << apply(subset)
+    Eq << apply(Subset(A, B))
     
     Eq << Subset(B, B, plausible=True)
     
@@ -31,5 +29,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

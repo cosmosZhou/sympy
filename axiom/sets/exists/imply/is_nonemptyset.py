@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -15,7 +15,7 @@ def apply(given):
 def prove(Eq):
     S = Symbol.S(etype=dtype.real)
     e = Symbol.e(real=True)
-    f = Function.f(nargs=(), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
 
     Eq << apply(Exists[e:S](f(e) > 0))
     
@@ -23,10 +23,10 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()
     
-    Eq << algebre.exists_et.imply.exists.split.apply(Eq[-1])
+    Eq << algebra.exists_et.imply.exists.split.apply(Eq[-1])
         
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,13 +1,13 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
 def apply(n):
     k = Symbol.k(integer=True)
     
-    return Equality(LAMBDA[k:n + 1](KroneckerDelta(k, n)),
+    return Equal(LAMBDA[k:n + 1](KroneckerDelta(k, n)),
                     BlockMatrix(ZeroMatrix(n), 1))
 
 
@@ -37,10 +37,14 @@ def prove(Eq):
     
     Eq << Eq[-2] - Eq[-1]
 
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.lamda, (i,), simplify=False)
+    Eq << algebra.is_zero.imply.eq.apply(Eq[-1])
     
-    Eq << Eq[-1].subs(Eq[1]).subs(Eq[2]).reversed
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.lamda, (i,), simplify=False)
+    
+    Eq << Eq[-1].subs(Eq[1]).subs(Eq[2])
+    
+    
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

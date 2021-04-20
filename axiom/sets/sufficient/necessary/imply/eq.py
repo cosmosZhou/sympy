@@ -1,7 +1,7 @@
 from sympy import *
 
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -22,7 +22,7 @@ def apply(*given):
     assert not x.is_given
     assert x.is_symbol
     
-    return Equality(A, B)
+    return Equal(A, B)
 
 
 @prove
@@ -34,13 +34,13 @@ def prove(Eq):
     
     Eq << apply(Sufficient(Contains(x, A), Contains(x, B)), Necessary(Contains(x, A), Contains(x, B)))
     
-    Eq << algebre.sufficient.imply.forall.rewrite.apply(Eq[0], wrt=x)
+    Eq << Eq[0].this.apply(algebra.sufficient.to.forall, wrt=x)
     
-    Eq << algebre.necessary.imply.forall.rewrite.apply(Eq[1], wrt=x)
+    Eq << algebra.necessary.imply.forall.apply(Eq[1], wrt=x)
     
     Eq << sets.forall_contains.forall_contains.imply.eq.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

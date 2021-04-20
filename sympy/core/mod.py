@@ -249,21 +249,21 @@ class Mod(Function):
         if exp is not None:
 #             return r'\left(%s\bmod{%s}\right)^{%s}' % \
             return r'\left(%s\%%{%s}\right)^{%s}' % \
-                (self.parenthesize(self.args[0], PRECEDENCE['Times'],
+                (self.parenthesize(self.args[0], PRECEDENCE['Mul'],
                                    strict=True), p._print(self.args[1]),
                  self._print(exp))
         return r'%s\%%{%s}' % (p.parenthesize(self.args[0],
-                                 PRECEDENCE['Times'], strict=True),
+                                 PRECEDENCE['Mul'], strict=True),
                                  p._print(self.args[1]))
 
     def _sympystr(self, p):
         n, d = self.args 
-        if n.is_Plus or n.is_Times:
+        if n.is_Add or n.is_Mul:
             n = '(%s)' % p._print(n)
         else:
             n = p._print(n)
             
-        if d.is_Plus or d.is_Times:
+        if d.is_Add or d.is_Mul:
             d = '(%s)' % p._print(d)
         else:
             d = p._print(d)
@@ -273,7 +273,7 @@ class Mod(Function):
     def _pretty(self, p):
         from sympy.printing.pretty.stringpict import prettyForm
         pform = p._print(self.args[0])
-        if pform.binding > prettyForm.MUL or self.args[0].is_Plus:
+        if pform.binding > prettyForm.MUL or self.args[0].is_Add:
             pform = prettyForm(*pform.parens())
         pform = prettyForm(*pform.right(' % '))
         pform = prettyForm(*pform.right(p._print(self.args[1])))
@@ -285,3 +285,12 @@ class Mod(Function):
             if self.args[1] == other.args[1]:
                 return self.func(self.args[0] + other.args[0], self.args[1])
         return Function.__add__(self, other)
+
+    def _eval_domain_defined(self, x):
+        domain = Function._eval_domain_defined(self, x)
+        n, d = self.args
+        if d._has(x):
+            domain &= d.domain_nonzero(x)
+        
+        domain &= n.domain_defined(x)
+        return domain

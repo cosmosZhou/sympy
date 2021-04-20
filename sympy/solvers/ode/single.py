@@ -15,7 +15,7 @@ from sympy.core.exprtools import factor_terms
 from sympy.core.expr import Expr
 from sympy.core.function import AppliedUndef, Derivative, Function, expand
 from sympy.core.numbers import Float
-from sympy.core.relational import Equality, Eq
+from sympy.core.relational import Equal, Eq
 from sympy.core.symbol import Symbol, Dummy, Wild
 from sympy.functions import exp, sqrt, tan, log
 from sympy.integrals import Integral
@@ -209,7 +209,7 @@ class SingleODESolver:
             self._matched = self._matches()
         return self._matched
 
-    def get_general_solution(self, *, simplify: bool = True) -> List[Equality]:
+    def get_general_solution(self, *, simplify: bool = True) -> List[Equal]:
         if not self.matches():
             msg = "%s solver can not solve:\n%s"
             raise ODEMatchError(msg % (self.hint, self.ode_problem.eq))
@@ -219,7 +219,7 @@ class SingleODESolver:
         msg = "Subclasses of SingleODESolver should implement matches."
         raise NotImplementedError(msg)
 
-    def _get_general_solution(self, *, simplify: bool = True) -> List[Equality]:
+    def _get_general_solution(self, *, simplify: bool = True) -> List[Equal]:
         msg = "Subclasses of SingleODESolver should implement get_general_solution."
         raise NotImplementedError(msg)
 
@@ -341,7 +341,7 @@ class NthAlgebraic(SingleODESolver):
             solns = []
 
         solns = [simplify(unreplace(soln, var)) for soln in solns]
-        solns = [Equality(func, soln) for soln in solns]
+        solns = [Equal(func, soln) for soln in solns]
 
         self.solutions = solns
         return len(solns) != 0

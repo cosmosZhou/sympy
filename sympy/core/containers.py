@@ -151,17 +151,24 @@ class Tuple(Basic):
         if p.printmethod == '_latex':
             if len(self) == 3:
                 x, a, b = self
-                if x.is_integer:
-                    if b.is_Plus and b.args[0].is_One:
-                        return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b - 1)])
-                    else:
-                        return r"%s \leq %s \lt %s" % tuple([p._print(s) for s in (a, x, b)])
-                return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b)])
+                if b.is_set:
+                    return r"%s \in %s \left| %s \right. " % (p._print(x), p._print(b), p._print(a))
+                else:
+                    if x.is_integer:
+                        if b.is_Add and b.args[0].is_One:
+                            return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b - 1)])
+                        else:
+                            return r"%s \leq %s \lt %s" % tuple([p._print(s) for s in (a, x, b)])
+                    return r"%s \leq %s \leq %s" % tuple([p._print(s) for s in (a, x, b)])
             elif len(self) == 2:
-                return r"%s \in %s" % tuple([p._print(s) for s in (self[0], self[1])])
+                x, cond = self
+                if cond.is_set:
+                    return r"%s \in %s" % (p._print(x), p._print(cond))
+                else:
+                    return r"%s \left| %s \right. " % (p._print(x), p._print(cond))
             else:
                 return p._print(self[0])
-        else:
+        elif p.printmethod == '_sympystr':
             if len(self) == 3:
                 if self[1].is_zero:
                     return r"%s:%s" % tuple([p._print(s) for s in (self[0], self[2])])
@@ -170,7 +177,18 @@ class Tuple(Basic):
             elif len(self) == 2:
                 return r"%s:%s" % tuple([p._print(s) for s in (self[0], self[1])])
             else:
-                return p._print(self[0])            
+                return p._print(self[0])
+        else:
+            if len(self) == 3:
+                if self[1].is_zero:
+                    return r"%s:%s" % tuple([str(s) for s in (self[0], self[2])])
+                else:
+                    return r"%s:%s:%s" % tuple([str(s) for s in (self[0], self[1], self[2])])
+            elif len(self) == 2:
+                return r"%s:%s" % tuple([str(s) for s in (self[0], self[1])])
+            else:
+                return str(self[0])
+                        
 
     def domain_latex(self, domain=None):
         if domain.is_Interval:
@@ -248,6 +266,27 @@ class Tuple(Basic):
             from sympy.sets.sets import Interval
             return (x, Interval(*ab, right_open=x.is_integer, integer=x.is_integer))
         return self
+    
+    def coerce_setlimit(self, function=None):
+        x, *ab = self
+        if not ab:
+            if function is None:
+                domain = x.universalSet
+            else:
+                domain = function.domain_defined(x)
+        elif len(ab) == 1: 
+            domain = ab[0]
+            if domain.is_boolean:
+                domain = x.domain_conditioned(domain)
+        else:
+            a, b = ab
+            if b.is_set:
+                domain = b & x.domain_conditioned(a)
+            else:
+                from sympy import Interval
+                domain = Interval(a, b, right_open=x.is_integer, integer=x.is_integer)
+        return x, domain
+    
 
 
 converter[tuple] = lambda tup: Tuple(*tup)

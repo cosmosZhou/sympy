@@ -129,7 +129,6 @@ from sympy.utilities.timeutils import timethis
 timeit = timethis('gruntz')
 
 
-
 def compare(a, b, x):
     """Returns "<" if a<b, "=" for a == b, ">" for a>b"""
     # log(exp(...)) must always be simplified here for termination
@@ -139,7 +138,7 @@ def compare(a, b, x):
     if isinstance(b, Basic) and isinstance(b, exp):
         lb = b.args[0]
 
-    c = limitinf(la/lb, x)
+    c = limitinf(la / lb, x)
     if c == 0:
         return "<"
     elif c.is_infinite:
@@ -192,6 +191,7 @@ class SubsSet(dict):
 
         exp(-w)/w + 1/w + x.
     """
+
     def __init__(self):
         self.rewrites = {}
 
@@ -258,7 +258,7 @@ def mrv(e, x):
         s1, e1 = mrv(a, x)
         s2, e2 = mrv(b, x)
         return mrv_max1(s1, s2, e.func(i, e1, e2), x)
-    elif e.is_Power:
+    elif e.is_Pow:
         b, e = e.as_base_exp()
         if b == 1:
             return SubsSet(), b
@@ -266,7 +266,7 @@ def mrv(e, x):
             return mrv(exp(e * log(b)), x)
         else:
             s, expr = mrv(b, x)
-            return s, expr**e
+            return s, expr ** e
     elif isinstance(e, log):
         s, expr = mrv(e.args[0], x)
         return s, log(expr)
@@ -390,12 +390,12 @@ def sign(e, x):
         return sa * sign(b, x)
     elif isinstance(e, exp):
         return 1
-    elif e.is_Power:
+    elif e.is_Pow:
         s = sign(e.base, x)
         if s == 1:
             return 1
         if e.exp.is_Integer:
-            return s**e.exp
+            return s ** e.exp
     elif isinstance(e, log):
         return sign(e.args[0] - 1, x)
 
@@ -428,13 +428,13 @@ def limitinf(e, x):
     if sig == 1:
         return S.Zero  # e0>0: lim f = 0
     elif sig == -1:  # e0<0: lim f = +-oo (the sign depends on the sign of c0)
-        if c0.match(I*Wild("a", exclude=[I])):
-            return c0*oo
+        if c0.match(I * Wild("a", exclude=[I])):
+            return c0 * oo
         s = sign(c0, x)
         # the leading term shouldn't be 0:
         if s == 0:
             raise ValueError("Leading term should not be 0")
-        return s*oo
+        return s * oo
     elif sig == 0:
         return limitinf(c0, x)  # e0=0: lim f = lim c0
 
@@ -527,10 +527,13 @@ def build_expression_tree(Omega, rewrites):
 
     This function builds the tree, rewrites then sorts the nodes.
     """
+
     class Node:
+
         def ht(self):
             return reduce(lambda x, y: x + y,
                           [x.ht() for x in self.before], 1)
+
     nodes = {}
     for expr, v in Omega:
         n = Node()
@@ -581,12 +584,12 @@ def rewrite(e, Omega, x, wsym):
         if sig != 1 and sig != -1:
             raise NotImplementedError('Result depends on the sign of %s' % sig)
     if sig == 1:
-        wsym = 1/wsym  # if g goes to oo, substitute 1/w
+        wsym = 1 / wsym  # if g goes to oo, substitute 1/w
     # O2 is a list, which results by rewriting each item in Omega using "w"
     O2 = []
     denominators = []
     for f, var in Omega:
-        c = limitinf(f.args[0]/g.args[0], x)
+        c = limitinf(f.args[0] / g.args[0], x)
         if c.is_Rational:
             denominators.append(c.q)
         arg = f.args[0]
@@ -594,7 +597,7 @@ def rewrite(e, Omega, x, wsym):
             if not isinstance(rewrites[var], exp):
                 raise ValueError("Value should be exp")
             arg = rewrites[var].args[0]
-        O2.append((var, exp((arg - c*g.args[0]).expand())*wsym**c))
+        O2.append((var, exp((arg - c * g.args[0]).expand()) * wsym ** c))
 
     # Remember that Omega contains subexpressions of "e". So now we find
     # them in "e" and substitute them for our rewriting, stored in O2
@@ -617,13 +620,13 @@ def rewrite(e, Omega, x, wsym):
     # Some parts of sympy have difficulty computing series expansions with
     # non-integral exponents. The following heuristic improves the situation:
     exponent = reduce(ilcm, denominators, 1)
-    f = f.xreplace({wsym: wsym**exponent})
+    f = f.xreplace({wsym: wsym ** exponent})
     logw /= exponent
 
     return f, logw
 
 
-def gruntz(e, z, z0, dir="+"):
+def gruntz(e, z, z0, dir=1):
     """
     Compute the limit of e(z) at the point z0 using the Gruntz algorithm.
 
@@ -647,12 +650,8 @@ def gruntz(e, z, z0, dir="+"):
     elif z0 == -oo:
         r = limitinf(e.subs(z, -z), z)
     else:
-        if str(dir) == "-":
-            e0 = e.subs(z, z0 - 1/z)
-        elif str(dir) == "+":
-            e0 = e.subs(z, z0 + 1/z)
-        else:
-            raise NotImplementedError("dir must be '+' or '-'")
+        assert dir, "dir must be 1 or -1, but get " + str(dir)
+        e0 = e.subs(z, z0 + dir / z)
         r = limitinf(e0, z)
 
     # This is a bit of a heuristic for nice results... we always rewrite

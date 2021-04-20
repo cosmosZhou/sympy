@@ -225,7 +225,7 @@ def integer_log(y, x):
     return e, r == 0 and y == 1
 
 
-class Power(Expr):
+class Pow(Expr):
     """
     Defines the expression x**y as "x raised to a power y"
 
@@ -311,17 +311,21 @@ class Power(Expr):
 
     __slots__ = ['is_commutative']
 
-    is_Pow = True
-    
     @property
     def shape(self):
         return self.args[0].shape
     
     @property
     def dtype(self):
-        if self.exp.is_integer:
-            return self.base.dtype
         from sympy.core.symbol import dtype
+        if self.exp.is_integer:
+            if self.exp.is_negative:
+                if self.base.is_rational:
+                    if self.base.is_nonnegative:
+                        return dtype.rational(positive=True)                    
+                    return dtype.rational
+                return  dtype.real
+            return self.base.dtype
         return dtype.real
 
     @cacheit
@@ -1057,7 +1061,7 @@ class Power(Expr):
                     radical, result = self.func(base, exp - n), []
 
                     expanded_base_n = self.func(base, n)
-                    if expanded_base_n.is_Power:
+                    if expanded_base_n.is_Pow:
                         expanded_base_n = \
                             expanded_base_n._eval_expand_multinomial()
                     for term in Add.make_args(expanded_base_n):
@@ -1271,7 +1275,7 @@ class Power(Expr):
                 and fuzzy_not(fuzzy_and([self.exp.is_negative, self.base.is_zero]))):
             return True
         p = self.func(*self.as_base_exp())  # in case it's unevaluated
-        if not p.is_Power:
+        if not p.is_Pow:
             return p.is_rational
         b, e = p.as_base_exp()
         if e.is_Rational and b.is_Rational:
@@ -1489,7 +1493,7 @@ class Power(Expr):
                 terms = [1 / prefactor]
                 for m in range(1, ceiling((n - dn + 1) / l * cf)):
                     new_term = terms[-1] * (-rest)
-                    if new_term.is_Power:
+                    if new_term.is_Pow:
                         new_term = new_term._eval_expand_multinomial(
                             deep=False)
                     else:
@@ -1516,7 +1520,7 @@ class Power(Expr):
 
         # see if the base is as simple as possible
         bx = b
-        while bx.is_Power and bx.exp.is_Rational:
+        while bx.is_Pow and bx.exp.is_Rational:
             bx = bx.base
         if bx == x:
             return self
@@ -1840,8 +1844,8 @@ class Power(Expr):
             if self.base == 1:
                 return r"%s^{%s}" % (self.base, self.exp)
             # things like 1/x
-            from sympy.core.mul import Times
-            return Times._latex(self, p)
+            from sympy.core.mul import Mul
+            return Mul._latex(self, p)
         else:
             if self.base.is_Function:
                 return p._print(self.base, exp=p._print(self.exp))
@@ -1882,6 +1886,24 @@ class Power(Expr):
                 return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e[1:-1])
         return '%s**%s' % (p.parenthesize(self.base, PREC, strict=False), e)
     
+    def _pretty(self, p):
+        from sympy.simplify.simplify import fraction
+        b, e = self.as_base_exp()
+        from sympy.printing.pretty.stringpict import prettyForm
+        
+        if e is S.NegativeOne:
+            return prettyForm("1")/p._print(b)
+        n, d = fraction(e)
+        if n is S.One and d.is_Atom and not e.is_Integer and p._settings['root_notation']:
+            return p._print_nth_root(b, e)
+        if e.is_Rational and e < 0:
+            return prettyForm("1")/p._print(Pow(b, -e, evaluate=False))
+
+        if b.is_Relational:
+            return prettyForm(*p._print(b).parens()).__pow__(p._print(e))
+
+        return p._print(b)**p._print(e)
+    
     def _eval_is_random(self):
         for arg in self.args:
             if arg.is_random:
@@ -1903,8 +1925,8 @@ class Power(Expr):
                 return self.expand()
             
         elif exp == S.Half:
-            if base.is_Times:
-                if all(b.is_Power and b.exp.is_even for b in base.args):
+            if base.is_Mul:
+                if all(b.is_Pow and b.exp.is_even for b in base.args):
                     return abs(base.func(*(b.base ** (b.exp // 2) for b in base.args)))
                     
         return self
@@ -1930,7 +1952,7 @@ class Power(Expr):
                 from sympy.polys.polytools import InverseProportionalFunction
                 return InverseProportionalFunction(wrt, 1, h, 0)
 
-Pow = Power    
+    
 from .add import Add
 from .numbers import Integer
 from .mul import Mul, _keep_coeff
@@ -2135,7 +2157,7 @@ def real_root(arg, n=None, evaluate=None):
     rv = sympify(arg)
     n1pow = Transform(lambda x:-(-x.base) ** x.exp,
                       lambda x:
-                      x.is_Power and
+                      x.is_Pow and
                       x.base.is_negative and
                       x.exp.is_Rational and
                       x.exp.p == 1 and x.exp.q % 2)

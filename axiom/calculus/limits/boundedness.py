@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from axiom import sets, algebre, calculus
+from axiom import sets, algebra, calculus
 
 
 @apply
@@ -21,11 +21,11 @@ def prove(Eq):
     
     Eq << apply(Equal(Limit[n:oo](x[n]), a))
 
-    Eq << calculus.eq.imply.exists.definition.limit.apply(Eq[0])
+    Eq << calculus.eq.imply.exists_forall.limit_definition.apply(Eq[0])
     
     ε = Eq[-1].function.function.rhs
     
-    Eq << Eq[-1].this.function.function.apply(algebre.lt.imply.lt.abs.max)
+    Eq << Eq[-1].this.function.function.apply(algebra.lt.imply.lt.abs.max)
     
     Eq.lt = Eq[-1].subs(ε, S.Half)
     
@@ -36,29 +36,29 @@ def prove(Eq):
     
     Eq << M.this.definition
     
-    Eq << LessThan(a_max, M, plausible=True)
+    Eq << LessEqual(a_max, M, plausible=True)
     
     Eq << Eq[-1].this.rhs.definition
     
-    Eq << Eq.lt.this.function.function.apply(algebre.lt.le.imply.lt.transit, Eq[-1])
+    Eq << Eq.lt.this.function.function.apply(algebra.lt.le.imply.lt.transit, Eq[-1])
     
-    Eq.less_than = Eq[-1].this.function.function.apply(algebre.lt.imply.le.relaxed)
+    Eq.less_than = Eq[-1].this.function.function.apply(algebra.lt.imply.le.relaxed)
     
-    Eq << algebre.imply.forall_ge.max.apply(Maximize[n:N + 1](abs(x[n])))
+    Eq << algebra.imply.forall_ge.max.apply(Maximize[n:N + 1](abs(x[n])))
     
-    Eq << LessThan(Maximize[n:N + 1](abs(x[n])), M, plausible=True)
+    Eq << LessEqual(Maximize[n:N + 1](abs(x[n])), M, plausible=True)
     
     Eq << Eq[-1].this.rhs.definition
     
-    Eq << Eq[-2].this.function.apply(algebre.ge.le.imply.le.transit, Eq[-1])
+    Eq << Eq[-2].this.function.apply(algebra.ge.le.imply.le.transit, Eq[-1])
     
-    Eq << algebre.exists_forall.forall.imply.exists_forall.apply(Eq.less_than, Eq[-1])
+    Eq << algebra.exists_forall.forall.imply.exists_forall.apply(Eq.less_than, Eq[-1])
     
     Eq << Eq[-1].this.function.simplify()
     
-    Eq << algebre.exists.given.exists.subs.apply(Eq[1], Eq[1].variable, M)
+    Eq << algebra.exists.given.exists.subs.apply(Eq[1], Eq[1].variable, M)
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -2,7 +2,7 @@ from axiom.utility import prove, apply
 from sympy import *
 import axiom
 
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
@@ -39,11 +39,11 @@ def prove(Eq):
     
     Eq << sets.forall_subset.given.subset.lhs.apply(Eq[-1])
         
-    Eq << Eq.forall_contains.subs(x, y)
+    Eq << algebra.forall.imply.ou.subs.apply(Eq.forall_contains, x, y)
     
-    Eq << algebre.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
+    Eq << algebra.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

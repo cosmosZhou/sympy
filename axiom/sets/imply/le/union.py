@@ -1,4 +1,4 @@
-from sympy.core.relational import LessThan
+from sympy.core.relational import LessEqual
 from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.sets import Union
@@ -7,7 +7,7 @@ from sympy import Symbol
 
 @apply
 def apply(A, B):
-    return LessThan(abs(Union(A, B)), abs(A) + abs(B))
+    return LessEqual(abs(Union(A, B)), abs(A) + abs(B))
 
 
 
@@ -24,5 +24,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

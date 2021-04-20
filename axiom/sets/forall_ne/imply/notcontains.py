@@ -21,15 +21,15 @@ def prove(Eq):
     j = Symbol.j(integer=True, given=True)
     n = Symbol.n(integer=True, positive=True, given=True)
  
-    Eq << apply(ForAll[i:n](Unequality(i, j)))
+    Eq << apply(ForAll[i:n](Unequal(i, j)))
     
     Eq << ~Eq[-1]
     
-    Eq << sets.contains.imply.exists_eq.definition.apply(Eq[-1], reverse=True)
+    Eq << sets.contains.imply.exists_eq.apply(Eq[-1], reverse=True)
     
     Eq << ~Eq[-1]
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

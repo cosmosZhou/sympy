@@ -10,7 +10,7 @@ def apply(s, wrt=None):
     assert s.is_set
     if wrt is None:
         wrt = s.generate_free_symbol(**s.etype.dict)
-    return Equality(Sum[wrt:s](Boole(Contains(wrt, s))), abs(s))
+    return Equal(Sum[wrt:s](Bool(Contains(wrt, s))), abs(s))
 
 
 @prove
@@ -20,11 +20,11 @@ def prove(Eq):
 
     Eq << apply(S)
 
-    Eq << Eq[-1].this.lhs.function.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.function.definition
     
     Eq << Eq[-1].this.lhs().function.simplify()
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

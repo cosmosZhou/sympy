@@ -1,6 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
+from axiom import algebra
 
 
 @apply
@@ -28,8 +29,10 @@ def prove(Eq):
     Eq << apply(Contains(x[i], S), (i, 0, n))
     
     Eq << Eq[1].simplify()
+    
+    Eq << algebra.cond.imply.forall.restrict.apply(Eq[0], (i, 0, n))
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

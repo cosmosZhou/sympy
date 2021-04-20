@@ -251,7 +251,7 @@ class log2(Function):
             result = log.eval(arg, base=_Two)
             if result.is_Atom:
                 return result
-        elif arg.is_Power and arg.base == _Two:
+        elif arg.is_Pow and arg.base == _Two:
             return arg.exp
 
     def _eval_expand_func(self, **hints):
@@ -349,7 +349,7 @@ class log10(Function):
             result = log.eval(arg, base=_Ten)
             if result.is_Atom:
                 return result
-        elif arg.is_Power and arg.base == _Ten:
+        elif arg.is_Pow and arg.base == _Ten:
             return arg.exp
 
     def _eval_expand_func(self, **hints):

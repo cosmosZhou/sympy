@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -23,28 +23,11 @@ def prove(Eq):
 
     Eq << apply(ForAll[k:n](NotContains(x, A[k])))
 
-    m = Symbol.m(domain=Interval(1, n - 1, integer=True))
-    Eq.hypothesis = Eq[1]._subs(n, m).copy(plausible=True)
+    Eq << sets.imply.sufficient.notcontains.induction.apply(Eq[0].function, n)
     
-    Eq.initial = Eq.hypothesis.subs(m, 1)
-    
-    Eq << Eq[0].subs(k, 0)
-    
-    Eq.induction = Eq.hypothesis.subs(m, m + 1)
-    
-    Eq << Eq[0].subs(k, m)
-
-    Eq << Eq.hypothesis.apply(sets.notcontains.notcontains.imply.notcontains.union, Eq[-1])
-        
-    Eq << Eq.induction.induct()
-    
-    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
-
-    Eq << Eq.hypothesis.subs(m, n - 1)
-    
-    Eq << Eq[-1].subs(n, n + 1)
+    Eq << algebra.cond.sufficient.imply.cond.transit.apply(Eq[0], Eq[-1])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

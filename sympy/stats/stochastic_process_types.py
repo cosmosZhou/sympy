@@ -25,6 +25,7 @@ from sympy.stats.drv_types import Poisson, PoissonDistribution
 from sympy.stats.crv_types import Normal, NormalDistribution, Gamma, GammaDistribution
 from sympy.core.sympify import _sympify, sympify
 from sympy.sets import NonnegativeIntegers
+from sympy.sets.fancysets import Reals
 
 __all__ = [
     'StochasticProcess',
@@ -142,7 +143,7 @@ class StochasticProcess(Basic):
 
     sym: Symbol or str
     state_space: Set
-        The state space of the stochastic process, by default S.Reals.
+        The state space of the stochastic process, by default Reals.
         For discrete sets it is zero indexed.
 
     See Also
@@ -151,9 +152,9 @@ class StochasticProcess(Basic):
     DiscreteTimeStochasticProcess
     """
 
-    index_set = S.Reals
+    index_set = Reals
 
-    def __new__(cls, sym, state_space=S.Reals, **kwargs):
+    def __new__(cls, sym, state_space=Reals, **kwargs):
         sym = _symbol_converter(sym)
         state_space = _set_converter(state_space)
         return Basic.__new__(cls, sym, state_space)
@@ -941,7 +942,7 @@ class ContinuousMarkovChain(ContinuousTimeStochasticProcess, MarkovProcess):
 
     sym: Symbol/str
     state_space: Set
-        Optional, by default, S.Reals
+        Optional, by default, Reals
     gen_mat: Matrix/ImmutableMatrix/MatrixSymbol
         Optional, by default, None
 
@@ -961,7 +962,7 @@ class ContinuousMarkovChain(ContinuousTimeStochasticProcess, MarkovProcess):
     .. [1] https://en.wikipedia.org/wiki/Markov_chain#Continuous-time_Markov_chain
     .. [2] http://u.math.biu.ac.il/~amirgi/CTMCnotes.pdf
     """
-    index_set = S.Reals
+    index_set = Reals
 
     def __new__(cls, sym, state_space=None, gen_mat=None):
         sym = _symbol_converter(sym)
@@ -1676,7 +1677,7 @@ class WienerProcess(CountingProcess):
 
     @property
     def state_space(self):
-        return S.Reals
+        return Reals
 
     def distribution(self, rv):
         return NormalDistribution(0, sqrt(rv.key))

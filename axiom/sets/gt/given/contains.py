@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, sets
+from axiom import algebra, sets
 import axiom
 # given: |A| >= 1
 # A != {}
@@ -8,7 +8,7 @@ import axiom
 
 @apply(simplify=False)
 def apply(given):
-    n, b = axiom.is_StrictGreaterThan(given)
+    n, b = axiom.is_Greater(given)
 
     return Contains(n, Interval(b, oo, left_open=True, integer=n.is_integer))
 
@@ -23,5 +23,5 @@ def prove(Eq):
     Eq << Eq[-1].simplify()    
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

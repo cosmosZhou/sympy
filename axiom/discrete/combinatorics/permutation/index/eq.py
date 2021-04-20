@@ -1,6 +1,6 @@
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import sets, discrete, algebre
+from axiom import sets, discrete, algebra
 
 def index_function(n):    
     k = Symbol.k(integer=True)
@@ -15,7 +15,7 @@ def index_function(n):
 
 @apply
 def apply(given, j=None):
-    assert given.is_Equality
+    assert given.is_Equal
     x_set_comprehension, interval = given.args
     n = interval.max() + 1
     assert interval.min() == 0
@@ -32,7 +32,7 @@ def apply(given, j=None):
     index = index_function(n)
     index_j = index[j](x[:n], evaluate=False)
 #     index_j = index[j](x[:n])
-    return Contains(index_j, Interval(0, n - 1, integer=True)), Equality(x[index_j], j)
+    return Contains(index_j, Interval(0, n - 1, integer=True)), Equal(x[index_j], j)
 
 
 @prove
@@ -46,16 +46,16 @@ def prove(Eq):
     
     j = Symbol.j(domain=Interval(0, n - 1, integer=True), given=True)
     
-    Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), j)    
+    Eq << apply(Equal(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), j)    
     
     a = Symbol.a(LAMBDA[k:n](k))
     Eq.aj_definition = a.this.definition[j]
     
     Eq << a.set_comprehension().this.function.arg.base.definition
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
     
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[0], Eq[-2])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[0], Eq[-2])
     
     Eq << discrete.combinatorics.permutation.index_general.eq.apply(Eq[-2], Eq[-1])
     
@@ -68,6 +68,6 @@ def prove(Eq):
     Eq << Eq[2].this.lhs.indices[0].definition
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
     
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

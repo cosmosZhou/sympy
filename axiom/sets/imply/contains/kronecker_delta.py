@@ -1,21 +1,14 @@
-from sympy import Symbol, Boole, Or
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.piecewise import Piecewise
-
-from sympy.core.function import Function
-from axiom import algebre, sets
+from axiom import algebra, sets
 import axiom
-from sympy.functions.special.tensor_functions import KroneckerDelta
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
-def apply(boole):
-    assert boole.is_KroneckerDelta
-    return Contains(boole, {0, 1})
+def apply(self):
+    assert self.is_KroneckerDelta
+    return Contains(self, {0, 1})
 
 
 @prove
@@ -27,10 +20,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.astype(Piecewise)
     
-    Eq << sets.imply.contains.bool.apply(Boole(Equality(x, y)))    
+    Eq << sets.imply.contains.bool.apply(Bool(Equal(x, y)))    
     
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.definition
+
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

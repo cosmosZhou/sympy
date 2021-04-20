@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from axiom import discrete, sets, algebre
+from axiom import discrete, sets, algebra
 
 @apply
 def apply(*given):
@@ -25,10 +25,10 @@ def apply(*given):
     assert piecewise.is_Piecewise and len(piecewise.args) == 3
     
     x0, condition0 = piecewise.args[0]
-    assert condition0.is_Equality and {*condition0.args} == {i, j}
+    assert condition0.is_Equal and {*condition0.args} == {i, j}
     
     xj, conditionj = piecewise.args[1]
-    assert conditionj.is_Equality and {*conditionj.args} == {i, 0}
+    assert conditionj.is_Equal and {*conditionj.args} == {i, 0}
     
     xi, conditioni = piecewise.args[2]
     assert conditioni
@@ -42,9 +42,9 @@ def apply(*given):
     assert x == _x and S == _S
     
     equality = given[1].function
-    assert equality.is_Equality and {*equality.args} == {abs(x.set_comprehension()), n}
+    assert equality.is_Equal and {*equality.args} == {abs(x.set_comprehension()), n}
         
-    return Equality(abs(S), factorial(n) * abs(UNION[x:S]({x.set_comprehension()})))
+    return Equal(abs(S), factorial(n) * abs(UNION[x:S]({x.set_comprehension()})))
 
 
 @prove(surmountable=False)
@@ -57,8 +57,8 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    Eq << apply(ForAll[j:1:n, x:S](Contains(LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S)),
-                ForAll[x:S](Equality(abs(x.set_comprehension()), n)))
+    Eq << apply(ForAll[j:1:n, x:S](Contains(LAMBDA[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S)),
+                ForAll[x:S](Equal(abs(x.set_comprehension()), n)))
     
     Eq << discrete.combinatorics.permutation.adjacent.swap2.general.apply(Eq[0])
     
@@ -70,12 +70,12 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.arg.limits_subs(Eq[-1].lhs.arg.variable, Eq[-2].rhs.variable)
     
-    Eq << Eq[-2].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-2].apply(algebra.eq.imply.eq.abs)
     
     Eq <<= Eq[-2] & Eq[-1]
     
-    F = Function.F(nargs=(), etype=dtype.integer * n)
-    F.eval = lambda e: conditionset(x, Equality(x.set_comprehension(), e), S)
+    F = Function.F(etype=dtype.integer * n)
+    F.eval = lambda e: conditionset(x, Equal(x.set_comprehension(), e), S)
     
     e = Symbol.e(etype=dtype.integer)
     Eq << Subset(F(e), S, plausible=True)
@@ -88,11 +88,11 @@ def prove(Eq):
     
     Eq << Eq.forall_x.this.function.rhs.definition
     
-    Eq << algebre.forall_et.given.forall.apply(Eq[-1])
+    Eq << algebra.forall_et.given.forall.apply(Eq[-1])
     
     P = Eq[-1].limits[0][1]
     Eq << sets.imply.forall.conditionset.apply(P)
-    Eq << Eq[-1].apply(sets.eq.imply.eq.permutation, x)
+    Eq << Eq[-1].this.function.apply(sets.eq.imply.eq.permutation, x)
     
     Eq.equality_e = Eq[-3] & Eq[-1]
     return
@@ -101,7 +101,7 @@ def prove(Eq):
     hat_S = Symbol("\hat{S}", Eq[2].rhs.args[0].arg)
     Eq.hat_S_definition = hat_S.this.definition
     
-    Eq << Equality(S, UNION[e:hat_S](F(e)), plausible=True)
+    Eq << Equal(S, UNION[e:hat_S](F(e)), plausible=True)
     return
     Eq << Eq[-1].subs(Eq.hat_S_definition)
     
@@ -110,5 +110,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

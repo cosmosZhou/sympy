@@ -1,6 +1,6 @@
 from sympy.core.numbers import oo
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy import sqrt, pi, exp, log, Symbol
 from sympy.integrals.integrals import Integral
 
@@ -43,13 +43,13 @@ def apply(y, x=None):
         if a <= 0:
             return None
 
-        return Equality(y, doit(a, b, c))
+        return Equal(y, doit(a, b, c))
 
     a, b, c = coefficient(y, x)
 
     if a <= 0:
         return None
-    return Equality(Integral(y, (x, -oo, oo)), doit(a, b, c))
+    return Equal(Integral(y, (x, -oo, oo)), doit(a, b, c))
 
 
 
@@ -78,5 +78,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

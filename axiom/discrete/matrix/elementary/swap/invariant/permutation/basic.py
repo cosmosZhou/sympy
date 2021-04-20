@@ -19,7 +19,7 @@ def apply(n, w=None, left=True, P=None):
     x = x[:n]
     
     if P is None:
-        P = Symbol.P(conditionset(x, Equality(x.set_comprehension(), Interval(0, n - 1, integer=True))))
+        P = Symbol.P(conditionset(x, Equal(x.set_comprehension(), Interval(0, n - 1, integer=True))))
     
     if left:
         return ForAll[x:P](Contains(w[i, j] @ x, P))
@@ -45,5 +45,5 @@ def prove(Eq):
 
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

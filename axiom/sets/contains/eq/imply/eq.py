@@ -1,5 +1,5 @@
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 from sympy import *
 
 from axiom import sets
@@ -11,7 +11,7 @@ import axiom
 @apply
 def apply(*given):
     contains, equal = given
-    if contains.is_Equality and given[1].is_Contains:
+    if contains.is_Equal and given[1].is_Contains:
         contains, equal = equal, contains
             
     a, A = axiom.is_Contains(contains)
@@ -30,7 +30,7 @@ def apply(*given):
         _A, B = B, _A
     assert A == _A
     
-    return Equality(A, B | a.set)
+    return Equal(A, B | a.set)
 
 
 @prove
@@ -39,7 +39,7 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer, given=True)
     a = Symbol.a(integer=True, given=True)
 
-    Eq << apply(Contains(a, A), Equality(A // a.set, B // a.set))
+    Eq << apply(Contains(a, A), Equal(A // a.set, B // a.set))
 
     Eq << sets.eq.imply.eq.union.apply(Eq[1], a.set)
     
@@ -48,5 +48,5 @@ def prove(Eq):
     Eq << Eq[-2].this.lhs.subs(Eq[-1])
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

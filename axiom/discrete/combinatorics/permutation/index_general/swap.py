@@ -2,12 +2,12 @@ from sympy import *
 from axiom.utility import prove, apply
 from axiom.discrete.combinatorics.permutation.index.eq import index_function
 from sympy.matrices.expressions.matexpr import Swap
-from axiom import discrete, sets
+from axiom import discrete, sets, algebra
 
 
 @apply
 def apply(given, i=None, j=None, w=None):
-    assert given.is_Equality
+    assert given.is_Equal
     x_set_comprehension, interval = given.args
     n = interval.max() + 1
     assert interval.min() == 0
@@ -31,7 +31,7 @@ def apply(given, i=None, j=None, w=None):
         _j = Symbol.j(integer=True)
         w = Symbol.w(LAMBDA[_j, _i](Swap(n, _i, _j)))
     
-    return Equality(index[i](w[index[i](x[:n]), index[j](x[:n])] @ x[:n]), index[j](x[:n]))
+    return Equal(index[i](w[index[i](x[:n]), index[j](x[:n])] @ x[:n]), index[j](x[:n]))
 
 
 @prove
@@ -46,7 +46,7 @@ def prove(Eq):
     j = Symbol.j(domain=Interval(0, n - 1, integer=True), given=True)
     i = Symbol.i(domain=Interval(0, n - 1, integer=True), given=True)
     
-    Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
+    Eq << apply(Equal(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
         
     _, di, dj = Eq[2].lhs.arg.args[0].args
     dj = Symbol("d_j", dj)
@@ -75,7 +75,8 @@ def prove(Eq):
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[1], j=i)
     Eq.di_domain, Eq.x_di_eqaulity = Eq[-2].subs(Eq.di_definition.reversed), Eq[-1].subs(Eq.di_definition.reversed)
     
-    Eq <<= Eq.dj_domain & Eq.di_domain
+    Eq << sets.contains.contains.imply.subset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
+    
     Eq << Eq.expand.subs(Eq.x_di_eqaulity)
     
     Eq.union_equality, Eq.piecewise_equality = sets.subset.imply.eq.union.apply(Eq[-2]), Eq.definition.subs(Eq[-1])
@@ -94,15 +95,17 @@ def prove(Eq):
 
     Eq.piecewise_equality = Eq.piecewise_equality.subs(Eq[-1])
 
-    Eq << sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
+    Eq.dj_eq = sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
     
     Eq << sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.di_domain, Eq.piecewise_equality.lhs.args[-1])
 
     Eq << sets.contains.imply.eq.intersection.apply(Eq.dj_domain)
     
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.subs.apply(Eq[-1], Eq[-2])
     
-    Eq << Eq[-4] + Eq[-1]
+    Eq << Eq[-1].this.rhs.find(Contains).simplify()
+    
+    Eq << Eq.dj_eq + Eq[-1]
     
     Eq << Eq.piecewise_equality.subs(Eq[-1]) 
 
@@ -114,6 +117,6 @@ def prove(Eq):
     
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
     
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

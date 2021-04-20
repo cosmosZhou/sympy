@@ -19,9 +19,9 @@ def prove(Eq):
     b = Symbol.b(real=True)
     Eq << apply(Contains(x, Interval(a, b)))
 
-    Eq << sets.contains.imply.contains.interval.negate.apply(Eq[1])
+    Eq << sets.contains.imply.contains.interval.neg.apply(Eq[1])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

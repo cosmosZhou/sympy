@@ -5,7 +5,7 @@ from axiom import sets
 
 @apply
 def apply(given):
-    assert given.is_Unequality
+    assert given.is_Unequal
     A, emptyset = given.args
     assert A.is_Intersection and emptyset.is_EmptySet
      
@@ -28,7 +28,7 @@ def prove(Eq):
     s = Symbol.s(etype=dtype.integer, given=True)
     e = Symbol.e(integer=True, given=True)
 
-    Eq << apply(Unequality(e.set & s, e.emptySet))
+    Eq << apply(Unequal(e.set & s, e.emptySet))
     
     Eq << ~Eq[1]
     
@@ -38,5 +38,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

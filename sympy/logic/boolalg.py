@@ -99,12 +99,12 @@ class Boolean(Basic):
                     hit = True
                 args.append(_arg)
             if hit:
-                return self.func(*args, equivalent=self).simplify()
+                return self.func(*args).simplify()
         return self
 
     def apply(self, axiom, *args, **kwargs):
         eqs = axiom.apply(self, *args, **kwargs)
-        if isinstance(eqs, list):
+        if isinstance(eqs, (list, tuple)):
             eqs = And(*eqs, equivalent=eqs)
         elif eqs.is_Equivalent:
             if eqs.clue is None:
@@ -130,6 +130,7 @@ class Boolean(Basic):
     def forall(self, *limits, simplify=True):
         if len(limits) == 1:
             x, *args = limits[0]
+            assert not x.is_given
             if not self._has(x): 
                 return self
             from sympy import ForAll
@@ -143,26 +144,24 @@ class Boolean(Basic):
                     domain = x.domain_conditioned(domain)
             else:
                 _x = x.unbounded
-                self = ForAll(self._subs(x, _x), (_x, x.domain), equivalent=self)
+                self = ForAll(self._subs(x, _x), (_x, x.domain))
                 return self.simplify() if simplify else self
                 
             x_domain = x.domain
             if domain == x_domain:
                 if not simplify:
                     _x = x.unbounded
-                    self = ForAll(self._subs(x, _x), (_x, x.domain), equivalent=self)
+                    self = ForAll(self._subs(x, _x), (_x, x.domain))
                     return self
         else:
             return
-            for limit in limits:
-                self = self.forall(limit, simplify=simplify)                
 
         return self
 
-    def limits_exists(self):
+    def existent_symbols(self):
         from sympy.tensor.indexed import Indexed, Slice
         from sympy.stats.rv import RandomSymbol
-        free_symbols = {*self.free_symbols}
+        free_symbols = {*self.free_symbols}        
         for symbol in self.free_symbols:
             if symbol.is_given:
                 free_symbols.discard(symbol)
@@ -177,8 +176,10 @@ class Boolean(Basic):
             deletes |= y.domain.free_symbols
             
         free_symbols -= deletes
-        if free_symbols:
-            return [(s,) for s in free_symbols]        
+        return free_symbols        
+
+    def limits_exists(self):
+        return [(s,) for s in self.existent_symbols()]
         
     def __invert__(self):
         """Return the negated relationship.
@@ -211,9 +212,9 @@ class Boolean(Basic):
         
         if limits_exists:
             from sympy import Exists
-            return Exists(invert, *limits_exists, counterpart=self).simplify()
+            return Exists(invert, *limits_exists, negation=self).simplify()
         
-        return invert.copy(counterpart=self)        
+        return invert.copy(negation=self)        
 
     def invert(self):
         return Boolean.__new__(self.invert_type, *self.args)
@@ -300,7 +301,7 @@ class Boolean(Basic):
             for r in self.atoms(Relational):
                 if periodicity(r, x) not in (0, None):
                     s = r._eval_as_set()
-                    if s.is_EmptySet or s.is_UniversalSet or s == S.Reals:
+                    if s.is_EmptySet or s.is_UniversalSet or s == Reals:
                         reps[r] = s.as_relational(x)
                         continue
                     raise NotImplementedError(filldedent('''
@@ -434,20 +435,6 @@ class Boolean(Basic):
         elif self.imply is not None:
             return 'imply'
 
-    def set_clause(self, clue, eqs, force=False):
-        if clue == 'equivalent':
-            if force:
-                self.equivalent = None
-            self.equivalent = eqs
-        elif clue == 'given':
-            if force:
-                self.given = None
-            self.given = eqs
-        elif clue == 'imply':
-            if force:
-                self.imply = None
-            self.imply = eqs
-
     @property
     def plausible(self):
 #         plausible = True, meaning, the statement is plausibly True, ready to be proven
@@ -482,16 +469,21 @@ class Boolean(Basic):
 
                 return
             if given.plausible is not None:
+#             if self is given by a False / plausible proposition, then self is plausible
                 return True
             return 
         
         imply = self.imply
-        if imply is not None: 
+        if imply is not None:
+#             if self implies a False proposition, then self must be False
+            plausible = imply._assumptions.get('plausible')
+            if plausible is False:
+                return False
             return True
         
-        counterpart = self.counterpart
-        if counterpart is not None:
-            plausible = counterpart.plausible
+        negation = self.negation
+        if negation is not None:
+            plausible = negation.plausible
             if plausible is True:
                 return True
             if plausible is False:
@@ -520,10 +512,10 @@ class Boolean(Basic):
             process_imply(imply, value)
             return
         
-        counterpart = self.counterpart
-        if counterpart is not None:
-            self.counterpart = None
-            process_counterpart(counterpart, value)            
+        negation = self.negation
+        if negation is not None:
+            self.negation = None
+            process_negation(negation, value)            
             return
         
         given = self.given
@@ -551,26 +543,21 @@ class Boolean(Basic):
         if 'equivalent' in self._assumptions:
             del self._assumptions['equivalent']
 
-# here we define counterpart = counterproposition
+# here we define negation = counterproposition
     @property
-    def counterpart(self):
-        if 'counterpart' in self._assumptions:
-            return self._assumptions['counterpart']
+    def negation(self):
+        if 'negation' in self._assumptions:
+            return self._assumptions['negation']
 
-    @counterpart.setter
-    def counterpart(self, eq):
+    @negation.setter
+    def negation(self, eq):
         if eq is not None:
-            assert 'counterpart' not in self._assumptions
-            self._assumptions['counterpart'] = eq
+            assert 'negation' not in self._assumptions
+            self._assumptions['negation'] = eq
             return
 
-        if 'counterpart' in self._assumptions:
-            del self._assumptions['counterpart']
-
-    @property
-    def derivative(self):
-        if 'derivative' in self._assumptions:
-            return self._assumptions['derivative']
+        if 'negation' in self._assumptions:
+            del self._assumptions['negation']
 
     def plausibles_set(self):
         find_plausibles = self.find_plausibles()        
@@ -657,26 +644,6 @@ class Boolean(Basic):
                         yield from given.find_plausibles(is_equivalent)
                 else:
                     yield from given.find_plausibles(is_equivalent)
-        
-    @derivative.setter
-    def derivative(self, dic):
-        if dic is not None:
-            self._assumptions['derivative'] = dic
-            return
-
-        derivative = self.derivative
-        if derivative is None:
-            return
-
-        if isinstance(derivative, list):
-            if self.is_BinaryCondition or self.is_And or \
-            self.is_ForAll and (self.function.is_Equality or self.function.is_And) or \
-            self.is_Exists and self.function.is_Equality:
-            # Exists of And structure is not deductive!
-                if all(eq.plausible is None for eq in derivative):
-                    del self._assumptions['derivative']
-                    self.plausible = True
-            return
         
     @property
     def given(self):
@@ -828,7 +795,7 @@ class BinaryCondition(Boolean):
         1 > x
         """
         a, b = self.args
-        return self.reversed_type(b, a, equivalent=self, evaluate=False)
+        return self.reversed_type(b, a, evaluate=False)
 
     def _eval_domain_defined(self, x):
         return self.lhs.domain_defined(x) & self.rhs.domain_defined(x)
@@ -853,55 +820,20 @@ class BinaryCondition(Boolean):
             evaluated = cls.eval(*args)
             if evaluated is not None:
 
-                if options and evaluated.is_BooleanAtom:
-                    if 'plausible' in options:
-                        if evaluated:
-                            del options['plausible']
-                        else:
-                            options['plausible'] = False
+                if options and evaluated.is_BooleanAtom and 'plausible' in options:
+                    if evaluated:
+                        options['plausible'] = None
                     else:
-                        return evaluated.copy(**options)
+                        options['plausible'] = False
                 else:
-                    return evaluated
-
+                    return evaluated.copy(**options)
+                
+        if options:
+            from sympy.core.inference import Inference
+            return Inference(BinaryCondition.__new__(cls, *args), **options)            
+                
         return BinaryCondition.__new__(cls, *args, **options)
     
-    def bisect(self, *args, **kwargs):
-        if len(args) == 1:
-            eq = args[0]
-            if not isinstance(eq, slice) and eq.is_boolean:
-                from sympy import ForAll
-                wrt = kwargs.get('wrt')
-                if wrt is None:
-                    wrt = eq.wrt
-                if wrt.is_given:
-                    _eq = eq.invert()
-                    return And(Or(eq, self), Or(_eq, self), equivalent=self)
-                else:
-                    if wrt.is_bounded:
-                        self = self.forall((wrt,), simplify=False)
-                    else:
-                        self = ForAll(self.copy(equivalent=None), (wrt,), equivalent=self)
-                    assert self.function is not self.equivalent
-                    assert self.is_ForAll
-                    return self.bisect(wrt.domain_conditioned(eq))
-                                        
-        lhs = self.lhs.bisect(*args, **kwargs)
-        rhs = self.rhs.bisect(*args, **kwargs)
-        if lhs.is_BlockMatrix and rhs.is_BlockMatrix:
-            return And(*[self.func(lhs, rhs) for lhs, rhs in zip(lhs.args, rhs.args)], equivalent=self)
-#             eqs = []
-#             for lhs, rhs in zip(lhs.args, rhs.args):
-#                 eq = self.func(lhs, rhs)
-#                 if lhs.is_LAMBDA:
-#                     eq = Or(eq, lhs.domain_definition().invert().simplify())
-#                 if rhs.is_LAMBDA:
-#                     eq = Or(eq, rhs.domain_definition().invert().simplify())
-#                 eqs.append(eq)  
-#             return And(*eqs, equivalent=self)
-                
-        return self
-
     @property
     def wrt(self):
         free_symbols = self.lhs.free_symbols
@@ -918,6 +850,8 @@ class BinaryCondition(Boolean):
             return res
         
         old, new = args
+        if old.is_Slice:
+            return self._subs_slice(old, new)
         if not old.is_symbol:
             return self
         new = sympify(new)
@@ -949,6 +883,10 @@ class BinaryCondition(Boolean):
             return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify())
  
     
+class BooleanAssumption(BinaryCondition):
+    ...
+
+        
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]
 
@@ -1062,133 +1000,6 @@ def set_equivalence_relationship(lhs, rhs):
         return
 
 
-def process_equivalent(equivalent, value):
-    if value:
-        if isinstance(equivalent, list):
-            plausibility_array = plausibles(equivalent)
-            if len(plausibility_array) == 1:
-                plausibility_array[0].plausible = True
-                return                 
-
-            for eq in plausibility_array:
-                eq.plausible = True
-                
-            return
-            if len(plausibility_array) == 2:
-                set_equivalence_relationship(*plausibility_array)
-                return
-            return
-
-        equivalent.plausible = True
-        return 
-    else:
-        if isinstance(equivalent, list):
-            plausibility_array = plausibles(equivalent)
-            if len(plausibility_array) == 1:
-                plausibility_false = plausibles_false(equivalent)
-                if not plausibility_false:
-                    plausibility_array[0].plausible = False
-        else:
-            equivalent.plausible = False
-
-
-def process_imply(imply, value):
-    if value:
-        if type(imply) == list:
-            array = plausibles(imply)
-            for eq in array:
-                eq.plausible = True
-            return
-
-        if isinstance(imply.given, tuple):
-#                 imply will be true unless all of imply.given is proven true!            
-            if all(g.plausible is None for g in imply.given):
-                imply.plausible = True
-        else:
-            imply.plausible = True
-    else: 
-        if imply.plausible is None:
-            derivative = imply.derivative
-            
-            if any(eq.plausible is None for eq in derivative):
-                return 
-            
-            plausibles = [eq for eq in derivative if eq.plausible]
-            if len(plausibles) == 1:
-                imply.derivative = None
-                plausibles[0].plausible = True
-        elif imply.plausible:
-            derivative = imply.derivative
-            if derivative is None:
-                return
-            
-            if any(eq.plausible is None for eq in derivative):
-                imply.plausible = None
-            elif all(eq.plausible is False for eq in derivative):
-                imply.plausible = False
-
-
-def process_counterpart(counterpart, value):
-    plausible = counterpart.plausible
-    if value:
-        if plausible:
-            counterpart.plausible = False
-        else:
-            assert plausible is False
-    else:
-        if plausible:
-            counterpart.plausible = True
-        else:
-            assert plausible is None
-
-
-def process_given(given, value):
-    if value:
-        if isinstance(given, (list, tuple)):
-            plausibility_array = plausibles(given)
-            if len(plausibility_array) == 1:
-#                 plausibility_array[0].plausible = True
-                print('evidence is not sufficient for deduction')
-                return
-
-            if len(plausibility_array) == 2:
-                set_equivalence_relationship(*plausibility_array)
-                return
-
-            return
-
-        given.derivative = None
-    else:
-        if isinstance(given, (list, tuple, set)):
-            plausibility_array = plausibles(given)
-            if len(plausibility_array) == 1:
-                plausibility_array[0].plausible = False
-        else:
-            given.plausible = False
-
-
-def process_options(value=True, **kwargs):
-    equivalent = kwargs.get('equivalent')
-    if equivalent is not None:
-        process_equivalent(equivalent, value)
-        return        
-
-    given = kwargs.get('given')
-    if given is not None:
-        process_given(given, value)
-        return
-
-    imply = kwargs.get('imply')
-    if imply is not None:
-        process_imply(imply, value)
-        return
-    
-    counterpart = kwargs.get('counterpart')
-    if counterpart is not None:
-        process_counterpart(counterpart, value)
-        return
-
-
 class BooleanAtom(Boolean):
     """
     Base class of BooleanTrue and BooleanFalse.
@@ -1238,6 +1049,9 @@ class BooleanAtom(Boolean):
     __le__ = __lt__
     __gt__ = __lt__
     __ge__ = __lt__
+
+    def _pretty(self, p):
+        return p._print(self.func.__name__)
 
 
     # \\\
@@ -1361,7 +1175,8 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
 
     def copy(self, **kwargs):
         if kwargs:
-            return BooleanTrueAssumption(**kwargs)
+            from sympy.core.inference import Inference
+            return Inference(self, **kwargs)
         return self
 
     def overwrite(self, _, **assumptions):
@@ -1370,7 +1185,10 @@ class BooleanTrue(with_metaclass(Singleton, BooleanAtom)):
     def domain_conditioned(self, x):
         return x.domain
 
-    
+    def _pretty(self, p): 
+        return p._print('True')
+
+        
 class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     """
     SymPy version of False, a singleton that can be accessed via S.false.
@@ -1441,7 +1259,8 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
     def copy(self, **kwargs):
         assert self.equivalent is None
         if kwargs:
-            return BooleanFalseAssumption(**kwargs)
+            from sympy.core.inference import Inference
+            return Inference(self, **kwargs)
         return self
 
     def overwrite(self, _, **assumptions):
@@ -1791,7 +1610,7 @@ class And(LatticeOp, BooleanFunction):
     def _latex(self, p):
         if len(self.args) == 2:
             strict_less_than, strict_greater_than = self.args
-            if strict_less_than.is_StrictLessThan and strict_greater_than.is_StrictGreaterThan:
+            if strict_less_than.is_Less and strict_greater_than.is_Greater:
                 if strict_less_than.lhs == strict_greater_than.lhs:
                     a, x, b = strict_greater_than.rhs, strict_less_than.lhs, strict_less_than.rhs
                     a = p._print(a)
@@ -1810,35 +1629,29 @@ class And(LatticeOp, BooleanFunction):
     def invert(self):
         return self.invert_type(*(arg.invert() for arg in self.args))
 
-    def apply(self, *axiom, split=True, **kwargs): 
+    def apply(self, *axiom, split=True, **kwargs):
+        if axiom[0].__name__.split(sep='.', maxsplit=3)[2] == 'et':
+            split = False
+            
         if split:
             if len(axiom) > 1:
                 eqs = []
                 for eq, axiom in zip(self.args, axiom): 
                     eqs.append(eq.apply(axiom, **kwargs))
                 return self.func(*eqs, given=self)
-
-            from sympy.concrete.conditional_boolean import ConditionalBoolean
+            
             axiom = axiom[0]
             args = []
             funcs = []
             
             depth = kwargs.pop('depth', None)
-            if depth is None:
-                for eq in self.args:
-                    if eq.is_ConditionalBoolean:
-                        func, function = eq.funcs()
-                        funcs = ConditionalBoolean.merge_func(funcs, func)
-                        args.append(function)
-                    else:
-                        args.append(eq)
-            elif depth == 0:
+            if not depth:
                 args = [*self.args]
             else:
 
                 def instantiate(eq):
                     function = eq
-                    for i in range(depth):
+                    for _ in range(depth):
                         function = function.function
                     return function
                 
@@ -1856,14 +1669,17 @@ class And(LatticeOp, BooleanFunction):
                         args.append(eq)
                         
             function = axiom.apply(*args, **kwargs)
-            clue = function.clue
-            for func, limits in funcs:
-                function = func(function, *limits)
-            
+            if isinstance(function, tuple): 
+                clue = {f.clue for f in function}
+                assert len(clue) == 1
+                clue, *_ = clue
+                function = And(*function, **{clue: self})
+            else:
+                clue = function.clue
+                function.set_clause(clue, self, force=True)
+                
             if function.is_BooleanAtom:
                 return function.copy(**{clue: self})
-            
-            function.set_clause(clue, self, force=True)
             
             if kwargs.get('simplify', True):
                 function = function.simplify()
@@ -1912,8 +1728,11 @@ class And(LatticeOp, BooleanFunction):
             return eq.func(*eq.args, **options)
 
         if set(v.invert() for v in args) & args:
-#             assert S.BooleanFalse.equivalent is None
             return S.BooleanFalse.copy(**options)
+
+        if options: 
+            from sympy.core.inference import Inference   
+            return Inference(LatticeOp.__new__(cls, *args), **options)
 
         return LatticeOp.__new__(cls, *args, **options)
 
@@ -1942,7 +1761,7 @@ class And(LatticeOp, BooleanFunction):
         return LatticeOp._new_args_filter(newargs, And)
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
-        from sympy.core.relational import Equality, Relational
+        from sympy.core.relational import Equal, Relational
         from sympy.solvers.solveset import linear_coeffs
         # standard simplify
         rv = super(And, self)._eval_simplify(
@@ -1955,7 +1774,7 @@ class And(LatticeOp, BooleanFunction):
                            binary=True)
         if not Rel:
             return rv
-        eqs, other = sift(Rel, lambda i: isinstance(i, Equality), binary=True)
+        eqs, other = sift(Rel, lambda i: isinstance(i, Equal), binary=True)
         if not eqs:
             return rv
         reps = {}
@@ -2016,7 +1835,7 @@ class And(LatticeOp, BooleanFunction):
             elif eq.is_NotContains:
                 e, S = eq.args
                 dict_notcontains[e].add(eq)
-            elif eq.is_Inequality:
+            elif eq.is_Relational:
                 x, y = eq.args
                 dict_domain[x].add(eq)
                 
@@ -2026,21 +1845,21 @@ class And(LatticeOp, BooleanFunction):
                 sets = [contains.rhs for contains in eqs] 
                 contains = Contains(e, Intersection(*sets))
                 argset = self._argset - eqs
-                return self.func(*argset, contains, equivalent=self)
+                return self.func(*argset, contains)
             if e in dict_notcontains:
                 _eqs = dict_notcontains[e]
                 sets = [contains.rhs for contains in eqs]
                 _sets = [contains.rhs for contains in _eqs]
-                contains = Contains(e, Intersection(*sets) - Union(*_sets))                
+                contains = Contains(e, Intersection(*sets) // Union(*_sets))                
                 argset = self._argset - eqs - _eqs
-                return self.func(*argset, contains, equivalent=self)                
+                return self.func(*argset, contains)                
                 
         for e, eqs in dict_notcontains.items(): 
             if len(eqs) > 1: 
                 sets = [contains.rhs for contains in eqs] 
                 eq = NotContains(e, Union(*sets))
                 argset = self._argset - eqs
-                return self.func(*argset, eq, equivalent=self)
+                return self.func(*argset, eq)
                             
         for e, eqs in dict_domain.items(): 
             if len(eqs) > 1:
@@ -2051,7 +1870,7 @@ class And(LatticeOp, BooleanFunction):
                     return self
                 if eq.is_Contains:
                     return self
-                return self.func(*argset, eq, equivalent=self).simplify()
+                return self.func(*argset, eq).simplify()
                             
         return self
 
@@ -2072,6 +1891,7 @@ class And(LatticeOp, BooleanFunction):
         if other.is_And:
             rhs = tuple(other._argset)
         elif other.is_Or:
+            print('this method should be axiomatized!')
             _self = self.invert()
             if _self in other._argset:
                 args = set(other._argset)
@@ -2080,19 +1900,32 @@ class And(LatticeOp, BooleanFunction):
 
         if rhs is None:
             rhs = (other,)
-
-        args = [*set((*lhs, *rhs))]
+        
+        argset = set((*lhs, *rhs))
+        args = [*argset]
         
         args_invert = set()
         for eq in args:
             args_invert.add(eq.invert())
                 
-        for i, ou_expr in enumerate(args):
+        for ou_expr in args:
             if ou_expr.is_Or:
                 if ou_expr._argset & args_invert:
-                    args[i] = Or(*ou_expr._argset - args_invert) 
+                    ou = Or(*ou_expr._argset - args_invert)
+                    argset.remove(ou_expr)
+                    if ou.is_And: 
+                        argset |= ou._argset
+                    else:
+                        argset.add(ou)                     
         
-        return And(*args, equivalent=[self, other])
+        return And(*argset)
+
+    def __or__(self, other):
+        if other.is_And:
+            intersect = other._argset & self._argset
+            if intersect:
+                return And(*intersect, And(*self._argset - intersect) | And(*other._argset - intersect))
+        return BooleanFunction.__or__(self, other)        
 
     def domain_conditioned(self, x):
         sol = x.domain
@@ -2105,54 +1938,26 @@ class And(LatticeOp, BooleanFunction):
         res = self.simplify_int_limits(function)
         if res:
             function, limits = res
-            return self.func(function, *limits, equivalent=self).simplify()
+            return self.func(function, *limits).simplify()
         
-        limits_condition = self.limits_condition
-        if limits_condition.is_And:
-            limits_condition = limits_condition._argset
+        limits_cond = self.limits_cond
+        if limits_cond.is_And:
+            limits_cond = limits_cond._argset
         else:
-            limits_condition = {limits_condition}
+            limits_cond = {limits_cond}
         for i, eq in enumerate(function.args):
-            if eq in limits_condition:
+            if eq in limits_cond:
                 args = [*function.args]
                 del args[i]
                 function = cls(*args)
-                return self.func(function, *limits, equivalent=self).simplify()
-
-    @classmethod
-    def rewrite_from_Or(cls, self):
-        for i, eq in enumerate(self.args):
-            if isinstance(eq, cls):
-                args = [*self.args]
-                del args[i]
-                this = self.func(*args)
-                return cls(*((arg | this).simplify() for arg in eq.args), equivalent=self)
+                return self.func(function, *limits).simplify()
         
     def copy(self, **kwargs):
-        obj = Basic.__new__(self.func, self._argset, **kwargs)
-        obj._argset = self._argset
-        return obj
-
-    def bisect(self, *args, **kwargs):
+        if kwargs:
+            from sympy.core.inference import Inference
+            return Inference(self, **kwargs)
         return self
 
-    def collect(self, term):
-        print('this should be axiomatized')
-        matched = []
-        unmatch = []
-        for eq in self.args:
-            if eq.is_Or:
-                if term in eq.args:
-                    matched.append(Or(*eq._argset - {term}))
-                    continue
-            elif eq == term:
-                matched.append(S.false)
-                continue
-            unmatch.append(eq)
-        if unmatch: 
-            return self.func(*unmatch, Or(term, self.func(*matched)), equivalent=self)            
-        return Or(term, self.func(*matched), equivalent=self)
-                
         
 class Or(LatticeOp, BooleanFunction):
     """
@@ -2213,10 +2018,13 @@ class Or(LatticeOp, BooleanFunction):
 
         if set(v.invert() for v in args) & args:
             if 'plausible' in options:
-                del options['plausible']
+                options['plausible'] = None
             else:
                 return S.BooleanTrue.copy(**options)
 
+        if options: 
+            from sympy.core.inference import Inference   
+            return Inference(LatticeOp.__new__(cls, *args), **options)
         return LatticeOp.__new__(cls, *args, **options)
 
     def invert(self):
@@ -2256,12 +2064,73 @@ class Or(LatticeOp, BooleanFunction):
         if deep:
             return Boolean.simplify(self, deep, **kwargs)
         
-        return self
-
-    def ou_given_condition(self, *args, **kwargs):
-        args = [arg.func(*arg.args, imply=self) for arg in self.args]        
-        self.derivative = args
-        return args
+        common_terms = None
+        for eq in self._argset:
+            if eq.is_And:
+                if common_terms is None:
+                    common_terms = eq._argset
+                else:
+                    common_terms &= eq._argset
+            else:
+                if common_terms is None:
+                    common_terms = {eq}
+                else:
+                    common_terms &= {eq}
+                    
+            if not common_terms: 
+                dict_contains = defaultdict(set)        
+                dict_notcontains = defaultdict(set)
+                dict_domain = defaultdict(set)
+                for eq in self._argset:
+                    if eq.is_Contains:
+                        e, S = eq.args
+                        dict_contains[e].add(eq)
+                    elif eq.is_NotContains:
+                        e, S = eq.args
+                        dict_notcontains[e].add(eq)
+                    elif eq.is_Relational:
+                        x, y = eq.args
+                        dict_domain[x].add(eq)
+                        
+                from sympy.sets import Intersection, Contains, NotContains, Union
+                for e, eqs in dict_contains.items(): 
+                    if len(eqs) > 1: 
+                        sets = [contains.rhs for contains in eqs] 
+                        contains = Contains(e, Union(*sets))
+                        argset = self._argset - eqs
+                        return self.func(*argset, contains)
+                    if e in dict_notcontains:
+                        _eqs = dict_notcontains[e]
+                        sets = [contains.rhs for contains in eqs]
+                        _sets = [contains.rhs for contains in _eqs]
+                        contains = NotContains(e, Intersection(*_sets) - Union(*sets))                
+                        argset = self._argset - eqs - _eqs
+                        return self.func(*argset, contains)                
+                        
+                for e, eqs in dict_notcontains.items(): 
+                    if len(eqs) > 1: 
+                        sets = [contains.rhs for contains in eqs] 
+                        eq = NotContains(e, Intersection(*sets))
+                        argset = self._argset - eqs
+                        return self.func(*argset, eq)
+                                    
+                for e, eqs in dict_domain.items(): 
+                    if len(eqs) > 1:
+                        argset = self._argset - eqs
+                        eq, *eqs = eqs
+                        eq |= Or(*eqs)
+                        if eq.is_Or:
+                            return self                        
+                        return self.func(*argset, eq).simplify()
+                                    
+                return self
+        
+        eqs = []
+        for eq in self._argset:
+            if eq.is_And:
+                eqs.append(And(*eq._argset - common_terms))
+            
+        return And(self.func(*eqs), *common_terms)
 
     def as_KroneckerDelta(self):
         eq = 1
@@ -2318,13 +2187,13 @@ class Or(LatticeOp, BooleanFunction):
                 lhs = Or(*self._argset - args_intersection)
                 rhs = Or(*other._argset - args_intersection)
                 
-                return Or(*args_intersection, And(lhs, rhs), equivalent=[self, other])
+                return Or(*args_intersection, And(lhs, rhs))
         else:
             for eq in self._argset:
                 if (other & eq).is_BooleanFalse:
                     args = set(self._argset)
                     args.remove(eq)
-                    this = self.func(*args)
+                    this = self.func(*args).simplify()
                     break
 
         if other.is_And:
@@ -2332,7 +2201,12 @@ class Or(LatticeOp, BooleanFunction):
         else:
             rhs = (other,)
 
-        return And(this, *rhs, equivalent=[self, other])
+        return And(this, *rhs)
+
+    def __or__(self, other):
+        if other.is_Or:
+            return BooleanFunction.__or__(self, other)
+        return BooleanFunction.__or__(self, other)                
 
     def _eval_domain_defined(self, x):
         domain = x.emptySet
@@ -2346,66 +2220,13 @@ class Or(LatticeOp, BooleanFunction):
             sol |= x.domain_conditioned(eq)
         return x.domain & sol
 
-    def bisect(self, eq, **kwargs):
-        if eq.is_boolean:
-            from sympy import ForAll
-            wrt = kwargs.get('wrt')
-            if wrt is None:
-                wrt, *_ = eq.lhs.free_symbols
-            if wrt.is_given:
-                _eq = eq.invert()
-                return And(Or(eq, self), Or(_eq, self), equivalent=self)                
-            if wrt.is_bounded:
-                self = self.forall((wrt,), simplify=False)
-            else:
-                self = ForAll(self, (wrt,), equivalent=self)
-            assert self.is_ForAll
-            return self.bisect(wrt.domain_conditioned(eq))
+    def copy(self, **kwargs):
+        if kwargs:
+            from sympy.core.inference import Inference
+            return Inference(self, **kwargs)
         return self
 
-    @classmethod
-    def rewrite_from_And(cls, self):
-        for i, eq in enumerate(self.args):
-            if isinstance(eq, cls):
-                args = [*self.args]
-                del args[i]
-                this = self.func(*args)
-                return cls(*((arg & this).simplify() for arg in eq.args), equivalent=self)
 
-    @classmethod
-    def rewrite_from_Sufficient(cls, self):
-        p, q = self.args
-        return cls(p.invert(), q, equivalent=self)
-            
-    @classmethod
-    def rewrite_from_Necessary(cls, self):
-        p, q = self.args
-        return cls(p, q.invert(), equivalent=self)
-    
-    def copy(self, **kwargs):
-        obj = Basic.__new__(self.func, self._argset, **kwargs)
-        obj._argset = self._argset
-        return obj
-
-    def collect(self, term):
-        print('this should be axiomatized')
-        matched = []
-        unmatch = []
-        for eq in self.args:
-            if eq.is_And:
-                if term in eq.args:
-                    matched.append(Or(*eq._argset - {term}))
-                    continue
-            elif eq == term:
-                matched.append(S.true)
-                continue
-            
-            unmatch.append(eq)
-        if unmatch: 
-            return self.func(*unmatch, Or(term, self.func(*matched)), equivalent=self)            
-        return And(term, self.func(*matched), equivalent=self)
-
-    
 And.invert_type = Or
 Or.invert_type = And
 
@@ -2460,25 +2281,25 @@ class Not(BooleanFunction):
     @classmethod
     def eval(cls, arg):
         from sympy import (
-            Equality, GreaterThan, LessThan,
-            StrictGreaterThan, StrictLessThan, Unequality)
+            Equal, GreaterEqual, LessEqual,
+            Greater, Less, Unequal)
         if isinstance(arg, Number) or arg in (True, False):
             return false if arg else true
         if arg.is_Not:
             return arg.args[0]
         # Simplify Relational objects.
-        if isinstance(arg, Equality):
-            return Unequality(*arg.args)
-        if isinstance(arg, Unequality):
-            return Equality(*arg.args)
-        if isinstance(arg, StrictLessThan):
-            return GreaterThan(*arg.args)
-        if isinstance(arg, StrictGreaterThan):
-            return LessThan(*arg.args)
-        if isinstance(arg, LessThan):
-            return StrictGreaterThan(*arg.args)
-        if isinstance(arg, GreaterThan):
-            return StrictLessThan(*arg.args)
+        if isinstance(arg, Equal):
+            return Unequal(*arg.args)
+        if isinstance(arg, Unequal):
+            return Equal(*arg.args)
+        if isinstance(arg, Less):
+            return GreaterEqual(*arg.args)
+        if isinstance(arg, Greater):
+            return LessEqual(*arg.args)
+        if isinstance(arg, LessEqual):
+            return Greater(*arg.args)
+        if isinstance(arg, GreaterEqual):
+            return Less(*arg.args)
 
     def _eval_as_set(self):
         """
@@ -2492,7 +2313,7 @@ class Not(BooleanFunction):
         >>> Not(x > 0).as_set()
         Interval(-oo, 0)
         """
-        return self.args[0].as_set().complement(S.Reals)
+        return self.args[0].as_set().complement(Reals)
 
     def to_nnf(self, simplify=True):
         if is_literal(self):
@@ -2744,7 +2565,7 @@ class Xnor(BooleanFunction):
         return Not(Xor(*args))
 
        
-class Sufficient(BinaryCondition):
+class Sufficient(BooleanAssumption):
     """
     Logical implication.
 
@@ -2835,29 +2656,98 @@ class Sufficient(BinaryCondition):
     def _sympystr(self, p): 
         return "%s \N{RIGHTWARDS DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
     
-    def _latex(self, p, altchar='\Rightarrow'):
-        A = p.conditions_wrapper(self.lhs)
-        B = p.conditions_wrapper(self.rhs)
-        return "%s %s %s" % (A, altchar, B)
+    def _latex(self, p, altchar='\Rightarrow', rotate=False):
+        A = p.conditions_wrapper(self.lhs, rotate=rotate)
+
+        B = p.conditions_wrapper(self.rhs, rotate=rotate)
+        
+        if rotate:
+            altchar = p.rotate_arrow(altchar)      
+            return r"\begin{array}{%s}%s\end{array}" % ('c', r'\\'.join([A, altchar, B]))      
+        else: 
+            return "%s %s %s" % (A, altchar, B)
+
+    def _pretty(self, p, altchar=None):
+        if p._use_unicode:
+            return p._print_Boolean(self, altchar or u"\N{RIGHTWARDS DOUBLE ARROW}", sort=False)
+        else:
+            return p._print_Function(self)
 
     def __and__(self, other):
         """Overloading for & operator"""
         if other.is_Sufficient:
             if self.lhs == other.lhs:
-                return self.func(self.lhs, self.rhs & other.rhs, equivalent=[self, other])
+                return self.func(self.lhs, self.rhs & other.rhs)
             if self.lhs == other.rhs:
                 if self.rhs == other.lhs:
-                    return Equivalent(self.lhs, self.rhs, equivalent=[self, other])
+                    return Equivalent(self.lhs, self.rhs)
+            if self.rhs == other.rhs:
+                return Sufficient(self.lhs | other.lhs, self.rhs)
                 
         elif other.is_Necessary:
             if self.lhs == other.lhs:
                 if self.rhs == other.rhs:
-                    return Equivalent(self.lhs, self.rhs, equivalent=[self, other])
+                    return Equivalent(self.lhs, self.rhs)
                  
         return BinaryCondition.__and__(self, other)
 
+    def premise_set(self):
+        p = self.args[0]
+        if p.is_And:
+            return p, p._argset
+        else:
+            return p, {p}
+          
+    def simplify(self):
+        q = self.args[1]
+        
+        if q.is_And:
+            p, p_set = self.premise_set()
+            
+            eqs = []
+            for eq in q.args:                
+                if eq in p_set:
+                    continue
+                if eq.is_Or:
+                    or_eqs = []
+                    for e in eq.args:
+                        if e in p_set:
+                            continue                        
+                        or_eqs.append(e)
+                    if len(or_eqs) == len(eq.args):
+                        eqs.append(eq)
+                        continue
+                    
+                    if not or_eqs:
+                        continue
+                    
+                    eq = Or(*or_eqs)  
+                     
+                eqs.append(eq)
+                
+            return Sufficient(p, And(*eqs))
+        elif q.is_Or:
+            p, p_set = self.premise_set()
+            
+            eqs = []
+            for eq in q.args:
+                if eq.is_And:
+                    intersect = eq._argset & p_set
+                    if intersect:
+                        res = eq._argset - intersect
+                        if res:
+                            eq = And(*res)
+                        else:
+                            continue
+                eqs.append(eq)
+            return Sufficient(p, Or(*eqs))
+            
+        return self
 
-class Necessary(BinaryCondition):
+    def inference_status(self, child):
+        return child == 0       
+        
+class Necessary(BooleanAssumption):
     """
     Logical implication.
 
@@ -2883,20 +2773,31 @@ class Necessary(BinaryCondition):
     def _sympystr(self, p): 
         return "%s \N{LEFTWARDS DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
 
-    def _latex(self, p):
-        return Sufficient._latex(self, p, '\Leftarrow')
+    def _pretty(self, p, altchar=None): 
+        if p._use_unicode:
+            return p._print_Boolean(self, altchar or u"\N{LEFTWARDS DOUBLE ARROW}", sort=False)
+        else:
+            return p._print_Function(self)
+    
+    def _latex(self, p, rotate=False):
+        return Sufficient._latex(self, p, '\Leftarrow', rotate=rotate)
 
     def __and__(self, other):
         """Overloading for & operator"""
         if other.is_Sufficient:
             if self.lhs == other.lhs:
                 if self.rhs == other.rhs:
-                    return Equivalent(self.lhs, self.rhs, equivalent=[self, other])
+                    return Equivalent(self.lhs, self.rhs)
+        elif other.is_Necessary:
+            if self.lhs == other.lhs: 
+                return Necessary(self.lhs, self.rhs | other.rhs)
 
         return BinaryCondition.__and__(self, other)
 
+    def inference_status(self, child):
+        return child == 1       
 
-class Equivalent(BinaryCondition):
+class Equivalent(BooleanAssumption):
     """
     Equivalence relation.
 
@@ -2918,7 +2819,11 @@ class Equivalent(BinaryCondition):
     True
     """
 
-    def __new__(cls, *args, **options):
+    def __new__(cls, *args, **assumptions):
+        return BinaryCondition.eval(cls, *args, **assumptions)
+
+    @classmethod
+    def eval(cls, *args, **options):
         from sympy.core.relational import Relational
         args = [_sympify(arg) for arg in args]
 
@@ -2945,6 +2850,10 @@ class Equivalent(BinaryCondition):
             argset.remove(b)
             argset.add(True)
         if len(argset) <= 1:
+            if 'plausible' in options:
+                eq, *_ = argset
+                del options['plausible']
+                return BinaryCondition.__new__(cls, eq, eq)
             return S.true.copy(**options)
         if True in argset:
             argset.discard(True)
@@ -2952,7 +2861,6 @@ class Equivalent(BinaryCondition):
         if False in argset:
             argset.discard(False)
             return And(*[arg.invert() for arg in argset])
-        return super(Equivalent, cls).__new__(cls, *args, **options)
 
     def to_nnf(self, simplify=True):
         args = []
@@ -2964,11 +2872,19 @@ class Equivalent(BinaryCondition):
     def _sympystr(self, p): 
         return "%s \N{LEFT RIGHT DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
 
-    def _latex(self, p):
-        return Sufficient._latex(self, p, '\Leftrightarrow')
+    def _latex(self, p, rotate=False):
+        return Sufficient._latex(self, p, '\Leftrightarrow', rotate=rotate)
 
+    def _pretty(self, p, altchar=None):
+        if p._use_unicode:
+            return p._print_Boolean(self, altchar or u"\N{LEFT RIGHT DOUBLE ARROW}", sort=False)
+        else:
+            return p._print_Function(self, sort=False)
+
+    def inference_status(self, child):
+        raise Exception("boolean conditions within Equivalent are not applicable for inequivalent inference!")       
        
-class Insufficient(BinaryCondition):
+class Insufficient(BooleanAssumption):
 
     def __new__(cls, *args, **assumptions):
         return BinaryCondition.eval(cls, *args, **assumptions)
@@ -2980,7 +2896,7 @@ class Insufficient(BinaryCondition):
     def _sympystr(self, p): 
         return "%s \N{RIGHTWARDS DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
     
-    def _latex(self, p):
+    def _latex(self, p, rotate=False):
         A = p.conditions_wrapper(self.lhs)
         B = p.conditions_wrapper(self.rhs)
         return r"%s \nRightarrow %s" % (A, B)
@@ -2988,8 +2904,10 @@ class Insufficient(BinaryCondition):
     def __and__(self, other):
         return BinaryCondition.__and__(self, other)
 
+    def inference_status(self, child):
+        return child == 1
 
-class Unnecessary(BinaryCondition):
+class Unnecessary(BooleanAssumption):
     
     @classmethod
     def eval(cls, *args):
@@ -2998,18 +2916,22 @@ class Unnecessary(BinaryCondition):
     def _sympystr(self, p): 
         return "%s \N{LEFTWARDS DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
 
-    def _latex(self, p):
-        return Sufficient._latex(self, p, '\nLeftarrow')
+    def _latex(self, p, altchar='\nLeftarrow', rotate=False):
+        return Sufficient._latex(self, p, altchar, rotate=rotate)
 
+    def inference_status(self, child):
+        return child == 0
 
-class Inequivalent(BinaryCondition):
+class Inequivalent(BooleanAssumption):
 
     def _sympystr(self, p): 
         return "%s \N{LEFT RIGHT DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
 
-    def _latex(self, p):
-        return Sufficient._latex(self, p, '\nLeftrightarrow')
+    def _latex(self, p, altchar='\nLeftrightarrow', rotate=False):
+        return Sufficient._latex(self, p, altchar, rotate=rotate)
 
+    def inference_status(self, child):
+        raise Exception("boolean conditions within Inequivalent are not applicable for inequivalent inference!")       
 
 Sufficient.reversed_type = Necessary
 Necessary.reversed_type = Sufficient

@@ -93,13 +93,13 @@ def convert_relation(rel):
     lh = convert_relation(rel.relation(0))
     rh = convert_relation(rel.relation(1))
     if rel.LT():
-        return sympy.StrictLessThan(lh, rh)
+        return sympy.Less(lh, rh)
     elif rel.LTE():
-        return sympy.LessThan(lh, rh)
+        return sympy.LessEqual(lh, rh)
     elif rel.GT():
-        return sympy.StrictGreaterThan(lh, rh)
+        return sympy.Greater(lh, rh)
     elif rel.GTE():
-        return sympy.GreaterThan(lh, rh)
+        return sympy.GreaterEqual(lh, rh)
     elif rel.EQUAL():
         return sympy.Eq(lh, rh)
 

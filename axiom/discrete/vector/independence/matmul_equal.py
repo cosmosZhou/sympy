@@ -1,12 +1,12 @@
 from sympy import *
 from axiom.utility import prove, apply
 
-from axiom import algebre, discrete
+from axiom import algebra, discrete
 
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     lhs, rhs = given.args        
     
     assert lhs.is_MatMul
@@ -23,13 +23,13 @@ def apply(given):
 #     n = p_polynomial.shape[0]
     k = p_polynomial.variable
     polynomial = p_polynomial.function
-    assert polynomial.is_Power
+    assert polynomial.is_Pow
     
     b, e = polynomial.as_base_exp()    
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
     
-    return Equality(x, y)
+    return Equal(x, y)
 
 
 @prove
@@ -42,7 +42,7 @@ def prove(Eq):
     
     assert x.is_given and y.is_given
     
-    given = Equality(LAMBDA[k:n](p ** k) @ x, LAMBDA[k:n](p ** k) @ y)
+    given = Equal(LAMBDA[k:n](p ** k) @ x, LAMBDA[k:n](p ** k) @ y)
     
     Eq << apply(given)
     
@@ -51,7 +51,7 @@ def prove(Eq):
     
     Eq << Eq[-1].forall((i,))
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.lamda, *Eq[-1].limits, simplify=False)
+    Eq << Eq[-1].this.function.apply(algebra.eq.imply.eq.lamda, *Eq[-1].limits, simplify=False)
     
     Eq << Eq[-1].this.lhs.astype(MatMul)
     
@@ -61,7 +61,7 @@ def prove(Eq):
     
     i, k = Eq.statement.lhs.args[1].variables
     
-    Eq << discrete.matrix.vandermonde.basicForm.apply(LAMBDA[i:n](i + 1))
+    Eq << discrete.matrix.vandermonde.apply(LAMBDA[i:n](i + 1))
     
     Eq << Unequal(Eq[-1].rhs, 0, plausible=True)
     
@@ -72,8 +72,8 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.arg.limits_subs(j, i)
 
-    Eq << algebre.is_nonzero.eq.imply.eq.matrix.apply(Eq[-1], Eq.statement)
+    Eq << algebra.is_nonzero.eq.imply.eq.matrix.apply(Eq[-1], Eq.statement)
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -30,9 +30,8 @@ from sympy.utilities.miscellany import filldedent
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
 
-class Integrate(AddWithLimits):
-    """Represents unevaluated integral."""
-    is_Integral = True
+class Integral(AddWithLimits):
+    """Represents unevaluated integral."""    
     __slots__ = ('is_commutative',)
 
     def __new__(cls, function, *symbols, **assumptions):
@@ -956,7 +955,7 @@ class Integrate(AddWithLimits):
 
             #               c
             # g(x) = (a*x+b)
-            if g.is_Power and not g.exp.has(x) and not meijerg:
+            if g.is_Pow and not g.exp.has(x) and not meijerg:
                 a = Wild('a', exclude=[x])
                 b = Wild('b', exclude=[x])
 
@@ -1515,9 +1514,9 @@ class Integrate(AddWithLimits):
         if a is -oo and b is oo:
             I = limit(F - F.subs(x, -x), x, oo)
         else:
-            I = limit(F, x, b, '-') - limit(F, x, a, '+')
+            I = limit(F, x, b, False) - limit(F, x, a, True)
         for s in singularities_list:
-            I += limit(((F.subs(x, s - r)) - F.subs(x, s + r)), r, 0, '+')
+            I += limit(((F.subs(x, s - r)) - F.subs(x, s + r)), r, 0, True)
         return I
 
     def as_polar_coordinate(self):
@@ -1584,7 +1583,7 @@ class Integrate(AddWithLimits):
                 symbols.insert(0, r"\, d%s" % p._print(symbol))
 
         from sympy.printing.precedence import PRECEDENCE
-        return r"%s %s%s" % (tex, p.parenthesize(self.function, PRECEDENCE["Times"], strict=True), "".join(symbols))
+        return r"%s %s%s" % (tex, p.parenthesize(self.function, PRECEDENCE["Mul"], strict=True), "".join(symbols))
 
     def to_wolfram(self, global_variables):        
         from wolframclient.language import wl, wlexpr
@@ -1632,9 +1631,6 @@ class Integrate(AddWithLimits):
             conditions = wl.And(*conditions)
             
         return wl.Integrate(function, limit, wl.Rule(wlexpr('Assumptions'), conditions))
-
-
-Integral = Integrate
 
 
 def integrate(*args, meijerg=None, conds='piecewise', risch=None, heurisch=None, manual=None, **kwargs):

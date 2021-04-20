@@ -15,20 +15,20 @@ def apply(*given, evaluate=False):
     for p in given:
         if p.is_Subset:
             A, B = p.args
-        elif p.is_Unequality:
+        elif p.is_Unequal:
             _A, _B = p.args
         else:
             return
                          
     assert A == _A and B == _B or A == _B and B == _A
-    return Unequality(B - A, A.etype.emptySet, evaluate=evaluate)
+    return Unequal(B - A, A.etype.emptySet, evaluate=evaluate)
 
 
 @prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
-    inequality = Unequality(A, B)
+    inequality = Unequal(A, B)
     subset = Subset(A, B, evaluate=False) 
     
     Eq << apply(inequality, subset)
@@ -47,5 +47,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

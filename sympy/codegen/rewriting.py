@@ -76,7 +76,7 @@ class ReplaceOptim(Optimization):
     >>> from sympy.codegen.rewriting import ReplaceOptim
     >>> from sympy.codegen.cfunctions import exp2
     >>> x = Symbol('x')
-    >>> exp2_opt = ReplaceOptim(lambda p: p.is_Power and p.base == 2,
+    >>> exp2_opt = ReplaceOptim(lambda p: p.is_Pow and p.base == 2,
     ...     lambda p: exp2(p.exp))
     >>> exp2_opt(2**x)
     exp2(x)
@@ -125,7 +125,7 @@ def optimize(expr, optimizations):
 
 
 exp2_opt = ReplaceOptim(
-    lambda p: p.is_Power and p.base == 2,
+    lambda p: p.is_Pow and p.base == 2,
     lambda p: exp2(p.exp)
 )
 
@@ -137,7 +137,7 @@ _w = Wild('w')
 
 log2_opt = ReplaceOptim(_v*log(_w)/log(2), _v*log2(_w), cost_function=lambda expr: expr.count(
     lambda e: (  # division & eval of transcendentals are expensive floating point operations...
-        e.is_Power and e.exp.is_negative  # division
+        e.is_Pow and e.exp.is_negative  # division
         or (isinstance(e, (log, log2)) and not e.args[0].is_number))  # transcendental
     )
 )
@@ -222,7 +222,7 @@ def create_expand_pow_optimization(limit):
 
     """
     return ReplaceOptim(
-        lambda e: e.is_Power and e.base.is_symbol and e.exp.is_Integer and abs(e.exp) <= limit,
+        lambda e: e.is_Pow and e.base.is_symbol and e.exp.is_Integer and abs(e.exp) <= limit,
         lambda p: (
             UnevaluatedExpr(Mul(*([p.base]*+p.exp), evaluate=False)) if p.exp > 0 else
             1/UnevaluatedExpr(Mul(*([p.base]*-p.exp), evaluate=False))

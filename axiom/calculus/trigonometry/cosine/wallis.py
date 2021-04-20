@@ -1,14 +1,14 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, geometry, calculus
+from axiom import algebra, geometry, calculus
 
 
 @apply
 def apply(n):
     n = sympify(n)
     x = Symbol.x(real=True)
-    return Equality(Integral[x:0:pi / 2](cos(x) ** (n - 1)),
-                    sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
+    return Equal(Integral[x:0:pi / 2](cos(x) ** (n - 1)),
+                 sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
 
 
 @prove
@@ -19,11 +19,11 @@ def prove(Eq):
 
     Eq << Eq[0].subs(n, 1)
     
-    Eq << Eq[-1].doit()
+    Eq << Eq[-1].this.lhs.doit()
         
     Eq << Eq[0].subs(n, 2)
     
-    Eq << Eq[-1].doit()
+    Eq << Eq[-1].this.lhs.doit()
 
     Eq.induction = Eq[0].subs(n, n + 2)
 
@@ -39,17 +39,17 @@ def prove(Eq):
 
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
     
-    Eq << Eq[-1].this.rhs.function.astype(Plus)
+    Eq << Eq[-1].this.rhs.function.astype(Add)
 
     Eq << Eq[-1].this.rhs.function.args[0].powsimp()
     
-    Eq << Eq[-1].this.rhs.astype(Plus)
+    Eq << Eq[-1].this.rhs.astype(Add)
     
     Eq << Eq[-1].this.rhs.args[1].simplify()
     
     Eq << Eq[-1].solve(-Eq[-1].rhs.args[1])
     
-    Eq << Eq[-1].subs(Eq[0])
+    Eq << algebra.eq.eq.imply.eq.subs.apply(Eq[0], Eq[-1])
     
     Eq << Eq[-1].this.rhs.expand()
     
@@ -57,9 +57,9 @@ def prove(Eq):
 
     Eq << Eq.induction.induct()
     
-    Eq << algebre.eq.eq.sufficient.imply.eq.induction.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
+    Eq << algebra.eq.eq.sufficient.imply.eq.induction.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

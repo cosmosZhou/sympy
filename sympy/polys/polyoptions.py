@@ -283,10 +283,10 @@ class Gens(with_metaclass(OptionType, Option)):
     @classmethod
     def preprocess(cls, gens):
         from sympy.tensor.indexed import Slice, Indexed
-        from sympy import Symbol, Function, Power
+        from sympy import Symbol, Function, Pow
         if isinstance(gens, Basic):
             gens = (gens,)
-        elif len(gens) == 1 and hasattr(gens[0], '__iter__') and not isinstance(gens[0], (Slice, Indexed, Symbol, Function, Power)):
+        elif len(gens) == 1 and hasattr(gens[0], '__iter__') and not isinstance(gens[0], (Slice, Indexed, Symbol, Function, Pow)):
             gens = gens[0]
 
         if gens == (None,):

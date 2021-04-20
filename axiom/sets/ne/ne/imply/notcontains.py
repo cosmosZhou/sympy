@@ -1,4 +1,4 @@
-from sympy.core.relational import Unequality
+from sympy.core.relational import Unequal
 from axiom.utility import prove, apply
 from sympy.sets.contains import NotContains
 from sympy import Symbol
@@ -32,7 +32,7 @@ def prove(Eq):
     x = Symbol.x(integer=True, given=True)
     a = Symbol.a(integer=True, given=True)
     b = Symbol.b(integer=True, given=True)
-    Eq << apply(Unequality(x, a), Unequality(x, b))
+    Eq << apply(Unequal(x, a), Unequal(x, b))
     
     Eq << sets.ne.imply.notcontains.apply(Eq[0], simplify=False)
     Eq << sets.ne.imply.notcontains.apply(Eq[1], simplify=False)
@@ -41,5 +41,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

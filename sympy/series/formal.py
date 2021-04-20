@@ -893,11 +893,11 @@ def compute_fps(f, x, x0=0, dir=1, hyper=True, order=4, rational=True,
 
     x0 = sympify(x0)
 
-    if dir == '+':
-        dir = S.One
-    elif dir == '-':
-        dir = -S.One
-    elif dir not in [S.One, -S.One]:
+#     if dir == 1:
+#         dir = S.One
+#     elif dir == -1:
+#         dir = -S.One
+    if dir not in [S.One, -S.One]:
         raise ValueError("Dir must be '+' or '-'")
     else:
         dir = sympify(dir)

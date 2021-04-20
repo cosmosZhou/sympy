@@ -11,8 +11,8 @@ def apply(*given, swap=False):
     x, y = axiom.is_Equal(equality_B)
     
     if swap:
-        return Equality(x // a, y // b)
-    return Equality(a // x, b // y)
+        return Equal(x // a, y // b)
+    return Equal(a // x, b // y)
 
 
 @prove
@@ -23,7 +23,7 @@ def prove(Eq):
     X = Symbol.X(etype=dtype.integer * n)    
     Y = Symbol.Y(etype=dtype.integer * n)
     
-    Eq << apply(Equality(A, B), Equality(X, Y))
+    Eq << apply(Equal(A, B), Equal(X, Y))
     
     Eq << Eq[-1].subs(Eq[0])
     
@@ -31,5 +31,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

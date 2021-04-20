@@ -99,7 +99,11 @@ class AssocOp(Basic):
         dtype = None
         for arg in self.args:
             _dtype = arg.dtype
-            if dtype is None or dtype in _dtype:
+            if dtype is None:
+                dtype = _dtype
+                continue
+            
+            if dtype in _dtype:
                 dtype = _dtype
         return dtype
 
@@ -632,7 +636,7 @@ class LatticeOp(AssocOp):
     @property  # type: ignore
     @cacheit
     def args(self):
-
+#         print('possible disorder!', __file__)
 #         return tuple(ordered(self._argset))
         return tuple(sorted(self._argset, key=lambda x: str(x)))
 

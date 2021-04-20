@@ -10,7 +10,7 @@ from axiom.sets.forall_contains.forall_contains.forall_eq.imply.eq import analyz
 @apply
 def apply(*given):
     A, B, a, b, fa, gb = analyze(*given)
-    return LessThan(Abs(A), Abs(B))
+    return LessEqual(Abs(A), Abs(B))
 
 
 @prove
@@ -31,7 +31,7 @@ def prove(Eq):
     assert g.shape == (n,)
     
     Eq << apply(ForAll[a:A](Contains(f(a), B)), ForAll[b:B](Contains(g(b), A)),
-                ForAll[a:A](Equality(a, g(f(a)))))
+                ForAll[a:A](Equal(a, g(f(a)))))
     
     Eq << sets.forall_contains.forall_contains.forall_eq.imply.eq.apply(Eq[0], Eq[1], Eq[2])
 
@@ -41,5 +41,5 @@ def prove(Eq):
 
             
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

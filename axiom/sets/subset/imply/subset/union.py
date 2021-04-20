@@ -17,13 +17,13 @@ def prove(Eq):
    
     Eq << apply(Subset(A, B), S)
     
-    Eq << sets.subset.imply.subset.amplify.apply(Eq[0], S)
+    Eq << sets.subset.imply.subset.relax.apply(Eq[0], S)
     
     Eq << Subset(S, B | S, plausible=True)
     
     Eq <<= Eq[-1] & Eq[-2]
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 
 

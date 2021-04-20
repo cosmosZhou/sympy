@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, geometry, calculus, sets
+from axiom import algebra, geometry, calculus, sets
 
 
 @apply
@@ -8,7 +8,7 @@ def apply(cosx):
     i = S.ImaginaryUnit
     assert cosx.is_Cos
     x = cosx.arg
-    return Equality(cosx, (E ** (i * x) + E ** (-i * x)) / 2)
+    return Equal(cosx, (E ** (i * x) + E ** (-i * x)) / 2)
 
 
 @prove
@@ -28,5 +28,5 @@ def prove(Eq):
     Eq << Eq[-1].reversed
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

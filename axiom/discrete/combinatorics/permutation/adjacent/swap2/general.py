@@ -1,16 +1,7 @@
-from sympy.core.relational import Equality
-from sympy.core.symbol import dtype
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy import ForAll, LAMBDA
-from sympy.sets.contains import Contains
 from sympy.matrices.expressions.matexpr import Swap
-
-from sympy import Symbol
-from axiom import algebre, discrete
+from axiom import algebra, discrete
 
 
 @apply
@@ -34,10 +25,10 @@ def apply(given):
     assert piecewise.is_Piecewise and len(piecewise.args) == 3
     
     x0, condition0 = piecewise.args[0]
-    assert condition0.is_Equality and {*condition0.args} == {i, j}
+    assert condition0.is_Equal and {*condition0.args} == {i, j}
     
     xj, conditionj = piecewise.args[1]
-    assert conditionj.is_Equality and {*conditionj.args} == {i, 0}
+    assert conditionj.is_Equal and {*conditionj.args} == {i, 0}
     
     xi, conditioni = piecewise.args[2]
     assert conditioni
@@ -61,7 +52,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)    
     
-    given = ForAll(Contains(LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))), S), (j, 1, n), (x, S))
+    given = ForAll(Contains(LAMBDA[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S), (j, 1, n), (x, S))
     
     Eq << apply(given)
     
@@ -69,7 +60,7 @@ def prove(Eq):
     
     Eq << discrete.combinatorics.permutation.adjacent.swap1.helper.apply(x, w[0])
     
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (i, 0, n), simplify=False)
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i, 0, n), simplify=False)
     
     Eq.given = Eq[1].subs(Eq[-1].reversed)
     
@@ -89,11 +80,13 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(w[0, 0].this.definition)
     
-    Eq <<= Eq[-1] & Eq[-2]
+    Eq << Eq[-1].simplify()    
+    
+    Eq << algebra.forall.forall.imply.forall_et.limits_intersect.apply(Eq[-2], Eq[-3])
     
     Eq << discrete.combinatorics.permutation.adjacent.swap2.contains.apply(Eq[-1])
         
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

@@ -7,3 +7,6 @@ from . import ou
 from . import le
 from . import ne
 from . import forall_ne
+from . import gt
+from . import ge
+from . import lt

@@ -13,7 +13,7 @@ def apply(A):
     j = Symbol.j(integer=True)
     d = Symbol.d(shape=(oo,), integer=True)
     k = Symbol.k(domain=Interval(0, n - 1, integer=True))
-    return Equality(Sum[k:1:n + 1]((-1) ** (k + 1) * Sum[d[:k]:ForAll[j:i, i:k](d[j] < d[i]):CartesianSpace(Interval(0, n - 1, integer=True), k)](abs(INTERSECTION[i:k](A[d[i]])))),
+    return Equal(Sum[k:1:n + 1]((-1) ** (k + 1) * Sum[d[:k]:ForAll[j:i, i:k](d[j] < d[i]):CartesianSpace(Interval(0, n - 1, integer=True), k)](abs(INTERSECTION[i:k](A[d[i]])))),
                     abs(UNION[i:n](A[i])))
 
 
@@ -28,5 +28,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

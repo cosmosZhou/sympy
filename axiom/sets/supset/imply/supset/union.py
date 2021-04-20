@@ -1,6 +1,6 @@
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import algebre, sets
+from axiom import algebra, sets
 import axiom
 
 
@@ -25,6 +25,6 @@ def prove(Eq):
     Eq << Eq[-1].reversed
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 
 

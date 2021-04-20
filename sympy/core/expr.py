@@ -106,7 +106,7 @@ class Expr(Basic, EvalfMixin):
 
         coeff, expr = self.as_coeff_Mul()
 
-        if expr.is_Power:
+        if expr.is_Pow:
             expr, exp = expr.args
         else:
             expr, exp = expr, S.One
@@ -393,7 +393,7 @@ class Expr(Basic, EvalfMixin):
         if cmp is not None:
             return cmp
         
-        from sympy import GreaterThan
+        from sympy import GreaterEqual
         from sympy.functions.elementary.extremum import Min, Max
         if isinstance(other, Min):
             for arg in other.args:
@@ -404,7 +404,7 @@ class Expr(Basic, EvalfMixin):
                 if diff is not None and diff >= 0:
                     return S.true
 
-            return GreaterThan(self, other, evaluate=False)
+            return GreaterEqual(self, other, evaluate=False)
         if isinstance(other, Max):
             bools = [self >= arg for arg in other.args]
             if all(bools):
@@ -413,7 +413,7 @@ class Expr(Basic, EvalfMixin):
             if any(bools):
                 return S.false            
             
-            return GreaterThan(self, other, evaluate=False)
+            return GreaterEqual(self, other, evaluate=False)
 
         try:
             other = _sympify(other)
@@ -432,14 +432,14 @@ class Expr(Basic, EvalfMixin):
         if dif.is_extended_nonnegative is not None:
             return sympify(dif.is_extended_nonnegative)
         
-        return GreaterThan(self, other, evaluate=False)
+        return GreaterEqual(self, other, evaluate=False)
 
     def __le__(self, other):
         cmp = Comparator('__le__', self, other).cmp()
         if cmp is not None:
             return cmp
                             
-        from sympy import LessThan
+        from sympy import LessEqual
         from sympy.functions.elementary.extremum import Max, Min
         if isinstance(other, Max):
             for arg in other.args:
@@ -451,7 +451,7 @@ class Expr(Basic, EvalfMixin):
                 if diff is not None and diff <= 0:
                     return S.true
 
-            return LessThan(self, other, evaluate=False)
+            return LessEqual(self, other, evaluate=False)
         
         if isinstance(other, Min):
             bools = [self <= arg for arg in other.args] 
@@ -460,7 +460,7 @@ class Expr(Basic, EvalfMixin):
             bools = [b.invert() for b in bools]
             if any(bools):
                 return S.false            
-            return LessThan(self, other, evaluate=False)
+            return LessEqual(self, other, evaluate=False)
 
         try:
             other = _sympify(other)
@@ -479,14 +479,14 @@ class Expr(Basic, EvalfMixin):
         if dif.is_extended_nonpositive is not None:
             return sympify(dif.is_extended_nonpositive)
         
-        return LessThan(self, other, evaluate=False)
+        return LessEqual(self, other, evaluate=False)
 
     def __gt__(self, other):
         cmp = Comparator('__gt__', self, other).cmp()
         if cmp is not None:
             return cmp
         
-        from sympy import StrictGreaterThan
+        from sympy import Greater
         from sympy.functions.elementary.extremum import Min, Max
         if isinstance(other, Min):
             for arg in other.args:
@@ -497,7 +497,7 @@ class Expr(Basic, EvalfMixin):
                 if diff is not None and diff > 0:
                     return S.true
 
-            return StrictGreaterThan(self, other, evaluate=False)
+            return Greater(self, other, evaluate=False)
 
         if isinstance(other, Max):
             bools = [self > arg for arg in other.args]
@@ -507,7 +507,7 @@ class Expr(Basic, EvalfMixin):
             if any(bools):
                 return S.false            
 
-            return StrictGreaterThan(self, other, evaluate=False)
+            return Greater(self, other, evaluate=False)
 
         try:
             other = _sympify(other)
@@ -526,14 +526,14 @@ class Expr(Basic, EvalfMixin):
         if dif.is_extended_positive is not None:
             return sympify(dif.is_extended_positive)
 
-        return StrictGreaterThan(self, other, evaluate=False)
+        return Greater(self, other, evaluate=False)
 
     def __lt__(self, other):
         cmp = Comparator('__lt__', self, other).cmp()
         if cmp is not None:
             return cmp
         
-        from sympy import StrictLessThan
+        from sympy import Less
         from sympy.functions.elementary.extremum import Max, Min
         if isinstance(other, Max):
             for arg in other.args:
@@ -544,7 +544,7 @@ class Expr(Basic, EvalfMixin):
                 if diff is not None and diff < 0:
                     return S.true
 
-            return StrictLessThan(self, other, evaluate=False)
+            return Less(self, other, evaluate=False)
         
         if isinstance(other, Min):
             bools = [self < arg for arg in other.args]
@@ -554,7 +554,7 @@ class Expr(Basic, EvalfMixin):
             if any(bools):
                 return S.false            
             
-            return StrictLessThan(self, other, evaluate=False)
+            return Less(self, other, evaluate=False)
 
         try:
             other = _sympify(other)
@@ -573,7 +573,7 @@ class Expr(Basic, EvalfMixin):
         if dif.is_extended_negative is not None:
             return sympify(dif.is_extended_negative)
 
-        return StrictLessThan(self, other, evaluate=False)
+        return Less(self, other, evaluate=False)
 
     def __trunc__(self):
         if not self.is_number:
@@ -1151,9 +1151,9 @@ class Expr(Basic, EvalfMixin):
             A = self.subs(x, a)
             if A.has(S.NaN, S.Infinity, S.NegativeInfinity, S.ComplexInfinity, AccumBounds):
                 if (a < b) != False:
-                    A = limit(self, x, a, "+")
+                    A = limit(self, x, a, True)
                 else:
-                    A = limit(self, x, a, "-")
+                    A = limit(self, x, a, False)
 
                 if A is S.NaN:
                     return A
@@ -1166,9 +1166,9 @@ class Expr(Basic, EvalfMixin):
             B = self.subs(x, b)
             if B.has(S.NaN, S.Infinity, S.NegativeInfinity, S.ComplexInfinity, AccumBounds):
                 if (a < b) != False:
-                    B = limit(self, x, b, "-")
+                    B = limit(self, x, b, False)
                 else:
-                    B = limit(self, x, b, "+")
+                    B = limit(self, x, b, True)
 
                 if isinstance(B, Limit):
                     raise NotImplementedError("Could not compute limit")
@@ -1198,9 +1198,9 @@ class Expr(Basic, EvalfMixin):
                     if not s.is_comparable:
                         continue
                     if (a < s) == (s < b) == True:
-                        value += -limit(self, x, s, "+") + limit(self, x, s, "-")
+                        value += -limit(self, x, s, True) + limit(self, x, s, False)
                     elif (b < s) == (s < a) == True:
-                        value += limit(self, x, s, "+") - limit(self, x, s, "-")
+                        value += limit(self, x, s, True) - limit(self, x, s, False)
             except TypeError:
                 pass
 
@@ -1438,13 +1438,13 @@ class Expr(Basic, EvalfMixin):
                 return S.Zero
             if o.is_Symbol:
                 return S.One
-            if o.is_Power:
+            if o.is_Pow:
                 return o.args[1]
             if o.is_Mul:  # x**n*log(x)**n or x**n/log(x)**n
                 for oi in o.args:
                     if oi.is_Symbol:
                         return S.One
-                    if oi.is_Power:
+                    if oi.is_Pow:
                         syms = oi.atoms(Symbol)
                         if len(syms) == 1:
                             x = syms.pop()
@@ -2453,8 +2453,8 @@ class Expr(Basic, EvalfMixin):
                 if newarg is not None:
                     args[i] = newarg
                     return Mul(*args)
-        elif self.is_Power:
-            if c.is_Power and c.base == self.base:
+        elif self.is_Pow:
+            if c.is_Pow and c.base == self.base:
                 new_exp = self.exp.extract_additively(c.exp)
                 if new_exp is not None:
                     return self.base ** (new_exp)
@@ -2916,7 +2916,7 @@ class Expr(Basic, EvalfMixin):
     ##################### SERIES, LEADING TERM, LIMIT, ORDER METHODS ##################
     ###################################################################################
 
-    def series(self, x=None, x0=0, n=6, dir="+", logx=None):
+    def series(self, x=None, x0=0, n=6, dir=1, logx=None):
         """
         Series expansion of "self" around ``x = x0`` yielding either terms of
         the series one by one (the lazy series given when n=None), else
@@ -2978,20 +2978,20 @@ class Expr(Basic, EvalfMixin):
             else:
                 return self
 
-        if len(dir) != 1 or dir not in '+-':
-            raise ValueError("Dir must be '+' or '-'")
+#         if len(dir) != 1 or dir not in '+-':
+#             raise ValueError("Dir must be '+' or '-'")
 
         if x0 in [S.Infinity, S.NegativeInfinity]:
             sgn = 1 if x0 is S.Infinity else -1
-            s = self.subs(x, sgn / x).series(x, n=n, dir='+')
+            s = self.subs(x, sgn / x).series(x, n=n, dir=1)
             if n is None:
                 return (si.subs(x, sgn / x) for si in s)
             return s.subs(x, sgn / x)
 
         # use rep to shift origin to x0 and change sign (if dir is negative)
         # and undo the process with rep2
-        if x0 or dir == '-':
-            if dir == '-':
+        if x0 or dir == -1:
+            if dir == -1:
                 rep = -x + x0
                 rep2 = -x
                 rep2b = x0
@@ -2999,7 +2999,7 @@ class Expr(Basic, EvalfMixin):
                 rep = x + x0
                 rep2 = x
                 rep2b = -x0
-            s = self.subs(x, rep).series(x, x0=0, n=n, dir='+', logx=logx)
+            s = self.subs(x, rep).series(x, x0=0, n=n, dir=1, logx=logx)
             if n is None:  # lseries...
                 return (si.subs(x, rep2 + rep2b) for si in s)
             return s.subs(x, rep2 + rep2b)
@@ -3101,7 +3101,7 @@ class Expr(Basic, EvalfMixin):
         _x = Dummy('x')
         return self.subs(x, _x).diff(_x, n).subs(_x, x).subs(x, 0) * x ** n / factorial(n)
 
-    def lseries(self, x=None, x0=0, dir='+', logx=None):
+    def lseries(self, x=None, x0=0, dir=1, logx=None):
         """
         Wrapper for series yielding an iterator of the terms of the series.
 
@@ -3150,7 +3150,7 @@ class Expr(Basic, EvalfMixin):
             yield series - e
             e = series
 
-    def nseries(self, x=None, x0=0, n=6, dir='+', logx=None):
+    def nseries(self, x=None, x0=0, n=6, dir=1, logx=None):
         """
         Wrapper to _eval_nseries if assumptions allow, else to series.
 
@@ -3212,7 +3212,7 @@ class Expr(Basic, EvalfMixin):
         """
         if x and not x in self.free_symbols:
             return self
-        if x is None or x0 or dir != '+':  # {see XPOS above} or (x.is_positive == x.is_negative == None):
+        if x is None or x0 or dir != True:  # {see XPOS above} or (x.is_positive == x.is_negative == None):
             return self.series(x, x0, n, dir)
         else:
             return self._eval_nseries(x, n=n, logx=logx)
@@ -3234,7 +3234,7 @@ class Expr(Basic, EvalfMixin):
                      nseries calls it.""" % self.func)
                      )
 
-    def limit(self, x, xlim, direction='+'):
+    def limit(self, x, xlim, direction=1):
         """ Compute limit x->xlim.
         """
         from sympy.series.limits import limit
@@ -3855,8 +3855,21 @@ class Expr(Basic, EvalfMixin):
             from sympy.sets import Integers
             interval = Integers
         elif self.is_extended_real:
-            interval = S.Reals
+            from sympy.sets.sets import Interval
+            if self.is_extended_positive:                
+                interval = Interval(0, S.Infinity, left_open=True)
+            elif self.is_extended_negative:
+                interval = Interval(-S.Infinity, 0, right_open=True)
+            elif self.is_extended_nonnegative:
+                interval = Interval(0, S.Infinity)
+            elif self.is_extended_nonpositive:
+                interval = Interval(-S.Infinity, 0)
+            else:
+                from sympy.sets.fancysets import Reals
+                interval = Reals
         else:
+#             if not self.is_complex:
+#                 print(self.is_complex)            
             assert self.is_complex, "%s(of type %s) is not complex!" % (self, type(self))
             interval = S.Complexes
 

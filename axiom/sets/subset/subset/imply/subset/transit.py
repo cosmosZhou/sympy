@@ -1,7 +1,6 @@
 from axiom.utility import prove, apply
-from sympy import Subset, Symbol
+from sympy import *
 import axiom
-from sympy.core.symbol import dtype
 from axiom import sets
 
 
@@ -26,9 +25,10 @@ def prove(Eq):
        
     Eq << sets.subset.imply.forall_contains.apply(Eq[0])
     
-    Eq << Eq[-1].apply(sets.contains.subset.imply.contains, Eq[1])
+    Eq << Eq[-1].this.function.apply(sets.contains.subset.imply.contains, Eq[1])
     
     Eq << sets.forall_contains.imply.subset.apply(Eq[-1])
+
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -3,7 +3,7 @@ from sympy.core.containers import Tuple
 from sympy.core.compatibility import iterable
 from sympy.core.exprtools import factor_terms
 from sympy.core.numbers import I
-from sympy.core.relational import Eq, Equality
+from sympy.core.relational import Eq, Equal
 from sympy.core.symbol import Dummy, Symbol
 from sympy.core.function import (expand_mul, expand, Derivative,
                                  AppliedUndef, Function, Subs)
@@ -1399,7 +1399,7 @@ def _classify_linear_system(eqs, funcs, t, is_canon=False):
 def _preprocess_eqs(eqs):
     processed_eqs = []
     for eq in eqs:
-        processed_eqs.append(eq if isinstance(eq, Equality) else Eq(eq, 0))
+        processed_eqs.append(eq if isinstance(eq, Equal) else Eq(eq, 0))
 
     return processed_eqs
 

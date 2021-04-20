@@ -2,7 +2,7 @@ from axiom.utility import prove, apply
 from tensorflow.nn import softmax
 from sympy import *
 import tensorflow as tf
-from axiom import keras, algebre, sets
+from axiom import keras, algebra, sets
 
 
 @apply
@@ -47,7 +47,7 @@ def apply(seq_length, dx, dz, k, num_lower, num_upper):
     indices = slice(β[i], ζ[i])
     indices0 = slice(0, ζ[i] - β[i])
     
-    return Equality(z[i], softmax(Q[i] @ (K[indices] + a_K_quote[i][indices0]).T / sqrt(dz)) @ (V[indices] + a_V_quote[i][indices0]))
+    return Equal(z[i], softmax(Q[i] @ (K[indices] + a_K_quote[i][indices0]).T / sqrt(dz)) @ (V[indices] + a_V_quote[i][indices0]))
 
 
 @prove
@@ -62,27 +62,26 @@ def prove(Eq):
 
     Eq << apply(n, dx, dz, k, l, u)
 
-    i, j = Eq[2].lhs.indices
+    Eq << Eq[11].this.find(Min).apply(algebra.min.to.add.relu, swap=True)
     
-    Eq << keras.nn.relu.min.astype.apply(l, i)
+    Eq << Eq[12].this.find(Min).apply(algebra.min.to.add.relu, swap=True)
     
-    Eq << Eq[-1].reversed.subs(Eq[9].reversed)
-    
-    Eq <<= Eq[11].this.rhs.subs(Eq[-1]), Eq[12].this.rhs.subs(Eq[-1])
+    Eq <<= Eq[-2].subs(Eq[9].reversed), Eq[-1].subs(Eq[9].reversed)
 
     β = Eq[9].lhs.base
     ζ = Eq[10].lhs.base
-    
+    i, j = Eq[2].lhs.indices
+        
     Eq <<= Eq[2].subs(j, j + β[i]), Eq[7].subs(j, j + β[i])
     
-    Eq <<= algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
+    Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
     
     gram_width = l + u + 1 
-    Eq.K_equality = algebre.eq.imply.eq.lamda.apply(Eq[-2], (j, 0, Min(n, gram_width)))
+    Eq.K_equality = algebra.eq.imply.eq.lamda.apply(Eq[-2], (j, 0, Min(n, gram_width)))
     
-    Eq.V_equality = algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, Min(n, gram_width)))
+    Eq.V_equality = algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, Min(n, gram_width)))
 
-    Eq.le = LessThan(ζ[i], β[i] + Min(n, l + u + 1), plausible=True)
+    Eq.le = LessEqual(ζ[i], β[i] + Min(n, l + u + 1), plausible=True)
     
     Eq << Eq.le.this.lhs.definition
     
@@ -92,9 +91,9 @@ def prove(Eq):
      
     Eq.le = Eq.le - β[i]
     
-    Eq << algebre.le.eq.imply.eq.slice.apply(Eq.le, Eq.K_equality)
+    Eq << algebra.le.eq.imply.eq.slice.apply(Eq.le, Eq.K_equality)
     
-    Eq << algebre.le.eq.imply.eq.slice.apply(Eq.le, Eq.V_equality)
+    Eq << algebra.le.eq.imply.eq.slice.apply(Eq.le, Eq.V_equality)
     
     Eq.objective = Eq[13].subs(Eq[-1], Eq[-2])    
     
@@ -121,13 +120,13 @@ def prove(Eq):
     
     Eq << Eq[-1][i]
     
-    Eq.Ξ_definition = Eq[-1].this.rhs.function.astype(Piecewise)
+    Eq.Ξ_definition = Eq[-1].this.rhs.function.definition
     
     Eq << Eq.z_definition.rhs.args[-1].args[0].this.arg.args[0].subs(Eq.Ξ_definition)
     
     Eq << Eq[-1].this.rhs.astype(Sum)
     
-    Eq << Eq[-1].this.rhs.function.args[0].cond.apply(sets.contains.astype.contains)
+    Eq << Eq[-1].this.rhs.function.args[0].cond.apply(sets.contains.to.contains)
     
     Eq.start_definition = Eq[9].this.rhs.definition
     
@@ -149,6 +148,8 @@ def prove(Eq):
     
     Eq << Eq.z_definition.rhs.args[0].this.expand()
     
+    Eq << Eq[-1].this.find(Sum).apply(algebra.sum.limits.domain_defined.insert)
+    
     k = Eq[-1].rhs.function.variable
     Eq << Eq.Ξ_definition[k]
     
@@ -160,14 +161,15 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.T
     
-    Eq << Eq[-1].this.rhs.function.args[1].astype(Plus)
+    Eq << Eq[-1].this.rhs.function.args[1].astype(Add)
     
     Eq << Eq[-1].this.rhs.astype(MatMul)
     
     Eq << Eq.z_definition.this.rhs.subs(Eq[-1])
+
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155

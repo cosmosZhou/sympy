@@ -303,7 +303,7 @@ class DifferentialExtension(object):
         from sympy.integrals.prde import is_deriv_k
 
         ratpows = [i for i in self.newf.atoms(Pow).union(self.newf.atoms(exp))
-            if (i.base.is_Power or isinstance(i.base, exp) and i.exp.is_Rational)]
+            if (i.base.is_Pow or isinstance(i.base, exp) and i.exp.is_Rational)]
 
         ratpows_repl = [
             (i, i.base.base**(i.exp*i.base.exp)) for i in ratpows]
@@ -399,7 +399,7 @@ class DifferentialExtension(object):
             lambda i: i.args[0].is_rational_function(*self.T) and
             i.args[0].has(*self.T))
         symlogs = update_sets(symlogs, atoms,
-            lambda i: i.has(*self.T) and i.args[0].is_Power and
+            lambda i: i.has(*self.T) and i.args[0].is_Pow and
             i.args[0].base.is_rational_function(*self.T) and
             not i.args[0].exp.is_Integer)
 

@@ -235,7 +235,7 @@ class LatexPrinter(Printer):
             if expr.is_Mul and not self._mul_is_clean(expr):
                 return True
             # Pows which don't need brackets can be folded
-            elif expr.is_Power and not self._pow_is_clean(expr):
+            elif expr.is_Pow and not self._pow_is_clean(expr):
                 return True
             # Add and Function always need brackets
             elif expr.is_Add or expr.is_Function:
@@ -258,7 +258,7 @@ class LatexPrinter(Printer):
         if expr.is_Mul:
             if not first and expr._coeff_isneg():
                 return True
-        elif precedence_traditional(expr) < PRECEDENCE["Times"]:
+        elif precedence_traditional(expr) < PRECEDENCE["Mul"]:
             return True
         elif expr.is_Relational:
             return True
@@ -313,7 +313,22 @@ class LatexPrinter(Printer):
     _print_BooleanTrue = _print_bool
     _print_BooleanFalse = _print_bool
 
-    def conditions_wrapper(self, cond, right_brace=True):
+    def rotate_arrow(self, arrow):
+        return {r'\Rightarrow': r'\Downarrow',
+         r'\Leftarrow': r'\Uparrow',
+         r'\Leftrightarrow': r'\Updownarrow',
+         r'\Downarrow': r'\Rightarrow',
+         r'\Uparrow': r'\Leftarrow',
+         r'\Updownarrow': r'\Leftrightarrow',
+         
+         r'\nRightarrow': r'\nDownarrow',
+         r'\nLeftarrow': r'\nUparrow',
+         r'\nLeftrightarrow': r'\nUpdownarrow',
+         r'\nDownarrow': r'\nRightarrow',
+         r'\nUparrow': r'\nLeftarrow',
+         r'\nUpdownarrow': r'\nLeftrightarrow'}[arrow]
+        
+    def conditions_wrapper(self, cond, right_brace=True, rotate=False):
         if cond.is_And:
             delimiter = r'\\'
             center = 'c'
@@ -325,8 +340,11 @@ class LatexPrinter(Printer):
                 return r"{\left\{\begin{array}{%s}%s\end{array}\right.}" % (center, delimiter.join(array))
 #                 A = r"{\left.\begin{array}{%s}%s\end{array}\right}}" % (center, delimiter.join(array))
         else:
-            return "{%s}" % self._print(cond)
-
+            if cond.is_BooleanAssumption:
+                return "{%s}" % self._print(cond, rotate=not rotate)
+            else:
+                return "{%s}" % self._print(cond)
+        
     def _print_NoneType(self, e):
         return r"\text{%s}" % e
 
@@ -374,36 +392,36 @@ class LatexPrinter(Printer):
     def _print_Cross(self, expr):
         vec1 = expr._expr1
         vec2 = expr._expr2
-        return r"%s \times %s" % (self.parenthesize(vec1, PRECEDENCE['Times']),
-                                  self.parenthesize(vec2, PRECEDENCE['Times']))
+        return r"%s \times %s" % (self.parenthesize(vec1, PRECEDENCE['Mul']),
+                                  self.parenthesize(vec2, PRECEDENCE['Mul']))
 
     def _print_Curl(self, expr):
         vec = expr._expr
-        return r"\nabla\times %s" % self.parenthesize(vec, PRECEDENCE['Times'])
+        return r"\nabla\times %s" % self.parenthesize(vec, PRECEDENCE['Mul'])
 
     def _print_Divergence(self, expr):
         vec = expr._expr
-        return r"\nabla\cdot %s" % self.parenthesize(vec, PRECEDENCE['Times'])
+        return r"\nabla\cdot %s" % self.parenthesize(vec, PRECEDENCE['Mul'])
 
     def _print_Dot(self, expr):
         vec1 = expr._expr1
         vec2 = expr._expr2
-        return r"%s \cdot %s" % (self.parenthesize(vec1, PRECEDENCE['Times']),
-                                 self.parenthesize(vec2, PRECEDENCE['Times']))
+        return r"%s \cdot %s" % (self.parenthesize(vec1, PRECEDENCE['Mul']),
+                                 self.parenthesize(vec2, PRECEDENCE['Mul']))
 
     def _print_Gradient(self, expr):
         func = expr._expr
-        return r"\nabla %s" % self.parenthesize(func, PRECEDENCE['Times'])
+        return r"\nabla %s" % self.parenthesize(func, PRECEDENCE['Mul'])
 
     def _print_Laplacian(self, expr):
         func = expr._expr
-        return r"\triangle %s" % self.parenthesize(func, PRECEDENCE['Times'])
+        return r"\triangle %s" % self.parenthesize(func, PRECEDENCE['Mul'])
 
     def _helper_print_standard_power(self, expr, template):
         exp = self._print(expr.exp)
         # issue #12886: add parentheses around superscripts raised
         # to powers
-        base = self.parenthesize(expr.base, PRECEDENCE['Power'])
+        base = self.parenthesize(expr.base, PRECEDENCE['Pow'])
         if '^' in base and expr.base.is_Symbol:
             base = r"\left(%s\right)" % base
         elif (isinstance(expr.base, Derivative)
@@ -468,7 +486,7 @@ class LatexPrinter(Printer):
             tex = r"\frac{%s^{%s}}{%s}" % (diff_symbol, dim, tex)
 
         return r"%s %s" % (tex, self.parenthesize(expr.expr,
-                                                  PRECEDENCE["Times"],
+                                                  PRECEDENCE["Mul"],
                                                   strict=True))
 
     def _print_Subs(self, subs):
@@ -480,7 +498,6 @@ class LatexPrinter(Printer):
             e[0] + '=' + e[1] for e in zip(latex_old, latex_new))
         return r'\left. %s \right|_{\substack{ %s }}' % (latex_expr,
                                                          latex_subs)
-
 
     def _hprint_Function(self, func):
         r'''
@@ -516,7 +533,7 @@ class LatexPrinter(Printer):
         from sympy.functions.special.delta_functions import DiracDelta
         from sympy.functions.special.error_functions import Chi
         return {KroneckerDelta: r'\delta',
-                gamma:  r'\Gamma',
+                gamma: r'\Gamma',
                 lowergamma: r'\gamma',
                 beta: r'\operatorname{B}',
                 DiracDelta: r'\delta',
@@ -754,14 +771,6 @@ class LatexPrinter(Printer):
 
         if exp is not None:
             return r"\left(%s\right)^{%s}" % (tex, exp)
-        else:
-            return tex
-
-    def _print_factorial(self, expr, exp=None):
-        tex = r"%s!" % self.parenthesize(expr.args[0], PRECEDENCE["Func"])
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
         else:
             return tex
 
@@ -1727,7 +1736,7 @@ class LatexPrinter(Printer):
     def _print_Quaternion(self, expr):
         # TODO: This expression is potentially confusing,
         # shall we print it as `Quaternion( ... )`?
-        s = [self.parenthesize(i, PRECEDENCE["Times"], strict=True)
+        s = [self.parenthesize(i, PRECEDENCE["Mul"], strict=True)
              for i in expr.args]
         a = [s[0]] + [i + " " + j for i, j in zip(s[1:], "ijk")]
         return " + ".join(a)

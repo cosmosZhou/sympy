@@ -34,7 +34,7 @@ class CombinatorialFunction(Function):
 ###############################################################################
 
 
-class factorial(CombinatorialFunction):
+class Factorial(CombinatorialFunction):
     r"""Implementation of factorial function over nonnegative integers.
        By convention (consistent with the gamma function and the binomial
        coefficients), factorial of a negative integer is complex infinity.
@@ -237,9 +237,9 @@ class factorial(CombinatorialFunction):
 
                     return Integer(fc % q)
 
-    def _eval_rewrite_as_gamma(self, n, **kwargs):
-        from sympy import gamma
-        return gamma(n + 1)
+#     def _eval_rewrite_as_gamma(self, n, **kwargs):
+#         from sympy import gamma
+#         return gamma(n + 1)
 
     def _eval_rewrite_as_Product(self, n, **kwargs):
         from sympy import Product
@@ -275,8 +275,31 @@ class factorial(CombinatorialFunction):
             return True
 
     def _sympystr(self, p):
-        return '(%s)!' % p._print(self.arg)
+        n = self.arg
+        latex = p._print(n)
+        if n.is_symbol:
+            return '%s!' % latex
+        return '(%s)!' % latex
 
+    @property
+    def definition(self):
+        n = self.arg
+        from sympy import Product
+        if n.is_nonnegative and n.is_integer: 
+            i = self.generate_free_symbol(free_symbol='i', integer=True)
+            return Product[i:1:n + 1](i)
+
+    def _latex(self, p, exp=None):
+        from sympy.printing.precedence import PRECEDENCE
+        tex = r"%s!" % p.parenthesize(self.args[0], PRECEDENCE["Func"])
+
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+
+
+factorial = Factorial
     
 class MultiFactorial(CombinatorialFunction):
     pass
@@ -359,6 +382,7 @@ class subfactorial(CombinatorialFunction):
     def _eval_is_extended_negative(self):
         if self.args[0].is_integer and self.args[0].is_extended_negative:
             return True
+
 
 class factorial2(CombinatorialFunction):
     r"""The double factorial `n!!`, not to be confused with `(n!)!`
@@ -1045,7 +1069,7 @@ class Binomial(CombinatorialFunction):
             beta = p.coeff_monomial(S.One)
             if alpha.is_number:
                 if alpha == S.One:
-                    #consider binomial(2*n, n), x = n
+                    # consider binomial(2*n, n), x = n
                     if not n._has(x):
                         return Interval(-beta, n - beta, integer=True)
                 elif alpha == S.NegativeOne:
@@ -1053,7 +1077,7 @@ class Binomial(CombinatorialFunction):
         return Interval(-oo, oo, integer=True)
 
     @property
-    def dtype(self):        
+    def dtype(self): 
         from sympy.core.symbol import dtype
         n, _ = self.args
         if n.is_integer:
@@ -1071,5 +1095,11 @@ class Binomial(CombinatorialFunction):
             return r"%s^{%s}" % (tex, exp)
         else:
             return tex
+        
+    @property
+    def definition(self):
+        n, k = self.args
+        return factorial(n) / (factorial(k) * factorial(n - k))
+
     
 binomial = binom = Binomial

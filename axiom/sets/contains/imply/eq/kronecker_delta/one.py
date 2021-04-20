@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 @apply
@@ -9,7 +9,7 @@ def apply(given):
     x, domain = given.args
     assert domain == FiniteSet(0, 1)
         
-    return Equality(KroneckerDelta(1, x), x)
+    return Equal(KroneckerDelta(1, x), x)
 
 
 @prove
@@ -21,15 +21,15 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.astype(Piecewise)
     
-    Eq << Eq[-1].bisect(Equality(1, x))
+    Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=Equal(1, x))
     
-    Eq << algebre.et.given.cond.apply(Eq[-1])
+    Eq << algebra.et.given.cond.apply(Eq[-1])
     
     Eq <<= ~Eq[-1], ~Eq[-2]
     
-    Eq << Eq[-2].apply(algebre.eq.ne.imply.ne.subs)
+    Eq << Eq[-2].apply(algebra.eq.ne.imply.ne.subs)
     
-    Eq << Eq[-1].apply(algebre.cond.cond.imply.et, invert=True)
+    Eq << Eq[-1].apply(algebra.cond.cond.imply.et, invert=True)
     
     Eq << Eq[-1].apply(sets.ne.ne.imply.notcontains, simplify=False)
     
@@ -37,5 +37,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

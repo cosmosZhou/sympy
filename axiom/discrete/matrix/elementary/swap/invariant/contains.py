@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from axiom.utility import prove, apply
 
@@ -56,5 +56,5 @@ def prove(Eq):
 
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

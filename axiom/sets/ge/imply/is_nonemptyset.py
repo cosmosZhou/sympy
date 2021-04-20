@@ -1,13 +1,13 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, sets
+from axiom import algebra, sets
 # given: |A| >= 1
 # A != {}
 
 
 @apply
 def apply(given):
-    assert isinstance(given, GreaterThan)
+    assert isinstance(given, GreaterEqual)
     S_abs, positive = given.args
     assert S_abs.is_Abs and positive.is_extended_positive
     S = S_abs.arg
@@ -23,11 +23,11 @@ def prove(Eq):
     
     Eq << apply(abs(S) >= 1)
     
-    Eq << algebre.ge.imply.gt.transit.apply(Eq[0], 0)
+    Eq << algebra.ge.imply.gt.transit.apply(Eq[0], 0)
     
     Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[-1])
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

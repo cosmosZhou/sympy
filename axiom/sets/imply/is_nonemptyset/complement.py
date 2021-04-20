@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
@@ -24,5 +24,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

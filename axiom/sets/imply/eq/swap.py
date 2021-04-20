@@ -32,7 +32,7 @@ def apply(x, i=None, j=None):
     if j is None:
         j = Symbol.j(integer=True)
     
-    return Equality(swap[i, j](swap[i, j](x)), x)
+    return Equal(swap[i, j](swap[i, j](x)), x)
 
 
 @prove
@@ -71,5 +71,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
@@ -27,9 +27,9 @@ def prove(Eq):
     
     Eq << sets.subset.given.forall_contains.apply(Eq[-1])
     
-    Eq << algebre.et.given.cond.apply(Eq[-1])
+    Eq << algebra.et.given.cond.apply(Eq[-1])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

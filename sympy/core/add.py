@@ -70,11 +70,9 @@ def _unevaluated_Add(*args):
 from .decorators import _sympifyit, call_highest_priority
 
 
-class Plus(Expr, AssocOp):
+class Add(Expr, AssocOp):
 
     __slots__ = []
-
-    is_Add = True
 
     identity = S.Zero
     
@@ -177,7 +175,7 @@ class Plus(Expr, AssocOp):
                 c, s = o.as_coeff_Mul()
 
             # check for unevaluated Pow, e.g. 2**3 or 2**(-1/2)
-            elif o.is_Power:
+            elif o.is_Pow:
                 b, e = o.as_base_exp()
                 if b.is_Number and (e.is_Integer or
                                    (e.is_Rational and e.is_negative)):
@@ -289,7 +287,7 @@ class Plus(Expr, AssocOp):
                     ones = OneMatrix(*coeff.shape)
 #                     expand dimensions here
                     newseq = [arg * ones for arg in newseq]
-        else:        
+        else: 
             newseq.insert(0, coeff)
         
         if infinitesimal is not None:
@@ -468,7 +466,7 @@ class Plus(Expr, AssocOp):
             eq = expand_mul(lhs.xreplace(reps) - rhs.xreplace(reps))
             if eq.has(oo):
                 eq = eq.replace(
-                    lambda x: x.is_Power and x.base == oo,
+                    lambda x: x.is_Pow and x.base == oo,
                     lambda x: x.base)
             return eq.xreplace(ireps)
         else:
@@ -651,7 +649,7 @@ class Plus(Expr, AssocOp):
         elif is_infinitesimal is False:
             return self.clear_infinitesimal()[0].is_extended_nonpositive
             
-        if self.is_number:            
+        if self.is_number: 
             return Expr._eval_is_extended_negative(self)
         
         f = self.max()
@@ -940,7 +938,7 @@ class Plus(Expr, AssocOp):
             for m in args:
                 term_rads = defaultdict(list)
                 for ai in Mul.make_args(m):
-                    if ai.is_Power:
+                    if ai.is_Pow:
                         b, e = ai.as_base_exp()
                         if e.is_Rational and b.is_Integer:
                             term_rads[e.q].append(abs(int(b)) ** e.p)
@@ -1037,9 +1035,9 @@ class Plus(Expr, AssocOp):
     @classmethod
     def simplify_Equal(cls, self, lhs, rhs):
         """
-        precondition: self.lhs is a Plus object!
+        precondition: self.lhs is a Add object!
         """
-        if rhs.is_Plus:
+        if rhs.is_Add:
             lhs_args = [*lhs.args]
             rhs_args = [*rhs.args]
             intersect = set(lhs_args) & set(rhs_args)
@@ -1047,21 +1045,21 @@ class Plus(Expr, AssocOp):
                 for arg in intersect:
                     lhs_args.remove(arg)
                     rhs_args.remove(arg)
-                return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
+                return self.func(cls(*lhs_args), cls(*rhs_args)).simplify()
 
         elif rhs in lhs.args:
             args = [*lhs.args]
             args.remove(rhs)
-            return self.func(cls(*args), 0, equivalent=self).simplify()
+            return self.func(cls(*args), 0).simplify()
         elif rhs.is_zero:
             return Basic.simplify_Equal(self, lhs, rhs)
             
     @classmethod
     def simplify_Relational(cls, self, lhs, rhs):
         """
-        precondition: self.lhs is a Plus object!
+        precondition: self.lhs is a Add object!
         """
-        if rhs.is_Plus:
+        if rhs.is_Add:
             lhs_args = [*lhs.args]
             rhs_args = [*rhs.args]
             intersect = set(lhs_args) & set(rhs_args)
@@ -1069,31 +1067,31 @@ class Plus(Expr, AssocOp):
                 for arg in intersect:
                     lhs_args.remove(arg)
                     rhs_args.remove(arg)
-                return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
+                return self.func(cls(*lhs_args), cls(*rhs_args)).simplify()
 
         elif rhs in lhs.args:
             args = [*lhs.args]
             args.remove(rhs)
-            return self.func(cls(*args), 0, equivalent=self).simplify()
+            return self.func(cls(*args), 0).simplify()
         elif rhs.is_zero:
             return Basic.simplify_Relational(self, lhs, rhs)
         
     @classmethod
     def simplify_Unequal(cls, self, lhs, rhs):
         """
-        precondition: self.lhs is a Plus object!
+        precondition: self.lhs is a Add object!
         """
         if len(lhs.args) == 2:
             if rhs.is_zero:
                 lhs, rhs = lhs.args
                 if lhs._coeff_isneg():
                     rhs, lhs = -lhs, rhs
-                    return self.func(lhs, rhs, equivalent=self).simplify()
+                    return self.func(lhs, rhs).simplify()
                 if rhs._coeff_isneg():
                     rhs = -rhs
-                    return self.func(lhs, rhs, equivalent=self).simplify()
+                    return self.func(lhs, rhs).simplify()
 
-    def simplifyKroneckerDelta(self):        
+    def simplifyKroneckerDelta(self): 
         dic = {}
        
         for expr in self.enumerate_KroneckerDelta():
@@ -1185,7 +1183,7 @@ class Plus(Expr, AssocOp):
         
         return self             
             
-    def simplifyPiecewise(self):     
+    def simplifyPiecewise(self): 
         piecewise = [arg for arg in self.args if arg.is_Piecewise]
         if not piecewise:
             return self
@@ -1209,7 +1207,7 @@ class Plus(Expr, AssocOp):
         
         return self
     
-    def simplifyMatrix(self):     
+    def simplifyMatrix(self): 
         matrix = [arg for arg in self.args if arg.is_DenseMatrix]
         scalar = [arg for arg in self.args if not arg.shape]
         if not matrix or not scalar:
@@ -1217,11 +1215,11 @@ class Plus(Expr, AssocOp):
         
         return self.func(*matrix) + self.func(*scalar)
 
-    def simplify_OneMatrix(self):        
+    def simplify_OneMatrix(self): 
         max_len = self.max_len_shape()
         
         for i, times in enumerate(self.args):
-            if times.is_Times and any(t.is_OneMatrix for t in times.args):
+            if times.is_Mul and any(t.is_OneMatrix for t in times.args):
                 if len(times.shape) < max_len or \
                 len(times.shape) == max_len and max_len == max(len(arg.shape) for j, arg in enumerate(self.args) if j != i):
                     args = [*self.args]
@@ -1269,7 +1267,7 @@ class Plus(Expr, AssocOp):
                 if arg == S.NegativeInfinity:
                     negativeInfinity = True
 
-            if negativeInfinity :
+            if negativeInfinity:
                 if positiveInfinity:
                     return self 
                 return S.NegativeInfinity
@@ -1311,7 +1309,7 @@ class Plus(Expr, AssocOp):
                             a += diff
                             b += diff
                         elif alpha == S.NegativeOne:
-                            bound = t_ + x
+                            bound = t_ + x + 1
                             a, b = bound - b, bound - a
                         else:
                             continue
@@ -1494,7 +1492,7 @@ class Plus(Expr, AssocOp):
 
     @property
     def is_lower(self):
-        for arg in self.args :
+        for arg in self.args:
             if not arg.shape:
                 return False            
             if len(arg.shape) == 1:
@@ -1506,7 +1504,7 @@ class Plus(Expr, AssocOp):
              
     @property
     def is_upper(self):
-        for arg in self.args :
+        for arg in self.args:
             if not arg.shape:
                 return False
             if len(arg.shape) == 1:
@@ -1528,7 +1526,7 @@ class Plus(Expr, AssocOp):
 
     @classmethod
     def rewrite_from_Difference(cls, self):
-        if self.expr.is_Plus:
+        if self.expr.is_Add:
             return self.expr.func(*(self.func(arg, *self.variable_count).simplify() for arg in self.expr.args))
         return self
 
@@ -1537,7 +1535,7 @@ class Plus(Expr, AssocOp):
         if isinstance(self.function, cls):
             function = self.function
             function = self.function.args
-        elif self.function.is_Times:
+        elif self.function.is_Mul:
             function = self.function.astype(cls)
             if isinstance(function, cls):
                 function = function.args
@@ -1556,7 +1554,7 @@ class Plus(Expr, AssocOp):
     @classmethod
     def rewrite_from_Piecewise(cls, self):
         common_terms = None
-        for e, c in self.args:            
+        for e, c in self.args: 
             if isinstance(e, cls):
                 if common_terms is None:
                     common_terms = {*e.args}
@@ -1583,7 +1581,7 @@ class Plus(Expr, AssocOp):
         return cls.rewrite_from_AddWithLimits(self)
         
     @classmethod
-    def rewrite_from_Integrate(cls, self):
+    def rewrite_from_Integral(cls, self):
         return cls.rewrite_from_AddWithLimits(self)
 
     @classmethod
@@ -1603,9 +1601,9 @@ class Plus(Expr, AssocOp):
         return self
         
     @classmethod
-    def rewrite_from_Times(cls, self):
+    def rewrite_from_Mul(cls, self):
         for i, arg in enumerate(self.args):
-            if isinstance(arg, cls):                
+            if isinstance(arg, cls): 
                 summand = []
                 for e in arg.args:
                     args = [*self.args]
@@ -1616,7 +1614,7 @@ class Plus(Expr, AssocOp):
 
     @classmethod
     def rewrite_from_RoundFunction(cls, self):
-        if isinstance(self.arg, cls):                
+        if isinstance(self.arg, cls): 
             integers = []
             reals = []
             for e in self.args:
@@ -1636,7 +1634,6 @@ class Plus(Expr, AssocOp):
     def rewrite_from_Ceiling(cls, self):
         return cls.rewrite_from_RoundFunction(self)
     
-       
-Add = Plus
+
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

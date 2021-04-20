@@ -14,7 +14,7 @@ def apply(given):
 def prove(Eq):
     S = Symbol.S(etype=dtype.real)
     e = Symbol.e(real=True)
-    f = Function.f(nargs=(), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
 
     Eq << apply(Exists[e:S](f(e) > 0))
     
@@ -26,5 +26,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

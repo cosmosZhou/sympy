@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -17,7 +17,7 @@ def apply(given, limit):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(positive=True, integer=True)
+    n = Symbol.n(positive=True, integer=True, given=False)
     x = Symbol.x(integer=True)
     k = Symbol.k(integer=True)
     
@@ -37,9 +37,9 @@ def prove(Eq):
 
     Eq << Eq.induction.induct()
     
-    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=1)    
+    Eq << algebra.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=1)    
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

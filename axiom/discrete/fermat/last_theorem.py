@@ -4,7 +4,7 @@ from sympy import *
 
 @apply
 def apply(x, y, z, n):
-    return Unequality(x ** n + y ** n, z ** n)
+    return Unequal(x ** n + y ** n, z ** n)
 
 
 @prove(surmountable=False)
@@ -18,4 +18,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

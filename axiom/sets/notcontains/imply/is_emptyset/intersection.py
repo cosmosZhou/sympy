@@ -8,7 +8,7 @@ from axiom import sets
 def apply(given):
     assert given.is_NotContains
     e, s = given.args
-    return Equality(e.set & s, e.emptySet)
+    return Equal(e.set & s, e.emptySet)
 
 
 @prove
@@ -20,11 +20,11 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
     
-    Eq << sets.is_nonemptyset.imply.exists_contains.setlimit.apply(Eq[-1])
+    Eq << sets.is_nonemptyset.imply.exists_contains.having.intersection.apply(Eq[-1])
     
     Eq <<= Eq[-1] & Eq[0]
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

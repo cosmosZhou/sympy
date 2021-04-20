@@ -1,17 +1,17 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, geometry
+from axiom import algebra, geometry
 from axiom.keras.layers.bert.position_representation.sinusoidal.definition import sinusoid_position_encoding
 
  
 @apply
-def apply(n, d):
-    PE = sinusoid_position_encoding(n, d)
+def apply(n, d, b):
+    PE = sinusoid_position_encoding(n, d, b)
     j, i = PE.definition.variables
         
     k = Symbol.k(integer=True)
     
-    PE_quote = sinusoid_position_encoding(n, d, inverse=True)
+    PE_quote = sinusoid_position_encoding(n, d, b, inverse=True)
     
     (e0, c0), (e1, _) = PE[k, j].definition.args
     
@@ -24,14 +24,15 @@ def apply(n, d):
     
     Z = Symbol.Z(PE * I - PE_quote)
     
-    return Equality(Z[i + k], Z[i] * z[1] ** k)
+    return Equal(Z[i + k], Z[i] * z[1] ** k)
 
 
 @prove
 def prove(Eq):
     n = Symbol.n(positive=True, integer=True)
+    b = Symbol.b(positive=True)
     d = Symbol("d_model", integer=True, positive=True, even=True)
-    Eq << apply(n, d)
+    Eq << apply(n, d, b)
     
     PE_quote = Eq[0].lhs.base 
     PE = Eq[1].lhs.base
@@ -43,13 +44,13 @@ def prove(Eq):
     
     Eq.PE_quote_definition = PE_quote[i + k, j].this.definition
     
-    Eq << Eq.PE_definition.rhs.args[0].expr.this.arg.astype(Plus) 
+    Eq << Eq.PE_definition.rhs.args[0].expr.this.arg.astype(Add) 
     
-    Eq << Eq.PE_definition.rhs.args[1].expr.this.arg.astype(Plus)
+    Eq << Eq.PE_definition.rhs.args[1].expr.this.arg.astype(Add)
     
     Eq <<= geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-1].rhs.arg.args)
  
-    Eq <<= algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
+    Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
      
     Eq << Eq.PE_definition.this.rhs.args[0].expr.subs(Eq[-2])
      
@@ -67,19 +68,19 @@ def prove(Eq):
      
     Eq << Eq[-1].this.rhs.astype(Piecewise)
      
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.cossin, Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.cossin, Eq[-1])
      
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
      
-    Eq.PE_equality = Eq[-1].this.rhs.astype(Plus)
+    Eq.PE_equality = Eq[-1].this.rhs.astype(Add)
      
-    Eq << Eq.PE_quote_definition.rhs.args[0].expr.this.arg.astype(Plus) 
+    Eq << Eq.PE_quote_definition.rhs.args[0].expr.this.arg.astype(Add) 
      
-    Eq << Eq.PE_quote_definition.rhs.args[1].expr.args[1].this.arg.astype(Plus)
+    Eq << Eq.PE_quote_definition.rhs.args[1].expr.args[1].this.arg.astype(Add)
      
     Eq <<= geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-1].rhs.arg.args)
      
-    Eq <<= algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
+    Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
      
     Eq << Eq.PE_quote_definition.this.rhs.args[0].expr.subs(Eq[-2])
      
@@ -97,11 +98,11 @@ def prove(Eq):
  
     Eq << Eq[-1].this.rhs.astype(Piecewise)
      
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.coscos, Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.coscos, Eq[-1])
      
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
      
-    Eq << Eq[-1].this.rhs.astype(Plus)
+    Eq << Eq[-1].this.rhs.astype(Add)
  
     I = S.ImaginaryUnit
     Eq << I * Eq.PE_equality - Eq[-1]
@@ -134,11 +135,11 @@ def prove(Eq):
      
     Eq << Z[k + i].this.definition 
      
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[-2])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[-2])
     
     Eq << Eq[-1].subs(k, 1)
     
-    Eq << algebre.eq.imply.eq.geometric_progression.apply(Eq[-1], n=i)
+    Eq << algebra.eq.imply.eq.geometric_progression.apply(Eq[-1], n=i)
     
     Eq << Eq[-1].subs(i, i + k)
     
@@ -146,11 +147,11 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.powsimp()
     
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155

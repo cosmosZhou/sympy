@@ -1,13 +1,6 @@
-
-from sympy.core.relational import Equality
-from sympy.core.singleton import S
-from sympy.functions.elementary.trigonometric import cos, sin
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.sympify import sympify
-from sympy.functions.special.beta_functions import beta
-from sympy.integrals.integrals import Integral
 import axiom
-from sympy import Symbol
 from axiom import calculus
 
 
@@ -17,10 +10,8 @@ def apply(m, n=1):
     n = sympify(n)
 
     x = Symbol.x(real=True)
-    return Equality(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
+    return Equal(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
                     beta(m / 2, n / 2) / 2)
-
-
 
 
 @prove
@@ -36,5 +27,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

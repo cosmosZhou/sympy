@@ -328,7 +328,7 @@ class MatMul(MatrixExpr):
                         rhs_args.remove(arg)
                         hit = True
                 if hit:
-                    return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
+                    return self.func(cls(*lhs_args), cls(*rhs_args)).simplify()
 
     def simplify(self, **_):
         this = any_zeros(self)

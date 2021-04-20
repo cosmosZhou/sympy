@@ -1933,7 +1933,7 @@ def _rs_series(expr, series_rs, a, prec):
             series += _series
         return series
 
-    elif expr.is_Power:
+    elif expr.is_Pow:
         R1, _ = sring(expr.base, domain=QQ, expand=False, series=True)
         R = R.compose(R1)
         series_inner = _rs_series(expr.base, R(expr.base), a, prec)

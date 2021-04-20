@@ -1,12 +1,12 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, geometry, calculus, sets
+from axiom import algebra, geometry, calculus, sets
 
 
 @apply
 def apply(x):
     i = S.ImaginaryUnit
-    return Equality(E ** (i * x), cos(x) + i * sin(x))
+    return Equal(E ** (i * x), cos(x) + i * sin(x))
 
 
 @prove
@@ -19,13 +19,13 @@ def prove(Eq):
     
     n = Eq[-1].rhs.variable
     
-    Eq << Eq[-1].this.rhs.bisect((-1) ** n > 0)
+    Eq << Eq[-1].this.rhs.bisect(Equal(n % 2, 0))
     
-    Eq << Eq[-1].this.rhs.args[0].limits[0][1].apply(sets.complement.astype.conditionset)
+    Eq << Eq[-1].this.rhs.args[0].limits[0][1].apply(sets.complement.to.conditionset)
     
-    Eq << Eq[-1].this.rhs.args[0].apply(algebre.sum.even)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebra.sum.even)
     
-    Eq << Eq[-1].this.rhs.args[0].apply(algebre.sum.odd)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebra.sum.odd)
     
     Eq << Eq[-1].this.rhs.args[0].function.expand()
     
@@ -39,11 +39,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].args[1].function.expand()
     
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.expand, Eq[-1])
-    
-    
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.expand, Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,5 +1,5 @@
 from sympy import Symbol, Function
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy.core.symbol import dtype
 from axiom.utility import prove, apply
 from sympy import LAMBDA
@@ -22,7 +22,7 @@ def apply(given, i=None, j=None):
     if j is None:
         j = Symbol.j(integer=True)
     
-    return Equality(swap[i, j](x), swap[i, j](y))
+    return Equal(swap[i, j](x), swap[i, j](y))
 
 
 @prove
@@ -32,10 +32,10 @@ def prove(Eq):
     x = Symbol.x(shape=(n,), etype=dtype.integer)
     y = Symbol.y(shape=(n,), etype=dtype.integer)
     
-    Eq << apply(Equality(x, y))
+    Eq << apply(Equal(x, y))
 
     Eq << Eq[1].subs(Eq[0])
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

@@ -38,8 +38,8 @@ ordering_of_classes = [
     # Landau O symbol
     'Order',
     # relational operations
-    'Equality', 'Unequality', 'StrictGreaterThan', 'StrictLessThan',
-    'GreaterThan', 'LessThan',
+    'Equal', 'Unequal', 'Greater', 'Less',
+    'GreaterEqual', 'LessEqual',
 ]
 
 
@@ -61,7 +61,8 @@ class Registry(object):
     def __delattr__(self, name):
         delattr(self.__class__, name)
 
-#A set containing all sympy class objects
+
+# A set containing all sympy class objects
 all_classes = set()
 
 
@@ -93,12 +94,118 @@ class BasicMeta(type):
             return (n1 > n2) - (n1 < n2)
         return (i1 > i2) - (i1 < i2)
 
-    def __lt__(self, other):
+    def __lshift__(self, other):
         if self.__cmp__(other) == -1:
             return True
         return False
 
-    def __gt__(self, other):
+    def __rshift__(self, other):
         if self.__cmp__(other) == 1:
             return True
         return False
+
+    def __or__(self, other):
+        from sympy import Basic
+        if self.is_Boolean:
+            from sympy import Or
+            obj = Basic.__new__(Or, self, other)
+        else:
+            from sympy import Union
+            obj = Basic.__new__(Union, self, other)
+        obj._argset = (self, other)
+        return obj            
+    
+    def __and__(self, other):
+        from sympy import Basic
+        if self.is_Boolean:
+            from sympy import And
+            obj = Basic.__new__(And, self, other)
+        else:
+            from sympy import Intersection
+            obj = Basic.__new__(Intersection, self, other)
+        obj._argset = (self, other)
+        return obj
+                    
+    def __add__(self, other):
+        from sympy import Basic, Add
+        return Basic.__new__(Add, self, other)
+
+    def __mul__(self, other):
+        from sympy import Basic, Mul
+        return Basic.__new__(Mul, self, other)
+
+    def __rmul__(self, lhs):
+        from sympy import Basic, Mul, sympify
+        return Basic.__new__(Mul, sympify(lhs), self)
+    
+    def __sub__(self, other):
+        from sympy import Basic, Add
+        return Basic.__new__(Add, self, other)
+
+    def __neg__(self):
+        from sympy import Basic, Mul, S
+        return Basic.__new__(Mul, S.NegativeOne, self)
+    
+    def __invert__(self):
+        return Wanted(self)
+    
+    def __truediv__(self, other):
+        from sympy import Basic, Mul, Pow, S
+        return Basic.__new__(Mul, self,
+                             Basic.__new__(Pow, other, S.NegativeOne))
+
+    def __pow__(self, other):
+        from sympy import Basic, Pow
+        return Basic.__new__(Pow, self, other)
+
+    def __gt__(self, other):
+        from sympy import Basic, Greater
+        return Basic.__new__(Greater, self, other)
+
+    def __ge__(self, other):
+        from sympy import Basic, GreaterEqual
+        return Basic.__new__(GreaterEqual, self, other)
+
+    def __lt__(self, other):
+        from sympy import Basic, Less
+        return Basic.__new__(Less, self, other)
+
+    def __le__(self, other):
+        from sympy import Basic, LessEqual
+        return Basic.__new__(LessEqual, self, other)
+
+
+class Wanted:
+    is_Wanted = True
+    
+    def __init__(self, func):
+        self.func = func
+        
+    def __getattr__(self, attr):
+        return getattr(self.func, attr)
+    
+    def __invert__(self):
+        # is wanted again?
+        return self
+    
+    def is_wanted(self):
+        return True
+
+    __add__ = BasicMeta.__add__
+    __sub__ = BasicMeta.__sub__
+    __neg__ = BasicMeta.__neg__
+    
+    __mul__ = BasicMeta.__mul__
+    __rmul__ = BasicMeta.__rmul__
+    __truediv__ = BasicMeta.__truediv__
+    
+    __pow__ = BasicMeta.__pow__
+    
+    
+    __and__ = BasicMeta.__and__
+    __or__ = BasicMeta.__or__
+    
+    __gt__ = BasicMeta.__gt__
+    __ge__ = BasicMeta.__ge__
+    __lt__ = BasicMeta.__lt__
+    __le__ = BasicMeta.__le__

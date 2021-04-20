@@ -159,7 +159,7 @@ class ConditionalFiniteDomain(ConditionalDomain, ProductFiniteDomain):
         val = self.condition.xreplace(dict(elem))
         if val in [True, False]:
             return val
-        elif val.is_Equality:
+        elif val.is_Equal:
             return val.lhs == val.rhs
         raise ValueError("Undecidable if %s" % str(val))
 

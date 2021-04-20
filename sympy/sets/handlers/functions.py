@@ -68,11 +68,11 @@ def _set_function(f, x):
         return
 
     if x.left_open:
-        _start = limit(expr, var, x.start, dir="+")
+        _start = limit(expr, var, x.start, dir=1)
     elif x.start not in sing:
         _start = f(x.start)
     if x.right_open:
-        _end = limit(expr, var, x.stop, dir="-")
+        _end = limit(expr, var, x.stop, dir=-1)
     elif x.stop not in sing:
         _end = f(x.stop)
 

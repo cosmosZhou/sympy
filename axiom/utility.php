@@ -386,7 +386,7 @@ function detect_axiom_given_theorem(&$theorem, &$statement)
 
     if (startsWith($theorem, 'Eq')) {
         // consider the case
-        // Eq[-2].this.args[0].apply(algebre.cond.cond.imply.et, invert=True, swap=True)
+        // Eq[-2].this.args[0].apply(algebra.cond.cond.imply.et, invert=True, swap=True)
         return detect_axiom($statement);
     }
 

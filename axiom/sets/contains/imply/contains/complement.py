@@ -4,14 +4,13 @@ import axiom
 
 from axiom import sets
 
+
 @apply
 def apply(given, U):
     e, domain = axiom.is_Contains(given)
     S, s = axiom.is_Complement(domain)
     assert S in U    
     return Contains(e, U - s)
-
-
 
 
 @prove
@@ -27,7 +26,8 @@ def prove(Eq):
     Eq << Subset(Eq[1].rhs, Eq[2].rhs, plausible=True)
 
     Eq << sets.contains.subset.imply.contains.apply(Eq[1], Eq[-1])
+
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

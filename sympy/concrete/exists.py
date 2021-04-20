@@ -1,6 +1,7 @@
-from sympy.logic.boolalg import Boolean, And, Or, BooleanTrue
+from sympy.logic.boolalg import Boolean, And, Or
 from sympy.concrete.conditional_boolean import ConditionalBoolean
 from sympy.sets.sets import FiniteSet
+from sympy.concrete.expr_with_limits import ExprWithLimits
 
 
 class Exists(ConditionalBoolean):
@@ -9,6 +10,16 @@ class Exists(ConditionalBoolean):
     """
     
     operator = Or
+    
+    # this will change the default new operator!
+    def __new__(cls, function, *symbols, **assumptions):
+        if assumptions:
+            from sympy.core.inference import Inference
+            return Inference(Exists.__new__(cls, function, *symbols), **assumptions)
+        
+        if function.is_BooleanAtom or len(symbols) == 0:
+            return function.copy(**assumptions)
+        return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
     
     def combine_clauses(self, rhs):
         if rhs.is_Exists:
@@ -142,13 +153,16 @@ class Exists(ConditionalBoolean):
         if deletes:
             limits = self.limits_delete(deletes)
             if limits:
-                return self.func(function, *limits, equivalent=self).simplify()
-
-            return function.copy(equivalent=self)
+                return self.func(function, *limits).simplify()
+            
+            if function.is_ForAll:
+                return function.simplify()
+            return function
         
     def simplify(self, **kwargs):
+        from sympy import S
         from sympy.sets.contains import Contains, NotContains
-        if self.function.is_Equality:
+        if self.function.is_Equal:
             limits_dict = self.limits_dict
             x = None
             if self.function.lhs in limits_dict:
@@ -163,17 +177,16 @@ class Exists(ConditionalBoolean):
                 if isinstance(domain, list):
                     if len(self.limits) == 1:
                         if all(not var.is_given for var in y.free_symbols):
-                            return BooleanTrue().copy(equivalent=self)
+                            return S.BooleanTrue
                 elif domain.is_set:
                     t = self.variables.index(x)
                     if not any(limit._has(x) for limit in self.limits[:t]):
                         function = Contains(y, domain)
                         if function.is_BooleanTrue:
-                            return function.copy(equivalent=self)
+                            return function
                         limits = self.limits_delete(x)
                         if limits:
-                            return self.func(function, *limits, equivalent=self)
-                        function.equivalent = self
+                            return self.func(function, *limits)
                         return function
                     
         from sympy import Unequal, Equal
@@ -200,12 +213,10 @@ class Exists(ConditionalBoolean):
                 if function is not None:
                     limits = self.limits_delete((x,))
                     if limits:
-                        return self.func(function, *limits, equivalent=self).simplify()
+                        return self.func(function, *limits).simplify()
                     else:
                         if function.is_BooleanAtom:
-                            return function.copy(equivalent=self)
-                        
-                        function.equivalent = self
+                            return function
                         return function
 
         elif self.function.is_NotContains: 
@@ -230,11 +241,10 @@ class Exists(ConditionalBoolean):
                 if function is not None:
                     limits = self.limits_delete((x,))
                     if limits:
-                        return self.func(function, *limits, equivalent=self).simplify()
+                        return self.func(function, *limits).simplify()
                     else:
                         if function.is_BooleanAtom:
-                            return function.copy(equivalent=self)
-                        function.equivalent = self
+                            return function
                         return function
                     
         if self.function.is_And:
@@ -246,13 +256,13 @@ class Exists(ConditionalBoolean):
                         eqs = [*self.function.args]
                         del eqs[i]  
                         if not eq.rhs.has(*self.variables[:i]): 
-                            return self.func(And(*eqs), *self.limits_update(eq.lhs, eq.rhs), equivalent=self).simplify()
+                            return self.func(And(*eqs), *self.limits_update(eq.lhs, eq.rhs)).simplify()
                     elif domain == eq.rhs:
                         eqs = [*self.function.args]
-                        del eqs[i]                    
-                        return self.func(And(*eqs), *self.limits, equivalent=self)
+                        del eqs[i]
+                        return self.func(And(*eqs), *self.limits)
 
-                if eq.is_Equality: 
+                if eq.is_Equal: 
                     if eq.lhs in limits_dict:
                         old, new = eq.args
                     elif eq.rhs in limits_dict:
@@ -261,24 +271,6 @@ class Exists(ConditionalBoolean):
                         continue
                     
                     continue 
-                    print("this simplification should be aximatized!")
-                    limits = self.limits_delete(old)
-                    if any(limit._has(old) for limit in limits):
-                        continue
-                    
-                    eqs = [*self.function.args] 
-                    del eqs[i]
-                    eqs = [eq._subs(old, new) for eq in eqs]
-                    
-                    domain = limits_dict[old]
-                    if isinstance(domain, list):
-                        limit = (old,)
-                    else:
-                        limit = (old, domain)
-                    eq = self.func(eq, limit).simplify()                    
-                    eqs.append(eq)
-                     
-                    return self.func(And(*eqs), *limits, equivalent=self).simplify()
                 
         if self.function.is_Or:
             limits_dict = self.limits_dict
@@ -287,8 +279,8 @@ class Exists(ConditionalBoolean):
                     domain = limits_dict[eq.lhs]
                     if not isinstance(domain, list) and domain in eq.rhs:
                         eqs = [*self.function.args]
-                        del eqs[i]                    
-                        return self.func(And(*eqs), *self.limits, equivalent=self)
+                        del eqs[i]
+                        return self.func(And(*eqs), *self.limits)
 
                 if eq.is_Unequal:
                     continue
@@ -315,9 +307,9 @@ class Exists(ConditionalBoolean):
                     eq = self.func(eq, limit).simplify()                    
                     eqs.append(eq)
                      
-                    return self.func(And(*eqs), *limits, equivalent=self).simplify()
+                    return self.func(And(*eqs), *limits).simplify()
                 
-        if self.function.is_Equality:
+        if self.function.is_Equal:
             limits_dict = self.limits_dict
             x = None
             if self.function.lhs in limits_dict:
@@ -361,6 +353,9 @@ class Exists(ConditionalBoolean):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])
         return '\N{THERE EXISTS}[%s](%s)' % (limits, p.doprint(self.function))
 
+    def _pretty(self, p):
+        return ConditionalBoolean._pretty(self, p, '\N{THERE EXISTS}')
+    
     def int_limit(self):
         if len(self.limits) != 1:
             return False
@@ -409,13 +404,25 @@ class Exists(ConditionalBoolean):
         latex = r"\exists_{%s}{%s}" % (limit, latex)
         return latex
 
+    def __or__(self, eq):
+        """Overloading for | operator"""
+        if eq.is_Exists:
+            if self.limits == eq.limits:
+                return self.func(self.function | eq.function, *self.limits)
+                        
+            if self.function == eq.function:
+                limits = self.limits_union(eq)
+                return self.func(self.function, *limits).simplify()
+        
+        return ConditionalBoolean.__or__(self, eq)
+
     def __and__(self, eq):
         """Overloading for & operator"""
         if eq.is_Exists:
             if self.limits == eq.limits:
                 if self.coexist_with(eq) is not False:
                     return ConditionalBoolean.__and__(self, eq)
-            return And(self, eq, equivalent=[self, eq])
+            return And(self, eq)
         
         return ConditionalBoolean.__and__(self, eq)
 
@@ -428,7 +435,7 @@ class Exists(ConditionalBoolean):
                 forall = forall.func(forall.function, *forall.limits_update(dic))
                 exists = exists.func(forall, *exists.limits)
 
-                return self.func(exists, *limits_delete(limits, dic), equivalent=self)
+                return self.func(exists, *limits_delete(limits, dic))
         
     def apply(self, axiom, *args, **kwargs):
         for arg in args:

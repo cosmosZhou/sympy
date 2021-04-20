@@ -1,11 +1,6 @@
-from sympy.core.relational import Equality
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.sets import Union, Intersection
-from sympy import Symbol
-from axiom import sets
-from sympy.core.add import Plus
-from sympy.functions.elementary.piecewise import Piecewise
+from axiom import sets, algebra
 
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
@@ -13,7 +8,7 @@ from sympy.functions.elementary.piecewise import Piecewise
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     lhs, rhs = given.args
     if rhs.is_EmptySet:
         assert lhs.is_Intersection
@@ -23,7 +18,7 @@ def apply(given):
         assert rhs.is_Intersection
         A, B = rhs.args
 
-    return Equality(abs(Union(A, B)), abs(A) + abs(B))
+    return Equal(abs(Union(A, B)), abs(A) + abs(B))
 
 
 
@@ -33,7 +28,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
-    Eq << apply(Equality(Intersection(A, B), A.etype.emptySet))
+    Eq << apply(Equal(Intersection(A, B), A.etype.emptySet))
     
     Eq << sets.imply.eq.sum.apply(A | B).reversed
     
@@ -41,7 +36,7 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1])
     
-    Eq.as_Plus = Eq[-1].this.rhs.astype(Plus)
+    Eq.as_Plus = Eq[-1].this.rhs.astype(Add)
     
     Eq <<= Eq.as_Plus.rhs.args[0].this.bisect(A), Eq.as_Plus.rhs.args[1].this.bisect(B)
     
@@ -49,15 +44,19 @@ def prove(Eq):
     
     Eq << Eq[-1] + Eq.as_Plus
     
+    Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
+    
     Eq << sets.imply.eq.sum.apply(A)
     
     Eq << sets.imply.eq.sum.apply(B)
     
     Eq << Eq[-1] + Eq[-2] + Eq[-3] 
     
+    Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
+    
    
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

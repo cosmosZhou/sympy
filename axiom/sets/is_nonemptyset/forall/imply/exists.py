@@ -16,10 +16,10 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol.S(etype=dtype.integer, given=True)
     e = Symbol.e(integer=True)
     f = Function.f(integer=True, shape=())
-    Eq << apply(Unequality(S, S.etype.emptySet), ForAll[e:S](f(e) > 0))
+    Eq << apply(Unequal(S, S.etype.emptySet), ForAll[e:S](f(e) > 0))
     
     Eq << ~Eq[-1]
     
@@ -29,5 +29,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

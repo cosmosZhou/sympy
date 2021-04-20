@@ -587,8 +587,8 @@ def _rewrite_gamma(f, s, a, b):
         if not fact.has(s):
             ufacs += [fact]
         # exponentials
-        elif fact.is_Power or isinstance(fact, exp_):
-            if fact.is_Power:
+        elif fact.is_Pow or isinstance(fact, exp_):
+            if fact.is_Pow:
                 base = fact.base
                 exp = fact.exp
             else:
@@ -910,14 +910,14 @@ def _simplifyconds(expr, s, a):
     >>> simp(Ne(1, x**3), x, 0)
     Ne(1, x**3)
     """
-    from sympy.core.relational import (StrictGreaterThan, StrictLessThan,
-        Unequality)
+    from sympy.core.relational import (Greater, Less,
+        Unequal)
     from sympy import Abs
 
     def power(ex):
         if ex == s:
             return 1
-        if ex.is_Power and ex.base == s:
+        if ex.is_Pow and ex.base == s:
             return ex.exp
         return None
 
@@ -957,16 +957,16 @@ def _simplifyconds(expr, s, a):
         b = bigger(x, y)
         if b == True or b == False:
             return True
-        return Unequality(x, y)
+        return Unequal(x, y)
 
     def repl(ex, *args):
         if ex == True or ex == False:
             return bool(ex)
         return ex.replace(*args)
 
-    expr = repl(expr, StrictLessThan, replie)
-    expr = repl(expr, StrictGreaterThan, lambda x, y: replie(y, x))
-    expr = repl(expr, Unequality, replue)
+    expr = repl(expr, Less, replie)
+    expr = repl(expr, Greater, lambda x, y: replie(y, x))
+    expr = repl(expr, Unequal, replue)
     return S(expr)
 
 

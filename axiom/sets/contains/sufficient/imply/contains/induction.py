@@ -1,17 +1,7 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol, Boole
-
-from sympy.core.numbers import oo
-from sympy import ForAll
-from sympy import LAMBDA
 import axiom
-from axiom import algebre, sets
-from sympy.sets.contains import Contains
-from sympy.core.symbol import dtype
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.core.sympify import sympify
-from sympy.logic.boolalg import Sufficient
+from axiom import algebra, sets
 
 
 @apply
@@ -29,8 +19,6 @@ def apply(*given, n=None, start=0):
     return fn
 
 
-
-
 @prove
 def prove(Eq):
     n = Symbol.n(integer=True, nonnegative=True)    
@@ -39,30 +27,32 @@ def prove(Eq):
     
     Eq << apply(Contains(f[0], g[0]), Sufficient(Contains(f[n], g[n]), Contains(f[n + 1], g[n + 1])), n=n)
     
-    h = Symbol.h(LAMBDA[n](Boole(Contains(f[n], g[n]))))
+    h = Symbol.h(LAMBDA[n](Bool(Contains(f[n], g[n]))))
     
     Eq << h[0].this.definition
     
     Eq << sets.contains.imply.eq.bool.contains.apply(Eq[0])
     
-    Eq.equality = Eq[-1] + Eq[-2]
+    Eq << Eq[-1] + Eq[-2]
+    
+    Eq.equality = Eq[-1].this.apply(algebra.eq.simplify.terms.common)
     
     Eq.sufficient = Sufficient(Equal(h[n], 1), Equal(h[n + 1], 1), plausible=True)
     
     Eq << Eq.sufficient.this.lhs.lhs.definition
     
-    Eq << Eq[-1].this.lhs.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.lhs.definition
     
     Eq << Eq[-1].this.rhs.lhs.definition
     
-    Eq << Eq[-1].this.rhs.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.lhs.definition
     
-    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.equality, Eq.sufficient, n=n)
+    Eq << algebra.cond.sufficient.imply.cond.induction.apply(Eq.equality, Eq.sufficient, n=n)
 
     Eq << Eq[-1].this.lhs.definition
     
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.definition
 
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

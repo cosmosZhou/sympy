@@ -8,7 +8,7 @@ def is_differentiable(f, a, b, x=None):
     if x is None: 
         x = Symbol.x(real=True)
         
-    return ForAll[x:Interval(a, b, left_open=True, right_open=True)](Contains(Derivative(f(x), x), S.Reals))
+    return ForAll[x:Interval(a, b, left_open=True, right_open=True)](Contains(Derivative(f(x), x), Reals))
 
 
 @apply
@@ -25,7 +25,7 @@ def apply(*given):
     assert fz._subs(z, a) == fa
     assert fz._subs(z, b) == fb
     
-    return Exists[z:Interval(a, b, left_open=True, right_open=True)](Equality(Derivative(fz, z), 0))               
+    return Exists[z:Interval(a, b, left_open=True, right_open=True)](Equal(Derivative(fz, z), 0))               
 
 
 @prove(surmountable=False)
@@ -37,5 +37,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

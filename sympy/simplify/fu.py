@@ -324,7 +324,7 @@ def TR2i(rv, half=False):
                 k.func in (sin, cos) or (half and
                 k.is_Add and
                 len(k.args) >= 2 and
-                any(any(isinstance(ai, cos) or ai.is_Power and ai.base is cos
+                any(any(isinstance(ai, cos) or ai.is_Pow and ai.base is cos
                 for ai in Mul.make_args(a)) for a in k.args))))
 
         n = n.as_powers_dict()
@@ -498,7 +498,7 @@ def _TR56(rv, f, g, h, max, pow):
         # or only those expressible as powers of 2. Also, should it only
         # make the changes in powers that appear in sums -- making an isolated
         # change is not going to allow a simplification as far as I can tell.
-        if not (rv.is_Power and rv.base.func == f):
+        if not (rv.is_Pow and rv.base.func == f):
             return rv
 
         if (rv.exp < 0) == True:
@@ -583,7 +583,7 @@ def TR7(rv):
     """
 
     def f(rv):
-        if not (rv.is_Power and rv.base.func == cos and rv.exp == 2):
+        if not (rv.is_Pow and rv.base.func == cos and rv.exp == 2):
             return rv
         return (1 + cos(2*rv.base.args[0]))/2
 
@@ -610,7 +610,7 @@ def TR8(rv, first=True):
     def f(rv):
         if not (
             rv.is_Mul or
-            rv.is_Power and
+            rv.is_Pow and
             rv.base.func in (cos, sin) and
             (rv.exp.is_integer or rv.base.is_positive)):
             return rv
@@ -630,7 +630,7 @@ def TR8(rv, first=True):
         for a in ordered(Mul.make_args(rv)):
             if a.func in (cos, sin):
                 args[a.func].append(a.args[0])
-            elif (a.is_Power and a.exp.is_Integer and a.exp > 0 and \
+            elif (a.is_Pow and a.exp.is_Integer and a.exp > 0 and \
                     a.base.func in (cos, sin)):
                 # XXX this is ok but pathological expression could be handled
                 # more efficiently as in TRmorrie
@@ -900,7 +900,7 @@ def TR10i(rv):
                 hit = 0
                 if a.is_Mul:
                     for ai in a.args:
-                        if ai.is_Power and ai.exp is S.Half and \
+                        if ai.is_Pow and ai.exp is S.Half and \
                                 ai.base.is_Integer:
                             byrad[ai].append(a)
                             hit = 1
@@ -1079,7 +1079,7 @@ def TR12i(rv):
     from sympy import factor
 
     def f(rv):
-        if not (rv.is_Add or rv.is_Mul or rv.is_Power):
+        if not (rv.is_Add or rv.is_Mul or rv.is_Pow):
             return rv
 
         n, d = rv.as_numer_denom()
@@ -1110,7 +1110,7 @@ def TR12i(rv):
                 if di.is_Mul:
                     d_args.extend(di.args)
                     d_args[i] = S.One
-            elif di.is_Power and (di.exp.is_integer or di.base.is_positive):
+            elif di.is_Pow and (di.exp.is_integer or di.base.is_positive):
                 m = ok(di.base)
                 if m:
                     g, t = m
@@ -1145,7 +1145,7 @@ def TR12i(rv):
                             n_args.extend(ni.args)
                             n_args[i] = S.One
                         continue
-                    elif ni.is_Power and (
+                    elif ni.is_Pow and (
                             ni.exp.is_integer or ni.base.is_positive):
                         m = ok(ni.base)
                         if m:
@@ -1384,7 +1384,7 @@ def TR14(rv, first=True):
         other = []
         process = []
         for a in rv.args:
-            if a.is_Power:
+            if a.is_Pow:
                 b, e = a.as_base_exp()
                 if not (e.is_integer or b.is_positive):
                     other.append(a)
@@ -1930,7 +1930,7 @@ def trig_split(a, b, two=False):
                 c = a
             elif isinstance(a, sin):
                 s = a
-            elif a.is_Power and a.exp is S.Half:  # autoeval doesn't allow -1/2
+            elif a.is_Pow and a.exp is S.Half:  # autoeval doesn't allow -1/2
                 co *= a
             else:
                 return None
@@ -1946,7 +1946,7 @@ def trig_split(a, b, two=False):
                         c = b
                     else:
                         s = b
-                elif b.is_Power and b.exp is S.Half:
+                elif b.is_Pow and b.exp is S.Half:
                     co *= b
                 else:
                     return None

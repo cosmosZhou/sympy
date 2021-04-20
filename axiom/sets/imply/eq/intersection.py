@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
@@ -9,7 +9,7 @@ from sympy import Symbol
 
 @apply
 def apply(e, s):
-    return Equality(s & e.set, Piecewise((e.set, Contains(e, s)), (e.emptySet, True)))
+    return Equal(s & e.set, Piecewise((e.set, Contains(e, s)), (e.emptySet, True)))
 
 
 
@@ -25,5 +25,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

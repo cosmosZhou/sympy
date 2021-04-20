@@ -1,1 +1,1 @@
-from . import subset
+from . import subset, contains

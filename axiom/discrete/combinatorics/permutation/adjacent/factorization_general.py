@@ -4,7 +4,7 @@ from sympy.matrices.expressions.matexpr import Swap
 
 import axiom
 
-from axiom import discrete, sets, algebre
+from axiom import discrete, sets, algebra
 from axiom.sets.imply.eq.swap import swap
 
 @apply
@@ -19,23 +19,23 @@ def apply(given):
     
     p = Symbol.p(shape=(oo,), **a.dtype.dict)
     
-    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), set_comprehension)))
+    P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), set_comprehension)))
     
     b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
     
     k = Symbol.k(integer=True)
     
     d = Symbol.d(LAMBDA[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))
-    return ForAll[p[:n]:P](Exists[b[:n]](Equality(p[:n], LAMBDA[k:n](a[d[k]]))))
+    return ForAll[p[:n]:P](Exists[b[:n]](Equal(p[:n], LAMBDA[k:n](a[d[k]]))))
 
 
 @prove(surmountable=False)
 def prove(Eq): 
-    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    n = Symbol.n(domain=Interval(2, oo, integer=True), given=False)
     
     a = Symbol.a(shape=(oo,), etype=dtype.integer, given=True)
     
-    Eq << apply(Equality(Abs(a[:n].set_comprehension()), n))
+    Eq << apply(Equal(Abs(a[:n].set_comprehension()), n))
     
     i = Symbol.i(integer=True)    
     p = Eq[3].variable.base
@@ -107,15 +107,15 @@ def prove(Eq):
     p0 = Eq[-1].variable
     Eq << Eq[-1].subs(b[:2], Matrix((0, KroneckerDelta(p0, a[0]))))
     
-    Eq << algebre.imply.forall.limits_assert.apply(Eq[-1].limits)
+    Eq << algebra.imply.forall.limits_assert.apply(Eq[-1].limits)
     
-    Eq << Eq[-1].apply(sets.eq.imply.eq.having.finiteset.indexed)
+    Eq << Eq[-1].this.function.apply(sets.eq.imply.eq.split.finiteset.indexed)
     
     Eq.induction = Eq.hypothesis.subs(n, n + 1)
     
     Eq.induction_swap = Eq.induction.apply(sets.eq.given.eq.swap, n, b[n])
     
-    Eq << discrete.combinatorics.permutation.exists.general.apply(a[:n + 1])
+    Eq << discrete.combinatorics.permutation.exists.apply(a[:n + 1])
     Eq << Eq[-1].this.limits[0][1].definition
     
     Eq << Eq[-1].this.function.limits_subs(Eq[-1].function.variable, b[n])
@@ -155,12 +155,12 @@ def prove(Eq):
     
     Eq << Eq.d_swap.this.rhs.args[1].definition - Eq.d_quote_definition + Eq.d_quote_definition.lhs
     
-    Eq << algebre.eq.imply.eq.getitem.apply(Eq[-1], a, i=Eq[-1].lhs.variable, simplify=None)
+    Eq << algebra.eq.imply.eq.getitem.apply(Eq[-1], a, i=Eq[-1].lhs.variable, simplify=None)
     
     return
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.a_swap, Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.a_swap, Eq[-1])
     
-    Eq << Eq.induction_swap.apply(algebre.eq.eq.given.eq.transit, Eq[-1])
+    Eq << Eq.induction_swap.apply(algebra.eq.eq.given.eq.transit, Eq[-1])
     
     Eq.deduction = Eq.deduction.subs(Eq.d_quote_definition.reversed)
     
@@ -199,11 +199,11 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=2)
+    Eq << algebra.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=2)
     
     Eq << Eq[1].subs(Eq[0])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

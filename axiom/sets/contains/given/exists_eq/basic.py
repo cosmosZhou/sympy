@@ -23,5 +23,5 @@ def prove(Eq):
     Eq << Eq[1].simplify()
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,14 +1,7 @@
-
-from sympy.core.numbers import oo
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy import Exists, MIN, MAX
-from sympy.integrals.integrals import Integral, Integrate
-from sympy.sets.sets import Interval
-from sympy.core.function import Function, diff
 import axiom
-from axiom import algebre, calculus
+from axiom import algebra, calculus
 
 
 @apply
@@ -29,7 +22,7 @@ def apply(integral, u=None, dv=None):
         ...
 # u * dv = d(u v) - du * v
     f = (u * v)._eval_interval(x, a, b) - integral.func(du * v, *integral.limits).simplify()
-    return Equality(integral, f)
+    return Equal(integral, f)
 
 
 @prove
@@ -41,7 +34,7 @@ def prove(Eq):
     u = Function.u(shape=(), real=True)
     v = Function.v(shape=(), real=True)    
     
-    Eq << apply(Integrate(u(x) * diff(v(x), x), (x, a, b)), u=u(x))
+    Eq << apply(Integral(u(x) * diff(v(x), x), (x, a, b)), u=u(x))
     
     uv = Function.uv(shape=(), real=True, eval=lambda x : u(x) * v(x))
     
@@ -51,7 +44,7 @@ def prove(Eq):
     
     Eq << Eq[0] - Eq[0].rhs.args[-1]
     
-    Eq << Eq[-1].this.lhs.astype(Integral)
+    Eq << Eq[-1].this.lhs.apply(calculus.add.to.integral)
     
     Eq << Eq[-1].subs(Eq[-3].reversed)
     
@@ -63,5 +56,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

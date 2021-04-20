@@ -2,6 +2,8 @@ from axiom.utility import prove, apply
 from sympy import *
 
 from axiom import sets
+
+
 # given: A ⊂ B
 # |A| <= |B|
 @apply
@@ -9,15 +11,13 @@ def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return LessThan(abs(A), abs(B))
-
-
+    return LessEqual(abs(A), abs(B))
 
 
 @prove
 def prove(Eq):
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A = Symbol.A(etype=dtype.integer, given=True)
+    B = Symbol.B(etype=dtype.integer, given=True)
 
     Eq << apply(Subset(A, B))
 
@@ -27,6 +27,7 @@ def prove(Eq):
     
     Eq << Eq[-1] + Eq[-2].reversed
 
+
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

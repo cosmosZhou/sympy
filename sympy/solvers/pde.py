@@ -39,7 +39,7 @@ from sympy.simplify import simplify
 from sympy.core import Add, S
 from sympy.core.compatibility import (reduce, is_sequence, range)
 from sympy.core.function import Function, expand, AppliedUndef, Subs
-from sympy.core.relational import Equality, Eq
+from sympy.core.relational import Equal, Eq
 from sympy.core.symbol import Symbol, Wild, symbols
 from sympy.functions import exp
 from sympy.integrals.integrals import Integral
@@ -74,7 +74,7 @@ def pdsolve(eq, func=None, hint='default', dict=False, solvefun=None, **kwargs):
 
         ``eq`` can be any supported partial differential equation (see
             the pde docstring for supported methods).  This can either
-            be an Equality, or an expression, which is assumed to be
+            be an Equal, or an expression, which is assumed to be
             equal to 0.
 
         ``f(x,y)`` is a function of two variables whose derivatives in that
@@ -140,7 +140,7 @@ def pdsolve(eq, func=None, hint='default', dict=False, solvefun=None, **kwargs):
 
         - See test_pde.py for many tests, which serves also as a set of
           examples for how to use pdsolve().
-        - pdsolve always returns an Equality class (except for the case
+        - pdsolve always returns an Equal class (except for the case
           when the hint is "all" or "all_Integral"). Note that it is not possible
           to get an explicit solution for f(x, y) as in the case of ODE's
         - Do help(pde.pde_hintname) to get help more information on a
@@ -280,7 +280,7 @@ def classify_pde(eq, func=None, dict=False, **kwargs):
         if func is None:
             func = func_
 
-    if isinstance(eq, Equality):
+    if isinstance(eq, Equal):
         if eq.rhs != 0:
             return classify_pde(eq.lhs - eq.rhs, func)
         eq = eq.lhs
@@ -433,7 +433,7 @@ def checkpdesol(pde, sol, func=None, solve_for_func=True):
     """
 
     # Converting the pde into an equation
-    if not isinstance(pde, Equality):
+    if not isinstance(pde, Equal):
         pde = Eq(pde, 0)
 
     # If no function is given, try finding the function present.
@@ -457,7 +457,7 @@ def checkpdesol(pde, sol, func=None, solve_for_func=True):
             solve_for_func=solve_for_func) for i in sol])
 
     # Convert solution into an equation
-    if not isinstance(sol, Equality):
+    if not isinstance(sol, Equal):
         sol = Eq(func, sol)
     elif sol.rhs == func:
         sol = sol.reversed
@@ -871,7 +871,7 @@ def pde_separate(eq, fun, sep, strategy='mul'):
     else:
         raise ValueError('Unknown strategy: %s' % strategy)
 
-    if isinstance(eq, Equality):
+    if isinstance(eq, Equal):
         if eq.rhs != 0:
             return pde_separate(Eq(eq.lhs - eq.rhs, 0), fun, sep, strategy)
     else:

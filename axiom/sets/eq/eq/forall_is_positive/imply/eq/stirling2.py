@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -36,7 +36,7 @@ def apply(*given):
     
     j = Symbol.j(domain=Interval(0, k - 1, integer=True))
     complement = Interval(0, k - 1, integer=True) // {j}
-    return Equality(UNION[i:complement](x[i]) // x[j], UNION[i:complement](x[i]))
+    return Equal(UNION[i:complement](x[i]) // x[j], UNION[i:complement](x[i]))
 
 
 @prove
@@ -52,5 +52,5 @@ def prove(Eq):
     Eq << sets.is_emptyset.imply.eq.complement.apply(Eq[-1], reverse=True)
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -53,7 +53,7 @@ from collections import defaultdict
 from sympy.core.singleton import S
 from sympy.core.numbers import Rational, I
 from sympy.core.symbol import Symbol, Wild, Dummy
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy.core.add import Add
 from sympy.core.mul import Mul
 from sympy.core import sympify
@@ -724,7 +724,7 @@ def rsolve(f, y, init=None, symbols=False):
     rsolve_poly, rsolve_ratio, rsolve_hyper
 
     """
-    if isinstance(f, Equality):
+    if isinstance(f, Equal):
         f = f.lhs - f.rhs
 
     from sympy import Function, Indexed

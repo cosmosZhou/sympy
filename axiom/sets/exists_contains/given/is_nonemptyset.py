@@ -18,9 +18,9 @@ def prove(Eq):
 
     Eq << apply(Exists[e](Contains(e, A)))
     
-    Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[1])
+    Eq << sets.is_nonemptyset.imply.exists_contains.apply(Eq[1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

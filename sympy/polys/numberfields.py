@@ -107,7 +107,7 @@ def _separate_sq(p):
     """
     from sympy.utilities.iterables import sift
     def is_sqrt(expr):
-        return expr.is_Power and expr.exp is S.Half
+        return expr.is_Pow and expr.exp is S.Half
     # p = c1*sqrt(q1) + ... + cn*sqrt(qn) -> a = [(c1, q1), .., (cn, qn)]
     a = []
     for y in p.args:
@@ -116,7 +116,7 @@ def _separate_sq(p):
                 a.append((S.One, y**2))
             elif y.is_Atom:
                 a.append((y, S.One))
-            elif y.is_Power and y.exp.is_integer:
+            elif y.is_Pow and y.exp.is_integer:
                 a.append((y, S.One))
             else:
                 raise NotImplementedError
@@ -554,7 +554,7 @@ def _minpoly_compose(ex, x, dom):
             res = _minpoly_op_algebraic_element(Mul, ex1, ex2, x, dom, mp1=mp1, mp2=mp2)
         else:
             res = _minpoly_mul(x, dom, *ex.args)
-    elif ex.is_Power:
+    elif ex.is_Pow:
         res = _minpoly_pow(ex.base, ex.exp, x, dom)
     elif ex.__class__ is sin:
         res = _minpoly_sin(ex, x)
@@ -709,7 +709,7 @@ def _minpoly_groebner(ex, x, cls):
             return Add(*[ bottom_up_scan(g) for g in ex.args ])
         elif ex.is_Mul:
             return Mul(*[ bottom_up_scan(g) for g in ex.args ])
-        elif ex.is_Power:
+        elif ex.is_Pow:
             if ex.exp.is_Rational:
                 if ex.exp < 0 and ex.base.is_Add:
                     coeff, terms = ex.base.as_coeff_add()
@@ -750,7 +750,7 @@ def _minpoly_groebner(ex, x, cls):
         Returns True if it is more likely that the minimal polynomial
         algorithm works better with the inverse
         """
-        if ex.is_Power:
+        if ex.is_Pow:
             if (1/ex.exp).is_integer and ex.exp < 0:
                 if ex.base.is_Add:
                     return True
@@ -759,7 +759,7 @@ def _minpoly_groebner(ex, x, cls):
             for p in ex.args:
                 if p.is_Add:
                     return False
-                if p.is_Power:
+                if p.is_Pow:
                     if p.base.is_Add and p.exp > 0:
                         return False
 
@@ -778,7 +778,7 @@ def _minpoly_groebner(ex, x, cls):
         if inverted:
             ex = ex**-1
         res = None
-        if ex.is_Power and (1/ex.exp).is_Integer:
+        if ex.is_Pow and (1/ex.exp).is_Integer:
             n = 1/ex.exp
             res = _minimal_polynomial_sq(ex.base, n, x)
 

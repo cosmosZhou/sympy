@@ -1,6 +1,6 @@
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import algebre
+from axiom import algebra, sets
 
 
 @apply
@@ -9,6 +9,7 @@ def apply(given, *limits):
     fx, A = given.args
     
     return Subset(UNION(fx, *limits).simplify(), A)
+
 
 @prove
 def prove(Eq):
@@ -20,20 +21,11 @@ def prove(Eq):
    
     Eq << apply(Subset(x[i], A), (i, 0, m))
     
-    Eq.initial = Eq[-1].subs(m, 1)
+    Eq << algebra.cond.imply.forall.restrict.apply(Eq[0], (i, 0, m))
     
-    Eq << Eq[0].subs(i, 0)
-    
-    Eq.induction = Eq[1].subs(m, m + 1)
-        
-    Eq << Eq[0].subs(i, m)
-    
-    Eq <<= Eq[-1] & Eq[1]
+    Eq << sets.forall_subset.imply.subset.union_comprehension.apply(Eq[-1])    
 
-    Eq << Eq.induction.induct(imply=True)
-    
-    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=m, start=1, simplify=None)    
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

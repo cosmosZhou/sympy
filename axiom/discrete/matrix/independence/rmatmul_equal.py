@@ -1,17 +1,11 @@
-
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Exists, LAMBDA
-from axiom import algebre, discrete
-from sympy.matrices.expressions.matmul import MatMul
-from sympy import Symbol
+from axiom import algebra, discrete
 
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     lhs, rhs = given.args
     
     assert lhs.is_MatMul
@@ -34,18 +28,16 @@ def apply(given):
 #     n = p_polynomial.shape[0]
     k = p_polynomial.variable
     polynomial = p_polynomial.function
-    assert polynomial.is_Power
+    assert polynomial.is_Pow
     
     b, e = polynomial.as_base_exp()    
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
     
     if given.is_Exists:
-        return Exists(Equality(x, y), (x,), (y,))
+        return Exists(Equal(x, y), (x,), (y,))
     else:
-        return Equality(x, y)
-
-
+        return Equal(x, y)
 
 
 @prove
@@ -57,9 +49,7 @@ def prove(Eq):
     y = Symbol.y(shape=(m, n))
     k = Symbol.k(domain=Interval(1, oo, integer=True))
     
-    given = Equality(x @ LAMBDA[k:n](p ** k), y @ LAMBDA[k:n](p ** k))
-    
-    Eq << apply(given)
+    Eq << apply(Equal(x @ LAMBDA[k:n](p ** k), y @ LAMBDA[k:n](p ** k)))
     
     i = Symbol.i(integer=True)
     Eq << Eq[0][i]
@@ -70,4 +60,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

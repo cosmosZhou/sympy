@@ -3,7 +3,7 @@ from sympy import *
 from sympy.stats.rv import pspace
 from sympy.stats.symbolic_probability import Probability as P
 from axiom.keras.layers.crf.markov import assumptions, process_assumptions
-from axiom import statistics, keras, algebre
+from axiom import statistics, keras, algebra
 
 import tensorflow as tf
 
@@ -37,8 +37,8 @@ def apply(*given):
     x_quote = Symbol.x_quote(-LAMBDA[t](log(z[t])))
     assert x_quote.shape == (n, d)
     
-    return Equality(x_quote[t + 1], -log(ReducedSum(exp(-x_quote[t] - G))) + x[t + 1]), \
-        Equality(-log(y_given_x_probability), tf.logsumexp(-x_quote[n - 1]) + s[n - 1])
+    return Equal(x_quote[t + 1], -log(ReducedSum(exp(-x_quote[t] - G))) + x[t + 1]), \
+        Equal(-log(y_given_x_probability), tf.logsumexp(-x_quote[n - 1]) + s[n - 1])
 
 
 @prove
@@ -49,7 +49,7 @@ def prove(Eq):
     n = x.shape[0]
         
     s, t = Eq.s_definition.lhs.args
-    Eq.z_definition = Eq.z_definition.apply(algebre.eq.imply.eq.lamda, (Eq.z_definition.lhs.indices[-1],), simplify=False)
+    Eq.z_definition = Eq.z_definition.apply(algebra.eq.imply.eq.lamda, (Eq.z_definition.lhs.indices[-1],), simplify=False)
     
     Eq << keras.layers.crf.markov.apply(*given)
 
@@ -61,13 +61,13 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.simplify()
 
-    Eq << Eq[-1].this.rhs.astype(Times)
+    Eq << Eq[-1].this.rhs.astype(Mul)
     
     Eq << Eq[-1].this.rhs.args[1].function.bisect(Slice[-1:])
     
     Eq << Eq[-1].this.rhs.args[1].function.astype(LAMBDA)
     
-    Eq << Eq[-1].this.rhs.args[1].function.function.astype(Times)
+    Eq << Eq[-1].this.rhs.args[1].function.function.astype(Mul)
     
     Eq.z_recursion = Eq[-1].subs(Eq.z_definition.reversed)
     
@@ -75,7 +75,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.subs(Eq.z_recursion)
     
-    Eq << Eq[-1].this.rhs.args[1].astype(Plus)
+    Eq << Eq[-1].this.rhs.args[1].astype(Add)
     
     Eq.z_definition_by_x_quote = E ** -Eq.x_quote_definition.reversed
     
@@ -83,9 +83,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[1].args[1].arg.astype(exp)
     
-    Eq.xy_joint_nonzero = statistics.is_nonzero.is_nonzero.joint_slice.apply(given[-1], Slice[:t + 1, :t + 1])
+    Eq.xy_joint_nonzero = statistics.is_nonzero.imply.is_nonzero.joint_slice.apply(given[-1], Slice[:t + 1, :t + 1])
     
-    Eq << algebre.et.imply.cond.apply(statistics.is_nonzero.et.apply(Eq.xy_joint_nonzero))
+    Eq << algebra.et.imply.cond.apply(statistics.is_nonzero.imply.et.apply(Eq.xy_joint_nonzero))
     
     y = Eq[-1].lhs.arg.lhs.base
     Eq << statistics.bayes.corollary.apply(Eq[-2], var=y[:t + 1])
@@ -94,17 +94,17 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
-    Eq << Eq[-1].apply(algebre.eq.imply.ou.log)    
+    Eq << Eq[-1].apply(algebra.eq.imply.ou.log)    
     
-    Eq << algebre.et.imply.cond.apply(Eq[-1] & Eq.xy_joint_nonzero)
+    Eq << algebra.et.imply.cond.apply(Eq[-1] & Eq.xy_joint_nonzero)
     
-    Eq << Eq[-1].this.rhs.astype(Plus)
+    Eq << Eq[-1].this.rhs.astype(Add)
     
-    Eq << algebre.eq.imply.eq.exp.apply(-Eq.s_definition.reversed)
+    Eq << algebra.eq.imply.eq.exp.apply(-Eq.s_definition.reversed)
     
     Eq.y_given_x_log = Eq[-2].subs(Eq[-1])
     
-    Eq << Eq.z_definition.apply(algebre.eq.imply.eq.sum)
+    Eq << Eq.z_definition.apply(algebra.eq.imply.eq.reduced_sum)
     
     Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
     
@@ -119,4 +119,4 @@ def prove(Eq):
 
 # reference: Neural Architectures for Named Entity Recognition.pdf
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

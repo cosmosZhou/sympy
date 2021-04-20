@@ -1,13 +1,10 @@
-from sympy.functions.combinatorial.factorials import binomial
-from sympy.core.relational import Equality
 from axiom.utility import prove, apply
+from sympy import *
 
-from sympy import Symbol
+
 @apply
 def apply(n, k):
-    return Equality(binomial(n, k), binomial(n, n - k))
-
-
+    return Equal(binomial(n, k), binomial(n, n - k))
 
 
 @prove
@@ -16,8 +13,11 @@ def prove(Eq):
     k = Symbol.k(integer=True)
 
     Eq << apply(n, k)
-    Eq << Eq[-1].combsimp()
+    
+    Eq << Eq[-1].this.lhs.definition
+    
+    Eq << Eq[-1].this.rhs.definition
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -1,11 +1,11 @@
 
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from tensorflow.nn import softmax
 from sympy import Symbol
 
-from sympy.core.mul import Times
+from sympy.core.mul import Mul
 
 
 # log softmax(x) = x - max(x) - log∑exp(x - max(x))
@@ -14,7 +14,7 @@ def apply(x, delta):
     assert len(x.shape) == 1
     assert not delta.shape
 
-    return Equality(softmax(x + delta), softmax(x))
+    return Equal(softmax(x + delta), softmax(x))
 
 
 
@@ -29,7 +29,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.definition
     
-    Eq << Eq[-1].this.lhs.args[0].args[0].arg.astype(Times)
+    Eq << Eq[-1].this.lhs.args[0].args[0].arg.astype(Mul)
     
     Eq << Eq[-1].this.lhs.powsimp()
     
@@ -37,4 +37,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

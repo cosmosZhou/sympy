@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
@@ -9,7 +9,7 @@ from axiom import sets
 # given A & B = {} => A - B = A
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     AB, emptyset = given.args
     if emptyset:
         tmp = emptyset
@@ -44,7 +44,7 @@ def prove(Eq):
     a = Symbol.a(integer=True, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
-    Eq << apply(Equality(a.set & B, a.emptySet))
+    Eq << apply(Equal(a.set & B, a.emptySet))
     
     Eq << ~Eq[-1]
 
@@ -55,5 +55,5 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0])
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

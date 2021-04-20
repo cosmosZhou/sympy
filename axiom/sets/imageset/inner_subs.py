@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -9,7 +9,11 @@ def apply(self):
     x, expr, et = axiom.is_ImageSet(self)
     if et.is_ConditionSet:
         et = et.condition & Contains(x, et.base_set)
-    eqs = axiom.is_And(et)
+    if et.is_And:
+        eqs = et._argset
+    else:
+        eqs = {et}
+        
     for eq in eqs:
         if eq.is_Equal: 
             return Equal(self, imageset(x, expr._subs(*eq.args), et).simplify())
@@ -28,10 +32,10 @@ def prove(Eq):
     
     Eq << apply(imageset(x, f(x), Equal(f(x), g(x)) & (h(x) > 0)))
     
-    Eq << Eq[0].this.lhs.apply(sets.union.bool)
+    Eq << Eq[0].this.lhs.apply(sets.union_comprehension.piecewise)
     
-    Eq << Eq[-1].this.lhs.function.apply(algebre.piecewise.subs)
+    Eq << Eq[-1].this.lhs.function.apply(algebra.piecewise.subs)
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

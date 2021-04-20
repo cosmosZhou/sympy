@@ -5,7 +5,7 @@ from sympy import (Expr, Add, Mul, S, Integral, Eq, Sum, Symbol,
 from sympy.core.compatibility import default_sort_key, ordered
 from sympy.core.parameters import global_parameters
 from sympy.core.sympify import _sympify
-from sympy.core.relational import Relational, Equality, Unequal
+from sympy.core.relational import Relational, Equal, Unequal
 from sympy.logic.boolalg import BooleanFunction, And
 from sympy.stats import variance, covariance, rv
 from sympy.stats.rv import (RandomSymbol, pspace, dependent,
@@ -37,7 +37,7 @@ class Distributed(BooleanFunction):
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq, *_ = args
-            if eq.is_Equality:
+            if eq.is_Equal:
                 args = eq.args
                 return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify(), equivalent=[self, eq]).simplify()
             if isinstance(eq, dict):
@@ -98,7 +98,7 @@ class Conditioned(Expr):
             return False
         return True
 
-    def __new__(cls, prob, given):
+    def __new__(cls, prob, given, evaluate=True):
         assert prob.is_random, prob
         assert given.is_random, given
         
@@ -205,7 +205,7 @@ class Probability(Expr):
             expr = []
             hit = False
             for eq in condition.args:
-                if eq.is_Equality:
+                if eq.is_Equal:
                     lhs, rhs = eq.args
                     if lhs.is_symbol and pspace(lhs).symbol == rhs:
                         if lhs._has(given):
@@ -228,7 +228,7 @@ class Probability(Expr):
                             else:
                                 rhs = rhs.bisect(Slice[start:stop])                                
                                 for lhs, rhs in zip(lhs.args, rhs.args):
-                                    eq = Equality(lhs, rhs)
+                                    eq = Equal(lhs, rhs)
                                     if lhs == given:
                                         hit = True
                                     else:
@@ -243,7 +243,9 @@ class Probability(Expr):
         elif condition.is_Equal:
             if given.is_Slice:
                 start, stop = given.index
-                condition = condition.bisect(Slice[start:stop])
+                lhs, rhs = condition.lhs.bisect(Slice[start:stop]), condition.rhs.bisect(Slice[start:stop])
+                assert lhs.is_BlockMatrix and rhs.is_BlockMatrix                
+                condition = And(*(condition.func(l, r) for l, r in zip(lhs.args, rhs.args)))
             elif given.is_Indexed:
                 condition = condition.bisect(Slice[given.indices])
             if condition.is_And:
@@ -254,16 +256,16 @@ class Probability(Expr):
         from sympy.core.symbol import dtype
         return dtype.real
     
-    def __new__(cls, *prob, given=None): 
+    def __new__(cls, *prob, given=None, evaluate=False): 
         booleans = []
         for arg in prob:
             assert arg.is_random
             if arg.is_symbol:
-                booleans.append(Equality(arg, pspace(arg).symbol))
+                booleans.append(Equal(arg, pspace(arg).symbol))
             elif arg.is_Conditioned:
                 lhs, rhs = arg.args
                 if lhs.is_symbol:
-                    booleans.append(arg.func(Equality(lhs, pspace(lhs).symbol), rhs))
+                    booleans.append(arg.func(Equal(lhs, pspace(lhs).symbol), rhs))
                 else:
                     booleans.append(arg)
             else:
@@ -277,7 +279,7 @@ class Probability(Expr):
 
     def doit(self, **hints):
         condition = self.args[0]
-        given_condition = self._condition
+        given_condition = None
         numsamples = hints.get('numsamples', False)
         for_rewrite = not hints.get('for_rewrite', False)
 
@@ -299,14 +301,13 @@ class Probability(Expr):
             else:
                 return Probability(condition).doit()
 
-        if given_condition is not None and \
-                not isinstance(given_condition, (Relational, Boolean)):
+        if given_condition is not None and not given_condition.is_Relational:
             raise ValueError("%s is not a relational or combination of relationals"
                     % (given_condition))
 
         if given_condition == False or condition is S.false:
             return S.Zero
-        if not isinstance(condition, (Relational, Boolean)):
+        if not condition.is_Relational:
             raise ValueError("%s is not a relational or combination of relationals"
                     % (condition))
         if condition is S.true:
@@ -358,7 +359,7 @@ class Probability(Expr):
             if lhs is not self.lhs.arg:
                 rhs = self.rhs.arg.simplify_condition_on_random_variable()
                 if rhs is not self.rhs.arg:
-                    return self.func(lhs, rhs, equivalent=self)
+                    return self.func(lhs, rhs)
                 
 class Expectation(ExprWithLimits):
     """

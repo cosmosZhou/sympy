@@ -288,6 +288,11 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
         if self.definition is not None:
             return other in self.definition
+        
+        if other.is_Symbol:
+            domain_assumed = other.domain_assumed
+            if domain_assumed is not None:
+                return domain_assumed in self
 
 # precondition, self and other are structurally equal!
     def _dummy_eq(self, other):
@@ -509,7 +514,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     def _eval_subs(self, old, new):
         from sympy.core.power import Pow
-        if old.is_Power:
+        if old.is_Pow:
             return Pow(self, S.One, evaluate=False)._eval_subs(old, new)
 
     @property
@@ -605,6 +610,12 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return Interval(-oo, 0, integer=self.is_integer)
         if self.is_nonnegative:
             return Interval(0, oo, integer=self.is_integer)
+        
+    def domain_defined(self, x):
+        definition = self.definition
+        if definition is None:
+            return Expr.domain_defined(self, x)
+        return definition.domain_defined(x)
         
     @property
     def domain(self):
@@ -709,7 +720,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                     return False
                 domain = self._assumptions['domain']
                 return domain._has(pattern)
-
+        if pattern.is_Slice:
+            if pattern.base == self:
+                return True
         return False
 
     @property
@@ -729,10 +742,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
     def equality_defined(self):
         print('this should be axiomatized')
-        from sympy import Mul, Equality
+        from sympy import Mul, Equal
         from sympy.concrete.expr_with_limits import LAMBDA
         if isinstance(self.definition, LAMBDA):
-            return Equality(self[tuple(var for var, *_ in self.definition.limits[::-1])], self.definition.function, evaluate=False)
+            return Equal(self[tuple(var for var, *_ in self.definition.limits[::-1])], self.definition.function, evaluate=False, plausible=None)
         elif isinstance(self.definition, Mul):
             args = []
             ref = None
@@ -744,9 +757,9 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                     args.append(arg)
             if ref is not None:
                 (var, *_), *_ = ref.limits
-                return Equality(self[var], Mul(*args) * ref.function, evaluate=False)
+                return Equal(self[var], Mul(*args) * ref.function, evaluate=False, plausible=None)
         
-        return Equality(self, self.definition, evaluate=False)
+        return Equal(self, self.definition, evaluate=False, plausible=None)
         
     @property
     def shape(self):
@@ -791,19 +804,34 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             # Special case needed because M[*my_tuple] is a syntax error.
 #             if self.shape and len(self.shape) != len(indices):
 #                 raise IndexException("Rank mismatch.")
-            if indices and isinstance(indices[0], slice):
-                if len(indices) == 2:
-                    start, stop = indices[0].start, indices[0].stop
-                    if start is None:
+            if indices:
+                if isinstance(indices[0], slice):
+                    if len(indices) == 2:
+                        start, stop = indices[0].start, indices[0].stop
+                        if start is None:
+                            if stop is None:
+                                return self.T[indices[1]]
+                            start = 0
                         if stop is None:
-                            return self.T[indices[1]]
-                        start = 0
-                    if stop is None:
-                        stop = self.shape[0]                
-                    return self[start:stop].T[indices[1]]
-                if len(indices) == 1:
-                    return Slice(self, *indices, **kw_args)
-                raise Exception('unknown indices!')
+                            stop = self.shape[0]                
+                        return self[start:stop].T[indices[1]]
+                    if len(indices) == 1:
+                        return Slice(self, *indices, **kw_args)
+                    raise Exception('unknown indices!')
+                elif isinstance(indices[0], Tuple):
+                    if len(indices) == 2:
+                        start, stop = indices[0]
+                        if start is None:
+                            if stop is None:
+                                return self.T[indices[1]]
+                            start = 0
+                        if stop is None:
+                            stop = self.shape[0]                
+                        return self[start:stop].T[indices[1]]
+                    if len(indices) == 1:
+                        return Slice(self, *indices, **kw_args)
+                    raise Exception('unknown indices!')
+                    
             return Indexed(self, *indices, **kw_args)
         elif isinstance(indices, slice):
             start, stop = indices.start, indices.stop
@@ -842,7 +870,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if exp.is_Indexed and exp.base == self:
             return True
         if exp.is_Slice and exp.base == self:
-            for index_start, index_stop in exp.indices:            
+            for index_start, index_stop in exp.indices: 
                 start, stop = 0, self.shape[-1]
     
                 if index_stop <= start:
@@ -1027,7 +1055,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return self._assumptions['distribution']
     
 #    given = True, for counter-proposition purposes;
-#    given = False, for methematical-induction purposes;
+#    given = False, for mathematical-induction purposes;
 #    given = None, for others cases;
     @property
     def is_given(self):
@@ -1079,14 +1107,14 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return wlexpr(self.name)
       
     def is_independent_of(self, y, **kwargs):
-        from sympy.core.relational import Equality
-        return Equality(self | y, self, **kwargs)
+        from sympy.core.relational import Equal
+        return Equal(self | y, self, **kwargs)
 
     def as_boolean(self):
         if self.is_random:
-            from sympy import Equality
+            from sympy import Equal
             from sympy.stats.rv import pspace
-            return Equality(self, pspace(self).symbol)
+            return Equal(self, pspace(self).symbol)
 
     def _subs(self, old, new, **hints):
         """Substitutes an expression old -> new. when self is a Symbol
@@ -1133,6 +1161,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     
     def linear_match(self, a):
         return a._has(self)
+
         
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
@@ -1735,10 +1764,6 @@ class Dtype:
         return DtypeMatrix(self, (length,))
 
     def __contains__(self, x):
-        if isinstance(x, Symbol):
-            for key, value in self.dict.items():
-                x._assumptions[key] = value
-            return True
         return isinstance(x, type(self))
 
     @property
@@ -1851,11 +1876,13 @@ class DtypeReal(DtypeComplex):
     is_real = True
     
     @property
-    def universalSet(self): 
-        return S.Reals
+    def universalSet(self):
+        from sympy.sets.fancysets import Reals 
+        return Reals
     
     def as_Set(self):
-        return S.Reals
+        from sympy.sets.fancysets import Reals
+        return Reals
 
     def __str__(self):
         return 'real'
@@ -1881,7 +1908,7 @@ class DtypeRealConditional(DtypeReal):
     def as_Set(self):
         if self.assumptions.get('positive') is True:
             ...
-        return S.Reals
+        return Reals
 
     def __init__(self, **assumptions):
         self.assumptions = assumptions
@@ -1901,6 +1928,27 @@ class DtypeRealConditional(DtypeReal):
     def __hash__(self):
         return hash(type(self).__name__)
 
+    def __contains__(self, x):
+        if isinstance(x, DtypeReal):
+            assumptions = x.dict
+            if 'nonnegative' in self.assumptions:
+                if 'positive' in assumptions:
+                    return True
+                elif 'nonnegative' in assumptions:
+                    return True
+            elif 'nonpositive' in self.assumptions:
+                if 'negative' in assumptions:
+                    return True
+                elif 'nonpositive' in assumptions:
+                    return True
+            elif 'negative' in self.assumptions:
+                if 'negative' in assumptions:
+                    return True
+            elif 'positive' in self.assumptions:
+                if 'nonpositive' in assumptions:
+                    return True
+            
+        return False
 
 class DtypeRational(DtypeReal):
 

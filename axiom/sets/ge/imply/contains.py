@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 
-from axiom import algebre, sets
+from axiom import algebra, sets
 import axiom
 # given: |A| >= 1
 # A != {}
@@ -9,7 +9,7 @@ import axiom
 
 @apply
 def apply(given):
-    n, b = axiom.is_GreaterThan(given)
+    n, b = axiom.is_GreaterEqual(given)
 
     return Contains(n, Interval(b, oo, integer=n.is_integer))
 
@@ -25,5 +25,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

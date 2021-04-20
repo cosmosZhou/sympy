@@ -7,7 +7,7 @@ import axiom
 @apply
 def apply(given, S):
     A, B = axiom.is_Equal(given)
-    return Equality(Complement(A, S), Complement(B, S))
+    return Equal(Complement(A, S), Complement(B, S))
 
 
 @prove
@@ -17,11 +17,11 @@ def prove(Eq):
     
     S = Symbol.S(etype=dtype.integer)
     
-    Eq << apply(Equality(A, B), S)
+    Eq << apply(Equal(A, B), S)
     
     Eq << Eq[-1].subs(Eq[0])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -47,7 +47,7 @@ class Transpose(MatrixExpr):
     
     def _sympystr(self, p):
         from sympy.printing.precedence import PRECEDENCE
-        return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Power"])
+        return "%s.T" % p.parenthesize(self.arg, PRECEDENCE["Pow"])
 
     def _latex(self, p): 
         if self.arg.is_BlockMatrix:
@@ -137,7 +137,7 @@ class Transpose(MatrixExpr):
         precondition: self.lhs is a Transpose object!
         """
         if rhs.is_Transpose:
-            return self.func(lhs.arg, rhs.arg, equivalent=self)
+            return self.func(lhs.arg, rhs.arg)
 
     def simplify(self, **_):
         from sympy.core.function import Function

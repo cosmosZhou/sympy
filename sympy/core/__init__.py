@@ -10,13 +10,13 @@ from .symbol import Symbol, Wild, Dummy, symbols, var, dtype
 from .numbers import Number, Float, Rational, Integer, NumberSymbol, \
     RealNumber, igcd, ilcm, seterr, E, I, nan, oo, pi, zoo, \
     AlgebraicNumber, comp, mod_inverse, Infinitesimal, NegativeInfinitesimal
-from .power import Pow, integer_nthroot, integer_log, Power
-from .mul import Mul, prod, Times
-from .add import Add, Plus
+from .power import Pow, integer_nthroot, integer_log
+from .mul import Mul, prod
+from .add import Add
 from .mod import Mod
 from .relational import ( Rel, Eq, Ne, Lt, Le, Gt, Ge, Equal, Unequal, 
-    Equality, GreaterThan, LessThan, Unequality, StrictGreaterThan,
-    StrictLessThan )
+    Equal, GreaterEqual, LessEqual, Unequal, Greater,
+    Less )
 from .multidimensional import vectorize
 from .function import Lambda, WildFunction, Derivative, diff, FunctionClass, \
     Function, Subs, expand, PoleError, count_ops, \

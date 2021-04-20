@@ -7,7 +7,7 @@ from sympy import *
 # A >> B
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     A, B = given.args
     assert A.is_set and B.is_set
     return Supset(A, B)
@@ -18,7 +18,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
-    equality = Equality(A, B)
+    equality = Equal(A, B)
 
     Eq << apply(equality)
 
@@ -28,5 +28,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,11 +1,7 @@
-
-from sympy.core.relational import Equality, Unequal
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy import Symbol
 from sympy.stats.symbolic_probability import Probability as P
-from axiom.statistics import bayes
-from axiom import algebre
+from axiom import algebra, statistics
 
 
 # given: P(x, y) = P(x) P(y)
@@ -13,8 +9,8 @@ from axiom import algebre
 @apply
 def apply(*given):
     equality, inequality = given    
-    assert equality.is_Equality
-    assert inequality.is_Unequality
+    assert equality.is_Equal
+    assert inequality.is_Unequal
     assert inequality.rhs.is_zero
     inequality.lhs.is_Probability 
     x = inequality.lhs.arg
@@ -28,7 +24,7 @@ def apply(*given):
     assert x == _x
     assert rhs == P(x) * P(y)
    
-    return Equality(P(y, given=x), P(y))
+    return Equal(P(y, given=x), P(y))
 
 
 @prove
@@ -36,13 +32,13 @@ def prove(Eq):
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
     
-    given = Equality(P(x, y), P(x) * P(y))
+    given = Equal(P(x, y), P(x) * P(y))
     
     Eq << apply(given, Unequal(P(x), 0))
     
     Eq << Eq[-1].simplify()
     
-    Eq << bayes.corollary.apply(Eq[1], var=y)
+    Eq << statistics.bayes.corollary.apply(Eq[1], var=y)
     
     Eq << Eq[-1].subs(Eq[0])
     
@@ -50,12 +46,12 @@ def prove(Eq):
     
     Eq << Eq[-1].this.lhs.collect(P(x))
     
-    Eq << algebre.is_zero.imply.ou.apply(Eq[-1])
+    Eq << algebra.is_zero.imply.ou.apply(Eq[-1])
     
     Eq <<= Eq[-1] & Eq[1]
     
-    Eq << algebre.et.imply.cond.apply(Eq[-1])
+    Eq << algebra.et.imply.cond.apply(Eq[-1])
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

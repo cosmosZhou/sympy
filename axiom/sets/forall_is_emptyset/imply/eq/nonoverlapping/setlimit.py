@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 # given: x[i] & x[j] = {}
 # |Union x[i]| = Sum |x[i]|
@@ -10,7 +10,7 @@ from axiom import sets, algebre
 def apply(given):
     assert given.is_ForAll
     eq = given.function
-    assert eq.is_Equality
+    assert eq.is_Equal
     limits = given.limits
     if len(limits) == 2: 
         (j, j_domain), i_limit = limits
@@ -37,7 +37,7 @@ def apply(given):
         xi, xj = xj, xi
                         
     assert xi._subs(i, j) == xj
-    return Equality(abs(UNION(xi, i_limit).simplify()), summation(abs(xi), i_limit))
+    return Equal(abs(UNION(xi, i_limit).simplify()), summation(abs(xi), i_limit))
 
 
 @prove
@@ -49,35 +49,41 @@ def prove(Eq):
  
     j_domain = Interval(0, n - 1, integer=True) // {i}
     emptySet = x[i].etype.emptySet 
-    Eq << apply(ForAll[j: j_domain, i: n](Equality(x[i] & x[j], emptySet)))
+    Eq << apply(ForAll[j: j_domain, i: n](Equal(x[i] & x[j], emptySet)))
 
     y = Symbol.y(LAMBDA[i](Piecewise((x[i], i < n), (emptySet, True))))
 
     Eq.y_definition = y.equality_defined()
     
-    Eq << Eq.y_definition.apply(algebre.cond.imply.forall.restrict, (i, 0, n))
+    Eq << Eq.y_definition.apply(algebra.cond.imply.forall.restrict, (i, 0, n))
     
     Eq.yi_definition = Eq[-1].this().function.rhs.simplify()
     
     Eq << Eq.yi_definition.reversed
     
-    Eq.nonoverlapping = Eq[0].subs(Eq[-1]).subs(Eq[-1].limits_subs(i, j))
+    Eq << algebra.forall.forall.imply.forall_et.limits_intersect.apply(Eq[0], Eq[-1], simplify=None)
     
-    Eq << Eq.y_definition.apply(algebre.cond.imply.forall.restrict, (i, n, oo))
+    Eq << Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
+    
+    Eq << algebra.forall.forall.imply.forall_et.limits_intersect.apply(Eq[-1], Eq[-3].limits_subs(i, j), simplify=None)
+    
+    Eq.nonoverlapping = Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
+    
+    Eq << Eq.y_definition.apply(algebra.cond.imply.forall.restrict, (i, n, oo))
     
     Eq << Eq[-1].this().function.rhs.simplify()
     
-    Eq << Eq[-1].apply(sets.eq.imply.eq.intersect, y[j])
+    Eq << Eq[-1].this.function.apply(sets.eq.imply.eq.intersect, y[j])
     
-    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (j, j_domain))
+    Eq << Eq[-1].apply(algebra.cond.imply.forall.restrict, (j, j_domain))
     
     Eq <<= Eq[-1] & Eq.nonoverlapping
 
     Eq << sets.forall_is_emptyset.imply.eq.nonoverlapping.util.setlimit.apply(Eq[-1])    
     
-    Eq << Eq[-1].subs(Eq.yi_definition)
+    Eq << algebra.forall_eq.cond.imply.forall.subs.apply(Eq.yi_definition, Eq[-1])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

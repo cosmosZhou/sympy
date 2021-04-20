@@ -16,7 +16,7 @@ def apply(*given):
     assert forall_A.function == B.image_set()[-1]
     assert forall_B.function == A.image_set()[-1]
 
-    return Equality(A, B)
+    return Equal(A, B)
 
 
 @prove
@@ -25,13 +25,13 @@ def prove(Eq):
     x = Symbol.x(complex=True, shape=(n,))
     f = Function.f(nargs=(n,), integer=True, shape=())
     g = Function.g(nargs=(n,), integer=True, shape=())
-    A = Symbol.A(conditionset(x, Equality(f(x), 1)))
-    B = Symbol.B(conditionset(x, Equality(g(x), 1)))
+    A = Symbol.A(conditionset(x, Equal(f(x), 1)))
+    B = Symbol.B(conditionset(x, Equal(g(x), 1)))
     
     assert f.is_integer and g.is_integer
     assert f.shape == g.shape == ()
     
-    Eq << apply(ForAll[x:A](Equality(g(x), 1)), ForAll[x:B](Equality(f(x), 1)))
+    Eq << apply(ForAll[x:A](Equal(g(x), 1)), ForAll[x:B](Equal(f(x), 1)))
     Eq << sets.imply.forall.conditionset.apply(A)
     
     Eq << sets.imply.forall.conditionset.apply(B)
@@ -48,5 +48,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

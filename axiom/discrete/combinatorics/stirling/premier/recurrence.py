@@ -5,7 +5,7 @@ from sympy import *
 
 @apply
 def apply(n, k):
-    return Equality(Stirling1(n + 1, k + 1), Stirling1(n, k) + (n + 1) * Stirling1(n, k + 1))
+    return Equal(Stirling1(n + 1, k + 1), Stirling1(n, k) + (n + 1) * Stirling1(n, k + 1))
 
 
 @prove(surmountable=False)
@@ -17,5 +17,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -59,7 +59,7 @@ def roots_quadratic(f):
         co = []
         other = []
         for di in Mul.make_args(d):
-            if di.is_Power and di.exp.is_Integer and di.exp % 2 == 0:
+            if di.is_Pow and di.exp.is_Integer and di.exp % 2 == 0:
                 co.append(Pow(di.base, di.exp // 2))
             else:
                 other.append(di)
@@ -880,7 +880,7 @@ def roots(f, *gens, **flags):
                 expr = f.as_expr()
                 con = expr.as_independent(*gens)[0]
                 for p in Mul.make_args(con):
-                    if p.is_Power and not p.exp % n:
+                    if p.is_Pow and not p.exp % n:
                         npow_bases.append(p.base ** (p.exp / n))
                     else:
                         others.append(p)

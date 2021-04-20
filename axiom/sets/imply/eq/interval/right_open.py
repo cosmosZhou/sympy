@@ -9,7 +9,7 @@ import axiom
 def apply(self, evaluate=False):
     a, b = axiom.is_integer_Interval(self)
     assert not self.right_open
-    return Equality(self, Interval(a, b + 1, left_open=self.left_open, right_open=True, integer=True), evaluate=evaluate)
+    return Equal(self, Interval(a, b + 1, left_open=self.left_open, right_open=True, integer=True), evaluate=evaluate)
 
 
 @prove
@@ -28,5 +28,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

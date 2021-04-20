@@ -43,9 +43,9 @@ def rubi_printer(expr, **settings):
     return RubiStrPrinter(settings).doprint(expr)
 
 replacements = dict( # Mathematica equivalent functions in SymPy
-        Times="Mul",
-        Plus="Add",
-        Power="Pow",
+        Mul="Mul",
+        Add="Add",
+        Pow="Pow",
         Log='log',
         Exp='exp',
         Sqrt='sqrt',
@@ -169,17 +169,17 @@ def get_default_values(parsed, default_values={}):
     if not isinstance(parsed, list):
         return default_values
 
-    if parsed[0] == "Times": # find Default arguments for "Times"
+    if parsed[0] == "Mul": # find Default arguments for "Mul"
         for i in parsed[1:]:
             if i[0] == "Optional":
                 default_values[(i[1][1])] = 1
 
-    if parsed[0] == "Plus": # find Default arguments for "Plus"
+    if parsed[0] == "Add": # find Default arguments for "Add"
         for i in parsed[1:]:
             if i[0] == "Optional":
                 default_values[(i[1][1])] = 0
 
-    if parsed[0] == "Power": # find Default arguments for "Power"
+    if parsed[0] == "Pow": # find Default arguments for "Pow"
         for i in parsed[1:]:
             if i[0] == "Optional":
                 default_values[(i[1][1])] = 1

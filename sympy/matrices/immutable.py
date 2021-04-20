@@ -75,7 +75,7 @@ class ImmutableDenseMatrix(DenseMatrix, MatrixExpr):
         raise TypeError("Cannot set values of {}".format(self.__class__))
 
     def _eval_Eq(self, other):
-        """Helper method for Equality with matrices.
+        """Helper method for Equal with matrices.
 
         Relational automatically converts matrices to ImmutableDenseMatrix
         instances, so this method only applies here.  Returns True if the

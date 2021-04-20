@@ -1,11 +1,11 @@
 from axiom.utility import prove, apply
 from sympy import *
 
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
-def index_function(n):    
+def index_function(n): 
     k = Symbol.k(integer=True)
     
     def index(x, a, *indices):
@@ -45,23 +45,23 @@ def apply(*given, j=None):
     index = index_function(n)
     index_j = index[j](x[:n], a[:n], evaluate=False)
     return Contains(index_j, Interval(0, n - 1, integer=True)), \
-        Equality(x[index_j], a[j])
+        Equal(x[index_j], a[j])
 
 
 @prove
-def prove(Eq):     
+def prove(Eq): 
     n = Symbol.n(domain=Interval(2, oo, integer=True), given=True)
     
-    x = Symbol.x(shape=(n,), integer=True)
+    x = Symbol.x(shape=(n,), integer=True, given=True)
     
-    a = Symbol.a(shape=(n,), integer=True)
+    a = Symbol.a(shape=(n,), integer=True, given=True)
     
     k = Symbol.k(integer=True)
     
     j = Symbol.j(domain=Interval(0, n - 1, integer=True), given=True)
     
-    Eq << apply(Equality(abs(a.set_comprehension(k)), n),
-                Equality(x[:n].set_comprehension(k), a.set_comprehension(k)),
+    Eq << apply(Equal(abs(a.set_comprehension(k)), n),
+                Equal(x[:n].set_comprehension(k), a.set_comprehension(k)),
                 j=j)
     
     Eq << Eq[2].lhs.this.definition
@@ -75,20 +75,20 @@ def prove(Eq):
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
     
     sj = Symbol.s_j(conditionset(k, Equal(a[j], x[k]), Interval(0, n - 1, integer=True)))
-    
+
     Eq.sj_definition = sj.this.definition
     
     Eq << Sum[k:sj](k).this.limits[0][1].definition
     
     Eq << Eq[-1].this.rhs.bisect({0})
     
-    Eq.crossproduct = algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
+    Eq.crossproduct = algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
     
     Eq.sj_definition_reversed = Eq.sj_definition.this.rhs.limits[0][1].reversed.reversed
     
     Eq << Eq[1].apply(sets.eq.imply.eq.intersect, {a[j]})
     
-    Eq << Piecewise((x[k].set, Equality(x[k], a[j])), (x[k].emptySet, True)).this.simplify()
+    Eq << Piecewise((x[k].set, Equal(x[k], a[j])), (x[k].emptySet, True)).this.simplify()
     
     Eq << sets.eq.imply.eq.union_comprehension.apply(Eq[-1].reversed, (k, 0, n))
     
@@ -110,31 +110,37 @@ def prove(Eq):
     
     (a, *_), (b, *_) = Eq.inequality_ab.limits
     
-    Eq << Eq[1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[1].apply(algebra.eq.imply.eq.abs)
     
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[0])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[0])
     
     Eq << sets.eq.imply.forall_is_emptyset.apply(Eq[-1], excludes=Eq.inequality_ab.variables_set)
     
     Eq << Eq[-1].subs(k, a)
     
-    Eq << Eq[-1].subs(Eq[-1].variable, b)
+    Eq << algebra.forall.imply.ou.subs.apply(Eq[-1], Eq[-1].variable, b)
     
-    Eq <<= Eq.inequality_ab & Eq[-1]
+    Eq << algebra.cond.exists.imply.exists_et.apply(Eq[-1], Eq.inequality_ab)
     
-    Eq.distribute_ab = Eq[-1].this.function.astype(Or)
+    Eq.distribute_ab = Eq[-1].this.function.apply(algebra.et.imply.ou)
 
     Eq.j_equality = sets.imply.forall.conditionset.apply(sj)
         
     Eq << Eq.j_equality.limits_subs(k, a)
     
-    Eq << Eq.distribute_ab.subs(Eq.j_equality.reversed)
+    Eq << algebra.forall.exists.imply.exists_et.apply(Eq.j_equality.reversed, Eq.distribute_ab)
     
+    Eq << Eq[-1].this.function.apply(algebra.et.imply.et.subs, index=1)
+    
+    Eq << Eq[-1].this.function.apply(algebra.et.imply.et.delete, index=1)
+
     Eq << Eq.j_equality.limits_subs(a, b)
     
-    Eq << Eq[-1].subs(Eq.j_equality)
+    Eq << algebra.forall.exists.imply.exists_et.apply(Eq.j_equality, Eq[-1])
     
-    Eq <<= algebre.et.imply.cond.apply(Eq.ou & ~Eq.inequality_ab, index=0)    
+    Eq <<= Eq.ou & ~Eq.inequality_ab
+    
+    Eq << algebra.et.imply.cond.apply(Eq[-1], index=0)    
     
     Eq <<= Eq.sj_less_than_1 & Eq.sj_greater_than_1
     
@@ -142,23 +148,26 @@ def prove(Eq):
     
     Eq.index_domain = Eq[-1].subs(Eq.crossproduct.reversed)
     
-    Eq.ou = Eq.j_equality.subs(Eq.j_equality.variable, Eq.index_domain.lhs)
-        
+    Eq.ou = algebra.forall.imply.ou.subs.apply(Eq.j_equality, Eq.j_equality.variable, Eq.index_domain.lhs)
+    
     Eq << Eq.ou.args[0].copy(plausible=True)
     
     Eq << Eq.ou.args[1].copy(plausible=True)
     
     Eq <<= Eq[-2] & Eq.index_domain
     
-    Eq <<= algebre.et.imply.cond.apply(Eq.ou & ~Eq[-2], index=0)
+    Eq <<= Eq.ou & ~Eq[-2]
     
-    Eq << Eq[-1].reversed
+    Eq << algebra.et.imply.cond.apply(Eq[-1], index=1)
+    
+    Eq << Eq[-2].reversed
     
     Eq << Subset(sj, Eq[2].rhs, plausible=True)
     
     Eq << sets.contains.subset.imply.contains.apply(Eq.index_domain, Eq[-1])
 
+
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
     
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

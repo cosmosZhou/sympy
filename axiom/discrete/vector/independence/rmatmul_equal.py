@@ -1,15 +1,11 @@
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from axiom import algebre, discrete
-from sympy import LAMBDA
-from sympy import Symbol
+from axiom import algebra, discrete
 
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     lhs, rhs = given.args
     
     assert lhs.is_MatMul
@@ -26,15 +22,13 @@ def apply(given):
 #     n = p_polynomial.shape[0]
     k = p_polynomial.variable
     polynomial = p_polynomial.function
-    assert polynomial.is_Power
+    assert polynomial.is_Pow
     
     b, e = polynomial.as_base_exp()    
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
     
-    return Equality(x, y)
-
-
+    return Equal(x, y)
 
 
 @prove
@@ -45,15 +39,16 @@ def prove(Eq):
     y = Symbol.y(shape=(n,), given=True, complex=True)
     k = Symbol.k(domain=Interval(1, oo, integer=True))
     
-    given = Equality(x @ LAMBDA[k:n](p ** k), y @ LAMBDA[k:n](p ** k))
+    Eq << apply(Equal(x @ LAMBDA[k:n](p ** k), y @ LAMBDA[k:n](p ** k)))
     
-    Eq << apply(given)
-    Eq << discrete.vector.cosine_similarity.apply(*given.lhs.args)
-    Eq << discrete.vector.cosine_similarity.apply(*given.rhs.args)
+    Eq << discrete.vector.cosine_similarity.apply(*Eq[0].lhs.args)
     
-    Eq << given.subs(Eq[-1], Eq[-2])
+    Eq << discrete.vector.cosine_similarity.apply(*Eq[0].rhs.args)
+    
+    Eq << Eq[0].subs(Eq[-1], Eq[-2])
     
     Eq << discrete.vector.independence.matmul_equal.apply(Eq[-1])
 
+
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

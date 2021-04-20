@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from sympy.stats.symbolic_probability import Probability as P
 from sympy.stats.rv import pspace
 from axiom.keras.layers.crf.markov import process_assumptions, assumptions
-from axiom import keras, algebre
+from axiom import keras, algebra
 
 
 @apply
@@ -30,8 +30,8 @@ def apply(*given):
     assert x_quote.shape == (n, d)
 
     assert x_quote.is_real
-    return Equality(x_quote[t + 1], x[t + 1] + MIN(x_quote[t] + G)), \
-        Equality(MAX[y](joint_probability), exp(-MIN(x_quote[n - 1])))
+    return Equal(x_quote[t + 1], x[t + 1] + MIN(x_quote[t] + G)), \
+        Equal(MAX[y](joint_probability), exp(-MIN(x_quote[n - 1])))
 
 
 
@@ -46,7 +46,7 @@ def prove(Eq):
     
     s, t = Eq.s_definition.lhs.args
     
-    Eq.x_quote_definition = Eq.x_quote_definition.apply(algebre.eq.imply.eq.lamda, (Eq.x_quote_definition.lhs.indices[-1],), simplify=False)
+    Eq.x_quote_definition = Eq.x_quote_definition.apply(algebra.eq.imply.eq.lamda, (Eq.x_quote_definition.lhs.indices[-1],), simplify=False)
     
     Eq << keras.layers.crf.markov.apply(*given)
     
@@ -69,13 +69,13 @@ def prove(Eq):
     
     Eq << -Eq.s_definition.reversed
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.exp)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.exp)
     
-    Eq << algebre.eq.imply.eq.maximize.apply(Eq[-1], (y[:t + 1],))
+    Eq << algebra.eq.imply.eq.maximize.apply(Eq[-1], (y[:t + 1],))
     
     Eq << Eq[-1].this.rhs.astype(exp)
     
-    Eq << algebre.eq.imply.eq.minimize.apply(Eq.x_quote_definition).this.rhs.simplify(wrt=t)
+    Eq << algebra.eq.imply.eq.minimize.apply(Eq.x_quote_definition).this.rhs.simplify(wrt=t)
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
@@ -83,4 +83,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

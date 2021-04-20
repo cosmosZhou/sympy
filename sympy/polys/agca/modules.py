@@ -1328,7 +1328,7 @@ class QuotientModuleElement(ModuleElement):
     """Element of a quotient module."""
 
     def eq(self, d1, d2):
-        """Equality comparison."""
+        """Equal comparison."""
         return self.module.killed_module.contains(d1 - d2)
 
     def __repr__(self):

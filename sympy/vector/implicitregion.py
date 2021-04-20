@@ -99,7 +99,7 @@ class ImplicitRegion(Basic):
         equation = self.equation
 
         if len(self.variables) == 1:
-            return (list(solveset(equation, self.variables[0], domain=S.Reals))[0],)
+            return (list(solveset(equation, self.variables[0], domain=Reals))[0],)
         elif len(self.variables) == 2:
 
             if self.degree == 2:
@@ -116,7 +116,7 @@ class ImplicitRegion(Basic):
 
             for x_reg in range(-10, 10):
                 for y_reg in range(-10, 10):
-                    if not solveset(equation.subs({x: x_reg, y: y_reg}), self.variables[2], domain=S.Reals).is_empty:
+                    if not solveset(equation.subs({x: x_reg, y: y_reg}), self.variables[2], domain=Reals).is_empty:
                         return (x_reg, y_reg, list(solveset(equation.subs({x: x_reg, y: y_reg})))[0])
 
         if len(self.singular_points()) != 0:

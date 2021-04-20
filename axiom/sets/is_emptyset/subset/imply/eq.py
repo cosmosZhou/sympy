@@ -13,7 +13,7 @@ def apply(*given):
     for p in given:
         if p.is_Subset:
             A, B = p.args
-        elif p.is_Equality:
+        elif p.is_Equal:
             BC, emptyset = p.args
             if emptyset:
                 tmp = emptyset
@@ -28,7 +28,7 @@ def apply(*given):
         assert B == C
         C = _B
 
-    return Equality(C - A, C)
+    return Equal(C - A, C)
 
 
 
@@ -39,7 +39,7 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer, given=True)
     C = Symbol.C(etype=dtype.integer, given=True)
 
-    Eq << apply(Equality(B & C, C.etype.emptySet, evaluate=False), Subset(A, B, evaluate=False))
+    Eq << apply(Equal(B & C, C.etype.emptySet, evaluate=False), Subset(A, B, evaluate=False))
 
     Eq << sets.is_emptyset.subset.imply.is_emptyset.apply(Eq[0], Eq[1])
 
@@ -49,5 +49,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

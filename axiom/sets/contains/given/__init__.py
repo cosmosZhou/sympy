@@ -1,4 +1,4 @@
-from . import exists_contains
+from . import exists_contains, forall_contains
 from . import contains
 from . import ou
 from . import et

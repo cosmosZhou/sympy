@@ -250,7 +250,7 @@ class AbstractPythonCodePrinter(CodePrinter):
         return ''.join(result)
 
     def _print_Relational(self, expr):
-        "Relational printer for Equality and Unequality"
+        "Relational printer for Equal and Unequal"
         op = {
             '==' :'equal',
             '!=' :'not_equal',
@@ -537,7 +537,7 @@ class NumPyPrinter(PythonCodePrinter):
         return '{0}({1}, {2}, default=numpy.nan)'.format(self._module_format('numpy.select'), conds, exprs)
 
     def _print_Relational(self, expr):
-        "Relational printer for Equality and Unequality"
+        "Relational printer for Equal and Unequal"
         op = {
             '==' :'equal',
             '!=' :'not_equal',

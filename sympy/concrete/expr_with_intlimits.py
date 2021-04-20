@@ -325,7 +325,7 @@ class ExprWithIntLimits(ExprWithLimits):
                 else:
                     x, a, b = limit
                     if x.is_integer:
-                        if b.is_Plus and b.args[0].is_One:
+                        if b.is_Add and b.args[0].is_One:
                             b -= 1                            
                             cmp = r"\leq"
                         else:

@@ -26,7 +26,7 @@ def prove(Eq):
     
     Eq << apply(Contains(x, {a, b}), t)
     
-    Eq << sets.contains.imply.ou.having.finiteset.two.apply(Eq[0], simplify=None)
+    Eq << sets.contains.imply.ou.split.finiteset.two.apply(Eq[0], simplify=None)
     
     Eq << Eq[-1].this.args[0] + t
     
@@ -36,5 +36,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

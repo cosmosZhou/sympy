@@ -1,1 +1,1 @@
-from . import integrate
+from . import integral

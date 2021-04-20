@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 from sympy.matrices.expressions.matexpr import Swap
 
 
@@ -9,7 +9,7 @@ def apply(n):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     
-    return Equality(BlockMatrix([[Swap(n, i, j), ZeroMatrix(n)], [ZeroMatrix(n), S.One]]), Swap(n + 1, i, j))
+    return Equal(BlockMatrix([[Swap(n, i, j), ZeroMatrix(n)], [ZeroMatrix(n), S.One]]), Swap(n + 1, i, j))
 
 
 @prove
@@ -36,15 +36,17 @@ def prove(Eq):
     
     Eq << Eq[-2] - Eq[-1] 
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.lamda, (k,), (h,), simplify=False)
+    Eq << Eq[-1].this.rhs.simplify()
+    
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.lamda, (k,), (h,), simplify=False)
     
     Eq << Eq[-1].subs(Eq[1]).subs(Eq[2])
     
-    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (_i,), (_j,))
+    Eq << Eq[-1].apply(algebra.cond.imply.forall.restrict, (_i,), (_j,))
     
     Eq << Eq[-1].reversed
     
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

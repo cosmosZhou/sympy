@@ -1,7 +1,7 @@
 from sympy import *
 
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -27,11 +27,11 @@ def prove(Eq):
     
     Eq << apply(Sufficient(Contains(x, A), Contains(x, B)))
     
-    Eq << algebre.sufficient.imply.forall.rewrite.apply(Eq[0], wrt=x)
+    Eq << Eq[0].this.apply(algebra.sufficient.to.forall, wrt=x)
     
     Eq << sets.forall_contains.imply.subset.apply(Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

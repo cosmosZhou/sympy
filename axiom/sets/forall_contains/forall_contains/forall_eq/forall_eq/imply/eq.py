@@ -13,7 +13,7 @@ def apply(*given):
     forall_a, forall_b, equality_a, equality_b = given
     A, B, a, b, fa, gb = analyze(forall_a, forall_b, equality_a)
     
-    eqs = Equality(b, Lambda(a, fa)(gb))
+    eqs = Equal(b, Lambda(a, fa)(gb))
     if equality_b.is_ForAll:
         assert equality_b.variable == b
         assert equality_b.limits == forall_b.limits
@@ -22,7 +22,7 @@ def apply(*given):
     assert equality_b.is_Equal        
     assert equality_b == eqs or equality_b.reversed == eqs        
     
-    return Equality(Abs(A), Abs(B))
+    return Equal(Abs(A), Abs(B))
 
 
 @prove
@@ -43,7 +43,7 @@ def prove(Eq):
     assert g.shape == (n,)
     
     Eq << apply(ForAll[a:A](Contains(f(a), B)), ForAll[b:B](Contains(g(b), A)),
-                ForAll[a:A](Equality(a, g(f(a)))), ForAll[b:B](Equality(b, f(g(b)))))
+                ForAll[a:A](Equal(a, g(f(a)))), ForAll[b:B](Equal(b, f(g(b)))))
     
     Eq << sets.forall_contains.forall_contains.forall_eq.imply.eq.apply(Eq[0], Eq[1], Eq[2])
     
@@ -53,5 +53,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

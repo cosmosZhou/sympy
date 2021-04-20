@@ -10,7 +10,7 @@ def KL(p, q, *limit):
 def apply(p, q):
     x = Symbol('x')
     y = Symbol('y')
-    return GreaterThan(KL(p(x, y), q(x, y), (x,), (y,)), KL(p(x), q(x), (x,)))
+    return GreaterEqual(KL(p(x, y), q(x, y), (x,), (y,)), KL(p(x), q(x), (x,)))
 
 
 @prove(surmountable=False)
@@ -21,4 +21,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

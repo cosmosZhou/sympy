@@ -18,8 +18,8 @@ from sympy import divisors
 from sympy.core.compatibility import (iterable, is_sequence, ordered,
     default_sort_key, range)
 from sympy.core.sympify import sympify
-from sympy.core import (S, Add, Symbol, Equality, Dummy, Expr, Mul,
-    Pow, Unequality)
+from sympy.core import (S, Add, Symbol, Equal, Dummy, Expr, Mul,
+    Pow, Unequal)
 from sympy.core.exprtools import factor_terms
 from sympy.core.function import (expand_mul, expand_log,
                           Derivative, AppliedUndef, UndefinedFunction, nfloat,
@@ -103,7 +103,7 @@ def recast_to_symbols(eqs, symbols):
 
 def _ispow(e):
     """Return True if e is a Pow or is exp."""
-    return isinstance(e, Expr) and (e.is_Power or isinstance(e, exp))
+    return isinstance(e, Expr) and (e.is_Pow or isinstance(e, exp))
 
 
 def _simple_dens(f, symbols):
@@ -113,7 +113,7 @@ def _simple_dens(f, symbols):
     # limit simplification to exponents that are Numbers
     dens = set()
     for d in denoms(f, symbols):
-        if d.is_Power and d.exp.is_Number:
+        if d.is_Pow and d.exp.is_Number:
             if d.exp.is_zero:
                 continue  # foo**0 is never 0
             d = d.base
@@ -246,7 +246,7 @@ def checksol(f, symbol, sol=None, **flags):
 
     if isinstance(f, Poly):
         f = f.as_expr()
-    elif isinstance(f, (Equality, Unequality)):
+    elif isinstance(f, (Equal, Unequal)):
         if f.rhs in (S.true, S.false):
             f = f.reversed
         B, E = f.args
@@ -319,7 +319,7 @@ def checksol(f, symbol, sol=None, **flags):
                 if p in seen:
                     continue
                 seen.add(p)
-                if p.is_Power and not p.exp.is_Integer:
+                if p.is_Pow and not p.exp.is_Integer:
                     saw_pow_func = True
                 elif p.is_Function:
                     saw_pow_func = True
@@ -468,7 +468,7 @@ def solve(f, *symbols, **flags):
 
     * f
         - a single Expr or Poly that must be zero,
-        - an Equality
+        - an Equal
         - a Relational expression
         - a Boolean
         - iterable of one or more of the above
@@ -958,7 +958,7 @@ def solve(f, *symbols, **flags):
     # preprocess equation(s)
     ###########################################################################
     for i, fi in enumerate(f):
-        if isinstance(fi, (Equality, Unequality)):
+        if isinstance(fi, (Equal, Unequal)):
             if 'ImmutableDenseMatrix' in [type(a).__name__ for a in fi.args]:
                 fi = fi.lhs - fi.rhs
             else:
@@ -967,7 +967,7 @@ def solve(f, *symbols, **flags):
                     args = args[1], args[0]
                 L, R = args
                 if L in (S.false, S.true):
-                    if isinstance(fi, Unequality):
+                    if isinstance(fi, Unequal):
                         L = ~L
                     if R.is_Relational:
                         fi = ~R if L is S.false else R
@@ -1125,7 +1125,7 @@ def solve(f, *symbols, **flags):
                     not p.args or
                     p in symset or
                     p.is_Add or p.is_Mul or
-                    p.is_Power and not implicit or
+                    p.is_Pow and not implicit or
                     p.is_Function and not implicit) and p.func not in (re, im):
                 continue
             elif not p in seen:
@@ -1630,7 +1630,7 @@ def _solve(f, *symbols, **flags):
                         return expand_power_exp(b ** e)
 
                     ftry = f_num.replace(
-                        lambda w: w.is_Power or isinstance(w, exp),
+                        lambda w: w.is_Pow or isinstance(w, exp),
                         _expand).subs(u, t)
                     if not ftry.has(symbol):
                         soln = _solve(ftry, t, **flags)
@@ -2086,10 +2086,10 @@ def solve_linear(lhs, rhs=0, symbols=[], exclude=[]):
     solution.)
 
     """
-    if isinstance(lhs, Equality):
+    if isinstance(lhs, Equal):
         if rhs:
             raise ValueError(filldedent('''
-            If lhs is an Equality, rhs must be 0 but was %s''' % rhs))
+            If lhs is an Equal, rhs must be 0 but was %s''' % rhs))
         rhs = lhs.rhs
         lhs = lhs.lhs
     dens = None
@@ -2468,7 +2468,7 @@ def solve_undetermined_coeffs(equ, coeffs, sym, **flags):
        {a: 1/c, b: -1/c}
 
     """
-    if isinstance(equ, Equality):
+    if isinstance(equ, Equal):
         # got equation, so move all the
         # terms to the left hand side
         equ = equ.lhs - equ.rhs
@@ -2679,7 +2679,7 @@ def _tsolve(eq, sym, **flags):
                         return _solve(f.args[0] - exp(rhs), sym, **flags)
                     return _tsolve(f - rhs, sym, **flags)
 
-        elif lhs.is_Power:
+        elif lhs.is_Pow:
             if lhs.exp.is_Integer:
                 if lhs - rhs != eq:
                     return _solve(lhs - rhs, sym, **flags)
@@ -2796,9 +2796,9 @@ def _tsolve(eq, sym, **flags):
         for gi in g:
             if isinstance(gi, exp) or isinstance(gi, log):
                 up_or_log.add(gi)
-            elif gi.is_Power:
+            elif gi.is_Pow:
                 gisimp = powdenest(expand_power_exp(gi))
-                if gisimp.is_Power and sym in gisimp.exp.free_symbols:
+                if gisimp.is_Pow and sym in gisimp.exp.free_symbols:
                     up_or_log.add(gi)
         down = g.difference(up_or_log)
         eq_down = expand_log(expand_power_exp(eq)).subs(
@@ -3006,14 +3006,14 @@ def nsolve(*args, **kwargs):
     if iterable(f):
         f = list(f)
         for i, fi in enumerate(f):
-            if isinstance(fi, Equality):
+            if isinstance(fi, Equal):
                 f[i] = fi.lhs - fi.rhs
         f = Matrix(f).T
     if iterable(x0):
         x0 = list(x0)
     if not isinstance(f, Matrix):
         # assume it's a sympy expression
-        if isinstance(f, Equality):
+        if isinstance(f, Equal):
             f = f.lhs - f.rhs
         syms = f.free_symbols
         if fargs is None:
@@ -3215,7 +3215,7 @@ def _invert(eq, *symbols, **kwargs):
                     raise ValueError(
                         'function with different numbers of args')
 
-        if rhs and lhs.is_Power and lhs.exp.is_Integer and lhs.exp < 0:
+        if rhs and lhs.is_Pow and lhs.exp.is_Integer and lhs.exp < 0:
             lhs = 1 / lhs
             rhs = 1 / rhs
 
@@ -3227,7 +3227,7 @@ def _invert(eq, *symbols, **kwargs):
         # doesn't try to resolve generators to see, for example, if the whole
         # system is written in terms of sqrt(x + y) so it will just fail, so we
         # do that step here.
-        if lhs.is_Power and (
+        if lhs.is_Pow and (
             lhs.exp.is_Integer and dointpow or not lhs.exp.is_Integer and
                 len(symbols) > 1 and len(lhs.base.free_symbols & set(symbols)) > 1):
             rhs = rhs ** (1 / lhs.exp)
@@ -3331,7 +3331,7 @@ def unrad(eq, *syms, **flags):
             for f in eq.args:
                 if f.is_number:
                     continue
-                if f.is_Power and _take(f, True):
+                if f.is_Pow and _take(f, True):
                     args.append(f.base)
                 else:
                     args.append(f)
@@ -3358,7 +3358,7 @@ def unrad(eq, *syms, **flags):
     def _take(d, take_int_pow):
         # return True if coefficient of any factor's exponent's den is not 1
         for pow in Mul.make_args(d):
-            if not (pow.is_Symbol or pow.is_Power):
+            if not (pow.is_Symbol or pow.is_Pow):
                 continue
             b, e = pow.as_base_exp()
             if not b.has(*syms):

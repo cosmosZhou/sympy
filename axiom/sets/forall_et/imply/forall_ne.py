@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
@@ -29,7 +29,7 @@ def apply(given):
     
     n = n_1
     
-    assert forall_historic.function.is_Unequality and forall_n.is_Unequality
+    assert forall_historic.function.is_Unequal and forall_n.is_Unequal
     lhs, rhs = forall_historic.function.args
     if lhs._has(j):
         lhs, rhs = rhs, lhs     
@@ -43,7 +43,7 @@ def apply(given):
     assert x[n] == lhs
     assert x[i] == rhs
     
-    return ForAll[j:i, i:n + 1](Unequality(x[i], x[j]))
+    return ForAll[j:i, i:n + 1](Unequal(x[i], x[j]))
 
 
 
@@ -55,13 +55,13 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
  
-    Eq << apply(ForAll[i:n](Unequality(x[n], x[i]) & ForAll[j:i](Unequality(x[i], x[j]))))
+    Eq << apply(ForAll[i:n](Unequal(x[n], x[i]) & ForAll[j:i](Unequal(x[i], x[j]))))
 
-    Eq << algebre.forall_et.imply.forall.apply(Eq[0])
+    Eq << algebra.forall_et.imply.forall.apply(Eq[0])
 
     Eq << sets.forall_ne.forall_ne.imply.forall_ne.apply(Eq[-1], Eq[-2])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

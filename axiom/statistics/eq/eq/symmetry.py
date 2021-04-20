@@ -9,20 +9,20 @@ from axiom import statistics
 @apply
 def apply(*given):
     given_equality, unequal = given
-    assert unequal.is_Unequality
+    assert unequal.is_Unequal
     assert unequal.lhs.is_Probability
     assert unequal.rhs.is_zero
         
-    assert given_equality.is_Equality
+    assert given_equality.is_Equal
     lhs, rhs = given_equality.args
     assert lhs.is_Conditioned
     x, y = lhs.args
     assert x == rhs
     
-    if y.is_Equality:
+    if y.is_Equal:
         y = y.lhs
     assert y.is_random and y.is_symbol
-    return Equality(y | x, y)
+    return Equal(y | x, y)
 
 
 @prove
@@ -30,7 +30,7 @@ def prove(Eq):
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
     
-    given = Equality(x | y, x)
+    given = Equal(x | y, x)
  
     Eq << apply(given, Unequal(P(x), 0))
     
@@ -40,4 +40,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

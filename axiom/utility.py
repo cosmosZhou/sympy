@@ -1,12 +1,11 @@
-
-import sympy
-import os
+import sympy, os
 from sympy.logic.boolalg import equivalent_ancestor, Boolean
 import traceback
 from sympy.logic import boolalg
 from sympy.utilities.iterables import topological_sort_depth_first
 import time
 from enum import unique, Enum
+from sympy.core.inference import Inference, process_options
 
 
 def init(func):
@@ -86,11 +85,60 @@ render(__FILE__);
                 res.append(line[m.start():m.start(1)])
                     
                 if eq.plausible: 
-                    _expr = Eq.reference(self.get_index(Eq.get_equivalent(eq)))
-                    if self.debug:
-                        print("%s=>%s : %s" % (_expr, expr, eq))
+                    index = self.get_index(Eq.get_equivalent(eq))
+                    _expr = Eq.reference(index)
+                    
+                    if eq.equivalent is not None:
+                        if isinstance(eq.equivalent, tuple):
+                            arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                        else:
+                            _expr_reference = self[index]
+                            if _expr_reference == eq.equivalent:
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                            elif _expr_reference.equivalent == eq:
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                            elif _expr_reference == eq.equivalent.given:
+                                arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                            elif _expr_reference == eq.equivalent.imply:
+                                arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                            elif _expr_reference == eq.equivalent.negation:
+                                arrow = '='
+                            elif _expr_reference == eq.equivalent.equivalent:
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                            elif index == -1:
+                                arrow = '='
+                            else:
+                                print('index =', index)
+                                print('unknown relationship:', _expr, expr)
+                                
+                                print('_expr_reference = ')
+                                print(_expr_reference)
+                                print(_expr_reference.equivalent)
+                                
+                                print('\neq = ')
+                                print(eq)
+                                print(eq.equivalent)
+                                print(eq.equivalent.negation)
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                        
+                    elif eq.given is not None:
+                        arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                        
+                    elif eq.imply is not None:
+                        if isinstance(eq.imply.given, (tuple, list)):
+                            arrow = '\N{LEFTWARDS ARROW}'
+                        else:
+                            arrow = '\N{LEFTWARDS DOUBLE ARROW}'
+                                
+                    else:
+                        arrow = '='
+                        assert _expr == '?'
+                        
+                    if self.debug: 
+                        print("%s%s%s : %s" % (_expr, arrow, expr, eq))                        
+
                     res.append(_expr)                
-                    res.append('=>')
+                    res.append(arrow)
                 elif eq.plausible == False:
                     res.append('~')
                                     
@@ -163,6 +211,12 @@ render(__FILE__);
             if eq == v or (dummy_eq and eq.dummy_eq(v)):
                 return k
         for i, _eq in enumerate(self.list):
+            if _eq.is_Inference:
+                _eq = _eq.cond
+                
+            if eq.is_Inference:
+                eq = eq.cond
+            
             if _eq == eq or (dummy_eq and eq.dummy_eq(_eq)):
                 return i
         return -1
@@ -181,7 +235,7 @@ render(__FILE__);
     
         infix = str(rhs)
             
-        if isinstance(rhs, Boolean):
+        if isinstance(rhs, (Boolean, Inference)):
             index = self.add_to_list(rhs, index)
             if index != -1:
                 if isinstance(index, int):
@@ -218,7 +272,7 @@ render(__FILE__);
         old_index = self.index(rhs)
         if old_index == -1:
             if rhs.is_BooleanAtom:
-                boolalg.process_options(value=bool(rhs), **rhs._assumptions)
+                process_options(value=bool(rhs), **rhs._assumptions)
                 return -1
             if index is not None:
                 self.__dict__[index] = rhs
@@ -243,12 +297,6 @@ render(__FILE__);
                             if not isinstance(equivalent, (list, tuple)):
                                 equivalent.equivalent = lhs
                                                     
-                    elif not isinstance(given, (list, tuple)):
-                        derivative = given.derivative     
-                        if isinstance(derivative, (list, tuple)):
-                            if all(eq.plausible is None for eq in derivative):
-                                given.plausible = True
-                                
                 elif lhs.plausible is False:
                     rhs.plausible = False
                 else:
@@ -260,11 +308,6 @@ render(__FILE__);
                         if isinstance(rhs.given, (list, tuple)):
                             if any(lhs is _eq for _eq in rhs.given):
                                 return old_index
-                        else:
-                            if rhs.given.plausible is False:
-                                eqs = [eq for eq in rhs.given.derivative if lhs.plausible is not None]
-                                if len(eqs) == 1:
-                                    eqs[0].plausible = False
                     
                     if rhs.equivalent is not lhs and rhs is not lhs:
                         lhs_is_plausible = 'plausible' in lhs._assumptions
@@ -316,6 +359,11 @@ render(__FILE__);
                             rhs_plausibles, rhs_is_equivalent = rhs.plausibles_set()
                             if len(rhs_plausibles) == 1:
                                 rhs_plausible, *_ = rhs_plausibles
+                                if not lhs_is_plausible:
+                                    lhs_equivalent = equivalent_ancestor(lhs)
+                                    if len(lhs_equivalent) == 1:
+                                        lhs_equivalent, *_ = lhs_equivalent
+                                        lhs_equivalent.given = rhs_plausible
                             else: 
                                 lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set()
                                 if len(lhs_plausibles) == 1:
@@ -441,12 +489,20 @@ class RetCode(Enum):
 
 def prove(*args, **kwargs):
 
-    def prove(py, func, debug=True):
-        eqs = Eq(py.replace('.py', '.php'), debug=debug)
-        website = "http://localhost" + func.__code__.co_filename[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3]
+    def prove(func, debug=True):
+        py = func.__code__.co_filename
+        website = "http://localhost" + py[len(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))):-3]
+        
         if website.endswith('__init__'):
-            website = os.path.dirname(website)
+            quick_exit = traceback.extract_stack()[0][0] == py
+            py = os.path.dirname(py) + '.py'
+            website = os.path.dirname(website)            
+        else:
+            quick_exit = False
+        
+        eqs = Eq(py.replace('.py', '.php'), debug=debug)
         website += ".php"
+        
         try: 
             func(eqs)
         except Exception as e:
@@ -457,6 +513,11 @@ def prove(*args, **kwargs):
         
         if debug:
             print(website)
+        
+        if quick_exit:
+#         if traceback.extract_stack()[5][0] == func.__code__.co_filename:            
+            os.sys.exit()
+            
         plausibles = eqs.plausibles_dict
         if plausibles:
             return RetCode.plausible
@@ -464,15 +525,15 @@ def prove(*args, **kwargs):
         return RetCode.success
 
     if args:
-        return lambda py, **kwargs: prove(py, *args, **kwargs)
+        return lambda **kwargs: prove(*args, **kwargs)
     
     surmountable = kwargs.pop('surmountable', True)
     if surmountable is False:
 
         def insurmountable(func):
 
-            def insurmountable(py, **kwargs):
-                prove(py, func, **kwargs)
+            def insurmountable(**kwargs):
+                prove(func, **kwargs)
                 return RetCode.insurmountable
 
             return insurmountable
@@ -484,13 +545,14 @@ def prove(*args, **kwargs):
 
         def unprovable(func):
 
-            def unprovable(py, **kwargs):
-                prove(py, func, **kwargs)
+            def unprovable(**kwargs):
+                prove(func, **kwargs)
                 return RetCode.unprovable
 
             return unprovable
 
         return unprovable
+
 
 def wolfram(func):
 
@@ -531,16 +593,16 @@ def imply(apply, **kwargs):
             if given is None:
                 return statement
             
-            if isinstance(given, list):
-                return tuple(given) + statement
+            if isinstance(given, tuple):
+                return given + statement
             
             return (given,) + statement
         
         if given is None:
             return statement
         
-        if isinstance(given, list):
-            return tuple(given) + (statement,)
+        if isinstance(given, tuple):
+            return given + (statement,)
         
         return (given, statement)
 
@@ -548,22 +610,23 @@ def imply(apply, **kwargs):
         s.definition_set(dependency)
                 
         if 'plausible' not in s._assumptions:
-            s._assumptions['plausible'] = True
+            s = Inference(s, plausible=True)
+#             s._assumptions['plausible'] = True
+            
+        return s
 
     def imply(*args, **kwargs):
         nonlocal simplify
         simplify = kwargs.pop('simplify', True) and simplify
-        statement = apply(*args, **kwargs)
-        
-        if isinstance(statement, tuple):
-            for s in statement:
-                if s.equivalent is not None:
-                    s.equivalent = None
-        elif statement.equivalent is not None:
-            statement.equivalent = None
+
+        __kwdefaults__ = apply.__kwdefaults__
+        if __kwdefaults__ is not None and 'simplify' in __kwdefaults__ and simplify != __kwdefaults__['simplify']:
+            kwargs['simplify'] = simplify
             
+        statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)        
+        
         if is_given:
-            given = [eq for eq in args if isinstance(eq, Boolean)]
+            given = tuple(eq for eq in args if isinstance(eq, (Boolean, Inference)))
             if len(given) == 1:
                 given = given[0]
             elif not given:
@@ -575,39 +638,58 @@ def imply(apply, **kwargs):
         if apply.__code__.co_filename != s[-2][0]:
             
             if given is not None:
-                if isinstance(statement, tuple): 
-                    statement = [s.copy(given=given) for s in statement]
+                if isinstance(given, tuple):
+                    is_not_False = all(g.plausible is not False for g in given)
                 else:
-                    statement = statement.copy(given=given)
+                    is_not_False = given.plausible is not False
+                    
+                assert is_not_False , 'a False proposition can not be used to imply any other proposition!'
+                    
+                if isinstance(statement, tuple): 
+                    statement = tuple(s.copy(given=given, evaluate=False) for s in statement)
+                else: 
+                    statement = statement.copy(given=given, evaluate=False)
+            else:
+                if isinstance(statement, tuple): 
+                    statement = tuple(s.copy(plausible=None, evaluate=False) for s in statement)
+                else: 
+                    statement = statement.copy(plausible=None, evaluate=False)                
                 
             if not simplify:
-                return statement
-            if isinstance(statement, list):
-                return [*(s.simplify() for s in statement)]
-            return statement.simplify()
+                if isinstance(statement, (list, tuple)) or statement.is_Inference:
+                    return statement
+                
+                return Inference(statement, plausible=None)
+            
+            if isinstance(statement, (list, tuple)):
+                return tuple(s.simplify(emplace=True) for s in statement)
+             
+            return statement.simplify(emplace=True)            
         
         dependency = {}
         if isinstance(statement, tuple):
-            for s in statement:
-                process(s, dependency)
+            statement = tuple(process(s, dependency) for s in statement)                
         else:
-            process(statement, dependency)
+            statement = process(statement, dependency)
             
         if given is not None:
-            if isinstance(given, (tuple, list)):
+            if isinstance(given, tuple):
                 for g in given:
                     g.definition_set(dependency)
+
+                given = tuple(Inference(g, plausible=None) for g in given) 
             else:
-                given.definition_set(dependency)
-            
+                given.definition_set(dependency)                
+                given = Inference(given, plausible=None)
+
         G = topological_sort_depth_first(dependency)
         if G:
-            definition = [s.equality_defined() for s in G]
+            definition = tuple(s.equality_defined() for s in G)
             
             statement = add(given, statement)
             if isinstance(statement, tuple):
-                return definition + [*statement]
-            return definition + [statement]
+                return definition + statement
+            return definition + (statement,)
             
         else:
             return add(given, statement)
@@ -642,23 +724,19 @@ def given(apply, **kwargs):
                 
         if 'plausible' in s._assumptions:
             del s._assumptions['plausible']
+        s = Inference(s, plausible=None)
+        return s
 
     def given(*args, **kwargs):
         nonlocal simplify
         simplify = kwargs.pop('simplify', True) and simplify
-        statement = apply(*args, **kwargs)        
         
-        if isinstance(statement, tuple):
-            for s in statement:
-                if s.equivalent is not None:
-                    s.equivalent = None
-        elif statement.equivalent is not None:
-            statement.equivalent = None
-            
+        statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)        
+        
         imply, *args = args
         
         if is_given: 
-            given = tuple(eq for eq in args if isinstance(eq, Boolean))        
+            given = tuple(eq for eq in args if isinstance(eq, (Boolean, Inference)))        
             assert all(g.plausible is None for g in given)
         else:
             given = ()
@@ -669,28 +747,30 @@ def given(apply, **kwargs):
         if apply.__code__.co_filename != s[-2][0]: 
             if isinstance(statement, tuple):
                 statement = tuple(s.copy(imply=imply) for s in statement)
+                if simplify:
+                    statement = tuple((s.simplify(emplace=True) for s in statement))
+                
                 imply.given = statement
             else:
                 statement = statement.copy(imply=imply)
+                if simplify:
+                    statement = statement.simplify(emplace=True)
             
-            if not simplify:
-                return statement
-            if isinstance(statement, tuple):
-                return tuple((s.simplify() for s in statement))
-            return statement.simplify()
+            return statement
         
         dependency = {}
         if isinstance(statement, tuple):
-            for s in statement:
-                process(s, dependency)
+            statement = tuple(process(s, dependency) for s in statement)
         else: 
-            process(statement, dependency)
+            statement = process(statement, dependency)
         
         for g in given:
             g.definition_set(dependency)
         
         imply.definition_set(dependency)
-        imply._assumptions['plausible'] = True
+        
+        assert not imply.is_Inference
+        imply = Inference(imply, plausible=True)
             
         G = topological_sort_depth_first(dependency)
         if G:

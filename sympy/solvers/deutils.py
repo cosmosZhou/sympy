@@ -11,7 +11,7 @@ _desolve
 from __future__ import print_function, division
 
 from sympy.core.function import Derivative, AppliedUndef
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy.core.symbol import Wild
 
 def _preprocess(expr, func=None, hint='_Integral'):
@@ -159,7 +159,7 @@ def _desolve(eq, func=None, hint="default", ics=None, simplify=True, **kwargs):
     as mentioned above.
 
     Key 'eq' is a common key to all the above mentioned hints which returns an
-    expression if eq given by user is an Equality.
+    expression if eq given by user is an Equal.
 
     See Also
     ========
@@ -167,7 +167,7 @@ def _desolve(eq, func=None, hint="default", ics=None, simplify=True, **kwargs):
     classify_pde(pde.py)
     """
     prep = kwargs.pop('prep', True)
-    if isinstance(eq, Equality):
+    if isinstance(eq, Equal):
         eq = eq.lhs - eq.rhs
 
     # preprocess the equation and find func if not given

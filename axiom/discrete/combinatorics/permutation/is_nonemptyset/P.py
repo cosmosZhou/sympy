@@ -1,13 +1,13 @@
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import algebre, sets
+from axiom import algebra, sets
 
     
 @apply
 def apply(n):    
     assert n > 0
     x = Symbol.x(integer=True, nonnegative=True, shape=(oo,))
-    P = Symbol("P", conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol("P", conditionset(x[:n], Equal(x[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     return Unequal(P, P.etype.emptySet) 
 
 
@@ -26,10 +26,10 @@ def prove(Eq):
     
     i = Symbol.i(integer=True)
     
-    Eq << algebre.exists.given.exists.subs.apply(Eq[-1], x[:n], LAMBDA[i:n](i))
+    Eq << algebra.exists.given.exists.subs.apply(Eq[-1], x[:n], LAMBDA[i:n](i))
     
     Eq << Eq[-1].this.lhs.simplify()
     
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

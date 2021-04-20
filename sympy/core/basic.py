@@ -65,13 +65,7 @@ class Basic(with_metaclass(ManagedProperties)):
     is_number = False
     is_symbol = False
    
-    is_Add = False
-    is_Mul = False
-    is_Pow = False   
     is_ConditionSet = False
-    
-    is_Equality = False
-    is_Unequality = False
     
     is_boolean = False
     
@@ -80,6 +74,10 @@ class Basic(with_metaclass(ManagedProperties)):
     is_set = False
     
     is_Integral = False
+    
+    is_Inference = False
+    # Wanted is used in expression: Product + {Sum[Sum]}
+    is_Wanted = False
     
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
@@ -104,9 +102,6 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy import preorder_traversal
         return preorder_traversal(self)
     
-    def subs_limits_with_epitome(self, epitome):
-        return self
-
     def __and__(self, other):
         """Overloading for & operator"""
         if self.is_set:
@@ -126,7 +121,7 @@ class Basic(with_metaclass(ManagedProperties)):
             rhs = (other,)
             
         from sympy.logic.boolalg import And
-        return And(self, *rhs, equivalent=[self, other])
+        return And(self, *rhs)
 
     __rand__ = __and__
 
@@ -273,7 +268,7 @@ class Basic(with_metaclass(ManagedProperties)):
             return 0
         n1 = self.__class__
         n2 = other.__class__
-        c = (n1 > n2) - (n1 < n2)
+        c = (n1 >> n2) - (n1 << n2)
         if c:
             return c
         #
@@ -1027,7 +1022,7 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy import Dummy, Symbol
 
         unordered = False
-        from sympy import Equality
+        from sympy import Equal
         if len(args) == 1:
             sequence = args[0]
             if isinstance(sequence, set):
@@ -1038,11 +1033,11 @@ class Basic(with_metaclass(ManagedProperties)):
             elif iterable(sequence):
                 ...
             else:
-                assert sequence.is_Equality
+                assert sequence.is_Equal
                 sequence = [sequence.args]
         else:
-            if isinstance(args[0], Equality):
-                assert all(isinstance(eq, Equality) for eq in args)                
+            if isinstance(args[0], Equal):
+                assert all(isinstance(eq, Equal) for eq in args)                
                 sequence = [eq.args for eq in args]
             else:
                 assert len(args) == 2, "subs accepts either 1 or 2 arguments"
@@ -1102,11 +1097,28 @@ class Basic(with_metaclass(ManagedProperties)):
         else:
             rv = self
             for old, new in sequence:
-                rv = rv._subs(old, new, **kwargs)
+                if old.is_Slice:
+                    rv = rv._subs_slice(old, new, **kwargs)
+                else:
+                    rv = rv._subs(old, new, **kwargs)
                 if not isinstance(rv, Basic):
                     break
             return rv
-
+        
+#    precondition: old is a Slice object
+#     @cacheit
+    def _subs_slice(self, old, new, **hints):
+        hit = False
+        args = [*self.args]
+        for i, arg in enumerate(args):
+            arg = arg._subs_slice(old, new, **hints)
+            if arg != args[i]:
+                hit = True
+                args[i] = arg
+        if hit:
+            return self.func(*args, **self.kwargs)
+        return self
+        
 #     @cacheit
     def _subs(self, old, new, **hints):
         """Substitutes an expression old -> new.
@@ -1183,9 +1195,9 @@ class Basic(with_metaclass(ManagedProperties)):
             return self
 
         if old.is_Slice:
-            this = old._subs_helper(new, self, **hints)
-            if this is not None:
-                return this
+            this = self._subs_slice(old, new, **hints)
+            if this != self:
+                return this             
         
         def fallback(self, old, new):
             """
@@ -1550,7 +1562,7 @@ class Basic(with_metaclass(ManagedProperties)):
         that describes the target expression more precisely:
 
         >>> (1 + x**(1 + y)).replace(
-        ... lambda x: x.is_Power and x.exp.is_Add and x.exp.args[0] == 1,
+        ... lambda x: x.is_Pow and x.exp.is_Add and x.exp.args[0] == 1,
         ... lambda x: x.base**(1 - (x.exp - 1)))
         ...
         x**(1 - y) + 1
@@ -1668,23 +1680,264 @@ class Basic(with_metaclass(ManagedProperties)):
                         for k, v in mapping.items()}
             return rv, mapping
 
-    def find(self, query, group=False):
-        """Find all subexpressions matching a query. """
-        query = _make_find_query(query)
-        results = list(filter(query, preorder_traversal(self)))
+    def typeof(self, cls):
+        if isinstance(cls, type):
+            return isinstance(self, cls)
+        return self.typeof(cls.func)
+    
+    def is_wanted(self):
+        if self.is_Wanted:
+            return True
+        for arg in self.args:
+            if isinstance(arg, type):
+                continue
+            if arg.is_wanted():
+                return True
+        return
+    
+    def find_path(self, cls, path):
+        for i, arg in enumerate(self.args):
+            if arg.typeof(cls):
+                path.append(i)
+                yield path
+                path.pop()
+                    
+        for i, arg in enumerate(self.args):
+            path.append(i)
+            yield from arg.find_path(cls, path)                
+            path.pop()
 
-        if not group:
-            return set(results)
+    def fetch_from_path(self, *path, struct=None):
+        if struct is None:
+            for index in path:
+                self = self.args[index]        
+            
+            return self
+            
+        parent = []
+        for index in path:
+            parent.append(self)
+            self = self.args[index]
+        
+        s = struct
+        root_index = 0
+        while True:
+            if isinstance(s, type) or s.is_Wanted: 
+                break
+            
+            assert isinstance(s, Basic)
+            root_index -= 1
+            
+            for i in range(-1, -len(s.args) - 1, -1): 
+                if not s.args[i].is_Number:
+                    break
+            s = s.args[i]
+        
+        if root_index == 0:
+            if not self.instanceof(struct):
+                raise
         else:
-            groups = {}
-
-            for result in results:
-                if result in groups:
-                    groups[result] += 1
+            root = parent[root_index]
+            if not root.isinstance(struct, *path[root_index:]):
+                raise
+        
+        return self
+    
+    def isinstance(self, cls, index, *path):
+        assert isinstance(cls, Basic)
+        
+        if not isinstance(self, cls.func):
+            return False
+        
+        j = -len(self.args) + index        
+        
+        for i in range(len(cls.args) - 1, -1, -1):
+            struct = cls.args[i]
+            if isinstance(struct, type):
+                if not isinstance(self.args[j], struct):
+                    return False
+            elif struct.is_Number:
+                if self.args[j] == struct:
+                    ...
+                elif self.args[j + 1] != struct:
+                    return False
                 else:
-                    groups[result] = 1
+                    continue
+            elif struct.is_Wanted:
+                if not isinstance(self.args[j], struct.func):
+                    return False                
+            else:
+                if not self.args[j].isinstance(struct, *path):
+                    return False
+            j -= 1
+            
+        return True
+        
+    def instanceof(self, cls):
+        if isinstance(cls, type):
+            return isinstance(self, cls)
+        
+        if cls.is_Wanted:
+            cls = cls.func
+            
+        if not isinstance(self, cls.func):
+            return False        
+        j = 0
+        i = 0
+        while j < len(self.args):
+            struct = cls.args[i]
+            if self.args[j].instanceof(struct):
+                i += 1
+                if i == len(cls.args):
+                    break            
+            j += 1
+        else:
+            return False
+            
+        return True
+    
+    @staticmethod
+    def make_query(*query):
+        if len(query) > 1 or isinstance(query[0], type):
+            struct = None
+        else:
+            from sympy.core.core import Wanted        
 
-            return groups
+            if isinstance(query[0], Basic):
+                struct = query[0]
+            else:
+                assert callable(query[0])
+                limits, cls = query[0].__closure__
+                limits = limits.cell_contents
+                assert len(limits) == 1
+                children = limits[0]
+                cls = cls.cell_contents
+                assert isinstance(cls, type)
+                
+                if len(children) == 1:                    
+                    child = children[0]
+                    if isinstance(child, int):
+                        children = [cls] * child                        
+                        children[-1] = Wanted(children[-1])
+                        cls = Basic
+                                    
+                struct = Basic.__new__(cls, *children)
+            if not struct.is_wanted():
+                struct = Wanted(struct)
+                    
+            query = []
+            s = struct
+            while True:
+                if isinstance(s, type) or s.is_Wanted:
+                    query.append(s)
+                    break
+                
+                assert isinstance(s, Basic)
+                query.append(s.func)
+                
+                for i in range(-1, -len(s.args) - 1, -1): 
+                    if not s.args[i].is_Number:
+                        break
+                s = s.args[i]
+            
+        return query, struct                                   
+        
+    def find(self, *query): 
+        query, struct = Basic.make_query(*query)
+            
+        return self.yield_one([(q, []) for q in query],
+                            foreach=Basic.find_path,
+                            func=Basic.fetch_from_path,
+                            fetch=self.fetch_from_path,
+                            output=[],
+                            struct=struct)
+                    
+    def findall(self, *query):
+        query, struct = Basic.make_query(*query)
+        try:
+            yield from self.yield_all([(q, []) for q in query],
+                            foreach=Basic.find_path,
+                            func=Basic.fetch_from_path,
+                            fetch=self.fetch_from_path,
+                            output=[],
+                            struct=struct)
+        except GeneratorExit:
+            ...
+        
+    def yield_one(self,
+                limits,
+                foreach=None,
+                                
+                func=None,
+                fetch=None,
+                output=None,
+                
+                **kwargs): 
+            
+        limit, *limits = limits
+        
+        for _output in foreach(self, *limit):
+            try: 
+                if not limits: 
+                    return fetch(*output, *_output, **kwargs)
+                
+                return func(self, *_output).yield_one(limits,
+                                                    foreach=foreach,
+                                                    func=func,
+                                                    fetch=fetch,
+                                                    output=output + _output,
+                                                    **kwargs)
+            except: 
+                continue
+            
+        raise
+                    
+    def yield_all(self,
+                limits,
+                foreach=None,
+                                
+                func=None,
+                fetch=None,
+                output=None,
+                
+                **kwargs): 
+            
+        limit, *limits = limits
+        for _output in foreach(self, *limit):
+            try: 
+                if not limits: 
+                    yield fetch(*output, *_output, **kwargs)
+                else:
+                    yield from func(self, *_output).yield_all(limits,
+                                                    foreach=foreach,
+                                                    func=func,
+                                                    fetch=fetch,
+                                                    output=output + _output,
+                                                    **kwargs)
+            except GeneratorExit as e:
+                raise e                        
+            except: 
+                continue
+    
+#     def find(self, *query, group=False):
+#         """Find all subexpressions matching a query. """
+#             query = query[0]
+#             query = _make_find_query(query)
+
+#             results = list(filter(query, preorder_traversal(self)))
+#     
+#             if not group:
+#                 return set(results)
+#             else:
+#                 groups = {}
+#     
+#                 for result in results:
+#                     if result in groups:
+#                         groups[result] += 1
+#                     else:
+#                         groups[result] = 1
+#     
+#                 return groups
 
     def count(self, query):
         """Count the number of matching subexpressions. """
@@ -1990,12 +2243,12 @@ class Basic(with_metaclass(ManagedProperties)):
             if isinstance(free_symbol, set):
                 free_symbol = free_symbol - excludes
             else:
+                if isinstance(free_symbol, str):
+                    free_symbol = Symbol(free_symbol, **kwargs)
                 free_symbol = {free_symbol} - excludes
                 
             if free_symbol:
                 free_symbol, *_ = free_symbol
-                if isinstance(free_symbol, str):
-                    free_symbol = Symbol(free_symbol, **kwargs)
                 return free_symbol
             
         excludes = set(symbol.name for symbol in excludes)
@@ -2233,7 +2486,12 @@ class Basic(with_metaclass(ManagedProperties)):
                 domain_defined[x] = domain
             return domain
         return self._eval_domain_defined(x)
-#         return x.domain
+
+    def domain_defined_for_limits(self, limits):
+        domain_defined = {}
+        for v, *ab in limits:
+            domain_defined[v] = self.domain_defined(v)        
+        return domain_defined
     
     @property
     def emptySet(self):
@@ -2271,8 +2529,13 @@ class Basic(with_metaclass(ManagedProperties)):
     def ceiling(self):
         from sympy import Ceiling
         return Ceiling(self)
-
     
+    def inference_status(self, child):
+        return False
+    
+    is_given = True
+      
+      
 class Atom(Basic):
     """
     A parent class for atomic things. An atom is an expression with no subexpressions.

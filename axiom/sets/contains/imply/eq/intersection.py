@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy import Symbol
 from axiom import sets
 # given: A in B 
@@ -11,7 +11,7 @@ def apply(given):
     assert given.is_Contains
     A, B = given.args
     
-    return Equality(A.set & B, A.set)
+    return Equal(A.set & B, A.set)
 
 
 
@@ -29,5 +29,5 @@ def prove(Eq):
     Eq << sets.subset.imply.eq.intersection.apply(Eq[-1])
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

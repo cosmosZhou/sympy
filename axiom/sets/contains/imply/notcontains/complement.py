@@ -1,7 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, NotContains
-from sympy import Symbol
 
 
 # given: A in B 
@@ -12,8 +10,6 @@ def apply(given, S):
     e, s = given.args
     
     return NotContains(e, S - s)
-
-
 
 
 @prove
@@ -31,5 +27,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

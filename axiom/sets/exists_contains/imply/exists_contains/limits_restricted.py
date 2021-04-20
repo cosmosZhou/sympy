@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets
+from axiom import sets, algebra
 
 
 @apply
@@ -17,7 +17,7 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    S = Symbol.S(etype=dtype.real)
+    S = Symbol.S(etype=dtype.real, given=True)
     e = Symbol.e(real=True)
     t = Symbol.t(real=True)
 
@@ -25,9 +25,17 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()
     
-    Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[0], simplify=False)
+    Eq << ~Eq[-1]    
+    
+    Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[0], simplify=None)
+    
+    Eq << algebra.cond.imply.forall.restrict.apply(Eq[-1], (t, S))
+    
+    Eq <<= Eq[-1] & Eq[-3]
+    
+    Eq << algebra.eq.ne.imply.ne.subs.apply(Eq[-1], Eq[-3])   
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

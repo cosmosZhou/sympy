@@ -12,7 +12,7 @@ from sympy.utilities import default_sort_key
 def is_sqrt(expr):
     """Return True if expr is a sqrt, otherwise False."""
 
-    return expr.is_Power and expr.exp.is_Rational and abs(expr.exp) is S.Half
+    return expr.is_Pow and expr.exp.is_Rational and abs(expr.exp) is S.Half
 
 
 def sqrt_depth(p):
@@ -64,7 +64,7 @@ def is_algebraic(p):
         return True
     elif p.is_Atom:
         return False
-    elif is_sqrt(p) or p.is_Power and p.exp.is_Integer:
+    elif is_sqrt(p) or p.is_Pow and p.exp.is_Integer:
         return is_algebraic(p.base)
     elif p.is_Add or p.is_Mul:
         return all(is_algebraic(x) for x in p.args)
@@ -280,7 +280,7 @@ def _sqrtdenest_rec(expr):
     -sqrt(11) - sqrt(7) + sqrt(2) + 3*sqrt(5)
     """
     from sympy.simplify.radsimp import radsimp, rad_rationalize, split_surds
-    if not expr.is_Power:
+    if not expr.is_Pow:
         return sqrtdenest(expr)
     if expr.base < 0:
         return sqrt(-1)*_sqrtdenest_rec(sqrt(-expr.base))

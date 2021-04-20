@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 import axiom
 
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -16,7 +16,7 @@ def apply(A, B, n=None, k=None, x=None):
     if k is None:
         k = Symbol.k(integer=True)
         
-    return Equality(Sum[n:0:oo](A[n] * x ** n) * Sum[n:0:oo](B[n] * x ** n), Sum[n:0:oo](Sum[k:0:n + 1](A[n - k] * B[k]) * x ** n))
+    return Equal(Sum[n:0:oo](A[n] * x ** n) * Sum[n:0:oo](B[n] * x ** n), Sum[n:0:oo](Sum[k:0:n + 1](A[n - k] * B[k]) * x ** n))
 
 
 @prove
@@ -38,11 +38,11 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.limits_subs(n, n - k)
         
-    Eq << Eq[-1].this.rhs.apply(algebre.sum.limits.swap)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.swap.intlimit)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.limits.separate)    
+    Eq << Eq[-1].this.rhs.apply(algebra.limits.separate)    
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

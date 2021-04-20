@@ -85,7 +85,7 @@ import os
 import textwrap
 
 from sympy import __version__ as sympy_version
-from sympy.core import Symbol, S, Tuple, Equality, Function, Basic
+from sympy.core import Symbol, S, Tuple, Equal, Function, Basic
 from sympy.core.compatibility import is_sequence, StringIO, string_types
 from sympy.printing.ccode import c_code_printers
 from sympy.printing.codeprinter import AssignmentError
@@ -596,7 +596,7 @@ class CodeGen(object):
                 if not expr:
                     raise ValueError("No expression given")
                 for e in expr:
-                    if not e.is_Equality:
+                    if not e.is_Equal:
                         raise CodeGenError("Lists of expressions must all be Equalities. {} is not.".format(e))
 
                 # create a list of right hand sides and simplify them
@@ -604,13 +604,13 @@ class CodeGen(object):
                 common, simplified = cse(rhs)
 
                 # pack the simplified expressions back up with their left hand sides
-                expr = [Equality(e.lhs, rhs) for e, rhs in zip(expr, simplified)]
+                expr = [Equal(e.lhs, rhs) for e, rhs in zip(expr, simplified)]
             else:
                 rhs = [expr]
 
-                if isinstance(expr, Equality):
+                if isinstance(expr, Equal):
                     common, simplified = cse(expr.rhs) #, ignore=in_out_args)
-                    expr = Equality(expr.lhs, simplified[0])
+                    expr = Equal(expr.lhs, simplified[0])
                 else:
                     common, simplified = cse(expr)
                     expr = simplified
@@ -656,7 +656,7 @@ class CodeGen(object):
         return_val = []
         output_args = []
         for expr in expressions:
-            if isinstance(expr, Equality):
+            if isinstance(expr, Equal):
                 out_arg = expr.lhs
                 expr = expr.rhs
                 if isinstance(out_arg, Indexed):
@@ -1351,7 +1351,7 @@ class JuliaCodeGen(CodeGen):
         return_vals = []
         output_args = []
         for (i, expr) in enumerate(expressions):
-            if isinstance(expr, Equality):
+            if isinstance(expr, Equal):
                 out_arg = expr.lhs
                 expr = expr.rhs
                 symbol = out_arg
@@ -1562,7 +1562,7 @@ class OctaveCodeGen(CodeGen):
         # Octave supports multiple return values
         return_vals = []
         for (i, expr) in enumerate(expressions):
-            if isinstance(expr, Equality):
+            if isinstance(expr, Equal):
                 out_arg = expr.lhs
                 expr = expr.rhs
                 symbol = out_arg
@@ -1790,7 +1790,7 @@ class RustCodeGen(CodeGen):
         return_vals = []
         output_args = []
         for (i, expr) in enumerate(expressions):
-            if isinstance(expr, Equality):
+            if isinstance(expr, Equal):
                 out_arg = expr.lhs
                 expr = expr.rhs
                 symbol = out_arg
@@ -2005,7 +2005,7 @@ def codegen(name_expr, language=None, prefix=None, project="project",
     name_expr : tuple, or list of tuples
         A single (name, expression) tuple or a list of (name, expression)
         tuples.  Each tuple corresponds to a routine.  If the expression is
-        an equality (an instance of class Equality) the left hand side is
+        an equality (an instance of class Equal) the left hand side is
         considered an output argument.  If expression is an iterable, then
         the routine will have multiple outputs.
 
@@ -2079,7 +2079,7 @@ def codegen(name_expr, language=None, prefix=None, project="project",
     #endif
     <BLANKLINE>
 
-    Another example using Equality objects to give named outputs.  Here the
+    Another example using Equal objects to give named outputs.  Here the
     filename (prefix) is taken from the first (name, expr) pair.
 
     >>> from sympy.abc import f, g
@@ -2180,7 +2180,7 @@ def make_routine(name, expr, argument_sequence=None,
 
     A decision about whether to use output arguments or return values is made
     depending on both the language and the particular mathematical expressions.
-    For an expression of type Equality, the left hand side is typically made
+    For an expression of type Equal, the left hand side is typically made
     into an OutputArgument (or perhaps an InOutArgument if appropriate).
     Otherwise, typically, the calculated expression is made a return values of
     the routine.

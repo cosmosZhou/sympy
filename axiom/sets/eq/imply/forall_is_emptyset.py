@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 # given: |Union x[i]| = Sum |x[i]|
 # x[i] & x[j] = Ø
@@ -8,7 +8,7 @@ from axiom import sets, algebre
 
 @apply
 def apply(given, excludes=None):
-    assert given.is_Equality
+    assert given.is_Equal
     x_union_abs, x_abs_sum = given.args
     if not x_union_abs.is_Abs:
         tmp = x_union_abs
@@ -37,13 +37,13 @@ def apply(given, excludes=None):
     i_domain = limits_dict[i] or i.domain
 
     limits = [(j, i_domain // {i})] + [*x_union.limits]
-    return ForAll(Equality(xi & xj, xi.etype.emptySet).simplify(), *limits)
+    return ForAll(Equal(xi & xj, xi.etype.emptySet).simplify(), *limits)
 
 
 @prove
 def prove(Eq):
     i = Symbol.i(integer=True)
-    k = Symbol.k(integer=True, positive=True)
+    k = Symbol.k(integer=True, positive=True, given=True)
     
     j = Symbol.j(domain=Interval(0, k, integer=True) // {i})
     
@@ -52,21 +52,23 @@ def prove(Eq):
     assert (j - k).is_nonpositive
     assert (k - j).is_nonnegative
 
-    x = Symbol.x(shape=(k + 1,), etype=dtype.integer, finite=True)
+    x = Symbol.x(shape=(k + 1,), etype=dtype.integer, finite=True, given=True)
 
-    Eq << apply(Equality(abs(UNION[i:0:k](x[i])), Sum[i:0:k](abs(x[i]))))
+    Eq << apply(Equal(abs(UNION[i:0:k](x[i])), Sum[i:0:k](abs(x[i]))))
 
     j = Eq[-1].variables[0]
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].apply(sets.is_nonemptyset.imply.is_positive)
+    Eq << Eq[-1].this.function.apply(sets.is_nonemptyset.imply.is_positive)
 
     Eq << sets.imply.eq.principle.inclusion_exclusion.basic.apply(x[i], x[j])
 
-    Eq << Eq[-2].this.function.apply(algebre.eq.gt.imply.lt.subs, Eq[-1])
+    Eq << Eq[-2].this.function.apply(algebra.eq.gt.imply.lt.subs, Eq[-1])
     
-    Eq.gt = Eq[0] - Eq[-1]
+    Eq << algebra.cond.exists.imply.exists_et.apply(Eq[0], Eq[-1], simplify=False)
+    
+    Eq.gt = Eq[-1].this.function.apply(algebra.eq.lt.imply.gt.substract)
 
     Eq << Eq[0].lhs.arg.this.bisect({i, j})
 
@@ -74,15 +76,17 @@ def prove(Eq):
 
     Eq << sets.imply.le.union.apply(*Eq[-1].rhs.args)
 
-    Eq << Eq.gt.this.function.apply(algebre.gt.le.imply.gt.subs, Eq[-1])
+    Eq << Eq.gt.this.function.apply(algebra.gt.le.imply.gt.subs, Eq[-1])
   
     Eq << Eq[-1].this().function.simplify()
 
-    Eq << Eq[-1].this.function.apply(algebre.gt.le.imply.gt.subs, Eq.union_less_than)
+    Eq << Eq.union_less_than.this.find(UNION).limits_subs(Eq.union_less_than.find(UNION).variable, Eq[-1].find(UNION).variable)
+    
+    Eq << Eq[-1].this.function.apply(algebra.gt.le.imply.gt.subs, Eq.union_less_than)
 
     Eq << Eq[-1].this().function.lhs.simplify()
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

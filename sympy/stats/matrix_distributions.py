@@ -217,7 +217,7 @@ class MatrixGammaDistribution(MatrixDistribution):
     @property
     def set(self):
         k = self.scale_matrix.shape[0]
-        return MatrixSet(k, k, S.Reals)
+        return MatrixSet(k, k, Reals)
 
     @property
     def dimension(self):
@@ -303,7 +303,7 @@ class WishartDistribution(MatrixDistribution):
     @property
     def set(self):
         k = self.scale_matrix.shape[0]
-        return MatrixSet(k, k, S.Reals)
+        return MatrixSet(k, k, Reals)
 
     @property
     def dimension(self):
@@ -396,7 +396,7 @@ class MatrixNormalDistribution(MatrixDistribution):
     @property
     def set(self):
         n, p = self.location_matrix.shape
-        return MatrixSet(n, p, S.Reals)
+        return MatrixSet(n, p, Reals)
 
     @property
     def dimension(self):

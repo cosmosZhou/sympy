@@ -26,11 +26,11 @@ def prove(Eq):
     f = Function.f(nargs=(m,), shape=(), integer=True)
     g = Function.g(nargs=(n,), shape=(m,))
     
-    P = Symbol.P(conditionset(y, Equality(f(y), 1)))
-    Eq << apply(ForAll[x:A](Equality(f(g(x)), 1)), P)
+    P = Symbol.P(conditionset(y, Equal(f(y), 1)))
+    Eq << apply(ForAll[x:A](Equal(f(g(x)), 1)), P)
     
     Eq << Eq[-1].this.function.rhs.definition
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

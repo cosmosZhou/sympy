@@ -298,7 +298,7 @@ def func_name(x, short=False):
     >>> func_name(Matrix.eye(3))
     'MutableDenseMatrix'
     >>> func_name(x < 1)
-    'StrictLessThan'
+    'Less'
     >>> func_name(x < 1, short=True)
     'Lt'
 
@@ -307,12 +307,12 @@ def func_name(x, short=False):
     sympy.core.compatibility get_function_name
     """
     alias = {
-    'GreaterThan': 'Ge',
-    'StrictGreaterThan': 'Gt',
-    'LessThan': 'Le',
-    'StrictLessThan': 'Lt',
-    'Equality': 'Eq',
-    'Unequality': 'Ne',
+    'GreaterEqual': 'Ge',
+    'Greater': 'Gt',
+    'LessEqual': 'Le',
+    'Less': 'Lt',
+    'Equal': 'Eq',
+    'Unequal': 'Ne',
     }
     typ = type(x)
     if str(typ).startswith("<type '"):
@@ -517,7 +517,7 @@ def createNewFile(path):
 
     try:
         os.mknod(path)
-    except :
+    except:
         with open(path, 'w') as _:
             ...
 
@@ -529,13 +529,14 @@ def createNewPath(basedir):
 
 class Text:
 
-    def __init__(self, path, encoding="utf-8"):
+    def __init__(self, path, encoding="utf-8", strip=False):
         try:
             self.file = open(path, "r+" if os.path.isfile(path) else "w+", encoding=encoding)
         except FileNotFoundError:
             createNewFile(path)
             self.file = open(path, "w+", encoding=encoding)
         self.home()
+        self.strip = strip
 
     def __del__(self):
         self.file.close()
@@ -549,9 +550,12 @@ class Text:
             if not line:
                 self.home()
                 raise StopIteration
-            line = line.strip()
+            if self.strip:
+                line = line.strip()
+            else:
+                line = line.rstrip()
             
-            if line:
+            if line or not self.strip:
                 return line
 
     def prepend(self, s):
@@ -725,3 +729,31 @@ class Text:
         assert _offset == offset
         char = self.file.read(1)
         return char        
+
+    def readlines(self):        
+        return [s for s in self]
+    
+    def readline(self):
+        try: 
+            return next(self)
+        except StopIteration:
+            return ''
+    
+    def writelines(self, array):        
+        self.home()
+
+        for s in array:
+            self.file.write(str(s) + '\n')
+
+        self.file.truncate()
+        self.file.flush()
+    
+class __LINE__:
+    def __repr__(self):
+        try:
+            raise Exception
+        except:
+            return str(sys.exc_info()[2].tb_frame.f_back.f_lineno)
+
+ 
+__LINE__ = __LINE__()

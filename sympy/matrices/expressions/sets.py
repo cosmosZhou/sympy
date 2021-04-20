@@ -14,7 +14,7 @@ class MatrixSet(Set):
 
     >>> from sympy.matrices import MatrixSet, Matrix
     >>> from sympy import S, I
-    >>> M = MatrixSet(2, 2, set=S.Reals)
+    >>> M = MatrixSet(2, 2, set=Reals)
     >>> X = Matrix([[1, 2], [3, 4]])
     >>> X in M
     True

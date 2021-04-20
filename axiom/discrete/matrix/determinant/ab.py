@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Multiplication
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -11,7 +11,7 @@ def apply(a, b):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     
-    return Equality(Det(LAMBDA[j:n, i:n](a[Min(i, j)] * b[Max(i, j)])),
+    return Equal(Det(LAMBDA[j:n, i:n](a[Min(i, j)] * b[Max(i, j)])),
                     a[0] * b[n - 1] * Product(a[i] * b[i - 1] - a[i - 1] * b[i], (i, 1, n)))
 
 
@@ -34,7 +34,7 @@ def prove(Eq):
     
     Eq << Multiplication(n, n - 1, b[n - 2]) @ Eq[-1] 
 
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.det)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.det)
     
     Eq << Eq[-1].subs(Eq[1])
     
@@ -46,4 +46,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

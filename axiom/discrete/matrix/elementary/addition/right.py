@@ -1,5 +1,5 @@
 from sympy import Symbol, KroneckerDelta
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from axiom.utility import prove, apply
 
@@ -23,7 +23,7 @@ def apply(x, lamda, w=None):
         assert w[i, j] == Addition(n, i, j, lamda)
         assert w_quote[i, j] == Addition(n, i, j, -lamda)
     
-    return Equality(x @ w[i, j] @ w_quote[i, j], x)
+    return Equal(x @ w[i, j] @ w_quote[i, j], x)
 
 
 @prove
@@ -67,5 +67,5 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[1].function.simplify()
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

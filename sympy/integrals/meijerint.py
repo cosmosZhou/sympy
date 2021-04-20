@@ -327,7 +327,7 @@ def _get_coeff_exp(expr, x):
     if not m:
         return c, S(0)
     [m] = m
-    if m.is_Power:
+    if m.is_Pow:
         if m.base != x:
             raise _CoeffExpValueError('expr not of form a*x**b')
         return c, m.exp
@@ -357,7 +357,7 @@ def _exponents(expr, x):
         if expr == x:
             res.update([1])
             return
-        if expr.is_Power and expr.base == x:
+        if expr.is_Pow and expr.base == x:
             res.update([expr.exp])
             return
         for arg in expr.args:
@@ -430,7 +430,7 @@ def _split_mul(f, x):
         elif x not in a.free_symbols:
             fac *= a
         else:
-            if a.is_Power and x not in a.exp.free_symbols:
+            if a.is_Pow and x not in a.exp.free_symbols:
                 c, t = a.base.as_coeff_mul(x)
                 if t != (x,):
                     c, t = expand_mul(a.base).as_coeff_mul(x)
@@ -454,7 +454,7 @@ def _mul_args(f):
     args = Mul.make_args(f)
     gs = []
     for g in args:
-        if g.is_Power and g.exp.is_Integer:
+        if g.is_Pow and g.exp.is_Integer:
             n = g.exp
             base = g.base
             if n < 0:
@@ -1436,7 +1436,7 @@ def _rewrite_single(f, x, recursive=True):
         if len(m) > 1:
             return None
         m = m[0]
-        if m.is_Power:
+        if m.is_Pow:
             if m.base != x or not m.exp.is_Rational:
                 return None
         elif m != x:
@@ -2081,7 +2081,7 @@ def meijerint_inversion(f, x, t):
                     exponentials.append(a)
                 else:
                     newargs.append(arg)
-            elif arg.is_Power:
+            elif arg.is_Pow:
                 arg2 = expand(arg)
                 if arg2.is_Mul:
                     args += arg2.args

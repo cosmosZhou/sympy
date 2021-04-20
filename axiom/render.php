@@ -76,10 +76,10 @@ function render($php)
     $py = str_replace('.php', '.py', $php);
     // $py = str_replace('latex', 'sympy', $py);
 
-    if (!file_exists($py)){
+    if (! file_exists($py)) {
         $py = str_replace('.php', '/__init__.py', $php);
-    }    
-//     error_log("python file = $py");    
+    }
+    // error_log("python file = $py");
     assert(file_exists($py), "file_exists($py)");
 
     $lengths = [];
@@ -124,11 +124,19 @@ function render($php)
             $indexOfYield = $counterOfLengths;
             $input[] = create_a_tag_with_this_module($statement, $module);
         } else if (array_key_exists('a', $dict)) {
+            // error_log(jsonify($dict));
             $a = $dict['a'][0];
             $a = create_a_tag($a, $statement, $axiom_prefix);
-            if (startsWith($statement, '    '))
+
+            // consider the following complex case:
+            // Eq <<= discrete.forall_gt.imply.eq.alpha.offset0.apply(Eq[-1]), \
+            // discrete.forall_gt.imply.is_nonzero.alpha.apply(Eq[-1])
+
+            // if (startsWith($statement, ' '))
+            if (startsWith($statement, '    ') || preg_match("/\\\\<\/a>$/", $inputs[count($inputs) - 1], $matches)) {
+//                 error_log(jsonify($matches));
                 $inputs[count($inputs) - 1] .= "<br>$a";
-            else
+            } else
                 $input[] = $a;
         } else {
             $text = create_text_tag($statement);
@@ -143,6 +151,8 @@ function render($php)
         }
 
         if (preg_match('/Eq *<< */', $statement, $matches)) {
+//             error_log(jsonify($input));
+
             $inputs[] = join("<br>", $input);
             $input = null;
             // unset($input);
@@ -160,7 +170,7 @@ function render($php)
             $lengths[] = count($matches);
 
             $inputs[] = join("<br>", $input);
-            unset($input);
+            $input = null;
         }
     }
 
@@ -178,10 +188,10 @@ function render($php)
     }
 
     echo "<h3><font color=blue>$given:</font></h3>";
-//     error_log("indexOfYield = $indexOfYield");
+    // error_log("indexOfYield = $indexOfYield");
 
     $numOfReturnsFromApply = $lengths[$indexOfYield];
-//     error_log("numOfReturnsFromApply = " . $numOfReturnsFromApply);
+    // error_log("numOfReturnsFromApply = " . $numOfReturnsFromApply);
 
     // error_log("lengths = " . jsonify($lengths));
 
@@ -200,9 +210,9 @@ function render($php)
 
                 if ($numOfReturnsFromApply == 1) {
                     if (is_latex($statement, $matches)) {
-//                         error_log("matches = ".jsonify($matches));
+                        // error_log("matches = ".jsonify($matches));
                         $numOfReturnsFromApply = count($matches);
-//                         error_log("count(matches) = ".$numOfReturnsFromApply);
+                        // error_log("count(matches) = ".$numOfReturnsFromApply);
 
                         $statements_before_yield = array_slice($matches, 0, $numOfReturnsFromApply - $numOfYields);
                         // error_log("statements_before_yield = ".jsonify($statements_before_yield));

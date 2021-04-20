@@ -1,12 +1,12 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, sets
+from axiom import algebra, sets
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(boole):
-    assert boole.is_Boole
+    assert boole.is_Bool
     return Contains(boole, {0, 1})
 
 
@@ -15,9 +15,9 @@ def prove(Eq):
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
      
-    Eq << apply(Boole(x > y))
+    Eq << apply(Bool(x > y))
     
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.definition
     
     S = Symbol.S(Eq[1].rhs)
     
@@ -27,15 +27,15 @@ def prove(Eq):
     
     Eq << Eq[-1].this.args[0].args[0].rhs.definition
     
-    Eq << sets.ou.imply.contains.two.apply(Eq[-2], wrt=S)
+    Eq << sets.ou.imply.contains.piecewise.apply(Eq[-2], wrt=S)
     
     Eq << Eq[-1].this.rhs.definition
     
-    Eq << algebre.piecewise.swap.front.apply(Eq[-1].lhs)
+    Eq << algebra.piecewise.swap.front.apply(Eq[-1].lhs)
     
     Eq << Eq[-2].subs(Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

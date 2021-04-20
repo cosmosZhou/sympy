@@ -1,5 +1,4 @@
 from . import union_comprehension
-from . import amplify
-from . import union
-from . import minify
-from . import having
+from . import union, intersect
+from . import split
+from . import relax, restrict

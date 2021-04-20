@@ -28,8 +28,8 @@ from __future__ import print_function, division
 from .plot import BaseSeries, Plot
 from .experimental_lambdify import experimental_lambdify, vectorized_lambdify
 from .intervalmath import interval
-from sympy.core.relational import (Equality, GreaterThan, LessThan,
-                Relational, StrictLessThan, StrictGreaterThan)
+from sympy.core.relational import (Equal, GreaterEqual, LessEqual,
+                Relational, Less, Greater)
 from sympy import Eq, Tuple, sympify, Symbol, Dummy
 from sympy.external import import_module
 from sympy.logic.boolalg import BooleanFunction
@@ -56,7 +56,7 @@ class ImplicitSeries(BaseSeries):
         self.end_y = float(var_start_end_y[2])
         self.get_points = self.get_raster
         self.has_equality = has_equality  # If the expression has equality, i.e.
-                                         #Eq, Greaterthan, LessThan.
+                                         #Eq, Greaterthan, LessEqual.
         self.nb_of_points = nb_of_points
         self.use_interval_math = use_interval_math
         self.depth = 4 + depth
@@ -175,14 +175,14 @@ class ImplicitSeries(BaseSeries):
         be used. In other cases, matplotlib's ``contourf`` is used.
         """
         equal = False
-        if isinstance(self.expr, Equality):
+        if isinstance(self.expr, Equal):
             expr = self.expr.lhs - self.expr.rhs
             equal = True
 
-        elif isinstance(self.expr, (GreaterThan, StrictGreaterThan)):
+        elif isinstance(self.expr, (GreaterEqual, Greater)):
             expr = self.expr.lhs - self.expr.rhs
 
-        elif isinstance(self.expr, (LessThan, StrictLessThan)):
+        elif isinstance(self.expr, (LessEqual, Less)):
             expr = self.expr.rhs - self.expr.lhs
         else:
             raise NotImplementedError("The expression is not supported for "
@@ -300,8 +300,8 @@ def plot_implicit(expr, x_var=None, y_var=None, adaptive=True, depth=0,
     >>> p9 = plot_implicit(x - 1, x_var=x)
 
     """
-    has_equality = False  # Represents whether the expression contains an Equality,
-                     #GreaterThan or LessThan
+    has_equality = False  # Represents whether the expression contains an Equal,
+                     #GreaterEqual or LessEqual
 
     def arg_expand(bool_expr):
         """
@@ -318,14 +318,14 @@ def plot_implicit(expr, x_var=None, y_var=None, adaptive=True, depth=0,
         arg_expand(expr)
 
     #Check whether there is an equality in the expression provided.
-        if any(isinstance(e, (Equality, GreaterThan, LessThan))
+        if any(isinstance(e, (Equal, GreaterEqual, LessEqual))
                for e in arg_list):
             has_equality = True
 
     elif not isinstance(expr, Relational):
         expr = Eq(expr, 0)
         has_equality = True
-    elif isinstance(expr, (Equality, GreaterThan, LessThan)):
+    elif isinstance(expr, (Equal, GreaterEqual, LessEqual)):
         has_equality = True
 
     xyvar = [i for i in (x_var, y_var) if i is not None]

@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
@@ -9,7 +9,7 @@ def apply(imply):
     assert imply.is_Subset
     B, A = imply.args
     x = B.element_symbol()
-   
+
     return ForAll[x:B](Contains(x, A))
 
 
@@ -25,11 +25,11 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[-1], simplify=False)
+    Eq << sets.is_nonemptyset.imply.exists_contains.having.complement.apply(Eq[-1], simplify=False)
     
-    Eq <<= Eq[-1] & Eq[1]
+    Eq << algebra.forall.exists.imply.exists_et.apply(Eq[-1], Eq[1])
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

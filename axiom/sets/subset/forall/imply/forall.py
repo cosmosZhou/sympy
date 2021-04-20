@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from axiom import sets
+from axiom import sets, algebra
 
 
 @apply
@@ -39,15 +39,19 @@ def prove(Eq):
     assert f.is_complex
     assert f.shape == ()
     
-    Eq << apply(Subset(B, A), ForAll[x:A](Equality(f(x), 1)))
+    Eq << apply(Subset(B, A), ForAll[x:A](Equal(f(x), 1)))
     
-    Eq << sets.subset.imply.forall_contains.apply(Eq[0])
+    Eq << sets.subset.imply.forall_contains.apply(Eq[0], wrt=x)
     
-    Eq << Eq[-1].limits_subs(Eq[-1].variable, x)
+    Eq << algebra.forall.imply.sufficient.apply(Eq[-1])
     
-    Eq << Eq[-1].apply(sets.contains.forall.imply.cond, Eq[1], join=False)
+    Eq << algebra.forall.imply.sufficient.apply(Eq[1])
+        
+    Eq << algebra.sufficient.sufficient.imply.sufficient.transit.apply(Eq[-1], Eq[-2])
+    
+    Eq << algebra.forall.given.sufficient.apply(Eq[2])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

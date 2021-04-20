@@ -11,7 +11,7 @@ This module contains functions to:
     - solve a system of Non Linear Equations with N variables and M equations
 """
 from sympy.core.sympify import sympify
-from sympy.core import (S, Pow, Dummy, pi, Expr, Wild, Mul, Equality,
+from sympy.core import (S, Pow, Dummy, pi, Expr, Wild, Mul, Equal,
                         Add)
 from sympy.core.containers import Tuple
 from sympy.core.power import real_root
@@ -48,6 +48,7 @@ from sympy.core.compatibility import ordered, default_sort_key, is_sequence
 
 from types import GeneratorType
 from collections import defaultdict
+from sympy.sets.fancysets import Reals
 
 
 class NonlinearError(ValueError):
@@ -121,7 +122,7 @@ def _invert(f_x, y, x, domain=S.Complexes):
 
     If you are working with real values only (or you are not sure which
     function to use) you should probably set the domain to
-    ``S.Reals`` (or use `invert\_real` which does that automatically).
+    ``Reals`` (or use `invert\_real` which does that automatically).
 
 
     Examples
@@ -159,7 +160,7 @@ def _invert(f_x, y, x, domain=S.Complexes):
     if x in y.free_symbols:
         raise ValueError("y should be independent of x ")
 
-    if domain.is_subset(S.Reals):
+    if domain.is_subset(Reals):
         x1, s = _invert_real(f_x, FiniteSet(y), x)
     else:
         x1, s = _invert_complex(f_x, FiniteSet(y), x)
@@ -173,10 +174,10 @@ def _invert(f_x, y, x, domain=S.Complexes):
 invert_complex = _invert
 
 
-def invert_real(f_x, y, x, domain=S.Reals):
+def invert_real(f_x, y, x, domain=Reals):
     """
     Inverts a real-valued function. Same as _invert, but sets
-    the domain to ``S.Reals`` before inverting.
+    the domain to ``Reals`` before inverting.
     """
     return _invert(f_x, y, x, domain)
 
@@ -213,7 +214,7 @@ def _invert_real(f, g_ys, symbol):
         if g is not S.One:
             return _invert_real(h, _imageset(Lambda(n, n / g), g_ys), symbol)
 
-    if f.is_Power:
+    if f.is_Pow:
         base, expo = f.args
         base_has_sym = base.has(symbol)
         expo_has_sym = expo.has(symbol)
@@ -223,7 +224,7 @@ def _invert_real(f, g_ys, symbol):
             if expo.is_rational:
                 numer, denom = expo.as_numer_denom()
                 if denom % 2 == 0:
-                    base_positive = solveset(base >= 0, symbol, S.Reals)
+                    base_positive = solveset(base >= 0, symbol, Reals)
                     res = _imageset(Lambda(n, real_root(n, expo)
                         ), g_ys.intersect(
                         Interval.Ropen(S.Zero, S.Infinity)))
@@ -254,14 +255,14 @@ def _invert_real(f, g_ys, symbol):
                 if b:
                     return _invert_real(expo, FiniteSet(s), symbol)
                 else:
-                    return _invert_real(expo, S.Reals.etype.emptySet, symbol)
+                    return _invert_real(expo, Reals.etype.emptySet, symbol)
             elif base.is_zero:
                 one = Eq(rhs, 1)
                 if one == S.true:
                     # special case: 0**x - 1
                     return _invert_real(expo, FiniteSet(0), symbol)
                 elif one == S.false:
-                    return _invert_real(expo, S.Reals.etype.emptySet, symbol)
+                    return _invert_real(expo, Reals.etype.emptySet, symbol)
 
     if isinstance(f, TrigonometricFunction):
         if isinstance(g_ys, FiniteSet):
@@ -279,7 +280,7 @@ def _invert_real(f, g_ys, symbol):
                     return (lambda a: n * pi + f.inverse()(a),)
 
             n = Dummy('n', integer=True)
-            invs = S.Reals.etype.emptySet
+            invs = Reals.etype.emptySet
             for L in inv(f):
                 invs += Union(*[_imageset(Lambda(n, L(g)), S.Integers) for g in g_ys])
             return _invert_real(f.args[0], invs, symbol)
@@ -307,7 +308,7 @@ def _invert_complex(f, g_ys, symbol):
 
         if g is not S.One:
             if g in set([S.NegativeInfinity, S.ComplexInfinity, S.Infinity]):
-                return (h, S.Reals.etype.emptySet)
+                return (h, Reals.etype.emptySet)
             return _invert_complex(h, _imageset(Lambda(n, n / g), g_ys), symbol)
 
     if hasattr(f, 'inverse') and \
@@ -363,7 +364,7 @@ def _invert_abs(f, g_ys, symbol):
         if ok is None:
             unknown.append(a)
         elif not ok:
-            return symbol, S.Reals.etype.emptySet
+            return symbol, Reals.etype.emptySet
     if unknown:
         conditions = And(*[Contains(i, Interval(0, oo))
             for i in unknown])
@@ -437,7 +438,7 @@ def _is_finite_with_finite_vars(f, domain=S.Complexes):
     def assumptions(s):
         A = s.assumptions0
         A.setdefault('finite', A.get('finite', True))
-        if domain.is_subset(S.Reals):
+        if domain.is_subset(Reals):
             # if this gets set it will make complex=True, too
             A.setdefault('real', True)
         else:
@@ -481,7 +482,7 @@ def _is_function_class_equation(func_class, f, symbol):
         return all(_is_function_class_equation(func_class, arg, symbol)
                    for arg in f.args)
 
-    if f.is_Power:
+    if f.is_Pow:
         if not f.exp.has(symbol):
             return _is_function_class_equation(func_class, f.base, symbol)
         else:
@@ -514,7 +515,7 @@ def _solve_as_rational(f, symbol, domain):
             return ConditionSet(symbol, Eq(f, 0), domain)
         except CoercionFailed:
             # contained oo, zoo or nan
-            return S.Reals.etype.emptySet
+            return Reals.etype.emptySet
     else:
         valid_solns = _solveset(g, symbol, domain)
         invalid_solns = _solveset(h, symbol, domain)
@@ -556,7 +557,7 @@ def _solve_trig1(f, symbol, domain):
     g, h = g.expand(), h.expand()
     g, h = g.subs(exp(I * symbol), y), h.subs(exp(I * symbol), y)
     if g.has(symbol) or h.has(symbol):
-        return ConditionSet(symbol, Eq(f, 0), S.Reals)
+        return ConditionSet(symbol, Eq(f, 0), Reals)
 
     solns = solveset_complex(g, y) - solveset_complex(h, y)
     if isinstance(solns, ConditionSet):
@@ -571,7 +572,7 @@ def _solve_trig1(f, symbol, domain):
     elif solns.is_EmptySet:
         return solns
     else:
-        return ConditionSet(symbol, Eq(f_original, 0), S.Reals)
+        return ConditionSet(symbol, Eq(f_original, 0), Reals)
 
 
 def _solve_trig2(f, symbol, domain):
@@ -620,7 +621,7 @@ def _solve_trig2(f, symbol, domain):
 
     if g.has(x) or h.has(x):
         return ConditionSet(symbol, Eq(f_original, 0), domain)
-    solns = solveset(g, y, S.Reals) - solveset(h, y, S.Reals)
+    solns = solveset(g, y, Reals) - solveset(h, y, Reals)
 
     if isinstance(solns, FiniteSet):
         result = Union(*[invert_real(tan(symbol / mu), s, symbol)[1]
@@ -632,7 +633,7 @@ def _solve_trig2(f, symbol, domain):
     elif solns.is_EmptySet:
         return solns
     else:
-        return ConditionSet(symbol, Eq(f_original, 0), S.Reals)
+        return ConditionSet(symbol, Eq(f_original, 0), Reals)
 
 
 def _solve_as_poly(f, symbol, domain=S.Complexes):
@@ -673,7 +674,7 @@ def _solve_as_poly(f, symbol, domain=S.Complexes):
 
             if gen != symbol:
                 y = Dummy('y')
-                inverter = invert_real if domain.is_subset(S.Reals) else invert_complex
+                inverter = invert_real if domain.is_subset(Reals) else invert_complex
                 lhs, rhs_s = inverter(gen, y, symbol)
                 if lhs == symbol:
                     result = Union(*[rhs_s.subs(y, s) for s in poly_solns])
@@ -769,7 +770,7 @@ def _solve_radical(f, symbol, solveset_solver):
 
 def _solve_abs(f, symbol, domain):
     """ Helper function to solve equation involving absolute value function """
-    if not domain.is_subset(S.Reals):
+    if not domain.is_subset(Reals):
         raise ValueError(filldedent('''
             Absolute values cannot be inverted in the
             complex domain.'''))
@@ -803,15 +804,15 @@ def solve_decomposition(f, symbol, domain):
     >>> from sympy.solvers.solveset import solve_decomposition as sd
     >>> x = Symbol('x')
     >>> f1 = exp(2*x) - 3*exp(x) + 2
-    >>> sd(f1, x, S.Reals)
+    >>> sd(f1, x, Reals)
     {0, log(2)}
     >>> f2 = sin(x)**2 + 2*sin(x) + 1
-    >>> pprint(sd(f2, x, S.Reals), use_unicode=False)
+    >>> pprint(sd(f2, x, Reals), use_unicode=False)
               3*pi
     {2*n*pi + ---- | n in Integers}
                2
     >>> f3 = sin(x + 2)
-    >>> pprint(sd(f3, x, S.Reals), use_unicode=False)
+    >>> pprint(sd(f3, x, Reals), use_unicode=False)
     {2*n*pi - 2 | n in Integers} U {2*n*pi - 2 + pi | n in Integers}
 
     """
@@ -828,7 +829,7 @@ def solve_decomposition(f, symbol, domain):
     for g in g_s:
         frange = function_range(g, symbol, domain)
         y_s = Intersection(frange, y_s)
-        result = S.Reals.etype.emptySet
+        result = Reals.etype.emptySet
         if isinstance(y_s, FiniteSet):
             for y in y_s:
                 solutions = solveset(Eq(g, y), symbol, domain)
@@ -925,11 +926,11 @@ def _solveset(f, symbol, domain, _check=False):
         result = solver(Add(f.lhs, -f.rhs, evaluate=False), symbol, domain)
 
     elif f.is_Relational:
-        if not domain.is_subset(S.Reals):
+        if not domain.is_subset(Reals):
             raise NotImplementedError(filldedent('''
                 Inequalities in the complex domain are
                 not supported. Try the real domain by
-                setting domain=S.Reals'''))
+                setting domain=Reals'''))
         try:
             result = solve_univariate_inequality(
             f, symbol, domain=domain, relational=False)
@@ -1074,13 +1075,13 @@ def _solve_exponential(lhs, rhs, symbol, domain):
     >>> from sympy import symbols, S
     >>> x = symbols('x', real=True)
     >>> a, b = symbols('a b')
-    >>> solve_expo(2**x + 3**x - 5**x, 0, x, S.Reals)  # not solvable
+    >>> solve_expo(2**x + 3**x - 5**x, 0, x, Reals)  # not solvable
     ConditionSet(x, Eq(2**x + 3**x - 5**x, 0), Reals)
-    >>> solve_expo(a**x - b**x, 0, x, S.Reals)  # solvable but incorrect assumptions
+    >>> solve_expo(a**x - b**x, 0, x, Reals)  # solvable but incorrect assumptions
     ConditionSet(x, (a > 0) & (b > 0), {0})
-    >>> solve_expo(3**(2*x) - 2**(x + 3), 0, x, S.Reals)
+    >>> solve_expo(3**(2*x) - 2**(x + 3), 0, x, Reals)
     {-3*log(2)/(-2*log(3) + log(2))}
-    >>> solve_expo(2**x - 4**x, 0, x, S.Reals)
+    >>> solve_expo(2**x - 4**x, 0, x, Reals)
     {0}
 
     * Proof of correctness of the method
@@ -1128,7 +1129,7 @@ def _solve_exponential(lhs, rhs, symbol, domain):
 
     from sympy.functions.elementary.complexes import im
 
-    if domain.is_subset(S.Reals):
+    if domain.is_subset(Reals):
         conditions = And(
             a_base > 0,
             b_base > 0,
@@ -1236,7 +1237,7 @@ def _solve_logarithm(lhs, rhs, symbol, domain):
     >>> from sympy.solvers.solveset import _solve_logarithm as solve_log
     >>> x = symbols('x')
     >>> f = log(x - 3) + log(x + 3)
-    >>> solve_log(f, 0, x, S.Reals)
+    >>> solve_log(f, 0, x, Reals)
     {-sqrt(10), sqrt(10)}
 
     * Proof of correctness
@@ -1390,7 +1391,7 @@ def _transolve(f, symbol, domain):
     >>> from sympy.solvers.solvers import _tsolve as tsolve
     >>> from sympy import symbols, S, pprint
     >>> x = symbols('x', real=True) # assumption added
-    >>> transolve(5**(x - 3) - 3**(2*x + 1), x, S.Reals)
+    >>> transolve(5**(x - 3) - 3**(2*x + 1), x, Reals)
     {-(log(3) + 3*log(5))/(-log(5) + 2*log(3))}
 
     How ``_transolve`` works
@@ -1433,7 +1434,7 @@ def _transolve(f, symbol, domain):
     Consider a simple exponential equation
 
     >>> f = 3**(2*x) - 2**(x + 3)
-    >>> pprint(transolve(f, x, S.Reals), use_unicode=False)
+    >>> pprint(transolve(f, x, Reals), use_unicode=False)
         -3*log(2)
     {------------------}
      -2*log(3) + log(2)
@@ -1630,7 +1631,7 @@ def solveset(f, symbol=None, domain=S.Complexes):
       real domain, provide a real domain. (Using ``solveset_real``
       does this automatically.)
 
-    >>> R = S.Reals
+    >>> R = Reals
     >>> x = Symbol('x')
     >>> solveset(exp(x) - 1, x, R)
     {0}
@@ -1661,7 +1662,7 @@ def solveset(f, symbol=None, domain=S.Complexes):
         return domain
 
     if f is S.false:
-        return S.Reals.etype.emptySet
+        return Reals.etype.emptySet
 
     if not isinstance(f, (Expr, Number)):
         raise ValueError("%s is not a valid SymPy expression" % f)
@@ -1679,7 +1680,7 @@ def solveset(f, symbol=None, domain=S.Complexes):
         if b is S.true:
             return domain
         elif b is S.false:
-            return S.Reals.etype.emptySet
+            return Reals.etype.emptySet
         else:
             raise NotImplementedError(filldedent('''
                 relationship between value and 0 is unknown: %s''' % b))
@@ -1696,7 +1697,7 @@ def solveset(f, symbol=None, domain=S.Complexes):
         # the xreplace will be needed if a ConditionSet is returned
         return solveset(f[0], s[0], domain).xreplace(swap)
 
-    if domain.is_subset(S.Reals):
+    if domain.is_subset(Reals):
         if not symbol.is_real:
             assumptions = symbol.assumptions0
             assumptions['real'] = True
@@ -1724,7 +1725,7 @@ def solveset(f, symbol=None, domain=S.Complexes):
 
 
 def solveset_real(f, symbol):
-    return solveset(f, symbol, S.Reals)
+    return solveset(f, symbol, Reals)
 
 
 def solveset_complex(f, symbol):
@@ -1764,15 +1765,15 @@ def solvify(f, symbol, domain):
     >>> from sympy.solvers.solveset import solvify, solveset
     >>> from sympy.abc import x
     >>> from sympy import S, tan, sin, exp
-    >>> solvify(x**2 - 9, x, S.Reals)
+    >>> solvify(x**2 - 9, x, Reals)
     [-3, 3]
-    >>> solvify(sin(x) - 1, x, S.Reals)
+    >>> solvify(sin(x) - 1, x, Reals)
     [pi/2]
-    >>> solvify(tan(x), x, S.Reals)
+    >>> solvify(tan(x), x, Reals)
     [0]
     >>> solvify(exp(x) - 1, x, S.Complexes)
 
-    >>> solvify(exp(x) - 1, x, S.Reals)
+    >>> solvify(exp(x) - 1, x, Reals)
     [0]
 
     """
@@ -1790,7 +1791,7 @@ def solvify(f, symbol, domain):
     else:
         period = periodicity(f, symbol)
         if period is not None:
-            solutions = S.Reals.etype.emptySet
+            solutions = Reals.etype.emptySet
             iter_solutions = ()
             if isinstance(solution_set, ImageSet):
                 iter_solutions = (solution_set,)
@@ -1985,7 +1986,7 @@ def linear_eq_to_matrix(equations, *symbols):
 
     A, b = [], []
     for i, f in enumerate(equations):
-        if isinstance(f, Equality):
+        if isinstance(f, Equal):
             f = f.rewrite(Add, evaluate=False)
         coeff_list = linear_coeffs(f, *symbols)
         b.append(-coeff_list.pop())
@@ -2149,7 +2150,7 @@ def linsolve(system, *symbols):
     The term x**2 is nonlinear in {x}
     """
     if not system:
-        return S.Reals.etype.emptySet
+        return Reals.etype.emptySet
 
     # If second argument is an iterable
     if symbols and hasattr(symbols[0], '__iter__'):
@@ -2208,7 +2209,7 @@ def linsolve(system, *symbols):
         solution, params, free_syms = A.gauss_jordan_solve(b, freevar=True)
     except ValueError:
         # No solution
-        return S.Reals.etype.emptySet
+        return Reals.etype.emptySet
 
     # Replace free parameters with free symbols
     if params:
@@ -2339,7 +2340,7 @@ def substitution(system, symbols, result=[{}], known_symbols=[],
     from sympy.core.compatibility import is_sequence
 
     if not system:
-        return S.Reals.etype.emptySet
+        return Reals.etype.emptySet
 
     if not symbols:
         msg = ('Symbols must be given, for which solution of the '
@@ -2431,8 +2432,8 @@ def substitution(system, symbols, result=[{}], known_symbols=[],
                 # Interval/Set will be at 0th index always
                 if sol.args[0] != Interval(-oo, oo):
                     # sometimes solveset returns soln
-                    # with intersection `S.Reals`, to confirm that
-                    # soln is in `domain=S.Reals` or not. We don't consider
+                    # with intersection `Reals`, to confirm that
+                    # soln is in `domain=Reals` or not. We don't consider
                     # that intersection.
                     intersections[sym] = sol.args[0]
                 sol = sol.args[1]
@@ -2448,7 +2449,7 @@ def substitution(system, symbols, result=[{}], known_symbols=[],
             # no testcase is written for this if block
             if isinstance(sol, Union):
                 sol_args = sol.args
-                sol = S.Reals.etype.emptySet
+                sol = Reals.etype.emptySet
                 # We need in sequence so append finteset elements
                 # and then imageset or other.
                 for sol_arg2 in sol_args:
@@ -2635,7 +2636,7 @@ def substitution(system, symbols, result=[{}], known_symbols=[],
                     try:
                         soln = solver(eq2, sym)
                         total_solvest_call += 1
-                        soln_new = S.Reals.etype.emptySet
+                        soln_new = Reals.etype.emptySet
                         if isinstance(soln, Complement):
                             # separate solution and complement
                             complements[sym] = soln.args[1]
@@ -2645,8 +2646,8 @@ def substitution(system, symbols, result=[{}], known_symbols=[],
                             # Interval will be at 0th index always
                             if soln.args[0] != Interval(-oo, oo):
                                 # sometimes solveset returns soln
-                                # with intersection S.Reals, to confirm that
-                                # soln is in domain=S.Reals
+                                # with intersection Reals, to confirm that
+                                # soln is in domain=Reals
                                 intersections[sym] = soln.args[0]
                             soln_new += soln.args[1]
                         soln = soln_new if soln_new else soln
@@ -2660,7 +2661,7 @@ def substitution(system, symbols, result=[{}], known_symbols=[],
                         # time we may get soln using next equation `eq2`
                         continue
                     if isinstance(soln, ConditionSet):
-                            soln = S.Reals.etype.emptySet
+                            soln = Reals.etype.emptySet
                             # don't do `continue` we may get soln
                             # in terms of other symbol(s)
                             not_solvable = True
@@ -2771,7 +2772,7 @@ def substitution(system, symbols, result=[{}], known_symbols=[],
             result_all_variables, complements, Complement=True)
 
     # convert to ordered tuple
-    result = S.Reals.etype.emptySet
+    result = Reals.etype.emptySet
     for r in result_all_variables:
         temp = [r[symb] for symb in all_symbols]
         result += FiniteSet(tuple(temp))
@@ -2812,7 +2813,7 @@ def _handle_zero_dimensional(polys, symbols, system):
     # May be some extra soln is added because
     # we used `unrad` in `_separate_poly_nonpoly`, so
     # need to check and remove if it is not a soln.
-    result_update = S.Reals.etype.emptySet
+    result_update = Reals.etype.emptySet
     for res in result:
         dict_sym_value = dict(list(zip(symbols, res)))
         if all(checksol(eq, dict_sym_value) for eq in system):
@@ -3009,7 +3010,7 @@ def nonlinsolve(system, *symbols):
     from sympy.polys import RR
 
     if not system:
-        return S.Reals.etype.emptySet
+        return Reals.etype.emptySet
 
     if not symbols:
         msg = ('Symbols must be given, for which solution of the '

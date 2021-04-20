@@ -131,28 +131,35 @@ class BlockMatrix(MatrixExpr):
             if stop is None:
                 stop = self.shape[0]
                 
+            if start == 0 and stop == self.shape[0]:
+                return self
+            
             rows = 0
             args = []
+            
+            len_self_shape = len(self.shape)
             for arg in self.args:
                 if start >= stop:
                     break
                 index = rows
-                if len(arg.shape) == 1:
+                if len(arg.shape) < len_self_shape:
                     rows += 1
                 else:
                     rows += arg.shape[0]
 
                 if start < rows:
-                    if len(arg.shape) == 1:
+                    if len(arg.shape) < len_self_shape:
                         args.append(arg)
                         start += 1
-                    else:
-                        if arg.shape[0] <= stop - start:
-                            args.append(arg)
-                            start += arg.shape[0]
+                    elif rows <= stop:
+                        if rows - start < arg.shape[0]:
+                            args.append(arg[start:])
                         else:
-                            args.append(arg[start - index: stop - index])
-                            start += stop - start
+                            args.append(arg)
+                        start = rows
+                    else:
+                        args.append(arg[start - index: stop - index])
+                        start = stop
             if len(args) == 1:
                 return args[0]
             if len(args) == 0:
@@ -207,7 +214,7 @@ class BlockMatrix(MatrixExpr):
                     raise IndexError("Invalid indices (%s, %s)" % (i, j))
                 
         if isinstance(key, int) or key.is_Integer or key.is_Symbol or key.is_Expr:
-            if self.axis == 0:                
+            if self.axis == 0: 
                 from sympy import S
                 rows = S.Zero
                 args = []
@@ -229,7 +236,7 @@ class BlockMatrix(MatrixExpr):
                 args[-1][-1] = True
                 return Piecewise(*args)
             else:
-                return self.func(*(a[key] for a in self.args), axis=self.axis-1)                
+                return self.func(*(a[key] for a in self.args), axis=self.axis - 1)                
 
         raise IndexError("Invalid index, wanted %s[i,j]" % self)
 
@@ -350,20 +357,52 @@ class BlockMatrix(MatrixExpr):
     def simplify(self, deep=False, **kwargs):
         if deep:
             return MatrixExpr.simplify(self, deep=deep, **kwargs)
-        if self.shape[0] == len(self.args):
-            from sympy import Indexed
-            start = None
-            for i, arg in enumerate(self.args):
-                if not isinstance(arg, Indexed):
-                    return self
-                diff = arg.indices[-1] - i
-                if start is None:
-                    start = diff
-                else:
-                    if start != diff:
+        if self.axis == 0:
+            if self.shape[0] == len(self.args):
+                from sympy import Indexed
+                start = None
+                for i, arg in enumerate(self.args):
+                    if not isinstance(arg, Indexed):
                         return self
-                
-            return arg.base[start:len(self.args)]
+                    diff = arg.indices[-1] - i
+                    if start is None:
+                        start = diff
+                    else:
+                        if start != diff:
+                            return self
+                    
+                return arg.base[start:len(self.args)]
+            
+            b = None
+            
+            start, stop = None, None
+            for arg in self.args:
+                if arg.is_Slice or arg.is_Indexed:
+                    if b is None:
+                        b = arg.base
+                    elif b != arg.base or len(arg.indices) > 1:
+                        b = None
+                        break
+                                        
+                    if start is None:
+                        if arg.is_Slice:
+                            start, stop = arg.index
+                        else:
+                            start = arg.index
+                            stop = start + 1
+                    else:
+                        if arg.is_Slice: 
+                            _start, _stop = arg.index
+                        else:
+                            _start = arg.index
+                            _stop = _start + 1
+                            
+                        if _start != stop:
+                            b = None
+                            break
+                        stop = _stop
+            if b is not None:
+                return b[start:stop]        
         return self
     
     @property
@@ -482,6 +521,18 @@ class BlockMatrix(MatrixExpr):
         return MatrixExpr.__rmul__(self, other)
 
     _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self.args), quick_exit=True)
+    
+    _eval_is_rational = lambda self: _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
+    
+    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)
+    
+    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
+    
+    _eval_is_extended_positive = lambda self: _fuzzy_group((a.is_extended_positive for a in self.args), quick_exit=True)
+    
+    _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self.args), quick_exit=True)
+
+    _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self.args), quick_exit=True)
 
     @classmethod
     def rewrite_from_Slice(cls, self):
@@ -506,7 +557,7 @@ class BlockMatrix(MatrixExpr):
             length = 0
             h = 0 
             for expr, cond in piecewise.args: 
-                if cond.is_StrictLessThan:
+                if cond.is_Less:
                     if cond.lhs == i:
                         upper_bound = cond.rhs
                     else:

@@ -15,6 +15,7 @@ from sympy.matrices.matrices import MatrixBase, ShapeError
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.decorator import doctest_depends_on
 from sympy.utilities.miscellany import filldedent
+from sympy.core.logic import _fuzzy_group
 
 
 def _iszero(x):
@@ -435,7 +436,7 @@ class DenseMatrix(MatrixBase):
             elif self.is_nonpositive:
                 interval = Interval(-oo, 0, integer=True)
             else:
-                interval = S.Integers
+                interval = Interval(-oo, oo, integer=True)
         elif self.is_extended_real:
             if self.is_positive:
                 interval = Interval(0, oo, left_open=True)
@@ -446,12 +447,18 @@ class DenseMatrix(MatrixBase):
             elif self.is_nonpositive:
                 interval = Interval(-oo, 0)
             else:
-                interval = S.Reals
+                interval = Interval(-oo, oo)
         else:
             interval = S.Complexes
         from sympy.sets.sets import CartesianSpace
         return CartesianSpace(interval, *shape)        
-
+    
+    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self._mat), quick_exit=True)
+    _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self._mat), quick_exit=True)
+    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self._mat), quick_exit=True)
+    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self._mat), quick_exit=True)
+    _eval_is_extended_positive = lambda self: _fuzzy_group((a.is_extended_positive for a in self._mat), quick_exit=True)
+    _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self._mat), quick_exit=True)
 
 def _force_mutable(x):
     """Return a matrix as a Matrix, otherwise return x."""

@@ -18,8 +18,16 @@
 			href="https://www.sagemath.org/"> sagemath</a>，包含了Maxima, <a
 			href="https://www.maplesoft.com/products/Maple/"> Maple</a>,
 		Mathematica, <a href="https://www.mathworks.com/products/matlab.html">
-			Matlab</a>,
-		以及sympy。随着机器学习、人工智能技术的发展，Python成为算法领域最流行的编程语言，鉴于其高效的开发效率（开发效率远超C++,当然执行效率却不到C++的10%），
+			Matlab</a>, sympy; 以及一些自动化机器证明的资料： <a
+			href="https://theoremprover-museum.github.io/"> theoremprover-museum</a>,
+
+		<a href="https://en.wikipedia.org/wiki/Proof_assistant">
+			Proof_assistant</a>, <a
+			href="https://en.wikipedia.org/wiki/Interactive_proof_system">
+			Interactive_proof_system</a>.
+
+
+		随着机器学习、人工智能技术的发展，Python成为算法领域最流行的编程语言，鉴于其高效的开发效率（开发效率远超C++,当然执行效率却不到C++的10%），
 		以及其普遍适用性（ Python从流行、普及程度上超过Common-Lisp语言），也是在语法上最接近数学语言的编程语言，从此，
 		作者开始转型Python算法。这个公理化的数学工具也逐渐改写（翻译）成Python语言。。 <br>
 	</p>

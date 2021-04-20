@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 from axiom.calculus.integral.intermediate_value_theorem import is_continuous
 import axiom
-from axiom import calculus, algebre, sets
+from axiom import calculus, algebra, sets
 from axiom.calculus.is_continuous.is_differentiable.eq.imply.exists_eq.Rolle import is_differentiable
 
 @apply
@@ -19,7 +19,7 @@ def apply(*given, ξ=None):
     fa = fz._subs(z, a)
     fb = fz._subs(z, b) 
     
-    return Exists[z:Interval(a, b, left_open=True, right_open=True)](Equality(fb - fa, (b - a) * Derivative(fz, z)))               
+    return Exists[z:Interval(a, b, left_open=True, right_open=True)](Equal(fb - fa, (b - a) * Derivative(fz, z)))               
 
 
 @prove
@@ -51,26 +51,26 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.rhs.definition
     
-    Eq << Eq[-1].this.function.lhs.apply(calculus.limit.astype.plus)
+    Eq << Eq[-1].this.function.lhs.apply(calculus.limit.to.add)
     
-    Eq << Eq[-1].this.function.lhs.args[0].apply(calculus.limit.astype.times)
+    Eq << Eq[-1].this.function.lhs.args[0].apply(calculus.limit.to.mul)
     
     Eq.is_differentiable = Eq[1]._subs(f, g).copy(plausible=True)
     
     Eq << Eq.is_differentiable.this.function.lhs.expr.definition
     
-    Eq << Eq[-1].this.function.lhs.apply(calculus.derivative.astype.plus)
+    Eq << Eq[-1].this.function.lhs.apply(calculus.derivative.to.add)
     
-    Eq << Eq[-1].this.function.apply(sets.contains.given.contains.interval.plus, (f(b) - f(a)) / (b - a))
+    Eq << Eq[-1].this.function.apply(sets.contains.given.contains.interval.add, (f(b) - f(a)) / (b - a))
     
     Eq << calculus.is_continuous.is_differentiable.eq.imply.exists_eq.Rolle.apply(Eq.is_continuous, Eq.is_differentiable, Eq.equal)
     
     Eq << Eq[-1].this.function.lhs.expr.definition
     
-    Eq << Eq[-1].this.function.lhs.apply(calculus.derivative.astype.plus)
+    Eq << Eq[-1].this.function.lhs.apply(calculus.derivative.to.add)
     
     Eq << Eq[-1].this.function * (b - a)
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

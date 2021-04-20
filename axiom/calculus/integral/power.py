@@ -1,8 +1,6 @@
-
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy.integrals.integrals import Integral
+from sympy import *
+from axiom import calculus, algebra
 
 
 @apply
@@ -12,11 +10,11 @@ def apply(n, a=0, b=None, x=None):
     if x is None:
         x = Symbol.x(real=True)
     
-    return Equality(Integral(x ** n, (x, a, b)), (b ** (n + 1) - a * (n + 1)) / (n + 1))
+    return Equal(Integral(x ** n, (x, a, b)), (b ** (n + 1) - a * (n + 1)) / (n + 1))
 
 
 @prove
-def prove(Eq):    
+def prove(Eq): 
 
     x = Symbol.x(real=True)
     n = Symbol.n(integer=True, nonnegative=True)
@@ -25,7 +23,7 @@ def prove(Eq):
     
     f = Symbol.f(Eq[0].lhs)
     g = Symbol.g(Eq[0].rhs)
-    from sympy import diff
+
     Eq << diff(f, x).this.expr.definition
     
     Eq << Eq[-1].this.rhs.doit()
@@ -40,15 +38,23 @@ def prove(Eq):
     
     Eq << Eq.df - Eq[-1]
     
-    Eq << Eq[-1].this.lhs.definition
+    Eq << Eq[-1].this.lhs.apply(calculus.add.to.derivative)
     
-    Eq.equality = Eq[-1].this.rhs.args[1].definition
+    Eq << calculus.is_zero.imply.exists_eq.constant.apply(Eq[-1])
     
-    Eq << Eq.equality.subs(x, 0)
+    Eq << Eq[-1].this.function.function.lhs.args[0].definition
     
-    Eq << Eq.equality.subs(Eq[-1].reversed).reversed
+    Eq << Eq[-1].this.find(-~Symbol).definition
+    
+    Eq << algebra.exists_forall.imply.exists_et.subs.apply(Eq[-1], x, 0)
+    
+    Eq << Eq[-1].this.function.function.args[1].lhs.doit()
+    
+    Eq << Eq[-1].this.function.function.apply(algebra.eq.eq.imply.eq.transit)
+    
+    Eq << Eq[-1].reversed
     
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 from sympy.stats.crv_types import ChiSquaredDistribution, NormalDistribution    
 from sympy.stats.rv import PDF, pspace
-from axiom import calculus, algebre
+from axiom import calculus, algebra
 import axiom
 
 
@@ -30,7 +30,7 @@ def apply(_Y, Y):
     assert X_squared_Sum.function == X[i] * X[i]
     assert X_squared_Sum.is_random
     
-    return Equality(PDF(_Y[k])(y), PDF(Y)(y).doit())
+    return Equal(PDF(_Y[k])(y), PDF(Y)(y).doit())
 
 
 @prove
@@ -40,7 +40,7 @@ def prove(Eq):
     assert X[i].is_extended_real
     assert X.is_random
 
-    k = Symbol.k(integer=True, positive=True)
+    k = Symbol.k(integer=True, positive=True, given=False)
     Y = Symbol.Y(distribution=ChiSquaredDistribution(k))
     assert Y.is_extended_real
     assert Y.is_random    
@@ -70,8 +70,6 @@ def prove(Eq):
     
     Eq << Eq[-2].subs(Eq[-1])
     
-#     Eq << Eq[-1].subs(Eq.x_squared_y)
-    
     Eq << Eq[-1].this.lhs.expand()
     
     t = Symbol.t(domain=Interval(0, pi / 2))
@@ -80,8 +78,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[-1].limits_subs(_y, y * sin(t) ** 2)
     
     Eq << Eq[-1].this.rhs.args[-1].function.powsimp()
-    
-#     Eq << Eq[-1].solve(Eq[-1].rhs.args[-1])
     
     Eq << calculus.trigonometry.wallis.beta.apply(1, k)
     
@@ -106,9 +102,9 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
 
-    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=k, start=1)
+    Eq << algebra.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=k, start=1)
 
 
 # https://www.asmeurer.com/blog/
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

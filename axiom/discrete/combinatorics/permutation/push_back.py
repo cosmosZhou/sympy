@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from axiom.utility import prove, apply
 
 from sympy import Symbol, Slice
@@ -16,11 +16,11 @@ def apply(*given):
     p = last_element_equality.lhs.base
     n = last_element_equality.rhs
     
-    assert set_comprehension_equality.is_Equality
+    assert set_comprehension_equality.is_Equal
     assert set_comprehension_equality.lhs._dummy_eq(p[:n].set_comprehension())
     assert set_comprehension_equality.rhs == Interval(0, n - 1, integer=True)
     
-    return Equality(p[:n + 1].set_comprehension(), Interval(0, n, integer=True))
+    return Equal(p[:n + 1].set_comprehension(), Interval(0, n, integer=True))
 
 
 
@@ -30,8 +30,8 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True, given=True)
     p = Symbol.p(shape=(oo,), integer=True, nonnegative=True, given=True)
     
-    Eq << apply(Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True)),
-                Equality(p[n], n))
+    Eq << apply(Equal(p[:n].set_comprehension(), Interval(0, n - 1, integer=True)),
+                Equal(p[n], n))
     
     Eq << Eq[-1].this.lhs.bisect(Slice[-1:])
     
@@ -40,4 +40,4 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0])
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -10,7 +10,7 @@ def BandPart(x, *limits):
     excludes.add(i)
     j = x.generate_free_symbol(excludes=excludes, free_symbol='j', integer=True)
     
-    return x * LAMBDA[j:n, i:m](Boole(Contains(i - j, Interval(-num_upper, num_lower, integer=True))))
+    return x * LAMBDA[j:n, i:m](Bool(Contains(i - j, Interval(-num_upper, num_lower, integer=True))))
 
    
 BandPart = Function.BandPart(eval=BandPart, complex=True)

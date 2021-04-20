@@ -10,7 +10,7 @@ from axiom import sets
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     abs_A_minus_B, zero = given.args
     if not zero.is_Zero:
         zero, abs_A_minus_B = given.args
@@ -31,12 +31,12 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
-    Eq << apply(Equality(abs(B - A), 0))
+    Eq << apply(Equal(abs(B - A), 0))
     
     Eq << sets.is_zero.imply.is_emptyset.apply(Eq[0])
     
     Eq << sets.is_emptyset.imply.subset.complement.apply(Eq[-1])
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

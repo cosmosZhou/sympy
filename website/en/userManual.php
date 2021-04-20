@@ -94,7 +94,7 @@ theorem', we employed the following sub-theorems:
 	<li><a href='../axiom/discrete/combinatorics/binomial/Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>:
 		<a href='https://en.wikipedia.org/wiki/Pascal%27s_rule'>Pascal's Rule</a>
 		in Combinatorics, named after the French methematician Pascal.</li>
-	<li><a href='../axiom/algebre/sufficient/imply/cond/induction'>axiom.algebre.sufficient.imply.cond.induction</a>:
+	<li><a href='../axiom/algebra/sufficient/imply/cond/induction'>axiom.algebra.sufficient.imply.cond.induction</a>:
 		the first <a
 		href='https://en.wikipedia.org/wiki/Mathematical_induction'>mathematical
 			induction</a>, a method of recursively prooving mathematical theorems

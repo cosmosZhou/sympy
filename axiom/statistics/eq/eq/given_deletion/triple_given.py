@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, statistics
+from axiom import algebra, statistics
 
 
 # given: x | y & z = x | y
@@ -22,7 +22,7 @@ def apply(given):
         x_historic, y_historic = y_historic, x_historic
     assert y[:k].as_boolean() == y_historic
     
-    return Equality(y[k] | y_historic, y[k] | y[k - 1])
+    return Equal(y[k] | y_historic, y[k] | y[k - 1])
 
 
 @prove
@@ -34,18 +34,18 @@ def prove(Eq):
     
     k = Symbol.k(integer=True)
     
-    Eq << apply(Equality(y[k] | (x[:k].as_boolean() & y[:k].as_boolean()), y[k] | y[k - 1]))
+    Eq << apply(Equal(y[k] | (x[:k].as_boolean() & y[:k].as_boolean()), y[k] | y[k - 1]))
 
-    Eq << Eq[0].apply(algebre.cond.imply.forall.restrict, (k, 2, oo))
+    Eq << Eq[0].apply(algebra.cond.imply.forall.restrict, (k, 2, oo))
     
-    Eq << Eq[-1].this().function.lhs.rhs.args[1].bisect(Slice[-1:])
-    
+    Eq << Eq[-1].this().function.lhs.rhs.args[1].apply(algebra.eq.imply.et.split.block_matrix, Slice[-1:])
+
     Eq << statistics.eq.eq.given_deletion.single_condition_w.apply(Eq[-1], wrt=Eq[-1].lhs.rhs.args[1].lhs)
     
-    Eq << Eq[1].bisect(k >= 2)
+    Eq << Eq[1].apply(algebra.cond.given.et.forall, cond=k >= 2)
     
-    Eq << Eq[-1].this().function.lhs.rhs.bisect(Slice[-1:])
+    Eq << Eq[-1].this().function.lhs.rhs.apply(algebra.eq.given.et.split.block_matrix, Slice[-1:])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

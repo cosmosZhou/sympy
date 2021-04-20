@@ -13,12 +13,16 @@ class ForAll(ConditionalBoolean):
     operator = And
 
     # this will change the default new operator!
-    def __new__(cls, function, *symbols, **assumptions):
+    def __new__(cls, function, *symbols, is_in_exists=False, **assumptions):
+        if assumptions:
+            from sympy.core.inference import Inference
+            return Inference(ForAll.__new__(cls, function, *symbols), **assumptions)
+        
         if function.is_BooleanAtom or len(symbols) == 0:
             if not function:
                 eqs = []
                 from sympy import Equal
-                for x, *ab in symbols:
+                for _, *ab in symbols:
                     if len(ab) == 1:
                         domain = ab[0]
                         if domain.is_set:
@@ -34,6 +38,8 @@ class ForAll(ConditionalBoolean):
         if all(isinstance(arg, Boolean) for arg in args):
             return ConditionalBoolean.subs(self, *args, **kwargs)
         old, new = args
+        if old.is_Slice:
+            return self._subs_slice(old, new)
         new = sympify(new)        
         if old in self.variables:
             wrt, *ab = self.limits[self.variables.index(old)]
@@ -115,9 +121,9 @@ class ForAll(ConditionalBoolean):
         if needsToDelete:
             limits = limits_delete(limits, deletes)
             if limits:
-                return self.func(function, *limits, equivalent=self).simplify()
+                return self.func(function, *limits).simplify()
 
-            return function.copy(equivalent=self)
+            return function
         
     def simplify(self, local=None, **kwargs):
         deletes = []
@@ -144,7 +150,7 @@ class ForAll(ConditionalBoolean):
                         x0, *_ = domain
                         function = self.function._subs(x, x0)
                         if function.is_BooleanAtom:
-                            return function.copy(equivalent=self)
+                            return function
                         
                         limits = [*self.limits]
                         del limits[i]
@@ -152,7 +158,7 @@ class ForAll(ConditionalBoolean):
                             limits[j] = limits[j]._subs(x, x0)
                              
                         if limits:
-                            return self.func(function, *limits, equivalent=self)
+                            return self.func(function, *limits)
                         else:
                             function.equivalent = self
                             return function.simplify()
@@ -160,12 +166,12 @@ class ForAll(ConditionalBoolean):
         if deletes:
             limits = self.limits_delete(deletes)
             if limits:
-                return self.func(self.function, *limits, equivalent=self).simplify()
+                return self.func(self.function, *limits).simplify()
 
             if local:
                 limits = [(x,) for x, *_ in self.limits if self.function._has(x)]
-                return self.func(self.function, *limits, equivalent=self)
-            return self.function.copy(equivalent=self)
+                return self.func(self.function, *limits)
+            return self.function
 
         this = self.function.func.simplify_ForAll(self, *self.args)
         if this is not None:
@@ -252,6 +258,9 @@ class ForAll(ConditionalBoolean):
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])        
         return '\N{FOR ALL}[%s](%s)' % (limits, p.doprint(self.function))
+
+    def _pretty(self, p):
+        return ConditionalBoolean._pretty(self, p, '\N{FOR ALL}')    
 
     def int_limit(self):
         if len(self.limits) != 1:
@@ -404,23 +413,25 @@ class ForAll(ConditionalBoolean):
         if eq.is_ForAll: 
             if self.function == eq.function:
                 limits = self.limits_union(eq)
-                return self.func(self.function, *limits, equivalent=[self, eq]).simplify()
-            
+                return self.func(self.function, *limits).simplify()
+
             if self.limits == eq.limits:
                 if self.function.is_Exists and eq.function.is_Exists:
                     if self.function.limits == eq.function.limits:
                         if self.coexist_with(eq) is not False:
-                            return ForAll(ForAll.invert_type(self.function.function & eq.function.function, *self.function.limits), *self.limits, equivalent=[self, eq]).simplify()
+                            return ForAll(ForAll.invert_type(self.function.function & eq.function.function, *self.function.limits), *self.limits).simplify()
+
+                return ForAll(self.function & eq.function, *self.limits)                
                                                     
         for i, (x, *ab) in enumerate(self.limits):
             if len(ab) == 1:
                 cond, *_ = ab
-                if cond.is_Unequality:
+                if cond.is_Unequal:
                     invert = cond.invert()
                     if self.function._subs(*invert.args) == eq:
                         limits = [self.limits]
                         del limits[i]                        
-                        return self.func(self.function, *limits, equivalent=[self, eq]).simplify()                        
+                        return self.func(self.function, *limits).simplify()                        
                     
         return ConditionalBoolean.__and__(self, eq)
 
@@ -444,5 +455,8 @@ class ForAll(ConditionalBoolean):
                                 return self
         
         return ConditionalBoolean.apply(self, axiom, *args, **kwargs)    
+
+    def inference_status(self, child):
+        return child > 0
 
 from sympy.concrete.limits import *

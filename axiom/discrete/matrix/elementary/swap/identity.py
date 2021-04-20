@@ -1,13 +1,7 @@
-from sympy.core.relational import Equality
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-
 from sympy.matrices.expressions.matexpr import Swap
-from sympy import LAMBDA
-from sympy import Symbol
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -24,14 +18,14 @@ def apply(x, w=None, left=True, reference=True):
     
     if left:
         if reference:
-            return Equality(LAMBDA[k:n](x[w[i, j, k] @ LAMBDA[k:n](k)]), w[i, j] @ x)
+            return Equal(LAMBDA[k:n](x[w[i, j, k] @ LAMBDA[k:n](k)]), w[i, j] @ x)
         else:
-            return Equality(x[w[i, j, k] @ LAMBDA[k:n](k)], w[i, j, k] @ x)
+            return Equal(x[w[i, j, k] @ LAMBDA[k:n](k)], w[i, j, k] @ x)
     else:
         if reference:
-            return Equality(LAMBDA[k:n](x[LAMBDA[k:n](k) @ w[i, j, k]]), x @ w[i, j])
+            return Equal(LAMBDA[k:n](x[LAMBDA[k:n](k) @ w[i, j, k]]), x @ w[i, j])
         else:
-            return Equality(x[LAMBDA[k:n](k) @ w[i, j, k]], x @ w[i, j, k])
+            return Equal(x[LAMBDA[k:n](k) @ w[i, j, k]], x @ w[i, j, k])
 
 
 @prove
@@ -63,9 +57,9 @@ def prove(Eq):
     
     Eq << Eq.lhs_assertion.subs(Eq[-1].reversed)
     
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (k, 0, n))
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (k, 0, n))
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

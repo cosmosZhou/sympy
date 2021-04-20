@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from tensorflow.nn import softmax
 from sympy import *
-from axiom import keras, algebre
+from axiom import keras, algebra
 
 
 @apply
@@ -13,7 +13,7 @@ def apply(n, dz, h):
     a = Symbol.a(Q @ K.T / sqrt(dz))
     
     Ξ = Symbol.Ξ(Identity(n) + BlockMatrix([[ZeroMatrix(h, h), OneMatrix(h, n - h)],
-                                                       [OneMatrix(n - h, h), ZeroMatrix(n - h, n - h)]]))
+                                            [OneMatrix(n - h, h), ZeroMatrix(n - h, n - h)]]))
     
     a_quote = Symbol("a'", a - (1 - Ξ) * oo)
     
@@ -34,7 +34,7 @@ def apply(n, dz, h):
     Vl = Symbol("V^l", V[h:n])
     Dl = Symbol("D^l", D[h:n])
 
-    return Equality(z, BlockMatrix((Wu @ Vl + Du * Vu) / (ReducedSum(Wu) + Du), (Wl @ Vu + Dl * Vl) / (ReducedSum(Wl) + Dl)))
+    return Equal(z, BlockMatrix((Wu @ Vl + Du * Vu) / (ReducedSum(Wu) + Du), (Wl @ Vu + Dl * Vl) / (ReducedSum(Wl) + Dl)))
 
 
 @prove
@@ -67,6 +67,8 @@ def prove(Eq):
      
     Eq << Eq[-1].this.rhs.subs(Eq[1][i, j])
     
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.piecewise)
+    
     Eq << Eq[-1].this.rhs.args[0]().expr.args[0].simplify()
     
     Eq << Eq[-1].this.rhs.args[-1].expr.astype(Piecewise)
@@ -77,7 +79,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.simplify(wrt=True)
 
-    Eq.divisor_definition = Eq[-1].this.rhs.astype(Plus)
+    Eq.divisor_definition = Eq[-1].this.rhs.astype(Add)
     
     Eq << Eq.divisor_definition.rhs.args[0].args[-1].expr.this.astype(ReducedSum)
     
@@ -95,21 +97,21 @@ def prove(Eq):
     
     Eq <<= Eq[-1][h:n], Eq[-1][:h], Eq[-1][i]
     
-    Eq <<= algebre.eq.imply.eq.exp.apply(Eq[-3]), algebre.eq.imply.eq.exp.apply(Eq[-2]), algebre.eq.imply.eq.exp.apply(Eq[-1])
+    Eq <<= algebra.eq.imply.eq.exp.apply(Eq[-3]), algebra.eq.imply.eq.exp.apply(Eq[-2]), algebra.eq.imply.eq.exp.apply(Eq[-1])
     
     Eq << Eq[-1] * OneMatrix(dz)
 
-    Eq.lower_part, Eq.upper_part, Eq.diagonal_part = algebre.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[7][i]), \
-        algebre.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[11][i - h]), \
-        algebre.eq.eq.imply.eq.transit.apply(Eq[-1], Eq.M_definition)
+    Eq.lower_part, Eq.upper_part, Eq.diagonal_part = algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[7][i]), \
+        algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[11][i - h]), \
+        algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq.M_definition)
         
     Eq << Eq.divisor_definition * OneMatrix(dz)
     
-    Eq << Eq[-1].this.rhs.astype(Plus)
+    Eq << Eq[-1].this.rhs.astype(Add)
     
     Eq << Eq[-1].this.rhs.subs(Eq.lower_part, Eq.upper_part, Eq.diagonal_part)
     
-    Eq.z_definition = algebre.eq.cond.imply.cond.subs_with_expand_dims.apply(Eq[-1], Eq.z_definition)
+    Eq.z_definition = algebra.eq.cond.imply.cond.subs_with_expand_dims.apply(Eq[-1], Eq.z_definition)
     
     Eq << Eq.z_definition.rhs.args[0].this.expand()
     
@@ -119,19 +121,19 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Piecewise)
     
-    Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.swap.back)
     
     Eq << Eq[-1].this.rhs.function.simplify(wrt=i)
     
-    Eq << Eq[-1].this.rhs.function.astype(Plus)
+    Eq << Eq[-1].this.rhs.function.astype(Add)
     
-    Eq << Eq[-1].this.rhs.astype(Plus)
+    Eq << Eq[-1].this.rhs.astype(Add)
     
-    Eq << Eq[-1].this.rhs.args[1].function.args[0].expr.astype(Plus)
+    Eq << Eq[-1].this.rhs.args[1].function.args[0].expr.astype(Add)
     
     Eq << Eq[-1].this.rhs.args[1].function.args[0]().expr.args[1].simplify()
     
-    Eq << Eq[-1].this.rhs.args[1].function.args[1].expr.astype(Plus)
+    Eq << Eq[-1].this.rhs.args[1].function.args[1].expr.astype(Add)
     
     Eq << Eq[-1].this.rhs.args[1].function.args[1]().expr.args[1].simplify()
     
@@ -151,7 +153,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.subs(Eq.lower_part, Eq.upper_part)
     
-    Eq << algebre.eq.cond.imply.cond.subs_with_expand_dims.apply(Eq.diagonal_part, Eq[-1])
+    Eq << algebra.eq.cond.imply.cond.subs_with_expand_dims.apply(Eq.diagonal_part, Eq[-1])
     
     Eq << Eq.z_definition.this.rhs.subs(Eq[-1])
     
@@ -161,27 +163,27 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(Piecewise)
     
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (i,))
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i,))
     
     Eq << Eq[-1].this.rhs.astype(BlockMatrix)
     
-    Eq << Eq[-1].this.rhs.args[0].astype(Times)
+    Eq << Eq[-1].this.rhs.args[0].astype(Mul)
     
-    Eq << Eq[-1].this.rhs.args[0].args[0].astype(Power)
+    Eq << Eq[-1].this.rhs.args[0].args[0].astype(Pow)
 
-    Eq << Eq[-1].this.rhs.args[1].astype(Times)
+    Eq << Eq[-1].this.rhs.args[1].astype(Mul)
     
-    Eq << Eq[-1].this.rhs.args[1].args[0].astype(Power)
+    Eq << Eq[-1].this.rhs.args[1].args[0].astype(Pow)
     
-    Eq << Eq[-1].this.rhs.args[0].args[1].astype(Plus)
+    Eq << Eq[-1].this.rhs.args[0].args[1].astype(Add)
     
-    Eq << Eq[-1].this.rhs.args[0].args[1].base.astype(Plus)
+    Eq << Eq[-1].this.rhs.args[0].args[1].base.astype(Add)
     
     Eq << Eq[-1].this.rhs.args[0].args[1].base.args[1].astype(ReducedSum)
     
-    Eq << Eq[-1].this.rhs.args[1].args[1].astype(Plus)
+    Eq << Eq[-1].this.rhs.args[1].args[1].astype(Add)
     
-    Eq << Eq[-1].this.rhs.args[1].args[1].base.astype(Plus)
+    Eq << Eq[-1].this.rhs.args[1].args[1].base.astype(Add)
     
     Eq << Eq[-1].this.rhs.args[1].args[1].base.args[1].astype(ReducedSum)
     
@@ -189,7 +191,7 @@ def prove(Eq):
 
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155

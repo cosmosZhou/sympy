@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 # given: A in B 
@@ -16,7 +16,7 @@ def apply(given):
     m = interval.min()    
     M = interval.max()
     assert M.is_zero
-    return LessThan(x * x, m * m)
+    return LessEqual(x * x, m * m)
 
 
 
@@ -27,13 +27,13 @@ def prove(Eq):
     m = Symbol.m(real=True)
     Eq << apply(Contains(x, Interval(m, 0)))
     
-    Eq << sets.contains.imply.et.interval.apply(Eq[0])
+    Eq << sets.contains.imply.et.split.interval.apply(Eq[0])
     
-    Eq << algebre.et.imply.cond.apply(Eq[-1])
+    Eq << algebra.et.imply.cond.apply(Eq[-1])
     
-    Eq << algebre.is_nonpositive.ge.imply.le.square.apply(Eq[-2], Eq[-1])
+    Eq << algebra.is_nonpositive.ge.imply.le.square.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

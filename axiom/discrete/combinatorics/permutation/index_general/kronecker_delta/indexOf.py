@@ -1,12 +1,12 @@
 from sympy import *
 from axiom.utility import prove, apply
 from axiom.discrete.combinatorics.permutation.index.eq import index_function
-from axiom import discrete, algebre
+from axiom import discrete, algebra
 
 
 @apply
 def apply(given, i=None, j=None):
-    assert given.is_Equality
+    assert given.is_Equal
     x_set_comprehension, interval = given.args
     n = interval.max() + 1
     assert interval.min() == 0
@@ -29,7 +29,7 @@ def apply(given, i=None, j=None):
     di = index[i](x[:n])
     dj = index[j](x[:n])
     
-    return Equality(KroneckerDelta(di, dj), KroneckerDelta(i, j))
+    return Equal(KroneckerDelta(di, dj), KroneckerDelta(i, j))
 
 
 @prove
@@ -44,17 +44,17 @@ def prove(Eq):
     j = Symbol.j(domain=Interval(0, n - 1, integer=True), given=True)
     i = Symbol.i(domain=Interval(0, n - 1, integer=True), given=True)
     
-    Eq << apply(Equality(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
+    Eq << apply(Equal(x[:n].set_comprehension(k), Interval(0, n - 1, integer=True)), i, j)
     
-    Eq << Eq[-1].bisect(Equality(i, j))
+    Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=Equal(i, j))
     
-    Eq << algebre.et.given.cond.apply(Eq[-1])
+    Eq << algebra.et.given.cond.apply(Eq[-1])
     
     Eq <<= ~Eq[-1], ~Eq[-2]
     
-    Eq << Eq[-2].apply(algebre.eq.ne.imply.ne.subs)
+    Eq << Eq[-2].apply(algebra.eq.ne.imply.ne.subs)
 
-    Eq << Eq[-1].apply(algebre.ne.cond.imply.et)
+    Eq << Eq[-1].apply(algebra.ne.cond.imply.et)
 
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[0], j=j)[1]
 
@@ -64,9 +64,9 @@ def prove(Eq):
     
     Eq << Eq[-2].this.args[0].lhs.subs(Eq[-1].reversed)
 
-    Eq << Eq[-1].apply(algebre.eq.ne.imply.ne.subs)
+    Eq << Eq[-1].apply(algebra.eq.ne.imply.ne.subs)
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
     
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

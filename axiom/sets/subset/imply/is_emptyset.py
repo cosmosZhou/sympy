@@ -11,7 +11,7 @@ def apply(given):
     assert given.is_Subset
     A, B = given.args
 
-    return Equality(A // B, A.etype.emptySet)
+    return Equal(A // B, A.etype.emptySet)
 
 
 @prove
@@ -23,18 +23,18 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.is_nonemptyset.imply.exists_contains.voidlimit.apply(Eq[-1], simplify=False)
+    Eq << sets.is_nonemptyset.imply.exists_contains.apply(Eq[-1], simplify=False)
     
-    Eq << Eq[-1].apply(sets.contains.imply.et.having.complement, simplify=None)
+    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.split.complement, simplify=None)
     
     Eq << sets.exists_et.imply.exists.single_variable.limits_absorb.apply(Eq[-1], index=0, simplify=None)
 
-    Eq << sets.exists.imply.exists.limits_swap.apply(Eq[-1])
+    Eq << sets.exists.imply.exists.limits.swap.apply(Eq[-1])
     
-    Eq << Eq[-1].apply(sets.contains.subset.imply.contains, Eq[0])
+    Eq << Eq[-1].this.function.apply(sets.contains.subset.imply.contains, Eq[0])
     
-    Eq << sets.exists.imply.exists.limits_swap.apply(Eq[-1])
+    Eq << sets.exists.imply.exists.limits.swap.apply(Eq[-1])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

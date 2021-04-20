@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -12,7 +12,7 @@ def apply(r, x=None, n=None):
     if n is None:
         n = Symbol.n(integer=True)
         
-    return Equality((1 + x) ** r, Sum[n:0:oo](binomial(r, n) * x ** n))
+    return Equal((1 + x) ** r, Sum[n:0:oo](binomial(r, n) * x ** n))
 
 
 @prove(surmountable=False)
@@ -24,5 +24,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

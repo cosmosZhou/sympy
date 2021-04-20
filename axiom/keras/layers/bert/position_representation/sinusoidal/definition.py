@@ -1,13 +1,9 @@
-from sympy import LAMBDA, sin, cos, log, exp, dtype
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
-from sympy.functions.elementary.piecewise import Piecewise
-
-from axiom import algebre
+from axiom import algebra
 
 
-def sinusoid_position_encoding(n, d, b=10000, inverse=False):
+def sinusoid_position_encoding(n, d, b, inverse=False):
     j = Symbol.j(integer=True)
     i = Symbol.i(integer=True)
 
@@ -20,16 +16,15 @@ def sinusoid_position_encoding(n, d, b=10000, inverse=False):
 
 
 @apply
-def apply(n, d):
-    PE = sinusoid_position_encoding(n, d)
+def apply(n, d, b):
+    PE = sinusoid_position_encoding(n, d, b)
     j, i = PE.definition.variables
     
     half_dim = Symbol("d'", d / 2)
     assert half_dim.is_integer
     assert half_dim.type in dtype.integer
         
-#     emb = log(10000) / (half_dim - 1)
-    emb = log(10000) / half_dim
+    emb = log(b) / half_dim
     
     indices = LAMBDA[j:half_dim](j)
     
@@ -42,14 +37,15 @@ def apply(n, d):
     COS = cos(emb)
     emb = LAMBDA[j:d, i:n](Piecewise((SIN[i, j / 2], (-1) ** j > 0), (COS[i, (j - 1) / 2], True)))
         
-    return Equality(PE, emb)
+    return Equal(PE, emb)
 
 
 @prove
 def prove(Eq):
     n = Symbol.n(positive=True, integer=True)
+    b = Symbol.b(positive=True)
     d = Symbol("d_model", integer=True, positive=True, even=True)
-    Eq << apply(n, d)
+    Eq << apply(n, d, b)
     
     PE = Symbol("PE'", Eq[2].rhs)
     j, i = Eq[2].rhs.variables
@@ -70,19 +66,21 @@ def prove(Eq):
     
     Eq << Eq[-4].this.rhs.subs(Eq[-1])
     
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d), (i, 0, n))
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d), (i, 0, n))
     
     Eq << Eq[0].this.rhs.args[1].expr.arg.args[0].args[1].expand()
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
     
+    Eq << Eq[-1].this.rhs.simplify()
+    
     Eq << PE.this.definition
     
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155

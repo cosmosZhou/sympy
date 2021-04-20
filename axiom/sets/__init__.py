@@ -33,4 +33,4 @@ from . import et
 from . import conditionset
 from . import sufficient
 from . import imageset
-from . import union
+from . import union_comprehension, piecewise, intersection, intersect, union

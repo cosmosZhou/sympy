@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.functions.combinatorial.numbers import Stirling
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
@@ -11,7 +11,7 @@ def apply(n, k=None):
     assert k <= n and k > 0
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)            
     s = Stirling.conditionset(n, k, x)
-    return Unequality(s, s.etype.emptySet)
+    return Unequal(s, s.etype.emptySet)
 
 
 @prove
@@ -20,18 +20,18 @@ def prove(Eq):
     k = Symbol.k(domain=Interval(1, n, integer=True), given=True)
     Eq << apply(n, k=k)    
     
-    Eq << sets.is_nonemptyset.given.exists.having.conditionset.apply(Eq[0])
+    Eq << sets.is_nonemptyset.given.exists.split.conditionset.apply(Eq[0])
     
     i = Symbol.i(integer=True)
     x, (_, k), *_ = Eq[-1].variable.args
     
     a = Symbol.a(LAMBDA[i:k](Piecewise((Interval(k - 1, n - 1, integer=True),
-                                                   Equality(i, k - 1)),
+                                                   Equal(i, k - 1)),
                                                    (i.set, True))))
     
-    Eq << algebre.exists.given.exists.subs.apply(Eq[-1], x[:k], a)
+    Eq << algebra.exists.given.exists.subs.apply(Eq[-1], x[:k], a)
     
-    Eq.is_positive, Eq.sum, Eq.union = algebre.et.given.cond.apply(Eq[-1])
+    Eq.is_positive, Eq.sum, Eq.union = algebra.et.given.cond.apply(Eq[-1])
     
     Eq << Eq.is_positive.this.lhs.arg.definition
     
@@ -41,4 +41,4 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

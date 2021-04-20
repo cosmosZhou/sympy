@@ -15,7 +15,7 @@ def apply(x, w=None):
     else:
         assert w[i, j] == Shift(n, i, j)
     
-    return Equality(x @ w[i, j] @ w[i, j].T, x)
+    return Equal(x @ w[i, j] @ w[i, j].T, x)
 
 
 @prove
@@ -40,8 +40,6 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expand()    
 
-#     Eq << Eq[-1].this.rhs.function.args[1]().expr.args[0].cond.simplify()
-    
     Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Piecewise)
     
     Eq << Eq[-1].this.rhs.function.args[1].expr.args[1].expr.astype(Piecewise)
@@ -54,5 +52,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

@@ -1,19 +1,19 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 def extract(x_constraint, y_constraint, z_constraint):
-    if isinstance(x_constraint, LessThan):
+    if isinstance(x_constraint, LessEqual):
         x, z = x_constraint.args
-    elif isinstance(x_constraint, GreaterThan):
+    elif isinstance(x_constraint, GreaterEqual):
         z, x = x_constraint.args
     else:
         return None
 
-    if isinstance(y_constraint, LessThan):
+    if isinstance(y_constraint, LessEqual):
         y, _z = y_constraint.args
-    elif isinstance(y_constraint, GreaterThan):
+    elif isinstance(y_constraint, GreaterEqual):
         _z, y = y_constraint.args
     else:
         return None
@@ -21,9 +21,9 @@ def extract(x_constraint, y_constraint, z_constraint):
     if _z != z:
         return None
 
-    if isinstance(z_constraint, StrictLessThan):
+    if isinstance(z_constraint, Less):
         _z, x_y = z_constraint.args
-    elif isinstance(z_constraint, StrictGreaterThan):
+    elif isinstance(z_constraint, Greater):
         x_y, _z = z_constraint.args
     else:
         return None
@@ -45,7 +45,7 @@ def apply(*given):
     x, y, z = extract(*given)
 
     theta = Symbol.theta(real=True)
-    return Exists[theta:Interval(pi / 3, pi, right_open=True)](Equality(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
+    return Exists[theta:Interval(pi / 3, pi, right_open=True)](Equal(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
 
 
 @prove
@@ -85,13 +85,13 @@ def prove(Eq):
     
     Eq << Eq[3].this.function.subs(Eq.x_definition, Eq.y_definition)
     
-    Eq << Eq[-1] / (z * z)
+    Eq << Eq[-1].this.function / (z * z)
     
-    Eq << Eq[-1] - Eq[-1].function.rhs.args[-1] - 1
+    Eq << Eq[-1].this.function - (Eq[-1].function.rhs.args[-1] + 1)
     
-    Eq.cos = Eq[-1] / (2 * x * y)
+    Eq.cos = Eq[-1].this.function / (2 * x * y)
 
-    Eq << algebre.le.le.imply.le.quadratic.apply(Eq.x_bound, Eq.y_bound)
+    Eq << algebra.le.le.imply.le.quadratic.apply(Eq.x_bound, Eq.y_bound)
     
     Eq << Eq.xy_bound * Eq.xy_bound
     
@@ -101,19 +101,14 @@ def prove(Eq):
     
     Eq << Eq[-1].apply(sets.gt.le.imply.contains)
     
-    Eq << Eq[-1] / (2 * x * y)
+    Eq << sets.contains.imply.contains.interval.div.real.apply(Eq[-1], 2 * x * y)
     
-    Eq << Eq[-1].subs(Eq.cos.reversed)
-
-    Eq << algebre.imply.forall.limits_assert.apply(Eq[-1].limits)
+    Eq << sets.contains.imply.contains.interval.acos.apply(Eq[-1])
     
-    Eq << Eq[-1].this.function.cos()
+    Eq << algebra.exists.given.exists.subs.apply(Eq.cos, Eq.cos.variable, Eq[-1].lhs)
     
-    Eq << Unequal(Eq[-2].function.rhs, EmptySet(etype=dtype.real), plausible=True)
-    
-    Eq << sets.is_nonemptyset.forall.imply.exists.apply(Eq[-1], Eq[-2])
-
+    Eq << algebra.exists.given.cond.apply(Eq[-1])
     
 # https://baike.baidu.com/item/%E5%92%8C%E8%A7%92%E5%85%AC%E5%BC%8F
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -26,10 +26,10 @@ def prove(Eq):
        
     Eq << apply(ForAll[x:A](Contains(x, B)))
 
-    Eq << Eq[0].apply(sets.contains.imply.subset, simplify=False)
+    Eq << Eq[0].this.function.apply(sets.contains.imply.subset, simplify=False)
     
-    Eq << Eq[-1].apply(sets.subset.imply.subset.union_comprehension.lhs, *Eq[-1].limits)    
+    Eq << Eq[-1].apply(sets.forall_subset.imply.subset.union_comprehension.lhs)    
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

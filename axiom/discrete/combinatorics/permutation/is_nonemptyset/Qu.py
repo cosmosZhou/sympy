@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import discrete, algebre, sets
+from axiom import discrete, algebra, sets
 from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
 
 from sympy.matrices.expressions.matexpr import Swap
@@ -35,9 +35,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.rhs.definition
     
-    Eq << algebre.exists.given.exists.subs.apply(Eq[-1], x[:n + 1], a, simplify=None)
+    Eq << algebra.exists.given.exists.subs.apply(Eq[-1], x[:n + 1], a, simplify=None)
     
-    Eq << algebre.exists.given.cond.apply(Eq[-1])
+    Eq << algebra.exists.given.cond.apply(Eq[-1])
         
     Eq << sets.exists_contains.imply.is_nonemptyset.apply(Eq[-3])
     
@@ -45,4 +45,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

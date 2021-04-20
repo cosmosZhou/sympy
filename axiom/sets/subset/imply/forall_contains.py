@@ -5,10 +5,14 @@ from axiom import sets
 
 
 @apply
-def apply(given):
+def apply(given, wrt=None):
     assert given.is_Subset
     B, A = given.args
-    x = B.element_symbol()
+    
+    if wrt is None:
+        x = B.element_symbol()
+    else:
+        x = wrt
    
     return ForAll[x:B](Contains(x, A))
 
@@ -26,9 +30,9 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()
 
-    Eq << Eq[-1].apply(sets.contains.subset.imply.contains, Eq[0], join=False)
+    Eq << Eq[-1].this.function.apply(sets.contains.subset.imply.contains, Eq[0])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

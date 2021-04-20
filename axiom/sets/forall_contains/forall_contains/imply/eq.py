@@ -21,7 +21,7 @@ def apply(*given):
     _x, _A = forall_B.function.args
     assert x == _x and A == _A
     
-    return Equality(A, B)
+    return Equal(A, B)
 
 
 @prove
@@ -43,5 +43,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

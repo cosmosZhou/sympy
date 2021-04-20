@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -22,7 +22,7 @@ def apply(*given):
     assert a[:n + 1] == _a
     assert p[:n + 1] == _p
     
-    return Equality(p[:n].set_comprehension(), a[:n].set_comprehension())
+    return Equal(p[:n].set_comprehension(), a[:n].set_comprehension())
 
 
 @prove(surmountable=False)
@@ -31,8 +31,8 @@ def prove(Eq):
     p = Symbol.p(shape=(oo,), etype=dtype.integer, given=True)
     a = Symbol.a(shape=(oo,), etype=dtype.integer, given=True)
     
-    Eq << apply(Equality(p[:n + 1].set_comprehension(), a[:n + 1].set_comprehension()),
-                Equality(p[n], a[n]))
+    Eq << apply(Equal(p[:n + 1].set_comprehension(), a[:n + 1].set_comprehension()),
+                Equal(p[n], a[n]))
     
     Eq << Eq[0].this.lhs.bisect(Slice[-1:])
     
@@ -48,7 +48,7 @@ def prove(Eq):
     
     Eq << ~Eq.plausible
     
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.having.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.split.union_comprehension)
     
     i = Eq[-1].variable
     _i = i.copy(domain=Interval(0, n - 1, integer=True))
@@ -64,7 +64,7 @@ def prove(Eq):
     
     Eq << Eq[-2] + Eq[-1]
     
-    Eq << Eq.paradox.apply(algebre.eq.imply.eq.abs)
+    Eq << Eq.paradox.apply(algebra.eq.imply.eq.abs)
     
     Eq << Eq[-1].subs(Eq[0])
     
@@ -74,4 +74,4 @@ def prove(Eq):
 
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

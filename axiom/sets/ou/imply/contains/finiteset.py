@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 @apply
@@ -38,11 +38,11 @@ def prove(Eq):
     
     Eq << ~Eq[-1]
     
-    Eq << sets.notcontains.imply.et.having.finiteset.apply(Eq[-1])
+    Eq << sets.notcontains.imply.et.split.finiteset.apply(Eq[-1])
     
     Eq << ~Eq[-1]
     
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

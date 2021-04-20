@@ -245,7 +245,7 @@ from sympy.core.function import (Function, Derivative, AppliedUndef, diff,
     expand, expand_mul, Subs, _mexpand)
 from sympy.core.multidimensional import vectorize
 from sympy.core.numbers import NaN, zoo, Number
-from sympy.core.relational import Equality, Eq
+from sympy.core.relational import Equal, Eq
 from sympy.core.symbol import Symbol, Wild, Dummy, symbols
 from sympy.core.sympify import sympify
 
@@ -396,7 +396,7 @@ def dsolve(eq, func=None, hint="default", simplify=True,
 
         ``eq`` can be any supported ordinary differential equation (see the
             :py:mod:`~sympy.solvers.ode` docstring for supported methods).
-            This can either be an :py:class:`~sympy.core.relational.Equality`,
+            This can either be an :py:class:`~sympy.core.relational.Equal`,
             or an expression, which is assumed to be equal to ``0``.
 
         ``f(x)`` is a function of one variable whose derivatives in that
@@ -505,7 +505,7 @@ def dsolve(eq, func=None, hint="default", simplify=True,
         - See ``test_ode.py`` for many tests, which serves also as a set of
           examples for how to use :py:meth:`~sympy.solvers.ode.dsolve`.
         - :py:meth:`~sympy.solvers.ode.dsolve` always returns an
-          :py:class:`~sympy.core.relational.Equality` class (except for the
+          :py:class:`~sympy.core.relational.Equal` class (except for the
           case when the hint is ``all`` or ``all_Integral``).  If possible, it
           solves the solution explicitly for the function being solved for.
           Otherwise, it returns an implicit solution.
@@ -533,7 +533,7 @@ def dsolve(eq, func=None, hint="default", simplify=True,
     **Details**
 
         ``eq`` can be any supported system of ordinary differential equations
-        This can either be an :py:class:`~sympy.core.relational.Equality`,
+        This can either be an :py:class:`~sympy.core.relational.Equal`,
         or an expression, which is assumed to be equal to ``0``.
 
         ``func`` holds ``x(t)`` and ``y(t)`` being functions of one variable which
@@ -967,7 +967,7 @@ def classify_ode(eq, func=None, dict=False, ics=None, **kwargs):
         raise ValueError("dsolve() and classify_ode() only "
         "work with functions of one variable, not %s" % func)
 
-    if isinstance(eq, Equality):
+    if isinstance(eq, Equal):
         eq = eq.lhs - eq.rhs
 
     # Some methods want the unprocessed equation
@@ -1853,7 +1853,7 @@ def classify_sysode(eq, funcs=None, **kwargs):
 
     eq, funcs = (_sympify(w) for w in [eq, funcs])
     for i, fi in enumerate(eq):
-        if isinstance(fi, Equality):
+        if isinstance(fi, Equal):
             eq[i] = fi.lhs - fi.rhs
 
     t = list(list(eq[0].atoms(Derivative))[0].atoms(Symbol))[0]
@@ -2268,8 +2268,8 @@ def odesimp(ode, eq, func, hint):
     eq = _handle_Integral(eq, func, hint)
     if hint.startswith("nth_linear_euler_eq_nonhomogeneous"):
         eq = simplify(eq)
-    if not isinstance(eq, Equality):
-        raise TypeError("eq should be an instance of Equality")
+    if not isinstance(eq, Equal):
+        raise TypeError("eq should be an instance of Equal")
 
     # Second, clean up the arbitrary constants.
     # Right now, nth linear hints can put as many as 2*order constants in an
@@ -2280,7 +2280,7 @@ def odesimp(ode, eq, func, hint):
 
     # Lastly, now that we have cleaned up the expression, try solving for func.
     # When CRootOf is implemented in solve(), we will want to return a CRootOf
-    # every time instead of an Equality.
+    # every time instead of an Equal.
 
     # Get the f(x) on the left if possible.
     if eq.rhs == func and not eq.lhs.has(func):
@@ -2566,7 +2566,7 @@ def __remove_linear_redundancies(expr, Cs):
         expr = _linear(expr)
         return expr
 
-    if isinstance(expr, Equality):
+    if isinstance(expr, Equal):
         lhs, rhs = [_recursive_walk(i) for i in expr.args]
         f = lambda i: isinstance(i, Number) or i in Cs
         if isinstance(lhs, Symbol) and lhs in Cs:
@@ -2809,7 +2809,7 @@ def constant_renumber(expr, variables=None, newconstants=None):
             renumbered = [_constant_renumber(e) for e in expr]
             return Tuple(*renumbered)
 
-        if isinstance(expr, Equality):
+        if isinstance(expr, Equal):
             return Eq(
                 _constant_renumber(expr.lhs),
                 _constant_renumber(expr.rhs))
@@ -5229,7 +5229,7 @@ def checkinfsol(eq, infinitesimals, func=None, order=None):
     is ``True``, then ``sol`` would be 0.
 
     """
-    if isinstance(eq, Equality):
+    if isinstance(eq, Equal):
         eq = eq.lhs - eq.rhs
     if not func:
         eq, func = _preprocess(eq)
@@ -5574,7 +5574,7 @@ def infinitesimals(eq, func=None, order=None, hint='default', match=None):
 
     """
 
-    if isinstance(eq, Equality):
+    if isinstance(eq, Equal):
         eq = eq.lhs - eq.rhs
     if not func:
         eq, func = _preprocess(eq)

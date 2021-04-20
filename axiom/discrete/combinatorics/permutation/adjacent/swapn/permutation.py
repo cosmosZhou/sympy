@@ -1,8 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Swap
-from axiom.discrete.combinatorics.permutation.adjacent import factorization, swapn
-from axiom import sets
+from axiom import sets, algebra, discrete
 
 
 @apply
@@ -20,7 +19,7 @@ def apply(given):
     
     p = Symbol.p(shape=(oo,), integer=True, nonnegative=True)
     
-    P = Symbol.P(conditionset(p[:n], Equality(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
+    P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), Interval(0, n - 1, integer=True))))
     
     return ForAll[p[:n]:P, x:S](Contains(LAMBDA[k:n](x[p[k]]), S))
 
@@ -41,7 +40,7 @@ def prove(Eq):
     
     Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(given)
     
-    Eq << factorization.apply(n)
+    Eq << discrete.combinatorics.permutation.adjacent.factorization.apply(n)
     
     * _, b_i = Eq[-1].rhs.args[1].function.args
     b, _i = b_i.args
@@ -54,17 +53,26 @@ def prove(Eq):
     
     Eq << Eq[-1].this.function.function.rhs.args[0].limits_subs(_i, k)
     
-    Eq << swapn.helper.apply(x[:n], b[:n], w)
+    Eq << discrete.combinatorics.permutation.adjacent.swapn.helper.apply(x[:n], b[:n], w)
     
-    Eq << Eq[-1].subs(Eq[-2].reversed)
+    Eq << algebra.forall_exists_eq.cond.imply.forall_exists.subs.apply(Eq[-2].reversed, Eq[-1])
     
-    Eq.plausible = Eq.axiom.subs(Eq[-1])
+    Eq << algebra.forall.imply.forall.limits.restrict.apply(Eq[-1], (x[:n], S))
     
-    Eq << swapn.mat_product.apply(Eq.swap.T, n, b)
+    Eq <<= Eq[-1] & Eq.axiom
     
-    Eq << Eq[-1].apply(sets.contains.imply.exists_contains.intlimits, (b[:n],))
+    Eq << Eq[-1].this.function.apply(algebra.et.given.exists_et, simplify=None)
+    
+    Eq << Eq[-1].this.function.function.apply(algebra.et.given.et.subs.eq)
+    
+    Eq << Eq[-1].this.function.apply(algebra.exists_et.given.et, index=-1)
+    
+    Eq << algebra.forall_et.given.forall.apply(Eq[-1])
+    
+    Eq << discrete.combinatorics.permutation.adjacent.swapn.mat_product.apply(Eq.swap.T, n, b)
+
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

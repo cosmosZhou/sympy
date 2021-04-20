@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 from sympy.functions.combinatorial.numbers import Stirling
 
@@ -45,7 +45,7 @@ def apply(*given, s1=None):
     return Exists[a:s1, j](Equal(x[i], Piecewise(({n - 1} | a[i], Equal(i, j)), (a[i], True))))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq):
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
     k = Symbol.k(integer=True, positive=True)
@@ -63,5 +63,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

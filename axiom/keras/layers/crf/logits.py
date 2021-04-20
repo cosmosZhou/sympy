@@ -9,7 +9,7 @@ from sympy.stats.rv import pspace
 def apply(G, x, s, given):
     t = s.definition.variable
     y = x.definition.variable.base
-    return Equality(s[t + 1], G[y[t + 1], y[t]] + s[t] + x[t + 1, y[t + 1]])
+    return Equal(s[t + 1], G[y[t + 1], y[t]] + s[t] + x[t + 1, y[t + 1]])
 
 
 @prove
@@ -28,7 +28,7 @@ def prove(Eq):
     emission_probability = P(x[i] | y[i])
     transition_probability = P(y[i] | y[i - 1])
         
-    given = Equality(joint_probability_t,
+    given = Equal(joint_probability_t,
                     P(x[0] | y[0]) * P(y[0]) * Product[i:1:t + 1](transition_probability * emission_probability))
         
     y = pspace(y).symbol
@@ -40,15 +40,15 @@ def prove(Eq):
 
     Eq << Eq.s_definition.this.rhs.subs(Eq.given)
     
-    Eq << Eq[-1].this.rhs.args[1].astype(Plus)
+    Eq << Eq[-1].this.rhs.args[1].astype(Add)
     
     Eq << Eq[-1].subs(Eq.x_definition.subs(i, 0).reversed)    
     
     Eq << Eq[-1].this.rhs.args[-1].args[1].astype(Sum)    
     
-    Eq << Eq[-1].this.rhs.args[-1].args[1].function.astype(Plus)
+    Eq << Eq[-1].this.rhs.args[-1].args[1].function.astype(Add)
     
-    Eq << Eq[-1].this.rhs.args[-1].args[1].astype(Plus)
+    Eq << Eq[-1].this.rhs.args[-1].args[1].astype(Add)
     
     Eq << Eq[-1].subs(Eq.x_definition.reversed).subs(Eq.G_definition.reversed)
     
@@ -62,4 +62,4 @@ def prove(Eq):
     
 # reference: Neural Architectures for Named Entity Recognition.pdf
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

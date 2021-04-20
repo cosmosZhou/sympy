@@ -10,17 +10,14 @@ from axiom import sets
 def apply(n):
     Q, w, x = mapping.Qu2v.predefined_symbols(n)    
     
-    Pn1 = Symbol("P_{n+1}", conditionset(x[:n + 1], Equality(x[:n + 1].set_comprehension(), Interval(0, n, integer=True))))
+    Pn1 = Symbol("P_{n+1}", conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Interval(0, n, integer=True))))
 
     t = Q.definition.variable
-    return Equality(UNION[t](Q[t]), Pn1)
-
-
-from sympy import S
+    return Equal(UNION[t](Q[t]), Pn1)
 
 
 @prove
-def prove(Eq):    
+def prove(Eq): 
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
     
@@ -37,13 +34,14 @@ def prove(Eq):
     
     Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[0].rhs.variable)    
     
-    Eq << Eq[-1].apply(sets.contains.given.exists_contains.having.union_comprehension)
+    Eq << Eq[-1].this.function.apply(sets.contains.given.exists_contains.st.union_comprehension)
     
     Eq << Eq[-1].this.function.function.rhs.definition
     
     Eq << sets.imply.forall.conditionset.apply(Eq[2].rhs)
 
     Eq <<= Eq.subset_P & Eq.subset_Q    
+
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

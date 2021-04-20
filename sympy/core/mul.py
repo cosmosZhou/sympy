@@ -87,12 +87,10 @@ def _unevaluated_Mul(*args):
     return Mul._from_args(newargs)
 
 
-class Times(Expr, AssocOp):
+class Mul(Expr, AssocOp):
 
     __slots__ = ()
 
-    is_Mul = True
-    
     is_commutative = True    
 
     def __neg__(self):
@@ -236,7 +234,7 @@ class Times(Expr, AssocOp):
                         continue
                     raise Exception('could not determine the final infinitesimal value in the expression: ', seq)
                 infinitesimal *= sign
-                if noninfinitesimal.is_zero:                   
+                if noninfinitesimal.is_zero: 
                     return [noninfinitesimal], [], infinitesimal
                 seq = noninfinitesimals + [noninfinitesimal]
             else:
@@ -365,7 +363,7 @@ class Times(Expr, AssocOp):
 
                 #  y
                 # 3
-                if o.is_Power:
+                if o.is_Pow:
                     if b.is_Number:
 
                         # get all the factors with numeric base so they can be
@@ -503,7 +501,7 @@ class Times(Expr, AssocOp):
                     # check to make sure that the base doesn't change
                     # after exponentiation; to allow for unevaluated
                     # Pow, we only do so if b is not already a Pow
-                    if p.is_Power and not b.is_Power:
+                    if p.is_Pow and not b.is_Pow:
                         bi = b
                         b, e = p.as_base_exp()
                         if b != bi:
@@ -1326,7 +1324,7 @@ class Times(Expr, AssocOp):
 
         if check(lhs, rhs) or check(rhs, lhs):
             return S.One
-        if any(i.is_Power or i.is_Mul for i in (lhs, rhs)):
+        if any(i.is_Pow or i.is_Mul for i in (lhs, rhs)):
             # gruntz and limit wants a literal I to not combine
             # with a power of -1
             d = Dummy('I')
@@ -2021,9 +2019,9 @@ class Times(Expr, AssocOp):
     @classmethod
     def simplify_Equal(cls, self, lhs, rhs):
         """
-        precondition: self.lhs is a Times object!
+        precondition: self.lhs is a Mul object!
         """
-        if rhs.is_Times:
+        if rhs.is_Mul:
             lhs_args = [*lhs.args]
             rhs_args = [*rhs.args]
             intersect = set(lhs_args) & set(rhs_args)
@@ -2035,7 +2033,7 @@ class Times(Expr, AssocOp):
                         rhs_args.remove(arg)
                         hit = True
                 if hit:
-                    return self.func(cls(*lhs_args), cls(*rhs_args), equivalent=self).simplify()
+                    return self.func(cls(*lhs_args), cls(*rhs_args)).simplify()
         elif rhs.is_zero:
             return Basic.simplify_Equal(self, lhs, rhs)
 
@@ -2053,15 +2051,15 @@ class Times(Expr, AssocOp):
                 delta.append(arg)
             else:
                 coefficient.append(arg)
-        if not delta:            
+        if not delta: 
             return self
         
-        if len(delta) == 1:            
+        if len(delta) == 1: 
             return self
 
         delta = self.func(*delta, evaluate=False).expand()
         
-        if coefficient:   
+        if coefficient: 
             coefficient = self.func(*coefficient, evaluate=False)
         else:
             coefficient = S.One
@@ -2100,7 +2098,7 @@ class Times(Expr, AssocOp):
                     args = [*self.args]
                     args[i] = _arg
                     return self.func(*args).simplify()
-            elif arg.is_Power:
+            elif arg.is_Pow:
                 b, e = arg.args
                 if e is S.NegativeOne:
                     try:
@@ -2156,7 +2154,7 @@ class Times(Expr, AssocOp):
         nonpows = []
         hit = False
         for arg in self.args:
-            if arg.is_Power:
+            if arg.is_Pow:
                 b, e = arg.args
                 if b in pows:
                     pows[b] += e
@@ -2259,7 +2257,7 @@ class Times(Expr, AssocOp):
         summation = None
         i = -1
         for index, arg in enumerate(self.args):
-            if isinstance(arg, summations.Sum) :
+            if isinstance(arg, summations.Sum):
                 summation = arg
                 i = index
 
@@ -2301,13 +2299,14 @@ class Times(Expr, AssocOp):
         return f
 
     @property
-    def domain(self):        
+    def domain(self): 
         if self.is_integer:
             from sympy.sets import Integers
             domain = Integers
         elif self.is_extended_real:
-            domain = S.Reals
-        else:            
+            from sympy.sets.fancysets import Reals
+            domain = Reals
+        else: 
             assert self.is_complex
             domain = S.Complexes
             
@@ -2362,10 +2361,15 @@ class Times(Expr, AssocOp):
                         args.append(arg)
                 else:
                     args.append(arg)
-            elif isinstance(index, tuple):
+            elif isinstance(index, (tuple, list)):
                 args.append(arg[index[:shape_length]])
             else:
-                args.append(arg[index])
+                if arg.is_Sum:
+                    import sys
+                    print('Sum should have a method __getitem__', file=sys.stderr)
+                    args.append(arg.func(arg.function[index], *arg.limits))
+                else:
+                    args.append(arg[index])
 
         return self.func(*args)
 
@@ -2484,8 +2488,8 @@ class Times(Expr, AssocOp):
 
         # Gather args for numerator/denominator
         for item in args:
-#             if item.is_commutative and item.is_Power and item.exp.is_Rational and item.exp.is_negative:
-            if item.is_Power and item.exp.is_Rational and item.exp.is_negative:
+#             if item.is_commutative and item.is_Pow and item.exp.is_Rational and item.exp.is_negative:
+            if item.is_Pow and item.exp.is_Rational and item.exp.is_negative:
                 if item.exp != -1:
                     b.append(Pow(item.base, -item.exp, evaluate=False))
                 else:
@@ -2517,9 +2521,66 @@ class Times(Expr, AssocOp):
         else:
             return sign + '*'.join(a_str) + "/(%s)" % '*'.join(b_str)
 
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm
+        a = []  # items in the numerator
+        b = []  # items that are in the denominator (if any)
+
+        if p.order not in ('old', 'none'):
+            args = self.as_ordered_factors()
+        else:
+            args = list(self.args)
+
+        # If quantities are present append them at the back
+        args = sorted(args, key=lambda x: x.is_Quantity or
+                     (isinstance(x, Pow) and x.base.is_Quantity))
+
+        # Gather terms for numerator/denominator
+        for item in args:
+            if item.is_Pow and item.exp.is_Rational and item.exp.is_negative:
+                if item.exp != -1:
+                    b.append(Pow(item.base, -item.exp, evaluate=False))
+                else:
+                    b.append(Pow(item.base, -item.exp))
+            elif item.is_Rational and item is not S.Infinity:
+                if item.p != 1:
+                    a.append( Rational(item.p) )
+                if item.q != 1:
+                    b.append( Rational(item.q) )
+            else:
+                a.append(item)
+
+        from sympy import Integral, Piecewise, Product, Sum
+
+        # Convert to pretty forms. Add parens to Add instances if there
+        # is more than one term in the numer/denom
+        for i in range(0, len(a)):
+            if (a[i].is_Add and len(a) > 1) or (i != len(a) - 1 and
+                    isinstance(a[i], (Integral, Piecewise, Product, Sum))):
+                a[i] = prettyForm(*p._print(a[i]).parens())
+            elif a[i].is_Relational:
+                a[i] = prettyForm(*p._print(a[i]).parens())
+            else:
+                a[i] = p._print(a[i])
+
+        for i in range(0, len(b)):
+            if (b[i].is_Add and len(b) > 1) or (i != len(b) - 1 and
+                    isinstance(b[i], (Integral, Piecewise, Product, Sum))):
+                b[i] = prettyForm(*p._print(b[i]).parens())
+            else:
+                b[i] = p._print(b[i])
+
+        # Construct a pretty form
+        if len(b) == 0:
+            return prettyForm.__mul__(*a)
+        else:
+            if len(a) == 0:
+                a.append( p._print(S.One) )
+            return prettyForm.__mul__(*a)/prettyForm.__mul__(*b)
+
     @property
     def is_lower(self):
-        for arg in self.args :
+        for arg in self.args:
             if not arg.shape:
                 continue            
             if len(arg.shape) == 1:
@@ -2531,7 +2592,7 @@ class Times(Expr, AssocOp):
              
     @property
     def is_upper(self):
-        for arg in self.args :
+        for arg in self.args:
             if not arg.shape:
                 continue
             if len(arg.shape) == 1:
@@ -2568,13 +2629,13 @@ class Times(Expr, AssocOp):
 
     @classmethod
     def rewrite_from_Exp(cls, self):
-        if self.arg.is_Plus:
+        if self.arg.is_Add:
             return cls(*(self.func(arg) for arg in self.args[0].args))
         return self
 
     @classmethod
-    def rewrite_from_Power(cls, self):
-        if self.exp.is_Plus:
+    def rewrite_from_Pow(cls, self):
+        if self.exp.is_Add:
             return cls(*(self.base ** exp for exp in self.exp.args))
         return self
     
@@ -2614,7 +2675,7 @@ class Times(Expr, AssocOp):
             for arg in self.function.args:
                 if not arg.has(*variables):
                     coefficient.append(arg)
-                elif arg.is_Power and arg.exp.is_Plus and any(not exp.has(*variables) for exp in arg.exp.args):
+                elif arg.is_Pow and arg.exp.is_Add and any(not exp.has(*variables) for exp in arg.exp.args):
                     base = arg.base
                     for exp in arg.exp.args:
                         if exp.has(*variables):
@@ -2631,7 +2692,7 @@ class Times(Expr, AssocOp):
     @classmethod
     def rewrite_from_Piecewise(cls, self):
         common_terms = None
-        for e, c in self.args:            
+        for e, c in self.args: 
             if isinstance(e, cls):
                 if common_terms is None:
                     common_terms = {*e.args}
@@ -2663,15 +2724,13 @@ class Times(Expr, AssocOp):
         if self.is_integer:
             from sympy import dtype
             return dtype.integer
-        return super(Times, self).dtype()
+        return super(Mul, self).dtype()
 
     def squeeze(self):
         return self.func(*[t for t in self.args if not t.is_OneMatrix])
 
     
 mul = AssocOpDispatcher('mul')
-
-Mul = Times
 
     
 def prod(a, start=1):

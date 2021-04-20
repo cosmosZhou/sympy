@@ -213,7 +213,7 @@ class FunctionClass(ManagedProperties):
         return self.__name__
 
     def __getattr__(self, attr):
-        if attr.startswith('_'):             
+        if attr.startswith('_'): 
             return
 #         from sympy import println, Foreground        
 #         println('generating func:', attr, color=Foreground.MAGENTA)
@@ -830,6 +830,11 @@ class Function(Application, Expr):
     def _sympystr(self, p):
         return self.func.__name__ + "(%s)" % p.stringify(self.args, ", ")
 
+    def _pretty(self, p):
+        # optional argument func_name for supplying custom names
+        # XXX works only for applied functions
+        return p._helper_print_function(self.func, self.args)
+
     def _latex(self, p, exp=None):
         r'''
         Render functions to LaTeX, handling functions that LaTeX knows about
@@ -960,29 +965,50 @@ class AppliedUndef(Function):
         return len(self.args)
         
     @property
-    def limits(self):        
+    def limits(self): 
         return self.args[self.index_of_limits():]
         
     @property
     def arg(self):
         inputs = self.inputs
-        assert len(inputs) == 1, "illegal arg for %s" % type(self)
+#         assert len(inputs) == 1, "illegal arg for %s" % type(self)
         return inputs[0]
         
     @property
-    def inputs(self):        
+    def inputs(self): 
         return self.args[:self.index_of_limits()]
         
     def _sympystr(self, p):
         limits = self.limits
-        if limits:            
+        if limits: 
             limits = [x for x, *_ in limits]
             return self.func.__name__ + "[%s](%s)" % (p.stringify(limits, ", "), p.stringify(self.inputs, ", "))
         return Function._sympystr(self, p)
 
+    def _pretty(self, p):
+        limits = self.limits
+        if limits: 
+            from sympy.printing.pretty.stringpict import prettyForm, stringPict
+            args = self.inputs            
+            func_name = self.func.__name__ + "[%s]" % ", ".join([str(x) for x, *_ in limits])
+            
+            prettyFunc = p._print(Symbol(func_name))
+            prettyArgs = prettyForm(*p._print_seq(args, delimiter=', ').parens())
+    
+            pform = prettyForm(
+                binding=prettyForm.FUNC, *stringPict.next(prettyFunc, prettyArgs))
+    
+            # store pform parts so it can be reassembled e.g. when powered
+            pform.prettyFunc = prettyFunc
+            pform.prettyArgs = prettyArgs
+    
+            return pform
+        
+        return Function._pretty(self, p)
+    
     def _latex(self, p, exp=None):
         limits = self.limits
-        if limits:            
+        if limits: 
             limits = [x for x, *_ in limits]
             return self.func.__name__ + "_{%s}(%s)" % ((", ".join(map(p._print, limits))), ", ".join(map(p._print, self.inputs)))
         return Function._latex(self, p, exp=exp)
@@ -998,11 +1024,15 @@ class AppliedUndef(Function):
         return Function._subs(self, old, new, **hints)
 
     def __contains__(self, other):
-        ...
+        if self == other:
+            return True
     
     def image_set(self):
         if self.is_set:
-            return self.definition.image_set()
+            definition = self.definition
+            if definition == self:
+                return None
+            return definition.image_set()
     
     def condition_set(self):
         if self.is_set:
@@ -1030,16 +1060,28 @@ class UndefinedFunction(FunctionClass):
     The (meta)class of undefined functions.
     """
 
-    def __new__(self, name, bases=(AppliedUndef,), __dict__=None, **kwargs):
-        __dict__ = __dict__ or {}
+    def __new__(self, name, bases=(AppliedUndef,), __dict__=None, **kwargs):  # @ReservedAssignment
+        __dict__ = __dict__ or {}  # @ReservedAssignment
         # Allow Function('f', real=True)
         __dict__.update({'is_' + arg: val for arg, val in kwargs.items() if arg in _assume_defined})
         # You can add other attributes, although they do have to be hashable
         # (but seriously, if you want to add anything other than assumptions,
         # just subclass Function)
         if 'etype' in kwargs:
-            kwargs['type'] = kwargs['etype'].set
-            kwargs['is_set'] = True
+            etype = kwargs['etype']
+            if isinstance(etype, property):
+                kwargs['type'] = property(lambda self: self.etype.set * self.shape)
+            else:
+                kwargs['type'] = kwargs['etype'].set
+                
+            if 'shape' in kwargs:
+                shape = kwargs['shape']
+                if isinstance(shape, property):
+                    kwargs['is_set'] = property(lambda self: not self.shape)
+                else: 
+                    kwargs['is_set'] = not shape
+            else:
+                kwargs['is_set'] = True
         __dict__.update(kwargs)
         # Save these for __eq__
         __dict__.update({'_extra_kwargs': kwargs})
@@ -1048,8 +1090,8 @@ class UndefinedFunction(FunctionClass):
         ret.name = name
         return ret
 
-    def __instancecheck__(cls, instance):
-        return cls in type(instance).__mro__
+    def __instancecheck__(self, instance):
+        return self in type(instance).__mro__
 
     _extra_kwargs = {}
 
@@ -1757,12 +1799,12 @@ class Derivative(Expr):
             from sympy import log, Mul
             if self.expr.is_Log:
                 return 1 / self.expr.arg * Expr.__new__(self.func, self.expr.arg, *self.variable_count)
-            elif self.expr.is_Times:
+            elif self.expr.is_Mul:
                 args = []
                 for i, factor in enumerate(self.expr.args):
                     args.append(Mul(*self.expr.args[:i] + self.expr.args[i + 1:]) * Expr.__new__(self.func, factor, *self.variable_count).doit(deep=False))
                 return Add(*args)
-            elif self.expr.is_Power:
+            elif self.expr.is_Pow:
                 base, exponent = self.expr.args
                 if not exponent.has(*self._wrt_variables):
                     return exponent * base ** (exponent - 1) * Expr.__new__(self.func, base, *self.variable_count).doit(deep=False)
@@ -1771,12 +1813,12 @@ class Derivative(Expr):
             elif self.expr.is_Sum:
                 if self.expr.limits:
                     return self.swap(evaluate=True)
-                else:                    
+                else: 
                     return Expr.__new__(self.func, self.expr.as_Sum(), *self.variable_count).doit(deep=False)
             elif self.expr.is_ReducedSum:
                 if self.expr.limits:
                     return self.swap(evaluate=True)
-                else:                    
+                else: 
                     return Expr.__new__(self.func, self.expr.as_Sum(), *self.variable_count).doit(deep=False)
                     
         return rv
@@ -2079,7 +2121,7 @@ class Derivative(Expr):
 
         return self
 
-    def simplify(self, **_):        
+    def simplify(self, **_): 
         if len(self.variable_count) > 1:
             return self
         x, n = self.variable_count[0]
@@ -2106,7 +2148,7 @@ class Derivative(Expr):
         if isinstance(rhs, cls):
             if lhs.variable_count == rhs.variable_count:
                 C = self.generate_free_symbol(real=True, given=True, free_symbol="C")
-                return self.func(lhs.expr, rhs.expr + C, equivalent=self)
+                return self.func(lhs.expr, rhs.expr + C)
 
     @property
     def dtype(self):
@@ -2343,13 +2385,7 @@ class Difference(Expr):
     def __new__(cls, expr, variable, count=S.One, **kwargs):
 #         assert count >= 0
         assert isinstance(count, int) or count.is_integer
-        from sympy.core.relational import Equality
-        if isinstance(expr, Equality):
-            lhs = Difference.__new__(cls, expr.lhs, variable, count)
-            rhs = Difference.__new__(cls, expr.rhs, variable, count)
-            return expr.func(lhs, rhs, given=expr if expr.plausible else None)
         from sympy.matrices.common import MatrixCommon
-
         from sympy.tensor.array import NDimArray
 
         expr = sympify(expr)
@@ -2362,6 +2398,9 @@ class Difference(Expr):
                 it cannot be differentiated.''' % expr))
 
         # Standardize the variables by sympifying them:
+        if isinstance(variable, tuple):
+            variable, count = variable
+            
         variable = sympify(variable)
 
         # Split the list of variables into a list of the variables we are diff
@@ -2732,7 +2771,7 @@ class Difference(Expr):
         i, _ = newargs[1:]
         j, _ = args[1:]
 
-        if i != j :  # a wrt-variable change
+        if i != j:  # a wrt-variable change
             # case (2) can't change vars by introducing a variable
             # that is contained in expr, e.g.
             # for Difference(f(z, g(h(x), y)), y), y cannot be changed to
@@ -3414,6 +3453,7 @@ class Subs(Expr):
     @property
     def shape(self):
         return self.expr.shape
+
 
 def diff(f, *symbols, **kwargs):
     """
@@ -4162,12 +4202,12 @@ def count_ops(expr, visual=False):
                 elif aargs[0]._coeff_isneg():  # -x + y = SUB, but already recorded ADD
                     ops.append(SUB - ADD)
                 continue
-            if a.is_Power and a.exp is S.NegativeOne:
+            if a.is_Pow and a.exp is S.NegativeOne:
                 ops.append(DIV)
                 args.append(a.base)  # won't be -Mul but could be Add
                 continue
             if (a.is_Mul or
-                a.is_Power or
+                a.is_Pow or
                 a.is_Function or
                 isinstance(a, Derivative) or
                     isinstance(a, Integral)):
@@ -4299,7 +4339,7 @@ def nfloat(expr, n=15, exponent=False, dkeys=False):
         # exponent is suppose to be handled we have to do so here
         rv = rv.xreplace(Transform(
             lambda x: Pow(x.base, Float(x.exp, n)),
-            lambda x: x.is_Power and x.exp.is_Integer))
+            lambda x: x.is_Pow and x.exp.is_Integer))
 
     return rv.xreplace(Transform(
         lambda x: x.func(*nfloat(x.args, n, exponent)),

@@ -1,20 +1,20 @@
-from sympy.core.relational import Unequality, StrictGreaterThan
+from sympy.core.relational import Unequal, Greater
 from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy import Symbol
-from axiom import algebre
+from axiom import algebra
 # given: |A| > 0
 # A != {}
 
 
 @apply
 def apply(given):
-    assert isinstance(given, StrictGreaterThan)
+    assert isinstance(given, Greater)
     A_abs, zero = given.args
     assert A_abs.is_Abs and zero.is_extended_nonnegative
     A = A_abs.arg
 
-    return Unequality(A, A.etype.emptySet)
+    return Unequal(A, A.etype.emptySet)
 
 
 
@@ -27,11 +27,11 @@ def prove(Eq):
     
     Eq << ~Eq[1]
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
     
     Eq << Eq[0].subs(Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

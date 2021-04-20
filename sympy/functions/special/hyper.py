@@ -1,7 +1,5 @@
 """Hypergeometric and Meijer G-functions"""
 
-from __future__ import print_function, division
-
 from sympy.core import S, I, pi, oo, zoo, ilcm, Mod
 from sympy.core.function import Function, Derivative, ArgumentIndexError
 from sympy.core.compatibility import reduce, range
@@ -14,7 +12,7 @@ from sympy.functions import (sqrt, exp, log, sin, cos, asin, atan,
 from sympy.utilities.iterables import default_sort_key
 
 class TupleArg(Tuple):
-    def limit(self, x, xlim, dir='+'):
+    def limit(self, x, xlim, dir=1):
         """ Compute limit x->xlim.
         """
         from sympy.series.limits import limit

@@ -1,11 +1,11 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, sets, calculus
+from axiom import algebra, sets, calculus
 
 
 @apply
 def apply(x, y):
-    return Equality(cos(x + y), cos(x) * cos(y) - sin(x) * sin(y))        
+    return Equal(cos(x + y), cos(x) * cos(y) - sin(x) * sin(y))        
 
 
 @prove
@@ -32,4 +32,4 @@ def prove(Eq):
     
 # https://baike.baidu.com/item/%E5%92%8C%E8%A7%92%E5%85%AC%E5%BC%8F
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

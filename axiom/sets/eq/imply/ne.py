@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
-from axiom import sets, algebre
+from axiom import sets, algebra
 # given : A & B = A | B => A = B
 
 
@@ -21,12 +21,12 @@ def prove(Eq):
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
     
-    Eq << apply(Equality({x, y}, {0, 1}))
+    Eq << apply(Equal({x, y}, {0, 1}))
     
     Eq << ~Eq[-1]
     
     Eq << Eq[0].subs(Eq[-1])
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

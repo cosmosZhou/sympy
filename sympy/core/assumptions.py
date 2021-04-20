@@ -213,6 +213,9 @@ _assume_rules = FactRules([
     'extended_nonzero == extended_real & !zero',
     'invertible == !singular',
     'random -> finite',
+    'emptyset -> finiteset',
+    'infiniteset == !finiteset',
+    'nonemptyset == !emptyset',
 ])
 
 _assume_defined = _assume_rules.defined_facts.copy()
@@ -554,10 +557,12 @@ class ManagedProperties(BasicMeta):
         if isinstance(limits, tuple):
             limits = [*limits]
             for i, limit in enumerate(limits):
-                if isinstance(limit, slice):                    
+                if isinstance(limit, slice): 
                     x, a, b = limit.start, limit.stop, limit.step
                     if b is not None:
                         limits[i] = (x, a, b)
+                    elif isinstance(a, set):
+                        limits[i] = (x, a)
                     elif isinstance(a, int) or a.type in dtype.integer:
                         limits[i] = (x, 0, a)
                     else:
@@ -568,6 +573,8 @@ class ManagedProperties(BasicMeta):
             x, a, b = limits.start, limits.stop, limits.step
             if limits.step is not None:
                 limits = [(x, a, b)]
+            elif isinstance(a, set):
+                limits = [(x, a)]
             elif isinstance(a, int) or a.type in dtype.integer or a.is_Infinity:
                 if self.is_Limit:
                     limits = [(x, a)]
@@ -585,3 +592,27 @@ class ManagedProperties(BasicMeta):
 
     def __iter__(self):
         raise TypeError
+
+
+class Operator:
+    def __init__(self, cls, limits):
+        self.cls = cls
+        self.limits = limits
+        
+    def __call__(self, *args, **kwargs):
+        return self.cls(*args, *self.limits, **kwargs)
+        
+    def __invert__(self):
+        from sympy import Basic
+        from sympy.core.core import Wanted
+        
+        limits = self.limits
+        if len(limits) == 1:                    
+            limit = limits[0]
+            if isinstance(limit, int):
+                limits = [cls] * limit                        
+                limits[-1] = Wanted(limits[-1])
+                cls = Basic
+                            
+        struct = Basic.__new__(cls, *limits)        
+        return Wanted(struct)

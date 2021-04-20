@@ -191,7 +191,7 @@ def _parallel_dict_from_expr_if_gens(exprs, opt):
     for expr in exprs:
         poly = {}
 
-        if expr.is_Equality:
+        if expr.is_Equal:
             expr = expr.lhs - expr.rhs
 
         for term in Add.make_args(expr):
@@ -249,7 +249,7 @@ def _parallel_dict_from_expr_no_gens(exprs, opt):
     for expr in exprs:
         terms = []
 
-        if expr.is_Equality:
+        if expr.is_Equal:
             expr = expr.lhs - expr.rhs
 
         for term in Add.make_args(expr):
@@ -349,7 +349,7 @@ def _dict_from_expr(expr, opt):
 #         raise PolynomialError('non-commutative expressions are not supported')
 
     def _is_expandable_pow(expr):
-        return (expr.is_Power and expr.exp.is_positive and expr.exp.is_Integer
+        return (expr.is_Pow and expr.exp.is_positive and expr.exp.is_Integer
                 and expr.base.is_Add)
 
     if opt.expand is not False:

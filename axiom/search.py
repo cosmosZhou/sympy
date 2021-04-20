@@ -37,7 +37,11 @@ def read_all_files(rootdir, sufix='.py'):
 
 
 def print_py(axiom, prefix=os.path.dirname(axiom_directory())):
-    print(prefix + '/' + axiom.replace('.', '/') + '.py')
+    path = prefix + '/' + axiom.replace('.', '/')
+    py =  path + '.py'
+    if not os.path.exists(py):
+        py = path + '/__init__.py'
+    print(py)
 
     
 def print_all_plausibles():
@@ -54,11 +58,16 @@ def print_all_plausibles():
 def read_all_plausibles(plausible):
     count = 0
     for php in read_all_php(os.path.dirname(__file__)):
+        path = php[:-3]
         py = php[:-3] + 'py'
+        
+        if not os.path.exists(py):
+            py = path + '/__init__.py'
+        
         if not os.path.exists(py):
             print(php + " is an obsolete file since its py file is deleted!")
             os.unlink(php)
-            continue        
+            continue
     
         count += 1
         if is_axiom_plausible(php):
@@ -170,11 +179,12 @@ def search(keyword, caseSensitive=True, wholeWord=False, regularExpression=False
     
     
 if __name__ == '__main__':
-    keyword = 'having.basic'
+    keyword = 'subs'
 
 #     keyword = ''
     caseSensitive = True
     wholeWord = False
+    wholeWord = True    
     regularExpression = False
 #     regularExpression = True
     

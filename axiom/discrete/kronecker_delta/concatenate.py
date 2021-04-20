@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -8,7 +8,7 @@ def apply(W):
     n = W.shape[0]
     k = Symbol.k(integer=True)
     
-    return Equality(BlockMatrix(BlockMatrix(W.T, ZeroMatrix(n)).T,
+    return Equal(BlockMatrix(BlockMatrix(W.T, ZeroMatrix(n)).T,
                                 LAMBDA[k:n + 1](KroneckerDelta(k, n))),
                     BlockMatrix(BlockMatrix(W, ZeroMatrix(n)).T,
                                 LAMBDA[k:n + 1](KroneckerDelta(k, n))).T)
@@ -33,12 +33,14 @@ def prove(Eq):
     
     Eq <<= Eq[-1].this.rhs.astype(KroneckerDelta), Eq[-2].this.rhs.astype(KroneckerDelta)
     
-    Eq << Eq[-2] - Eq[-1]
+    Eq << Eq[-1] - Eq[-2]
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.lamda, (j,), (i,))
+    Eq << Eq[-1].this.apply(algebra.is_zero.imply.eq)
+    
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.lamda, (j,), (i,))
 
     Eq << Eq[-1].subs(Eq[1]).subs(Eq[2]).reversed
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

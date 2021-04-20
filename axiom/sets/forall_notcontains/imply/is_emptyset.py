@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << apply(ForAll[x: A](NotContains(x, B)))
     
-    Eq << algebre.forall.imply.ou.rewrite.apply(Eq[0])    
+    Eq << algebra.forall.imply.ou.apply(Eq[0], simplify=False)    
     
     Eq << ~Eq[-1]
     
@@ -32,5 +32,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

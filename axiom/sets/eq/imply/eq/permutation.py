@@ -1,11 +1,11 @@
 from axiom.utility import prove, apply
 from sympy import *
-from axiom import sets, discrete, algebre
+from axiom import sets, discrete, algebra
 
 
 @apply
 def apply(given, x):
-    assert given.is_Equality
+    assert given.is_Equal
     p_set_comprehension, interval = given.args
     assert len(p_set_comprehension.limits) == 1
     i, zero, n_1 = p_set_comprehension.limits[0]
@@ -17,7 +17,7 @@ def apply(given, x):
     zero, _n = interval.args
     assert zero.is_zero 
     assert _n == n and interval.right_open
-    return Equality(UNION[i:n](x[p[i]].set), x[:n].set_comprehension())
+    return Equal(UNION[i:n](x[p[i]].set), x[:n].set_comprehension())
 
 
 @prove
@@ -26,7 +26,7 @@ def prove(Eq):
     p = Symbol.p(integer=True, shape=(n,))
     x = Symbol.x(integer=True, shape=(n,))
     
-    Eq << apply(Equality(p.set_comprehension(), Interval(0, n - 1, integer=True)), x)
+    Eq << apply(Equal(p.set_comprehension(), Interval(0, n - 1, integer=True)), x)
 
     A = Symbol.A(Eq[1].lhs)
     B = Symbol.B(Eq[1].rhs)
@@ -44,24 +44,24 @@ def prove(Eq):
     
     Eq.subset = Subset(Eq.A_definition.rhs, Eq.B_definition.rhs, plausible=True)    
     
-    Eq << sets.subset.given.forall_subset.having.union_comprehension.apply(Eq.subset)
+    Eq << sets.subset.given.forall_subset.split.union_comprehension.apply(Eq.subset)
     
-    Eq << Eq[-1].apply(sets.contains.given.exists_contains.having.union_comprehension)
+    Eq << Eq[-1].apply(sets.contains.given.exists_contains.st.union_comprehension)
     
-    Eq << algebre.exists.given.exists.subs.apply(Eq[-1], Eq[-1].variable, p[_i])    
+    Eq << algebra.exists.given.exists.subs.apply(Eq[-1], Eq[-1].variable, p[_i])    
     
     Eq.supset = Supset(Eq.subset.lhs, Eq.subset.rhs, plausible=True)    
 
-    Eq << sets.supset.given.forall_supset.having.union_comprehension.apply(Eq.supset)
+    Eq << sets.supset.given.forall_supset.split.union_comprehension.apply(Eq.supset)
     
-    Eq.definition = Eq[-1].apply(sets.contains.given.exists_contains.having.union_comprehension)    
+    Eq.definition = Eq[-1].apply(sets.contains.given.exists_contains.st.union_comprehension)    
     
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[0], _j)
     
     index_j = Eq[-1].lhs.indices[0]
     Eq << Eq.definition.subs(Eq[-1].reversed)
 
-    Eq << algebre.exists.given.exists.subs.apply(Eq[-1], Eq[-1].variable, index_j)
+    Eq << algebra.exists.given.exists.subs.apply(Eq[-1], Eq[-1].variable, index_j)
     
     Eq <<= Eq.subset & Eq.supset
     
@@ -71,5 +71,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

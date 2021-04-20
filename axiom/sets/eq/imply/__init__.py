@@ -1,5 +1,5 @@
 from . import eq
-from . import forall_is_emptyset
+from . import forall_is_emptyset, forall
 from . import subset
 from . import contains
 from . import supset

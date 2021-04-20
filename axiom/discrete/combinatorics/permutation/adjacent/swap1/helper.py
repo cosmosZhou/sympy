@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 
 from sympy.matrices.expressions.matexpr import Swap
-from axiom import algebre, discrete
+from axiom import algebra, discrete
 
 
 @apply
@@ -17,7 +17,7 @@ def apply(x, w=None):
     assert w.shape == (n, n, n)
     assert w[j].definition == Swap(n, 0, j)
     
-    return Equality(LAMBDA[i:n](x[w[j][i] @ LAMBDA[i:n](i)]), LAMBDA[i:n](Piecewise((x[0], Equality(i, j)), (x[j], Equality(i, 0)), (x[i], True))))
+    return Equal(LAMBDA[i:n](x[w[j][i] @ LAMBDA[i:n](i)]), LAMBDA[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))))
 
 
 @prove
@@ -32,13 +32,13 @@ def prove(Eq):
     Eq << discrete.combinatorics.permutation.adjacent.swap1.eq.apply(x, w)
     
     i, j = Eq[-1].rhs.args[0][1].args
-    Eq << Eq[-1].apply(algebre.cond.imply.forall.restrict, (i,), (j,))
+    Eq << Eq[-1].apply(algebra.cond.imply.forall.restrict, (i,), (j,))
     
     _i = i.unbounded
     Eq << Eq[-1].this.lhs.args[1].args[1].limits_subs(i, _i)
 
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (_i, 0, n), simplify=False)   
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (_i, 0, n), simplify=False)   
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

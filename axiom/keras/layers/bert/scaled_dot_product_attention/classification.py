@@ -11,7 +11,7 @@ def apply(n, d, i):
     
     z = Symbol.z(softmax(Q @ K.T / sqrt(d)) @ V)
 
-    return Equality(z[i], softmax(Q[i] @ K.T / sqrt(d)) @ V)
+    return Equal(z[i], softmax(Q[i] @ K.T / sqrt(d)) @ V)
 
 
 @prove
@@ -34,4 +34,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

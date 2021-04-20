@@ -1,16 +1,11 @@
-from sympy.core.relational import LessThan
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.sets import Intersection
-from sympy import Symbol
-from axiom import sets
+from axiom import sets, algebra
 
 
 @apply
 def apply(A, B):
-    return LessThan(abs(Intersection(A, B)), abs(A))
-
-
+    return LessEqual(abs(Intersection(A, B)), abs(A))
 
 
 @prove
@@ -29,7 +24,11 @@ def prove(Eq):
     
     Eq << Eq[-1].reversed
     
+    Eq << Eq[-1].this.apply(algebra.le.simplify.terms.common)
+    
+    Eq << Eq[-1].this.apply(algebra.is_nonnegative.imply.le)
+    
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

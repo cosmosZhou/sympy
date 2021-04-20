@@ -1,5 +1,5 @@
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy.sets.sets import Interval
 from sympy import Symbol
 
@@ -7,7 +7,7 @@ from sympy import Symbol
 def apply(x, y):
     assert x.shape == y.shape
     assert len(x.shape) == 1
-    return Equality(x @ y, y @ x)
+    return Equal(x @ y, y @ x)
 
 
 
@@ -28,4 +28,4 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

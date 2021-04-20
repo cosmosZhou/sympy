@@ -1,12 +1,10 @@
-from sympy import factorial
-from sympy.core.relational import Equality
+from sympy import *
 from sympy.stats.drv import SingleDiscretePSpace
 from sympy.stats.drv_types import PoissonDistribution
 from sympy.stats.rv import PDF, pspace
 from axiom.utility import prove, apply
 import axiom
-from sympy.core.symbol import Symbol
-from sympy.sets import NonnegativeIntegers
+from axiom import algebra
 
 
 @apply
@@ -15,16 +13,16 @@ def apply(x0, x1):
     pspace0 = pspace(x0)
     pspace1 = pspace(x1)
     if not isinstance(pspace0, SingleDiscretePSpace) or not isinstance(pspace1, SingleDiscretePSpace):
-        return None
+        return 
     distribution0 = pspace0.distribution
     distribution1 = pspace1.distribution
     if not isinstance(distribution0, PoissonDistribution) or not isinstance(distribution1, PoissonDistribution):
-        return None
+        return 
     
     Y = Symbol.y(distribution=PoissonDistribution(distribution0.lamda + distribution1.lamda))
     y = pspace(Y).symbol
     
-    return Equality(PDF(x0 + x1)(y), PDF(Y)(y).doit())
+    return Equal(PDF(x0 + x1)(y), PDF(Y)(y).doit())
 
 
 @prove
@@ -40,21 +38,19 @@ def prove(Eq):
 
     Eq << apply(x0, x1)
 
-    Eq << Eq[0].lhs.this.doit(evaluate=False)
-
-    Eq << Eq[0].reversed + Eq[-1]
-
-    Eq << Eq[-1].this.rhs.powsimp()
-
+    Eq << Eq[0].this.lhs.this.doit(evaluate=False)
+    
+    Eq << Eq[-1].this.lhs.powsimp()
+    
     y = Eq[0].lhs.symbol
     Eq << Eq[-1] * factorial(y)
 
     Eq << axiom.discrete.combinatorics.binomial.theorem.apply(lamda0, lamda1, y)
+    
+    Eq << Eq[-2].subs(Eq[-1])
 
-    Eq << Eq[-2].reversed + Eq[-1]
-
-    Eq << Eq[-1].this.rhs.combsimp()
+    Eq << Eq[-1].this.rhs.find(binomial).definition
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

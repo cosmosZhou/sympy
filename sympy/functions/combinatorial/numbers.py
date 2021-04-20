@@ -15,7 +15,7 @@ from sympy.core.compatibility import as_int, SYMPY_INTS, range
 from sympy.core.function import Function, expand_mul
 from sympy.core.logic import fuzzy_not
 from sympy.core.numbers import E, pi
-from sympy.core.relational import LessThan, StrictGreaterThan
+from sympy.core.relational import LessEqual, Greater
 from sympy.functions.combinatorial.factorials import binomial, factorial
 from sympy.functions.elementary.exponential import log
 from sympy.functions.elementary.integers import floor
@@ -821,9 +821,9 @@ class harmonic(Function):
             # TODO: Fix for symbolic values of m
             if m.is_negative:
                 return S.NaN
-            elif LessThan(m, S.One):
+            elif LessEqual(m, S.One):
                 return S.Infinity
-            elif StrictGreaterThan(m, S.One):
+            elif Greater(m, S.One):
                 return zeta(m)
             else:
                 return cls
@@ -2043,14 +2043,14 @@ class Stirling(Function):
             from sympy.core.symbol import dtype
             x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
         from sympy import Sum
-        from sympy.core.relational import Equality
+        from sympy.core.relational import Equal
         from sympy import UNION, ForAll
         from sympy.sets import conditionset
         from sympy.sets.sets import Interval
         i = Symbol.i(integer=True)
         return conditionset(x[:k],
-                                Equality(UNION[i:k](x[i]), Interval(0, n - 1, integer=True)) & 
-                                    Equality(Sum[i:k](abs(x[i])), n) & 
+                                Equal(UNION[i:k](x[i]), Interval(0, n - 1, integer=True)) & 
+                                    Equal(Sum[i:k](abs(x[i])), n) & 
                                     ForAll[i:k](abs(x[i]) > 0))
 
     @classmethod
@@ -2307,7 +2307,7 @@ class Stirling1(Function):
         from sympy.concrete.expr_with_limits import UNION, ForAll
         from sympy.core.numbers import oo
         from sympy.sets.sets import Interval, FiniteSet, image_set
-        from sympy.core.relational import Equality
+        from sympy.core.relational import Equal
         from sympy.logic.boolalg import And
         from sympy import Sum
         from sympy.core.symbol import dtype, DtypeVector
@@ -2323,9 +2323,9 @@ class Stirling1(Function):
             image_set(UNION(FiniteSet(x[i]), (i, 0, k - 1)),
                       x[:k],
                       conditionset(x[:k],
-                                   And(Equality(UNION(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
-                                       Equality(Sum(abs(x[i]), (i, 0, k - 1)), n),
-                                       ForAll(StrictGreaterThan(abs(x[i]), 0), (i, 0, k - 1))))))
+                                   And(Equal(UNION(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
+                                       Equal(Sum(abs(x[i]), (i, 0, k - 1)), n),
+                                       ForAll(Greater(abs(x[i]), 0), (i, 0, k - 1))))))
 
     @classmethod
     def _eval(self, n, k):

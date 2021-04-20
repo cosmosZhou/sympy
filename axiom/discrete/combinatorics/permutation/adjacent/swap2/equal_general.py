@@ -3,7 +3,7 @@ from axiom.utility import prove, apply
 from sympy import *
 from sympy.matrices.expressions.matexpr import Swap
 
-from axiom import algebre, discrete, sets
+from axiom import algebra, discrete, sets
 
 
 @apply
@@ -16,7 +16,7 @@ def apply(n, w=None):
     if w is None:
         w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
     
-    return ForAll(Equality(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain // {i, t}))
+    return ForAll(Equal(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain // {i, t}))
 
 
 @prove
@@ -56,21 +56,21 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs().function.simplify(wrt=True)    
     
-    Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Plus)
+    Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Add)
     
-    Eq << Eq[-1].this.rhs().function.apply(algebre.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs().function.apply(algebra.piecewise.swap.back)
     
     Eq << Eq[-1].this.rhs().function.args[2].cond.simplify()
     
-    Eq << Eq[-1].this.rhs.function.args[2].cond.apply(sets.contains.astype.ou)
+    Eq << Eq[-1].this.rhs.function.args[2].cond.apply(sets.contains.to.ou.split.finiteset)
     
-    Eq << Eq[-1].this.rhs().function.apply(algebre.piecewise.invert, index=1)
+    Eq << Eq[-1].this.rhs().function.apply(algebra.piecewise.invert, index=1)
     
-    Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.subs, index=2)
+    Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.subs, index=2)
     
-    Eq << algebre.cond.imply.forall.restrict.apply(Eq[-1], (j,))
+    Eq << algebra.cond.imply.forall.restrict.apply(Eq[-1], (j,))
 
-    Eq << algebre.cond.imply.forall.restrict.apply(Eq[-1], Eq[1].limits[0])
+    Eq << algebra.cond.imply.forall.restrict.apply(Eq[-1], Eq[1].limits[0])
     
     Eq << Eq[-1].this().function.simplify()
         
@@ -80,7 +80,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this().function.rhs().function.simplify(wrt=True)
     
-    Eq << Eq[-1].this().function.rhs().function.args[-1].expr.args[1].apply(algebre.piecewise.swap.front)
+    Eq << Eq[-1].this().function.rhs().function.args[-1].expr.args[1].apply(algebra.piecewise.swap.front)
     
     Eq << Eq[-1].this.function.rhs.function.astype(KroneckerDelta)
     
@@ -97,9 +97,9 @@ def prove(Eq):
 
     Eq << Eq.www_expansion.subs(Eq[-1].reversed)
 
-    Eq << Eq[-1].apply(discrete.matrix.independence.rmatmul_equal)
+    Eq << Eq[-1].this.function.apply(discrete.matrix.independence.rmatmul_equal)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

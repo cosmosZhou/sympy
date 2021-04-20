@@ -6,7 +6,7 @@ Special - gamma, zeta,spherical harmonics...
 """
 
 from sympy.functions.combinatorial.factorials import (factorial, factorial2,
-        rf, ff, binomial, RisingFactorial, FallingFactorial, subfactorial)
+        rf, ff, binomial, RisingFactorial, FallingFactorial, subfactorial, Factorial)
 
 from sympy.functions.combinatorial.factorials import Binomial  # , Factorial, Factorial2, 
 
@@ -27,7 +27,7 @@ from sympy.functions.elementary.exponential import (exp_polar, exp, log, Exp, Lo
 from sympy.functions.elementary.hyperbolic import (sinh, cosh, tanh, coth,
         sech, csch, asinh, acosh, atanh, acoth, asech, acsch)
 from sympy.functions.elementary.integers import floor, ceiling, frac, Floor, Ceiling, FractionalPart
-from sympy.functions.elementary.piecewise import Piecewise, piecewise_fold
+from sympy.functions.elementary.piecewise import Piecewise, piecewise_fold, ExprCondPair
 from sympy.functions.special.error_functions import (erf, erfc, erfi, erf2,
         erfinv, erfcinv, erf2inv, Ei, expint, E1, li, Li, Si, Ci, Shi, Chi,
         fresnels, fresnelc)
@@ -36,7 +36,7 @@ from sympy.functions.special.gamma_functions import (gamma, lowergamma,
 from sympy.functions.special.zeta_functions import (dirichlet_eta, zeta,
         lerchphi, polylog, stieltjes)
 from sympy.functions.special.tensor_functions import (Eijk, LeviCivita,
-        KroneckerDelta, Boole)
+        KroneckerDelta, Bool)
 from sympy.functions.special.singularity_functions import SingularityFunction
 from sympy.functions.special.delta_functions import DiracDelta, Heaviside
 from sympy.functions.special.bsplines import bspline_basis, bspline_basis_set, interpolating_spline

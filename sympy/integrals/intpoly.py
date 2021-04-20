@@ -869,7 +869,7 @@ def best_origin(a, b, lineseg, expr):
         if isinstance(expr, Expr):  # Find the sum total of power of each
             if expr.is_Add:         # generator and store in a dictionary.
                 for monomial in expr.args:
-                    if monomial.is_Power:
+                    if monomial.is_Pow:
                         if monomial.args[0] in gens:
                             power_gens[monomial.args[0]] += monomial.args[1]
                     else:
@@ -887,7 +887,7 @@ def best_origin(a, b, lineseg, expr):
                         power_gens[term] += 1
                     elif term_type == 2 and term.args[0] in gens:
                         power_gens[term.args[0]] += term.args[1]
-            elif expr.is_Power:
+            elif expr.is_Pow:
                 power_gens[expr.args[0]] = expr.args[1]
             elif expr.is_Symbol:
                 power_gens[expr] += 1
@@ -960,7 +960,7 @@ def decompose(expr, separate=False):
                         poly_dict[degree] += term
                     else:
                         poly_dict[degree] = term
-        elif expr.is_Power:
+        elif expr.is_Pow:
             _, degree = expr.args
             poly_dict[degree] = expr
         else:  # Now expr can only be of `Mul` type

@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 # given A & B = {} => A - B = A
@@ -24,7 +24,7 @@ def apply(given, peicewise_A, peicewise_B):
     assert A == _A
     assert B == _B    
 
-    return Equality(peicewise_A + peicewise_B,
+    return Equal(peicewise_A + peicewise_B,
                     Piecewise((fx + _gx, Contains(x, A)),
                               (_fx + gx, Contains(x, B)),
                               (_fx + _gx, True)))
@@ -37,20 +37,20 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
     x = Symbol.x(integer=True)
-    f = Function.f(nargs=(), shape=(), integer=True)
-    f_quote = Function("f'", nargs=(), shape=(), integer=True)
-    g = Function.g(nargs=(), shape=(), integer=True)
-    g_quote = Function("g'", nargs=(), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
+    f_quote = Function("f'", shape=(), integer=True)
+    g = Function.g(shape=(), integer=True)
+    g_quote = Function("g'", shape=(), integer=True)
 
-    Eq << apply(Equality(A & B, A.etype.emptySet),
+    Eq << apply(Equal(A & B, A.etype.emptySet),
                 Piecewise((f(x), Contains(x, A)), (f_quote(x), True)),
                 Piecewise((g(x), Contains(x, B)), (g_quote(x), True)))
     
     Eq << Eq[1].this.lhs.astype(Piecewise)
     
-    Eq << Eq[-1].bisect(Contains(x, A))
+    Eq << Eq[-1].apply(algebra.cond.given.et.forall, cond=Contains(x, A))
     
-    Eq << algebre.et.given.cond.apply(Eq[-1])
+    Eq << algebra.et.given.cond.apply(Eq[-1])
     
     Eq << Eq[-2].this().function.simplify()
     
@@ -58,9 +58,9 @@ def prove(Eq):
     
     Eq << sets.is_emptyset.imply.forall_notcontains.apply(Eq[0], wrt=Eq[-1].variable)
     
-    Eq << Eq[-1].apply(algebre.cond.imply.eq.piecewise, Eq[-2].lhs, invert=True)
+    Eq << Eq[-1].this.function.apply(algebra.cond.imply.eq.piecewise, Eq[-2].lhs, invert=True)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

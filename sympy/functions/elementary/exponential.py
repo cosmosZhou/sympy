@@ -740,7 +740,7 @@ class Log(Function):
                 else:
                     nonpos.append(x)
             return Add(*expr) + log(Mul(*nonpos))
-        elif arg.is_Power or isinstance(arg, exp):
+        elif arg.is_Pow or isinstance(arg, exp):
             if force or (arg.exp.is_extended_real and (arg.base.is_positive or ((arg.exp + 1)
                 .is_positive and (arg.exp - 1).is_nonpositive))) or arg.base.is_polar:
                 b = arg.base
@@ -923,7 +923,7 @@ class Log(Function):
         return Unequal(self.arg, 0)
 
     @classmethod
-    def rewrite_from_Times(cls, self):        
+    def rewrite_from_Mul(cls, self):        
         for i, arg in enumerate(self.args):
             if isinstance(arg, cls):
                 args = [*self.args]

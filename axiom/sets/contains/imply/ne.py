@@ -11,7 +11,7 @@ def apply(given):
     U, y = axiom.is_Complement(complement)
     assert U.is_UniversalSet
     y = axiom.is_FiniteSet(y)
-    return Unequality(x, y)
+    return Unequal(x, y)
 
 @prove
 def prove(Eq):
@@ -24,5 +24,5 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

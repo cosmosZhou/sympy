@@ -1,6 +1,5 @@
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from sympy import Symbol
 import axiom
 from axiom import sets
 
@@ -12,7 +11,7 @@ def apply(imply):
     a = axiom.is_set_comprehension(lhs)
     b = axiom.is_set_comprehension(rhs)
     k = lhs.variable
-    return Equality(a[k], b[k])
+    return Equal(a[k], b[k])
 
 
 @prove
@@ -21,13 +20,13 @@ def prove(Eq):
     a = Symbol.a(integer=True, shape=(n,))
     b = Symbol.b(integer=True, shape=(n,))
     
-    Eq << apply(Equality(a.set_comprehension(), b.set_comprehension()))
+    Eq << apply(Equal(a.set_comprehension(), b.set_comprehension()))
     
     i = Eq[0].lhs.variable
     
-    Eq << sets.eq.imply.eq.set_comprehension.apply(Eq[-1], (i, 0, n))
+    Eq << sets.eq.imply.eq.set_comprehension.apply(Eq[-1], (i, 0, n), simplify=None)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

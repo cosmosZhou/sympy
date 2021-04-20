@@ -1,16 +1,7 @@
-
+from sympy import *
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
-from tensorflow.nn import softmax
-from sympy import Symbol, Max, Min
-from sympy.core.power import sqrt
-from sympy.concrete.summations import Sum
-from sympy import LAMBDA
-from sympy.sets.contains import Contains
-from sympy.sets.sets import Interval
-from sympy.core.add import Plus
-
 import tensorflow as tf
+from axiom import algebra
 
 
 @apply
@@ -35,13 +26,13 @@ def apply(n, dx, dz):
     a_V = Symbol("a^V", LAMBDA[j:n, i:n](w_V[k + tf.clip(j - i, -k, k)]))
     
     a = Symbol.a(Q @ (K + a_K).T / sqrt(dz))
-    s = Symbol.s(softmax(a))
+    s = Symbol.s(tf.softmax(a))
     
     z = Symbol.z(s @ (V + a_V))
     
     return Contains(k + tf.clip(j - i, -k, k), Interval(0, 2 * k, integer=True)), \
-        Equality(a[i, j], (x[i] @ W_Q @ (x[j] @ W_K + a_K[i, j])) / sqrt(dz)), \
-        Equality(z[i], Sum[j:n](s[i, j] * (x[j] @ W_V + a_V[i, j])))
+        Equal(a[i, j], (x[i] @ W_Q @ (x[j] @ W_K + a_K[i, j])) / sqrt(dz)), \
+        Equal(z[i], Sum[j:n](s[i, j] * (x[j] @ W_V + a_V[i, j])))
 
 
 @prove
@@ -63,7 +54,7 @@ def prove(Eq):
     
     Eq << Eq[7][i]
     
-    Eq << Eq[-1].this.rhs.astype(Plus)
+    Eq << Eq[-1].this.rhs.astype(Add)
         
     k = Symbol.k(integer=True)
     Eq << Eq[-1].this.rhs.args[0].expand(free_symbol={k})
@@ -76,10 +67,12 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[0].astype(Sum)
     
-    Eq << Eq[-1].this.rhs.astype(Sum)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum)
     
     α = Eq[4].lhs
     Eq << Eq[-1].this.rhs.function.collect(α[i, j])
+    
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.domain_defined.insert)
     
     Eq << Eq[8].this.lhs.args[1].definition
     
@@ -89,7 +82,7 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155

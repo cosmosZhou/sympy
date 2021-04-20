@@ -1,2 +1,2 @@
 from . import transit
-from . import union
+from . import union, union_comprehension

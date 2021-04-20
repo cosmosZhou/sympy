@@ -1,22 +1,22 @@
 from sympy import sin, cos, tan
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
-    LessThan, GreaterThan, Unequal
+from sympy.core.relational import Equal, Less, Greater, \
+    LessEqual, GreaterEqual, Unequal
 
 from sympy import Symbol
 
 from sympy import cos, pi
 from sympy.sets.sets import Interval, EmptySet
 from sympy import Exists
-from axiom import algebre, sets, geometry
+from axiom import algebra, sets, geometry
 from sympy.core.symbol import dtype
 from sympy.core.numbers import Pi
-from sympy.core.mul import Times
+from sympy.core.mul import Mul
 
 
 @apply
 def apply(x, y):
-    return Equality(tan(x - y), (tan(x) - tan(y)) / (1 + tan(x) * tan(y)))        
+    return Equal(tan(x - y), (tan(x) - tan(y)) / (1 + tan(x) * tan(y)))        
 
 
 @prove
@@ -30,4 +30,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -70,7 +70,7 @@ function is_axiom_plausible($php)
     foreach (yield_from_php($php) as &$statement) {
         if (is_latex($statement, $matches)) {
             foreach ($matches as list ($match)) {
-                if (preg_match("/.+tag\*\{(.+=>.+)\}.+/", $match, $result)) {
+                if (preg_match("/.+tag\*\{(\?=.+)\}.+/", $match, $result)) {
                     return true;
                 }
             }

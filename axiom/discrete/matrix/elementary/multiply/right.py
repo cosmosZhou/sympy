@@ -1,5 +1,5 @@
 from sympy import Symbol
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from axiom.utility import prove, apply
 
@@ -22,7 +22,7 @@ def apply(x, lamda, w=None):
         assert w[i] == Multiplication(n, i, lamda)
         assert w_quote[i] == Multiplication(n, i, 1 / lamda)
     
-    return Equality(x @ w[i] @ w_quote[i] , x)
+    return Equal(x @ w[i] @ w_quote[i] , x)
 
 
 @prove
@@ -49,5 +49,5 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

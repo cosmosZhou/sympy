@@ -100,7 +100,7 @@ class ConditionalContinuousDomain(ContinuousDomain, ConditionalDomain):
                 elif isinstance(cond, Or):
                     raise NotImplementedError("Or not implemented here")
             elif cond.is_Relational:
-                if cond.is_Equality:
+                if cond.is_Equal:
                     # Add the appropriate Delta to the integrand
                     integrand *= DiracDelta(cond.lhs - cond.rhs)
                 else:
@@ -653,10 +653,10 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
         if expr == self.value:
             return self.density
         y = Dummy('y', real=True)
+        from sympy.sets.fancysets import Reals
+        gs = solveset(expr - y, self.value, Reals)
 
-        gs = solveset(expr - y, self.value, S.Reals)
-
-        if isinstance(gs, Intersection) and S.Reals in gs.args:
+        if isinstance(gs, Intersection) and Reals in gs.args:
             gs = list(gs.args[1])
 
         if not gs:

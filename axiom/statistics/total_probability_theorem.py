@@ -9,9 +9,9 @@ def apply(self, given):
     marginal_probability = self.marginalize(given)
     x = pspace(given).symbol
     if given.is_integer:
-        return Equality(Sum[x](self), marginal_probability)
+        return Equal(Sum[x](self), marginal_probability)
     else:
-        return Equality(Integral[x](self), marginal_probability)
+        return Equal(Integral[x](self), marginal_probability)
 
 
 @prove(provable=False)
@@ -23,4 +23,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -22,5 +22,5 @@ def prove(Eq):
     Eq << sets.subset.imply.contains.apply(Eq[1])
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

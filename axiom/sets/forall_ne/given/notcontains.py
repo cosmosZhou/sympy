@@ -21,11 +21,11 @@ def prove(Eq):
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True, positive=True)
  
-    Eq << apply(ForAll[i:n](Unequality(i, j)))
+    Eq << apply(ForAll[i:n](Unequal(i, j)))
     
     Eq << sets.notcontains.imply.forall_ne.apply(Eq[1], reverse=True)
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

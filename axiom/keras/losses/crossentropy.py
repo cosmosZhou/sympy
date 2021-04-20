@@ -1,18 +1,19 @@
 from sympy import *
 from tensorflow.nn import softmax
 from axiom.utility import prove, apply
-from axiom import algebre, calculus
+from axiom import algebra, calculus
 import tensorflow as tf
+import axiom
 
 
 @apply
 def apply(given):
-    assert isinstance(given, Equality)
+    assert isinstance(given, Equal)
     lhs = given.lhs
     assert isinstance(lhs, summations.Sum)
     
-    limit = lhs.limits[0]
-    j, a, b = limit
+    j, a, b = axiom.limit_is_Interval(lhs.limits, function=lhs.function)
+    
     n = b - a
     
     t = LAMBDA[j:0:n](lhs.function).simplify()    
@@ -24,7 +25,7 @@ def apply(given):
     
     assert y.is_zero == False
     
-    return Equality(Derivative(tf.crossentropy(t, y), x), y - t)
+    return Equal(Derivative(tf.crossentropy(t, y), x), y - t)
 
 
 @prove
@@ -32,9 +33,8 @@ def prove(Eq):
     n = Symbol.n(domain=Interval(2, oo, integer=True))    
     t = Symbol.t(shape=(n,), real=True)
     j = Symbol.j(integer=True)
-    given = Equality(Sum[j:0:n](t[j]), 1)
     
-    Eq << apply(given)
+    Eq << apply(Equal(Sum[j](t[j]), 1))
     assert Eq[0].lhs.is_zero == False
     
     Eq << Eq[-1].lhs.expr.this.definition
@@ -75,10 +75,10 @@ def prove(Eq):
     
     Eq.loss = Eq.loss.this.rhs.args[1].args[1].simplify()
     
-    Eq.loss = Eq.loss.subs(given)
+    Eq.loss = Eq.loss.subs(Eq[1])
     
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq.loss, (i,), simplify=False)
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq.loss, (i,), simplify=False)
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

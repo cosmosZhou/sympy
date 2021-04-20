@@ -6,7 +6,7 @@ from axiom import discrete
 @apply
 def apply(n):
     i = Symbol.i(integer=True)
-    return Equality(factorial(n), Sum[i:n + 1]((-1) ** (n - i) * i ** n * binomial(n, i)))
+    return Equal(factorial(n), Sum[i:n + 1]((-1) ** (n - i) * i ** n * binomial(n, i)))
 
 
 @prove
@@ -26,4 +26,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

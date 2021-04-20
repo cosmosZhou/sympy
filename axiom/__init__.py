@@ -2,25 +2,23 @@ from . import discrete
 from . import sets
 from . import keras
 from . import statistics
-from . import algebre
+from . import algebra
 from . import calculus
 from . import geometry
-
-from sympy.core.numbers import oo
 
 
 def is_zero(eq):
     assert eq.is_Equal
     lhs, rhs = eq.args
-    if lhs.is_zero:
+    if lhs == 0:
         return rhs
-    if rhs.is_zero:
+    if rhs == 0:
         return lhs    
 
 
 def is_odd(eq):
     expr = None
-    if eq.is_StrictLessThan:
+    if eq.is_Less:
         assert eq.rhs.is_zero
         expr = eq.lhs        
     elif eq.is_Equal:
@@ -41,14 +39,14 @@ def is_odd(eq):
         assert d == 2
         return n
 
-    base, exponent = is_Power(expr)
+    base, exponent = is_Pow(expr)
     assert base.is_NegativeOne
     return exponent
 
 
 def is_even(eq):
     expr = None
-    if eq.is_StrictGreaterThan:
+    if eq.is_Greater:
         assert eq.rhs.is_zero
         expr = eq.lhs        
     elif eq.is_Equal:
@@ -69,7 +67,7 @@ def is_even(eq):
         assert d == 2
         return n
     
-    base, exponent = is_Power(expr)
+    base, exponent = is_Pow(expr)
     assert base.is_NegativeOne
     return exponent
 
@@ -93,29 +91,48 @@ def is_infinite_series(fx):
 
 
 def is_nonnegative(eq):
-    assert eq.is_GreaterThan
-    lhs, rhs = eq.args
+    if eq.is_GreaterEqual:
+        lhs, rhs = eq.args
+    elif eq.is_LessEqual:
+        rhs ,lhs = eq.args
+    else:
+        return
     assert rhs.is_zero
     return lhs    
 
 
 def is_nonpositive(eq):
-    assert eq.is_LessThan
-    lhs, rhs = eq.args
+    if eq.is_LessEqual:
+        lhs, rhs = eq.args
+    elif eq.is_GreaterEqual:
+        rhs, lhs = eq.args
+    else:
+        return
+    
     assert rhs.is_zero
     return lhs    
 
 
 def is_positive(eq):
-    assert eq.is_StrictGreaterThan
-    lhs, rhs = eq.args
+    if eq.is_Greater:
+        lhs, rhs = eq.args
+    elif eq.is_Less:
+        rhs, lhs = eq.args
+    else:
+        return
     assert rhs.is_zero
-    return lhs    
+    return lhs
+            
 
 
 def is_negative(eq):
-    assert eq.is_StrictLessThan
-    lhs, rhs = eq.args
+    if eq.is_Less:
+        lhs, rhs = eq.args
+    elif eq.is_Greater:
+        rhs, lhs = eq.args
+    else:
+        return
+    
     assert rhs.is_zero
     return lhs    
 
@@ -135,7 +152,7 @@ def is_ConditionSet(s):
 
 
 def is_ImageSet(s):
-    assert s.is_UNION
+#     assert s.is_UNION
     sym, expr, base_set = s.image_set()    
     return sym, expr, base_set
 
@@ -196,6 +213,9 @@ def is_Interval(domain, integer=True, end=None):
         return domain.min(), domain.max() + 1
     return domain.args
 
+def is_CartesianSpace(domain):
+    assert domain.is_CartesianSpace    
+    return domain.args
 
 def is_integer_Interval(domain):
     assert domain.is_Interval
@@ -259,20 +279,27 @@ def limit_is_set(limits):
         from sympy import Interval
         S = Interval(a, b, right_open=x.is_integer, integer=x.is_integer)
 
-    else:
+    elif len(limit) == 2:
         x, S = limit
-        assert S.is_set 
+        assert S.is_set
+    else:
+        x = limit[0]
+        S = x.universalSet
 
     return x, S
 #     return Contains(x, S)
 
 
-def limit_is_Interval(limits, integer=True):
+def limit_is_Interval(limits, integer=True, function=None):
     assert len(limits) == 1
     limit = limits[0]
     x, *ab = limit
     if integer:
-        assert x.is_integer     
+        assert x.is_integer
+    if not ab and function is not None:         
+        domain = function.domain_defined(x)
+        ab = is_Interval(domain, integer=integer)
+        
     return [x, *ab]
 
 
@@ -353,7 +380,7 @@ def limit_is_LessThan(limits):
     assert len(limits) == 1
     limit = limits[0]
     x, cond = limit
-    is_LessThan(cond)       
+    is_LessEqual(cond)       
     return x, cond
 
 
@@ -373,54 +400,75 @@ def limit_is_Contains(limits):
     return x, cond
 
 
-def is_Times(self, copy=False):
-    assert self.is_Times
+def is_Mul(self, copy=False):
+    assert self.is_Mul
     if copy:
         return [*self.args]
     return self.args
 
 
-def is_Plus(self):
-    assert self.is_Plus
+def is_Add(self, copy=False):
+    assert self.is_Add
+    if copy:
+        return [*self.args]
     return self.args
 
 
 def is_Substract(self):
-    assert self.is_Plus
-    lhs, rhs = self.args
-    if rhs.is_Times:
-        if rhs.args[0].is_NegativeOne:
-            rhs = rhs.func(*rhs.args[1:])
-            return lhs, rhs
-    if lhs.is_Times: 
-        if lhs.args[0].is_NegativeOne:
-            lhs = lhs.func(*lhs.args[1:])
-            return rhs, lhs
+    assert self.is_Add
+    if len(self.args) > 2:
+        positive = []
+        negative = []
+        for arg in self.args:
+            if arg._coeff_isneg():
+                negative.append(-arg)
+            else:
+                positive.append(arg)
+        
+        return self.func(*positive), self.func(*negative)
+    else:
+        lhs, rhs = self.args
+        if rhs.is_Mul:
+            if rhs.args[0].is_NegativeOne:
+                rhs = rhs.func(*rhs.args[1:])
+                return lhs, rhs
+            elif lhs._coeff_isneg():
+                return rhs, -lhs
+            
+        if lhs.is_Mul: 
+            if lhs.args[0].is_NegativeOne:
+                lhs = lhs.func(*lhs.args[1:])
+                return rhs, lhs
     assert False
 
         
 def is_Divide(self):
-    if self.is_Times:
+    if self.is_Mul:
         d_inverse, n = self.args
-        if d_inverse.is_Power:
+        if d_inverse.is_Pow:
             d, e = d_inverse.args
             assert e.is_NegativeOne            
         elif d_inverse.is_Rational:
             num, d = d_inverse.as_numer_denom()
             assert num.is_One
-    elif self.is_Plus:
+        elif n.is_Pow:
+            d_inverse, n = n, d_inverse
+            d, e = d_inverse.args
+            assert e.is_NegativeOne
+            
+    elif self.is_Add:
         n, d = self.as_numer_denom()
         
     return n, d
 
 
 def is_Negate(self):
-    from sympy import Times
-    arg, *args = is_Times(self)
+    from sympy import Mul
+    arg, *args = is_Mul(self)
     if arg == -1: 
-        return Times(*args)
+        return Mul(*args)
     assert arg._coeff_isneg
-    return Times(-arg, *args)
+    return Mul(-arg, *args)
 
 
 def is_And(self, copy=True):
@@ -442,10 +490,20 @@ def is_Unequal(self):
     return self.args
 
 
-def is_Equal(self):
+def is_Equal(self, lhs=None, rhs=None):
     assert self.is_Equal
-    return self.args
+    x, y = self.args
+    if rhs is not None:
+        if not isinstance(y, rhs):
+            x, y = y, x
+    elif lhs is not None:
+        if not isinstance(x, lhs):
+            x, y = y, x        
+    return x, y
 
+def is_Relational(self):
+    assert self.is_Relational
+    return self.args
 
 def is_Mod(self):
     assert self.is_Mod
@@ -461,19 +519,27 @@ def is_Subset(self):
     assert self.is_Subset
     return self.args
 
+def is_NotSubset(self):
+    assert self.is_NotSubset
+    return self.args
 
 def is_Supset(self):
     assert self.is_Supset
     return self.args
 
+def is_NotSupset(self):
+    assert self.is_NotSupset
+    return self.args
 
-def is_Boole(self):
-    assert self.is_Boole
+def is_Bool(self):
+    assert self.is_Bool
     return self.arg
+
 
 def is_Subs(self):
     assert self.is_Subs
     return self.args
+
 
 def is_set_comprehension(self): 
     function, *limits = is_UNION(self)
@@ -484,23 +550,23 @@ def is_set_comprehension(self):
     return LAMBDA[k:a:b](element_k).simplify()
 
 
-def is_LessThan(self):
-    assert self.is_LessThan
+def is_LessEqual(self):
+    assert self.is_LessEqual
     return self.args
 
 
-def is_StrictLessThan(self):
-    assert self.is_StrictLessThan
+def is_Less(self):
+    assert self.is_Less
     return self.args
 
 
-def is_StrictGreaterThan(self):
-    assert self.is_StrictGreaterThan
+def is_Greater(self):
+    assert self.is_Greater
     return self.args
 
 
-def is_GreaterThan(self):
-    assert self.is_GreaterThan
+def is_GreaterEqual(self):
+    assert self.is_GreaterEqual
     return self.args
 
 
@@ -595,6 +661,9 @@ def is_UNION(self):
     assert self.is_UNION
     return self.args 
 
+def is_INTERSECTION(self):
+    assert self.is_INTERSECTION
+    return self.args 
 
 def is_MatMul(self):
     assert self.is_MatMul
@@ -605,11 +674,25 @@ def is_Maximize(self):
     assert self.is_Maximize
     return self.args
 
+def is_Matrix(self):
+    assert self.is_Matrix
+    return self.args
+
+def is_BlockMatrix(self):
+    assert self.is_BlockMatrix
+    return self.args
 
 def is_Minimize(self):
     assert self.is_Minimize
     return self.args
 
+def is_ArgMin(self):
+    assert self.is_ArgMin
+    return self.args
+
+def is_ArgMax(self):
+    assert self.is_ArgMax
+    return self.args
 
 def is_Max(self):
     assert self.is_Max
@@ -621,13 +704,13 @@ def is_Min(self):
     return self.args
 
 
-def is_Power(self):
-    assert self.is_Power
+def is_Pow(self):
+    assert self.is_Pow
     return self.args
 
 
-def is_Squared(self):
-    assert self.is_Power
+def is_Square(self):
+    assert self.is_Pow
     base, exp = self.args
     assert exp == 2
     return base
@@ -657,13 +740,18 @@ def is_Slice(self):
     return self.args
 
 
-def is_Union(self):
+def is_Union(self, copy=False):
     assert self.is_Union
+    if copy:
+        return [*self.args]
+    
     return self.args
 
 
-def is_Intersection(self):
+def is_Intersection(self, copy=False):
     assert self.is_Intersection
+    if copy:
+        return [*self.args]
     return self.args
 
 
@@ -674,7 +762,7 @@ def is_definition(self):
     return definition
 
 
-def forall_equal(eq):
+def forall_eq(eq):
     assert eq.is_ForAll
     limits = eq.limits
     is_Equal(eq.function)
@@ -694,7 +782,7 @@ def forall_ne(eq):
     return (eq.function, *limits)
 
 
-def exists_equal(eq):
+def exists_eq(eq):
     assert eq.is_Exists
     limits = eq.limits
     is_Equal(eq.function)
@@ -715,17 +803,17 @@ def forall_supset(eq):
     return (eq.function, *limits)
 
 
-def forall_less_than(eq):
+def forall_le(eq):
     assert eq.is_ForAll
     limits = eq.limits
-    is_LessThan(eq.function)
+    is_LessEqual(eq.function)
     return (eq.function, *limits)
 
 
-def forall_strict_less_than(eq):
+def forall_lt(eq):
     assert eq.is_ForAll
     limits = eq.limits
-    is_StrictLessThan(eq.function)
+    is_Less(eq.function)
     return (eq.function, *limits)
 
 
@@ -749,18 +837,29 @@ def exists_et(eq):
     eqs = is_And(eq.function)
     return (eq.function, *limits)
 
+def exists_ou(eq):
+    assert eq.is_Exists
+    limits = eq.limits
+    eqs = is_Or(eq.function)
+    return (eq.function, *limits)
 
-def forall_strict_greater_than(eq):
+def exists_forall(eq): 
+    function, *limits_e = is_Exists(eq)
+    function, *limits_f = is_ForAll(function)
+    return ((function, *limits_f), *limits_e)
+
+
+def forall_gt(eq):
     assert eq.is_ForAll
     limits = eq.limits
-    is_StrictGreaterThan(eq.function)
+    is_Greater(eq.function)
     return (eq.function, *limits)
 
 
-def forall_greater_than(eq):
+def forall_ge(eq):
     assert eq.is_ForAll
     limits = eq.limits
-    is_GreaterThan(eq.function)
+    is_GreaterEqual(eq.function)
     return (eq.function, *limits)
 
 
@@ -797,15 +896,25 @@ def is_Limit(self):
     assert self.is_Limit
     return self.args
 
+
+def is_limited(given):
+    limit, R = is_Contains(given)
+    assert R.is_set
+    
+    expr, *limits = is_Limit(limit)
+    if R.is_UniversalSet:
+        return (expr, *limits)
+    return (expr, *limits, R)
+
     
 def is_continuous(cond):
-    eq, *limits = forall_equal(cond)    
+    eq, *limits = forall_eq(cond)    
     xi, a, b = limit_is_Interval(limits, integer=False)
     limit, fxi = is_Equal(eq)
     fz, (z, xi, dirt) = is_Limit(limit)
     
     assert fz._subs(z, xi) == fxi
-    assert str(dirt) == '+-'
+    assert dirt == 0
     return fz, (z, a, b)
 
     
@@ -826,3 +935,8 @@ def is_differentiable(cond):
     assert one == 1
     
     return fx, (x, a, b)
+
+
+def is_Factorial(self):
+    assert self.is_Factorial
+    return self.arg

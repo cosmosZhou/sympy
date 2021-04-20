@@ -390,7 +390,7 @@ class MinMaxBase(Expr, LatticeOp):
         return Expr.__add__(self, other)
 
     @classmethod
-    def rewrite_from_Plus(cls, self):
+    def rewrite_from_Add(cls, self):
         for i, arg in enumerate(self.args):
             if not isinstance(arg, cls):
                 continue
@@ -402,7 +402,7 @@ class MinMaxBase(Expr, LatticeOp):
         return self
 
     @classmethod
-    def rewrite_from_Times(cls, self):
+    def rewrite_from_Mul(cls, self):
         for i, arg in enumerate(self.args):
             if not isinstance(arg, cls):
                 continue

@@ -111,7 +111,7 @@ def JointRV(symbol, pdf, _set=None):
     syms = list(i for i in pdf.free_symbols if isinstance(i, Indexed)
         and i.base == IndexedBase(symbol))
     syms = tuple(sorted(syms, key = lambda index: index.args[1]))
-    _set = S.Reals**len(syms)
+    _set = Reals**len(syms)
     pdf = Lambda(syms, pdf)
     dist = JointDistributionHandmade(pdf, _set)
     jrv = JointPSpace(symbol, dist).value
@@ -132,7 +132,7 @@ class MultivariateNormalDistribution(JointDistribution):
     @property
     def set(self):
         k = self.mu.shape[0]
-        return S.Reals**k
+        return Reals**k
 
     @staticmethod
     def check(mu, sigma):
@@ -218,7 +218,7 @@ class MultivariateLaplaceDistribution(JointDistribution):
     @property
     def set(self):
         k = self.mu.shape[0]
-        return S.Reals**k
+        return Reals**k
 
     @staticmethod
     def check(mu, sigma):
@@ -292,7 +292,7 @@ class MultivariateTDistribution(JointDistribution):
     @property
     def set(self):
         k = self.mu.shape[0]
-        return S.Reals**k
+        return Reals**k
 
     @staticmethod
     def check(mu, sigma, v):
@@ -364,7 +364,7 @@ class NormalGammaDistribution(JointDistribution):
 
     @property
     def set(self):
-        return S.Reals*Interval(0, S.Infinity)
+        return Reals*Interval(0, S.Infinity)
 
     def pdf(self, x, tau):
         beta, alpha, lamda = self.beta, self.alpha, self.lamda
@@ -613,7 +613,7 @@ class GeneralizedMultivariateLogGammaDistribution(JointDistribution):
 
     @property
     def set(self):
-        return S.Reals**len(self.lamda)
+        return Reals**len(self.lamda)
 
     def pdf(self, *y):
         from sympy.functions.special.gamma_functions import gamma

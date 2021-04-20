@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
@@ -23,9 +23,9 @@ def prove(Eq):
     
     Eq << apply(Contains(x, Interval(a, b)), t)
     
-    Eq << sets.contains.imply.et.interval.apply(Eq[0])
+    Eq << sets.contains.imply.et.split.interval.apply(Eq[0])
     
-    Eq << algebre.et.imply.cond.apply(Eq[-1])
+    Eq << algebra.et.imply.cond.apply(Eq[-1])
     
     Eq <<= Eq[-1] + t, Eq[-2] + t
     
@@ -33,5 +33,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

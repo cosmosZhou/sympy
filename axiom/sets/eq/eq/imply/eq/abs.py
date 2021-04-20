@@ -6,7 +6,7 @@ from axiom import sets
 @apply
 def apply(*given):
     equality_A, equality_B = given    
-    assert equality_A.is_Equality and equality_B.is_Equality
+    assert equality_A.is_Equal and equality_B.is_Equal
     image_B, A = equality_A.args
     image_A, B = equality_B.args
         
@@ -15,7 +15,7 @@ def apply(*given):
     
     assert A == _A and B == _B
     
-    return Equality(Abs(A), Abs(B))
+    return Equal(Abs(A), Abs(B))
 
 
 
@@ -37,7 +37,7 @@ def prove(Eq):
     assert f.shape == (m,)
     assert g.shape == (n,)
     
-    Eq << apply(Equality(UNION[a:A](f(a).set), B), Equality(UNION[b:B](g(b).set), A))
+    Eq << apply(Equal(UNION[a:A](f(a).set), B), Equal(UNION[b:B](g(b).set), A))
     
     Eq << sets.imply.le.union_comprehension.apply(*Eq[0].lhs.args)
     
@@ -51,5 +51,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

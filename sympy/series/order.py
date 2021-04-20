@@ -232,17 +232,17 @@ class Order(Expr):
                         expr.as_independent(x, as_Add=False)[1]))
 
                     for i, t in enumerate(margs):
-                        if t.is_Power:
+                        if t.is_Pow:
                             b, q = t.args
                             if b in (x, -x) and q.is_real and not q.has(x):
                                 margs[i] = x**q
-                            elif b.is_Power and not b.exp.has(x):
+                            elif b.is_Pow and not b.exp.has(x):
                                 b, r = b.args
                                 if b in (x, -x) and r.is_real:
                                     margs[i] = x**(r*q)
                             elif b.is_Mul and b.args[0] is S.NegativeOne:
                                 b = -b
-                                if b.is_Power and not b.exp.has(x):
+                                if b.is_Pow and not b.exp.has(x):
                                     b, r = b.args
                                     if b in (x, -x) and r.is_real:
                                         margs[i] = x**(r*q)
@@ -359,11 +359,11 @@ class Order(Expr):
                 common_symbols = expr.variables
             if not common_symbols:
                 return None
-            if (self.expr.is_Power and len(self.variables) == 1
+            if (self.expr.is_Pow and len(self.variables) == 1
                 and self.variables == expr.variables):
                     symbol = self.variables[0]
                     other = expr.expr.as_independent(symbol, as_Add=False)[1]
-                    if (other.is_Power and other.base == symbol and
+                    if (other.is_Pow and other.base == symbol and
                         self.expr.base == symbol):
                             if point == S.Zero:
                                 rv = (self.expr.exp - other.exp).is_nonpositive
@@ -389,10 +389,10 @@ class Order(Expr):
                         return
             return r
 
-        if self.expr.is_Power and len(self.variables) == 1:
+        if self.expr.is_Pow and len(self.variables) == 1:
             symbol = self.variables[0]
             other = expr.as_independent(symbol, as_Add=False)[1]
-            if (other.is_Power and other.base == symbol and
+            if (other.is_Pow and other.base == symbol and
                 self.expr.base == symbol):
                     if point == S.Zero:
                         rv = (self.expr.exp - other.exp).is_nonpositive

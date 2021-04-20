@@ -21,7 +21,7 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer, given=True)
     A = Symbol.A(etype=dtype.integer, given=True)
 
-    Eq << apply(Equality(A & B, A.emptySet))
+    Eq << apply(Equal(A & B, A.emptySet))
     
     Eq << ~Eq[1]
     
@@ -33,5 +33,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

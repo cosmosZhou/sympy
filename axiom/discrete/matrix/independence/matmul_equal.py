@@ -1,14 +1,14 @@
 from sympy.core.numbers import oo
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from sympy import LAMBDA
-from axiom import algebre, discrete
+from axiom import algebra, discrete
 from sympy.matrices.expressions.matmul import MatMul
 from sympy import Symbol
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     lhs, rhs = given.args
     
     assert lhs.is_MatMul
@@ -29,13 +29,13 @@ def apply(given):
 #     n = p_polynomial.shape[0]
     k = p_polynomial.variable
     polynomial = p_polynomial.function
-    assert polynomial.is_Power
+    assert polynomial.is_Pow
     
     b, e = polynomial.as_base_exp()    
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
     
-    return Equality(x, y)
+    return Equal(x, y)
 
 
 
@@ -49,7 +49,7 @@ def prove(Eq):
     y = Symbol.y(shape=(n, m), given=True, complex=True)
     k = Symbol.k(positive=True, integer=True)
     
-    given = Equality(LAMBDA[k:n](p ** k) @ x, LAMBDA[k:n](p ** k) @ y)
+    given = Equal(LAMBDA[k:n](p ** k) @ x, LAMBDA[k:n](p ** k) @ y)
     
     Eq << apply(given)
     
@@ -58,4 +58,4 @@ def prove(Eq):
     Eq << discrete.matrix.independence.rmatmul_equal.apply(Eq[-1])
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

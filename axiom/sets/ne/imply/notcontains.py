@@ -6,7 +6,7 @@ from axiom.utility import prove, apply
 
 @apply(simplify=None)
 def apply(given):
-    assert given.is_Unequality
+    assert given.is_Unequal
     x, y = given.args
     return NotContains(x, y.set)
 
@@ -15,7 +15,7 @@ def apply(given):
 def prove(Eq):
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
-    Eq << apply(Unequality(x, y))
+    Eq << apply(Unequal(x, y))
     
     Eq << ~Eq[-1]
     
@@ -25,5 +25,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 # P is condition set;
 
 
@@ -18,8 +18,8 @@ def prove(Eq):
     y = Symbol.y(complex=True)
     Eq << apply(y)
     
-    Eq << algebre.forall.given.ou.apply(Eq[0])
+    Eq << algebra.forall.given.ou.apply(Eq[0])
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

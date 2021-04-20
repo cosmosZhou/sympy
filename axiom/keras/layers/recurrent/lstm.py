@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from axiom import algebre
+from axiom import algebra
 
 from tensorflow.nn.recurrent.lstm import LSTM, LSTMCell
 from tensorflow.nn import sigmoid
@@ -35,12 +35,11 @@ def apply(x, W, Wh, b):
     ct = Symbol.c_t(ft * c[t - 1] + it * tanh(x[t] @ Wc + h[t - 1] @ Whc + bc))
     ot = Symbol.o_t(sigmoid(x[t] @ Wo + h[t - 1] @ Who + bo))    
      
-    return Equality(h[t], ot * tanh(ct))
+    return Equal(h[t], ot * tanh(ct))
 
 
 @prove
 def prove(Eq):
-    m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
     
     dx = Symbol.d_x(integer=True, positive=True)
@@ -73,4 +72,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -1,15 +1,8 @@
-from sympy.core.relational import Equality
-
+from sympy import *
 from axiom.utility import prove, apply
-
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-
 from sympy.matrices.expressions.matexpr import Swap
-from sympy import LAMBDA
-from sympy import Symbol
 import axiom
-from axiom import algebre, discrete
+from axiom import algebra, discrete, sets
 
 
 @apply
@@ -26,7 +19,7 @@ def apply(a, free_symbol=None):
     else:
         return
  
-    return Equality(a.set_comprehension(free_symbol=free_symbol), x.set_comprehension(free_symbol=free_symbol).simplify())
+    return Equal(a.set_comprehension(free_symbol=free_symbol), x.set_comprehension(free_symbol=free_symbol).simplify())
 
 
 @prove
@@ -50,8 +43,10 @@ def prove(Eq):
     Eq << Eq[-2][k]
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
+    
+    Eq << Eq[-1].this.rhs.apply(sets.union_comprehension.limits.domain_defined.delete)
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

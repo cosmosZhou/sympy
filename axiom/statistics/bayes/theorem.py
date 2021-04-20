@@ -28,9 +28,8 @@ def apply(self, *given):
         else:
             inequality = Unequal(given_probability, 0)
         
-        return ForAll[given: inequality](Equality(self, given_probability * given_marginal_prob))
+        return ForAll[given: inequality](Equal(self, given_probability * given_marginal_prob))
     else:
-        from sympy import S
         marginal_prob = self
         cond = S.true
         for g in given:
@@ -52,7 +51,7 @@ def apply(self, *given):
         else:
             inequality = Unequal(given_probability, 0)
         
-        return ForAll[given: inequality](Equality(self, given_probability * given_marginal_prob))
+        return ForAll[given: inequality](Equal(self, given_probability * given_marginal_prob))
     
 
 @prove(provable=False)
@@ -64,4 +63,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

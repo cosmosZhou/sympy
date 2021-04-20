@@ -1,5 +1,2 @@
-from . import negate
-from . import add
-from . import substract
-from . import divide
-from . import multiply
+from . import neg, add, sub, div, mul
+from . import acos

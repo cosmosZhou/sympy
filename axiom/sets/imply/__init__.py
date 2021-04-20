@@ -7,4 +7,4 @@ from . import forall_exists_eq
 from . import is_nonemptyset
 from . import contains
 from . import forall_contains
-from . import subset
+from . import subset, sufficient

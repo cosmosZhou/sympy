@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets
+from axiom import sets, algebra
 
 # reference
 # www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
@@ -8,7 +8,7 @@ from axiom import sets
 
 @apply
 def apply(A, B):
-    return Equality(abs(A | B), abs(A) + abs(B) - abs(A & B))
+    return Equal(abs(A | B), abs(A) + abs(B) - abs(A & B))
 
 
 @prove
@@ -21,11 +21,13 @@ def prove(Eq):
     
     Eq << Eq[-1].reversed + Eq[-2]
     
+    Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
+    
     Eq << Eq[-1] - Eq[-1].rhs.args[1]
     
     Eq << sets.imply.eq.principle.addition.apply(B - A, A & B).reversed
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,2 +1,1 @@
-from . import union
-from . import lhs
+from . import union_comprehension

@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre, geometry, calculus, sets
+from axiom import algebra, geometry, calculus, sets
 
 
 @apply
@@ -8,7 +8,7 @@ def apply(sinx):
     i = S.ImaginaryUnit
     assert sinx.is_Sin
     x = sinx.arg
-    return Equality(sinx, (E ** (i * x) - E ** (-i * x)) / (2 * i))
+    return Equal(sinx, (E ** (i * x) - E ** (-i * x)) / (2 * i))
 
 
 @prove
@@ -31,5 +31,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

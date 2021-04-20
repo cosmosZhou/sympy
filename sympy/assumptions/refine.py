@@ -167,7 +167,7 @@ def refine_Pow(expr, assumptions):
                         e2 *= expr.base
                 if e2.is_Add:
                     i, p = e2.as_two_terms()
-                    if p.is_Power and p.base is S.NegativeOne:
+                    if p.is_Pow and p.base is S.NegativeOne:
                         if ask(Q.integer(p.exp), assumptions):
                             i = (i + 1)/2
                             if ask(Q.even(i), assumptions):
@@ -244,10 +244,10 @@ handlers_dict = {
     'Abs': refine_abs,
     'Pow': refine_Pow,
     'atan2': refine_atan2,
-    'Equality': refine_Relational,
-    'Unequality': refine_Relational,
-    'GreaterThan': refine_Relational,
-    'LessThan': refine_Relational,
-    'StrictGreaterThan': refine_Relational,
-    'StrictLessThan': refine_Relational
+    'Equal': refine_Relational,
+    'Unequal': refine_Relational,
+    'GreaterEqual': refine_Relational,
+    'LessEqual': refine_Relational,
+    'Greater': refine_Relational,
+    'Less': refine_Relational
 }

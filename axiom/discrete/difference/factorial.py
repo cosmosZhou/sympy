@@ -1,13 +1,13 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import discrete, algebre
+from axiom import discrete, algebra
 
 
 @apply
 def apply(x, n):
     if not x.is_Symbol:
         return
-    return Equality(Difference(x ** n, x, n), factorial(n))
+    return Equal(Difference(x ** n, x, n), factorial(n))
 
 
 @prove
@@ -19,12 +19,12 @@ def prove(Eq):
     assert t.is_complex
     assert t.is_extended_real
     
-    n = Symbol.n(integer=True, nonnegative=True)
+    n = Symbol.n(integer=True, nonnegative=True, given=False)
     Eq << apply(x, n)
     
     Eq.initial = Eq[0].subs(n, 0)
     
-    Eq << Eq.initial.doit()
+    Eq << Eq.initial.this.lhs.doit()
     
     Eq.induction = Eq[0].subs(n, n + 1)
     
@@ -42,20 +42,19 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.bisect(n.set)
     
-    Eq << discrete.combinatorics.permutation.factorial.expand.apply(n + 1)
-    
-    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+    Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
     
     _k = Symbol.k(domain=Interval(0, n, right_open=True, integer=True))
     
     Eq << Eq[0].subs(n, _k)
     
-    Eq << Difference(Eq[-1], x, n - _k)
+    Eq << discrete.eq.imply.eq.difference.apply(Eq[-1], (x, n - _k))
+    
     Eq << Eq[-1].this.lhs.as_one_term()
         
     Eq << Eq[-1] * binomial(n + 1, _k)
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.sum, (_k,))    
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (_k,))    
     
     Eq << Eq[-1].this.lhs.limits_subs(_k, k)
     
@@ -67,11 +66,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.forall((_k,))
     
-    Eq << algebre.eq.sufficient.imply.eq.second.induction.having.forall.apply(Eq.initial, Eq[-1], n=n)
+    Eq << algebra.cond.sufficient.imply.cond.induction.second.split.forall.apply(Eq.initial, Eq[-1], n=n)
     
     Eq << Eq[0].subs(n, _k)
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,0 +1,27 @@
+from sympy import *
+from axiom.utility import prove, apply
+import axiom
+from axiom import algebra
+
+
+@apply
+def apply(self):
+    args = axiom.is_Mul(self)
+    return Equal(self, Piecewise((self, And(*(Unequal(arg, 0) for arg in args))), (0, True)))
+
+
+@prove
+def prove(Eq):
+    x = Symbol.x(real=True)
+    y = Symbol.y(real=True)
+    Eq << apply(x * y)
+    
+    Eq << algebra.eq.given.ou.apply(Eq[0])
+    
+    Eq << Eq[-1].this.args[1].apply(algebra.et.given.is_nonzero)
+    
+    Eq << Eq[-1].this.args[0].args[0].apply(algebra.ou.given.is_zero)
+
+    
+if __name__ == '__main__':
+    prove()

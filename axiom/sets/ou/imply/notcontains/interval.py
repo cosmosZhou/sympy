@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 @apply
@@ -30,9 +30,9 @@ def prove(Eq):
     
     Eq <<= Eq[-1] & Eq[0]
     
-    Eq << Eq[-1].astype(Or)
+    Eq << algebra.et.imply.ou.apply(Eq[-1])
     
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

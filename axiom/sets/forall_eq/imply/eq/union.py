@@ -1,50 +1,31 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 @apply
 def apply(given):
-    eq, *limits = axiom.forall_equal(given)
+    eq, *limits = axiom.forall_eq(given)
     lhs, rhs = eq.args
     
-    return Equality(UNION(lhs, *limits).simplify(), UNION(rhs, *limits).simplify())
+    return Equal(UNION(lhs, *limits).simplify(), UNION(rhs, *limits).simplify())
 
 
 @prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
-    f = Function.f(nargs=(), shape=(), etype=dtype.integer)
-    g = Function.g(nargs=(), shape=(), etype=dtype.integer)
+    f = Function.f(shape=(), etype=dtype.integer)
+    g = Function.g(shape=(), etype=dtype.integer)
     
-    Eq << apply(ForAll[i:n](Equality(f(i), g(i))))
+    Eq << apply(ForAll[i:n](Equal(f(i), g(i))))
     
-    m = Symbol.m(domain=Interval(1, n - 1, integer=True))
-    Eq.hypothesis = Eq[1]._subs(n, m).copy(plausible=True)
+    Eq << sets.imply.sufficient.eq.union_comprehension.induction.apply(Equal(f(i), g(i)), (i, 0, n))
     
-    Eq.initial = Eq.hypothesis.subs(m, 1)
-    
-    Eq << Eq[0].subs(i, 0)
-    
-    Eq.induction = Eq.hypothesis.subs(m, m + 1)
-    
-    Eq << Eq[0].subs(i, m)
-    
-    Eq << Eq.hypothesis.apply(sets.eq.imply.eq.union, Eq[-1].lhs)
-    
-    Eq << Eq[-1].this.rhs.subs(Eq[-2])
-    
-    Eq << Eq.induction.induct()
-    
-    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=m, start=1)
-    
-    Eq << Eq.hypothesis.subs(m, n - 1)
-    
-    Eq << Eq[-1].subs(n, n + 1)
+    Eq << algebra.cond.sufficient.imply.cond.transit.apply(Eq[0], Eq[-1])
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

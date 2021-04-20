@@ -59,6 +59,10 @@ del sys
 
 
 try:
+    try:
+        del bisect
+    except :
+        ...
     import mpmath
 except ImportError:
     raise ImportError("SymPy now depends on mpmath as an external library. "
@@ -111,7 +115,7 @@ from .integrals import *
 from .tensor import *
 from .parsing import *
 from .calculus import *
-from .algebras import *
+from .algebra import *
 # This module causes conflicts with other modules:
 # from .stats import *
 # Adds about .04-.05 seconds of import time

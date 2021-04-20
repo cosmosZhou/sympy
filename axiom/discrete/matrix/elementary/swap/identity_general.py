@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from axiom.utility import prove, apply
 
@@ -23,7 +23,7 @@ def apply(x, d, w=None):
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
         assert w[i, j].is_Swap or w[i, j].definition.is_Swap
     
-    return Equality(x[d @ w[i, j, k]], LAMBDA[k:n](x[d[k]]) @ w[i, j, k])
+    return Equal(x[d @ w[i, j, k]], LAMBDA[k:n](x[d[k]]) @ w[i, j, k])
 
 
 @prove
@@ -48,4 +48,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

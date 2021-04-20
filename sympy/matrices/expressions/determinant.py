@@ -18,7 +18,7 @@ class Determinant(Expr):
     """
     is_complex = True
 
-    def __new__(cls, mat):
+    def __new__(cls, mat, evaluate=False):
         from sympy.matrices.expressions.blockmatrix import BlockMatrix
         if isinstance(mat, (list, tuple)):
             mat = BlockMatrix(*mat)

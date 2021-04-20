@@ -8,59 +8,59 @@ from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
 from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet
 from sympy.utilities.miscellany import filldedent
+# from sympy.sets import Reals
 
+Reals = Interval(S.NegativeInfinity, S.Infinity)
 
-class Reals(with_metaclass(Singleton, Interval)):
-    """
-    Represents all real numbers
-    from negative infinity to positive infinity,
-    including all integer, rational and irrational numbers.
-    This set is also available as the Singleton, S.Reals.
-
-
-    Examples
-    ========
-
-    >>> from sympy import S, Interval, Rational, pi, I
-    >>> 5 in S.Reals
-    True
-    >>> Rational(-1, 2) in S.Reals
-    True
-    >>> pi in S.Reals
-    True
-    >>> 3*I in S.Reals
-    False
-    >>> S.Reals.contains(pi)
-    True
-
-
-    See Also
-    ========
-
-    ComplexRegion
-    """
-
-    def __new__(cls):
-        return Interval.__new__(cls, -S.Infinity, S.Infinity)
-
-    def __matmul__(self, other):
-        if other.is_set:
-            return ProductSet(self, other)
-        
-        raise Exception("could not multiply %s, %s" % (self, other))
-    
-    def __mul__(self, other):
-        if other.is_extended_real:
-            return self
-        if other.is_complex:
-            return S.Complexes
-
-        raise Exception("could not multiply %s, %s" % (self, other))
-    
-    def _latex(self, p):
-        return r"\mathbb{R}"
-    
-    
+# class _Reals(with_metaclass(Singleton, Interval)):
+#     """
+#     Represents all real numbers
+#     from negative infinity to positive infinity,
+#     including all integer, rational and irrational numbers.
+#     This set is also available as the Singleton, Reals.
+# 
+# 
+#     Examples
+#     ========
+# 
+#     >>> from sympy import S, Interval, Rational, pi, I
+#     >>> 5 in Reals
+#     True
+#     >>> Rational(-1, 2) in Reals
+#     True
+#     >>> pi in Reals
+#     True
+#     >>> 3*I in Reals
+#     False
+#     >>> Reals.contains(pi)
+#     True
+# 
+# 
+#     See Also
+#     ========
+# 
+#     ComplexRegion
+#     """
+# 
+#     def __new__(cls):
+#         return Interval.__new__(cls, -S.Infinity, S.Infinity)
+# 
+#     def __matmul__(self, other):
+#         if other.is_set:
+#             return ProductSet(self, other)
+#         
+#         raise Exception("could not multiply %s, %s" % (self, other))
+#     
+#     def __mul__(self, other):
+#         if other.is_extended_real:
+#             return self
+#         if other.is_complex:
+#             return S.Complexes
+# 
+#         raise Exception("could not multiply %s, %s" % (self, other))
+#     
+#     def _latex(self, p):
+#         return r"\mathbb{R}"
 # class Integers(Reals):
 #     """
 #     Represents all integers: positive, negative and zero. This set is also
@@ -145,7 +145,7 @@ class Reals(with_metaclass(Singleton, Interval)):
 #         if other.is_integer:
 #             return self
 #         if other.is_extended_real:
-#             return S.Reals
+#             return Reals
 #         if other.is_complex:
 #             return S.Complexes
 # 
@@ -155,7 +155,7 @@ class Reals(with_metaclass(Singleton, Interval)):
 #         if other.is_integer:
 #             return self
 #         if other.is_extended_real:
-#             return S.Reals
+#             return Reals
 #         if other.is_complex:
 #             return S.Complexes
 
@@ -787,7 +787,7 @@ def normalize_theta_set(theta):
     elif theta.is_Union:
         return Union(*[normalize_theta_set(interval) for interval in theta.args])
 
-    elif theta.is_subset(S.Reals):
+    elif theta.is_subset(Reals):
         raise NotImplementedError("Normalizing theta when, it is of type %s is not "
                                   "implemented" % type(theta))
     else:
@@ -877,7 +877,7 @@ class ComplexRegion(Set):
         if b.is_EmptySet:
             return
         
-        if b.is_subset(S.Reals):
+        if b.is_subset(Reals):
             # treat a subset of reals as a complex region
             b = ComplexRegion.from_real(b)
 
@@ -1118,7 +1118,7 @@ class ComplexRegion(Set):
         ComplexRegion(Interval(0, 1) x {0}, False)
 
         """
-        if not sets.is_subset(S.Reals):
+        if not sets.is_subset(Reals):
             raise ValueError("sets must be a subset of the real line")
 
         return cls(sets * FiniteSet(0))
@@ -1164,13 +1164,13 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
     is_UniversalSet = True
     
     def __new__(cls):
-        return ComplexRegion.__new__(cls, S.Reals @ S.Reals)
+        return ComplexRegion.__new__(cls, Reals @ Reals)
 
     def __eq__(self, other):
-        return other == ComplexRegion(S.Reals @ S.Reals)
+        return other == ComplexRegion(Reals @ Reals)
 
     def __hash__(self):
-        return hash(ComplexRegion(S.Reals @ S.Reals))
+        return hash(ComplexRegion(Reals @ Reals))
 
     def __str__(self):
         return "S.Complexes"

@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from axiom import sets
@@ -11,7 +11,7 @@ from sympy import Symbol
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     x_union_intersect_A, emptyset = given.args
     if emptyset:
         tmp = emptyset
@@ -28,7 +28,7 @@ def apply(given):
         A = tmp
     assert x_union.is_UNION
 
-    return ForAll(Equality(x_union.function & A, A.etype.emptySet), *x_union.limits)
+    return ForAll(Equal(x_union.function & A, A.etype.emptySet), *x_union.limits)
 
 
 
@@ -40,7 +40,7 @@ def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(shape=(k + 1,), etype=dtype.integer)
 
-    Eq << apply(Equality(UNION[i:0:k](x[i]) & A, A.etype.emptySet))    
+    Eq << apply(Equal(UNION[i:0:k](x[i]) & A, A.etype.emptySet))    
     
     Eq << Eq[-1].simplify()
 
@@ -52,5 +52,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

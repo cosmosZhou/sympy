@@ -19,6 +19,7 @@ from sympy import S, Symbol
 from sympy.core.sympify import sympify
 from sympy.simplify import simplify
 from sympy.solvers.solveset import solveset
+from sympy.sets.fancysets import Reals
 
 
 def singularities(expression, symbol):
@@ -86,7 +87,7 @@ def singularities(expression, symbol):
             " functions are not yet implemented."
         )
     else:
-        domain = S.Reals if symbol.is_real else S.Complexes
+        domain = Reals if symbol.is_real else S.Complexes
         return solveset(simplify(1 / expression), symbol, domain)
 
 
@@ -95,7 +96,7 @@ def singularities(expression, symbol):
 ###########################################################################
 
 
-def monotonicity_helper(expression, predicate, interval=S.Reals, symbol=None):
+def monotonicity_helper(expression, predicate, interval=Reals, symbol=None):
     """
     Helper function for functions checking function monotonicity.
 
@@ -138,11 +139,11 @@ def monotonicity_helper(expression, predicate, interval=S.Reals, symbol=None):
 
     variable = symbol or (free.pop() if free else Symbol('x'))
     derivative = expression.diff(variable)
-    predicate_interval = solveset(predicate(derivative), variable, S.Reals)
+    predicate_interval = solveset(predicate(derivative), variable, Reals)
     return interval.is_subset(predicate_interval)
 
 
-def is_increasing(expression, interval=S.Reals, symbol=None):
+def is_increasing(expression, interval=Reals, symbol=None):
     """
     Return whether the function is increasing in the given interval.
 
@@ -170,7 +171,7 @@ def is_increasing(expression, interval=S.Reals, symbol=None):
     >>> from sympy import is_increasing
     >>> from sympy.abc import x, y
     >>> from sympy import S, Interval, oo
-    >>> is_increasing(x**3 - 3*x**2 + 4*x, S.Reals)
+    >>> is_increasing(x**3 - 3*x**2 + 4*x, Reals)
     True
     >>> is_increasing(-x**2, Interval(-oo, 0))
     True
@@ -185,7 +186,7 @@ def is_increasing(expression, interval=S.Reals, symbol=None):
     return monotonicity_helper(expression, lambda x: x >= 0, interval, symbol)
 
 
-def is_strictly_increasing(expression, interval=S.Reals, symbol=None):
+def is_strictly_increasing(expression, interval=Reals, symbol=None):
     """
     Return whether the function is strictly increasing in the given interval.
 
@@ -228,7 +229,7 @@ def is_strictly_increasing(expression, interval=S.Reals, symbol=None):
     return monotonicity_helper(expression, lambda x: x > 0, interval, symbol)
 
 
-def is_decreasing(expression, interval=S.Reals, symbol=None):
+def is_decreasing(expression, interval=Reals, symbol=None):
     """
     Return whether the function is decreasing in the given interval.
 
@@ -271,7 +272,7 @@ def is_decreasing(expression, interval=S.Reals, symbol=None):
     return monotonicity_helper(expression, lambda x: x <= 0, interval, symbol)
 
 
-def is_strictly_decreasing(expression, interval=S.Reals, symbol=None):
+def is_strictly_decreasing(expression, interval=Reals, symbol=None):
     """
     Return whether the function is strictly decreasing in the given interval.
 
@@ -312,7 +313,7 @@ def is_strictly_decreasing(expression, interval=S.Reals, symbol=None):
     return monotonicity_helper(expression, lambda x: x < 0, interval, symbol)
 
 
-def is_monotonic(expression, interval=S.Reals, symbol=None):
+def is_monotonic(expression, interval=Reals, symbol=None):
     """
     Return whether the function is monotonic in the given interval.
 
@@ -350,9 +351,9 @@ def is_monotonic(expression, interval=S.Reals, symbol=None):
     True
     >>> is_monotonic(1/(x**2 - 3*x), Interval.Lopen(3, oo))
     True
-    >>> is_monotonic(x**3 - 3*x**2 + 4*x, S.Reals)
+    >>> is_monotonic(x**3 - 3*x**2 + 4*x, Reals)
     True
-    >>> is_monotonic(-x**2, S.Reals)
+    >>> is_monotonic(-x**2, Reals)
     False
     >>> is_monotonic(x**2 + y + 1, Interval(1, 2), x)
     True

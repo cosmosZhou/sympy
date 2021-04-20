@@ -82,7 +82,7 @@ def cse_separate(r, e):
     ...
     True
     """
-    d = sift(e, lambda w: w.is_Equality and w.lhs.is_Symbol)
+    d = sift(e, lambda w: w.is_Equal and w.lhs.is_Symbol)
     r = r + [w.args for w in d[True]]
     e = d[False]
     return [reps_toposort(r), e]

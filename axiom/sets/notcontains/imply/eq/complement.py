@@ -10,7 +10,7 @@ from axiom import sets
 def apply(given):
     assert given.is_NotContains    
     e, S = given.args
-    return Equality(S // {e}, S)
+    return Equal(S // {e}, S)
 
 
 @prove
@@ -26,5 +26,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

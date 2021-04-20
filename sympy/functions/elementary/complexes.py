@@ -328,7 +328,7 @@ class sign(Function):
             if isinstance(arg, sign):
                 return arg
         if arg.is_imaginary:
-            if arg.is_Power and arg.exp is S.Half:
+            if arg.is_Pow and arg.exp is S.Half:
                 # we catch this because non-trivial sqrt args are not expanded
                 # e.g. sqrt(1-sqrt(2)) --x-->  to I*sqrt(sqrt(2) - 1)
                 return S.ImaginaryUnit
@@ -594,6 +594,17 @@ class Abs(Function):
     
     def _sympystr(self, p):
         return "|%s|" % p._print(self.arg)
+    
+    @property
+    def definition(self):
+        z = self.arg
+        if z.is_extended_real:
+            return Piecewise((z, z >= 0), (-z, True))
+        
+#         from sympy import re
+        x = re(z)
+        y = im(z)
+        return sqrt(x * x + y * y)
 
 
 class Norm(Function):
@@ -694,7 +705,7 @@ class Norm(Function):
         return latex
 
     def simplify(self, deep=False, **kwargs):
-        if self.arg.is_Times:
+        if self.arg.is_Mul:
             coeff = []
             args = []
             for arg in self.arg.args:
@@ -703,9 +714,36 @@ class Norm(Function):
                 else:
                     coeff.append(arg)
             if coeff:
-                Times = self.arg.func
-                return abs(Times(*coeff)) * self.func(Times(*args))
-        return Function.simplify(self, deep=deep, **kwargs)  
+                Mul = self.arg.func
+                return abs(Mul(*coeff)) * self.func(Mul(*args))
+        return Function.simplify(self, deep=deep, **kwargs)
+    
+    @property
+    def definition(self):
+
+        def next_free_symbol(ch):
+            return chr(ord(ch) + 1)
+        
+        x = self.arg
+        shape = x.shape
+        size = len(shape)
+        
+        ch = 'i'        
+        excludes = set()
+        limits = []
+        d = -1
+        indices = []
+        for d in range(-1, -size - 1, -1):
+            var = self.generate_free_symbol(excludes, free_symbol=ch, integer=True)
+            limits.append((var, 0, shape[d]))
+            indices.append(var)
+            excludes.add(var)
+            ch = next_free_symbol(ch)
+            
+        indices.reverse()
+        from sympy import Sum
+        return sqrt(Sum(Abs(x[tuple(indices)]) ** 2, *limits))
+
     
 class arg(Function):
     """
@@ -836,7 +874,7 @@ class transpose(Function):
     def _sympystr(self, p):
         return p.parenthesize(self.arg, 0) + ".T"
 
-    def _latex(self, p):        
+    def _latex(self, p): 
         return r"{%s}^{\color{red} T}" % p._print(self.arg)
 
     def _eval_adjoint(self):
@@ -1006,7 +1044,7 @@ class periodic_argument(Function):
                 unbranched += arg(a)
             elif isinstance(a, exp_polar):
                 unbranched += a.exp.as_real_imag()[1]
-            elif a.is_Power:
+            elif a.is_Pow:
                 re, im = a.exp.as_real_imag()
                 unbranched += re * unbranched_argument(
                     a.base) + im * log(abs(a.base))
@@ -1247,7 +1285,7 @@ def _unpolarify(eq, exponents_only, pause=False):
         if isinstance(eq, polar_lift):
             return _unpolarify(eq.args[0], exponents_only)
 
-    if eq.is_Power:
+    if eq.is_Pow:
         expo = _unpolarify(eq.exp, exponents_only)
         base = _unpolarify(eq.base, exponents_only,
             not (expo.is_integer and not pause))

@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 from tensorflow.nn.convolutional.same import conv2d
 
@@ -19,7 +19,7 @@ def apply(x, w, r, *indices):
     l0, l1, _d, d_ = w.shape
     assert d == _d
     
-    M = Symbol.M(LAMBDA[j:n1, i:n0, k:m](Boole((i >= β0[k]) & (i < ζ0[k]) & (j >= β1[k]) & (j < ζ1[k]))))
+    M = Symbol.M(LAMBDA[j:n1, i:n0, k:m](Bool((i >= β0[k]) & (i < ζ0[k]) & (j >= β1[k]) & (j < ζ1[k]))))
     
     M0 = LAMBDA[t:d, j:n1, i:n0, k:m](M[k, i, j])
     M1 = LAMBDA[t:d_, j:n1, i:n0, k:m](M[k, i, j])
@@ -33,7 +33,7 @@ def apply(x, w, r, *indices):
     block = BlockMatrix(ZeroMatrix(β0[k], n1, d_), block, ZeroMatrix(n0 - ζ0[k], n1, d_))
 #     print(block.shape)
     
-    return Equality(conv2d[r](x * M0, w) * M1, LAMBDA[k:m](block))
+    return Equal(conv2d[r](x * M0, w) * M1, LAMBDA[k:m](block))
 
 
 @prove
@@ -81,39 +81,39 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].function.args[0].args[1].function.definition
     
-    Eq << Eq[-1].this.rhs.args[1].function.args[1].astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[1].function.args[1].definition
     
-    Eq << Eq[-1].this.rhs.args[1].function.apply(algebre.piecewise.ripple, var=i)
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebra.piecewise.ripple, var=i)
     
-    Eq << Eq[-1].this.rhs.args[1].apply(algebre.sum.limits.split.piecewise)
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum.limits.split.piecewise)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][2].args[1].args[1].args[1].apply(algebre.ceiling.astype.plus.quotient)
+    Eq << Eq[-1].this.rhs.args[1].limits[0][2].args[1].args[1].args[1].apply(algebra.ceiling.to.add.quotient)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[1][2].args[1].args[1].args[1].apply(algebre.ceiling.astype.plus.quotient)
+    Eq << Eq[-1].this.rhs.args[1].limits[1][2].args[1].args[1].args[1].apply(algebra.ceiling.to.add.quotient)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][2].args[1].apply(algebre.min.astype.floor)
+    Eq << Eq[-1].this.rhs.args[1].limits[0][2].args[1].apply(algebra.min.to.floor)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[1][2].args[1].apply(algebre.min.astype.floor)
+    Eq << Eq[-1].this.rhs.args[1].limits[1][2].args[1].apply(algebra.min.to.floor)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[0].apply(algebre.times.astype.ceiling)
+    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[0].apply(algebra.mul.to.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[1][1].args[0].apply(algebre.times.astype.ceiling)
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].args[0].apply(algebra.mul.to.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.apply(algebre.times.distribute)    
+    Eq << Eq[-1].this.rhs.args[1].limits[0][1].args[2].arg.apply(algebra.mul.distribute)    
     
-    Eq << Eq[-1].this.rhs.args[1].limits[1][1].args[2].arg.apply(algebre.times.distribute)
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].args[2].arg.apply(algebra.mul.distribute)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebre.max.astype.ceiling)
+    Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebra.max.to.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[1][1].apply(algebre.max.astype.ceiling)
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].apply(algebra.max.to.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebre.ceiling.astype.max)
+    Eq << Eq[-1].this.rhs.args[1].limits[0][1].apply(algebra.ceiling.to.max)
     
-    Eq << Eq[-1].this.rhs.args[1].limits[1][1].apply(algebre.ceiling.astype.max)
+    Eq << Eq[-1].this.rhs.args[1].limits[1][1].apply(algebra.ceiling.to.max)
     
     Eq << Eq[-1].this.rhs.args[0].definition
     
-    Eq << Eq[-1].this.rhs.args[0].astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[0].definition
     
     Eq.convolution_definition = Eq[-1].this.rhs.astype(Piecewise)
     
@@ -127,32 +127,32 @@ def prove(Eq):
     
     Eq << Eq[-1][i]
 
-    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.swap.front)
+    Eq << Eq[-1].this.rhs.apply(algebra.piecewise.swap.front)
     
     Eq << Eq[-1][j]
     
-    Eq << Eq[-1].this.rhs.args[0].expr.apply(algebre.piecewise.swap.front)
+    Eq << Eq[-1].this.rhs.args[0].expr.apply(algebra.piecewise.swap.front)
     
-    Eq << Eq[-1].this.rhs.apply(algebre.piecewise.flatten, index=0)
+    Eq << Eq[-1].this.rhs.apply(algebra.piecewise.flatten, index=0)
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[0].apply(algebre.times.astype.ceiling)
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[0].apply(algebra.mul.to.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][1].args[0].apply(algebre.times.astype.ceiling)
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][1].args[0].apply(algebra.mul.to.ceiling)
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.apply(algebre.times.distribute)
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][1].args[1].arg.apply(algebra.mul.distribute)
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][1].args[1].arg.apply(algebre.times.distribute)        
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][1].args[1].arg.apply(algebra.mul.distribute)        
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][2].args[1].apply(algebre.min.astype.floor)
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[0][2].args[1].apply(algebra.min.to.floor)
     
-    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][2].args[1].apply(algebre.min.astype.floor)
+    Eq << Eq[-1].this.rhs.args[0].expr.limits[1][2].args[1].apply(algebra.min.to.floor)
     
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.convolution_definition, Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.convolution_definition, Eq[-1])
         
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, n[1]), (i, 0, n[0]), (k, 0, m))
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, n[1]), (i, 0, n[0]), (k, 0, m))
     
     Eq << Eq[-1].subs(C.this.definition, C_quote.this.definition)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

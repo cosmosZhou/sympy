@@ -1,11 +1,11 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     x_union, emptyset = given.args
     if emptyset:
         tmp = emptyset
@@ -14,7 +14,7 @@ def apply(given):
         assert emptyset.is_EmptySet
 
     assert x_union.is_UNION
-    return ForAll(Equality(x_union.function, emptyset), *x_union.limits)
+    return ForAll(Equal(x_union.function, emptyset), *x_union.limits)
 
 
 @prove
@@ -23,7 +23,7 @@ def prove(Eq):
     k = Symbol.k(integer=True, positive=True, given=True)
     x = Symbol.x(shape=(k + 1,), etype=dtype.integer, given=True)
 
-    Eq << apply(Equality(UNION[i:0:k + 1](x[i]), x[i].etype.emptySet))
+    Eq << apply(Equal(UNION[i:0:k + 1](x[i]), x[i].etype.emptySet))
 
     j = Symbol.j(domain=Interval(0, k, integer=True))
     
@@ -31,21 +31,21 @@ def prove(Eq):
     
     Eq.paradox = ~Eq[-1]
 
-    Eq.positive = Eq.paradox.apply(sets.is_nonemptyset.imply.is_positive)
+    Eq.positive = Eq.paradox.this.function.apply(sets.is_nonemptyset.imply.is_positive)
 
-    Eq.union_empty = Eq[0].apply(algebre.eq.imply.eq.abs)
+    Eq.union_empty = Eq[0].apply(algebra.eq.imply.eq.abs)
 
     Eq << sets.eq.imply.eq.complement.apply(Eq[0], Eq.paradox.lhs)
 
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
 
     Eq << sets.imply.eq.principle.addition.apply(*Eq[-2].lhs.args)
 
     Eq << Eq[-1].subs(Eq[-2], Eq.union_empty)
 
-    Eq << Eq.positive.subs(Eq[-1].reversed)
+    Eq << algebra.cond.exists.imply.exists_et.apply(Eq.positive, Eq[-1].reversed)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

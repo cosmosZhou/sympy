@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 
 from sympy import *
-from axiom import algebre
+from axiom import algebra
 
 from tensorflow.nn.recurrent.gru import GRU
 from tensorflow.nn import sigmoid
@@ -29,7 +29,7 @@ def apply(x, Wx, Wh, b):
     rt = Symbol.r_t(sigmoid(x[t] @ Wxr + h[t - 1] @ Whr + br))     
     gh = Symbol(r"\tilde{h}_t", tanh(x[t] @ Wxh + (rt * h[t - 1]) @ Whh + bh))
     
-    return Equality(h[t], (1 - zt) * gh + zt * h[t - 1])
+    return Equal(h[t], (1 - zt) * gh + zt * h[t - 1])
 
 
 @prove
@@ -60,4 +60,4 @@ def prove(Eq):
     Eq << Eq[-1].subs(*(Eq[i].reversed for i in range(1, 13)))
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

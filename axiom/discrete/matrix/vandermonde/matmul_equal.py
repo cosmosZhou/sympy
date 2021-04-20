@@ -2,7 +2,7 @@ from sympy import *
 from axiom.utility import prove, apply
 import axiom
 
-from axiom import algebre
+from axiom import algebra
 
 
 @apply
@@ -11,7 +11,7 @@ def apply(x, m, n, d, delta):
     j = Symbol.j(domain=Interval(0, n, right_open=True, integer=True))
     h = Symbol.h(integer=True)
 
-    return Equality(LAMBDA[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ LAMBDA[j, i:m]((i + delta) ** j * x ** i),
+    return Equal(LAMBDA[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ LAMBDA[j, i:m]((i + delta) ** j * x ** i),
                     LAMBDA[j, i]((i + delta) ** j * x ** i) @ LAMBDA[j, i:n](binomial(j, i) * Sum[h:d + 1](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
 
 
@@ -31,7 +31,9 @@ def prove(Eq):
 
     Eq << apply(x, m, n, d, delta)
 
-    Eq << Eq[-1].expand()
+    Eq << Eq[-1].this.lhs.expand()
+    
+    Eq << Eq[-1].this.rhs.expand()
 
     Eq << Eq[-1][i, j]
 
@@ -49,8 +51,8 @@ def prove(Eq):
 
     Eq << Eq.distribute.this.rhs.subs(Eq[-1])
 
-    Eq << Eq[2].apply(algebre.eq.imply.eq.lamda, (j,), (i,), simplify=False)
+    Eq << Eq[3].apply(algebra.eq.imply.eq.lamda, (j,), (i,), simplify=False)
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

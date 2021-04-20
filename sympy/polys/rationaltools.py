@@ -66,7 +66,7 @@ def together(expr, deep=False, fraction=True):
                 return expr
             elif expr.is_Add:
                 return gcd_terms(list(map(_together, Add.make_args(expr))), fraction=fraction)
-            elif expr.is_Power:
+            elif expr.is_Pow:
                 base = _together(expr.base)
 
                 if deep:

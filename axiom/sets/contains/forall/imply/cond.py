@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import algebre
+from axiom import algebra
 
 
 # given: A in B 
@@ -42,15 +42,15 @@ def prove(Eq):
     assert f.is_complex
     assert f.shape == ()
     
-    Eq << apply(Contains(b, A), ForAll[a:A](Equality(f(a), 1)))
+    Eq << apply(Contains(b, A), ForAll[a:A](Equal(f(a), 1)))
     
-    Eq << Eq[1].subs(a, b)
+    Eq << algebra.forall.imply.ou.subs.apply(Eq[1], a, b)
     
     Eq <<= Eq[-1] & Eq[0]
     
-    Eq << algebre.et.imply.cond.apply(Eq[-1])
+    Eq << algebra.et.imply.cond.apply(Eq[-1])
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

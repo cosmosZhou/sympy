@@ -473,8 +473,8 @@ class KroneckerDelta(Function):
         return sage.kronecker_delta(self.args[0]._sage_(), self.args[1]._sage_())
 
     def domain_nonzero(self, x):
-        from sympy import Equality
-        domain = x.domain_conditioned(Equality(*self.args, evaluate=False))
+        from sympy import Equal
+        domain = x.domain_conditioned(Equal(*self.args, evaluate=False))
         if domain.is_ConditionSet:
             return x.domain
         return domain
@@ -508,11 +508,11 @@ class KroneckerDelta(Function):
         return FiniteSet(0, 1)
 
     @classmethod
-    def rewrite_from_Plus(cls, self):
+    def rewrite_from_Add(cls, self):
         return self.as_KroneckerDelta()
 
     @classmethod
-    def rewrite_from_Times(cls, self):
+    def rewrite_from_Mul(cls, self):
         return self.as_KroneckerDelta()
     
     @classmethod
@@ -528,7 +528,7 @@ class KroneckerDelta(Function):
         precondition: self.lhs is a KroneckerDelta object!
         """
         if rhs.is_One:        
-            return self.func(*lhs.args, equivalent=self).simplify()
+            return self.func(*lhs.args).simplify()
         return Function.simplify_Equal(self, lhs, rhs)
             
     @classmethod
@@ -537,12 +537,12 @@ class KroneckerDelta(Function):
         precondition: self.lhs is a KroneckerDelta object!
         """
         if rhs.is_zero:
-            return self.func.invert_type(*lhs.args, equivalent=self)
+            return self.func.invert_type(*lhs.args)
         elif rhs.is_One:
-            return self.func(*lhs.args, equivalent=self)
-            
+            return self.func(*lhs.args)
 
-class Boole(Function):
+
+class Bool(Function):
     """IversonBracket function
     https://en.wikipedia.org/wiki/Iverson_bracket     
     """
@@ -589,3 +589,12 @@ class Boole(Function):
     def domain(self):
         from sympy.sets.sets import FiniteSet
         return FiniteSet(0, 1)
+    
+    @property
+    def definition(self):
+        from sympy import Piecewise
+        return Piecewise((S.One, self.arg), (S.Zero, True))
+
+    def inference_status(self, child):
+        raise Exception("boolean conditions within Bool are not applicable for inequivalent inference!")
+    

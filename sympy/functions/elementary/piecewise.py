@@ -2,13 +2,14 @@ from sympy.core import Basic, S, Function, diff, Tuple, Dummy
 from sympy.core.basic import as_Basic
 from sympy.core.compatibility import range
 from sympy.core.numbers import Rational, NumberSymbol
-from sympy.core.relational import (Equality, Unequality, Relational,
+from sympy.core.relational import (Equal, Unequal, Relational,
     _canonical)
 from sympy.functions.elementary.extremum import Max, Min
 from sympy.logic.boolalg import (And, Boolean, distribute_and_over_or,
     true, false, Or, ITE, simplify_logic)
 from sympy.utilities.iterables import uniq, ordered, product, sift
 from sympy.utilities.miscellany import filldedent, func_name
+from sympy.sets.fancysets import Reals
 
 Undefined = S.NaN  # Piecewise()
 
@@ -16,7 +17,7 @@ Undefined = S.NaN  # Piecewise()
 class ExprCondPair(Tuple):
     """Represents an expression, condition pair."""
 
-    def __new__(cls, expr, cond):
+    def __new__(cls, expr, cond, evaluate=True):
         expr = as_Basic(expr)
         if cond == True:
             return Tuple.__new__(cls, expr, true)
@@ -55,7 +56,10 @@ class ExprCondPair(Tuple):
     def _eval_simplify(self, ratio, measure, rational, inverse):
         return self.func(*[a.simplify() for a in self.args])
 
-
+    def inference_status(self, child):
+        assert child is not self.cond, "boolean conditions within ExprCondPair are not applicable for inequivalent inference!"
+        return False
+    
 class Piecewise(Function):
     """
     Represents a piecewise function.
@@ -153,7 +157,10 @@ class Piecewise(Function):
             if cond.is_BooleanFalse:
                 continue
             newargs.append(pair)
-            if cond is true:
+            if cond.is_BooleanTrue:
+                if cond.is_BooleanTrueAssumption:
+                    e, c = newargs[-1]
+                    newargs[-1] = ExprCondPair(e, S.true) 
                 break
             
 #         if newargs[-1][-1] is not True:
@@ -370,8 +377,8 @@ class Piecewise(Function):
             # -> Piecewise((0, And(Eq(n, 0), Eq(m, 0))), (1, True))
             if isinstance(cond, And):
                 eqs, other = sift(cond.args,
-                    lambda i: isinstance(i, Equality), binary=True)
-            elif isinstance(cond, Equality):
+                    lambda i: isinstance(i, Equal), binary=True)
+            elif isinstance(cond, Equal):
                 eqs, other = [cond], []
             else:
                 eqs = other = []
@@ -394,8 +401,8 @@ class Piecewise(Function):
             if prevexpr is not None:
                 if isinstance(cond, And):
                     eqs, other = sift(cond.args,
-                        lambda i: isinstance(i, Equality), binary=True)
-                elif isinstance(cond, Equality):
+                        lambda i: isinstance(i, Equal), binary=True)
+                elif isinstance(cond, Equal):
                     eqs, other = [cond], []
                 else:
                     eqs = other = []
@@ -853,7 +860,7 @@ class Piecewise(Function):
             if isinstance(cond, Or):
                 expr_cond.extend(
                     [(i, expr, o) for o in cond.args
-                    if not isinstance(o, Equality)])
+                    if not isinstance(o, Equal)])
             elif cond is not S.false:
                 expr_cond.append((i, expr, cond))
 
@@ -864,7 +871,7 @@ class Piecewise(Function):
                 lower = S.NegativeInfinity
                 upper = S.Infinity
                 for cond2 in cond.args:
-                    if isinstance(cond2, Equality):
+                    if isinstance(cond2, Equal):
                         lower = upper  # ignore
                         break
                     elif cond2.lts == sym:
@@ -975,7 +982,7 @@ class Piecewise(Function):
         """Return the truth value of the condition."""
         if cond == True:
             return True
-        if isinstance(cond, Equality):
+        if isinstance(cond, Equal):
             try:
                 diff = cond.lhs - cond.rhs
                 if diff.is_commutative:
@@ -983,7 +990,7 @@ class Piecewise(Function):
             except TypeError:
                 pass
 
-    def as_expr_set_pairs(self, domain=S.Reals):
+    def as_expr_set_pairs(self, domain=Reals):
         """Return tuples for each argument of self that give
         the expression and the interval in which it is valid
         which is contained within the given domain.
@@ -1010,15 +1017,15 @@ class Piecewise(Function):
         """
         exp_sets = []
         U = domain
-        complex = not domain.is_subset(S.Reals)
+        complex = not domain.is_subset(Reals)
         for expr, cond in self.args:
             if complex:
                 for i in cond.atoms(Relational):
-                    if not isinstance(i, (Equality, Unequality)):
+                    if not isinstance(i, (Equal, Unequal)):
                         raise ValueError(filldedent('''
                             Inequalities in the complex domain are
                             not supported. Try the real domain by
-                            setting domain=S.Reals'''))
+                            setting domain=Reals'''))
             cond_int = U.intersect(cond.as_set())
             U = U - cond_int
             exp_sets.append((expr, cond_int))
@@ -1051,7 +1058,7 @@ class Piecewise(Function):
                             This error would not occur if a default expression
                             like `(foo, True)` were given.
                             ''' % c))
-                if byfree[x].is_UniversalSet or byfree[x] == S.Reals:
+                if byfree[x].is_UniversalSet or byfree[x] == Reals:
                     # collapse the ith condition to True and break
                     args[i] = list(args[i])
                     c = args[i][1] = True
@@ -1113,7 +1120,7 @@ class Piecewise(Function):
                     rest = rest.func(*args)
         else:
             rest = self.func(*self.args[1:]).as_KroneckerDelta()
-        if e.is_Piecewise or e.is_Plus or e.is_Times:
+        if e.is_Piecewise or e.is_Add or e.is_Mul:
             e = e.as_KroneckerDelta()
         return ((e * eq).simplify() + (rest * (1 - eq)).simplify()).simplify()
 
@@ -1125,19 +1132,19 @@ class Piecewise(Function):
         if len(lhs.args) == 2:
             (e0, c0), (e1, _) = lhs.args
             if e0 == rhs:
-                if Equality(e1, rhs) == False:
-                    return c0.copy(equivalent=self)
+                if Equal(e1, rhs) == False:
+                    return c0
             elif e1 == rhs:
-                if Equality(e0, rhs) == False:
+                if Equal(e0, rhs) == False:
                     c1 = c0.invert()
                     c1.equivalent = self
                     return c1                
                 
-        elif rhs.is_Plus and lhs in rhs.args:
+        elif rhs.is_Add and lhs in rhs.args:
             cls = rhs.func
             args = [*rhs.args]
             args.remove(lhs)
-            return self.func(0, cls(*args), equivalent=self).simplify()
+            return self.func(0, cls(*args)).simplify()
                  
     @classmethod
     def simplify_Unequal(cls, self, lhs, rhs):
@@ -1147,19 +1154,19 @@ class Piecewise(Function):
         if len(lhs.args) == 2:
             (e0, c0), (e1, _) = lhs.args
             if e0 == rhs:
-                if Equality(e1, rhs) == False:
+                if Equal(e1, rhs) == False:
                     c1 = c0.invert()
                     c1.equivalent = self
                     return c1
             elif e1 == rhs:
-                if Equality(e0, rhs) == False:
-                    return c0.copy(equivalent=self)
+                if Equal(e0, rhs) == False:
+                    return c0
                 
-        elif rhs.is_Plus and lhs in rhs.args:
+        elif rhs.is_Add and lhs in rhs.args:
             cls = rhs.func
             args = [*rhs.args]
             args.remove(lhs)
-            return self.func(0, cls(*args), equivalent=self).simplify()
+            return self.func(0, cls(*args)).simplify()
         
     @staticmethod
     def simplify_Equality(e0, e1, lhs, rhs):
@@ -1172,8 +1179,11 @@ class Piecewise(Function):
         _e0 = e0._subs(lhs, rhs)
         __e0 = e0._subs(rhs, lhs)
 
-        if {e1, e1._subs(lhs, rhs), e1._subs(rhs, lhs)} & {e0, _e0, __e0}:
-            return e1
+        try:
+            if {e1, e1._subs(lhs, rhs), e1._subs(rhs, lhs)} & {e0, _e0, __e0}:
+                return e1
+        except:
+            print('this simplification process should be axiomatized!')
         
         if not e0.is_set and lhs.is_integer and rhs.is_integer:
             e_diff = e0 - e1                   
@@ -1187,7 +1197,10 @@ class Piecewise(Function):
             if not lhs.is_Number:
                 if e_diff.is_infinite:
                     return
-                delta *= e_diff._subs(lhs, rhs)
+                try:
+                    delta *= e_diff._subs(lhs, rhs)
+                except:
+                    print('this simplification process should be axiomatized!')
                 
             delta += e1
             return delta.simplify()
@@ -1221,7 +1234,7 @@ class Piecewise(Function):
             return lhs.set & rhs.set
         
         if hit:
-            return Piecewise((e0, Equality(lhs, rhs)), (e1, True))
+            return Piecewise((e0, Equal(lhs, rhs)), (e1, True))
         
     def simplifyComplement(self, i):
         if not i:
@@ -1329,7 +1342,7 @@ class Piecewise(Function):
                         if isinstance(_x, tuple):
                             arglist = []
                             for x in _x:
-                                eq = Equality(wrt, x)
+                                eq = Equal(wrt, x)
                                 if eq.is_BooleanFalse:
                                     continue
                                 arglist.append([f._subs(wrt, x), eq])
@@ -1350,7 +1363,7 @@ class Piecewise(Function):
                 if need_swap:
                     e_last, _ = args[-1]
                     e_second_last, _ = args[-2]
-                    args[-2] = (e_last, Equality(wrt, _x))
+                    args[-2] = (e_last, Equal(wrt, _x))
                     args[-1] = (e_second_last, True)
                     
                 if hit:                    
@@ -1375,12 +1388,17 @@ class Piecewise(Function):
         expr, _ = self.args[-1]
         e, c = self.args[-2]
 
-        if e == expr or c.is_Equality and (e == expr._subs(*c.args) or e._subs(*c.args) == expr):
-            args = [*self.args]
-            del args[-2]
-            if len(args) == 1:
-                return expr
-            return self.func(*args).simplify()
+        try:
+            if e == expr or c.is_Equal and (e == expr._subs(*c.args) or e._subs(*c.args) == expr):
+                args = [*self.args]
+                del args[-2]
+                if len(args) == 1:
+                    return expr
+                return self.func(*args).simplify()
+        except:
+            print('this simplification process should be axiomatized!')
+            return self
+            
             
         if len(self.args) == 2:
             e0, c0 = self.args[0]
@@ -1388,12 +1406,12 @@ class Piecewise(Function):
             if deep:
                 e0 = e0.simplify(deep=deep)
                 e1 = e1.simplify(deep=deep)
-            if c0.is_Equality:
+            if c0.is_Equal:
                 res = Piecewise.simplify_Equality(e0, e1, *c0.args)
                 if res is not None:
                     return res                
                                          
-            if c0.is_Unequality:
+            if c0.is_Unequal:
                 res = Piecewise.simplify_Equality(e1, e0, *c0.args)
                 if res is not None:
                     return res     
@@ -1406,7 +1424,7 @@ class Piecewise(Function):
                     for y in A.args:
                         delta = KroneckerDelta(x, y)
                         if delta != S.Zero:
-                            args.append((e0._subs(x, y).simplify(), Equality(x, y)))
+                            args.append((e0._subs(x, y).simplify(), Equal(x, y)))
                             e1 = e1._subs(delta, S.Zero)
                     return self.func(*args, (e1, True)).simplify()
 
@@ -1476,7 +1494,7 @@ class Piecewise(Function):
     def select_cond(self, expr):
         u = S.true
         for e, c in self.args:              
-            eq = Equality(expr, e)                   
+            eq = Equal(expr, e)                   
             if eq.is_BooleanFalse:
                 ...
             elif eq.is_BooleanTrue:
@@ -1533,11 +1551,12 @@ class Piecewise(Function):
         u = S.true
         for e, c in self.args:
             args = []
-            _u = S.true
-            c_ = c & u
+            _u = S.true            
+            c_ = c & u            
             for _e, _c in other.args:
-                _c_ = _c & _u
+                _c_ = _c & _u                
                 _c_ = c_ & _c_
+                
                 if _c_.is_BooleanFalse:
                     continue
                 args.append([(e * _e).simplify(), _c])
@@ -1668,7 +1687,7 @@ class Piecewise(Function):
 
     @classmethod
     def rewrite_from_KroneckerDelta(cls, self):
-        return cls((1, Equality(*self.args)), (0, True))
+        return cls((1, Equal(*self.args)), (0, True))
 
     @classmethod
     def rewrite_from_Abs(cls, self):
@@ -1676,11 +1695,7 @@ class Piecewise(Function):
         return cls((x, x >= 0), (-x, True))
 
     @classmethod
-    def rewrite_from_Boole(cls, self):
-        return cls((1, self.arg), (0, True))
-
-    @classmethod
-    def rewrite_from_Plus(cls, self, simplify=True):
+    def rewrite_from_Add(cls, self, simplify=True):
         piecewise = []
         delta = []
         for arg in self.args:
@@ -1708,7 +1723,7 @@ class Piecewise(Function):
         return result
 
     @classmethod
-    def rewrite_from_Times(cls, self, simplify=True):
+    def rewrite_from_Mul(cls, self, simplify=True):
         piecewise = []
         delta = []
         for arg in self.args:
@@ -1749,7 +1764,7 @@ class Piecewise(Function):
         return cls((arg, arg <= self), (self, True))
 
     @classmethod
-    def rewrite_from_Power(cls, self, **kwargs):
+    def rewrite_from_Pow(cls, self, **kwargs):
         b, e = self.args
         if isinstance(e, cls):
             return cls(*[(b ** e, c) for e, c in e.args])
@@ -1763,6 +1778,31 @@ class Piecewise(Function):
         if isinstance(e, cls):
             return cls(*[(self.func(e), c) for e, c in e.args])
         return self
+    
+    def as_multiple_terms(self, x, domain, cls):
+        universalSat = x.universalSet
+        args = []
+        union = x.emptySet 
+        assert x in self.scope_variables            
+        for f, condition in self.args:
+            _domain = (universalSat // union) & x.domain_conditioned(condition) & domain
+            if not condition:
+                union |= _domain
+    
+            if _domain.is_FiniteSet:
+                for e in _domain:
+                    args.append(f.subs(x, e))
+            elif _domain:
+                if _domain.is_Interval:
+                    a = _domain.min()
+                    if x.is_integer:
+                        b = _domain.max() + 1                        
+                    else:
+                        b = _domain.max()
+                    args.append(cls(f, (x, a, b)).simplify())
+                else:
+                    args.append(cls(f, (x, _domain)).simplify())
+        return cls.operator(*args)
     
 def piecewise_fold(expr):
     """

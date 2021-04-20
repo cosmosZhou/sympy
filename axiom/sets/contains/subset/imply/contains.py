@@ -24,7 +24,7 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.complex * n, given=True)
     Eq << apply(Contains(x, A), Subset(A, B))
     
-    Eq << sets.contains.imply.contains.amplify.apply(Eq[0], B)
+    Eq << sets.contains.imply.contains.relaxed.apply(Eq[0], B)
     
     Eq << sets.subset.imply.eq.union.apply(Eq[1])
     
@@ -32,5 +32,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

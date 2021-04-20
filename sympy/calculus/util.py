@@ -14,6 +14,7 @@ from sympy.simplify.radsimp import denom
 from sympy.solvers.inequalities import solve_univariate_inequality
 from sympy.utilities import filldedent
 from sympy.core.symbol import dtype
+from sympy.sets.fancysets import Reals
 
 def continuous_domain(f, symbol, domain):
     """
@@ -39,13 +40,13 @@ def continuous_domain(f, symbol, domain):
     >>> from sympy.sets import Interval
     >>> from sympy.calculus.util import continuous_domain
     >>> x = Symbol('x')
-    >>> continuous_domain(1/x, x, S.Reals)
+    >>> continuous_domain(1/x, x, Reals)
     Union(Interval.open(-oo, 0), Interval.open(0, oo))
     >>> continuous_domain(tan(x), x, Interval(0, pi))
     Union(Interval.Ropen(0, pi/2), Interval.Lopen(pi/2, pi))
     >>> continuous_domain(sqrt(x - 2), x, Interval(-5, 5))
     Interval(2, 5)
-    >>> continuous_domain(log(2*x - 1), x, S.Reals)
+    >>> continuous_domain(log(2*x - 1), x, Reals)
     Interval.open(1/2, oo)
 
     Returns
@@ -65,7 +66,7 @@ def continuous_domain(f, symbol, domain):
     from sympy.solvers.inequalities import solve_univariate_inequality
     from sympy.solvers.solveset import solveset, _has_rational_power
 
-    if domain.is_subset(S.Reals):
+    if domain.is_subset(Reals):
         constrained_interval = domain
         for atom in f.atoms(Pow):
             predicate, denomin = _has_rational_power(atom, symbol)
@@ -132,11 +133,11 @@ def function_range(f, symbol, domain):
     Interval(-1, 1)
     >>> function_range(tan(x), x, Interval(-pi/2, pi/2))
     Interval(-oo, oo)
-    >>> function_range(1/x, x, S.Reals)
+    >>> function_range(1/x, x, Reals)
     Union(Interval.open(-oo, 0), Interval.open(0, oo))
-    >>> function_range(exp(x), x, S.Reals)
+    >>> function_range(exp(x), x, Reals)
     Interval.open(0, oo)
-    >>> function_range(log(x), x, S.Reals)
+    >>> function_range(log(x), x, Reals)
     Interval(-oo, oo)
     >>> function_range(sqrt(x), x , Interval(-5, 9))
     Interval(0, 3)
@@ -290,7 +291,7 @@ def not_empty_in(finset_intersection, *syms):
 
     if isinstance(finset_intersection, FiniteSet):
         finite_set = finset_intersection
-        _sets = S.Reals
+        _sets = Reals
     else:
         finite_set = finset_intersection.args[1]
         _sets = finset_intersection.args[0]
@@ -312,23 +313,23 @@ def not_empty_in(finset_intersection, *syms):
         _start = intrvl.start
         _end = intrvl.stop
         _singularities = solveset(expr.as_numer_denom()[1], symb,
-                                  domain=S.Reals)
+                                  domain=Reals)
 
         if intrvl.right_open:
             if _end is S.Infinity:
-                _domain1 = S.Reals
+                _domain1 = Reals
             else:
-                _domain1 = solveset(expr < _end, symb, domain=S.Reals)
+                _domain1 = solveset(expr < _end, symb, domain=Reals)
         else:
-            _domain1 = solveset(expr <= _end, symb, domain=S.Reals)
+            _domain1 = solveset(expr <= _end, symb, domain=Reals)
 
         if intrvl.left_open:
             if _start is S.NegativeInfinity:
-                _domain2 = S.Reals
+                _domain2 = Reals
             else:
-                _domain2 = solveset(expr > _start, symb, domain=S.Reals)
+                _domain2 = solveset(expr > _start, symb, domain=Reals)
         else:
-            _domain2 = solveset(expr >= _start, symb, domain=S.Reals)
+            _domain2 = solveset(expr >= _start, symb, domain=Reals)
 
         # domain in the interval
         expr_with_sing = Intersection(_domain1, _domain2)
@@ -483,7 +484,7 @@ def periodicity(f, symbol, check=False):
             if period_real is not None and period_imag is not None:
                 period = lcim([period_real, period_imag])
 
-    if f.is_Power:
+    if f.is_Pow:
         base, expo = f.args
         base_has_sym = base.has(symbol)
         expo_has_sym = expo.has(symbol)
@@ -646,7 +647,7 @@ def is_convex(f, *syms, **kwargs):
         The variables with respect to which the convexity is to be determined.
     domain : Interval, optional
         The domain over which the convexity of the function has to be checked.
-        If unspecified, S.Reals will be the default domain.
+        If unspecified, Reals will be the default domain.
 
     Returns
     =======
@@ -699,7 +700,7 @@ def is_convex(f, *syms, **kwargs):
             "The check for the convexity of multivariate functions is not implemented yet.")
 
     f = _sympify(f)
-    domain = kwargs.get('domain', S.Reals)
+    domain = kwargs.get('domain', Reals)
     var = syms[0]
     condition = f.diff(var, 2) < 0
     if solve_univariate_inequality(condition, var, False, domain):
@@ -707,7 +708,7 @@ def is_convex(f, *syms, **kwargs):
     return True
 
 
-def stationary_points(f, symbol, domain=S.Reals):
+def stationary_points(f, symbol, domain=Reals):
     """
     Returns the stationary points of a function (where derivative of the
     function is 0) in the given domain.
@@ -721,7 +722,7 @@ def stationary_points(f, symbol, domain=S.Reals):
         The variable for which the stationary points are to be determined.
     domain : Interval
         The domain over which the stationary points have to be checked.
-        If unspecified, S.Reals will be the default domain.
+        If unspecified, Reals will be the default domain.
 
     Examples
     ========
@@ -730,7 +731,7 @@ def stationary_points(f, symbol, domain=S.Reals):
     >>> from sympy.sets import Interval
     >>> x = Symbol('x')
 
-    >>> stationary_points(1/x, x, S.Reals)
+    >>> stationary_points(1/x, x, Reals)
     EmptySet()
 
     >>> pprint(stationary_points(sin(x), x), use_unicode=False)
@@ -753,7 +754,7 @@ def stationary_points(f, symbol, domain=S.Reals):
     return set
 
 
-def maximum(f, symbol, domain=S.Reals):
+def maximum(f, symbol, domain=Reals):
     """
     Returns the maximum value of a function in the given domain.
 
@@ -776,7 +777,7 @@ def maximum(f, symbol, domain=S.Reals):
     >>> x = Symbol('x')
 
     >>> f = -x**2 + 2*x + 5
-    >>> maximum(f, x, S.Reals)
+    >>> maximum(f, x, Reals)
     6
 
     >>> maximum(sin(x), x, Interval(-pi, pi/4))
@@ -797,7 +798,7 @@ def maximum(f, symbol, domain=S.Reals):
         raise ValueError("%s is not a valid symbol." % symbol)
 
 
-def minimum(f, symbol, domain=S.Reals):
+def minimum(f, symbol, domain=Reals):
     """
     Returns the minimum value of a function in the given domain.
 
@@ -820,7 +821,7 @@ def minimum(f, symbol, domain=S.Reals):
     >>> x = Symbol('x')
 
     >>> f = x**2 + 2*x + 5
-    >>> minimum(f, x, S.Reals)
+    >>> minimum(f, x, Reals)
     4
 
     >>> minimum(sin(x), x, Interval(2, 3))

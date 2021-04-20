@@ -10,16 +10,14 @@ def apply(n, Q=None):
         Q, w, x = mapping.Qu2v.predefined_symbols(n)
     else:
         x = Q.definition.function.variable
-    P_quote = Symbol("P'", conditionset(x[:n + 1], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equality(x[n], n)))
+    P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)) & Equal(x[n], n)))
     
     t = Q.definition.variable
-    return Equality(Abs(Q[t]), Abs(P_quote))
-
-
+    return Equal(Abs(Q[t]), Abs(P_quote))
 
 
 @prove
-def prove(Eq):    
+def prove(Eq): 
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
     
@@ -36,4 +34,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

@@ -1,24 +1,27 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 @apply
-def apply(given, *limits):
+def apply(given, *limits, simplify=True):
     lhs, rhs = axiom.is_Equal(given)
-    
-    return Equality(UNION(lhs.set, *limits).simplify(), UNION(rhs.set, *limits).simplify())
+    lhs, rhs = UNION(lhs.set, *limits), UNION(rhs.set, *limits)
+    if simplify:
+        lhs, rhs = lhs.simplify(), rhs.simplify() 
+        
+    return Equal(lhs, rhs)
 
 
 @prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(domain=Interval(0, n - 1, integer=True))
-    f = Function.f(nargs=(), shape=(), etype=dtype.integer)
-    g = Function.g(nargs=(), shape=(), etype=dtype.integer)
+    f = Function.f(shape=(), etype=dtype.integer)
+    g = Function.g(shape=(), etype=dtype.integer)
     
-    Eq << apply(Equality(f(i), g(i)), (i, 0, n))
+    Eq << apply(Equal(f(i), g(i)), (i, 0, n))
     
     Eq << Eq[0].forall((i,))
     
@@ -26,5 +29,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

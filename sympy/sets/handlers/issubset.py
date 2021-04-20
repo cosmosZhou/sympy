@@ -6,7 +6,7 @@ from sympy.sets.fancysets import Complexes, Reals, Range, Rationals
 from sympy.multipledispatch import dispatch
 
 
-_inf_sets = [S.Naturals, S.Naturals0, S.Integers, S.Rationals, S.Reals, S.Complexes]
+_inf_sets = [S.Naturals, S.Naturals0, S.Integers, S.Rationals, Reals, S.Complexes]
 
 @dispatch(Set, Set)  # type: ignore # noqa:F811
 def is_subset_sets(a, b): # noqa:F811

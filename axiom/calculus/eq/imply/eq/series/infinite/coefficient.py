@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 import axiom
-from axiom import algebre, calculus
+from axiom import algebra, calculus
 
 
 @apply
@@ -12,7 +12,7 @@ def apply(given, x):
     n = lhs.variable
     an /= x ** n
     bn /= x ** n
-    return Equality(an, bn)
+    return Equal(an, bn)
 
 
 @prove
@@ -21,15 +21,19 @@ def prove(Eq):
     B = Symbol.B(shape=(oo,), real=True)
     x = Symbol.x(real=True)
     n = Symbol.n(integer=True)
-    Eq << apply(Equality(Sum[n:0:oo](A[n] * x ** n), Sum[n:0:oo](B[n] * x ** n)), x=x)
+    Eq << apply(Equal(Sum[n:0:oo](A[n] * x ** n), Sum[n:0:oo](B[n] * x ** n)), x=x)
     
-    Eq << Eq[0].subs(x, 0)
+    Eq << Eq[0].this.lhs.simplify()
+    
+    Eq << Eq[-1].this.rhs.simplify()
+    
+    Eq << Eq[3].subs(x, 0)
     
     Eq << Eq[-1].this.lhs().function.simplify()
     
     Eq.initial = Eq[-1].this.rhs().function.simplify()
 
-    m = Symbol.m(integer=True, nonnegative=True)
+    m = Symbol.m(integer=True, given=False, nonnegative=True)
     Eq.hypothesis = Eq[1].subs(n, m)
     
     Eq.induction = Eq.hypothesis.subs(m, m + 1)
@@ -40,22 +44,22 @@ def prove(Eq):
     
     Eq << Eq[-1] * x ** k
     
-    Eq << algebre.eq.imply.eq.sum.apply(Eq[-1], (k,))
+    Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (k,))
     
     _k = Symbol.k(integer=True)
     Eq << Eq[-1].this.lhs.limits_subs(k, _k)
     
     Eq << Eq[-1].this.rhs.limits_subs(k, _k)
     
-    Eq << Eq[0].this.lhs.limits_subs(n, _k)
+    Eq << Eq[3].this.lhs.limits_subs(n, _k)
     
-    Eq << Eq[0].this.rhs.limits_subs(n, _k)
+    Eq << Eq[3].this.rhs.limits_subs(n, _k)
     
-    Eq << Eq[0] - Eq[-1]
+    Eq << Eq[3] - Eq[-1]
     
-    Eq << Eq[-1].this.lhs.astype(Sum)
+    Eq << Eq[-1].this.lhs.apply(algebra.add.to.sum.limits.complement)
     
-    Eq << Eq[-1].this.rhs.astype(Sum)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum.limits.complement)
     
     r = Symbol.r(real=True, positive=True)
     
@@ -65,9 +69,9 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.limits_subs(_k, _k + m + 1)
     
-    Eq << Eq[-1].this.lhs.astype(Times)
+    Eq << Eq[-1].this.lhs.astype(Mul)
     
-    Eq << Eq[-1].this.rhs.astype(Times)
+    Eq << Eq[-1].this.rhs.astype(Mul)
     
     Eq << calculus.eq.imply.eq.limit.apply(Eq[-1], (r, 0))
     
@@ -85,16 +89,13 @@ def prove(Eq):
 
     Eq << Eq.induction.induct()
     
-    Eq << algebre.eq.sufficient.imply.eq.induction.second.apply(Eq.initial, Eq[-1], n=m + 1, k=k, hypothesis=True)
+    Eq << algebra.cond.sufficient.imply.cond.induction.second.apply(Eq.initial, Eq[-1], n=m + 1, k=k, hypothesis=True)
     
     Eq << Eq.induction.subs(m, m - 1)
     
-    Eq << Eq[-1].subs(m, n)
+    Eq << Eq.hypothesis.subs(m, n)
 
-    Eq << algebre.ou.imply.forall.apply(Eq[-1], pivot=1)
-    
-    Eq <<= Eq[-1] & Eq.initial
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

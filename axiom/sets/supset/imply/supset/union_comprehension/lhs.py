@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 @apply
@@ -18,7 +18,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     x = Symbol.x(shape=(oo,), etype=dtype.complex * n)
     A = Symbol.A(etype=dtype.complex * n)
-    m = Symbol.m(integer=True, positive=True)
+    m = Symbol.m(integer=True, positive=True, given=False)
    
     Eq << apply(Supset(A, x[i]), (i, 0, m))
     
@@ -34,9 +34,9 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=m, start=1, simplify=None)
+    Eq << algebra.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=m, start=1, simplify=None)
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

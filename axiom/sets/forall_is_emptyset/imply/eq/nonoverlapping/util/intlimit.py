@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 # given: x[i] & x[j] = {}
@@ -20,18 +20,18 @@ def apply(given, n=None):
         xi = xj
         assert xj.has(i)
         
-    return Equality(abs(UNION[i:n](xi)), Sum[i:n](abs(xi)))
+    return Equal(abs(UNION[i:n](xi)), Sum[i:n](abs(xi)))
 
 
 @prove
 def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol.n(integer=True, positive=True, given=False)
     
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
 
-    Eq << apply(ForAll[j:i](Equality(x[i] & x[j], x[i].etype.emptySet)), n=n)
+    Eq << apply(ForAll[j:i](Equal(x[i] & x[j], x[i].etype.emptySet)), n=n)
     
     Eq << Eq[0].subs(i, 1)
     
@@ -45,7 +45,7 @@ def prove(Eq):
     
     Eq << Eq[0].subs(i, n).limits_subs(j, i)
     
-    Eq << Eq[-1].apply(sets.eq.imply.eq.union_comprehension, *Eq[-1].limits)
+    Eq << sets.forall_eq.imply.eq.union.apply(Eq[-1])
     
     Eq << Eq[-3].subs(Eq[-1])
     
@@ -57,9 +57,9 @@ def prove(Eq):
     
     Eq << Eq.induction.induct()
     
-    Eq << algebre.sufficient.imply.cond.induction.apply(Eq[-1], n=n, start=1)
+    Eq << algebra.sufficient.imply.cond.induction.apply(Eq[-1], n=n, start=1)
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

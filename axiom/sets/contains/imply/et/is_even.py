@@ -1,7 +1,7 @@
 from axiom.utility import prove, apply
 from sympy import *
 import axiom
-from axiom import sets, algebre
+from axiom import sets, algebra
 
 
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
@@ -46,17 +46,17 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.definition
     
-    Eq.contains = Eq[-1].subs(Eq[-2])
+    Eq.contains = Eq[-1].subs(Eq[-2]).simplify()
     
-    Eq << sets.contains.imply.contains.interval.multiply.apply(Eq.contains, 2)
+    Eq << sets.contains.imply.contains.interval.mul.apply(Eq.contains, 2)
     
-    Eq << sets.contains.imply.et.interval.apply(Eq[-1])
+    Eq << sets.contains.imply.et.split.interval.apply(Eq[-1])
     
-    Eq << algebre.et.imply.cond.apply(Eq[-1])
+    Eq << algebra.et.imply.cond.apply(Eq[-1])
     
-    Eq << algebre.ge.ge.imply.ge.transit.apply(Eq[-1], algebre.imply.ge.floor.apply(a + 1, 2))
+    Eq << algebra.ge.ge.imply.ge.transit.apply(Eq[-1], algebra.imply.ge.floor.apply(a + 1, 2))
     
-    Eq << algebre.le.le.imply.le.transit.apply(Eq[-3], algebre.imply.le.floor.apply(b, 2))
+    Eq << algebra.le.le.imply.le.transit.apply(Eq[-3], algebra.imply.le.floor.apply(b, 2))
     
     Eq << sets.ge.le.imply.contains.apply(Eq[-2], Eq[-1])
     
@@ -64,15 +64,15 @@ def prove(Eq):
     
     Eq << sets.contains.subset.imply.contains.apply(Eq.contains, Eq[-1])
     
-    Eq << sets.contains.imply.exists_eq.definition.apply(Eq[-1])
+    Eq << sets.contains.imply.exists_eq.apply(Eq[-1])
     
     Eq << Eq[-1] * 2
     
     Eq << Eq[-1] % 2
     
-    Eq << algebre.et.given.cond.apply(Eq[1])
+    Eq << algebra.et.given.cond.apply(Eq[1])
     
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

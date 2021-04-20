@@ -17,7 +17,7 @@ from functools import singledispatch
 from typing import Tuple as tTuple
 
 from sympy import (Basic, S, Expr, Symbol, Tuple, And, Add, Eq, lambdify, Or,
-                   Equality, Lambda, sympify, Dummy, Ne, KroneckerDelta,
+                   Equal, Lambda, sympify, Dummy, Ne, KroneckerDelta,
                    DiracDelta, Mul, Indexed, MatrixSymbol, Function)
 from sympy.core.relational import Relational
 from sympy.core.sympify import _sympify
@@ -812,11 +812,11 @@ def given(expr, condition, **kwargs):
         condition = Eq(condition, pspace(condition).symbol)
 
 #     condsymbols = random_symbols(condition)
-#     if condition.is_Equality and len(condsymbols) == 1 and not isinstance(pspace(expr).domain, ConditionalDomain):
+#     if condition.is_Equal and len(condsymbols) == 1 and not isinstance(pspace(expr).domain, ConditionalDomain):
 #         rv = tuple(condsymbols)[0]
 # 
 #         results = solveset(condition, rv)
-#         if isinstance(results, Intersection) and S.Reals in results.args:
+#         if isinstance(results, Intersection) and Reals in results.args:
 #             results = list(results.args[1])
 # 
 #         sums = 0

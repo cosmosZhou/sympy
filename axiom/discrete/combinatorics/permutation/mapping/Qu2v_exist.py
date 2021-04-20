@@ -1,7 +1,7 @@
 from sympy import *
 from axiom.utility import prove, apply
 
-from axiom import discrete, sets, algebre
+from axiom import discrete, sets, algebra
 from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
 
 
@@ -13,7 +13,7 @@ def apply(n, u, v):
     return ForAll[x[:n + 1]:Q[u]](Exists[j:0:n + 1](Contains(x_quote, Q[v])))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq):    
     n = Symbol.n(integer=True, positive=True)
     u = Symbol.u(domain=Interval(0, n, integer=True))
@@ -25,9 +25,9 @@ def prove(Eq):
     
     Eq << sets.imply.forall.conditionset.apply(Q[u])
     
-    Eq << algebre.forall_et.imply.forall.apply(Eq[-1])
+    Eq << algebra.forall_et.imply.forall.apply(Eq[-1])
     
-    Eq.x_j_equality = Eq[-1].apply(discrete.combinatorics.permutation.index.exists, v)    
+    Eq.x_j_equality = Eq[-1].this.function.apply(discrete.combinatorics.permutation.index.exists, v)    
     
     Eq << Eq.x_j_equality.this.function.limits_subs(Eq.x_j_equality.function.variable, j)
     
@@ -37,7 +37,7 @@ def prove(Eq):
     
     Eq << sets.subset.forall.imply.forall.apply(Eq[-1], Eq[-2])
     
-    Eq << Eq[-1].subs(Eq[-1].rhs.this.definition)
+    Eq << Eq[-1].this.function.rhs.definition
     
     Eq << Eq[-1].subs(i, n)
     
@@ -55,7 +55,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.expand()
     
-    Eq << Eq[-1].subs(Eq.x_j_equality)
+    Eq << algebra.forall_exists_eq.cond.imply.forall_exists.subs.apply(Eq.x_j_equality, Eq[-1])
     
     Eq << Eq[-1].this.function().function.rhs.args[0].simplify()
     
@@ -65,4 +65,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

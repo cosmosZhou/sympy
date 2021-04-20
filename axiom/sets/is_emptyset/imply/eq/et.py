@@ -1,13 +1,13 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 # given: A | B = {}
 # A = {} and B = {}
 
 
 @apply
 def apply(given):
-    assert given.is_Equality
+    assert given.is_Equal
     AB, emptyset = given.args
     if emptyset:
         tmp = emptyset
@@ -18,7 +18,7 @@ def apply(given):
     assert AB.is_Union
     A, B = AB.args
     emptySet = A.etype.emptySet
-    return And(Equality(A, emptySet), Equality(B, emptySet))
+    return And(Equal(A, emptySet), Equal(B, emptySet))
 
 
 
@@ -28,7 +28,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
-    Eq << apply(Equality(A | B, A.etype.emptySet))
+    Eq << apply(Equal(A | B, A.etype.emptySet))
 
     Eq.ou = ~Eq[-1]
 
@@ -40,11 +40,11 @@ def prove(Eq):
 
     Eq.B_positive = Eq.B_nonempty.apply(sets.is_nonemptyset.imply.is_positive)
 
-    Eq.AB_union_empty = Eq[0].apply(algebre.eq.imply.eq.abs)
+    Eq.AB_union_empty = Eq[0].apply(algebra.eq.imply.eq.abs)
     
     Eq << sets.eq.imply.eq.complement.apply(Eq[0], A)
 
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
 
     Eq << sets.imply.eq.principle.addition.apply(*Eq[-2].lhs.args)
 
@@ -54,7 +54,7 @@ def prove(Eq):
 
     Eq << sets.eq.imply.eq.complement.apply(Eq[0], B)
 
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
 
     Eq << sets.imply.eq.principle.addition.apply(*Eq[-2].lhs.args)
 
@@ -70,5 +70,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

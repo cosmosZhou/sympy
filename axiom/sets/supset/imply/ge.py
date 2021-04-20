@@ -10,7 +10,7 @@ def apply(given):
     assert given.is_Supset
     A, B = given.args
 
-    return GreaterThan(abs(A), abs(B))
+    return GreaterEqual(abs(A), abs(B))
 
 
 
@@ -29,5 +29,5 @@ def prove(Eq):
     Eq << Eq[-1].reversed
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

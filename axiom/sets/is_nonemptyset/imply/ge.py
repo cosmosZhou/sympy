@@ -1,40 +1,37 @@
-from sympy.core.relational import Unequality, GreaterThan
 from axiom.utility import prove, apply
-from sympy.core.symbol import dtype 
-from axiom import sets
-from sympy import Symbol
+from sympy import *
+from axiom import sets, algebra
+
 # given: A != {}
 # |A| >= 1
 
 
 @apply
 def apply(given):
-    assert given.is_Unequality
+    assert given.is_Unequal
     A, B = given.args
     if B:
         assert A.is_EmptySet
         A = B
 
-    return GreaterThan(abs(A), 1)
-
-
+    return GreaterEqual(abs(A), 1)
 
 
 @prove
 def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
-    inequality = Unequality(A, A.etype.emptySet)
 
-    Eq << apply(inequality)
+    Eq << apply(Unequal(A, A.etype.emptySet))
 
-    Eq << sets.is_nonemptyset.imply.is_positive.apply(inequality)
+    Eq << sets.is_nonemptyset.imply.is_positive.apply(Eq[0])
     
     Eq << ~Eq[1]
+    
     Eq << Eq[-1].this.function.solve(Eq[-1].lhs)
     
-    Eq << Eq[2].subs(Eq[-1])
+    Eq << algebra.exists_eq.cond.imply.exists.subs.apply(Eq[-1], Eq[2])
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

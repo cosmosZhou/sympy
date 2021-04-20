@@ -13,6 +13,50 @@ def limits_dict(limits):
             dic[x] = domain
     return dic
 
+def limits_dictionary(limits):
+    dic = {}
+    for limit in limits:
+        x, domain = limit.coerce_setlimit()        
+        dic[x] = domain
+    return dic
+
+# perform topological_sort on limits
+def limits_sort(limits_dict):
+    G = {x: set() for x in limits_dict}
+
+    for kinder in G:
+        if not limits_dict[kinder]:
+            continue
+
+        for parent in limits_dict[kinder].free_symbols:
+            if parent in G:
+                G[parent].add(kinder)
+                
+    from sympy.utilities.iterables import topological_sort_depth_first, strongly_connected_components
+    g = topological_sort_depth_first(G)
+
+    if g is None:
+        g = strongly_connected_components(G)
+        for components in g:
+            limit = And(*(limits_dict[v] for v in components)).latex
+#             latex = r"\%s_{%s}{%s}" % (clause, limit, latex)
+
+#         return latex
+        return g
+
+    limits = []
+    for x in g:
+        domain = limits_dict[x]
+        if not domain:
+            limit = (x,)
+        elif domain.is_Interval and domain.is_integer:
+            limit = (x, domain.min(), domain.max() + 1)
+        else:
+            limit = (x, domain)
+        limits.append(limit)
+
+    return limits
+
 
 # tests if limits include _limits
 def limits_include(limits, _limits):
@@ -27,11 +71,12 @@ def limits_include(limits, _limits):
 def limits_difference(limits, _limits):
     dict_b = limits_dict(_limits)
     newLimits = []
-    for limit in limits:        
+    for limit in limits: 
         if limit[0] in dict_b:
             continue
         newLimits.append(limit)    
     return newLimits
+
 
 def limits_update(limits, *args):
     variables = [x for x, *_ in limits]
@@ -48,7 +93,10 @@ def limits_update(limits, *args):
             new = old
 
         if isinstance(domain, Interval) and (not new.is_integer) == (not domain.is_integer):
-            limit = (new, domain.min(), domain.max() + 1)
+            if new.is_integer:
+                limit = (new, domain.min(), domain.max() + 1)
+            else:
+                limit = (new, domain.min(), domain.max())
         elif isinstance(domain, (tuple, list)):
             limit = (new, *domain)
         else:
@@ -142,27 +190,6 @@ def limits_intersect(limits, _limits, clue=None):
         return limits + _limits
 
 
-def limits_complement(limits, _limits):
-    new_limits = []
-    for limit, _limit in zip(limits, _limits):
-        if len(limit) == len(_limit) == 3:
-            x, a, b = limit
-            _x, _a, _b = _limit
-            if x == _x:
-                if a == _a:
-                    if _b <= b:
-                        new_limits.append((x, _b, b))
-                    else:
-                        return
-                else:
-                    return
-            else:
-                return
-        else:
-            return 
-    return new_limits
-
-
 def limits_empty(limits):
     for _, *ab in limits:
         if len(ab) != 1:
@@ -183,42 +210,7 @@ def limits_union(limits, _limits):
         return limits + _limits
 
 
-# perform topological_sort on limits
-def limits_sort(limits):
-    forall = limits_dict(limits)
-    G = {x: set() for x, *_ in limits}
-
-    for kinder in G:
-        if forall[kinder] is None:
-            continue
-
-        for parent in forall[kinder].free_symbols:
-            if parent in G:
-                G[parent].add(kinder)
-    from sympy.utilities.iterables import topological_sort_depth_first, strongly_connected_components
-    g = topological_sort_depth_first(G)
-
-    if g is None:
-        g = strongly_connected_components(G)
-        for components in g:
-            limit = And(*(forall[v] for v in components)).latex
-            latex = r"\%s_{%s}{%s}" % (clause, limit, latex)
-
-        return latex
-
-    limits = []
-    for x in g:
-        domain = forall[x]
-        if domain.is_Interval and domain.is_integer:
-            limit = (x, domain.min(), domain.max() + 1)
-        else:
-            limit = (x, domain)
-        limits.append(limit)
-
-    return limits
-
-
-def limits_condition(limits):
+def limits_cond(limits):
     eqs = []
     from sympy.sets.contains import Contains
     limitsdict = limits_dict(limits)
@@ -234,6 +226,32 @@ def limits_condition(limits):
         eqs.append(cond)
     return And(*eqs)
 
+
+def limits_dependent(limits_x, limits_y):
+    dict_x = limits_dict(limits_x)
+    dict_y = limits_dict(limits_y)
+    if dict_x.keys() & dict_y.keys():
+        return True
+    
+    for x, domain_x in dict_x.items():
+        for y, domain_y in dict_y.items():
+            if isinstance(domain_y, list):
+                if any(d._has(x) for d in domain_y):
+                    return True
+            elif domain_y.is_set:
+                if domain_y._has(x):
+                    return True
+                
+            if isinstance(domain_x, list):
+                if any(d._has(x) for d in domain_x):
+                    return True                
+            elif domain_x.is_set:
+                if domain_x._has(y):
+                    return True                                   
+    
+    return False
+   
+   
 '''
 fundamental theory of logic:
 axiom:

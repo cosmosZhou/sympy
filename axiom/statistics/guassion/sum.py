@@ -1,5 +1,5 @@
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality
+from sympy.core.relational import Equal
 
 from sympy.stats.crv_types import NormalDistribution
 from sympy.stats.rv import PDF, pspace
@@ -7,7 +7,7 @@ from sympy import sqrt
 from sympy.stats.crv import SingleContinuousPSpace
 from axiom.statistics.guassion import quadratic
 from sympy.core.symbol import Symbol
-from axiom import algebre
+from axiom import algebra
 
 @apply
 def apply(x0, x1):
@@ -25,7 +25,7 @@ def apply(x0, x1):
                                             sqrt(distribution0.std * distribution0.std + distribution1.std * distribution1.std)))
     y = pspace(Y).symbol
 
-    return Equality(PDF(x0 + x1)(y), PDF(Y)(y).doit())
+    return Equal(PDF(x0 + x1)(y), PDF(Y)(y).doit())
 
 
 
@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / Eq[-1].rhs
 
-    Eq << Eq[-1].apply(algebre.eq.given.eq.log)    
+    Eq << Eq[-1].apply(algebra.eq.given.eq.log)    
 
     Eq << Eq[-1].this.lhs.simplify()
 
@@ -66,5 +66,5 @@ def prove(Eq):
 
 # https://www.asmeurer.com/blog/
 if __name__ == '__main__':    
-    prove(__file__)
+    prove()
 

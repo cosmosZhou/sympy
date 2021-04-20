@@ -1,18 +1,18 @@
 from axiom.utility import prove, apply
-from sympy.core.relational import Equality, StrictLessThan, StrictGreaterThan, \
-    LessThan, GreaterThan, Unequal
+from sympy.core.relational import Equal, Less, Greater, \
+    LessEqual, GreaterEqual, Unequal
 
 from sympy import Symbol
 
 from sympy import cos, pi, sin
 from sympy.sets.sets import Interval, EmptySet
 from sympy import Exists
-from axiom import algebre, sets
+from axiom import algebra, sets
 from sympy.core.symbol import dtype
 
 @apply
 def apply(x):    
-    return Equality(cos(x) ** 2, 1 - sin(x) ** 2)
+    return Equal(cos(x) ** 2, 1 - sin(x) ** 2)
 
 
 
@@ -30,4 +30,4 @@ def prove(Eq):
     
 # https://baike.baidu.com/item/%E5%92%8C%E8%A7%92%E5%85%AC%E5%BC%8F
 if __name__ == '__main__':
-    prove(__file__)
+    prove()

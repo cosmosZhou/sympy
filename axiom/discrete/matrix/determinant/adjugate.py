@@ -6,7 +6,7 @@ from sympy.matrices.expressions.cofactor import Cofactors
 @apply
 def apply(A): 
     n = A.shape[0]        
-    return Equality(A @ Cofactors(A).T, Determinant(A) * Identity(n))
+    return Equal(A @ Cofactors(A).T, Determinant(A) * Identity(n))
 
 
 @prove(surmountable=False)
@@ -17,7 +17,7 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 
 # https://en.wikipedia.org/wiki/Minor_(linear_algebra)
 # https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html

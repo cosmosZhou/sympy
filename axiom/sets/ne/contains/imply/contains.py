@@ -26,7 +26,7 @@ def prove(Eq):
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
     s = Symbol.s(etype=dtype.integer, given=True)
-    Eq << apply(Unequality(x, y), Contains(x, s))
+    Eq << apply(Unequal(x, y), Contains(x, s))
     
     Eq << sets.ne.imply.notcontains.apply(Eq[0], simplify=False)
     
@@ -34,5 +34,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

@@ -1,4 +1,4 @@
-from sympy.core.relational import Equality, StrictGreaterThan
+from sympy.core.relational import Equal, Greater
 from axiom.utility import prove, apply
 from sympy.core.symbol import dtype
 from sympy.sets.contains import Contains
@@ -10,7 +10,7 @@ from sympy import Symbol
 @apply
 def apply(*given):
     equality = given[0]
-    assert equality.is_Equality
+    assert equality.is_Equal
     
     intersection, a = equality.args
     if not intersection.is_Intersection:
@@ -46,7 +46,7 @@ def prove(Eq):
     e = Symbol.e(integer=True)
     a = Symbol.a(etype=dtype.integer)
     
-    Eq << apply(Equality(e.set & s, a), StrictGreaterThan(abs(a), 0))    
+    Eq << apply(Equal(e.set & s, a), Greater(abs(a), 0))    
     
     Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[1])
     
@@ -56,5 +56,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

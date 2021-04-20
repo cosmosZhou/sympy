@@ -14,7 +14,7 @@ def apply(n, w=None):
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
     
-    return ForAll(Equality(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) // {i}))
+    return ForAll(Equal(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Interval(1, n - 1, integer=True) // {i}))
 
 
 @prove
@@ -31,5 +31,5 @@ def prove(Eq):
     Eq << Eq[-1].subs(t, 0)
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

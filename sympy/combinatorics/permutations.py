@@ -627,7 +627,7 @@ class Permutation(Basic):
     True
 
 
-    Equality testing
+    Equal testing
     ----------------
 
     The array forms must be the same in order for permutations to be equal:

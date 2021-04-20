@@ -1,6 +1,6 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import keras, algebre
+from axiom import keras, algebra
 import axiom
 
 
@@ -12,8 +12,8 @@ def apply(a, Ξ):
     else:        
         function, *limits = axiom.is_LAMBDA(Ξ.definition)
         
-    assert function.is_Boole
-    return Equality(exp(a - (1 - Ξ) * oo), Ξ * exp(a))
+    assert function.is_Bool
+    return Equal(exp(a - (1 - Ξ) * oo), Ξ * exp(a))
 
 
 @prove
@@ -25,7 +25,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     
-    Ξ = Symbol.Ξ(LAMBDA[j:n, i:n](Boole(p(i, j) > 0)))
+    Ξ = Symbol.Ξ(LAMBDA[j:n, i:n](Bool(p(i, j) > 0)))
     Eq << apply(a, Ξ)
     
     a_quote = Symbol.a(a - (1 - Ξ) * oo)
@@ -35,7 +35,7 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.args[1].args[1].args[1].args[1].definition
     
-    Eq << Eq[-1].this.rhs.args[1].args[1].args[1].apply(algebre.bool.astype.piecewise, simplify=None)
+    Eq << Eq[-1].this.rhs.args[1].args[1].args[1].apply(algebra.bool.to.piecewise, simplify=None)
     
     Eq << Eq[-1].this.rhs.args[1].args[1].astype(Piecewise)
     
@@ -43,25 +43,25 @@ def prove(Eq):
     
     Eq << Eq[-1].this.rhs.astype(Piecewise)
     
-    Eq << algebre.eq.imply.eq.exp.apply(Eq[-1])
+    Eq << algebra.eq.imply.eq.exp.apply(Eq[-1])
     
     Eq.exp_a = Eq[-1].this.rhs.astype(Piecewise)
     
-    Eq << Eq[0].this.rhs.astype(Piecewise)
+    Eq << Eq[0].this.rhs.definition
     
     Eq << Eq[-1] * exp(a[i, j])
     
     Eq << Eq[-1].this.rhs.astype(Piecewise)
 
-    Eq << algebre.eq.eq.imply.eq.transit.apply(Eq.exp_a, Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.exp_a, Eq[-1])
     
-    Eq << algebre.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, n), (i, 0, n))
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, n), (i, 0, n))
     
     Eq << Eq[-1].this.lhs.arg.definition
 
         
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 # reference:
 # Self-Attention with Relative Position Representations.pdf
 # https://arxiv.org/abs/1803.02155

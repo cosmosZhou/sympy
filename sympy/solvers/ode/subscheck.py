@@ -1,7 +1,7 @@
 from sympy.core import S, Pow
 from sympy.core.compatibility import iterable, is_sequence
 from sympy.core.function import (Derivative, AppliedUndef, diff)
-from sympy.core.relational import Equality, Eq
+from sympy.core.relational import Equal, Eq
 from sympy.core.symbol import Dummy
 from sympy.core.sympify import sympify
 
@@ -52,7 +52,7 @@ def checkodesol(ode, sol, func=None, order='auto', solve_for_func=True):
     This works when ``func`` is one function, like `f(x)` or a list of
     functions like `[f(x), g(x)]` when `ode` is a system of ODEs.  ``sol`` can
     be a single solution or a list of solutions.  Each solution may be an
-    :py:class:`~sympy.core.relational.Equality` that the solution satisfies,
+    :py:class:`~sympy.core.relational.Equal` that the solution satisfies,
     e.g. ``Eq(f(x), C1), Eq(f(x) + C1, 0)``; or simply an
     :py:class:`~sympy.core.expr.Expr`, e.g. ``f(x) - C1``. In most cases it
     will not be necessary to explicitly identify the function, but if the
@@ -113,7 +113,7 @@ def checkodesol(ode, sol, func=None, order='auto', solve_for_func=True):
     if iterable(ode):
         return checksysodesol(ode, sol, func=func)
 
-    if not isinstance(ode, Equality):
+    if not isinstance(ode, Equal):
         ode = Eq(ode, 0)
     if func is None:
         try:
@@ -132,7 +132,7 @@ def checkodesol(ode, sol, func=None, order='auto', solve_for_func=True):
     if is_sequence(sol, set):
         return type(sol)([checkodesol(ode, i, order=order, solve_for_func=solve_for_func) for i in sol])
 
-    if not isinstance(sol, Equality):
+    if not isinstance(sol, Equal):
         sol = Eq(func, sol)
     elif sol.rhs == func:
         sol = sol.reversed
@@ -344,7 +344,7 @@ def checksysodesol(eqs, sols, func=None):
         return list(map(sympify, eq if iterable(eq) else [eq]))
     eqs = _sympify(eqs)
     for i in range(len(eqs)):
-        if isinstance(eqs[i], Equality):
+        if isinstance(eqs[i], Equal):
             eqs[i] = eqs[i].lhs - eqs[i].rhs
     if func is None:
         funcs = []

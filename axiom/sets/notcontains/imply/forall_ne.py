@@ -16,11 +16,9 @@ def apply(given, reverse=False):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(integer=True)
-    k = Symbol.k(integer=True)
+    x = Symbol.x(integer=True, given=True)
     
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol.S(etype=dtype.integer, given=True)
 
     Eq << apply(NotContains(x, S))
     
@@ -31,5 +29,5 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq[0]
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

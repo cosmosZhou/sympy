@@ -1,31 +1,31 @@
 from sympy import *
 from axiom.utility import prove, apply
-from axiom import discrete, algebre
+from axiom import discrete, algebra
 
 
 @apply
 def apply(n):
     x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
     
-    return Equality(abs(conditionset(x[:n], Equality(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)))), factorial(n))
+    return Equal(abs(conditionset(x[:n], Equal(x[:n].set_comprehension(), Interval(0, n - 1, integer=True)))), factorial(n))
 
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol.n(integer=True, positive=True, given=False)
     Eq << apply(n)
     
     Eq.initial = Eq[-1].subs(n, 1)
     
     Eq << Eq.initial.this.lhs.arg.limits[0][1].simplify()
     
-    Eq.induction = Eq[0].subs(n, n + 1)
+    Eq.induct = Eq[0].subs(n, n + 1)
     
     Eq << discrete.combinatorics.permutation.mapping.P2Q_union.apply(n)
     
     Q = Eq[-1].lhs.function.base
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
     
     Eq << discrete.combinatorics.permutation.nonoverlapping.apply(n, Q=Q)
     
@@ -45,17 +45,17 @@ def prove(Eq):
     
     Eq << Eq[0].subs(Eq.P_definition.reversed)
 
-    Eq << Eq.induction.subs(Eq.Pn1_definition.reversed)
+    Eq << Eq.recursion.subs(Eq[-1])
     
-    Eq << Eq.recursion.subs(Eq[-1], Eq[-2])
+    Eq << Eq[-1].this.rhs.apply(discrete.mul.to.factorial)
     
-    Eq << discrete.combinatorics.permutation.factorial.expand.apply(n + 1)
+    Eq << Eq.induct.subs(Eq.Pn1_definition.reversed)
+        
+    Eq << Eq.induct.induct()
     
-    Eq << Eq.induction.induct()
-    
-    Eq << algebre.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
+    Eq << algebra.cond.sufficient.imply.cond.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
 
     
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

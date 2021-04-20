@@ -1,7 +1,7 @@
 from sympy import *
 
 from axiom.utility import prove, apply
-from axiom import sets, algebre
+from axiom import sets, algebra
 import axiom
 
 
@@ -21,7 +21,7 @@ def apply(*given):
     _x, B = axiom.is_Contains(x_in_B)
     assert x == _x
     
-    return Equality(A, B)
+    return Equal(A, B)
 
 
 @prove
@@ -37,5 +37,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

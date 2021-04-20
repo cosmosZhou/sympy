@@ -54,7 +54,7 @@ class PowerSet(Set):
 
     A power set of an infinite set:
 
-    >>> PowerSet(S.Reals)
+    >>> PowerSet(Reals)
     PowerSet(Reals)
 
     Evaluating the power set of a finite set to its explicit form:

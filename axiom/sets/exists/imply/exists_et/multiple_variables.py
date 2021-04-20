@@ -13,7 +13,7 @@ from sympy.logic.boolalg import And
 def apply(given):
     function, *limits = axiom.is_Exists(given)
     variables = axiom.limits_are_Contains(limits)    
-    return Exists[variables](And(function, given.limits_condition).simplify())
+    return Exists[variables](And(function, given.limits_cond).simplify())
 
 
 
@@ -32,5 +32,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
 

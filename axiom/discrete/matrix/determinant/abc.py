@@ -1,14 +1,14 @@
 from sympy import *
 from axiom.utility import prove, apply
 from sympy.matrices.expressions.matexpr import Addition, Multiplication, Shift
-from axiom import algebre, sets
+from axiom import algebra, sets
 
 
 @apply
 def apply(A):
     n = A.shape[0]
     k = Symbol.k(integer=True)    
-    return Equality(det(Sum[k:1:n]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
+    return Equal(det(Sum[k:1:n]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
 
 
 @prove
@@ -25,7 +25,7 @@ def prove(Eq):
     
     Eq << (shift @ A).this.expand()
     
-#     Eq << Eq[-1].this.rhs.function.apply(algebre.piecewise.flatten, index=1)
+#     Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.flatten, index=1)
     
 #     Eq << Eq[-1].this.rhs.function.args[1].cond.args[0].apply(sets.contains.imply.contains.interval.substract, 1)
     
@@ -59,7 +59,7 @@ def prove(Eq):
     Eq << Addition(n, 0, 4, -1) @ Eq[-1]
     Eq << Addition(n, 0, 5, -1) @ Eq[-1]
     
-    Eq << Eq[-1].apply(algebre.eq.imply.eq.det)
+    Eq << Eq[-1].apply(algebra.eq.imply.eq.det)
     
     Eq << Eq[-1] * (n - 1)
     
@@ -67,4 +67,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove(__file__)
+    prove()
