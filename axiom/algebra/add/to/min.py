@@ -1,16 +1,13 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(self):
-    min_xy, z = axiom.is_Add(self)
+    min_xy, z = self.of(Add)
     if z.is_Min:
         min_xy, z = z, min_xy
     
-    args = [e + z for e in axiom.is_Min(min_xy)]
+    args = [e + z for e in min_xy.of(Min)]
     
     return Equal(self, Min(*args))
 
@@ -30,4 +27,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()

@@ -1,5 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 
 
 def is_continuous(f, a, b, x=None, xi=None): 
@@ -40,5 +39,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

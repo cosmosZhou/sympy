@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given, bound):
-    lhs, rhs = axiom.is_Greater(given)
+    lhs, rhs = given.of(Greater)
     
     assert bound >= rhs
     
@@ -28,5 +27,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

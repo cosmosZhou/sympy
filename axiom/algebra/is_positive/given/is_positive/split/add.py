@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(given):
     add = axiom.is_positive(given)
-    args = axiom.is_Add(add)        
+    args = add.of(Add)        
     return tuple(Greater(arg, 0) for arg in args)
 
 
@@ -22,5 +21,5 @@ def prove(Eq):
     Eq << Eq[1] + Eq[2] + Eq[3]
     
 if __name__ == '__main__':
-    prove()
+    run()
 

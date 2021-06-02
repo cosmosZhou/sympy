@@ -2,7 +2,7 @@ from sympy.logic.boolalg import Boolean, And, Or, relationship
 from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.concrete.conditional_boolean import ConditionalBoolean
 from sympy.core.sympify import sympify
-from sympy.sets.sets import FiniteSet
+from sympy.sets.finiteset import FiniteSet
 
 
 class ForAll(ConditionalBoolean):
@@ -50,7 +50,8 @@ class ForAll(ConditionalBoolean):
                 if b.is_set:
                     domain = b & old.domain_conditioned(a)
                 else:
-                    domain = Interval(a, b, right_open=wrt.is_integer, integer=wrt.is_integer)
+                    from sympy import Range
+                    domain = (Range if wrt.is_integer else Interval)(a, b)
                             
             eqs = []
             if not domain.is_set:
@@ -78,6 +79,23 @@ class ForAll(ConditionalBoolean):
                 
         return ConditionalBoolean.subs(self, *args, **kwargs)
         
+    def detect_previous_dependence(self, i):
+        x = self.variables[i]
+        for j in range(i):
+            var, *ab = self.limits[j]
+            if not ab:
+                continue
+            if len(ab) == 1:
+                domain = ab[0]
+                if domain._has(x):
+                    return True
+            else:
+                a, b = ab
+                if a._has(x) or b._has(x):
+                    return True
+            
+        return False
+        
     def delete_independent_variables(self):
         limits_dict = self.limits_dict
         variables = self.variables
@@ -87,36 +105,28 @@ class ForAll(ConditionalBoolean):
         limits = self.limits
         needsToDelete = False
         for i, x in enumerate(variables):
-            if not function._has(x):
-                _needsToDelete = True
-                for j in range(i):
-                    dependent = variables[j]
-                    domain = limits_dict[dependent]
-                    if not isinstance(domain, list) and domain.has(x) and dependent not in deletes:
-                        _needsToDelete = False
-                        break
-
-                if _needsToDelete:
-                    needsToDelete = True
-                    domain = limits_dict[x]
-                    if not isinstance(domain, list) and domain.is_boolean:
-                        free_symbols = domain.free_symbols & function.free_symbols
-                        if free_symbols:
-                            free_symbols = {sym for sym in free_symbols if not sym.is_given}
-                            if free_symbols and domain.free_symbols - free_symbols - {x}:
-                                limits = [*limits]
-                                x, *_ = free_symbols
-                                limits[i] = (x, domain)
-                                break
-                                                      
-                    deletes.add(x)
-            
-            domain = limits_dict[x]
-            if not isinstance(domain, list) and domain.is_FiniteSet and len(domain) == 1:
+            if not function._has(x) and not self.detect_previous_dependence(i):
                 needsToDelete = True
+                domain = limits_dict[x]
+                if not isinstance(domain, list) and domain.is_boolean:
+                    free_symbols = domain.free_symbols & function.free_symbols
+                    if free_symbols:
+                        free_symbols = {sym for sym in free_symbols if not sym.is_given}
+                        if free_symbols and domain.free_symbols - free_symbols - {x}:
+                            limits = [*limits]
+                            x, *_ = free_symbols
+                            limits[i] = (x, domain)
+                            break
+                                                  
                 deletes.add(x)
+        
+            domain = limits_dict[x]
+            if not isinstance(domain, list) and domain.is_FiniteSet and len(domain) == 1:                
                 _x, *_ = limits_dict[x].args
-                function = function._subs(x, _x)
+                if not self.detect_previous_dependence(i):
+                    needsToDelete = True
+                    deletes.add(x)
+                    function = function._subs(x, _x)
                     
         if needsToDelete:
             limits = limits_delete(limits, deletes)
@@ -124,7 +134,7 @@ class ForAll(ConditionalBoolean):
                 return self.func(function, *limits).simplify()
 
             return function
-        
+
     def simplify(self, local=None, **kwargs):
         deletes = []
         for i in range(len(self.limits) - 1, -1, -1):
@@ -138,7 +148,9 @@ class ForAll(ConditionalBoolean):
                 a, b = ab
                 if b.is_set:
                     continue
-                domain = Interval(a, b, right_open=True, integer=x.is_integer)
+                from sympy import Range
+                domain = (Range if x.is_integer else Interval)(a, b)
+                
                 
             if self.function._has(x) and domain.is_set:
                 _eval_domain_defined = self.function.domain_defined(x)
@@ -160,7 +172,6 @@ class ForAll(ConditionalBoolean):
                         if limits:
                             return self.func(function, *limits)
                         else:
-                            function.equivalent = self
                             return function.simplify()
 
         if deletes:
@@ -251,8 +262,8 @@ class ForAll(ConditionalBoolean):
                                 domain = Complement(A, B, evaluate=False)
                                 return self.func(self.function, (i, domain))
                             domain = A
-                            if isinstance(domain, Interval) and domain.is_integer:
-                                return self.func(self.function, (i, domain.min(), domain.max() + 1))
+                            if domain.is_Range:
+                                return self.func(self.function, (i, domain.start, domain.stop))
                             return self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
@@ -278,6 +289,9 @@ class ForAll(ConditionalBoolean):
 
     def _latex(self, p):
         latex = p._print(self.function)
+        if self.function.is_LatticeOp:
+            latex = r"\left(%s\right)" % latex
+
 
         if all(len(limit) == 1 for limit in self.limits):
             limit = ', '.join(var.latex for var, *_ in self.limits)
@@ -294,7 +308,8 @@ class ForAll(ConditionalBoolean):
                     if b.is_set:
                         limit = var.domain_latex(a, baseset=b)
                     else:
-                        limit = var.domain_latex(Interval(*args, right_open=var.is_integer, integer=var.is_integer))
+                        from sympy import Range
+                        limit = var.domain_latex((Range if var.is_integer else Interval)(*args))
 
                 limits.append(limit)
 

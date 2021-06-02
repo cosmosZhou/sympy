@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets
+
 
 
 @apply
@@ -9,7 +8,7 @@ def apply(given):
     assert given.is_NotContains    
     
     e, S = given.args
-    args = axiom.is_Union(S)
+    args = S.of(Union)
     
     eqs = [NotContains(e, s) for s in args]
     
@@ -27,5 +26,5 @@ def prove(Eq):
     Eq << Eq[-1].simplify()
     
 if __name__ == '__main__':
-    prove()
+    run()
 

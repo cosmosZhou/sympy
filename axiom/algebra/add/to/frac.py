@@ -1,13 +1,10 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(sub):
-    y, x = axiom.is_Substract(sub)
-    
+    y, x = sub.of(Basic - Basic)
+
     if y == ceiling(x):
         return Equal(sub, frac(-x))
     if x == floor(y):
@@ -16,13 +13,14 @@ def apply(sub):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     Eq << apply(ceiling(x) - x)
-    
-    Eq << Eq[-1].this.rhs.definition
-    
+
+    Eq << Eq[-1].this.rhs.apply(algebra.frac.to.add)
+
     Eq << Eq[-1].this.lhs.apply(algebra.ceiling.to.mul)
 
-    
+
 if __name__ == '__main__':
-    prove()
+    run()

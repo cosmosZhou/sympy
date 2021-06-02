@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, sets
+from util import *
+
 import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
@@ -12,16 +11,17 @@ def apply(x):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     Eq << apply(x)
-    
+
     Eq << algebra.imply.gt.floor.apply(x)
-    
+
     Eq << Eq[-1] + 1
-    
+
     Eq << Eq[-1].reversed
 
-    
+
 if __name__ == '__main__':
-    prove()
+    run()
 

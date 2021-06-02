@@ -1,11 +1,10 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
 
 
 @apply
 def apply(given):
-    x, y = axiom.is_Greater(given)
+    x, y = given.of(Greater)
     assert y >= 0
     
     return Unequal(x, 0)
@@ -23,4 +22,4 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()

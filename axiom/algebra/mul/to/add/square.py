@@ -1,14 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(self):
-    zx, zy = axiom.is_Mul(self)
-    z, x = axiom.is_Substract(zx)
-    _z, y = axiom.is_Substract(zy)
+    zx, zy = self.of(Mul)
+    z, x = zx.of(Basic - Basic)
+    _z, y = zy.of(Basic - Basic)
     assert _z == z
     return Equal(self, ((z - x) ** 2 + (z - y) ** 2 - (x - y) ** 2) / 2)
 
@@ -28,4 +25,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

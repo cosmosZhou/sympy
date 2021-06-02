@@ -1,3 +1,3 @@
 from . import et
 from . import ou
-from . import forall
+from . import all

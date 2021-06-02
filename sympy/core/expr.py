@@ -208,10 +208,16 @@ class Expr(Basic, EvalfMixin):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rsub__')
     def __sub__(self, other):
-        if self.is_set:
-            assert other.is_set
-            return other.complement(self)
-        return self + (-other)
+        try:
+            return self + (-other)
+        except TypeError as e:
+            from sympy.core.assumptions import ManagedProperties
+            if isinstance(other, ManagedProperties):
+                if self.is_Add:
+                    return Basic.__new__(Add, *self.args, -other)                    
+                return Basic.__new__(Add, self, -other)
+            raise e
+                
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__sub__')
@@ -3856,7 +3862,7 @@ class Expr(Basic, EvalfMixin):
             interval = Integers
         elif self.is_extended_real:
             from sympy.sets.sets import Interval
-            if self.is_extended_positive:                
+            if self.is_extended_positive: 
                 interval = Interval(0, S.Infinity, left_open=True)
             elif self.is_extended_negative:
                 interval = Interval(-S.Infinity, 0, right_open=True)
@@ -3879,10 +3885,12 @@ class Expr(Basic, EvalfMixin):
         return CartesianSpace(interval, *shape)
 
     def domain_nonzero(self, x):
-        from sympy.sets.sets import Interval
+        from sympy import Interval, Range
         from sympy.core.numbers import oo
         if self == x:
-            return Interval(-oo, 0, right_open=True, integer=x.is_integer) | Interval(0, oo, left_open=True, integer=x.is_integer)
+            if x.is_integer:
+                return Range(-oo, 0) | Range(1, oo)
+            return Interval(-oo, 0, right_open=True) | Interval(0, oo, left_open=True)
         return self.domain_defined(x)
 
     def as_coeff_Sum(self):
@@ -3894,14 +3902,22 @@ class Expr(Basic, EvalfMixin):
         if self.type == domain.type:
             return r"%s = %s" % (self.latex, domain.latex)
 
-        from sympy.sets.sets import Interval
         from sympy.core.numbers import oo
-        if type(domain) == Interval:
+        if domain.is_Range:
             start, end = domain.start, domain.stop
             if end == oo:
                 if start == -oo:
-                    if domain.is_integer:
-                        return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
+                    return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
+                return r"%s \ge %s" % (self.latex, start.latex)
+            else:
+                if start == -oo:
+                    return r"%s < %s" % (self.latex, end.latex)
+
+                return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
+        elif domain.is_Interval:
+            start, end = domain.start, domain.stop
+            if end == oo:
+                if start == -oo:
                     return r"%s\in%s" % (self.latex, r'\mathbb{R}')
                 if domain.left_open:
                     return r"%s > %s" % (self.latex, start.latex)
@@ -3919,6 +3935,7 @@ class Expr(Basic, EvalfMixin):
                 if domain.right_open:
                     return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
                 return r"%s \le %s \le %s" % (start.latex, self.latex, end.latex)
+            
         elif domain.is_boolean:
             if baseset is None:
                 if domain.is_BinaryCondition:
@@ -3946,12 +3963,12 @@ class Expr(Basic, EvalfMixin):
         from sympy.stats.rv import given
         return given(self, exp)
             
-    def set_comprehension(self, free_symbol=None):
-        from sympy.concrete.expr_with_limits import UNION
+    def set_comprehension(self, var=None):
+        from sympy.concrete.expr_with_limits import Cup
 
-        i = self.generate_free_symbol(integer=True, free_symbol=free_symbol)
+        i = self.generate_var(integer=True, var=var)
 #         assert self.shape[0] > 1         
-        return UNION({self[i]}, (i, 0, self.shape[0]))
+        return Cup({self[i]}, (i, 0, self.shape[0]))
 
     @property
     def is_square(self):
@@ -3967,38 +3984,38 @@ class Expr(Basic, EvalfMixin):
     
     def drop(self, I, J):
         from sympy.functions.elementary.piecewise import Piecewise
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
         excludes = I.free_symbols | J.free_symbols
-        i = self.generate_free_symbol(excludes=excludes, integer=True)
-        j = self.generate_free_symbol(excludes=excludes | {i}, integer=True)
+        i = self.generate_var(excludes=excludes, integer=True)
+        j = self.generate_var(excludes=excludes | {i}, integer=True)
         m, n = self.shape
         
-        LAMBDA = LAMBDA[j:n - 1, i:m - 1]
+        Lamda = Lamda[j:n - 1, i:m - 1]
         if m - 1 == I:
             if n - 1 == J:
-                ref = LAMBDA(self[i, j])
+                ref = Lamda(self[i, j])
             else: 
                 if J.is_zero:
-                    ref = LAMBDA(self[i, j + 1])                    
+                    ref = Lamda(self[i, j + 1])                    
                 else:
-                    ref = LAMBDA(Piecewise((self[i, j], j < J), (self[i, j + 1], True)))
+                    ref = Lamda(Piecewise((self[i, j], j < J), (self[i, j + 1], True)))
         else:
             if n - 1 == J:
                 if I.is_zero:
-                    ref = LAMBDA(self[i + 1, j])            
+                    ref = Lamda(self[i + 1, j])            
                 else:
-                    ref = LAMBDA(Piecewise((self[i, j], i < I), (self[i + 1, j], True)))
+                    ref = Lamda(Piecewise((self[i, j], i < I), (self[i + 1, j], True)))
             else:
                 if I.is_zero:
                     if J.is_zero:
-                        ref = LAMBDA(self[i + 1, j + 1])
+                        ref = Lamda(self[i + 1, j + 1])
                     else:
-                        ref = LAMBDA(Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)))
+                        ref = Lamda(Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)))
                 else:
                     if J.is_zero:
-                        ref = LAMBDA(Piecewise((self[i, j + 1], i < I), (self[i + 1, j + 1], True)))
+                        ref = Lamda(Piecewise((self[i, j + 1], i < I), (self[i + 1, j + 1], True)))
                     else: 
-                        ref = LAMBDA(Piecewise(
+                        ref = Lamda(Piecewise(
                             (Piecewise((self[i, j], j < J), (self[i, j + 1], True)), i < I),
                             (Piecewise((self[i + 1, j], j < J), (self[i + 1, j + 1], True)), True)))
         return ref.simplify()
@@ -4006,11 +4023,11 @@ class Expr(Basic, EvalfMixin):
     def _eval_determinant(self):
         ...
 
-    def generate_int_limit(self, index=-1, excludes=None, generator=None, free_symbol=None):
-        x = generator.generate_free_symbol(excludes, free_symbol=free_symbol, integer=True)
+    def generate_int_limit(self, index=-1, excludes=None, generator=None, var=None):
+        x = generator.generate_var(excludes, var=var, integer=True)
         domain = x.domain_assumed
         start, end = 0, self.shape[-index - 1] 
-        if domain is not None and domain.is_Interval and domain.min() == start and domain.max() + 1 == end:
+        if domain is not None and domain.is_Range and domain.start == start and domain.stop == end:
             return (x,)   
         return (x, start, end)
 
@@ -4053,6 +4070,26 @@ class Expr(Basic, EvalfMixin):
             return conditionset(self, condition, self.domain)
         return domain
 
+    def slice(self, index, self_start, self_stop, allow_empty=False):
+        from sympy import BlockMatrix, Symbol 
+        mid = Symbol.process_slice(index, self_start, self_stop)
+        if mid is None:
+            return self
+        
+        if allow_empty:
+            assert mid >= self_start, "mid >= self_start => %s" % (mid >= self_start)
+        else: 
+            assert mid > self_start, "mid > self_start => %s" % (mid > self_start)
+             
+        assert mid < self_stop, "mid < self_stop => %s" % (mid < self_stop)
+        
+        if isinstance(mid, tuple):
+            start, stop = mid
+            assert start < stop, "start < stop => %s" % (start < stop)
+            return BlockMatrix(self[self_start: start], self[start: stop], self[stop:self_stop])
+        
+        return BlockMatrix(self[self_start:mid], self[mid:self_stop])
+        
       
 class AtomicExpr(Atom, Expr):
     """

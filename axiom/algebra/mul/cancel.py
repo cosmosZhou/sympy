@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply(simplify=False)
@@ -29,4 +28,4 @@ def prove(Eq):
     Eq << Eq[0].subs(Eq[-2].reversed, Eq[-1].reversed)
     
 if __name__ == '__main__':
-    prove()
+    run()

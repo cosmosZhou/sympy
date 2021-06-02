@@ -1,6 +1,5 @@
-from axiom.utility import prove, apply
-from sympy import *
-from axiom import sets
+from util import *
+
 
 
 # given0: A in B
@@ -36,14 +35,15 @@ def apply(*given):
 
 @prove
 def prove(Eq):
+    from axiom import sets
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
     C = Symbol.C(etype=dtype.integer)
 
     Eq << apply(Equal(B & C, C.etype.emptySet, evaluate=False), Subset(A, B, evaluate=False))
-    
-    Eq << sets.subset.imply.subset.intersect.apply(Eq[1], C)
-    
+
+    Eq << sets.subset.imply.subset.intersection.apply(Eq[1], C)
+
     Eq << Eq[-1].subs(Eq[0])
 
     Eq << Supset(*Eq[-1].args, plausible=True)
@@ -52,5 +52,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

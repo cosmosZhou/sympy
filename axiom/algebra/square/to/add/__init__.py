@@ -1,13 +1,9 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(self): 
-    xy = axiom.is_Square(self)
-    x, y = axiom.is_Add(xy)
+    x, y = self.of(Add ** 2)
     return Equal(self, x * x + 2 * x * y + y * y)
 
 
@@ -19,8 +15,9 @@ def prove(Eq):
     Eq << apply((x + y) ** 2)
     
     Eq << Eq[-1].this.lhs.expand()
+
     
 if __name__ == '__main__':
-    prove()
+    run()
 
 from . import st

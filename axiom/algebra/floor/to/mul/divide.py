@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(self):
-    div = axiom.is_Floor(self)
+    div = self.of(Floor)
     n, d = axiom.is_Divide(div)
 
     return Equal(self, (n - n % d) / d)
@@ -14,12 +13,13 @@ def apply(self):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
     Eq << apply(n // d)
-    
-    Eq << Eq[0].this.rhs.args[1].args[1].args[1].definition
-    
+
+    Eq << Eq[0].this.find(Mod).apply(algebra.mod.to.add)
+
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 def ratsimp(equal, eq):    
     self_lhs, self_rhs = equal.args
@@ -42,4 +41,4 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0].reversed)
     
 if __name__ == '__main__':
-    prove()
+    run()

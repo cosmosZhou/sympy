@@ -1,14 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets, algebra
+from util import *
+
 
 
 @apply
 def apply(given):
-    assert given.is_Contains
-    x, interval = given.args
-    assert interval.is_Interval
-    a, b = interval.args
+    x, interval = given.of(Contains)
+    a, b = interval.of(Interval)
     if interval.left_open:
         if interval.right_open:
             return And(x > a, x < b)
@@ -23,18 +20,19 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import sets, algebra
     x = Symbol.x(real=True, given=True)
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)
     Eq << apply(Contains(x, Interval(a, b)))
-    
-    Eq << algebra.et.given.cond.apply(Eq[-1])
-    
+
+    Eq << algebra.et.given.conds.apply(Eq[-1])
+
     Eq << sets.contains.imply.le.split.interval.apply(Eq[0])
-    
+
     Eq << sets.contains.imply.ge.split.interval.apply(Eq[0])
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

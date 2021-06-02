@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(given):
-    fn, fn1 = axiom.is_Equivalent(given)        
-    return Sufficient(fn, fn1), Necessary(fn, fn1)
+    fn, fn1 = given.of(Equivalent)        
+    return Suffice(fn, fn1), Necessary(fn, fn1)
 
 
 @prove
@@ -22,4 +21,4 @@ def prove(Eq):
 
         
 if __name__ == '__main__':
-    prove()
+    run()

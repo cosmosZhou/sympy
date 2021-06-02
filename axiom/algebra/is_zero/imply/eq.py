@@ -1,13 +1,10 @@
-from axiom.utility import prove, apply
-from sympy import *
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(given, reverse=False):
-    xy = axiom.is_zero(given)
-    x, y = axiom.is_Substract(xy)
+    xy = given.of(Equal[0])
+    x, y = xy.of(Basic - Basic)
     if reverse:
         x, y = y, x
     
@@ -25,7 +22,6 @@ def prove(Eq):
     
     Eq << Eq[-1].reversed
     
-    
 
 if __name__ == '__main__':
-    prove()
+    run()

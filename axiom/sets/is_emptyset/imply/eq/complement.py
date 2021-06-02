@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets
+from util import *
+
 
 
 # given A & B = {} => A - B = A
@@ -27,6 +26,7 @@ def apply(given, reverse=False):
 
 @prove
 def prove(Eq):
+    from axiom import sets
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
@@ -36,5 +36,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

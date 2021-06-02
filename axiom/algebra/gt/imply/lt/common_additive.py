@@ -1,5 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
@@ -7,8 +6,8 @@ import axiom
 @apply
 def apply(given, t, alpha):
     abs_x_y = axiom.is_positive(given)
-    x_y = axiom.is_Norm(abs_x_y)
-    x, y = axiom.is_Substract(x_y)
+    x_y = abs_x_y.of(Norm)
+    x, y = axiom.is_Subtract(x_y)
     
     assert x.shape == y.shape == t.shape
     assert alpha > 0
@@ -44,5 +43,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 

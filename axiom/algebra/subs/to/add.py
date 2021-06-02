@@ -1,16 +1,15 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 
-from axiom import algebra, sets
+
 import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(self):
-    expr, old, new = axiom.is_Subs(self)    
+    expr, old, new = self.of(Subs)    
     
-    args = axiom.is_Add(expr)
+    args = expr.of(Add)
     
     return Equal(self, Add(*[Subs(arg, old, new) for arg in args]))
 
@@ -31,5 +30,5 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.doit()
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,7 +1,6 @@
-from axiom.utility import prove, apply
 
-from sympy import *
-from axiom import discrete, algebra
+from util import *
+
 
 
 @apply
@@ -11,32 +10,33 @@ def apply(n, k):
 
 @prove
 def prove(Eq):
+    from axiom import discrete
     n = Symbol.n(integer=True, positive=True)
-    
-    k = Symbol.k(domain=Interval(1, n - 1, integer=True))
-    
+
+    k = Symbol.k(domain=Range(1, n))
+
     Eq << apply(n, k)
 
-    Eq << Eq[-1].this.lhs.definition
-    
-    Eq << Eq[-1].this.find(binomial).definition
-    
-    Eq << Eq[-1].this.find(binomial).definition
-    
+    Eq << Eq[-1].this.lhs.apply(discrete.binomial.to.mul)
+
+    Eq << Eq[-1].this.find(binomial).apply(discrete.binomial.to.mul)
+
+    Eq << Eq[-1].this.find(binomial).apply(discrete.binomial.to.mul)
+
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
 
     Eq << Eq[-1] / factorial(n - 1)
-    
+
     Eq << Eq[-1] * factorial(k)
-    
+
     Eq << Eq[-1] * factorial(n - k)
-    
+
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
-    
+
     Eq << Eq[-1].this.rhs.ratsimp()
-    
+
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
 
 
 if __name__ == '__main__':
-    prove()
+    run()

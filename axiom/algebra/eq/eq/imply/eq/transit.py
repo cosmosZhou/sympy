@@ -1,13 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
+from util import *
 
 
 def transit(*given, reverse=False):
     b_eq_x, x_eq_a = given
 
-    b, x = axiom.is_Equal(b_eq_x)    
-    _x, a = axiom.is_Equal(x_eq_a)
+    b, x = b_eq_x.of(Equal)    
+    _x, a = x_eq_a.of(Equal)
     if x != _x:
         if _x == b:
             b, x = x, b
@@ -38,4 +36,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

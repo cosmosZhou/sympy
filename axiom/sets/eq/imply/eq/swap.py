@@ -1,9 +1,8 @@
-from sympy import Symbol, Function
-from sympy.core.relational import Equal
-from sympy.core.symbol import dtype
-from axiom.utility import prove, apply
-from sympy import LAMBDA
-from sympy.matrices.expressions.matexpr import Swap
+from util import *
+
+
+
+
 
 import axiom
 from axiom.sets.imply.eq.swap import swap
@@ -12,7 +11,7 @@ from axiom.sets.imply.eq.swap import swap
 
 @apply
 def apply(given, i=None, j=None):
-    x, y = axiom.is_Equal(given)
+    x, y = given.of(Equal)
     assert len(x.shape) == 1
     
     assert x.dtype.is_set
@@ -37,5 +36,5 @@ def prove(Eq):
     Eq << Eq[1].subs(Eq[0])
     
 if __name__ == '__main__':
-    prove()
+    run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

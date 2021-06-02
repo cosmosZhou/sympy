@@ -1,12 +1,8 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, sets
-import axiom
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
+from util import *
 
 
 @apply(simplify=False)
-def apply(function): 
+def apply(function):
     assert function.is_real
     square = function ** 2
     square = square.expand()
@@ -15,16 +11,17 @@ def apply(function):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
-     
-    Eq << apply(x + y)
-    
-    Eq << ((x + y)**2).this.apply(algebra.square.to.add)
-    
-    Eq << Eq[0].subs(Eq[-1].reversed)
-        
-if __name__ == '__main__':
-    prove()
 
+    Eq << apply(x + y)
+
+    Eq << ((x + y) ** 2).this.apply(algebra.square.to.add)
+
+    Eq << Eq[0].subs(Eq[-1].reversed)
+
+
+if __name__ == '__main__':
+    run()
 

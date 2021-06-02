@@ -1,8 +1,5 @@
-from sympy.core.relational import Unequal, Greater
-from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from axiom import algebra
+from util import *
+
 # given: |A| > 0
 # A != {}
 
@@ -17,21 +14,20 @@ def apply(given):
     return Unequal(A, A.etype.emptySet)
 
 
-
-
 @prove
 def prove(Eq):
+    from axiom import algebra
     A = Symbol.A(etype=dtype.integer, given=True)
-    
+
     Eq << apply(abs(A) > 0)
-    
+
     Eq << ~Eq[1]
-    
+
     Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
-    
+
     Eq << Eq[0].subs(Eq[-1])
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

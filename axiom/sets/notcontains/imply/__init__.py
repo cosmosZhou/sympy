@@ -1,12 +1,14 @@
 from . import eq
 from . import notcontains
-from . import forall_notcontains
+from . import all_notcontains
 from . import is_emptyset
 from . import et
 from . import ou
 from . import le
 from . import ne
-from . import forall_ne
+from . import all_ne
 from . import gt
 from . import ge
 from . import lt
+from . import ne_0, is_positive
+from . import contains

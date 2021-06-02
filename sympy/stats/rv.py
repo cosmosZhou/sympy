@@ -15,14 +15,12 @@ sympy.stats.rv_interface
 
 from functools import singledispatch
 from typing import Tuple as tTuple
-
 from sympy import (Basic, S, Expr, Symbol, Tuple, And, Add, Eq, lambdify, Or,
-                   Equal, Lambda, sympify, Dummy, Ne, KroneckerDelta,
+                   Lambda, sympify, Dummy, Ne, KroneckerDelta,
                    DiracDelta, Mul, Indexed, MatrixSymbol, Function)
-from sympy.core.relational import Relational
 from sympy.core.sympify import _sympify
-from sympy.sets.sets import FiniteSet, ProductSet, Intersection
-from sympy.solvers.solveset import solveset
+from sympy.sets.sets import ProductSet
+from sympy.sets.finiteset import FiniteSet
 from sympy.external import import_module
 from sympy.utilities.miscellany import filldedent
 import warnings
@@ -88,7 +86,7 @@ class SingleDomain(RandomDomain):
     sympy.stats.frv.SingleFiniteDomain
     """
 
-    def __new__(cls, symbol, set):        
+    def __new__(cls, symbol, set): 
         assert symbol.is_Symbol or symbol.is_Indexed
         return Basic.__new__(cls, symbol, set)
 
@@ -247,8 +245,8 @@ class SinglePSpace(PSpace):
     
             assumptions = symbol.assumptions0
             if symbol.is_Indexed:
-                from sympy import LAMBDA
-                distribution = LAMBDA(distribution, *((i,) for i in symbol.indices))
+                from sympy import Lamda
+                distribution = Lamda(distribution, *((i,) for i in symbol.indices))
                 value = symbol.base.copy(distribution=distribution, **assumptions)[symbol.indices]
             else:
                 value = symbol.copy(distribution=distribution, **assumptions)
@@ -353,7 +351,7 @@ class RandomSymbol(Expr):
     def domain(self):
         return self.symbol.domain
 
-    def _sympystr(self, _):   
+    def _sympystr(self, _): 
         return Symbol.sympystr(self.name)
 
     def _latex(self, p, style='plain'):
@@ -471,7 +469,7 @@ class IndependentProductPSpace(ProductPSpace):
         return FiniteSet(*self.args)
 
     def values2symbols(self):
-        return {space.value : space.symbol for space in self.args}
+        return {space.value: space.symbol for space in self.args}
 
     @property
     def values(self):
@@ -536,7 +534,7 @@ class IndependentProductPSpace(ProductPSpace):
         rvs = random_symbols(expr)
         
         reps = self.values2symbols()
-        for var in rvs:            
+        for var in rvs: 
             expr = expr._subs(var, reps[var])
 
         assert not random_symbols(expr)
@@ -583,6 +581,7 @@ class IndependentProductPSpace(ProductPSpace):
     @property
     def distribution(self):
         ...
+
         
 class ProductDomain(RandomDomain):
     """
@@ -659,7 +658,7 @@ def random_symbols(expr):
     """
 
     def preorder_traversal(self):
-        if isinstance(self, Basic):            
+        if isinstance(self, Basic): 
             if self.is_symbol:
                 if self.is_random:
                     yield self
@@ -801,7 +800,7 @@ def given(expr, condition, **kwargs):
          2*\/ pi
     """
     from sympy.stats.symbolic_probability import Conditioned
-    if isinstance(expr, list):        
+    if isinstance(expr, list): 
         return Conditioned(BlockMatrix(*expr), condition)
         
     if not condition.is_random or pspace_independent(expr, condition):
@@ -849,7 +848,7 @@ def given(expr, condition, **kwargs):
         # Swap random variables in the expression
         expr = expr.xreplace(swapdict)
         return expr
-    else:        
+    else: 
         return Conditioned(expr, condition)
 
 
@@ -990,7 +989,7 @@ class PDF(Basic):
 
 
 # probability mass function for discrete random variables, probability density function for continuous random variables
-class PDFInvoker(Expr):    
+class PDFInvoker(Expr): 
     is_nonnegative = True
       
     @property
@@ -1757,7 +1756,9 @@ def sample_stochastic_process(process):
         raise ValueError("Process must be an instance of Stochastic Process")
     return process.sample()
 
+
 class Distribution(Basic):
+
     def __call__(self, *args):
         return self.pdf(*args)
     

@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra
+from util import *
+
 import axiom
 
 
 @apply
 def apply(self):
-    function, *limits_d = axiom.is_Derivative(self)
-    f, *limits_s = axiom.is_Sum(function)
+    function, *limits_d = self.of(Derivative)
+    f, *limits_s = function.of(Sum)
     
     return Equal(self, Sum(Derivative(f, *limits_d).doit(), *limits_s))
 
@@ -21,5 +20,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,2 +1,2 @@
 from . import eq
-from . import exists_forall
+from . import any_all

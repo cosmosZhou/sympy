@@ -1,33 +1,33 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given, *limits, simplify=True):
-    lhs, rhs = axiom.is_Equal(given)
-    lhs, rhs = UNION(lhs.set, *limits), UNION(rhs.set, *limits)
+    lhs, rhs = given.of(Equal)
+    lhs, rhs = Cup(lhs.set, *limits), Cup(rhs.set, *limits)
     if simplify:
-        lhs, rhs = lhs.simplify(), rhs.simplify() 
-        
+        lhs, rhs = lhs.simplify(), rhs.simplify()
+
     return Equal(lhs, rhs)
 
 
 @prove
 def prove(Eq):
+    from axiom import sets
     n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(domain=Range(0, n))
     f = Function.f(shape=(), etype=dtype.integer)
     g = Function.g(shape=(), etype=dtype.integer)
-    
+
     Eq << apply(Equal(f(i), g(i)), (i, 0, n))
-    
+
     Eq << Eq[0].forall((i,))
-    
-    Eq << sets.forall_eq.imply.eq.set_comprehension.apply(Eq[-1])
+
+    Eq << sets.all_eq.imply.eq.set_comprehension.apply(Eq[-1])
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

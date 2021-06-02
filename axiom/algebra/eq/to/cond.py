@@ -1,30 +1,30 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply(given=None)
 def apply(given):
-    boole, one = axiom.is_Equal(given)
+    boole, one = given.of(Equal)
     if not one.is_One:
         boole, one = one, boole
     assert one.is_One
-    
-    cond = axiom.is_Bool(boole)
-         
+
+    cond = boole.of(Bool)
+
     return Equivalent(given, cond)
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     A = Symbol.A(etype=dtype.real)
-    
+
     Eq << apply(Equal(Bool(Contains(x, A)), 1))
-    
-    Eq << Eq[-1].this.lhs.lhs.definition
-    
-    
+
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+
+
 if __name__ == '__main__':
-    prove()
+    run()

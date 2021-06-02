@@ -1,1 +1,1 @@
-from . import piecewise, intersect
+from . import piecewise, cap, cup

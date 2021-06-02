@@ -535,12 +535,15 @@ class Text:
         except FileNotFoundError:
             createNewFile(path)
             self.file = open(path, "w+", encoding=encoding)
-        self.home()
+        self.rewind()
         self.strip = strip
 
     def __del__(self):
-        self.file.close()
+        self.close()
 
+    def close(self):
+        self.file.close()
+        
     def __iter__(self):  # Get iterator object on iter
         return self
 
@@ -548,7 +551,7 @@ class Text:
         while True:
             line = self.file.readline()
             if not line:
-                self.home()
+                self.rewind()
                 raise StopIteration
             if self.strip:
                 line = line.strip()
@@ -562,7 +565,7 @@ class Text:
         '''
         prepend = append before the list;
         '''
-        self.home()
+        self.rewind()
 
         content = self.file.read()
         self.write(s)
@@ -597,7 +600,7 @@ class Text:
                     if char[0] == '\n' or char[0] == '\r':
                         break
         else:
-            self.home()
+            self.rewind()
             offset = self.file.tell()
             while index > 0:
                 index -= 1
@@ -643,7 +646,7 @@ class Text:
                     if char == '\n' or char == '\r':
                         break
         else:
-            self.home()
+            self.rewind()
             offset = self.f.tell()
             while index > 0:
                 index -= 1
@@ -662,7 +665,7 @@ class Text:
         return self.f.readline().strip()
 
     def write(self, s):
-        self.home()
+        self.rewind()
 
         if type(s) == str:
             self.file.write(s + '\n')
@@ -673,12 +676,12 @@ class Text:
         self.file.flush()
 
     def clear(self):
-        self.home()
+        self.rewind()
         self.file.write('')
         self.file.truncate()
         self.file.flush()
 
-    def home(self):
+    def rewind(self):
 #         skip_byte_order_mark
         self.file.seek(0, os.SEEK_SET)
         byteOrderMark = self.file.read(1)
@@ -689,15 +692,10 @@ class Text:
         self.file.seek(0, os.SEEK_END)
 
     def collect(self):
-        self.home()
+        self.rewind()
 
         arr = []
         for line in self:
-            if ord(line[0]) == 0xFEFF:
-                line = line[1:]
-                if not line:
-                    continue
-#             print(line)
             arr.append(line)
         return arr
 
@@ -720,17 +718,23 @@ class Text:
     def read(self):
         return self.file.read()
     
-    def get_last_char(self):
+    def __len__(self):
         self.end()
-        offset = self.file.tell() - 1
+        return self.file.tell();
+        
+    def endswith(self, end):
+        self.end()
+        size = len(end)
+        offset = self.file.tell() - size
         if offset < 0:
-            return ''
+            return False
+        
         _offset = self.file.seek(offset, os.SEEK_SET)
         assert _offset == offset
-        char = self.file.read(1)
-        return char        
+        char = self.file.read(size)        
+        return char == end
 
-    def readlines(self):        
+    def readlines(self): 
         return [s for s in self]
     
     def readline(self):
@@ -739,16 +743,18 @@ class Text:
         except StopIteration:
             return ''
     
-    def writelines(self, array):        
-        self.home()
+    def writelines(self, array): 
+        self.rewind()
 
         for s in array:
             self.file.write(str(s) + '\n')
 
         self.file.truncate()
         self.file.flush()
+
     
 class __LINE__:
+
     def __repr__(self):
         try:
             raise Exception

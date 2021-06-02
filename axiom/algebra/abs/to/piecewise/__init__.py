@@ -1,27 +1,22 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(self):
-    x = axiom.is_Abs(self)    
+    x = self.of(Abs)    
     return Equal(self, Piecewise((x, x >= 0), (-x, True)))
 
 
-@prove
+@prove(provable=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     Eq << apply(abs(x))
-    
-    Eq << Eq[0].this.lhs.definition
-    
-    
 
     
 if __name__ == '__main__':
-    prove()
+    run()
     
 from . import is_positive
 from . import is_zero

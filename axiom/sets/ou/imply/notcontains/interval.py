@@ -1,38 +1,36 @@
-from axiom.utility import prove, apply
-from sympy import *
-import axiom
-from axiom import algebra, sets
+from util import *
 
 
 @apply
 def apply(given):
-    equal, notcontains = axiom.is_Or(given)
-    
-    x, b = axiom.is_Equal(equal)
-    _x, ab = axiom.is_NotContains(notcontains)
+    equal, notcontains = given.of(Or)
+
+    x, b = equal.of(Equal)
+    _x, ab = notcontains.of(NotContains)
     assert x == _x
-    assert ab.is_Interval
+    a, b = ab.of(Interval)
     assert not ab.right_open
-    assert b == ab.stop
+
     ab = ab.copy(right_open=True)
-    return NotContains(x, ab)            
+    return NotContains(x, ab)
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True, given=True)
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)
-    
+
     Eq << apply(Equal(x, b) | NotContains(x, Interval(a, b)))
-    
+
     Eq << ~Eq[-1]
-    
+
     Eq <<= Eq[-1] & Eq[0]
-    
+
     Eq << algebra.et.imply.ou.apply(Eq[-1])
-    
-        
+
+
 if __name__ == '__main__':
-    prove()
+    run()
 

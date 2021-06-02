@@ -10,7 +10,6 @@ See the webpage for more information and documentation:
     https://sympy.org
 
 """
-
 # Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
 # Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
 # Style: DIM, NORMAL, BRIGHT, RESET_ALL
@@ -59,10 +58,6 @@ del sys
 
 
 try:
-    try:
-        del bisect
-    except :
-        ...
     import mpmath
 except ImportError:
     raise ImportError("SymPy now depends on mpmath as an external library. "
@@ -116,6 +111,8 @@ from .tensor import *
 from .parsing import *
 from .calculus import *
 from .algebra import *
+from .stats import *
+from .keras import *
 # This module causes conflicts with other modules:
 # from .stats import *
 # Adds about .04-.05 seconds of import time
@@ -130,5 +127,3 @@ evalf._create_evalf_table()
 
 # This is slow to import:
 # import abc
-
-from .deprecated import *

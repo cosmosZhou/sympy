@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 def rewrite_from_MinMaxBase(self):
     common_terms = None
@@ -31,7 +30,7 @@ def rewrite_from_MinMaxBase(self):
 
 @apply
 def apply(self): 
-    axiom.is_Max(self)
+    self.of(Max)
     
     return Equal(self, rewrite_from_MinMaxBase(self))
 
@@ -51,4 +50,4 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.astype(Piecewise)
     
 if __name__ == '__main__':
-    prove()
+    run()

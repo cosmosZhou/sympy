@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, calculus
+
 from axiom.algebra.add.to.sum import piece_together
 
 @apply
@@ -11,7 +10,7 @@ def apply(self):
     return Equal(self, piece_together(Integral, self))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     a = Symbol.a(real=True)
@@ -24,7 +23,7 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()
     
 del limits
 from . import limits

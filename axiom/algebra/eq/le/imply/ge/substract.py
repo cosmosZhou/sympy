@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
@@ -9,8 +8,8 @@ def apply(*given):
     equal, less_than = given
     if not equal.is_Equal:
         equal, less_than = less_than, equal
-    x, y = axiom.is_Equal(equal)
-    a, b = axiom.is_LessEqual(less_than)
+    x, y = equal.of(Equal)
+    a, b = less_than.of(LessEqual)
     return GreaterEqual(x - a, y - b)
 
 
@@ -32,4 +31,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

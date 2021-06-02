@@ -1,10 +1,4 @@
-from sympy.core.numbers import oo
-from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy.concrete.summations import Sum
-from sympy import Symbol
-from sympy.core.add import Add
-from axiom import algebra
+from util import *
 
 
 def extract(recurrence):
@@ -26,7 +20,7 @@ def extract(recurrence):
 
 
 @apply
-def apply(*given):    
+def apply(*given):
     initial_condition, recurrence = given
     m, g, beta, t = extract(recurrence)
     assert initial_condition.is_Equal
@@ -40,13 +34,14 @@ def apply(*given):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     m = Symbol.m(shape=(oo,), real=True)
     g = Symbol.g(shape=(oo,), real=True)
     t = Symbol.t(integer=True, positive=True)
     beta = Symbol.beta(real=True, nonzero=True)
     recurrence = Equal(m[t], beta * m[t - 1] + (1 - beta) * g[t])
     initial_condition = Equal(m[0], 0)
-    
+
     Eq << apply(initial_condition, recurrence)
 
     Eq << Eq[1] / beta ** t
@@ -60,7 +55,7 @@ def prove(Eq):
     k = Eq[2].lhs.indices[0]
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (t, 1, k + 1))
-    
+
     Eq << Eq[-1].this.rhs.astype(Add)
 
     Eq << Eq[-1] - Eq[-1].rhs.args[0]
@@ -73,5 +68,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

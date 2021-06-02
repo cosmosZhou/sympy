@@ -165,6 +165,8 @@ class Tuple(Basic):
                 if cond.is_set:
                     return r"%s \in %s" % (p._print(x), p._print(cond))
                 else:
+                    if cond.is_BinaryCondition and cond.lhs == x:
+                        return p._print(cond)
                     return r"%s \left| %s \right. " % (p._print(x), p._print(cond))
             else:
                 return p._print(self[0])
@@ -191,12 +193,21 @@ class Tuple(Basic):
                         
 
     def domain_latex(self, domain=None):
-        if domain.is_Interval:
+        if domain.is_Range:
             start, end = domain.start, domain.stop
             if end.is_Infinity:
                 if start.is_NegativeInfinity:
-                    if domain.is_integer:
-                        return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
+                    return r"%s\in%s" % (self.latex, r'\mathbb{Z}')
+                return r"%s \ge %s" % (self.latex, start.latex)
+            else:
+                if start.is_NegativeInfinity:
+                    return r"%s < %s" % (self.latex, end.latex)
+                return r"%s \le %s < %s" % (start.latex, self.latex, end.latex)
+            
+        elif domain.is_Interval:
+            start, end = domain.start, domain.stop
+            if end.is_Infinity:
+                if start.is_NegativeInfinity:
                     return r"%s\in%s" % (self.latex, r'\mathbb{R}')
                 if domain.left_open:
                     return r"%s > %s" % (self.latex, start.latex)
@@ -255,16 +266,16 @@ class Tuple(Basic):
     def to_setlimit(self):
         x, *ab = self
         if len(ab) == 2 and not ab[1].is_set:
-            from sympy.sets.sets import Interval
-            return (x, Interval(*ab, right_open=x.is_integer, integer=x.is_integer))
+            from sympy import Interval, Range
+            return (x, (Range if x.is_integer else Interval)(*ab))
         return self
     
     @classmethod
     def as_setlimit(cls, self):
         x, *ab = self
         if len(ab) == 2 and not ab[1].is_set:
-            from sympy.sets.sets import Interval
-            return (x, Interval(*ab, right_open=x.is_integer, integer=x.is_integer))
+            from sympy import Interval, Range
+            return (x, (Range if x.is_integer else Interval)(*ab))
         return self
     
     def coerce_setlimit(self, function=None):
@@ -283,8 +294,8 @@ class Tuple(Basic):
             if b.is_set:
                 domain = b & x.domain_conditioned(a)
             else:
-                from sympy import Interval
-                domain = Interval(a, b, right_open=x.is_integer, integer=x.is_integer)
+                from sympy import Interval, Range
+                domain = (Range if x.is_integer else Interval)(a, b)
         return x, domain
     
 

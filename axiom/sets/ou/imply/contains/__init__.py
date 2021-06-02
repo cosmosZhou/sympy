@@ -1,17 +1,16 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given):
-    or_eqs = axiom.is_Or(given)
+    or_eqs = given.of(Or)
 
     ss = []    
     var = None
     for eq in or_eqs:
-        x, s = axiom.is_Contains(eq)
+        x, s = eq.of(Contains)
         
         if var is None:
             var = x
@@ -35,6 +34,7 @@ def prove(Eq):
     
         
 if __name__ == '__main__':
-    prove()
+    run()
 
+del finiteset
 from . import finiteset, piecewise

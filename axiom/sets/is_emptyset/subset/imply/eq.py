@@ -1,10 +1,6 @@
-from axiom.utility import prove, apply
+from util import *
 
-from sympy import *
-from axiom import sets
-# given0: A in B
-# given1: B & C = {}
-# C - A = C
+
 @apply
 def apply(*given):
     assert len(given) == 2
@@ -28,13 +24,12 @@ def apply(*given):
         assert B == C
         C = _B
 
-    return Equal(C - A, C)
-
-
+    return Equal(C // A, C)
 
 
 @prove
 def prove(Eq):
+    from axiom import sets
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
     C = Symbol.C(etype=dtype.integer, given=True)
@@ -44,10 +39,10 @@ def prove(Eq):
     Eq << sets.is_emptyset.subset.imply.is_emptyset.apply(Eq[0], Eq[1])
 
     Eq << sets.eq.imply.eq.union.apply(Eq[-1], Eq[-2].lhs)
-    
+
     Eq << Eq[-1].reversed
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

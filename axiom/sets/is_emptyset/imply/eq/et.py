@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets, algebra
+from util import *
+
 # given: A | B = {}
 # A = {} and B = {}
 
@@ -25,6 +24,7 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import sets, algebra
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
@@ -33,15 +33,15 @@ def prove(Eq):
     Eq.ou = ~Eq[-1]
 
     Eq.A_nonempty = Eq.ou.args[0].copy(plausible=True)
-    
-    Eq.B_nonempty = Eq.ou.args[1].copy(plausible=True)    
+
+    Eq.B_nonempty = Eq.ou.args[1].copy(plausible=True)
 
     Eq.A_positive = Eq.A_nonempty.apply(sets.is_nonemptyset.imply.is_positive)
 
     Eq.B_positive = Eq.B_nonempty.apply(sets.is_nonemptyset.imply.is_positive)
 
     Eq.AB_union_empty = Eq[0].apply(algebra.eq.imply.eq.abs)
-    
+
     Eq << sets.eq.imply.eq.complement.apply(Eq[0], A)
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
@@ -63,12 +63,12 @@ def prove(Eq):
     Eq << Eq.B_positive.subs(Eq[-1].reversed)
 
     Eq << ~Eq.A_nonempty
-    
+
     Eq << ~Eq.B_nonempty
 
     Eq <<= Eq[-1] & Eq[-2]
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

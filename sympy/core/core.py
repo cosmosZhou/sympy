@@ -1,6 +1,4 @@
 """ The core's core. """
-from __future__ import print_function, division
-
 # used for canonical ordering of symbolic sequences
 # via __cmp__ method:
 # FIXME this is *so* irrelevant and outdated!
@@ -127,7 +125,8 @@ class BasicMeta(type):
         return obj
                     
     def __add__(self, other):
-        from sympy import Basic, Add
+        from sympy import Basic, Add, sympify
+        other = sympify(other)
         return Basic.__new__(Add, self, other)
 
     def __mul__(self, other):
@@ -139,7 +138,12 @@ class BasicMeta(type):
         return Basic.__new__(Mul, sympify(lhs), self)
     
     def __sub__(self, other):
-        from sympy import Basic, Add
+        from sympy import Basic, Add, sympify
+        other = -other
+        if isinstance(other, int):
+            other = sympify(other)
+            if not self.is_Number:
+                return Basic.__new__(Add, other, self)
         return Basic.__new__(Add, self, other)
 
     def __neg__(self):
@@ -154,29 +158,66 @@ class BasicMeta(type):
         return Basic.__new__(Mul, self,
                              Basic.__new__(Pow, other, S.NegativeOne))
 
+#     lhs / self
+    def __rtruediv__(self, lhs):
+        from sympy import Basic, Mul, Pow, S, sympify
+        lhs = sympify(lhs)
+        
+        pow = Basic.__new__(Pow, self, S.NegativeOne)
+        if lhs == 1:
+            return pow                    
+        return Basic.__new__(Mul, lhs, pow)
+
+    def __mod__(self, other):
+        from sympy import Basic, Mod, sympify
+        if isinstance(other, int):
+            other = sympify(other)
+        return Basic.__new__(Mod, self, other)
+
     def __pow__(self, other):
-        from sympy import Basic, Pow
+        from sympy import Basic, Pow, sympify
+        if isinstance(other, int):
+            other = sympify(other)
         return Basic.__new__(Pow, self, other)
 
+    def __rpow__(self, lhs):
+        from sympy import Basic, Pow, sympify
+        if isinstance(lhs, int):
+            lhs = sympify(lhs)
+        return Basic.__new__(Pow, lhs, self)
+    
     def __gt__(self, other):
-        from sympy import Basic, Greater
+        from sympy import Basic, Greater, sympify
+        if isinstance(other, int):
+            other = sympify(other)
         return Basic.__new__(Greater, self, other)
 
     def __ge__(self, other):
-        from sympy import Basic, GreaterEqual
+        from sympy import Basic, GreaterEqual, sympify
+        if isinstance(other, int):
+            other = sympify(other)
         return Basic.__new__(GreaterEqual, self, other)
 
     def __lt__(self, other):
-        from sympy import Basic, Less
+        from sympy import Basic, Less, sympify
+        if isinstance(other, int):
+            other = sympify(other)
         return Basic.__new__(Less, self, other)
 
     def __le__(self, other):
-        from sympy import Basic, LessEqual
+        from sympy import Basic, LessEqual, sympify
+        if isinstance(other, int):
+            other = sympify(other)
         return Basic.__new__(LessEqual, self, other)
 
 
 class Wanted:
     is_Wanted = True
+    
+    def __str__(self):
+        return str(self.func)
+    
+    __repr__ = __str__
     
     def __init__(self, func):
         self.func = func
@@ -198,9 +239,9 @@ class Wanted:
     __mul__ = BasicMeta.__mul__
     __rmul__ = BasicMeta.__rmul__
     __truediv__ = BasicMeta.__truediv__
+    __rtruediv__ = BasicMeta.__rtruediv__
     
     __pow__ = BasicMeta.__pow__
-    
     
     __and__ = BasicMeta.__and__
     __or__ = BasicMeta.__or__

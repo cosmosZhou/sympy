@@ -1,23 +1,15 @@
+from util import *
 
-from sympy.core.relational import Equal
-
-from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-
-from sympy.matrices.expressions.matexpr import Addition
-from sympy import LAMBDA
-from sympy import Symbol
 
 @apply
 def apply(x, lamda, w=None):
     n = x.shape[0]
-    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
-    j = Symbol.j(domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(domain=Range(0, n))
+    j = Symbol.j(domain=Range(0, n))
     
     if w is None:
-        w = Symbol.w(LAMBDA[j, i](Addition(n, i, j, lamda)))
-        w_quote = Symbol.w_quote(LAMBDA[j, i](Addition(n, i, j, -lamda)))
+        w = Symbol.w(Lamda[j, i](Addition(n, i, j, lamda)))
+        w_quote = Symbol.w_quote(Lamda[j, i](Addition(n, i, j, -lamda)))
     else:
         assert w[i, j] == Addition(n, i, j, lamda)
         assert w_quote[i, j] == Addition(n, i, j, -lamda)
@@ -27,7 +19,7 @@ def apply(x, lamda, w=None):
 
 @prove
 def prove(Eq): 
-    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(shape=(n,), real=True)
     lamda = Symbol.lamda(real=True)
     Eq << apply(x, lamda)
@@ -51,5 +43,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

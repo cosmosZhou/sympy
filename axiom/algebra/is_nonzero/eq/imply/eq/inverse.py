@@ -1,5 +1,4 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
 
 
@@ -9,8 +8,8 @@ def apply(*given):
     if is_nonzero.is_Equal:
         equality, is_nonzero = given
         
-    lhs = axiom.is_nonzero(is_nonzero)
-    _lhs, rhs = axiom.is_Equal(equality)
+    lhs = is_nonzero.of(Unequal[0])
+    _lhs, rhs = equality.of(Equal)
     assert lhs == _lhs
         
     return Equal(1 / lhs, 1 / rhs)
@@ -30,5 +29,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

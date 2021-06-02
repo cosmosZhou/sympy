@@ -1,2 +1,2 @@
-from . import intersect
-from . import piecewise, interval
+from . import piecewise, range
+from . import intersection

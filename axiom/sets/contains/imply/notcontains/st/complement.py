@@ -1,21 +1,12 @@
-from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains, NotContains
-from sympy import Symbol
-import axiom
+from util import *
 
 
-# given: A in B 
-# => {A} subset B
 @apply
 def apply(given):
-    assert given.is_Contains
-    e, domain = given.args
-    S, s = axiom.is_Complement(domain)
+    e, domain = given.of(Contains)
+    S, s = domain.of(Complement)
     
     return NotContains(e, s)
-
-
 
 
 @prove
@@ -25,7 +16,7 @@ def prove(Eq):
     
     S = Symbol.S(etype=dtype.integer, given=True)
     
-    Eq << apply(Contains(e, S - s, evaluate=False))
+    Eq << apply(Contains(e, S // s, evaluate=False))
     
     Eq << ~Eq[-1]
     
@@ -33,5 +24,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

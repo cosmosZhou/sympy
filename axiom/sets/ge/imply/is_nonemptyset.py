@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, sets
+from util import *
+
 # given: |A| >= 1
 # A != {}
 
@@ -19,15 +18,16 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import sets, algebra
     S = Symbol.S(etype=dtype.integer, given=True)
-    
+
     Eq << apply(abs(S) >= 1)
-    
+
     Eq << algebra.ge.imply.gt.transit.apply(Eq[0], 0)
-    
+
     Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[-1])
-    
+
 
 if __name__ == '__main__':
-    prove()
+    run()
 

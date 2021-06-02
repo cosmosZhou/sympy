@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets, algebra
+
 
 
 @apply
@@ -20,5 +19,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 

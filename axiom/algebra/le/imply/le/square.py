@@ -1,31 +1,31 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given):
-    lhs, rhs = axiom.is_LessEqual(given)
-    
+    lhs, rhs = given.of(LessEqual)
+
     assert lhs.is_real
     assert rhs.is_real
     assert lhs >= 0
-    
+
     return LessEqual(lhs * lhs, rhs * rhs)
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True, nonnegative=True)
     y = Symbol.y(real=True)
-    
+
     Eq << apply(LessEqual(x, y))
-    
+
     Eq << algebra.le.le.imply.le.multiply.apply(Eq[0], Eq[0])
-    
-    
+
+
 
 if __name__ == '__main__':
-    prove()
+    run()
 

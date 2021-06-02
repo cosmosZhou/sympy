@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 
 
 @apply
 def apply(*given):
     a_less_than_b, x_less_than_y = given
-    a, b = axiom.is_Less(a_less_than_b)    
-    x, y = axiom.is_Less(x_less_than_y)
+    a, b = a_less_than_b.of(Less)    
+    x, y = x_less_than_y.of(Less)
     return Less(a + x, b + y)
 
 
@@ -24,4 +23,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

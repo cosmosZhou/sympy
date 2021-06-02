@@ -1,21 +1,17 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import sets
-# given: x != y
-# x not in {y}
+from util import *
 
 
 @apply
 def apply(given):
-    x, R = axiom.is_Contains(given)
-    assert R.is_Interval
+    x, R = given.of(Contains)
+    start, stop = R.of(Interval)
     if R.left_open:        
-        assert R.start >= 0
+        assert start >= 0
     else:
-        assert R.start > 0
-    assert R.stop == oo     
+        assert start > 0
+    assert stop == oo
     assert x.is_complex
+    
     return Greater(x, 0)
 
 
@@ -31,6 +27,6 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove()
+    run()
 
 from . import abs

@@ -357,15 +357,15 @@ class MatMul(MatrixExpr):
 
         return self
                 
-    def expand(self, free_symbol=None, deep=True, **_):
+    def expand(self, var=None, deep=True, **_):
         if not deep:
             return MatrixExpr.expand(self) 
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
         from sympy.concrete.summations import Sum
         if len(self.args) > 2:
-            matmul = self.func(*self.args[:-1]).expand(free_symbol=free_symbol, deep=deep) @ self.args[-1]
+            matmul = self.func(*self.args[:-1]).expand(var=var, deep=deep) @ self.args[-1]
             if matmul.is_MatMul:
-                matmul = matmul.expand(free_symbol=free_symbol, deep=deep)            
+                matmul = matmul.expand(var=var, deep=deep)            
             return matmul
         
         A, B = self.args
@@ -411,9 +411,9 @@ class MatMul(MatrixExpr):
                         if len(a.shape) == 1 and len(b.shape) == 1:
                             n = a.shape[0]
                             if b.shape[0] == n:
-                                i = a.generate_free_symbol(b.free_symbols, integer=True)
-                                j = a.generate_free_symbol(b.free_symbols | {i}, integer=True)                                
-                                product = LAMBDA[j:n, i:n](a[i] * b[j]).simplify()
+                                i = a.generate_var(b.free_symbols, integer=True)
+                                j = a.generate_var(b.free_symbols | {i}, integer=True)                                
+                                product = Lamda[j:n, i:n](a[i] * b[j]).simplify()
                             else:
                                 return self
                         else:
@@ -443,10 +443,10 @@ class MatMul(MatrixExpr):
         if A.is_MatProduct:
             return self
         
-        kwargs = {'free_symbol': free_symbol, 'generator': self}
+        kwargs = {'var': var, 'generator': self}
         
         def generate_k_limit(A, B, excludes=None, **kwargs):
-            if A.is_LAMBDA or not B.is_LAMBDA:
+            if A.is_Lamda or not B.is_Lamda:
                 if excludes:
                     excludes |= B.free_symbols
                 else:
@@ -472,13 +472,13 @@ class MatMul(MatrixExpr):
                 k, *_ = k_limit
                 
                 assert i != k and k != j and i != j
-                return LAMBDA(Sum(A[i, k] * B[k, j], k_limit).simplify(), j_limit, i_limit).simplify()
+                return Lamda(Sum(A[i, k] * B[k, j], k_limit).simplify(), j_limit, i_limit).simplify()
             else:
                 k_limit = generate_k_limit(A, B, {i}, **kwargs)
                 k, *_ = k_limit
                 
                 assert i != k                            
-                return LAMBDA(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
+                return Lamda(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
         else:
 
             if len(B.shape) > 1:
@@ -491,7 +491,7 @@ class MatMul(MatrixExpr):
                         for j in range(B.shape[-1]):
                             args.append(Sum(A[k] * B[k, j], k_limit).doit())
                         from sympy import Matrix
-                        return Matrix(args)
+                        return Matrix(tuple(args))
                     else:
                         for j in range(B.shape[-1]):
                             args.append(Sum(A[k] * B[k, j], k_limit).simplify())
@@ -505,7 +505,7 @@ class MatMul(MatrixExpr):
                     k, *_ = k_limit
                     
                     assert k != j
-                    return LAMBDA(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
+                    return Lamda(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
             k_limit = generate_k_limit(A, B, **kwargs)
             k, *_ = k_limit
             return Sum(A[k] * B[k], k_limit).simplify()                
@@ -520,10 +520,10 @@ class MatMul(MatrixExpr):
 
     @property
     def domain(self):
-        from sympy import Interval, oo
-        from sympy.sets.sets import CartesianSpace
+        from sympy import Interval, oo, Range, CartesianSpace
         shape = self.shape
-        interval = Interval(-oo, oo, integer=self.is_integer)
+        interval = (Range if self.is_integer else Interval)(-oo, oo)
+        
         if shape: 
             return CartesianSpace(interval, *shape)
         return interval
@@ -649,8 +649,8 @@ class MatMul(MatrixExpr):
     def rewrite_from_Sum(cls, self):
         first, second = self.function.as_two_terms()
         if self.limits:
-            from sympy.concrete.expr_with_limits import LAMBDA
-            return LAMBDA(first, *self.limits).simplify() @ LAMBDA(second, *self.limits).simplify()
+            from sympy.concrete.expr_with_limits import Lamda
+            return Lamda(first, *self.limits).simplify() @ Lamda(second, *self.limits).simplify()
         else:
             return first @ second
 
@@ -660,7 +660,7 @@ class MatMul(MatrixExpr):
         return first @ second
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if isinstance(self.function, cls):
             if len(self.function.args) == 2:
                 first, second = self.function.args
@@ -668,7 +668,7 @@ class MatMul(MatrixExpr):
                     if not first._has(*self.variables):
                         if len(second.shape) == 1: 
                             n = second.shape[0]
-                            j = self.generate_free_symbol(excludes=self.variables_set, integer=True)                                                    
+                            j = self.generate_var(excludes=self.variables_set, integer=True)                                                    
                             second = self.func(second[j], *self.limits, (j, 0, n)).simplify()
                             return first @ second
                     else:

@@ -95,9 +95,7 @@ class Contains(BinaryCondition):
         return self.args[0]
 
     def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
+        if not self.set.is_Interval:
             return self
 
         res = [None] * 2
@@ -139,13 +137,13 @@ class Contains(BinaryCondition):
         if other.is_NotContains:
             if self.element == other.element:
                 from sympy import Complement
-                s = Complement(self.set, other.set)
+                s = Complement(self.rhs, other.rhs)
                 return self.func(self.element, s)
         elif other.is_Contains:
             if self.element == other.element:
-                s = self.set & other.set
+                s = self.rhs & other.rhs
                 return self.func(self.element, s)
-        elif self.rhs.is_Interval:
+        elif self.rhs.is_Range or self.rhs.is_Interval:
             if other.is_LessEqual:            
                 if self.lhs == other.lhs:
                     if self.rhs.left_open:
@@ -218,26 +216,30 @@ class Contains(BinaryCondition):
         if x == self.lhs:
             return self.rhs
         interval = self.rhs
-        if interval.is_Interval: 
+        if interval.is_Range: 
             poly = self.lhs.as_poly(x)
             if poly is not None and poly.degree() == 1:
                 c1 = poly.nth(1)
                 c0 = poly.nth(0)
-                if interval.is_integer:
-                    if c1 == 1:
-                        interval = interval.copy(start=interval.start - c0, stop=interval.stop - c0)
-                        return domain & interval
-                    elif c1 == -1:
-                        interval = interval.copy(start=c0 - interval.stop, stop=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
-                        return domain & interval                            
-                else:
-                    if c1 > 0:
-                        interval.func(start=(interval.start - c0) / c1, stop=(interval.stop - c0) / c1)
-                        return domain & interval
-                    elif c1 < 0:
-                        interval.func(start=(interval.stop - c0) / c1, stop=(interval.start - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
-                        return domain & interval             
+                if c1 == 1:
+                    interval = interval.copy(start=interval.start - c0, stop=interval.stop - c0)
+                    return domain & interval
+                elif c1 == -1:
+                    interval = interval.copy(start=c0 - interval.stop, stop=c0 - interval.start, left_open=interval.right_open, right_open=interval.left_open)
+                    return domain & interval                            
       
+        elif interval.is_Interval: 
+            poly = self.lhs.as_poly(x)
+            if poly is not None and poly.degree() == 1:
+                c1 = poly.nth(1)
+                c0 = poly.nth(0)
+                if c1 > 0:
+                    interval.func(start=(interval.start - c0) / c1, stop=(interval.stop - c0) / c1)
+                    return domain & interval
+                elif c1 < 0:
+                    interval.func(start=(interval.stop - c0) / c1, stop=(interval.start - c0) / c1, left_open=interval.right_open, right_open=interval.left_open)
+                    return domain & interval
+                                 
     @classmethod
     def simplify_ForAll(cls, self, function, *limits):
         x = function.lhs
@@ -376,7 +378,10 @@ class NotContains(BinaryCondition):
         elif other.is_GreaterEqual: 
             if self.lhs == other.lhs:
                 interval = self.rhs
-                if interval.is_Interval:
+                if interval.is_Range:
+                    if interval.start == other.rhs:
+                        return other.func(other.lhs, interval.stop)
+                elif interval.is_Interval:
                     if interval.left_open:
                         if interval.right_open:
                             ...

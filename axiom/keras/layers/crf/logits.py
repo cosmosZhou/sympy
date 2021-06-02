@@ -1,8 +1,4 @@
-# coding=utf-8
-from sympy import *
-from axiom.utility import prove, apply
-from sympy.stats.symbolic_probability import Probability as P
-from sympy.stats.rv import pspace
+from util import *
 
 
 @apply
@@ -19,22 +15,21 @@ def prove(Eq):
     d = Symbol.d(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(shape=(n, d), real=True, random=True, given=True)
-    y = Symbol.y(shape=(n,), domain=Interval(0, d - 1, integer=True), random=True, given=True)
+    y = Symbol.y(shape=(n,), domain=Range(0, d), random=True, given=True)
 
     i = Symbol.i(integer=True)
-    t = Symbol.t(integer=True, domain=[0, n])
+    t = Symbol.t(domain=Range(0, n + 1))
     
-    joint_probability_t = P(x[:t + 1], y[:t + 1])
-    emission_probability = P(x[i] | y[i])
-    transition_probability = P(y[i] | y[i - 1])
+    joint_probability_t = Probability(x[:t + 1], y[:t + 1])
+    emission_probability = Probability(x[i] | y[i])
+    transition_probability = Probability(y[i] | y[i - 1])
         
-    given = Equal(joint_probability_t,
-                    P(x[0] | y[0]) * P(y[0]) * Product[i:1:t + 1](transition_probability * emission_probability))
+    given = Equal(joint_probability_t, Probability(x[0] | y[0]) * Probability(y[0]) * Product[i:1:t + 1](transition_probability * emission_probability))
         
     y = pspace(y).symbol
-    G = Symbol.G(LAMBDA[y[i - 1], y[i]](-log(transition_probability)))
-    s = Symbol.s(LAMBDA[t](-log(joint_probability_t)))
-    x = Symbol.x(LAMBDA[y[i], i](-log(emission_probability)))
+    G = Symbol.G(Lamda[y[i - 1], y[i]](-log(transition_probability)))
+    s = Symbol.s(Lamda[t](-log(joint_probability_t)))
+    x = Symbol.x(Lamda[y[i], i](-log(emission_probability)))
     
     Eq.s_definition, Eq.G_definition, Eq.x_definition, Eq.given, Eq.logits_recursion = apply(G, x, s, given)
 
@@ -52,7 +47,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq.x_definition.reversed).subs(Eq.G_definition.reversed)
     
-    Eq << Eq[-1].this.rhs.args[-1].bisect({0})
+    Eq << Eq[-1].this.rhs.args[-1].split({0})
     
     Eq << Eq[-1].subs(t, t + 1) - Eq[-1]
     
@@ -62,4 +57,4 @@ def prove(Eq):
     
 # reference: Neural Architectures for Named Entity Recognition.pdf
 if __name__ == '__main__':
-    prove()
+    run()

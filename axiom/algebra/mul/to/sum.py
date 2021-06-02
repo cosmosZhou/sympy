@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
@@ -21,7 +20,7 @@ def apply(self):
             if duplicate_set:
                 excludes = set()
                 for v in duplicate_set:
-                    _v = self.generate_free_symbol(excludes=excludes, **v.type.dict)
+                    _v = self.generate_var(excludes=excludes, **v.type.dict)
                     sgm = sgm.limits_subs(v, _v)
                     excludes.add(_v)                        
                     
@@ -42,4 +41,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()

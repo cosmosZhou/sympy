@@ -32,7 +32,7 @@ class Invoker:
         return 'imply' if boolean else 'given'
         
     def determine_assumptions(self, obj):
-        if obj.is_Boolean:
+        if obj.is_Inference and obj.is_Boolean: 
             equivalent = obj.equivalent
             if equivalent is not None:
                 if not isinstance(equivalent, (list, tuple)):
@@ -61,16 +61,6 @@ class Invoker:
             
             stop = i == -len(self.index)
             
-            if this.func.is_ExprWithLimits and self._domain_defined:
-                function, *limits = args
-                for i, limit in enumerate(limits):
-                    if limit[0] in self._domain_defined:
-                        x, domain = limit.coerce_setlimit() 
-                        domain_defined = self._domain_defined.pop(x)
-                        if domain != domain_defined:
-                            if domain_defined in domain: 
-                                args[i + 1] = (x, domain_defined)
-                        
             if stop:
                 kwargs = assumptions
             else:
@@ -78,6 +68,22 @@ class Invoker:
                 
             if evaluate is not None:
                 kwargs['evaluate'] = evaluate
+            
+            if self._domain_defined and this.func.is_ExprWithLimits:
+                _, *limits = args
+                for i, limit in enumerate(limits):
+                    if limit[0] in self._domain_defined:
+                        x, domain = limit.coerce_setlimit() 
+                        domain_defined = self._domain_defined.pop(x)
+                        if domain != domain_defined:
+                            if domain_defined in domain: 
+                                args[i + 1] = (x, domain_defined)
+                                break
+                else:
+                    if this.is_ForAll:
+                        for x in set(self._domain_defined):
+                            if this._has(x): 
+                                args.append((x, self._domain_defined.pop(x)))                    
 
             obj = this.func(*args, **kwargs)
             
@@ -129,16 +135,24 @@ class Invoker:
         if self._context:
             this = self.this
             reps = []
-            from sympy import Interval
+            from sympy import Interval, Range
             outer_context = {}
             for _, limits in self._context:
                 for x, *ab in limits:
+                    if x.shape:
+                        continue
                     if len(ab) == 1:
                         domain, *_ = ab
                         if domain.is_Boolean:
                             domain = x.domain_conditioned(domain)                                                    
                     else:
-                        domain = Interval(*ab, right_open=x.is_integer, integer=x.is_integer)
+                        for i, t in enumerate(ab):
+                            for outer_var in outer_context:
+                                if t._has(outer_var):
+                                    t = t._subs(outer_var, outer_context[outer_var][0])
+                            ab[i] = t
+                                
+                        domain = (Range if x.is_integer else Interval)(*ab)
                         
                     if x in outer_context:
                         x, _domain = outer_context[x]
@@ -153,7 +167,7 @@ class Invoker:
                     reps.append((x, _x))
                     outer_context[x] = (_x, domain)
             
-            obj = getattr(this, self.callable.__name__)(*args, **kwargs)  # .simplify()
+            obj = getattr(this, self.callable.__name__)(*args, **kwargs)
             if obj.is_BooleanAtom:
                 if obj.is_BooleanTrue:
                     parent = self.parent
@@ -166,19 +180,8 @@ class Invoker:
             for x, _x in reps:
                 _obj = obj._subs(_x, x)
                 if obj.is_boolean:
-                    if _obj.equivalent is not None:
-                        if _obj.equivalent is not obj:
-                            _obj.equivalent = None
-                            if _obj is not obj:
-                                _obj.equivalent = obj 
-                    else:
-                        if _obj.is_BooleanAtom:
-                            _obj = _obj.copy(equivalent=obj)
-                        else:
-                            if _obj is obj:
-                                ...
-                            else:
-                                _obj.equivalent = obj
+                    if _obj.is_BooleanAtom:
+                        _obj = _obj.copy(equivalent=obj)
                 obj = _obj                    
         else: 
             obj = self.callable(*args, **kwargs)
@@ -325,12 +328,12 @@ class Invoker:
         elif target.is_Tuple:
             self.index.append(indices)
             self._objs.append(target[indices])
-        elif target.is_DenseMatrix:
+        elif target.is_Matrix:
             if isinstance(indices, tuple):
                 i, j = indices
-                index = i * target.cols + j + 1
+                index = i * target.cols + j
             else:
-                index = indices + 1
+                index = indices
             
             self.index.append(index)
             self._objs.append(target.args[index])
@@ -353,7 +356,8 @@ class Invoker:
                     x, *ab = limit
                     if not ab and x.is_integer:
                         limit = (x, target.function.domain_defined(x))
-                    limits.append(limit)                
+                    limits.append(limit)
+                limits.reverse()      
             else:
                 limits = target.limits
             

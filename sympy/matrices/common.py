@@ -555,23 +555,23 @@ class MatrixShaping(MatrixRequired):
         """
         return self[i, :]
 
-    @property
-    def shape(self):
-        """The shape (dimensions) of the matrix as the 2-tuple (rows, cols).
-
-        Examples
-        ========
-
-        >>> from sympy.matrices import zeros
-        >>> M = zeros(2, 3)
-        >>> M.shape
-        (2, 3)
-        >>> M.rows
-        2
-        >>> M.cols
-        3
-        """
-        return (self.rows, self.cols)
+#     @property
+#     def shape(self):
+#         """The shape (dimensions) of the matrix as the 2-tuple (rows, cols).
+# 
+#         Examples
+#         ========
+# 
+#         >>> from sympy.matrices import zeros
+#         >>> M = zeros(2, 3)
+#         >>> M.shape
+#         (2, 3)
+#         >>> M.rows
+#         2
+#         >>> M.cols
+#         3
+#         """
+#         return (self.rows, self.cols)
 
     def tolist(self):
         """Return the Matrix as a nested Python list.
@@ -1071,15 +1071,15 @@ class MatrixProperties(MatrixRequired):
     __slots__ = []
     def _eval_atoms(self, *types):
         result = set()
-        for i in self._mat:
+        for i in self._args:
             result.update(i.atoms(*types))
         return result
 
     def _eval_free_symbols(self):
-        return set().union(*(i.free_symbols for i in self._mat))
+        return set().union(*(i.free_symbols for i in self._args))
 
     def _eval_has(self, *patterns):
-        return any(a.has(*patterns) for a in self._mat)
+        return any(a.has(*patterns) for a in self._args)
 
     def _eval_is_anti_symmetric(self, simpfunc):
         if not all(simpfunc(self[i, j] + self[j, i]).is_zero for i in range(self.rows) for j in range(self.cols)):
@@ -1127,9 +1127,9 @@ class MatrixProperties(MatrixRequired):
         return mat.is_zero
 
     def _eval_is_zero(self):
-        if any(i.is_zero == False for i in self._mat):
+        if any(i.is_zero == False for i in self._args):
             return False
-        if any(i.is_zero is None for i in self._mat):
+        if any(i.is_zero is None for i in self._args):
             return None
         return True
 
@@ -1139,7 +1139,7 @@ class MatrixProperties(MatrixRequired):
                    for j in range(min(self.cols, (i - 1))))
 
     def _eval_values(self):
-        return [i for i in self._mat if not i.is_zero]
+        return [i for i in self._args if not i.is_zero]
 
     def atoms(self, *types):
         """Returns the atoms that form the current object.
@@ -1654,7 +1654,7 @@ class MatrixOperations(MatrixRequired):
         return self.transpose().conjugate()
 
     def _eval_applyfunc(self, f):
-        out = self._new(self.rows, self.cols, [f(x) for x in self._mat])
+        out = self._new(self.rows, self.cols, [f(x) for x in self._args])
         return out
 
     def _eval_as_real_imag(self):
@@ -2122,7 +2122,7 @@ class MatrixArithmetic(MatrixRequired):
         """Return self + other, raising ShapeError if shapes don't match."""
         if not other.is_DenseMatrix:
             if not other.shape:
-                return self.func(*self.args[:2], tuple(e + other for e in self._mat))
+                return self.func(*self.args[:2], tuple(e + other for e in self._args))
             return Expr.__add__(self, other)
         other = _matrixify(other)
         # matrix-like objects can have shapes.  This is
@@ -2436,7 +2436,7 @@ class _MinimalMatrix(object):
             return (row_slice, col_slice)
 
         def _coord_to_index(i, j):
-            """Return the index in _mat corresponding
+            """Return the index in _args corresponding
             to the (i,j) position in the matrix. """
             return i * self.cols + j
 

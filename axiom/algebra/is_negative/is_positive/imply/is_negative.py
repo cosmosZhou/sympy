@@ -1,7 +1,6 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
@@ -14,17 +13,18 @@ def apply(*given):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
-    
+
     Eq << apply(y < 0, x > 0)
-    
-    Eq << -Eq[0]    
-    
+
+    Eq << -Eq[0]
+
     Eq << algebra.is_positive.is_positive.imply.is_positive.mul.apply(Eq[-1], Eq[1])
-    
+
     Eq << -Eq[-1]
 
-    
+
 if __name__ == '__main__':
-    prove()
+    run()

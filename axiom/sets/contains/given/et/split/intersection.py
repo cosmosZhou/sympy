@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets
+from util import *
+
 import axiom
 
 
@@ -8,9 +7,9 @@ import axiom
 def apply(imply):
     assert imply.is_Contains
     
-    x, intersection = axiom.is_Contains(imply)
+    x, intersection = imply.of(Contains)
     
-    ss = axiom.is_Intersection(intersection)
+    ss = intersection.of(Intersection)
     
     return And(*(Contains(x, s) for s in ss))
 
@@ -26,5 +25,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

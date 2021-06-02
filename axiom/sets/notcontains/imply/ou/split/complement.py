@@ -1,14 +1,13 @@
-from axiom.utility import prove, apply
-from sympy import *
-from axiom import sets
+from util import *
+
 import axiom
 
 
 # given e not in S
 @apply
 def apply(given, simplify=True):
-    e, S = axiom.is_NotContains(given)
-    U, A = axiom.is_Complement(S)
+    e, S = given.of(NotContains)
+    U, A = S.of(Complement)
     contains = Contains(e, A)
     notcontains = NotContains(e, U)
     if simplify:
@@ -34,5 +33,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

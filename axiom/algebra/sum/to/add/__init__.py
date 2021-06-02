@@ -1,8 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
-from sympy.concrete.limits import limits_dictionary, limits_update
+
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
@@ -22,15 +20,16 @@ def difference_of_domain_defined(domain_defined, _domain_defined, limitsDict):
             
     return diff_set
 
-        
-@apply
-def apply(self, simplify=True):
-    assert self.is_Sum
+
+def associate(self, simplify=True):
+    from sympy.concrete.limits import limits_dictionary, limits_update
     args = []
     domain_defined = self.function.domain_defined_for_limits(self.limits)
     
     limitsDict = limits_dictionary(self.limits)
-    for arg in axiom.is_Add(self.function):
+    assert isinstance(self.function, self.func.operator)
+    
+    for arg in self.function.args:
         arg_domain_defined = arg.domain_defined_for_limits(self.limits)
         diff_set = difference_of_domain_defined(domain_defined, arg_domain_defined, limitsDict)
         if diff_set:
@@ -42,11 +41,17 @@ def apply(self, simplify=True):
         if simplify:
             arg = arg.simplify()
         args.append(arg)
-        
-    return Equal(self, Add(*args, evaluate=False))
+
+    return self.func.operator(*args, evaluate=False)
 
 
-@prove
+@apply
+def apply(self, simplify=True):
+    assert self.is_Sum        
+    return Equal(self, associate(self, simplify=simplify))
+
+
+@prove(provable=False)
 def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
@@ -61,7 +66,7 @@ def prove(Eq):
     
 #     Eq << apply(Sum[i:C, j](f(i) + x[i] + h(j) + x[j] + y[i, j]))
     Eq << apply(Sum[i:n](f(i) + h(i)))
-    
+    return
     Eq << Eq[0].subs(n, 1)
     
     Eq.induct = Eq[0].subs(n, n + 1)
@@ -76,11 +81,11 @@ def prove(Eq):
     
     Eq << Eq[0].induct(reverse=True)
     
-    Eq << algebra.sufficient.imply.eq.induction.apply(Eq[-1], n=n, start=1)
+    Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 
 from . import push_front, push_back
 from . import doit

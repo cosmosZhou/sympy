@@ -12,8 +12,6 @@ class Cofactors(MatrixExpr):
     method of matrices.
 
     """
-    is_Cofactors = True
-
     def __new__(cls, mat):        
         mat = _sympify(mat)
         return Basic.__new__(cls, mat)
@@ -47,11 +45,11 @@ class Cofactors(MatrixExpr):
 
     def _entry(self, i, j=None, **_):
         from sympy.matrices.expressions.minors import Minors
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
         m, n = self.rows, self.cols
         if j is None:
-            j = self.generate_free_symbol(integer=True)
-            return LAMBDA[j:n]((-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j])
+            j = self.generate_var(integer=True)
+            return Lamda[j:n]((-1) * (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j])
         return (-1) ** (i + j) * Minors(self.arg)[m - 1 - i, n - 1 - j]
 
 # Needs["Combinatorica`"]

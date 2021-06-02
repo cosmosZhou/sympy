@@ -39,10 +39,8 @@ from sympy.core.alphabets import greeks
 # D   - DIGIT     0
 # S   - SYMBOL    +
 
-
 __all__ = ['greek_unicode', 'sub', 'sup', 'xsym', 'vobj', 'hobj', 'pretty_symbol',
            'annotated']
-
 
 _use_unicode = False
 
@@ -112,11 +110,12 @@ def xstr(*args):
     else:
         return str(*args)
 
+
 # GREEK
 g = lambda l: U('GREEK SMALL LETTER %s' % l.upper())
 G = lambda l: U('GREEK CAPITAL LETTER %s' % l.upper())
 
-greek_letters = list(greeks) # make a copy
+greek_letters = list(greeks)  # make a copy
 # deal with Unicode's funny spelling of lambda
 greek_letters[greek_letters.index('lambda')] = 'lamda'
 
@@ -141,7 +140,7 @@ bold_unicode.update((L, B(L)) for L in ascii_uppercase)
 gb = lambda l: U('MATHEMATICAL BOLD SMALL %s' % l.upper())
 GB = lambda l: U('MATHEMATICAL BOLD CAPITAL  %s' % l.upper())
 
-greek_bold_letters = list(greeks) # make a copy, not strictly required here
+greek_bold_letters = list(greeks)  # make a copy, not strictly required here
 # deal with Unicode's funny spelling of lambda
 greek_bold_letters[greek_bold_letters.index('lambda')] = 'lamda'
 
@@ -154,47 +153,47 @@ greek_bold_unicode['Lambda'] = greek_unicode['Lamda']
 greek_bold_unicode['varsigma'] = u'\N{MATHEMATICAL BOLD SMALL FINAL SIGMA}'
 
 digit_2txt = {
-    '0':    'ZERO',
-    '1':    'ONE',
-    '2':    'TWO',
-    '3':    'THREE',
-    '4':    'FOUR',
-    '5':    'FIVE',
-    '6':    'SIX',
-    '7':    'SEVEN',
-    '8':    'EIGHT',
-    '9':    'NINE',
+    '0': 'ZERO',
+    '1': 'ONE',
+    '2': 'TWO',
+    '3': 'THREE',
+    '4': 'FOUR',
+    '5': 'FIVE',
+    '6': 'SIX',
+    '7': 'SEVEN',
+    '8': 'EIGHT',
+    '9': 'NINE',
 }
 
 symb_2txt = {
-    '+':    'PLUS SIGN',
-    '-':    'MINUS',
-    '=':    'EQUALS SIGN',
-    '(':    'LEFT PARENTHESIS',
-    ')':    'RIGHT PARENTHESIS',
-    '[':    'LEFT SQUARE BRACKET',
-    ']':    'RIGHT SQUARE BRACKET',
-    '{':    'LEFT CURLY BRACKET',
-    '}':    'RIGHT CURLY BRACKET',
+    '+': 'PLUS SIGN',
+    '-': 'MINUS',
+    '=': 'EQUALS SIGN',
+    '(': 'LEFT PARENTHESIS',
+    ')': 'RIGHT PARENTHESIS',
+    '[': 'LEFT SQUARE BRACKET',
+    ']': 'RIGHT SQUARE BRACKET',
+    '{': 'LEFT CURLY BRACKET',
+    '}': 'RIGHT CURLY BRACKET',
 
     # non-std
-    '{}':   'CURLY BRACKET',
-    'sum':  'SUMMATION',
-    'int':  'INTEGRAL',
+    '{}': 'CURLY BRACKET',
+    'sum': 'SUMMATION',
+    'int': 'INTEGRAL',
 }
 
 # SUBSCRIPT & SUPERSCRIPT
 LSUB = lambda letter: U('LATIN SUBSCRIPT SMALL LETTER %s' % letter.upper())
 GSUB = lambda letter: U('GREEK SUBSCRIPT SMALL LETTER %s' % letter.upper())
-DSUB = lambda digit:  U('SUBSCRIPT %s' % digit_2txt[digit])
-SSUB = lambda symb:   U('SUBSCRIPT %s' % symb_2txt[symb])
+DSUB = lambda digit: U('SUBSCRIPT %s' % digit_2txt[digit])
+SSUB = lambda symb: U('SUBSCRIPT %s' % symb_2txt[symb])
 
 LSUP = lambda letter: U('SUPERSCRIPT LATIN SMALL LETTER %s' % letter.upper())
-DSUP = lambda digit:  U('SUPERSCRIPT %s' % digit_2txt[digit])
-SSUP = lambda symb:   U('SUPERSCRIPT %s' % symb_2txt[symb])
+DSUP = lambda digit: U('SUPERSCRIPT %s' % digit_2txt[digit])
+SSUP = lambda symb: U('SUPERSCRIPT %s' % symb_2txt[symb])
 
-sub = {}    # symb -> subscript symbol
-sup = {}    # symb -> superscript symbol
+sub = {}  # symb -> subscript symbol
+sup = {}  # symb -> superscript symbol
 
 # latin subscripts
 for l in 'aeioruvxhklmnpst':
@@ -231,8 +230,8 @@ modifier_dict = {
     'hat': lambda s: center_accent(s, u'\N{COMBINING CIRCUMFLEX ACCENT}'),
     'bar': lambda s: center_accent(s, u'\N{COMBINING OVERLINE}'),
     'vec': lambda s: center_accent(s, u'\N{COMBINING RIGHT ARROW ABOVE}'),
-    'prime': lambda s: s+u'\N{PRIME}',
-    'prm': lambda s: s+u'\N{PRIME}',
+    'prime': lambda s: s + u'\N{PRIME}',
+    'prm': lambda s: s + u'\N{PRIME}',
     # # Faces -- these are here for some compatibility with latex printing
     # 'bold': lambda s: s,
     # 'bm': lambda s: s,
@@ -240,10 +239,10 @@ modifier_dict = {
     # 'scr': lambda s: s,
     # 'frak': lambda s: s,
     # Brackets
-    'norm': lambda s: u'\N{DOUBLE VERTICAL LINE}'+s+u'\N{DOUBLE VERTICAL LINE}',
-    'avg': lambda s: u'\N{MATHEMATICAL LEFT ANGLE BRACKET}'+s+u'\N{MATHEMATICAL RIGHT ANGLE BRACKET}',
-    'abs': lambda s: u'\N{VERTICAL LINE}'+s+u'\N{VERTICAL LINE}',
-    'mag': lambda s: u'\N{VERTICAL LINE}'+s+u'\N{VERTICAL LINE}',
+    'norm': lambda s: u'\N{DOUBLE VERTICAL LINE}' + s + u'\N{DOUBLE VERTICAL LINE}',
+    'avg': lambda s: u'\N{MATHEMATICAL LEFT ANGLE BRACKET}' + s + u'\N{MATHEMATICAL RIGHT ANGLE BRACKET}',
+    'abs': lambda s: u'\N{VERTICAL LINE}' + s + u'\N{VERTICAL LINE}',
+    'mag': lambda s: u'\N{VERTICAL LINE}' + s + u'\N{VERTICAL LINE}',
 }
 
 # VERTICAL OBJECTS
@@ -261,73 +260,73 @@ _xobj_unicode = {
 
     # vertical symbols
     #       (( ext, top, bot, mid ), c1)
-    '(':    (( EXT('('), HUP('('), HLO('(') ), '('),
-    ')':    (( EXT(')'), HUP(')'), HLO(')') ), ')'),
-    '[':    (( EXT('['), CUP('['), CLO('[') ), '['),
-    ']':    (( EXT(']'), CUP(']'), CLO(']') ), ']'),
-    '{':    (( EXT('{}'), HUP('{'), HLO('{'), MID('{') ), '{'),
-    '}':    (( EXT('{}'), HUP('}'), HLO('}'), MID('}') ), '}'),
-    '|':    U('BOX DRAWINGS LIGHT VERTICAL'),
+    '(': ((EXT('('), HUP('('), HLO('(')), '('),
+    ')': ((EXT(')'), HUP(')'), HLO(')')), ')'),
+    '[': ((EXT('['), CUP('['), CLO('[')), '['),
+    ']': ((EXT(']'), CUP(']'), CLO(']')), ']'),
+    '{': ((EXT('{}'), HUP('{'), HLO('{'), MID('{')), '{'),
+    '}': ((EXT('{}'), HUP('}'), HLO('}'), MID('}')), '}'),
+    '|': U('BOX DRAWINGS LIGHT VERTICAL'),
 
-    '<':    ((U('BOX DRAWINGS LIGHT VERTICAL'),
+    '<': ((U('BOX DRAWINGS LIGHT VERTICAL'),
               U('BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT'),
               U('BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT')), '<'),
 
-    '>':    ((U('BOX DRAWINGS LIGHT VERTICAL'),
+    '>': ((U('BOX DRAWINGS LIGHT VERTICAL'),
               U('BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT'),
               U('BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT')), '>'),
 
-    'lfloor': (( EXT('['), EXT('['), CLO('[') ), U('LEFT FLOOR')),
-    'rfloor': (( EXT(']'), EXT(']'), CLO(']') ), U('RIGHT FLOOR')),
-    'lceil':  (( EXT('['), CUP('['), EXT('[') ), U('LEFT CEILING')),
-    'rceil':  (( EXT(']'), CUP(']'), EXT(']') ), U('RIGHT CEILING')),
+    'lfloor': ((EXT('['), EXT('['), CLO('[')), U('LEFT FLOOR')),
+    'rfloor': ((EXT(']'), EXT(']'), CLO(']')), U('RIGHT FLOOR')),
+    'lceil': ((EXT('['), CUP('['), EXT('[')), U('LEFT CEILING')),
+    'rceil': ((EXT(']'), CUP(']'), EXT(']')), U('RIGHT CEILING')),
 
-    'int':  (( EXT('int'), U('TOP HALF INTEGRAL'), U('BOTTOM HALF INTEGRAL') ), U('INTEGRAL')),
-    'sum':  (( U('BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT'), '_', U('OVERLINE'), U('BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT')), U('N-ARY SUMMATION')),
+    'int': ((EXT('int'), U('TOP HALF INTEGRAL'), U('BOTTOM HALF INTEGRAL')), U('INTEGRAL')),
+    'sum': ((U('BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT'), '_', U('OVERLINE'), U('BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT')), U('N-ARY SUMMATION')),
 
     # horizontal objects
-    #'-':   '-',
-    '-':    U('BOX DRAWINGS LIGHT HORIZONTAL'),
-    '_':    U('LOW LINE'),
+    # '-':   '-',
+    '-': U('BOX DRAWINGS LIGHT HORIZONTAL'),
+    '_': U('LOW LINE'),
     # We used to use this, but LOW LINE looks better for roots, as it's a
     # little lower (i.e., it lines up with the / perfectly.  But perhaps this
     # one would still be wanted for some cases?
     # '_':    U('HORIZONTAL SCAN LINE-9'),
 
     # diagonal objects '\' & '/' ?
-    '/':    U('BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT'),
-    '\\':   U('BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT'),
+    '/': U('BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT'),
+    '\\': U('BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT'),
 }
 
 _xobj_ascii = {
     # vertical symbols
     #       (( ext, top, bot, mid ), c1)
-    '(':    (( '|', '/', '\\' ), '('),
-    ')':    (( '|', '\\', '/' ), ')'),
+    '(': (('|', '/', '\\'), '('),
+    ')': (('|', '\\', '/'), ')'),
 
 # XXX this looks ugly
 #   '[':    (( '|', '-', '-' ), '['),
 #   ']':    (( '|', '-', '-' ), ']'),
 # XXX not so ugly :(
-    '[':    (( '[', '[', '[' ), '['),
-    ']':    (( ']', ']', ']' ), ']'),
+    '[': (('[', '[', '['), '['),
+    ']': ((']', ']', ']'), ']'),
 
-    '{':    (( '|', '/', '\\', '<' ), '{'),
-    '}':    (( '|', '\\', '/', '>' ), '}'),
-    '|':    '|',
+    '{': (('|', '/', '\\', '<'), '{'),
+    '}': (('|', '\\', '/', '>'), '}'),
+    '|': '|',
 
-    '<':    (( '|', '/', '\\' ), '<'),
-    '>':    (( '|', '\\', '/' ), '>'),
+    '<': (('|', '/', '\\'), '<'),
+    '>': (('|', '\\', '/'), '>'),
 
-    'int':  ( ' | ', '  /', '/  ' ),
+    'int': (' | ', '  /', '/  '),
 
     # horizontal objects
-    '-':    '-',
-    '_':    '_',
+    '-': '-',
+    '_': '_',
 
     # diagonal objects '\' & '/' ?
-    '/':    '/',
-    '\\':   '\\',
+    '/': '/',
+    '\\': '\\',
 }
 
 
@@ -350,13 +349,13 @@ def xobj(symb, length):
 
     c1 = top = bot = mid = None
 
-    if not isinstance(vinfo, tuple):        # 1 entry
+    if not isinstance(vinfo, tuple):  # 1 entry
         ext = vinfo
     else:
-        if isinstance(vinfo[0], tuple):     # (vlong), c1
+        if isinstance(vinfo[0], tuple):  # (vlong), c1
             vlong = vinfo[0]
             c1 = vinfo[1]
-        else:                               # (vlong), c1
+        else:  # (vlong), c1
             vlong = vinfo
 
         ext = vlong[0]
@@ -387,13 +386,13 @@ def xobj(symb, length):
         return c1
 
     res = []
-    next = (length - 2)//2
-    nmid = (length - 2) - next*2
+    next = (length - 2) // 2
+    nmid = (length - 2) - next * 2
 
     res += [top]
-    res += [ext]*next
-    res += [mid]*nmid
-    res += [ext]*next
+    res += [ext] * next
+    res += [mid] * nmid
+    res += [ext] * next
     res += [bot]
 
     return res
@@ -404,7 +403,7 @@ def vobj(symb, height):
 
        see: xobj
     """
-    return '\n'.join( xobj(symb, height) )
+    return '\n'.join(xobj(symb, height))
 
 
 def hobj(symb, width):
@@ -412,16 +411,16 @@ def hobj(symb, width):
 
        see: xobj
     """
-    return ''.join( xobj(symb, width) )
+    return ''.join(xobj(symb, width))
+
 
 # RADICAL
 # n -> symbol
 root = {
-    2: U('SQUARE ROOT'),   # U('RADICAL SYMBOL BOTTOM')
+    2: U('SQUARE ROOT'),  # U('RADICAL SYMBOL BOTTOM')
     3: U('CUBE ROOT'),
     4: U('FOURTH ROOT'),
 }
-
 
 # RATIONAL
 VF = lambda txt: U('VULGAR FRACTION %s' % txt)
@@ -445,33 +444,32 @@ frac = {
     (7, 8): VF('SEVEN EIGHTHS'),
 }
 
-
 # atom symbols
 _xsym = {
-    '==':  ('=', '='),
-    '<':   ('<', '<'),
-    '>':   ('>', '>'),
-    '<=':  ('<=', U('LESS-THAN OR EQUAL TO')),
-    '>=':  ('>=', U('GREATER-THAN OR EQUAL TO')),
-    '!=':  ('!=', U('NOT EQUAL TO')),
-    ':=':  (':=', ':='),
-    '+=':  ('+=', '+='),
-    '-=':  ('-=', '-='),
-    '*=':  ('*=', '*='),
-    '/=':  ('/=', '/='),
-    '%=':  ('%=', '%='),
-    '*':   ('*', U('DOT OPERATOR')),
-    '@':   ('@', '@'),
-    '-->': ('-->', U('EM DASH') + U('EM DASH') +
+    '==': ('=', '='),
+    '<': ('<', '<'),
+    '>': ('>', '>'),
+    '<=': ('<=', U('LESS-THAN OR EQUAL TO')),
+    '>=': ('>=', U('GREATER-THAN OR EQUAL TO')),
+    '!=': ('!=', U('NOT EQUAL TO')),
+    ':=': (':=', ':='),
+    '+=': ('+=', '+='),
+    '-=': ('-=', '-='),
+    '*=': ('*=', '*='),
+    '/=': ('/=', '/='),
+    '%=': ('%=', '%='),
+    '*': ('*', U('DOT OPERATOR')),
+    '@': ('@', '@'),
+    '-->': ('-->', U('EM DASH') + U('EM DASH') + 
             U('BLACK RIGHT-POINTING TRIANGLE') if U('EM DASH')
             and U('BLACK RIGHT-POINTING TRIANGLE') else None),
-    '==>': ('==>', U('BOX DRAWINGS DOUBLE HORIZONTAL') +
-            U('BOX DRAWINGS DOUBLE HORIZONTAL') +
+    '==>': ('==>', U('BOX DRAWINGS DOUBLE HORIZONTAL') + 
+            U('BOX DRAWINGS DOUBLE HORIZONTAL') + 
             U('BLACK RIGHT-POINTING TRIANGLE') if
             U('BOX DRAWINGS DOUBLE HORIZONTAL') and
             U('BOX DRAWINGS DOUBLE HORIZONTAL') and
             U('BLACK RIGHT-POINTING TRIANGLE') else None),
-    '.':   ('*', U('RING OPERATOR')),
+    '.': ('*', U('RING OPERATOR')),
 }
 
 
@@ -484,30 +482,30 @@ def xsym(sym):
     else:
         return op[0]
 
-
 # SYMBOLS
+
 
 atoms_table = {
     # class                    how-to-display
-    'Exp1':                    U('SCRIPT SMALL E'),
-    'Pi':                      U('GREEK SMALL LETTER PI'),
-    'Infinity':                U('INFINITY'),
-    'NegativeInfinity':        U('INFINITY') and ('-' + U('INFINITY')),  # XXX what to do here
-    #'ImaginaryUnit':          U('GREEK SMALL LETTER IOTA'),
-    #'ImaginaryUnit':          U('MATHEMATICAL ITALIC SMALL I'),
-    'ImaginaryUnit':           U('DOUBLE-STRUCK ITALIC SMALL I'),
-    'EmptySet':                U('EMPTY SET'),
-    'Naturals':                U('DOUBLE-STRUCK CAPITAL N'),
-    'Naturals0':               (U('DOUBLE-STRUCK CAPITAL N') and
-                                (U('DOUBLE-STRUCK CAPITAL N') +
+    'Exp1': U('SCRIPT SMALL E'),
+    'Pi': U('GREEK SMALL LETTER PI'),
+    'Infinity': U('INFINITY'),
+    'NegativeInfinity': U('INFINITY') and ('-' + U('INFINITY')),  # XXX what to do here
+    # 'ImaginaryUnit':          U('GREEK SMALL LETTER IOTA'),
+    # 'ImaginaryUnit':          U('MATHEMATICAL ITALIC SMALL I'),
+    'ImaginaryUnit': U('DOUBLE-STRUCK ITALIC SMALL I'),
+    'EmptySet': U('EMPTY SET'),
+    'Naturals': U('DOUBLE-STRUCK CAPITAL N'),
+    'Naturals0': (U('DOUBLE-STRUCK CAPITAL N') and
+                                (U('DOUBLE-STRUCK CAPITAL N') + 
                                  U('SUBSCRIPT ZERO'))),
-    'Integers':                U('DOUBLE-STRUCK CAPITAL Z'),
-    'Reals':                   U('DOUBLE-STRUCK CAPITAL R'),
-    'Complexes':               U('DOUBLE-STRUCK CAPITAL C'),
-    'Union':                   U('UNION'),
-    'SymmetricDifference':     U('INCREMENT'),
-    'Intersection':            U('INTERSECTION'),
-    'Ring':                    U('RING OPERATOR')
+    'Integers': U('DOUBLE-STRUCK CAPITAL Z'),
+    'Reals': U('DOUBLE-STRUCK CAPITAL R'),
+    'Complexes': U('DOUBLE-STRUCK CAPITAL C'),
+    'Union': U('UNION'),
+    'SymmetricDifference': U('INCREMENT'),
+    'Intersection': U('INTERSECTION'),
+    'Ring': U('RING OPERATOR')
 }
 
 
@@ -534,17 +532,20 @@ def pretty_symbol(symb_name, bold_name=False):
     if not _use_unicode:
         return symb_name
 
-    name, sups, subs = split_super_sub(symb_name)
+    try:
+        name, sups, subs = split_super_sub(symb_name)
+    except:
+        return symb_name
 
-    def translate(s, bold_name) :
+    def translate(s, bold_name):
         if bold_name:
             gG = greek_bold_unicode.get(s)
         else:
             gG = greek_unicode.get(s)
         if gG is not None:
             return gG
-        for key in sorted(modifier_dict.keys(), key=lambda k:len(k), reverse=True) :
-            if s.lower().endswith(key) and len(s)>len(key):
+        for key in sorted(modifier_dict.keys(), key=lambda k:len(k), reverse=True):
+            if s.lower().endswith(key) and len(s) > len(key):
                 return modifier_dict[key](translate(s[:-len(key)], bold_name))
         if bold_name:
             return ''.join([bold_unicode[c] for c in s])
@@ -575,9 +576,9 @@ def pretty_symbol(symb_name, bold_name=False):
     # glue the results into one string
     if pretty_subs is None:  # nice formatting of sups/subs did not work
         if subs:
-            name += '_'+'_'.join([translate(s, bold_name) for s in subs])
+            name += '_' + '_'.join([translate(s, bold_name) for s in subs])
         if sups:
-            name += '__'+'__'.join([translate(s, bold_name) for s in sups])
+            name += '__' + '__'.join([translate(s, bold_name) for s in sups])
         return name
     else:
         sups_result = ' '.join(pretty_sups)

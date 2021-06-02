@@ -1,39 +1,39 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, discrete
-from axiom.discrete.continued_fraction.HK.definition import HK
+from util import *
+
+from axiom.discrete.H.to.add.definition import H
+from axiom.discrete.K.to.add.definition import K
+
 
 
 @apply
-def apply(x, n):
-    assert n >= 2
-    H, K = HK(x)
-    return Equal(H[n] * K[n - 2] - H[n - 2] * K[n], (-1) ** n * x[n])
+def apply(x):
+    n = x.shape[0]
+    n -= 1
+
+    return Equal(H(x[:n + 1]) * K(x[:n - 1]) - H(x[:n - 1]) * K(x[:n + 1]), (-1) ** n * x[n])
 
 
 @prove
-def prove(Eq): 
+def prove(Eq):
+    from axiom import discrete
     x = Symbol.x(integer=True, shape=(oo,))
-    n = Symbol.n(domain=Interval(2, oo, integer=True))
-    
-    Eq << apply(x, n)    
-    
-    H = Eq[0].lhs.base
-    K = Eq[1].lhs.base
-    
-    Eq << discrete.continued_fraction.HK.definition.apply(x, n - 1, H, K)
-    
-    Eq << Eq[2].subs(Eq[-2], Eq[-1])
-    
+    n = Symbol.n(domain=Range(2, oo))
+
+    Eq << apply(x[:n + 1])
+
+    Eq << Eq[-1].this.lhs.args[1].args[2].defun()
+
+    Eq << Eq[-1].this.lhs.args[1].args[0].defun()
+
     Eq << Eq[-1].this.lhs.expand()
-    
-    Eq << discrete.continued_fraction.HK.recurrence.apply(x, n - 1, H, K)
-    
+
+    Eq << discrete.continued_fraction.HK.recurrence.apply(x[:n])
+
     Eq << Eq[-1] * x[n]
-    
+
     Eq << Eq[-1].this.lhs.expand()
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

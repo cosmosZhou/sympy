@@ -2025,31 +2025,16 @@ class Stirling(Function):
 
 #         return r"\left( \begin{array}{c}%s\end{array} \right)" % r'\\'.join('{%s}' % printer._print(arg) for arg in self.args)
 
-    @property
-    def definition(self):        
-        from sympy import oo, FiniteSet, imageset, UNION, dtype
-        x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-        assert x.type[0] == dtype.integer.set
-        assert not x.is_set
-        n, k = self.args
-        i = Symbol('i', integer=True)
-        
-        return abs(imageset(x[:k], UNION[i:k](FiniteSet(x[i])), self.conditionset(n, k, x)))
-
     @classmethod
     def conditionset(cls, n, k, x=None):
         if x is None:
             from sympy.core.numbers import oo
             from sympy.core.symbol import dtype
             x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-        from sympy import Sum
-        from sympy.core.relational import Equal
-        from sympy import UNION, ForAll
-        from sympy.sets import conditionset
-        from sympy.sets.sets import Interval
+        from sympy import Cup, ForAll, Range, Equal, Sum, conditionset
         i = Symbol.i(integer=True)
         return conditionset(x[:k],
-                                Equal(UNION[i:k](x[i]), Interval(0, n - 1, integer=True)) & 
+                                Equal(Cup[i:k](x[i]), Range(0, n)) & 
                                     Equal(Sum[i:k](abs(x[i])), n) & 
                                     ForAll[i:k](abs(x[i]) > 0))
 
@@ -2266,10 +2251,10 @@ class Stirling(Function):
             beta = p.coeff_monomial(S.One)
             if alpha.is_number:
                 if alpha == S.One:
-                    return Interval(-beta, n - beta, integer=True)
+                    return Range(-beta, n - beta + 1)
                 elif alpha == S.NegativeOne:
-                    return Interval(beta - n, beta, integer=True)
-        return Interval(-oo, oo, integer=True)
+                    return Range(beta - n, beta + 1)
+        return Range(-oo, oo)
 
 
 class Stirling1(Function):
@@ -2301,31 +2286,6 @@ class Stirling1(Function):
                 polygamma(0, k + 1))
         else:
             raise ArgumentIndexError(self, argindex)
-
-    @property
-    def definition(self):
-        from sympy.concrete.expr_with_limits import UNION, ForAll
-        from sympy.core.numbers import oo
-        from sympy.sets.sets import Interval, FiniteSet, image_set
-        from sympy.core.relational import Equal
-        from sympy.logic.boolalg import And
-        from sympy import Sum
-        from sympy.core.symbol import dtype, DtypeVector
-        x = Symbol('x', shape=(oo,), etype=dtype.integer)
-        assert x.type[0] == dtype.integer.set
-        assert not x.is_set
-        assert isinstance(x.type, DtypeVector)
-        n, k = self.args
-        i = Symbol('i', integer=True)
-        from sympy.sets import conditionset
-        
-        return abs(
-            image_set(UNION(FiniteSet(x[i]), (i, 0, k - 1)),
-                      x[:k],
-                      conditionset(x[:k],
-                                   And(Equal(UNION(x[i], (i, 0, k - 1)), Interval(0, n - 1, integer=True)),
-                                       Equal(Sum(abs(x[i]), (i, 0, k - 1)), n),
-                                       ForAll(Greater(abs(x[i]), 0), (i, 0, k - 1))))))
 
     @classmethod
     def _eval(self, n, k):
@@ -2539,7 +2499,7 @@ class Stirling1(Function):
             beta = p.coeff_monomial(S.One)
             if alpha.is_number:
                 if alpha == S.One:
-                    return Interval(-beta, n - beta, integer=True)
+                    return Range(-beta, n - beta + 1)
                 elif alpha == S.NegativeOne:
-                    return Interval(beta - n, beta, integer=True)
-        return Interval(-oo, oo, integer=True)
+                    return Range(beta - n, beta + 1)
+        return Range(-oo, oo)

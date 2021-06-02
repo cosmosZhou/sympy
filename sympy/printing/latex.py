@@ -610,10 +610,10 @@ class LatexPrinter(Printer):
         return self._do_exponent(tex, exp)
 
     def _print_Not(self, e):
-        from sympy import Equivalent, Sufficient
+        from sympy import Equivalent, Suffice
         if isinstance(e.args[0], Equivalent):
             return self._print_Equivalent(e.args[0], r"\not\Leftrightarrow")
-        if isinstance(e.args[0], Sufficient):
+        if isinstance(e.args[0], Suffice):
             return self._print_Imply(e.args[0], r"\not\Rightarrow")
         if (e.args[0].is_Boolean):
             return r"\neg (%s)" % self._print(e.args[0])
@@ -1060,8 +1060,8 @@ class LatexPrinter(Printer):
 
     def _print_MatrixBase(self, expr):
         lines = []
-        for i in range(0, len(expr._mat), expr.cols):  # horrible, should be 'rows'                
-            lines.append(" & ".join([self._print(i) for i in expr._mat[i:i + expr.cols]]))
+        for i in range(0, len(expr._args), expr.cols):  # horrible, should be 'rows'                
+            lines.append(" & ".join([self._print(i) for i in expr._args[i:i + expr.cols]]))
 
         mat_str = self._settings['mat_str']
         if mat_str is None:

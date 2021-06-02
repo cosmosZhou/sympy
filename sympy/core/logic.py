@@ -25,11 +25,11 @@ def _torf(args):
     """
     sawT = sawF = False
     for a in args:
-        if a is True:
+        if a == True:
             if sawF:
                 return
             sawT = True
-        elif a is False:
+        elif a == False:
             if sawT:
                 return
             sawF = True

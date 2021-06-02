@@ -1,7 +1,6 @@
-from axiom.utility import prove, apply
 
-from sympy import *
-from axiom import sets
+from util import *
+
 
 # given: A ⊃ B
 # |A| >= |B|
@@ -17,17 +16,18 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import sets
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
     Eq << apply(Supset(A, B))
-    
+
     Eq << Eq[0].reversed
 
     Eq << sets.subset.imply.le.apply(Eq[-1])
-    
+
     Eq << Eq[-1].reversed
 
 if __name__ == '__main__':
-    prove()
+    run()
 

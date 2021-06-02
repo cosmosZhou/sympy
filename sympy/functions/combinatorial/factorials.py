@@ -281,14 +281,6 @@ class Factorial(CombinatorialFunction):
             return '%s!' % latex
         return '(%s)!' % latex
 
-    @property
-    def definition(self):
-        n = self.arg
-        from sympy import Product
-        if n.is_nonnegative and n.is_integer: 
-            i = self.generate_free_symbol(free_symbol='i', integer=True)
-            return Product[i:1:n + 1](i)
-
     def _latex(self, p, exp=None):
         from sympy.printing.precedence import PRECEDENCE
         tex = r"%s!" % p.parenthesize(self.args[0], PRECEDENCE["Func"])
@@ -1059,8 +1051,7 @@ class Binomial(CombinatorialFunction):
                 return True
 
     def domain_nonzero(self, x):
-        from sympy.sets.sets import Interval
-        from sympy.core.numbers import oo
+        from sympy import Range, oo
         n, k = self.args
 
         p = k.as_poly(x)
@@ -1071,10 +1062,10 @@ class Binomial(CombinatorialFunction):
                 if alpha == S.One:
                     # consider binomial(2*n, n), x = n
                     if not n._has(x):
-                        return Interval(-beta, n - beta, integer=True)
+                        return Range(-beta, n - beta + 1)
                 elif alpha == S.NegativeOne:
-                    return Interval(beta - n, beta, integer=True)
-        return Interval(-oo, oo, integer=True)
+                    return Range(beta - n, beta + 1)
+        return Range(-oo, oo)
 
     @property
     def dtype(self): 
@@ -1096,10 +1087,5 @@ class Binomial(CombinatorialFunction):
         else:
             return tex
         
-    @property
-    def definition(self):
-        n, k = self.args
-        return factorial(n) / (factorial(k) * factorial(n - k))
-
     
 binomial = binom = Binomial

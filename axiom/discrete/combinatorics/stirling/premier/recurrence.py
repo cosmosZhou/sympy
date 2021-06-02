@@ -1,10 +1,9 @@
-from axiom.utility import prove, apply
-from sympy.functions.combinatorial.numbers import Stirling1
-from sympy import *
+from util import *
 
 
 @apply
 def apply(n, k):
+    from sympy.functions.combinatorial.numbers import Stirling1
     return Equal(Stirling1(n + 1, k + 1), Stirling1(n, k) + (n + 1) * Stirling1(n, k + 1))
 
 
@@ -17,5 +16,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 

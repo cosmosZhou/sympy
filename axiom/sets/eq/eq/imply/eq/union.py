@@ -1,14 +1,13 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets
+from util import *
+
 import axiom
 
 
 @apply
 def apply(*given):
     equality_A, equality_B = given
-    a, b = axiom.is_Equal(equality_A)    
-    x, y = axiom.is_Equal(equality_B)
+    a, b = equality_A.of(Equal)    
+    x, y = equality_B.of(Equal)
     
     return Equal(a | x, b | y)
 
@@ -29,5 +28,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 

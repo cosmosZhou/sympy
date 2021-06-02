@@ -1,15 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 
 
-# given: A in B 
-# => {A} subset B
 @apply
 def apply(given, S):
-    assert given.is_Contains
-    e, s = given.args
+    e, s = given.of(Contains)
     
-    return NotContains(e, S - s)
+    return NotContains(e, S // s)
 
 
 @prove
@@ -27,5 +23,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

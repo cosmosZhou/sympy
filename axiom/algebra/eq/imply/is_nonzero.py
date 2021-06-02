@@ -1,11 +1,10 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
 
 
 @apply
 def apply(given): 
-    lhs, rhs = axiom.is_Equal(given)
+    lhs, rhs = given.of(Equal)
     if lhs.is_nonzero:
         x = rhs
     if rhs.is_nonzero:
@@ -24,4 +23,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

@@ -1,2 +1,2 @@
 from . import imply
-from . import forall_is_positive
+from . import all_is_positive

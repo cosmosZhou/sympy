@@ -62,8 +62,8 @@ class Determinant(Expr):
 
         matrix = self.arg
         if matrix.is_DenseMatrix:
-            if len(matrix._mat) == 1:
-                return matrix._mat[0]
+            if len(matrix._args) == 1:
+                return matrix._args[0]
             
         return self
 
@@ -72,15 +72,6 @@ class Determinant(Expr):
 
     def _sympystr(self, p):
         return "¦%s¦" % p._print(self.arg)
-
-    @property
-    def definition(self):
-        n = self.shape[0]
-        from sympy import Sum, Product
-        from sympy.combinatorics.permutations import Permutations, Signature
-        p = self.generate_free_symbol(shape=(n,), integer=True)
-        i = self.generate_free_symbol(integer=True)
-        return Sum[p:Permutations(n)](Signature(p) * Product[i:n](self[i, p[i]]))
 
     def _eval_domain_defined(self, x):
         domain = Expr._eval_domain_defined(self, x)

@@ -1,5 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 
 def process_given_conditions(*given, swap=False):
@@ -8,7 +7,7 @@ def process_given_conditions(*given, swap=False):
     else:
         eq, f_eq = given
         
-    lhs, rhs = axiom.is_Unequal(eq)    
+    lhs, rhs = eq.of(Unequal)    
     assert f_eq.is_Boolean
     
     return eq, f_eq._subs(KroneckerDelta(lhs, rhs), Zero())
@@ -38,5 +37,5 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()
 

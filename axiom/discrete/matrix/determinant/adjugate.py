@@ -1,6 +1,5 @@
-from axiom.utility import prove, apply
-from sympy import *
-from sympy.matrices.expressions.cofactor import Cofactors
+from util import *
+
 
 
 @apply
@@ -17,7 +16,7 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 
 # https://en.wikipedia.org/wiki/Minor_(linear_algebra)
 # https://mathworld.wolfram.com/DeterminantExpansionbyMinors.html

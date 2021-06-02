@@ -1,9 +1,8 @@
-from axiom.utility import prove, apply
-from sympy.core.relational import Equal, Unequal
-from sympy import Symbol
+
+from util import *
 
 import axiom
-from sympy.core.symbol import dtype
+
 
 
 @apply
@@ -12,8 +11,8 @@ def apply(*given):
     if not eq.is_Equal:
         eq, not_eq = not_eq, eq
             
-    a, x = axiom.is_Equal(eq)
-    _x, b = axiom.is_Unequal(not_eq)
+    a, x = eq.of(Equal)
+    _x, b = not_eq.of(Unequal)
     if x != _x:
         if _x == a:
             a, x = x, a
@@ -33,4 +32,4 @@ def prove(Eq):
         
     
 if __name__ == '__main__':
-    prove()
+    run()

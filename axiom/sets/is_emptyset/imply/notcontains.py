@@ -1,9 +1,4 @@
-from sympy.core.relational import Equal
-from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy import Symbol
-from sympy.sets.contains import NotContains
-from axiom import sets
+from util import *
 
 
 # given A & B = {} => A - B = A
@@ -29,31 +24,30 @@ def apply(given):
         swap = True
     if swap:
         A, B = B, A
-        
+
     assert A.is_FiniteSet and len(A) == 1
     a, *_ = A.args
-    
-    
+
     return NotContains(a, B)
-
-
 
 
 @prove
 def prove(Eq):
+    from axiom import sets
     a = Symbol.a(integer=True, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
     Eq << apply(Equal(a.set & B, a.emptySet))
-    
+
     Eq << ~Eq[-1]
 
     Eq << Eq[-1].apply(sets.contains.imply.eq.union)
-    
-    Eq << Eq[-1].apply(sets.eq.imply.eq.intersect, a.set)
-    
+
+    Eq << Eq[-1].apply(sets.eq.imply.eq.intersection, a.set)
+
     Eq << Eq[-1].subs(Eq[0])
 
+
 if __name__ == '__main__':
-    prove()
+    run()
 

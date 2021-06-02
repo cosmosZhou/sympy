@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import discrete
+from util import *
+
 
 
 @apply
@@ -11,19 +10,20 @@ def apply(n):
 
 @prove
 def prove(Eq):
+    from axiom import discrete
     n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(n)
 
     x = Symbol.x(real=True)
-    
+
     Eq << discrete.difference.definition.apply(x ** n, x, n)
-    
+
     Eq << discrete.difference.factorial.apply(x, n)
-    
+
     Eq << Eq[-2].subs(Eq[-1])
-    
+
     Eq << Eq[-1].subs(x, 0)
 
 
 if __name__ == '__main__':
-    prove()
+    run()

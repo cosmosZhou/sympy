@@ -49,7 +49,7 @@ def limits_sort(limits_dict):
         domain = limits_dict[x]
         if not domain:
             limit = (x,)
-        elif domain.is_Interval and domain.is_integer:
+        elif domain.is_Range:
             limit = (x, domain.min(), domain.max() + 1)
         else:
             limit = (x, domain)
@@ -84,6 +84,7 @@ def limits_update(limits, *args):
     if isinstance(limits, tuple):
         limits = [*limits]
 
+    from sympy import Range
     def assign(old, domain):
         if isinstance(domain, (tuple, list)) and domain:
             new, *domain = domain
@@ -92,11 +93,21 @@ def limits_update(limits, *args):
         else:
             new = old
 
-        if isinstance(domain, Interval) and (not new.is_integer) == (not domain.is_integer):
+        if isinstance(domain, Interval):
             if new.is_integer:
-                limit = (new, domain.min(), domain.max() + 1)
+                domain = domain.copy(integer=True)
+                limit = (new, domain.start, domain.stop)
             else:
-                limit = (new, domain.min(), domain.max())
+                if domain.left_open or domain.right_open:
+                    limit = (new, domain)
+                else:
+                    limit = (new, domain.start, domain.stop)
+        elif isinstance(domain, Range):
+            if new.is_integer:
+                limit = (new, domain.start, domain.stop)
+            else:
+                limit = (new, domain)
+        
         elif isinstance(domain, (tuple, list)):
             limit = (new, *domain)
         else:

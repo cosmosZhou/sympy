@@ -1,13 +1,12 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(given):
-    xy = axiom.is_nonzero(given)
-    x, y = axiom.is_Substract(xy)
+    xy = given.of(Unequal[0])
+    x, y = axiom.is_Subtract(xy)
     
     return Unequal(x, y)
 
@@ -26,4 +25,4 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()

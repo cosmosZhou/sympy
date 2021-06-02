@@ -1,11 +1,9 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
+from util import *
 
 
 @apply
 def apply(given, *limits):
-    lhs, rhs = axiom.is_Greater(given)
+    lhs, rhs = given.of(Greater)
     
     return GreaterEqual(Limit(lhs, *limits).simplify(), Limit(rhs, *limits).simplify())
 
@@ -20,5 +18,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

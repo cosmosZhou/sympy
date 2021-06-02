@@ -78,9 +78,7 @@ class Subset(BinaryCondition):
         return self.args[0]
 
     def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
+        if not self.set.is_Interval:
             return self
 
         res = [None] * 2
@@ -173,7 +171,7 @@ class NotSubset(BinaryCondition):
         return BinaryCondition.eval(cls, *args, **assumptions)
 
     def simplify(self, deep=False):
-        if self.lhs.is_UNION:
+        if self.lhs.is_Cup:
             from sympy import Exists
             return Exists(self.func(self.lhs.function, self.rhs), *self.lhs.limits)
 
@@ -226,9 +224,7 @@ class NotSubset(BinaryCondition):
         return self.args[0]
 
     def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
+        if not self.set.is_Interval:
             return self
 
         res = [None] * 2
@@ -354,9 +350,7 @@ class Supset(BinaryCondition):
         return self.args[0]
 
     def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
+        if not self.set.is_Interval:
             return self
 
         res = [None] * 2
@@ -411,7 +405,7 @@ class NotSupset(BinaryCondition):
 
     def simplify(self, deep=False):
         from sympy import Exists
-        if self.rhs.is_UNION:
+        if self.rhs.is_Cup:
             return Exists(self.func(self.lhs, self.rhs.function), *self.rhs.limits).simplify()
         return self
 
@@ -451,9 +445,7 @@ class NotSupset(BinaryCondition):
         return self.args[0]
 
     def as_two_terms(self):
-        from sympy.sets.sets import Interval
-
-        if not isinstance(self.set, Interval):
+        if not self.set.is_Interval:
             return self
 
         res = [None] * 2

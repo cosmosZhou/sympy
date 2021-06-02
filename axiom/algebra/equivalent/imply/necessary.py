@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(given):
-    fn, fn1 = axiom.is_Equivalent(given)        
+    fn, fn1 = given.of(Equivalent)        
     return Necessary(fn, fn1)
 
 
@@ -18,10 +17,10 @@ def prove(Eq):
     
     Eq << apply(Equivalent(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1])))
     
-    Eq << Sufficient(*Eq[1].args, plausible=True)
+    Eq << Suffice(*Eq[1].args, plausible=True)
     
     Eq <<= Eq[-1] & Eq[-2]
 
         
 if __name__ == '__main__':
-    prove()
+    run()

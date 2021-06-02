@@ -438,12 +438,11 @@ class Exp(ExpBase):
                 return Pow(logs[0].args[0], arg.coeff(logs[0]))
 
     def domain_nonzero(self, x):
-        from sympy.sets.sets import Interval
-        from sympy.core.numbers import oo
-        integer = None
+        from sympy import Interval, Range, oo
         if x.is_integer:
-            integer = True
-        return Interval(-oo, oo, integer=integer)
+            return Range(-oo, oo)
+        else:
+            return Interval(-oo, oo)
 
     @classmethod
     def rewrite_from_Maximize(cls, self):
@@ -452,7 +451,7 @@ class Exp(ExpBase):
         return func(self.func(function, *self.limits).simplify())
     
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if isinstance(self.function, cls):
             function = self.function.arg
             return cls(self.func(function, *self.limits).simplify())

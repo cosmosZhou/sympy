@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given, *limits):
-    lhs, rhs = axiom.is_LessEqual(given)
+    lhs, rhs = given.of(LessEqual)
     
     return LessEqual(Integral(lhs, *limits).simplify(), Integral(rhs, *limits).simplify())
 
@@ -21,5 +20,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 

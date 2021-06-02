@@ -48,8 +48,8 @@ class MutablePolyDenseMatrix(MutableDenseMatrix):
         # if any non-Poly element is given as input then
         # 'ring' defaults 'EX'
         ring = kwargs.get('ring', EX)
-        if all(isinstance(p, Poly) for p in self._mat) and self._mat:
-            domain = tuple([p.domain[p.gens] for p in self._mat])
+        if all(isinstance(p, Poly) for p in self._args) and self._args:
+            domain = tuple([p.domain[p.gens] for p in self._args])
             ring = domain[0]
             for i in range(1, len(domain)):
                 ring = ring.unify(domain[i])

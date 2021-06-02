@@ -1,49 +1,45 @@
-from sympy import *
-from axiom.utility import prove, apply
-
-from axiom import algebra, sets
-import axiom
+from util import *
 
 
-def dissect(self, indices, wrt=None, simplify=True, evaluate=False):    
+def dissect(self, indices, wrt=None, simplify=True, evaluate=False):
     if len(self.limits) > 1:
         if wrt is None:
             x, *ab = self.limits[-1]
-            if len(ab) == 2: 
-                a, b = ab   
-                universe = Interval(a, b, right_open=x.is_integer, integer=x.is_integer)
+            if len(ab) == 2:
+                a, b = ab
+                universe = (Range if x.is_integer else Interval)(a, b)
                 if x.is_integer:
-                    if isinstance(indices, slice): 
+                    if isinstance(indices, slice):
                         mid = Symbol.process_slice(indices, a, b)
-                        assert mid >= a, "mid >= a => %s" % (mid >= a)        
+                        assert mid >= a, "mid >= a => %s" % (mid >= a)
                         assert mid <= b, "mid <= b => %s" % (mid <= b)
-                        
+
                         if mid is None:
                             return self
                         if isinstance(mid, tuple):
                             ...
-                            assert False                        
+                            assert False
                         return self.func.operator(self.func(self.function, *self.limits[:-1], (x, a, mid - 1)).simplify(), self.func(self.function, *self.limits[:-1], (x, mid, b)).simplify(), evaluate=evaluate)
-                    elif isinstance(indices, (set, Set)): 
+                    elif isinstance(indices, (set, Set)):
                         intersection = universe & indices
-                        if intersection: 
+                        if intersection:
                             return self.func.operator(self.func(self.function, *self.limits[:-1], (x, intersection)).simplify(),
                                                       self.func(self.function, *self.limits[:-1], (x, universe // indices)).simplify(), evaluate=evaluate)
-                
+
             return self
-        
+
         for i, limit in enumerate(self.limits):
-            x, *ab = limit 
+            x, *ab = limit
             if x != wrt:
                 continue
             if len(ab) == 2:
-                universe = Interval(*ab, right_open=True, integer=x.is_integer)
+                universe = (Range if x.is_integer else Interval)(*ab)
             else:
                 universe, *_ = ab
-                
+
             limits1 = [*self.limits]
             limits1[i] = (x, universe & indices)
-            
+
             limits2 = [*self.limits]
             limits2[i] = (x, universe // indices)
 
@@ -52,11 +48,11 @@ def dissect(self, indices, wrt=None, simplify=True, evaluate=False):
 
     (x, *ab), *_ = self.limits
     if x.is_Slice:
-        x, z = x.bisect(indices, allow_empty=True).args
         if not ab:
+            x, z = x.bisect(indices, allow_empty=True).args
             return self.func(self.func(self.function, (x,)).simplify(), (z,))
 
-    if not isinstance(indices, slice): 
+    if not isinstance(indices, slice):
         if len(ab) == 1:
             universe = ab[0]
             if universe.is_boolean:
@@ -66,17 +62,17 @@ def dissect(self, indices, wrt=None, simplify=True, evaluate=False):
             if b.is_set:
                 universe = conditionset(x, a, b)
             else:
-                universe = Interval(*ab, right_open=x.is_integer, integer=x.is_integer)
+                universe = (Range if x.is_integer else Interval)(*ab)
         else:
             universe = x.domain
-            
+
         if not isinstance(indices, set) and indices.is_boolean:
             indices = x.domain_conditioned(indices)
         intersection = universe & indices
         if intersection:
             first = self.func(self.function, (x, intersection))
             second = self.func(self.function, (x, universe // indices))
-            
+
             if simplify:
                 first = first.simplify()
                 second = second.simplify()
@@ -87,16 +83,16 @@ def dissect(self, indices, wrt=None, simplify=True, evaluate=False):
         a, b = ab
         if x.is_integer:
             mid = Symbol.process_slice(indices, a, b)
-            assert mid >= a, "mid >= a => %s" % (mid >= a)        
+            assert mid >= a, "mid >= a => %s" % (mid >= a)
             assert mid <= b, "mid <= b => %s" % (mid <= b)
 
             if mid is None:
                 return self
             if isinstance(mid, tuple):
                 ...
-                assert False                        
-                
-            lhs = self.func(self.function, (x, a, mid))                
+                assert False
+
+            lhs = self.func(self.function, (x, a, mid))
             rhs = self.func(self.function, (x, mid, b))
             return self.func.operator(lhs.simplify(), rhs.simplify(), evaluate=evaluate)
 
@@ -104,35 +100,36 @@ def dissect(self, indices, wrt=None, simplify=True, evaluate=False):
 
 
 @apply
-def apply(self, indices, wrt=None, evaluate=False):
+def apply(self, *, cond=None, wrt=None, evaluate=False):
     assert self.is_Sum
-    return Equal(self, dissect(self, indices, wrt=wrt), evaluate=evaluate)
+    return Equal(self, dissect(self, cond, wrt=wrt), evaluate=evaluate)
 
- 
+
 @prove
-def prove(Eq): 
+def prove(Eq):
+    from axiom import sets, algebra
     x = Symbol.x(integer=True)
     f = Function.f(real=True)
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
-    Eq << apply(Sum[x:A](f(x)), B)
-    
+    Eq << apply(Sum[x:A](f(x)), cond=B)
+
     Eq << Eq[-1].this.find(Sum).apply(algebra.sum.bool)
-    
+
     Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum.bool)
-    
+
     Eq << Eq[-1].this.find(Sum[2]).apply(algebra.sum.bool)
-    
+
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum)
-    
+
     Eq << Eq[-1].this.rhs.function.apply(algebra.add.to.mul)
 
     Eq << Eq[-1].this.find(Contains).apply(sets.contains.to.ou.dissect, B)
-    
+
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.add)
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

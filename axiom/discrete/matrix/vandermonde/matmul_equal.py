@@ -1,38 +1,35 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(x, m, n, d, delta):
-    i = Symbol.i(domain=Interval(0, m - d, right_open=True, integer=True))
-    j = Symbol.j(domain=Interval(0, n, right_open=True, integer=True))
+    i = Symbol.i(domain=Range(0, m - d))
+    j = Symbol.j(domain=Range(0, n))
     h = Symbol.h(integer=True)
 
-    return Equal(LAMBDA[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ LAMBDA[j, i:m]((i + delta) ** j * x ** i),
-                    LAMBDA[j, i]((i + delta) ** j * x ** i) @ LAMBDA[j, i:n](binomial(j, i) * Sum[h:d + 1](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
+    return Equal(Lamda[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ Lamda[j, i:m]((i + delta) ** j * x ** i),
+                    Lamda[j, i]((i + delta) ** j * x ** i) @ Lamda[j, i:n](binomial(j, i) * Sum[h:d + 1](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
 
 
 @prove
 def prove(Eq):
-    n = Symbol.n(domain=Interval(1, oo, right_open=True, integer=True))
-    m = Symbol.m(domain=Interval(1, oo, right_open=True, integer=True))
-    d = Symbol.d(domain=Interval(0, oo, right_open=True, integer=True))
+    from axiom import discrete, algebra
+    n = Symbol.n(domain=Range(1, oo))
+    m = Symbol.m(domain=Range(1, oo))
+    d = Symbol.d(domain=Range(0, oo))
 
-    i = Symbol.i(domain=Interval(0, m - d, right_open=True, integer=True))
-    j = Symbol.j(domain=Interval(0, n, right_open=True, integer=True))
+    i = Symbol.i(domain=Range(0, m - d))
+    j = Symbol.j(domain=Range(0, n))
     h = Symbol.h(integer=True)
 
     delta = Symbol.delta(real=True)
-    
+
     x = Symbol.x(real=True)
 
     Eq << apply(x, m, n, d, delta)
 
     Eq << Eq[-1].this.lhs.expand()
-    
+
     Eq << Eq[-1].this.rhs.expand()
 
     Eq << Eq[-1][i, j]
@@ -40,12 +37,12 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[1].limits_swap()
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(h, h - i)
-    
+
     Eq.distribute = Eq[-1].this.rhs.astype(Sum)
-   
+
     Eq << Eq.distribute.this.lhs.limits_subs(Eq.distribute.lhs.variable, h)
 
-    Eq << axiom.discrete.combinatorics.binomial.theorem.apply(delta + i, h - i, j).reversed
+    Eq << discrete.combinatorics.binomial.theorem.apply(delta + i, h - i, j).reversed
 
     Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, Eq.distribute.rhs.function.args[-1].variable)
 
@@ -55,4 +52,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()

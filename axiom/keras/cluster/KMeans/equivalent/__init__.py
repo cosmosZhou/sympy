@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import keras, algebra, sets
+from util import *
+
 import axiom
 from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 
@@ -8,23 +7,23 @@ from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 @apply
 def apply(*given, x=None):
     eq_sum, eq_union = given
-    w_sum, M = axiom.is_Equal(eq_sum)
-    w_union, M_interval = axiom.is_Equal(eq_union)
+    w_sum, M = eq_sum.of(Equal)
+    w_union, M_interval = eq_union.of(Equal)
     
-    zero, _M = axiom.is_Interval(M_interval, integer=True)
+    zero, _M = M_interval.of(Range)
     assert _M == M
     assert zero == 0
     
-    wi_abs, *limits = axiom.is_Sum(w_sum)
-    wi, *_limits = axiom.is_UNION(w_union)
+    wi_abs, limit = w_sum.of(Sum)
+    wi, _limit = w_union.of(Cup)
     
-    assert limits == _limits
+    assert limit == _limit
     
-    _wi = axiom.is_Abs(wi_abs)
+    _wi = wi_abs.of(Abs)
     assert _wi == wi
     
-    i = axiom.limit_is_symbol(limits)
-    w, _i = axiom.is_Indexed(wi)
+    (i,) = limit
+    w, _i = wi.of(Indexed)
     assert _i == i
     
     _M = x.shape[0]
@@ -34,25 +33,25 @@ def apply(*given, x=None):
         
     k = w.shape[0]
     
-    return Equivalent(Contains(j, w[i]) & Contains(i, Interval(0, k - 1, integer=True)), 
-                      Equal(i, Sum[i](i * Bool(Contains(j, w[i])))) & Contains(j, Interval(0, M - 1, integer=True)))
+    return Equivalent(Contains(j, w[i]) & Contains(i, Range(0, k)),
+                      Equal(i, Sum[i](i * Bool(Contains(j, w[i])))) & Contains(j, Range(0, M)))
 
 
-@prove
+@prove(surmountable=False)
 def prove(Eq):
     M = Symbol.M(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
     
-    k = Symbol.k(domain=Interval(0, M - 1, integer=True))
+    k = Symbol.k(domain=Range(0, M))
         
     x = Symbol.x(real=True, shape=(M, n))
     w = Symbol.omega(shape=(k,), etype=dtype.integer, emptyset=False)
     
-    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(UNION[i](w[i]), k.domain), x=x)
+    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 
 from . import w_quote

@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import keras, algebra, sets
+from util import *
+
 import axiom
 from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 
@@ -8,60 +7,61 @@ from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 @apply
 def apply(*given, x=None):
     eq_sum, eq_union = given
-    w_sum, M = axiom.is_Equal(eq_sum)
-    w_union, M_interval = axiom.is_Equal(eq_union)
-    
-    zero, _M = axiom.is_Interval(M_interval, integer=True)
+    w_sum, M = eq_sum.of(Equal)
+    w_union, M_interval = eq_union.of(Equal)
+
+    zero, _M = M_interval.of(Range)
     assert _M == M
     assert zero == 0
-    
-    wi_abs, *limits = axiom.is_Sum(w_sum)
-    wi, *_limits = axiom.is_UNION(w_union)
-    
-    assert limits == _limits
-    
-    _wi = axiom.is_Abs(wi_abs)
+
+    wi_abs, limit = w_sum.of(Sum)
+    wi, _limit = w_union.of(Cup)
+
+    assert limit == _limit
+
+    _wi = wi_abs.of(Abs)
     assert _wi == wi
-    
-    i = axiom.limit_is_symbol(limits)
-    w, _i = axiom.is_Indexed(wi)
+
+    (i,) = limit
+    w, _i = wi.of(Indexed)
     assert _i == i
-    
+
     _M = x.shape[0]
     assert _M == M
-    
+
     j = Symbol.j(integer=True)
-        
+
     k = w.shape[0]
     w_ = Symbol("omega^'", cluster(w, x))
-    
-    c = LAMBDA[i](mean(w[i], x))
-    
-    return Equivalent(Contains(j, w_[i]) & Contains(i, Interval(0, k - 1, integer=True)),
-                      Equal(i, ArgMin[i](Norm(x[j] - c[i]))) & Contains(j, Interval(0, M - 1, integer=True)))
+
+    c = Lamda[i](mean(w[i], x))
+
+    return Equivalent(Contains(j, w_[i]) & Contains(i, Range(0, k)),
+                      Equal(i, ArgMin[i](Norm(x[j] - c[i]))) & Contains(j, Range(0, M)))
 
 
 @prove
 def prove(Eq):
+    from axiom import keras
     M = Symbol.M(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
-    
-    k = Symbol.k(domain=Interval(0, M - 1, integer=True))
-        
+
+    k = Symbol.k(domain=Range(0, M))
+
     x = Symbol.x(real=True, shape=(M, n))
     w = Symbol.omega(shape=(k,), etype=dtype.integer, emptyset=False)
-    
-    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(UNION[i](w[i]), k.domain), x=x)
-    
+
+    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
+
     Eq << keras.cluster.KMeans.nonoverlapping.apply(Eq[1], Eq[2], x=x)
-    
+
     Eq << keras.cluster.KMeans.equivalent.apply(Eq[-2], Eq[-1], x=x)
-    
+
     Eq << Eq[-1].this.find(Bool).arg.rhs.base.definition
-    
-    Eq << Eq[-1].this.find(Bool).arg.rhs.base.definition
+
+    Eq << Eq[-1].this.find(Bool).arg.rhs.base.defun()
 
 
 if __name__ == '__main__':
-    prove()
+    run()

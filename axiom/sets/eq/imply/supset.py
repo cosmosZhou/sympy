@@ -1,6 +1,5 @@
-from axiom.utility import prove, apply
 
-from sympy import *
+from util import *
 
 
 # given: A = B
@@ -28,5 +27,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 def simplify_common_terms(given):
     lhs, rhs = given.args
@@ -43,4 +42,4 @@ def prove(Eq):
     
         
 if __name__ == '__main__':
-    prove()
+    run()

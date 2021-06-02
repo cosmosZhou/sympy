@@ -1932,7 +1932,7 @@ class Pow(Expr):
         return self
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if isinstance(self.function, cls):
             base, exponent = self.function.args
             if exponent.has(*self.variables):

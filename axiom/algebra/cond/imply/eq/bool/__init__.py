@@ -1,5 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
+
 
 
 @apply
@@ -10,17 +10,18 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     f = Function.f(shape=(), real=True)
     y = Symbol.y(real=True)
-    
+
     Eq << apply(GreaterEqual(f(x), y))
-    
-    Eq << Eq[-1].this.lhs.definition
-    
+
+    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
+
 
 if __name__ == '__main__':
-    prove()
+    run()
 
 del invert
 from . import invert

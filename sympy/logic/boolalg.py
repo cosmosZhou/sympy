@@ -64,6 +64,7 @@ class Boolean(Basic):
     """A boolean object is an object for which logic operations make sense."""
 
     is_boolean = True
+    plausible = None
     __slots__ = ()
 
     def simplify_condition_on_random_variable(self):
@@ -112,21 +113,6 @@ class Boolean(Basic):
                     return eqs.rhs
         return eqs
 
-    @staticmethod
-    def bfn(bfn, eq):
-        function = bfn(eq.function)
-        kwargs = {}
-        if function is bfn.__self__:
-            return function 
-        if function.equivalent is not None:
-            kwargs['equivalent'] = [bfn.__self__, eq]
-            function.equivalent = None
-        elif function.given is not None:
-            kwargs['given'] = [bfn.__self__, eq]
-            function.given = None
-
-        return eq.func(function, *eq.limits, **kwargs).simplify()
-
     def forall(self, *limits, simplify=True):
         if len(limits) == 1:
             x, *args = limits[0]
@@ -135,9 +121,9 @@ class Boolean(Basic):
                 return self
             from sympy import ForAll
             if len(args) == 2:
-                from sympy.sets.sets import Interval
-    
-                domain = Interval(*args, integer=x.is_integer)
+                from sympy import Interval, Range    
+                domain = (Range if x.is_integer else Interval)(*args)
+                
             elif len(args) == 1:
                 domain = args[0]
                 if not domain.is_set:
@@ -231,11 +217,11 @@ class Boolean(Basic):
 
     def __rshift__(self, other):
         """Overloading for >>"""
-        return Sufficient(self, other)
+        return Suffice(self, other)
 
     def __lshift__(self, other):
         """Overloading for <<"""
-        return Sufficient(other, self)
+        return Suffice(other, self)
 
     __rrshift__ = __lshift__
     __rlshift__ = __rshift__
@@ -319,365 +305,6 @@ class Boolean(Basic):
         from sympy.core.relational import Eq, Ne
         return set().union(*[i.binary_symbols for i in self.args if i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne))])
 
-    def is_given_by(self, given):
-        while True:
-            equivalent = equivalent_ancestor(self)
-            if len(equivalent) != 1:
-                return False
-            equivalent, *_ = equivalent
-            
-            if equivalent is self:
-                return False
-            
-            if isinstance(equivalent.given, (list, tuple)):
-                for i, g in enumerate(equivalent.given):
-                    if g is not given:
-                        continue
-                    if all(g.plausible is None for j, g in enumerate(equivalent.given) if j != i):
-                        return True                    
-            elif equivalent.given is given:
-                return True
-            
-            self = equivalent
-         
-    def coexist_with_list(self, rhs):
-        eq_set = {*rhs}
-        bases = [None] * len(rhs)
-        
-        def get_basis(i):
-            if bases[i] is None:
-                bases[i] = self.coexist_with(rhs[i])
-            return bases[i]
-        
-        for i, eq in enumerate(rhs):
-            basis = get_basis(i)
-            if basis is False:
-                continue
-            
-            eqs = plausibles(eq_set - {eq})
-            if not eqs:
-                return basis
-            
-            hit = True
-            for j, eq in enumerate(rhs):
-                if j == i:
-                    continue
-                basis_j = get_basis(j)
-                if basis_j != basis:
-                    hit = False
-                    break
-            if hit:
-                return basis
-        return False
-
-    # return False or return the common given condition!
-    def coexist_with(self, rhs):
-        while self != rhs:
-            if self.equivalent is None: 
-                if self.given is None:
-                    if rhs.equivalent is None:
-                        if rhs.given is None:
-                            return False
-                        else:
-                            rhs = rhs.given
-                            if isinstance(rhs, list): 
-                                return self.coexist_with_list(rhs)
-                    else:
-                        rhs = rhs.equivalent
-                        if isinstance(rhs, list):
-                            return self.coexist_with_list(rhs)
-                    continue                        
-                else:
-                    self = self.given
-            else:
-                self = self.equivalent
-                
-            if isinstance(self, list):
-                return rhs.coexist_with_list(self)
-            
-            if self == rhs:
-                return self
-            
-            if rhs.equivalent is None: 
-                if rhs.given is None:
-                    continue
-                else:
-                    rhs = rhs.given
-            else:
-                rhs = rhs.equivalent
-                
-            if isinstance(rhs, list):
-                return self.coexist_with_list(rhs)
-            
-        return self
-        
-    def is_equivalent_of(self, rhs):
-        while True:
-            if self == rhs:
-                return True
-            equivalent = self.equivalent
-            if equivalent is None:
-                return False
-            
-            if isinstance(equivalent, (list, tuple)):
-                equivalent = plausibles(equivalent)                
-                if len(equivalent) != 1:
-                    return False
-                equivalent, *_ = equivalent
-            self = equivalent
-
-    @property
-    def clue(self):
-        if self.equivalent is not None:
-            return 'equivalent'
-        elif self.given is not None:
-            return 'given'
-        elif self.imply is not None:
-            return 'imply'
-
-    @property
-    def plausible(self):
-#         plausible = True, meaning, the statement is plausibly True, ready to be proven
-#         plausible = False, meaning, the statement is proven False
-#         plausible = None, meaning, the statement is proven True
-
-        if 'plausible' in self._assumptions:
-            return self._assumptions['plausible']
-
-        if self.is_BooleanTrue:
-            return 
-        if self.is_BooleanFalse:
-            return False
-
-        equivalent = self.equivalent
-        if equivalent is not None:
-            if isinstance(equivalent, (tuple, list)):
-                for parent in equivalent:
-                    if parent.plausible:
-                        return True
-    
-                return
-            return equivalent.plausible
-    
-        given = self.given
-        if given is not None:
-            if isinstance(given, (tuple, list, set)):
-                for parent in given:
-                    assert parent is not self, self
-                    if parent.plausible:
-                        return True
-
-                return
-            if given.plausible is not None:
-#             if self is given by a False / plausible proposition, then self is plausible
-                return True
-            return 
-        
-        imply = self.imply
-        if imply is not None:
-#             if self implies a False proposition, then self must be False
-            plausible = imply._assumptions.get('plausible')
-            if plausible is False:
-                return False
-            return True
-        
-        negation = self.negation
-        if negation is not None:
-            plausible = negation.plausible
-            if plausible is True:
-                return True
-            if plausible is False:
-                return
-            return False
-
-    @plausible.setter
-    def plausible(self, value):
-        if value:
-            # this axiom is plausible to be true!
-            if 'plausible' in self._assumptions:
-                del self._assumptions['plausible']
-        else:
-            # this axiom is plausible to be false!
-            self._assumptions['plausible'] = False
-
-        equivalent = self.equivalent
-        if equivalent is not None:
-            self.equivalent = None
-            process_equivalent(equivalent, value)
-            return            
-
-        imply = self.imply
-        if imply is not None:
-            self.imply = None
-            process_imply(imply, value)
-            return
-        
-        negation = self.negation
-        if negation is not None:
-            self.negation = None
-            process_negation(negation, value)            
-            return
-        
-        given = self.given
-        if given is not None:
-            self.given = None
-            process_given(given, value)
-            return
-
-    @property
-    def equivalent(self):
-        if 'equivalent' in self._assumptions:
-            return self._assumptions['equivalent']
-
-    @equivalent.setter
-    def equivalent(self, eq):
-        if eq is not None:
-            assert 'equivalent' not in self._assumptions
-            assert not self.is_BooleanFalse and not self.is_BooleanTrue
-            assert self is not eq 
-            self._assumptions['equivalent'] = eq
-            if 'plausible' in self._assumptions:
-                del self._assumptions['plausible']
-            return
-
-        if 'equivalent' in self._assumptions:
-            del self._assumptions['equivalent']
-
-# here we define negation = counterproposition
-    @property
-    def negation(self):
-        if 'negation' in self._assumptions:
-            return self._assumptions['negation']
-
-    @negation.setter
-    def negation(self, eq):
-        if eq is not None:
-            assert 'negation' not in self._assumptions
-            self._assumptions['negation'] = eq
-            return
-
-        if 'negation' in self._assumptions:
-            del self._assumptions['negation']
-
-    def plausibles_set(self):
-        find_plausibles = self.find_plausibles()        
-        result = [*zip(*find_plausibles)]
-        if result:
-            plausibles_set, is_equivalent = result       
-            return {*plausibles_set}, all(is_equivalent)
-        return set(), False
-        
-    def set_equivalence_relationship(self, other):
-        plausibles_set, is_equivalent = self.plausibles_set()
-        if len(plausibles_set) == 1:
-            if is_equivalent:
-                eq, *_ = plausibles_set
-                if isinstance(other, list):
-                    is_equivalent = True
-                    plausibles_set = set()
-                    for other in other:
-                        _plausibles_set, _is_equivalent = other.plausibles_set()
-                        plausibles_set |= _plausibles_set
-                        is_equivalent &= _is_equivalent
-                else:
-                    plausibles_set, is_equivalent = other.plausibles_set()
-                
-                assert eq not in plausibles_set, 'cyclic proof detected'
-                    
-                equivalent = [*plausibles_set]
-                if len(equivalent) == 1:
-                    equivalent, *_ = equivalent
-                elif not equivalent:
-                    return
-                
-                if is_equivalent:
-                    from sympy.core.compatibility import default_sort_key
-                    if isinstance(equivalent, list):
-                        p, *q = sorted((eq, *equivalent), key=default_sort_key)                    
-                    else:
-                        p, q = sorted((eq, equivalent), key=default_sort_key)
-                    p.equivalent = q
-                else:
-                    del eq._assumptions['plausible']
-                    eq.given = equivalent
-                return True
-            else:
-                eq, *_ = plausibles_set
-                if isinstance(other, list):
-                    plausibles_set = set()
-                    for other in other:
-                        _plausibles_set, is_equivalent = other.plausibles_set()
-                        plausibles_set |= _plausibles_set
-                        if not is_equivalent:
-                            return 
-                else:
-                    plausibles_set, is_equivalent = other.plausibles_set()
-                    if not is_equivalent:
-                        return 
-                
-                assert eq not in plausibles_set, 'cyclic proof detected'
-                    
-                equivalent = [*plausibles_set]
-                if len(equivalent) == 1:
-                    equivalent, *_ = equivalent
-                elif not equivalent:
-                    return
-                
-                del eq._assumptions['plausible']
-                eq.given = equivalent
-                return True                
-        
-    def find_plausibles(self, is_equivalent=True):
-        if 'plausible' in self._assumptions:
-            yield self, is_equivalent
-        else:
-            equivalent = self.equivalent        
-            if equivalent is None:
-                given = self.given
-                is_equivalent = False
-            else:
-                given = equivalent
-    
-            if given is not None:
-                if isinstance(given, (tuple, list, set)): 
-                    for given in given:
-                        yield from given.find_plausibles(is_equivalent)
-                else:
-                    yield from given.find_plausibles(is_equivalent)
-        
-    @property
-    def given(self):
-        if 'given' in self._assumptions:
-            return self._assumptions['given']
-
-    @given.setter
-    def given(self, eq):
-        if eq is not None:
-            assert self is not eq
-            self._assumptions['given'] = eq
-            if 'plausible' in self._assumptions:
-                del self._assumptions['plausible']
-            
-            return
-
-        if 'given' in self._assumptions:
-            del self._assumptions['given']
-
-    @property
-    def imply(self):
-        if 'imply' in self._assumptions:
-            return self._assumptions['imply']
-
-    @imply.setter
-    def imply(self, eq):
-        if eq is not None:
-            assert self is not eq
-            self._assumptions['imply'] = eq
-            return
-
-        if 'imply' in self._assumptions:
-            del self._assumptions['imply']
-
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
@@ -709,8 +336,8 @@ class Boolean(Basic):
                 given = And(*given)
                 
             if kwargs.get('given'):
-                return Sufficient(self, given)
-            return Sufficient(given, self)
+                return Suffice(self, given)
+            return Suffice(given, self)
         if self.equivalent is not None:
             equivalent = self.equivalent
             if isinstance(equivalent, list):
@@ -725,8 +352,8 @@ class Boolean(Basic):
                         self._assumptions['plausible'] = True
                         equivalent.equivalent = self
                     
-                    return Sufficient(self, equivalent)
-                return Sufficient(equivalent, self)
+                    return Suffice(self, equivalent)
+                return Suffice(equivalent, self)
             
             return Equivalent(equivalent, self)
         if self.imply is not None:
@@ -737,7 +364,7 @@ class Boolean(Basic):
             if kwargs.get('given'):
                 return Necessary(imply, self)
                 
-            return Sufficient(self, imply)
+            return Suffice(self, imply)
         
     @property    
     def wrt(self):
@@ -801,9 +428,7 @@ class BinaryCondition(Boolean):
         return self.lhs.domain_defined(x) & self.rhs.domain_defined(x)
 
     def domain_definition(self):
-        eq = self.lhs.domain_definition() & self.rhs.domain_definition()
-        eq.given = self
-        return eq
+        return self.lhs.domain_definition() & self.rhs.domain_definition()
     
     def __nonzero__(self):
         return False
@@ -881,8 +506,7 @@ class BinaryCondition(Boolean):
                 return self
 
             return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify())
- 
-    
+
 class BooleanAssumption(BinaryCondition):
     ...
 
@@ -894,23 +518,6 @@ def plausibles(parent):
 def plausibles_false(parent):
     return [eq for eq in parent if eq.plausible is False]
 
-
-def equivalent_ancestor(a):
-    if a is None:
-        return a
-    while True:
-        equivalent = a.equivalent
-        if equivalent is None:
-            return {a}
-
-        if isinstance(equivalent, (list, tuple)):
-            res = set()
-            for e in equivalent:
-                if e.plausible:
-                    res |= equivalent_ancestor(e)
-            return res
-
-        a = equivalent
 
 
 def _relationship(lhs, rhs):
@@ -1257,7 +864,6 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
         return EmptySet()
 
     def copy(self, **kwargs):
-        assert self.equivalent is None
         if kwargs:
             from sympy.core.inference import Inference
             return Inference(self, **kwargs)
@@ -1609,14 +1215,54 @@ class And(LatticeOp, BooleanFunction):
 
     def _latex(self, p):
         if len(self.args) == 2:
-            strict_less_than, strict_greater_than = self.args
-            if strict_less_than.is_Less and strict_greater_than.is_Greater:
-                if strict_less_than.lhs == strict_greater_than.lhs:
-                    a, x, b = strict_greater_than.rhs, strict_less_than.lhs, strict_less_than.rhs
-                    a = p._print(a)
-                    b = p._print(b)
-                    x = p._print(x)
-                    return r"%s \lt %s \lt %s" % (a, x, b)
+            def render(op1, op2, a, x, b):
+                a = p._print(a)
+                b = p._print(b)
+                x = p._print(x)
+                return r"%s \%s %s \%s %s" % (a, op1, x, op2, b)
+            
+            eq1, eq2 = self.args
+            if eq1.is_Less:
+                a, x = eq1.args
+                if eq2.is_Less:
+                    _x, b = eq2.args                        
+                    if x == _x:                            
+                        return render('lt', 'lt', a, x, b)
+                if eq2.is_LessEqual:
+                    _x, b = eq2.args
+                    if x == _x:
+                        return render('lt', 'le', a, x, b)
+            elif eq1.is_LessEqual:
+                a, x = eq1.args
+                if eq2.is_Less:
+                    _x, b = eq2.args                        
+                    if x == _x:
+                        return render('le', 'lt', a, x, b)
+                if eq2.is_LessEqual:
+                    _x, b = eq2.args
+                    if x == _x:
+                        return render('le', 'le', a, x, b)
+            elif eq1.is_Greater:
+                a, x = eq1.args
+                if eq2.is_Greater:
+                    _x, b = eq2.args
+                    if x == _x:
+                        return render('gt', 'gt', a, x, b)
+                if eq2.is_GreaterEqual:
+                    _x, b = eq2.args
+                    if x == _x:
+                        return render('gt', 'ge', a, x, b)
+            elif eq1.is_GreaterEqual:
+                a, x = eq1.args
+                if eq2.is_Greater:
+                    _x, b = eq2.args
+                    if x == _x:
+                        return render('ge', 'gt', a, x, b)
+                if eq2.is_GreaterEqual:
+                    _x, b = eq2.args
+                    if x == _x:
+                        return render('ge', 'ge', a, x, b)
+    
         args = []
         for arg in self.args:
             if arg.is_Or or arg.is_Conditioned:
@@ -2329,7 +1975,7 @@ class Not(BooleanFunction):
         if func == Or:
             return And._to_nnf(*[~arg for arg in args], simplify=simplify)
 
-        if func == Sufficient:
+        if func == Suffice:
             a, b = args
             return And._to_nnf(a, ~b, simplify=simplify)
 
@@ -2565,11 +2211,11 @@ class Xnor(BooleanFunction):
         return Not(Xor(*args))
 
        
-class Sufficient(BooleanAssumption):
+class Suffice(BooleanAssumption):
     """
     Logical implication.
 
-    A is Sufficient for B is equivalent to !A v B
+    A is Suffice for B is equivalent to !A v B
 
     Accepts two Boolean arguments; A and B.
     Returns False if A is True and B is False
@@ -2578,29 +2224,29 @@ class Sufficient(BooleanAssumption):
     Examples
     ========
 
-    >>> from sympy.logic.boolalg import Sufficient
+    >>> from sympy.logic.boolalg import Suffice
     >>> from sympy import symbols
     >>> x, y = symbols('x y')
 
-    >>> Sufficient(True, False)
+    >>> Suffice(True, False)
     False
-    >>> Sufficient(False, False)
+    >>> Suffice(False, False)
     True
-    >>> Sufficient(True, True)
+    >>> Suffice(True, True)
     True
-    >>> Sufficient(False, True)
+    >>> Suffice(False, True)
     True
     >>> x >> y
-    Sufficient(x, y)
+    Suffice(x, y)
     >>> y << x
-    Sufficient(x, y)
+    Suffice(x, y)
 
     Notes
     =====
 
     The ``>>`` and ``<<`` operators are provided as a convenience, but note
     that their use here is different from their normal use in Python, which is
-    bit shifts. Hence, ``Sufficient(a, b)`` and ``a >> b`` will return different
+    bit shifts. Hence, ``Suffice(a, b)`` and ``a >> b`` will return different
     things if ``a`` and ``b`` are integers.  In particular, since Python
     considers ``True`` and ``False`` to be integers, ``True >> True`` will be
     the same as ``1 >> 1``, i.e., 0, which has a truth value of False.  To
@@ -2626,21 +2272,19 @@ class Sufficient(BooleanAssumption):
                     newargs.append(True if x else False)
                 else:
                     newargs.append(x)
-            A, B = newargs
-            if A.plausible is not None:
-                A = A.copy(plausible=None)                
-            if B.plausible is not None:
-                B = B.copy(plausible=None)                
+            A, B = newargs                            
         except ValueError:
             raise ValueError(
-                "%d operand(s) used for an Sufficient "
+                "%d operand(s) used for an Suffice "
                 "(pairs are required): %s" % (len(args), str(args)))
+            
         if B.is_BooleanFalse:
             return A.invert()
+        
         if A.is_BooleanTrue:
             return B
         
-        if A.is_BooleanFalse or B.is_BooleanTrue or A == B or A.is_And and B in A._argset or B.is_Or and A in B._argset:
+        if A.is_BooleanFalse or B.is_BooleanTrue or A == B:
             return S.true
         
         if A.is_Relational and B.is_Relational:
@@ -2648,6 +2292,23 @@ class Sufficient(BooleanAssumption):
                 return S.true
             if A.invert().canonical == B.canonical:
                 return B
+            
+        if A.is_And:
+            if B.is_And:
+                if not B._argset - A._argset:
+                    return S.true
+            else:
+                if B in A._argset:
+                    return S.true
+                
+        if B.is_Or:
+            if A.is_Or:
+                if not A._argset - B._argset:
+                    return S.true
+            else:
+                if A in B._argset:
+                    return S.true
+                
 
     def to_nnf(self, simplify=True):
         a, b = self.args
@@ -2675,14 +2336,14 @@ class Sufficient(BooleanAssumption):
 
     def __and__(self, other):
         """Overloading for & operator"""
-        if other.is_Sufficient:
+        if other.is_Suffice:
             if self.lhs == other.lhs:
                 return self.func(self.lhs, self.rhs & other.rhs)
             if self.lhs == other.rhs:
                 if self.rhs == other.lhs:
                     return Equivalent(self.lhs, self.rhs)
             if self.rhs == other.rhs:
-                return Sufficient(self.lhs | other.lhs, self.rhs)
+                return Suffice(self.lhs | other.lhs, self.rhs)
                 
         elif other.is_Necessary:
             if self.lhs == other.lhs:
@@ -2725,7 +2386,7 @@ class Sufficient(BooleanAssumption):
                      
                 eqs.append(eq)
                 
-            return Sufficient(p, And(*eqs))
+            return Suffice(p, And(*eqs))
         elif q.is_Or:
             p, p_set = self.premise_set()
             
@@ -2740,7 +2401,7 @@ class Sufficient(BooleanAssumption):
                         else:
                             continue
                 eqs.append(eq)
-            return Sufficient(p, Or(*eqs))
+            return Suffice(p, Or(*eqs))
             
         return self
 
@@ -2764,7 +2425,7 @@ class Necessary(BooleanAssumption):
 
     @classmethod
     def eval(cls, *args):
-        return Sufficient.eval(*args[::-1])
+        return Suffice.eval(*args[::-1])
 
     def to_nnf(self, simplify=True):
         b, a = self.args
@@ -2780,11 +2441,11 @@ class Necessary(BooleanAssumption):
             return p._print_Function(self)
     
     def _latex(self, p, rotate=False):
-        return Sufficient._latex(self, p, '\Leftarrow', rotate=rotate)
+        return Suffice._latex(self, p, '\Leftarrow', rotate=rotate)
 
     def __and__(self, other):
         """Overloading for & operator"""
-        if other.is_Sufficient:
+        if other.is_Suffice:
             if self.lhs == other.lhs:
                 if self.rhs == other.rhs:
                     return Equivalent(self.lhs, self.rhs)
@@ -2873,7 +2534,7 @@ class Equivalent(BooleanAssumption):
         return "%s \N{LEFT RIGHT DOUBLE ARROW} %s" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, rotate=False):
-        return Sufficient._latex(self, p, '\Leftrightarrow', rotate=rotate)
+        return Suffice._latex(self, p, '\Leftrightarrow', rotate=rotate)
 
     def _pretty(self, p, altchar=None):
         if p._use_unicode:
@@ -2884,7 +2545,7 @@ class Equivalent(BooleanAssumption):
     def inference_status(self, child):
         raise Exception("boolean conditions within Equivalent are not applicable for inequivalent inference!")       
        
-class Insufficient(BooleanAssumption):
+class NotSuffice(BooleanAssumption):
 
     def __new__(cls, *args, **assumptions):
         return BinaryCondition.eval(cls, *args, **assumptions)
@@ -2917,7 +2578,7 @@ class Unnecessary(BooleanAssumption):
         return "%s \N{LEFTWARDS DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, altchar='\nLeftarrow', rotate=False):
-        return Sufficient._latex(self, p, altchar, rotate=rotate)
+        return Suffice._latex(self, p, altchar, rotate=rotate)
 
     def inference_status(self, child):
         return child == 0
@@ -2928,24 +2589,24 @@ class Inequivalent(BooleanAssumption):
         return "%s \N{LEFT RIGHT DOUBLE ARROW WITH STROKE} %s" % (p._print(self.lhs), p._print(self.rhs))
 
     def _latex(self, p, altchar='\nLeftrightarrow', rotate=False):
-        return Sufficient._latex(self, p, altchar, rotate=rotate)
+        return Suffice._latex(self, p, altchar, rotate=rotate)
 
     def inference_status(self, child):
         raise Exception("boolean conditions within Inequivalent are not applicable for inequivalent inference!")       
 
-Sufficient.reversed_type = Necessary
-Necessary.reversed_type = Sufficient
+Suffice.reversed_type = Necessary
+Necessary.reversed_type = Suffice
 Equivalent.reversed_type = Equivalent
 
-Insufficient.reversed_type = Unnecessary
-Unnecessary.reversed_type = Insufficient
+NotSuffice.reversed_type = Unnecessary
+Unnecessary.reversed_type = NotSuffice
 Inequivalent.reversed_type = Inequivalent
 
-Sufficient.invert_type = Insufficient
+Suffice.invert_type = NotSuffice
 Necessary.invert_type = Unnecessary
 Equivalent.invert_type = Inequivalent
 
-Insufficient.invert_type = Sufficient 
+NotSuffice.invert_type = Suffice 
 Unnecessary.invert_type = Necessary
 Inequivalent.invert_type = Equivalent
 
@@ -3392,10 +3053,10 @@ def eliminate_implications(expr):
     Examples
     ========
 
-    >>> from sympy.logic.boolalg import Sufficient, Equivalent, \
+    >>> from sympy.logic.boolalg import Suffice, Equivalent, \
          eliminate_implications
     >>> from sympy.abc import A, B, C
-    >>> eliminate_implications(Sufficient(A, B))
+    >>> eliminate_implications(Suffice(A, B))
     B | ~A
     >>> eliminate_implications(Equivalent(A, B))
     (A | ~B) & (B | ~A)

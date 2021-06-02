@@ -238,11 +238,6 @@ class Mod(Function):
         if self.args[1].is_extended_negative:
             return False
 
-    @property
-    def definition(self):
-        a, b = self.args
-        return a - a // b * b 
-
     def _latex(self, p, exp=None):
 #         https://www.cnblogs.com/javajava/articles/13627588.html
         from sympy.printing.precedence import PRECEDENCE

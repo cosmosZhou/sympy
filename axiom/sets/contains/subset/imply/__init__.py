@@ -1,1 +1,1 @@
-from . import contains
+from . import contains, subset

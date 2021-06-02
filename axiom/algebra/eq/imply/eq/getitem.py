@@ -1,16 +1,15 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 @apply
 def apply(given, a, i=None):
-    x, y = axiom.is_Equal(given)
+    x, y = given.of(Equal)
     assert x.shape == y.shape    
     if i is None:
         return Equal(a[x], a[y])
     n = x.shape[0]
-    return Equal(LAMBDA[i:n](a[x[i]]), LAMBDA[i:n](a[y[i]]))
+    return Equal(Lamda[i:n](a[x[i]]), Lamda[i:n](a[y[i]]))
 
 
 @prove
@@ -27,5 +26,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

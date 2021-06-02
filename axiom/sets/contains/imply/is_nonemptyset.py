@@ -1,5 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 # given: x != y
 # x not in {y}
@@ -7,7 +6,7 @@ import axiom
 
 @apply
 def apply(given):
-    x, S = axiom.is_Contains(given)
+    x, S = given.of(Contains)
     return Unequal(S, x.emptySet)
 
 
@@ -24,5 +23,5 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove()
+    run()
 

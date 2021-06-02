@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra
+from util import *
+
 import axiom
 
 
 @apply
 def apply(given):
-    x, y = axiom.is_LessEqual(given)
+    x, y = given.of(LessEqual)
     assert x.is_integer
     assert y.is_real
 
@@ -15,23 +14,24 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(real=True, given=True)
-    
+
     Eq << apply(x <= y)
-    
+
     Eq << ~Eq[1]
-    
+
     Eq << algebra.gt.imply.ge.strengthen.apply(Eq[-1])
-    
+
     Eq << algebra.le.ge.imply.ge.transit.apply(Eq[0], Eq[-1])
-        
+
     Eq << Eq[-1] - floor(y)
-    
+
     Eq << Eq[-1].this.lhs.apply(algebra.add.to.frac)
-        
+
 if __name__ == '__main__':
-    prove()
+    run()
 
 
 

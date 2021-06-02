@@ -174,7 +174,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
     @property
     def set(self):
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         return FiniteSet(self)
 
     def __reduce_ex__(self, proto):
@@ -1685,6 +1685,12 @@ class Basic(with_metaclass(ManagedProperties)):
             return isinstance(self, cls)
         return self.typeof(cls.func)
     
+    def of(self, cls, copy=False):
+        args = self.extract(cls)
+        if copy and isinstance(args, tuple):
+            return [*args]
+        return args
+    
     def is_wanted(self):
         if self.is_Wanted:
             return True
@@ -1729,8 +1735,14 @@ class Basic(with_metaclass(ManagedProperties)):
             root_index -= 1
             
             for i in range(-1, -len(s.args) - 1, -1): 
-                if not s.args[i].is_Number:
+                arg = s.args[i]
+                if isinstance(arg, type):
+                    continue
+                if arg.is_wanted():
                     break
+            else:
+                raise Exception('not wanted??')
+                
             s = s.args[i]
         
         if root_index == 0:
@@ -1749,37 +1761,76 @@ class Basic(with_metaclass(ManagedProperties)):
         if not isinstance(self, cls.func):
             return False
         
-        j = -len(self.args) + index        
+        for wantedIndex, s in enumerate(cls.args):
+            if s.is_Wanted or isinstance(s, Basic) and s.is_wanted():                
+                if not self.args[index].instanceof(s):
+                    return False
+                break
+        else:
+            raise Exception('wanted not detected!')
         
-        for i in range(len(cls.args) - 1, -1, -1):
+        j = index - 1
+        # scan backward, starting from wantedIndex - 1
+        for i in range(wantedIndex - 1, -1, -1):
             struct = cls.args[i]
+            if j < 0:
+                break
+
             if isinstance(struct, type):
                 if not isinstance(self.args[j], struct):
-                    return False
+                    break
             elif struct.is_Number:
                 if self.args[j] == struct:
                     ...
                 elif self.args[j + 1] != struct:
-                    return False
+                    break
                 else:
                     continue
-            elif struct.is_Wanted:
-                if not isinstance(self.args[j], struct.func):
-                    return False                
             else:
                 if not self.args[j].isinstance(struct, *path):
-                    return False
+                    break
+            
             j -= 1
             
-        return True
+        else:
+            j = index + 1
+            # scan forward, starting from wantedIndex + 1
+            for i in range(wantedIndex + 1, len(cls.args)):
+                if j >= len(self.args):
+                    break
+
+                struct = cls.args[i]
+                if isinstance(struct, type):
+                    if not isinstance(self.args[j], struct):
+                        break
+                elif struct.is_Number:
+                    if self.args[j] == struct:
+                        ...
+                    elif self.args[j + 1] != struct:
+                        break
+                    else:
+                        continue
+                else:
+                    if not self.args[j].isinstance(struct, *path):
+                        break
+                    
+                j += 1
+                
+            else:
+                return True
+                
+        return False
         
     def instanceof(self, cls):
         if isinstance(cls, type):
             return isinstance(self, cls)
         
-        if cls.is_Wanted:
-            cls = cls.func
+        if cls.is_Wanted: 
+            if isinstance(cls.func, type):
+                return isinstance(self, cls.func)
             
+            cls = cls.func
+                
         if not isinstance(self, cls.func):
             return False        
         j = 0
@@ -1789,40 +1840,80 @@ class Basic(with_metaclass(ManagedProperties)):
             if self.args[j].instanceof(struct):
                 i += 1
                 if i == len(cls.args):
-                    break            
+                    break
             j += 1
         else:
-            return False
+            return i == len(cls.args)
             
         return True
     
+    def extract(self, cls):
+        if isinstance(cls, type):
+            if isinstance(self, cls):
+                args = self.args
+                if len(args) == 1:
+                    return args[0]
+                return args
+            else:
+                return
+        
+        if not isinstance(self, cls.func):
+            return        
+        j = 0
+        i = 0
+        
+        args = []
+        while j < len(self.args):
+            struct = cls._args[i]
+            this = self.args[j]
+            arg = this.extract(struct)
+            if arg is not None:
+                if arg == ():
+                    if this.is_Symbol:
+                        args.append(this)
+                else: 
+                    args.append(this if struct is Basic else arg)
+                    
+                i += 1
+                if i == len(cls._args):
+                    args.extend(self.args[j + 1:])
+                    break
+            else:
+                args.append(this)
+                
+            j += 1
+        else:
+            if i == len(cls._args):
+                return ()
+            else:
+                return
+            
+        while isinstance(args, (tuple, list)):
+            if len(args) == 1:
+                args = args[0]
+            elif not args:
+                return ()
+            else:
+                break
+            
+        return args
+    
     @staticmethod
     def make_query(*query):
-        if len(query) > 1 or isinstance(query[0], type):
-            struct = None
-        else:
-            from sympy.core.core import Wanted        
-
-            if isinstance(query[0], Basic):
-                struct = query[0]
+        if len(query) > 1 or isinstance(query[0], type): 
+            if isinstance(query[-1], type):
+                struct = None
             else:
-                assert callable(query[0])
-                limits, cls = query[0].__closure__
-                limits = limits.cell_contents
-                assert len(limits) == 1
-                children = limits[0]
-                cls = cls.cell_contents
-                assert isinstance(cls, type)
+                q, struct = Basic.make_query(query[-1])
+                query = [*query[:-1]] + q
+        else:
+            struct = query[0]
+            
+            if not struct.is_Basic: 
+                struct = struct.basic
                 
-                if len(children) == 1:                    
-                    child = children[0]
-                    if isinstance(child, int):
-                        children = [cls] * child                        
-                        children[-1] = Wanted(children[-1])
-                        cls = Basic
-                                    
-                struct = Basic.__new__(cls, *children)
             if not struct.is_wanted():
+                from sympy.core.core import Wanted
                 struct = Wanted(struct)
                     
             query = []
@@ -1832,12 +1923,18 @@ class Basic(with_metaclass(ManagedProperties)):
                     query.append(s)
                     break
                 
-                assert isinstance(s, Basic)
+                assert s.is_Basic
+                
                 query.append(s.func)
                 
-                for i in range(-1, -len(s.args) - 1, -1): 
-                    if not s.args[i].is_Number:
+                for i in range(-1, -len(s.args) - 1, -1):
+                    arg = s.args[i]
+                    if isinstance(arg, type):
+                        continue
+                    if arg.is_wanted():
                         break
+                else:
+                    raise Exception('not wanted??')
                 s = s.args[i]
             
         return query, struct                                   
@@ -1887,7 +1984,7 @@ class Basic(with_metaclass(ManagedProperties)):
                                                     fetch=fetch,
                                                     output=output + _output,
                                                     **kwargs)
-            except: 
+            except:
                 continue
             
         raise
@@ -2232,24 +2329,26 @@ class Basic(with_metaclass(ManagedProperties)):
     def type(self):
         return self.dtype * self.shape
     
-    def generate_free_symbol(self, excludes=None, free_symbol=None, **kwargs):
+    def generate_var(self, excludes=None, var=None, **kwargs):
         if excludes is None:
             excludes = self.free_symbols
         else:
+            if not isinstance(excludes, set):
+                excludes = {excludes}
             excludes |= self.free_symbols
             
         from sympy import Symbol
-        if free_symbol is not None and free_symbol not in excludes:
-            if isinstance(free_symbol, set):
-                free_symbol = free_symbol - excludes
+        if var is not None and var not in excludes:
+            if isinstance(var, set):
+                var = var - excludes
             else:
-                if isinstance(free_symbol, str):
-                    free_symbol = Symbol(free_symbol, **kwargs)
-                free_symbol = {free_symbol} - excludes
+                if isinstance(var, str):
+                    var = Symbol(var, **kwargs)
+                var = {var} - excludes
                 
-            if free_symbol:
-                free_symbol, *_ = free_symbol
-                return free_symbol
+            if var:
+                var, *_ = var
+                return var
             
         excludes = set(symbol.name for symbol in excludes)
         if 'definition' in kwargs:

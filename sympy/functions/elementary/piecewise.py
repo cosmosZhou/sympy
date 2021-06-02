@@ -345,24 +345,13 @@ class Piecewise(Function):
         return self.func(*newargs)
 
     def __sub__(self, other):
-        if other.is_Piecewise:
-            other = -other
-            other = other.astype(self.func)
+        if other.is_Piecewise:            
+            other = self.func(*((-e, c) for e, c in other.args))
             return Function.__add__(self, other)
         newargs = []
         for e, c in self.args:
             newargs.append((e - other, c))
         return self.func(*newargs)
-
-#     def __mul__(self, other):
-#         if other.is_Piecewise:
-#             args = []
-#             for e, c in self.args:
-#                 for _e, _c in self.args:
-#                     args.append((e * _e, c & _c))
-#             return self.func(*args)
-# 
-#         return super(Piecewise, self).__mul__(self, other)
 
     def _eval_simplify(self, ratio, measure, rational, inverse):
         args = [a._eval_simplify(ratio, measure, rational, inverse)
@@ -1137,7 +1126,6 @@ class Piecewise(Function):
             elif e1 == rhs:
                 if Equal(e0, rhs) == False:
                     c1 = c0.invert()
-                    c1.equivalent = self
                     return c1                
                 
         elif rhs.is_Add and lhs in rhs.args:
@@ -1156,7 +1144,6 @@ class Piecewise(Function):
             if e0 == rhs:
                 if Equal(e1, rhs) == False:
                     c1 = c0.invert()
-                    c1.equivalent = self
                     return c1
             elif e1 == rhs:
                 if Equal(e0, rhs) == False:
@@ -1680,7 +1667,7 @@ class Piecewise(Function):
         return tex % r" \\".join(ecpairs)
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if self.function.is_Piecewise:
             self = self.function.func(*[(self.func(e, *self.limits).simplify(), c) for e, c in self.function.args])
         return self          
@@ -1723,35 +1710,6 @@ class Piecewise(Function):
         return result
 
     @classmethod
-    def rewrite_from_Mul(cls, self, simplify=True):
-        piecewise = []
-        delta = []
-        for arg in self.args:
-            if arg.is_Piecewise:
-                piecewise.append(arg)       
-            else:
-                delta.append(arg)
-                
-        if not piecewise:
-            return self
-        
-        delta = self.func(*delta, evaluate=False)
-        if len(piecewise) == 1:
-            result, *_ = piecewise
-            if not delta.is_One:            
-                result = result.func(*((e * delta, c) for e, c in result.args))
-        else:            
-            result = piecewise[0]
-            for i in range(1, len(piecewise)):            
-                result = result.mul(piecewise[i])
-                
-            if not delta.is_One:
-                result = result.func(*((e * delta, c) for e, c in result.args))
-        if simplify:
-            result = result.simplify()
-        return result
-    
-    @classmethod
     def rewrite_from_Max(cls, self):
         arg, *args = self.args        
         self = self.func(*args)
@@ -1793,13 +1751,21 @@ class Piecewise(Function):
                 for e in _domain:
                     args.append(f.subs(x, e))
             elif _domain:
-                if _domain.is_Interval:
-                    a = _domain.min()
+                if _domain.is_Range:
                     if x.is_integer:
-                        b = _domain.max() + 1                        
+                        a = _domain.start
+                        b = _domain.stop
+                        args.append(cls(f, (x, a, b)).simplify())
                     else:
-                        b = _domain.max()
-                    args.append(cls(f, (x, a, b)).simplify())
+                        args.append(cls(f, (x, _domain)).simplify())
+                elif _domain.is_Interval:                    
+                    if x.is_integer:
+                        _domain = _domain.copy(integer=True)   
+                        a = _domain.start
+                        b = _domain.stop
+                        args.append(cls(f, (x, a, b)).simplify())    
+                    else:
+                        args.append(cls(f, (x, _domain)).simplify())
                 else:
                     args.append(cls(f, (x, _domain)).simplify())
         return cls.operator(*args)

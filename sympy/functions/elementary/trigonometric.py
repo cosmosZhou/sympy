@@ -15,7 +15,7 @@ from sympy.functions.elementary.hyperbolic import (acoth, asinh, atanh, cosh,
 from sympy.functions.elementary.extremum import Min, Max
 from sympy.core.power import sqrt
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.sets.sets import FiniteSet
+from sympy.sets.finiteset import FiniteSet
 from sympy.utilities.iterables import numbered_symbols
 
 ###############################################################################
@@ -495,10 +495,9 @@ class Sin(TrigonometricFunction):
             return True
 
     def _eval_Abs(self):
-        from sympy import Interval
         domain = self.arg.domain
-        if not isinstance(domain, Interval):
-            return None
+        if not domain.is_Interval:
+            return
         domain /= pi
 #         (0,1) * pi + 2 k pi
 #         (1,2) * pi + 2 k pi
@@ -515,12 +514,12 @@ class Sin(TrigonometricFunction):
             b += diff
             a += diff
 
-            return None
+            return 
         if b <= 1 and a >= 0:
             return self
         if b <= 2 and a >= 1:
             return -self
-        return None
+
 
     def _eval_is_extended_negative(self):
         from sympy import Interval
@@ -548,12 +547,6 @@ class Sin(TrigonometricFunction):
             return False
         if b < 2 and a > 1:
             return True
-
-    @property
-    def definition(self):
-        from sympy import Sum, oo
-        n = self.generate_free_symbol(integer=True, free_symbol='n')
-        return Sum[n:oo]((-1) ** n * self.arg ** (2 * n + 1) / factorial(2 * n + 1))
 
 
 sin = Sin
@@ -1044,12 +1037,6 @@ class Cos(TrigonometricFunction):
             return False
         if b < 3 and a > 1:
             return True
-
-    @property
-    def definition(self):
-        from sympy import Sum, oo
-        n = self.generate_free_symbol(integer=True, free_symbol='n')
-        return Sum[n:oo]((-1) ** n * self.arg ** (2 * n) / factorial(2 * n))
 
 
 cos = Cos

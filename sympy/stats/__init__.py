@@ -101,14 +101,16 @@ Lambda(x, Piecewise((1/3, Eq(x, 1)), (1/6, Eq(x, 2)), (1/4, Eq(x, 3) | Eq(x, 4))
 """
 
 __all__ = [
-    'P', 'E', 'H', 'density', 'where', 'given', 'sample', 'cdf','median',
+#     'P', 'E', 'H', 
+    'density', 'where', 'given', 'sample', 'cdf', 'median',
     'characteristic_function', 'pspace', 'sample_iter', 'variance', 'std',
     'skewness', 'kurtosis', 'covariance', 'dependent', 'entropy', 'independent',
     'random_symbols', 'correlation', 'factorial_moment', 'moment', 'cmoment',
     'sampling_density', 'moment_generating_function', 'smoment', 'quantile',
     'coskewness', 'sample_stochastic_process',
 
-    'FiniteRV', 'DiscreteUniform', 'Die', 'Bernoulli', 'Coin', 'Binomial',
+    'FiniteRV', 'DiscreteUniform', 'Die', 'Bernoulli', 'Coin',
+#     'Binomial',
     'BetaBinomial', 'Hypergeometric', 'Rademacher',
     'FiniteDistributionHandmade',
 
@@ -118,11 +120,11 @@ __all__ = [
     'FisherZ', 'Frechet', 'Gamma', 'GammaInverse', 'Gompertz', 'Gumbel',
     'Kumaraswamy', 'Laplace', 'Levy', 'Logistic', 'LogLogistic', 'LogNormal', 'Lomax',
     'Moyal', 'Maxwell', 'Nakagami', 'Normal', 'GaussianInverse', 'Pareto', 'PowerFunction',
-    'QuadraticU', 'RaisedCosine', 'Rayleigh','Reciprocal', 'StudentT', 'ShiftedGompertz',
+    'QuadraticU', 'RaisedCosine', 'Rayleigh', 'Reciprocal', 'StudentT', 'ShiftedGompertz',
     'Trapezoidal', 'Triangular', 'Uniform', 'UniformSum', 'VonMises', 'Wald',
     'Weibull', 'WignerSemicircle', 'ContinuousDistributionHandmade',
 
-    'Geometric','Hermite', 'Logarithmic', 'NegativeBinomial', 'Poisson', 'Skellam',
+    'Geometric', 'Hermite', 'Logarithmic', 'NegativeBinomial', 'Poisson', 'Skellam',
     'YuleSimon', 'Zeta', 'DiscreteRV', 'DiscreteDistributionHandmade',
 
     'JointRV', 'Dirichlet', 'GeneralizedMultivariateLogGamma',
@@ -147,10 +149,13 @@ __all__ = [
     'Probability', 'Expectation', 'Variance', 'Covariance', 'Moment',
     'CentralMoment',
 
-    'ExpectationMatrix', 'VarianceMatrix', 'CrossCovarianceMatrix'
+    'ExpectationMatrix', 'VarianceMatrix', 'CrossCovarianceMatrix',
+    
+    'DieDistribution', 'NormalDistribution', 'ChiSquaredDistribution', 'PoissonDistribution', 'BinomialDistribution', 'Conditioned'
 
 ]
-from .rv_interface import (P, E, H, density, where, given, sample, cdf, median,
+
+from .rv_interface import (density, where, given, sample, cdf, median,
         characteristic_function, pspace, sample_iter, variance, std, skewness,
         kurtosis, covariance, dependent, entropy, independent, random_symbols,
         correlation, factorial_moment, moment, cmoment, sampling_density,
@@ -158,7 +163,8 @@ from .rv_interface import (P, E, H, density, where, given, sample, cdf, median,
         sample_stochastic_process)
 
 from .frv_types import (FiniteRV, DiscreteUniform, Die, Bernoulli, Coin,
-        Binomial, BetaBinomial, Hypergeometric, Rademacher,
+#         Binomial, 
+        BetaBinomial, Hypergeometric, Rademacher,
         FiniteDistributionHandmade)
 
 from .crv_types import (ContinuousRV, Arcsin, Benini, Beta, BetaNoncentral,
@@ -168,10 +174,10 @@ from .crv_types import (ContinuousRV, Arcsin, Benini, Beta, BetaNoncentral,
         Levy, Logistic, LogLogistic, LogNormal, Lomax, Maxwell, Moyal, Nakagami, Normal,
         GaussianInverse, Pareto, QuadraticU, RaisedCosine, Rayleigh, Reciprocal, StudentT,
         PowerFunction, ShiftedGompertz, Trapezoidal, Triangular, Uniform, UniformSum,
-        VonMises, Wald, Weibull, WignerSemicircle, ContinuousDistributionHandmade)
+        VonMises, Wald, Weibull, WignerSemicircle, ContinuousDistributionHandmade, NormalDistribution, ChiSquaredDistribution)
 
 from .drv_types import (Geometric, Hermite, Logarithmic, NegativeBinomial, Poisson,
-        Skellam, YuleSimon, Zeta, DiscreteRV, DiscreteDistributionHandmade)
+        Skellam, YuleSimon, Zeta, DiscreteRV, DiscreteDistributionHandmade, DieDistribution, PoissonDistribution, BinomialDistribution)
 
 from .joint_rv_types import (JointRV, Dirichlet,
         GeneralizedMultivariateLogGamma, GeneralizedMultivariateLogGammaOmega,
@@ -194,7 +200,7 @@ from .random_matrix_models import (CircularEnsemble, CircularUnitaryEnsemble,
 from .matrix_distributions import MatrixGamma, Wishart, MatrixNormal
 
 from .symbolic_probability import (Probability, Expectation, Variance,
-        Covariance, Moment, CentralMoment)
+        Covariance, Moment, CentralMoment, Conditioned)
 
 from .symbolic_multivariate_probability import (ExpectationMatrix, VarianceMatrix,
         CrossCovarianceMatrix)

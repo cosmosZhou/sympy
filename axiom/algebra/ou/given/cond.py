@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets, algebra
+
 
 
 @apply
 def apply(imply, index=None):
-    eqs = axiom.is_Or(imply, copy=False)
+    eqs = imply.of(Or)
     if index is None:
         return eqs
     return eqs[index]
@@ -14,20 +13,21 @@ def apply(imply, index=None):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True, given=True)
     y = Symbol.y(real=True, given=True)
-    
+
     f = Function.f(real=True, given=True)
-    
+
     Eq << apply((f(y) > 0) | (f(x) > 0), index=0)
-    
+
     Eq << ~Eq[0]
-    
+
     Eq << algebra.et.imply.cond.apply(Eq[-1], index=0)
-    
+
     Eq <<= Eq[-1] & Eq[1]
-    
+
 
 if __name__ == '__main__':
-    prove()
+    run()
 

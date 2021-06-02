@@ -2,9 +2,11 @@
 
 from .slice import MatrixSlice
 from .blockmatrix import BlockMatrix, BlockDiagMatrix, block_collapse, blockcut
+from .cofactor import Cofactors
+
 from .funcmatrix import FunctionMatrix
 from .inverse import Inverse
-from .matexpr import (Identity, MatrixExpr, MatrixSymbol, ZeroMatrix, OneMatrix, matrix_symbols)
+from .matexpr import Identity, MatrixExpr, MatrixSymbol, ZeroMatrix, OneMatrix, matrix_symbols, Swap, Addition, Multiplication, Shift
 
 from .matmul import MatMul
 from .matpow import MatPow

@@ -1,11 +1,10 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 
 
 @apply
 def apply(given, *limits, simplify=True):
-    lhs, rhs = axiom.is_LessEqual(given)
+    lhs, rhs = given.of(LessEqual)
     
     lhs = Limit(lhs, *limits)
     rhs = Limit(rhs, *limits)
@@ -25,5 +24,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

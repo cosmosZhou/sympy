@@ -1,12 +1,9 @@
-from axiom.utility import prove, apply
-from sympy import *
-import axiom
-from axiom import sets, algebra
+from util import *
 
 
 @apply(given=None)
 def apply(given, B):
-    x, A = axiom.is_Contains(given)
+    x, A = given.of(Contains)
     
     return Equivalent(given, Or(Contains(x, A // B), Contains(x, A & B)))
 
@@ -23,5 +20,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 

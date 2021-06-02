@@ -110,7 +110,7 @@ class Poly(Expr):
 
         is_iterable = iterable(rep)
         if isinstance(rep, Basic) and is_iterable:
-            if rep.is_Symbol or rep.is_LAMBDA or rep.is_Function:
+            if rep.is_Symbol or rep.is_Lamda or rep.is_Function:
                 is_iterable = False
                 
         if is_iterable:

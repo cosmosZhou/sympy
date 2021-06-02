@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 # given : A & B = A | B => A = B
 
 
 @apply
 def apply(given, S):
-    A, B = axiom.is_Equal(given)
+    A, B = given.of(Equal)
     return Equal(Complement(A, S), Complement(B, S))
 
 
@@ -23,5 +22,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

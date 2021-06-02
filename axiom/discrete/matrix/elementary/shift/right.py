@@ -1,17 +1,14 @@
-from sympy import *
-from axiom.utility import prove, apply
-
-from sympy.matrices.expressions.matexpr import Shift
+from util import *
 
 
 @apply
 def apply(x, w=None):
     n = x.shape[0]
-    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
-    j = Symbol.j(domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(domain=Range(0, n))
+    j = Symbol.j(domain=Range(0, n))
     
     if w is None:
-        w = Symbol.w(LAMBDA[j, i](Shift(n, i, j)))
+        w = Symbol.w(Lamda[j, i](Shift(n, i, j)))
     else:
         assert w[i, j] == Shift(n, i, j)
     
@@ -20,7 +17,7 @@ def apply(x, w=None):
 
 @prove
 def prove(Eq): 
-    n = Symbol.n(domain=Interval(2, oo, integer=True))    
+    n = Symbol.n(domain=Range(2, oo))    
     x = Symbol.x(shape=(n,), real=True)
     
     Eq << apply(x)
@@ -52,5 +49,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

@@ -595,17 +595,6 @@ class Abs(Function):
     def _sympystr(self, p):
         return "|%s|" % p._print(self.arg)
     
-    @property
-    def definition(self):
-        z = self.arg
-        if z.is_extended_real:
-            return Piecewise((z, z >= 0), (-z, True))
-        
-#         from sympy import re
-        x = re(z)
-        y = im(z)
-        return sqrt(x * x + y * y)
-
 
 class Norm(Function):
     """
@@ -718,31 +707,6 @@ class Norm(Function):
                 return abs(Mul(*coeff)) * self.func(Mul(*args))
         return Function.simplify(self, deep=deep, **kwargs)
     
-    @property
-    def definition(self):
-
-        def next_free_symbol(ch):
-            return chr(ord(ch) + 1)
-        
-        x = self.arg
-        shape = x.shape
-        size = len(shape)
-        
-        ch = 'i'        
-        excludes = set()
-        limits = []
-        d = -1
-        indices = []
-        for d in range(-1, -size - 1, -1):
-            var = self.generate_free_symbol(excludes, free_symbol=ch, integer=True)
-            limits.append((var, 0, shape[d]))
-            indices.append(var)
-            excludes.add(var)
-            ch = next_free_symbol(ch)
-            
-        indices.reverse()
-        from sympy import Sum
-        return sqrt(Sum(Abs(x[tuple(indices)]) ** 2, *limits))
 
     
 class arg(Function):

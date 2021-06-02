@@ -8,3 +8,4 @@ from . import multiply
 from . import square
 from . import st
 from . import integral
+from . import floor

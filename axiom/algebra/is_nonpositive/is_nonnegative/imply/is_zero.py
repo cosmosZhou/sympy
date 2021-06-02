@@ -1,6 +1,5 @@
-from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol
+
+from util import *
 import axiom
 
 
@@ -27,4 +26,4 @@ def prove(Eq):
         
     
 if __name__ == '__main__':
-    prove()
+    run()

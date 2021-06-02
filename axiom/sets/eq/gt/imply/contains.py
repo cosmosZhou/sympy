@@ -1,17 +1,13 @@
-from sympy.core.relational import Equal, Greater
-from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from axiom import sets
-from sympy import Symbol
+from util import *
 
 # given : e.set & s = a, |a| > 0 => e in s
+
 
 @apply
 def apply(*given):
     equality = given[0]
     assert equality.is_Equal
-    
+
     intersection, a = equality.args
     if not intersection.is_Intersection:
         a, intersection = equality.args
@@ -21,40 +17,38 @@ def apply(*given):
     if not e_set.is_FiniteSet:
         s, e_set = intersection.args
         assert e_set.is_FiniteSet
-        
+
     assert len(e_set) == 1
-    
+
     e, *_ = e_set.args
     if len(given) > 1:
         positive = given[1]
         x_abs = positive.is_positive_relationship()
         assert x_abs is not None
         assert x_abs.is_Abs
-        assert a == x_abs.arg        
+        assert a == x_abs.arg
     else:
         assert abs(a) > 0
-        
-    
+
     return Contains(e, s)
-
-
 
 
 @prove
 def prove(Eq):
+    from axiom import sets
     s = Symbol.s(etype=dtype.integer)
     e = Symbol.e(integer=True)
     a = Symbol.a(etype=dtype.integer)
-    
-    Eq << apply(Equal(e.set & s, a), Greater(abs(a), 0))    
-    
+
+    Eq << apply(Equal(e.set & s, a), Greater(abs(a), 0))
+
     Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[1])
-    
+
     Eq << Eq[-1].subs(Eq[0].reversed)
-    
+
     Eq << sets.is_nonemptyset.imply.contains.apply(Eq[-1])
-    
+
 
 if __name__ == '__main__':
-    prove()
+    run()
 

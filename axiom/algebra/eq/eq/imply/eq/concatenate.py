@@ -1,16 +1,14 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
-def apply(*given): 
+def apply(*given):
+    import axiom
     eq_historic, eq_n = given
-    lhs, rhs = axiom.is_Equal(eq_historic)
-    _lhs, _rhs = axiom.is_Equal(eq_n)
-    fx, *limits_x = axiom.is_LAMBDA(lhs)
-    gy, *limits_y = axiom.is_LAMBDA(rhs)
+    lhs, rhs = eq_historic.of(Equal)
+    _lhs, _rhs = eq_n.of(Equal)
+    fx, *limits_x = lhs.of(Lamda)
+    gy, *limits_y = rhs.of(Lamda)
     k, a, b = axiom.limit_is_Interval(limits_x)
     _k, _a, _b = axiom.limit_is_Interval(limits_y)
     assert k == _k
@@ -20,22 +18,23 @@ def apply(*given):
     n = b
     assert fx._subs(k, n) == _lhs
     assert gy._subs(k, n) == _rhs
-    return Equal(LAMBDA[k:n + 1](fx), LAMBDA[k:n + 1](gy))
+    return Equal(Lamda[k:n + 1](fx), Lamda[k:n + 1](gy))
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     n = Symbol.n(integer=True, positive=True)
     k = Symbol.k(integer=True)
     f = Function.f(real=True)
     g = Function.g(real=True)
-    
-    Eq << apply(Equal(LAMBDA[k:n](f(k)), LAMBDA[k:n](g(k))), Equal(f(n), g(n)))
-    
-    Eq << Eq[-1].apply(algebra.eq.given.et.split.block_matrix, Slice[-1:])
-    
-    Eq << algebra.et.given.cond.apply(Eq[-1], simplify=None)
-        
-    
+
+    Eq << apply(Equal(Lamda[k:n](f(k)), Lamda[k:n](g(k))), Equal(f(n), g(n)))
+
+    Eq << Eq[-1].apply(algebra.eq.given.et.split.blockmatrix, Slice[-1:])
+
+    Eq << algebra.et.given.conds.apply(Eq[-1], simplify=None)
+
+
 if __name__ == '__main__':
-    prove()
+    run()

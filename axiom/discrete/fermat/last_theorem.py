@@ -1,5 +1,4 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 
 
 @apply
@@ -9,7 +8,7 @@ def apply(x, y, z, n):
 
 @prove(surmountable=False)
 def prove(Eq):
-    n = Symbol.n(domain=Interval(3, oo, integer=True))
+    n = Symbol.n(domain=Range(3, oo))
     x = Symbol.x(integer=True, nonnegative=True)
     y = Symbol.y(integer=True, nonnegative=True)
     z = Symbol.z(integer=True, nonnegative=True)
@@ -18,4 +17,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()

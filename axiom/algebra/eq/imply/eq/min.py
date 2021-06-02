@@ -1,17 +1,16 @@
-from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol, ForAll, Slice, Min
-from sympy.core.function import Function
+
+from util import *
+
 import axiom
-from sympy.concrete.limits import limits_dict
-from sympy.sets.sets import Interval
-from axiom import algebra, sets
-from sympy.core.symbol import dtype
+
+
+
+
 
 
 @apply
 def apply(given, x):
-    lhs, rhs = axiom.is_Equal(given)
+    lhs, rhs = given.of(Equal)
     
     return Equal(Min(lhs, x).simplify(), Min(rhs, x).simplify())
 
@@ -28,5 +27,5 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove()
+    run()
 

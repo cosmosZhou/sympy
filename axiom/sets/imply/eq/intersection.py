@@ -1,9 +1,8 @@
-from sympy.core.relational import Equal
-from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
-from sympy.sets.contains import Contains
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy import Symbol
+
+
+
+
+from util import *
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
@@ -25,5 +24,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 

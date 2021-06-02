@@ -28,12 +28,12 @@
 	proof process of <a
 		href='../axiom/discrete/combinatorics/binomial/theorem.php'>binomial
 		theorem</a>, we can also directly visit the get api: <a
-		href='../axiom/search.php?keyword=binomial'>www.axiom.top/sympy/axiom/search.php?keyword=binomial</a>
+		href='../axiom/search.php?keyword=binomial'>www.axiom.top/sympy/php/search.php?keyword=binomial</a>
 	to acquire the search results. Both the graphical user interface and
 	get api support<a
 		href='http://www.regular-expressions.info/tutorial.html'>regular
 		expression</a>, and whole word matching, e.g., <a
-		href='../axiom/search.php?keyword=discrete.*binomial&regularExpression=true'>www.axiom.top/sympy/axiom/search.php?keyword=discrete.*binomial&amp;regularExpression=true</a>
+		href='../axiom/search.php?keyword=discrete.*binomial&regularExpression=true'>www.axiom.top/sympy/php/search.php?keyword=discrete.*binomial&amp;regularExpression=true</a>
 	which indicates searching theorems that include both 'discrete' and
 	'binomial'.
 </p>
@@ -158,7 +158,7 @@ Take windows system as an example:
 </li>
 <br>
 <li>start the Chrome, or Edge/IE browser, input at the browser address
-	bar:<br> <a href='../axiom'>http://localhost/sympy/axiom/</a><br>Now
+	bar:<br> <a href='../axiom'>http://localhost/sympy/axiom.php</a><br>Now
 	the visualized theorem library is instantiated. Then we can directly
 	access this theorem library at localhost.
 </li>

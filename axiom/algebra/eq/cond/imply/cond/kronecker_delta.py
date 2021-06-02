@@ -1,5 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 
 
@@ -9,7 +8,7 @@ def process_given_conditions(*given, swap=False, delta=True, reverse=False):
     else:
         eq, f_eq = given
         
-    lhs, rhs = axiom.is_Equal(eq)    
+    lhs, rhs = eq.of(Equal)    
     assert f_eq.is_Boolean
     if reverse:
         lhs, rhs = rhs, lhs    
@@ -42,5 +41,5 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()
 

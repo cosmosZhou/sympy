@@ -16,10 +16,10 @@ from sympy.core.containers import Dict
 from sympy.core.logic import Logic
 from sympy.core.relational import Relational
 from sympy.core.sympify import _sympify
-from sympy.sets.sets import FiniteSet
+from sympy.sets.finiteset import FiniteSet
 from sympy.stats.rv import (RandomDomain, ProductDomain, ConditionalDomain,
                             PSpace, IndependentProductPSpace, SinglePSpace, random_symbols,
-                            sumsets, rv_subs, NamedArgsMixin, PDF)
+                            sumsets, rv_subs, NamedArgsMixin)
 from sympy.external import import_module
 
 

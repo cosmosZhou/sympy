@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import calculus
+
 
 
 @apply
@@ -16,6 +15,7 @@ def apply(m, n=1):
 
 @prove
 def prove(Eq):
+    from axiom import calculus
     m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
 
@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << calculus.trigonometry.wallis.gamma.apply(m, n)
 
-    
+
 if __name__ == '__main__':
-    prove()
+    run()
 

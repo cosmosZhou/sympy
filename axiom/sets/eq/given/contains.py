@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets
+
 # given : A & B = A | B => A = B
 
 
 @apply(simplify=False)
 def apply(given):
-    x, a = axiom.is_Equal(given)    
+    x, a = given.of(Equal)    
     return Contains(x, a.set) 
 
 
@@ -23,5 +22,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

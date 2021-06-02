@@ -1,19 +1,18 @@
-from sympy.core.relational import Equal
-from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
 
-from sympy.matrices.expressions.matexpr import Swap, Identity
-from sympy import LAMBDA
-from sympy import Symbol
-from axiom import algebra
+
+
+
+
+
+from util import *
+
 
 
 @apply
 def apply(w):
     n = w.shape[0]
-    i = w.generate_free_symbol(integer=True)
-    j = w.generate_free_symbol({i}, integer=True)
+    i = w.generate_var(integer=True)
+    j = w.generate_var({i}, integer=True)
     
     assert len(w.shape) == 4 and all(s == n for s in w.shape)
     assert w[i, j].is_Swap or w[i, j].definition.is_Swap 
@@ -28,7 +27,7 @@ def prove(Eq):
     j = Symbol.j(integer=True)
     
     assert Identity(n).is_integer
-    w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
+    w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
     
     Eq << apply(w)
     
@@ -36,5 +35,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

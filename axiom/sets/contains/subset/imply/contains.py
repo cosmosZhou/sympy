@@ -1,8 +1,7 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 
-from axiom import sets
-# given: A in B 
+
+# given: A in B
 # => {A} subset B
 @apply
 def apply(*given):
@@ -18,19 +17,20 @@ def apply(*given):
 
 @prove
 def prove(Eq):
+    from axiom import sets
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(complex=True, shape=(n,), given=True)
     A = Symbol.A(etype=dtype.complex * n)
     B = Symbol.B(etype=dtype.complex * n, given=True)
     Eq << apply(Contains(x, A), Subset(A, B))
-    
+
     Eq << sets.contains.imply.contains.relaxed.apply(Eq[0], B)
-    
+
     Eq << sets.subset.imply.eq.union.apply(Eq[1])
-    
+
     Eq << Eq[-2].subs(Eq[-1])
 
-    
+
 if __name__ == '__main__':
-    prove()
+    run()
 

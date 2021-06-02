@@ -1,14 +1,13 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(*given): 
     equal, cond = given
-    b, x = axiom.is_Equal(equal)
-    _x, a = axiom.is_BinaryCondition(cond)
+    b, x = equal.of(Equal)
+    _x, a = cond.of(BinaryCondition)
     
     if x != _x:
         b, x = x, b    
@@ -32,4 +31,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

@@ -80,10 +80,13 @@ class DenseMatrix(MatrixBase):
         [1, 3]
         """
         if isinstance(key, tuple):
+            if len(key) == 1:
+                key = key[0]
+                return self[key]
             i, j = key
             try:
                 i, j = self.key2ij(key)
-                return self._mat[i * self.cols + j]
+                return self._args[i * self.cols + j]
             except (TypeError, IndexError):
                 if (isinstance(i, Expr) and not i.is_number) or (isinstance(j, Expr) and not j.is_number):
                     if ((j < 0) is True) or ((j >= self.shape[1]) is True) or\
@@ -108,16 +111,16 @@ class DenseMatrix(MatrixBase):
         else:
             # row-wise decomposition of matrix
             if isinstance(key, slice):
-                return self._new(self._mat[key])
+                return self._new(self._args[key])
             if len(self.shape) == 1:
                 from sympy.functions.elementary.piecewise import Piecewise
                 from sympy import Equal
                 args = []
-                for i in range(len(self._mat)):
-                    args.append([self._mat[i], Equal(key, i)])
+                for i in range(len(self._args)):
+                    args.append([self._args[i], Equal(key, i)])
                 args[-1][1] = True
                 return Piecewise(*args).simplify()
-            return self._mat[a2idx(key)]
+            return self._args[a2idx(key)]
 
     def __setitem__(self, key, value):
         raise NotImplementedError()
@@ -159,11 +162,11 @@ class DenseMatrix(MatrixBase):
     def _eval_add(self, other):
         # we assume both arguments are dense matrices since
         # sparse matrices have a higher priority
-        mat = [a + b for a, b in zip(self._mat, other._mat)]
+        mat = [a + b for a, b in zip(self._args, other._args)]
         return classof(self, other)._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_extract(self, rowsList, colsList):
-        mat = self._mat
+        mat = self._args
         cols = self.cols
         indices = (i * cols + j for i in rowsList for j in colsList)
         return self._new(len(rowsList), len(colsList),
@@ -188,9 +191,9 @@ class DenseMatrix(MatrixBase):
         # if we multiply an n x 0 with a 0 x m, the
         # expected behavior is to produce an n x m matrix of zeros
         if self_cols != 0 and other_rows != 0:
-            # cache self._mat and other._mat for performance
-            mat = self._mat
-            other_mat = other._mat
+            # cache self._args and other._args for performance
+            mat = self._args
+            other_mat = other._args
             for i in range(len(new_mat)):
                 row, col = i // new_mat_cols, i % new_mat_cols
                 row_indices = range(self_cols * row, self_cols * (row + 1))
@@ -209,7 +212,7 @@ class DenseMatrix(MatrixBase):
         return classof(self, other)._new(new_mat_rows, new_mat_cols, new_mat, copy=False)
 
     def _eval_matrix_mul_elementwise(self, other):
-        mat = [a * b for a, b in zip(self._mat, other._mat)]
+        mat = [a * b for a, b in zip(self._args, other._args)]
         return classof(self, other)._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_inverse(self, **kwargs):
@@ -276,15 +279,15 @@ class DenseMatrix(MatrixBase):
         return self._new(rv)
 
     def _eval_scalar_mul(self, other):
-        mat = tuple(other * a for a in self._mat)
+        mat = tuple(other * a for a in self._args)
         return self._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_scalar_rmul(self, other):
-        mat = tuple(a * other for a in self._mat)
+        mat = tuple(a * other for a in self._args)
         return self._new(self.rows, self.cols, mat, copy=False)
 
     def _eval_tolist(self):
-        mat = list(self._mat)
+        mat = list(self._args)
         cols = self.cols
         return [mat[i * cols:(i + 1) * cols] for i in range(self.rows)]
 
@@ -414,7 +417,7 @@ class DenseMatrix(MatrixBase):
     @property
     def dtype(self):
         dtype = None
-        for arg in self._mat:
+        for arg in self._args:
             _dtype = arg.dtype
             if dtype is None or dtype in _dtype:
                 dtype = _dtype
@@ -422,21 +425,19 @@ class DenseMatrix(MatrixBase):
 
     @property
     def domain(self):
-        from sympy.sets.sets import Interval
-
-        from sympy.core.numbers import oo
+        from sympy import Interval, Range, oo, CartesianSpace
         shape = self.shape
         if self.is_integer:
             if self.is_positive:
-                interval = Interval(1, oo, integer=True)
+                interval = Range(1, oo)
             elif self.is_nonnegative:
-                interval = Interval(0, oo, integer=True)
+                interval = Range(0, oo)
             elif self.is_negative:
-                interval = Interval(-oo, -1, integer=True)
+                interval = Range(-oo, 0)
             elif self.is_nonpositive:
-                interval = Interval(-oo, 0, integer=True)
+                interval = Range(-oo, 1)
             else:
-                interval = Interval(-oo, oo, integer=True)
+                interval = Range(-oo, oo)
         elif self.is_extended_real:
             if self.is_positive:
                 interval = Interval(0, oo, left_open=True)
@@ -450,15 +451,18 @@ class DenseMatrix(MatrixBase):
                 interval = Interval(-oo, oo)
         else:
             interval = S.Complexes
-        from sympy.sets.sets import CartesianSpace
         return CartesianSpace(interval, *shape)        
     
-    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self._mat), quick_exit=True)
-    _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self._mat), quick_exit=True)
-    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self._mat), quick_exit=True)
-    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self._mat), quick_exit=True)
-    _eval_is_extended_positive = lambda self: _fuzzy_group((a.is_extended_positive for a in self._mat), quick_exit=True)
-    _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self._mat), quick_exit=True)
+    def split(self, indices):
+        return self.slice(indices, 0, self.shape[0])
+    
+    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self._args), quick_exit=True)
+    _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self._args), quick_exit=True)
+    _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self._args), quick_exit=True)
+    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self._args), quick_exit=True)
+    _eval_is_extended_positive = lambda self: _fuzzy_group((a.is_extended_positive for a in self._args), quick_exit=True)
+    _eval_is_extended_negative = lambda self: _fuzzy_group((a.is_extended_negative for a in self._args), quick_exit=True)
+
 
 def _force_mutable(x):
     """Return a matrix as a Matrix, otherwise return x."""
@@ -504,18 +508,18 @@ class MutableDenseMatrix(DenseMatrix):
         while shape and shape[0] == 1:
             shape = shape[1:]
         if shape:
-            self = Basic.__new__(cls)            
-            self._args = (Tuple(*shape), *flat_list)
+            self = Basic.__new__(cls, shape=tuple(shape))
+            self._args = flat_list
             return self
         return flat_list[0]
 
     @property
-    def _mat(self):
-        return self.args[1:]
+    def shape(self): 
+        return self._assumptions['shape']
     
     @property
-    def shape(self):        
-        return tuple(self._args[0])
+    def kwargs(self): 
+        return {'shape': self.shape}
 
     @property
     def rows(self):
@@ -530,7 +534,7 @@ class MutableDenseMatrix(DenseMatrix):
     
     @property
     def is_number(self):
-        return all(a.is_number for a in self._mat)
+        return all(a.is_number for a in self._args)
 
     def __setitem__(self, key, value):
         """
@@ -575,8 +579,8 @@ class MutableDenseMatrix(DenseMatrix):
         rv = self._setitem(key, value)
         if rv is not None:
             i, j, value = rv
-#             self._mat[i * self.cols + j] = value
-            self._args[i * self.cols + j + 1] = value
+            self._args[i * self.cols + j] = value
+#             self._args[i * self.cols + j + 1] = value
 
     def as_mutable(self):
         return self.copy()
@@ -606,7 +610,7 @@ class MutableDenseMatrix(DenseMatrix):
             raise IndexError("Index out of range: 'i=%s', valid -%s <= i < %s"
                              % (i, self.cols, self.cols))
         for j in range(self.rows - 1, -1, -1):
-            del self._mat[i + j * self.cols]
+            del self._args[i + j * self.cols]
         self.cols -= 1
 
     def col_op(self, j, f):
@@ -629,7 +633,7 @@ class MutableDenseMatrix(DenseMatrix):
         col
         row_op
         """
-        self._mat[j::self.cols] = [f(*t) for t in list(zip(self._mat[j::self.cols], list(range(self.rows))))]
+        self._args[j::self.cols] = [f(*t) for t in list(zip(self._args[j::self.cols], list(range(self.rows))))]
 
     def col_swap(self, i, j):
         """Swap the two given columns of the matrix in-place.
@@ -752,7 +756,7 @@ class MutableDenseMatrix(DenseMatrix):
         zeros
         ones
         """
-        self._mat = [value] * len(self)
+        self._args = [value] * len(self)
 
     def row_del(self, i):
         """Delete the given row.
@@ -779,7 +783,7 @@ class MutableDenseMatrix(DenseMatrix):
                              " < %s" % (i, self.rows, self.rows))
         if i < 0:
             i += self.rows
-        del self._mat[i * self.cols:(i + 1) * self.cols]
+        del self._args[i * self.cols:(i + 1) * self.cols]
         self.rows -= 1
 
     def row_op(self, i, f):
@@ -805,8 +809,8 @@ class MutableDenseMatrix(DenseMatrix):
 
         """
         i0 = i * self.cols
-        ri = self._mat[i0: i0 + self.cols]
-        self._mat[i0: i0 + self.cols] = [f(x, j) for x, j in zip(ri, list(range(self.cols)))]
+        ri = self._args[i0: i0 + self.cols]
+        self._args[i0: i0 + self.cols] = [f(x, j) for x, j in zip(ri, list(range(self.cols)))]
 
     def row_swap(self, i, j):
         """Swap the two given rows of the matrix in-place.
@@ -845,10 +849,11 @@ class MutableDenseMatrix(DenseMatrix):
 
         sympy.simplify.simplify.simplify
         """
-        if isinstance(self._mat, tuple):
-            return self.func(*(_simplify(self._mat[i]) for i in range(len(self._mat))), shape=self.shape)
-        for i in range(len(self._mat)):
-            self._mat[i] = _simplify(self._mat[i], ratio=ratio, measure=measure, rational=rational, inverse=inverse)
+        return self
+        if isinstance(self._args, tuple):
+            return self.func(*(_simplify(self._args[i]) for i in range(len(self._args))), shape=self.shape)
+        for i in range(len(self._args)):
+            self._args[i] = _simplify(self._args[i], ratio=ratio, measure=measure, rational=rational, inverse=inverse)
             
         return self
 
@@ -877,10 +882,10 @@ class MutableDenseMatrix(DenseMatrix):
         i0 = i * self.cols
         k0 = k * self.cols
 
-        ri = self._mat[i0: i0 + self.cols]
-        rk = self._mat[k0: k0 + self.cols]
+        ri = self._args[i0: i0 + self.cols]
+        rk = self._args[k0: k0 + self.cols]
 
-        self._mat[i0: i0 + self.cols] = [f(x, y) for x, y in zip(ri, rk)]
+        self._args[i0: i0 + self.cols] = [f(x, y) for x, y in zip(ri, rk)]
 
     def to_wolfram(self, global_variables):
         from wolframclient.language import wl
@@ -896,14 +901,14 @@ class MutableDenseMatrix(DenseMatrix):
         return cls.rewrite_from_Expr(self)
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         return cls.rewrite_from_Expr(self)
 
     @classmethod
     def rewrite_from_Expr(cls, self):
         if len(self.shape) == 1:
             n = self.shape[0]
-            if isinstance(n, int) or n.is_Number:  
+            if isinstance(n, int) or n.is_Number: 
                 array = []
                 for i in range(n):
                     array.append(self[sympify(i)])                
@@ -912,7 +917,7 @@ class MutableDenseMatrix(DenseMatrix):
 
         i_shape, j_shape = self.shape
         if isinstance(i_shape, int) or i_shape.is_Number:
-            if isinstance(j_shape, int) or j_shape.is_Number:  
+            if isinstance(j_shape, int) or j_shape.is_Number: 
                 array = tuple(tuple(self[sympify(i), sympify(j)] for j in range(j_shape)) for i in range(i_shape))
                 return cls(array)            
         return self
@@ -1501,8 +1506,8 @@ def randMatrix(r, c=None, min=0, max=99, seed=None, symmetric=False,
         if percent == 100:
             return m
         z = int(r * c * (100 - percent) // 100)
-        m._mat[:z] = [S.Zero] * z
-        prng.shuffle(m._mat)
+        m._args[:z] = [S.Zero] * z
+        prng.shuffle(m._args)
 
         return m
 

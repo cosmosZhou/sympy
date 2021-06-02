@@ -16,7 +16,8 @@ from sympy.logic.boolalg import And
 from sympy.polys import apart, PolynomialError, together
 from sympy.series.limitseq import limit_seq
 from sympy.series.order import O
-from sympy.sets.sets import FiniteSet, Complement, Interval, Union
+from sympy.sets.sets import Complement, Interval, Union
+from sympy.sets.finiteset import FiniteSet
 from sympy.simplify import denom
 from sympy.simplify.combsimp import combsimp
 from sympy.simplify.powsimp import powsimp
@@ -1007,7 +1008,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     return Piecewise((self.function._subs(self.variable, a), Contains(a, A // B)), (0, True))
         
     def simplify(self, deep=False, **kwargs):
-        from sympy import Contains
+        from sympy import Contains, Range
         if deep:
             function = self.function
             reps = {}
@@ -1052,7 +1053,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             return self
 
         if not self.limits:
-            if self.function.is_LAMBDA:
+            if self.function.is_Lamda:
                 if len(self.function.limits) == 1 and not self.function.variable.shape:
                     function = self.function.function
                     self = self.func(function, *self.function.limits).simplify(**kwargs)
@@ -1134,8 +1135,8 @@ domain & limit[1] = %s
                 
             if isinstance(domain, Complement):
                 A, B = domain.args
-                if isinstance(A, Interval) and A.is_integer and B in A:
-                    A = self.func(self.function, (x, A.min(), A.max() + 1)).simplify()
+                if A.is_Range and B in A:
+                    A = self.func(self.function, (x, A.start, A.stop)).simplify()
                     if isinstance(B, FiniteSet):
                         B = Add(*[self.function.subs(x, b) for b in B])
                     else:
@@ -1166,8 +1167,8 @@ domain & limit[1] = %s
         if len(limit) == 1:
             x = limit[0]
             domain = x.domain & self.function.domain_defined(x)
-            if domain.is_Interval: 
-                limit = x, domain.min(), domain.max() + 1 
+            if domain.is_Range: 
+                limit = x, domain.start, domain.stop 
         
         if len(limit) > 1:
             x, a, b = limit
@@ -1185,7 +1186,7 @@ domain & limit[1] = %s
                     
                 return self
 
-            universe = Interval(a, b, right_open=True, integer=True)
+            universe = Range(a, b)
             if universe.is_FiniteSet:
                 return self.simplify_finiteset(x, universe)
 
@@ -1269,8 +1270,8 @@ domain & limit[1] = %s
                     piecewise = piecewise0.func(*args)
                     
                     return self.func(piecewise, *self.limits).simplify()
-#                 else:
-#                     return self 
+
+ 
             domain = self.function.domain_nonzero(x)
 
             domain &= universe
@@ -1312,12 +1313,13 @@ domain & limit[1] = %s
                 if self.function.domain_defined(x) in domain:
                     return self.func(self.function, (x,))
             
-            _a, _b = domain.min(), domain.max()
-            if not _b.is_Min:
-                b = _b + 1
-            if not _a.is_Max:
-                a = _a                
-            limit = x, a, b
+            if domain.is_Range:
+                _a, _b = domain.start, domain.stop
+                if not _b.is_Min:
+                    b = _b
+                if not _a.is_Max:
+                    a = _a                
+                limit = x, a, b
         x = limit[0]
 
         function = self.function
@@ -1366,8 +1368,8 @@ domain & limit[1] = %s
 
         return finite_set_sum(s)
     
-    def bisect(self, indices, wrt=None):
-        this = super(Sum, self).bisect(indices, wrt=wrt)
+    def split(self, indices, wrt=None):
+        this = super(Sum, self).split(indices, wrt=wrt)
         if this is not self:
             return this
         
@@ -1376,7 +1378,8 @@ domain & limit[1] = %s
             if len(ab) == 1:
                 universe = ab[0]
             elif len(ab) == 2:
-                universe = Interval(*ab, right_open=True, integer=True)
+                from sympy import Range
+                universe = Range(*ab)
             else:
                 universe = x.domain
                 
@@ -1388,15 +1391,15 @@ domain & limit[1] = %s
         return self
     
     def as_Sum(self):
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
         function = self.function
-        if not function.is_LAMBDA: 
-            function = function.astype(LAMBDA)
+        if not function.is_Lamda: 
+            function = function.astype(Lamda)
 
         limit = function.limits[-1]
         limits = function.limits[:-1]
         if limits:
-            function = LAMBDA(function.function, *limits)
+            function = Lamda(function.function, *limits)
         else:
             function = function.function
 
@@ -1436,7 +1439,9 @@ domain & limit[1] = %s
         return self.function.shape[:-1]
 
     def _pretty(self, p):
-        ascii_mode = not p._use_unicode
+        from sympy.printing.pretty.stringpict import stringPict, prettyForm
+        return prettyForm(self.__str__())
+        ascii_mode = not p._use_unicode        
 
         def asum(hrequired, lower, upper, use_ascii):
 
@@ -1485,8 +1490,7 @@ domain & limit[1] = %s
         f = self.function
 
         prettyF = p._print(f)
-
-        from sympy.printing.pretty.stringpict import stringPict, prettyForm
+        
         if f.is_Add:  # add parens
             prettyF = prettyForm(*prettyF.parens())
 
@@ -1562,7 +1566,7 @@ domain & limit[1] = %s
     def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
+            if not isinstance(domain, list) and not domain.is_boolean:
                 if domain.is_infinite:
                     return
                     
@@ -1584,7 +1588,7 @@ domain & limit[1] = %s
         return self
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if isinstance(self.function, cls):
             sigmar = self.function
             function = sigmar.function
@@ -1593,7 +1597,7 @@ domain & limit[1] = %s
     
     @classmethod
     def rewrite_from_ReducedSum(cls, self):
-        i = self.arg.generate_free_symbol(integer=True)
+        i = self.arg.generate_var(integer=True)
         n = self.arg.shape[-1]
         return Sum[i:n](self.arg[i])
     
@@ -2097,7 +2101,7 @@ class ReducedSum(Function):
         return self.func(self.arg[indices])
         
     def simplify(self, deep=False, **kwargs):
-        if self.arg.is_LAMBDA:
+        if self.arg.is_Lamda:
             if len(self.arg.limits) == 1 and not self.arg.variable.shape:
                 function = self.arg.function
                 self = Sum(function, *self.arg.limits).simplify(**kwargs)
@@ -2126,7 +2130,7 @@ class ReducedSum(Function):
         return self
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if isinstance(self.function, cls):
             sigmar = self.function
             function = sigmar.arg
@@ -2137,8 +2141,8 @@ class ReducedSum(Function):
     def rewrite_from_Sum(cls, self):
         limit, *limits = self.limits
         if limit[0].is_integer:
-            from sympy import LAMBDA
-            sigmar = ReducedSum(LAMBDA(self.function, limit).simplify())
+            from sympy import Lamda
+            sigmar = ReducedSum(Lamda(self.function, limit).simplify())
             if not limits:
                 return sigmar
             return self.func(sigmar, *limits)

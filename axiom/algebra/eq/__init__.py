@@ -1,4 +1,3 @@
-from . import sufficient
 from . import eq
 from . import imply
 from . import gt
@@ -10,3 +9,4 @@ from . import cond
 from . import simplify
 from . import rsolve
 from . import to
+from . import suffice

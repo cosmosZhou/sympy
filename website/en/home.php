@@ -1,7 +1,7 @@
 <div id="body">
 	<h1>What is axiom.top?</h1>
 	<p>
-		<a href="../axiom"> axiom.top</a> is a website for symbolic
+		<a href="../axiom.php"> axiom.top</a> is a website for symbolic
 		semi-mechanized axiomatized theorem-proving system, based on
 		open-source symbolic computation project of sympy and <a
 			href="http://maxima.sourceforge.net"> Maxima </a> , as well as on

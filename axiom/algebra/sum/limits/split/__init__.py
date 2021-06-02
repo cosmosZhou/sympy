@@ -1,1 +1,1 @@
-from . import piecewise, by_parts
+from . import piecewise, by_parts, slice

@@ -1,13 +1,12 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
 
 
 @apply
 def apply(*given):
     less_than, equal = given
-    k, n = axiom.is_LessEqual(less_than)
-    a, b = axiom.is_Equal(equal)
+    k, n = less_than.of(LessEqual)
+    a, b = equal.of(Equal)
     assert a.shape == b.shape
     assert n <= a.shape[0] == b.shape[0]
     
@@ -25,5 +24,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 

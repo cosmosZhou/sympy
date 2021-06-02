@@ -1,7 +1,6 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
@@ -10,7 +9,7 @@ def apply(*given, swap=False, reverse=False):
     if swap:
         f_eq, eq = given
         
-    lhs, rhs = axiom.is_Equal(eq)
+    lhs, rhs = eq.of(Equal)
     assert f_eq.is_Equal
     
     if reverse:
@@ -34,4 +33,4 @@ def prove(Eq):
     Eq << Eq[1].subs(Eq[0])
     
 if __name__ == '__main__':
-    prove()
+    run()

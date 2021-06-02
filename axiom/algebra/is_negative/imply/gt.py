@@ -1,13 +1,12 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(given):
     xy = axiom.is_negative(given)
-    x, y = axiom.is_Substract(xy)
+    x, y = axiom.is_Subtract(xy)
     
     return Greater(y, x)
 
@@ -26,4 +25,4 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()

@@ -23,11 +23,11 @@
 <p>
 	按照箭头方向所指单击即可进入<a
 		href='../axiom/discrete/combinatorics/binomial/theorem.php'>牛顿二项式定理</a>的论证过程，
-	用户也可以直接访问get api: <a href='../axiom/search.php?keyword=binomial'>www.axiom.top/sympy/axiom/search.php?keyword=binomial</a>
+	用户也可以直接访问get api: <a href='../axiom/search.php?keyword=binomial'>www.axiom.top/sympy/php/search.php?keyword=binomial</a>
 	来获取搜索结果。 图形界面和get api同时也支持<a
 		href='http://www.regular-expressions.info/tutorial.html'>正则表达式</a>以及全字(whole
 	word)匹配，比如： <a
-		href='../axiom/search.php?keyword=discrete.*binomial&regularExpression=true'>www.axiom.top/sympy/axiom/search.php?keyword=discrete.*binomial&amp;regularExpression=true</a>
+		href='../axiom/search.php?keyword=discrete.*binomial&regularExpression=true'>www.axiom.top/sympy/php/search.php?keyword=discrete.*binomial&amp;regularExpression=true</a>
 	表示搜索在同时包含discrete和binomial单词的定理。
 </p>
 <hr />
@@ -95,10 +95,16 @@
 <h2>线下使用指南</h2>
 线下使用该工具需要自己搭建本地php网站，具体php安装过程请参考安装部署文档
 <a href='../php installation.docx'>php installation.docx</a>
-。线下使用还必须安装python开发环境。建议使用python3.6版的。安装完python3.6之后需要安装一个python依赖包：
-<br>
-pip install mpmath
-<br>
+。
+在linux环境下使用以下命令安装：<br>
+cd /usr/local<br>
+git clone https://github.com/cosmosZhou/shell.git<br>
+cd shell/php<br>
+make<br>
+sh start.sh port=80 DocumentRoot=/home/github<br>
+DocumentRoot设定为所需的工程(网页)文件夹目录。<br>
+
+线下使用还必须安装python开发环境。建议使用python3.6版的。
 以下介绍python工程的使用方法：
 <br>
 <br>
@@ -126,7 +132,7 @@ pip install mpmath
 
 </li>
 <br>
-<li>打开Chrome或者Edge/IE浏览器，在浏览器地址栏输入：<br> <a href='../axiom'>http://localhost/sympy/axiom/</a>
+<li>打开Chrome或者Edge/IE浏览器，在浏览器地址栏输入：<br> <a href='../axiom'>http://localhost/sympy/axiom.php</a>
 	<br>即可启动软件网站可视化定理库，这样就可以在本地环境下直接访问可视化定理库了
 </li>
 <br>

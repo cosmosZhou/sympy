@@ -1,7 +1,6 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
@@ -12,12 +11,13 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
-    
+
     Eq << apply(x >= 0)
-    
+
     Eq << algebra.is_positive.imply.is_nonnegative.apply(Eq[1])
-    
-    
+
+
 if __name__ == '__main__':
-    prove()
+    run()

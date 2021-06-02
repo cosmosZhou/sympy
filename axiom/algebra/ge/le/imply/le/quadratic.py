@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 def quadratic_coefficient(fx, x):
@@ -17,57 +16,58 @@ def quadratic_coefficient(fx, x):
 @apply
 def apply(*given, quadratic=None):
     greater_than, less_than = given
-    x, m = axiom.is_GreaterEqual(greater_than)
-    _x, M = axiom.is_LessEqual(less_than)
+    x, m = greater_than.of(GreaterEqual)
+    _x, M = less_than.of(LessEqual)
     assert x == _x
     a, b, c = quadratic_coefficient(quadratic, x)
-    
+
     assert a > 0
     return LessEqual(quadratic, Max(a * m * m + b * m + c, a * M * M + b * M + c))
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     m = Symbol.m(real=True)
     M = Symbol.M(real=True)
-    
+
     a = Symbol.a(real=True, positive=True)
     b = Symbol.b(real=True)
     c = Symbol.c(real=True)
 
-    Eq << apply(x >= m, x <= M, quadratic=a * x * x + b * x + c)   
-    
-    x = Symbol.x(x + b / (2 * a))    
-    
+    Eq << apply(x >= m, x <= M, quadratic=a * x * x + b * x + c)
+
+    x = Symbol.x(x + b / (2 * a))
+
     Eq.x_definition = x.this.definition
-    
+
     Eq << Eq.x_definition - Eq.x_definition.rhs.args[1]
-    
+
     Eq.x_original_definition = Eq[-1].reversed
-    
+
     Eq << Eq[0].subs(Eq.x_original_definition)
-    
+
     Eq << Eq[-1] + b / (2 * a)
-    
+
     Eq << Eq[1].subs(Eq.x_original_definition)
-    
+
     Eq << Eq[-1] + b / (2 * a)
-    
+
     Eq << algebra.ge.le.imply.le.square.apply(Eq[-3], Eq[-1])
-    
+
     Eq << Eq[-1].subs(Eq.x_definition)
-    
+
     Eq << Eq[-1] * a
-    
+
     Eq << Eq[-1].this.lhs.expand()
-    
+
     Eq << Eq[-1].this.rhs.expand()
-    
+
     Eq << Eq[-1] - b * b / (4 * a) + c
-    
+
     Eq << Eq[-1].this.rhs.astype(Max)
 
-    
+
 if __name__ == '__main__':
-    prove()
+    run()

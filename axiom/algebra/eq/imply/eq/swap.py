@@ -1,17 +1,16 @@
-from axiom.utility import prove, apply
-from sympy.core.relational import Equal
-from sympy import Symbol, Dummy, Slice, Or, log, Sum
+
+from util import *
 import axiom
-from sympy.concrete.limits import limits_dict
-from sympy.sets.sets import Interval
-from sympy.concrete.expr_with_limits import LAMBDA
-from axiom import algebra, sets
-from sympy.functions.special.tensor_functions import KroneckerDelta
+
+
+
+
+
 
 
 @apply
 def apply(given, x, y):
-    axiom.is_Equal(given)
+    given.of(Equal)
     
     d = Dummy(**y.type.dict)
     this = given._subs(x, d)
@@ -38,5 +37,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

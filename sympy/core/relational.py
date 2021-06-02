@@ -376,7 +376,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
     def solve(self, x):
         from sympy.sets.contains import Contains
         if not x.is_Symbol:
-            _x = self.generate_free_symbol(x.free_symbols, **x.type.dict)
+            _x = self.generate_var(x.free_symbols, **x.type.dict)
             this = self._subs(x, _x)
             domain = _x.domain_conditioned(this)            
             domain = domain._subs(_x, x)
@@ -432,9 +432,9 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         return "%s %s %s" % (p._print(self.lhs), charmap[self.rel_op], p._print(self.rhs))
 
     def domain_conditioned(self, var):
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         domain = var.domain & self.domain_defined(var)
-        if var.shape:
+        if var.shape or var.is_set:
             return
         
         from sympy import solve
@@ -590,7 +590,7 @@ class Equal(Relational):
             if Contains(rhs, lhs.domain).is_BooleanFalse or Contains(lhs, rhs.domain).is_BooleanFalse:
                 return S.false.copy(**options)
 
-            if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.is_set and not rhs.is_set:
+            if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.dtype.is_set and not rhs.dtype.is_set:
                 # see if the difference evaluates
                 if not rhs.is_infinite:
                     dif = (lhs - rhs).simplify()
@@ -935,12 +935,20 @@ class Equal(Relational):
     def __and__(self, other):
         """Overloading for & operator"""
         if other.is_Equal:
-            if self.lhs == other.rhs and self.rhs == other.lhs:
-                return self
-            elif self.lhs == other.lhs and self.rhs == other.rhs:
-                return self
-        elif other.is_ConditionalBoolean:
-            return self.bfn(self.__and__, other)            
+            if self.lhs == other.rhs:
+                eq = Equal(self.rhs, other.lhs)
+                if eq:
+                    return self
+                if eq == False:
+                    return S.false
+                
+            elif self.lhs == other.lhs:
+                eq = Equal(self.rhs, other.rhs)
+                if eq:
+                    return self
+                if eq == False:
+                    return S.false
+                
         elif isinstance(other, (Less, Greater)):
             if set(self.args) == set(other.args):
                 return S.false
@@ -1071,6 +1079,25 @@ class Equal(Relational):
             return
         if not self.lhs.is_set and not var.is_set:
             return Relational.domain_conditioned(self, var)
+
+    def of(self, cls):
+        res = Boolean.of(self, cls)
+        if res is None:
+            if cls.is_Equal:
+                a, b = cls.args
+                cls = Basic.__new__(Equal, b, a)                 
+                res = Boolean.of(self, cls)
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]
+        elif isinstance(res, list):
+            if cls.is_Equal and len(cls.args) == 1:
+                _a, _b = res
+                a, b = self.args
+                if a is _a:
+                    return [_b, _a]
+            
+        return res 
 
     
 Eq = Equal
@@ -1271,6 +1298,7 @@ class Unequal(Relational):
         if not self.lhs.is_set: 
             return Relational.domain_conditioned(self, var)
 
+    of = Equal.of
 
 Ne = Unequal
 Equal.invert_type = Unequal
@@ -1706,10 +1734,14 @@ class GreaterEqual(_Greater):
             if self.lhs == other.rhs:
                 if other.lhs == self.rhs:
                     return Equal(*self.args)
+                if other.lhs < self.rhs:
+                    return S.false
         elif isinstance(other, LessEqual):
             if self.lhs == other.lhs:
                 if self.rhs == other.rhs:
                     return Equal(*self.args)
+                if other.rhs < self.rhs:
+                    return S.false
         if isinstance(other, Less):
             if self.lhs == other.lhs:
                 if self.rhs >= other.rhs:
@@ -1725,7 +1757,7 @@ class GreaterEqual(_Greater):
             if {*self.args} == {*other.args}:
                 return other            
         elif other.is_Contains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if other.rhs.right_open:
                         if self.rhs >= other.rhs.stop:
@@ -1734,7 +1766,7 @@ class GreaterEqual(_Greater):
                         if self.rhs > other.rhs.stop:
                             return S.false           
         elif other.is_NotContains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if other.rhs.left_open and self.rhs > other.rhs.start or \
                     not other.rhs.left_open and self.rhs >= other.rhs.start:
@@ -1902,7 +1934,9 @@ class LessEqual(_Less):
         if other.is_LessEqual:
             if self.lhs == other.rhs:
                 if other.lhs == self.rhs:
-                    return Equal(self.lhs, self.rhs)        
+                    return Equal(self.lhs, self.rhs)
+                if other.lhs > self.rhs:
+                    return S.false   
         elif other.is_Less:
             if self.lhs == other.lhs:
                 if other.rhs <= self.rhs:
@@ -1918,7 +1952,13 @@ class LessEqual(_Less):
                 if other.rhs >= self.rhs:
                     return S.false
         elif other.is_Contains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range:
+                if self.lhs == other.lhs:
+                    if self.rhs < other.rhs.start:
+                        return S.false
+
+                    return other.func(self.lhs, other.rhs.func(S.NegativeInfinity, self.rhs + 1) & other.rhs).simplify()
+            elif other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if other.rhs.left_open:
                         if self.rhs <= other.rhs.start:
@@ -1927,14 +1967,14 @@ class LessEqual(_Less):
                         if self.rhs < other.rhs.start:
                             return S.false           
 
-                    return other.func(self.lhs, other.rhs.func(S.NegativeInfinity, self.rhs, integer=other.rhs.is_integer) & other.rhs).simplify()
+                    return other.func(self.lhs, other.rhs.func(S.NegativeInfinity, self.rhs) & other.rhs).simplify()
                 
         elif other.is_Unequal:
             if {*self.args} == {*other.args}:
                 return Less(*self.args)
             
         elif other.is_NotContains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if other.rhs.right_open and self.rhs < other.rhs.stop or \
                     not other.rhs.right_open and self.rhs <= other.rhs.stop:
@@ -2078,13 +2118,13 @@ class Greater(_Greater):
                 if self.rhs >= other.rhs:
                     return self
         elif other.is_Contains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if self.rhs >= other.rhs.stop:
                             return S.false
                 
         elif other.is_NotContains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs: 
                     if self.rhs >= other.rhs.start:
                         if other.rhs.right_open:
@@ -2137,14 +2177,13 @@ class Greater(_Greater):
         lhs, rhs = self.args        
         if lhs.is_Symbol:
             domain = lhs.domain_assumed
-            if domain and domain.is_Interval:
-                if rhs == domain.min():
-                    return 1 - KroneckerDelta(lhs, rhs)
+            if domain and (domain.is_Range or domain.is_Interval) and rhs == domain.min():
+                return 1 - KroneckerDelta(lhs, rhs)
+                    
         if rhs.is_Symbol:
             domain = rhs.domain_assumed
-            if domain and domain.is_Interval:
-                if domain.max() == lhs:
-                    return 1 - KroneckerDelta(lhs, rhs)            
+            if domain and (domain.is_Range or domain.is_Interval) and domain.max() == lhs:
+                return 1 - KroneckerDelta(lhs, rhs)
 
     def __mul__(self, other):
         if isinstance(other, Greater):
@@ -2254,12 +2293,12 @@ class Less(_Less):
                 if self.rhs <= other.rhs:
                     return self
         elif other.is_Contains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if self.rhs <= other.rhs.start:
                         return S.false
         elif other.is_NotContains:
-            if other.rhs.is_Interval:
+            if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs: 
                     if self.rhs <= other.rhs.stop:
                         if other.rhs.left_open:
@@ -2311,12 +2350,12 @@ class Less(_Less):
         lhs, rhs = self.args        
         if lhs.is_Symbol:
             domain = lhs.domain_assumed
-            if domain and domain.is_Interval:
+            if domain and domain.is_Range:
                 if domain.max() == rhs:
                     return 1 - KroneckerDelta(lhs, rhs)
         if rhs.is_Symbol:
             domain = rhs.domain_assumed
-            if domain and domain.is_Interval:
+            if domain and domain.is_Range:
                 if lhs == domain.min():
                     return 1 - KroneckerDelta(lhs, rhs)
 

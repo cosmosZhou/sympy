@@ -1,5 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 # given: x != y
 # x not in {y}
@@ -7,10 +6,10 @@ import axiom
 
 @apply
 def apply(given):
-    x, complement = axiom.is_Contains(given)
-    U, y = axiom.is_Complement(complement)
+    x, complement = given.of(Contains)
+    U, y = complement.of(Complement)
     assert U.is_UniversalSet
-    y = axiom.is_FiniteSet(y)
+    y = y.of(FiniteSet)
     return Unequal(x, y)
 
 @prove
@@ -24,5 +23,5 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given, divisor=None):
-    lhs, rhs = axiom.is_Equal(given)    
+    lhs, rhs = given.of(Equal)    
     return Equal(lhs / divisor, rhs / divisor)
 
 
@@ -22,5 +21,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

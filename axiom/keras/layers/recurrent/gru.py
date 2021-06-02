@@ -1,10 +1,4 @@
-from axiom.utility import prove, apply
-
-from sympy import *
-from axiom import algebra
-
-from tensorflow.nn.recurrent.gru import GRU
-from tensorflow.nn import sigmoid
+from util import *
 
 
 @apply
@@ -13,11 +7,11 @@ def apply(x, Wx, Wh, b):
     t = Symbol.t(integer=True, positive=True)
     
     d = h[t - 1].shape[-1]
-    Wxz = Symbol.W_xz(Wx[:, :d])
+    Wxz = Symbol.W_xz(Wx[:,:d])
     Wxr = Symbol.W_xr(Wx[:, d:2 * d])
     Wxh = Symbol.W_xh(Wx[:, -d:])
      
-    Whz = Symbol.W_hz(Wh[:, :d])
+    Whz = Symbol.W_hz(Wh[:,:d])
     Whr = Symbol.W_hr(Wh[:, d:2 * d])
     Whh = Symbol.W_hh(Wh[:, -d:])
      
@@ -49,15 +43,16 @@ def prove(Eq):
     
     t = Eq[-1].lhs.index
     
-    Eq << Eq[0].this.rhs.definition
+    Eq << Eq[0].this.rhs.defun()
          
     Eq <<= Eq[-1][t - 1], Eq[-1][t]
     
-    Eq << Eq[-1].this.rhs.definition
+    Eq << Eq[-1].this.rhs.defun()
     
     Eq << Eq[-1].subs(Eq[-3].reversed)
     
     Eq << Eq[-1].subs(*(Eq[i].reversed for i in range(1, 13)))
 
+
 if __name__ == '__main__':
-    prove()
+    run()

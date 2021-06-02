@@ -26,7 +26,7 @@ PRECEDENCE = {
 PRECEDENCE_VALUES = {
     "Equivalent": PRECEDENCE["Xor"],
     "Xor": PRECEDENCE["Xor"],
-    "Sufficient": PRECEDENCE["Xor"],
+    "Suffice": PRECEDENCE["Xor"],
     "Or": PRECEDENCE["Or"],
     "And": PRECEDENCE["And"],
     "Add": PRECEDENCE["Add"],

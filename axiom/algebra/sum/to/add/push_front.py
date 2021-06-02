@@ -1,17 +1,13 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra, sets
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
+from util import *
 
 
 @apply
 def apply(self):
-    
-    function, *limits = axiom.is_Sum(self)
+    import axiom 
+    function, *limits = self.of(Sum)
     i, a, b = axiom.limit_is_Interval(limits)
     front = function._subs(i, a - 1)
-        
+#     b >= a => b >= a - 1
     return Equal(self, Sum[i:a - 1:b](function) - front, evaluate=False)
 
 
@@ -26,9 +22,9 @@ def prove(Eq):
     
     Eq << apply(Sum[i:1:n](f(i) + h(i)))
 
-    Eq << Eq[-1].this.rhs.find(Sum).bisect({0})
+    Eq << Eq[-1].this.rhs.find(Sum).split({0})
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 

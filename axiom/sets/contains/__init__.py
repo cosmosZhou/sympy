@@ -2,7 +2,10 @@ from . import to
 from . import imply
 from . import given
 from . import contains
-from . import sufficient
 from . import subset
-from . import forall
+from . import all
 from . import eq
+from . import suffice
+from . import sub
+from . import negate
+from . import add

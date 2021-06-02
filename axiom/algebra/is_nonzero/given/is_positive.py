@@ -1,22 +1,20 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(given):
-    x = axiom.is_nonzero(given)    
+    x = given.of(Unequal[0])
     return x > 0
 
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)    
+    from axiom import algebra
+    a = Symbol.a(real=True)
     Eq << apply(Unequal(a, 0))
-    
+
     Eq << algebra.is_positive.imply.is_nonzero.apply(Eq[1])
-    
+
 
 if __name__ == '__main__':
-    prove()
+    run()

@@ -1,17 +1,10 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import sets
-# given: x != y
-# x not in {y}
+from util import *
 
 
 @apply
 def apply(given):
-    x, R = axiom.is_Contains(given)
-    assert R.is_Interval
-    assert R.start == 0
-    assert R.stop == oo
+    x, R = given.of(Contains)
+    [*_] = R.of(Interval[0, Infinity])
     assert x.is_complex
     return GreaterEqual(x, 0)
 
@@ -24,9 +17,8 @@ def prove(Eq):
     Eq << ~Eq[1]
     
     Eq <<= Eq[-1] & Eq[0]
-    
         
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,24 +1,25 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
+
 
 @apply
 def apply(fraction):
-    x = axiom.is_FractionalPart(fraction)
-     
+    x = fraction.of(FractionalPart)
+
     return Equal(fraction, x + ceiling(-x))
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     Eq << apply(frac(x))
-    
-    Eq << Eq[-1].this.lhs.definition
-    
-    Eq << Eq[-1].this.rhs.definition
-    
-    Eq << Eq[-1].this.rhs.args[1].definition
-    
+
+    Eq << Eq[-1].this.lhs.apply(algebra.frac.to.add)
+
+    Eq << Eq[-1].this.rhs.apply(algebra.ceiling.to.add.frac)
+
+    Eq << Eq[-1].this.find(FractionalPart).apply(algebra.frac.to.add)
+
 if __name__ == '__main__':
-    prove()
+    run()

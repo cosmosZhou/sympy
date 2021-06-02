@@ -151,12 +151,6 @@ class Transpose(MatrixExpr):
 
         return self
 
-    @property
-    def definition(self):
-        definition = self.arg.definition
-        if definition is not None:
-            return definition.T
-
     def _eval_domain_defined(self, x):
         domain = MatrixExpr._eval_domain_defined(self, x)
         for arg in self.args:

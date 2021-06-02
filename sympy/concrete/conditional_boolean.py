@@ -78,11 +78,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
 
         return funcs, function
 
-    def combine_clauses(self, rhs):
-        func = []
-        func.append([self.func, self.limits])
-        return None, func, self.function, rhs
-
     def apply(self, axiom, *args, **kwargs):
         given = self
         
@@ -121,10 +116,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
 
     def __neg__(self):
         return self.this.function.__neg__()
-
-    @property
-    def definition(self):
-        return self.this.function.definition
 
     def limits_include(self, eq):
         variables = self.variables_set
@@ -229,81 +220,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     def __bool__(self):
         return False
 
-    def subs(self, *args, simplify=True, **kwargs):
-        args = tuple(map(sympify, args))
-        
-        def _subs_with_Equality(limits, old, new):
-            _limits = []
-            for limit in limits:
-                x, *domain = limit
-                if not domain:
-                    ...
-                elif len(domain) == 1:
-                    domain, *_ = domain
-                    if domain.is_set or not old._has(x):
-                        limit = (x, domain._subs(old, new))
-                else: 
-                    _domain = []
-                    for expr in domain:
-                        _domain.append(expr._subs(old, new))
-                    limit = (x, *_domain)
-                _limits.append(limit)
-            return _limits
-
-        clue = None
-        if len(args) == 1:
-            clue, funcs, lhs, rhs = self.combine_clauses(args[0])
-            function = lhs.subs(rhs, simplify=simplify)
-            if not clue:
-                clue = function.clue
-                if not clue and function == lhs:
-                    clue = 'equivalent'
-
-            for func, limits in funcs[:-1]:
-                if rhs.is_Equal:
-                    limits = _subs_with_Equality(limits, *rhs.args)
-                function = func(function, *limits).simplify()
-            func, limits = funcs[-1]
-            if rhs.is_Equal:
-                limits = _subs_with_Equality(limits, *rhs.args)
-        else:
-            func = self.func
-#             limits = self.limits
-            limits = []          
-            for x, *ab in self.limits:
-                if x.is_Indexed or x.is_Slice:
-                    indices = tuple(index._subs(*args, **kwargs) for index in x.indices)
-                    if x.indices != indices:
-                        x = x.func(x.base, *indices)                
-                limits.append((x, *(e._subs(*args, **kwargs) for e in ab)))   
-            
-            if all(arg.is_Boolean for arg in args):
-                function = self.function.subs(*args, **kwargs)
-                clue = function.clue
-            else:
-                n, n1 = args
-                if self.plausible:
-                    function = self.function._subs(n, n1, **kwargs)
-                    if n1._has(n):
-                        assumptions = {'plausible':True}
-                    else:
-                        assumptions = {'given': self}
-                    eq = self.func(function, *limits, **assumptions)
-                    if not n1._has(n):
-                        return eq.simplify()
-                    return eq
-                else:
-                    if n.is_symbol and n1 in n.domain:
-                        function = self.function._subs(n, n1, **kwargs)
-                    else:
-                        function = self.function.subs(n, n1, **kwargs)
-        kwargs = {}
-
-        if function.is_BooleanAtom:
-            return function
-
-        return func(function, *limits, **kwargs).simplify()
-
     def simplify(self, deep=False):
         from sympy import S
         if self.function.func == self.func:
@@ -382,8 +298,9 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
         for i, (x, *domain) in enumerate(self.limits):
             if len(domain) == 1:
                 domain = domain[0]
-                if domain.is_FiniteSet: 
-                    return self.func(self.finite_aggregate(x, domain), *self.limits_delete(x)).simplify()
+                if domain.is_FiniteSet and len(domain) == 1:
+                    if len(self.limits) == 1: 
+                        return self.func(self.finite_aggregate(x, domain), *self.limits_delete(x)).simplify()
                 if domain.is_Contains:
                     if domain.lhs == x:
                         domain = domain.rhs
@@ -524,13 +441,13 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                         if x.is_BlockMatrix:
                             flat_list = x.args
                         else:
-                            flat_list = x._mat
+                            flat_list = x._args
                             
                         for arg in flat_list[:0:-1]:
                             limits.append((arg,))
                         limits.append((flat_list[0], *ab))
                     else:
-                        for arg in x._mat[::-1]:
+                        for arg in x._args[::-1]:
                             limits.append((arg,))
                     continue
 

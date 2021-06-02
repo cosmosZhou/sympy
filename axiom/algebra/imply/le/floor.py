@@ -1,8 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, sets
-import axiom
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
+from util import *
 
 
 @apply
@@ -22,5 +18,5 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 

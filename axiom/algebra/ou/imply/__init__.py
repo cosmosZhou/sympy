@@ -6,7 +6,7 @@ from . import lt
 from . import ge
 from . import gt
 from . import ne
-from . import forall
-from . import sufficient
+from . import all, any
 from . import et
-from . import exists_ou
+from . import any_ou
+from . import suffice

@@ -1,10 +1,9 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 
 @apply
 def apply(piecewise, additive=None):
-    ec = axiom.is_Piecewise(piecewise)
+    ec = piecewise.of(Piecewise)
     ec = [(e + additive, c)for e, c in ec]
      
     return Equal(piecewise, Add(piecewise.func(*ec), -additive))
@@ -26,4 +25,4 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[1].astype(Add)
     
 if __name__ == '__main__':
-    prove()
+    run()

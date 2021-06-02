@@ -1,2 +1,2 @@
 from . import eq
-from . import forall_eq
+from . import all_eq

@@ -1,2 +1,2 @@
 from . import imply, given
-from . import sufficient
+from . import suffice

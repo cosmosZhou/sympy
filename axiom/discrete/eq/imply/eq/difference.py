@@ -1,12 +1,11 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given, *limits):    
-    lhs, rhs = axiom.is_Equal(given)
+    lhs, rhs = given.of(Equal)
     
     lhs = Difference(lhs, *limits)
     rhs = Difference(rhs, *limits)
@@ -27,5 +26,5 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0])
 
 if __name__ == '__main__':
-    prove()
+    run()
 

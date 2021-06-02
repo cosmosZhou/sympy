@@ -243,7 +243,7 @@ class BlockMatrix(MatrixExpr):
     def _eval_determinant(self):
         from sympy.concrete.products import Product
         if self.is_upper or self.is_lower:
-            i = self.generate_free_symbol(integer=True)
+            i = self.generate_var(integer=True)
             return Product(self[i, i], (i, 0, self.cols)).doit()
 
     @property
@@ -289,11 +289,10 @@ class BlockMatrix(MatrixExpr):
         is_diagonal
         is_lower_hessenberg
         """
-        from sympy.sets.sets import Interval
-        from sympy.functions.elementary.extremum import Min
+        from sympy import Range, Min
 
-        i = self.generate_free_symbol(domain=Interval(0, Min(self.rows, self.cols - 1), right_open=True, integer=True))
-        j = i.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(i + 1, self.cols, right_open=True, integer=True))
+        i = self.generate_var(domain=Range(0, Min(self.rows, self.cols - 1)))
+        j = i.generate_var(free_symbols=self.free_symbols, domain=Range(i + 1, self.cols))
         assert i < j
         return self[i, j] == 0
 
@@ -339,11 +338,10 @@ class BlockMatrix(MatrixExpr):
         is_diagonal
         is_upper_hessenberg
         """
-        from sympy.sets.sets import Interval
-        from sympy.functions.elementary.extremum import Min
+        from sympy import Range, Min
 
-        j = self.generate_free_symbol(domain=Interval(0, Min(self.cols, self.rows - 1), right_open=True, integer=True))
-        i = j.generate_free_symbol(free_symbols=self.free_symbols, domain=Interval(j + 1, self.rows, right_open=True, integer=True))
+        j = self.generate_var(domain=Range(0, Min(self.cols, self.rows - 1)))
+        i = j.generate_var(free_symbols=self.free_symbols, domain=Range(j + 1, self.rows))
         assert i > j
         return self[i, j] == 0
 
@@ -547,7 +545,7 @@ class BlockMatrix(MatrixExpr):
         return self
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if self.function.is_Piecewise: 
             piecewise = self.function
             i = self.variables[-1]

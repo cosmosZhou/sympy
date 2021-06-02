@@ -1,3 +1,3 @@
 from . import imply
 from . import cond
-from . import given
+from . import given, equivalent

@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra
+from util import *
+
 import axiom
 
 def mul_to_derivative(self):
@@ -31,5 +30,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,15 +1,11 @@
-from axiom.utility import prove, apply
-from sympy import *
-import axiom
-
-from axiom import sets, algebra
+from util import *
 
 
 @apply
 def apply(given, f):
-    x, s = axiom.is_Contains(given)
+    x, s = given.of(Contains)
     if x.is_given:
-        z = s.generate_free_symbol(**x.type.dict)
+        z = s.generate_var(**x.type.dict)
         S = imageset(z, f(z), s)
     else:
         S = imageset(x, f(x), s)
@@ -18,32 +14,33 @@ def apply(given, f):
 
 @prove
 def prove(Eq):
+    from axiom import sets, algebra
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True, given=True)
     f = Function.f(integer=True)
     s = Symbol.s(etype=dtype.integer)
-    
+
     Eq << apply(Contains(y, s), f=f)
-    
+
     S = Symbol.S(Eq[1].rhs)
-    
+
     Eq << S.this.definition
-    
+
     Eq << Eq[1].subs(Eq[-1].reversed)
-    
-    Eq.forall_contains = ForAll[x:s](Contains(f(x), S), plausible=True)
-    
-    Eq << Eq.forall_contains.this.function.rhs.definition
-    
+
+    Eq.all_contains = ForAll[x:s](Contains(f(x), S), plausible=True)
+
+    Eq << Eq.all_contains.this.function.rhs.definition
+
     Eq << Eq[-1].this.function.apply(sets.contains.given.subset, simplify=False)
-    
-    Eq << sets.forall_subset.given.subset.lhs.apply(Eq[-1])
-        
-    Eq << algebra.forall.imply.ou.subs.apply(Eq.forall_contains, x, y)
-    
+
+    Eq << sets.all_subset.given.subset.lhs.apply(Eq[-1])
+
+    Eq << algebra.all.imply.ou.subs.apply(Eq.all_contains, x, y)
+
     Eq << algebra.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
 
-    
+
 if __name__ == '__main__':
-    prove()
+    run()
 

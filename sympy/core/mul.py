@@ -1065,7 +1065,7 @@ class Mul(Expr, AssocOp):
             if len(x.shape) == 1 and len(A.shape) == 2:
                 from sympy import Product, det
                 n = x.shape[0]
-                i = x.generate_free_symbol(integer=True)
+                i = x.generate_var(integer=True)
                 return det(A) * Product[i:n](x[i])
 
     def _eval_difference_delta(self, n, step):
@@ -2092,7 +2092,7 @@ class Mul(Expr, AssocOp):
             return Expr.simplify(self, deep=True, **kwargs)
         
         for i, arg in enumerate(self.args):
-            if arg.is_LAMBDA:
+            if arg.is_Lamda:
                 _arg = arg.simplify(squeeze=True)
                 if _arg != arg:
                     args = [*self.args]
@@ -2227,7 +2227,7 @@ class Mul(Expr, AssocOp):
                 for limit in it.limits:
                     x = limit[0]
                     if x in var_list:
-                        _x = x.generate_free_symbol(free_symbols, integer=x.is_integer)
+                        _x = x.generate_var(free_symbols, integer=x.is_integer)
                         it = it.limits_subs(x, _x)
 
                 limits += it.limits
@@ -2244,9 +2244,9 @@ class Mul(Expr, AssocOp):
             return self.func(*(arg.T for arg in self.args))
 
     def domain_nonzero(self, x):
-        from sympy.sets.sets import Interval
-        from sympy.core.numbers import oo
-        domain = Interval(-oo, oo, integer=x.is_integer)
+        from sympy import Interval, Range
+        from sympy.core.numbers import oo        
+        domain = Range(-oo, oo) if x.is_integer else Interval(-oo, oo)
         for arg in self.args:
             domain &= arg.domain_nonzero(x)
         return domain
@@ -2544,9 +2544,9 @@ class Mul(Expr, AssocOp):
                     b.append(Pow(item.base, -item.exp))
             elif item.is_Rational and item is not S.Infinity:
                 if item.p != 1:
-                    a.append( Rational(item.p) )
+                    a.append(Rational(item.p))
                 if item.q != 1:
-                    b.append( Rational(item.q) )
+                    b.append(Rational(item.q))
             else:
                 a.append(item)
 
@@ -2575,8 +2575,8 @@ class Mul(Expr, AssocOp):
             return prettyForm.__mul__(*a)
         else:
             if len(a) == 0:
-                a.append( p._print(S.One) )
-            return prettyForm.__mul__(*a)/prettyForm.__mul__(*b)
+                a.append(p._print(S.One))
+            return prettyForm.__mul__(*a) / prettyForm.__mul__(*b)
 
     @property
     def is_lower(self):
@@ -2651,7 +2651,7 @@ class Mul(Expr, AssocOp):
         return cls(sin(self.arg), 1 / cos(self.arg))
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if isinstance(self.function, cls):
             first, second = self.function.as_two_terms()
             first = self.func(first, *self.limits).simplify(squeeze=True)
@@ -2728,6 +2728,21 @@ class Mul(Expr, AssocOp):
 
     def squeeze(self):
         return self.func(*[t for t in self.args if not t.is_OneMatrix])
+
+    def of_NegatePattern(self):
+        if len(self.args) == 2:
+            negativeOne, basic = self.args
+            return negativeOne == -1 and basic is Basic
+        
+    def extract(self, cls):
+        res = Expr.extract(self, cls)
+        if isinstance(res, list):            
+            if cls.of_NegatePattern():
+                return Mul(*res)        
+        elif res is None:
+            if cls.is_Mul and cls.of_NegatePattern() and self._coeff_isneg():
+                return -self 
+        return res
 
     
 mul = AssocOpDispatcher('mul')

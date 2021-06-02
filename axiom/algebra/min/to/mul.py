@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(self): 
-    args = axiom.is_Min(self)
+    args = self.of(Min)
     
     common_factors = None
      
@@ -45,4 +44,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

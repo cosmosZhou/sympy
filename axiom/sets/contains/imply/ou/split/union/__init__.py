@@ -1,20 +1,23 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets
 
 
-@apply
-def apply(given, simplify=True):
-    assert given.is_Contains
-    e, domain = given.args
+
+def split(self, simplify=True):
+    assert self.is_Contains
+    e, domain = self.args
     
-    eqs = [Contains(e, s) for s in axiom.is_Union(domain)]
+    eqs = [Contains(e, s) for s in domain.of(Union)]
         
     if simplify:
         eqs = [eq.simplify() for eq in eqs]
         
     return Or(*eqs)
+    
+    
+@apply(simplify=False)
+def apply(self, simplify=True):
+    return split(self, simplify=simplify)
 
 
 @prove
@@ -30,6 +33,6 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 
 from . import two

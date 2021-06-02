@@ -1,16 +1,15 @@
-from sympy.core.relational import Equal
-from axiom.utility import prove, apply
-from sympy.core.symbol import dtype
 
-from sympy import Symbol
+
+
+from util import *
 import axiom
-from sympy.sets.sets import FiniteSet
+
 # given : A & B = A | B => A = B
 
 
 @apply
 def apply(given):
-    A, B = axiom.is_Equal(given)
+    A, B = given.of(Equal)
     return Equal(FiniteSet(A), FiniteSet(B))
 
 
@@ -24,5 +23,5 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0])
 
 if __name__ == '__main__':
-    prove()
+    run()
 

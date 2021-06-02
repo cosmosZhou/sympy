@@ -1,14 +1,13 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, calculus
+
 
 
 @apply
 def apply(given):
     dfx = axiom.is_positive(given)
     
-    fx, *limits = axiom.is_Derivative(dfx)
+    fx, *limits = dfx.of(Derivative)
     
     assert len(limits) == 1
     limit = limits[0]
@@ -17,9 +16,8 @@ def apply(given):
     
     domain = x.domain
     
-    assert domain.is_Interval
     assert not domain.left_open
-    a = domain.start
+    a, b = domain.of(Interval)
     
     return GreaterEqual(fx, fx._subs(x, a))
 
@@ -37,5 +35,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

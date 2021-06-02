@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 def limits_complement(limits, _limits, function=None): 
@@ -21,9 +20,9 @@ def limits_complement(limits, _limits, function=None):
 
 @apply
 def apply(self):
-    A, B = axiom.is_Substract(self)
-    function, *limits_a = axiom.is_Sum(A)
-    _function, *limits_b = axiom.is_Sum(B)    
+    A, B = axiom.is_Subtract(self)
+    function, *limits_a = A.of(Sum)
+    _function, *limits_b = B.of(Sum)    
     assert function == _function
     
     limits = limits_complement(limits_a, limits_b, function=function)
@@ -42,4 +41,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

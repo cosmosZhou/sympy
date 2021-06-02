@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets, algebra
+
 
 
 @apply
 def apply(imply, index=None):
-    eqs = axiom.is_Or(imply, copy=False)
+    eqs = imply.of(Or)
     assert isinstance(index, slice)
     
     return Or(*eqs[index])
@@ -28,5 +27,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 

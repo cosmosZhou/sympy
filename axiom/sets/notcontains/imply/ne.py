@@ -1,6 +1,5 @@
-from axiom.utility import prove, apply
-from sympy import *
-from axiom import sets
+from util import *
+
 import axiom
 
 
@@ -9,7 +8,7 @@ import axiom
 def apply(given, index=0):
     assert given.is_NotContains
     e, s = given.args
-    s = axiom.is_FiniteSet(s, size=None)
+    s = s.of(FiniteSet)
     return Unequal(e, s[index])
 
 
@@ -27,5 +26,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

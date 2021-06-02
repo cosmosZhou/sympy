@@ -1,7 +1,6 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 
-from axiom import sets
+
 
 
 # given: A ⊂ B
@@ -16,18 +15,19 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import sets
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
     Eq << apply(Subset(A, B))
 
     Eq << sets.subset.imply.eq.complement.apply(Eq[0])
-    
+
     Eq << ~Eq[1]
-    
+
     Eq << Eq[-1] + Eq[-2].reversed
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

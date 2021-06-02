@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets, algebra
+from util import *
+
 import axiom
 
 
 @apply(given=None)
 def apply(given):
-    x, fx = axiom.is_Equal(given)
+    x, fx = given.of(Equal)
     if not x.is_Symbol:
         x, fx = fx, x
         
@@ -24,5 +23,5 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.rhs.simplify()
     
 if __name__ == '__main__':
-    prove()
+    run()
 

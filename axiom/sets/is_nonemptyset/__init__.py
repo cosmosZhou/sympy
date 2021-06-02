@@ -1,4 +1,4 @@
 from . import imply
 from . import subset
-from . import forall
+from . import all
 from . import given

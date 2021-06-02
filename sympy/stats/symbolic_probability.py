@@ -222,11 +222,11 @@ class Probability(Expr):
                                 expr.append(eq)
                                 continue                                                       
                                                                                                   
-                            lhs = lhs.bisect(Slice[start:stop])
+                            lhs = lhs.split(Slice[start:stop])
                             if not lhs.is_BlockMatrix:
                                 hit = True
                             else:
-                                rhs = rhs.bisect(Slice[start:stop])                                
+                                rhs = rhs.split(Slice[start:stop])                                
                                 for lhs, rhs in zip(lhs.args, rhs.args):
                                     eq = Equal(lhs, rhs)
                                     if lhs == given:
@@ -243,11 +243,11 @@ class Probability(Expr):
         elif condition.is_Equal:
             if given.is_Slice:
                 start, stop = given.index
-                lhs, rhs = condition.lhs.bisect(Slice[start:stop]), condition.rhs.bisect(Slice[start:stop])
+                lhs, rhs = condition.lhs.split(Slice[start:stop]), condition.rhs.split(Slice[start:stop])
                 assert lhs.is_BlockMatrix and rhs.is_BlockMatrix                
                 condition = And(*(condition.func(l, r) for l, r in zip(lhs.args, rhs.args)))
             elif given.is_Indexed:
-                condition = condition.bisect(Slice[given.indices])
+                condition = condition.split(Slice[given.indices])
             if condition.is_And:
                 return cls.marginalize_condition(condition, given)
             

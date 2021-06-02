@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
-def apply(self, simplify=True):    
+def apply(self, simplify=True):
     if isinstance(self.function, Mul):
         coefficient = []
         factors = []
@@ -23,24 +22,26 @@ def apply(self, simplify=True):
                         coefficient.append(base ** exp)
             else:
                 factors.append(arg)
-                
+
         if coefficient:
-            return Equal(self, Mul(*coefficient, self.func(Mul(*factors), *self.limits)))                              
+            return Equal(self, Mul(*coefficient, self.func(Mul(*factors), *self.limits)))
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-    
+
     C = Symbol.C(etype=dtype.integer, given=True)
-    
+
     f = Function.f(real=True)
     h = Function.h(real=True)
-    
+
     Eq << apply(Sum[i:C](f(i) * h(j)))
 
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
 if __name__ == '__main__':
-    prove()
+    run()
 from . import st

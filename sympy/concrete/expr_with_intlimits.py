@@ -324,6 +324,10 @@ class ExprWithIntLimits(ExprWithLimits):
                         return r"%s \in %s" % tuple([p._print(i) for i in limit])
                 else:
                     x, a, b = limit
+                    if b.is_set:
+                        assert a.is_boolean
+                        return r"%s \in %s \left|%s\right." % (p._print(x), p._print(b), p._print(a))
+                        
                     if x.is_integer:
                         if b.is_Add and b.args[0].is_One:
                             b -= 1                            

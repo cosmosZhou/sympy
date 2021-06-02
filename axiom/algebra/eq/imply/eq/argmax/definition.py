@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(given): 
-    x0, argmax_fx = axiom.is_Equal(given)
-    function, limit = axiom.is_ArgMax(argmax_fx)
+    x0, argmax_fx = given.of(Equal)
+    function, limit = argmax_fx.of(ArgMax)
     x = limit[0]
     fx0 = function._subs(x, x0)
     return Equal(fx0, MAX(function, limit))
@@ -22,4 +21,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

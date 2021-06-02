@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
 def apply(given, x):
-    lhs, rhs = axiom.is_Equal(given)
+    lhs, rhs = given.of(Equal)
     fx = lhs - rhs
     assert fx._has(x)
     if x.is_Symbol:
@@ -41,4 +40,4 @@ def prove(Eq):
     
         
 if __name__ == '__main__':
-    prove()
+    run()

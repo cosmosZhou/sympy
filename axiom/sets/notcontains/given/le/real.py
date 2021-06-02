@@ -1,15 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets, algebra
-import axiom
+from util import *
 
 
-# given e not in S
 @apply
 def apply(given):
     assert given.is_NotContains
     n, interval = given.args
-    a, b = axiom.is_Interval(interval, integer=False)
+    a, b = interval.of(Interval)
     assert b.is_Infinity
     return LessEqual(n, a)
 
@@ -24,7 +20,8 @@ def prove(Eq):
     Eq << ~Eq[0]
     
     Eq <<= Eq[-1] & Eq[1]
+
     
 if __name__ == '__main__':
-    prove()
+    run()
 

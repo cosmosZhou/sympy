@@ -1,6 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
-from tensorflow.nn import softmax
+from util import *
 
 
 @apply
@@ -34,4 +32,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()

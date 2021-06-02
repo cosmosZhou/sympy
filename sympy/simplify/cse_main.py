@@ -709,7 +709,7 @@ def cse(exprs, symbols=None, optimizations=None, postprocess=None,
     temp = []
     for e in exprs:
         if isinstance(e, (Matrix, ImmutableMatrix)):
-            temp.append(Tuple(*e._mat))
+            temp.append(Tuple(*e._args))
         elif isinstance(e, (SparseMatrix, ImmutableSparseMatrix)):
             temp.append(Tuple(*e._smat.items()))
         else:

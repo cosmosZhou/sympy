@@ -1,2 +1,2 @@
 from . import cond
-from . import sufficient
+from . import suffice

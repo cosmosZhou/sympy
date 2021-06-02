@@ -1,6 +1,6 @@
 from sympy.logic.boolalg import Boolean, And, Or
 from sympy.concrete.conditional_boolean import ConditionalBoolean
-from sympy.sets.sets import FiniteSet
+from sympy.sets.finiteset import FiniteSet
 from sympy.concrete.expr_with_limits import ExprWithLimits
 
 
@@ -345,8 +345,8 @@ class Exists(ConditionalBoolean):
                                 domain = Complement(A, B, evaluate=False)
                                 return self.func(self.function, (i, domain))
                             domain = A
-                            if isinstance(domain, Interval) and domain.is_integer:
-                                return self.func(self.function, (i, domain.min(), domain.max() + 1))
+                            if domain.is_Range:
+                                return self.func(self.function, (i, domain.start, domain.stop))
                             return self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
@@ -383,6 +383,9 @@ class Exists(ConditionalBoolean):
 
     def _latex(self, p):
         latex = p._print(self.function)
+        if self.function.is_LatticeOp:
+            latex = r"\left(%s\right)" % latex
+        
 
         if all(len(limit) == 1 for limit in self.limits):
             limit = ', '.join(var.latex for var, *_ in self.limits)
@@ -395,7 +398,8 @@ class Exists(ConditionalBoolean):
                 elif len(args) == 1:
                     limit = var.domain_latex(args[0])
                 else:
-                    limit = var.domain_latex(Interval(*args, right_open=var.is_integer, integer=var.is_integer))
+                    from sympy import Range
+                    limit = var.domain_latex((Range if var.is_integer else Interval)(*args))
 
                 limits.append(limit)
 

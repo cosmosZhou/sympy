@@ -6,31 +6,30 @@ from . import lt
 from . import is_zero
 from . import ne
 from . import ou
-from . import exists_et, exists_ou
-from . import exists
+from . import any_et, any_ou
+from . import any
 from . import le
 from . import is_nonnegative
 from . import is_nonpositive
-from . import forall
-from . import sufficient
+from . import all
 from . import necessary
 from . import equivalent
 from . import cond
 from . import et
 from . import imply
-from . import forall_lt
-from . import forall_le
-from . import forall_exists
+from . import all_lt
+from . import all_le
+from . import all_any
 from . import is_positive
 from . import is_negative
-from . import forall_gt
-from . import forall_ge
-from . import exists_forall
+from . import all_gt
+from . import all_ge
+from . import any_all
 from . import is_even
 from . import is_odd
-from . import forall_ou
-from . import forall_et
-from . import exists_eq, forall_eq, forall_exists_eq
+from . import all_ou
+from . import all_et
+from . import any_eq, all_eq, all_any_eq
 from . import ceiling
 from . import frac
 from . import piecewise
@@ -42,7 +41,14 @@ from . import lamda
 from . import product
 from . import floor
 from . import min
-from . import add
+from . import add, mod
 from . import bool
 from . import pow, square, abs
 from . import subs
+from . import suffice
+from . import norm
+from . import slice
+from . import eq_piecewise
+from . import mul_piecewise
+from . import eq_maximize
+from . import eq_minimize

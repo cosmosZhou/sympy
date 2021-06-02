@@ -585,34 +585,78 @@ class ManagedProperties(BasicMeta):
         else:
             limits = [(limits,)]            
                     
-        def operator(*args, **kwargs):
-            return self(*args, *limits, **kwargs)
-
-        return operator
+#         def operator(*args, **kwargs):
+#             return self(*args, *limits, **kwargs)# 
+#         return operator
+        return Operator(self, limits)
 
     def __iter__(self):
         raise TypeError
 
 
 class Operator:
+    is_Basic = False
+    is_Operator = True
+    is_Number = False
+    is_Wanted = False
+    
     def __init__(self, cls, limits):
         self.cls = cls
         self.limits = limits
+        self._basic = None
         
     def __call__(self, *args, **kwargs):
         return self.cls(*args, *self.limits, **kwargs)
         
-    def __invert__(self):
-        from sympy import Basic
-        from sympy.core.core import Wanted
-        
-        limits = self.limits
-        if len(limits) == 1:                    
-            limit = limits[0]
-            if isinstance(limit, int):
-                limits = [cls] * limit                        
-                limits[-1] = Wanted(limits[-1])
-                cls = Basic
+    @property
+    def basic(self):
+        if self._basic is None: 
+            cls = self.cls
+            limits = self.limits
+            assert isinstance(cls, type)
+            from sympy import Basic, sympify
+            from sympy.core.core import Wanted
+            
+            if len(limits) == 1: 
+                children = limits[0]
+                
+                if len(children) == 1: 
+                    child = children[0]
+                    if isinstance(child, int):
+                        if child > 1:
+                            children = [cls] * child                                                    
+                            children[-1] = Wanted(children[-1])                            
+                            cls = Basic
+                        else: 
+                            children = [sympify(child)]                            
                             
-        struct = Basic.__new__(cls, *limits)        
-        return Wanted(struct)
+            else:
+                children = []                
+                for limit in limits: 
+                    assert len(limit) == 1  
+                    child = limit[0]
+                    children.append(sympify(child))
+            
+            obj = Basic.__new__(cls, *children)
+            if cls.is_LatticeOp:
+                obj._argset = tuple(children)
+            self._basic = obj
+        return self._basic
+        
+    def __invert__(self):
+        from sympy.core.core import Wanted
+        return Wanted(self.basic)
+    
+#     @property
+#     def func(self):
+#         return self.basic.func
+
+#     @property
+#     def args(self):
+#         return self.basic.args
+
+    def __getattr__(self, attr):
+        return getattr(self.basic, attr)
+
+#     def __pow__(self, other): 
+#         return BasicMeta.__pow__(self.basic, other)

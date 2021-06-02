@@ -504,7 +504,7 @@ class KroneckerDelta(Function):
         
     @property
     def domain(self):
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         return FiniteSet(0, 1)
 
     @classmethod
@@ -587,13 +587,8 @@ class Bool(Function):
         
     @property
     def domain(self):
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         return FiniteSet(0, 1)
-    
-    @property
-    def definition(self):
-        from sympy import Piecewise
-        return Piecewise((S.One, self.arg), (S.Zero, True))
 
     def inference_status(self, child):
         raise Exception("boolean conditions within Bool are not applicable for inequivalent inference!")

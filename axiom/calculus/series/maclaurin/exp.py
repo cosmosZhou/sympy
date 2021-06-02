@@ -1,12 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets, algebra
+
 
 
 @apply
 def apply(x):    
-    n = x.generate_free_symbol(integer=True, free_symbol='n')
+    n = x.generate_var(integer=True, var='n')
     return Equal(E ** x, Sum[n:oo](x ** n / factorial(n)))
 
 
@@ -16,5 +15,5 @@ def prove(Eq):
     Eq << apply(x)
 
 if __name__ == '__main__':
-    prove()
+    run()
 

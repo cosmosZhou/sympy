@@ -1,6 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, geometry, calculus
+from util import *
 
 
 @apply
@@ -13,53 +11,54 @@ def apply(n):
 
 @prove
 def prove(Eq):
+    from axiom import geometry, calculus, algebra
     n = Symbol.n(integer=True, positive=True, given=False)
     Eq << apply(n)
     (x, *_), *_ = Eq[0].lhs.limits
 
     Eq << Eq[0].subs(n, 1)
-    
+
     Eq << Eq[-1].this.lhs.doit()
-        
+
     Eq << Eq[0].subs(n, 2)
-    
+
     Eq << Eq[-1].this.lhs.doit()
 
-    Eq.induction = Eq[0].subs(n, n + 2)
+    Eq.induct = Eq[0].subs(n, n + 2)
 
-    Eq << Eq.induction.lhs.this.expand()
+    Eq << Eq.induct.lhs.this.expand()
 #     Integration by parts
     Eq << Eq[-1].this.rhs.apply(calculus.integral.by_parts, dv=cos(x)) / n
 
     Eq << Eq[-1].this.lhs.args[1].function.powsimp()
-    
+
     Eq << Eq[-1].this.rhs.function.powsimp()
-    
+
     Eq << geometry.plane.trigonometry.sine.squared.apply(x)
 
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
-    
+
     Eq << Eq[-1].this.rhs.function.astype(Add)
 
     Eq << Eq[-1].this.rhs.function.args[0].powsimp()
-    
-    Eq << Eq[-1].this.rhs.astype(Add)
-    
-    Eq << Eq[-1].this.rhs.args[1].simplify()
-    
-    Eq << Eq[-1].solve(-Eq[-1].rhs.args[1])
-    
-    Eq << algebra.eq.eq.imply.eq.subs.apply(Eq[0], Eq[-1])
-    
-    Eq << Eq[-1].this.rhs.expand()
-    
-    Eq << Eq.induction.this.rhs.expand(func=True)
 
-    Eq << Eq.induction.induct()
-    
-    Eq << algebra.eq.eq.sufficient.imply.eq.induction.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
+    Eq << Eq[-1].this.rhs.astype(Add)
+
+    Eq << Eq[-1].this.rhs.args[1].simplify()
+
+    Eq << Eq[-1].solve(-Eq[-1].rhs.args[1])
+
+    Eq << algebra.eq.eq.imply.eq.subs.apply(Eq[0], Eq[-1])
+
+    Eq << Eq[-1].this.rhs.expand()
+
+    Eq << Eq.induct.this.rhs.expand(func=True)
+
+    Eq << Eq.induct.induct()
+
+    Eq << algebra.eq.eq.suffice.imply.eq.induct.apply(Eq[1], Eq[2], Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,38 +1,35 @@
-from axiom.utility import prove, apply
-from sympy import *
-import axiom
-from axiom import sets, algebra
+from util import *
 
 
-# i ∈ [d + j; n) & j ∈ [a; -d + n)
 @apply(given=None)
 def apply(given):
-    is_odd, contains_n = axiom.is_And(given)     
-    n = axiom.is_odd(is_odd)
-    n_, ab = axiom.is_Contains(contains_n)
-    
+    is_odd, contains_n = given.of(And)
+    n = is_odd.of(Equal[Basic % 2, 1])
+    n_, ab = contains_n.of(Contains)
+
     assert n == n_
-    axiom.is_integer_Interval(ab)
-    a, b = ab.min(), ab.max()
-    
-    return Equivalent(given, Contains(n, imageset(n, 2 * n + 1, Interval(a // 2, (b - 1) // 2, integer=True))))
+    a, b = ab.of(Range)
+    b -= 1
+
+    return Equivalent(given, Contains(n, imageset(n, 2 * n + 1, Range(a // 2, (b - 1) // 2 + 1))))
 
 
 @prove
 def prove(Eq):
+    from axiom import sets, algebra
     a = Symbol.a(integer=True)
     b = Symbol.b(integer=True)
     n = Symbol.n(integer=True)
 
-    Eq << apply(Equal(n % 2, 1) & Contains(n, Interval(a, b, integer=True)))
+    Eq << apply(Equal(n % 2, 1) & Contains(n, Range(a, b + 1)))
 
     Eq << algebra.equivalent.given.cond.apply(Eq[0])
-        
+
     Eq << Eq[-2].this.lhs.apply(sets.is_odd.contains.imply.contains)
-    
+
     Eq << Eq[-1].this.rhs.apply(sets.contains.imply.et.is_odd)
-    
-    
+
+
 if __name__ == '__main__':
-    prove()
+    run()
 

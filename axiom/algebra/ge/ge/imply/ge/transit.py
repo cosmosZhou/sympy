@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
 
 
 @apply
 def apply(*given):
     b_greater_than_x, x_greater_than_a = given
-    b, x = axiom.is_GreaterEqual(b_greater_than_x)    
-    _x, a = axiom.is_GreaterEqual(x_greater_than_a)
+    b, x = b_greater_than_x.of(GreaterEqual)    
+    _x, a = x_greater_than_a.of(GreaterEqual)
     if b == a:
         b, x, _x, a = _x, a, b, x    
     assert x == _x
@@ -28,4 +27,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

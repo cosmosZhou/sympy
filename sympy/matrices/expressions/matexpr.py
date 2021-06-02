@@ -838,9 +838,9 @@ class Identity(MatrixExpr):
 
     def _entry(self, i, j=None, **kwargs):
         if j is None:
-            from sympy.concrete.expr_with_limits import LAMBDA
-            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
-            return LAMBDA[j:self.n](KroneckerDelta(i, j))
+            from sympy.concrete.expr_with_limits import Lamda
+            j = self.generate_var(excludes=i.free_symbols, integer=True)
+            return Lamda[j:self.n](KroneckerDelta(i, j))
         else:
             eq = Eq(i, j)
             if eq is S.true:
@@ -1300,13 +1300,13 @@ class Swap(Identity):
         return Identity.__new__(cls, n, i, j)
     
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equal
         
         if isinstance(i, slice):
             if i.start in (0, None) and i.stop in (self.n, None):
-                i = self.generate_free_symbol(excludes=None if j is None else j.free_symbols, integer=True)
+                i = self.generate_var(excludes=None if j is None else j.free_symbols, integer=True)
                 return_reference_i = True
             else:
                 raise Exception('general i slice unimplemented')
@@ -1315,7 +1315,7 @@ class Swap(Identity):
             
         if j is None:
             return_reference_j = True
-            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+            j = self.generate_var(excludes=i.free_symbols, integer=True)
         else:
             return_reference_j = False                        
         piecewise = Piecewise((KroneckerDelta(j, self.i), Equal(i, self.j)),
@@ -1323,9 +1323,9 @@ class Swap(Identity):
                               (KroneckerDelta(j, i), True))
 
         if return_reference_j:
-            return LAMBDA[j:self.n](piecewise)
+            return Lamda[j:self.n](piecewise)
         if return_reference_i:
-            return LAMBDA[i:self.n](piecewise)
+            return Lamda[i:self.n](piecewise)
         return piecewise            
 
     @property
@@ -1388,7 +1388,7 @@ class Multiplication(Identity):
         return self.multiplier
 
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
 #     1   0   0   0   0   0
 #     0   1   0   0   0   0    
 #     0   0   k   0   0   0    <-----self.i    th row
@@ -1401,14 +1401,14 @@ class Multiplication(Identity):
         
         if j is None:
             return_reference = True
-            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+            j = self.generate_var(excludes=i.free_symbols, integer=True)
         else:
             return_reference = False                        
             
         piecewise = (1 + (self.multiplier - 1) * KroneckerDelta(i, self.i)) * KroneckerDelta(i, j)
         
         if return_reference:
-            return LAMBDA[j:self.n](piecewise)
+            return Lamda[j:self.n](piecewise)
         return piecewise
 
     def __matmul__(self, rhs):
@@ -1425,10 +1425,10 @@ class Multiplication(Identity):
                 return rhs.func(*args)  
         elif rhs.is_DenseMatrix:
             d = rhs.shape[0]
-            _mat = [*rhs._mat]
+            _args = [*rhs._args]
             for i in range(self.i * d, self.i * d + d):
-                _mat[i] *= self.multiplier
-            return rhs.func(*rhs.shape, type(rhs._mat)(_mat))
+                _args[i] *= self.multiplier
+            return rhs.func(*rhs.shape, type(rhs._args)(_args))
 
         return MatrixExpr.__matmul__(self, rhs)
 
@@ -1438,10 +1438,10 @@ class Multiplication(Identity):
         from sympy.matrices.dense import DenseMatrix                
         if isinstance(lhs, DenseMatrix):
             d = lhs.shape[0]
-            _mat = [*lhs._mat]
+            _args = [*lhs._args]
             for i in range(self.i, self.i + d * d, d):
-                _mat[i] *= self.multiplier
-            return lhs.func(*lhs.shape, type(lhs._mat)(_mat))
+                _args[i] *= self.multiplier
+            return lhs.func(*lhs.shape, type(lhs._args)(_args))
             
         return MatrixExpr.__rmatmul__(self, lhs)
 
@@ -1469,7 +1469,7 @@ class Addition(Multiplication):
         return self.func(self.n, self.i, self.j, -self.multiplier)
 
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equal
         
@@ -1485,7 +1485,7 @@ class Addition(Multiplication):
         
         if j is None:
             return_reference = True
-            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+            j = self.generate_var(excludes=i.free_symbols, integer=True)
         else:
             return_reference = False                        
             
@@ -1496,7 +1496,7 @@ class Addition(Multiplication):
                               (KroneckerDelta(j, i), True))
 
         if return_reference:
-            return LAMBDA[j:self.n](piecewise)
+            return Lamda[j:self.n](piecewise)
         return piecewise            
 
     def _eval_determinant(self):
@@ -1567,13 +1567,13 @@ class Shift(Identity):
         return self.T
 
     def _entry(self, i, j=None, **_):
-        from sympy.concrete.expr_with_limits import LAMBDA
+        from sympy.concrete.expr_with_limits import Lamda
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equal, Less 
-        from sympy.sets import Contains, Interval
+        from sympy.sets import Contains, Range
         if j is None:
             return_reference = True
-            j = self.generate_free_symbol(excludes=i.free_symbols, integer=True)
+            j = self.generate_var(excludes=i.free_symbols, integer=True)
         else:
             return_reference = False                        
 #     1   0   0   0   0   0
@@ -1587,7 +1587,7 @@ class Shift(Identity):
 #            i col    j col      
 # delete i th row insert into after j th row        
         piecewise_ij = Piecewise((KroneckerDelta(self.i, j), Equal(i, self.j)),
-                                 (KroneckerDelta(i + 1, j), Contains(i, Interval(self.i, self.j, right_open=True, integer=True))),
+                                 (KroneckerDelta(i + 1, j), Contains(i, Range(self.i, self.j))),
                                  (KroneckerDelta(i, j), True))
         
 #     1   0   0   0   0   0
@@ -1601,7 +1601,7 @@ class Shift(Identity):
 #            j col    i col      
 # delete i th row insert into before j th row        
         piecewise_ji = Piecewise((KroneckerDelta(i, self.j), Equal(j, self.i)),
-                                 (KroneckerDelta(i, j + 1), Contains(j, Interval(self.j, self.i, right_open=True, integer=True))),
+                                 (KroneckerDelta(i, j + 1), Contains(j, Range(self.j, self.i))),
                                  (KroneckerDelta(i, j), True))
         
         piecewise = Piecewise((KroneckerDelta(i, j), Equal(self.i, self.j)),
@@ -1609,7 +1609,7 @@ class Shift(Identity):
                               (piecewise_ji, True))
 
         if return_reference:
-            return LAMBDA[j:self.n](piecewise)
+            return Lamda[j:self.n](piecewise)
         return piecewise            
 
     @_sympifyit('other', NotImplemented)

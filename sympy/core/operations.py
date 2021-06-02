@@ -637,6 +637,7 @@ class LatticeOp(AssocOp):
     @cacheit
     def args(self):
 #         print('possible disorder!', __file__)
+#         print('possible bugs here!', __file__)
 #         return tuple(ordered(self._argset))
         return tuple(sorted(self._argset, key=lambda x: str(x)))
 
@@ -644,6 +645,17 @@ class LatticeOp(AssocOp):
     def _compare_pretty(a, b):
         return (str(a) > str(b)) - (str(a) < str(b))
 
+    def of(self, cls):
+        res = AssocOp.of(self, cls)
+        if res is None:
+            if cls.is_LatticeOp:
+                a, b = cls._args
+                cls = Basic.__new__(cls.func, b, a)
+                res = AssocOp.of(self, cls)
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]
+        return res 
 
 class AssocOpDispatcher:
     """

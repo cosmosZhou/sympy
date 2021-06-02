@@ -1,7 +1,6 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply
@@ -28,7 +27,7 @@ def prove(Eq):
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)    
     c = Symbol.c(real=True, positive=True)
-    i = Symbol.i(domain=Interval(0, k, integer=True))
+    i = Symbol.i(domain=Range(0, k + 1))
     
     y = Symbol.y(real=True, shape=(oo,))
     
@@ -37,4 +36,4 @@ def prove(Eq):
     
         
 if __name__ == '__main__':
-    prove()
+    run()

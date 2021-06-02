@@ -203,7 +203,7 @@ class FunctionClass(ManagedProperties):
         >>> len(f(1).args)
         1
         """
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         from sympy.sets import NonnegativeIntegers
         # XXX it would be nice to handle this in __init__ but there are import
         # problems with trying to import FiniteSet there
@@ -236,7 +236,7 @@ class Application(with_metaclass(FunctionClass, Basic)):
 
     @cacheit
     def __new__(cls, *args, **options):
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
 
         args = list(map(sympify, args))
         evaluate = options.pop('evaluate', global_parameters.evaluate)
@@ -648,7 +648,7 @@ class Function(Application, Expr):
 
         """
         from sympy import Order
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         args = self.args
         args0 = [t.limit(x, 0) for t in args]
         if any(t.is_finite == False for t in args0):
@@ -1010,11 +1010,18 @@ class AppliedUndef(Function):
         limits = self.limits
         if limits: 
             limits = [x for x, *_ in limits]
-            return self.func.__name__ + "_{%s}(%s)" % ((", ".join(map(p._print, limits))), ", ".join(map(p._print, self.inputs)))
+            from sympy.printing.latex import translate
+            name = translate(self.func.__name__)
+            return name + "_{%s}(%s)" % ((", ".join(map(p._print, limits))), ", ".join(map(p._print, self.inputs)))
         return Function._latex(self, p, exp=exp)
     
-    @property
-    def definition(self):
+    def _eval_is_complex(self):
+        return fuzzy_and(a.is_complex for a in self.inputs)
+
+    def _eval_is_extended_real(self):
+        return fuzzy_and(a.is_complex for a in self.inputs)
+
+    def defun(self):
         return self.func(*self.args, evaluate=True)
 
     def _subs(self, old, new, **hints):
@@ -1029,7 +1036,7 @@ class AppliedUndef(Function):
     
     def image_set(self):
         if self.is_set:
-            definition = self.definition
+            definition = self.defun()
             if definition == self:
                 return None
             return definition.image_set()
@@ -2147,7 +2154,7 @@ class Derivative(Expr):
     def simplify_Equal(cls, self, lhs, rhs):
         if isinstance(rhs, cls):
             if lhs.variable_count == rhs.variable_count:
-                C = self.generate_free_symbol(real=True, given=True, free_symbol="C")
+                C = self.generate_var(real=True, given=True, var="C")
                 return self.func(lhs.expr, rhs.expr + C)
 
     @property
@@ -2926,7 +2933,7 @@ class Difference(Expr):
             return r'{\color{blue} \Delta}_{%s}\ {%s}' % (printer._print(x), expr)
         return r'{\color{blue} \Delta}_{%s}^{%s}\ {%s}' % (printer._print(x), printer._print(n), expr)
 
-    def bisect(self, index):
+    def split(self, index):
         x, n = self.variable_count        
         mid = Symbol.process_slice(index, S.Zero, n)
         assert mid >= 0, "mid >= 0 => %s" % (mid >= 0)        
@@ -3012,7 +3019,7 @@ class Lambda(Expr):
     is_Function = True
 
     def __new__(cls, variables, expr):
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         v = list(variables) if iterable(variables) else [variables]
         for i in v:
             if not getattr(i, 'is_symbol', False):

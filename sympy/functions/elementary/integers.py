@@ -318,10 +318,6 @@ class Ceiling(RoundFunction):
         else:
             return r
 
-    @property
-    def definition(self):
-        return self.arg + frac(-self.arg)
-
     def _eval_is_extended_positive(self):
         return self.args[0].is_extended_positive
 
@@ -506,10 +502,6 @@ class FractionalPart(Function):
         real = _eval(real)
         imag = _eval(imag)
         return real + S.ImaginaryUnit * imag
-
-    @property
-    def definition(self):
-        return self.arg - floor(self.arg)
 
     def _eval_is_finite(self):
         return True

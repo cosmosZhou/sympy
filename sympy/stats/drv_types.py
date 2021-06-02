@@ -496,8 +496,9 @@ class BinomialDistribution(SingleDiscreteDistribution):
                     "p should be in range [0, 1].")
 
     @property
-    def domain(self):  
-        return Interval(0, self.n, integer=True) 
+    def domain(self):
+        from sympy import Range  
+        return Range(0, self.n + 1) 
 
     set = domain
     
@@ -580,8 +581,9 @@ class DieDistribution(SingleDiscreteDistribution):
         return S.One
 
     @property
-    def set(self):        
-        return Interval(1, self.sides, integer=True)
+    def set(self):    
+        from sympy import Range    
+        return Range(1, self.sides + 1)
 
     domain = set
     

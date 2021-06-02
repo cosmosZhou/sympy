@@ -3,7 +3,7 @@
 at present Inference is mainly needed for process of theorem proof
 """
 from sympy.logic.invoker import Invoker
-from sympy.logic.boolalg import And, Sufficient, Necessary, Equivalent
+from sympy.logic.boolalg import And, Suffice, Necessary, Equivalent
 
 
 class Inference:
@@ -15,6 +15,10 @@ class Inference:
 
     def __getattr__(self, attr):
         return getattr(self.cond, attr) 
+
+    @property    
+    def T(self):
+        return Inference(self.cond.T, equivalent=self)        
 
     @property    
     def equivalent(self):
@@ -162,9 +166,11 @@ class Inference:
             if given is not None:
                 if isinstance(given, (tuple, list, set)): 
                     for given in given:
-                        yield from given.find_plausibles(is_equivalent)
+                        if given.is_Inference:
+                            yield from given.find_plausibles(is_equivalent)
                 else:
-                    yield from given.find_plausibles(is_equivalent)
+                    if given.is_Inference:
+                        yield from given.find_plausibles(is_equivalent)
         
     def induct(self, **kwargs):
         if self.given is not None:
@@ -177,8 +183,8 @@ class Inference:
             if kwargs.get('deep'):
                 inf = given.induct(deep=True, imply=True)
                 if inf is not None:
-                    return Inference(Sufficient(inf.lhs, self), plausible=None)
-            return Inference(Sufficient(given, self), plausible=None)
+                    return Inference(Suffice(inf.lhs, self), plausible=None)
+            return Inference(Suffice(given, self), plausible=None)
         if self.equivalent is not None:
             equivalent = self.equivalent
             if isinstance(equivalent, list):
@@ -189,8 +195,8 @@ class Inference:
             
             if kwargs.get('imply', True):
                 if kwargs.get('reverse'):
-                    return Inference(Sufficient(self, equivalent), plausible=None)
-                return Inference(Sufficient(equivalent, self), plausible=None)
+                    return Inference(Suffice(self, equivalent), plausible=None)
+                return Inference(Suffice(equivalent, self), plausible=None)
             
             return Inference(Equivalent(equivalent, self), plausible=None)
         if self.imply is not None:
@@ -201,7 +207,7 @@ class Inference:
             if kwargs.get('given'):
                 return Inference(Necessary(imply, self), plausible=None)
                 
-            return Inference(Sufficient(self, imply), plausible=None)
+            return Inference(Suffice(self, imply), plausible=None)
     
     def subs_assumptions_for_equality(self, eq, result, simplify=True):
         if eq.plausible:
@@ -239,47 +245,51 @@ class Inference:
                 return clue
     
     def apply(self, axiom, *args, split=True, **kwargs):
-        if self.is_And and split:
-            args = []
-            funcs = []
-            
-            depth = kwargs.pop('depth', None)
-            if not depth:
-                args = [*self.args]
-            else:
-
-                def instantiate(eq):
-                    function = eq
-                    for _ in range(depth):
-                        function = function.function
-                    return function
+        if self.is_And:
+            if axiom.__name__.split(sep='.', maxsplit=3)[2] == 'et':
+                split = False
                 
-                for eq in self.args: 
-                    if eq.is_ConditionalBoolean:
-                        _funcs, function = eq.funcs()
-                        _funcs = _funcs[-depth:]
-                        if funcs:
-                            assert _funcs == funcs
-                        else: 
-                            funcs = _funcs
-                        function = instantiate(eq)
-                        args.append(function)
-                    else:
-                        args.append(eq)
-                        
-            function = axiom.apply(*args, **kwargs)
-            clue = function.clue
-            for func, limits in funcs:
-                function = func(function, *limits)
-            
-            if function.is_BooleanAtom:
-                return function.copy(**{clue: self})
-            
-            function.set_clause(clue, self, force=True)
-            
-            if kwargs.get('simplify', True):
-                function = function.simplify()
-            return function
+            if split: 
+                args = []
+                funcs = []
+                
+                depth = kwargs.pop('depth', None)
+                if not depth:
+                    args = [*self.args]
+                else:
+    
+                    def instantiate(eq):
+                        function = eq
+                        for _ in range(depth):
+                            function = function.function
+                        return function
+                    
+                    for eq in self.args: 
+                        if eq.is_ConditionalBoolean:
+                            _funcs, function = eq.funcs()
+                            _funcs = _funcs[-depth:]
+                            if funcs:
+                                assert _funcs == funcs
+                            else: 
+                                funcs = _funcs
+                            function = instantiate(eq)
+                            args.append(function)
+                        else:
+                            args.append(eq)
+                            
+                function = axiom.apply(*args, **kwargs)
+                clue = function.clue
+                for func, limits in funcs:
+                    function = func(function, *limits)
+                
+                if function.is_BooleanAtom:
+                    return function.copy(**{clue: self})
+                
+                function.set_clause(clue, self, force=True)
+                
+                if kwargs.get('simplify', True):
+                    function = function.simplify()
+                return function
             
         eqs = axiom.apply(self, *args, **kwargs)
         if isinstance(eqs, (list, tuple)):
@@ -402,7 +412,6 @@ class Inference:
             from sympy import Exists
             return Exists(invert, *limits_exists, negation=self).simplify()
         
-#         return invert.copy(negation=self)
         return Inference(invert, negation=self)
 
     def simplify(self, emplace=False):
@@ -427,7 +436,7 @@ class Inference:
             for eq in args:
                 old, new = eq.args
                  
-                if self.plausible:                    
+                if self.plausible: 
                     if eq.plausible:
                         cond = self.cond._subs(old, new, **kwargs)
                         if cond == self.cond:
@@ -451,7 +460,7 @@ class Inference:
                     cond = self.cond._subs(old, new, **kwargs)
                     if cond == self.cond:
                         continue
-
+                    
                     if eq.plausible:
                         self = Inference(cond, given=eq)
                     else:
@@ -472,7 +481,7 @@ class Inference:
         
         if new in old.domain:
             if self.is_ConditionalBoolean:
-                assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.forall.imply.cond.subs.apply(...)'
+                assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.cond.subs.apply(...)'
                 function = self.function._subs(old, new, **kwargs)
                 limits = []
                 for x, *ab in self.limits:
@@ -491,7 +500,7 @@ class Inference:
         if domain is not None and new not in domain:
             if self.is_ForAll:
                 from sympy import NotContains
-                assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.forall.imply.ou.subs'
+                assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.ou.subs'
                 function = self.function._subs(old, new) | NotContains(new, domain)
                 cond = self.func(function, *self.limits)
             else:
@@ -660,7 +669,7 @@ class Inference:
     def __mod__(self, other):
         other = sympify(other)
         assert other.is_integer
-        if self.is_Equal:        
+        if self.is_Equal: 
             return self.func(self.lhs % other, self.rhs % other, given=self)
         elif self.is_ConditionalBoolean:
             return self.this.function % other
@@ -737,7 +746,7 @@ class Inference:
                 return Inference(self.func.reversed_type(self.lhs / other, self.rhs / other), equivalent=self)
             
     def __getitem__(self, indices):
-        if self.is_Equal:            
+        if self.is_Equal: 
             if isinstance(indices, slice):
                 x, *args = indices.start, indices.stop, indices.step
                 if x is None or not x.is_symbol or args[1] is None and args[0].is_integer:
@@ -792,10 +801,55 @@ class Inference:
                 equivalent, *_ = equivalent
             self = equivalent
 
+    def is_given_by(self, given):
+        while True:
+            equivalent = equivalent_ancestor(self)
+            if len(equivalent) != 1:
+                return False
+            equivalent, *_ = equivalent
+            
+            if equivalent is self:
+                return False
+            
+            if isinstance(equivalent.given, (list, tuple)):
+                for i, g in enumerate(equivalent.given):
+                    if g is not given:
+                        continue
+                    if all(g.plausible is None for j, g in enumerate(equivalent.given) if j != i):
+                        return True                    
+            elif equivalent.given is given:
+                return True
+            
+            self = equivalent
+            
+            
+def equivalent_ancestor(a):
+    if a is None:
+        return a
+    while True:
+        equivalent = a.equivalent
+        if equivalent is None:
+            return {a}
+
+        if isinstance(equivalent, (list, tuple)):
+            res = set()
+            for e in equivalent:
+                if e.plausible:
+                    res |= equivalent_ancestor(e)
+            return res
+
+        a = equivalent
+
             
 from sympy.core.sympify import converter, sympify
 
 converter[Inference] = lambda infer: infer.cond 
+
+from sympy.core.assumptions import Operator
+converter[Operator] = lambda op: op.basic
+
+from sympy.core.core import Wanted
+converter[Wanted] = lambda wanted: wanted
 
 # converter[slice] = lambda s: s
 
@@ -905,6 +959,7 @@ def process_options(value=True, **kwargs):
     if negation is not None:
         process_negation(negation, value)
         return
+
 
 def plausibles(parent):
     return [eq for eq in parent if eq.plausible]

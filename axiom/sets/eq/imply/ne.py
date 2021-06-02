@@ -1,15 +1,14 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import sets, algebra
+
 # given : A & B = A | B => A = B
 
 
 @apply
 def apply(given):
-    x_y, _01 = axiom.is_Equal(given)
-    x, y = axiom.is_FiniteSet(x_y, 2)
-    zero, one = axiom.is_FiniteSet(_01, 2)
+    x_y, _01 = given.of(Equal)
+    x, y = x_y.of(FiniteSet)
+    zero, one = _01.of(FiniteSet)
     
     assert zero.is_zero
     assert one.is_One
@@ -28,5 +27,5 @@ def prove(Eq):
     Eq << Eq[0].subs(Eq[-1])
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -220,13 +220,13 @@ class PrettyPrinter(Printer):
         return pform
 
     def _print_Not(self, e):
-        from sympy import Equivalent, Sufficient
+        from sympy import Equivalent, Suffice
         if self._use_unicode:
             arg = e.args[0]
             pform = self._print(arg)
             if isinstance(arg, Equivalent):
                 return self._print_Equivalent(arg, altchar=u"\N{LEFT RIGHT DOUBLE ARROW WITH STROKE}")
-            if isinstance(arg, Sufficient):
+            if isinstance(arg, Suffice):
                 return self._print_Imply(arg, altchar=u"\N{RIGHTWARDS ARROW WITH STROKE}")
 
             if arg.is_Boolean and not arg.is_Not:
@@ -523,9 +523,13 @@ class PrettyPrinter(Printer):
         """
         M = e   # matrix
         Ms = {}  # i,j -> pretty(M[i,j])
-        for i in range(M.rows):
+        if M.rows == 1:            
             for j in range(M.cols):
-                Ms[i, j] = self._print(M[i, j])
+                Ms[0, j] = self._print(M[j])            
+        else:
+            for i in range(M.rows):
+                for j in range(M.cols):
+                    Ms[i, j] = self._print(M[i, j])
 
         # h- and v- spacers
         hsep = 2

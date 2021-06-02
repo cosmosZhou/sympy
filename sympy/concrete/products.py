@@ -205,7 +205,7 @@ class Product(ExprWithIntLimits):
     def _eval_is_zero(self):
         # a Product is zero only if its term is zero.
         function = self.function
-        from sympy import Interval
+        from sympy import Range
         reps = {}
         for limit in self.limits[::-1]:
             x, *ab = limit
@@ -221,7 +221,7 @@ class Product(ExprWithIntLimits):
                     
                 if b.free_symbols & reps.keys():
                     b = b.subs(reps)
-                _x = x.copy(domain=Interval(a, b, right_open=True, integer=True))
+                _x = x.copy(domain=Range(a, b))
                 function = function._subs(x, _x)
                 reps[x] = _x
                 
@@ -234,8 +234,8 @@ class Product(ExprWithIntLimits):
             if len(limit) == 1:
                 i = limit[0]
                 domain = self.function.domain_defined(i)
-                if domain.is_Interval: 
-                    a, b = domain.min(), domain.max() + 1
+                if domain.is_Range: 
+                    a, b = domain.start, domain.stop
                 else:
                     return self 
             else:
@@ -586,12 +586,12 @@ class Product(ExprWithIntLimits):
         if len(limit) == 1:
             x = limit[0]
             domain = x.domain
-            if domain.is_Interval: 
-                limit = x, domain.min(), domain.max() + 1 
+            if domain.is_Range: 
+                limit = x, domain.start, domain.stop 
 
         if len(limit) == 2:
             x, domain = limit
-            if domain.is_FiniteSet:
+            if domain.is_FiniteSet and len(domain) == 1:
                 return self.finite_aggregate(x, domain)
             if not self.function._has(x):
                 return self.function ** abs(domain)
@@ -599,9 +599,8 @@ class Product(ExprWithIntLimits):
         elif len(limit) == 3:
             x, a, b = limit
             if self.function.is_Piecewise:
-                from sympy.sets.sets import Interval
-                domain = Interval(a, b, right_open=True, integer=True)
-                return self.function.as_multiple_terms(x, domain, self.func)
+                from sympy import Range
+                return self.function.as_multiple_terms(x, Range(a, b), self.func)
             if not self.function._has(x):
                 return self.function ** (b - a)
             
@@ -668,24 +667,6 @@ class Product(ExprWithIntLimits):
         return self
 
     @classmethod
-    def rewrite_from_Mul(cls, self):
-        function_limits_coeff = self._detect_multiple_products()
-        if function_limits_coeff is not None:
-            function, limits, coeff, last_product = function_limits_coeff
-            if len(function) == 1:
-                coeff = self.func(*coeff)
-                prod = last_product.try_absorb(coeff)
-                if prod is not None:
-                    return prod
-            elif len(function) > 1:
-                prod = cls(self.func(*function).simplify(), *limits)
-                if coeff:
-                    return self.func(*coeff) * prod
-                return prod
-        
-        return self
-
-    @classmethod
     def identity(cls, self, **_):
         from sympy import OneMatrix
         return OneMatrix(*self.shape)
@@ -720,7 +701,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
     def _eval_is_zero(self):
         # a Product is zero only if its term is zero.
         function = self.function
-        from sympy import Interval
+        from sympy import Range
         reps = {}
         for limit in self.limits[::-1]:
             x, *ab = limit
@@ -736,7 +717,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
                     
                 if b.free_symbols & reps.keys():
                     b = b.subs(reps)
-                _x = x.copy(domain=Interval(a, b, integer=True))
+                _x = x.copy(domain=Range(a, b + 1))
                 function = function._subs(x, _x)
                 reps[x] = _x
                 
@@ -1022,7 +1003,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         limit = self.limits[0]
         if len(limit) == 2:
             x, domain = limit
-            if domain.is_FiniteSet:
+            if domain.is_FiniteSet and len(domain) == 1:
                 return self.finite_aggregate(x, domain)
             if not self.function._has(x):
                 return self.function ^ abs(domain)
@@ -1116,7 +1097,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
             this = self
             excludes = self.variables_set | new.free_symbols
             for var in intersect:
-                _var = self.generate_free_symbol(excludes, integer=True)
+                _var = self.generate_var(excludes, integer=True)
                 this = this.limits_subs(var, _var)
                 excludes.add(_var) 
             _this = this._subs(old, new)
@@ -1155,7 +1136,7 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
 
             if old.is_Slice and len(ab) == 2:
                 from sympy import Interval
-                _x = x.copy(domain=Interval(*ab, right_open=True, integer=True))
+                _x = x.copy(domain=Range(*ab))
                 function = self.function.subs(x, _x)
                 _function = function.subs(old, new)
                 if _function != function:

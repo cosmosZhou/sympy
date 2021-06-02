@@ -1,7 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra, sets
+from util import *
 
 
 @apply
@@ -14,6 +11,7 @@ def apply(self):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     m = Symbol.m(integer=True, positive=True)
@@ -21,46 +19,46 @@ def prove(Eq):
 
     f = Symbol.f(shape=(oo,), real=True)
     g = Symbol.g(shape=(oo, oo), real=True)
-    
+
     Eq << apply(Sum[i:0:m, j:0:n](f[i] * g[i, j]))
-    
+
     Eq.initial = Eq[0].subs(n, 1)
-    
+
     Eq << Eq.initial.this.lhs.apply(algebra.sum.to.add.doit.outer)
-    
+
     Eq << Eq[-1].this.rhs.apply(algebra.sum.doit.inner)
-    
+
     Eq.induct = Eq[0].subs(n, n + 1)
-    
-    Eq << Eq.induct.this.lhs.bisect({n})
-    
+
+    Eq << Eq.induct.this.lhs.split({n})
+
     Eq << Eq[-1].this.lhs.find(Sum).apply(algebra.sum.to.add.doit.outer.setlimit)
-    
+
     s = Symbol.s(Sum[j:0:n + 1](f[i] * g[i, j]))
-    
+
     Eq << s.this.definition
-    
+
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (i, 0, m))
-    
-    Eq << Eq[-2].this.rhs.bisect({n})
-    
+
+    Eq << Eq[-2].this.rhs.split({n})
+
     Eq << Eq[-1].this.rhs.args[1].apply(algebra.mul.to.sum)
-    
+
     Eq << Eq[-3].subs(Eq[-1])
-    
+
     Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add)
-    
+
     Eq << Eq[3].subs(Eq[-1].reversed)
-    
+
     Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
-    
+
     Eq << Eq[0].induct(reverse=True)
-    
-    Eq << algebra.eq.sufficient.imply.eq.induction.apply(Eq.initial, Eq[-1], n=n, start=1)
+
+    Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 
 from . import intlimit
 from . import subs

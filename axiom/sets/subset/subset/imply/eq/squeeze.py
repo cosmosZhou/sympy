@@ -1,14 +1,13 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import sets
+
 
 
 @apply
 def apply(*given):
     a_less_than_x, x_less_than_b = given
-    A, B = axiom.is_Subset(a_less_than_x)    
-    _B, _A = axiom.is_Subset(x_less_than_b)
+    A, B = a_less_than_x.of(Subset)    
+    _B, _A = x_less_than_b.of(Subset)
     assert A == _A
     assert B == _B
 
@@ -27,4 +26,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()

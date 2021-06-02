@@ -469,7 +469,7 @@ class ContinuousPSpace(PSpace):
 
     @cacheit
     def compute_cdf(self, expr, **kwargs):
-        if not self.domain.set.is_Interval:
+        if not self.domain.set.is_Interval or not self.domain.set.is_Range:
             raise ValueError(
                 "CDF not well defined on multivariate expressions")
 
@@ -485,7 +485,7 @@ class ContinuousPSpace(PSpace):
 
     @cacheit
     def compute_characteristic_function(self, expr, **kwargs):
-        if not self.domain.set.is_Interval:
+        if not self.domain.set.is_Interval or not self.domain.set.is_Range:
             raise NotImplementedError("Characteristic function of multivariate expressions not implemented")
 
         d = self.compute_density(expr, **kwargs)
@@ -495,7 +495,7 @@ class ContinuousPSpace(PSpace):
 
     @cacheit
     def compute_moment_generating_function(self, expr, **kwargs):
-        if not self.domain.set.is_Interval:
+        if not self.domain.set.is_Interval or not self.domain.set.is_Range:
             raise NotImplementedError("Moment generating function of multivariate expressions not implemented")
 
         d = self.compute_density(expr, **kwargs)
@@ -505,7 +505,7 @@ class ContinuousPSpace(PSpace):
 
     @cacheit
     def compute_quantile(self, expr, **kwargs):
-        if not self.domain.set.is_Interval:
+        if not self.domain.set.is_Interval or not self.domain.set.is_Range:
             raise ValueError(
                 "Quantile not well defined on multivariate expressions")
 
@@ -533,9 +533,7 @@ class ContinuousPSpace(PSpace):
             if domain.set.is_EmptySet or isinstance(domain.set, FiniteSet):
                 return S.Zero if not cond_inv else S.One
             if isinstance(domain.set, Union):
-                return sum(
-                     Integral(pdf(z), (z, subset), **kwargs) for subset in
-                     domain.set.args if isinstance(subset, Interval))
+                return sum(Integral(pdf(z), (z, subset), **kwargs) for subset in domain.set.args if subset.is_Interval)
             # Integrate out the last variable over the special domain
             return Integral(pdf(z), (z, domain.set), **kwargs)
 

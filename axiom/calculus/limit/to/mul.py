@@ -1,13 +1,10 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(self, evaluate=True): 
-    expr, (x, x0, dir) = axiom.is_Limit(self)
-    args = axiom.is_Mul(expr)
+    expr, (x, x0, dir) = self.of(Limit)
+    args = expr.of(Mul)
     
     coefficient = []
     factors = []
@@ -37,4 +34,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()

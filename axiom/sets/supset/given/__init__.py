@@ -1,2 +1,2 @@
-from . import forall_supset
-from . import forall_contains
+from . import all_supset
+from . import all_contains

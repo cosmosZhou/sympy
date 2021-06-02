@@ -1,26 +1,26 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
 
-from axiom import sets, algebra
+
 
 @apply
 def apply(imply):
-    e, AB = axiom.is_Contains(imply)
-         
-    return tuple(Contains(e, s) for s in axiom.is_Intersection(AB))
+    e, AB = imply.of(Contains)
+
+    return tuple(Contains(e, s) for s in AB.of(Intersection))
 
 @prove
 def prove(Eq):
+    from axiom import sets
     x = Symbol.x(integer=True)
     A = Symbol.A(etype=dtype.integer)
-    
+
     B = Symbol.B(etype=dtype.integer)
-    
+
     Eq << apply(Contains(x, A & B))
-    
-    Eq << sets.contains.contains.imply.contains.intersect.apply(Eq[1], Eq[2])
-    
+
+    Eq << sets.contains.contains.imply.contains.intersection.apply(Eq[1], Eq[2])
+
 if __name__ == '__main__':
-    prove()
+    run()
 

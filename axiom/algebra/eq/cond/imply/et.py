@@ -1,5 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 from axiom.algebra.eq.cond.imply.cond.kronecker_delta import process_given_conditions
 
 
@@ -27,5 +26,5 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()
 

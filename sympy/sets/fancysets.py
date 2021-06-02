@@ -6,158 +6,10 @@ from sympy.core.singleton import Singleton, S
 from sympy.core.symbol import Dummy, symbols, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
-from sympy.sets.sets import Set, Interval, Union, FiniteSet, ProductSet
+from sympy.sets.sets import Set, Interval, Union, ProductSet
+from sympy.sets.finiteset import FiniteSet
 from sympy.utilities.miscellany import filldedent
-# from sympy.sets import Reals
-
 Reals = Interval(S.NegativeInfinity, S.Infinity)
-
-# class _Reals(with_metaclass(Singleton, Interval)):
-#     """
-#     Represents all real numbers
-#     from negative infinity to positive infinity,
-#     including all integer, rational and irrational numbers.
-#     This set is also available as the Singleton, Reals.
-# 
-# 
-#     Examples
-#     ========
-# 
-#     >>> from sympy import S, Interval, Rational, pi, I
-#     >>> 5 in Reals
-#     True
-#     >>> Rational(-1, 2) in Reals
-#     True
-#     >>> pi in Reals
-#     True
-#     >>> 3*I in Reals
-#     False
-#     >>> Reals.contains(pi)
-#     True
-# 
-# 
-#     See Also
-#     ========
-# 
-#     ComplexRegion
-#     """
-# 
-#     def __new__(cls):
-#         return Interval.__new__(cls, -S.Infinity, S.Infinity)
-# 
-#     def __matmul__(self, other):
-#         if other.is_set:
-#             return ProductSet(self, other)
-#         
-#         raise Exception("could not multiply %s, %s" % (self, other))
-#     
-#     def __mul__(self, other):
-#         if other.is_extended_real:
-#             return self
-#         if other.is_complex:
-#             return S.Complexes
-# 
-#         raise Exception("could not multiply %s, %s" % (self, other))
-#     
-#     def _latex(self, p):
-#         return r"\mathbb{R}"
-# class Integers(Reals):
-#     """
-#     Represents all integers: positive, negative and zero. This set is also
-#     available as the Singleton, S.Integers.
-# 
-#     Examples
-#     ========
-# 
-#     >>> from sympy import S, Interval, pprint
-#     >>> 5 in S.Naturals
-#     True
-#     >>> iterable = iter(S.Integers)
-#     >>> next(iterable)
-#     0
-#     >>> next(iterable)
-#     1
-#     >>> next(iterable)
-#     -1
-#     >>> next(iterable)
-#     2
-# 
-#     >>> pprint(S.Integers.intersect(Interval(-4, 4)))
-#     {-4, -3, ..., 4}
-# 
-#     See Also
-#     ========
-# 
-#     Naturals0 : non-negative integers
-#     Integers : positive and negative integers and zero
-#     """
-# 
-#     is_iterable = True
-#     is_integer = True
-#     
-#     def __new__(cls):
-#         return Interval.__new__(cls, -S.Infinity, S.Infinity, integer=True)
-# 
-#     def _contains(self, other):
-#         if not isinstance(other, Expr):
-#             return S.false
-#         elif other.is_integer:
-#             return S.true
-#         elif other.is_integer == False:
-#             return S.false
-# 
-#     def __iter__(self):
-#         yield S.Zero
-#         i = S.One
-#         while True:
-#             yield i
-#             yield -i
-#             i = i + 1
-# 
-#     @property
-#     def _inf(self):
-#         return -S.Infinity
-# 
-#     @property
-#     def _sup(self):
-#         return S.Infinity
-# 
-#     @property
-#     def _boundary(self):
-#         return self
-#     
-#     def intersection_sets(self, b):
-#         if isinstance(b, Reals):
-#             return self
-# 
-#         if b.is_Interval and b.is_integer:
-#             return b        
-# 
-#     def union_sets(self, b):
-#         from sympy import Intersection
-#         intersect = Intersection(self, b)
-#         if intersect == self:
-#             return b
-#         elif intersect == b:
-#             return self
-# 
-#     def __add__(self, other):
-#         if other.is_integer:
-#             return self
-#         if other.is_extended_real:
-#             return Reals
-#         if other.is_complex:
-#             return S.Complexes
-# 
-#     def __mul__(self, other):
-#         if other.is_set:
-#             return ProductSet(self, other)
-#         if other.is_integer:
-#             return self
-#         if other.is_extended_real:
-#             return Reals
-#         if other.is_complex:
-#             return S.Complexes
 
 
 class ImageSet(Set):
@@ -378,10 +230,10 @@ class ImageSet(Set):
         return SetExpr(base_set)._eval_func(f).set
 
 
-class Range(Set):
+class _Range(Set):
     """
     Represents a range of integers. Can be called as Range(stop),
-    Range(start, stop), or Range(start, stop, step); when stop is
+    Range(start, stop), or Range(start, stop, step); when step is
     not given it defaults to 1.
 
     `Range(stop)` is the same as `Range(0, stop, 1)` and the stop value
@@ -703,10 +555,938 @@ class Range(Set):
         return self
 
 
-if PY3:
-    converter[range] = Range
-else:
-    converter[xrange] = Range
+class Range(Set):
+    """
+    Represents a range of integers. Can be called as Range(stop),
+    Range(start, stop), or Range(start, stop, step); when step is
+    not given it defaults to 1.
+
+    `Range(stop)` is the same as `Range(0, stop, 1)` and the stop value
+    (just as for Python ranges) is not included in the Range values.
+    """
+
+    def structurally_equal(self, other):
+        if not isinstance(other, self.func) or len(self.args) != len(other.args):
+            return False
+        if self.left_open != other.left_open or self.right_open != other.right_open or self.is_integer != other.is_integer:
+            return False
+        for x, y in zip(self.args[:3], other.args[:3]):
+            if not x.structurally_equal(y):
+                return False
+        return True
+
+    def simplify(self, deep=False):
+        if deep:
+            hit = False
+            args = [*self.args]
+            for i, arg in enumerate(self.args[:3]): 
+                _arg = arg.simplify(deep=deep)                
+
+                if _arg != arg:
+                    hit = True
+                args[i] = _arg
+            if hit:
+                return self.func(*args).simplify()
+        
+        if self.is_integer:
+            if self.left_open:
+                return self.copy(start=self.start + 1, left_open=False)
+        return self
+
+    @property
+    def is_UniversalSet(self):
+        return self.start.is_NegativeInfinity and self.stop.is_Infinity
+    
+    def intersection_sets(self, b):
+        if not (b.is_Interval or b.is_Range):
+            if self.is_UniversalSet:
+                return b
+            return
+        # handle (-oo, oo)
+        infty = S.NegativeInfinity, S.Infinity
+        if self.is_UniversalSet:
+            l, r = self.left, self.right
+            if l.is_real or l in infty or r.is_real or r in infty:
+                if not b.is_integer:
+                    return b.copy(integer=True)
+                return b
+
+        # We can't intersect [0,3] with [x,6] -- we don't know if x>0 or x<0
+        if not self._is_comparable(b):
+            from sympy import Min, Max
+            integer = b.is_integer
+            if integer:
+                a_start = self.start
+                b_start = b.start
+    
+                start = Max(a_start, b_start)
+    
+                a_end = self.stop
+                b_end = b.stop
+    
+                stop = Min(a_end, b_end)
+                return Range(start, stop)                
+            else:
+                if b.left_open:
+                    if self.start <= b.start:
+                        start = b.start
+                        left_open = True
+                    elif self.start > b.start:
+                        start = self.start
+                        left_open = False
+                    else:
+                        return
+                else:
+                    start = Max(self.start, b.start)
+                    left_open = False
+                    
+                if b.right_open: 
+                    stop = Min(self.stop, b.stop)
+                    right_open = True                            
+                else:
+                    if self.stop > b.stop:
+                        stop = b.stop
+                        right_open = False
+                    elif self.stop <= b.stop:
+#                                 [a, b), [a, b']
+                        stop = self.stop
+                        right_open = True
+                    else: 
+                        return                            
+                            
+                return Range(start, stop, left_open=left_open, right_open=right_open)
+
+        empty = False
+
+        if self.start <= b.stop and b.start <= self.stop:
+            # Get topology right.
+            if self.start < b.start:
+                start = b.start
+                left_open = b.left_open
+            elif self.start > b.start:
+                start = self.start
+                left_open = self.left_open
+            else:
+                start = self.start
+                left_open = self.left_open or b.left_open
+
+            if self.stop < b.stop:
+                stop = self.stop
+                right_open = self.right_open
+            elif self.stop > b.stop:
+                stop = b.stop
+                right_open = b.right_open
+            else:
+                stop = self.stop
+                right_open = self.right_open or b.right_open
+
+            if stop - start == 0 and (left_open or right_open):
+                empty = True
+        else:
+            empty = True
+
+        if empty:
+            return self.etype.emptySet
+
+        if self.is_integer or b.is_integer: 
+            return self.func(start, stop, left_open=left_open, right_open=right_open)
+        else:
+            return Interval(start, stop, left_open=left_open, right_open=right_open)
+
+    def _union_sets(self, b):
+        from sympy import Min, Max
+        if self.max() in b:            
+            return b.copy(start=Min(self.min(), b.min()), left_open=False, integer=True)
+        elif self.min() in b:
+            return b.copy(stop=Max(self.max(), b.max()), right_open=False, integer=True)
+        elif self in b:
+            return b
+        elif b in self:
+            return self
+        elif not self.right_open and b.left_open:
+            if self.stop == b.start:
+                return Range(self.start, b.stop, left_open=self.left_open, right_open=b.right_open)
+        elif not b.right_open and self.left_open:
+            if b.stop == self.start:
+                return Range(b.start, self.stop, left_open=b.left_open, right_open=self.right_open)
+
+    def union_sets(self, b):
+        if b.is_Range or b.is_Interval:
+            if self._is_comparable(b):
+                from sympy.functions.elementary.extremum import Min, Max
+                # Non-overlapping intervals
+                stop = Min(self.stop, b.stop)
+                start = Max(self.start, b.start)
+                if (stop < start or
+                   (stop == start and (stop not in self and stop not in b))):
+                    return 
+                else:
+                    start = Min(self.start, b.start)
+                    stop = Max(self.stop, b.stop)
+
+                    left_open = ((self.start != start or self.left_open) and
+                                 (b.start != start or b.left_open))
+                    right_open = ((self.stop != stop or self.right_open) and
+                                  (b.stop != stop or b.right_open))
+                    return self.func(start, stop, left_open=left_open, right_open=right_open)
+            else:
+                if self.right_open:
+                    if b.left_open:
+                        if self.stop == b.start:
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) // FiniteSet(b.start)
+                    else:
+                        if self.stop == b.start - 1:
+                            if b.start <= b.stop:                                
+                                return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) // FiniteSet(self.stop)
+                        if self.stop == b.start:
+                            return self.copy(stop=b.stop, right_open=b.right_open)
+                    
+                return self._union_sets(b)
+        if b.is_UniversalSet:
+            return b
+        if b.is_Complement:
+            U, A = b.args             
+            if (U.is_Range or U.is_Interval) and not A & self:
+                combined = self | U
+                if combined.is_Range or combined.is_Interval:
+                    return combined // A 
+
+        # If I have open end points and these endpoints are contained in b
+        # But only in case, when endpoints are finite. Because
+        # interval does not contain oo or -oo.
+        open_left_in_b_and_finite = (self.left_open and
+                                         sympify(b.contains(self.start)) is S.true and
+                                         self.start.is_finite)
+        open_right_in_b_and_finite = (self.right_open and
+                                          sympify(b.contains(self.stop)) is S.true and
+                                          self.stop.is_finite)
+        if open_left_in_b_and_finite or open_right_in_b_and_finite:
+            # Fill in my end points and return
+            left_open = self.left_open and self.start not in b
+            right_open = self.right_open and self.stop not in b            
+            new_a = self.copy(left_open=left_open, right_open=right_open)
+            return set((new_a, b))
+        
+        drapeau = False
+        stop = self.stop
+        right_open = self.right_open
+        if right_open:
+            if stop in b:
+                drapeau = True
+                right_open = False
+        else: 
+            if stop + 1 in b:
+                drapeau = True
+                stop += 1                                   
+
+        start = self.start
+        left_open = self.left_open
+        if left_open:
+            if start in b:
+                drapeau = True
+                left_open = False
+        else: 
+            if start - 1 in b:
+                drapeau = True
+                start -= 1                                    
+
+        if drapeau:
+            new_a = self.func(start + 1 if left_open else start, stop if right_open else stop + 1)
+            return set((new_a, b))
+        
+        if self.is_UniversalSet:
+            return self
+
+    def __new__(cls, start=None, stop=None, left_open=False, right_open=True, **kwargs):
+        assert 'integer' not in kwargs
+        if start is None or stop is None:
+            if kwargs.get('positive'):
+                stop = S.Infinity
+                start = 1
+            elif kwargs.get('nonnegative'):
+                start = 0
+                stop = S.Infinity
+            elif kwargs.get('negative'):
+                start = S.NegativeInfinity
+                stop = 0
+                right_open = True
+            elif kwargs.get('nonpositive'):
+                start = S.NegativeInfinity
+                stop = 0
+            else:
+                start = S.NegativeInfinity
+                stop = S.Infinity
+                
+            if kwargs.get('odd'):
+                return cls(start, stop, left_open=left_open, right_open=right_open).retain_odd()
+            elif kwargs.get('even'):
+                return cls(start, stop, left_open=left_open, right_open=right_open).retain_even()
+                
+        start = _sympify(start)
+        stop = _sympify(stop)
+
+        inftys = [S.Infinity, S.NegativeInfinity]
+        # Only allow real intervals (use symbols with 'is_extended_real=True').
+        if not all(i.is_extended_real is not False or i in inftys for i in (start, stop)):
+            raise ValueError("Non-real intervals are not supported")
+
+        # evaluate if possible
+        if right_open and stop <= start or not right_open and stop < start:
+            return start.emptySet
+
+        if stop == start:
+            if left_open or right_open:
+                return start.emptySet
+            else:
+                if start == S.Infinity or start == S.NegativeInfinity:
+                    return start.emptySet                
+                return FiniteSet(stop)
+
+        # Make sure infinite interval stop points are open.
+        if start == S.NegativeInfinity:
+            left_open = True
+        if stop == S.Infinity:
+            right_open = True
+
+        if left_open:
+            if start.is_finite and not start.is_integer:
+                start = start.floor().simplify()
+            start += 1
+            left_open = False
+        else:
+            if start.is_finite and not start.is_integer: 
+                start = start.ceiling().simplify()                
+            
+        if right_open: 
+            if stop.is_finite and not stop.is_integer:
+                stop = stop.ceiling().simplify()
+            
+            if start == stop - 1:
+                return FiniteSet(start)                
+                
+        else:
+            if stop.is_finite and not stop.is_integer:
+                stop = stop.floor().simplify()
+
+            if left_open:
+                if start == stop - 1:
+                    return FiniteSet(stop)
+            else:
+                if start == stop:
+                    return FiniteSet(stop)
+            
+            right_open = True
+            stop += 1
+                
+        self = Basic.__new__(cls, start, stop)
+        self.left_open = bool(left_open)
+        self.right_open = bool(right_open)
+        return self        
+
+    def element_symbol(self, excludes=set()):
+        return self.generate_var(excludes, integer=True)
+
+    @property
+    def size(self):
+        if self.left_open:
+            start = self.start + 1
+        else:
+            start = self.start
+        if self.right_open:
+            stop = self.stop
+        else:
+            stop = self.stop + 1
+        return stop - start
+
+    def _eval_Abs(self):
+        return self.size
+
+    @property
+    def start(self):
+        """
+        The left end point of 'self'.
+
+        This property takes the same value as the 'inf' property.
+
+        Examples
+        ========
+
+        >>> from sympy import Interval
+        >>> Interval(0, 1).start
+        0
+
+        """
+        return self._args[0]
+
+    _inf = left = start
+
+    @classmethod
+    def open(cls, a, b):
+        """Return an interval including neither boundary."""
+        return cls(a, b, True, True)
+
+    @classmethod
+    def Lopen(cls, a, b):
+        """Return an interval not including the left boundary."""
+        return cls(a, b, True, False)
+
+    @classmethod
+    def Ropen(cls, a, b):
+        """Return an interval not including the right boundary."""
+        return cls(a, b, False, True)
+
+    @property
+    def stop(self):
+        """
+        The right end point of 'self'.
+
+        This property takes the same value as the 'sup' property.
+
+        Examples
+        ========
+
+        >>> from sympy import Interval
+        >>> Interval(0, 1).stop
+        1
+
+        """
+        return self._args[1]
+
+    _sup = right = stop
+
+#     trying to evaluate other \ self
+    def _complement(self, other):
+        if other == Reals:
+            return
+        
+        from sympy.sets import Integers
+        if other == Integers:
+            start, stop = S.NegativeInfinity, self.start
+            if self.left_open:
+                stop += 1
+            a = Range(start, stop)
+            
+            start, stop = self.stop, S.Infinity
+            if not self.right_open:
+                start += 1    
+            b = Range(start, stop)
+            
+            return a | b
+
+        if other.is_FiniteSet:
+            nums = [m for m in other.args if m.is_number]
+            if nums == []:
+                return
+
+        return Set._complement(self, other)
+
+    @property
+    def _boundary(self):
+        finite_points = [p for p in (self.start, self.stop) if abs(p) != S.Infinity]
+        return FiniteSet(*finite_points)
+
+    def _contains(self, other):
+        if not isinstance(other, Expr) or (
+                other is S.Infinity or
+                other is S.NegativeInfinity or
+                other is S.NaN or
+                other is S.ComplexInfinity) or other.is_extended_real == False:
+            return S.false
+
+        if self.start is S.NegativeInfinity and self.stop is S.Infinity:
+            if not other.is_extended_real is None:
+                if other.is_integer:
+                    return S.true
+                return
+
+        if other.is_extended_real == False:
+            return S.false
+        
+        if other.is_extended_real is None:
+            return
+        
+        if self.left_open:
+            expr = other > self.start
+        else:
+            expr = other >= self.start
+
+        if self.right_open:
+            expr = And(expr, other < self.stop)
+        else:
+            expr = And(expr, other <= self.stop)
+
+        return _sympify(expr)
+
+    @property
+    def _measure(self):
+        return self.stop - self.start
+
+    def doit(self, deep=False, **_):
+        if deep:
+            return self.copy(start=self.start.doit(), stop=self.stop.doit())
+        m = self.min()
+        if m.is_Integer:
+            M = self.max()
+            if M.is_Integer: 
+                from sympy import FiniteSet
+                return FiniteSet(*range(m, M + 1))
+        return self
+
+    def to_mpi(self, prec=53):
+        return mpi(mpf(self.start._eval_evalf(prec)),
+            mpf(self.stop._eval_evalf(prec)))
+
+    def _eval_evalf(self, prec):
+        return Interval(self.left._eval_evalf(prec),
+            self.right._eval_evalf(prec),
+                        left_open=self.left_open, right_open=self.right_open)
+
+    def _is_comparable(self, other):
+        is_comparable = self.start.is_comparable
+        is_comparable &= self.stop.is_comparable
+        is_comparable &= other.start.is_comparable
+        is_comparable &= other.stop.is_comparable
+
+        return is_comparable
+
+    @property
+    def is_left_unbounded(self):
+        """Return ``True`` if the left endpoint is negative infinity. """
+        return self.left is S.NegativeInfinity or self.left == Float("-inf")
+
+    @property
+    def is_right_unbounded(self):
+        """Return ``True`` if the right endpoint is positive infinity. """
+        return self.right is S.Infinity or self.right == Float("+inf")
+
+    def as_relational(self, x):
+        """Rewrite an interval in terms of inequalities and logic operators."""
+        x = sympify(x)
+        if self.right_open:
+            right = x < self.stop
+        else:
+            right = x <= self.stop
+        if self.left_open:
+            left = self.start < x
+        else:
+            left = self.start <= x
+        return And(left, right)
+
+    def _eval_Eq(self, other):
+        if not other.is_Range:
+            if other.is_FiniteSet:
+                if not self.is_integer or other.is_EmptySet and self.min() <= self.max():
+                    return S.false
+                return
+            elif other.is_set:
+                return
+            return S.false
+        from sympy import Equal 
+        return And(Equal(self.left, other.left), Equal(self.right, other.right))
+
+    @property
+    def free_symbols(self):
+        return set().union(*[a.free_symbols for a in self.args[:2]])
+
+    def max(self):
+        if self.right_open:
+            return self.stop - 1
+        return self.stop
+
+    def min(self):
+        if self.left_open:
+            return self.start + 1
+        return self.start
+
+    def __neg__(self):
+        assert self.right_open
+        assert not self.left_open        
+        return self.func(-self.stop + 1, -self.start + 1)
+    
+    def __sub__(self, other):
+        if not other.is_set:
+            return self + (-other)
+        return Set.__sub__(self, other)
+    
+    def __add__(self, other):
+        other = sympify(other)
+        if other.is_Range:
+            start = self.min()
+            stop = self.max()
+            
+            start += other.min()
+            stop += other.max()
+            left_open, right_open = False, False                    
+            return self.func(start, stop, left_open=left_open, right_open=right_open)
+        
+        if other.is_Interval:
+            start = self.min()
+            stop = self.max()
+            
+            start += other.start
+            stop += other.stop
+            left_open, right_open = other.left_open, other.right_open                    
+            return Interval(start, stop, left_open=left_open, right_open=right_open)
+        
+        if other.is_ComplexRegion:
+            productset = other.args[0].args
+            return other.func((self + productset[0]) @ productset[1])
+        
+        if other.is_FiniteSet:
+            start, stop = self.start, self.stop
+            start += other.min()
+            stop += other.max()
+                        
+            if other.is_integer:            
+                return self.func(start, stop)
+            else:                
+                stop -= 1
+                return Interval(start, stop)
+            
+        if not other.is_set:
+            start = self.start + other
+            stop = self.stop + other
+            return self.func(start, stop)
+
+        return Set.__add__(self, other)
+
+    def __mul__(self, k):
+        if isinstance(k, Expr):
+            a, b = self.args
+            start = self.start * k
+            stop = self.stop * k
+            if k.is_integer:
+                if k > 0:
+                    return self.func(a * k, b * k - k + 1)
+                if k < 0:
+                    return self.func(b * k - k, a * k + 1)
+                if k == 0:
+                    return FiniteSet(0)
+                
+                return self.func(S.NegativeInfinity, S.Infinity)
+            else:
+                if k > 0:
+                    return Interval(a * k, b * k - k)
+                if k < 0:
+                    return Interval(b * k - k, a * k)
+                if k == 0:
+                    return FiniteSet(0)
+                
+                return Interval(S.NegativeInfinity, S.Infinity)
+
+        return Set.__mul__(self, k)
+
+    def cos(self):
+        from sympy.core.numbers import epsilon
+        start, stop = self.args
+        if self.right_open:
+            stop -= epsilon
+
+        from sympy import cos, floor
+
+        n = floor(start / S.Pi)
+
+        m = floor(stop / S.Pi)
+
+        if n.is_even:
+            if n == m:
+                return self.func(cos(self.stop), cos(start),
+                                 left_open=self.right_open,
+                                 right_open=self.left_open,
+                                 integer=self.is_integer)
+        elif n.is_odd:
+            if n == m:
+                return self.copy(start=cos(start), stop=cos(self.stop))
+
+        return self.func(-1, 1)
+
+    def acos(self):
+        from sympy import acos
+
+        start, stop = self.args
+
+        return self.func(acos(stop), acos(start), left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
+
+    def __truediv__(self, other):
+        if self.is_integer:
+            if other.is_One:
+                return self
+            if other.is_NegativeOne: 
+                return self.func(self.stop / other, self.start / other,
+                                 left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
+        else:
+            if other.is_extended_positive: 
+                return self.copy(start=self.start / other, stop=self.stop / other)
+            if other.is_extended_negative: 
+                return self.func(self.stop / other, self.start / other,
+                                 left_open=self.right_open, right_open=self.left_open, integer=self.is_integer)
+
+    def _has(self, pattern):
+        return self.start._has(pattern) or self.stop._has(pattern)
+
+    def copy(self, **kwargs):
+        if 'start' not in kwargs:
+            start = self.start
+        else:
+            start = kwargs['start']
+            
+        if 'stop' not in kwargs:
+            stop = self.stop
+        else:
+            stop = kwargs['stop']
+            
+        if 'left_open' not in kwargs:
+            left_open = self.left_open
+        else:
+            left_open = kwargs['left_open']
+
+        if 'right_open' not in kwargs:
+            right_open = self.right_open
+        else:
+            right_open = kwargs['right_open']
+            
+        if left_open:
+            start += 1
+        if not right_open:
+            stop += 1
+        return self.func(start, stop)
+
+    def retain_odd(self):
+        i = self.generate_var(integer=True)
+        a, b = self.min(), self.max()
+        if a.is_finite:
+            a = (a / 2).floor()
+        if b.is_finite:
+            b = ((b - 1) / 2).floor()
+            
+        if a.is_infinite and b.is_infinite:
+            domain = self
+        else:
+            domain = self.func(a, b, integer=True)
+        from sympy import Cup
+        return Cup[i:domain]((2 * i + 1).set)
+        
+    def retain_even(self):
+        i = self.generate_var(integer=True)
+        a, b = self.min(), self.max()
+        if a.is_finite:
+            a = (a / 2).floor()
+        if b.is_finite:
+            b = (b / 2).floor()
+            
+        if a.is_infinite and b.is_infinite:
+            domain = self
+        else:
+            domain = self.func(a, b + 1)
+        from sympy import Cup
+        return Cup[i:domain]((2 * i).set)
+        
+    def _subs(self, old, new, **hints):
+        assert old != new
+        if self == old:
+            return new
+        
+        hit = False
+        args = list(self.args[:2])
+        for i, arg in enumerate(args):
+            if not hasattr(arg, '_eval_subs'):
+                continue
+            arg = arg._subs(old, new, **hints)
+            if arg != args[i]:
+                hit = True
+                args[i] = arg
+        if hit:
+            start, stop = args
+            return self.copy(start=start, stop=stop)
+        return self
+
+    @property
+    def etype(self):
+        if self.is_integer:
+            return dtype.integer
+        return dtype.real
+
+    def _pretty(self, p): 
+        if self.start == self.stop:
+            return p._print_seq(self.args[:1], '{', '}')
+
+        else:
+            left = '['
+            right = ')'
+
+            return p._print_seq(self.args[:2], left, right, delimiter=';')
+
+    def _sympystr(self, _): 
+        return '{left_open}{start}{sep} {stop}{right_open}'.format(**{'start': self.start, 'stop': self.stop, 'sep': ';',
+                             'left_open': '(' if self.left_open else '[',
+                             'right_open': ')' if self.right_open else ']'})
+
+    def handle_finite_sets(self, unk):
+        if all(arg.domain in self for arg in unk.args):
+            return unk
+
+    def _hashable_content(self):
+        """Return a tuple of information about self that can be used to
+        compute the hash. If a class defines additional attributes,
+        like ``name`` in Symbol, then this method should be updated
+        accordingly to return such relevant attributes.
+
+        Defining more than _hashable_content is necessary if __eq__ has
+        been defined by a class. See note about this in Basic.__eq__."""
+
+        return self._args + (self.left_open, self.right_open)
+
+    is_integer = True
+    
+    def _eval_is_extended_negative(self):
+        if self.min().is_extended_nonnegative:
+            return False
+        if self.max().is_extended_negative:
+            return True
+
+    def _eval_is_extended_positive(self):
+        if self.max().is_extended_nonpositive:
+            return False
+        if self.min().is_extended_positive:
+            return True
+
+    def _eval_is_zero(self):
+        if self.min().is_extended_positive:
+            return False
+        if self.max().is_extended_negative:
+            return False
+
+    def _eval_is_rational(self):
+        return True        
+
+    def _eval_is_algebraic(self):
+        return True        
+
+    def _eval_is_finite(self):
+        if self.start.is_finite:
+            return self.stop.is_finite
+        return self.start.is_finite
+
+    def inverse(self):
+        return
+
+    def _latex(self, p):
+        if self.start == self.stop:
+            return r"\left\{%s\right\}" % self._print(self.start)
+        elif self.start.is_NegativeInfinity:
+            if self.stop.is_Infinity: 
+                return r"\mathbb{Z}"
+            elif self.stop.is_Zero:
+                if self.right_open:
+                    return r"\mathbb{Z}^-"
+                else:
+                    return r"\overline{\mathbb{Z}^+}"
+                                    
+        elif self.stop.is_Infinity:
+            if self.start.is_Zero:
+                if self.left_open:
+                    return r"\mathbb{Z}^+"
+                else:
+                    return r"\overline{\mathbb{Z}^-}"
+        
+        if self.left_open:
+            left = '('
+        else:
+            left = '['
+
+        if self.right_open:
+            right = ')'
+        else:
+            right = ']'
+
+        return r"\left%s%s; %s\right%s" % (left, p._print(self.start), p._print(self.stop), right)
+
+    @classmethod
+    def simplify_Contains(cls, self, e, s):
+        if s.is_integer and e.is_Add:
+            if not s.left_open or s.right_open:
+                if S.NegativeOne in e.args:
+                    s += S.One
+                    e += S.One
+                    return self.func(e, s, evaluate=False)
+                    
+            if s.left_open or not s.right_open:
+                if S.One in e.args:
+                    s -= S.One
+                    e -= S.One
+                    return self.func(e, s, evaluate=False)
+                
+        if e.is_integer == s.is_integer: 
+            if s.start is S.NegativeInfinity:
+                from sympy import Less, LessEqual
+                func = Less if s.right_open else LessEqual
+                if e.is_extended_real:
+                    return func(e, s.stop)
+                return
+            if s.stop is S.Infinity:
+                from sympy import Greater, GreaterEqual
+                func = Greater if s.left_open else GreaterEqual
+                if e.is_extended_real:
+                    return func(e, s.start).simplify()
+                return
+            complement = e.domain // s
+            if complement.is_FiniteSet:
+                return self.invert_type(e, complement).simplify()                
+            
+    @classmethod
+    def simplify_NotContains(cls, self, e, s):
+        if s.is_integer and e.is_Add:
+            if S.NegativeOne in e.args:
+                s += S.One
+                e += S.One
+                return self.func(e, s, evaluate=False).simplify()
+                    
+            if S.One in e.args: 
+                s -= S.One
+                e -= S.One
+                return self.func(e, s, evaluate=False).simplify()
+
+    def _eval_Subset(self, rhs):
+        if rhs.is_UniversalSet:
+            return S.true
+        if rhs.is_Range:
+            if self.left_open == rhs.left_open:
+                if rhs.start == self.start:
+                    if self.right_open == rhs.right_open:
+                        if self.stop <= rhs.stop:
+                            return S.true
+            if self.right_open == rhs.right_open:
+                if rhs.stop == self.stop:
+                    if self.left_open == rhs.left_open:
+                        if self.start >= rhs.start:
+                            return S.true               
+
+        if rhs.is_Interval:
+            if not rhs.left_open:
+                if rhs.start == self.start:
+                    if self.right_open == rhs.right_open:
+                        if self.stop <= rhs.stop:
+                            return S.true
+            if rhs.right_open:
+                if rhs.stop == self.stop:
+                    if self.left_open == rhs.left_open:
+                        if self.start >= rhs.start:
+                            return S.true
+            else:
+                if rhs.stop == self.stop - 1:
+                    if rhs.left_open:
+                        if rhs.start.is_NegativeInfinity:
+                            return S.true
+                    else:
+                        if self.start >= rhs.start:
+                            return S.true                
+                                               
+    @property
+    def kwargs(self):
+        return {'left_open': self.left_open, 'right_open': self.right_open}             
+
+
+converter[range] = Range
 
 
 def normalize_theta_set(theta):
@@ -749,7 +1529,7 @@ def normalize_theta_set(theta):
     """
     from sympy.functions.elementary.trigonometric import _pi_coeff as coeff
 
-    if theta.is_Interval:
+    if theta.is_Range or theta.is_Interval:
         interval_len = theta.measure
         # one complete circle
         if interval_len >= 2 * S.Pi:

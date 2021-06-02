@@ -1,4 +1,3 @@
-
 from sympy.core import Function, S, sympify
 from sympy.core.add import Add
 from sympy.core.containers import Tuple
@@ -6,7 +5,6 @@ from sympy.core.operations import LatticeOp, ShortCircuit
 from sympy.core.function import (Application, Lambda,
     ArgumentIndexError)
 from sympy.core.expr import Expr
-from sympy.core.mod import Mod
 from sympy.core.mul import Mul
 from sympy.core.relational import Relational
 from sympy.core.singleton import Singleton
@@ -44,7 +42,7 @@ class IdentityFunction(with_metaclass(Singleton, Lambda)):
     """
 
     def __new__(cls):
-        from sympy.sets.sets import FiniteSet
+        from sympy.sets.finiteset import FiniteSet
         x = Dummy('x')
         # construct "by hand" to avoid infinite loop
         obj = Expr.__new__(cls, Tuple(x), x)

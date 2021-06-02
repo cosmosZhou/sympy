@@ -1,5 +1,5 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
+
 
 
 @apply
@@ -9,13 +9,14 @@ def apply(given):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     e = Symbol.e(integer=True)
     s = Symbol.s(etype=dtype.integer)
     Eq << apply(Contains(e, s))
-    
-    Eq << Eq[-1].this.lhs.definition
-    
+
+    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
+
 
 if __name__ == '__main__':
-    prove()
+    run()
 

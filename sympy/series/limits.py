@@ -283,9 +283,19 @@ class Limit(Expr):
 
     @property
     def dtype(self):
-        from sympy.core.symbol import dtype
+        expr = self.expr
+        if expr.is_set:
+            return expr.dtype
+        
+        from sympy import dtype
+        if not expr.is_real:
+            return dtype.complex        
         return dtype.real
 
+    @property
+    def is_set(self):
+        return self.expr.is_set
+    
     @property
     def shape(self): 
         return self.args[0].shape
@@ -353,9 +363,13 @@ class Limit(Expr):
         return Lim
 
     def simplify(self, **kwargs):
-        expr, (x, *_) = self.args
+        expr, (x, x0, dir) = self.args
         if not expr._has(x):
             return expr
+        
+        if expr.is_symbol:
+            if expr == x:
+                return x0
         return self
 
 

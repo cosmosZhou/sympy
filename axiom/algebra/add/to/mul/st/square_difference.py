@@ -1,14 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(self):
-    x2, y2 = axiom.is_Substract(self)
-    x = axiom.is_Square(x2)
-    y = axiom.is_Square(y2)
+    import axiom
+    x2, y2 = axiom.is_Subtract(self)
+    x = x2.of(Basic ** 2)
+    y = y2.of(Basic ** 2)
     return Equal(self, (x - y) * (x + y))
 
 
@@ -24,4 +22,4 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()

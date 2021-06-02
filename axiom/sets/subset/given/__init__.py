@@ -1,3 +1,3 @@
-from . import forall_subset
+from . import all_subset
 from . import is_emptyset
-from . import forall_contains
+from . import all_contains

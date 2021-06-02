@@ -1,52 +1,50 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra
-from sympy.matrices.expressions.matexpr import Swap
+from util import *
 
 
 @apply
 def apply(n):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-    
+
     return Equal(BlockMatrix([[Swap(n, i, j), ZeroMatrix(n)], [ZeroMatrix(n), S.One]]), Swap(n + 1, i, j))
 
 
 @prove
 def prove(Eq):
-    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    from axiom import algebra
+    n = Symbol.n(domain=Range(2, oo))
     Eq << apply(n)
 
     _, i, j = Eq[0].rhs.args
-    _i = i.copy(domain=Interval(0, n - 1, integer=True))
-    _j = j.copy(domain=Interval(0, n - 1, integer=True))
-    
+    _i = i.copy(domain=Range(0, n))
+    _j = j.copy(domain=Range(0, n))
+
     W = Symbol.W(Eq[0].lhs._subs(i, _i)._subs(j, _j))
     V = Symbol.V(Eq[0].rhs._subs(i, _i)._subs(j, _j))
-    
+
     Eq << W.this.definition
     Eq << V.this.definition
-    
-    h = Symbol.h(integer=True, domain=[0, n])
-    k = Symbol.k(integer=True, domain=[0, n])
+
+    h = Symbol.h(domain=Range(0, n + 1))
+    k = Symbol.k(domain=Range(0, n + 1))
 
     Eq << (V[h, k].this.definition, W[h, k].this.definition)
 
     Eq << (Eq[-1].this.rhs.astype(KroneckerDelta), Eq[-2].this.rhs.astype(KroneckerDelta))
-    
-    Eq << Eq[-2] - Eq[-1] 
-    
+
+    Eq << Eq[-2] - Eq[-1]
+
     Eq << Eq[-1].this.rhs.simplify()
-    
+
     Eq << Eq[-1].apply(algebra.eq.imply.eq.lamda, (k,), (h,), simplify=False)
-    
+
     Eq << Eq[-1].subs(Eq[1]).subs(Eq[2])
-    
-    Eq << Eq[-1].apply(algebra.cond.imply.forall.restrict, (_i,), (_j,))
-    
+
+    Eq << Eq[-1].apply(algebra.cond.imply.all.restrict, (_i,), (_j,))
+
     Eq << Eq[-1].reversed
-    
-    
+
+
 if __name__ == '__main__':
-    prove()
+    run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

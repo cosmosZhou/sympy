@@ -251,30 +251,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
         return mid        
 
-    def slice(self, index, self_start, self_stop, allow_empty=False):
-        from sympy import BlockMatrix
-        mid = Symbol.process_slice(index, self_start, self_stop)
-        if mid is None:
-            return self
-        
-        if allow_empty:
-            assert mid >= self_start, "mid >= self_start => %s" % (mid >= self_start)
-        else: 
-            assert mid > self_start, "mid > self_start => %s" % (mid > self_start)
-             
-        assert mid < self_stop, "mid < self_stop => %s" % (mid < self_stop)
-        
-        if isinstance(mid, tuple):
-            start, stop = mid
-            assert start < stop, "start < stop => %s" % (start < stop)
-            return BlockMatrix(self[self_start: start], self[start: stop], self[stop:self_stop])
-        
-        return BlockMatrix(self[self_start:mid], self[mid:self_stop])
-        
-    def bisect(self, indices):
+    def split(self, indices):
         from sympy import Union
         if self.is_set:
-            return Union(self & indices, self - indices, evaluate=False)
+            return Union(self & indices, self // indices, evaluate=False)
         if self.shape: 
             return self.slice(indices, 0, self.shape[0])
             
@@ -308,12 +288,28 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def process_assumptions(assumptions, integer):
         domain = assumptions.get('domain')
         if domain is not None:
-            from sympy import Interval
+            from sympy import Interval, Range
             if isinstance(domain, list):
-                domain = Interval(*domain, integer=integer)
+                domain = (Range if integer else Interval)(*domain)
                
             if isinstance(domain, set):
                 assumptions['domain'] = sympify(domain) 
+            elif domain.is_Range:
+                if domain.start is S.NegativeInfinity:
+                    if domain.stop is S.Infinity:
+                        assumptions.pop('domain')
+                    elif domain.stop is S.Zero:
+                        assumptions.pop('domain')
+                        assumptions['negative'] = True
+                elif domain.start is S.Zero:
+                    if domain.stop is S.Infinity:
+                        assumptions.pop('domain')
+                        assumptions['nonnegative'] = True
+                elif domain.start is S.One:
+                    if domain.stop is S.Infinity:
+                        assumptions.pop('domain')
+                        assumptions['positive'] = True
+                        
             elif domain.is_Interval:
                 if domain.start is S.NegativeInfinity:
                     if domain.stop is S.Infinity:
@@ -332,14 +328,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                             assumptions['positive'] = True
                         else:
                             assumptions['nonnegative'] = True
-                elif domain.start is S.One:
-                    if integer and not domain.left_open and domain.stop is S.Infinity:
-                        assumptions.pop('domain')
-                        assumptions['positive'] = True
-                elif domain.stop is S.NegativeOne:
-                    if integer and not domain.right_open and domain.start is S.NegativeInfinity:
-                        assumptions.pop('domain')
-                        assumptions['negative'] = True
             
             if 'domain' not in assumptions:
                 assumptions['integer'] = integer            
@@ -475,13 +463,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         tmp_asm_copy = assumptions.copy()
 
         # be strict about commutativity
-        is_commutative = fuzzy_bool(assumptions.get('commutative', True))
-        if 'domain' in assumptions:
-            domain = assumptions['domain']
-            if isinstance(domain, list):
-                from sympy import Interval
-                assumptions['domain'] = Interval(*domain, integer=assumptions.get('integer'))
-                
+        is_commutative = fuzzy_bool(assumptions.get('commutative', True))                
         assumptions['commutative'] = is_commutative
         obj._assumptions = StdFactKB(assumptions)
         obj._assumptions._generator = tmp_asm_copy  # Issue #8873
@@ -601,15 +583,23 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def domain_bounded(self):
         if 'domain' in self._assumptions:
             return self._assumptions['domain']
-        from sympy import Interval, oo
+        from sympy import Interval, oo, Range
         if self.is_positive:
-            return Interval(0, oo, left_open=True, integer=self.is_integer)
+            if self.is_integer:
+                return Range(1, oo)
+            return Interval(0, oo, left_open=True)
         if self.is_negative:
-            return Interval(-oo, 0, right_open=True, integer=self.is_integer)
+            if self.is_integer:
+                return Range(-oo, 0)
+            return Interval(-oo, 0, right_open=True)
         if self.is_nonpositive:
-            return Interval(-oo, 0, integer=self.is_integer)
+            if self.is_integer:
+                return Range(-oo, 1)
+            return Interval(-oo, 0)
         if self.is_nonnegative:
-            return Interval(0, oo, integer=self.is_integer)
+            if self.is_integer:
+                return Range(0, oo)
+            return Interval(0, oo)
         
     def domain_defined(self, x):
         definition = self.definition
@@ -619,14 +609,13 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         
     @property
     def domain(self):
-        from sympy.sets.sets import Interval
+        from sympy import Interval, Range, CartesianSpace
 
         if 'domain' in self._assumptions:
             domain = self._assumptions['domain']
-            if self.is_integer and domain.is_Interval and not domain.is_integer:
+            if self.is_integer and domain.is_Interval:                
                 domain = domain.copy(integer=True)
             if self.shape:
-                from sympy import CartesianSpace
                 domain = CartesianSpace(domain, *self.shape)
             return domain
          
@@ -638,15 +627,20 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                          
         if self.is_extended_real:
             assumptions = self.assumptions0
-            if 'integer' not in assumptions:
-                assumptions['integer'] = self.is_integer
-            domain = Interval(**assumptions)
+            if 'integer' in assumptions:
+                integer = assumptions.pop('integer')
+            else:
+                integer = self.is_integer
+                
+            if integer:
+                domain = Range(**assumptions)
+            else:
+                domain = Interval(**assumptions)
         else: 
             domain = S.Complexes
         shape = self.shape
         if not shape:
             return domain
-        from sympy.sets.sets import CartesianSpace
         return CartesianSpace(domain, *shape)        
 
     @property
@@ -654,6 +648,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if 'definition' in self._assumptions:
             return self._assumptions['definition']        
 
+    def defun(self):
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition']
+                
     def domain_nonzero(self, x):
         if self == x:
             return x.domain // {0}
@@ -733,24 +731,24 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if definition is not None:
             return definition.etype        
 
-    def element_symbol(self, excludes=set(), free_symbol=None):
+    def element_symbol(self, excludes=set(), var=None):
         etype = self.etype
         if etype is None:
             return
 
-        return self.generate_free_symbol(excludes=excludes, free_symbol=free_symbol, **etype.dict)
+        return self.generate_var(excludes=excludes, var=var, **etype.dict)
 
     def equality_defined(self):
         print('this should be axiomatized')
         from sympy import Mul, Equal
-        from sympy.concrete.expr_with_limits import LAMBDA
-        if isinstance(self.definition, LAMBDA):
+        from sympy.concrete.expr_with_limits import Lamda
+        if isinstance(self.definition, Lamda):
             return Equal(self[tuple(var for var, *_ in self.definition.limits[::-1])], self.definition.function, evaluate=False, plausible=None)
         elif isinstance(self.definition, Mul):
             args = []
             ref = None
             for arg in self.definition.args:
-                if isinstance(arg, LAMBDA):
+                if isinstance(arg, Lamda):
                     assert ref is None
                     ref = arg
                 else:
@@ -810,6 +808,12 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                         start, stop = indices[0].start, indices[0].stop
                         if start is None:
                             if stop is None:
+                                if self.is_Symbol:
+                                    if isinstance(indices[1], slice):
+                                        return Slice(self, (0, self.shape[0]), indices[1])
+                                    else:
+                                        from sympy.tensor.indexed import SliceIndexed
+                                        return SliceIndexed(self, (0, self.shape[0]), indices[1])
                                 return self.T[indices[1]]
                             start = 0
                         if stop is None:
@@ -849,8 +853,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             return Slice(self, (start, stop), **kw_args)
         else:
             if self.definition is not None:
-                from sympy.concrete.expr_with_limits import LAMBDA
-                if isinstance(self.definition, LAMBDA):
+                from sympy.concrete.expr_with_limits import Lamda
+                if isinstance(self.definition, Lamda):
                     ref = self.definition
                     from sympy.stats.rv import RandomSymbol
                     if len(ref.limits) == 1 and isinstance(ref.function, RandomSymbol):
@@ -982,7 +986,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def _eval_is_finite(self):
         if 'domain' in self._assumptions:
             domain_assumed = self.domain_assumed
-            if domain_assumed.is_Interval: 
+            if domain_assumed.is_Range or domain_assumed.is_Interval: 
                 return True
             if domain_assumed.is_FiniteSet:
                 if all(arg.is_finite for arg in domain_assumed.args):
@@ -1135,7 +1139,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                     
                 definition = self.definition
                 if definition is not None:
-                    if definition.is_LAMBDA:
+                    if definition.is_Lamda:
                         for var in definition.variables:
                             if old == var:
                                 return self
@@ -2013,8 +2017,8 @@ class DtypeInteger(DtypeRational):
     
     @property
     def universalSet(self):
-        from sympy import Interval        
-        return Interval(S.NegativeInfinity, S.Infinity, integer=True)
+        from sympy import Range        
+        return Range(S.NegativeInfinity, S.Infinity)
     
     def as_Set(self):
         from sympy.sets import Integers
@@ -2054,10 +2058,10 @@ class DtypeIntegerConditional(DtypeInteger):
         from sympy.sets.sets import Interval
         negative = self.assumptions.get('negative')
         if negative:
-            return Interval(S.NegativeInfinity, -1, integer=True)
+            return Range(S.NegativeInfinity, 0)
         nonpositive = self.assumptions.get('nonpositive')
         if nonpositive:
-            return Interval(S.NegativeInfinity, 0, integer=True)
+            return Range(S.NegativeInfinity, 1)
 
         even = self.assumptions.get('even')
         odd = self.assumptions.get('odd')
@@ -2090,7 +2094,7 @@ class DtypeIntegerConditional(DtypeInteger):
         from sympy import Interval, oo
         if 'nonnegative' in self.assumptions:
             if start != 0:
-                return self.integer(domain=Interval(start, oo, integer=True)) 
+                return self.integer(domain=Range(start, oo)) 
             return self
         return self.integer
 

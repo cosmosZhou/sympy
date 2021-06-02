@@ -5,8 +5,16 @@ from . import kronecker_delta
 from . import vector
 from . import matrix
 from . import continued_fraction
-from . import forall_gt
 from . import imply
 from . import eq
-from . import forall_ge
+from . import all_ge
 from . import factorial, mul
+from . import binomial
+from . import det
+from . import stirling
+from . import stirling1
+from . import all_is_positive
+from . import alpha
+from . import K
+from . import H
+from . import sigma

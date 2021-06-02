@@ -1,11 +1,9 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
+from util import *
 
 
 @apply
 def apply(given, *limits):
-    lhs, rhs = axiom.is_Equal(given)
+    lhs, rhs = given.of(Equal)
     
     return Equal(Limit(lhs, *limits).simplify(), Limit(rhs, *limits).simplify())
 
@@ -22,5 +20,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

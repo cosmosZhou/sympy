@@ -1152,7 +1152,7 @@ class Add(Expr, AssocOp):
                 return this
             
         for i, arg in enumerate(self.args):
-            if arg.is_LAMBDA:
+            if arg.is_Lamda:
                 _arg = arg.simplify(squeeze=True)
                 if _arg != arg:
                     args = [*self.args]
@@ -1290,6 +1290,8 @@ class Add(Expr, AssocOp):
                 if not pos.limits:
                     continue
                 t = pos.limits[0][0]
+                if t.shape:
+                    continue
                 pattern = pos.function._subs(t, Wild(t.name, **t.assumptions0), symbol=False)
                 for i, neg in enumerate(negative):
                     if not (len(pos.limits) == len(neg.limits) == 1 and len(pos.limits[0]) == len(neg.limits[0]) == 3):
@@ -1486,7 +1488,7 @@ class Add(Expr, AssocOp):
     def _eval_determinant(self):
         if self.is_upper or self.is_lower:
             from sympy.concrete.products import Product
-            i = self.generate_free_symbol(integer=True)
+            i = self.generate_var(integer=True)
             n = self.shape[-2]
             return Product[i:n](self[i, i].simplify()).doit()
 
@@ -1544,7 +1546,7 @@ class Add(Expr, AssocOp):
         return cls(*(self.func(f, *self.limits) for f in function))
 
     @classmethod
-    def rewrite_from_LAMBDA(cls, self):
+    def rewrite_from_Lamda(cls, self):
         if isinstance(self.function, cls):
             function = self.function
             function = self.function.args
@@ -1634,6 +1636,46 @@ class Add(Expr, AssocOp):
     def rewrite_from_Ceiling(cls, self):
         return cls.rewrite_from_RoundFunction(self)
     
+    def of_two_terms(self):
+        if len(self.args) == 2:
+            basic, mul = self.args
+            return basic is Basic
+        
+    def of(self, cls):
+        res = Expr.of(self, cls)
+        if res is None:
+            if cls.is_Add:
+                if len(cls.args) == 2:
+                    a, b = cls.args
+                    cls = Basic.__new__(Add, b, a)
+                    args = Expr.of(self, cls)
+                    if args is not None:
+                        _b, _a = args
+                        return [_a, _b]
+                    return args
+                if len(cls.args) == 3:
+                    a, b, c = cls.args
+                    cls = Basic.__new__(Add, b, a, c)
+                    args = Expr.of(self, cls)
+                    if args is not None:
+                        _b, _a, _c = args
+                        return [_a, _b, _c]
+                    
+                    cls = Basic.__new__(Add, b, c, a)
+                    args = Expr.of(self, cls)
+                    if args is not None:
+                        _b, _c, _a = args
+                        return [_a, _b, _c]
+                    return args
+        elif isinstance(res, list):
+            if len(res) > 2 and cls.of_two_terms():
+                *res, mul = res
+                return Mul(*res), mul
+                
+        return res
+                    
+                    
+
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, geometry, calculus, sets
+from util import *
+
 
 
 @apply
@@ -13,20 +12,21 @@ def apply(cosx):
 
 @prove
 def prove(Eq):
+    from axiom import calculus
     x = Symbol.x(real=True)
     Eq << apply(cos(x))
-    
+
     i = S.ImaginaryUnit
     Eq << calculus.trigonometry.euler.formula.apply(x)
-    
+
     Eq << calculus.trigonometry.euler.formula.apply(-x)
-    
+
     Eq << Eq[-2] + Eq[-1]
-    
+
     Eq << Eq[-1] / 2
-    
+
     Eq << Eq[-1].reversed
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,12 +1,11 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given, *, simplify=True): 
-    lhs, rhs = axiom.is_Equal(given)
+    lhs, rhs = given.of(Equal)
     
     lhs, rhs = ReducedSum(lhs), ReducedSum(rhs)
     if simplify:
@@ -19,7 +18,7 @@ def apply(given, *, simplify=True):
 @prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(domain=Range(0, n))
     assert i.is_integer
     f = Function.f(shape=(), complex=True)
     g = Function.g(shape=(), complex=True)
@@ -30,5 +29,5 @@ def prove(Eq):
     
     
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,12 +1,9 @@
-from axiom.utility import prove, apply
-from sympy import *
-import axiom
-# given : A & B = A | B => A = B
+from util import *
 
 
 @apply
 def apply(given, S):
-    A, B = axiom.is_Equal(given)
+    A, B = given.of(Equal)
     return Equal(A | S, B | S)
 
 
@@ -21,6 +18,7 @@ def prove(Eq):
     
     Eq << Eq[-1].subs(Eq[0])
 
+
 if __name__ == '__main__':
-    prove()
+    run()
 

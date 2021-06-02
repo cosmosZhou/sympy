@@ -1,7 +1,4 @@
-from axiom.utility import prove, apply
-
-from tensorflow.nn import softmax
-from sympy import *
+from util import *
 
 
 @apply
@@ -20,7 +17,7 @@ def prove(Eq):
     n = Symbol.n(integer=True)
     d = Symbol("d_z", integer=True)
 #     i = Symbol.i(integer=True)
-    h = Symbol.h(domain=Interval(0, n, integer=True))
+    h = Symbol.h(domain=Range(0, n + 1))
     Eq << apply(n, d, slice(0, h))
     
     M = Symbol.M(Eq[0].rhs.args[0].arg)
@@ -36,4 +33,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()

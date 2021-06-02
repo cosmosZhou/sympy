@@ -1,15 +1,9 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets, algebra
-import axiom
-
-# given: |A | B| = |A| + |B|
-# A & B = {}
+from util import *
 
 
 @apply
 def apply(given):
-    x_union_abs, x_abs_sum = axiom.is_Equal(given)
+    x_union_abs, x_abs_sum = given.of(Equal)
     if not x_union_abs.is_Abs:
         tmp = x_union_abs
         x_union_abs = x_abs_sum
@@ -32,10 +26,9 @@ def apply(given):
     return Equal(A & B, A.etype.emptySet)
 
 
-
-
 @prove
 def prove(Eq):
+    from axiom import sets, algebra
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
@@ -46,12 +39,12 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[0])
 
     Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
-    
+
     Eq << -Eq[-1]
-    
+
     Eq << Eq[-1].apply(sets.is_zero.imply.is_emptyset)
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

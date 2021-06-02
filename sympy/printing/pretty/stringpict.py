@@ -31,7 +31,10 @@ class stringPict(object):
         """
         self.s = s
         # picture is a string that just can be printed
-        self.picture = stringPict.equalLengths(s.splitlines())
+        try:
+            self.picture = stringPict.equalLengths(s.splitlines())
+        except:
+            self.picture = stringPict.equalLengths([str(s)])
         # baseline is the line number of the "base line"
         self.baseline = baseline
         self.binding = None

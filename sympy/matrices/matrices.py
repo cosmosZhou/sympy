@@ -716,7 +716,7 @@ class MatrixBase(MatrixCommon):
             If ``zero_above=False``, an echelon matrix will be returned.
         """
         rows, cols = self.rows, self.cols
-        mat = list(self._mat)
+        mat = list(self._args)
 
         def get_col(i):
             return mat[i::cols]
@@ -1503,7 +1503,7 @@ class MatrixBase(MatrixCommon):
                 Data type not understood; expecting list of lists
                 or lists of values.'''))
 
-        return rows, cols, flat_list
+        return sympify(rows), sympify(cols), flat_list
 
     def _setitem(self, key, value):
         """Helper to set value at location given by key.
@@ -2414,8 +2414,7 @@ class MatrixBase(MatrixCommon):
         if is_sequence(key):
             if not len(key) == 2:
                 raise TypeError('key must be a sequence of length 2')
-            return [a2idx_(i, n) if not isinstance(i, slice) else i
-                    for i, n in zip(key, self.shape)]
+            return [a2idx_(i, n) if not isinstance(i, slice) else i for i, n in zip(key, self.shape)]
         elif isinstance(key, slice):
             return key.indices(len(self))[:2]
         else:

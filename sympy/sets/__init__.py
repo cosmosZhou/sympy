@@ -1,19 +1,21 @@
-from .sets import (Set, Interval, Union, EmptySet, FiniteSet, ProductSet,
+from .sets import (Set, Interval, Union, EmptySet, ProductSet,
         Intersection, imageset, conditionset, Complement, SymmetricDifference, CartesianSpace)
-from .fancysets import ImageSet, Range, ComplexRegion#, Reals
+
+from .finiteset import FiniteSet
+from .fancysets import ImageSet, Range, ComplexRegion  # , Reals
 from .contains import Contains, NotContains
 from .subset import Subset, Supset, NotSubset, NotSupset
 from .ordinals import Ordinal, OmegaPower, ord0
 from ..core.singleton import S
 from sympy.sets.fancysets import Reals
 
-PositiveIntegers = Interval(1, S.Infinity, integer=True)
-NonnegativeIntegers = Interval(0, S.Infinity, integer=True)
-# NegativeIntegers = Interval(S.NegativeInfinity, -1, integer=True)
-# NonpositiveIntegers = Interval(S.NegativeInfinity, 0, integer=True)
+PositiveIntegers = Range(1, S.Infinity)
+NonnegativeIntegers = Range(0, S.Infinity)
+# NegativeIntegers = Range(S.NegativeInfinity, 0)
+# NonpositiveIntegers = Range(S.NegativeInfinity, 1)
 
 Naturals = PositiveIntegers 
 Naturals0 = NonnegativeIntegers
 
-Integers = Interval(S.NegativeInfinity, S.Infinity, integer=True)
+Integers = Range(S.NegativeInfinity, S.Infinity)
 del S

@@ -1,32 +1,31 @@
-from sympy.core.relational import Equal
-from sympy.core.symbol import dtype
-from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-from sympy.functions.elementary.piecewise import Piecewise
-from sympy.matrices.expressions.matexpr import Swap
-from sympy import LAMBDA
-from sympy import Symbol
+
+
+
+
+
+
+
+from util import *
 
 
 @apply
 def apply(x, w=None):
     n = x.shape[0]
-    i = Symbol.i(domain=Interval(0, n - 1, integer=True))
-    j = Symbol.j(domain=Interval(0, n - 1, integer=True))
+    i = Symbol.i(domain=Range(0, n))
+    j = Symbol.j(domain=Range(0, n))
     
     if w is None:
-        w = Symbol.w(LAMBDA[j](Swap(n, 0, j)))
+        w = Symbol.w(Lamda[j](Swap(n, 0, j)))
 #     else:
     assert w.shape == (n, n, n)
     assert w[j].definition == Swap(n, 0, j)
     
-    return Equal(x[w[j][i] @ LAMBDA[i:n](i)], Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True)))
+    return Equal(x[w[j][i] @ Lamda[i:n](i)], Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True)))
 
 
 @prove
 def prove(Eq): 
-    n = Symbol.n(domain=Interval(2, oo, integer=True))    
+    n = Symbol.n(domain=Range(2, oo))    
     x = Symbol.x(etype=dtype.integer, shape=(n,))    
     
     Eq << apply(x)
@@ -42,4 +41,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()

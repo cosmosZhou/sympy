@@ -1,8 +1,0 @@
-*.php
-!/utility.php
-!/request.php
-!/index.php
-!/render.php
-!/search.php
-!/searchBox.php
-!/hierarchy.php

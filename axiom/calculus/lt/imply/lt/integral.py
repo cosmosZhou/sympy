@@ -1,14 +1,13 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra, sets
+
 
 
 @apply
 def apply(given, *limits):
-    lhs, rhs = axiom.is_Less(given)
+    lhs, rhs = given.of(Less)
     
-    return Less(Integrate(lhs, *limits).simplify(), Integrate(rhs, *limits).simplify())
+    return Less(Integral(lhs, *limits).simplify(), Integral(rhs, *limits).simplify())
 
 
 @prove(surmountable=False)
@@ -21,5 +20,5 @@ def prove(Eq):
     
 
 if __name__ == '__main__':
-    prove()
+    run()
 

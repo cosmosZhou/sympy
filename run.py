@@ -1,52 +1,54 @@
 import os, sys, re
 from sympy.utilities.miscellany import Text
-    
-try: 
-    import axiom  # @UnusedImport
+
+try:
+    import axiom
 except ImportError as e:
     from traceback import TracebackException
     etype, value, tb = sys.exc_info() 
     lines = [*TracebackException(type(value), value, tb, limit=None).format(chain=None)]
     error_source = lines[-2]
-    
+
     print(error_source, file=sys.stderr)
     error_source = error_source.strip()
     error_message, line = error_source.splitlines()
-    
-    m = re.compile(r'File "([^"]+(?:\\|/)__init__\.py)", line (\d+), in <module>').fullmatch(error_message)
+
+    m = re.fullmatch(r'File "([^"]+(?:\\|/)__init__\.py)", line (\d+), in <module>', error_message)
     assert m
     file, line_number = m.groups()
-    
+
     line_number = int(line_number) - 1
     print('file =', file)
     print('line_number =', line_number)
-    
+
     file = Text(file)
 
     lines = file.readlines()    
     del lines[line_number]
-    
+
     file.writelines(lines)
-        
+
     command = 'python ' + ' '.join(sys.argv)
     print(command)
-    
+
     exit_code = os.system(command)
     print('exit_code =', exit_code)
     exit(exit_code)
 
 import time
-from os.path import getsize
 from multiprocessing import cpu_count
 from queue import PriorityQueue
 from functools import singledispatch 
 import random
-from axiom.utility import RetCode
+from util.utility import RetCode
 sep = os.path.sep
 
 
-def axiom_directory(): 
-    return os.path.dirname(axiom.__file__)
+def axiom_directory():
+    directory = os.path.dirname(__file__)
+    if not directory:
+        return './axiom'
+    return directory + '/axiom'
 
 
 class Globals:
@@ -56,18 +58,13 @@ class Globals:
     def increment_count(cls):
         cls.count += 1
 
-    @classmethod
-    def decrement_count(cls):
-        cls.count -= 1
-
     unproved = []
 
     failures = []
 
     websites = []
 
-    insurmountable = set()
-    unprovable = set()
+    data = []
 
 
 def readFolder(rootdir, sufix='.py'):
@@ -77,30 +74,37 @@ def readFolder(rootdir, sufix='.py'):
         if path.endswith(sufix):
             name = name[:-len(sufix)]
             if name == '__init__':
-                path = path[:-len(sufix) - len('/__init__')]
+                line = Text(path).readline()                
+                if not line:
+                    lines = Text(path).readlines()
+                    for i, line in enumerate(lines):
+                        if line:
+                            break
+                    
+                    try:
+                        lines = lines[i:]
+                        Text(path).writelines(lines)
+                    except UnboundLocalError:
+                        print(f'removing empty {path}')
+                        os.remove(path)
+                        continue                    
+                    
+                if re.match('from *\. *import +\w+', line):
+                    continue
+
+                path = path[:-len(sufix) - len('/__init__')]                
             else: 
                 path = path[:-len(sufix)]
-                
-            paths = re.compile(r'[\\/]+').split(path)
+
+            paths = re.split(r'[\\/]+', path)
 #             print(path)
             index = paths.index('axiom')
 
-            package = '.'.join(paths[index:])
+            package = '.'.join(paths[index + 1:])
 
             Globals.increment_count()
-            path += '.php'            
-            if os.path.isfile(path): 
-                file = Text(path)
-                line = file.readline()
-                m = re.compile(r"<p style='display:none'>timing = ([\d.]+)</p>").match(line)
-                if m:
-                    timing = float(m.group(1))
-                else:
-                    timing = getsize(path) / 500
-            else:
-                timing = random.random()    
             
-            yield package, timing
+            yield package
 
         elif os.path.isdir(path):
             yield from readFolder(path, sufix)
@@ -127,15 +131,10 @@ def create_module(package, module, delete=False):
     file = Text(__init__)
     
     for line in file:
-        m = re.compile('from \. import (\w+)((?:, *\w+)*)').match(line)
-        if m:        
-            if m.group(1) == module:
-                hit = True
-                break
-            if m.group(2):
-                if module in m.group(2).split(', *'):
-                    hit = True
-                    break                
+        m = re.match('from \. import (\w+(?:, *\w+)*)', line)
+        if m and module in m.group(1).split(', *'):
+            hit = True
+            break                
     
     if not hit:
         addition = 'from . import '
@@ -144,33 +143,53 @@ def create_module(package, module, delete=False):
              
         addition += module
         
-        last_char = file.get_last_char()
-        if last_char and last_char != '\n':
+        if len(file) and not file.endswith('\n'):
             addition = '\n' + addition  
         file.append(addition)
 
 
-def run(package): 
-    command = 'python %s %s debug=True' % (project_directory() + sep + 'run.py', package)
-    return os.system(command)
-#     for line in os.popen(cmd).readlines():
-#         print(line) 
+def run(package, debug=True):
+    args = (project_directory() + sep + 'run.py', package)
+    if debug:
+        return os.system('python %s %s debug=True' % args)
+    else: 
+        return os.popen('python %s %s' % args).readlines() 
 
     
-def import_module(package):
+def import_module(package, debug=False):
     try: 
-        return eval(package)
+        module = axiom
+        for attr in package.split('.'):
+            module = getattr(module, attr)
+        return module
+    
     except AttributeError as e: 
         print(e)
         s = str(e)
         
-        m = re.compile("module '([\w\.]+)' has no attribute '(\w+)'").fullmatch(s)
+        m = re.fullmatch("module '([\w\.]+)' has no attribute '(\w+)'", s)
         assert m 
         create_module(*m.groups())
         print(package, 'is created newly')
-        return run(package)
+        return run(package, debug=debug)
 
-        
+
+def prove_with_timing(module, debug):
+    lapse = time.time()
+    state, latex = module.prove(debug=debug)
+    lapse = time.time() - lapse
+    return state, lapse, latex            
+
+
+def interpret_int_from_import(module):
+    if module < 0:
+        return RetCode.failure
+    elif module:
+        return RetCode.success
+    else:
+        return RetCode.plausible    
+
+
 @singledispatch    
 def process(package, debug=False):
     module = import_module(package)    
@@ -182,36 +201,27 @@ def process(package, debug=False):
         file = module.__file__
         if debug:
             print(file)
-        try:
-            ret = module.prove(debug=debug)
-            if package in Globals.insurmountable:
-                ret = RetCode.insurmountable
-        except AttributeError as e: 
-            if os.path.basename(file) == '__init__.py':
-                ret = RetCode.nonexistent
-            else:
-                print(file, 'is not a file of __init__.py!')
-                raise e
+            
+        state, lapse, latex = prove_with_timing(module, debug)
                                 
     except AttributeError as e:
+        lapse = None
+        latex = None 
         if isinstance(module, int):
-            if module < 0:
-                ret = RetCode.failure
-            elif module:
-                ret = RetCode.success
-            else:
-                ret = RetCode.plausible                
+            state = interpret_int_from_import(module)
         else:
             print(module, 'from', module)
             print('importing errors found in', package)
-            
-            m = re.compile('(.*)\.(\w+)').match(package)
-            create_module(*m.groups(), delete=True)
-            ret = RetCode.failure
+
+            m = re.match('(.*)\.(\w+)', package)
+            _package, module = m.groups()
+            _package = 'axiom.' + _package
+            create_module(_package, module, delete=True)
+            state = RetCode.failure
         
         file = project_directory() + sep + package.replace('.', sep) + '.py'        
             
-    return package, file, ret
+    return package, file, state, lapse, latex
 
 
 @process.register(list) 
@@ -221,9 +231,11 @@ def _(packages, debug=False):
 
 start = time.time()    
 
+user = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
+assert user, 'user should not be empty!'
 
 def prove(debug=False, parallel=True): 
-    
+    from util import MySQL
     def generator(): 
         rootdir = axiom_directory()
 #         rootdir += r'\algebra\imply\le\abs'
@@ -233,7 +245,24 @@ def prove(debug=False, parallel=True):
             if os.path.isdir(path):
                 yield from readFolder(path)
 
-    tasks = {task: timing for task, timing in generator()}
+    taskSet = {*generator()}
+    
+#     taskSet = {*[*taskSet][:100]}
+
+    tasks = MySQL.select_axiom_lapse_from_tbl_axiom_py(user=user)
+    deleteSet = tasks.keys() - taskSet
+    if len(deleteSet) > 1:
+        MySQL.instance.execute("delete from tbl_axiom_py where user='%s' and axiom in %s" % (user, tuple(deleteSet)))
+    elif len(deleteSet) == 1:
+        deleteAxiom, *_ = deleteSet
+        MySQL.instance.execute("delete from tbl_axiom_py where user='%s' and axiom = '%s'" % (user, deleteAxiom))
+        
+    for key in deleteSet:
+        del tasks[key]
+    
+    for module in taskSet - tasks.keys():
+        tasks[module] = random.random()
+        
     packages = tuple([] for _ in range(cpu_count() * 2))
     timings = [0 for _ in range(cpu_count() * 2)]
     
@@ -262,9 +291,11 @@ def prove(debug=False, parallel=True):
         
     print('total timing =', sum(timings))
     
+    data = []
     for array in process(packages, debug=debug, parallel=parallel):
-        post_process(array)
+        data += post_process(array)
         
+    MySQL.instance.load_data('tbl_axiom_py', data, replace=True)
     print('in all %d axioms' % Globals.count)
     print_summary()
 
@@ -292,22 +323,21 @@ def print_summary():
 
         
 def post_process(result):
-    for package, file, ret in result:
-         
-        if ret is RetCode.plausible: 
+    data = []
+    for package, file, state, lapse, latex in result:
+        
+        data.append((user, package, state, lapse, latex))
+            
+        if state is RetCode.plausible: 
             Globals.unproved.append(file)
-        elif ret is RetCode.failure:
+        elif state is RetCode.failure:
             Globals.failures.append(file)
-        elif ret is RetCode.nonexistent:
-            Globals.decrement_count()
-            continue
-        elif ret is RetCode.insurmountable:
-            continue
         else:
             continue
         
-        Globals.websites.append("http://localhost/sympy/" + package.replace('.', sep) + ".php")
-    return Globals.count
+        Globals.websites.append("http://localhost/sympy/axiom.php/" + package.replace('.', '/'))
+        
+    return data
 
 
 def process_debug(packages):
@@ -319,7 +349,8 @@ def _(items, debug=False, parallel=True):  # @DuplicatedSignature
     proc = process_debug if debug else process 
     if parallel: 
         from multiprocessing import Pool
-        with Pool(processes=cpu_count()) as pool:
+        processes = cpu_count()
+        with Pool(processes=processes) as pool:
 #         with Pool(processes=cpu_count() * 2) as pool:
             return pool.map(proc, items)
     else:
@@ -355,7 +386,7 @@ def listdir_recursive(rootdir, sufix='.php'):
 
 
 def clean(): 
-    for php in listdir(os.path.abspath(os.path.dirname(axiom.__file__))):
+    for php in listdir(os.path.abspath(axiom_directory())):
         py = php.replace('.php', '.py')
         if not os.path.exists(py):
             print(php)
@@ -381,16 +412,9 @@ if __name__ == '__main__':
         if 'clean' in kwargs:
             clean()
 
-    debug = False
-    parallel = True
-    
-    debug = kwargs.get('debug', debug)
-    
+    debug = kwargs.get('debug', False)
+    parallel = kwargs.get('parallel', True)
     if not args:
-#     prove(debug=True, parallel=False)    
-#     prove(debug=True)
-#     prove()
- 
         prove(debug=debug, parallel=parallel)
     else: 
 
@@ -398,15 +422,42 @@ if __name__ == '__main__':
             for package in args:
                 package = package.replace('/', '.').replace('\\', '.')
                 module = import_module(package)
-                if isinstance(module, int): 
-                    ret = None if module < 0 else bool(module)
-                    file = project_directory() + '/' + package.replace('.', '/') + '.py'        
+                if isinstance(module, int):
+                    state = interpret_int_from_import(module)                    
+                    file = project_directory() + '/' + package.replace('.', '/') + '.py'
+                    lapse = None
+                    latex = None         
                 else:
                     file = module.__file__
-                    ret = module.prove(debug=debug)                    
-                yield package, file, ret
+                    try:
+                        state, lapse, latex = prove_with_timing(module, debug)
+                    except AttributeError:
+                        continue
+                    
+                yield package, file, state, lapse, latex                        
                 
-        post_process(generator())
+        data = post_process(generator())
+        import tempfile, uuid 
+        sql = "%s/%s.sql" % (tempfile.gettempdir(), uuid.uuid4())        
+        assert not os.path.exists(sql)
+        print("latex results are saved into:")
+        print(sql)
+        
+        sql = Text(sql)
+#         sql.clear()
+        file = sql.file
+        
+        from util.MySQL import json_encode
+        for args in data: 
+            _args = []
+            for arg in args:
+                if not isinstance(arg, str):
+                    arg = str(arg)
+                    
+                _args.append(json_encode(arg))
+            
+            print("replace into tbl_axiom_py values(%s);" % ','.join(_args), file=file)
+        
         print_summary()
         
         if Globals.unproved: 
@@ -416,12 +467,9 @@ if __name__ == '__main__':
         else:
             exit_code = 1
             
-        print('exit_code =', exit_code)            
+        print('exit_code =', exit_code)
         exit(exit_code)
         
-    if os.sep == '/':  # is Linux system
-        cmd = 'chmod -R 777 axiom'
-#         os.system(cmd)
-        for s in os.popen(cmd).readlines():
-            print(s)
+    from util.utility import chmod
+    chmod()
                     

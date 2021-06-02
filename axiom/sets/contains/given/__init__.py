@@ -1,6 +1,6 @@
-from . import exists_contains, forall_contains
+from . import any_contains, all_contains
 from . import contains
 from . import ou
 from . import et
-from . import exists_eq
+from . import any_eq
 from . import subset

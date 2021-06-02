@@ -1,13 +1,11 @@
-from sympy import *
-from axiom.utility import prove, apply
-import axiom
-from axiom import algebra
+from util import *
 
 
 @apply
 def apply(self): 
-    expr, (x, x0, dir) = axiom.is_Limit(self)
-    args = axiom.is_Add(expr)
+    print(__file__, 'is doubtable')
+    expr, (x, x0, dir) = self.of(Limit)
+    args = expr.of(Add)
     
     return Equal(self, Add(*(Limit[x:x0:dir](arg) for arg in args)))
 
@@ -30,6 +28,6 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()
 
 # https://en.wikipedia.org/wiki/Limit_of_a_function#Properties

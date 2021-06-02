@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import sets, algebra
+from util import *
+
 import axiom
 
 
@@ -13,29 +12,30 @@ def apply(self):
         eqs = et._argset
     else:
         eqs = {et}
-        
+
     for eq in eqs:
-        if eq.is_Equal: 
+        if eq.is_Equal:
             return Equal(self, imageset(x, expr._subs(*eq.args), et).simplify())
 
 
 @prove
 def prove(Eq):
+    from axiom import sets, algebra
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
-    
+
     x = Symbol.x(complex=True, shape=(n,))
-    f = Function.f(complex=True, shape=(m,))        
+    f = Function.f(complex=True, shape=(m,))
     g = Function.g(complex=True, shape=(m,))
-    
+
     h = Function.h(shape=(), real=True)
-    
+
     Eq << apply(imageset(x, f(x), Equal(f(x), g(x)) & (h(x) > 0)))
-    
-    Eq << Eq[0].this.lhs.apply(sets.union_comprehension.piecewise)
-    
+
+    Eq << Eq[0].this.lhs.apply(sets.cup.piecewise)
+
     Eq << Eq[-1].this.lhs.function.apply(algebra.piecewise.subs)
 
 if __name__ == '__main__':
-    prove()
+    run()
 

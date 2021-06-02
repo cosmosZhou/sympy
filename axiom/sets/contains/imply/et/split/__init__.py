@@ -1,3 +1,3 @@
 from . import complement
 from . import intersection
-from . import interval
+from . import interval, range

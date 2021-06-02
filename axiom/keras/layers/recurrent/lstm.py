@@ -1,10 +1,4 @@
-from axiom.utility import prove, apply
-
-from sympy import *
-from axiom import algebra
-
-from tensorflow.nn.recurrent.lstm import LSTM, LSTMCell
-from tensorflow.nn import sigmoid
+from util import *
 
 
 @apply
@@ -54,15 +48,15 @@ def prove(Eq):
     
     t = Eq[-1].lhs.index
     
-    Eq << Eq[0].this.rhs.definition
+    Eq << Eq[0].this.rhs.defun()
     
     Eq <<= Eq[-1][t - 1], Eq[-1][t]
     
-    Eq << Eq[-1].this.rhs.definition
+    Eq << Eq[-1].this.rhs.defun()
 
     Eq << Eq[-1].subs(Eq[-3].reversed)
     
-    Eq << Eq[9].this.rhs.definition[t - 1]
+    Eq << Eq[9].this.rhs.defun()[t - 1]
     
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
@@ -72,4 +66,4 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()

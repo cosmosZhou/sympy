@@ -1,4 +1,5 @@
-from . import forall_is_positive
+from . import all_is_positive
 from . import is_nonzero
 from . import is_positive
-from . import sufficient
+from . import suffice
+from . import ge

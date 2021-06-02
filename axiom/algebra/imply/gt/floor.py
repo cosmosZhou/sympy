@@ -1,8 +1,4 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra, sets
-import axiom
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
+from util import *
 
 
 @apply
@@ -12,13 +8,38 @@ def apply(x):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
+    from axiom import algebra, sets
+
+    x = Symbol.x(real=True, given=True)
     Eq << apply(x)
-    
-    Eq << Eq[0].reversed + 1 - Floor(x)
-    
-    Eq << Eq[-1].this.lhs.apply(algebra.add.to.frac)
-    
+
+    Eq << algebra.floor.to.maximize.apply(Eq[0].lhs)
+
+    y = Symbol.y(Eq[1].lhs)
+    Eq << y.this.definition
+
+    Eq << Eq[1].subs(Eq[-1].reversed)
+
+    Eq << algebra.eq_maximize.imply.all_ge.apply(Eq[-1])
+
+    Eq << Eq[0].subs(y.this.definition.reversed)
+
+    Eq << ~Eq[-1]
+
+    Eq << algebra.cond.all.imply.all_et.apply(Eq[-1], Eq[-3])
+
+    Eq << Eq[-1].this.function.apply(algebra.le.ge.imply.le.transit)
+
+    Eq << ~Eq[-1]
+
+    Eq << algebra.any.given.any_et.apply(Eq[-1])
+
+    Eq << Eq[-1].this.function.apply(sets.et.given.contains.st.le_gt)
+
+    n = Eq[-1].variable
+    Eq << sets.imply.any_contains.integer.apply(x, n)
+
+
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,13 +1,12 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import algebra
+
 
 
 @apply(simplify=False)
 def apply(self):
     args = []    
-    for arg in axiom.is_Add(self):
+    for arg in self.of(Add):
         if arg.is_Add:
             args += arg.args
         else:
@@ -27,4 +26,4 @@ def prove(Eq):
 
     
 if __name__ == '__main__':
-    prove()
+    run()

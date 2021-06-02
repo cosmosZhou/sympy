@@ -1,10 +1,9 @@
-from axiom.utility import prove, apply
-from sympy import *
+from util import *
 
 
 # given: A in B 
 # => {A} subset B
-@apply
+@apply(simplify=False)
 def apply(given):
     assert given.is_Contains
     e, s = given.args
@@ -24,5 +23,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

@@ -1,2 +1,3 @@
 from . import bool
-from . import mul
+from . import mul, product
+from . import piecewise

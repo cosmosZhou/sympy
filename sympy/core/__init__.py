@@ -14,9 +14,8 @@ from .power import Pow, integer_nthroot, integer_log
 from .mul import Mul, prod
 from .add import Add
 from .mod import Mod
-from .relational import ( Rel, Eq, Ne, Lt, Le, Gt, Ge, Equal, Unequal, 
-    Equal, GreaterEqual, LessEqual, Unequal, Greater,
-    Less )
+from .relational import Rel, Eq, Ne, Lt, Le, Gt, Ge, Equal, GreaterEqual, LessEqual, Unequal, Greater, Less
+
 from .multidimensional import vectorize
 from .function import Lambda, WildFunction, Derivative, diff, FunctionClass, \
     Function, Subs, expand, PoleError, count_ops, \

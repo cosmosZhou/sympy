@@ -1,14 +1,13 @@
-from sympy import *
-from axiom.utility import prove, apply
+from util import *
 import axiom
-from axiom import sets
+
 
 
 @apply
 def apply(given):
     assert given.is_Contains
     e, domain = given.args
-    args = axiom.is_Intersection(domain)
+    args = domain.of(Intersection)
     
     return And(*(Contains(e, s) for s in args))
 
@@ -24,5 +23,5 @@ def prove(Eq):
 
 
 if __name__ == '__main__':
-    prove()
+    run()
 

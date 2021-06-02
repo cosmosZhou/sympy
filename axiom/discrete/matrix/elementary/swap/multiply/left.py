@@ -1,33 +1,24 @@
-
-from sympy.core.relational import Equal
-from axiom.utility import prove, apply
-from sympy.sets.sets import Interval
-from sympy.core.numbers import oo
-
-from sympy.matrices.expressions.matexpr import Swap
-from sympy import LAMBDA
-from sympy import Symbol
-from sympy.functions.elementary.piecewise import Piecewise
+from util import *
 
 
 @apply
 def apply(x, i=None, j=None, w=None):
     n = x.shape[0]
     if i is None:
-        i = Symbol.i(domain=Interval(0, n - 1, integer=True))
+        i = Symbol.i(domain=Range(0, n))
         
     if j is None:
-        j = Symbol.j(domain=Interval(0, n - 1, integer=True))
+        j = Symbol.j(domain=Range(0, n))
     
     if w is None:
-        w = Symbol.w(LAMBDA[j, i](Swap(n, i, j)))
+        w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
     
     return Equal(w[i, j] @ w[i, j] @ x, x)
 
 
 @prove
 def prove(Eq): 
-    n = Symbol.n(domain=Interval(2, oo, integer=True))
+    n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(shape=(n,), real=True)
     Eq << apply(x)
     
@@ -46,5 +37,5 @@ def prove(Eq):
         
 
 if __name__ == '__main__':
-    prove()
+    run()
 # https://docs.sympy.org/latest/modules/combinatorics/permutations.html

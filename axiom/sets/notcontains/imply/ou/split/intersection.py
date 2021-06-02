@@ -1,14 +1,13 @@
-from axiom.utility import prove, apply
-from sympy import *
-from axiom import sets
+from util import *
+
 import axiom
 
 
 # given e not in S
 @apply
 def apply(given):
-    e, S = axiom.is_NotContains(given)
-    S = axiom.is_Intersection(S)
+    e, S = given.of(NotContains)
+    S = S.of(Intersection)
     return Or(*(NotContains(e, s) for s in S))
 
 
@@ -27,5 +26,5 @@ def prove(Eq):
     Eq << ~Eq[-1]
 
 if __name__ == '__main__':
-    prove()
+    run()
 

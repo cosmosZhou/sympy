@@ -1,6 +1,5 @@
-from sympy import *
-from axiom.utility import prove, apply
-from axiom import algebra
+from util import *
+
 
 
 @apply
@@ -13,16 +12,17 @@ def apply(given, lower):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True, given=True)
     y = Symbol.y(real=True, given=True)
-    
+
     z = Symbol.z(domain=Interval(-oo, y))
     Eq << apply(x >= y, z)
-    
+
     Eq << GreaterEqual(y, z, plausible=True)
-    
+
     Eq << algebra.ge.ge.imply.ge.transit.apply(Eq[0], Eq[-1])
-    
+
 
 if __name__ == '__main__':
-    prove()
+    run()
