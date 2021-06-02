@@ -1,0 +1,21 @@
+from util import *
+
+
+@apply
+def apply(n):
+    X = Symbol.X(integer=True, random=True)
+    return Equal(Expectation[X:DieDistribution(n)](X | (X > n / 2)), (n + 1) / 2 + floor(n / 2) / 2)
+
+
+@prove
+def prove(Eq): 
+    n = Symbol.n(integer=True, positive=True)
+    Eq << apply(n)
+    
+    Eq << Eq[-1].this.lhs.doit()
+    
+    Eq << Eq[-1].this.lhs.ratsimp()
+
+
+if __name__ == '__main__':
+    run()

@@ -1,0 +1,43 @@
+from util import *
+import axiom
+
+
+
+@apply
+def apply(given, n=None, start=0):
+    start = sympify(start)
+    fn, fn1 = given.of(Suffice)
+    assert fn._subs(n, n + 1) == fn1
+
+    assert fn._subs(n, start)
+    assert n.domain.min() >= start
+
+    return fn
+
+
+@prove
+def prove(Eq):
+    from axiom import algebra
+    n = Symbol.n(integer=True, nonnegative=True)
+    f = Symbol.f(integer=True, shape=(oo,))
+    h = Symbol.h(integer=True, shape=(oo,))
+    g = Lamda[n](Piecewise((f[0], Equal(n, 0)), (h[n], True)))
+
+    Eq << apply(Suffice(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1])), n=n)
+
+    g = Symbol.g(Lamda[n](Piecewise((f[0], Equal(n, 0)), (h[n], True))))
+    Eq.equality = g[0].this.definition.reversed
+
+    Eq.suffice = Suffice(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1]), plausible=True)
+
+    Eq << Eq.suffice.this.lhs.rhs.definition
+
+    Eq << Eq[-1].this.rhs.rhs.definition
+
+    Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.equality, Eq.suffice, n=n)
+
+    Eq << Eq[-1].this.rhs.definition
+
+
+if __name__ == '__main__':
+    run()

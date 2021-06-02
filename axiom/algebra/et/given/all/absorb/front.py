@@ -1,0 +1,30 @@
+from util import *
+
+
+@apply
+def apply(imply):
+    import axiom
+    cond, forall = imply.of(And)
+    fn, *limits = forall.of(ForAll)
+    k, a, b = axiom.limit_is_Interval(limits)
+    assert fn._subs(k, a - 1) == cond
+
+    return ForAll[k:a - 1:b](fn)
+
+
+@prove
+def prove(Eq):
+    from axiom import algebra
+    k = Symbol.k(integer=True)
+    a = Symbol.a(integer=True)
+    b = Symbol.b(domain=Range(a + 1, oo))
+    g = Function.g(integer=True)
+
+    Eq << apply((g(a - 1) > 0) & ForAll[k:a:b](g(k) > 0))
+
+    Eq << algebra.all.imply.et.split.apply(Eq[1], cond={a - 1})
+
+
+if __name__ == '__main__':
+    run()
+

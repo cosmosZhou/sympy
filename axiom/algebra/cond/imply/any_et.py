@@ -1,0 +1,32 @@
+from util import *
+
+
+@apply
+def apply(given, wrt=None):
+    assert given._has(wrt)
+    x = given.generate_var(**wrt.type.dict)
+    domain = wrt.domain
+
+    return Exists[x:domain](given._subs(wrt, x) & Equal(x, wrt))
+
+
+@prove
+def prove(Eq):
+    from axiom import sets, algebra
+    n = Symbol.n(integer=True, positive=True, given=True)
+    e = Symbol.e(domain=Range(0, n), given=True)
+    f = Function.f(integer=True, shape=())
+    Eq << apply(f(e) > 0, wrt=e)
+
+    Eq << ~Eq[-1]
+
+    Eq << Eq[-1].this.find(Unequal).apply(sets.ne.imply.notcontains)
+
+    Eq << Eq[-1].apply(algebra.all_ou.imply.all.limits.absorb, index=1)
+
+    Eq <<= Eq[-1] & Eq[0]
+
+
+if __name__ == '__main__':
+    run()
+

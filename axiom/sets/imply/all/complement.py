@@ -1,0 +1,25 @@
+from util import *
+
+# P is condition set;
+
+
+@apply
+def apply(y, x=None):
+    U = y.universalSet
+
+    if x is None:
+        x = y.generate_var(**y.type.dict)
+    return ForAll[x:U // y.set](Unequal(x, y))
+
+
+@prove
+def prove(Eq):
+    from axiom import algebra
+    y = Symbol.y(complex=True)
+    Eq << apply(y)
+
+    Eq << algebra.all.given.ou.apply(Eq[0])
+
+if __name__ == '__main__':
+    run()
+

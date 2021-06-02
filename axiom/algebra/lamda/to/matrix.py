@@ -1,0 +1,86 @@
+from util import *
+
+
+@apply
+def apply(self):
+    assert self.is_Lamda
+    limit = self.limits[-1]
+    x, a, b = limit
+    diff = b - a
+    if not diff.is_Number:
+        return self
+
+    limits = self.limits[:-1]
+    if limits:
+        return
+    else:
+        function = self.function
+    assert not function.shape
+    array = []
+    for i in range(diff):
+        array.append(function._subs(x, sympify(i)))
+
+    return Equal(self, Matrix(tuple(array)))
+
+
+@prove
+def prove(Eq):
+    from axiom import algebra
+    i = Symbol.i(integer=True)
+    n = 4
+    a = Symbol.a(real=True, shape=(oo,))
+
+    Eq << apply(Lamda[i:n](a[i]))
+
+    A = Symbol.A(Eq[0].lhs)
+    B = Symbol.B(Eq[0].rhs)
+    j = 0
+    Eq << Equal(A[j], B[j], plausible=True)
+
+    Eq << Eq[-1].this.lhs.definition
+
+    Eq << Eq[-1].this.rhs.definition
+
+    j += 1
+    Eq << Equal(A[j], B[j], plausible=True)
+
+    Eq << Eq[-1].this.lhs.definition
+
+    Eq << Eq[-1].this.rhs.definition
+
+    j += 1
+    Eq << Equal(A[j], B[j], plausible=True)
+
+    Eq << Eq[-1].this.lhs.definition
+
+    Eq << Eq[-1].this.rhs.definition
+
+    j += 1
+    Eq << Equal(A[j], B[j], plausible=True)
+
+    Eq << Eq[-1].this.lhs.definition
+
+    Eq << Eq[-1].this.rhs.definition
+
+    Eq.all_et = ForAll[i:4](Equal(A[i], B[i]), plausible=True)
+
+    Eq << Eq.all_et.this.apply(algebra.all.to.et.doit)
+
+    Eq << algebra.et.given.conds.apply(Eq[-1])
+
+    Eq << algebra.et.given.conds.apply(Eq[-1])
+
+    Eq << algebra.et.given.conds.apply(Eq[-1])
+
+    _i = Symbol.i(domain=Range(0, 4))
+    Eq << Eq.all_et.limits_subs(i, _i)
+
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (_i, 0, 4))
+
+    Eq << Eq[-1].this.lhs.definition
+
+    Eq << Eq[-1].this.rhs.definition
+
+if __name__ == '__main__':
+    run()
+

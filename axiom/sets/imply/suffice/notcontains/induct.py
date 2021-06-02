@@ -1,0 +1,40 @@
+from util import *
+
+import axiom
+
+
+@apply(given=None)
+def apply(given, n):
+    x, Ak = given.of(NotContains)
+    A, k = Ak.of(Indexed)
+
+    return Suffice(ForAll[k:n](NotContains(x, A[k])), NotContains(x, Cup[k:n](A[k])))
+
+
+@prove
+def prove(Eq):
+    from axiom import algebra
+    n = Symbol.n(integer=True, positive=True, given=False)
+    x = Symbol.x(integer=True)
+    k = Symbol.k(integer=True)
+
+    A = Symbol.A(shape=(oo,), etype=dtype.integer)
+
+    Eq << apply(NotContains(x, A[k]), n)
+
+    Eq.initial = Eq[0].subs(n, 1)
+
+    Eq.induct = Eq[0].subs(n, n + 1)
+
+    Eq << algebra.suffice.imply.suffice.et.both_sided.apply(Eq[0], cond=NotContains(x, A[n]))
+
+    Eq << Eq[-1].this.lhs.apply(algebra.et.given.all.absorb.back)
+
+    Eq << Eq.induct.induct()
+
+    Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=n, start=1)
+
+
+if __name__ == '__main__':
+    run()
+
