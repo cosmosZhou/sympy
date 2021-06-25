@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Greater])
+    (lhs, rhs), *limits = given.of(All[Greater])
     assert rhs.is_positive
 
     return Greater(Product(lhs, *limits).simplify(), Product(rhs, *limits).simplify())
@@ -17,7 +17,7 @@ def prove(Eq):
     f = Function.f(shape=(), real=True, positive=True)
     g = Function.g(shape=(), real=True, positive=True)
 
-    Eq << apply(ForAll[i:n](f(i) > g(i)))
+    Eq << apply(All[i:n](f(i) > g(i)))
 
     Eq << algebra.imply.suffice.gt.induct.product.apply(f(i) > g(i), (i, 0, n))
 

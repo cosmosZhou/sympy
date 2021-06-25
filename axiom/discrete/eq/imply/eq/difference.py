@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -14,16 +12,14 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     d = Symbol.d(integer=True, positive=True)
-    
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
-    
     f = Function.f(shape=(), complex=True)
     g = Function.g(shape=(), complex=True)
-    
-    Eq << apply(Equal(f(x), g(y)), (x, d))
-    
+    Eq << apply(Equal(f(x), g(x)), (x, d))
+
     Eq << Eq[-1].subs(Eq[0])
+
 
 if __name__ == '__main__':
     run()

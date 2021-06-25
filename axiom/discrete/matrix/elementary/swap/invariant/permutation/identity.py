@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq.ou = algebra.all.imply.ou.subs.apply(Eq[-1], Eq[-1].variable, Eq[2].lhs.args[0])
 
-    Eq << Exists[x](Eq.ou.args[1], plausible=True)
+    Eq << Any[x](Eq.ou.args[1], plausible=True)
 
     Eq << Eq[-1].this.function.rhs.definition
 

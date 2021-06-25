@@ -1,20 +1,12 @@
 from util import *
 
 
-import axiom
-
-
 @apply
 def apply(self):
-    intersection, *limits = self.of(Cap)
-    x, S = axiom.limit_is_set(limits)
-    piecewise, gx = intersection.of(Union)
-    if not piecewise.is_Piecewise:
-        piecewise, gx = gx, piecewise
+    (piecewise, gx), limit = self.of(Cap[Union[Piecewise, Basic]])
+    ecs = ((e | gx, c) for e, c in piecewise)
 
-    ecs = ((e | gx, c) for e, c in piecewise.of(Piecewise))
-
-    return Equal(self, Piecewise(*ecs).as_multiple_terms(x, S, Cap))
+    return Equal(self, Piecewise(*ecs).as_multiple_terms(*limit.to_setlimit(), Cap))
 
 
 @prove

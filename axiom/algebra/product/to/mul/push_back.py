@@ -1,13 +1,11 @@
 from util import *
-import axiom
-
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(self):
-    function, *limits = self.of(Product)
-    i, a, b = axiom.limit_is_Interval(limits)
+    function, (i, a, b) = self.of(Product[Tuple])
+    
+    assert i.is_integer
     back = function._subs(i, b)
     assert back.is_nonzero
     return Equal(self, Product[i:a:b + 1](function) / back, evaluate=False)
@@ -24,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(Product[i:0:n](f(i) + h(i)))
 
-    Eq << Eq[-1].this.rhs.find(Product).apply(algebra.product.to.mul.dissect, cond={n})
+    Eq << Eq[-1].this.rhs.find(Product).apply(algebra.product.to.mul.split, cond={n})
 
 
 if __name__ == '__main__':

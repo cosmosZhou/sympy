@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self):
     from axiom.algebra.sum.to.add.doit.setlimit import doit
-    assert self.is_Product
-    return Equal(self, doit(self))
+    return Equal(self, doit(Product, self))
 
 
 @prove
@@ -21,22 +20,22 @@ def prove(Eq):
     Eq << apply(Product[i:finiteset](x[i]))
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.product.to.mul.dissect, cond={n}, simplify=False)
+    Eq << Eq[-1].this.lhs.apply(algebra.product.to.mul.split, cond={n}, simplify=False)
 
     Eq << Eq[-1].this.lhs.find(Product).simplify()
 
     n -= 1
-    Eq << Eq[-1].lhs.find(Product).this.apply(algebra.product.to.mul.dissect, cond={n}, simplify=False)
+    Eq << Eq[-1].lhs.find(Product).this.apply(algebra.product.to.mul.split, cond={n}, simplify=False)
 
     Eq << Eq[-1].this.rhs.find(Product).simplify()
 
     n -= 1
-    Eq << Eq[-1].rhs.find(Product).this.apply(algebra.product.to.mul.dissect, cond={n})
+    Eq << Eq[-1].rhs.find(Product).this.apply(algebra.product.to.mul.split, cond={n})
 
     Eq << Eq[-1].this.rhs.find(Product).simplify()
 
     n -= 1
-    Eq << Eq[-1].rhs.find(Product).this.apply(algebra.product.to.mul.dissect, cond={n})
+    Eq << Eq[-1].rhs.find(Product).this.apply(algebra.product.to.mul.split, cond={n})
 
     Eq << Eq[5].subs(Eq[-1])
 

@@ -14,7 +14,7 @@ def apply(self):
 from axiom.discrete.sigma.to.add.recurrent import sigma
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import sets, algebra
     n = Symbol.n(integer=True, positive=True)
@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(sigma).defun()
 
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond=CartesianSpace(Range(0, n), k))
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond=CartesianSpace(Range(0, n), k))
 
     Eq << Eq[-1].this.find(Complement).apply(sets.complement.to.conditionset)
 

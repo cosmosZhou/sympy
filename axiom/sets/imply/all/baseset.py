@@ -7,7 +7,7 @@ def apply(P):
     assert definition.is_ConditionSet
     x = definition.variable
 
-    return ForAll[x:P](definition.condition & Contains(x, definition.base_set))
+    return All[x:P](definition.condition & Contains(x, definition.base_set))
 
 
 @prove
@@ -17,14 +17,14 @@ def prove(Eq):
     m = Symbol.m(integer=True, positive=True)
     x = Symbol.x(shape=(oo,), integer=True)
 
-    f = Function.f(nargs=(n,), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
 
     P = Symbol.P(conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Range(0, m), n)))
     Eq << apply(P)
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1])
 
-    Eq << ForAll[x[:n]:P](Contains(x[:n], P), plausible=True)
+    Eq << All[x[:n]:P](Contains(x[:n], P), plausible=True)
 
     Eq << Eq[-1].simplify()
 

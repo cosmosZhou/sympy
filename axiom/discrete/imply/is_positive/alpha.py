@@ -1,7 +1,5 @@
 from util import *
 
-import axiom
-
 
 def alpha_step(*args):
     if len(args) == 1:

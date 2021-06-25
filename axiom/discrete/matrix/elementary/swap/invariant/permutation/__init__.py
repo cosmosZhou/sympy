@@ -20,7 +20,7 @@ def apply(m, d, w=None, x=None):
 
     P = Symbol.P(conditionset(x, Equal(x.set_comprehension(), Range(0, n))))
 
-    return ForAll[x:P](Contains(x @ MatProduct[i:m](w[i, d[i]]), P))
+    return All[x:P](Contains(x @ MatProduct[i:m](w[i, d[i]]), P))
 
 
 @prove

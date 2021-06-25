@@ -1,12 +1,11 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(given, *limits):
     lhs, rhs = given.of(Equal)
 
-    return Equal(MAX(lhs, *limits).simplify(), MAX(rhs, *limits).simplify())
+    return Equal(Maximize(lhs, *limits).simplify(), Maximize(rhs, *limits).simplify())
 
 
 @prove
@@ -19,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(Equal(f(i), g(i)), (i, 0, n))
 
-    Eq << algebra.eq.imply.eq.invoke.apply(Eq[0], MAX[i:n], simplify=False)
+    Eq << algebra.eq.imply.eq.invoke.apply(Eq[0], Maximize[i:n], simplify=False)
 
 
 if __name__ == '__main__':

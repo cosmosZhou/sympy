@@ -1,11 +1,10 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(given):
-    fn, *limits = given.of(ForAll)
+    fn, *limits = given.of(All)
     return fn
 
 
@@ -16,7 +15,7 @@ def prove(Eq):
     e = Symbol.e(real=True)
     f = Function.f(shape=(), integer=True)
 
-    Eq << apply(ForAll[e:S](f(e) > 0))
+    Eq << apply(All[e:S](f(e) > 0))
 
     Eq << algebra.all.given.ou.apply(Eq[0])
 

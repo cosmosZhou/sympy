@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << sets.contains.imply.eq.kronecker_delta.zero.apply(Eq[-1])
+    Eq << sets.contains.imply.eq.kroneckerDelta.zero.apply(Eq[-1])
 
     Eq.x_equality = -Eq[-1] + 1
 

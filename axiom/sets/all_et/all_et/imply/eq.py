@@ -3,8 +3,8 @@ from util import *
 
 @apply
 def apply(all_a, all_b):
-    (contains_a, equality_a), (a, A) = all_a.of(ForAll[And])
-    (contains_b, equality_b), (b, B) = all_b.of(ForAll[And])
+    (contains_a, equality_a), (a, A) = all_a.of(All[And])
+    (contains_b, equality_b), (b, B) = all_b.of(All[And])
 
     if contains_a.is_Equal:
         equality_a, contains_a = contains_a, equality_a
@@ -38,16 +38,16 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer * m)
     b = Symbol.b(integer=True, shape=(m,))
 
-    f = Function.f(nargs=(n,), integer=True, shape=(m,))
-    g = Function.g(nargs=(m,), integer=True, shape=(n,))
+    f = Function.f(integer=True, shape=(m,))
+    g = Function.g(integer=True, shape=(n,))
 
     assert f.is_integer
     assert g.is_integer
     assert f.shape == (m,)
     assert g.shape == (n,)
 
-    Eq << apply(ForAll[a:A](Contains(f(a), B) & Equal(a, g(f(a)))),
-                ForAll[b:B](Contains(g(b), A) & Equal(b, f(g(b)))))
+    Eq << apply(All[a:A](Contains(f(a), B) & Equal(a, g(f(a)))),
+                All[b:B](Contains(g(b), A) & Equal(b, f(g(b)))))
 
     Eq << algebra.all_et.imply.all.apply(Eq[0])
 

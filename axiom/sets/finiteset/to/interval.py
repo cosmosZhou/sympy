@@ -1,7 +1,5 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(self):
@@ -28,7 +26,7 @@ def prove(Eq):
 
     Eq << Contains(a + 1, Eq[0].rhs, plausible=True)
 
-    Eq << sets.contains.contains.imply.subset.apply(Eq[-2], Eq[-1], simplify=None)
+    Eq << sets.contains.contains.imply.subset.finiteset.apply(Eq[-2], Eq[-1], simplify=None)
 
     Eq << Contains(a + 2, Eq[0].rhs, plausible=True)
 

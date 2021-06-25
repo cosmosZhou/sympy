@@ -1244,26 +1244,6 @@ class MatProduct(ExprWithIntLimits, MatrixExpr):
         return self
 
     @classmethod
-    def rewrite_from_MatMul(cls, self):
-        function_limits_coeff = self._detect_multiple_products()
-        if function_limits_coeff is not None:
-            before, product, after = function_limits_coeff
-            if before is not None:
-                prod = product.try_absorb_forward(before)
-                if prod is not None:
-                    if after is not None:
-                        return prod @ after
-                    return prod
-            elif after is not None:
-                prod = product.try_absorb_backward(after)
-                if prod is not None:
-                    if before is not None:
-                        return before @ prod
-                    return prod
-        
-        return self
-
-    @classmethod
     def identity(cls, self, **_):
         from sympy import Identity
         return Identity(self.shape[-1])

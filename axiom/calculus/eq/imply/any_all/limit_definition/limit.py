@@ -1,5 +1,4 @@
 from util import *
-import axiom
 from axiom.calculus.eq.to.any_all.limit_definition import any_all
 
 

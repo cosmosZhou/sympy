@@ -1,13 +1,12 @@
 from util import *
 
-import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(maximize):
     function, *limits = maximize.of(Maximize)
-    return ForAll(GreaterEqual(maximize, function), *limits)
+    return All(GreaterEqual(maximize, function), *limits)
 
 
 @prove

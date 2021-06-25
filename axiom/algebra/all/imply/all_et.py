@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given, index=None):
     from sympy.concrete.limits import limits_cond
-    fn, *limits = given.of(ForAll)
+    fn, *limits = given.of(All)
 
     if index is None:
         cond = limits_cond(limits)
@@ -13,7 +13,7 @@ def apply(given, index=None):
             cond = limits_cond(limits[index])
         else:
             cond = limits_cond([limits[index]])
-    return ForAll(fn & cond, *limits)
+    return All(fn & cond, *limits)
 
 
 @prove
@@ -23,7 +23,7 @@ def prove(Eq):
     f = Function.f(real=True)
     g = Function.g(real=True)
 
-    Eq << apply(ForAll[x:g(x) > 0](f(x) > 0))
+    Eq << apply(All[x:g(x) > 0](f(x) > 0))
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 

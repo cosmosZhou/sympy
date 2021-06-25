@@ -1,7 +1,7 @@
 from util import *
 
 # given: A != {}
-# Exists[x] (x in A)
+# Any[x] (x in A)
 
 
 @apply
@@ -12,7 +12,7 @@ def apply(given):
         assert A.is_EmptySet
         A = B
     x = A.element_symbol()
-    return Exists[x](Contains(x, A))
+    return Any[x](Contains(x, A))
 
 
 @prove

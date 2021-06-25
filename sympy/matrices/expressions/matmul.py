@@ -359,7 +359,8 @@ class MatMul(MatrixExpr):
                 
     def expand(self, var=None, deep=True, **_):
         if not deep:
-            return MatrixExpr.expand(self) 
+            return MatrixExpr.expand(self)
+         
         from sympy.concrete.expr_with_limits import Lamda
         from sympy.concrete.summations import Sum
         if len(self.args) > 2:
@@ -461,54 +462,22 @@ class MatMul(MatrixExpr):
             
             return B.generate_int_limit(0 if len(B.shape) == 1 else 1, excludes, **kwargs)
 
-        if len(A.shape) > 1:
-            i_limit = A.generate_int_limit(1, **kwargs)
-            i, *_ = i_limit
-            if len(B.shape) > 1:
-                j_limit = B.generate_int_limit(0, {i}, **kwargs)
-                j, *_ = j_limit
-                
-                k_limit = generate_k_limit(A, B, {i, j}, **kwargs)
-                k, *_ = k_limit
-                
-                assert i != k and k != j and i != j
-                return Lamda(Sum(A[i, k] * B[k, j], k_limit).simplify(), j_limit, i_limit).simplify()
-            else:
-                k_limit = generate_k_limit(A, B, {i}, **kwargs)
-                k, *_ = k_limit
-                
-                assert i != k                            
-                return Lamda(Sum(A[i, k] * B[k], k_limit).simplify(), i_limit).simplify()
-        else:
-
-            if len(B.shape) > 1:
-                if B.shape[-1].is_Integer:
-                    k_limit = generate_k_limit(A, B, **kwargs)
-                    k, *_ = k_limit
-  
-                    args = []                    
-                    if A.shape[0].is_Integer:
-                        for j in range(B.shape[-1]):
-                            args.append(Sum(A[k] * B[k, j], k_limit).doit())
-                        from sympy import Matrix
-                        return Matrix(tuple(args))
-                    else:
-                        for j in range(B.shape[-1]):
-                            args.append(Sum(A[k] * B[k, j], k_limit).simplify())
-                        return BlockMatrix(*args)
-                else: 
-#                     print('B.shape =', B.shape)                 
-                    j_limit = B.generate_int_limit(0, **kwargs)
-                    j, *_ = j_limit
-                    
-                    k_limit = generate_k_limit(A, B, {j}, **kwargs)
-                    k, *_ = k_limit
-                    
-                    assert k != j
-                    return Lamda(Sum(A[k] * B[k, j], k_limit).simplify(), j_limit).simplify()
+        if len(A.shape) == 1 and len(B.shape) > 1 and B.shape[-1].is_Integer:
             k_limit = generate_k_limit(A, B, **kwargs)
             k, *_ = k_limit
-            return Sum(A[k] * B[k], k_limit).simplify()                
+            
+            args = []                    
+            if A.shape[0].is_Integer:
+                for j in range(B.shape[-1]):
+                    args.append(Sum(A[k] * B[k, j], k_limit).doit())
+                from sympy import Matrix
+                return Matrix(tuple(args))
+            else:
+                for j in range(B.shape[-1]):
+                    args.append(Sum(A[k] * B[k, j], k_limit).simplify())
+                return BlockMatrix(*args)
+            
+        return self
 
     def _eval_is_integer(self):
         for elem in self.args:
@@ -600,7 +569,7 @@ class MatMul(MatrixExpr):
                 dtype = _dtype
         return dtype
     
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         if x.dtype.is_set:
             return x.universalSet
         
@@ -645,40 +614,6 @@ class MatMul(MatrixExpr):
                     return self.func(*self.args[:i] + (new.args if new.is_MatMul else (new,)) + self.args[i + len(args):]).simplify()
         return MatrixExpr._subs(self, old, new, **hints)
 
-    @classmethod
-    def rewrite_from_Sum(cls, self):
-        first, second = self.function.as_two_terms()
-        if self.limits:
-            from sympy.concrete.expr_with_limits import Lamda
-            return Lamda(first, *self.limits).simplify() @ Lamda(second, *self.limits).simplify()
-        else:
-            return first @ second
-
-    @classmethod
-    def rewrite_from_ReducedSum(cls, self):
-        first, second = self.arg.as_two_terms()
-        return first @ second
-
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        if isinstance(self.function, cls):
-            if len(self.function.args) == 2:
-                first, second = self.function.args
-                if second._has(*self.variables):
-                    if not first._has(*self.variables):
-                        if len(second.shape) == 1: 
-                            n = second.shape[0]
-                            j = self.generate_var(excludes=self.variables_set, integer=True)                                                    
-                            second = self.func(second[j], *self.limits, (j, 0, n)).simplify()
-                            return first @ second
-                    else:
-                        ...                                        
-                else:
-                    first = self.func(first, *self.limits).simplify()
-                    return first @ second
-
-        return self
-    
     def _detect_multiple_products(self):
         product = None
         function = []

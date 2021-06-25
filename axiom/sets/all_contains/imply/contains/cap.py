@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (x, A), *limits = given.of(ForAll[Contains])
+    (x, A), *limits = given.of(All[Contains])
     return Contains(x, Cap(A, *limits))
 
 
@@ -16,7 +16,7 @@ def prove(Eq):
 
     A = Symbol.A(shape=(oo,), etype=dtype.integer)
 
-    Eq << apply(ForAll[k:n](Contains(x, A[k])))
+    Eq << apply(All[k:n](Contains(x, A[k])))
 
     Eq << sets.imply.suffice.contains.induct.apply(Contains(x, A[k]), n)
 

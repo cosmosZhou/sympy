@@ -1,6 +1,5 @@
-
-
 from util import *
+
 
 @apply
 def apply(x, y):
@@ -9,22 +8,21 @@ def apply(x, y):
     return Equal(x @ y, y @ x)
 
 
-
-
 @prove
 def prove(Eq):
+    from axiom import discrete
     n = Symbol.n(integer=True)
     x = Symbol.x(shape=(n,), real=True)
     y = Symbol.y(shape=(n,), real=True)
     i = Symbol.i(domain=Range(0, n))
     Eq << apply(x, y)
-    
-    Eq << Eq[0].lhs.this.expand(var=i)
-    
-    Eq << Eq[0].rhs.this.expand(var=i)
-    
+
+    Eq << Eq[0].lhs.this.apply(discrete.matmul.to.sum, var=i)
+
+    Eq << Eq[0].rhs.this.apply(discrete.matmul.to.sum, var=i)
+
     Eq << Eq[-2].subs(Eq[-1].reversed)
-        
+
 
 if __name__ == '__main__':
     run()

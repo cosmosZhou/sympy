@@ -2031,12 +2031,12 @@ class Stirling(Function):
             from sympy.core.numbers import oo
             from sympy.core.symbol import dtype
             x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-        from sympy import Cup, ForAll, Range, Equal, Sum, conditionset
+        from sympy import Cup, All, Range, Equal, Sum, conditionset
         i = Symbol.i(integer=True)
         return conditionset(x[:k],
                                 Equal(Cup[i:k](x[i]), Range(0, n)) & 
                                     Equal(Sum[i:k](abs(x[i])), n) & 
-                                    ForAll[i:k](abs(x[i]) > 0))
+                                    All[i:k](abs(x[i]) > 0))
 
     @classmethod
     def _eval(self, n, k):

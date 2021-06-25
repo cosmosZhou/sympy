@@ -12,7 +12,6 @@ from .parameters import global_parameters
 from sympy.utilities.iterables import sift
 
 from mpmath.libmp import sqrtrem as mpmath_sqrtrem
-
 from math import sqrt as _sqrt
 
 ###############################################################################
@@ -373,7 +372,14 @@ class Pow(Expr):
                                 log(-factor_terms(b, sign=False)) + s * S.ImaginaryUnit * S.Pi:
                             return S.Exp1 ** (c * numer(ex))
 
-                obj = b._eval_power(e)
+                try:
+                    obj = b._eval_power(e)
+                except AttributeError:
+                    from sympy import sympify, Basic  
+                    if isinstance(e, int):
+                        e = sympify(e)
+                    return Basic.__new__(Pow, b, e)
+                
                 if obj is not None:
                     return obj
         obj = Expr.__new__(cls, b, e)
@@ -1774,7 +1780,7 @@ class Pow(Expr):
             return domain & self.domain_defined(x)
         return self.domain_defined(x)
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = self.base.domain_defined(x) & self.exp.domain_defined(x)
         if self.exp < 0:
             domain &= self.base.domain_nonzero(x)
@@ -1847,7 +1853,10 @@ class Pow(Expr):
             from sympy.core.mul import Mul
             return Mul._latex(self, p)
         else:
-            if self.base.is_Function:
+            if self.base.is_Piecewise:
+                tex = r"\left(%s\right)^{%s}"
+                return p._helper_print_standard_power(self, tex)
+            elif self.base.is_Function:
                 return p._print(self.base, exp=p._print(self.exp))
             else:
                 tex = r"%s^{%s}"
@@ -1912,7 +1921,22 @@ class Pow(Expr):
     def domain_definition(self):
         if self.exp.is_extended_negative:
             from sympy import Unequal
-            return Unequal(self.base, 0)
+            shape = self.base.shape
+            if shape:
+                excludes = set()
+                vars = []
+                limits = []
+                for n in shape:
+                    i = self.generate_var(excludes, integer=True)
+                    vars.append(i)
+                    excludes.add(i)
+                    limits.append((i, 0, n))
+                limits.reverse()
+                
+                from sympy import All
+                return All(Unequal(self.base[tuple(vars)], 0), *limits) 
+            else:
+                return Unequal(self.base, 0)
         return S.true
     
     def simplify(self, deep=False, **kwargs):
@@ -1929,19 +1953,6 @@ class Pow(Expr):
                 if all(b.is_Pow and b.exp.is_even for b in base.args):
                     return abs(base.func(*(b.base ** (b.exp // 2) for b in base.args)))
                     
-        return self
-
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        if isinstance(self.function, cls):
-            base, exponent = self.function.args
-            if exponent.has(*self.variables):
-                if base.has(*self.variables):
-                    return cls(self.func(base, *self.limits), self.func(exponent, *self.limits))
-                else:
-                    return cls(base, self.func(exponent, *self.limits))
-            else:
-                return cls(self.func(base, *self.limits), exponent)
         return self
 
     def as_inverse_proportional_function(self, wrt):

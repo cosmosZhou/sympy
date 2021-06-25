@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.doit.inner.setlimit import doit
-
-
 @apply
 def apply(self):
-    assert self.is_Product
-    return Equal(self, doit(self))
+    from axiom.algebra.sum.doit.inner.setlimit import doit
+    return Equal(self, doit(Product, self))
 
 
 @prove

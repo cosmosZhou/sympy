@@ -1,11 +1,8 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    a_less_than_b, x_less_than_y = given
+def apply(a_less_than_b, x_less_than_y):
     a, b = a_less_than_b.of(Less)
     x, y = x_less_than_y.of(Less)
 
@@ -36,7 +33,7 @@ def prove(Eq):
 
     Eq << Eq[1] - x
 
-    Eq.is_positive = algebra.is_positive.is_positive.imply.is_positive.mul.apply(Eq[-1], Eq[-2])
+    Eq.is_positive = algebra.is_positive.is_positive.imply.is_positive.apply(Eq[-1], Eq[-2])
 
     Eq << Eq[0] - a
 

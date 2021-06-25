@@ -1,14 +1,9 @@
 from util import *
-import axiom
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(given, t, alpha):
-    abs_x_y = axiom.is_positive(given)
-    x_y = abs_x_y.of(Norm)
-    x, y = axiom.is_Subtract(x_y)
-    
+    x, y = given.of(Norm[Expr - Expr] > 0)    
     assert x.shape == y.shape == t.shape
     assert alpha > 0
     

@@ -1,12 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
-    add = axiom.is_positive(given)
-    args = add.of(Add)        
+    args = given.of(Add > 0)        
     return tuple(Greater(arg, 0) for arg in args)
 
 
@@ -19,6 +16,7 @@ def prove(Eq):
     Eq << apply(x + y + z > 0)
 
     Eq << Eq[1] + Eq[2] + Eq[3]
+
     
 if __name__ == '__main__':
     run()

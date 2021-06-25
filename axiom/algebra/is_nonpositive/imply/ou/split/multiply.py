@@ -1,13 +1,9 @@
 from util import *
 
-import axiom
-
-
 
 @apply
 def apply(given):
-    xy = axiom.is_nonpositive(given)
-    x, y = xy.of(Mul)
+    x, y = given.of(Mul <= 0)
     return Or(And(x >= 0, y <= 0), And(x <= 0, y >= 0))
 
 
@@ -29,7 +25,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[1].apply(algebra.et.imply.ou)
 
-    Eq << Eq[-1].this.args[-1].apply(algebra.is_positive.is_positive.imply.is_positive.mul)
+    Eq << Eq[-1].this.args[-1].apply(algebra.is_positive.is_positive.imply.is_positive)
 
     Eq << algebra.cond.cond.imply.cond.apply(Eq[0], Eq[-1], invert=True)
 

@@ -9,4 +9,4 @@ def crossentropy(y_true, y_pred):
     return -y_true @ log(y_pred)
  
   
-crossentropy = Function.crossentropy(nargs=(2,), shape=(), real=True, eval=crossentropy)
+crossentropy = Function.crossentropy(shape=(), real=True, eval=crossentropy)

@@ -1,11 +1,8 @@
 from util import *
-import axiom
 
 
 def split(given, index=-1):
-    function, *limits = given.of(ForAll)
-
-    x, s = axiom.limit_is_set(limits)
+    function, (x, s) = given.of(All)
 
     domain, size = s.of(CartesianSpace)
 
@@ -31,7 +28,7 @@ def split(given, index=-1):
     if _stop < stop:
         limits.append((x[_stop:stop], CartesianSpace(domain, stop - _stop)))
 
-    return ForAll(function, *limits)
+    return All(function, *limits)
 
 
 @apply
@@ -49,7 +46,7 @@ def prove(Eq):
     x = Symbol.x(real=True, shape=(oo,))
     f = Function.f(real=True)
 
-    Eq << apply(ForAll[x[:n + 1]:CartesianSpace(Interval(a, b), n + 1)](f(x[:n + 1]) > 0), index=n)
+    Eq << apply(All[x[:n + 1]:CartesianSpace(Interval(a, b), n + 1)](f(x[:n + 1]) > 0), index=n)
 
     Eq << algebra.all.imply.suffice.apply(Eq[0])
 

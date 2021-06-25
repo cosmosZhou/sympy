@@ -9,7 +9,7 @@ def apply(given):
     assert S.is_Cup
     limits = S.limits
 
-    return ForAll(NotContains(e, S.function).simplify(), *limits)
+    return All(NotContains(e, S.function).simplify(), *limits)
 
 
 @prove

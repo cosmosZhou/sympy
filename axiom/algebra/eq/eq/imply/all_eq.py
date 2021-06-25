@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply
@@ -17,7 +16,7 @@ def apply(*given, wrt=None):
 
     k = wrt.unbounded
 
-    return ForAll[k:domain](eq_k._subs(wrt, k))
+    return All[k:domain](eq_k._subs(wrt, k))
 
 
 @prove

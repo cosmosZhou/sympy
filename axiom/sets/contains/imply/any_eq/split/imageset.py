@@ -1,15 +1,10 @@
 from util import *
-import axiom
-
 
 
 @apply(simplify=False)
 def apply(given):
-    y, s = given.of(Contains)
-
-    x, expr, base_set = axiom.is_ImageSet(s)
-
-    return Exists[x:base_set](Equal(y, expr))
+    y, (expr, (x, base_set)) = given.of(Contains[Cup[FiniteSet]])
+    return Any[x:base_set](Equal(y, expr))
 
 
 @prove
@@ -30,6 +25,7 @@ def prove(Eq):
     Eq << sets.all_notcontains.imply.notcontains.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[0]
+
 
 if __name__ == '__main__':
     run()

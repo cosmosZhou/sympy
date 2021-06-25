@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply(simplify=False)
 def apply(self, index=0): 
-    args = self.of(Mul, copy=True)
+    [*args] = self.of(Mul)
     factor = args.pop(index)
     
     for i, plus in enumerate(args):

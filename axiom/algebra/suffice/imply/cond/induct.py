@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 
 
 
@@ -32,7 +31,7 @@ def prove(Eq):
 
     S = Symbol.S(etype=dtype.integer * k)
 
-    Eq << apply(Suffice(ForAll[x:S](Contains(x @ MatProduct[i:n](w[i]), S)), ForAll[x:S](Contains(x @ MatProduct[i:n + 1](w[i]), S))), n=n)
+    Eq << apply(Suffice(All[x:S](Contains(x @ MatProduct[i:n](w[i]), S)), All[x:S](Contains(x @ MatProduct[i:n + 1](w[i]), S))), n=n)
 
     Eq << Eq[0].lhs._subs(n, Zero()).copy(plausible=True)
 

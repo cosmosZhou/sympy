@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply
@@ -15,7 +14,7 @@ def apply(self):
     condSet = conditionset(x[:k],
                            And(Equal(Cup(x[i], (i, 0, k)), Range(0, n)),
                                Equal(Sum(abs(x[i]), (i, 0, k)), n),
-                               ForAll(Greater(abs(x[i]), 0), (i, 0, k))))
+                               All(Greater(abs(x[i]), 0), (i, 0, k))))
     
     return Equal(self, abs(imageset(x[:k], Cup(FiniteSet(x[i]), (i, 0, k)), condSet)))
 

@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply(simplify=False)

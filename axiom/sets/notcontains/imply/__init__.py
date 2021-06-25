@@ -10,5 +10,5 @@ from . import all_ne
 from . import gt
 from . import ge
 from . import lt
-from . import ne_0, is_positive
+from . import is_nonzero, is_positive
 from . import contains

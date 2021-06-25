@@ -12,11 +12,11 @@ def apply(A):
     j = Symbol.j(integer=True)
     d = Symbol.d(shape=(oo,), integer=True)
     k = Symbol.k(domain=Range(0, n))
-    return Equal(Sum[k:1:n + 1]((-1) ** (k + 1) * Sum[d[:k]:ForAll[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](abs(Cap[i:k](A[d[i]])))),
+    return Equal(Sum[k:1:n + 1]((-1) ** (k + 1) * Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](abs(Cap[i:k](A[d[i]])))),
                     abs(Cup[i:n](A[i])))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     n = Symbol.n(domain=Range(2, oo))
     A = Symbol.A(etype=dtype.integer, shape=(n,))

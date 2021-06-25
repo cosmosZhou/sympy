@@ -1,13 +1,11 @@
 from util import *
 
-import axiom
-
 
 @apply
-def apply(complement):
-    condset, B = complement.of(Complement)
-    x, cond, baseset = axiom.is_ConditionSet(condset)
-    return Equal(complement, conditionset(x, cond, baseset // B))
+def apply(self):
+    (x, (_x, cond, baseset)), B = self.of(Complement[Cup[FiniteSet], Basic])
+    assert _x == x
+    return Equal(self, conditionset(x, cond, baseset // B))
 
 
 @prove
@@ -22,7 +20,7 @@ def prove(Eq):
 
     Eq << sets.eq.given.suffice.apply(Eq[0])
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.et.split.complement, simplify=None),\
+    Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.et.split.complement, simplify=None), \
     Eq[-1].this.rhs.apply(sets.contains.given.et.split.complement, simplify=None)
 
     Eq <<= Eq[-2].this.lhs.find(Contains).simplify(), Eq[-1].this.rhs.find(Contains).simplify()

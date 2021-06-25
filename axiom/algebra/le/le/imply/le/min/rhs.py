@@ -1,11 +1,8 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    x_less_than_y, x_less_than_b = given
+def apply(x_less_than_y, x_less_than_b):
     x, y = x_less_than_y.of(LessEqual)
     _x, b = x_less_than_b.of(LessEqual)
     assert x == _x
@@ -22,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(x <= y, x <= b)
 
-    Eq << Eq[-1].this.rhs.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.min.to.piecewise)
 
     Eq << algebra.cond.given.ou.apply(Eq[-1])
 
@@ -31,6 +28,7 @@ def prove(Eq):
     Eq << algebra.cond.cond.imply.cond.apply(Eq[0], Eq[-1], invert=True, reverse=True)
 
     Eq << algebra.cond.cond.imply.cond.apply(Eq[1], Eq[-1], invert=True, reverse=True)
+
 
 if __name__ == '__main__':
     run()

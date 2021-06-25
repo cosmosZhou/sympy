@@ -1,10 +1,6 @@
 from util import *
 
 
-import axiom
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
-
-
 @apply
 def apply(self):
     p, q = self.of(Add)

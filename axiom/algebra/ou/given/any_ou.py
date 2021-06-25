@@ -7,14 +7,14 @@ def apply(imply):
     limits = None
     eqs = []
     for exist in exists:
-        fn, *_limits = exist.of(Exists)
+        fn, *_limits = exist.of(Any)
         if limits is None:
             limits = _limits
         else:
             assert limits == _limits
         eqs.append(fn)
 
-    return Exists(Or(*eqs), *limits)
+    return Any(Or(*eqs), *limits)
 
 
 @prove
@@ -26,7 +26,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(Or(Exists[x:A]((g(x) > 0)), Exists[x:A](f(x) > 0)))
+    Eq << apply(Or(Any[x:A]((g(x) > 0)), Any[x:A](f(x) > 0)))
 
     Eq << algebra.any_ou.imply.ou.any.apply(Eq[1])
 

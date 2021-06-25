@@ -1,19 +1,12 @@
 from util import *
-import axiom
-
 from axiom.discrete.K.to.add.definition import K
 
 
 @apply
 def apply(given):
-    (xj, one), *limits = given.of(ForAll[GreaterEqual])
+    (x, _j), (j, n1) = given.of(All[Indexed >= 1, Tuple[1, Expr]])
 
-    assert one == 1
-
-    j, a, n1 = axiom.limit_is_Interval(limits)
-    assert a == 1
     n = n1 - 1
-    x, _j = xj.of(Indexed)
     assert _j == j
 
     return GreaterEqual(K(x[:n + 1]), K(x[:n]))
@@ -26,9 +19,9 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     n = Symbol.n(integer=True, positive=True)
 
-    Eq << apply(ForAll[i:1:n + 1](x[i] >= 1))
+    Eq << apply(All[i:1:n + 1](x[i] >= 1))
 
-    Eq.case2, Eq.case1 = algebra.cond.given.suffice.bisected.apply(Eq[-1], cond=n >= 2)
+    Eq.case2, Eq.case1 = algebra.cond.given.suffice.split.apply(Eq[-1], cond=n >= 2)
 
     Eq << Eq.case1.this.lhs.apply(algebra.lt.to.eq.squeeze)
 

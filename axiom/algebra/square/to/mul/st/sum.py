@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply
@@ -9,10 +8,10 @@ def apply(self):
 
 
 def dissect_variance(variance):
-    dx = variance.of(Basic ** 2)
-    ym, x_mean = axiom.is_Subtract(dx)
+    dx = variance.of(Expr ** 2)
+    ym, x_mean = dx.of(Expr - Expr)
 
-    x_sum, n = axiom.is_Divide(x_mean)
+    x_sum, n = x_mean.of(Expr / Expr)
     xi, (i, *ab) = x_sum.of(Sum)
     x = Lamda[i](xi).simplify()
     if ab:

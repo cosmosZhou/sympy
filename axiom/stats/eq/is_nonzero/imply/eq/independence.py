@@ -20,16 +20,15 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import stats, algebra
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
-
     given = Equal(Probability(x, y), Probability(x) * Probability(y))
-
     Eq << apply(given, Unequal(Probability(x), 0))
 
     Eq << Eq[-1].simplify()
 
-    Eq << stats.bayes.corollary.apply(Eq[1], var=y)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[1], y)
 
     Eq << Eq[-1].subs(Eq[0])
 

@@ -782,22 +782,6 @@ class LatexPrinter(Printer):
         else:
             return tex
 
-    def _print_RisingFactorial(self, expr, exp=None):
-        n, k = expr.args
-        base = r"%s" % self.parenthesize(n, PRECEDENCE['Func'])
-
-        tex = r"{%s}^{\left(%s\right)}" % (base, self._print(k))
-
-        return self._do_exponent(tex, exp)
-
-    def _print_FallingFactorial(self, expr, exp=None):
-        n, k = expr.args
-        sub = r"%s" % self.parenthesize(k, PRECEDENCE['Func'])
-
-        tex = r"{\left(%s\right)}_{%s}" % (self._print(n), sub)
-
-        return self._do_exponent(tex, exp)
-
     def _hprint_BesselBase(self, expr, exp, sym):
         tex = r"%s" % (sym)
 

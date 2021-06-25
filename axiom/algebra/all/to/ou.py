@@ -14,7 +14,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     A = Symbol.A(etype=dtype.integer)
 
-    Eq << apply(ForAll[x:A](f(x) > 0))
+    Eq << apply(All[x:A](f(x) > 0))
 
     Eq << algebra.equivalent.given.suffice.apply(Eq[0])
 

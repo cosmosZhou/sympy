@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Equal])
+    (lhs, rhs), *limits = given.of(All[Equal])
 
     return Equal(Integral(lhs, *limits).simplify(), Integral(rhs, *limits).simplify())
 
@@ -17,7 +17,7 @@ def prove(Eq):
     f = Function.f(shape=(), real=True)
     g = Function.g(shape=(), real=True)
 
-    Eq << apply(ForAll[x:a:b](Equal(f(x), g(x))))
+    Eq << apply(All[x:a:b](Equal(f(x), g(x))))
 
     x_ = Symbol.x(domain=Interval(a, b))
 

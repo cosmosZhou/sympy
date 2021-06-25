@@ -821,7 +821,7 @@ class Function(Application, Expr):
     def T(self):
         return self.func(self.arg.T)
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = Expr._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
@@ -1823,10 +1823,12 @@ class Derivative(Expr):
                 else: 
                     return Expr.__new__(self.func, self.expr.as_Sum(), *self.variable_count).doit(deep=False)
             elif self.expr.is_ReducedSum:
-                if self.expr.limits:
-                    return self.swap(evaluate=True)
-                else: 
-                    return Expr.__new__(self.func, self.expr.as_Sum(), *self.variable_count).doit(deep=False)
+                expr = self.expr.arg
+                i = expr.generate_var(integer=True)
+                [n] = expr.shape
+                from sympy import Sum
+                sgm = Sum[i:n](expr[i])                
+                return Expr.__new__(self.func, sgm, *self.variable_count).doit(deep=False)
                     
         return rv
 
@@ -2933,24 +2935,19 @@ class Difference(Expr):
             return r'{\color{blue} \Delta}_{%s}\ {%s}' % (printer._print(x), expr)
         return r'{\color{blue} \Delta}_{%s}^{%s}\ {%s}' % (printer._print(x), printer._print(n), expr)
 
-    def split(self, index):
-        x, n = self.variable_count        
-        mid = Symbol.process_slice(index, S.Zero, n)
-        assert mid >= 0, "mid >= 0 => %s" % (mid >= 0)        
-        assert mid <= n, "mid <= n => %s" % (mid <= n)
-
-        return self.func(self.func(self.expr, x, mid).simplify(), x, n - mid)
-
     def simplify(self, **_):
         x, n = self.variable_count
 
-        import sympy
-        function = self.expr
-        if isinstance(function, sympy.exp):
-            function = function.as_Mul()
+        expr = self.expr
+        if expr.is_Exp:
+            expr = expr.as_Mul()
 
-        independent, dependent = function.as_independent(x, as_Add=False)
+        independent, dependent = expr.as_independent(x, as_Add=False)
         if independent == S.One:
+            if expr.is_Difference:
+                expr, _x, _n = expr.args
+                if _x == x:
+                    return self.func(expr, x, n + _n)
             return self
 
         if dependent == S.One:

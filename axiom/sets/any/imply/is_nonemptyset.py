@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    f, limit = given.of(Exists)
+    f, limit = given.of(Any)
     x, S = limit
     return Unequal(S, x.emptySet)
 
@@ -15,9 +15,9 @@ def prove(Eq):
     e = Symbol.e(real=True)
     f = Function.f(shape=(), integer=True)
 
-    Eq << apply(Exists[e:S](f(e) > 0))
+    Eq << apply(Any[e:S](f(e) > 0))
 
-    Eq << Exists[e:S](Contains(e, S) & Eq[0].function, plausible=True)
+    Eq << Any[e:S](Contains(e, S) & Eq[0].function, plausible=True)
 
     Eq << Eq[-1].simplify()
 

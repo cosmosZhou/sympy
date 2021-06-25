@@ -60,7 +60,7 @@ def prove(Eq):
 
     Eq << Eq[-3].subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << Eq[-1].this(k).rhs.simplify()
 

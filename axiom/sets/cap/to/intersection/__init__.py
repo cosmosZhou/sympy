@@ -46,4 +46,4 @@ if __name__ == '__main__':
 from . import single_variable
 from . import st
 from . import doit
-from . import dissect
+from . import split

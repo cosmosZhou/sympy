@@ -9,7 +9,7 @@ def apply(y, x=None):
 
     if x is None:
         x = y.generate_var(**y.type.dict)
-    return ForAll[x:U // y.set](Unequal(x, y))
+    return All[x:U // y.set](Unequal(x, y))
 
 
 @prove

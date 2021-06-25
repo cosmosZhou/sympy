@@ -10,7 +10,7 @@ def apply(self):
     return Equal(self, Add(*(Limit[x:x0:dir](arg) for arg in args)))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     x0 = Symbol.x0(real=True)

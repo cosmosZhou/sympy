@@ -20,7 +20,7 @@ def apply(n, k, s2=None, A=None):
     return Equal(conditionset(e, NotContains({n}, e), s2), Cup[j](A[j]))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import sets, algebra
     k = Symbol.k(integer=True, positive=True)

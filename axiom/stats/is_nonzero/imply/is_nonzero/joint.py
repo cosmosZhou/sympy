@@ -16,14 +16,14 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import stats, algebra
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
-
     Eq << apply(Unequal(Probability(x | y), 0))
 
-    Eq << Eq[0].domain_definition()
+    Eq << stats.is_nonzero.imply.is_nonzero.condition.apply(Eq[0])
 
-    Eq << stats.bayes.corollary.apply(Eq[-1], var=x)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
 
     Eq << algebra.is_nonzero.is_nonzero.imply.is_nonzero.apply(Eq[0], Eq[2])
 

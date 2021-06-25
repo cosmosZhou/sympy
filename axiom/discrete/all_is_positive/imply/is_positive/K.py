@@ -1,16 +1,11 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(given):
     from axiom.discrete.K.to.add.definition import K
-    xj, *limits = axiom.all_is_positive(given)
-    j, a, n = axiom.limit_is_Interval(limits)
-    assert a == 1
-    x, _j = xj.of(Indexed)
+    (x, _j), (j, n) = given.of(All[Indexed > 0, Tuple[1, Expr]])
     assert _j == j
-
     return Greater(K(x[:n]), 0)
 
 
@@ -21,7 +16,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     n = Symbol.n(integer=True, positive=True)
 
-    Eq << apply(ForAll[i:1:n](x[i] > 0))
+    Eq << apply(All[i:1:n](x[i] > 0))
 
     Eq << discrete.imply.suffice.is_positive.K.apply(x[:n])
 

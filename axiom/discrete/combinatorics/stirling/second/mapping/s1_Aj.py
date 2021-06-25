@@ -19,7 +19,7 @@ def apply(n, k, s1=None, A=None):
     return Equal(abs(s1), abs(A[j]))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     k = Symbol.k(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)

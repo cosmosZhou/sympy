@@ -1,8 +1,6 @@
 from util import *
 
 
-
-
 @apply
 def apply(a, h):
     n = a.shape[0]
@@ -34,35 +32,33 @@ def prove(Eq):
 
     Eq << Eq[0][i, j]
 
-    Eq << Eq[-1].this.rhs.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.args[0].expr.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[0].expr.apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.args[1].expr.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[1].expr.apply(algebra.add.to.piecewise)
 
     Eq << Eq[-1].this.rhs.args[0]().expr.args[1]().expr.simplify()
 
     Eq.Ξ_definition = Eq[-1].this.rhs.args[1]().expr.simplify()
 
-    Eq << Eq.Ξ_definition.this.rhs.args[-1].expr.astype(Piecewise)
+    Eq << Eq.Ξ_definition.this.rhs.args[-1].expr.apply(algebra.kroneckerDelta.to.piecewise)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piecewise.flatten)
 
-#     Eq << Eq[-1].this.rhs.apply(algebra.piecewise.flatten, index=0)
-
-    Eq << Eq[-1].this.rhs.args[0].expr.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[0].expr.apply(algebra.kroneckerDelta.to.piecewise)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piecewise.flatten, index=0)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piecewise.swap.back)
 
-    Eq << Eq[-1].this.rhs.args[1].cond.apply(algebra.et.to.et.collect, cond=i < h)
+    Eq << Eq[-1].this.rhs.args[1].cond.apply(algebra.et.collect, cond=i < h)
 
-    Eq << Eq[-1].this.rhs.args[1].cond.apply(algebra.et.to.et.collect, cond=j < h)
+    Eq << Eq[-1].this.rhs.args[1].cond.apply(algebra.et.collect, cond=j < h)
 
     Eq << Eq[-1].this.rhs.apply(algebra.piecewise.swap.back)
 
-    Eq << Eq[-1].this.rhs.args[0].cond.apply(algebra.et.to.et.collect, cond=Equal(i, j))
+    Eq << Eq[-1].this.rhs.args[0].cond.apply(algebra.et.collect, cond=Equal(i, j))
 
     Eq << Eq[-1].this.rhs.args[0].cond.args[0].args[0].apply(algebra.et.imply.ou)
 

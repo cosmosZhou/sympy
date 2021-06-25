@@ -3,14 +3,14 @@ from util import *
 
 @apply
 def apply(given):
-    (all_historic, all_n), (i, zero, n_1) = given.of(ForAll[And])
+    (all_historic, all_n), (i, zero, n_1) = given.of(All[And])
     assert zero.is_zero
 
-    if all_n.is_ForAll:
+    if all_n.is_All:
         all_n, all_historic = all_historic, all_n
 
-    (lhs, rhs), (j, zero, i_1) = all_historic.of(ForAll[Unequal])
-    assert zero.is_zero
+    (lhs, rhs), (j, zero, i_1) = all_historic.of(All[Unequal])
+    assert zero == 0
     assert i == i_1
     n = n_1
 
@@ -27,7 +27,7 @@ def apply(given):
     assert x[n] == lhs
     assert x[i] == rhs
 
-    return ForAll[j:i, i:n + 1](Unequal(x[i], x[j]))
+    return All[j:i, i:n + 1](Unequal(x[i], x[j]))
 
 
 @prove
@@ -38,7 +38,7 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
 
-    Eq << apply(ForAll[i:n](Unequal(x[n], x[i]) & ForAll[j:i](Unequal(x[i], x[j]))))
+    Eq << apply(All[i:n](Unequal(x[n], x[i]) & All[j:i](Unequal(x[i], x[j]))))
 
     Eq << algebra.all_et.imply.all.apply(Eq[0])
 

@@ -1,14 +1,10 @@
 from util import *
-import axiom
-
-from axiom.algebra.add.to.sum.limits.complement import limits_complement
 
 
 @apply
 def apply(self):
-    A, B = axiom.is_Divide(self)
-    function, *limits_a = A.of(Product)
-    _function, *limits_b = B.of(Product)
+    from axiom.algebra.add.to.sum.limits.complement import limits_complement
+    (function, *limits_a), (_function, *limits_b) = self.of(Product / Product)
     assert function == _function
 
     limits = limits_complement(limits_a, limits_b, function=function)
@@ -24,7 +20,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     Eq << apply(Product[k:A](f(k)) / Product[k:A & B](f(k)))
 
-    Eq << Eq[0].this.lhs.find(Product).apply(algebra.product.to.mul.dissect, cond=B)
+    Eq << Eq[0].this.lhs.find(Product).apply(algebra.product.to.mul.split, cond=B)
 
 
 if __name__ == '__main__':

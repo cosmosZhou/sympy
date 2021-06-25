@@ -3,7 +3,7 @@ from util import *
 
 
 def rewrite_as_Or(given):
-    assert given.is_ForAll
+    function, *limits = given.of(All)
     limits_dict = given.limits_dict
     eqs = []
     for var, domain in limits_dict.items():
@@ -16,10 +16,10 @@ def rewrite_as_Or(given):
             cond = domain
         eqs.append(cond.invert().simplify())
 
-    if given.function.is_Or:
-        eqs += given.function.args
+    if function.is_Or:
+        eqs += function.args
     else:
-        eqs.append(given.function)
+        eqs.append(function)
 
     return Or(*eqs)
 
@@ -35,7 +35,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)    
     A = Symbol.A(etype=dtype.integer, given=True)
     
-    Eq << apply(ForAll[x:A](f(x) > 0))
+    Eq << apply(All[x:A](f(x) > 0))
     
     Eq << ~Eq[-1]
     

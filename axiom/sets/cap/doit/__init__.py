@@ -3,12 +3,11 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    xi, *limits = self.of(Sum)
+    xi, limit = self.of(Sum)
     try:
-        i, a, b = axiom.limit_is_Interval(limits)
+        i, a, b = limit
     except:
-        i = axiom.limit_is_symbol(limits)
+        (i,) = limit
         domain = xi.domain_defined(i)
         a, b = domain.of(Range)
     

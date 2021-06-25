@@ -7,7 +7,7 @@ def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     j = w.definition.variables[0]
     x_quote = Symbol("x'", w[n, j] @ x[:n + 1])
-    return ForAll[x[:n + 1]:Q[u]](Exists[j:0:n + 1](Contains(x_quote, Q[v])))
+    return All[x[:n + 1]:Q[u]](Any[j:0:n + 1](Contains(x_quote, Q[v])))
 
 
 @prove
@@ -51,7 +51,7 @@ def prove(Eq):
 
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << algebra.all_any_eq.cond.imply.all_any.subs.apply(Eq.x_j_equality, Eq[-1])
 

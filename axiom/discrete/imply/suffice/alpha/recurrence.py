@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.discrete.imply.is_positive.alpha import alpha
 
 
@@ -15,7 +14,7 @@ def apply(A):
     x = x.base
 
     i = A.generate_var(integer=True, var='i')
-    return Suffice(ForAll[i:1:n + 2](x[i] > 0), Equal(A, alpha(x[:n], x[n] + 1 / x[n + 1])))
+    return Suffice(All[i:1:n + 2](x[i] > 0), Equal(A, alpha(x[:n], x[n] + 1 / x[n + 1])))
 
 
 @prove
@@ -53,7 +52,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.all.given.all.limits.relaxed, domain=Range(1, n + 3))
 
-    Eq << Suffice(ForAll[i:1:n + 3](x[i] > 0), Unequal(alpha(x[1:n + 3]), 0), plausible=True)
+    Eq << Suffice(All[i:1:n + 3](x[i] > 0), Unequal(alpha(x[1:n + 3]), 0), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(discrete.all_is_positive.imply.is_nonzero.alpha.offset)
 

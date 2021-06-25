@@ -3,8 +3,7 @@ from util import *
 
 @apply
 def apply(given, m):
-    assert given.is_GreaterEqual
-    lhs, rhs = given.args
+    lhs, rhs = given.of(GreaterEqual)
     return GreaterEqual(Min(lhs, m), Min(rhs, m))
 
 
@@ -19,9 +18,9 @@ def prove(Eq):
 
     Eq << Eq[-1] - y
 
-    Eq << Eq[-1].this.lhs.astype(Min)
+    Eq << Eq[-1].this.lhs.apply(algebra.add.to.min)
 
-    Eq << Eq[-1].this.rhs.astype(Min)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.min)
 
     Eq << Eq[0] - y
 

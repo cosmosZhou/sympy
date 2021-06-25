@@ -3,10 +3,9 @@ from util import *
 
 @apply(given=None)
 def apply(given):
-    n, (n_, ab) = given.of(And[Equal[Basic % 2, 0], Contains])
+    n, (n_, (a, b)) = given.of(And[Equal[Expr % 2, 0], Contains[Range]])
 
     assert n == n_
-    a, b = ab.of(Range)
     b -= 1
 
     return Equivalent(given, Contains(n, imageset(n, 2 * n, Range((a + 1) // 2, b // 2 + 1))))

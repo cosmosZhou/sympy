@@ -3,9 +3,12 @@ from util import *
 
 @apply
 def apply(given):
-    import axiom
-    (x, y), *limits = given.of(ForAll[Unequal])
-    lhs, rhs = axiom.limit_is_set(limits)
+    (x, y), (lhs, *rhs) = given.of(All[Unequal])
+    if len(rhs) == 2:
+        rhs = Range(*rhs) if lhs.is_integer else Interval(*rhs)
+    else:
+        [rhs] = rhs
+        
     if x == lhs:
         return NotContains(y, rhs)
     if y == lhs:
@@ -19,7 +22,7 @@ def prove(Eq):
     j = Symbol.j(integer=True, given=True)
     n = Symbol.n(integer=True, positive=True, given=True)
 
-    Eq << apply(ForAll[i:n](Unequal(i, j)))
+    Eq << apply(All[i:n](Unequal(i, j)))
 
     Eq << ~Eq[-1]
 

@@ -20,7 +20,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
-    Eq << apply(ForAll[x:A, y:B](f(x, y) > 0), x, a)
+    Eq << apply(All[x:A, y:B](f(x, y) > 0), x, a)
 
     Eq << algebra.all.imply.ou.apply(Eq[0])
 

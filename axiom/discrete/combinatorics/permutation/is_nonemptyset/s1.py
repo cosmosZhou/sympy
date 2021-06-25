@@ -26,7 +26,7 @@ def prove(Eq):
 
     a = Symbol.a(Lamda[i:k](Piecewise((Range(k - 1, n), Equal(i, k - 1)), (i.set, True))))
 
-    Eq << algebra.any.given.any.subs.apply(Eq[-1], x[:k], a)
+    Eq << algebra.any.given.cond.subs.apply(Eq[-1], x[:k], a)
 
     Eq << algebra.et.given.conds.apply(Eq[-1])
 

@@ -23,7 +23,7 @@ def apply(self, evaluate=True):
     return Equal(self, coefficient * limited)
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)

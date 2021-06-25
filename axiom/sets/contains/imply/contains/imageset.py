@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[1].subs(Eq[-1].reversed)
 
-    Eq.all_contains = ForAll[x:s](Contains(f(x), S), plausible=True)
+    Eq.all_contains = All[x:s](Contains(f(x), S), plausible=True)
 
     Eq << Eq.all_contains.this.function.rhs.definition
 

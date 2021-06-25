@@ -2,10 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given, x=None):
+def apply(is_nonzero, eq, x=None):
     from axiom.algebra.ge.le.imply.le.quadratic import quadratic_coefficient
-    import axiom
-    is_nonzero, eq = given
     if not is_nonzero.is_Unequal:
         is_nonzero, eq = eq, is_nonzero
 

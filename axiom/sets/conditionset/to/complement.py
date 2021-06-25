@@ -24,19 +24,19 @@ def prove(Eq):
     B = Symbol.B(Eq[0].rhs)
 
     a = Eq[0].lhs.variable
-    Eq.all_contains_in_B = ForAll[a:A](Contains(a, B), plausible=True)
+    Eq.all_contains_in_B = All[a:A](Contains(a, B), plausible=True)
 
     Eq << Eq.all_contains_in_B.this.limits[0][1].definition
 
     Eq << Eq[-1].this.function.rhs.definition
 
-    Eq.all_contains_in_A = ForAll[a:B](Contains(a, A), plausible=True)
+    Eq.all_contains_in_A = All[a:B](Contains(a, A), plausible=True)
 
     Eq << Eq.all_contains_in_A.this.limits[0][1].definition
 
     Eq << Eq[-1].this.function.rhs.definition
 
-    Eq << ForAll[a:Eq[-1].function.invert()](Eq[-1].limits_cond.invert(), plausible=True)
+    Eq << All[a:Eq[-1].function.invert()](Eq[-1].limits_cond.invert(), plausible=True)
 
     Eq << Eq[-1].this.function.simplify()
 

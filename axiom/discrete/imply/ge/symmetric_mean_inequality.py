@@ -7,14 +7,14 @@ def apply(x, k=None):
     if k is None:
         k = Symbol.k(integer=True)
 
-    return ForAll[k:1:n](GreaterEqual((sigma[k](x[:n]) / binomial(n, k)) ** (1 / k),
+    return All[k:1:n](GreaterEqual((sigma[k](x[:n]) / binomial(n, k)) ** (1 / k),
                                       (sigma[k + 1](x[:n]) / binomial(n, k + 1)) ** (1 / (k + 1))))
 
 
 from axiom.discrete.sigma.to.add.recurrent import sigma
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import algebra
     n = Symbol.n(domain=Range(2, oo), given=False)
@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Product).apply(algebra.product.to.mul.doit)
 
-    Eq << Eq[-1].this.find(ForAll).apply(algebra.all.to.et.doit.outer)
+    Eq << Eq[-1].this.find(All).apply(algebra.all.to.et.doit.outer)
 
     Eq << Eq[-1].this.find(Sum).apply(algebra.sum.to.add.doit)
 

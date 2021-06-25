@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given, j=None):
-    a_size, xa_equality = given
+def apply(a_size, xa_equality, j=None):
     a_set_comprehension_abs, n = a_size.of(Equal)
     a_set_comprehension = a_set_comprehension_abs.of(Abs)
     x_set_comprehension, _a_set_comprehension = xa_equality.of(Equal)
@@ -26,26 +25,15 @@ def apply(*given, j=None):
 
     assert j >= 0 and j < n
 
+    from axiom.discrete.combinatorics.permutation.index.eq import index_function
     index = index_function(n)
     index_j = index[j](x[:n], a[:n], evaluate=False)
     return Contains(index_j, Range(0, n)), Equal(x[index_j], a[j])
 
 
-def index_function(n):
-    k = Symbol.k(integer=True)
-
-    def index(x, a, *indices):
-        (j,), *_ = indices
-        return Lamda[k:n](KroneckerDelta(x[k], a[j])) @ Lamda[k:n](k)
-
-    f = Function.index(nargs=(2,), shape=(), integer=True)
-    f.eval = index
-    return f
-
-
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets, algebra, discrete
     n = Symbol.n(domain=Range(2, oo), given=True)
 
     x = Symbol.x(shape=(n,), integer=True, given=True)
@@ -64,9 +52,9 @@ def prove(Eq):
 
     Eq <<= Eq[-3].subs(Eq[-1]), Eq[-2].subs(Eq[-1])
 
-    Eq << Eq[-1].lhs.indices[0].this.expand()
+    Eq << Eq[-1].lhs.indices[0].this.apply(discrete.matmul.to.sum)
 
-    Eq << Eq[-1].rhs.function.args[1].this.astype(Piecewise)
+    Eq << Eq[-1].rhs.function.args[1].this.apply(algebra.kroneckerDelta.to.piecewise)
 
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
 

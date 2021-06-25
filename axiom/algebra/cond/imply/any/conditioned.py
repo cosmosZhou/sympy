@@ -15,7 +15,7 @@ def apply(given, *limits):
         else:
             return
 
-    return Exists(given, *limits)
+    return Any(given, *limits)
 
 
 @prove

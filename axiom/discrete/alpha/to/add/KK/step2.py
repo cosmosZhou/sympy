@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.discrete.K.to.add.definition import K
 
 from axiom.discrete.imply.is_positive.alpha import alpha

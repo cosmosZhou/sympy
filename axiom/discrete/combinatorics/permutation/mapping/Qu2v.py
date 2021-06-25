@@ -5,7 +5,7 @@ from util import *
 def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     X, index = X_definition(n, w, x)
-    return ForAll[x[:n + 1]:Q[u]](Contains(X[v], Q[v]) & Equal(x[:n + 1], w[n, index[u](X[v])] @ X[v]))
+    return All[x[:n + 1]:Q[u]](Contains(X[v], Q[v]) & Equal(x[:n + 1], w[n, index[u](X[v])] @ X[v]))
 
 
 def X_definition(n, w, x):
@@ -28,7 +28,7 @@ def predefined_symbols(n):
     return Q, w, x
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import discrete, sets, algebra
     n = Symbol.n(integer=True, positive=True, given=True)
@@ -78,7 +78,7 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.expand()
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq.x_h_equality, Eq[-1])
-
+    return
     Eq << Eq[-1].this.function.apply(algebra.eq_piecewise.imply.ou)
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1] & Eq.h_domain)
@@ -107,7 +107,7 @@ def prove(Eq):
     x = Eq[-1].variable.base
     Eq.ou = Eq[-1].subs(i, x[n])
 
-    Eq << Exists(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
+    Eq << Any(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
 
     Eq << algebra.all.any.imply.any_et.apply(Eq.x_slice_last, Eq[-1])
 
@@ -124,7 +124,7 @@ def prove(Eq):
 
     Eq.ou = Eq[-1].subs(j, Eq.equality_of_indexu_and_n.function.lhs)
 
-    Eq << Exists(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
+    Eq << Any(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
 
     Eq << algebra.all.any.imply.any_et.apply(Eq.x_indexu_equality, Eq[-1])
 
@@ -134,7 +134,7 @@ def prove(Eq):
 
     Eq.ou = Eq.indexOf_indexed.subs(m, Eq.equality_of_indexu_and_n.function.lhs.indices[0])
 
-    Eq << Exists(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
+    Eq << Any(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
 
     Eq <<= Eq.indexu_contains & Eq[-1]
 

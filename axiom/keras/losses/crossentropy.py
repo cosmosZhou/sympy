@@ -27,22 +27,19 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import calculus, algebra
+    from axiom import calculus, algebra, discrete
     n = Symbol.n(domain=Range(2, oo))
     t = Symbol.t(shape=(n,), real=True)
     j = Symbol.j(integer=True)
 
     Eq << apply(Equal(Sum[j](t[j]), 1))
-    assert Eq[0].lhs.is_zero == False
 
     Eq << Eq[-1].lhs.expr.this.defun()
 
-    Eq << Eq[-1].this.rhs.args[1].expand(var=j)
+    Eq << Eq[-1].this.rhs.args[1].apply(discrete.matmul.to.sum, var=j)
 
     i = Symbol.i(domain=Range(0, n))
     xi = Eq[2].lhs._wrt_variables[0][i]
-
-    assert Eq[-1].lhs.has(xi)
 
     Eq << Eq[-1].apply(calculus.eq.imply.eq.derive, (xi,), simplify=False)
 
@@ -53,29 +50,23 @@ def prove(Eq):
 
     Eq << Eq[0][j]
 
-    assert Eq[0].lhs.is_zero == False
-
-    assert Eq[-1].lhs.is_zero == False
-
     Eq << Eq[-1].apply(calculus.eq.imply.eq.derive, (xi,), simplify=False)
-
-    assert Eq[-1].lhs.expr.is_zero == False
 
     Eq << Eq[-1].this.rhs.doit(deep=False)
 
-    assert Eq[-1].lhs.expr.is_zero == False
-
     Eq << Eq[-1].subs(Eq[-3].reversed).subs(Eq[-4].reversed) / Eq[-1].lhs.expr
 
-    Eq.loss = Eq.loss.subs(Eq[-1]).expand()
+    Eq << Eq.loss.subs(Eq[-1])
+    
+    Eq << Eq[-1].this.rhs.expand()
 
-    Eq.loss = Eq.loss.this.rhs.args[0].simplify()
+    Eq << Eq[-1].this.rhs.args[0].simplify()
 
-    Eq.loss = Eq.loss.this.rhs.args[1].args[1].simplify()
+    Eq << Eq[-1].this.rhs.args[1].args[1].simplify()
 
-    Eq.loss = Eq.loss.subs(Eq[1])
+    Eq << Eq[-1].subs(Eq[1])
 
-    Eq << algebra.eq.imply.eq.lamda.apply(Eq.loss, (i,), simplify=False)
+    Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i,), simplify=False)
 
 
 if __name__ == '__main__':

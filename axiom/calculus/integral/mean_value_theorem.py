@@ -3,12 +3,12 @@ from util import *
 
 @apply
 def apply(given):
-    ((f, (z, xi, direction)), _f), (_xi, a, b) = given.of(ForAll[Equal[Limit]])
+    ((f, (z, xi, direction)), _f), (_xi, a, b) = given.of(All[Equal[Limit]])
     assert direction == 0
     assert xi == _xi
     assert _f == f._subs(z, xi)
 
-    return Exists(Equal(Integral(f, (z, a, b)), (b - a) * _f), (xi, a, b))
+    return Any(Equal(Integral(f, (z, a, b)), (b - a) * _f), (xi, a, b))
 
 
 @prove
@@ -27,8 +27,8 @@ def prove(Eq):
 
     Eq << apply(given)
 
-    m = Symbol.m(MIN(f(z), (z, a, b)))
-    M = Symbol.M(MAX(f(z), (z, a, b)))
+    m = Symbol.m(Minimize[z:a:b](f(z)))
+    M = Symbol.M(Maximize[z:a:b](f(z)))
 
     Eq.min = m.this.definition
     Eq.max = M.this.definition

@@ -148,15 +148,15 @@ def parse_full_form(wmexpr):
         position = match.start()
         last_expr = wmexpr[last_pos:position].replace(',', '').replace(']', '').replace('[', '').strip()
 
-        if match.group() == ',':
+        if match[0] == ',':
             if last_expr != '':
                 stack[-1].append(last_expr)
-        elif match.group() == ']':
+        elif match[0] == ']':
             if last_expr != '':
                 stack[-1].append(last_expr)
             stack.pop()
             current_pos = stack[-1]
-        elif match.group() == '[':
+        elif match[0] == '[':
             stack[-1].append([last_expr])
             stack.append(stack[-1][-1])
         last_pos = match.end()

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (((w, i, j), x), S), (_x, _S) = given.of(ForAll[Contains[MatMul[Indexed]]])
+    (((w, i, j), x), S), (_x, _S) = given.of(All[Contains[MatMul[Indexed]]])
 
     assert x == _x and S == _S
 
@@ -17,7 +17,7 @@ def apply(given):
 
     P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
 
-    return ForAll[p[:n]:P, x:S](Contains(Lamda[k:n](x[p[k]]), S))
+    return All[p[:n]:P, x:S](Contains(Lamda[k:n](x[p[k]]), S))
 
 
 @prove
@@ -33,7 +33,7 @@ def prove(Eq):
 
     w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
 
-    Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(ForAll[x[:n]:S](Contains(w[i, j] @ x[:n], S)))
+    Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(All[x[:n]:S](Contains(w[i, j] @ x[:n], S)))
 
     Eq << discrete.combinatorics.permutation.adjacent.factorization.apply(n)
 

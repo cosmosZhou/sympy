@@ -173,11 +173,10 @@ class Contains(BinaryCondition):
 
     def __or__(self, other):
         if other.is_Contains:
-            print('this should be axiomatized!!!!')
             x, X = self.args
             y, Y = other.args
             if x == y: 
-                return self.func(x, X | Y, given=[self, other]).simplify()
+                return self.func(x, X | Y).simplify()
             
         elif other.is_Or:            
             return other.func(self, *other.args)
@@ -189,21 +188,6 @@ class Contains(BinaryCondition):
             e, s = self.args
             return self.func(e / other, s / other, given=self)
             
-        return self
-
-    def as_KroneckerDelta(self):
-        x, domain = self.args 
-        if domain.is_FiniteSet:
-            return domain.as_KroneckerDelta(x)
-    
-        domain = x.domain - domain
-        if domain.is_FiniteSet: 
-            return 1 - domain.as_KroneckerDelta(x)
-            
-    def inverse(self):
-        rhs = self.rhs.inverse()
-        if rhs is not None:
-            return self.func(1 / self.lhs, rhs)
         return self
 
     @property
@@ -241,7 +225,7 @@ class Contains(BinaryCondition):
                     return domain & interval
                                  
     @classmethod
-    def simplify_ForAll(cls, self, function, *limits):
+    def simplify_All(cls, self, function, *limits):
         x = function.lhs
         limits_dict = self.limits_dict
         if x in limits_dict:
@@ -405,14 +389,6 @@ class NotContains(BinaryCondition):
             
         return BinaryCondition.__or__(self, other)
 
-    def as_KroneckerDelta(self):
-        x, domain = self.args 
-        if domain.is_FiniteSet:
-            return 1 - domain.as_KroneckerDelta(x)
-        domain = x.domain - domain
-        if domain.is_FiniteSet:
-            return domain.as_KroneckerDelta(x)
-            
     @property
     def T(self):
         assert len(self.lhs.shape) <= 1
@@ -424,7 +400,7 @@ class NotContains(BinaryCondition):
             return x.domain_conditioned(self.invert_type(x, domain // self.rhs))
         
     @classmethod
-    def simplify_ForAll(cls, self, function, *limits):
+    def simplify_All(cls, self, function, *limits):
         element, container = function.args
         forall = self.limits_dict
         if element in forall:

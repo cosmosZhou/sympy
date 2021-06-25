@@ -43,9 +43,9 @@ def prove(Eq):
 
     Eq.PE_quote_definition = PE_quote[i + k, j].this.definition
 
-    Eq << Eq.PE_definition.rhs.args[0].expr.this.arg.astype(Add)
+    Eq << Eq.PE_definition.rhs.args[0].expr.this.arg.apply(algebra.mul.to.add)
 
-    Eq << Eq.PE_definition.rhs.args[1].expr.this.arg.astype(Add)
+    Eq << Eq.PE_definition.rhs.args[1].expr.this.arg.apply(algebra.mul.to.add)
 
     Eq <<= geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-1].rhs.arg.args)
 
@@ -65,17 +65,17 @@ def prove(Eq):
 
     Eq << Eq[-1] + Eq[-3]
 
-    Eq << Eq[-1].this.rhs.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise.st.two_pieces)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.cossin, Eq[-1])
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
 
-    Eq.PE_equality = Eq[-1].this.rhs.astype(Add)
+    Eq.PE_equality = Eq[-1].this.rhs.apply(algebra.lamda.to.add)
 
-    Eq << Eq.PE_quote_definition.rhs.args[0].expr.this.arg.astype(Add)
+    Eq << Eq.PE_quote_definition.rhs.args[0].expr.this.arg.apply(algebra.mul.to.add)
 
-    Eq << Eq.PE_quote_definition.rhs.args[1].expr.args[1].this.arg.astype(Add)
+    Eq << Eq.PE_quote_definition.rhs.args[1].expr.args[1].this.arg.apply(algebra.mul.to.add)
 
     Eq <<= geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-1].rhs.arg.args)
 
@@ -95,13 +95,13 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-3]
 
-    Eq << Eq[-1].this.rhs.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise.st.two_pieces)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.coscos, Eq[-1])
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, d))
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.add)
 
     I = S.ImaginaryUnit
     Eq << I * Eq.PE_equality - Eq[-1]

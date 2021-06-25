@@ -1,25 +1,12 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given, function):
-    et_j, et_i = given.of(Equivalent)
-    Aj_contains_j, Ai_contains_i = et_j.of(And)
-    j, Aj = Aj_contains_j.of(Contains)
-    i, Ai = Ai_contains_i.of(Contains)
-
-    Bi_eq_i, Bj_contains_j = et_i.of(And)
-    if not Bi_eq_i.is_Equal:
-        Bi_eq_i, Bj_contains_j = Bj_contains_j, Bi_eq_i
-
-    _i, Bi = Bi_eq_i.of(Equal)
-    _j, Bj = Bj_contains_j.of(Contains)
-
+    ((j, Aj), (i, Ai)), ((_i, Bi), (_j, Bj)) = given.of(Equivalent[Contains & Contains, Equal & Contains])
+    
     if i != _i:
         _i, Bi, _j, Bj = _j, Bj, _i, Bi
-
     assert _i == i
     assert _j == j
 

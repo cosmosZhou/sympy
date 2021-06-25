@@ -2,10 +2,9 @@ from util import *
 
 
 @apply
-def apply(self):
-    import axiom    
-    function, *limits = self.of(Sum)
-    i, a, b = axiom.limit_is_Interval(limits)
+def apply(self):    
+    function, (i, a, b) = self.of(Sum)
+    assert i.is_integer
     back = function._subs(i, b)
 #     b >= a => b + 1 >= a
     return Equal(self, Sum[i:a:b + 1](function) - back, evaluate=False)

@@ -8,7 +8,7 @@ def apply(A):
     return Equal(A @ Cofactors(A).T, Determinant(A) * Identity(n))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     A = Symbol.A(complex=True, shape=(n, n))

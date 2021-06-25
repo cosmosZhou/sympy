@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given, old, new):
     from sympy.concrete.limits import limits_dict
-    (function, *limits_f), *limits_e = given.of(Exists[ForAll])
+    (function, *limits_f), *limits_e = given.of(Any[All])
     limits_f_dict = limits_dict(limits_f)
 
     domain = limits_f_dict[old]
@@ -13,7 +13,7 @@ def apply(given, old, new):
     else:
         assert new in domain
 
-    return Exists(ForAll(function._subs(old, new) & function, *limits_f), *limits_e)
+    return Any(All(function._subs(old, new) & function, *limits_f), *limits_e)
 
 
 @prove
@@ -31,7 +31,7 @@ def prove(Eq):
 
     f = Function.f(integer=True)
 
-    Eq << apply(Exists[C](ForAll[x:A](f(x, C) > 0)), x, x0)
+    Eq << apply(Any[C](All[x:A](f(x, C) > 0)), x, x0)
 
     Eq << Eq[-1].this.function.apply(algebra.all_et.given.et)
 

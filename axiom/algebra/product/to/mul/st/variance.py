@@ -3,39 +3,14 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    x_sub_x_means, *limits = self.of(Sum[Basic ** 2])
-
-    try:
-        i, z, n = axiom.limit_is_Interval(limits)
-    except:
-        i = axiom.limit_is_symbol(limits)
-        domain = function.domain_defined(i)
-        z, n = domain.of(Range)
-
-    assert z == 0
-    xi, x_means = axiom.is_Subtract(x_sub_x_means)
-
-    x, _i = xi.of(Indexed)
-    assert _i == i
-
-    x_sum = x_means * n
-
-    xi, *limits = x_sum.of(Sum)
-
-    try:
-        j, z, _n = axiom.limit_is_Interval(limits)
-    except:
-        j = axiom.limit_is_symbol(limits)
-        domain = xi.domain_defined(j)
-        z, _n = domain.of(Range)
-
-    assert z == 0
-    assert n == _n
-    _x, _j = xi.of(Indexed)
-    assert _j == j
-
-    assert x == _x
+#     ((x, _i), x_means), (i, n) = self.of(Sum[(Indexed - Basic) ** 2, Tuple[0, Expr]])        
+#     ((_x, _j), (j, _n)), __n = x_means.of(Sum[Indexed, Tuple[0, Expr]] / Expr)
+    
+    ((x, _i), (((_x, _j), (j, _n)), __n)), (i, n) = self.of(Sum[(Indexed - Sum[Indexed, Tuple[0, Expr]] / Expr) ** 2, Tuple[0, Expr]])
+    
+    assert i.is_integer and j.is_integer
+    assert _i == i and _j == j
+    assert _n == n and __n == n and _x == x
 
     if j == i:
         j = self.generate_var(excludes={i}, integer=True, var='j')

@@ -847,7 +847,6 @@ class Basic(with_metaclass(ManagedProperties)):
     
     @property
     def arg(self):
-#         assert len(self._args) == 1, "illegal arg for %s" % type(self)
         return self._args[0]
 
     @property
@@ -1866,13 +1865,16 @@ class Basic(with_metaclass(ManagedProperties)):
         while j < len(self.args):
             struct = cls._args[i]
             this = self.args[j]
-            arg = this.extract(struct)
+            arg = this.of(struct)
             if arg is not None:
                 if arg == ():
-                    if this.is_Symbol:
+                    from sympy import Symbol
+                    if this.is_Symbol and (struct is Symbol or not struct.is_Symbol) or \
+                    this.is_Number and not struct.is_Number:
                         args.append(this)
-                else: 
-                    args.append(this if struct is Basic else arg)
+                else:
+                    is_abstract = struct.is_abstract if isinstance(struct, type) else False
+                    args.append(this if is_abstract else arg)
                     
                 i += 1
                 if i == len(cls._args):
@@ -2320,7 +2322,7 @@ class Basic(with_metaclass(ManagedProperties)):
 
         return self
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         if x.dtype.is_set:
             return x.universalSet
         return x.domain            
@@ -2546,14 +2548,11 @@ class Basic(with_metaclass(ManagedProperties)):
         from sympy.logic.invoker import Identity
         return Identity(self)
       
-    def as_KroneckerDelta(self):
-        return self
-
     def domain_definition(self):
         return S.true
       
     @classmethod
-    def simplify_ForAll(cls, self, *args):
+    def simplify_All(cls, self, *args):
         ...
 
     @classmethod
@@ -2576,19 +2575,19 @@ class Basic(with_metaclass(ManagedProperties)):
     def simplify_Relational(cls, self, lhs, rhs):
         ...
         
-    def domain_defined(self, x):
+    def domain_defined(self, x, **kwargs):
         domain_defined = self._domain_defined
         if x in domain_defined:
             domain = domain_defined[x]
             if domain is None:
-                domain = self._eval_domain_defined(x)
+                domain = self._eval_domain_defined(x, **kwargs)
                 domain_defined[x] = domain
             return domain
-        return self._eval_domain_defined(x)
+        return self._eval_domain_defined(x, **kwargs)
 
     def domain_defined_for_limits(self, limits):
         domain_defined = {}
-        for v, *ab in limits:
+        for v, *_ in limits:
             domain_defined[v] = self.domain_defined(v)        
         return domain_defined
     
@@ -2604,10 +2603,6 @@ class Basic(with_metaclass(ManagedProperties)):
     
     def astype(self, cls, *args, **kwargs):
         return getattr(cls, 'rewrite_from_' + self.__class__.__name__)(self, *args, **kwargs)    
-    
-    @classmethod
-    def rewrite_from_Minimize(cls, self):
-        return cls.rewrite_from_Maximize(self)
     
     def _eval_Subset_reversed(self, lhs):
         ...

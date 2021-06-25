@@ -1,5 +1,5 @@
 from util import *
-import axiom
+
 
 from axiom.algebra.eq.le.imply.le.subs import ratsimp
 

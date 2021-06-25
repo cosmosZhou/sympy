@@ -3,10 +3,10 @@ from util import *
 
 @apply
 def apply(given):
-    dx, dy = given.of(Less[Basic ** 2, Basic ** 2])
+    dx, dy = given.of(Less[Expr ** 2, Expr ** 2])
 
-    y2, *x01_mean = dx.of(Basic - Basic - Basic)
-    _y2, *y01_mean = dy.of(Basic - Basic - Basic)
+    y2, *x01_mean = dx.of(Expr - Expr - Expr)
+    _y2, *y01_mean = dy.of(Expr - Expr - Expr)
 
     x01_mean = Add(*x01_mean)
     y01_mean = Add(*y01_mean)

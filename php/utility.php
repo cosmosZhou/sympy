@@ -178,7 +178,7 @@ function analyze_apply($py, &$i)
             continue;
         }
 
-        if (preg_match('/^(?:    )+return(?=\W) *(.+) */', $statement, $matches)) {
+        if (preg_match('/^(?:    )+return(?=\W)\s*(.+?)\s*$/', $statement, $matches)) {
             if ($numOfYields)
                 continue;
             // error_log('return statement: ' . $statement);
@@ -498,10 +498,13 @@ function replace_into_init($package, $old, $new)
     $folder = module_to_path($package);
     $__init__ = $folder . "/__init__.py";
     $__init__ = new Text($__init__);
-    $lineNum = 0;
+    $lineNum = - 1;
     foreach ($__init__ as $line) {
+        ++ $lineNum;
+
         if (! preg_match('/^from *. *import +(.+)/', $line, $m))
             continue;
+
         $theorems = preg_split('/\s*,\s*/', $m[1]);
         $index = array_search($old, $theorems);
         if ($index !== false) {
@@ -511,20 +514,31 @@ function replace_into_init($package, $old, $new)
             $__init__->setitem($lineNum, "from . import $theorems");
             return;
         }
-
-        ++ $lineNum;
     }
+}
+
+function split_module($theorem)
+{
+    $index = strrpos($theorem, ".");
+    $package = substr($theorem, 0, $index);
+    $new = substr($theorem, $index + 1);
+    return [
+        $package,
+        $new
+    ];
 }
 
 function insert_into_init($package, $new = null)
 {
     error_log("insert into $package with $new");
-    if ($new == null) {
-        $folder = dirname($package);
-        $new = substr(basename($package), 0, -3);
-    } else {
-        $folder = module_to_path($package);
+    if ($new === null) {
+        list ($package, $new) = split_module($package);
+
+        if (strpos($package, ".") !== false)
+            insert_into_init($package);
     }
+
+    $folder = module_to_path($package);
 
     $__init__ = $folder . "/__init__.py";
     $__init__ = new Text($__init__);
@@ -539,26 +553,37 @@ function insert_into_init($package, $new = null)
         }
     }
 
-    if (!$__init__->isEmpty() && ! $__init__->endsWith("\n"))
+    if (! $__init__->isEmpty() && ! $__init__->endsWith("\n"))
         $__init__->append("");
 
     $__init__->append("from . import $new");
 }
 
-function delete_from_init($package, $theorem)
+function delete_from_init($package, $theorem = null)
 {
+    if ($theorem === null) {
+        list ($package, $theorem) = split_module($package);
+    }
+
     $folder = module_to_path($package);
 
     error_log("theorem = $theorem");
-    $__init__ = $folder . "/__init__.py";
+    $initPy = $folder . "/__init__.py";
 
-    $__init__ = new Text($__init__);
+    $__init__ = new Text($initPy);
     $lineNum = - 1;
+
+    $imports = 0;
+    
+    $lineNumIndex = -1;
+    $content = null;
+    
     foreach ($__init__ as $line) {
         ++ $lineNum;
         if (! preg_match('/^from *. *import +(.+)/', $line, $m))
             continue;
 
+        ++ $imports;
         $theorems = preg_split('/\s*,\s*/', $m[1]);
         error_log(\std\jsonify($theorems));
 
@@ -573,13 +598,27 @@ function delete_from_init($package, $theorem)
 
             error_log("theorems = $theorems");
 
-            if ($theorems == "") {
-                error_log("lineNum = $lineNum");
-                $__init__->delitem($lineNum);
-            } else
-                $__init__->setitem($lineNum, "from . import $theorems");
-            break;
+            if ($theorems == "") {                
+                $lineNumIndex = $lineNum;                
+            } else{
+                ++ $imports;
+                $content = "from . import $theorems";
+            }
         }
+    }
+    
+    if ($content)
+        $__init__->setitem($lineNum, $content);
+    else
+        $__init__->delitem($lineNum);
+    
+    if ($imports == 1){
+        error_log("imports = 1");
+        if ($lineNum > 0){
+            rename($initPy, "$folder.py");
+        }
+        
+        \std\deleteDirectory($folder);
     }
 }
 
@@ -755,13 +794,9 @@ function run($py)
     $module = py_to_module($py);
     $logs[] = "module = $module";
 
-    $pathToRun = dirname(dirname(__file__)) . "/run.py";
-    $pythonExecutable = look_for_executable_python();
-    $cmd = "$pythonExecutable $pathToRun $module";
+    $array = file_get_contents("http://localhost/sympy/run.py?module=$module");
 
-    $logs[] = "cmd = $cmd";
-
-    exec($cmd, $array, $ret);
+    $array = explode(\std\is_linux() ? "\n" : "\r\n", $array);
 
     array_push($logs, ...$array);
 
@@ -769,19 +804,18 @@ function run($py)
         error_log($line);
     }
 
-    $logs[] = "return code of python script = $ret";
-
     $sql_statement = '';
     $statementsFromSQLFile = '';
-    foreach (\std\range(0, count($array)) as $i) {
-        if (\std\equals($array[$i], "latex results are saved into:")) {
-            ++ $i;
-
-            $sqlFileContainingLatex = $array[$i];
+    foreach ($array as &$line) {
+        if (preg_match("/latex results are saved into: (\S+)/", $line, $m)) {
+            $sqlFileContainingLatex = $m[1];
             $statementsFromSQLFile = iterator_to_array(\mysql\yield_from_sql($sqlFileContainingLatex));
 
             // error_log("statementsFromSQLFile = " . \std\jsonify($statementsFromSQLFile));
+
             $sql_statement = str_replace('\\', '/', $sqlFileContainingLatex);
+
+            // error_log("sql_statement = $sql_statement");
             break;
         }
     }

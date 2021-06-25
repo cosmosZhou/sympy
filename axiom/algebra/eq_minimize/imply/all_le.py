@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given): 
     (fx, *limits), M = given.of(Equal[Minimize])
-    return ForAll(M <= fx, *limits)
+    return All(M <= fx, *limits)
 
 
 @prove(provable=False)

@@ -3,16 +3,15 @@ from util import *
 
 @apply
 def apply(given, P):
-    assert given.is_ForAll
+    f_gx, *limits = given.of(All)
     assert P.is_ConditionSet or P.definition.is_ConditionSet
     _, y, cond = P.image_set()
-    f_gx = given.function
     pattern = cond._subs(y, Wild(y.name, **y.assumptions0), symbol=False)
     
     res = f_gx.match(pattern)
     gx, *_ = res.values()
 
-    return given.func(Contains(gx, P), *given.limits)
+    return given.func(Contains(gx, P), *limits)
 
 
 @prove
@@ -22,11 +21,11 @@ def prove(Eq):
     x = Symbol.x(complex=True, shape=(n,))
     y = Symbol.y(complex=True, shape=(m,))
     A = Symbol.A(etype=dtype.complex * n)
-    f = Function.f(nargs=(m,), shape=(), integer=True)
-    g = Function.g(nargs=(n,), shape=(m,))
+    f = Function.f(shape=(), integer=True)
+    g = Function.g(shape=(m,))
     
     P = Symbol.P(conditionset(y, Equal(f(y), 1)))
-    Eq << apply(ForAll[x:A](Equal(f(g(x)), 1)), P)
+    Eq << apply(All[x:A](Equal(f(g(x)), 1)), P)
     
     Eq << Eq[-1].this.function.rhs.definition
 

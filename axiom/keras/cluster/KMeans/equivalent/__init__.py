@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 
 
@@ -37,7 +36,7 @@ def apply(*given, x=None):
                       Equal(i, Sum[i](i * Bool(Contains(j, w[i])))) & Contains(j, Range(0, M)))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     M = Symbol.M(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)

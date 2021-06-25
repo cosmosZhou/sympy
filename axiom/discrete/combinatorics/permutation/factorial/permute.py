@@ -1,19 +1,14 @@
-
 from util import *
 
 
 @apply
-def apply(*given):
-    assert len(given) == 2
-    assert given[0].is_ForAll and len(given[0].limits) == 2
-    j, a, n_munis_1 = given[0].limits[0]
+def apply(all0, all1):    
+    
+    (ref, _S), (j, a, n_munis_1), (x, S) = all0.of(All[Contains])
+    
     assert a == 1
-    x, S = given[0].limits[1]
-
-    contains = given[0].function
-    assert contains.is_Contains
-    ref, _S = contains.args
     assert S == _S and ref.is_Lamda and S.is_set
+    
     dtype = S.etype
 
     assert len(ref.limits) == 1
@@ -36,17 +31,14 @@ def apply(*given):
 
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.type
 
-    assert given[1].is_ForAll and len(given[1].limits) == 1
-    _x, _S = given[1].limits[0]
+    equality, (_x, _S) = all1.of(All)     
     assert x == _x and S == _S
-
-    equality = given[1].function
     assert equality.is_Equal and {*equality.args} == {abs(x.set_comprehension()), n}
 
     return Equal(abs(S), factorial(n) * abs(Cup[x:S]({x.set_comprehension()})))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import discrete, sets, algebra
     n = Symbol.n(domain=Range(2, oo))
@@ -57,8 +49,8 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
 
-    Eq << apply(ForAll[j:1:n, x:S](Contains(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S)),
-                ForAll[x:S](Equal(abs(x.set_comprehension()), n)))
+    Eq << apply(All[j:1:n, x:S](Contains(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S)),
+                All[x:S](Equal(abs(x.set_comprehension()), n)))
 
     Eq << discrete.combinatorics.permutation.adjacent.swap2.general.apply(Eq[0])
 
@@ -83,7 +75,7 @@ def prove(Eq):
 
     Eq << sets.subset.all.imply.all.apply(Eq[-1], Eq.permutation)
 
-    Eq.all_x = ForAll(Contains(Eq[-1].lhs, F(e)), *Eq[-1].limits, plausible=True)
+    Eq.all_x = All(Contains(Eq[-1].lhs, F(e)), *Eq[-1].limits, plausible=True)
 
     Eq << Eq.all_x.this.function.rhs.defun()
 

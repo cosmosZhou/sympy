@@ -1,7 +1,5 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(given):
@@ -14,9 +12,9 @@ def prove(Eq):
     x = Symbol.x(real=True, given=True)
     y = Symbol.y(real=True, given=True)
     Eq << apply(x < y)
-    
+
     Eq << Eq[0] - y
-    
+
 
 if __name__ == '__main__':
     run()

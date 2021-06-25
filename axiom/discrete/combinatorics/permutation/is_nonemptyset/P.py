@@ -17,7 +17,7 @@ def prove(Eq):
 
     x = Eq[0].rhs.variable.base
     P = Eq[0].lhs
-    Eq << Exists[x[:n]](Contains(x[:n] , P), plausible=True)
+    Eq << Any[x[:n]](Contains(x[:n] , P), plausible=True)
 
     Eq << sets.any_contains.imply.is_nonemptyset.apply(Eq[-1])
 
@@ -25,7 +25,7 @@ def prove(Eq):
 
     i = Symbol.i(integer=True)
 
-    Eq << algebra.any.given.any.subs.apply(Eq[-1], x[:n], Lamda[i:n](i))
+    Eq << algebra.any.given.cond.subs.apply(Eq[-1], x[:n], Lamda[i:n](i))
 
     Eq << Eq[-1].this.lhs.simplify()
 

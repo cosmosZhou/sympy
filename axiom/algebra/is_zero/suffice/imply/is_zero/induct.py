@@ -5,9 +5,9 @@ from util import *
 def apply(*given, n=None):
     assert n.is_given == False
 
-    f0, sufficient = given
+    f0, suffice = given
     f0.of(Equal[0])
-    fn, fn1 = sufficient.of(Suffice)
+    fn, fn1 = suffice.of(Suffice)
 
     assert fn._subs(n, n + 1) == fn1
 

@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.to.add.doit import doit
-
-
 @apply(given=None)
 def apply(self):
-    assert self.is_Exists
-    return Equivalent(self, doit(self))
+    from axiom.algebra.sum.to.add.doit import doit
+    return Equivalent(self, doit(Any, self))
 
 
 @prove
@@ -19,19 +15,19 @@ def prove(Eq):
     i = Symbol.i(integer=True)
 
     n = 5
-    Eq << apply(Exists[i:n](x[i] > 0))
+    Eq << apply(Any[i:n](x[i] > 0))
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.any.to.ou.dissect, {n})
+    Eq << Eq[-1].this.lhs.apply(algebra.any.to.ou.split, {n})
 
     n -= 1
-    Eq << Eq[-1].this.find(Exists).apply(algebra.any.to.ou.dissect, {n})
+    Eq << Eq[-1].this.find(Any).apply(algebra.any.to.ou.split, {n})
 
     n -= 1
-    Eq << Eq[-1].this.find(Exists).apply(algebra.any.to.ou.dissect, {n})
+    Eq << Eq[-1].this.find(Any).apply(algebra.any.to.ou.split, {n})
 
     n -= 1
-    Eq << Eq[-1].this.find(Exists).apply(algebra.any.to.ou.dissect, {n})
+    Eq << Eq[-1].this.find(Any).apply(algebra.any.to.ou.split, {n})
 
 
 if __name__ == '__main__':

@@ -1,18 +1,17 @@
-
 from util import *
-
 
 
 @apply
 def apply(*given):
     subset, forall = given
-    if subset.is_ForAll:
+    if subset.is_All:
         forall, subset = subset, forall
-    assert subset.is_Subset and forall.is_ForAll
-    B, A = subset.args
+    function, *limits = forall.of(All)
+    
+    B, A = subset.of(Subset)
 
     index = -1
-    for i, (x, *domain) in enumerate(forall.limits):
+    for i, (x, *domain) in enumerate(limits):
         if len(domain) == 1:
             if domain[0] == A:
                 index = i
@@ -20,26 +19,22 @@ def apply(*given):
 
     assert index >= 0
 
-    function = forall.function
-    limits = [*forall.limits]
     limits[index] = (x, B)
-    return ForAll(function, *limits)
+    return All(function, *limits)
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(complex=True, positive=True)
     A = Symbol.A(etype=dtype.complex * n)
     B = Symbol.B(etype=dtype.complex * n)
     x = Symbol.x(complex=True, shape=(n,))
-
-    f = Function.f(nargs=(n,), complex=True, shape=())
-
+    f = Function.f(complex=True, shape=())
     assert f.is_complex
     assert f.shape == ()
-
-    Eq << apply(Subset(B, A), ForAll[x:A](Equal(f(x), 1)))
+    Eq << apply(Subset(B, A), All[x:A](Equal(f(x), 1)))
 
     Eq << sets.subset.imply.all_contains.apply(Eq[0], wrt=x)
 

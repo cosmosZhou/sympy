@@ -7,7 +7,7 @@ def apply(S):
 
     x = S.element_symbol()
     y = S.element_symbol({x})
-    return LessEqual(abs(S), 1) | Exists[x:S, y:S](Unequal(x, y))
+    return LessEqual(abs(S), 1) | Any[x:S, y:S](Unequal(x, y))
 
 
 @prove

@@ -1,1 +1,2 @@
-from . import kronecker_delta, terms
+from . import terms
+from . import kroneckerDelta

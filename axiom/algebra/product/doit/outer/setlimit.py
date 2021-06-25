@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self):
     from axiom.algebra.sum.doit.outer.setlimit import doit
-    assert self.is_Product
-    return Equal(self, doit(self))
+    return Equal(self, doit(Product, self))
 
 
 @prove

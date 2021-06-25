@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -25,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[0] - y
 
-    Eq << algebra.is_positive.is_positive.imply.is_positive.mul.apply(Eq[-2], Eq[-1])
+    Eq << algebra.is_positive.is_positive.imply.is_positive.apply(Eq[-2], Eq[-1])
 
     Eq << Eq[-1].this.lhs.expand()
 

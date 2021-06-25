@@ -2,17 +2,16 @@ from util import *
 
 
 @apply
-def apply(*given):
-    cond, exists = given
-    if not exists.is_Exists:
+def apply(cond, exists):
+    if not exists.is_Any:
         cond, exists = exists, cond
 
     if cond.is_ConditionalBoolean:
         assert not cond.variables_set & exists.variables_set
 
-    fn, *limits = exists.of(Exists)
+    fn, *limits = exists.of(Any)
 
-    return Exists(cond & fn, *limits)
+    return Any(cond & fn, *limits)
 
 
 @prove
@@ -25,7 +24,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(f(y) > 0, Exists[y:B](g(y) > 0))
+    Eq << apply(f(y) > 0, Any[y:B](g(y) > 0))
 
     Eq << ~Eq[-1].simplify()
 

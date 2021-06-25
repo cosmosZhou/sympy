@@ -1,13 +1,12 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(*given):
-    cond, sufficient = given
+    cond, suffice = given
 
-    lhs, rhs = sufficient.of(Suffice)
+    lhs, rhs = suffice.of(Suffice)
     assert cond == lhs
 
     return rhs

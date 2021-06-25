@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Greater])
+    (lhs, rhs), *limits = given.of(All[Greater])
 
     return Greater(Sum(lhs, *limits).simplify(), Sum(rhs, *limits).simplify())
 
@@ -16,7 +16,7 @@ def prove(Eq):
     f = Function.f(shape=(), real=True)
     g = Function.g(shape=(), real=True)
 
-    Eq << apply(ForAll[i:n](Greater(f(i), g(i))))
+    Eq << apply(All[i:n](Greater(f(i), g(i))))
 
     Eq << algebra.imply.suffice.gt.induct.sum.apply(Greater(f(i), g(i)), (i, 0, n))
 

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lt, *limits_f), *limits_e = given.of(Exists[ForAll])
+    (lt, *limits_f), *limits_e = given.of(Any[All])
 
     assert len(limits_f) == 1
     x, domain = limits_f[0]
@@ -51,9 +51,8 @@ def apply(given):
             lt, gt = domain.args
             xx0, _δ = lt.of(Less)
             assert _δ == δ
-            if xx0.is_Abs:
-                import axiom
-                _x, x0 = axiom.is_Subtract(xx0.of(Abs))
+            if xx0.is_Abs:                
+                _x, x0 = xx0.of(Abs[Expr - Expr])
                 assert x == _x
                 assert x0.is_real
 
@@ -105,7 +104,7 @@ def prove(Eq):
     N = Symbol.N(integer=True, positive=True)
     ε = Symbol.ε(real=True, positive=True)
     δ = Symbol.δ(real=True, positive=True)
-    Eq << apply(Exists[δ](ForAll[x: (abs(x - x0) > 0) & (abs(x - x0) < δ)](abs(f(x) - a) < ε)))
+    Eq << apply(Any[δ](All[x: (abs(x - x0) > 0) & (abs(x - x0) < δ)](abs(f(x) - a) < ε)))
 
     Eq << Eq[1].this.apply(calculus.eq.to.any_all.limit_definition)
 

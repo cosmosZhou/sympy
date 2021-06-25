@@ -3,9 +3,8 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom 
-    function, *limits = self.of(Sum)
-    i, a, b = axiom.limit_is_Interval(limits)
+    function, (i, a, b) = self.of(Sum)
+    assert i.is_integer
     front = function._subs(i, a - 1)
 #     b >= a => b >= a - 1
     return Equal(self, Sum[i:a - 1:b](function) - front, evaluate=False)

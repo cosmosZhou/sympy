@@ -1,15 +1,10 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(given):
-    xj, *limits = axiom.all_is_positive(given)
-    j, a, n = axiom.limit_is_Interval(limits)
-    assert a == 1
-    x, _j = xj.of(Indexed)
+    (x, _j), (j, n) = given.of(All[Indexed > 0, Tuple[1, Expr]])
     assert _j == j
-
     n = n - 2
     return Equal(alpha(x[:n + 2]), alpha(x[:n], x[n] + 1 / x[n + 1]))
 
@@ -24,7 +19,7 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
 
-    Eq << apply(ForAll[i:1:n + 2](x[i] > 0))
+    Eq << apply(All[i:1:n + 2](x[i] > 0))
 
     Eq << discrete.imply.suffice.alpha.recurrence.apply(alpha(x[:n + 2]))
 

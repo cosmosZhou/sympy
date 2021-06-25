@@ -615,6 +615,18 @@ class RisingFactorial(CombinatorialFunction):
                                      self.args[1]._sage_())
 
 
+    def _latex(self, p, exp=None):
+        n, k = self.args        
+        if n.is_Add or n.is_Mul:
+            base = r"\left%s\right" % p._print(n)
+        else:
+            base = p._print(n)
+
+        tex = r"{%s}^\overline{%s}" % (base, p._print(k))
+
+        return p._do_exponent(tex, exp)
+
+
 class FallingFactorial(CombinatorialFunction):
     r"""
     Falling factorial (related to rising factorial) is a double valued
@@ -747,6 +759,19 @@ class FallingFactorial(CombinatorialFunction):
         return sage.falling_factorial(self.args[0]._sage_(),
                                       self.args[1]._sage_())
 
+    def _latex(self, p, exp=None):
+        from sympy.printing.precedence import PRECEDENCE
+        n, k = self.args
+        if n.is_Add or n.is_Mul:
+            base = r"{\left(%s\right)}" % p._print(n)
+        else:
+            base = p._print(n)
+            
+        sub = r"%s" % p.parenthesize(k, PRECEDENCE['Func'])
+
+        tex = r"%s^\underline{%s}" % (base, sub)
+
+        return p._do_exponent(tex, exp)
 
 rf = RisingFactorial
 ff = FallingFactorial

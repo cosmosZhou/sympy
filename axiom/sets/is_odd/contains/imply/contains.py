@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
-    is_odd, contains_n = given
-    n = is_odd.of(Equal[Basic % 2, 1])
+def apply(is_odd, contains_n):
+    n = is_odd.of(Equal[Expr % 2, 1])
     n_, ab = contains_n.of(Contains)
 
     assert n == n_

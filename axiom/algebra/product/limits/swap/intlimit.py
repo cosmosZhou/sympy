@@ -1,14 +1,10 @@
 from util import *
-import axiom
 
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
-
-from axiom.algebra.sum.limits.swap.intlimit import limits_swap
 
 @apply
 def apply(self):
-    assert self.is_Product
-    return Equal(self, limits_swap(self))
+    from axiom.algebra.sum.limits.swap.intlimit import limits_swap
+    return Equal(self, limits_swap(Product, self))
 
 
 @prove

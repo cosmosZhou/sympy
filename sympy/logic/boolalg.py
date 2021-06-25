@@ -119,7 +119,7 @@ class Boolean(Basic):
             assert not x.is_given
             if not self._has(x): 
                 return self
-            from sympy import ForAll
+            from sympy import All
             if len(args) == 2:
                 from sympy import Interval, Range    
                 domain = (Range if x.is_integer else Interval)(*args)
@@ -130,14 +130,14 @@ class Boolean(Basic):
                     domain = x.domain_conditioned(domain)
             else:
                 _x = x.unbounded
-                self = ForAll(self._subs(x, _x), (_x, x.domain))
+                self = All(self._subs(x, _x), (_x, x.domain))
                 return self.simplify() if simplify else self
                 
             x_domain = x.domain
             if domain == x_domain:
                 if not simplify:
                     _x = x.unbounded
-                    self = ForAll(self._subs(x, _x), (_x, x.domain))
+                    self = All(self._subs(x, _x), (_x, x.domain))
                     return self
         else:
             return
@@ -197,8 +197,8 @@ class Boolean(Basic):
         invert |= self.domain_definition().invert()
         
         if limits_exists:
-            from sympy import Exists
-            return Exists(invert, *limits_exists, negation=self).simplify()
+            from sympy import Any
+            return Any(invert, *limits_exists, negation=self).simplify()
         
         return invert.copy(negation=self)        
 
@@ -321,9 +321,6 @@ class Boolean(Basic):
             return self
         return origin
 
-    def as_KroneckerDelta(self):
-        ...
-
     def _eval_is_random(self):
         for arg in self.args:
             if arg.is_random:
@@ -424,7 +421,7 @@ class BinaryCondition(Boolean):
         a, b = self.args
         return self.reversed_type(b, a, evaluate=False)
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         return self.lhs.domain_defined(x) & self.rhs.domain_defined(x)
 
     def domain_definition(self):
@@ -1156,7 +1153,7 @@ class BooleanFunction(Application, Boolean):
                      +nonRel + nonRealRel))
         return rv
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = Boolean._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
@@ -1520,15 +1517,6 @@ class And(LatticeOp, BooleanFunction):
                             
         return self
 
-    def as_KroneckerDelta(self):
-        eq = 1
-        for c in self.args:
-            e = c.as_KroneckerDelta()
-            if e is None:
-                return
-            eq *= e
-        return eq
-
     def __and__(self, other):
         """Overloading for & operator"""
         lhs = tuple(self._argset)
@@ -1537,7 +1525,6 @@ class And(LatticeOp, BooleanFunction):
         if other.is_And:
             rhs = tuple(other._argset)
         elif other.is_Or:
-            print('this method should be axiomatized!')
             _self = self.invert()
             if _self in other._argset:
                 args = set(other._argset)
@@ -1580,7 +1567,7 @@ class And(LatticeOp, BooleanFunction):
         return sol
 
     @classmethod
-    def simplify_ForAll(cls, self, function, *limits):
+    def simplify_All(cls, self, function, *limits):
         res = self.simplify_int_limits(function)
         if res:
             function, limits = res
@@ -1778,15 +1765,6 @@ class Or(LatticeOp, BooleanFunction):
             
         return And(self.func(*eqs), *common_terms)
 
-    def as_KroneckerDelta(self):
-        eq = 1
-        for c in self.args:
-            e = c.as_KroneckerDelta()
-            if e is None:
-                return
-            eq *= 1 - e
-        return 1 - eq
-
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq = args[0]
@@ -1854,7 +1832,7 @@ class Or(LatticeOp, BooleanFunction):
             return BooleanFunction.__or__(self, other)
         return BooleanFunction.__or__(self, other)                
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = x.emptySet
         for arg in self.args:
             domain |= arg.domain_defined(x)

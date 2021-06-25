@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Sum[x](Eq[-1].rhs.function).this.function.args[1].apply(algebra.bool.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.astype(Mul)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.mul)
 
     Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (y,))
 

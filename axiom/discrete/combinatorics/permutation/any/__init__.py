@@ -11,7 +11,7 @@ def apply(a):
 
     P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), a.set_comprehension())))
 
-    return ForAll[p[:n]:P](Exists[i:n](Equal(p[i], a[n - 1])))
+    return All[p[:n]:P](Any[i:n](Equal(p[i], a[n - 1])))
 
 
 @prove

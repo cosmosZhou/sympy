@@ -64,7 +64,7 @@ def any_all(given, ε=None, δ=None):
     else:
         epsilon_constraint = abs(fx - a) < ε
         
-    return Exists[δ](ForAll[x:cond](epsilon_constraint))
+    return Any[δ](All[x:cond](epsilon_constraint))
 
 
 @prove(provable=False)

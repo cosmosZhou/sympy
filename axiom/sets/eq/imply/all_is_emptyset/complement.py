@@ -23,7 +23,7 @@ def apply(given, excludes=None):
     i_domain = limitsDict[i] or i.domain
 
     limits = [(j, i_domain // {i})] + [*limits]
-    return ForAll(Equal(xi & xj, xi.etype.emptySet).simplify(), *limits)
+    return All(Equal(xi & xj, xi.etype.emptySet).simplify(), *limits)
 
 
 @prove

@@ -3,9 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    x, expr, intersection = axiom.is_ImageSet(self)
-    ss = intersection.of(Intersection)
+    expr, (x, ss) = self.of(Cup[FiniteSet, Tuple[Intersection]])
     return Subset(self, Intersection(*(imageset(x, expr, s) for s in ss)))
 
 

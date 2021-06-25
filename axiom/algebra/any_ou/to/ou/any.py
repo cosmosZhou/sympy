@@ -3,9 +3,9 @@ from util import *
 
 @apply(given=None)
 def apply(imply):
-    ou, *limits = imply.of(Exists[Or])
+    ou, *limits = imply.of(Any[Or])
 
-    return Equivalent(imply, Or(*(Exists(eq, *limits) for eq in ou)))
+    return Equivalent(imply, Or(*(Any(eq, *limits) for eq in ou)))
 
 
 @prove
@@ -17,7 +17,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(Exists[x:A]((g(x) > 0) | (f(x) > 0)))
+    Eq << apply(Any[x:A]((g(x) > 0) | (f(x) > 0)))
 
     Eq << algebra.equivalent.given.cond.apply(Eq[0])
 

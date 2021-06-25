@@ -1,13 +1,11 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(self):
     exponent = []
     base = set()
-    for arg in self.of(Mul, copy=True):
+    for arg in self.of(Mul):
         b, e = arg.of(Pow)
         base.add(b)
         if len(base) > 1:

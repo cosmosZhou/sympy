@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Supset])
+    (lhs, rhs), *limits = given.of(All[Supset])
     return Supset(Cup(lhs, *limits).simplify(), Cup(rhs, *limits).simplify())
 
 
@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function.f(shape=(), etype=dtype.integer)
     g = Function.g(shape=(), etype=dtype.integer)
 
-    Eq << apply(ForAll[i:n](Supset(f(i), g(i))))
+    Eq << apply(All[i:n](Supset(f(i), g(i))))
 
     Eq << Eq[0].reversed
 

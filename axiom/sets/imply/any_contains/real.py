@@ -7,7 +7,7 @@ def apply(x, k=None):
     if k is None:
         k = x.generate_var(integer=True, var='k')
 
-    return Exists[k](Contains(x, Interval(k, k + 1, right_open=True)))
+    return Any[k](Contains(x, Interval(k, k + 1, right_open=True)))
 
 
 @prove

@@ -3,9 +3,8 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    fx, *limits = self.of(Cup)
-    return Equal(self, fx.as_multiple_terms(*axiom.limit_is_set(limits), cls=Cup))
+    fx, (x, s) = self.of(Cup)
+    return Equal(self, fx.as_multiple_terms(x, s, cls=Cup))
 
 
 @prove

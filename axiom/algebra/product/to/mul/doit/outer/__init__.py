@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.to.add.doit.outer import doit
-
-
 @apply
 def apply(self):
-    assert self.is_Product
-    return Equal(self, doit(self))
+    from axiom.algebra.sum.to.add.doit.outer import doit
+    return Equal(self, doit(Product, self))
 
 
 @prove

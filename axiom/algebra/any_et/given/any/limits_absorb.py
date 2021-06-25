@@ -13,12 +13,12 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(oo,))
 
-    f = Function.f(nargs=(n,), shape=(), integer=True)
-    f_quote = Function("f'", nargs=(n,), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
+    f_quote = Function("f'", shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-    h = Function.h(nargs=(n + 1,), shape=(), integer=True)
+    h = Function.h(shape=(), integer=True)
 
-    Eq << apply(Exists[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
+    Eq << apply(Any[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
 
     Eq << algebra.any.imply.any_et.single_variable.apply(Eq[1])
 

@@ -3,8 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    xy = given.of(Equal[0])
-    x, y = xy.of(Basic - Basic)
+    x, y = given.of(Equal[Expr - Expr, 0])
     
     return Equal(x, y)
 

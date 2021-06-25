@@ -6,7 +6,7 @@ def apply(x, n=None):
     if n is None:
         n = x.generate_var(integer=True)
     assert x.is_real
-    return Exists[n](Contains(n, Interval(x - 1, x, left_open=True)))
+    return Any[n](Contains(n, Interval(x - 1, x, left_open=True)))
 
 
 @prove

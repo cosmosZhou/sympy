@@ -84,7 +84,7 @@ class Conditioned(Expr):
     lhs = property(lambda self: self.args[0])
     rhs = property(lambda self: self.args[1])
     
-    def _eval_domain_defined(self, x):        
+    def _eval_domain_defined(self, x, **_):        
         return self.lhs.domain_defined(x) & self.rhs.domain_defined(x)            
 
     def simplify_condition_on_random_variable(self):
@@ -162,8 +162,8 @@ class Conditioned(Expr):
             return self.func(self.lhs.as_boolean(), self.rhs)
 
 
-# when X is a discrete random variable, define P(X) = P(X=x), which is necessarily nomore than 1         
-# when X is a continuous random variable, define P(X) = PDF(X)(x) which is possibly greater than 1
+# when X is a discrete random variable, define P(X) = P(X=x), which is necessarily nomore than 1, Sum[X](P(X)) = 1
+# when X is a continuous random variable, define P(X) = P(X=x) = PDF(X)(x) which is possibly greater than 1, Integral[X](P(X)) = 1
 class Probability(Expr):
     """
     Symbolic expression for the probability.
@@ -192,7 +192,7 @@ class Probability(Expr):
     is_extended_real = True
     is_finite = True
     
-    def _eval_domain_defined(self, x):        
+    def _eval_domain_defined(self, x, **_):        
         return self.arg.domain_defined(x)            
 
     def marginalize(self, given):
@@ -284,12 +284,10 @@ class Probability(Expr):
         for_rewrite = not hints.get('for_rewrite', False)
 
         if isinstance(condition, Not):
-            return S.One - self.func(condition.args[0], given_condition,
-                                    evaluate=for_rewrite).doit(**hints)
+            return S.One - self.func(condition.args[0], given_condition, evaluate=for_rewrite).doit(**hints)
 
         if condition.has(RandomIndexedSymbol):
-            return pspace(condition).probability(condition, given_condition,
-                                evaluate=for_rewrite)
+            return pspace(condition).probability(condition, given_condition, evaluate=for_rewrite)
 
         if isinstance(given_condition, RandomSymbol):
             condrv = random_symbols(condition)
@@ -302,14 +300,14 @@ class Probability(Expr):
                 return Probability(condition).doit()
 
         if given_condition is not None and not given_condition.is_Relational:
-            raise ValueError("%s is not a relational or combination of relationals"
-                    % (given_condition))
+            raise ValueError("%s is not a relational or combination of relationals" % (given_condition))
 
         if given_condition == False or condition is S.false:
             return S.Zero
+        
         if not condition.is_Relational:
-            raise ValueError("%s is not a relational or combination of relationals"
-                    % (condition))
+            raise ValueError("%s is not a relational or combination of relationals" % (condition))
+        
         if condition is S.true:
             return S.One
 
@@ -320,14 +318,11 @@ class Probability(Expr):
             return Probability(given(condition, given_condition)).doit()
 
         # Otherwise pass work off to the ProbabilitySpace
-        if pspace(condition) == PSpace():
+        ps = pspace(condition)
+        if ps  == PSpace():
             return Probability(condition, given_condition)
 
-        result = pspace(condition).probability(condition)
-        if hasattr(result, 'doit') and for_rewrite:
-            return result.doit()
-        else:
-            return result
+        return ps.probability(condition).simplify()
 
     def _eval_rewrite_as_Integral(self, arg, condition=None, **kwargs):
         return self.func(arg, condition=condition).doit(for_rewrite=True)

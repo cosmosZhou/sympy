@@ -1,11 +1,8 @@
 from util import *
 
-import axiom
-
 
 @apply
-def apply(*given):
-    x_less_than_y, x_greater_than_y_minus = given
+def apply(x_less_than_y, x_greater_than_y_minus):
     x, y = x_less_than_y.of(LessEqual)
     _x, _y = x_greater_than_y_minus.of(GreaterEqual)
     assert _x == x
@@ -34,6 +31,7 @@ def prove(Eq):
     Eq << Eq[-1] + Eq[-2].reversed
 
     Eq << Eq[-1].this.apply(algebra.le.simplify.terms.common)
+
 
 if __name__ == '__main__':
     run()

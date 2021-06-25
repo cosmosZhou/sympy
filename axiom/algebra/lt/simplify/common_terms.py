@@ -1,5 +1,5 @@
 from util import *
-import axiom
+
 
 from axiom.algebra.eq.simplify.terms.common import simplify_common_terms
 

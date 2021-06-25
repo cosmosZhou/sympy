@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 from axiom.algebra.sum.limits.domain_defined.insert import limits_insert
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s

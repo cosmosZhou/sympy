@@ -43,7 +43,7 @@ def apply(*given):
     x, y, z = extract(*given)
 
     theta = Symbol.theta(real=True)
-    return Exists[theta:Interval(pi / 3, pi, right_open=True)](Equal(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
+    return Any[theta:Interval(pi / 3, pi, right_open=True)](Equal(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
 
 
 @prove

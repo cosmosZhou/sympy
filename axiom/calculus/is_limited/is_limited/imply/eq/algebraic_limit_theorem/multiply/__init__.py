@@ -3,11 +3,11 @@ from util import *
 
 @apply
 def apply(*given):
-    import axiom
+    from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
     limited_f, limited_g = given
-    fx, (x, x0, dir) = axiom.is_limited(limited_f)
+    fx, (x, x0, dir) = of_limited(limited_f)
 
-    gx, (_x, _x0, _dir) = axiom.is_limited(limited_g)
+    gx, (_x, _x0, _dir) = of_limited(limited_g)
     assert dir == _dir
 
     assert x == _x

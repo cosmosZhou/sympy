@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -9,7 +7,7 @@ def apply(given):
     function, limit = argmax_fx.of(ArgMax)
     x = limit[0]
     fx0 = function._subs(x, x0)
-    return Equal(fx0, MAX(function, limit))
+    return Equal(fx0, Maximize(function, limit))
 
 
 @prove(provable=False)

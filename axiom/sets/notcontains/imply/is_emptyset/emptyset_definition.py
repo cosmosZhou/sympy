@@ -17,7 +17,7 @@ def prove(Eq):
 
     U = Symbol.U(e.universalSet)
 
-    Eq << ForAll[e:U](NotContains(e, s), plausible=True)
+    Eq << All[e:U](NotContains(e, s), plausible=True)
 
     Eq << Eq[-1].this.limits[0][1].definition
 

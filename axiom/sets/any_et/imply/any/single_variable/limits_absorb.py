@@ -1,14 +1,10 @@
-
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given, index):
-    assert given.is_Exists and given.function.is_And
-
-    eqs = [*given.function.args]
+    [*eqs], *limits = given.of(Any[And])
+    
     eq = eqs[index]
     del eqs[index]
     wrt, B = eq.of(Contains)
@@ -17,16 +13,13 @@ def apply(given, index):
 
     function = And(*eqs)
 
-    limits = [*given.limits]
     A = given.limits_dict[wrt]
     if A:
         limits[i] = (wrt, A & B)
     else:
         limits[i] = (wrt, B)
 
-    return Exists(function, *limits)
-
-
+    return Any(function, *limits)
 
 
 @prove
@@ -38,9 +31,9 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.real * n)
     B = Symbol.B(etype=dtype.real * n)
 
-    f = Function.f(nargs=(n,), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
 
-    Eq << apply(Exists[x[:n]: A](Contains(x[:n], B) & (f(x[:n]) > 0)), index=1)
+    Eq << apply(Any[x[:n]: A](Contains(x[:n], B) & (f(x[:n]) > 0)), index=1)
 
     Eq << sets.any.imply.any_et.single_variable.apply(Eq[0])
 

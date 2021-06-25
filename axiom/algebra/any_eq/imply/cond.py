@@ -3,7 +3,7 @@ from util import *
 
 @apply(simplify=False)
 def apply(given):
-    (x, y), *limits = given.of(Exists[Equal])
+    (x, y), *limits = given.of(Any[Equal])
     cond = given.limits_cond
     return cond._subs(x, y)
 
@@ -15,7 +15,7 @@ def prove(Eq):
     
     S = Symbol.S(etype=dtype.integer)
 
-    Eq << apply(Exists[x:S](Equal(x, y)))
+    Eq << apply(Any[x:S](Equal(x, y)))
     
     Eq << Eq[0].simplify()
 

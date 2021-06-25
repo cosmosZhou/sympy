@@ -1,13 +1,12 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(*given, n=None, start=0):
     start = sympify(start)
-    f0, f1, sufficient = given
-    fn_fn1, fn2 = sufficient.of(Suffice)
+    f0, f1, suffice = given
+    fn_fn1, fn2 = suffice.of(Suffice)
     fn, fn1 = fn_fn1.of(And)
 
     if fn._subs(n, n + 1) != fn1:

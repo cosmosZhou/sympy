@@ -4,7 +4,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Equal])
+    (lhs, rhs), *limits = given.of(All[Equal])
 
     return Equal(Cap(lhs, *limits).simplify(), Cap(rhs, *limits).simplify())
 
@@ -17,7 +17,7 @@ def prove(Eq):
     f = Function.f(shape=(), etype=dtype.integer)
     g = Function.g(shape=(), etype=dtype.integer)
 
-    Eq << apply(ForAll[i:n](Equal(f(i), g(i))))
+    Eq << apply(All[i:n](Equal(f(i), g(i))))
 
     Eq << sets.imply.suffice.eq.intersection.induct.apply(Equal(f(i), g(i)), (i, 0, n))
 

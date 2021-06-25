@@ -15,7 +15,7 @@ def apply(given):
     j = xi.generate_var(integer=True)
     xj = xi.subs(i, j)
 
-    return ForAll[j:i, i:n](Equal(xi & xj, xi.etype.emptySet))
+    return All[j:i, i:n](Equal(xi & xj, xi.etype.emptySet))
 
 
 @prove

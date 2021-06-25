@@ -8,7 +8,7 @@ def apply(A):
     j = Symbol.j(integer=True)
     d = Symbol.d(shape=(oo,), integer=True)
     k = Symbol.k(domain=Range(0, n + 1))
-    M = Symbol.M(Lamda[k](Piecewise((Sum[d[:k]:ForAll[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](abs(Cap[i:k](A[d[i]]))), k > 0),
+    M = Symbol.M(Lamda[k](Piecewise((Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](abs(Cap[i:k](A[d[i]]))), k > 0),
                                                 (abs(Cup[i:n](A[i])), True))))
 
     assert M.shape[0] == n + 1
@@ -33,7 +33,7 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-1].lhs.args[1]
 
-    Eq << Eq[-1].this.rhs.astype(Sum)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
     Eq << Eq[0].subs(_k, 0)
 

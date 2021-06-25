@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.apply(sets.cup.to.union.dissect, cond={n})
+    Eq << Eq.induct.this.lhs.apply(sets.cup.to.union.split, cond={n})
 
     Eq << sets.eq.imply.eq.union.apply(Eq[0], Interval(n, n + 1, left_open=True))
 

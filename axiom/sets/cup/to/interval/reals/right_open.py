@@ -18,7 +18,7 @@ def prove(Eq):
     k = Symbol.k(integer=True)
     Eq << apply(Cup[k](Interval(k, k + 1, right_open=True)))
 
-    Eq << Eq[0].this.lhs.apply(sets.cup.to.union.dissect, cond=k >= 0)
+    Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=k >= 0)
 
     Eq << Eq[-1].this.find(~Cup | Cup).apply(sets.cup.limits.subs.negate, k, -k - 1)
 

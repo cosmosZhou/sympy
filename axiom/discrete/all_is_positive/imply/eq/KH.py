@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 from axiom.discrete.imply.is_positive.alpha import alpha
 from axiom.discrete.H.to.add.definition import H
 from axiom.discrete.K.to.add.definition import K
@@ -8,10 +6,7 @@ from axiom.discrete.K.to.add.definition import K
 
 @apply
 def apply(given):
-    xj, *limits = axiom.all_is_positive(given)
-    j, a, n = axiom.limit_is_Interval(limits)
-    assert a == 0
-    x, _j = xj.of(Indexed)
+    (x, _j), (j, n) = given.of(All[Indexed > 0, Tuple[0, Expr]])
     offset = _j - j
     if offset != 0:
         assert not offset._has(j)
@@ -29,7 +24,7 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
 
-    Eq << apply(ForAll[i:0:n + 1](x[i] > 0))
+    Eq << apply(All[i:0:n + 1](x[i] > 0))
 
     x_ = Symbol.x(real=True, positive=True, shape=(oo,))
     Eq << discrete.continued_fraction.HK.KH.apply(x_[:n + 1])

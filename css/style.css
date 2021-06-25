@@ -3,7 +3,7 @@ body {
 	margin-left: 1.5em;
 }
 
-button.transparent, input {
+input {
 	background-color: inherit;
 	border-style: none;
 	outline: none;

@@ -6,7 +6,7 @@ from . import min
 from . import floor
 from . import split
 from . import astrict
-from . import multiply
+from . import mul
 from . import square
 from . import st
 from . import integral

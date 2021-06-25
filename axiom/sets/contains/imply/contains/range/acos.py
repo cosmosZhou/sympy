@@ -15,7 +15,7 @@ def apply(given):
     return Contains(acos(e), interval.func(acos(b), acos(a), left_open=interval.right_open, right_open=interval.left_open))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(integer=True)
     a = Symbol.a(real=True)

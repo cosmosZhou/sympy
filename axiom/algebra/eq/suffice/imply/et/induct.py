@@ -1,14 +1,13 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(*given, n=None, x=None, start=0):
     start = sympify(start)
-    f0, sufficient = given
+    f0, suffice = given
     f0.of(Equal)
-    fn_and_fnt, fn1 = sufficient.of(Suffice)
+    fn_and_fnt, fn1 = suffice.of(Suffice)
 
     fn, fnt = fn_and_fnt.of(And)
 

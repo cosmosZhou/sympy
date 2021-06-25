@@ -2,13 +2,12 @@ from util import *
 
 
 @apply
-def apply(*given):
-    forall, exists = given
-    if forall.is_Exists:
+def apply(forall, exists):
+    if forall.is_Any:
         forall, exists = exists, forall
 
-    fx, *limits_f = forall.of(ForAll)
-    fy, *limits_e = exists.of(Exists)
+    fx, *limits_f = forall.of(All)
+    fy, *limits_e = exists.of(Any)
 
     dict_f = forall.limits_dict
     dict_e = exists.limits_dict
@@ -32,7 +31,7 @@ def apply(*given):
 
         assert domain_e in domain_f
 
-    return Exists(fx & fy, *limits_e)
+    return Any(fx & fy, *limits_e)
 
 
 @prove
@@ -43,11 +42,11 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(ForAll[y:g(y) > 0](f(y) > 0), Exists[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
+    Eq << apply(All[y:g(y) > 0](f(y) > 0), Any[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
 
     Eq << algebra.any.given.any_et.apply(Eq[-1])
 
-    Eq.any = algebra.any.imply.any_et.multiple_variables.apply(Eq[1], simplify=False)
+    Eq.any = algebra.any.imply.any_et.apply(Eq[1], simplify=False)
 
     Eq << algebra.all.imply.suffice.apply(Eq[0])
 

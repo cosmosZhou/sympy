@@ -72,15 +72,22 @@ if (! \std\endsWith($path_info, '/')) {
                 \std\createDirectory(dirname($py));
 
                 rename($base_py, $base_init);
-                $base_init = new \std\Text($base_init);
-
-                $moduleName = substr(basename($py), 0, - 3);
-
-                $base_init->append("\n\nfrom . import $moduleName");
+                // $base_init = new \std\Text($base_init);
+                // $moduleName = substr(basename($py), 0, - 3);
+                // $base_init->append("\n\nfrom . import $moduleName");
             }
 
+            $imports = [];
             if (file_exists($py)) {
-                die("$py already exists!");
+                if (! \std\endsWith($py, "/__init__.py"))
+                    die("$py already exists!");
+                else {
+                    $file = new \std\Text($py);
+                    if ($file->search('from util import \S')) {
+                        die("$py already exists!");
+                    }
+                    $imports = $file->preg_match('from \. import');
+                }
             }
 
             $file = new \std\Text($py);
@@ -94,9 +101,14 @@ if (! \std\endsWith($path_info, '/')) {
             $code .= "\n\nif __name__ == '__main__':\n";
             $code .= "    run()";
 
+            if (count($imports)) {
+                $code .= "\n\n";
+                $code .= implode("\n", $imports);
+            }
+
             $file->write($code);
 
-            insert_into_init($py);
+            insert_into_init(py_to_module($py));
         }
 
         list ($logs, $sql_statement, $statementsFromSQLFile) = run($py);
@@ -131,8 +143,8 @@ if (! \std\endsWith($path_info, '/')) {
             $indexOfYield = $counterOfLengths;
             $input[] = $statement;
         } else if (array_key_exists('a', $dict)) {
-            if ($input == null && end($inputs)[- 1] == '\\') {
-                $length = count($inputs);                
+            if (! $input && $inputs && end($inputs)[- 1] == '\\') {
+                $length = count($inputs);
                 $inputs[$length - 1] .= "\n$statement";
             } else {
                 $input[] = $statement;

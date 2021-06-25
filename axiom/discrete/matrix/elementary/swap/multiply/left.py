@@ -6,35 +6,41 @@ def apply(x, i=None, j=None, w=None):
     n = x.shape[0]
     if i is None:
         i = Symbol.i(domain=Range(0, n))
-        
+
     if j is None:
         j = Symbol.j(domain=Range(0, n))
-    
+
     if w is None:
         w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
-    
+
     return Equal(w[i, j] @ w[i, j] @ x, x)
 
 
 @prove
-def prove(Eq): 
+def prove(Eq):
+    from axiom import discrete, algebra
+
     n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(shape=(n,), real=True)
     Eq << apply(x)
-    
-    i, j = Eq[0].lhs.indices    
 
+    i, j = Eq[0].lhs.indices
     w = Eq[0].lhs.base
-    
     Eq << (w[i, j] @ x).this.subs(Eq[0])
-    Eq << Eq[-1].this.rhs.expand()
-    
+
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
+
     Eq << (w[i, j] @ Eq[-1]).this.rhs.subs(Eq[0])
+
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
+
+    Eq << Eq[-1].this.rhs.function.args[-1].expr.apply(algebra.add.to.piecewise)
+
+    Eq << Eq[-1].this.rhs().function.simplify()
     
-    Eq << Eq[-1].this.rhs.expand()
-    
-    Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Piecewise)
-        
+    k = Eq[-1].rhs.variable
+    Eq << Eq[-1].this.rhs.function.simplify(wrt=k)
+
 
 if __name__ == '__main__':
     run()

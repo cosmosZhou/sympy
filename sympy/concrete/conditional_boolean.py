@@ -12,62 +12,29 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     _op_priority = 12.1  # higher than Relational
 
     def __getitem__(self, rhs):
-        return self.this.function.__getitem__(rhs)
+        return self.func(self.function[rhs], *self.limits)
 
     def __mul__(self, rhs):
-        return self.this.function.__mul__(rhs)
+        return self.func(self.function * rhs, *self.limits)
         
     def __mod__(self, rhs):
-        return self.this.function.__mod__(rhs)
+        return self.func(self.function % rhs, *self.limits)
     
     def __truediv__(self, rhs):
-        return self.this.function.__truediv__(rhs)
+        return self.func(self.function / rhs, *self.limits)
 
     def __matmul__(self, rhs):
-        return self.this.function.__matmul__(rhs)
+        return self.func(self.function @ rhs, *self.limits)
     
-    def __rmatmul__(self, rhs):
-        return self.this.function.__rmatmul__(rhs)
+    def __rmatmul__(self, lhs):
+        return self.func(lhs @ self.function, *self.limits)
     
     @property
     def T(self):
-        return self.this.function.T
+        return self.func(self.function.T, *self.limits)
     
     def inverse(self):
-        return self.this.function.inverse()
-
-    @staticmethod
-    def merge_func(funcs, _funcs):
-        array = []
-        i = len(funcs) - 1
-        j = len(_funcs) - 1
-        while i >= 0 and j >= 0:
-            func, limits = funcs[i]
-            _func, _limits = _funcs[j]
-            if func.is_Exists:
-                if _func.is_ForAll:
-                    array.append(funcs[i])
-                else:
-                    array.append((func, limits + _limits))
-                    j -= 1
-                i -= 1
-            elif _func.is_ForAll:
-                if func.is_ForAll and limits == _limits:
-                    array.append(funcs[i])
-                else:
-                    array.append(funcs[i])
-                    array.append(_funcs[j])
-                i -= 1
-            else:
-                array.append(_funcs[j])
-            j -= 1
-
-        array = array[::-1]
-        if i >= 0:
-            array = funcs[0:i + 1] + array
-        elif j >= 0:
-            array = _funcs[0:j + 1] + array
-        return array
+        return self.func(self.function.inverse(), *self.limits)
 
     def funcs(self):
         funcs = [(self.func, self.limits)]
@@ -112,10 +79,10 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
 
     @property
     def reversed(self):
-        return self.this.function.reversed
+        return self.func(self.function.reversed, *self.limits)
 
     def __neg__(self):
-        return self.this.function.__neg__()
+        return self.func(-self.function, *self.limits)
 
     def limits_include(self, eq):
         variables = self.variables_set
@@ -176,7 +143,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                         result.given = True
                     else:
                         result = self.bfn(bfn, eq.function)
-            elif eq.is_ForAll:
+            elif eq.is_All:
                 func = self.func
                 if self.limits == eq.limits:
                     limits = self.limits

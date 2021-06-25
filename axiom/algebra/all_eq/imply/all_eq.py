@@ -1,12 +1,9 @@
 from util import *
 
 
-
 @apply
 def apply(given):
-    assert given.is_ForAll
-    assert len(given.limits) == 1
-    n, *ab = given.limits[0]
+    function, (n, *ab) = given.of(All)
     assert n.is_integer
     if len(ab) == 2:
         a, b = ab
@@ -23,12 +20,10 @@ def apply(given):
         else:
             return
 
-    eq = given.function
-    assert eq.is_Equal
-    lhs, rhs = eq.args
+    lhs, rhs = function.of(Equal)
     assert lhs == rhs._subs(n, n + 1)
     assert lhs.is_complex and rhs.is_complex
-    return ForAll[n:a:oo](Equal(rhs, rhs._subs(n, a)))
+    return All[n:a:oo](Equal(rhs, rhs._subs(n, a)))
 
 
 @prove
@@ -37,7 +32,7 @@ def prove(Eq):
     n = Symbol.n(integer=True)
     a = Symbol.a(integer=True)
     f = Function.f(shape=())
-    Eq << apply(ForAll[n:a:oo](Equal(f(n + 1), f(n))))
+    Eq << apply(All[n:a:oo](Equal(f(n + 1), f(n))))
 
     Eq << Eq[0].this.function - Eq[0].rhs
 

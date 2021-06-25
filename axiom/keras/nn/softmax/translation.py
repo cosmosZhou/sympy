@@ -12,16 +12,16 @@ def apply(x, delta):
 
 @prove
 def prove(Eq):
-    from axiom import keras
-    n = Symbol.n(integer=True, positive=True)
+    from axiom import keras, algebra
 
+    n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(n,))
     delta = Symbol.delta(real=True)
     Eq << apply(x, delta)
 
     Eq << Eq[-1].this.lhs.apply(keras.softmax.to.mul)
 
-    Eq << Eq[-1].this.lhs.args[0].args[0].arg.astype(Mul)
+    Eq << Eq[-1].this.lhs.args[0].args[0].arg.apply(algebra.exp.to.mul)
 
     Eq << Eq[-1].this.lhs.powsimp()
 

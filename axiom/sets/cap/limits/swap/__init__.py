@@ -3,11 +3,10 @@ from util import *
 
 @apply
 def apply(self):
-    assert self.is_Cap
-    i_limit, j_limit = self.limits
+    function, i_limit, j_limit = self.of(Cap)
     j, *_ = j_limit
     assert not i_limit._has(j)
-    return Equal(self, self.func(self.function, j_limit, i_limit))
+    return Equal(self, Cap(function, j_limit, i_limit))
 
 
 @prove

@@ -1,8 +1,7 @@
 from util import *
 
 
-@apply
-def apply(self, old, new):
+def limits_subs(Sum, self, old, new):
     expr, (i, a, b) = self.of(Sum)
     assert old == i
     c = new + i + 1
@@ -10,7 +9,11 @@ def apply(self, old, new):
     assert not c._has(i)
     #i = a => new = c - a - 1
     #i = b - 1 => new = c - (b - 1) - 1 = c - b
-    return Equal(self, Sum[i:c - b: c - a](expr._subs(old, new)), evaluate=False)
+    return Sum[i:c - b: c - a](expr._subs(old, new))
+
+@apply
+def apply(self, old, new):
+    return Equal(self, limits_subs(Sum, self, old, new), evaluate=False)
 
 
 @prove
@@ -33,6 +36,7 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.limits_subs(i, i - c)
 
     Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.add, c)
+
     Eq << Eq[-1].this.rhs().find(Contains).simplify()
 
 

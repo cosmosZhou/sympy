@@ -1,30 +1,25 @@
 from util import *
 
 
-import axiom
-
-
-def doit(self):
-    xi, *limits = self.args
-    limit, *limits = limits
-    i, s = axiom.limit_is_set((limit,))
+def doit(Sum, self):
+    xi, (i, s), *limits = self.of(Sum)
     assert s.is_FiniteSet
 
     sgm = self.identity(xi)
     while s:
         t, *args = s.args
-        sgm = self.func.operator(sgm, xi._subs(i, t))
+        sgm = Sum.operator(sgm, xi._subs(i, t))
 
         s = FiniteSet(*args)
         assert Contains(t, s).is_BooleanFalse
 
     assert limits
-    return self.func(sgm, *limits)
+    return Sum(sgm, *limits)
+
 
 @apply
 def apply(self):
-    assert self.is_Sum
-    return Equal(self, doit(self))
+    return Equal(self, doit(Sum, self))
 
 
 @prove

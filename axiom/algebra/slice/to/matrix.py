@@ -1,12 +1,9 @@
 from util import *
-import axiom
 
 
-
-@apply
-def apply(self):
-    assert self.is_Slice
-    if len(self.indices) == 1:
+def convert(self):
+    base, *indices = self.of(Slice)
+    if len(indices) == 1:
         start, stop = self.index
         size = stop - start
         assert size.is_Integer
@@ -15,12 +12,19 @@ def apply(self):
         for i in range(size):
             array.append(self[i])
 
-        return Equal(self, Matrix(tuple(array)))
-    elif len(self.indices) == 2:
-        for index in self.indices:
+        return Matrix(tuple(array))
+    elif len(indices) == 2:
+        for index in indices:
             start, stop = index
     else:
         return
+
+    
+@apply
+def apply(self):
+    rhs = convert(self)
+    
+    return Equal(self, rhs, evaluate=False)
 
 
 @prove

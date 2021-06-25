@@ -1,14 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(self):
-    fx, gx = axiom.is_Divide(self)
-    fx, *limits = fx.of(Product)
-    gx, *_limits = gx.of(Product)
-
+    (fx, *limits), (gx, *_limits) = self.of(Product / Product)
     assert limits == _limits
 
     return Equal(self, Product(fx / gx, *limits))

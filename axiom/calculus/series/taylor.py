@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -9,7 +7,7 @@ def apply(n):
     return Equal(Limit[n:oo](Sum[k:1:n](1 / k) / log(n + 1)), 1)
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)

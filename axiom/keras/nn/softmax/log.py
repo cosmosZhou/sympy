@@ -5,7 +5,7 @@ from util import *
 @apply
 def apply(x):
     assert len(x.shape) == 1
-    return Equal(log(softmax(x)), x - MAX(x) - log(ReducedSum(exp(x - MAX(x)))))
+    return Equal(log(softmax(x)), x - ReducedMax(x) - log(ReducedSum(exp(x - ReducedMax(x)))))
 
 
 @prove
@@ -16,7 +16,7 @@ def prove(Eq):
     x = Symbol.x(real=True, shape=(n,))
     Eq << apply(x)
 
-    Eq << keras.nn.softmax.translation.apply(x, -MAX(x)).reversed
+    Eq << keras.nn.softmax.translation.apply(x, -ReducedMax(x)).reversed
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.log)
 

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, *, cond=None, wrt=None):
-    assert given.is_Exists
+    assert given.is_Any
 
     if isinstance(cond, Boolean):
         if wrt is None:
@@ -20,7 +20,7 @@ def prove(Eq):
     x = Symbol.x(real=True)
     f = Function.f(integer=True, shape=())
     d = Symbol.d(real=True, positive=True, given=True)
-    Eq << apply(Exists[x:-d:d](f(x) > 0), cond=x > 0)
+    Eq << apply(Any[x:-d:d](f(x) > 0), cond=x > 0)
 
     Eq << ~Eq[-1]
 

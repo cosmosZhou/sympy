@@ -1,11 +1,9 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(self):
-    axiom.is_ConditionSet(self)
+    assert self.is_ConditionSet
     variable, expr, base_set = self.base_set.image_set()
     if base_set.is_boolean:
         condition = base_set & self.condition._subs(self.variable, expr)

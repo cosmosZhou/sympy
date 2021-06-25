@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
-    x = axiom.is_positive(given)
+    x = given.of(Expr > 0)
 
     return 1 / x > 0
 
@@ -19,6 +17,7 @@ def prove(Eq):
     Eq << apply(x + y > 0)
 
     Eq << algebra.is_positive.imply.is_positive.div.apply(Eq[-1])
+
 
 if __name__ == '__main__':
     run()

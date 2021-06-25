@@ -2,17 +2,16 @@ from util import *
 
 
 @apply
-def apply(*given, reverse=False):
-    any_eq, cond = given
-    if not any_eq.is_Exists:
+def apply(any_eq, cond, reverse=False):
+    if not any_eq.is_Any:
         any_eq, cond = cond, any_eq
 
     assert not cond.is_ConditionalBoolean
-    (x, y), *limits = any_eq.of(Exists[Equal])
+    (x, y), *limits = any_eq.of(Any[Equal])
 
     if reverse:
         x, y = y, x
-    return Exists(cond._subs(x, y), *limits)
+    return Any(cond._subs(x, y), *limits)
 
 
 @prove
@@ -25,7 +24,7 @@ def prove(Eq):
 
     S = Symbol.S(etype=dtype.integer)
 
-    Eq << apply(Exists[x:S](Equal(g(x), f(x))), g(x) > y)
+    Eq << apply(Any[x:S](Equal(g(x), f(x))), g(x) > y)
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[1])
 

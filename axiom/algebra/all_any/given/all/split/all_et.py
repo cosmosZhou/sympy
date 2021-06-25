@@ -3,8 +3,8 @@ from util import *
 
 @apply
 def apply(given): 
-    et, *limits = given.of(ForAll[And])    
-    return tuple(ForAll(eq, *limits) for eq in et)
+    et, *limits = given.of(All[And])    
+    return tuple(All(eq, *limits) for eq in et)
 
 
 @prove
@@ -19,7 +19,7 @@ def prove(Eq):
     g = Function.g(real=True)
     b = Symbol.b(shape=(k,), real=True)
     
-    Eq << apply(ForAll[x:A](And(Unequal(x, y), Unequal(f(x), g(y)), Equal(f(x), b))))
+    Eq << apply(All[x:A](And(Unequal(x, y), Unequal(f(x), g(y)), Equal(f(x), b))))
     
     Eq <<= Eq[1] & Eq[2] & Eq[3]
 

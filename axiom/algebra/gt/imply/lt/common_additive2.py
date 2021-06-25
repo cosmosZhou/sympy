@@ -1,14 +1,9 @@
 from util import *
 
-import axiom
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
-
 
 @apply
 def apply(given, t, alpha, beta):
-    abs_x_y = axiom.is_positive(given)
-    x_y = abs_x_y.of(Abs)
-    x, y = axiom.is_Subtract(x_y)
+    x, y = given.of(Abs[Expr - Expr] > 0)    
 
     assert x.shape == y.shape == t.shape
     assert alpha > 0
@@ -58,7 +53,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.abs.apply(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.astype(Mul)
+    Eq << Eq[-1].this.rhs.apply(algebra.abs.to.mul)
 
     Eq << (alpha * lamda + (1 - lamda) * beta).this.expand()
 

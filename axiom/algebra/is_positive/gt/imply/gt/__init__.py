@@ -1,1 +1,3 @@
-from . import multiply
+from . import mul
+
+from . import div

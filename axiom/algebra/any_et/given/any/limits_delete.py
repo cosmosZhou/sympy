@@ -33,7 +33,7 @@ def apply(imply):
             eq = imply.func(eq, limit).simplify()
             eqs.append(eq)
 
-            return Exists(And(*eqs), *limits)
+            return Any(And(*eqs), *limits)
 
 
 @prove
@@ -47,17 +47,17 @@ def prove(Eq):
 
     x = Symbol.x(real=True, shape=(oo,))
 
-    f = Function.f(nargs=(n,), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
     f_quote = Function("f'", shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(Exists[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
+    Eq << apply(Any[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
 
     Eq << Eq[-1].this.function.apply(algebra.cond.imply.any_et, wrt=j)
 
     Eq << Eq[-1].this.function.apply(algebra.eq.cond.imply.et, delta=False, simplify=None, swap=True)
 
-    Eq << algebra.any.imply.any.limits_swap.apply(Eq[-1], simplify=None)
+    Eq << algebra.any.imply.any.limits.swap.apply(Eq[-1], simplify=None)
 
     Eq << Eq[0].this.function.apply(algebra.et.given.et.split.eq, delta=False, simplify=None)
 

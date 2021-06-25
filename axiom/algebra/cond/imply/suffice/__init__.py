@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 
@@ -24,4 +23,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-from . import bisected
+from . import split

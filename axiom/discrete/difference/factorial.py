@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.split(Slice[:1])
+    Eq << Eq.induct.this.lhs.apply(discrete.difference.split, Slice[:1])
 
     Eq << Eq[-1].this.lhs.expr.doit()
 
@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << Eq[-3].subs(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.astype(Sum)
+    Eq << Eq[-1].this.lhs.apply(discrete.difference.to.sum)
 
     Eq << Eq[-1].this.lhs.split(n.set)
 

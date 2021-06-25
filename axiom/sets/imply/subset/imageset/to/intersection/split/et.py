@@ -1,12 +1,9 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(self):
-    x, expr, et = axiom.is_ImageSet(self)
-    eqs = et.of(And)
+    expr, (x, eqs) = self.of(Cup[FiniteSet, Tuple[And]])
     return Subset(self, Intersection(*(imageset(x, expr, eq) for eq in eqs)))
 
 

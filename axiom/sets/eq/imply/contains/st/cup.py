@@ -1,14 +1,11 @@
 from util import *
 
-import axiom
 
-
-# given: |S| = 1
-# Sum[x:S](x) in S
 @apply
 def apply(given, index=None):
+    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
     cup, s = given.of(Equal)
-    x = axiom.is_set_comprehension(cup)
+    x = of_set_comprehension(cup)
     n = x.shape[0]
     assert index >= 0 and index < n
     return Contains(x[index], s)
@@ -26,10 +23,9 @@ def prove(Eq):
 
     Eq << Contains(x[i], x[:n].set_comprehension(), plausible=True)
 
-    Eq << Eq[-1].this.rhs.apply(sets.cup.to.union.dissect, cond={i})
+    Eq << Eq[-1].this.rhs.apply(sets.cup.to.union.split, cond={i})
 
     Eq << Eq[-1].subs(Eq[0])
-
 
 
 if __name__ == '__main__':

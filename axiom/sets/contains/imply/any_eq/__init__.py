@@ -13,8 +13,8 @@ def apply(given, reverse=False, var=None):
             x = var
     
     if reverse:
-        return Exists[x:given.rhs](Equal(x, given.lhs))
-    return Exists[x:given.rhs](Equal(given.lhs, x))
+        return Any[x:given.rhs](Equal(x, given.lhs))
+    return Any[x:given.rhs](Equal(given.lhs, x))
 
 
 @prove

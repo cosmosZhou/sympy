@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
-from axiom.sets.contains.imply.ou.split.union import split
 
 
 @apply(simplify=False)
 def apply(self, simplify=True):
+    from axiom.sets.contains.imply.ou.split.union import split
     return split(self, simplify=simplify)
 
 

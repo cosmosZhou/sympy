@@ -37,13 +37,14 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import stats, keras, algebra
+    from axiom import keras, algebra, discrete, stats
+
     from axiom.keras.layers.crf.markov import assumptions
     Eq.s_definition, Eq.z_definition, Eq.x_quote_definition, Eq.x_definition, Eq.G_definition, *given, Eq.recursion, Eq.y_given_x = apply(*assumptions())
+
     x_probability = given[-1].lhs.arg.args[0]
     x = x_probability.lhs
     n = x.shape[0]
-
     s, t = Eq.s_definition.lhs.args
     Eq.z_definition = Eq.z_definition.apply(algebra.eq.imply.eq.lamda, (Eq.z_definition.lhs.indices[-1],), simplify=False)
 
@@ -55,15 +56,17 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.subs(Eq[-2])
 
-    Eq << Eq[-1].this.rhs.function.simplify()
+    Eq << Eq[-1].this.find(Exp).apply(algebra.exp.to.mul)
 
-    Eq << Eq[-1].this.rhs.astype(Mul)
+    Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.mul)
 
     Eq << Eq[-1].this.rhs.args[1].function.split(Slice[-1:])
 
-    Eq << Eq[-1].this.rhs.args[1].function.astype(Lamda)
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebra.sum.to.reducedSum)
 
-    Eq << Eq[-1].this.rhs.args[1].function.function.astype(Mul)
+    Eq << Eq[-1].this.find(ReducedSum[~Lamda]).apply(algebra.lamda.to.mul)
+
+    Eq << Eq[-1].this.find(Lamda).apply(discrete.lamda_reducedSum.to.matmul)
 
     Eq.z_recursion = Eq[-1].subs(Eq.z_definition.reversed)
 
@@ -71,22 +74,22 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.subs(Eq.z_recursion)
 
-    Eq << Eq[-1].this.rhs.args[1].astype(Add)
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.log.to.add)
 
     Eq.z_definition_by_x_quote = E ** -Eq.x_quote_definition.reversed
 
     Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].arg.astype(exp)
+    Eq << Eq[-1].this.rhs.args[1].args[1].arg.apply(discrete.matmul.to.exp)
 
     Eq.xy_joint_nonzero = stats.is_nonzero.imply.is_nonzero.joint_slice.apply(given[-1], Slice[:t + 1,:t + 1])
 
     Eq << algebra.et.imply.conds.apply(stats.is_nonzero.imply.et.apply(Eq.xy_joint_nonzero))
 
     y = Eq[-1].lhs.arg.lhs.base
-    Eq << stats.bayes.corollary.apply(Eq[-2], var=y[:t + 1])
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-2], y[:t + 1])
 
-    Eq << stats.total_probability_theorem.apply(Eq[-1].lhs, y[:t + 1])
+    Eq << stats.sum.to.probability.apply(Sum[pspace(y[:t + 1]).symbol](Eq[-1].lhs))
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
@@ -94,13 +97,13 @@ def prove(Eq):
 
     Eq << algebra.et.imply.conds.apply(Eq[-1] & Eq.xy_joint_nonzero)
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(algebra.log.to.add)
 
     Eq << algebra.eq.imply.eq.exp.apply(-Eq.s_definition.reversed)
 
     Eq.y_given_x_log = Eq[-2].subs(Eq[-1])
 
-    Eq << Eq.z_definition.apply(algebra.eq.imply.eq.reduced_sum)
+    Eq << Eq.z_definition.apply(algebra.eq.imply.eq.reducedSum)
 
     Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
 
@@ -112,7 +115,8 @@ def prove(Eq):
 
     Eq << Eq[-1] + Eq[-2]
 
+    #reference: Neural Architectures for Named Entity Recognition.pdf
 
-# reference: Neural Architectures for Named Entity Recognition.pdf
+
 if __name__ == '__main__':
     run()

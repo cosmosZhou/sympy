@@ -5,7 +5,7 @@ from util import *
 def apply(given):
     lhs, rhs = given.of(Subset)
     assert lhs.is_Cup
-    return ForAll(Subset(lhs.function, rhs).simplify(), *lhs.limits)
+    return All(Subset(lhs.function, rhs).simplify(), *lhs.limits)
 
 
 @prove

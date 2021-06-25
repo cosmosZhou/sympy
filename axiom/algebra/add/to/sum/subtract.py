@@ -3,10 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    fx, gx = self.of(Basic - Basic)
-    fx, *limits = fx.of(Sum)
-    gx, *_limits = gx.of(Sum)
-
+    (fx, *limits), (gx, *_limits) = self.of(Sum - Sum)
     assert limits == _limits
 
     return Equal(self, Sum(fx - gx, *limits))

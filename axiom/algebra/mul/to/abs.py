@@ -5,7 +5,7 @@ from util import *
 def apply(self, evaluate=False):
     args = []
 
-    for arg in self.of(Mul, copy=True):
+    for arg in self.of(Mul):
         if arg.is_Abs:
             args.append(arg.of(Abs))
         else:
@@ -22,9 +22,9 @@ def prove(Eq):
     y = Symbol.y(real=True)
     Eq << apply(abs(x) * abs(y))
 
-    Eq << Eq[-1].this.lhs.args[0].astype(Piecewise)
+    Eq << Eq[-1].this.lhs.args[0].apply(algebra.abs.to.piecewise)
 
-    Eq << Eq[-1].this.lhs.args[1].astype(Piecewise)
+    Eq << Eq[-1].this.lhs.args[1].apply(algebra.abs.to.piecewise)
 
     Eq << Eq[-1].this.lhs.apply(algebra.mul_piecewise.to.piecewise)
 
@@ -78,7 +78,7 @@ def prove(Eq):
 
     Eq << Eq[-2].this.lhs.apply(algebra.is_negative.is_negative.imply.is_positive)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.is_positive.imply.is_positive.mul)
+    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.is_positive.imply.is_positive)
 
     Eq << Eq.necessary.this.rhs.apply(algebra.is_positive.imply.ou)
 

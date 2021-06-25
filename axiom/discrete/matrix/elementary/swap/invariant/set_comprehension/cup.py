@@ -21,7 +21,7 @@ def apply(x, w=None, right=None, var=None):
 
 @prove
 def prove(Eq):
-    from axiom import sets
+    from axiom import sets, discrete
     n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(shape=(n,), integer=True)
 
@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << (Eq[0].lhs[k] @ x).this.args[0].definition
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << Eq[-1].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n))
 

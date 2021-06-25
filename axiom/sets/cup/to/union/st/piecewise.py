@@ -1,18 +1,16 @@
 from util import *
 
 
-import axiom
-
-
 @apply
 def apply(self):
-    fx, *limits = self.of(Cup)
-    * limits, limit = limits
+    fx, * limits, limit = self.of(Cup)
     if limits:
         ecs = ((Cup(e, *limits).simplify(), c) for e, c in fx.args)
         fx = Piecewise(*ecs)
 
-    return Equal(self, fx.as_multiple_terms(*axiom.limit_is_set((limit,)), cls=Cup))
+    x, s = limit.to_setlimit()
+    
+    return Equal(self, fx.as_multiple_terms(x, s, cls=Cup))
 
 
 @prove
@@ -33,6 +31,7 @@ def prove(Eq):
     Eq << sets.eq.imply.eq.cup.apply(Eq[-1], (x, B))
 
     Eq << Eq[-1].this.rhs.apply(sets.cup.to.union.single_variable)
+
 
 if __name__ == '__main__':
     run()

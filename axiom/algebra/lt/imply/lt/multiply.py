@@ -1,14 +1,10 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given, factor):
     lhs, rhs = given.of(Less)
-
     assert factor > 0
-
     return Less(lhs * factor, rhs * factor)
 
 

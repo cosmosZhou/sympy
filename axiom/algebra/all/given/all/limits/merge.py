@@ -17,7 +17,7 @@ def prove(Eq):
     x = Symbol.x(real=True, shape=(oo,))
     f = Function.f(real=True)
 
-    Eq << apply(ForAll[x[:n]:CartesianSpace(Interval(a, b), n), x[n]:Interval(a, b)](f(x[:n + 1]) > 0))
+    Eq << apply(All[x[:n]:CartesianSpace(Interval(a, b), n), x[n]:Interval(a, b)](f(x[:n + 1]) > 0))
 
     Eq << algebra.all.imply.all.limits.split.apply(Eq[1], index=n)
 

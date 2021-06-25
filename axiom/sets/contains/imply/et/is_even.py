@@ -1,26 +1,14 @@
 from util import *
 
 
-# i ∈ [d + j; n) & j ∈ [a; -d + n)
 @apply
 def apply(given):
-    import axiom
-    n, image_set = given.of(Contains)
-    _n, expr, cond = axiom.is_ImageSet(image_set)
+    n, (__n, (_n, a, b)) = given.of(Contains[Cup[FiniteSet[2 * Expr], Tuple[Floor, Floor + 1]]])
 
-    assert expr == 2 * n
-
-    a, b = cond.of(Range)
-    b -= 1
-
-    assert n == _n
-
-    a = a.of(Floor)
+    assert n == _n == __n
     a = 2 * a - 1
-
-    b = b.of(Floor)
     b = 2 * b
-
+# i ∈ [d + j; n) & j ∈ [a; -d + n)
     return And(Equal(n % 2, 0), Contains(n, Range(a, b + 1)))
 
 

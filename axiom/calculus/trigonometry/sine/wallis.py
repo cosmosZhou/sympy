@@ -6,7 +6,7 @@ def apply(n):
     n = sympify(n)
     x = Symbol.x(real=True)
     return Equal(Integral[x:0:pi / 2](sin(x) ** (n - 1)),
-                    sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
+                 sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
 
 
 @prove
@@ -36,11 +36,11 @@ def prove(Eq):
 
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.function.astype(Add)
+    Eq << Eq[-1].this.rhs.function.apply(algebra.mul.to.add)
 
     Eq << Eq[-1].this.rhs.function.args[0].powsimp()
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(calculus.integral.to.add)
 
     Eq << Eq[-1].this.rhs.args[1].simplify()
 

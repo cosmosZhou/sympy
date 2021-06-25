@@ -11,26 +11,31 @@ def apply(n):
 
     b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
 
-    return ForAll[p[:n]:P](Exists[b[:n]](Equal(p[:n], Lamda[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))))
+    return All[p[:n]:P](Any[b[:n]](Equal(p[:n], Lamda[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))))
 
 
 @prove
 def prove(Eq):
-    from axiom import discrete, sets, algebra
-    n = Symbol.n(domain=Range(2, oo), given=False)
+    from axiom import algebra, sets, discrete
 
+    n = Symbol.n(domain=Range(2, oo), given=False)
     Eq << apply(n)
 
     b = Eq[1].function.variable.base
-
     Eq.hypothesis = Eq[1].subs(Eq[0]).copy(plausible=True)
 
     Eq.initial = Eq.hypothesis.subs(n, 2)
 
     Eq << Eq.initial.doit(deep=True)
 
+    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.matrix)
+
+    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.matrix)
+
+    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.matrix)
+
     p0 = Eq[-1].variable
-    Eq << Eq[-1].this.function.apply(algebra.any.given.any.subs, b[:2], Matrix((0, KroneckerDelta(p0, 0))))
+    Eq << Eq[-1].this.function.apply(algebra.any.given.cond.subs, b[:2], Matrix((0, KroneckerDelta(p0, 0))))
 
     Eq << Eq[-1].this.function.rhs.expand()
 
@@ -58,7 +63,7 @@ def prove(Eq):
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1])
 
-    Eq << Eq[-2].this.function.apply(sets.contains.imply.eq.kronecker_delta.zero).reversed
+    Eq << Eq[-2].this.function.apply(sets.contains.imply.eq.kroneckerDelta.zero).reversed
 
     Eq << -(Eq.premier - 1)
 
@@ -89,16 +94,15 @@ def prove(Eq):
     Eq.any_n = Eq[-1].this.limits[0][1].definition
 
     p_quote = Symbol.p_quote(Eq.deduction.function.function.lhs)
-
     Eq.p_quote_definition = p_quote.this.definition
 
     Eq.deduction = Eq.deduction.subs(Eq.p_quote_definition.reversed)
 
     Eq << Eq.p_quote_definition.lhs[n].this.definition
 
-    Eq << Eq[-1].this.rhs.args[1].function.astype(KroneckerDelta)
+    Eq << Eq[-1].this.rhs.args[1].function.apply(algebra.piecewise.to.kroneckerDelta)
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << algebra.all_any_eq.cond.imply.all_any.subs.apply(Eq.any_n, Eq[-1])
 

@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 def split(self, simplify=True):

@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << algebra.imply.le.abs.apply(x * y)
 
-    Eq << Eq[-1].this.rhs.astype(Mul)
+    Eq << Eq[-1].this.rhs.apply(algebra.abs.to.mul)
 
     Eq << Eq[-1] * 2
 

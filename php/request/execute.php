@@ -36,6 +36,8 @@ foreach ($file as $query) {
     $tuples = [];
 
     $tokens = explode('.', $axiom);
+    $tokens[] = "apply";
+    
     $prefix = "";
 
     $size = count($tokens) - 1;
@@ -83,9 +85,11 @@ foreach ($file as $query) {
             $count
         ];
     }
-    
+
     \mysql\execute("delete from tbl_hierarchy_py where user = '$user' and caller = '$caller'");
-    \mysql\insertmany("tbl_suggest_py", $tuples, false);
+    
+    if ($tuples)
+        \mysql\insertmany("tbl_hierarchy_py", $tuples, false);
 }
 
 // error_log("deleting $sqlFile");

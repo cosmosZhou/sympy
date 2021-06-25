@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, index, wrt=None):
-    [*eqs], *limits = given.of(ForAll[Or])
+    [*eqs], *limits = given.of(All[Or])
 
     cond = eqs.pop(index)
     if wrt is None:
@@ -22,7 +22,7 @@ def apply(given, index, wrt=None):
                 domain = (Range if x.is_integer else Interval)(a, b)
                 domain &= cond.domain_conditioned(wrt)
                 limits[i] = (x, domain)
-                return ForAll(Or(*eqs), *limits)
+                return All(Or(*eqs), *limits)
 
 
 @prove
@@ -35,7 +35,7 @@ def prove(Eq):
 
     f = Function.f(shape=(), real=True)
 
-    Eq << apply(ForAll[x:a:b]((x <= c) | (f(x) >= 1)), index=1)
+    Eq << apply(All[x:a:b]((x <= c) | (f(x) >= 1)), index=1)
 
     Eq << algebra.all.given.ou.apply(Eq[1])
 

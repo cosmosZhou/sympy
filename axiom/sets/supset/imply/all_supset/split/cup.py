@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 
@@ -7,7 +6,7 @@ import axiom
 def apply(given):
     lhs, rhs = given.of(Supset)
     assert rhs.is_Cup
-    return ForAll(Supset(lhs, rhs.function, ).simplify(), *rhs.limits)
+    return All(Supset(lhs, rhs.function, ).simplify(), *rhs.limits)
 
 @prove
 def prove(Eq):

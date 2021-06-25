@@ -10,7 +10,7 @@ def apply(A):
 
 @prove
 def prove(Eq):
-    from axiom import algebra
+    from axiom import algebra, discrete
     n = 6
     A = Symbol.A(shape=(n, n), complex=True)
 
@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq.L_definition = Eq[-1].this.rhs.doit()
 
-    Eq << (shift @ A).this.expand()
+    Eq << (shift @ A).this.apply(discrete.matmul.to.lamda)
 
 #     Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.flatten, index=1)
 
@@ -57,7 +57,7 @@ def prove(Eq):
     Eq << Addition(n, 0, 4, -1) @ Eq[-1]
     Eq << Addition(n, 0, 5, -1) @ Eq[-1]
 
-    Eq << Eq[-1].apply(algebra.eq.imply.eq.det)
+    Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
 
     Eq << Eq[-1] * (n - 1)
 

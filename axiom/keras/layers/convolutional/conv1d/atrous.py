@@ -23,6 +23,7 @@ def apply(x, w, β, ζ, r):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
     d = Symbol.d(integer=True, positive=True)
@@ -59,7 +60,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Min).apply(algebra.min.to.add, 1)
 
-    Eq << Eq[-1].this.find(Add[Ceiling]).apply(algebra.add.to.floor)
+    Eq << Eq[-1].this.find(Add[Ceiling]).apply(algebra.add_ceiling.to.floor)
 
     Eq << Eq[-1].this.find(Min[Floor]).apply(algebra.min.to.floor)
 

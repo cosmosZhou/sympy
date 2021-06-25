@@ -1,17 +1,14 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(given, old, new):
-    function, *limits = given.of(ForAll)
-    assert given.is_ForAll
-    n, a, b = axiom.limit_is_Interval(limits, integer=True)
+    expr, (n, a, b) = given.of(All[Tuple])
+    assert n.is_integer
     assert old == n
     m = new + n + 1
     assert m == a + b
-    return ForAll[n:m - b:m - a](function._subs(old, new))
+    return All[n:m - b:m - a](expr._subs(old, new))
 
 
 @prove
@@ -21,7 +18,7 @@ def prove(Eq):
     m = Symbol.m(integer=True)
     f = Function.f(integer=True)
 
-    Eq << apply(ForAll[n:0:m + 1](f(n) > 0), n, m - n)
+    Eq << apply(All[n:0:m + 1](f(n) > 0), n, m - n)
 
     Eq << algebra.all.imply.all.limits.subs.reverse.apply(Eq[1], n, m - n)
 

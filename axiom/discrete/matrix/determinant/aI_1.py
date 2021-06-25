@@ -10,6 +10,7 @@ def apply(n, a):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     n = Symbol.n(integer=True, positive=True, given=False)
     a = Symbol.a(shape=(oo,), complex=True, zero=False)
     Eq << apply(n, a)
@@ -49,19 +50,16 @@ def prove(Eq):
     Eq.deduction = Eq[-1].reversed
 
     D = Eq.deduction.lhs.function.args[1].arg
-
     i = Eq.deduction.lhs.variable.copy(domain=Range(0, n))
     D = D._subs(Eq.deduction.lhs.variable, i)
-
     def column_transformation(*limits):
         n = limits[0][-1]
         (i, *_), (j, *_) = limits
-    #     return Identity(n) + Lamda[j:n, i:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
-    #     return Identity(n) + Lamda[j:n, i:n](Piecewise((KroneckerDelta(j, n - 1) - 1, Equal(i, n - 1)), (0, True)))
+    #return Identity(n) + Lamda[j:n, i:n](Piecewise((0, i < n - 1), (KroneckerDelta(j, n - 1) - 1, True)))
+    #return Identity(n) + Lamda[j:n, i:n](Piecewise((KroneckerDelta(j, n - 1) - 1, Equal(i, n - 1)), (0, True)))
         return Identity(n) + Lamda[j:n, i:n](KroneckerDelta(i, n - 1) * (KroneckerDelta(j, n - 1) - 1))
-#         return Lamda(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
-
-    Eq << (D @ column_transformation(*D.limits)).this.expand()
+    #return Lamda(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
+    Eq << (D @ column_transformation(*D.limits)).this.apply(discrete.matmul.to.lamda)
 
     Eq << Eq[-1].this.find(Sum).split(Slice[-1:])
 
@@ -73,11 +71,11 @@ def prove(Eq):
 
     Eq << Eq[-2] + Eq[-1]
 
-    Eq << Eq[-1].this.rhs.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise.st.two_pieces)
 
     Eq << Eq.split.this.rhs.subs(Eq[-1])
 
-    Eq << Eq[-1].this.find(Lamda[~Add]).astype(Piecewise)
+    Eq << Eq[-1].this.find(Lamda[~Add]).apply(algebra.add.to.piecewise)
 
     Eq << Eq[-1].this.find(Add, Piecewise).apply(algebra.piecewise.swap.front)
 
@@ -95,9 +93,9 @@ def prove(Eq):
 
     Eq << discrete.matrix.determinant.expansion_by_minors.apply(Eq.column_transformation.rhs, i=i).this.rhs.simplify(deep=True)
 
-    Eq << Eq[-1].this.find(Mul, Piecewise, Add).astype(Piecewise)
+    Eq << Eq[-1].this.find(Mul, Piecewise, Add).apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.find(Mul, Piecewise, Add).astype(Piecewise)
+    Eq << Eq[-1].this.find(Mul, Piecewise, Add).apply(algebra.add.to.piecewise)
 
     Eq << Eq[-1].this.find(Mul, Det).doit()
 
@@ -109,7 +107,7 @@ def prove(Eq):
 
     Eq << Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
 
-    Eq << Eq.column_transformation.apply(algebra.eq.imply.eq.det)
+    Eq << Eq.column_transformation.apply(discrete.eq.imply.eq.det)
 
     Eq << Eq[-1].subs(Eq[-2]).forall((i,))
 

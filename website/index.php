@@ -34,6 +34,8 @@ switch ($lang) {
         $history = 'Breif History';
 
         $userManual = 'User Manual';
+        $signIn = 'Sign In';
+        $signUp = 'Sign UP';
         break;
     case 'cn':
         $title = '机械化定理库';
@@ -55,6 +57,8 @@ switch ($lang) {
 
         $history = '发展简史';
         $userManual = '操作手册';
+        $signIn = '登陆';
+        $signUp = '注册';
     default:
         break;
 }
@@ -77,7 +81,9 @@ switch ($lang) {
 				<?php echo $foreignLanguageHint ?>
 				<a
 					href='index.php?lang=<?php echo $foreignLanguage ?>&section=<?php echo $section ?>'
-					align='left'><?php echo $foreignLanguageName ?></a>
+					align='left'><?php echo $foreignLanguageName ?></a><br> <a
+					href='signin.php?lang=<?php echo $lang ?>' align='left'><?php echo $signIn ?></a>
+				<a href='signup.php?lang=<?php echo $lang ?>' align='left'><?php echo $signUp ?></a>
 			</div>
 
 		</div>

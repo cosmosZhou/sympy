@@ -13,7 +13,7 @@ def apply(given):
 
     x = S.element_symbol()
 
-    return Exists[x](Contains(x, S))
+    return Any[x](Contains(x, S))
 
 
 

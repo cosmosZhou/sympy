@@ -14,7 +14,7 @@ from sympy.sets.fancysets import Reals
 Undefined = S.NaN  # Piecewise()
 
 
-class ExprCondPair(Tuple):
+class ExprCondPair(Basic):
     """Represents an expression, condition pair."""
 
     def __new__(cls, expr, cond, evaluate=True):
@@ -60,6 +60,18 @@ class ExprCondPair(Tuple):
         assert child is not self.cond, "boolean conditions within ExprCondPair are not applicable for inequivalent inference!"
         return False
     
+    def __getitem__(self, i):
+        return self.args[i]
+
+    def __len__(self):
+        return 2
+    
+    def _eval_domain_defined(self, x, **_):
+        domain = Basic._eval_domain_defined(self, x)
+        for arg in self.args:
+            domain &= arg.domain_defined(x)
+        return domain
+
 class Piecewise(Function):
     """
     Represents a piecewise function.
@@ -1071,7 +1083,7 @@ class Piecewise(Function):
             domain.append(x.domain_conditioned(condition) & function.domain_nonzero(x))
         return Union(*domain)
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = x.emptySet
         for arg in self.args:
             domain |= arg.domain_defined(x)
@@ -1087,31 +1099,6 @@ class Piecewise(Function):
             if dtype is None or dtype in _dtype and dtype != _dtype:
                 dtype = _dtype
         return dtype
-
-    def as_KroneckerDelta(self):
-        e, c = self.args[0]
-        eq = c.as_KroneckerDelta()
-        if eq is None:
-            return self
-        
-        if len(self.args) == 2:
-            rest, _ = self.args[1]
-            if rest.is_Piecewise:
-                rest = rest.as_KroneckerDelta()
-            elif rest.is_Mul or rest.is_Add:
-                args = [*rest.args]
-                hit = False
-                for i, p in enumerate(args):
-                    if p.is_Piecewise:
-                        args[i] = p.as_KroneckerDelta()
-                        hit = True
-                if hit:
-                    rest = rest.func(*args)
-        else:
-            rest = self.func(*self.args[1:]).as_KroneckerDelta()
-        if e.is_Piecewise or e.is_Add or e.is_Mul:
-            e = e.as_KroneckerDelta()
-        return ((e * eq).simplify() + (rest * (1 - eq)).simplify()).simplify()
 
     @classmethod
     def simplify_Equal(cls, self, lhs, rhs):
@@ -1166,11 +1153,8 @@ class Piecewise(Function):
         _e0 = e0._subs(lhs, rhs)
         __e0 = e0._subs(rhs, lhs)
 
-        try:
-            if {e1, e1._subs(lhs, rhs), e1._subs(rhs, lhs)} & {e0, _e0, __e0}:
-                return e1
-        except:
-            print('this simplification process should be axiomatized!')
+        if {e1, e1._subs(lhs, rhs), e1._subs(rhs, lhs)} & {e0, _e0, __e0}:
+            return e1
         
         if not e0.is_set and lhs.is_integer and rhs.is_integer:
             e_diff = e0 - e1                   
@@ -1184,10 +1168,8 @@ class Piecewise(Function):
             if not lhs.is_Number:
                 if e_diff.is_infinite:
                     return
-                try:
-                    delta *= e_diff._subs(lhs, rhs)
-                except:
-                    print('this simplification process should be axiomatized!')
+                
+                delta *= e_diff._subs(lhs, rhs)
                 
             delta += e1
             return delta.simplify()
@@ -1374,18 +1356,13 @@ class Piecewise(Function):
             
         expr, _ = self.args[-1]
         e, c = self.args[-2]
-
-        try:
-            if e == expr or c.is_Equal and (e == expr._subs(*c.args) or e._subs(*c.args) == expr):
-                args = [*self.args]
-                del args[-2]
-                if len(args) == 1:
-                    return expr
-                return self.func(*args).simplify()
-        except:
-            print('this simplification process should be axiomatized!')
-            return self
-            
+    
+        if e == expr or c.is_Equal and (e == expr._subs(*c.args) or e._subs(*c.args) == expr):
+            args = [*self.args]
+            del args[-2]
+            if len(args) == 1:
+                return expr
+            return self.func(*args).simplify()            
             
         if len(self.args) == 2:
             e0, c0 = self.args[0]
@@ -1666,77 +1643,6 @@ class Piecewise(Function):
         tex = r"\begin{cases} %s \end{cases}"
         return tex % r" \\".join(ecpairs)
 
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        if self.function.is_Piecewise:
-            self = self.function.func(*[(self.func(e, *self.limits).simplify(), c) for e, c in self.function.args])
-        return self          
-
-    @classmethod
-    def rewrite_from_KroneckerDelta(cls, self):
-        return cls((1, Equal(*self.args)), (0, True))
-
-    @classmethod
-    def rewrite_from_Abs(cls, self):
-        x = self.arg
-        return cls((x, x >= 0), (-x, True))
-
-    @classmethod
-    def rewrite_from_Add(cls, self, simplify=True):
-        piecewise = []
-        delta = []
-        for arg in self.args:
-            if arg.is_Piecewise:
-                piecewise.append(arg)       
-            else:
-                delta.append(arg)
-                
-        if not piecewise:
-            return self
-        
-        delta = self.func(*delta, evaluate=False)
-        if len(piecewise) == 1:
-            result, *_ = piecewise            
-            result = result.func(*((e + delta, c) for e, c in result.args))
-        else:            
-            result = piecewise[0]
-            for i in range(1, len(piecewise)):            
-                result = result.add(piecewise[i])
-                
-            if delta:
-                result = result.func(*((e + delta, c) for e, c in result.args))
-        if simplify:
-            result = result.simplify()
-        return result
-
-    @classmethod
-    def rewrite_from_Max(cls, self):
-        arg, *args = self.args        
-        self = self.func(*args)
-        return cls((arg, arg >= self), (self, True))
-
-    @classmethod
-    def rewrite_from_Min(cls, self):
-        arg, *args = self.args        
-        self = self.func(*args)
-        return cls((arg, arg <= self), (self, True))
-
-    @classmethod
-    def rewrite_from_Pow(cls, self, **kwargs):
-        b, e = self.args
-        if isinstance(e, cls):
-            return cls(*[(b ** e, c) for e, c in e.args])
-        if isinstance(b, cls):
-            return cls(*[(b ** e, c) for e, c in b.args])
-        return self
-    
-    @classmethod
-    def rewrite_from_Exp(cls, self):
-        e = self.arg
-        if isinstance(e, cls):
-            return cls(*[(self.func(e), c) for e, c in e.args])
-        return self
-    
     def as_multiple_terms(self, x, domain, cls):
         universalSat = x.universalSet
         args = []

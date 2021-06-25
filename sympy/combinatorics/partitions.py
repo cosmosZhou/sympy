@@ -3,14 +3,14 @@ from sympy.core.compatibility import as_int, default_sort_key, range
 from sympy.core.sympify import _sympify
 from sympy.functions.combinatorial.numbers import bell
 from sympy.matrices import zeros
-from sympy.sets.sets import Union
+from sympy.sets.sets import Union, Set
 from sympy.sets.finiteset import FiniteSet
 from sympy.utilities.iterables import flatten, group
 
 from collections import defaultdict
 
 
-class Partition(FiniteSet):
+class Partition(Set):
     """
     This class represents an abstract partition.
 

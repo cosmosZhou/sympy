@@ -1,13 +1,10 @@
 from util import *
 
 
-
-
 @apply
 def apply(self):
-    assert self.is_Cup
-    f = self.function
-    return Equal(self, self.func(Piecewise((f, self.limits_cond), (f.etype.emptySet, True)), *((x,) for x, *_ in self.limits)))
+    f, *limits = self.of(Cup)
+    return Equal(self, Cup(Piecewise((f, self.limits_cond), (f.etype.emptySet, True)), *((x,) for x, *_ in self.limits)))
 
 
 @prove

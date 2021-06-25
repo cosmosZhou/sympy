@@ -1,8 +1,5 @@
 from util import *
 
-import axiom
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
-
 
 @apply
 def apply(x, y, a, b):
@@ -30,8 +27,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[0].arg.expand()
 
     Eq << algebra.imply.le.abs.add.apply(Eq[-1].rhs.args[0].arg, Eq[-1].rhs.args[1].arg)
-
-
 
 
 if __name__ == '__main__':

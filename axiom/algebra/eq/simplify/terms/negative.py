@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 def simplify_negative_terms(given):

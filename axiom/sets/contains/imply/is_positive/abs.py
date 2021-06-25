@@ -1,8 +1,4 @@
 from util import *
-import axiom
-
-# given: x != y
-# x not in {y}
 
 
 @apply

@@ -1,11 +1,9 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(self):
-    x, expr, et = axiom.is_ImageSet(self)
+    expr, (x, et) = self.of(Cup[FiniteSet])
     if et.is_ConditionSet:
         et = et.condition & Contains(x, et.base_set)
     if et.is_And:
@@ -35,6 +33,7 @@ def prove(Eq):
     Eq << Eq[0].this.lhs.apply(sets.cup.piecewise)
 
     Eq << Eq[-1].this.lhs.function.apply(algebra.piecewise.subs)
+
 
 if __name__ == '__main__':
     run()

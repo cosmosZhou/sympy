@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 
 
 
@@ -19,11 +18,11 @@ def prove(Eq):
     g = Symbol.g(integer=True, shape=(oo,))
     h = Symbol.h(integer=True, shape=(oo,))
 
-    Eq << apply(Equivalent(f[n] > 0, g[n] > 0), ForAll[n:f[n] > 0](h[n] > 0))
+    Eq << apply(Equivalent(f[n] > 0, g[n] > 0), All[n:f[n] > 0](h[n] > 0))
 
     Eq << algebra.equivalent.imply.eq.apply(Eq[0])
 
-    Eq << ForAll[n:Equal(Bool(f[n] > 0), 1)](h[n] > 0, plausible=True)
+    Eq << All[n:Equal(Bool(f[n] > 0), 1)](h[n] > 0, plausible=True)
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
 

@@ -2,7 +2,7 @@ from util import *
 
 @apply
 def apply(given, old, new):
-    cond, *limits = given.of(ForAll)
+    cond, *limits = given.of(All)
 
     limitsDict = given.limits_dict
     assert old in limitsDict
@@ -22,7 +22,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     x0 = Symbol.x0(domain=A)
 
-    Eq << apply(ForAll[x:A](Contains(f(x), s)), x, x0)
+    Eq << apply(All[x:A](Contains(f(x), s)), x, x0)
 
     Eq << algebra.et.given.conds.apply(Eq[1])
 

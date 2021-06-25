@@ -22,9 +22,9 @@ def prove(Eq):
     B = Symbol.B(shape=(oo,), real=True)
     Eq << apply(A, B)
 
-    Eq << Eq[0].lhs.this.astype(Sum)
+    Eq << Eq[0].lhs.this.apply(algebra.mul.to.sum)
 
-    Eq << Eq[-1].this.rhs.function.astype(Sum)
+    Eq << Eq[-1].this.rhs.function.apply(algebra.mul.to.sum)
 
     i, n = Eq[-1].rhs.variables
     k = Eq[0].rhs.function.args[1].variable

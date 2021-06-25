@@ -36,7 +36,8 @@ def apply(n, dz, h):
 
 @prove
 def prove(Eq):
-    from axiom import keras, algebra
+    from axiom import keras, discrete, algebra
+
     n = Symbol.n(integer=True, positive=True)
     h = Symbol.h(domain=Range(1, n))
     dz = Symbol.d_z(integer=True, positive=True)
@@ -57,9 +58,9 @@ def prove(Eq):
 
     Eq.z_definition = Eq.z_definition.this.rhs.subs(Eq.ai_definition)
 
-    Eq << Eq.z_definition.rhs.args[-1].args[0].this.astype(MatMul)
+    Eq << Eq.z_definition.rhs.args[-1].args[0].this.apply(discrete.reducedSum.to.matmul)
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << Eq[-1].this.rhs.subs(Eq[1][i, j])
 
@@ -67,7 +68,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[0]().expr.args[0].simplify()
 
-    Eq << Eq[-1].this.rhs.args[-1].expr.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[-1].expr.apply(algebra.add.to.piecewise)
 
     Eq << Eq[-1].this.rhs.args[0]().expr.args[1]().function.simplify()
 
@@ -75,19 +76,19 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.simplify(wrt=True)
 
-    Eq.divisor_definition = Eq[-1].this.rhs.astype(Add)
+    Eq.divisor_definition = Eq[-1].this.rhs.apply(algebra.piecewise.to.add)
 
-    Eq << Eq.divisor_definition.rhs.args[0].args[-1].expr.this.astype(ReducedSum)
+    Eq << Eq.divisor_definition.rhs.args[0].args[-1].expr.this.apply(algebra.sum.to.reducedSum)
 
-    Eq << Eq.divisor_definition.rhs.args[0].args[0].expr.this.astype(ReducedSum)
+    Eq << Eq.divisor_definition.rhs.args[0].args[0].expr.this.apply(algebra.sum.to.reducedSum)
 
     Eq.divisor_definition = Eq.divisor_definition.this.rhs.subs(Eq[-2], Eq[-1], simplify=False)
 
     Eq << Eq[5][i]
 
-    Eq << Eq[-1].this.rhs.args[1].arg.args[1].astype(MatMul)
+    Eq << Eq[-1].this.find(ReducedSum).apply(discrete.reducedSum.to.matmul)
 
-    Eq.M_definition = Eq[-1].this.rhs.args[1].arg.args[1].T
+    Eq.M_definition = Eq[-1].this.find(MatMul).T
 
     Eq << Eq[0][i]
 
@@ -103,47 +104,47 @@ def prove(Eq):
 
     Eq << Eq.divisor_definition * OneMatrix(dz)
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add)
 
     Eq << Eq[-1].this.rhs.subs(Eq.lower_part, Eq.upper_part, Eq.diagonal_part)
 
     Eq.z_definition = algebra.eq.cond.imply.cond.subs_with_expand_dims.apply(Eq[-1], Eq.z_definition)
 
-    Eq << Eq.z_definition.rhs.args[0].this.expand()
+    Eq << Eq.z_definition.rhs.args[0].this.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.function.function.args[1].definition
+    Eq << Eq[-1].this.find(Sum[~Mul]).args[1].definition
 
     Eq << Eq[-1].this(i).rhs.function.args[0]().expr.simplify()
 
-    Eq << Eq[-1].this.rhs.function.args[-1].expr.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.function.args[-1].expr.apply(algebra.add.to.piecewise)
 
     Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.swap.back)
 
     Eq << Eq[-1].this.rhs.function.simplify(wrt=i)
 
-    Eq << Eq[-1].this.rhs.function.astype(Add)
+    Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.to.add)
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.add)
 
-    Eq << Eq[-1].this.rhs.args[1].function.args[0].expr.astype(Add)
+    Eq << Eq[-1].this.find(Sum).apply(algebra.sum_mul.to.add)
 
-    Eq << Eq[-1].this.rhs.args[1].function.args[0]().expr.args[1].simplify()
+    Eq << Eq[-1].this.find(ExprCondPair)().find(Piecewise).simplify()
 
-    Eq << Eq[-1].this.rhs.args[1].function.args[1].expr.astype(Add)
+    Eq << Eq[-1].this.find(Sum[Mul[Add]]).apply(algebra.sum_mul.to.add)
 
-    Eq << Eq[-1].this.rhs.args[1].function.args[1]().expr.args[1].simplify()
+    Eq << Eq[-1].this.find(ExprCondPair[2])().find(Piecewise).simplify()
 
-    Eq << Eq[-1].this.rhs.args[1].function.args[0].expr.astype(MatMul)
+    Eq << Eq[-1].this.find(Sum).apply(discrete.sum.to.matmul)
 
-    Eq << Eq[-1].this.rhs.args[1].function.args[1].expr.astype(MatMul)
+    Eq << Eq[-1].this.find(Sum).apply(discrete.sum.to.matmul)
 
-    Eq << Eq[-1].this.rhs.args[1].astype(Piecewise)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.args[1].args[0].expr.astype(MatMul)
+    Eq << Eq[-1].this.find(Lamda).apply(discrete.lamda_matmul.to.matmul)
 
     Eq << Eq[-1].this.rhs.args[1].args[0].expr.T
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].expr.astype(MatMul)
+    Eq << Eq[-1].this.find(Lamda).apply(discrete.lamda_matmul.to.matmul)
 
     Eq << Eq[-1].this.rhs.args[1].args[1].expr.T
 
@@ -153,35 +154,35 @@ def prove(Eq):
 
     Eq << Eq.z_definition.this.rhs.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.args[0].args[0].astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[0].args[0].apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.args[0].astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebra.add.to.piecewise)
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i,))
 
-    Eq << Eq[-1].this.rhs.astype(BlockMatrix)
+    Eq << Eq[-1].this.rhs.apply(algebra.lamda_piecewise.to.blockMatrix)
 
-    Eq << Eq[-1].this.rhs.args[0].astype(Mul)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.mul)
 
-    Eq << Eq[-1].this.rhs.args[0].args[0].astype(Pow)
+    Eq << Eq[-1].this.find(~Lamda * Lamda).apply(algebra.lamda.to.pow)
 
-    Eq << Eq[-1].this.rhs.args[1].astype(Mul)
+    Eq << Eq[-1].this.find(Lamda[Mul]).apply(algebra.lamda.to.mul)
 
-    Eq << Eq[-1].this.rhs.args[1].args[0].astype(Pow)
+    Eq << Eq[-1].this.find(~Lamda * Lamda).apply(algebra.lamda.to.pow)
 
-    Eq << Eq[-1].this.rhs.args[0].args[1].astype(Add)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.add)
 
-    Eq << Eq[-1].this.rhs.args[0].args[1].base.astype(Add)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.add)
 
-    Eq << Eq[-1].this.rhs.args[0].args[1].base.args[1].astype(ReducedSum)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.reducedSum)
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].astype(Add)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.add)
 
-    Eq << Eq[-1].this.find(Lamda).astype(Add)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.add)
 
-    Eq << Eq[-1].this.find(Lamda).astype(ReducedSum)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.reducedSum)
 
     Eq << Eq[-1].this.rhs.subs(Eq[6].reversed, Eq[8].reversed, Eq[9].reversed, Eq[10].reversed)
 

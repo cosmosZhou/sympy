@@ -80,15 +80,15 @@ class Invoker:
                                 args[i + 1] = (x, domain_defined)
                                 break
                 else:
-                    if this.is_ForAll:
+                    if this.is_All:
                         for x in set(self._domain_defined):
                             if this._has(x): 
                                 args.append((x, self._domain_defined.pop(x)))                    
 
             obj = this.func(*args, **kwargs)
             
-            if simplify and (not obj.is_ForAll or stop or not self._objs[i - 2].is_Exists):
-                # exclude case Exists[C](ForAll[x](f(x) == C))
+            if simplify and (not obj.is_All or stop or not self._objs[i - 2].is_Any):
+                # exclude case Any[C](All[x](f(x) == C))
                 obj = obj.simplify()
                 
             if stop:
@@ -99,6 +99,15 @@ class Invoker:
              
         if obj.equivalent == self.source and obj == self.source:
             return self.source
+        from sympy import Boolean
+        if isinstance(self.source, Boolean):
+            if 'given' in assumptions:
+                from sympy import Suffice
+                return Suffice(self.source, obj, plausible=None)
+            if 'equivalent' in assumptions:
+                from sympy import Equivalent
+                return Equivalent(self.source, obj, plausible=None)
+            
         return obj
 
     @property
@@ -119,9 +128,9 @@ class Invoker:
                 assert all(arg.plausible is None for arg in args)                
                 args = map(lambda inf: inf.cond, args)
         
-        if this.is_ForAll: 
+        if this.is_All: 
             if self.callable.__func__ is this.func.simplify:
-                if self.parent.is_Exists:
+                if self.parent.is_Any:
                     kwargs['local'] = True
                     
         evaluate = kwargs.pop('evaluate', None)
@@ -386,16 +395,6 @@ class Invoker:
         self._context.append((target, limits))
         return self
 
-#     def __exit__(self, *_):
-#         self._context.pop()
-#         if self._context:
-#             target, _ = self._context[-1]
-#             while self.target != target:
-#                 self._objs.pop()
-#                 self.index.pop()
-#         
-#         return self
-    
     def __or__(self, x):
         if self.assumptions is None:
             self.assumptions = []

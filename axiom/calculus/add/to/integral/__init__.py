@@ -1,5 +1,5 @@
 from util import *
-import axiom
+
 
 from axiom.algebra.add.to.sum import piece_together
 
@@ -10,7 +10,7 @@ def apply(self):
     return Equal(self, piece_together(Integral, self))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     a = Symbol.a(real=True)

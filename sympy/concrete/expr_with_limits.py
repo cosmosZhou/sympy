@@ -240,7 +240,7 @@ class ExprWithLimits(Expr):
     @property
     def dtype(self):
         return self.function.dtype
-        
+
     def __new__(cls, function, *symbols, **assumptions):
         function = sympify(function)
         limits = []
@@ -250,119 +250,136 @@ class ExprWithLimits(Expr):
             if isinstance(sym, tuple):
                 sym = Tuple(*sym)
             
-            if isinstance(sym, Tuple): 
-                if len(sym) == 2:
-                    x, domain = sym                    
-                    if domain.is_set:
-                        assert x.type in domain.etype or domain.etype in x.type, "domain.etype = %s\n, x.type = %s" % (domain.etype, x.type)
-                        if x.is_Symbol and x.is_bounded:
-                            domain &= x.domain_bounded
-                            _x = x.unbounded
-                            sym = _x, domain
-                            function = function._subs(x, _x)                            
-                        elif domain.is_Range:
-                            if domain.is_UniversalSet:
-                                sym = (x,)
-                            else:
-                                sym = (x, domain.start, domain.stop)
-                        elif domain.is_Interval:
-                            if domain.is_UniversalSet:
-                                sym = (x,)
-                            elif not domain.left_open and not domain.right_open:
-                                sym = (x, domain.start, domain.stop)
-                                
-                        elif domain.is_ConditionSet and domain.variable == x:
-                            if domain.base_set.is_UniversalSet:
-                                sym = (x, domain.condition)
-                            else:
-                                sym = (x, domain.condition, domain.base_set)
-                    elif domain.is_BinaryCondition:
-                        if domain.lhs == x:
-                            if domain.is_GreaterEqual:
-                                sym = (x, domain.rhs, S.Infinity)
-                            elif domain.is_Less:
-                                if x.is_integer:
-                                    if x.is_nonnegative:
-                                        sym = (x, 0, domain.rhs)
-                                        function = function._subs(x, x.unbounded)
-                                    else:
-                                        sym = (x, -S.Infinity, domain.rhs)
-                            elif domain.is_LessEqual:
-                                if x.is_integer:
-                                    ...
-                                else:
-                                    if x.is_nonnegative:
-                                        sym = (x, 0, domain.rhs)
-                                        function = function._subs(x, x.unbounded)
-                                    else:
-                                        sym = (x, -S.Infinity, domain.rhs)
-                            elif domain.is_Greater:
-                                if x.is_integer:
-                                    if domain.rhs.is_integer:
-                                        sym = (x, domain.rhs + 1, S.Infinity)
-                                else:
-                                    ...    
-                            elif domain.is_Contains:
-                                sym = (x, domain.rhs)
-                        elif domain.rhs == x:
-                            if domain.is_LessEqual:  # lhs <= x 
-                                sym = (x, domain.lhs, S.Infinity)
-                            elif domain.is_Greater:  # lhs > x
-                                if x.is_integer:
-                                    if x.is_nonnegative:
-                                        sym = (x, 0, domain.lhs)
-                                        function = function._subs(x, x.unbounded)
-                                    else: 
-                                        sym = (x, -S.Infinity, domain.lhs)
-                                else:
-                                    ...
-                            elif domain.is_GreaterEqual:  # lhs >= x
-                                if x.is_integer:
-                                    ...
-                                else:
-                                    if x.is_nonnegative:
-                                        sym = (x, 0, domain.lhs)
-                                        function = function._subs(x, x.unbounded)
-                                    else:
-                                        sym = (x, -S.Infinity, domain.lhs)
-                    elif domain.is_BooleanTrue:
-                        return function.copy(**assumptions)
-                    elif domain.is_BooleanFalse:
-                        return cls.identity(function)                        
-                                
-                elif len(sym) == 3: 
-                    x, *ab = sym
-                    if x.is_Symbol and x.is_bounded and not ab[0].is_boolean:
-                        _x = x.unbounded
-                        function = function._subs(x, _x)
-                        sym = (_x, *ab)
-                        
-                    a, b = ab
-                    if a.is_boolean:
-                        if a.is_BooleanTrue:
-                            if b.is_Range and x.is_integer:
-                                if b.is_UniversalSet:
+            if isinstance(sym, Tuple):
+                x, *ab = sym 
+                
+                if isinstance(x, (Symbol, Indexed, Slice)):
+                    if len(sym) == 2:
+                        [domain] = ab
+                        if domain.is_set:
+                            assert x.type in domain.etype or domain.etype in x.type, "domain.etype = %s\n, x.type = %s" % (domain.etype, x.type)
+                            if x.is_Symbol and x.is_bounded:
+                                domain &= x.domain_bounded
+                                _x = x.unbounded
+                                sym = _x, domain
+                                function = function._subs(x, _x)                            
+                            elif domain.is_Range:
+                                if domain.is_UniversalSet:
                                     sym = (x,)
                                 else:
-                                    sym = (x, b.start, b.stop)
-                            else:
-                                sym = (x, b)
-                        elif b.is_UniversalSet:
-                            sym = (x, a)
-                    elif x.is_integer and not x.shape and not x.is_set and not b.is_set:
-                        if a == b - 1:
-                            function = function._subs(x, a)                        
-                            for j in range(i - 1, -1, -1):
-                                _x, *ab = symbols[j]                
-                                symbols[j] = (_x, *(sympify(e)._subs(x, a) for e in ab))
-                                if _x == x:
-                                    break                            
-                                
-                            continue
-                        elif a == b:
-                            return cls.identity(function, **assumptions)
+                                    sym = (x, domain.start, domain.stop)
+                            elif domain.is_Interval:
+                                if domain.is_UniversalSet:
+                                    sym = (x,)
+                                elif not domain.left_open and not domain.right_open:
+                                    sym = (x, domain.start, domain.stop)
+                                    
+                            elif domain.is_ConditionSet and domain.variable == x:
+                                if domain.base_set.is_UniversalSet:
+                                    sym = (x, domain.condition)
+                                else:
+                                    sym = (x, domain.condition, domain.base_set)
+                        elif domain.is_BinaryCondition:
+                            if domain.lhs == x:
+                                if domain.is_GreaterEqual:
+                                    sym = (x, domain.rhs, S.Infinity)
+                                elif domain.is_Less:
+                                    if x.is_integer:
+                                        if x.is_nonnegative:
+                                            sym = (x, 0, domain.rhs)
+                                            function = function._subs(x, x.unbounded)
+                                        else:
+                                            sym = (x, -S.Infinity, domain.rhs)
+                                elif domain.is_LessEqual:
+                                    if x.is_integer:
+                                        ...
+                                    else:
+                                        if x.is_nonnegative:
+                                            sym = (x, 0, domain.rhs)
+                                            function = function._subs(x, x.unbounded)
+                                        else:
+                                            sym = (x, -S.Infinity, domain.rhs)
+                                elif domain.is_Greater:
+                                    if x.is_integer:
+                                        if domain.rhs.is_integer:
+                                            sym = (x, domain.rhs + 1, S.Infinity)
+                                    else:
+                                        ...    
+                                elif domain.is_Contains:
+                                    sym = (x, domain.rhs)
+                            elif domain.rhs == x:
+                                if domain.is_LessEqual:  # lhs <= x 
+                                    sym = (x, domain.lhs, S.Infinity)
+                                elif domain.is_Greater:  # lhs > x
+                                    if x.is_integer:
+                                        if x.is_nonnegative:
+                                            sym = (x, 0, domain.lhs)
+                                            function = function._subs(x, x.unbounded)
+                                        else: 
+                                            sym = (x, -S.Infinity, domain.lhs)
+                                    else:
+                                        ...
+                                elif domain.is_GreaterEqual:  # lhs >= x
+                                    if x.is_integer:
+                                        ...
+                                    else:
+                                        if x.is_nonnegative:
+                                            sym = (x, 0, domain.lhs)
+                                            function = function._subs(x, x.unbounded)
+                                        else:
+                                            sym = (x, -S.Infinity, domain.lhs)
+                        elif domain.is_BooleanTrue:
+                            return function.copy(**assumptions)
+                        elif domain.is_BooleanFalse:
+                            return cls.identity(function)
                         
-                limits.append(Tuple(*sym))
+                    elif len(sym) == 3:
+                        if x.is_Symbol and x.is_bounded and not ab[0].is_boolean:
+                            _x = x.unbounded
+                            function = function._subs(x, _x)
+                            sym = (_x, *ab)
+                            
+                        a, b = ab
+                        if a.is_boolean:
+                            if a.is_BooleanTrue:
+                                if b.is_Range and x.is_integer:
+                                    if b.is_UniversalSet:
+                                        sym = (x,)
+                                    else:
+                                        sym = (x, b.start, b.stop)
+                                else:
+                                    sym = (x, b)
+                            elif b.is_UniversalSet:
+                                sym = (x, a)
+                        elif x.is_integer and not x.shape and not x.is_set and not b.is_set:
+                            if a == b - 1:
+                                function = function._subs(x, a)                        
+                                for j in range(i - 1, -1, -1):
+                                    _x, *ab = symbols[j]                
+                                    symbols[j] = (_x, *(sympify(e)._subs(x, a) for e in ab))
+                                    if _x == x:
+                                        break                            
+                                    
+                                continue
+                            elif a == b:
+                                return cls.identity(function, **assumptions)
+                            
+                    
+                    limits.append(Tuple(*sym))
+                else:
+                    if ab:
+                        if x.is_BlockMatrix:
+                            flat_list = x.args
+                        else:
+                            flat_list = x._args
+                            
+                        for arg in flat_list[:0:-1]:
+                            limits.append(Tuple(arg,))
+                        limits.append(Tuple(flat_list[0], *ab))
+                    else:
+                        for arg in x._args[::-1]:
+                            limits.append(Tuple(arg,))
+                    
             else:
                 limits.append(Tuple(sym,))
                 
@@ -438,7 +455,7 @@ class ExprWithLimits(Expr):
         as_dummy : Rename dummy variables
         transform : Perform mapping on the dummy variable
         """
-        return [l[0] for l in self.limits]
+        return tuple(l[0] for l in self.limits)
 
     @property
     def variable(self):
@@ -668,7 +685,7 @@ class ExprWithLimits(Expr):
             return this.simplify() if simplify else this
 
         if self.function.is_ExprWithLimits and new in self.function.variables_set:
-            if self.function.is_Exists:
+            if self.function.is_Any:
                 return self
             y = self.function.generate_var(self.function.variables_set, **new.type.dict)
             assert new != y
@@ -1249,7 +1266,7 @@ class ExprWithLimits(Expr):
     def shape(self):
         return self.function.shape
 
-    def _eval_domain_defined(self, x, allow_empty=True): 
+    def _eval_domain_defined(self, x, allow_empty=True, **_): 
         if x.dtype.is_set:
             return x.universalSet            
         
@@ -1486,13 +1503,13 @@ class AddWithLimits(ExprWithLimits):
 
             if a._has(t):
                 domain &= t.domain_conditioned(a <= x)
-                a = MIN(a, self.limits[i]).doit()
+                a = Minimize(a, self.limits[i]).doit()
             if b._has(t):
                 if t.is_integer:
                     domain &= t.domain_conditioned(x < b)
                 else:
                     domain &= t.domain_conditioned(x <= b)
-                b = MAX(b, self.limits[i]).doit()
+                b = Maximize(b, self.limits[i]).doit()
 
             if t.is_integer:
                 limit = (t, domain.min(), domain.max() + 1)
@@ -1531,42 +1548,6 @@ class AddWithLimits(ExprWithLimits):
                     function = function._subs(x, _x)
                     
         return function.is_extended_negative
-
-    @classmethod
-    def rewrite_from_Mul(cls, self):
-        for i, sgm in enumerate(self.args):
-            if isinstance(sgm, cls):
-                args = [*self.args]
-                args[i] = S.One
-                variables_set = sgm.variables_set
-                duplicate_set = set()
-                for a in args:
-                    duplicates = {v for v in variables_set if a._has(v)}
-                    if duplicates:
-                        variables_set -= duplicates
-                        duplicate_set |= duplicates
-                
-                if duplicate_set:
-                    excludes = set()
-                    for v in duplicate_set:
-                        _v = self.generate_var(excludes=excludes, **v.type.dict)
-                        sgm = sgm.limits_subs(v, _v)
-                        excludes.add(_v)                        
-                        
-                args[i] = sgm.function
-                function = self.func(*args).powsimp()
-                return cls(function, *sgm.limits)
-        return self
-
-    @classmethod
-    def rewrite_from_MatMul(cls, self):
-        for i, arg in enumerate(self.args):
-            if isinstance(arg, cls):
-                args = [*self.args]
-                args[i] = arg.function 
-                function = self.func(*args).powsimp()
-                return cls(function, *arg.limits)
-        return self
 
 
 class MINMAXBase(ExprWithLimits):
@@ -1671,21 +1652,6 @@ class MINMAXBase(ExprWithLimits):
                 return self.function.etype
         return self.function.dtype
 
-    @classmethod        
-    def rewrite_from_Lamda(cls, self):
-        if isinstance(self.function, cls) and len(self.function.limits) == 0:
-            minimum = self.function
-            function = minimum.function
-            return minimum.func(self.func(function, *self.limits).simplify())
-        return self
-
-    @classmethod        
-    def rewrite_from_Log(cls, self):
-        if isinstance(self.arg, cls):
-            m = self.arg
-            return m.func(self.func(m.function), *m.limits)        
-        return self
-
 
 class Minimize(MINMAXBase):
     r"""Represents unevaluated MIN operator.
@@ -1696,7 +1662,7 @@ class Minimize(MINMAXBase):
     __slots__ = ['is_commutative']
     operator = Min
 
-    def __new__(cls, function, *symbols, **assumptions):
+    def __new__(cls, function, *symbols, **assumptions):        
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
 
     def _eval_is_zero(self):
@@ -1899,10 +1865,8 @@ class Maximize(MINMAXBase):
                 return True
 
 
-MAX = Maximize
-
-MAX.reversed_type = MIN
-MIN.reversed_type = MAX
+Maximize.reversed_type = MIN
+MIN.reversed_type = Maximize
 
 
 class ArgMinMaxBase(ExprWithLimits):
@@ -2180,8 +2144,8 @@ class Lamda(ExprWithLimits):
         """
         if rhs.is_Lamda:
             if lhs.limits == rhs.limits:
-                from sympy import ForAll
-                return ForAll(self.func(lhs.function, rhs.function), *lhs.limits).simplify()        
+                from sympy import All
+                return All(self.func(lhs.function, rhs.function), *lhs.limits).simplify()        
 
     def simplify(self, deep=False, squeeze=False, **kwargs):
         from sympy import Contains
@@ -2926,54 +2890,7 @@ class Lamda(ExprWithLimits):
     def limits_swap(self):
         return self
 
-    @classmethod
-    def rewrite_from_Maximize(cls, self):
-        *limits, limit = self.limits
-        if limits:
-            return self.func(cls(self.func(self.function, *limits), limit).simplify())
-        return self.func(cls(self.function, limit).simplify())
-
-    @classmethod
-    def rewrite_from_Sum(cls, self):
-        limits = self.limits[1:]
-        sigmar = self.func(cls(self.function, self.limits[0]).simplify())
-        if not limits:
-            return sigmar
-        return self.func(sigmar, *limits)            
-
-    @classmethod
-    def rewrite_from_Exp(cls, self):
-        if self.shape:
-            k = []
-            for size in self.shape: 
-                k.append(self.generate_var(excludes={*k}, domain=Range(0, size)))
-            return cls(self[k], *k)
-        return self 
-        
-    @classmethod
-    def rewrite_from_Swap(cls, self):
-        i = self.generate_var(integer=True)
-        j = self.generate_var({i}, integer=True)
-        return Lamda[j:self.n, i:self.n](self._entry(i, j))
-        
-    @classmethod
-    def rewrite_from_Slice(cls, self):
-        size = self.shape[0]                     
-        k = self.generate_var(integer=True)
-        return cls[k:size](self[k])
-
-    @classmethod
-    def rewrite_from_Add(cls, self):
-        for i, lamda in enumerate(self.args):
-            if isinstance(lamda, cls):
-                k = lamda.variable
-                args = [*self.args]
-                del args[i]
-                rest = self.func(*args)                
-                return cls(rest[k] + lamda.function, *lamda.limits)
-        return self
-    
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         return ExprWithLimits._eval_domain_defined(self, x, allow_empty=False)        
 
     def domain_definition(self):
@@ -3296,20 +3213,6 @@ class Cup(Set, ExprWithLimits):
                 else:
                     limits = self.limits_union(expr)
                     return self.func(self.function, *limits)
-            else:
-                finite_set = self.finite_set()
-                if finite_set and finite_set.is_Slice:
-                    _finite_set = expr.finite_set()
-                    if _finite_set and _finite_set.is_Slice:
-                        if finite_set.base == _finite_set.base:
-                            if len(finite_set.indices) == len(_finite_set.indices) == 1:
-                                print("this should be axiomatized!")
-                                start, stop = finite_set.index
-                                _start, _stop = _finite_set.index
-                                if _start == stop:
-                                    return Cup.construct_finite_set(finite_set.base, start, _stop, self.limits[0][0])
-                                if stop == _start - 1:
-                                    return Cup.construct_finite_set(finite_set.base, start, _stop, self.limits[0][0]) // finite_set.base[stop].set
 
         if self.is_ConditionSet:
             return
@@ -3404,18 +3307,6 @@ class Cup(Set, ExprWithLimits):
                 x, baseset = condition_limit
                 expr, *_ = function
                 return x, expr, baseset
-
-    @classmethod
-    def construct_finite_set(cls, base, start=None, stop=None, x=None):
-        if start is None:
-            start = S.Zero
-
-        if stop is None:
-            stop = base.shape[-1]
-
-        if x is None:
-            x = base.generate_var(start.free_symbols | stop.free_symbols, integer=True)
-        return cls(base[x].set, (x, start, stop - 1))
 
     def finite_set(self):
         function = self.function
@@ -3546,8 +3437,8 @@ class Cup(Set, ExprWithLimits):
         from sympy.sets.contains import Contains
         if other.has(*self.variables):
             return
-        from sympy import Exists
-        return Exists(Contains(other, self.function), *self.limits)
+        from sympy import Any
+        return Any(Contains(other, self.function), *self.limits)
 
     @property
     def _measure(self):
@@ -3663,10 +3554,10 @@ class Cup(Set, ExprWithLimits):
             ...
 
     def min(self): 
-        return MIN(self.function.min(), *self.limits)        
+        return Minimize(self.function.min(), *self.limits)        
 
     def max(self):
-        return MAX(self.function.max(), *self.limits)
+        return Maximize(self.function.max(), *self.limits)
 
     def _eval_is_extended_real(self):
         function = self.function                
@@ -3757,18 +3648,6 @@ class Cup(Set, ExprWithLimits):
     def identity(cls, self, **_):
         return self.etype.emptySet
     
-    @classmethod
-    def rewrite_from_Intersection(cls, self):
-        for i, union in enumerate(self.args):
-            if isinstance(union, cls):
-                args = [*self.args]
-                del args[i]
-                this = self.func(*args)
-                function = union.function & this
-                return union.func(function, *union.limits).simplify()
-        return self
-
-        
 class Cap(Set, ExprWithLimits):
     """
     Represents an intersection of sets as a :class:`Set`.
@@ -3811,8 +3690,8 @@ class Cap(Set, ExprWithLimits):
         from sympy.sets.contains import Contains
         if other.has(*self.variables):
             return
-        from sympy import ForAll
-        return ForAll(Contains(other, self.function), *self.limits)
+        from sympy import All
+        return All(Contains(other, self.function), *self.limits)
 
     def __iter__(self):
         no_iter = True

@@ -10,7 +10,7 @@ def apply(given):
     j = xi.generate_var(integer=True)
     xj = xi.subs(i, j)
 
-    return ForAll[j:i, i:n](Unequal(xi, xj))
+    return All[j:i, i:n](Unequal(xi, xj))
 
 
 @prove

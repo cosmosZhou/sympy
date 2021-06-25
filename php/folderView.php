@@ -53,28 +53,42 @@ if (\std\endsWith($module, '/')) {
 <title>content</title>
 
 <div id=root>
-	<contents :packages=packages :theorems=theorems></contents>
+	<axiom-contents :packages=packages :theorems=theorems></axiom-contents>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
-
-<script
-	src='https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js'></script>
-
-<script
-	src="https://cdn.jsdelivr.net/npm/vue-async-computed@3.3.1/dist/vue-async-computed.min.js"></script>
-
-<script
-	src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
+<script	src='https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-async-computed@3.3.1/dist/vue-async-computed.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
+<script src='/sympy/js/std.js'></script>
+<script src='/sympy/js/utility.js'></script>
 <script>
 	var module = '<?php echo $module?>';
 	var packages = <?php echo \std\jsonify($packages)?>;	
 	var theorems = <?php echo \std\jsonify($theorems)?>;
+
+	Vue.use(httpVueLoader);
+	Vue.use(AsyncComputed);
+
+	Vue.component('axiom-contents', 'url:/sympy/vue/axiom-contents.vue');
+
+	var data = {
+		packages: packages,
+		theorems: theorems,
+	};
+
+	//console.log("data = " + JSON.stringify(data));
+
+	var app = new Vue({
+		el: '#root',
+		data: data,	
+	});
+
+	promise(()=>{
+		document.querySelector('.theorem, .package').focus();
+	});
 </script>
 
-<script src='/sympy/js/std.js'></script>
-<script src='/sympy/js/utility.js'></script>
-<script src='/sympy/js/folderView.js'></script>
+
+

@@ -1,13 +1,10 @@
 from util import *
 
-import axiom
-
 
 @apply
-def apply(*given):
-    is_positive_x, is_nonnegative_y = given
-    x = axiom.is_nonnegative(is_positive_x)
-    y = axiom.is_nonnegative(is_nonnegative_y)
+def apply(is_positive_x, is_nonnegative_y):
+    x = is_positive_x.of(Expr >= 0)
+    y = is_nonnegative_y.of(Expr >= 0)
     return GreaterEqual(x * y, 0)
 
 

@@ -3,10 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    x2, y2 = axiom.is_Subtract(self)
-    x = x2.of(Basic ** 2)
-    y = y2.of(Basic ** 2)
+    x, y = self.of(Expr ** 2 - Expr ** 2)
     return Equal(self, (x - y) * (x + y))
 
 

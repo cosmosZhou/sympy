@@ -5,3 +5,5 @@ from . import lt
 from . import is_nonzero
 from . import is_negative
 from . import is_positive
+
+from . import eq

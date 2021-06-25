@@ -1,13 +1,11 @@
 from util import *
-import axiom
-
 
 
 @apply(simplify=False)
 def apply(given, old, new):
     assert given._has(old)
     assert new.is_symbol
-    return ForAll[new:{old}](given._subs(old, new))
+    return All[new:{old}](given._subs(old, new))
 
 
 @prove

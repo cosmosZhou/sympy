@@ -1,5 +1,5 @@
 from util import *
-import axiom
+
 
 from axiom.algebra.eq.simplify.terms.negative import simplify_negative_terms
 

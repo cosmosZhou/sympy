@@ -33,8 +33,8 @@ def apply(given):
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
 
-    if given.is_Exists:
-        return Exists(Equal(x, y), (x,), (y,))
+    if given.is_Any:
+        return Any(Equal(x, y), (x,), (y,))
     else:
         return Equal(x, y)
 

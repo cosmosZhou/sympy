@@ -34,17 +34,19 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import stats, algebra
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
     z = Symbol.z(real=True, random=True)
-
     Eq << apply(x.is_independent_of(z), y.is_independent_of(z), Unequal(Probability(y), 0))
 
     Eq << stats.eq.imply.eq.mul.apply(Eq[0])
 
     Eq.bayes_yz = stats.eq.imply.eq.mul.apply(Eq[1])
 
-    Eq.bayes_xyz = stats.bayes.corollary.apply(Eq[0].domain_definition(), var=Probability(x, y))
+    Eq.z_is_nonzero = stats.eq.imply.is_nonzero.apply(Eq[0])
+
+    Eq.bayes_xyz = stats.is_nonzero.imply.eq.bayes.apply(Eq.z_is_nonzero, x, y)
 
     Eq << Eq[2].subs(Eq[1].reversed)
 
@@ -52,17 +54,17 @@ def prove(Eq):
 
     Eq << stats.is_nonzero.imply.is_nonzero.joint.apply(Eq[-1])
 
-    Eq << stats.bayes.corollary.apply(Eq[-1], var=x)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
 
     Eq << Eq.bayes_xyz.subs(Eq[-1])
 
     Eq << Eq[-1].subs(Eq.bayes_yz)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq[0].domain_definition())
+    Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.z_is_nonzero)
 
     Eq << Eq[-1].subs(Eq.given_addition)
 
-    Eq << stats.bayes.corollary.apply(Eq[2], var=x)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[2], x)
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 

@@ -1,10 +1,9 @@
 from util import *
-import axiom
 
 
 
 # given: f(a) != f(b) or a = b
-# ForAll[a: a!=b](f(a) != f(b))
+# All[a: a!=b](f(a) != f(b))
 @apply
 def apply(given, pivot=0):
     [*conds] = given.of(Or)

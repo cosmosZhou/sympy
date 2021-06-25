@@ -1,13 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(self):
-    div = self.of(Floor)
-    n, d = axiom.is_Divide(div)
-
+    n, d = self.of(Floor[Expr / Expr])
     return Equal(self, (n - n % d) / d)
 
 
@@ -19,6 +15,7 @@ def prove(Eq):
     Eq << apply(n // d)
 
     Eq << Eq[0].this.find(Mod).apply(algebra.mod.to.add)
+
 
 if __name__ == '__main__':
     run()

@@ -1,11 +1,8 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    greater_than, less_than = given
+def apply(greater_than, less_than):
     x, m = greater_than.of(GreaterEqual)
     _x, M = less_than.of(LessEqual)
     assert x == _x

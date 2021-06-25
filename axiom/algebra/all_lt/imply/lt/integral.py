@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Less])
+    (lhs, rhs), *limits = given.of(All[Less])
     return Less(Integral(lhs, *limits).simplify(), Integral(rhs, *limits).simplify())
 
 
@@ -16,7 +16,7 @@ def prove(Eq):
     f = Function.f(shape=(), real=True)
     g = Function.g(shape=(), real=True)
 
-    Eq << apply(ForAll[x:a:b](f(x) < g(x)))
+    Eq << apply(All[x:a:b](f(x) < g(x)))
 
     Eq << Eq[0].reversed
 

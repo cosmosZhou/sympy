@@ -2,30 +2,17 @@ from util import *
 
 
 @apply
-def apply(*given, x=None):
-    import axiom
-    eq_sum, eq_union = given
-    w_sum, M = eq_sum.of(Equal)
-    w_union, M_interval = eq_union.of(Equal)
+def apply(eq_sum, eq_union, x=None):
+    ((_w, ___i), i), M = eq_sum.of(Equal[Sum[Abs[Indexed], Tuple]])
+    ((w, __i), _i), (zero, _M) = eq_union.of(Equal[Cup[Indexed, Tuple], Range])
 
-    zero, _M = M_interval.of(Range)
     assert _M == M
     assert zero == 0
 
-    wi_abs, limit = w_sum.of(Sum)
-    wi, _limit = w_union.of(Cup)
+    assert i == _i == __i == ___i
+    assert _w == w
 
-    assert limit == _limit
-
-    _wi = wi_abs.of(Abs)
-    assert _wi == wi
-
-    (i,) = limit
-    w, _i = wi.of(Indexed)
-    assert _i == i
-
-    _M = x.shape[0]
-    assert _M == M
+    assert x.shape[0] == M
 
     w_ = Symbol("omega^'", cluster(w, x))
 
@@ -38,7 +25,7 @@ def apply(*given, x=None):
 from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import keras, sets, algebra
     M = Symbol.M(integer=True, positive=True)

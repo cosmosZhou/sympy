@@ -2,27 +2,17 @@ from util import *
 
 
 @apply
-def apply(*given):
-    import axiom
-    equal_sum, equal_union = given
-
-    sgm, n = equal_sum.of(Equal)
-    abs_xi, *limits = sgm.of(Sum)
-    xi = abs_xi.of(Abs)
+def apply(equal_sum, equal_union):
+    (xi, (_i, k)), n = equal_sum.of(Equal[Sum[Abs, Tuple[0, Expr]]])
     x, i = xi.of(Indexed)
 
-    _i, zero, k = axiom.limit_is_Interval(limits, integer=True)
     assert _i == i
-    assert zero.is_zero
 
-    union, interval_n = equal_union.of(Equal)
-    zero, _n = interval_n.of(Range)
+    (_xi, limit), _n = equal_union.of(Equal[Cup, Range[0, Expr]])
     assert n == _n
-    assert zero.is_zero
 
-    _xi, *_limits = union.of(Cup)
     assert _xi == xi
-    assert limits == _limits
+    assert limit == (_i, 0, k)
 
     j = Symbol.j(domain=Range(0, k))
     complement = Range(0, k) // {j}

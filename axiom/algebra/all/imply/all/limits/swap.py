@@ -1,11 +1,10 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(given):
     from sympy.concrete.limits import limits_dependent
-    fn, *limits = given.of(ForAll)
+    fn, *limits = given.of(All)
     assert len(limits) == 2
     limit_x, limit_y = limits
 
@@ -13,7 +12,7 @@ def apply(given):
 
     assert not limits_dependent([limit_x], [limit_y])
 
-    return ForAll(fn, *limits)
+    return All(fn, *limits)
 
 
 @prove
@@ -24,7 +23,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(ForAll[x:g(x) > 0, y:g(y) > 0](f(x, y) > 0))
+    Eq << apply(All[x:g(x) > 0, y:g(y) > 0](f(x, y) > 0))
 
     Eq << algebra.all.imply.ou.apply(Eq[0])
 

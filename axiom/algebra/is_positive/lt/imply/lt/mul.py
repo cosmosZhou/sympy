@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -8,7 +6,7 @@ def apply(*given):
     is_positive_x, strict_less_than = given
     if is_positive_x.is_Less:
         strict_less_than, is_positive_x = given
-    x = axiom.is_positive(is_positive_x)
+    x = is_positive_x.of(Expr > 0)
     lhs, rhs = strict_less_than.of(Less)
     return Less(lhs * x, rhs * x)
 

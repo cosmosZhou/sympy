@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    lhs, rhs = given.of(LessEqual[Basic ** 2, Basic ** 2])
+    lhs, rhs = given.of(LessEqual[Expr ** 2, Expr ** 2])
 
     assert lhs.is_real
     assert rhs.is_real

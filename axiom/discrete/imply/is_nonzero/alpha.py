@@ -1,11 +1,9 @@
 from util import *
 
-import axiom
-from axiom.discrete.imply.is_positive.alpha import alpha
-
 
 @apply
 def apply(x):
+    from axiom.discrete.imply.is_positive.alpha import alpha
     return Unequal(alpha(x), 0)
 
 

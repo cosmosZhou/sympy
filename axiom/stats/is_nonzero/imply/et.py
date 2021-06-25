@@ -1,8 +1,6 @@
 from util import *
 
 
-# given: Probability(x, y) != 0
-# imply: Probability(y) != 0
 @apply
 def apply(given, wrt=None):
     assert given.is_Unequal
@@ -28,22 +26,23 @@ def apply(given, wrt=None):
 @prove
 def prove(Eq):
     from axiom import stats, calculus, algebra
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
-
     Eq << apply(Unequal(Probability(x, y), 0))
 
-    Eq.x_marginal_probability, Eq.y_marginal_probability = stats.total_probability_theorem.apply(Probability(x, y), y), stats.total_probability_theorem.apply(Probability(x, y), x)
+    _x = pspace(x).symbol
+    Eq.x_marginal_probability = stats.integral.to.probability.apply(Integral[_x](Probability(x, y)))
 
-    _y = Eq.x_marginal_probability.lhs.variable
-    _x = Eq.y_marginal_probability.lhs.variable
+    _y = pspace(y).symbol
+    Eq.y_marginal_probability = stats.integral.to.probability.apply(Integral[_y](Probability(x, y)))
 
     Eq << stats.is_nonzero.imply.is_positive.apply(Eq[0])
 
     Eq <<= calculus.gt.imply.gt.integral.apply(Eq[-1], (_y,)), \
         calculus.gt.imply.gt.integral.apply(Eq[-1], (_x,))
 
-    Eq <<= Eq[-2].subs(Eq.x_marginal_probability), Eq[-1].subs(Eq.y_marginal_probability)
+    Eq <<= Eq[-2].subs(Eq.y_marginal_probability), Eq[-1].subs(Eq.x_marginal_probability)
 
     Eq <<= algebra.gt.imply.ne.apply(Eq[-1]) & algebra.gt.imply.ne.apply(Eq[-2])
 

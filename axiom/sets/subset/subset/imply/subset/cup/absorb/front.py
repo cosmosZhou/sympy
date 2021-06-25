@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.algebra.eq.eq.imply.eq.sum.absorb.front import absorb_front
 
 

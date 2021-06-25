@@ -372,14 +372,7 @@ class FiniteSet(Set, EvalfMixin):
         if len(unk) == len(self) == 1:
             return Intersection(unk, self, evaluate=False)
 
-    def as_KroneckerDelta(self, x):
-        from sympy.functions.special.tensor_functions import KroneckerDelta
-        eq = 1
-        for arg in self.args:
-            eq *= 1 - KroneckerDelta(x, arg)
-        return 1 - eq
-
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = Set._eval_domain_defined(self, x)        
         for arg in self.args:
             domain &= arg.domain_defined(x)        

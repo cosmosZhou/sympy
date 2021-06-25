@@ -1,13 +1,12 @@
-from sympy.logic.boolalg import Boolean, And, Or, relationship
+from sympy.logic.boolalg import Boolean, And, Or
 from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.concrete.conditional_boolean import ConditionalBoolean
 from sympy.core.sympify import sympify
-from sympy.sets.finiteset import FiniteSet
 
 
-class ForAll(ConditionalBoolean):
+class All(ConditionalBoolean):
     """
-    ForAll[p] q <=> !p | q
+    All[p] q <=> !p | q
     """
     
     operator = And
@@ -16,7 +15,7 @@ class ForAll(ConditionalBoolean):
     def __new__(cls, function, *symbols, is_in_exists=False, **assumptions):
         if assumptions:
             from sympy.core.inference import Inference
-            return Inference(ForAll.__new__(cls, function, *symbols), **assumptions)
+            return Inference(All.__new__(cls, function, *symbols), **assumptions)
         
         if function.is_BooleanAtom or len(symbols) == 0:
             if not function:
@@ -184,7 +183,7 @@ class ForAll(ConditionalBoolean):
                 return self.func(self.function, *limits)
             return self.function
 
-        this = self.function.func.simplify_ForAll(self, *self.args)
+        this = self.function.func.simplify_All(self, *self.args)
         if this is not None:
             return this
 
@@ -247,24 +246,6 @@ class ForAll(ConditionalBoolean):
                     return self.func(self.function, (i, a, b + 1))
                 if self.function.subs(i, a - 1) == expr:
                     return self.func(self.function, (i, a - 1 , b))
-            elif len(args) == 1:
-                domain = args[0]
-                if isinstance(domain, Complement):
-                    A, B = domain.args
-                    if isinstance(B, FiniteSet):
-                        deletes = set()
-                        for b in B:
-                            if self.function.subs(i, b) == expr:
-                                deletes.add(b)
-                        if deletes:
-                            B -= FiniteSet(*deletes)
-                            if B:
-                                domain = Complement(A, B, evaluate=False)
-                                return self.func(self.function, (i, domain))
-                            domain = A
-                            if domain.is_Range:
-                                return self.func(self.function, (i, domain.start, domain.stop))
-                            return self.func(self.function, (i, domain))
 
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])        
@@ -318,125 +299,15 @@ class ForAll(ConditionalBoolean):
         latex = r"\forall_{%s}{%s}" % (limit, latex)
         return latex
 
-    def combine_clauses(self, rhs):
-        if rhs.is_Exists:
-            func = []
-            if self.function.is_Exists:
-                dic = self.function.limits_common(rhs)
-                if dic:
-                    limits = self.limits_intersect(rhs)
-                    limits = limits_intersect(limits, self.function.limits)
-                    func.append([ForAll.invert_type, limits])
-                    return 'given', func, self.function.function, rhs.function
-
-            dic = self.limits_common(rhs)
-            if dic:
-                limits = self.limits_delete(dic)
-                if limits:
-                    func.append([ForAll, limits])
-                func.append([ForAll.invert_type, rhs.limits_update(dic)])
-                return 'given', func, self.function, rhs.function
-
-            func.append([ForAll, self.limits])
-            func.append([ForAll.invert_type, rhs.limits])
-            return None, func, self.function, rhs.function
-
-        if rhs.is_ForAll:
-            func = []
-
-            if self.function.is_Exists:
-                dic = self.function.limits_common(rhs)
-                if dic:
-                    func.append([ForAll.invert_type, self.function.limits])
-                    func.append([ForAll, limits_intersect(self.limits, rhs.limits_delete(dic))])
-                    return None, func, self.function.function, rhs.function
-                dic = self.limits_common(rhs)
-                if dic:
-                    rhs_limits = rhs.limits_delete(dic)
-                    if rhs_limits:
-                        func.append([ForAll, rhs_limits])
-                    else:
-                        if rhs.function.is_Exists:
-                            if self.function.limits_include(rhs.function): 
-                                clue = relationship(self, rhs)                                
-                                if clue: 
-                                    func.append([ForAll.invert_type, self.function.limits])                                        
-                                    func.append([ForAll, self.limits])
-                                    return None, func, self.function.function, rhs.function.function
-                                print('could not combine exists clauses due to different context')
-                                return
-                            elif rhs.function.limits_include(self.function):
-                                clue = relationship(self, rhs)                                
-                                if clue: 
-                                    func.append([ForAll.invert_type, rhs.function.limits])
-                                    func.append([ForAll, self.limits])
-                                    return None, func, self.function.function, rhs.function.function
-                                print('could not combine exists clauses due to different context')
-                                return
-                                
-                            return ConditionalBoolean.combine_clauses(self, rhs)                                
-                        else:
-                            func.append([ForAll, self.limits])
-                            return None, func, self.function, rhs.function
-                    func.append([ForAll.invert_type, self.function.limits])
-                    func.append([ForAll, self.limits])
-                    return None, func, self.function.function, rhs.function
-
-            if rhs.function.is_Exists:
-                dic = self.limits_common(rhs.function)
-                if dic:
-                    func.append([ForAll.invert_type, rhs.function.limits])
-                    func.append([ForAll, limits_intersect(self.limits_delete(dic), rhs.limits)])
-                    return 'given', func, self.function, rhs.function.function
-                else:
-                    if self.limits_include(rhs): 
-                        if any([limit.has(*rhs.function.variables) for limit in self.limits]):
-                            dic = self.limits_common(rhs)                            
-                            self_limits = self.limits_delete(dic)
-                            if self_limits:
-                                func.append([ForAll, self_limits])
-                            func.append([ForAll.invert_type, rhs.function.limits])                        
-                            func.append([ForAll, rhs.limits])                        
-                            return 'given', func, self.function, rhs.function.function
-                        else:
-                            func.append([ForAll.invert_type, rhs.function.limits])
-                            func.append([ForAll, self.limits])
-                            return None, func, self.function, rhs.function.function                            
-                    elif rhs.limits_include(self):
-                        dic = self.limits_common(rhs)
-                        self_limits = rhs.limits_delete(dic)
-                        if self_limits:
-                            func.append([ForAll, self_limits])
-                        func.append([ForAll.invert_type, rhs.function.limits])
-                        func.append([ForAll, limits_intersect(self.limits, rhs.limits)])
-                        return 'given', func, self.function, rhs.function.function
-                    else:
-                        ...
-            clue = {}
-            limits = self.limits_intersect(rhs, clue=clue)
-            func.append([ForAll, limits])
-            if 'given' in clue:
-                clue = 'given'
-            else:
-                clue = None
-            return clue, func, self.function, rhs.function
-
-        return ConditionalBoolean.combine_clauses(self, rhs)
-
     def __and__(self, eq):
         """Overloading for & operator"""
-        if eq.is_ForAll: 
+        if eq.is_All: 
             if self.function == eq.function:
                 limits = self.limits_union(eq)
                 return self.func(self.function, *limits).simplify()
 
             if self.limits == eq.limits:
-                if self.function.is_Exists and eq.function.is_Exists:
-                    if self.function.limits == eq.function.limits:
-                        if self.coexist_with(eq) is not False:
-                            return ForAll(ForAll.invert_type(self.function.function & eq.function.function, *self.function.limits), *self.limits).simplify()
-
-                return ForAll(self.function & eq.function, *self.limits)                
+                return All(self.function & eq.function, *self.limits)                
                                                     
         for i, (x, *ab) in enumerate(self.limits):
             if len(ab) == 1:
@@ -466,7 +337,7 @@ class ForAll(ConditionalBoolean):
                             if domain in domain_given:
                                 ...
                             else:
-                                print("variables' are beyond the bound given in ForAll context!")
+                                print("variables' are beyond the bound given in All context!")
                                 return self
         
         return ConditionalBoolean.apply(self, axiom, *args, **kwargs)    

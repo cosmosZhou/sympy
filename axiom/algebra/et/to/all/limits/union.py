@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply(given=None)
@@ -8,7 +7,7 @@ def apply(self):
     limitsArr = []
     fnset = set()
     for forall in self.of(And):
-        fn, *_limits = forall.of(ForAll)
+        fn, *_limits = forall.of(All)
         limitsArr.append(_limits)
         fnset.add(fn)
         assert len(fnset) == 1
@@ -18,7 +17,7 @@ def apply(self):
         limits = limits_union(limits, limitsArr[i])
 
     fn, *_ = fnset
-    return Equivalent(self, ForAll(fn, *limits))
+    return Equivalent(self, All(fn, *limits))
 
 
 @prove
@@ -28,9 +27,9 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(And(ForAll[e:g(e) > 0](f(e) > 0), ForAll[e:g(e) < 0](f(e) > 0)))
+    Eq << apply(And(All[e:g(e) > 0](f(e) > 0), All[e:g(e) < 0](f(e) > 0)))
 
-    Eq << Eq[-1].this.rhs.apply(algebra.all.to.et.dissect, cond=g(e) < 0)
+    Eq << Eq[-1].this.rhs.apply(algebra.all.to.et.split, cond=g(e) < 0)
 
 
 if __name__ == '__main__':

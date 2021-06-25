@@ -1,13 +1,11 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given, *, exp=None, base=None):
     lhs, rhs = given.of(Equal)
-    if exp is not None:    
-        assert exp > 0
+    if exp is not None:
+        assert lhs > 0 or rhs > 0 or exp > 0
         return Equal(lhs ** exp, rhs ** exp)
     
     base = sympify(base)
@@ -32,9 +30,8 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
     k = Symbol.k(real=True, positive=True)
-    
     Eq << apply(Equal(f(i), g(i)), base=k)
-    
+
     Eq << Eq[-1].subs(Eq[0])
 
 

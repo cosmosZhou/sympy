@@ -27,11 +27,14 @@
 				var m = href.match(/\/([^\/]+)\/axiom\.php\/(.+)/);
 				var user = m[1];
 				var package = m[2];
+				if (package.endsWith('/')){
+					package = package.slice(0, -1);
+				}
 				
 				var py = `${user}/axiom/${package}/${this.theorem}.py`;
 				console.log(py);
 				
-				request_post("/sympy/php/request/delete/theorem.php", {user: user, package: package, theorem: this.theorem}).done(res => {
+				request_post(`/${user}/php/request/delete/theorem.php`, {package: package.replaceAll('/', '.'), theorem: this.theorem}).done(res => {
 					console.log('res = ' + res);
 				}).fail(fail);
 			},

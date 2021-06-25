@@ -38,3 +38,13 @@ from . import cap
 from . import piecewise
 from . import intersection
 from . import suffice
+
+from . import eq_complement
+
+from . import intersection_finiteset
+
+from . import interval_is_nonemptyset
+
+from . import interval_is_emptyset
+
+from . import is_negative

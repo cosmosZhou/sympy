@@ -1,8 +1,5 @@
 from util import *
 
-# given: |S| = 1
-# Exists[x:S] ({x}) = S
-
 
 @apply
 def apply(given):
@@ -12,7 +9,7 @@ def apply(given):
     assert S_abs.is_Abs and n.is_extended_positive
     S = S_abs.arg
     x = S.element_symbol()
-    return Exists[x](Equal(x.set, S))
+    return Any[x](Equal(x.set, S))
 
 
 @prove
@@ -32,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(sets.contains.imply.subset, simplify=False)
 
-    Eq << Eq[-1].this.function.apply(sets.subset.eq.imply.eq.split.abs, Eq[0])
+    Eq << Eq[-1].this.function.apply(sets.eq.subset.imply.eq, Eq[0])
 
 
 if __name__ == '__main__':

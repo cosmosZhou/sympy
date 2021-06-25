@@ -7,7 +7,7 @@ def apply(complement):
     n = C.variable
     cond = C.condition
 #     eq__0mod_x2
-    assert cond.of(Equal[Basic % 2, 0]) == n
+    assert cond.of(Equal[Expr % 2, 0]) == n
     base_set = C.base_set
     assert base_set.is_UniversalSet
 
@@ -25,7 +25,7 @@ def prove(Eq):
     A = Symbol.A(Eq[0].lhs)
     B = Symbol.B(Eq[0].rhs)
 
-    Eq.all_contains_in_B = ForAll[n:A](Contains(n, B), plausible=True)
+    Eq.all_contains_in_B = All[n:A](Contains(n, B), plausible=True)
 
     Eq << Eq.all_contains_in_B.this.limits[0][1].definition
 
@@ -41,7 +41,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[0].apply(algebra.is_nonzero.imply.is_odd)
 
-    Eq.all_contains_in_A = ForAll[n:B](Contains(n, A), plausible=True)
+    Eq.all_contains_in_A = All[n:B](Contains(n, A), plausible=True)
 
     Eq << Eq.all_contains_in_A.this.limits[0][1].definition
 

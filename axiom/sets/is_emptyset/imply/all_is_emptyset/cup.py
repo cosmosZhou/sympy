@@ -13,7 +13,7 @@ def apply(given):
         assert emptyset.is_EmptySet
 
     assert x_union.is_Cup
-    return ForAll(Equal(x_union.function, emptyset), *x_union.limits)
+    return All(Equal(x_union.function, emptyset), *x_union.limits)
 
 
 @prove

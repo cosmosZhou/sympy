@@ -1,12 +1,20 @@
 from util import *
-import axiom
 
-from axiom.calculus.eq.to.any_all.limit_definition import any_all
+
+def of_limited(given):
+    limit, R = given.of(Contains)
+    assert R.is_set
+    
+    expr, *limits = limit.of(Limit)
+    if R.is_UniversalSet:
+        return (expr, *limits)
+    return (expr, *limits, R)
 
 
 @apply
 def apply(given, ε=None, δ=None):
-    fn, (x, x0, dir) = axiom.is_limited(given)
+    from axiom.calculus.eq.to.any_all.limit_definition import any_all
+    fn, (x, x0, dir) = of_limited(given)
 #     A = given.generate_var(definition=given)
 
     A = fn.generate_var(excludes={x}, **fn.type.dict)

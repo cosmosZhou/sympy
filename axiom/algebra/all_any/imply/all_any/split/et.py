@@ -1,20 +1,19 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(given, index=None):
-    (fn, *limits_e), *limits_f = given.of(ForAll[Exists])
+    (fn, *limits_e), *limits_f = given.of(All[Any])
     eqs = fn.of(And)
 
     if index is None:
-        eqs = tuple(ForAll(Exists(eq, *limits_e), *limits_f) for eq in eqs)
+        eqs = tuple(All(Any(eq, *limits_e), *limits_f) for eq in eqs)
         return eqs
 
     eq = eqs[index]
 
-    return ForAll(Exists(eq, *limits_e), *limits_f)
+    return All(Any(eq, *limits_e), *limits_f)
 
 
 @prove
@@ -29,7 +28,7 @@ def prove(Eq):
     f = Function.f(shape=(), real=True)
     g = Function.g(shape=(), real=True)
 
-    Eq << apply(ForAll[x:0:a](Exists[y:0:b]((g(x, y, z) <= 1) & (f(x, y, z) >= 1))), index=0)
+    Eq << apply(All[x:0:a](Any[y:0:b]((g(x, y, z) <= 1) & (f(x, y, z) >= 1))), index=0)
 
     Eq << Eq[0].this.function.function.apply(algebra.et.imply.cond, index=0)
 

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given, wrt=None):
     assert given._has(wrt)
-    return Exists[wrt](given)
+    return Any[wrt](given)
 
 
 @prove
@@ -15,7 +15,7 @@ def prove(Eq):
     Eq << apply(f(e) > 0, wrt=e)
 
     S = Symbol.S(Integers)
-    Eq << ForAll[e:S](f(e) > 0, plausible=True)
+    Eq << All[e:S](f(e) > 0, plausible=True)
 
     Eq << Eq[-1].this.limits[0][1].definition
 

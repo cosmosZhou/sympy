@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given, num=1, evaluate=False):
-    x = axiom.is_positive(given)
+    x = given.of(Expr > 0)
     assert num > 0
     return Greater(num / x, 0, evaluate=evaluate)
 

@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1])
 
-    Eq.as_Plus = Eq[-1].this.rhs.astype(Add)
+    Eq.as_Plus = Eq[-1].this.rhs.apply(algebra.sum.to.add)
 
     Eq <<= Eq.as_Plus.rhs.args[0].this.split(A), Eq.as_Plus.rhs.args[1].this.split(B)
 

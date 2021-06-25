@@ -3,8 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    mul = self.of(Abs)
-    args = mul.of(Mul)
+    args = self.of(Abs[Mul])
     return Equal(self, Mul(*(abs(arg) for arg in args)))
 
 

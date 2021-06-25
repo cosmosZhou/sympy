@@ -1,25 +1,20 @@
 from util import *
 
 
-import axiom
-
-
-def doit(self):
-    xi, *limits = self.args
-    i, s = axiom.limit_is_set(limits)
+def doit(All, self):
+    xi, (i, s) = self.of(All)
     assert s.is_FiniteSet
 
     sgm = self.identity(xi)
     for t in s.args:
-        sgm = self.func.operator(sgm, xi._subs(i, t))
+        sgm = All.operator(sgm, xi._subs(i, t))
 
     return sgm
 
 
 @apply(given=None)
 def apply(self):
-    assert self.is_ForAll
-    return Equivalent(self, doit(self), evaluate=False)
+    return Equivalent(self, doit(All, self), evaluate=False)
 
 
 @prove
@@ -34,29 +29,30 @@ def prove(Eq):
     c = Symbol.c(integer=True)
     d = Symbol.d(integer=True)
 
-    Eq << apply(ForAll[i:{a, b, c, d}](x[i] > 0))
+    Eq << apply(All[i:{a, b, c, d}](x[i] > 0))
 
-    Eq << Equivalent(ForAll[i:{a}](x[i] > 0), x[a] > 0, plausible=True)
-
-    Eq << Eq[-1].this.lhs.simplify()
-
-    Eq << Equivalent(ForAll[i:{b}](x[i] > 0), x[b] > 0, plausible=True)
+    Eq << Equivalent(All[i:{a}](x[i] > 0), x[a] > 0, plausible=True)
 
     Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << algebra.equivalent.equivalent.imply.equivalent.et.apply(Eq[-2], Eq[-1])
-
-    Eq << Equivalent(ForAll[i:{c}](x[i] > 0), x[c] > 0, plausible=True)
+    Eq << Equivalent(All[i:{b}](x[i] > 0), x[b] > 0, plausible=True)
 
     Eq << Eq[-1].this.lhs.simplify()
 
     Eq << algebra.equivalent.equivalent.imply.equivalent.et.apply(Eq[-2], Eq[-1])
 
-    Eq << Equivalent(ForAll[i:{d}](x[i] > 0), x[d] > 0, plausible=True)
+    Eq << Equivalent(All[i:{c}](x[i] > 0), x[c] > 0, plausible=True)
 
     Eq << Eq[-1].this.lhs.simplify()
 
     Eq << algebra.equivalent.equivalent.imply.equivalent.et.apply(Eq[-2], Eq[-1])
+
+    Eq << Equivalent(All[i:{d}](x[i] > 0), x[d] > 0, plausible=True)
+
+    Eq << Eq[-1].this.lhs.simplify()
+
+    Eq << algebra.equivalent.equivalent.imply.equivalent.et.apply(Eq[-2], Eq[-1])
+
 
 if __name__ == '__main__':
     run()

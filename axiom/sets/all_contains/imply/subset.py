@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    function, *limits = given.of(ForAll)
+    function, *limits = given.of(All)
     assert len(limits) == 1
     x, A = limits[0]
     _x, B = function.of(Contains)
@@ -20,7 +20,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.complex * n)
     B = Symbol.B(etype=dtype.complex * n)
 
-    Eq << apply(ForAll[x:A](Contains(x, B)))
+    Eq << apply(All[x:A](Contains(x, B)))
 
     Eq << Eq[0].this.function.apply(sets.contains.imply.subset, simplify=False)
 

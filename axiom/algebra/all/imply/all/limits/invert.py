@@ -4,13 +4,12 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_ForAll
-    limits = given.limits
+    function, *limits = given.of(All)
     assert len(limits) == 1
 
-    limit = limits[0][0], given.function.invert()
+    limit = limits[0][0], function.invert()
 
-    return ForAll(given.limits_cond.invert().simplify(), limit)
+    return All(given.limits_cond.invert().simplify(), limit)
 
 
 @prove
@@ -20,7 +19,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(ForAll[e:g(e) > 0](f(e) > 0))
+    Eq << apply(All[e:g(e) > 0](f(e) > 0))
 
     Eq << algebra.all.imply.ou.apply(Eq[0])
 

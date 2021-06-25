@@ -1,12 +1,9 @@
 from util import *
 
-from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
-
-
-
 
 @apply
 def apply(n, u=None):
+    from axiom.discrete.combinatorics.permutation.mapping.Qu2v import predefined_symbols
     Q, w, x = predefined_symbols(n)
     if u is None:
         u = Q.definition.variable
@@ -24,14 +21,14 @@ def prove(Eq):
     a = Symbol.a(Lamda[i:n + 1](i) @ Swap(n + 1, n, _t))
     Eq << a.this.definition
 
-    Eq << a[n].this.definition.this.rhs.expand()
+    Eq << a[n].this.definition.this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << discrete.matrix.elementary.swap.invariant.set_comprehension.definition.apply(a)
 
     Eq <<= Eq[-1] & Eq[-2]
 
     x = Eq[0].rhs.variable.base
-    Eq << Exists[x[:n + 1]](Contains(x[:n + 1], Q[_t]), plausible=True)
+    Eq << Any[x[:n + 1]](Contains(x[:n + 1], Q[_t]), plausible=True)
 
     Eq << Eq[-1].this.function.rhs.definition
 

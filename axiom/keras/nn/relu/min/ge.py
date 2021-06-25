@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(x, y, z):
     return GreaterEqual(relu(x - y) + Min(y, z), Min(x, z))
@@ -17,11 +16,11 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.args[1].defun()
 
-    Eq << Eq[-1].this.lhs.args[0].astype(Piecewise)
+    Eq << Eq[-1].this.lhs.args[0].apply(algebra.max.to.piecewise)
 
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.lhs.args[1].expr.astype(Min)
+    Eq << Eq[-1].this.lhs.args[1].expr.apply(algebra.add.to.min)
 
     Eq << Eq[-1].this.lhs.args[0].cond.reversed
 

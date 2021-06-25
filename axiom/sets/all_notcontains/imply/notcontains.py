@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (e, S), *limits = given.of(ForAll[NotContains])
+    (e, S), *limits = given.of(All[NotContains])
 
     return NotContains(e, Cup(S, *limits))
 
@@ -17,7 +17,7 @@ def prove(Eq):
 
     A = Symbol.A(shape=(oo,), etype=dtype.integer)
 
-    Eq << apply(ForAll[k:n](NotContains(x, A[k])))
+    Eq << apply(All[k:n](NotContains(x, A[k])))
 
     Eq << sets.imply.suffice.notcontains.induct.apply(Eq[0].function, n)
 

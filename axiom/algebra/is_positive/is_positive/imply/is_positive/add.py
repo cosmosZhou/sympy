@@ -1,13 +1,10 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    is_positive_x, is_positive_y = given
-    x = axiom.is_positive(is_positive_x)
-    y = axiom.is_positive(is_positive_y)
+def apply(is_positive_x, is_positive_y):
+    x = is_positive_x.of(Expr > 0)
+    y = is_positive_y.of(Expr > 0)
     return Greater(x + y, 0)
 
 

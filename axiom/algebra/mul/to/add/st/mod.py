@@ -1,15 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(self):
-    flr, d = self.of(Mul)
-    if d.is_Floor:
-        flr, d = d, flr
-    div_x_d = flr.of(Floor)
-    x, _d = axiom.is_Divide(div_x_d)
+    (x, _d), d = self.of(Floor[Expr / Expr] * Expr)    
     assert d == _d
 
     assert d.is_integer and x.is_integer

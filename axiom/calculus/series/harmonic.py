@@ -9,7 +9,8 @@ def apply(n):
 
 @prove
 def prove(Eq):
-    from axiom import calculus, sets, algebra
+    from axiom import algebra, calculus, sets
+
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
 
@@ -21,14 +22,13 @@ def prove(Eq):
 
     k, *ab = Eq[-1].lhs.args[0].args[-1].limits[0]
     k = k.copy(domain=Range(*ab))
-
     Eq << Eq.is_continuous.apply(algebra.cond.imply.all.restrict, (x0, k, k + 1))
 
     Eq.mean_value_theorem = calculus.integral.mean_value_theorem.apply(Eq[-1])
 
     Eq << algebra.imply.all.limits_assert.apply(Eq[-1].limits)
 
-    Eq << Eq[-1].inverse()
+    Eq << Eq[-1].this.function.apply(sets.contains.imply.contains.interval.inverse)
 
     Eq << Eq[-1].this.function.apply(sets.contains.imply.et.split.interval)
 

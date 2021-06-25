@@ -3,9 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    zx, zy = self.of(Mul)
-    z, x = zx.of(Basic - Basic)
-    _z, y = zy.of(Basic - Basic)
+    (z, x), (_z, y) = self.of(Mul[Expr - Expr, Expr - Expr])
     assert _z == z
     return Equal(self, ((z - x) ** 2 + (z - y) ** 2 - (x - y) ** 2) / 2)
 

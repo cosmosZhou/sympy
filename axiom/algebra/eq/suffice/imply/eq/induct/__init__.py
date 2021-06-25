@@ -4,9 +4,9 @@ from util import *
 @apply
 def apply(*given, n=None, start=0):
     start = sympify(start)
-    f0, sufficient = given
+    f0, suffice = given
     f0.of(Equal)
-    fn, fn1 = sufficient.of(Suffice)
+    fn, fn1 = suffice.of(Suffice)
     assert fn._subs(n, n + 1) == fn1
 
     assert fn._subs(n, start) == f0

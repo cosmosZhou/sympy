@@ -494,6 +494,8 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
     def rewrite(self, *args, **hints):
         return self.func(self.lhs.rewrite(*args, **hints), self.rhs.rewrite(*args, **hints))
 
+    def _eval_domain_defined(self, x, **_):
+        return self.lhs.domain_defined(x, real=True) & self.rhs.domain_defined(x, real=True)
                     
 Rel = Relational
 
@@ -786,10 +788,10 @@ class Equal(Relational):
         if len(limits) == 0:
             eq.equivalent = self
             return eq
-        from sympy import Exists
+        from sympy import Any
         for i, C in enumerate(limits):
             limits[i] = (C,)
-        return Exists(eq, *limits)
+        return Any(eq, *limits)
 
     def solve(self, x):
         from sympy.solvers.solvers import solve
@@ -846,7 +848,7 @@ class Equal(Relational):
         return BinaryCondition.subs(self, *args, **kwargs)
 
     def __getitem__(self, indices):
-        from sympy import ForAll
+        from sympy import All
         if isinstance(indices, slice):
             x, *args = indices.start, indices.stop, indices.step
             if x is None or not x.is_symbol or args[1] is None and args[0].is_integer:
@@ -880,7 +882,7 @@ class Equal(Relational):
                 if is_equivalent:
                     return self.func(self.lhs[x], self.rhs[x])
                 else:
-                    ForAll(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
+                    All(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
         return self.func(self.lhs[indices], self.rhs[indices], given=self)
 
     def combsimp(self, *args):
@@ -903,7 +905,7 @@ class Equal(Relational):
         return self
 
     @classmethod
-    def simplify_ForAll(cls, self, function, *limits):
+    def simplify_All(cls, self, function, *limits):
         limits_dict = self.limits_dict
         x = None
         if self.function.lhs in limits_dict:
@@ -972,10 +974,6 @@ class Equal(Relational):
                     return S.false
         return Relational.__and__(self, other)
 
-    def as_KroneckerDelta(self):
-        from sympy.functions.special.tensor_functions import KroneckerDelta
-        return KroneckerDelta(*self.args)
-
     def _sympystr(self, p):
         return '%s == %s' % tuple(p._print(arg) for arg in self.args)
 
@@ -1038,15 +1036,6 @@ class Equal(Relational):
             
         return Relational.__or__(self, other)
 
-    def inverse(self): 
-        if self.lhs.shape:
-            if self.lhs.is_invertible or self.rhs.is_invertible:
-                return self.func(self.lhs.inverse(), self.rhs.inverse())            
-        else:
-            if self.lhs.is_nonzero or self.rhs.is_nonzero:
-                return self.func(1 / self.lhs, 1 / self.rhs)
-            
-        return self
 
     def simplify_condition_on_random_variable(self):
         lhs, rhs = self.args
@@ -1085,8 +1074,10 @@ class Equal(Relational):
         if res is None:
             if cls.is_Equal:
                 a, b = cls.args
-                cls = Basic.__new__(Equal, b, a)                 
+                cls = Basic.__new__(Equal, b, a)
                 res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
                 if isinstance(res, list):
                     b, a = res
                     return [a, b]
@@ -1268,10 +1259,6 @@ class Unequal(Relational):
             from sympy import Or 
             return Or(Equal(other, 0), self.func((self.lhs / other).ratsimp(), (self.rhs / other).ratsimp()))
 
-    def as_KroneckerDelta(self):
-        from sympy.functions.special.tensor_functions import KroneckerDelta
-        return 1 - KroneckerDelta(*self.args)
-
     def __mul__(self, other):
         if isinstance(other, Unequal):
             return self.func(self.lhs * other.lhs, self.rhs * other.rhs, given=[self, other])
@@ -1299,6 +1286,7 @@ class Unequal(Relational):
             return Relational.domain_conditioned(self, var)
 
     of = Equal.of
+
 
 Ne = Unequal
 Equal.invert_type = Unequal
@@ -1748,8 +1736,11 @@ class GreaterEqual(_Greater):
                     return S.false            
         elif isinstance(other, Greater):
             if self.lhs == other.lhs:
-                if other.rhs >= self.rhs:
+                if self.rhs <= other.rhs:
                     return other
+#                 x >= 1 and x > 0
+                if self.rhs > other.rhs:
+                    return self
         elif isinstance(other, Unequal):
             if {*self.args} == {*other.args}:
                 return Greater(self.lhs, self.rhs)            
@@ -1837,6 +1828,30 @@ class GreaterEqual(_Greater):
     def _sympystr(self, p):
         # GREATER-THAN OVER EQUAL TO
         return '%s \N{GREATER-THAN OR EQUAL TO} %s' % tuple(p._print(arg) for arg in self.args)
+
+    def of(self, cls):
+        res = Boolean.of(self, cls)
+        if res is None:
+            if cls.is_GreaterEqual:
+                a, b = cls.args
+                cls = Basic.__new__(LessEqual, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]
+            elif cls.is_LessEqual:
+                a, b = cls.args
+                cls = Basic.__new__(GreaterEqual, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]                
+            
+        return res 
 
 
 Ge = GreaterEqual
@@ -1939,8 +1954,16 @@ class LessEqual(_Less):
                     return S.false   
         elif other.is_Less:
             if self.lhs == other.lhs:
-                if other.rhs <= self.rhs:
+#                 x <= 1 and x < 0                
+                if self.rhs >= other.rhs:
                     return other
+#                 x <= 0 and x < 1
+                if self.rhs < other.rhs:
+                    return self
+
+            elif self.lhs == other.rhs:
+                if other.lhs >= self.rhs:
+                    return S.false
         elif other.is_GreaterEqual:
             if self.lhs == other.lhs:
                 if other.rhs == self.rhs:
@@ -2040,6 +2063,30 @@ class LessEqual(_Less):
         # LESS-THAN OVER EQUAL TO
         return '%s \N{LESS-THAN OR EQUAL TO} %s' % tuple(p._print(arg) for arg in self.args)
 
+    def of(self, cls):
+        res = Boolean.of(self, cls)
+        if res is None:
+            if cls.is_LessEqual:
+                a, b = cls.args
+                cls = Basic.__new__(GreaterEqual, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]
+            elif cls.is_GreaterEqual:
+                a, b = cls.args
+                cls = Basic.__new__(LessEqual, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]                
+            
+        return res 
+
 
 Le = LessEqual
 
@@ -2117,6 +2164,10 @@ class Greater(_Greater):
             if self.lhs == other.lhs:
                 if self.rhs >= other.rhs:
                     return self
+#                 x > 0 and x >= 1
+                if self.rhs < other.rhs:
+                    return other                    
+                 
         elif other.is_Contains:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
@@ -2172,19 +2223,6 @@ class Greater(_Greater):
             
         return _Greater.__or__(self, other)
 
-    def as_KroneckerDelta(self):
-        from sympy import KroneckerDelta
-        lhs, rhs = self.args        
-        if lhs.is_Symbol:
-            domain = lhs.domain_assumed
-            if domain and (domain.is_Range or domain.is_Interval) and rhs == domain.min():
-                return 1 - KroneckerDelta(lhs, rhs)
-                    
-        if rhs.is_Symbol:
-            domain = rhs.domain_assumed
-            if domain and (domain.is_Range or domain.is_Interval) and domain.max() == lhs:
-                return 1 - KroneckerDelta(lhs, rhs)
-
     def __mul__(self, other):
         if isinstance(other, Greater):
             if self.rhs.is_extended_nonnegative: 
@@ -2215,6 +2253,30 @@ class Greater(_Greater):
                 if other.lhs.is_extended_nonnegative:
                     return Greater(self.lhs * other.lhs, self.rhs * other.rhs, given=[self, other])
         return Relational.__mul__(self, other)
+
+    def of(self, cls):
+        res = Boolean.of(self, cls)
+        if res is None:
+            if cls.is_Greater:
+                a, b = cls.args
+                cls = Basic.__new__(Less, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]
+            elif cls.is_Less:
+                a, b = cls.args
+                cls = Basic.__new__(Greater, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]                
+            
+        return res 
 
 
 Gt = Greater
@@ -2292,6 +2354,10 @@ class Less(_Less):
             if self.lhs == other.lhs:
                 if self.rhs <= other.rhs:
                     return self
+#                 x < 1 and x <= 0
+                if self.rhs > other.rhs:
+                    return other 
+        
         elif other.is_Contains:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
@@ -2345,20 +2411,6 @@ class Less(_Less):
             
         return _Less.__or__(self, other)
 
-    def as_KroneckerDelta(self):
-        from sympy import KroneckerDelta
-        lhs, rhs = self.args        
-        if lhs.is_Symbol:
-            domain = lhs.domain_assumed
-            if domain and domain.is_Range:
-                if domain.max() == rhs:
-                    return 1 - KroneckerDelta(lhs, rhs)
-        if rhs.is_Symbol:
-            domain = rhs.domain_assumed
-            if domain and domain.is_Range:
-                if lhs == domain.min():
-                    return 1 - KroneckerDelta(lhs, rhs)
-
     def __mul__(self, other):
         other = sympify(other)
         if isinstance(other, Less):
@@ -2394,6 +2446,30 @@ class Less(_Less):
             return self
 
         return Relational.__mul__(self, other)
+
+    def of(self, cls):
+        res = Boolean.of(self, cls)
+        if res is None:
+            if cls.is_Less:
+                a, b = cls.args
+                cls = Basic.__new__(Greater, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]
+            elif cls.is_Greater:
+                a, b = cls.args
+                cls = Basic.__new__(Less, b, a)
+                res = Boolean.of(self, cls)
+                if b.is_Number:
+                    return res
+                if isinstance(res, list):
+                    b, a = res
+                    return [a, b]                
+            
+        return res 
 
 
 Lt = Less

@@ -73,7 +73,7 @@ class BlockMatrix(MatrixExpr):
             if len(shape) > length:
                 length = len(shape)
                 
-        if all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes):
+        if length == 1 and all(shape[0] == shapes[0][0] and len(shape) == length for shape in shapes):            
             length += 1
             
         for i, shape in enumerate(shapes):
@@ -199,7 +199,9 @@ class BlockMatrix(MatrixExpr):
                     length = 0
                     for arg in self.args:
                         _length = length
-                        length += arg.rows
+                        
+                        shape = arg.shape                         
+                        length += shape[0]
                         cond = i < length
                         if len(arg.shape) == 1:
                             args.append([arg[j], cond])
@@ -433,8 +435,13 @@ class BlockMatrix(MatrixExpr):
             matrix = [b for b in block if len(b.shape) == 2]           
             
             if matrix:
-                cols = matrix[0].cols
-                if any(m.cols != cols for m in matrix):
+                shape = matrix[0].shape
+                if len(shape) == 2:
+                    cols = shape[-1]
+                else:
+                    cols = shape[-1]
+                    
+                if any(m.shape[-1] != cols for m in matrix):
                     return
                 
                 vector = [b for b in block if len(b.shape) == 1]
@@ -489,7 +496,7 @@ class BlockMatrix(MatrixExpr):
     def _pretty(self, p): 
         return p._print_seq(self.args, '[', ']')
     
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         if x.dtype.is_set:
             return x.universalSet
         
@@ -532,47 +539,8 @@ class BlockMatrix(MatrixExpr):
 
     _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self.args), quick_exit=True)
 
-    @classmethod
-    def rewrite_from_Slice(cls, self):
-        i_shape = self.shape[0]        
-        if isinstance(i_shape, int) or i_shape.is_Number:
-            from sympy import sympify
-            array = []
-            for i in range(i_shape):
-                array.append(self[sympify(i)])
-            return BlockMatrix(*array)
-            
-        return self
-
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        if self.function.is_Piecewise: 
-            piecewise = self.function
-            i = self.variables[-1]
-            n = self.shape[0]
-                 
-            blocks = []     
-            length = 0
-            h = 0 
-            for expr, cond in piecewise.args: 
-                if cond.is_Less:
-                    if cond.lhs == i:
-                        upper_bound = cond.rhs
-                    else:
-                        return self
-                elif cond:
-                    upper_bound = n
-                else:
-                    return self
-                length = upper_bound - length
-                blocks.append(self.func[i:length](expr._subs(i, i + h)))
-                h += length
-            
-            return cls(*blocks)    
-        return self
-
-    
-class BlockDiagMatrix(BlockMatrix):
+        
+class BlockDiagMatrix(MatrixExpr):
     """
     A BlockDiagMatrix is a BlockMatrix with matrices only along the diagonal
 

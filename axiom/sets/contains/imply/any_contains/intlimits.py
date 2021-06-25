@@ -13,7 +13,7 @@ def apply(given, *limits):
             domain = domain[0]
             assert domain in given.domain_defined(var)
 
-    return Exists(given, *limits)
+    return Any(given, *limits)
 
 
 @prove

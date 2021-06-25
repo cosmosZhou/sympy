@@ -7,6 +7,16 @@ global $user;
 
 $dict = empty($_POST) ? $_GET : $_POST;
 
+if (! $dict) {
+    // https://www.php.net/manual/en/function.getopt.php
+    $dict = getopt("", [
+        'package::',
+        'old::',
+        'new::'
+    ]);
+    $dict['package'] = str_replace('/', '.', $dict['package']);
+}
+
 $package = $dict['package'];
 $old = $dict['old'];
 $new = $dict['new'];
@@ -91,15 +101,50 @@ if (strpos($new, '.') !== false) {
     }
 } else {
 
-    if (rename($folder . $old . ".py", $folder . $new . ".py")) {
-        replace_into_init($package, $old, $new);
-        \mysql\update_suggest($package, $old, $new);
+    if (is_dir($folder . $new)) {
+        $newPyPath = $folder . $new . "/__init__.py";
+        $newPy = new Text($newPyPath);
+        if ($newPy->search('^@apply\b')) {
+            die($newPyPath . " already exists");
+        }
 
-        $old = "$package.$old";
-        $new = "$package.$new";
-        \mysql\update_axiom($old, $new);
-        \mysql\update_hierarchy($old, $new);
+        $oldPyPath = $folder . $old . ".py";
+        $oldPy = new Text($oldPyPath);
+
+        $newPy->insert(0, $oldPy->readlines());
+
+        unlink($oldPyPath);
+        delete_from_init($package, $old);
+    } else {
+
+        if (file_exists($folder . $old . ".py")) {
+            if (! rename($folder . $old . ".py", $folder . $new . ".py")) {
+                die("failed in renaming: $folder.$old.py => $folder.$new.py");
+            }
+            replace_into_init($package, $old, $new);
+        } else {
+            $oldPath = $folder . $old . "/__init__.py";
+            
+            assert(file_exists($oldPath));            
+            $oldText = new Text($oldPath);
+            $lines = $oldText->retain('from \. import \w+');
+            $newText = new Text($folder . $new . ".py");
+            $newText->writelines($lines);
+            
+            insert_into_init($package, $new);
+        }        
     }
+
+    \mysql\update_suggest($package, $old, $new);
+    $old = "$package.$old";
+
+    if ($new == null) {
+        $new = $package;
+    } else
+        $new = "$package.$new";
+
+    \mysql\update_axiom($old, $new);
+    \mysql\update_hierarchy($old, $new);
 }
 
 echo \std\jsonify("renamed!");

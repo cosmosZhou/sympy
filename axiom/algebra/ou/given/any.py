@@ -17,7 +17,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(Or(Exists[x:A]((f(x) > 0)), Exists[x:B](f(x) > 0)))
+    Eq << apply(Or(Any[x:A]((f(x) > 0)), Any[x:B](f(x) > 0)))
 
     Eq << ~Eq[0]
 

@@ -3,10 +3,10 @@ from util import *
 
 @apply
 def apply(given, simplify=True):
-    et, *limits = given.of(ForAll[And])
+    et, *limits = given.of(All[And])
     eqs = []
     for eq in et:
-        forall = ForAll(eq, *limits)
+        forall = All(eq, *limits)
         if simplify:
             forall = forall.simplify()
         eqs.append(forall)
@@ -26,7 +26,7 @@ def prove(Eq):
     g = Function.g(real=True)
     b = Symbol.b(shape=(k,), real=True)
 
-    Eq << apply(ForAll[x:A](And(Unequal(x, y), Unequal(f(x), g(y)), Equal(f(x), b))))
+    Eq << apply(All[x:A](And(Unequal(x, y), Unequal(f(x), g(y)), Equal(f(x), b))))
 
     Eq << algebra.et.imply.conds.apply(Eq[1])
 

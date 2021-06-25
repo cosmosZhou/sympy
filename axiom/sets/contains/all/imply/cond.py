@@ -5,13 +5,12 @@ from util import *
 # given: A in B
 # => A | B = B
 @apply
-def apply(*given):
-    contains, forall = given
-    assert contains.is_Contains and forall.is_ForAll
-    b, A = contains.args
+def apply(contains, forall):
+    function, *limits = forall.of(All)    
+    b, A = contains.of(Contains)
 
     index = -1
-    for i, (x, *domain) in enumerate(forall.limits):
+    for i, (x, *domain) in enumerate(limits):
         if len(domain) == 1:
             if domain[0] == A:
                 index = i
@@ -19,12 +18,11 @@ def apply(*given):
 
     assert index >= 0
 
-    function = forall.function
     function = function._subs(x, b) if x != b else function
     limits = [*forall.limits]
     del limits[index]
     if limits:
-        return ForAll(function, *limits)
+        return All(function, *limits)
 
     return function
 
@@ -37,12 +35,12 @@ def prove(Eq):
     a = Symbol.a(complex=True, shape=(n,))
     b = Symbol.b(complex=True, shape=(n,))
 
-    f = Function.f(nargs=(n,), complex=True, shape=())
+    f = Function.f(complex=True, shape=())
 
     assert f.is_complex
     assert f.shape == ()
 
-    Eq << apply(Contains(b, A), ForAll[a:A](Equal(f(a), 1)))
+    Eq << apply(Contains(b, A), All[a:A](Equal(f(a), 1)))
 
     Eq << algebra.all.imply.ou.subs.apply(Eq[1], a, b)
 

@@ -4,7 +4,7 @@
 		<template v-for="theorem, i of theorems">
 			<theorem :theorem=theorem :tabindex="i + initialIndex"></theorem>
 			<template v-if='i == focusedIndex'>
-				<contextmenu v-if='left >= 0' :left=left :top=top></contextmenu>
+				<axiom-contextmenu v-if='left >= 0' :left=left :top=top></axiom-contextmenu>
 				<package-selector v-else :path=path></package-selector>				
 			</template>
 		</template>		
@@ -16,7 +16,7 @@
 	console.log('importing theorems.vue');	
 
 	var theorem = httpVueLoader('/sympy/vue/theorem.vue');
-	var contextmenu = httpVueLoader('/sympy/vue/contextmenu.vue');
+	var axiomContextmenu = httpVueLoader('/sympy/vue/axiom-contextmenu.vue');
 	var packageSelector = httpVueLoader('/sympy/vue/package-selector.vue');
 	module.exports = {
 		data(){
@@ -27,7 +27,7 @@
 			};
 		},
 		
-		components : {theorem, contextmenu, packageSelector},
+		components : {theorem, axiomContextmenu, packageSelector},
 	
 		props : [ 'theorems', 'initialIndex' ],
 

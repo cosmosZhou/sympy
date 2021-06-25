@@ -1,14 +1,9 @@
 from util import *
 
 
-import axiom
-
-
-def doit(self):
-    xi, *limits = self.args
-    * limits, limit = limits
+def doit(Sum, self):
+    xi, * limits, (i, s) = self.args
     assert limits
-    i, s = axiom.limit_is_set((limit,))
     assert s.is_FiniteSet
 
     sgm = self.identity(xi)
@@ -19,17 +14,17 @@ def doit(self):
         for (j, *ab) in limits:
             _limits.append((j, *(c._subs(i, t) for c in ab)))
 
-        sgm = self.func.operator(sgm, self.func(xi._subs(i, t), *_limits))
+        sgm = Sum.operator(sgm, Sum(xi._subs(i, t), *_limits))
 
         s = FiniteSet(*args)
         assert Contains(t, s).is_BooleanFalse
 
     return sgm
 
+
 @apply
 def apply(self):
-    assert self.is_Sum
-    return Equal(self, doit(self))
+    return Equal(self, doit(Sum, self))
 
 
 @prove

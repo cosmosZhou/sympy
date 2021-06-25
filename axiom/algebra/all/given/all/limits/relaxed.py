@@ -1,11 +1,10 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(given, domain=None, wrt=None):
-    function, *limits = given.of(ForAll)
+    function, *limits = given.of(All)
 
     if isinstance(domain, tuple):
         wrt, *domain = domain
@@ -26,7 +25,7 @@ def apply(given, domain=None, wrt=None):
     limit = (x, domain)
 
     limits[i] = limit
-    return ForAll(function, *limits)
+    return All(function, *limits)
 
 
 @prove
@@ -37,7 +36,7 @@ def prove(Eq):
     e = Symbol.e(real=True)
     f = Function.f(shape=(), integer=True)
 
-    Eq << apply(ForAll[e:A](f(e) > 0), domain=A | B)
+    Eq << apply(All[e:A](f(e) > 0), domain=A | B)
 
     Eq << ~Eq[0]
 

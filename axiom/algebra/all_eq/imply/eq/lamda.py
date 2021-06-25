@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     from sympy.concrete.limits import limits_dict
-    function, *limits = given.of(ForAll)
+    function, *limits = given.of(All)
     function.of(Equal)
 
     dic = limits_dict(limits)
@@ -24,7 +24,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(ForAll[i:n](Equal(f(i), g(i))))
+    Eq << apply(All[i:n](Equal(f(i), g(i))))
 
     i_ = Symbol.i(domain=Range(0, n))
 

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(sub):
-    y, x = sub.of(Basic - Basic)
+    y, x = sub.of(Expr - Expr)
 
     if y == ceiling(x):
         return Equal(sub, frac(-x))

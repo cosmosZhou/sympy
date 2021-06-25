@@ -13,7 +13,7 @@ def prove(Eq):
     x = Symbol.x(real=True)
     d = Symbol.d(real=True, positive=True)
     f = Function.f(integer=True)
-    Eq << apply(ForAll[x:-d:d](f(x) > 0), cond=x > 0)
+    Eq << apply(All[x:-d:d](f(x) > 0), cond=x > 0)
 
     Eq << Eq[-1].apply(algebra.all.all.imply.all.limits_union)
 

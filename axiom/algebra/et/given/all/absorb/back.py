@@ -3,13 +3,11 @@ from util import *
 
 @apply
 def apply(imply):
-    import axiom
-    cond, forall = imply.of(And)
-    fn, *limits = forall.of(ForAll)
-    k, a, b = axiom.limit_is_Interval(limits)
+    cond, (fn, (k, a, b)) = imply.of(And[Boolean, All[Tuple]])
+    
+    assert k.is_integer
     assert fn._subs(k, b) == cond
-
-    return ForAll[k:a:b + 1](fn)
+    return All[k:a:b + 1](fn)
 
 
 @prove
@@ -20,7 +18,7 @@ def prove(Eq):
     b = Symbol.b(domain=Range(a + 1, oo))
     g = Function.g(integer=True)
 
-    Eq << apply((g(b) > 0) & ForAll[k:a:b](g(k) > 0))
+    Eq << apply((g(b) > 0) & All[k:a:b](g(k) > 0))
 
     Eq << algebra.all.imply.et.split.apply(Eq[1], cond={b})
 

@@ -1,26 +1,37 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="/sympy/css/style.css">
+<title>search</title>
 <?php
-require_once 'searchBox.php';
 require_once 'utility.php';
 require_once 'mysql.php';
 
-$dict = $_POST;
-if (array_key_exists("keyword", $_POST)) {
-    $dict = $_POST;
-} else {
-    $dict = $_GET;
-    if (! array_key_exists("keyword", $dict)) {
-        $dict["keyword"] = ".*";
-        $dict["regularExpression"] = true;
-    }
+$dict = empty($_POST) ? $_GET : $_POST;
+
+if (! $dict) {
+    // https://www.php.net/manual/en/function.getopt.php
+    $dict = getopt("", [
+        'keyword::',
+        'regularExpression::',
+        'caseSensitive::',
+        'wholeWord::',
+    ]);
+}
+
+if (! array_key_exists("keyword", $dict)) {
+    $dict["keyword"] = ".*";
+    $dict["regularExpression"] = true;
 }
 
 $keyword = $dict["keyword"];
 $wholeWord = array_key_exists("wholeWord", $dict) ? true : false;
 $caseSensitive = array_key_exists("caseSensitive", $dict) ? true : false;
 $regularExpression = array_key_exists("regularExpression", $dict) ? true : false;
+
+error_log("keyword = $keyword");
+error_log("wholeWord = $wholeWord");
+error_log("caseSensitive = $caseSensitive");
+error_log("regularExpression = $regularExpression");
 
 $like = false;
 
@@ -38,38 +49,44 @@ else
 
 // echo jsonify($modules);
 
+global $user;
 ?>
-<title>search</title>
-search results:
 
 <div id=root>
-in all, there are <?php echo count($modules)?> hits:
-<br>
-	<li v-for="module of modules" />
-        <a :href="'/sympy/axiom.php/' + module.replace(/\./g, '/')">
-        	{{module}}
-        </a>
-	</li>
+	<search-result :keyword=keyword :user=user :modules=modules
+		:regular-expression=regularExpression :whole-word=wholeWord :case-sensitive=caseSensitive> 
+	</search-result>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
 <script
 	src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
-<script src="utility.js"></script>
-<script>	 
-	search.keyword.value = <?php echo \std\jsonify($keyword)?>;
-	search.regularExpression.checked = <?php echo \std\jsonify($regularExpression)?>;
-	search.wholeWord.checked = <?php echo \std\jsonify($wholeWord)?>;	
-	search.caseSensitive.checked = <?php echo \std\jsonify($caseSensitive)?>;	
+<script
+	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
+<script src="/sympy/js/std.js"></script>
+<script src="/sympy/js/utility.js"></script>
+<script>
+
+	Vue.use(httpVueLoader);
+	Vue.component('search-result', 'url:/sympy/vue/search-result.vue');
 
 	var data = {
-		modules : <?php echo \std\jsonify($modules)?>
+		modules : <?php echo \std\jsonify($modules)?>,
+		user: <?php echo \std\jsonify($user)?>,
+				
+		keyword: <?php echo \std\jsonify($keyword)?>,
+		regularExpression: <?php echo \std\jsonify($regularExpression)?>,
+		wholeWord: <?php echo \std\jsonify($wholeWord)?>,
+		caseSensitive: <?php echo \std\jsonify($caseSensitive)?>,
 	};
 
 	var app = new Vue({
 		el : '#root',
 		data : data, 
 	});
+
+	promise(()=>{
+		$("input[type=text]")[0].focus();
+	});
 	
-	$("input[type=text]")[0].focus();
 </script>

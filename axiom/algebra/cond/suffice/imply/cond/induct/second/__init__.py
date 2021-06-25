@@ -3,9 +3,9 @@ from util import *
 
 @apply
 def apply(*given, n=None, k=None, hypothesis=False):
-    f0, sufficient = given
+    f0, suffice = given
 
-    fk, fn = sufficient.of(Suffice)
+    fk, fn = suffice.of(Suffice)
 
     start, _n = k.domain.of(Range)
 

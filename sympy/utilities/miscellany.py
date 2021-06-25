@@ -344,9 +344,8 @@ def _replace(reps):
     """
     if not reps:
         return lambda x: x
-    D = lambda match: reps[match.group(0)]
-    pattern = _re.compile("|".join(
-        [_re.escape(k) for k, v in reps.items()]), _re.M)
+    D = lambda match: reps[match[0]]
+    pattern = _re.compile("|".join([_re.escape(k) for k, v in reps.items()]), _re.M)
     return lambda string: pattern.sub(D, string)
 
 
@@ -600,18 +599,13 @@ class Text:
                     if char[0] == '\n' or char[0] == '\r':
                         break
         else:
-            self.rewind()
-            offset = self.file.tell()
-            while index > 0:
-                index -= 1
-                while True:
-                    offset += 1
-                    _offset = self.file.seek(offset, os.SEEK_SET)
-                    assert _offset == offset
-                    char = self.file.read(1)
-#                     print('char =', char)
-                    if char[0] == '\n' or char[0] == '\r':
-                        break
+            arr = self.collect()
+            if type(s) == str:
+                arr.insert(index, s)
+            else:
+                arr = arr[:index] + s + arr[index:]
+            self.writelines(arr)
+            return
 
         current_pos = self.file.tell()
         assert current_pos == offset + 1
@@ -718,9 +712,16 @@ class Text:
     def read(self):
         return self.file.read()
     
-    def __len__(self):
+    def tell(self):
+        return self.file.tell()
+    
+    @property
+    def size(self):
+        tell = self.tell()
         self.end()
-        return self.file.tell();
+        size = self.file.tell()
+        self.file.seek(tell, os.SEEK_SET)        
+        return size
         
     def endswith(self, end):
         self.end()

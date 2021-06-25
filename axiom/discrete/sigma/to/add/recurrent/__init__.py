@@ -10,7 +10,7 @@ def sigma(x, *limits):
     d = x.generate_var(exclues={k, i, j}, shape=(oo,), integer=True, var='d')
 
     return Piecewise((ZeroMatrix(*x.shape[1:]), Equal(k, 0) | (k > n)),
-                     (Sum[d[:k]:ForAll[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](abs(Product[i:k](x[d[i]]))), True))
+                     (Sum[d[:k]:All[j:i, i:k](d[j] < d[i]):CartesianSpace(Range(0, n), k)](abs(Product[i:k](x[d[i]]))), True))
 
 
 sigma = Function.sigma(eval=sigma, shape=())
@@ -26,7 +26,7 @@ def apply(self):
     return Equal(self, x[n] * sigma[k - 1](x[:n]) + sigma[k](x[:n]))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(complex=True, shape=(oo,))

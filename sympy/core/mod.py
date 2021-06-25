@@ -281,7 +281,7 @@ class Mod(Function):
                 return self.func(self.args[0] + other.args[0], self.args[1])
         return Function.__add__(self, other)
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = Function._eval_domain_defined(self, x)
         n, d = self.args
         if d._has(x):

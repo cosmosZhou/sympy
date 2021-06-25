@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 
 

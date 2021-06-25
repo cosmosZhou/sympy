@@ -1,11 +1,10 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(given):
-    contains, *limits = given.of(Exists)
+    contains, *limits = given.of(Any)
     x, A = contains.of(Contains)
     return Unequal(A, A.etype.emptySet)
 
@@ -16,7 +15,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.real, given=True)
     e = Symbol.e(real=True)
 
-    Eq << apply(Exists[e](Contains(e, A)))
+    Eq << apply(Any[e](Contains(e, A)))
 
     Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[1])
 

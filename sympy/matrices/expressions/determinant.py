@@ -73,11 +73,20 @@ class Determinant(Expr):
     def _sympystr(self, p):
         return "¦%s¦" % p._print(self.arg)
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = Expr._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
         return domain
+
+    def _eval_Eq(self, other):
+        if other.is_zero:
+            X = self.arg
+            if X.is_singular == True:
+                return S.true
+            
+            if X.is_singular == False:
+                return S.false
 
 Det = Determinant
 

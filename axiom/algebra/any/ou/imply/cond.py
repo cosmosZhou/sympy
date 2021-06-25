@@ -1,15 +1,12 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    exists, ou = given
-    if not exists.is_Exists:
+def apply(exists, ou):
+    if not exists.is_Any:
         exists, ou = ou, exists
 
-    fx, *limits_x = exists.of(Exists)
+    fx, *limits_x = exists.of(Any)
     cond = fx.invert()
     [*eqs] = ou.of(Or)
     for i, eq in enumerate(eqs):
@@ -28,7 +25,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(Exists[x:A](f(x, y) > 0), (g(y, x) > 0) | (f(x, y) <= 0))
+    Eq << apply(Any[x:A](f(x, y) > 0), (g(y, x) > 0) | (f(x, y) <= 0))
 
     Eq <<= Eq[0] & Eq[1]
 

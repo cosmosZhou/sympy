@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -9,7 +7,7 @@ def apply(*given):
     if not less_than.is_Less:
         less_than, is_nonnegative = given
 
-    x = axiom.is_nonnegative(is_nonnegative)
+    x = is_nonnegative.of(Expr >= 0)
     _x, M = less_than.of(Less)
     assert x == _x
 

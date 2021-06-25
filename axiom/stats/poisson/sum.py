@@ -2,30 +2,22 @@ from util import *
 
 
 @apply
-def apply(x0, x1):
-    from sympy.stats.rv import PDF
-    assert x0.is_random and x1.is_random
+def apply(x0, x1):    
     pspace0 = pspace(x0)
     pspace1 = pspace(x1)
-    if not pspace0.is_SingleDiscretePSpace or not pspace1.is_SingleDiscretePSpace:
-        return
-    distribution0 = pspace0.distribution
-    distribution1 = pspace1.distribution
-    if not isinstance(distribution0, PoissonDistribution) or not isinstance(distribution1, PoissonDistribution):
-        return
+    
+    lamda0 = pspace0.distribution.of(PoissonDistribution)
+    lamda1 = pspace1.distribution.of(PoissonDistribution)
 
-    Y = Symbol.y(distribution=PoissonDistribution(distribution0.lamda + distribution1.lamda))
+    Y = Symbol.y(distribution=PoissonDistribution(lamda0 + lamda1))
     y = pspace(Y).symbol
 
-    return Equal(PDF(x0 + x1)(y), PDF(Y)(y).doit())
+    return Equal(Probability(Equal(x0 + x1, y)), Probability(Equal(Y, y)).doit())
 
 
 @prove
 def prove(Eq):
     from axiom import discrete
-    assert NonnegativeIntegers.is_extended_negative == False
-    assert NonnegativeIntegers.is_extended_nonnegative
-
     lamda0 = Symbol.lamda0(positive=True)
     lamda1 = Symbol.lamda1(positive=True)
 
@@ -38,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.powsimp()
 
-    y = Eq[0].lhs.symbol
+    y = Eq[0].lhs.arg.rhs
     Eq << Eq[-1] * factorial(y)
 
     Eq << discrete.combinatorics.binomial.theorem.apply(lamda0, lamda1, y)

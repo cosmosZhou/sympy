@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -9,7 +7,7 @@ def apply(*given):
     if 0 not in is_nonnegative.args:
         ge, is_nonnegative = given
 
-    x = axiom.is_nonnegative(is_nonnegative)
+    x = is_nonnegative.of(Expr >= 0)
     a, b = ge.of(GreaterEqual)
 
     return GreaterEqual(a * x, b * x)
@@ -31,6 +29,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.expand()
 
     Eq << algebra.is_nonnegative.imply.ge.apply(Eq[-1])
+
 
 if __name__ == '__main__':
     run()

@@ -12,14 +12,13 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True, given=False)
-
     f = Symbol.f(shape=(oo,), real=True)
     g = Symbol.g(shape=(oo, oo), real=True)
-
     Eq << apply(Sum[i:0:m, j:0:n](f[i] * g[i, j]))
 
     Eq.initial = Eq[0].subs(n, 1)
@@ -32,10 +31,7 @@ def prove(Eq):
 
     Eq << Eq.induct.this.lhs.split({n})
 
-    Eq << Eq[-1].this.lhs.find(Sum).apply(algebra.sum.to.add.doit.outer.setlimit)
-
     s = Symbol.s(Sum[j:0:n + 1](f[i] * g[i, j]))
-
     Eq << s.this.definition
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (i, 0, m))
@@ -48,7 +44,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add)
 
-    Eq << Eq[3].subs(Eq[-1].reversed)
+    Eq << Eq[2].subs(Eq[-1].reversed)
 
     Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
 

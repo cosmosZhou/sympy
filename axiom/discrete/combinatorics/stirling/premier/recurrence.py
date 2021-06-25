@@ -7,7 +7,7 @@ def apply(n, k):
     return Equal(Stirling1(n + 1, k + 1), Stirling1(n, k) + (n + 1) * Stirling1(n, k + 1))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     k = Symbol.k(integer=True, nonnegative=True)
 

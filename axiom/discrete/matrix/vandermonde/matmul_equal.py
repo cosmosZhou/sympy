@@ -8,7 +8,7 @@ def apply(x, m, n, d, delta):
     h = Symbol.h(integer=True)
 
     return Equal(Lamda[j:m, i](binomial(d, j - i) * (-1) ** (d + i - j)) @ Lamda[j, i:m]((i + delta) ** j * x ** i),
-                    Lamda[j, i]((i + delta) ** j * x ** i) @ Lamda[j, i:n](binomial(j, i) * Sum[h:d + 1](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
+                 Lamda[j, i]((i + delta) ** j * x ** i) @ Lamda[j, i:n](binomial(j, i) * Sum[h:d + 1](binomial(d, h) * (-1) ** (d - h) * x ** h * h ** (j - i))))
 
 
 @prove
@@ -28,9 +28,9 @@ def prove(Eq):
 
     Eq << apply(x, m, n, d, delta)
 
-    Eq << Eq[-1].this.lhs.expand()
+    Eq << Eq[-1].this.lhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
     Eq << Eq[-1][i, j]
 
@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(h, h - i)
 
-    Eq.distribute = Eq[-1].this.rhs.astype(Sum)
+    Eq.distribute = Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
     Eq << Eq.distribute.this.lhs.limits_subs(Eq.distribute.lhs.variable, h)
 

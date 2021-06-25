@@ -16,7 +16,7 @@ def apply(imply):
         expr = expr._subs(variables, _variables)
         variables = _variables
     assert not e._has(variables)
-    return Exists(Equal(e, expr, evaluate=False), (variables, base_set))
+    return Any(Equal(e, expr, evaluate=False), (variables, base_set))
 
 
 @prove

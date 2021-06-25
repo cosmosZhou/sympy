@@ -1,8 +1,5 @@
 from util import *
 
-from axiom.discrete.combinatorics.binomial import Pascal
-
-
 
 @apply
 def apply(x, y, n=None, var=None):
@@ -21,7 +18,8 @@ def apply(x, y, n=None, var=None):
 
 @prove
 def prove(Eq):
-    from axiom import algebra
+    from axiom import algebra, discrete
+
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
     n = Symbol.n(integer=True, nonnegative=True, given=False)
@@ -33,20 +31,20 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.powsimp()
 
-    Eq << Eq[-1].this.rhs.astype(Sum)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
     Eq << Eq[-1].this.rhs.function.expand()
 
     Eq << Eq[-1].this.rhs.function.powsimp()
 
     (k, *_), *_ = Eq[-1].rhs.limits
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(k, k - 1)
 
-    Eq << Eq.induct.subs(Pascal.apply(n + 1, k))
+    Eq << Eq.induct.subs(discrete.combinatorics.binomial.Pascal.apply(n + 1, k))
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum_mul.to.add)
 
     Eq << Eq[-1].this.rhs.args[0].simplify()
 

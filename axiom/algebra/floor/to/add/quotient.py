@@ -2,10 +2,8 @@ from util import *
 
 
 @apply
-def apply(self):
-    import axiom
-    div = self.of(Floor)
-    n, d = axiom.is_Divide(div)
+def apply(self): 
+    n, d = self.of(Floor[Expr / Expr])
 
     q = 0
     m = 0

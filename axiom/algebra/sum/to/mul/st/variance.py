@@ -3,19 +3,20 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
     function, limit = self.of(Sum)
-    x_sub_x_means = function.of(Basic ** 2)
+    x_sub_x_means = function.of(Expr ** 2)
 
     try:
-        i, z, n = axiom.limit_is_Interval((limit,))
+        i, z, n = limit
     except:
         (i,) = limit
         domain = function.domain_defined(i)
         z, n = domain.of(Range)
 
+    assert i.is_integer
+    
     assert z == 0
-    xi, x_means = axiom.is_Subtract(x_sub_x_means)
+    xi, x_means = x_sub_x_means.of(Expr - Expr)
 
     x, _i = xi.of(Indexed)
     assert _i == i
@@ -25,7 +26,7 @@ def apply(self):
     xi, limit = x_sum.of(Sum)
 
     try:
-        j, z, _n = axiom.limit_is_Interval((limit,))
+        j, z, _n = limit
     except:
         (j,) = limit
         domain = xi.domain_defined(j)

@@ -1,13 +1,11 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
     xy = given.of(Unequal[0])
-    x, y = axiom.is_Subtract(xy)
-    
+    x, y = xy.of(Expr - Expr)
+
     return Unequal(x, y)
 
 

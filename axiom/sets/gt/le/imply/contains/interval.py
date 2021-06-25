@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 # given: |A| >= 1
 # A != {}
 

@@ -3,7 +3,7 @@ from util import *
 
 
 # given A & B != Ø
-# then Exists[e:B] e in A
+# then Any[e:B] e in A
 @apply
 def apply(given, wrt=None, domain=None):
     assert given.is_Unequal
@@ -24,7 +24,7 @@ def apply(given, wrt=None, domain=None):
     if wrt is None:
         wrt = B.element_symbol(A.free_symbols)
     assert wrt.type == B.etype
-    return Exists[wrt:B](Contains(wrt, A))
+    return Any[wrt:B](Contains(wrt, A))
 
 
 @prove

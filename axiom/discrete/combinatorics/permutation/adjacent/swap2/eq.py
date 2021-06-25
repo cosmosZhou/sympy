@@ -13,7 +13,7 @@ def apply(n, w=None):
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
 
-    return ForAll(Equal(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Range(1, n) // {i}))
+    return All(Equal(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Range(1, n) // {i}))
 
 
 @prove

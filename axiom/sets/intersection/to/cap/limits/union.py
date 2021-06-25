@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 from axiom.sets.union.to.cup.limits.union import limits_union
 

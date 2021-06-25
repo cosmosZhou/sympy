@@ -17,7 +17,7 @@ def apply(given):
         shape = (oo,)
     kwargs.pop('shape', None)
     x = S.generate_var(shape=shape, **kwargs)
-    return Exists[x[:n]:ForAll[j:i, i:n](Unequal(x[i], x[j]))](Equal(S, Cup[i:n]({x[i]})))
+    return Any[x[:n]:All[j:i, i:n](Unequal(x[i], x[j]))](Equal(S, Cup[i:n]({x[i]})))
 
 
 @prove

@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -10,7 +8,7 @@ def apply(given, *limits):
     return LessEqual(Integral(lhs, *limits).simplify(), Integral(rhs, *limits).simplify())
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     f = Function.f(shape=(), real=True)

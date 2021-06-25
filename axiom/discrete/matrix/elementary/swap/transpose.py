@@ -1,9 +1,6 @@
 from util import *
 
 
-
-
-
 @apply
 def apply(w):
     n = w.shape[0]
@@ -28,17 +25,17 @@ def prove(Eq):
 
     Eq << apply(w)
 
-    Eq << w[j, i].equality_defined()
+    Eq << w[j, i].this.definition
 
     Eq << Eq[0] @ Eq[-1]
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
 
-    Eq << Eq[-1].this.rhs.function.args[-1].expr.args[0].astype(Piecewise)
+    Eq << Eq[-1].this.rhs.function.args[-1].expr.args[0].apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.function.astype(KroneckerDelta)
+    Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.to.kroneckerDelta)
 
     Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.identity)
 

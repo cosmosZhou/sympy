@@ -1,13 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
-    xy = axiom.is_positive(given)
-    x, y = axiom.is_Subtract(xy)
-    
+    x, y = given.of(Expr - Expr > 0)
     return Less(y, x)
 
 
@@ -21,7 +17,6 @@ def prove(Eq):
     Eq << Eq[0] + b
     
     Eq << Eq[-1]
-    
     
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 
@@ -7,10 +6,10 @@ import axiom
 def apply(*given, reverse=False):
     eq, f_eq = given
     assert not f_eq.is_ConditionalBoolean
-    (lhs, rhs), *limits = eq.of(ForAll[Equal])
+    (lhs, rhs), *limits = eq.of(All[Equal])
     if reverse:
         lhs, rhs = rhs, lhs
-    return ForAll(f_eq._subs(lhs, rhs), *limits)
+    return All(f_eq._subs(lhs, rhs), *limits)
 
 
 @prove
@@ -28,7 +27,7 @@ def prove(Eq):
     C = Symbol.C(etype=dtype.real * (m, n))
     S = Symbol.S(etype=dtype.real * (m, n))
 
-    Eq << apply(ForAll[c:C](Equal(a, f(c))), Contains(a * b + c, S))
+    Eq << apply(All[c:C](Equal(a, f(c))), Contains(a * b + c, S))
 
     Eq << algebra.cond.all.imply.all_et.apply(Eq[1], Eq[0])
 

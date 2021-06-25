@@ -35,44 +35,45 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import stats, calculus, algebra
+    from axiom import stats, algebra, calculus
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
     z = Symbol.z(real=True, random=True)
-
     Eq << apply(Equal(x | y.as_boolean() & z.as_boolean(), x | y), Equal(z | y, z))
 
-    Eq << Eq[0].domain_definition()
+    Eq.yz_nonzero = stats.eq_conditioned.imply.is_nonzero.apply(Eq[0])
 
-    Eq.yz_nonzero, Eq.y_nonzero = algebra.et.imply.conds.apply(Eq[-1])
+    Eq.y_nonzero = stats.eq_conditioned.imply.is_nonzero.apply(Eq[0], reverse=True)
 
     Eq << stats.is_nonzero.imply.et.apply(Eq.yz_nonzero)
 
     Eq.z_nonzero = algebra.et.imply.cond.apply(Eq[-1], index=1)
 
-    Eq << stats.bayes.corollary.apply(Eq.yz_nonzero, var=x)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq.yz_nonzero, x)
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << stats.bayes.corollary.apply(Eq.y_nonzero, var=z)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq.y_nonzero, z)
 
     Eq << Eq[-2].subs(Eq[-1])
 
-    Eq.xy_probability = stats.bayes.corollary.apply(Eq.y_nonzero, var=x)
+    Eq.xy_probability = stats.is_nonzero.imply.eq.bayes.apply(Eq.y_nonzero, x)
 
     Eq << Eq[-1].subs(Eq.xy_probability.reversed)
 
     Eq << Eq[-1].subs(Eq[1])
 
-    Eq << stats.total_probability_theorem.apply(Eq[-1].lhs, y).subs(stats.bayes.corollary.apply(Eq.z_nonzero, var=x))
+    y_ = pspace(y).symbol
+    Eq << stats.integral.to.probability.apply(Integral[y_](Eq[-1].lhs))
 
-    Eq << calculus.eq.imply.eq.integral.apply(Eq[-2], (pspace(y).symbol,))
+    Eq << Eq[-1].subs(stats.is_nonzero.imply.eq.bayes.apply(Eq.z_nonzero, x))
+
+    Eq << calculus.eq.imply.eq.integral.apply(Eq[-3], (y_,))
 
     Eq << Eq[-1].subs(Eq[-2])
 
-    Eq << stats.total_probability_theorem.apply(Eq.xy_probability.lhs, y)
-
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-1].this.find(Integral).apply(stats.integral.to.probability)
 
     Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.z_nonzero)
 

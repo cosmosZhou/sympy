@@ -9,8 +9,8 @@ def apply(given, reverse=False):
     
     x = given.generate_var(**e.type.dict)
     if reverse:
-        return ForAll[x:S](Unequal(x, e))
-    return ForAll[x:S](Unequal(e, x))
+        return All[x:S](Unequal(x, e))
+    return All[x:S](Unequal(e, x))
 
 
 @prove

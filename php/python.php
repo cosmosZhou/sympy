@@ -2656,7 +2656,7 @@ function compile(string &$infix, &$state, $caret = null)
         ]);
     }
 
-    $strlen = strlen($infix);
+    $strlen = strlen($infix);    
     for ($i = 0; $i < $strlen; ++ $i) {
         $ch = $infix[$i];
         switch ($ch) {
@@ -3011,8 +3011,15 @@ function compile(string &$infix, &$state, $caret = null)
                 break;
             case '\\':
                 // unicodedata.name('\\')
-                if ($i < $strlen - 1)
-                    throw new RuntimeException("illegal characters after ReverseSolidus: " . \std\slice($infix, $i));
+                if ($i < $strlen - 1){
+                    switch(\std\slice($infix, $i + 1)){
+                        case "\r\n":
+                        case "\n":
+                            break;
+                        default:
+                            throw new RuntimeException("illegal characters after ReverseSolidus: " . \std\slice($infix, $i));
+                    } 
+                }                    
 
                 $state['ReverseSolidus'] = true;
                 break;
@@ -3117,6 +3124,7 @@ function len_args(&$statement, $caret = null)
     // error_log("statement = $statement");
     // error_log("caret = $caret");
     $state = [];
+    
     $caret = compile($statement, $state, $caret);
     if ($state) {
         if (array_key_exists('ReverseSolidus', $state)) {
@@ -3186,7 +3194,7 @@ function is_unfinished($parent, $self)
 
 function main($offset = 0)
 {
-    // $py = "ForAll(Exists(cond._subs(x, y), *limits_e), *limits_f)";
+    // $py = "All(Any(cond._subs(x, y), *limits_e), *limits_f)";
     // $offset = 0;
     $count = 0;
     $caret = null;

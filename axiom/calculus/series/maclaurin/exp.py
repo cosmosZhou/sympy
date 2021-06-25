@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -9,7 +7,7 @@ def apply(x):
     return Equal(E ** x, Sum[n:oo](x ** n / factorial(n)))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     Eq << apply(x)

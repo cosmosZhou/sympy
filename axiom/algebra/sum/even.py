@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    function, (n, _n, (a, b)) = self.of(Sum[Tuple[Equal[Basic % 2, 0], Range]])
+    function, (n, _n, (a, b)) = self.of(Sum[Tuple[Equal[Expr % 2, 0], Range]])
     assert n == _n
     return Equal(self, Sum[n:(a + 1) // 2:(b + 1) // 2](function._subs(n, 2 * n)))
 

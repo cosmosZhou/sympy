@@ -1,14 +1,12 @@
 from util import *
 
-import axiom
-
 
 @apply(given=None)
-def apply(given, *limits):
+def apply(given, limit):
     fk, gk = given.of(Equal)
-    k, a, b = axiom.limit_is_Interval(limits)
+    k, a, b = limit
 
-    return Suffice(ForAll[k:a:b](Equal(fk, gk)), Equal(Cup[k:a:b](fk), Cup[k:a:b](gk)))
+    return Suffice(All[k:a:b](Equal(fk, gk)), Equal(Cup[k:a:b](fk), Cup[k:a:b](gk)))
 
 
 @prove

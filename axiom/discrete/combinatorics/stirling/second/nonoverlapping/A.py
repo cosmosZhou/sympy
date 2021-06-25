@@ -16,7 +16,7 @@ def apply(n, k, A=None):
     return Equal(abs(Cup[j](A[j])), Sum[j](abs(A[j])))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import sets, algebra
     n = Symbol.n(integer=True, positive=True)
@@ -83,7 +83,7 @@ def prove(Eq):
 
     j_quote = Symbol.j_quote(integer=True)
 
-    Eq.nonoverlapping = ForAll(Equal(A_quote[j_quote] & A_quote[j], A_quote[j].etype.emptySet), *((j_quote, Range(0, k + 1) // {j}),) + Eq.A_definition_simplified.rhs.limits, plausible=True)
+    Eq.nonoverlapping = All(Equal(A_quote[j_quote] & A_quote[j], A_quote[j].etype.emptySet), *((j_quote, Range(0, k + 1) // {j}),) + Eq.A_definition_simplified.rhs.limits, plausible=True)
 
     Eq << ~Eq.nonoverlapping
 

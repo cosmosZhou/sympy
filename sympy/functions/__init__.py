@@ -17,10 +17,10 @@ from sympy.functions.elementary.extremum import (Min, Max, Id)
 from sympy.functions.elementary.complexes import (re, im, sign, Abs, Norm,
         conjugate, arg, polar_lift, periodic_argument, unbranched_argument,
         principal_branch, transpose, adjoint, polarify, unpolarify)
-from sympy.functions.elementary.trigonometric import (sin, cos, tan,
+from sympy.functions.elementary.trigonometric import (sin, cos, tan, 
         sec, csc, cot, sinc, asin, acos, atan, asec, acsc, acot, atan2)
 
-from sympy.functions.elementary.trigonometric import Sin, Cos  # , Tan, Sec, Csc, Cot, Sinc, Asin, Acos, Atan, Asec, Acsc, Acot, Atan2
+from sympy.functions.elementary.trigonometric import Sin, Cos, Tan#, Sec, Csc, Cot#, Asin, Acos, Atan, Asec, Acsc, Acot
 
 from sympy.functions.elementary.exponential import (exp_polar, exp, log, Exp, Log,
         LambertW)

@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 def simplify_common_terms(given):

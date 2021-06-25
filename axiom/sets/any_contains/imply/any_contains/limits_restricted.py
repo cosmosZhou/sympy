@@ -3,9 +3,9 @@ from util import *
 
 @apply
 def apply(given):
-    (_x, S), (x,), *limits = given.of(Exists[Contains])
+    (_x, S), (x,), *limits = given.of(Any[Contains])
     assert x == _x
-    return Exists(Contains(x, S), (x, S), *limits)
+    return Any(Contains(x, S), (x, S), *limits)
 
 
 @prove
@@ -15,7 +15,7 @@ def prove(Eq):
     e = Symbol.e(real=True)
     t = Symbol.t(real=True)
 
-    Eq << apply(Exists[e, t:S](Contains(e, S // {t})))
+    Eq << apply(Any[e, t:S](Contains(e, S // {t})))
 
     Eq << Eq[-1].simplify()
 

@@ -151,7 +151,7 @@ class Transpose(MatrixExpr):
 
         return self
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = MatrixExpr._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)

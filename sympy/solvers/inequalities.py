@@ -16,6 +16,7 @@ from sympy.polys import Poly, PolynomialError, parallel_poly_from_expr
 from sympy.polys.polyutils import _nsort
 from sympy.utilities.iterables import sift
 from sympy.utilities.miscellany import filldedent
+from sympy.sets.fancysets import Reals
 
 def solve_poly_inequality(poly, rel):
     """Solve a polynomial inequality with rational coefficients.
@@ -178,7 +179,7 @@ def solve_rational_inequalities(eqs):
 
             for global_interval in global_intervals:
                 for denom_interval in denom_intervals:
-                    global_interval -= denom_interval
+                    global_interval //= denom_interval
 
                 if not global_interval.is_EmptySet:
                     intervals.append(global_interval)
@@ -273,7 +274,7 @@ def reduce_rational_inequalities(exprs, gen, relational=True):
         solution &= solve_rational_inequalities(eqs)
         exclude = solve_rational_inequalities([[((d, d.one), '==')
             for i in eqs for ((n, d), _) in i if d.has(gen)]])
-        solution -= exclude
+        solution //= exclude
 
     if not exact and solution:
         solution = solution.evalf()
@@ -462,6 +463,8 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
     # `solveset` makes sure this function is called only when the domain is
     # real.
     _gen = gen
+    if domain is None:
+        domain = Reals
     _domain = domain
     if gen.is_extended_real == False:
         rv = Reals.etype.emptySet
@@ -554,6 +557,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
                 if v.is_extended_real == False:
                     return S.false
                 else:
+                    return S.false
                     v = v.n(2)
                     if v.is_comparable:
                         return expr.func(v, 0)
@@ -570,8 +574,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
             include_x = '=' in expr.rel_op and expr.rel_op != '!='
 
             try:
-                discontinuities = set(domain.boundary -
-                    FiniteSet(domain.inf, domain.sup))
+                discontinuities = set(domain.boundary - FiniteSet(domain.inf, domain.sup))
                 # remove points that are not between inf and sup of domain
                 critical_points = FiniteSet(*(solns + singularities + list(
                     discontinuities))).intersection(
@@ -673,8 +676,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
             if im(expanded_e) != S.Zero and check:
                 rv = (make_real).intersect(_domain)
             else:
-                rv = Intersection(
-                    (Union(*sol_sets)), make_real, _domain).subs(gen, _gen)
+                rv = Intersection((Union(*sol_sets)), make_real, _domain).subs(gen, _gen)
 
     return rv if not relational else rv.as_relational(_gen)
 

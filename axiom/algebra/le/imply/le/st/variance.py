@@ -3,18 +3,17 @@ from util import *
 
 @apply
 def apply(given):
-    import axiom
     from axiom.algebra.square.to.mul.st.sum import dissect_variance
 
     dx, dy = given.of(LessEqual)
 
     ym, x, i, n = dissect_variance(dx)
 
-    dy = dy.of(Basic ** 2)
+    dy = dy.of(Expr ** 2)
 
-    _ym, y_mean = axiom.is_Subtract(dy)
+    _ym, y_mean = dy.of(Expr - Expr)
     assert _ym == ym
-    y_sum, m1 = axiom.is_Divide(y_mean)
+    y_sum, m1 = y_mean.of(Expr / Expr)
     m = m1 - 1
     yj, (j, *ab) = y_sum.of(Sum)
     if ab:
@@ -33,15 +32,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(oo,))
-
     m = Symbol.m(domain=Range(2, oo))
     y = Symbol.y(real=True, shape=(m,))
-
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-
     Eq << apply((y[m - 1] - Sum[i](x[i]) / n) ** 2 <= (y[m - 1] - Sum[j](y[j]) / m) ** 2)
 
     Eq << Eq[-1].rhs.args[0].this.apply(algebra.sum.to.mul.st.variance)
@@ -50,7 +47,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Sum).split({n})
 
-    Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum.to.add.doit.outer.setlimit)
+    
 
     Eq << Eq[-1].this.lhs.split({n})
 

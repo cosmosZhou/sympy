@@ -14,7 +14,7 @@ def apply(given, function):
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
-    f = Function.f(nargs=(n,), real=True, shape=(m,))
+    f = Function.f(real=True, shape=(m,))
     x = Symbol.x(real=True, shape=(n,))
     a = Symbol.a(real=True)
     b = Symbol.b(real=True, shape=(n,))

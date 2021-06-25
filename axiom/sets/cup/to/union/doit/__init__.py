@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self):
     from axiom.algebra.sum.to.add.doit import doit
-    assert self.is_Cup
-    return Equal(self, doit(self))
+    return Equal(self, doit(Cup, self))
 
 
 @prove
@@ -20,16 +19,16 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.apply(sets.cup.limits.domain_defined.insert)
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(sets.cup.to.union.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(sets.cup.to.union.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].find(Cup).this.apply(sets.cup.to.union.dissect, cond={n})
+    Eq << Eq[-1].find(Cup).this.apply(sets.cup.to.union.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].rhs.find(Cup).this.apply(sets.cup.to.union.dissect, cond={n})
+    Eq << Eq[-1].rhs.find(Cup).this.apply(sets.cup.to.union.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].rhs.find(Cup).this.apply(sets.cup.to.union.dissect, cond={n})
+    Eq << Eq[-1].rhs.find(Cup).this.apply(sets.cup.to.union.split, cond={n})
 
     Eq << Eq[4].subs(Eq[-1])
 

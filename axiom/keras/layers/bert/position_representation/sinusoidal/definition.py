@@ -53,13 +53,13 @@ def prove(Eq):
 
     Eq << Eq[-1].rhs.args[0].expr.arg.this.args[1].arg.args[1].base.definition
 
-    Eq << Eq[-1].this.rhs.args[1].arg.astype(log)
+    Eq << Eq[-1].this.rhs.args[1].arg.apply(algebra.mul.to.log)
 
     Eq << Eq[-3].this.rhs.subs(Eq[-1])
 
     Eq << Eq[-1].rhs.args[1].expr.arg.this.args[1].arg.args[1].base.definition
 
-    Eq << Eq[-1].this.rhs.args[1].arg.astype(log)
+    Eq << Eq[-1].this.rhs.args[1].arg.apply(algebra.mul.to.log)
 
     Eq << Eq[-1].this.rhs.args[0].args[1].expand()
 

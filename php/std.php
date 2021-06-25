@@ -405,6 +405,36 @@ class Graph implements JsonSerializable, IteratorAggregate
         return null;
     }
 
+    function visit_and_traceback($n, &$parent)
+    {
+        // error_log("visiting key = $n");
+        if ($this->permanent_mark->contains($n))
+            return null;
+
+        if ($this->temporary_mark->contains($n)) {
+            return $n;
+        }
+
+        if (array_key_exists($n, $this->graph)) {
+
+            $this->temporary_mark->add($n);
+            // error_log("this->graph[n] = " . jsonify($this->graph[$n]));
+
+            foreach ($this->graph[$n] as $m) {
+                $node = $this->visit_and_traceback($m, $parent);
+                if ($node != null) {
+                    $parent[] = $m;
+                    return $node;
+                }
+            }
+
+            $this->temporary_mark->remove($n);
+        }
+
+        $this->permanent_mark->add($n);
+        return null;
+    }
+
     function initialize_topology()
     {
         $this->permanent_mark = new Set();
@@ -426,6 +456,12 @@ class Graph implements JsonSerializable, IteratorAggregate
     {
         $this->initialize_topology();
         return $this->visit($key);
+    }
+
+    function detect_cycle_traceback($key, &$parent)
+    {
+        $this->initialize_topology();
+        $this->visit_and_traceback($key, $parent);
     }
 
     public function __construct()
@@ -532,6 +568,68 @@ function createDirectory($dir)
     }
 }
 
+// delete a non-empty Directory recursively
+function deleteDirectory($directory)
+{
+    if (! file_exists($directory)) {
+        return;
+    }
+
+    if ($dir_handle = opendir($directory)) {
+
+        while ($filename = readdir($dir_handle)) {
+
+            if ($filename != '.' && $filename != '..') {
+
+                $subFile = $directory . "/" . $filename;
+
+                if (is_dir($subFile)) {
+                    deleteDirectory($subFile);
+                } elseif (is_file($subFile)) {
+                    unlink($subFile);
+                }
+            }
+        }
+
+        closedir($dir_handle);
+
+        rmdir($directory);
+    }
+}
+
+// delete a non-empty Directory recursively
+function renameDirectory($directory, $newDirectory)
+{
+    createDirectory($newDirectory);
+    if (! file_exists($directory)) {
+        return;
+    }
+    
+    if ($dir_handle = opendir($directory)) {
+        
+        while ($filename = readdir($dir_handle)) {
+            
+            if ($filename != '.' && $filename != '..') {
+                
+                $subFile = $directory . "/" . $filename;
+                $_subFile = $newDirectory . "/" . $filename;
+                
+                if (is_dir($subFile)) {
+                    renameDirectory($subFile, $_subFile);
+                } elseif (is_file($subFile)) {
+                    
+                    
+                    rename($subFile, $_subFile);
+                }
+            }
+        }
+        
+        closedir($dir_handle);
+        
+        rmdir($directory);
+    }
+}
+
 function createNewFile($path)
 {
     $dir = dirname($path);
@@ -553,7 +651,14 @@ class Text implements IteratorAggregate
     public function __construct($path)
     {
         // error_log("path = " . $path);
-        $this->file = fopen($path, file_exists($path) ? "r+" : "w+");
+        if (file_exists($path)){
+            $this->file = fopen($path, "r+");
+        }
+        else{
+            createNewFile($path);            
+            $this->file = fopen($path, "w+");
+        }
+        
 
         if ($this->file === false) {
             createNewFile($path);
@@ -656,13 +761,19 @@ class Text implements IteratorAggregate
         fread($this->file, $size);
     }
 
-    public function isEmpty(){
+    public function readlines()
+    {
+        return iterator_to_array($this);
+    }
+
+    public function isEmpty()
+    {
         foreach ($this as $line) {
             return False;
         }
         return true;
     }
-    
+
     public function endsWith($end)
     {
         $this->end();
@@ -671,14 +782,14 @@ class Text implements IteratorAggregate
         if ($offset < 0)
             return False;
 
-        $this->seek($offset, SEEK_SET);        
-        
+        $this->seek($offset, SEEK_SET);
+
         return $this->read($size) == $end;
     }
 
     public function setitem($index, $newLine)
     {
-//        $this->rewind();
+        // $this->rewind();
         $i = 0;
         $lines = [];
         foreach ($this as $line) {
@@ -695,10 +806,32 @@ class Text implements IteratorAggregate
         $this->truncate();
     }
 
+    public function insert($index, $newLine)
+    {
+        $i = 0;
+        $lines = [];
+        foreach ($this as $line) {
+            if ($i == $index) {
+                if (is_array($newLine)) {
+                    array_push($lines, ...$newLine);
+                } else {
+                    $lines[] = $newLine;
+                }
+            }
+
+            $lines[] = $line;
+            ++ $i;
+        }
+
+        $this->rewind();
+        $this->write(implode("\n", $lines));
+        $this->truncate();
+    }
+
     public function delitem($index)
     {
         error_log("index = $index");
-//         $this->rewind();
+        // $this->rewind();
         $i = 0;
         $lines = [];
         foreach ($this as $line) {
@@ -725,7 +858,8 @@ class Text implements IteratorAggregate
 
     public function search($regex)
     {
-//         $this->rewind();
+        $regex = "/$regex/";
+        // $this->rewind();
         foreach ($this as $line) {
             if (preg_match($regex, $line, $m)) {
                 return true;
@@ -736,7 +870,7 @@ class Text implements IteratorAggregate
 
     public function replace($old, $new)
     {
-//         $this->rewind();
+        // $this->rewind();
         $lines = [];
         foreach ($this as $line) {
             $lines[] = str_replace($old, $new, $line);
@@ -746,6 +880,50 @@ class Text implements IteratorAggregate
 
         $this->write(implode("\n", $lines));
         $this->truncate();
+    }
+
+    public function preg_replace($old, $new)
+    {
+        $old = "/$old/";
+        $lines = [];
+        foreach ($this as $line) {
+            $lines[] = preg_replace($old, $new, $line);
+        }
+
+        $this->rewind();
+
+        $this->write(implode("\n", $lines));
+        $this->truncate();
+    }
+    
+    public function preg_match($regex)
+    {
+        $regex = "/$regex/";
+        $lines = [];
+        foreach ($this as $line) {
+            if (preg_match($regex, $line)){
+                $lines[] = $line;
+            }            
+        }
+        
+        return $lines;
+    }
+
+    public function retain($regex)
+    {
+        $regex = "/$regex/";
+        $lines = [];
+        $linesRemoved = [];
+        foreach ($this as $line) {
+            if (preg_match($regex, $line)){
+                $lines[] = $line;
+            }
+            else{
+                $linesRemoved[] = $line;
+            }
+        }
+        $this->writelines($lines);
+        return $linesRemoved;
     }
 }
 
@@ -1097,5 +1275,12 @@ function array_delete(&$array, $index)
 {
     array_splice($array, $index, 1);
 }
+
+function is_linux()
+{
+    return DIRECTORY_SEPARATOR == '/';
+}
+
+
 
 ?>

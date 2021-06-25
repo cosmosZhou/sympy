@@ -14,11 +14,11 @@ def prove(Eq):
 
     Eq << apply(x, y)
 
-    Eq << Eq[0].this.lhs.astype(Mul)
+    Eq << Eq[0].this.lhs.apply(geometry.tan.to.mul)
 
-    Eq << tan(x).this.astype(Mul)
+    Eq << tan(x).this.apply(geometry.tan.to.mul)
 
-    Eq << tan(y).this.astype(Mul)
+    Eq << tan(y).this.apply(geometry.tan.to.mul)
 
     Eq << Eq[1].subs(Eq[-1], Eq[-2])
 

@@ -18,7 +18,7 @@ def apply(n, k, s2=None, B=None):
     return Equal(conditionset(e, Contains({n}, e), s2), B)
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import sets, algebra
     k = Symbol.k(integer=True, positive=True)
@@ -61,7 +61,7 @@ def prove(Eq):
     i = Eq.x_union_s0.lhs.limits[0][0]
     x = Eq.x_union_s0.variable.base
 
-    Eq.x_k_definition = Exists[x[k]](Equal(x[k], {n}), plausible=True)
+    Eq.x_k_definition = Any[x[k]](Equal(x[k], {n}), plausible=True)
 
     Eq << Eq.x_k_definition.simplify()
 
@@ -120,7 +120,7 @@ def prove(Eq):
 
     num_plausibles = len(Eq.plausibles_dict)
 
-    Eq.plausible_notcontains = ForAll(NotContains({n}, e), (e, s0), plausible=True)
+    Eq.plausible_notcontains = All(NotContains({n}, e), (e, s0), plausible=True)
 
     Eq << Eq.plausible_notcontains.this.limits[0][1].subs(s0_definition)
 
@@ -216,7 +216,18 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.args[0].simplify()
 
-    Eq.x_tilde_set_in_s0 = Eq[-3].func(Contains(Cup.construct_finite_set(x_tilde), s0), *Eq[-3].limits, plausible=True)
+    def construct_finite_set(cls, base, start=None, stop=None, x=None):
+        if start is None:
+            start = S.Zero
+
+        if stop is None:
+            stop = base.shape[-1]
+
+        if x is None:
+            x = base.generate_var(start.free_symbols | stop.free_symbols, integer=True)
+        return cls(base[x].set, (x, start, stop - 1))
+
+    Eq.x_tilde_set_in_s0 = Eq[-3].func(Contains(construct_finite_set(Cup, x_tilde), s0), *Eq[-3].limits, plausible=True)
 
     Eq << Eq.x_tilde_set_in_s0.subs(s0_definition)
 
@@ -234,7 +245,7 @@ def prove(Eq):
 
     Eq.subset_B_plausible = Eq.subset_B_definition.apply(sets.eq.imply.eq.union, {n.set})
 
-    Eq << ForAll(Eq.subset_B_plausible.limits[0][1], *Eq.subset_B_plausible.limits, plausible=True)
+    Eq << All(Eq.subset_B_plausible.limits[0][1], *Eq.subset_B_plausible.limits, plausible=True)
 
     Eq << Eq[-1].simplify()
 

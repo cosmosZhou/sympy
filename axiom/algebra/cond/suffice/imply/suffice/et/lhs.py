@@ -1,12 +1,11 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(*given):
-    cond, sufficient = given
-    p, q = sufficient.of(Suffice)
+    cond, suffice = given
+    p, q = suffice.of(Suffice)
     return Suffice(p & cond, q)
 
 

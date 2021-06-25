@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given, reverse=False): 
-    eq, f_eq = given
+def apply(eq, f_eq, reverse=False): 
     if not eq.is_Equal:
         eq, f_eq = f_eq, eq    
     lhs, rhs = eq.of(Equal)
@@ -16,16 +15,14 @@ def apply(*given, reverse=False):
 def prove(Eq):
     m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
-    
     a = Symbol.a(real=True, shape=(m, n))
     b = Symbol.b(real=True, shape=(m, n))
     c = Symbol.c(real=True, shape=(m, n))
-    
     S = Symbol.S(etype=dtype.real * (m, n))
     Eq << apply(Equal(a, 2 * c), Contains(a * b, S))
-    
+
     Eq << Eq[1].subs(Eq[0])
 
-    
+
 if __name__ == '__main__':
     run()

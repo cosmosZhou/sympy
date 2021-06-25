@@ -3,12 +3,12 @@ from util import *
 
 @apply
 def apply(given, index=-1):
-    function, *limits = given.of(ForAll)
+    function, *limits = given.of(All)
 
     assert len(limits) > 1
     del limits[index]
 
-    return ForAll(function, *limits)
+    return All(function, *limits)
 
 
 @prove
@@ -22,7 +22,7 @@ def prove(Eq):
 
     f = Function.f(integer=True)
 
-    Eq << apply(ForAll[x:A, y:B](f(x, y) > 0))
+    Eq << apply(All[x:A, y:B](f(x, y) > 0))
 
     Eq << ~Eq[0]
 

@@ -1,5 +1,5 @@
 <template>
-	<div @click=click @dblclick=dblclick @focus=focus @blur=blur @keydown=keydown @contextmenu.prevent=contextmenu>
+	<div v-show=visible @click=click @dblclick=dblclick @focus=focus @blur=blur @keydown=keydown @contextmenu.prevent=contextmenu>
 		<br v-for="i of lines" /> 
 		<font v-if="tagName == 'FONT'">{{text}}</font> 
 		<input v-else-if="tagName == 'INPUT'" :size='text.length + 1' :value=text @blur=blur_input />
@@ -11,14 +11,14 @@
 	console.log('importing icon.vue');
 	var previousKey = '';
 	var previousTime = null;	
-	
 	module.exports = {
 		props : [ 'text', 'lines'],
 		
 		data(){
 			return {
-				tagName: '',				
-			}
+				tagName: '',
+				visible: true,
+			};
 		},
 		
 		watch:{
@@ -40,6 +40,8 @@
 				}
 				
 				var sympy = sympy_user();
+				
+				var self = this.$parent;
 				request_post(`/${sympy}/php/request/rename/${className}.php`, { package: folder.replaceAll('/', '.'), old: oldText, new: newText}).done(res => {
 					console.log('res = ' + res);
 					
@@ -52,6 +54,10 @@
 							href += '/';
 						}
 						location.href += subPackage;
+					}
+					else if (!newText){						
+						var parent = self.$parent;
+						parent.remove(parent.$children.indexOf(self));						
 					}
 					
 				}).fail(fail);
@@ -195,9 +201,7 @@
 						this.dblclick(event);
 						break;
 					case 'Delete':
-						var self = this.$parent;
-						var parent = self.$parent;
-						parent.remove(parent.$children.indexOf(self));
+						this.remove();
 						break;
 					case 'Backspace':
 						var href = location.href;
@@ -272,13 +276,7 @@
 				
 				setTimeout(()=>{
 					// Code that will run only after the entire view has been rendered					
-					//console.log('self = ');
-					//console.log(self);
-					var contextmenu = self.nextElementSibling;
-
-					//console.log('contextmenu = ');
-					//console.log(contextmenu);
-					contextmenu.focus();					
+					self.nextElementSibling.focus();					
 				}, 100);
 			},
 			
@@ -294,8 +292,9 @@
 				});
 			},
 			
-			remove() {
-				console.log("remove() {");
+			remove() {	
+				this.visible = false;
+				this.$parent.remove();
 			},
 			
 			blur_input(event){

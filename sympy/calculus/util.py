@@ -104,7 +104,7 @@ def continuous_domain(f, symbol, domain):
         raise NotImplementedError("Methods for determining the continuous domains"
                                   " of this function have not been developed.")
 
-    return domain - sings
+    return domain // sings
 
 
 def function_range(f, symbol, domain):

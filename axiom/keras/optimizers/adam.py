@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (t, 1, k + 1))
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
 
     Eq << Eq[-1] - Eq[-1].rhs.args[0]
 

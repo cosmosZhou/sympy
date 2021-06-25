@@ -9,7 +9,7 @@ def apply(given, wrt=None):
     if wrt is None:
         wrt = given.generate_var(**A.etype.dict)
 
-    return ForAll[wrt:A](NotContains(wrt, B))
+    return All[wrt:A](NotContains(wrt, B))
 
 
 @prove

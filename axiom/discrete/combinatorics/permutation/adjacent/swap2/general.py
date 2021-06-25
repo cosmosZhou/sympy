@@ -3,40 +3,22 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_ForAll and len(given.limits) == 2
-    j, a, n_munis_1 = given.limits[0]
+    ((((x0, condition0), (xj, conditionj), (xi, conditioni)), (i, z, _n)), _S), (j, a, n), (x, S) = given.of(All[Contains[Lamda[Piecewise]]])
     assert a == 1
-    x, S = given.limits[1]
-
-    contains = given.function
-    assert contains.is_Contains
-    ref, _S = contains.args
-    assert S == _S and ref.is_Lamda and S.is_set
+    assert S == _S and S.is_set
     dtype = S.etype
 
-    assert len(ref.limits) == 1
-    i, a, _n_munis_1 = ref.limits[0]
-    assert _n_munis_1 == n_munis_1 and a == 0
-
-    piecewise = ref.function
-    assert piecewise.is_Piecewise and len(piecewise.args) == 3
-
-    x0, condition0 = piecewise.args[0]
-    assert condition0.is_Equal and {*condition0.args} == {i, j}
-
-    xj, conditionj = piecewise.args[1]
-    assert conditionj.is_Equal and {*conditionj.args} == {i, 0}
-
-    xi, conditioni = piecewise.args[2]
+    assert _n == n and z == 0   
+     
+    assert {*condition0.of(Equal)} == {i, j}    
+    assert {*conditionj.of(Equal)} == {i, 0}
     assert conditioni
-
-    n = n_munis_1
 
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.type
 
     w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
 
-    return ForAll(Contains(w[i, j] @ x, S), (x, S))
+    return All(Contains(w[i, j] @ x, S), (x, S))
 
 
 @prove
@@ -50,7 +32,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
 
-    given = ForAll(Contains(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S), (j, 1, n), (x, S))
+    given = All(Contains(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S), (j, 1, n), (x, S))
 
     Eq << apply(given)
 
@@ -74,7 +56,7 @@ def prove(Eq):
 
     Eq << Eq.given.limits_swap()
 
-    Eq << ForAll[x:S](Eq[-1].function.subs(j, 0), plausible=True)
+    Eq << All[x:S](Eq[-1].function.subs(j, 0), plausible=True)
 
     Eq << Eq[-1].subs(w[0, 0].this.definition)
 

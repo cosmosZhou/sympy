@@ -14,7 +14,7 @@ def apply(given, pivot=0, wrt=None):
 
     cond = eq.invert()
 
-    return ForAll[wrt:cond](given.func(*conds))
+    return All[wrt:cond](given.func(*conds))
 
 
 @prove

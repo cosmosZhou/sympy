@@ -1,7 +1,5 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(*given):
@@ -21,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(x < y, x > -y)
 
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.abs.to.piecewise)
 
     Eq << Eq[-1].apply(algebra.cond.given.ou)
 

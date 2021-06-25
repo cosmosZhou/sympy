@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq[-1], Eq[-2])
 
-    Eq.P2P_quote = ForAll[x[:n]:P](Contains(x_quote, P_quote), plausible=True)
+    Eq.P2P_quote = All[x[:n]:P](Contains(x_quote, P_quote), plausible=True)
 
     Eq << Eq.P2P_quote.this.function.rhs.definition
 
@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(algebra.eq.eq.imply.eq.transit)
 
-    Eq.mapping_quote = ForAll[x[:n + 1]:P_quote](Equal(x_quote, x[:n + 1]), plausible=True)
+    Eq.mapping_quote = All[x[:n + 1]:P_quote](Equal(x_quote, x[:n + 1]), plausible=True)
 
     Eq << Eq.mapping_quote.this.function.apply(algebra.eq.given.et.split.blockmatrix, Slice[-1:])
 
@@ -64,7 +64,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.mapping)
 
-    Eq << ForAll[x[:n + 1]:P_quote](Contains(x[:n], P), plausible=True)
+    Eq << All[x[:n + 1]:P_quote](Contains(x[:n], P), plausible=True)
 
     Eq << Eq[-1].this.function.rhs.definition
 

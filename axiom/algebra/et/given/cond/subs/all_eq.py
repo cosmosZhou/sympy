@@ -1,12 +1,11 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(imply, simplify=True):
     from sympy.concrete.expr_with_limits import ExprWithLimits
     all_eq, cond = imply.of(And)
-    (old, new), *limits = all_eq.of(ForAll[Equal])
+    (old, new), *limits = all_eq.of(All[Equal])
     limits = tuple(limits)
 
     for expr in cond.findall(ExprWithLimits):
@@ -38,7 +37,7 @@ def prove(Eq):
 
     S = Symbol.S(etype=dtype.integer)
 
-    Eq << apply(ForAll[i:n](Equal(a[i], b[i])) & Contains(Sum[i:n](a[i]), S))
+    Eq << apply(All[i:n](Equal(a[i], b[i])) & Contains(Sum[i:n](a[i]), S))
 
     Eq << algebra.all_eq.imply.eq.sum.apply(Eq[-2])
 

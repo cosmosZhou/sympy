@@ -28,14 +28,14 @@ def apply(n, **kwargs):
 
         x = S.generate_var(shape=shape, **kwargs)
 
-    return ForAll[S:Equal(abs(S), n)](Exists[x[:n]:ForAll[j:i, i:n](Unequal(x[i], x[j]))](Equal(S, Cup[i:n]({x[i]}))))
+    return All[S:Equal(abs(S), n)](Any[x[:n]:All[j:i, i:n](Unequal(x[i], x[j]))](Equal(S, Cup[i:n]({x[i]}))))
 
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
-    n = Symbol.n(domain=Range(2, oo), given=False)
+    from axiom import algebra, sets
 
+    n = Symbol.n(domain=Range(2, oo), given=False)
     k = Symbol.k(integer=True, positive=True)
     S = Symbol.S(etype=dtype.integer * k)
     Eq << apply(n, set=S)
@@ -43,6 +43,8 @@ def prove(Eq):
     Eq.initial = Eq[0].subs(n, 2)
 
     Eq << Eq.initial.this.function.doit(deep=True)
+    
+    Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.blockMatrix)
 
     Eq << Eq[-1].this.function.limits[0][1].reversed
 
@@ -51,7 +53,6 @@ def prove(Eq):
     Eq.induct = Eq[0].subs(n, n + 1)
 
     A = Eq.induct.function.variable.base
-
     Eq << algebra.imply.all.limits_assert.apply(Eq.induct.limits)
 
     Eq.size_deduction = Eq[-1].this.function.apply(sets.eq.imply.any_eq.size_deduction, var=A[n])

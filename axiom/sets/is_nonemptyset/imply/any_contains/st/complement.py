@@ -9,12 +9,13 @@ def apply(given, wrt=None):
     if wrt is None:
         wrt = A.element_symbol(B.free_symbols)
     assert wrt.type == B.etype
-    return Exists[wrt:A](Contains(wrt, AB))
+    return Any[wrt:A](Contains(wrt, AB))
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
     Eq << apply(Unequal(A // B, A.etype.emptySet))
@@ -22,7 +23,6 @@ def prove(Eq):
     Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[0])
 
     i = Eq[-1].variable
-
     Eq << Suffice(Contains(i, A // B), And(Contains(i, A // B), Contains(i, A)), plausible=True)
 
     Eq << algebra.suffice.given.suffice.st.et.apply(Eq[-1])

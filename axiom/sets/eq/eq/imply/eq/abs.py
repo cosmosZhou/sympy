@@ -29,8 +29,8 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer * m)
     b = Symbol.b(integer=True, shape=(m,))
 
-    f = Function.f(nargs=(n,), integer=True, shape=(m,))
-    g = Function.g(nargs=(m,), integer=True, shape=(n,))
+    f = Function.f(integer=True, shape=(m,))
+    g = Function.g(integer=True, shape=(n,))
 
     assert f.is_integer
     assert g.is_integer

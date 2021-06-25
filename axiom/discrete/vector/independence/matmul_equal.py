@@ -33,17 +33,15 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
+    from axiom import algebra, discrete
+
     p = Symbol.p(complex=True)
     n = Symbol.n(domain=Range(1, oo))
     x = Symbol.x(shape=(n,), complex=True, given=True)
     y = Symbol.y(shape=(n,), complex=True, given=True)
     k = Symbol.k(domain=Range(1, oo))
-
     assert x.is_given and y.is_given
-
     given = Equal(Lamda[k:n](p ** k) @ x, Lamda[k:n](p ** k) @ y)
-
     Eq << apply(given)
 
     i = Symbol.i(domain=Range(1, n + 1))
@@ -53,14 +51,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(algebra.eq.imply.eq.lamda, *Eq[-1].limits, simplify=False)
 
-    Eq << Eq[-1].this.lhs.astype(MatMul)
+    Eq << Eq[-1].this.lhs.apply(discrete.lamda_matmul.to.matmul)
 
-    Eq << Eq[-1].this.rhs.astype(MatMul)
+    Eq << Eq[-1].this.rhs.apply(discrete.lamda_matmul.to.matmul)
 
     Eq.statement = Eq[-1].T
 
     i, k = Eq.statement.lhs.args[1].variables
-
     Eq << discrete.matrix.vandermonde.apply(Lamda[i:n](i + 1))
 
     Eq << Unequal(Eq[-1].rhs, 0, plausible=True)

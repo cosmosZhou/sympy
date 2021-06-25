@@ -14,7 +14,7 @@ def prove(Eq):
     x = Symbol.x(real=True)
     Eq << apply(ceiling(x))
 
-    Eq << algebra.cond.given.suffice.bisected.apply(Eq[-1], cond=Contains(x, Integers))
+    Eq << algebra.cond.given.suffice.split.apply(Eq[-1], cond=Contains(x, Integers))
 
     Eq << Eq[-2].this.lhs.apply(sets.contains.imply.any_eq)
 

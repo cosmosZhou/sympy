@@ -1075,7 +1075,7 @@ class Range(Set):
     def _eval_Eq(self, other):
         if not other.is_Range:
             if other.is_FiniteSet:
-                if not self.is_integer or other.is_EmptySet and self.min() <= self.max():
+                if other.is_EmptySet and self.start < self.stop:
                     return S.false
                 return
             elif other.is_set:

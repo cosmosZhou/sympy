@@ -4,7 +4,6 @@ from util import *
 
 
 
-import axiom
 from axiom.sets.imply.eq.swap import swap
 
 

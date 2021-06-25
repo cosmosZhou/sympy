@@ -16,7 +16,7 @@ def apply(x, wrt=None):
     else:
         i = wrt
 
-    return Suffice(ForAll[i:1:n](x[i] > 0), Equal(alpha(x), H(x) / K(x)))
+    return Suffice(All[i:1:n](x[i] > 0), Equal(alpha(x), H(x) / K(x)))
 
 
 @prove
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(K).defun()
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.is_positive.imply.is_positive.mul)
+    Eq << Eq[-1].this.lhs.apply(algebra.is_positive.is_positive.imply.is_positive)
 
     Eq << Eq[-1].this.lhs + 1
 
@@ -71,7 +71,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.all.given.et, cond={n})
 
-    Eq << Eq[-1].this.find(ForAll)().function.simplify()
+    Eq << Eq[-1].this.find(All)().function.simplify()
 
     Eq << Eq[-1].this.find(Greater).apply(algebra.is_positive.given.is_positive.split.add)
 

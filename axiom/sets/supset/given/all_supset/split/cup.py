@@ -5,7 +5,7 @@ from util import *
 def apply(imply):
     lhs, rhs = imply.of(Supset)
     assert rhs.is_Cup
-    return ForAll(Supset(lhs, rhs.function).simplify(), *rhs.limits)
+    return All(Supset(lhs, rhs.function).simplify(), *rhs.limits)
 
 
 @prove

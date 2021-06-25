@@ -13,8 +13,8 @@ def apply(given, *, cond=None, wrt=None):
     if wrt.is_bounded:
         given = given.forall((wrt,), simplify=False)
     else:
-        given = ForAll(given, (wrt,))
-    assert given.is_ForAll
+        given = All(given, (wrt,))
+    assert given.is_All
 
     domain = wrt.domain_conditioned(cond)
     if not domain.is_integer:

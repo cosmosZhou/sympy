@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << Eq.initial.this.rhs.doit(deep=True)
 
-    Eq << Eq[-1].this.lhs.arg.astype(Matrix).this.lhs.doit()
+    Eq << Eq[-1].this.lhs.arg.apply(algebra.lamda.to.matrix).this.lhs.doit()
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
@@ -33,7 +33,7 @@ def prove(Eq):
         (i, *_), (j, *_) = limits
         return Identity(n) - Lamda[j:n, i:n](a[0] * KroneckerDelta(i, j + 1))
 
-    Eq.expand = (row_transformation(a, *D.limits) @ D).this.expand()
+    Eq.expand = (row_transformation(a, *D.limits) @ D).this.apply(discrete.matmul.to.lamda)
 
     Eq << discrete.matrix.determinant.expansion_by_minors.apply(Eq.expand.rhs, i=0)
 
@@ -61,9 +61,9 @@ def prove(Eq):
 
     Eq.recursion = algebra.all_eq.cond.imply.all.subs.apply(Eq[-1], Eq.recursion)
 
-    Eq << Eq.recursion.rhs.args[0].arg.this.astype(Mul)
+    Eq << Eq.recursion.rhs.args[0].arg.this.apply(algebra.lamda.to.mul)
 
-    Eq << Eq[-1].apply(algebra.eq.imply.eq.det)
+    Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
 
     i = Eq[-1].rhs.args[1].variable
     Eq.determinant = Eq[-1].this.rhs.args[1].limits_subs(i, i - 1)
@@ -96,7 +96,7 @@ def prove(Eq):
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq[-1], Eq.recursion)
 
-    Eq << Eq.expand.apply(algebra.eq.imply.eq.det)
+    Eq << Eq.expand.apply(discrete.eq.imply.eq.det)
 
     Eq << Eq[-1].subs(Eq[-2])
 

@@ -13,8 +13,7 @@ def prove(Eq):
     from axiom import discrete, algebra
     f = Function.f(real=True)
     x = Symbol.x(real=True)
-    fx = f(x)
-    assert fx.is_real
+    fx = f(x)    
     n = Symbol.n(integer=True, nonnegative=True, given=False)
     Eq << apply(fx, x, n)
 
@@ -24,11 +23,11 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.split(Slice[:1])
+    Eq << Eq.induct.this.lhs.apply(discrete.difference.split, Slice[:1])
 
     Eq << Eq[-1].this.lhs.expr.doit()
 
-    Eq << Eq[-1].this.lhs.astype(Add)
+    Eq << Eq[-1].this.lhs.apply(discrete.difference.to.add)
 
     Eq << Eq[-1].this.rhs.split({0})
 

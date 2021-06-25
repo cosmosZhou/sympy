@@ -3,17 +3,15 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_ForAll and len(given.limits) == 1
-    x, S = given.limits[0]
-
-    contains = given.function
-    assert contains.is_Contains
-
-    w = contains.lhs.args[0].base
-    _, j = contains.lhs.args[0].indices
+    (lhs, _S), (x, S) = given.of(All[Contains])
+    
+    assert S == _S
+    
+    w = lhs.args[0].base
+    _, j = lhs.args[0].indices
     i = Symbol.i(integer=True)
 
-    return ForAll[x:S](Contains(w[i, j] @ x, S))
+    return All[x:S](Contains(w[i, j] @ x, S))
 
 
 @prove
@@ -29,7 +27,7 @@ def prove(Eq):
 
     w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
 
-    Eq << apply(ForAll[x:S](Contains(w[0, j] @ x, S)))
+    Eq << apply(All[x:S](Contains(w[0, j] @ x, S)))
 
     j_ = j.copy(domain=Range(0, n))
     Eq.given = Eq[1].subs(j, j_)
@@ -61,7 +59,7 @@ def prove(Eq):
 
     Eq.i_complement = Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
 
-    Eq.plausible = ForAll(Contains(w[i, j] @ x, S), (x, S), (j, Range(1, n)), plausible=True)
+    Eq.plausible = All(Contains(w[i, j] @ x, S), (x, S), (j, Range(1, n)), plausible=True)
 
     Eq << algebra.all.given.et.apply(Eq.plausible, cond=i.set, wrt=j)
 

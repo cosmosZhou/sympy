@@ -141,7 +141,7 @@ class Tuple(Basic):
         else:
             return self.args.index(value, start, stop)
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         domain = Basic._eval_domain_defined(self, x)
         for arg in self.args:
             domain &= arg.domain_defined(x)
@@ -268,6 +268,8 @@ class Tuple(Basic):
         if len(ab) == 2 and not ab[1].is_set:
             from sympy import Interval, Range
             return (x, (Range if x.is_integer else Interval)(*ab))
+        if not ab:
+            return x, x.universalSet
         return self
     
     @classmethod
@@ -298,7 +300,11 @@ class Tuple(Basic):
                 domain = (Range if x.is_integer else Interval)(a, b)
         return x, domain
     
-
+    def limit(self, x, xlim, dir=1):
+        """ Compute limit x->xlim.
+        """
+        from sympy.series.limits import limit
+        return Tuple(*[limit(f, x, xlim, dir) for f in self.args])
 
 converter[tuple] = lambda tup: Tuple(*tup)
 

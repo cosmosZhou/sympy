@@ -14,7 +14,7 @@ def apply(given, pivot=0, wrt=None):
 
     cond = eq.invert()
 
-    return ForAll[wrt:cond](given.func(*conds))
+    return All[wrt:cond](given.func(*conds))
 
 
 @prove
@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << sets.ne.to.contains.apply(x, y)
 
-    Eq << ForAll[x: Equal(Bool(Contains(x, Eq[2].limits[0][1])), 1)](Eq[2].function, plausible=True)
+    Eq << All[x: Equal(Bool(Contains(x, Eq[2].limits[0][1])), 1)](Eq[2].function, plausible=True)
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
 

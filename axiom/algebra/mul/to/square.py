@@ -10,7 +10,7 @@ def apply(self, evaluate=False):
             assert arg >= 0
             args.append(sqrt(arg))
         else:
-            arg = arg.of(Basic ** 2)
+            arg = arg.of(Expr ** 2)
             args.append(arg)
 
     return Equal(self, Mul(*args) ** 2, evaluate=evaluate)

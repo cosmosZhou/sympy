@@ -1,13 +1,9 @@
 from util import *
-import axiom
-
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(self):
-    function, *limits = self.of(Sum)
-    x, cond, space = axiom.limit_is_baseset(limits)
+    function, (x, cond, space) = self.of(Sum)
     domain = x.domain_conditioned(cond) & space
     return Equal(self, Sum[x:domain](function), evaluate=False)
 

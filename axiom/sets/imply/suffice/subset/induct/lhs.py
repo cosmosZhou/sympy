@@ -1,14 +1,12 @@
 from util import *
 
-import axiom
-
 
 @apply(given=None)
-def apply(given, *limits):
+def apply(given, limit):
     fk, A = given.of(Subset)
-    k, a, b = axiom.limit_is_Interval(limits)
+    k, a, b = limit
     assert not A._has(k)
-    return Suffice(ForAll[k:a:b](Subset(fk, A)), Subset(Cup[k:a:b](fk), A))
+    return Suffice(All[k:a:b](Subset(fk, A)), Subset(Cup[k:a:b](fk), A))
 
 
 @prove

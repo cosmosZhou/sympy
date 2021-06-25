@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -10,7 +8,7 @@ def apply(given, q=None):
     if q is None:
         q = Symbol.q(integer=True)
 
-    return Exists[q](Equal(n, q * d + r))
+    return Any[q](Equal(n, q * d + r))
 
 
 @prove
@@ -31,7 +29,8 @@ def prove(Eq):
 
     q = Eq[1].variable
 
-    Eq << algebra.any.given.any.subs.apply(Eq[1], q, n // d)
+    Eq << algebra.any.given.cond.subs.apply(Eq[1], q, n // d)
+
 
 if __name__ == '__main__':
     run()

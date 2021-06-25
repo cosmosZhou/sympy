@@ -8,7 +8,6 @@ sympy.stats.rv
 sympy.stats.frv
 """
 
-
 from sympy import (Interval, Intersection, symbols, sympify, Dummy, nan,
         Integral, And, Or, Piecewise, cacheit, integrate, oo, Lambda,
         Basic, S, exp, I, FiniteSet, Ne, Eq, Union, poly, series, factorial,
@@ -43,6 +42,7 @@ class SingleContinuousDomain(ContinuousDomain, SingleDomain):
 
     Represented using a single symbol and interval.
     """
+
     def compute_expectation(self, expr, variables=None, **kwargs):
         if variables is None:
             variables = self.symbols
@@ -144,8 +144,10 @@ class ConditionalContinuousDomain(ContinuousDomain, ConditionalDomain):
 class ContinuousDistribution(Distribution):
     is_extended_real = True
 
+
 class SampleContinuousScipy:
     """Returns the sample from scipy of the given distribution"""
+
     def __new__(cls, dist, size):
         return cls._sample_scipy(dist, size)
 
@@ -156,12 +158,16 @@ class SampleContinuousScipy:
         from scipy.stats import rv_continuous
         z = Dummy('z')
         handmade_pdf = lambdify(z, dist.pdf(z), 'scipy')
+
         class scipy_pdf(rv_continuous):
+
             def _pdf(self, x):
                 return handmade_pdf(x)
+
         scipy_rv = scipy_pdf(a=float(dist.set._inf),
                     b=float(dist.set._sup), name='scipy_pdf')
         return scipy_rv.rvs(size=size)
+
 
 class SampleContinuousNumpy:
     """Returns the sample from numpy of the given distribution"""
@@ -180,7 +186,7 @@ class SampleContinuousNumpy:
             'ChiSquaredDistribution': lambda dist, size: numpy.random.chisquare(
                 df=float(dist.k), size=size),
             'ExponentialDistribution': lambda dist, size: numpy.random.exponential(
-                1/float(dist.rate), size=size),
+                1 / float(dist.rate), size=size),
             'GammaDistribution': lambda dist, size: numpy.random.gamma(float(dist.k),
                 float(dist.theta), size=size),
             'LogNormalDistribution': lambda dist, size: numpy.random.lognormal(
@@ -199,6 +205,7 @@ class SampleContinuousNumpy:
             return None
 
         return numpy_rv_map[dist.__class__.__name__](dist, size)
+
 
 class SampleContinuousPymc:
     """Returns the sample from pymc3 of the given distribution"""
@@ -221,7 +228,7 @@ class SampleContinuousPymc:
             'ExponentialDistribution': lambda dist:
                 pymc3.Exponential('X', lam=float(dist.rate)),
             'GammaDistribution': lambda dist:
-                pymc3.Gamma('X', alpha=float(dist.k), beta=1/float(dist.theta)),
+                pymc3.Gamma('X', alpha=float(dist.k), beta=1 / float(dist.theta)),
             'LogNormalDistribution': lambda dist:
                 pymc3.Lognormal('X', mu=float(dist.mean), sigma=float(dist.std)),
             'NormalDistribution': lambda dist:
@@ -242,6 +249,7 @@ class SampleContinuousPymc:
         with pymc3.Model():
             pymc3_rv_map[dist.__class__.__name__](dist)
             return pymc3.sample(size, chains=1, progressbar=False)[:]['X']
+
 
 _get_sample_class_crv = {
     'scipy': SampleContinuousScipy,
@@ -295,7 +303,6 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
                 % (self.__class__.__name__, library)
                 )
 
-
     @cacheit
     def compute_cdf(self, **kwargs):
         """ Compute the CDF from the PDF
@@ -331,7 +338,7 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
         """
         x, t = symbols('x, t', real=True, cls=Dummy)
         pdf = self.pdf(x)
-        cf = integrate(exp(I*t*x)*pdf, (x, -oo, oo))
+        cf = integrate(exp(I * t * x) * pdf, (x, -oo, oo))
         return Lambda(t, cf)
 
     def _characteristic_function(self, t):
@@ -367,7 +374,7 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
                     return mgf
         return self.compute_moment_generating_function(**kwargs)(t)
 
-    def expectation(self, expr, var, evaluate=True, **kwargs):
+    def expectation(self, expr, var, evaluate=True, space=None, **kwargs):
         """ Expectation of expression over distribution """
         if evaluate:
             try:
@@ -379,12 +386,15 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
                 deg = p.degree()
                 taylor = poly(series(mgf, t, 0, deg + 1).removeO(), t)
                 result = 0
-                for k in range(deg+1):
+                for k in range(deg + 1):
                     result += p.coeff_monomial(var ** k) * taylor.coeff_monomial(t ** k) * factorial(k)
                 return result
             except PolynomialError:
                 return integrate(expr * self.pdf(var), (var, self.set), **kwargs)
         else:
+            if space is not None:
+                from sympy import Probability, Equal
+                return Integral(expr * Probability(Equal(space.value, var)), (var, self.set), **kwargs)            
             return Integral(expr * self.pdf(var), (var, self.set), **kwargs)
 
     @cacheit
@@ -399,7 +409,7 @@ class SingleContinuousDistribution(ContinuousDistribution, NamedArgsMixin):
         pdf = self.pdf(x)
         cdf = integrate(pdf, (x, left_bound, x), **kwargs)
         quantile = solveset(cdf - p, x, self.set)
-        return Lambda(p, Piecewise((quantile, (p >= 0) & (p <= 1) ), (nan, True)))
+        return Lambda(p, Piecewise((quantile, (p >= 0) & (p <= 1)), (nan, True)))
 
     def _quantile(self, x):
         return None
@@ -490,7 +500,7 @@ class ContinuousPSpace(PSpace):
 
         d = self.compute_density(expr, **kwargs)
         x, t = symbols('x, t', real=True, cls=Dummy)
-        cf = integrate(exp(I*t*x)*d(x), (x, -oo, oo), **kwargs)
+        cf = integrate(exp(I * t * x) * d(x), (x, -oo, oo), **kwargs)
         return Lambda(t, cf)
 
     @cacheit
@@ -517,7 +527,7 @@ class ContinuousPSpace(PSpace):
 
         return Lambda(p, quantile)
 
-    def probability(self, condition, **kwargs):
+    def probability(self, condition, pdf=True, **kwargs):
         z = Dummy('z', real=True)
         cond_inv = False
         if isinstance(condition, Ne):
@@ -526,13 +536,27 @@ class ContinuousPSpace(PSpace):
         # Univariate case can be handled by where
         try:
             domain = self.where(condition)
-            rv = [rv for rv in self.values if rv.symbol == domain.symbol][0]
+            from sympy import pspace
+            rv = [rv for rv in self.values if pspace(rv).symbol == domain.symbol][0]
             # Integrate out all other random variables
             pdf = self.compute_density(rv, **kwargs)
             # return S.Zero if `domain` is empty set
-            if domain.set.is_EmptySet or isinstance(domain.set, FiniteSet):
-                return S.Zero if not cond_inv else S.One
-            if isinstance(domain.set, Union):
+            s = domain.set
+            if s.is_EmptySet or s.is_FiniteSet:
+                if cond_inv:
+                    return S.One
+                if pdf:       
+                    if len(s) == 1:
+                        [x] = s             
+                        return pdf(x)
+                    else:
+                        assert condition.is_Equal
+                        y = condition.rhs
+                        fy = sum(pdf(g) * abs(g.diff(y)) for g in s)
+                        return fy
+                    
+                return S.Zero
+            if s.is_Union:
                 return sum(Integral(pdf(z), (z, subset), **kwargs) for subset in domain.set.args if subset.is_Interval)
             # Integrate out the last variable over the special domain
             return Integral(pdf(z), (z, domain.set), **kwargs)
@@ -559,12 +583,12 @@ class ContinuousPSpace(PSpace):
     def where(self, condition):
         rvs = frozenset(random_symbols(condition))
         if not (len(rvs) == 1 and rvs.issubset(self.values)):
-            raise NotImplementedError(
-                "Multiple continuous random variables not supported")
+            raise NotImplementedError("Multiple continuous random variables not supported")
         rv = tuple(rvs)[0]
         interval = reduce_rational_inequalities_wrap(condition, rv)
         interval = interval.intersect(self.domain.set)
-        return SingleContinuousDomain(rv.symbol, interval)
+        from sympy import pspace
+        return SingleContinuousDomain(pspace(rv).symbol, interval)
 
     def conditional_space(self, condition, normalize=True, **kwargs):
         condition = condition.xreplace({rv: rv.symbol for rv in self.values})
@@ -575,7 +599,7 @@ class ContinuousPSpace(PSpace):
             # from the variables outside the integral
             # this makes sure that they are evaluated separately
             # and in the correct order
-            replacement  = {rv: Dummy(str(rv)) for rv in self.symbols}
+            replacement = {rv: Dummy(str(rv)) for rv in self.symbols}
             norm = domain.compute_expectation(self.pdf, **kwargs)
             pdf = self.pdf / norm.xreplace(replacement)
             # XXX: Converting set to tuple. The order matters to Lambda though
@@ -621,7 +645,7 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
 
         x = self.symbol
         try:
-            return self.distribution.expectation(expr, x, evaluate=evaluate, **kwargs)
+            return self.distribution.expectation(expr, x, evaluate=evaluate, space=self, **kwargs)
         except PoleError:
             return Integral(expr * self.pdf, (x, self.set), **kwargs)
 
@@ -658,7 +682,7 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
             gs = list(gs.args[1])
 
         if not gs:
-            raise ValueError("Can not solve %s for %s"%(expr, self.value))
+            raise ValueError("Can not solve %s for %s" % (expr, self.value))
         fx = self.compute_density(self.value)
         fy = sum(fx(g) * abs(g.diff(y)) for g in gs)
         return Lambda(y, fy)
@@ -670,6 +694,7 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
             return Lambda(p, self.distribution.quantile(p, **kwargs))
         else:
             return ContinuousPSpace.compute_quantile(self, expr, **kwargs)
+
 
 def _reduce_inequalities(conditions, var, **kwargs):
     try:

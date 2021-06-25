@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(r, n):
     if not n >= 2:
-        return None
+        return
     k = Symbol.k(integer=True)
     i = Symbol.i(integer=True)
     j = Symbol.j(domain=Range(0, n))
@@ -20,42 +20,42 @@ def apply(r, n):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     r = Symbol.r(real=True)
     n = Symbol.n(domain=Range(2, oo))
-
     Eq << apply(r, n)
 
     (j, *_), (i, *iab) = Eq[0].lhs.arg.args[1].limits
-
     assert (2 * i).is_even
-
     E = Lamda[j, i:n]((-1) ** (j - i) * binomial(j + 1, i + 1))
+    Eq << (Eq[0].lhs.arg @ E).this.apply(discrete.matmul.to.blockMatrix)
 
-    Eq << (Eq[0].lhs.arg @ E).this.expand()
+    Eq << Eq[-1].this.rhs.find(MatMul).apply(discrete.matmul.to.lamda)
+
+    Eq << Eq[-1].this.rhs.find(MatMul).apply(discrete.matmul.to.lamda)
 
     (k, *_), *_ = Eq[-1].rhs.args[1].function.limits
-
     _i = i.copy(domain=Range(*iab))
     Eq << discrete.combinatorics.stirling.second.definition.apply(_i + 1, j + 1)
 
     Eq << Eq[-1] * factorial(j + 1)
+
     Eq << Eq[-1].reversed
 
     Eq << Eq[-1].this.lhs.simplify()
 
     Eq << Eq[-1].forall((_i,))
 
-    Eq << Eq[1].rhs.args[1].function.this.limits_subs(k, k - 1)
+    Eq << Eq[3].rhs.args[1].function.this.limits_subs(k, k - 1)
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq[-2], Eq[-1])
 
-    Eq.equation = algebra.all_eq.cond.imply.all.subs.apply(Eq[-1], Eq[1])
+    Eq.equation = algebra.all_eq.cond.imply.all.subs.apply(Eq[-1], Eq[3])
 
     i_ = Eq.equation.rhs.args[0].function.variable
     Eq << Eq.equation.rhs.args[0].function.this.limits_subs(i_, i_ - 1)
 
     i = Eq[-1].rhs.variable
-
     Eq << Eq[-1].this.rhs.expand()
 
     Eq << Eq[-1].this.rhs.args[1].simplify()
@@ -74,7 +74,7 @@ def prove(Eq):
 
     Eq << discrete.combinatorics.binomial.theorem.apply(1, -1, j + 1, i)
 
-    Eq << (-Eq[-1]).this.rhs.astype(Sum)
+    Eq << (-Eq[-1]).this.rhs.apply(algebra.mul.to.sum)
 
     Eq << Eq[-3] + Eq[-1]
 
@@ -84,7 +84,7 @@ def prove(Eq):
 
     Eq << Shift(n, 0, n - 1) @ Eq[-1]
 
-    Eq << Eq[-1].apply(algebra.eq.imply.eq.det)
+    Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
 
     Eq << Eq[-1] * (-1) ** (n - 1)
 

@@ -1,18 +1,14 @@
 from util import *
 
 
-import axiom
-
-
-def doit(self):
-    xi, *limits = self.args
-    i, s = axiom.limit_is_set(limits)
+def doit(Sum, self):
+    xi, (i, s) = self.of(Sum)
     assert s.is_FiniteSet
 
     sgm = self.identity(xi)
     while s:
         t, *args = s.args
-        sgm = self.func.operator(sgm, xi._subs(i, t))
+        sgm = Sum.operator(sgm, xi._subs(i, t))
 
         s = FiniteSet(*args)
         assert Contains(t, s).is_BooleanFalse
@@ -22,8 +18,7 @@ def doit(self):
 
 @apply
 def apply(self):
-    assert self.is_Sum
-    return Equal(self, doit(self))
+    return Equal(self, doit(Sum, self))
 
 
 @prove
@@ -41,16 +36,16 @@ def prove(Eq):
     Eq << apply(Sum[i:finiteset](x[i]))
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
 
 if __name__ == '__main__':

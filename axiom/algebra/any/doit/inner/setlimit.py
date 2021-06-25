@@ -4,8 +4,7 @@ from util import *
 @apply(given=None)
 def apply(self):
     from axiom.algebra.all.doit.inner.setlimit import doit
-    assert self.is_Exists
-    return Equivalent(self, doit(self))
+    return Equivalent(self, doit(Any, self))
 
 
 @prove
@@ -20,13 +19,13 @@ def prove(Eq):
     c = Symbol.c(integer=True)
     d = Symbol.d(integer=True)
 
-    Eq << apply(Exists[j:{a, b, c, d}, i:m](x[i, j] > 0))
+    Eq << apply(Any[j:{a, b, c, d}, i:m](x[i, j] > 0))
 
-    Eq << Equivalent(Exists[i:m](Equal(Bool(Exists[j:{a, b, c, d}](x[i, j] > 0)), 1)), Exists[j:{a, b, c, d}, i:m](x[i, j] > 0), plausible=True)
+    Eq << Equivalent(Any[i:m](Equal(Bool(Any[j:{a, b, c, d}](x[i, j] > 0)), 1)), Any[j:{a, b, c, d}, i:m](x[i, j] > 0), plausible=True)
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
 
-    Eq << Eq[-1].this.find(Bool, Exists).apply(algebra.any.to.ou.doit.setlimit)
+    Eq << Eq[-1].this.find(Bool, Any).apply(algebra.any.to.ou.doit.setlimit)
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
 

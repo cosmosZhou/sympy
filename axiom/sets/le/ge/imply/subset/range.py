@@ -35,7 +35,7 @@ def prove(Eq):
     # if self implies a False proposition, then self must be False
     Eq << Eq[-1].this.function.apply(algebra.et.given.ou, simplify=False)
 
-    Eq.any_ax, Eq.any_by = Exists(Eq[-1].function.args[0], *Eq[-1].limits, plausible=True), Exists(Eq[-1].function.args[1], *Eq[-1].limits, plausible=True)
+    Eq.any_ax, Eq.any_by = Any(Eq[-1].function.args[0], *Eq[-1].limits, plausible=True), Any(Eq[-1].function.args[1], *Eq[-1].limits, plausible=True)
 
     Eq <<= algebra.any_et.imply.any.limits_absorb.apply(Eq.any_ax, index=1), algebra.any_et.imply.any.limits_absorb.apply(Eq.any_by, index=2)
 

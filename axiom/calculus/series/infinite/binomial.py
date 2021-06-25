@@ -14,7 +14,7 @@ def apply(r, x=None, n=None):
     return Equal((1 + x) ** r, Sum[n:0:oo](binomial(r, n) * x ** n))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     r = Symbol.r(real=True)    

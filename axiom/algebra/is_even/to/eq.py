@@ -3,7 +3,7 @@ from util import *
 
 @apply(given=None)
 def apply(self):
-    n = self.of(Equal[Basic % 2, 0])
+    n = self.of(Equal[Expr % 2, 0])
     return Equivalent(self, Equal((-1) ** n, 1))
 
 

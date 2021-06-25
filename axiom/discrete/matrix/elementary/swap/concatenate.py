@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << (V[h, k].this.definition, W[h, k].this.definition)
 
-    Eq << (Eq[-1].this.rhs.astype(KroneckerDelta), Eq[-2].this.rhs.astype(KroneckerDelta))
+    Eq <<= Eq[-1].this.rhs.apply(algebra.piecewise.to.kroneckerDelta), Eq[-2].this.rhs.apply(algebra.piecewise.to.kroneckerDelta)
 
     Eq << Eq[-2] - Eq[-1]
 

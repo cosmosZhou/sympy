@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 def ou_to_any(imply):
@@ -8,7 +7,7 @@ def ou_to_any(imply):
     fn = set()
     limitsArr = []
     for exist in exists:
-        func, *_limits = exist.of(Exists)
+        func, *_limits = exist.of(Any)
         fn.add(func)
         assert len(fn) == 1
 
@@ -19,7 +18,7 @@ def ou_to_any(imply):
         limits = limits_union(limits, limitsArr[i])
 
     fn, *_ = fn
-    return Exists(fn, *limits)
+    return Any(fn, *limits)
 
 
 @apply
@@ -37,7 +36,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(Or(Exists[x:A]((f(x) > 0)), Exists[x:B](f(x) > 0)))
+    Eq << apply(Or(Any[x:A]((f(x) > 0)), Any[x:B](f(x) > 0)))
 
     Eq << ~Eq[1]
 

@@ -1,13 +1,10 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    is_negative_y, is_positive_x = given
-    x = axiom.is_positive(is_positive_x)
-    y = axiom.is_negative(is_negative_y)
+def apply(is_negative_y, is_positive_x):
+    x = is_positive_x.of(Expr > 0)
+    y = is_negative_y.of(Expr < 0)
     return Less(x * y, 0)
 
 
@@ -21,7 +18,7 @@ def prove(Eq):
 
     Eq << -Eq[0]
 
-    Eq << algebra.is_positive.is_positive.imply.is_positive.mul.apply(Eq[-1], Eq[1])
+    Eq << algebra.is_positive.is_positive.imply.is_positive.apply(Eq[-1], Eq[1])
 
     Eq << -Eq[-1]
 

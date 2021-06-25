@@ -4,7 +4,7 @@ from util import *
 
 @apply(given=None)
 def apply(self):
-    n = self.of(Equal[Basic % 2, 1])
+    n = self.of(Equal[Expr % 2, 1])
     return Equivalent(self, Equal((-1) ** n, -1))
 
 

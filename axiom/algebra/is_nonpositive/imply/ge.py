@@ -1,13 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
-    xy = axiom.is_nonpositive(given)
-    x, y = axiom.is_Subtract(xy)
-    
+    x, y = given.of(Expr - Expr <= 0)
     return GreaterEqual(y, x)
 
 

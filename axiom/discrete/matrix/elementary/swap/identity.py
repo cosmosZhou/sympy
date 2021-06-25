@@ -1,8 +1,6 @@
 from util import *
 
 
-
-
 @apply
 def apply(x, w=None, left=True, reference=True):
     n = x.shape[0]
@@ -29,7 +27,7 @@ def apply(x, w=None, left=True, reference=True):
 
 @prove
 def prove(Eq):
-    from axiom import algebra
+    from axiom import algebra, discrete
     n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(shape=(n,), real=True)
     Eq << apply(x)
@@ -41,7 +39,7 @@ def prove(Eq):
 
     Eq << (Eq[0].lhs[k] @ Lamda[k:n](k)).this.args[0].definition
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << Eq[-1].this(i).rhs.args[0].expr.simplify()
     Eq << Eq[-1].this(j).rhs.args[1].expr.simplify()
@@ -51,7 +49,7 @@ def prove(Eq):
 
     Eq << (w[i, j] @ x).this.subs(Eq[0])
 
-    Eq << Eq[-1].subs(Eq[-1].rhs.this.expand())
+    Eq << Eq[-1].subs(Eq[-1].rhs.this.apply(discrete.matmul.to.lamda))
 
     Eq << Eq[-1][k]
 

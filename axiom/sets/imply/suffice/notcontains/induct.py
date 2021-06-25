@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 
 
 @apply(given=None)
@@ -8,7 +7,7 @@ def apply(given, n):
     x, Ak = given.of(NotContains)
     A, k = Ak.of(Indexed)
 
-    return Suffice(ForAll[k:n](NotContains(x, A[k])), NotContains(x, Cup[k:n](A[k])))
+    return Suffice(All[k:n](NotContains(x, A[k])), NotContains(x, Cup[k:n](A[k])))
 
 
 @prove

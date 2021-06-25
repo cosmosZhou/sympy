@@ -56,7 +56,7 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq.xj_notcontains
 
     i = Symbol.i(domain=Range(0, n))
-    Eq << discrete.combinatorics.permutation.index.kronecker_delta.indexed.apply(Eq[0], i, j)
+    Eq << discrete.combinatorics.permutation.index.kroneckerDelta.indexed.apply(Eq[0], i, j)
 
     Eq.ou1 = algebra.cond.imply.ou.subs.apply(Eq[-1], i, Eq[1].lhs)
 
@@ -78,7 +78,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.equality)
 
-    Eq << Eq[-1].this.apply(algebra.eq.simplify.kronecker_delta)
+    Eq << Eq[-1].this.apply(algebra.eq.simplify.kroneckerDelta)
 
     Eq << Eq[-1].reversed
 

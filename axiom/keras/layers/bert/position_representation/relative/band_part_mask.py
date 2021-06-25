@@ -49,15 +49,14 @@ def apply(seq_length, dx, dz, k, num_lower, num_upper):
 
 @prove
 def prove(Eq):
-    from axiom import keras, sets, algebra
+    from axiom import keras, algebra, sets, discrete
+
     n = Symbol.n(integer=True, positive=True)
     k = Symbol.k(integer=True, positive=True)
-
     l = Symbol.l(integer=True, positive=True)
     u = Symbol.u(integer=True, positive=True)
     dx = Symbol.d_x(integer=True, positive=True)
     dz = Symbol.d_z(integer=True, positive=True)
-
     Eq << apply(n, dx, dz, k, l, u)
 
     Eq << Eq[11].this.find(Min).apply(keras.min.to.add.relu, swap=True)
@@ -69,7 +68,6 @@ def prove(Eq):
     β = Eq[9].lhs.base
     ζ = Eq[10].lhs.base
     i, j = Eq[2].lhs.indices
-
     Eq <<= Eq[2].subs(j, j + β[i]), Eq[7].subs(j, j + β[i])
 
     Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
@@ -102,12 +100,12 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[4].reversed)
 
     Ξ = Symbol.Ξ(band_part)
-
     Eq.Ξ_definition = Ξ.this.definition
 
     Eq << Eq[-1].subs(Eq.Ξ_definition.reversed)
 
     Eq << Eq[-1][i]
+
     Eq << Eq[8][i]
 
     Eq << Eq[-1].this.rhs.args[0].definition
@@ -122,7 +120,7 @@ def prove(Eq):
 
     Eq << Eq.z_definition.rhs.args[-1].args[0].this.arg.args[0].subs(Eq.Ξ_definition)
 
-    Eq << Eq[-1].this.rhs.astype(Sum)
+    Eq << Eq[-1].this.rhs.apply(algebra.reducedSum.to.sum)
 
     Eq << Eq[-1].this.find(Contains).apply(sets.contains.negate)
 
@@ -130,7 +128,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.start_definition.reversed, Eq[10].reversed)
 
-    Eq << Eq[-1].this.rhs.astype(ReducedSum)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.reducedSum)
 
     Eq.z_definition = Eq.z_definition.subs(Eq[-1])
 
@@ -142,7 +140,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(softmax).apply(keras.softmax.to.mul)
 
-    Eq << Eq.z_definition.rhs.args[0].this.expand()
+    Eq << Eq.z_definition.rhs.args[0].this.apply(discrete.matmul.to.lamda)
 
     Eq << Eq[-1].this.find(Sum).apply(algebra.sum.limits.domain_defined.insert)
 
@@ -153,14 +151,13 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.start_definition.reversed, Eq[10].reversed)
 
-
-    Eq << Eq[-1].this.rhs.function.astype(MatMul)
+    Eq << Eq[-1].this.rhs.function.apply(discrete.sum.to.matmul)
 
     Eq << Eq[-1].this.rhs.function.T
 
-    Eq << Eq[-1].this.rhs.function.args[1].astype(Add)
+    Eq << Eq[-1].this.rhs.function.args[1].apply(algebra.lamda.to.add)
 
-    Eq << Eq[-1].this.rhs.astype(MatMul)
+    Eq << Eq[-1].this.rhs.apply(discrete.lamda_matmul.to.matmul)
 
     Eq << Eq.z_definition.this.rhs.subs(Eq[-1])
 

@@ -5,11 +5,11 @@ from util import *
 def apply(*given):
     from sympy.concrete.limits import limits_dependent
     forall, exists = given
-    fx, *limits_f = forall.of(ForAll)
-    fy, *limits_e = exists.of(Exists)
+    fx, *limits_f = forall.of(All)
+    fy, *limits_e = exists.of(Any)
 
     assert not limits_dependent(limits_f, limits_e)
-    return Exists(ForAll(fx & fy, *limits_f), *limits_e)
+    return Any(All(fx & fy, *limits_f), *limits_e)
 
 
 @prove
@@ -22,11 +22,11 @@ def prove(Eq):
     g = Function.g(integer=True)
     h = Function.h(integer=True)
 
-    Eq << apply(ForAll[z:h(z) > 0](h(y, z) > 0), Exists[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
+    Eq << apply(All[z:h(z) > 0](h(y, z) > 0), Any[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
 
     Eq << Eq[-1].this.function.apply(algebra.all_et.given.et)
 
-#     Eq << Eq[-1].this.find(ForAll).apply(algebra.all.given.cond)
+#     Eq << Eq[-1].this.find(All).apply(algebra.all.given.cond)
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[1])
 

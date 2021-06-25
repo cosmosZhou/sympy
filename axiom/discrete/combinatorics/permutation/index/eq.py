@@ -4,13 +4,19 @@ from util import *
 def index_function(n):
     k = Symbol.k(integer=True)
 
-    def index(x, *indices):
-        (j,), *_ = indices
+    def index(*args):
+        if len(args) == 3:
+            x, a, (j,) = args
+            j = a[j]            
+        else:
+            x, (j,) = args
+
         return Lamda[k:n](KroneckerDelta(x[k], j)) @ Lamda[k:n](k)
 
-    f = Function.index(nargs=(n,), shape=(), integer=True)
+    f = Function.index(shape=(), integer=True)
     f.eval = index
     return f
+
 
 @apply
 def apply(given, j=None):
@@ -66,6 +72,7 @@ def prove(Eq):
     Eq << Eq[1].this.lhs.defun()
 
     Eq << Eq[2].this.lhs.indices[0].defun()
+
 
 if __name__ == '__main__':
     run()

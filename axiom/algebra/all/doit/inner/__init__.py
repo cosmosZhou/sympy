@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.doit.inner import doit
-
-
 @apply(given=None)
 def apply(self):
-    assert self.is_ForAll
-    return Equivalent(self, doit(self))
+    from axiom.algebra.sum.doit.inner import doit
+    return Equivalent(self, doit(All, self))
 
 
 @prove
@@ -20,13 +16,13 @@ def prove(Eq):
     m = Symbol.m(integer=True, positive=True)
 
     n = 5
-    Eq << apply(ForAll[j:n, i:m](x[i, j] > 0))
+    Eq << apply(All[j:n, i:m](x[i, j] > 0))
 
-    Eq << Equivalent(ForAll[i:m](Equal(Bool(ForAll[j:n](x[i, j] > 0)), 1)), ForAll[j:n, i:m](x[i, j] > 0), plausible=True)
+    Eq << Equivalent(All[i:m](Equal(Bool(All[j:n](x[i, j] > 0)), 1)), All[j:n, i:m](x[i, j] > 0), plausible=True)
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
 
-    Eq << Eq[-1].this.find(Bool, ForAll).apply(algebra.all.to.et.doit)
+    Eq << Eq[-1].this.find(Bool, All).apply(algebra.all.to.et.doit)
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
 

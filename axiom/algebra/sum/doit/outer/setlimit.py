@@ -1,13 +1,8 @@
 from util import *
 
 
-import axiom
-
-
-def doit(self):
-    function, *limits = self.args
-    * limits, setlimit = limits
-    i, si = axiom.limit_is_set((setlimit,))
+def doit(Sum, self):
+    function, * limits, (i, si) = self.of(Sum)
     i0 = si.of(FiniteSet)
 
     for t in range(-1, -len(limits) - 1, -1):
@@ -39,36 +34,24 @@ def doit(self):
     else:
         function = function._subs(i, i0)
 
-    return self.func(function, *limits)
+    return Sum(function, *limits)
 
 
 @apply
 def apply(self):
-    assert self.is_Sum
-
-    return Equal(self, doit(self))
+    return Equal(self, doit(Sum, self))
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
     x = Symbol.x(real=True, shape=(oo, oo))
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     f = Function.f(integer=True)
-
     a = Symbol.a(integer=True)
-
     Eq << apply(Sum[j:f(i), i:{a}](x[i, j]))
 
-    s = Function.s(eval=lambda i: Sum[j:f(i)](x[i, j]))
-    Eq << s(i).this.defun()
-
-    Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (i, {a}))
-
-    Eq << Eq[-1].this.lhs.defun()
-
-    Eq << Eq[-1].reversed
+    Eq << Eq[-1].this.lhs.simplify()
 
 
 if __name__ == '__main__':

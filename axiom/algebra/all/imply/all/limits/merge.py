@@ -2,7 +2,7 @@ from util import *
 
 
 def merge(given):
-    function, *limits = given.of(ForAll)
+    function, *limits = given.of(All)
 
     limit_slice, limit_index = limits
 
@@ -43,7 +43,7 @@ def merge(given):
         assert _stop == start
         start = _start
 
-    return ForAll[x[start:stop]:CartesianSpace(domain, stop - start)](function)
+    return All[x[start:stop]:CartesianSpace(domain, stop - start)](function)
 
 
 @apply
@@ -61,7 +61,7 @@ def prove(Eq):
     x = Symbol.x(real=True, shape=(oo,))
     f = Function.f(real=True)
 
-    Eq << apply(ForAll[x[:n]:CartesianSpace(Interval(a, b), n), x[n]:Interval(a, b)](f(x[:n + 1]) > 0))
+    Eq << apply(All[x[:n]:CartesianSpace(Interval(a, b), n), x[n]:Interval(a, b)](f(x[:n + 1]) > 0))
 
     Eq << algebra.all.given.suffice.apply(Eq[1])
 

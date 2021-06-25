@@ -61,7 +61,7 @@ def prove(Eq):
 
     Eq.definition = Eq[-1].this.lhs.defun()
 
-    Eq.expand = Eq.definition.lhs.args[0].function.args[1].this.expand()
+    Eq.expand = Eq.definition.lhs.args[0].function.args[1].this.apply(discrete.matmul.to.sum)
 
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[1], j=j)
 
@@ -72,13 +72,13 @@ def prove(Eq):
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[1], j=i)
     Eq.di_domain, Eq.x_di_eqaulity = Eq[-2].subs(Eq.di_definition.reversed), Eq[-1].subs(Eq.di_definition.reversed)
 
-    Eq << sets.contains.contains.imply.subset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
+    Eq << sets.contains.contains.imply.subset.finiteset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
 
     Eq << Eq.expand.subs(Eq.x_di_eqaulity)
 
     Eq.union_equality, Eq.piecewise_equality = sets.subset.imply.eq.union.apply(Eq[-2]), Eq.definition.subs(Eq[-1])
 
-    Eq.piecewise_equality = Eq.piecewise_equality.this.lhs.expand()
+    Eq.piecewise_equality = Eq.piecewise_equality.this.lhs.apply(discrete.matmul.to.sum)
 
     Eq << Eq.piecewise_equality.lhs.args[-1].this.split({di, dj})
 
@@ -86,7 +86,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.subs(Eq.union_equality)
 
-    Eq << Eq.di_definition.this.rhs.defun().this.rhs.expand()
+    Eq << Eq.di_definition.this.rhs.defun().this.rhs.apply(discrete.matmul.to.sum)
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
@@ -106,7 +106,7 @@ def prove(Eq):
 
     Eq << Eq.piecewise_equality.subs(Eq[-1])
 
-    Eq << discrete.combinatorics.permutation.index.kronecker_delta.indexOf.apply(Eq[1], i, j)
+    Eq << discrete.combinatorics.permutation.index.kroneckerDelta.indexOf.apply(Eq[1], i, j)
 
     Eq << Eq[-1].subs(Eq.di_definition.reversed).subs(Eq.dj_definition.reversed)
 

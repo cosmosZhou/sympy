@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 
 
 @apply(given=None)
@@ -8,7 +7,7 @@ def apply(given, n):
     x, Ak = given.of(Contains)
     A, k = Ak.of(Indexed)
 
-    return Suffice(ForAll[k:n](Contains(x, A[k])), Contains(x, Cap[k:n](A[k])))
+    return Suffice(All[k:n](Contains(x, A[k])), Contains(x, Cap[k:n](A[k])))
 
 
 @prove

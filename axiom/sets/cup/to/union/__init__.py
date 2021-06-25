@@ -1,6 +1,5 @@
 from util import *
 
-
 @apply
 def apply(self):
     fx, *limits = self.of(Cup)
@@ -50,4 +49,4 @@ if __name__ == '__main__':
 from . import doit
 from . import st
 from . import single_variable
-from . import dissect
+from . import split

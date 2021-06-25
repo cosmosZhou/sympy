@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self):
     from axiom.algebra.sum.to.add.doit import doit
-    assert self.is_Cap
-    return Equal(self, doit(self))
+    return Equal(self, doit(Cap, self))
 
 
 @prove
@@ -20,16 +19,16 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.apply(sets.cap.limits.domain_defined.insert)
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(sets.cap.to.intersection.dissect, {n})
+    Eq << Eq[-1].this.lhs.apply(sets.cap.to.intersection.split, {n})
 
     n -= 1
-    Eq << Eq[-1].find(Cap).this.apply(sets.cap.to.intersection.dissect, {n})
+    Eq << Eq[-1].find(Cap).this.apply(sets.cap.to.intersection.split, {n})
 
     n -= 1
-    Eq << Eq[-1].rhs.find(Cap).this.apply(sets.cap.to.intersection.dissect, {n})
+    Eq << Eq[-1].rhs.find(Cap).this.apply(sets.cap.to.intersection.split, {n})
 
     n -= 1
-    Eq << Eq[-1].rhs.find(Cap).this.apply(sets.cap.to.intersection.dissect, {n})
+    Eq << Eq[-1].rhs.find(Cap).this.apply(sets.cap.to.intersection.split, {n})
 
     Eq << Eq[4].subs(Eq[-1])
 

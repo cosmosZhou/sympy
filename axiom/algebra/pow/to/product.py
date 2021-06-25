@@ -23,9 +23,9 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.rhs.apply(algebra.product.to.mul.dissect, cond={n})
+    Eq << Eq.induct.this.rhs.apply(algebra.product.to.mul.split, cond={n})
 
-    Eq << Eq[-1].this.find(Product).apply(algebra.product.to.mul.dissect, cond={n})
+    Eq << Eq[-1].this.find(Product).apply(algebra.product.to.mul.split, cond={n})
 
     Eq << Eq[-1].this.lhs.apply(algebra.pow.to.mul.split.base)
 

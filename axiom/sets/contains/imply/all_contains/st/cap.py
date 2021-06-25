@@ -12,7 +12,7 @@ def apply(given):
             S = S.limits_subs(v, _v)
 
     contains = Contains(x, S.function).simplify()
-    return ForAll(contains, *S.limits)
+    return All(contains, *S.limits)
 
 
 @prove

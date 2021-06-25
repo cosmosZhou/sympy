@@ -1,30 +1,22 @@
 from util import *
-import axiom
-
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
-def limits_swap(self):
-    function, *limits = self.args
-    assert len(limits) == 2
-    i_limit, j_limit = self.limits
-    j, *_ = j_limit
-    assert i_limit._has(j)
+def limits_swap(Sum, self):
+    function, limit_i, limit_j = self.of(Sum)
+    j, *_ = limit_j
+    assert limit_i._has(j)
 
-    limit_i, limit_j = axiom.limits_are_Interval(limits)
-    if len(limit_i) == 3:
+    try:
         i, _a, _b = limit_i
-    else:
-        assert len(limit_i) == 1
-        i = limit_i[0]
+    except:
+        (i,) = limit_i
         _ab = function.domain_defined(i)
         _a, _b = _ab.of(Range)
 
-    if len(limit_j) == 3:
+    try:
         j, a, b = limit_j
-    else:
-        assert len(limit_j) == 1
-        j = limit_j[0]
+    except:
+        (j,) = limit_j
         ab = function.domain_defined(j)
         a, b = ab.of(Range)
 
@@ -45,9 +37,9 @@ def limits_swap(self):
 
         diff_a = a - _a
         if diff == diff_a:
-            return self.func(function, (j, i + diff, b), (i, _a, b - diff))
+            return Sum(function, (j, i + diff, b), (i, _a, b - diff))
         elif diff == diff_a + 1:
-            return self.func(function, (j, i + diff, b), (i, _a, b - diff + 1))
+            return Sum(function, (j, i + diff, b), (i, _a, b - diff + 1))
         else:
             raise
 
@@ -61,13 +53,12 @@ def limits_swap(self):
 # a <= i + diff < b
 # a - diff <= i < b - diff
 
-    return self.func(function, (j, a, i + diff + 1), (i, a - diff, _b))
+    return Sum(function, (j, a, i + diff + 1), (i, a - diff, _b))
 
 
 @apply
 def apply(self):
-    assert self.is_Sum
-    return Equal(self, limits_swap(self))
+    return Equal(self, limits_swap(Sum, self))
 
 
 @prove

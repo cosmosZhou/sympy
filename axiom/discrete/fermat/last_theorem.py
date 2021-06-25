@@ -6,13 +6,12 @@ def apply(x, y, z, n):
     return Unequal(x ** n + y ** n, z ** n)
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     n = Symbol.n(domain=Range(3, oo))
     x = Symbol.x(integer=True, nonnegative=True)
     y = Symbol.y(integer=True, nonnegative=True)
     z = Symbol.z(integer=True, nonnegative=True)
-    
     Eq << apply(x, y, z, n)
 
 

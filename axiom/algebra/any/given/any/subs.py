@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply
@@ -35,13 +34,12 @@ def apply(self, old, new):
         vars = {x for x, *_ in limits}
         limits += [(s,) for s in new.free_symbols if not s.is_given and s not in vars]
                     
-        if limits:
-            return self.func(And(*eqs), *limits)
-        else: 
-            return And(*eqs)
+        assert limits
+        return self.func(And(*eqs), *limits)
         
     if old.is_Slice:
-        old = old.astype(Matrix)
+        from axiom.algebra.slice.to.matrix import convert   
+        old = convert(old)
         if old.is_DenseMatrix:
             old = Tuple(*old._args)                    
             if old in exists or all(sym in exists for sym in old):
@@ -74,11 +72,8 @@ def apply(self, old, new):
         if new.is_symbol:
             limits = limits_intersect(limits, [(new,)])
         
-        if limits:
-            return self.func(And(*eqs), *limits)
-        else:
-            return And(*eqs)
-
+        assert limits
+        return self.func(And(*eqs), *limits)        
 
 @prove
 def prove(Eq): 
@@ -87,7 +82,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(Exists[x](x > g(x)), x, f(e))
+    Eq << apply(Any[x](x > g(x)), x, f(e))
     
     Eq << ~Eq[0]
     

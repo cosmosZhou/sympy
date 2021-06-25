@@ -13,7 +13,7 @@ def apply(given, wrt=None):
     else:
         x = wrt
 
-    return ForAll[x:B](Contains(x, A))
+    return All[x:B](Contains(x, A))
 
 
 @prove
@@ -26,7 +26,7 @@ def prove(Eq):
     Eq << apply(Subset(B, A))
 
     x = Eq[1].variable
-    Eq << ForAll[x:B](Contains(x, B), plausible=True)
+    Eq << All[x:B](Contains(x, B), plausible=True)
 
     Eq << Eq[-1].simplify()
 

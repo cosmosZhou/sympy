@@ -444,27 +444,6 @@ class Exp(ExpBase):
         else:
             return Interval(-oo, oo)
 
-    @classmethod
-    def rewrite_from_Maximize(cls, self):
-        func = self.function.func
-        function = self.function.arg
-        return func(self.func(function, *self.limits).simplify())
-    
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        if isinstance(self.function, cls):
-            function = self.function.arg
-            return cls(self.func(function, *self.limits).simplify())
-        return self
-    
-    @classmethod
-    def rewrite_from_MatMul(cls, self):
-        if len(self.args) == 2 and all(isinstance(arg, cls) for arg in self.args):
-            if len(self.args[0].shape) < len(self.args[1].shape):
-                from sympy.concrete.summations import ReducedSum
-                return ReducedSum(cls(self.args[0].arg + self.args[1].arg.T))
-        return self
-    
 exp = Exp
     
 def match_real_imag(expr):
@@ -920,18 +899,23 @@ class Log(Function):
     def domain_definition(self):
         from sympy import Unequal
         return Unequal(self.arg, 0)
-
-    @classmethod
-    def rewrite_from_Mul(cls, self):        
-        for i, arg in enumerate(self.args):
-            if isinstance(arg, cls):
-                args = [*self.args]
-                del args[i]
-                self = self.func(*args)
-                return cls(arg.arg ** self)
-                
-        return self
     
+    def _eval_domain_defined(self, x, **kwargs):
+        real = kwargs.get('real')
+        arg = self.arg
+        if x == arg:
+            if real:
+                from sympy import Interval, oo
+                return x.domain & Interval(0, oo, left_open=True)
+            else:
+                return x.domain // {0}
+            
+        if real:
+            return arg._eval_domain_defined(x, positive=True)
+        else:
+            return arg._eval_domain_defined(x, zero=False)
+    
+
 log = Log    
 
 

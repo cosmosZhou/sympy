@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.algebra.ge.le.imply.le.quadratic import quadratic_coefficient
 
 

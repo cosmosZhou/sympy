@@ -7,7 +7,7 @@ def apply(given):
     expr, (n, *_) = lim.args
     assert n.is_integer
     M = Symbol.M(real=True, positive=True)
-    return Exists[M](ForAll[n](abs(expr) <= M))
+    return Any[M](All[n](abs(expr) <= M))
 
 
 @prove

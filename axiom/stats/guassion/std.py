@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply():
     x = Symbol.x(real=True)
@@ -13,13 +12,10 @@ def prove(Eq):
     from axiom import algebra
     Eq << apply()
 
-    assert Eq[-1].lhs.is_extended_real
     Eq << Eq[0] * sqrt(2 * pi)
 
     x, *_ = Eq[-1].lhs.limits[0]
     y = Symbol.y(real=True)
-
-    assert Eq[-1].lhs.is_extended_real
 
     Eq << Eq[-1].lhs.this.limits_subs(x, y)
 

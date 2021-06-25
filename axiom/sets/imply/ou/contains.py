@@ -7,7 +7,7 @@ def apply(S):
     assert S.is_set
 
     e = S.element_symbol()
-    return Exists(Contains(e, S), (e,)) | Equal(S, e.emptySet)
+    return Any(Contains(e, S), (e,)) | Equal(S, e.emptySet)
 
 
 @prove

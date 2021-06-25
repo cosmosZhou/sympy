@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (fx, A), *limits = given.of(ForAll[Subset])
+    (fx, A), *limits = given.of(All[Subset])
 
     return Subset(Cup(fx, *limits).simplify(), A)
 
@@ -17,7 +17,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.complex * n)
     m = Symbol.m(integer=True, positive=True)
 
-    Eq << apply(ForAll[i:0:m](Subset(x[i], A)))
+    Eq << apply(All[i:0:m](Subset(x[i], A)))
 
     Eq << sets.imply.suffice.subset.induct.lhs.apply(Subset(x[i], A), (i, 0, m))
 

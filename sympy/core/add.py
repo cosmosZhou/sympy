@@ -668,7 +668,7 @@ class Add(Expr, AssocOp):
             if old is S.Infinity and -old in self.args:
                 # foo - oo is foo + (-oo) internally
                 return self.xreplace({-old:-new})
-            return None
+            return
 
         coeff_self, terms_self = self.as_coeff_Add()
         coeff_old, terms_old = old.as_coeff_Add()
@@ -1358,14 +1358,16 @@ class Add(Expr, AssocOp):
 
     @property
     def domain(self):
-        domain = self.emptySet
+        domain = None
         coeff = []
         for arg in self.args:
             if arg.is_number:
                 coeff.append(arg)
                 continue
-
-            domain += arg.domain
+            if domain is None:
+                domain = arg.domain
+            else:
+                domain += arg.domain
         if coeff:
             return domain + Add(*coeff)
         return domain
@@ -1415,26 +1417,7 @@ class Add(Expr, AssocOp):
     def __iter__(self):
         raise TypeError
 
-    def __getitem__(self, index, **_):
-        shape = self.shape
-        len_shape = len(shape)
-        if isinstance(index, (tuple, list)):
-            len_subtracted = len(index)
-        else:
-            len_subtracted = 1
-        len_required = len_shape - len_subtracted
-        
-        args = []
-        for arg in self.args:
-            shape_length = len(arg.shape)
-            if shape_length <= len_required:
-                args.append(arg)
-            elif hasattr(index, "__len__"):
-                args.append(arg[index[:shape_length]])
-            else:
-                args.append(arg[index])
-
-        return self.func(*args)
+    __getitem__ = AssocOp.getitem
 
     def _latex(self, p, order=None):
         if p.order == 'none':
@@ -1519,123 +1502,7 @@ class Add(Expr, AssocOp):
     def _eval_Abs(self):
         if all(arg.is_nonnegative for arg in self.args):
             return self
-
-    @classmethod
-    def rewrite_from_Log(cls, self):
-        if self.arg.is_Mul:
-            return cls(*(self.func(arg).simplify() for arg in self.arg.args))        
-        return self
-
-    @classmethod
-    def rewrite_from_Difference(cls, self):
-        if self.expr.is_Add:
-            return self.expr.func(*(self.func(arg, *self.variable_count).simplify() for arg in self.expr.args))
-        return self
-
-    @classmethod
-    def rewrite_from_AddWithLimits(cls, self):
-        if isinstance(self.function, cls):
-            function = self.function
-            function = self.function.args
-        elif self.function.is_Mul:
-            function = self.function.astype(cls)
-            if isinstance(function, cls):
-                function = function.args
-        else:
-            return self                   
-        return cls(*(self.func(f, *self.limits) for f in function))
-
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        if isinstance(self.function, cls):
-            function = self.function
-            function = self.function.args
-            return cls(*(self.func(f, *self.limits).simplify() for f in function))
-        return self
-    
-    @classmethod
-    def rewrite_from_Piecewise(cls, self):
-        common_terms = None
-        for e, c in self.args: 
-            if isinstance(e, cls):
-                if common_terms is None:
-                    common_terms = {*e.args}
-                else:
-                    common_terms &= {*e.args}
-            else:
-                if common_terms is None:
-                    common_terms = {e}
-                else:
-                    common_terms &= {e}
-        if common_terms:
-            args = []
-            for e, c in self.args:
-                if isinstance(e, cls):
-                    e = cls(*{*e.args} - common_terms)
-                else:
-                    e = 0 
-                args.append((e, c))
-            return cls(*common_terms, self.func(*args))
-        return self
-    
-    @classmethod
-    def rewrite_from_Sum(cls, self):
-        return cls.rewrite_from_AddWithLimits(self)
         
-    @classmethod
-    def rewrite_from_Integral(cls, self):
-        return cls.rewrite_from_AddWithLimits(self)
-
-    @classmethod
-    def rewrite_from_MatMul(cls, self):
-        for i, arg in enumerate(self.args):
-            if isinstance(arg, cls):
-                args = [*self.args]
-                if i > 0:
-                    left = arg.func(*(self.func(*args[:i]) @ a for a in arg.args))
-                    right = args[i + 1:]
-                    if right:
-                        return left @ self.func(*right)
-                    else:
-                        return left
-                else:
-                    return self
-        return self
-        
-    @classmethod
-    def rewrite_from_Mul(cls, self):
-        for i, arg in enumerate(self.args):
-            if isinstance(arg, cls): 
-                summand = []
-                for e in arg.args:
-                    args = [*self.args]
-                    args[i] = e 
-                    summand.append(self.func(*args))
-                return cls(*summand).simplify()
-        return self
-
-    @classmethod
-    def rewrite_from_RoundFunction(cls, self):
-        if isinstance(self.arg, cls): 
-            integers = []
-            reals = []
-            for e in self.args:
-                if e.is_integer:
-                    integers.append(e)
-                else:
-                    reals.append(e)
-            if integers:
-                return cls(*integers) + self.func(cls(*reals))
-        return self
-    
-    @classmethod
-    def rewrite_from_Floor(cls, self):
-        return cls.rewrite_from_RoundFunction(self)
-    
-    @classmethod
-    def rewrite_from_Ceiling(cls, self):
-        return cls.rewrite_from_RoundFunction(self)
-    
     def of_two_terms(self):
         if len(self.args) == 2:
             basic, mul = self.args
@@ -1650,6 +1517,8 @@ class Add(Expr, AssocOp):
                     cls = Basic.__new__(Add, b, a)
                     args = Expr.of(self, cls)
                     if args is not None:
+                        if b.is_Number:
+                            return args
                         _b, _a = args
                         return [_a, _b]
                     return args
@@ -1667,14 +1536,24 @@ class Add(Expr, AssocOp):
                         _b, _c, _a = args
                         return [_a, _b, _c]
                     return args
+            elif cls.is_Mul:
+                args = []
+                common_terms = set()
+                for arg in self.args:
+                    a, c = arg.of(cls)
+                    args.append(a)
+                    common_terms.add(c)
+                    if len(common_terms) > 1:
+                        return         
+                [c] = common_terms
+                return Add(*args), c                    
+                    
         elif isinstance(res, list):
             if len(res) > 2 and cls.of_two_terms():
                 *res, mul = res
                 return Mul(*res), mul
                 
         return res
-                    
-                    
 
 
 from .mul import Mul, _keep_coeff, prod

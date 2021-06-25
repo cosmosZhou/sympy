@@ -1,11 +1,8 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    a_less_than_b, x_less_than_y = given
+def apply(a_less_than_b, x_less_than_y):
     a, b = a_less_than_b.of(LessEqual)
     x, y = x_less_than_y.of(LessEqual)
 
@@ -47,7 +44,6 @@ def prove(Eq):
     Eq << algebra.is_nonpositive.is_nonnegative.imply.is_nonpositive.apply(Eq[-2], Eq[-1])
 
     Eq << algebra.ge.le.imply.le.transit.apply(Eq.is_nonnegative, Eq[-1])
-
 
 
 if __name__ == '__main__':

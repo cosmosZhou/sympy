@@ -519,7 +519,7 @@ class Indexed(Expr):
     def dtype(self):
         return self.base.dtype
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **_):
         from sympy import Range
         for i, index in enumerate(self.indices):
             if not x.shape and index._has(x) and not x.is_set:
@@ -1062,16 +1062,6 @@ class Slice(Expr):
         
         return False
 
-    def doit(self, **_):
-        if self.shape[0].is_Number:
-            if len(self.shape) > 1:
-                from sympy import BlockMatrix
-                return self.astype(BlockMatrix)
-            else:
-                from sympy import Matrix
-                return self.astype(Matrix)
-        return self
-
     @property
     def dtype(self):
         return self.base.dtype
@@ -1110,7 +1100,7 @@ class Slice(Expr):
             from sympy.stats.rv import pspace
             return Equal(self, pspace(self).symbol)
 
-    def _eval_domain_defined(self, x, allow_empty=False):
+    def _eval_domain_defined(self, x, allow_empty=False, **_):
         domain = self.base.domain_defined(x)
         start, stop = self.index
         if allow_empty:
@@ -1188,27 +1178,6 @@ class Slice(Expr):
                 indexed.add(expr)
         return indexed
                 
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        limits = self.limits
-        if len(limits) == 1:
-            j, zero, n_1 = limits[0]
-            assert zero.is_zero
-            n = n_1 + 1
-            assert self.function._has(j)
-            if self.function.is_Indexed: 
-                base, *indices, index = self.function.args
-                p = index.as_poly(j)
-                if p is not None and p.degree() == 1:
-                    a = p.coeff_monomial(j)
-                    b = p.nth(0)
-                    if a.is_One:
-                        return base[indices][b:b + n]
-                    elif a.is_NegativeOne:
-                        return base[indices][b - n + 1:b + 1]
-            
-        return self
-
     @property
     def domain_bounded(self):
         base = self.base
@@ -1717,7 +1686,7 @@ class SliceIndexed(Expr):
             from sympy.stats.rv import pspace
             return Equal(self, pspace(self).symbol)
 
-    def _eval_domain_defined(self, x, allow_empty=False):
+    def _eval_domain_defined(self, x, allow_empty=False, **_):
         eqs = []
         for start, stop in self.slices: 
             if allow_empty:

@@ -3,12 +3,12 @@ from util import *
 
 @apply
 def apply(given, index=None):
-    eqs, *limits = given.of(ForAll[Or])
+    eqs, *limits = given.of(All[Or])
 
     if index is None:
-        return tuple(ForAll(eq, *limits) for eq in eqs)
+        return tuple(All(eq, *limits) for eq in eqs)
 
-    return ForAll(eqs[index], *limits)
+    return All(eqs[index], *limits)
 
 
 @prove
@@ -21,7 +21,7 @@ def prove(Eq):
 
     f = Function.f(shape=(), real=True)
 
-    Eq << apply(ForAll[x:a:b]((x <= c) | (f(x) >= 1)), index=0)
+    Eq << apply(All[x:a:b]((x <= c) | (f(x) >= 1)), index=0)
 
     Eq << ~Eq[0]
 

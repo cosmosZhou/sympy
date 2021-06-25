@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Equal])
+    (lhs, rhs), *limits = given.of(All[Equal])
     
     return Equal(MatProduct(lhs, *limits).simplify(), MatProduct(rhs, *limits).simplify())
 
@@ -16,7 +16,7 @@ def prove(Eq):
     f = Function.f(shape=(m, m), complex=True)
     g = Function.g(shape=(m, m), complex=True)
     
-    Eq << apply(ForAll[i:n](Equal(f(i), g(i))))
+    Eq << apply(All[i:n](Equal(f(i), g(i))))
     
     i_ = Symbol.i(domain=Range(0, n))
     

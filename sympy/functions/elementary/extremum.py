@@ -387,41 +387,12 @@ class MinMaxBase(Expr, LatticeOp):
         
         return Expr.__add__(self, other)
 
-    @classmethod
-    def rewrite_from_Add(cls, self):
-        for i, arg in enumerate(self.args):
-            if not isinstance(arg, cls):
-                continue
-            args = [*self.args]
-            del args[i]
-            
-            rest = self.func(*args)
-            return cls(*(e + rest for e in arg.args))
-        return self
-
-    @classmethod
-    def rewrite_from_Mul(cls, self):
-        for i, arg in enumerate(self.args):
-            if not isinstance(arg, cls):
-                continue
-            args = [*self.args]
-            del args[i]
-            
-            rest = self.func(*args)
-            if rest.is_extended_positive:
-                return cls(*(e * rest for e in arg.args))
-
-        for i, arg in enumerate(self.args):
-            if not isinstance(arg, cls.negated_type):
-                continue
-            args = [*self.args]
-            del args[i]
-            
-            rest = self.func(*args)
-            if rest.is_extended_negative:
-                return cls(*(e * rest for e in arg.args))
-            
-        return self
+    @property
+    def domain(self):
+        domain = self.emptySet
+        for arg in self._argset:
+            domain |= arg.domain
+        return domain
     
 class Max(MinMaxBase, Application):
     """

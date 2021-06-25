@@ -11,11 +11,11 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     x = Symbol.x(real=True)
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
-
     Eq << apply(Contains(x, {a, b}))
 
     Eq << algebra.equivalent.given.cond.apply(Eq[0])

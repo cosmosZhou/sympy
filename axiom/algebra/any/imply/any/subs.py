@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self, old, new):
     from sympy.concrete.limits import limits_sort
-    function, *limits = self.of(Exists)
+    function, *limits = self.of(Any)
     assert not new.is_given
     assert not self.function._has(new)
 
@@ -26,7 +26,7 @@ def apply(self, old, new):
 
     limits = limits_sort(limits_dict)
 
-    return Exists(function, *limits)
+    return Any(function, *limits)
 
 
 @prove
@@ -43,7 +43,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(Exists[e, a:A(b), b:B](f(e) * a > g(f(e)) * b), f(e), x)
+    Eq << apply(Any[e, a:A(b), b:B](f(e) * a > g(f(e)) * b), f(e), x)
 
     Eq << algebra.any.given.any.subs.apply(Eq[1], x, f(e))
 

@@ -1,24 +1,12 @@
-
 from util import *
-
-import axiom
-
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(lamda):
-    function, *limits = lamda.of(Lamda)
+    (_i, _j), (i, n), (j, _n) = lamda.of(Lamda[KroneckerDelta, Tuple[0, Expr], Tuple[0, Expr]])
 
-    (i, zero, n_1), (j, _zero, _n_1) = axiom.limits_are_Interval(limits, integer=True)
-    assert zero.is_Zero and _zero.is_Zero
-
-    _i, _j = function.of(KroneckerDelta)
     assert i == _i and j == _j or i == _j and j == _i
-
-    assert n_1 == _n_1
-
-    n = n_1
+    assert n == _n
 
     return Equal(lamda, Identity(n))
 

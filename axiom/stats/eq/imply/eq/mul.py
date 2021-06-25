@@ -1,16 +1,9 @@
 from util import *
 
 
-# given: x | y = x
-# imply: Probability(x, y) = Probability(x) Probability(y)
 @apply
 def apply(given):
-    assert given.is_Equal
-    lhs, rhs = given.args
-
-    assert lhs.is_Conditioned
-
-    x, y = lhs.args
+    (x, y), rhs = given.of(Equal[Conditioned])
 
     assert x == rhs
 
@@ -20,18 +13,16 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import stats
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
+    Eq << apply(Equal(x | y, x))
 
-    given = Equal(x | y, x)
+    Eq << stats.eq.imply.eq.probability.apply(Eq[0], simplify=False)
 
-    Eq << apply(given)
+    Eq << Eq[-1].this.lhs.apply(stats.probability.to.mul)
 
-    Eq << stats.bayes.corollary.apply(Eq[0].lhs.domain_definition(), var=x)
-
-    Eq << Eq[0].apply(stats.eq.imply.eq.probability, simplify=None)
-
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-1] * Probability(y)
 
 
 if __name__ == '__main__':

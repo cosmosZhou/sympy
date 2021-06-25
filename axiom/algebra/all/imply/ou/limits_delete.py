@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(given, index=0):
     from sympy.concrete.limits import limits_dict
-    assert given.is_ForAll
-    limits = [*given.limits]
+    function, *limits = given.of(All)
     limit = limits.pop(index)
 
     limitsDict = limits_dict([limit])
@@ -20,13 +19,13 @@ def apply(given, index=0):
             cond = domain
         eqs.append(cond.invert().simplify())
 
-    if given.function.is_Or:
-        eqs += given.function.args
+    if function.is_Or:
+        eqs += function.args
     else:
-        eqs.append(given.function)
+        eqs.append(function)
 
     if limits:
-        return ForAll(Or(*eqs), *limits)
+        return All(Or(*eqs), *limits)
     return Or(*eqs)
 
 
@@ -39,7 +38,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
-    Eq << apply(ForAll[x:A, y:B](f(x, y) > 0), index=1)
+    Eq << apply(All[x:A, y:B](f(x, y) > 0), index=1)
 
     Eq << algebra.all.given.ou.apply(Eq[1])
 

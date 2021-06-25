@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 
@@ -10,7 +9,7 @@ def apply(given, *limits):
         if not ab:
             if x.domain:
                 limits[i] = (x, x.domain)
-    return ForAll(given, *limits)
+    return All(given, *limits)
 
 
 @prove

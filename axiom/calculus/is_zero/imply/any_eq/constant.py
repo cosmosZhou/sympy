@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -8,10 +6,10 @@ def apply(given):
     dfx = given.of(Equal[0])
     fx, *limits = dfx.of(Derivative)
     C = given.generate_var(real=True, var='C')
-    return Exists[C](ForAll(Equal(fx, C), *((x,) for x,*_ in limits)))
+    return Any[C](All(Equal(fx, C), *((x,) for x,*_ in limits)))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     f = Function.f(real=True)    

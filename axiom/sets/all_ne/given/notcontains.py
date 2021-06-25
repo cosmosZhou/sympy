@@ -1,12 +1,14 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(imply):
-    (x, y), *limits = imply.of(ForAll[Unequal])
-    lhs, rhs = axiom.limit_is_set(limits)
+    (x, y), (lhs, *rhs) = imply.of(All[Unequal])
+    if len(rhs) == 2:
+        rhs = Range(*rhs) if lhs.is_integer else Interval(*rhs)
+    else:
+        [rhs] = rhs
+        
     if x == lhs:
         return NotContains(y, rhs)
     if y == lhs:
@@ -20,7 +22,7 @@ def prove(Eq):
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True, positive=True)
 
-    Eq << apply(ForAll[i:n](Unequal(i, j)))
+    Eq << apply(All[i:n](Unequal(i, j)))
 
     Eq << sets.notcontains.imply.all_ne.apply(Eq[1], reverse=True)
 

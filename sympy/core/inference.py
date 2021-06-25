@@ -409,8 +409,8 @@ class Inference:
         invert |= self.domain_definition().invert()
         
         if limits_exists:
-            from sympy import Exists
-            return Exists(invert, *limits_exists, negation=self).simplify()
+            from sympy import Any
+            return Any(invert, *limits_exists, negation=self).simplify()
         
         return Inference(invert, negation=self)
 
@@ -498,11 +498,20 @@ class Inference:
         
         domain = old.domain_bounded
         if domain is not None and new not in domain:
-            if self.is_ForAll:
+            if self.is_All:
                 from sympy import NotContains
                 assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.ou.subs'
-                function = self.function._subs(old, new) | NotContains(new, domain)
-                cond = self.func(function, *self.limits)
+                if self.function._has(old):
+                    function = self.function._subs(old, new) | NotContains(new, domain)
+                    cond = self.func(function, *limits)
+                else:                    
+                    limits = []
+                    for limit in self.limits:
+                        x, *ab = limit
+                        limit = (x, *[a._subs(old, new) for a in ab])
+                        limits.append(limit)
+                    
+                    cond = self.func(self.function, *limits) | NotContains(new, domain)
             else:
                 cond = self.forall((old,))
                 old = old.unbounded
@@ -534,81 +543,7 @@ class Inference:
     def forall(self, *limits, **kwargs):
         return Inference(self.cond.forall(*limits, **kwargs), equivalent=self)
     
-    # return False or return the common given condition!
-    def coexist_with(self, rhs):
-        while self != rhs:
-            if self.equivalent is None: 
-                if self.given is None:
-                    if rhs.equivalent is None:
-                        if rhs.given is None:
-                            return False
-                        else:
-                            rhs = rhs.given
-                            if isinstance(rhs, list): 
-                                return self.coexist_with_list(rhs)
-                    else:
-                        rhs = rhs.equivalent
-                        if isinstance(rhs, list):
-                            return self.coexist_with_list(rhs)
-                    continue                        
-                else:
-                    self = self.given
-            else:
-                self = self.equivalent
-                
-            if isinstance(self, list):
-                return rhs.coexist_with_list(self)
-            
-            if self == rhs:
-                return self
-            
-            if rhs.equivalent is None: 
-                if rhs.given is None:
-                    continue
-                else:
-                    rhs = rhs.given
-            else:
-                rhs = rhs.equivalent
-                
-            if isinstance(rhs, list):
-                return self.coexist_with_list(rhs)
-            
-        return self
-    
-    def coexist_with_list(self, rhs):
-        eq_set = {*rhs}
-        bases = [None] * len(rhs)
-        
-        def get_basis(i):
-            if bases[i] is None:
-                bases[i] = self.coexist_with(rhs[i])
-            return bases[i]
-        
-        for i, eq in enumerate(rhs):
-            basis = get_basis(i)
-            if basis is False:
-                continue
-            
-            eqs = plausibles(eq_set - {eq})
-            if not eqs:
-                return basis
-            
-            hit = True
-            for j, eq in enumerate(rhs):
-                if j == i:
-                    continue
-                basis_j = get_basis(j)
-                if basis_j != basis:
-                    hit = False
-                    break
-            if hit:
-                return basis
-        return False
-    
     def __and__(self, other):
-        if self.is_Exists and other.is_Exists and self.limits == other.limits:
-            if self.coexist_with(other) is not False:
-                    return self.func(self.function & other.function, *self.limits, equivalent=(self, other))
         return Inference(self.cond & other.cond, equivalent=(self, other))
     
     def __add__(self, other):
@@ -780,8 +715,8 @@ class Inference:
                     if is_equivalent:
                         return self.func(self.lhs[x], self.rhs[x], equivalent=self)
                     else:
-                        from sympy import ForAll
-                        return ForAll(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
+                        from sympy import All
+                        return All(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
             return self.func(self.lhs[indices], self.rhs[indices], given=self)
         elif self.is_ConditionalBoolean:
             return self.this.function[indices]

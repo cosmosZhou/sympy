@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(n, dx, dz):
     x = Symbol.x(shape=(n, dx), real=True)
@@ -35,7 +34,7 @@ def apply(n, dx, dz):
 
 @prove
 def prove(Eq):
-    from axiom import algebra
+    from axiom import algebra, discrete
     n = Symbol.n(integer=True, positive=True)
     dx = Symbol.d_x(integer=True, positive=True)
     dz = Symbol.d_z(integer=True, positive=True)
@@ -53,18 +52,18 @@ def prove(Eq):
 
     Eq << Eq[7][i]
 
-    Eq << Eq[-1].this.rhs.astype(Add)
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.add)
 
     k = Symbol.k(integer=True)
-    Eq << Eq[-1].this.rhs.args[0].expand(var={k})
+    Eq << Eq[-1].this.rhs.args[0].apply(discrete.matmul.to.lamda, var={k})
 
-    Eq << Eq[-1].this.rhs.args[-1].astype(Sum)
+    Eq << Eq[-1].this.rhs.args[-1].apply(algebra.lamda.to.sum)
 
     Eq << Eq[-1].this.rhs.subs(Eq[5][j])
 
-    Eq << Eq[-1].this.rhs.args[0].expand(var={k})
+    Eq << Eq[-1].this.rhs.args[0].apply(discrete.matmul.to.lamda, var={k})
 
-    Eq << Eq[-1].this.rhs.args[0].astype(Sum)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebra.lamda.to.sum)
 
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum)
 
@@ -75,9 +74,9 @@ def prove(Eq):
 
     Eq << Eq[8].this.lhs.args[1].defun()
 
-    Eq << Eq[-1].this.lhs.astype(Min)
+    Eq << Eq[-1].this.lhs.apply(algebra.add.to.min)
 
-    Eq << Eq[-1].this.lhs.args[1].astype(Max)
+    Eq << Eq[-1].this.lhs.args[1].apply(algebra.add.to.max)
 
 
 if __name__ == '__main__':

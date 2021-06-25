@@ -210,13 +210,20 @@ class Expr(Basic, EvalfMixin):
     def __sub__(self, other):
         try:
             return self + (-other)
-        except TypeError as e:
-            from sympy.core.assumptions import ManagedProperties
-            if isinstance(other, ManagedProperties):
-                if self.is_Add:
-                    return Basic.__new__(Add, *self.args, -other)                    
-                return Basic.__new__(Add, self, -other)
-            raise e
+        except TypeError:
+            if other.is_Mul:
+                args = other.args
+                if args[0].is_Number:
+                    args[0] = -args[0]
+                else:
+                    args = (sympify(-1),) + args
+                other = Basic.__new__(Mul, *args)
+            else:
+                other = Basic.__new__(Mul, sympify(-1), other)
+            
+            if self.is_Add:
+                return Basic.__new__(Add, *self.args, other)
+            return Basic.__new__(Add, self, other)            
                 
 
     @_sympifyit('other', NotImplemented)
@@ -258,7 +265,12 @@ class Expr(Basic, EvalfMixin):
 
     def __pow__(self, other, mod=None):
         if mod is None:
-            return self._pow(other)
+            try:
+                return self._pow(other)
+            except TypeError:
+                if isinstance(other, int):
+                    other = sympify(other)
+                return Basic.__new__(Pow, self, other)
         try:
             _self, other, mod = as_int(self), as_int(other), as_int(mod)
             if other >= 0:
@@ -427,7 +439,8 @@ class Expr(Basic, EvalfMixin):
             raise TypeError("Invalid comparison %s >= %s" % (self, other))
         for me in (self, other):
             if me.is_complex and me.is_extended_real == False:
-                raise TypeError("Invalid comparison of complex %s" % me)
+                return Basic.__new__(GreaterEqual, self, other)
+#                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
         n2 = _n2(self, other)
@@ -474,7 +487,8 @@ class Expr(Basic, EvalfMixin):
             raise TypeError("Invalid comparison %s <= %s" % (self, other))
         for me in (self, other):
             if me.is_complex and me.is_extended_real == False:
-                raise TypeError("Invalid comparison of complex %s" % me)
+                return Basic.__new__(LessEqual, self, other)
+#                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
         n2 = _n2(self, other)
@@ -521,7 +535,8 @@ class Expr(Basic, EvalfMixin):
             raise TypeError("Invalid comparison %s > %s" % (self, other))
         for me in (self, other):
             if me.is_complex and me.is_extended_real == False:
-                raise TypeError("Invalid comparison of complex %s" % me)
+                return Basic.__new__(Greater, self, other)
+#                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
         n2 = _n2(self, other)
@@ -568,7 +583,8 @@ class Expr(Basic, EvalfMixin):
             raise TypeError("Invalid comparison %s < %s" % (self, other))
         for me in (self, other):
             if me.is_complex and me.is_extended_real == False:
-                raise TypeError("Invalid comparison of complex %s" % me)
+                return Basic.__new__(Less, self, other)
+#                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
         n2 = _n2(self, other)
@@ -3794,12 +3810,12 @@ class Expr(Basic, EvalfMixin):
         return [_LeftRightArgs([S.One, S.One], higher=self._eval_derivative(x))]
 
     def min(self):
-        from sympy.concrete.expr_with_limits import MIN
-        return self.aggregate(MIN)
+        from sympy.concrete.expr_with_limits import Minimize
+        return self.aggregate(Minimize)
 
     def max(self):
-        from sympy.concrete.expr_with_limits import MAX
-        return self.aggregate(MAX)
+        from sympy.concrete.expr_with_limits import Maximize
+        return self.aggregate(Maximize)
 
     def aggregate(self, aggregate):
         free_symbols = self.free_symbols

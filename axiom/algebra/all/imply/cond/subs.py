@@ -1,11 +1,10 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(given, old, new):
     from sympy.concrete.limits import limits_dict
-    cond, *limits = given.of(ForAll)
+    cond, *limits = given.of(All)
 
     domain = limits_dict(limits)[old]
     if domain.is_set:
@@ -26,7 +25,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     s = Symbol.s(etype=dtype.integer)
 
-    Eq << apply(ForAll[x:0:n + 1](Contains(f(x), s)), x, n)
+    Eq << apply(All[x:0:n + 1](Contains(f(x), s)), x, n)
 
     Eq << algebra.all.imply.et.split.apply(Eq[0], cond={n})
 

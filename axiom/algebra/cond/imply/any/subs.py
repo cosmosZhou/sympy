@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -9,7 +7,7 @@ def apply(given, old, new):
     assert old.free_symbols
     function = given._subs(old, new)
     assert function._has(new)
-    return Exists[new](function)
+    return Any[new](function)
 
 
 @prove

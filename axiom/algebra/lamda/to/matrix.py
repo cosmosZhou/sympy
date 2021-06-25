@@ -3,24 +3,21 @@ from util import *
 
 @apply
 def apply(self):
-    assert self.is_Lamda
-    limit = self.limits[-1]
-    x, a, b = limit
+    function, *limits, (x, a, b) = self.of(Lamda)
     diff = b - a
-    if not diff.is_Number:
-        return self
+    assert diff.is_Number
 
-    limits = self.limits[:-1]
     if limits:
-        return
-    else:
-        function = self.function
-    assert not function.shape
-    array = []
-    for i in range(diff):
-        array.append(function._subs(x, sympify(i)))
+        [(y, _a, _b)] = limits
+        diff_y = _b - _a
+        assert diff_y.is_Number
+        array = tuple(tuple(self[sympify(i), sympify(j)] for j in range(diff_y)) for i in range(diff))
+        
+    else:    
+        assert not function.shape
+        array = tuple(self[sympify(i)] for i in range(diff))
 
-    return Equal(self, Matrix(tuple(array)))
+    return Equal(self, Matrix(array), evaluate=False)
 
 
 @prove
@@ -62,7 +59,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.definition
 
-    Eq.all_et = ForAll[i:4](Equal(A[i], B[i]), plausible=True)
+    Eq.all_et = All[i:4](Equal(A[i], B[i]), plausible=True)
 
     Eq << Eq.all_et.this.apply(algebra.all.to.et.doit)
 

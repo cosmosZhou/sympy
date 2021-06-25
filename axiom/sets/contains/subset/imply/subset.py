@@ -1,7 +1,6 @@
 from util import *
 
 
-import axiom
 # given: A in B
 # => {A} subset B
 @apply

@@ -2,18 +2,17 @@ from util import *
 
 
 @apply
-def apply(given):
-    import axiom
+def apply(given):    
     from axiom.algebra.square.to.mul.st.sum import dissect_variance
     dx, dy = given.of(LessEqual)
 
     ym, x, i, n = dissect_variance(dx)
 
-    dy = dy.of(Basic ** 2)
+    dy = dy.of(Expr ** 2)
 
-    _ym, y_mean = dy.of(Basic - Basic)
+    _ym, y_mean = dy.of(Expr - Expr)
     assert _ym == ym
-    y_sum, m1 = axiom.is_Divide(y_mean)
+    y_sum, m1 = y_mean.of(Expr / Expr)
     m = m1 - 1
     yj, (j, *ab) = y_sum.of(Sum)
     if ab:
@@ -32,15 +31,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(n,))
-
     m = Symbol.m(domain=Range(2, oo))
     y = Symbol.y(real=True, shape=(m,))
-
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-
     Eq << apply((y[m - 1] - Sum[i](x[i]) / n) ** 2 <= (y[m - 1] - Sum[j](y[j]) / m) ** 2)
 
     Eq << Eq[0].this.lhs.apply(algebra.square.to.mul.st.sum)
@@ -97,8 +94,6 @@ def prove(Eq):
 
     Eq << Eq.le_given.find(- ~Sum).this.split({m - 1})
 
-    Eq << Eq[-1].this.rhs.args[0].apply(algebra.sum.to.add.doit.outer.setlimit)
-
     Eq << Eq[-1].this.rhs.args[0].apply(algebra.sum.to.add.push_back)
 
     Eq << Eq[-1].this.rhs.args[0].limits_subs(i, j)
@@ -133,7 +128,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.split({m - 1})
 
-    Eq << Eq[-1].this.rhs.args[0].apply(algebra.sum.to.add.doit.outer.setlimit)
+    
 
     Eq << Eq[-1] - Eq[-1].rhs.args[-1]
 
@@ -165,7 +160,6 @@ def prove(Eq):
     Eq.is_nonnegative = algebra.le.given.is_nonnegative.apply(Eq[-1])
 
     x_ = Symbol.x(Lamda[i](y[m - 1] - x[i]))
-
     Eq <<= x_[i].this.definition, x_[j].this.definition
 
     Eq <<= Eq[-2] + x[i] - x_[i], Eq[-1] + x[j] - x_[j]
@@ -194,8 +188,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.limits_subs(j, i)
 
-#     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.mul)
-
+    #Eq << Eq[-1].this.rhs.apply(algebra.sum.to.mul)
     Eq << Eq[-4].subs(Eq[-1])
 
     Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum.to.mul)

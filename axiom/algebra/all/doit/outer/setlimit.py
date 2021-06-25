@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.doit.outer.setlimit import doit
-
-
 @apply(given=None)
 def apply(self):
-    assert self.is_ForAll
-    return Equivalent(self, doit(self))
+    from axiom.algebra.sum.doit.outer.setlimit import doit
+    return Equivalent(self, doit(All, self))
 
 
 @prove
@@ -21,10 +17,10 @@ def prove(Eq):
 
     a = Symbol.a(integer=True)
 
-    Eq << apply(ForAll[j:f(i, j) > 0, i:{a}](x[i, j] > 0))
+    Eq << apply(All[j:f(i, j) > 0, i:{a}](x[i, j] > 0))
 
-    Eq << Equivalent(ForAll[i:{a}](Equal(Bool(ForAll[j:f(i, j) > 0](x[i, j] > 0)), 1)),
-                     ForAll[j:f(i, j) > 0, i:{a}](x[i, j] > 0), plausible=True)
+    Eq << Equivalent(All[i:{a}](Equal(Bool(All[j:f(i, j) > 0](x[i, j] > 0)), 1)),
+                     All[j:f(i, j) > 0, i:{a}](x[i, j] > 0), plausible=True)
 
     Eq << Eq[-1].this.lhs.function.lhs.apply(algebra.bool.to.piecewise)
 

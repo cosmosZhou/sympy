@@ -3,12 +3,12 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Greater])
+    (lhs, rhs), *limits = given.of(All[Greater])
     
     return Greater(Integral(lhs, *limits).simplify(), Integral(rhs, *limits).simplify())
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     a = Symbol.a(real=True)
@@ -16,7 +16,7 @@ def prove(Eq):
     f = Function.f(shape=(), real=True)
     g = Function.g(shape=(), real=True)
     
-    Eq << apply(ForAll[x:a:b](Greater(f(x), g(x))))
+    Eq << apply(All[x:a:b](Greater(f(x), g(x))))
     
 
 if __name__ == '__main__':

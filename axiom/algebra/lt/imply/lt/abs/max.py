@@ -3,9 +3,7 @@ from util import *
 
 @apply
 def apply(given, swap=False):
-    lhs, M = given.of(Less)
-    substract = lhs.of(Abs)
-    a, b = substract.of(Basic - Basic)
+    (a, b), M = given.of(Less[Abs[Expr - Expr], Expr])
 #     |a - b| < M
     if swap:
         a, b = b, a

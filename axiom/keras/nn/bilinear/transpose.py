@@ -8,7 +8,7 @@ def apply(x, y, W):
 
 @prove
 def prove(Eq):
-    from axiom import algebra
+    from axiom import algebra, discrete
     n = Symbol.n(integer=True)
     x = Symbol.x(shape=(n,), real=True)
     y = Symbol.y(shape=(n,), real=True)
@@ -19,13 +19,13 @@ def prove(Eq):
     i = Symbol.i(domain=Range(0, n))
     j = Symbol.j(domain=Range(0, n))
 
-    Eq << (x @ W).this.expand(var={i, j})
+    Eq << (x @ W).this.apply(discrete.matmul.to.lamda, var={i, j})
 
     Eq << Eq[-1] @ y
 
-    Eq << Eq[-1].this.rhs.expand()
+    Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
-    Eq.expansion = Eq[-1].this.rhs.function.astype(Sum)
+    Eq.expansion = Eq[-1].this.rhs.function.apply(algebra.mul.to.sum)
 
     Eq << Eq.expansion.subs(W, W.T)
 

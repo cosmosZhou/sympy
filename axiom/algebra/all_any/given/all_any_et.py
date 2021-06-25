@@ -1,13 +1,12 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(imply):
     from sympy.concrete.limits import limits_cond
-    (fn, *limits_e), *limits_f = imply.of(ForAll[Exists])
+    (fn, *limits_e), *limits_f = imply.of(All[Any])
     cond = limits_cond(limits_f)
-    return ForAll(Exists(fn & cond, *limits_e), *limits_f)
+    return All(Any(fn & cond, *limits_e), *limits_f)
 
 
 @prove
@@ -18,7 +17,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
     
-    Eq << apply(ForAll[x:A](Exists[y:B](f(x, y) > 0)))  
+    Eq << apply(All[x:A](Any[y:B](f(x, y) > 0)))  
     
     Eq << Eq[1].this.function.simplify()    
 

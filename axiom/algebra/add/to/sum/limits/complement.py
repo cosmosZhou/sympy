@@ -3,10 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    A, B = axiom.is_Subtract(self)
-    function, *limits_a = A.of(Sum)
-    _function, *limits_b = B.of(Sum)    
+    (function, *limits_a), (_function, *limits_b) = self.of(Sum - Sum)    
     assert function == _function
     
     limits = limits_complement(limits_a, limits_b, function=function)

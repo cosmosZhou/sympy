@@ -4,7 +4,7 @@ from axiom.discrete.K.to.add.definition import K
 
 @apply
 def apply(x, n):
-    return ForAll[x[:n]:CartesianSpace(Range(1, oo), n)](Greater(K(x[:n]), 0))
+    return All[x[:n]:CartesianSpace(Range(1, oo), n)](Greater(K(x[:n]), 0))
 
 
 @prove
@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.args[1].apply(algebra.ge.imply.gt.transit, 0)
 
-    Eq << Eq[-1].this.function.apply(algebra.is_positive.is_positive.imply.is_positive.mul)
+    Eq << Eq[-1].this.function.apply(algebra.is_positive.is_positive.imply.is_positive)
 
     Eq <<= Eq.is_positive & Eq[-1]
 

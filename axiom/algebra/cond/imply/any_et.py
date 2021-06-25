@@ -7,7 +7,7 @@ def apply(given, wrt=None):
     x = given.generate_var(**wrt.type.dict)
     domain = wrt.domain
 
-    return Exists[x:domain](given._subs(wrt, x) & Equal(x, wrt))
+    return Any[x:domain](given._subs(wrt, x) & Equal(x, wrt))
 
 
 @prove

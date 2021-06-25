@@ -111,6 +111,16 @@ foreach ($statementsFromSQLFile === null ? \mysql\yield_from_mysql($module) : $s
 <link rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/codemirror@5.41.0/addon/hint/show-hint.css">
 <link rel="stylesheet" href="/sympy/css/codemirror.css">
+<style>
+.error{
+    color: red;
+}
+
+.error:hover{
+	cursor: pointer;
+}
+
+</style>
 
 <div id=root>
 
@@ -144,22 +154,37 @@ foreach ($statementsFromSQLFile === null ? \mysql\yield_from_mysql($module) : $s
 		<h3>debugging information is printed as follows:</h3>
 	</template>
 
-	<template v-for="log in logs">
-		<br>{{log}}
-	</template>
+	<div v-for="log in logs">
+		<p v-if="typeof log == 'string'">{{log}}</p>
+		<font v-else class=error :title=log.module @click=click>
+			{{log.code}}<br>
+			{{log.type}}: {{log.error}}<br>
+		</font>
+	</div>
+	
 </div>
 
-<script>
+<script>	
+	logs = <?php echo \std\jsonify($logs)?>;
+	for (let i = 0; i < logs.length; ++i){
+		var log = logs[i];
+		if (log.startsWith('{') && log.endsWith('}')){
+			logs[i] = JSON.parse(log);
+		}
+	}
+
 	var data = {
-		logs : <?php echo \std\jsonify($logs)?>,
+		logs : logs,
 		inputs : <?php echo \std\jsonify($inputs)?>,
 		p : <?php echo \std\jsonify($p)?>,
-		indexOfImply: <?php echo $indexOfImply?>,				
+		indexOfImply: <?php echo $indexOfImply?>,			
 		user: <?php global $user; echo \std\jsonify($user)?>,
-		module:<?php echo \std\jsonify($module)?>,
+		module: <?php echo \std\jsonify($module)?>,
 	};
 
     var sql = `<?php echo $sql_statement?>`;
+
+    var apply = `<?php echo array_key_exists('apply', $_GET)? $_GET['apply']: null ?>`;
 </script>
 
 <script

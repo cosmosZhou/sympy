@@ -1,17 +1,9 @@
 from util import *
 
-import axiom
-# given : A \ B = A
-
-# => A & B = EmptySet
-
 
 @apply
 def apply(given):
-    imageSet, s = given.of(Equal)
-    x, fx, cond = axiom.is_ImageSet(imageSet)
-    fy = s.of(FiniteSet)
-
+    (fx, (x, cond)), fy = given.of(Equal[Cup[FiniteSet], FiniteSet])
     z = Wild('z', **x.type.dict)
     fx_ = fx._subs(x, z)
     values = fy.match(fx_)

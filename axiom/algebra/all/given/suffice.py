@@ -1,11 +1,10 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(given):
-    fn1, *limits = given.of(ForAll)
+    fn1, *limits = given.of(All)
     return Suffice(given.limits_cond.simplify(), fn1)
 
 
@@ -16,7 +15,7 @@ def prove(Eq):
     f = Symbol.f(integer=True, shape=(oo,))
     g = Symbol.g(integer=True, shape=(oo,))
 
-    Eq << apply(ForAll[n:Equal(f[n], g[n])](Equal(f[n + 1], g[n + 1])))
+    Eq << apply(All[n:Equal(f[n], g[n])](Equal(f[n + 1], g[n + 1])))
 
     Eq << Eq[1].this.apply(algebra.suffice.to.all, wrt=n)
 

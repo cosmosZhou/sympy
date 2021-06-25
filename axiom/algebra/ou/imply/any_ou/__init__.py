@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 
 
 @apply
@@ -10,7 +9,7 @@ def apply(imply):
 
     eqs = []
     for exist in exists:
-        if not exist.is_Exists:
+        if not exist.is_Any:
             eqs.append(exist)
         else:
             fn, *_limits = exist.args
@@ -23,7 +22,7 @@ def apply(imply):
             eqs.append(fn)
 
 
-    return Exists(Or(*eqs), *limits)
+    return Any(Or(*eqs), *limits)
 
 
 @prove
@@ -35,7 +34,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(Or(Exists[x:A]((g(x) > 0)), f(x) > 0))
+    Eq << apply(Or(Any[x:A]((g(x) > 0)), f(x) > 0))
 
     Eq << Eq[0].this.args[0].apply(algebra.cond.imply.any.conditioned, (x, A))
 

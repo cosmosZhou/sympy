@@ -77,7 +77,7 @@
 <ul>
 	<li><a href='../axiom/discrete/combinatorics/binomial/Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>组合数学中的<a
 		href='https://en.wikipedia.org/wiki/Pascal%27s_rule'>Pascal法则</a>，以法国数学家Pascal命名。</li>
-	<li><a href='../axiom/algebra/sufficient/imply/cond/induction'>axiom.algebra.sufficient.imply.cond.induction</a>第一<a
+	<li><a href='../axiom/algebra/suffice/imply/cond/induction'>axiom.algebra.suffice.imply.cond.induction</a>第一<a
 		href='https://en.wikipedia.org/wiki/Mathematical_induction'>数学归纳法</a>，一种递归证明方法。</li>
 </ul>
 <br>

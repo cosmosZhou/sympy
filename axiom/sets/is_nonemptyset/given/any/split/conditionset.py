@@ -3,10 +3,13 @@ from util import *
 
 @apply
 def apply(imply):
-    import axiom
-    s = imply.of(Unequal[EmptySet])
-    x, cond, baseset = axiom.is_ConditionSet(s)
-    return Exists[x:baseset](cond)
+    x, (_x, cond, *baseset) = imply.of(Unequal[Cup[FiniteSet], EmptySet])
+    assert _x == x
+    if baseset:
+        [baseset] = baseset
+        return Any[x:baseset](cond)
+    else:
+        return Any[x](cond)
 
 
 @prove
@@ -21,7 +24,7 @@ def prove(Eq):
     
     Eq << A.this.definition
     
-    Eq << Exists[x:S](Contains(x, A), plausible=True)
+    Eq << Any[x:S](Contains(x, A), plausible=True)
     
     Eq << Eq[-1].this.function.subs(Eq[2])
     

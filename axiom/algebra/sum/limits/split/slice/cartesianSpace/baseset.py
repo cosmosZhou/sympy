@@ -2,18 +2,10 @@ from util import *
 
 
 @apply
-def apply(self):
-    import axiom
-    function, *limits = self.of(Sum)
-    x, cond, space = axiom.limit_is_baseset(limits)
-    x, *indices = x.of(Slice)
+def apply(self): 
+    function, ((x, (start, stop)), cond, (domain, *shape)) = self.of(Sum[Tuple[Slice, CartesianSpace]])
 
-    assert len(indices) == 1
-    domain, *shape = space.of(CartesianSpace)
-    assert len(shape) == 1
-    n = shape[0]
-
-    start, stop = indices[0]
+    [n] = shape
     assert start + 1 < stop
     assert n == stop - start
 
@@ -38,14 +30,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Contains).simplify()
 
-    j = Eq[-1].find(ForAll).variable
-    Eq << Eq[-1].this.rhs.find(ForAll).limits_subs(j, j - i - 1)
+    j = Eq[-1].find(All).variable
+    Eq << Eq[-1].this.rhs.find(All).limits_subs(j, j - i - 1)
 
     Eq << Eq[-1].this.lhs.find(Contains).simplify()
 
-    Eq << Eq[-1].this.lhs.find(ForAll).limits_subs(j, j - i)
+    Eq << Eq[-1].this.lhs.find(All).limits_subs(j, j - i)
 
-    Eq << Eq[-1].this.lhs.find(ForAll).apply(algebra.all.to.et.dissect, cond={i})
+    Eq << Eq[-1].this.lhs.find(All).apply(algebra.all.to.et.split, cond={i})
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.split.slice)
 

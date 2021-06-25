@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 from axiom.algebra.add.to.sum import piece_together
 

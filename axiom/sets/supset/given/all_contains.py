@@ -8,7 +8,7 @@ def apply(imply, var=None):
     if var is None:
         var = B.element_symbol()
 
-    return ForAll[var:B](Contains(var, A))
+    return All[var:B](Contains(var, A))
 
 
 @prove

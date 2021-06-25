@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 # given : A & B = A | B => A = B
 
@@ -23,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(Equal({x, y}, {0, 1}))
 
-    Eq << algebra.eq.imply.eq.reduced_sum.apply(Eq[0])
+    Eq << algebra.eq.imply.eq.reducedSum.apply(Eq[0])
 
     Eq << Eq[-1].this.rhs.doit()
 

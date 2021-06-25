@@ -2,11 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
-    import axiom
-    assert len(given) == 2
-    set_comprehension_equality, last_element_equality = given
-
+def apply(set_comprehension_equality, last_element_equality):
+    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
     if last_element_equality.lhs.is_Cup:
         last_element_equality, set_comprehension_equality = set_comprehension_equality, last_element_equality
 
@@ -15,7 +12,7 @@ def apply(*given):
     assert _n == n
 
     set_comprehension, interval = set_comprehension_equality.of(Equal)
-    _p = axiom.is_set_comprehension(set_comprehension)
+    _p = of_set_comprehension(set_comprehension)
     assert p[:n + 1] == _p
     assert interval == Range(0, n + 1)
 

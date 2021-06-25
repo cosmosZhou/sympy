@@ -4,7 +4,6 @@ from util import *
 @apply
 def apply(given):
     x = given.of(NotContains[Integers])
-
     return Equal(ceiling(x), floor(x) + 1)
 
 

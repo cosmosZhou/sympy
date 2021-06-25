@@ -1,17 +1,12 @@
-
 from util import *
-import axiom
 
 
 @apply
-def apply(*given):
-    is_nonnegative, is_nonpositive = given
-    x = axiom.is_nonnegative(is_nonnegative)
-    _x = axiom.is_nonpositive(is_nonpositive)
+def apply(is_nonnegative, is_nonpositive):
+    x = is_nonnegative.of(Expr >= 0)
+    _x = is_nonpositive.of(Expr <= 0)
     assert x == _x
     return Equal(x, 0)
-
-
 
 
 @prove

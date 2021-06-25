@@ -3,10 +3,8 @@ from util import *
 
 @apply
 def apply(given):
-    import axiom
-    xy = axiom.is_nonnegative(given)
-    x, y = xy.of(Basic - Basic)
-    
+    *x, y = given.of(Expr - Expr >= 0)    
+    x = Add(*x)
     return GreaterEqual(x, y)
 
 

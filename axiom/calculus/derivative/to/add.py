@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 
 
 @apply
@@ -11,7 +10,7 @@ def apply(self):
     return Equal(self, Add(*(Derivative(arg, *limits_d).doit() for arg in args)))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     f = Function.f(real=True)    

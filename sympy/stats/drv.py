@@ -389,7 +389,7 @@ class DiscretePSpace(PSpace):
         return prob if not complement else S.One - prob
 
     def eval_prob(self, _domain):
-        return Sum[self.symbol:_domain](self.distribution.pdf(self.symbol)).doit()
+        return Sum[self.symbol:_domain](self.distribution.pdf(self.symbol)).simplify()
 
     def conditional_space(self, condition):
         # XXX: Converting from set to tuple. The order matters to Lambda

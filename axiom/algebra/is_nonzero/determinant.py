@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[0], Eq[-1])
 
-    Eq << Eq[-1].inverse()
+    Eq << discrete.eq.imply.eq.inverse.apply(Eq[-1])
 
     Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[0], Eq[-1])
 

@@ -1,17 +1,16 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(*given):
     from sympy.concrete.limits import limits_dependent
     any_x, any_y = given
-    fx, *limits_x = any_x.of(Exists)
-    fy, *limits_y = any_y.of(Exists)
+    fx, *limits_x = any_x.of(Any)
+    fy, *limits_y = any_y.of(Any)
 
     assert not limits_dependent(limits_x, limits_y)
 
-    return Exists(fx & fy, *limits_x, *limits_y)
+    return Any(fx & fy, *limits_x, *limits_y)
 
 
 @prove
@@ -26,7 +25,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(Exists[x:A](f(x, y) > 0), Exists[y:B](g(y, x) > 0))
+    Eq << apply(Any[x:A](f(x, y) > 0), Any[y:B](g(y, x) > 0))
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[1])
 

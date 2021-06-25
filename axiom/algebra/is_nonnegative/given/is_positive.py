@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
-    x = axiom.is_nonnegative(given)
+    x = given.of(Expr >= 0)
     return x > 0
 
 

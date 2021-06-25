@@ -3,8 +3,8 @@ from util import *
 
 @apply
 def apply(given):
-    eqs, *limits = given.of(Exists[And])
-    return And(*(Exists(eq, *limits) for eq in eqs))
+    eqs, *limits = given.of(Any[And])
+    return And(*(Any(eq, *limits) for eq in eqs))
 
 
 @prove
@@ -14,7 +14,7 @@ def prove(Eq):
     b = Symbol.b(real=True)
     f = Function.f(shape=(), real=True)
 
-    Eq << apply(Exists[x:2:b]((x <= 3) & (f(x) >= 1)))
+    Eq << apply(Any[x:2:b]((x <= 3) & (f(x) >= 1)))
 
     Eq << algebra.any_et.imply.any.split.apply(Eq[0])
 

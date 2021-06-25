@@ -31,7 +31,7 @@ def apply(given, i=None, j=None, w=None):
     return Equal(index[i](w[index[i](x[:n]), index[j](x[:n])] @ x[:n]), index[j](x[:n]))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import discrete, sets
 
@@ -73,10 +73,11 @@ def prove(Eq):
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[1], j=i)
     Eq.di_domain, Eq.x_di_eqaulity = Eq[-2].subs(Eq.di_definition.reversed), Eq[-1].subs(Eq.di_definition.reversed)
 
-    Eq << sets.contains.contains.imply.subset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
+    Eq << sets.contains.contains.imply.subset.finiteset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
 
     Eq << Eq.expand.subs(Eq.x_di_eqaulity)
 
+    return
     Eq.union_equality, Eq.piecewise_equality = sets.subset.imply.eq.union.apply(Eq[-2]), Eq.definition.subs(Eq[-1])
 
     Eq.piecewise_equality = Eq.piecewise_equality.this.lhs.expand()

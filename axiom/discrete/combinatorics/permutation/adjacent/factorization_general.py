@@ -1,16 +1,14 @@
 from util import *
 
-
-import axiom
-
-
 from axiom.sets.imply.eq.swap import swap
+
 
 @apply
 def apply(given):
+    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
     set_comprehension_abs, n = given.of(Equal)
     set_comprehension = set_comprehension_abs.of(Abs)
-    a = axiom.is_set_comprehension(set_comprehension)
+    a = of_set_comprehension(set_comprehension)
 
     assert a.shape == (n,)
 
@@ -25,10 +23,10 @@ def apply(given):
     k = Symbol.k(integer=True)
 
     d = Symbol.d(Lamda[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))
-    return ForAll[p[:n]:P](Exists[b[:n]](Equal(p[:n], Lamda[k:n](a[d[k]]))))
+    return All[p[:n]:P](Any[b[:n]](Equal(p[:n], Lamda[k:n](a[d[k]]))))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import algebra
     n = Symbol.n(domain=Range(2, oo), given=False)

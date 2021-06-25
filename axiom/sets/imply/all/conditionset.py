@@ -7,7 +7,7 @@ def apply(P):
     definition = P.definition
     assert definition.is_ConditionSet    
     x = definition.variable
-    return ForAll[x:P](definition.limits[0][1])
+    return All[x:P](definition.limits[0][1])
 
 
 @prove
@@ -17,7 +17,7 @@ def prove(Eq):
     P = Symbol.P(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(0, n))))
     Eq << apply(P)
     
-    Eq << ForAll[x[:n]:P](Contains(x[:n], P), plausible=True)
+    Eq << All[x[:n]:P](Contains(x[:n], P), plausible=True)
     
     Eq << Eq[-1].simplify()
     

@@ -1,11 +1,6 @@
 from util import *
 
 
-
-
-from axiom.stats.guassion import std
-
-
 def coefficient(y, x):
     quadratic = -log(y.powsimp()).simplify()
     quadratic = quadratic.as_poly(x)
@@ -30,31 +25,30 @@ def apply(y, x=None):
     if x is None:
         if not isinstance(y, Integral):
             print('not isinstance(y, Integral)')
-            return None
+            return
         if len(y.limits) > 1:
-            return None
+            return
         (x, a, b), *_ = y.limits
 
         if a != -oo or b != oo:
-            return None
+            return
 
         a, b, c = coefficient(y.function, x)
         if a <= 0:
-            return None
+            return
 
         return Equal(y, doit(a, b, c))
 
     a, b, c = coefficient(y, x)
 
     if a <= 0:
-        return None
+        return
     return Equal(Integral(y, (x, -oo, oo)), doit(a, b, c))
-
-
 
 
 @prove
 def prove(Eq):
+    from axiom import stats
     a = Symbol.a(positive=True)
     b = Symbol.b(real=True)
     c = Symbol.c(real=True)
@@ -67,7 +61,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.powsimp()
 
-    Eq << std.apply()
+    Eq << stats.guassion.std.apply()
 
     Eq << Eq[-1] * sqrt(2 * pi)
 

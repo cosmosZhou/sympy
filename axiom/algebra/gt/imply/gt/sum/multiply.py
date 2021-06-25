@@ -2,13 +2,15 @@ from util import *
 
 
 @apply
-def apply(given, *limits):
-    import axiom
+def apply(given, limit):
     lhs, rhs = given.of(Greater)
-    n, a, b = axiom.limit_is_Interval(limits, integer=True)
+    
+    n, a, b = limit
+    
+    assert n.is_integer
     assert a >= 0 and b > a + 1 or a > 0 and b > a
 
-    return Greater(Sum(n * lhs, *limits).simplify(), Sum(n * rhs, *limits).simplify())
+    return Greater(Sum(n * lhs, limit).simplify(), Sum(n * rhs, limit).simplify())
 
 
 @prove

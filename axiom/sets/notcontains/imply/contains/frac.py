@@ -14,7 +14,7 @@ def prove(Eq):
     x = Symbol.x(real=True)
     Eq << apply(NotContains(x, Integers))
 
-    Eq << sets.notcontains.imply.ne_0.frac.apply(Eq[0])
+    Eq << sets.notcontains.imply.is_nonzero.frac.apply(Eq[0])
 
     Eq << Contains(frac(x), Interval(0, 1, right_open=True), plausible=True)
 

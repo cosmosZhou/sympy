@@ -2102,6 +2102,32 @@ class Rational(Number):
         from wolframclient.language import wl        
         return getattr(wl, "Rational")(self.p, self.q)
 
+    def of(self, cls):
+        if cls.is_Pow:
+            b, e = cls.args
+            if e == -1 and (b is Expr or b is Basic):
+                p, q = self.p, self.q
+                if p == 1:
+                    return sympify(q)
+            return
+        
+        if cls.is_Mul:
+            p, q = cls.args
+            if q.is_Pow and q.exp == -1:
+                q = q.base
+                
+                if p is Expr or p is Basic:
+                    if q is Expr or q is Basic:
+                        return sympify(self.p), sympify(self.q) 
+            return
+            
+        if isinstance(cls, type):
+            if isinstance(self, cls):
+                return ()
+        else:
+            if self == cls:
+                return ()        
+
 
 class Integer(Rational):
     """Represents integer numbers of any size.

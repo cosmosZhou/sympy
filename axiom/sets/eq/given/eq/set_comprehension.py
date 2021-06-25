@@ -1,14 +1,16 @@
 from util import *
-import axiom
 
+
+def of_set_comprehension(self):
+    ak, (k, b) = self.of(Cup[FiniteSet, Tuple[0, Expr]])
+    return Lamda[k:b](ak).simplify()
 
 
 @apply
 def apply(imply):
     lhs, rhs = imply.of(Equal)
-
-    a = axiom.is_set_comprehension(lhs)
-    b = axiom.is_set_comprehension(rhs)
+    a = of_set_comprehension(lhs)
+    b = of_set_comprehension(rhs)
     k = lhs.variable
     return Equal(a[k], b[k])
 

@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    greater_than, _greater_than = given
+def apply(greater_than, _greater_than):
     x, a = greater_than.of(Less)
     _x, b = _greater_than.of(Greater)
     if x != _x:

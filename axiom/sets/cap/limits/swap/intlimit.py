@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self):
     from axiom.algebra.sum.limits.swap.intlimit import limits_swap
-    assert self.is_Cap
-    return Equal(self, limits_swap(self))
+    return Equal(self, limits_swap(Cap, self))
 
 
 @prove

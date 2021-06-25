@@ -18,16 +18,16 @@ def apply(given, wrt):
 @prove
 def prove(Eq):
     from axiom import stats, algebra
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
-
     Eq << apply(Unequal(Probability(x, y), 0), y)
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[0])
 
     Eq << algebra.et.imply.conds.apply(Eq[-1])
 
-    Eq << stats.bayes.corollary.apply(Eq[-1], var=Eq[0].lhs)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
 
     Eq << Eq[0].subs(Eq[-1])
 

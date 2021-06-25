@@ -1,5 +1,5 @@
 from util import *
-import axiom
+
 
 def process_given_conditions(*given, swap=False):
     if swap:
@@ -23,7 +23,7 @@ def apply(*given, **kwargs):
 def prove(Eq):    
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
-    f = Function.f(nargs=(2,), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
     Eq << apply(Unequal(x, y), Unequal(g(KroneckerDelta(x, y)), f(x, y)))
     

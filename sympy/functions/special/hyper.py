@@ -11,13 +11,6 @@ from sympy.functions import (sqrt, exp, log, sin, cos, asin, atan,
         sinh, cosh, asinh, acosh, atanh, acoth, Abs)
 from sympy.utilities.iterables import default_sort_key
 
-class TupleArg(Tuple):
-    def limit(self, x, xlim, dir=1):
-        """ Compute limit x->xlim.
-        """
-        from sympy.series.limits import limit
-        return TupleArg(*[limit(f, x, xlim, dir) for f in self.args])
-
 
 # TODO should __new__ accept **options?
 # TODO should constructors should check if parameters are sensible?
@@ -40,7 +33,7 @@ def _prep_tuple(v):
     (7, 8, 9)
     """
     from sympy import unpolarify
-    return TupleArg(*[unpolarify(x) for x in v])
+    return Tuple(*[unpolarify(x) for x in v])
 
 
 class TupleParametersBase(Function):
@@ -450,7 +443,7 @@ class meijerg(TupleParametersBase):
         def tr(p):
             if len(p) != 2:
                 raise TypeError("wrong argument")
-            return TupleArg(_prep_tuple(p[0]), _prep_tuple(p[1]))
+            return Tuple(_prep_tuple(p[0]), _prep_tuple(p[1]))
 
         arg0, arg1 = tr(args[0]), tr(args[1])
         if Tuple(arg0, arg1).has(oo, zoo, -oo):

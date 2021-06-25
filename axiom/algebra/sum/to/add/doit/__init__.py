@@ -1,30 +1,30 @@
 from util import *
 
 
-def doit(self):
-    xi, limit = self.args
-    try:
-        import axiom
-        i, a, b = axiom.limit_is_Interval((limit,))
+def doit(Sum, self):
+    xi, limit = self.of(Sum)
+    try:        
+        i, a, b = limit
     except:
         (i,) = limit
         domain = xi.domain_defined(i)
         a, b = domain.of(Range)
 
+    assert i.is_integer
+    
     diff = b - a
     assert diff == int(diff)
 
-    sgm = self.func.identity(xi)
+    sgm = Sum.identity(xi)
     for t in range(diff):
-        sgm = self.func.operator(sgm, xi._subs(i, a + t))
+        sgm = Sum.operator(sgm, xi._subs(i, a + t))
 
     return sgm
 
 
 @apply
 def apply(self):
-    assert self.is_Sum
-    return Equal(self, doit(self))
+    return Equal(self, doit(Sum, self))
 
 
 @prove
@@ -38,16 +38,16 @@ def prove(Eq):
     Eq << apply(Sum[i:n](x[i]))
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ def apply(self, doit=True):
     return Equal(self, expr.copy(start=start, stop=stop))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     n = Symbol.n(integer=True)
     

@@ -1,6 +1,6 @@
 from util import *
 
-import axiom
+
 
 def mul_to_derivative(self):
     for i, derivative in enumerate(self.args):
@@ -20,7 +20,7 @@ def apply(self):
     return Equal(self, mul_to_derivative(self))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, m=None, b=None):
-    ((x, (w, i, j)), S), (_x, _S) = given.of(ForAll[Contains[MatMul[Indexed]]])
+    ((x, (w, i, j)), S), (_x, _S) = given.of(All[Contains[MatMul[Indexed]]])
     assert S == _S and x == _x
 
     assert w[i, j].is_Swap or w[i, j].definition.is_Swap
@@ -14,7 +14,7 @@ def apply(given, m=None, b=None):
     if b is None:
         b = Symbol.b(integer=True, shape=(oo,))
 
-    return ForAll[x:S](Contains(x @ MatProduct[i:m](w[i, b[i]]), S))
+    return All[x:S](Contains(x @ MatProduct[i:m](w[i, b[i]]), S))
 
 
 @prove
@@ -31,7 +31,7 @@ def prove(Eq):
 
     w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
 
-    given = ForAll[x[:n]:S](Contains(x[:n] @ w[i, j], S))
+    given = All[x[:n]:S](Contains(x[:n] @ w[i, j], S))
 
     Eq.w_definition, Eq.swap, Eq.hypothesis = apply(given, m=m)
 

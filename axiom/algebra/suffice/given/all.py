@@ -6,7 +6,7 @@ def apply(given, wrt=None):
     cond, q = given.of(Suffice)
     if wrt is None:
         wrt = cond.wrt
-    return ForAll[wrt:cond](q)
+    return All[wrt:cond](q)
 
 
 @prove

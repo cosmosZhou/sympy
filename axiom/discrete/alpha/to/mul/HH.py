@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.discrete.H.to.add.definition import H
 
 from axiom.discrete.imply.is_positive.alpha import alpha

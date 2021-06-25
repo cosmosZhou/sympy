@@ -23,7 +23,7 @@ def apply(given):
         A = tmp
     assert x_union.is_Cup
 
-    return ForAll(Equal(x_union.function & A, A.etype.emptySet), *x_union.limits)
+    return All(Equal(x_union.function & A, A.etype.emptySet), *x_union.limits)
 
 
 @prove

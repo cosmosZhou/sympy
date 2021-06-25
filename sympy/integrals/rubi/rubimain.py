@@ -240,7 +240,7 @@ def get_matching_rule_definition(expr, var):
         print("On line: ", lineno)
         print("\n".join(code))
         print("Pattern matching: ")
-        pattno = int(re.match(r"^\s*rule(\d+)", code[0]).group(1))
+        pattno = int(re.match(r"^\s*rule(\d+)", code[0])[1])
         print(matcher.patterns[pattno-1])
         print(e)
         print()

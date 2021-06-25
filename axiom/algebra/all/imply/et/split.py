@@ -1,12 +1,9 @@
 from util import *
-import axiom
-
-
-from axiom.algebra.sum.to.add.dissect import dissect
 
 
 def split_all(given, cond, wrt):
-    assert given.is_ForAll
+    from axiom.algebra.sum.to.add.split import split
+    function, *limits = given.of(All)
 
     if isinstance(cond, Boolean):
         if wrt is None:
@@ -16,9 +13,9 @@ def split_all(given, cond, wrt):
 
         if wrt not in given.variables:
             domain = given.domain_defined(wrt)
-            given = ForAll(given.function, *given.limits, (wrt, domain))
+            given = All(function, *limits, (wrt, domain))
 
-    return dissect(given, cond, wrt=wrt)
+    return split(given, cond, wrt=wrt)
 
 
 @apply
@@ -33,7 +30,7 @@ def prove(Eq):
     f = Function.f(integer=True, shape=())
     d = Symbol.d(real=True, positive=True)
 # for x > 0
-#     Eq << apply(ForAll[x:-d:d](f(x) > 0), cond=x > 0)
+#     Eq << apply(All[x:-d:d](f(x) > 0), cond=x > 0)
 #
 #     Eq << algebra.et.given.conds.apply(Eq[-1])
 #
@@ -42,7 +39,7 @@ def prove(Eq):
 #     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[0], domain=Interval(-d, 0))
 
 # for x >= 0
-#     Eq << apply(ForAll[x:-d:d](f(x) > 0), cond=x >= 0)
+#     Eq << apply(All[x:-d:d](f(x) > 0), cond=x >= 0)
 #
 #     Eq << algebra.et.given.conds.apply(Eq[-1])
 #
@@ -51,7 +48,7 @@ def prove(Eq):
 #     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[0], domain=Interval(-d, 0, right_open=True))
 
 # for x < 0
-#     Eq << apply(ForAll[x:-d:d](f(x) > 0), cond=x < 0)
+#     Eq << apply(All[x:-d:d](f(x) > 0), cond=x < 0)
 #
 #     Eq << algebra.et.given.conds.apply(Eq[-1])
 #
@@ -60,7 +57,7 @@ def prove(Eq):
 #     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[0], domain=Interval(-d, 0, right_open=True))
 
 # for x:(-d,d), x < 0
-    Eq << apply(ForAll[x:Interval(-d, d, left_open=True, right_open=True)](f(x) > 0), cond=x < 0)
+    Eq << apply(All[x:Interval(-d, d, left_open=True, right_open=True)](f(x) > 0), cond=x < 0)
 
     Eq << algebra.et.given.conds.apply(Eq[-1])
 
@@ -69,7 +66,7 @@ def prove(Eq):
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[0], domain=Interval(-d, 0, right_open=True, left_open=True))
 
 # for x <= 0
-#     Eq << apply(ForAll[x:-d:d](f(x) > 0), cond=x <= 0)
+#     Eq << apply(All[x:-d:d](f(x) > 0), cond=x <= 0)
 #
 #     Eq << algebra.et.given.conds.apply(Eq[-1])
 #
@@ -78,7 +75,7 @@ def prove(Eq):
 #     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[0], domain=Interval(-d, 0))
 
 # for x in (-d, d) cond = x <= 0
-#     Eq << apply(ForAll[x:Interval(-d, d, left_open=True, right_open=True)](f(x) > 0), cond=x <= 0)
+#     Eq << apply(All[x:Interval(-d, d, left_open=True, right_open=True)](f(x) > 0), cond=x <= 0)
 #
 #     Eq << algebra.et.given.conds.apply(Eq[-1])
 #

@@ -2,15 +2,15 @@ from util import *
 
 
 @apply(given=None)
-def apply(given, *limits):
-    import axiom
+def apply(given, limit):
     xk, yk = given.of(Greater)
-    k, a, b = axiom.limit_is_Interval(limits)
+    k, a, b = limit
+    
     assert xk._has(k)
     assert yk._has(k)
     assert yk > 0
 
-    return Suffice(ForAll[k:a:b](xk > yk), Product[k:a:b](xk) > Product[k:a:b](yk))
+    return Suffice(All[k:a:b](xk > yk), Product[k:a:b](xk) > Product[k:a:b](yk))
 
 
 @prove

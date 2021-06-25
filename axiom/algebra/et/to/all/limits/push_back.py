@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply(given=None)
@@ -7,17 +6,15 @@ def apply(self):
     [*eqs] = self.of(And)
 
     for i, eq in enumerate(eqs):
-        if isinstance(eq, ForAll):
+        if eq.is_All:
             break
     else:
         return
 
     forall = eqs.pop(i)
 
-    function, *limits = forall.args
-
-    i, a, b = axiom.limit_is_Interval(limits)
-
+    function, (i, a, b) = forall.of(All[Tuple])
+    assert i.is_integer
     try:
         while eqs:
             j = eqs.index(function._subs(i, b))
@@ -26,7 +23,7 @@ def apply(self):
     except:
         return
 
-    return Equivalent(self, ForAll[i:a:b](function))
+    return Equivalent(self, All[i:a:b](function))
 
 
 @prove
@@ -37,7 +34,7 @@ def prove(Eq):
 
     x = Symbol.x(real=True, shape=(oo,))
 
-    Eq << apply(And(ForAll[i:0:n](x[i] > 0), x[n] > 0, x[n + 1] > 0))
+    Eq << apply(And(All[i:0:n](x[i] > 0), x[n] > 0, x[n + 1] > 0))
 
     Eq << algebra.equivalent.given.cond.apply(Eq[-1])
 

@@ -4,8 +4,8 @@ from util import *
 @apply
 def apply(*given):
     cond, exists = given
-    (fn, *limits_e), *limits_f = exists.of(ForAll[Exists])
-    return ForAll(Exists(cond & fn, *limits_e), *limits_f)
+    (fn, *limits_e), *limits_f = exists.of(All[Any])
+    return All(Any(cond & fn, *limits_e), *limits_f)
 
 
 @prove
@@ -20,7 +20,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(f(x, y) > 0, ForAll[y:B](Exists[x:A]((g(x, y) > 0))))
+    Eq << apply(f(x, y) > 0, All[y:B](Any[x:A]((g(x, y) > 0))))
 
     Eq << Eq[-1].this.function.apply(algebra.any_et.given.et, index=0)
 

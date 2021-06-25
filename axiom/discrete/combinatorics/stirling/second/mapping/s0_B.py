@@ -41,7 +41,7 @@ def prove(Eq):
     j = Symbol.j(domain=Range(0, k + 1))
 
     B = Eq[1].lhs
-    Eq.plausible_notcontains = ForAll(NotContains({n}, e), (e, s0), plausible=True)
+    Eq.plausible_notcontains = All(NotContains({n}, e), (e, s0), plausible=True)
 
     Eq << Eq.plausible_notcontains.this.limits[0][1].subs(Eq.s0_definition)
 
@@ -63,7 +63,7 @@ def prove(Eq):
 
     x_hat = Symbol(r"\hat{x}", Lamda[i](Piecewise((x[i] // {n} , Equal(i, j)), (x[i], True))))
 
-    Eq.x_hat_definition = x_hat.equality_defined()
+    Eq.x_hat_definition = x_hat[i].this.definition
 
     Eq << algebra.eq_piecewise.imply.ou.apply(Eq.x_hat_definition)
 

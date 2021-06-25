@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -16,7 +14,7 @@ def apply(given, wrt):
     lhs = lhs._subs(x, wrt)
     rhs = rhs._subs(x, wrt)
     
-    return ForAll[wrt:Unequal(wrt % 2, 0)](Equal(lhs, rhs))
+    return All[wrt:Unequal(wrt % 2, 0)](Equal(lhs, rhs))
 
 
 @prove

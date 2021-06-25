@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 def limits_union(limits, _limits, function=None):

@@ -3,12 +3,9 @@ from util import *
 
 @apply(given=None)
 def apply(given):
-    is_odd, contains_n = given.of(And)
-    n = is_odd.of(Equal[Basic % 2, 1])
-    n_, ab = contains_n.of(Contains)
+    n, (n_, (a, b)) = given.of(And[Equal[Expr % 2, 1], Contains[Range]])
 
     assert n == n_
-    a, b = ab.of(Range)
     b -= 1
 
     return Equivalent(given, Contains(n, imageset(n, 2 * n + 1, Range(a // 2, (b - 1) // 2 + 1))))

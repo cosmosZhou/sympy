@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, domain=None, wrt=None):
-    function, *limits = given.of(Exists)
+    function, *limits = given.of(Any)
 
     if wrt is None:
         i = 0
@@ -21,7 +21,7 @@ def apply(given, domain=None, wrt=None):
         limit = (x, domain)
 
     limits[i] = limit
-    return Exists(function, *limits)
+    return Any(function, *limits)
 
 
 @prove
@@ -32,7 +32,7 @@ def prove(Eq):
     t = Symbol.t(real=True)
     f = Function.f(shape=(), integer=True)
 
-    Eq << apply(Exists[e:S // {t}](f(e) > 0), domain=S)
+    Eq << apply(Any[e:S // {t}](f(e) > 0), domain=S)
 
     Eq << algebra.any.given.ou.apply(Eq[-1], cond={t})
 

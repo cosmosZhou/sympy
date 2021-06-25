@@ -1,12 +1,21 @@
 from util import *
 
 
+def is_infinite_series(fx):
+    f, (n, a, b) = fx.of(Sum)
+    assert n.is_integer
+    assert b.is_infinite
+    if not a.is_zero:
+        f = f._subs(n, n + a)
+    return f
+
+
 @apply
 def apply(given, x):
-    import axiom
+    
     lhs, rhs = given.of(Equal)
-    an = axiom.is_infinite_series(lhs)
-    bn = axiom.is_infinite_series(rhs)
+    an = is_infinite_series(lhs)
+    bn = is_infinite_series(rhs)
     n = lhs.variable
     an /= x ** n
     bn /= x ** n
@@ -68,15 +77,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.limits_subs(_k, _k + m + 1)
 
-    Eq << Eq[-1].this.lhs.astype(Mul)
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.mul)
 
-    Eq << Eq[-1].this.rhs.astype(Mul)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.mul)
 
     Eq << calculus.eq.imply.eq.limit.apply(Eq[-1], (r, 0))
 
-    Eq << Eq[-1].this.lhs.astype(Sum)
+    Eq << Eq[-1].this.lhs.apply(calculus.limit.to.sum)
 
-    Eq << Eq[-1].this.rhs.astype(Sum)
+    Eq << Eq[-1].this.rhs.apply(calculus.limit.to.sum)
 
     Eq << Eq[-1].this.lhs.split({0})
 

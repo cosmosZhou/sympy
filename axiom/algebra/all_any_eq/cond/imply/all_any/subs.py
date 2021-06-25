@@ -2,16 +2,15 @@ from util import *
 
 
 @apply
-def apply(*given, reverse=False):
-    all_any, cond = given
+def apply(all_any, cond, reverse=False):
     assert not cond.is_ConditionalBoolean
-    (fn, *limits_e), *limits_f = all_any.of(ForAll[Exists])
+    (fn, *limits_e), *limits_f = all_any.of(All[Any])
 
     x, y = fn.of(Equal)
     if reverse:
         x, y = y, x
 
-    return ForAll(Exists(cond._subs(x, y), *limits_e), *limits_f)
+    return All(Any(cond._subs(x, y), *limits_e), *limits_f)
 
 
 @prove
@@ -25,7 +24,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
 
-    Eq << apply(ForAll[y:B](Exists[x:A](Equal(g(x, y), f(x, y)))), g(x, y) > y)
+    Eq << apply(All[y:B](Any[x:A](Equal(g(x, y), f(x, y)))), g(x, y) > y)
 
     Eq << algebra.cond.all.imply.all_et.apply(Eq[1], Eq[0])
 

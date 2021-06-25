@@ -1153,14 +1153,10 @@ class Integral(AddWithLimits):
             try:
                 limit = x, domain.start, domain.stop
             except AttributeError:
-#                 AttributeError: 'Union' object has no attribute 'start'
                 return self
         var = limit[0]
 
         function = self.function
-        if function.is_Exp:
-            function = function.astype(Mul)
-
         independent, dependent = function.as_independent(var, as_Add=False)
         if independent == S.One:
             if limit != self.limits[0]:

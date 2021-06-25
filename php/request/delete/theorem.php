@@ -5,28 +5,37 @@ use std\Graph, std\Text, std\Set;
 
 $dict = empty($_POST) ? $_GET : $_POST;
 
-$user = $dict['user'];
+if (! $dict) {
+    // https://www.php.net/manual/en/function.getopt.php
+    $dict = getopt("", [
+        'package::',
+        'theorem::'
+    ]);
+}
+
 $package = $dict['package'];
 $theorem = $dict['theorem'];
 
-error_log("user = $user");
 error_log("package = $package");
 error_log("theorem = $theorem");
 
-if (! \std\endsWith($package, '/')) {
-    $package .= '/';
-}
+$module = "$package.$theorem";
+$py = module_to_py($module);
+error_log("py = $py");
 
-$ROOT = $_SERVER['DOCUMENT_ROOT'];
-$folder = $ROOT . "/" . $user . "/axiom/" . $package;
-error_log("folder = $folder");
-error_log("package = $package");
-error_log("theorem = $theorem");
+if (\std\endsWith($py, "/__init__.py")) {
+    $init = new Text($py);
+    $lines = $init->preg_match('^from . import \w+');
+    $init->writelines($lines);
 
-$py = $folder . "/$theorem.py";
-if (file_exists($py)) {
+    \mysql\delete_from_suggest($module, true);
+} else {
     unlink($py);
+    delete_from_init($package, $theorem);
+
+    \mysql\delete_from_suggest($module);
 }
 
-delete_from_init($folder, $theorem);
+\mysql\delete_from_axiom($module);
+echo \std\jsonify("deleted!");
 ?>

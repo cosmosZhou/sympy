@@ -5,13 +5,13 @@ from util import *
 def apply(*given, reverse=False):
     any_eq, forall = given
 
-    (x, y), *limits = any_eq.of(Exists[Equal])
-    cond, *_limits = forall.of(ForAll)
+    (x, y), *limits = any_eq.of(Any[Equal])
+    cond, *_limits = forall.of(All)
     assert limits == _limits
 
     if reverse:
         x, y = y, x
-    return Exists(cond._subs(x, y), *limits)
+    return Any(cond._subs(x, y), *limits)
 
 
 @prove
@@ -24,7 +24,7 @@ def prove(Eq):
 
     S = Symbol.S(etype=dtype.integer)
 
-    Eq << apply(Exists[x:S](Equal(g(x), f(x))), ForAll[x:S](g(x) > y))
+    Eq << apply(Any[x:S](Equal(g(x), f(x))), All[x:S](g(x) > y))
 
     Eq << algebra.all.any.imply.any_et.apply(Eq[0], Eq[1])
 

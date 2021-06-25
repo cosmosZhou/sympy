@@ -5,16 +5,16 @@ from util import *
 def apply(*given):
     forall, all_any = given
     from sympy.concrete.limits import limits_include, limits_difference
-    fx, *limits_a = forall.of(ForAll)
+    fx, *limits_a = forall.of(All)
 
-    exists, *limits_b = all_any.of(ForAll)
+    exists, *limits_b = all_any.of(All)
     assert limits_include(limits_a, limits_b)
 
     limits_a = limits_difference(limits_a, limits_b)
 
     assert limits_a
-    fy, *limits_c = exists.of(Exists)
-    return ForAll(Exists(ForAll(fx & fy, *limits_a), *limits_c), *limits_b)
+    fy, *limits_c = exists.of(Any)
+    return All(Any(All(fx & fy, *limits_a), *limits_c), *limits_b)
 
 
 @prove
@@ -29,14 +29,14 @@ def prove(Eq):
     j = Symbol.j(domain=Range(0, k + 1))
     s = Symbol.s(etype=dtype.integer.set * (k + 1))
 
-    Eq << apply(ForAll[i:Range(0, k + 1) // {j}, x[:k + 1]:s](Equal(x[i] & x[j], x[i].etype.emptySet)),
-                ForAll[x[:k + 1]:s](Exists[j](Subset({n}, x[j]))))
+    Eq << apply(All[i:Range(0, k + 1) // {j}, x[:k + 1]:s](Equal(x[i] & x[j], x[i].etype.emptySet)),
+                All[x[:k + 1]:s](Any[j](Subset({n}, x[j]))))
 
     Eq << Eq[-1].this.function.function.apply(algebra.all.given.ou)
 
     Eq << Eq[-1].this.function.apply(algebra.any_ou.given.ou.any, simplify=None)
 
-    Eq << Eq[-1].this.find(Exists).apply(algebra.any.given.cond, simplify=None)
+    Eq << Eq[-1].this.find(Any).apply(algebra.any.given.cond, simplify=None)
 
     Eq << Eq[-1].this.function.apply(algebra.ou.given.all)
 

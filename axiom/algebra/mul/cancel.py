@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply(simplify=False)
 def apply(self, factor): 
-    num, den = axiom.is_Divide(self)
+    num, den = self.of(Expr / Expr)
     factor = sympify(factor)
     assert factor.is_nonzero
     

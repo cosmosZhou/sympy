@@ -1,7 +1,7 @@
 from util import *
 
 # given: A != {}
-# Exists[x] (x in A)
+# Any[x] (x in A)
 
 
 @apply
@@ -17,7 +17,7 @@ def apply(x=None, y=None, **kwargs):
     if y is None:
         y = S.generate_var(excludes={x}, **S.etype.dict)
 
-    return ForAll[S:Equal(abs(S), 2)](Exists[x: Unequal(x, y), y](Equal(S, {x, y})))
+    return All[S:Equal(abs(S), 2)](Any[x: Unequal(x, y), y](Equal(S, {x, y})))
 
 
 @prove

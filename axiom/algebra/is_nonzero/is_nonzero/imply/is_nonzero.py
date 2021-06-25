@@ -1,12 +1,8 @@
 from util import *
 
-import axiom
-
-
 
 @apply
-def apply(*given):
-    is_nonzero_x, is_nonzero_y = given
+def apply(is_nonzero_x, is_nonzero_y):
     x = is_nonzero_x.of(Unequal[0])
     y = is_nonzero_y.of(Unequal[0])
     return Unequal(x * y, 0)
@@ -23,7 +19,7 @@ def prove(Eq):
 
     Eq << algebra.is_nonzero.imply.is_positive.abs.apply(Eq[1])
 
-    Eq << algebra.is_positive.is_positive.imply.is_positive.mul.apply(Eq[-1], Eq[-2])
+    Eq << algebra.is_positive.is_positive.imply.is_positive.apply(Eq[-1], Eq[-2])
 
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.abs)
 

@@ -3,14 +3,14 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
     xi, limit = self.of(Sum ** 2)
     try:
-        i, z, n = axiom.limit_is_Interval((limit,))
+        i, z, n = limit.of(Tuple)
     except:
-        (i,) = limit
+        [i] = limit
         domain = xi.domain_defined(i)
         z, n = domain.of(Range)
+        
     assert z == 0
 
     j = self.generate_var({i}, integer=True, var='j')
@@ -21,11 +21,10 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     i = Symbol.i(integer=True)
     n = Symbol.n(integer=True, positive=True, given=False)
-
     x = Symbol.x(real=True, shape=(oo,))
-
     Eq << apply(Sum[i:n](x[i]) ** 2)
 
     Eq.initial = Eq[0].subs(n, 1)
@@ -42,7 +41,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Number * ~Sum).split({n})
 
-    Eq << Eq[-1].this.rhs.find(Number * ~Sum).apply(algebra.sum.to.add.doit.outer.setlimit)
+    
 
     Eq << Eq[-1].this.rhs.find(Number * ~Sum).simplify()
 

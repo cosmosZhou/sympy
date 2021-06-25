@@ -3,9 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    div = self.of(Floor)
-    plus, d = axiom.is_Divide(div)
+    plus, d = self.of(Floor[Expr / Expr])
     n = plus - (d - 1)
 
     return Equal(self, ceiling(n / d))

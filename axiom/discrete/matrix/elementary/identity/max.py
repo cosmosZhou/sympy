@@ -20,7 +20,7 @@ def prove(Eq):
     j = Symbol.j(domain=Range(0, n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], (i, j))
 
-    Eq << Eq[-1].this.find(Max).astype(Piecewise)
+    Eq << Eq[-1].this.find(Max).apply(algebra.max.to.piecewise)
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
 
@@ -28,11 +28,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(GreaterEqual).reversed
 
-    Eq << Eq[-1].this.find(KroneckerDelta).astype(Piecewise)
+    Eq << Eq[-1].this.find(KroneckerDelta).apply(algebra.kroneckerDelta.to.piecewise)
 
     Eq << Eq[-1].this.find(Mul[Piecewise]).apply(algebra.mul_piecewise.to.piecewise, simplify=False)
 
-    Eq << Eq[-1].this.find(Add[Piecewise]).astype(Piecewise, simplify=False)
+    Eq << Eq[-1].this.find(Add[Piecewise]).apply(algebra.add.to.piecewise, simplify=False)    
 
     Eq << Eq[-1].this.find(Mul[Piecewise]).apply(algebra.mul_piecewise.to.piecewise, simplify=False)
 

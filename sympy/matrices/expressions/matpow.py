@@ -175,5 +175,8 @@ class MatPow(MatrixExpr):
     def domain_definition(self):
         if self.exp.is_extended_negative:
             from sympy import Unequal
-            return Unequal(self.base.det(), S.Zero)
+            base = self.base
+            if base.is_singular == False:
+                return S.true
+            return Unequal(base.det(), S.Zero)
         return MatrixExpr.domain_definition(self)

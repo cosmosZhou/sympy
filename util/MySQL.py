@@ -7,8 +7,7 @@ from DBUtils.PooledDB import PooledDB
 import time
 
 import os
-import json
-
+from util.std import json_encode
 
 class Database:
 
@@ -32,7 +31,7 @@ class Database:
             
             m = re.compile("Unknown database '(\w+)'").search(e.msg)
             assert m
-            database = m.group(1)
+            database = m[1]
             assert database == kwargs['database']
             kwargs.pop('database')
             
@@ -173,7 +172,7 @@ class MySQLConnector(Database):
                 continue
             m = re.compile("varchar\((\d+)\)").match(Type)
             if m:
-                char_length[i] = int(m.group(1))           
+                char_length[i] = int(m[1])           
                 
         def create_csv(lines, step):
             import tempfile
@@ -251,19 +250,15 @@ class MySQLConnector(Database):
         print('time cost =', (time.time() - start))
         if delete:
             print("os.remove(csv)", csv)
-            os.remove(csv)        
+            try:
+                os.remove(csv)
+            except:
+                exit()
 
 
 instance = MySQLConnector()()            
 
     
-def json_encode(data, utf8=False): 
-    s = json.dumps(data, ensure_ascii=False)
-    if utf8:
-        s = s.encode(encoding='utf-8')
-    return s 
-
-
 def select_axiom_lapse_from_tbl_axiom_py(user='root'):
     try:
         return {axiom:lapse for axiom, lapse in instance.select("select axiom, lapse from tbl_axiom_py where user='%s'" % user)}
@@ -271,13 +266,13 @@ def select_axiom_lapse_from_tbl_axiom_py(user='root'):
         print(err.msg)
         m = re.compile("Table '(\w+)\.([\w_]+)' doesn't exist").search(err.msg)
         assert m
-        assert m.group(1) == 'axiom'
-        assert m.group(2) == 'tbl_axiom_py'
+        assert m[1] == 'axiom'
+        assert m[2] == 'tbl_axiom_py'
         sql = '''\
 CREATE TABLE `tbl_axiom_py` (
   `user` varchar(32) NOT NULL,
   `axiom` varchar(256) NOT NULL,  
-  `state` enum('success','failure','plausible','insurmountable','unprovable') NOT NULL,
+  `state` enum('proved','failed','plausible','unproved','unprovable','slow') NOT NULL,
   `lapse` double default NULL,  
   `latex` text NOT NULL,
   PRIMARY KEY (`user`, `axiom`) 
@@ -320,6 +315,21 @@ PARTITION BY KEY () PARTITIONS 8
 '''
         instance.execute(sql)
                 
+        sql = '''\
+CREATE TABLE `tbl_login_py` (
+  `user` varchar(32) NOT NULL,
+  `password` varchar(32) NOT NULL,
+  `email` varchar(128) NOT NULL,
+  `visibility` enum('public','private','protected') NOT NULL,
+  PRIMARY KEY (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+PARTITION BY KEY () PARTITIONS 8
+'''
+        instance.execute(sql)
+        
+        sql = "insert into tbl_login_py values('sympy', '123456', 'chenlizhibeing@126.com', 'protected')"
+        instance.execute(sql)
+        
     except Exception as e:
         print(type(e), e)
         

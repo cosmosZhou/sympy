@@ -3,11 +3,11 @@ from util import *
 
 @apply
 def apply(given, index=None):
-    eqs, *limits = given.of(Exists[And])
+    eqs, *limits = given.of(Any[And])
     if index is None:
-        return tuple(Exists(eq, *limits)for eq in eqs)
+        return tuple(Any(eq, *limits)for eq in eqs)
     eq = eqs[index]
-    return Exists(eq, *limits)
+    return Any(eq, *limits)
 
 
 @prove
@@ -19,7 +19,7 @@ def prove(Eq):
     c = Symbol.c(real=True)
     f = Function.f(shape=(), real=True)
 
-    Eq << apply(Exists[x:a:b]((x <= c) & (f(x) >= 1)), index=0)
+    Eq << apply(Any[x:a:b]((x <= c) & (f(x) >= 1)), index=0)
 
     Eq << ~Eq[-1]
 

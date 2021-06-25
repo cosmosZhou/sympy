@@ -2,7 +2,6 @@
 from util import *
 
 
-import axiom
 
 
 # given: A in B and |A| = |B|

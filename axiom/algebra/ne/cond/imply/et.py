@@ -1,10 +1,9 @@
 from util import *
-import axiom
-from axiom.algebra.ne.cond.imply.cond import process_given_conditions
 
 
 @apply
 def apply(*given, **kwargs):
+    from axiom.algebra.ne.cond.imply.cond import process_given_conditions
     eq, f_eq = process_given_conditions(*given, **kwargs)    
     return And(eq, f_eq.simplify())
 
@@ -13,7 +12,7 @@ def apply(*given, **kwargs):
 def prove(Eq): 
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
-    f = Function.f(nargs=(2,), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
     Eq << apply(Unequal(x, y), Unequal(g(KroneckerDelta(x, y)), f(x, y)))
     

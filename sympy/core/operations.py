@@ -84,7 +84,10 @@ class AssocOp(Basic):
 
         c_part, nc_part, other_symbols = cls.flatten(args)
         is_commutative = not nc_part
-        obj = cls._from_args(c_part + nc_part, is_commutative)
+        try:
+            obj = cls._from_args(c_part + nc_part, is_commutative)
+        except TypeError:
+            return Basic.__new__(cls, *c_part)
 #         obj = cls._exec_constructor_postprocessors(obj)
 
         if other_symbols is not None:
@@ -479,13 +482,14 @@ class AssocOp(Basic):
     def as_expr(self):
         return self
 
-    def _eval_domain_defined(self, x):
+    def _eval_domain_defined(self, x, **kwargs):
         if x.dtype.is_set:
             return x.universalSet
-        
         domain = x.domain
+        
+        real = kwargs.get('real')
         for arg in self.args:
-            domain &= arg.domain_defined(x)
+            domain &= arg.domain_defined(x, real=real)
         return domain
 
     def _eval_is_extended_real(self):
@@ -502,8 +506,33 @@ class AssocOp(Basic):
     def max_len_shape(self):
         return max(len(arg.shape) for arg in self.args)    
 
-    def as_KroneckerDelta(self):
-        return self.func(*(arg.as_KroneckerDelta() for arg in self.args))
+    def getitem(self, index, **_):
+        args = []
+        len_shape = self.max_len_shape()
+#         assert not isinstance(index, list)
+        if isinstance(index, tuple):
+            len_subtracted = len(index)
+        else:
+            len_subtracted = 1
+            
+        len_required = len_shape - len_subtracted
+        for arg in self.args:
+            shape_length = len(arg.shape)
+            if shape_length <= len_required:
+                args.append(arg)
+            elif isinstance(index, tuple):
+                args.append(arg[index[len_shape - shape_length:]])
+            else:
+                args.append(arg[index])
+
+        return self.func(*args)
+
+#     def domain_definition(self):
+#         from sympy import S
+#         et = S.BooleanTrue
+#         for arg in self.args:
+#             et &= arg.domain_definition()
+#         return et
 
 class ShortCircuit(Exception):
     pass

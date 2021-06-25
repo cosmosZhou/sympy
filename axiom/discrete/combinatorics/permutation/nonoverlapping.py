@@ -21,7 +21,7 @@ def prove(Eq):
     t = Q.definition.variable
     j = Symbol.j(integer=True)
 
-    Eq.nonoverlapping = ForAll[j: Range(0, n + 1) // {t}, t](Equal(Q[t] & Q[j], Q[t].etype.emptySet), plausible=True)
+    Eq.nonoverlapping = All[j: Range(0, n + 1) // {t}, t](Equal(Q[t] & Q[j], Q[t].etype.emptySet), plausible=True)
 
     Eq << ~Eq.nonoverlapping
 

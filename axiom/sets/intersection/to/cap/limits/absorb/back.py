@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
-from axiom.algebra.add.to.sum.limits.absorb.back import absorb
 
 
 @apply
 def apply(self):
+    from axiom.algebra.add.to.sum.limits.absorb.back import absorb
     return Equal(self, absorb(Cap, self), evaluate=False)
 
 
@@ -18,7 +16,7 @@ def prove(Eq):
     f = Function.f(etype=dtype.integer)
     Eq << apply(Intersection(Cap[k:i:n](f(k)), f(n), evaluate=False))
 
-    Eq << Eq[-1].this.rhs.apply(sets.cap.to.intersection.dissect, {n})
+    Eq << Eq[-1].this.rhs.apply(sets.cap.to.intersection.split, {n})
 
 
 if __name__ == '__main__':

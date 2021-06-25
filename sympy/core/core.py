@@ -2,6 +2,7 @@
 # used for canonical ordering of symbolic sequences
 # via __cmp__ method:
 # FIXME this is *so* irrelevant and outdated!
+from sympy.core.cache import cacheit
 ordering_of_classes = [
     # singleton numbers
     'Zero', 'One', 'Half', 'Infinity', 'NaN', 'NegativeOne', 'NegativeInfinity',
@@ -129,17 +130,37 @@ class BasicMeta(type):
         other = sympify(other)
         return Basic.__new__(Add, self, other)
 
+    def __radd__(self, lhs):
+        from sympy import Basic, Add, sympify
+        lhs = sympify(lhs)
+        return Basic.__new__(Add, lhs, self)
+    
     def __mul__(self, other):
         from sympy import Basic, Mul
         return Basic.__new__(Mul, self, other)
 
+    def __matmul__(self, other):
+        from sympy import Basic, MatMul
+        return Basic.__new__(MatMul, self, other)
+    
     def __rmul__(self, lhs):
         from sympy import Basic, Mul, sympify
         return Basic.__new__(Mul, sympify(lhs), self)
     
     def __sub__(self, other):
         from sympy import Basic, Add, sympify
-        other = -other
+        try:
+            other = -other
+        except TypeError:
+            if other.is_Mul:
+                args = other.args
+                if args[0].is_Number:
+                    args[0] = -args[0]
+                else:
+                    args = (sympify(-1),) + args
+                other = Basic.__new__(other.func, *args)
+            else:
+                raise
         if isinstance(other, int):
             other = sympify(other)
             if not self.is_Number:
@@ -153,10 +174,18 @@ class BasicMeta(type):
     def __invert__(self):
         return Wanted(self)
     
+    def __floordiv__(self, other):
+        from sympy import Basic, Floor        
+        return Basic.__new__(Floor, self / other)
+        
     def __truediv__(self, other):
-        from sympy import Basic, Mul, Pow, S
-        return Basic.__new__(Mul, self,
-                             Basic.__new__(Pow, other, S.NegativeOne))
+        from sympy import Basic, Mul, Pow, S, sympify
+        if isinstance(other, int):
+            other = 1 / sympify(other)
+            self, other = other, self
+        else:
+            other = Basic.__new__(Pow, other, S.NegativeOne)
+        return Basic.__new__(Mul, self, other)
 
 #     lhs / self
     def __rtruediv__(self, lhs):
@@ -210,6 +239,11 @@ class BasicMeta(type):
             other = sympify(other)
         return Basic.__new__(LessEqual, self, other)
 
+    
+    @property
+    @cacheit
+    def is_abstract(self):
+        return bool(self.__subclasses__())
 
 class Wanted:
     is_Wanted = True

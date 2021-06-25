@@ -1,11 +1,11 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(given, δ=None, var=None):
+    from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
     from axiom.calculus.eq.to.any_all.limit_definition import any_all
-    fn, (x, x0, dir) = axiom.is_limited(given)
+    fn, (x, x0, dir) = of_limited(given)
 
     M = fn.generate_var(excludes={x}, var=var, positive=True, real=True)
     exists = any_all(Equal(given.lhs, S.Zero), M, δ=δ)

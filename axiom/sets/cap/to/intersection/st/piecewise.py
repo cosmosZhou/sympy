@@ -2,15 +2,13 @@ from util import *
 
 
 @apply
-def apply(self):
-    import axiom
-    fx, *limits = self.of(Cap)
-    * limits, limit = limits
+def apply(self):    
+    fx, * limits, limit = self.of(Cap)
     if limits:
         ecs = ((Cap(e, *limits).simplify(), c) for e, c in fx.args)
         fx = Piecewise(*ecs)
 
-    return Equal(self, fx.as_multiple_terms(*axiom.limit_is_set((limit,)), cls=Cap))
+    return Equal(self, fx.as_multiple_terms(*limit.to_setlimit(), cls=Cap))
 
 
 @prove

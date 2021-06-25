@@ -1,20 +1,12 @@
 from util import *
-from axiom.calculus.integral.intermediate_value_theorem import is_continuous
-import axiom
-
-
-def is_differentiable(f, a, b, x=None):
-    if x is None: 
-        x = Symbol.x(real=True)
-        
-    return ForAll[x:Interval(a, b, left_open=True, right_open=True)](Contains(Derivative(f(x), x), Reals))
 
 
 @apply
 def apply(*given):
     is_continuous, is_differentiable, equal = given
-    fz, (z, a, b) = axiom.is_continuous(is_continuous)
-    _fz, (_z, _a, _b) = axiom.is_differentiable(is_differentiable)
+    from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import of_continuous, of_differentiable
+    fz, (z, a, b) = of_continuous(is_continuous)
+    _fz, (_z, _a, _b) = of_differentiable(is_differentiable)
     assert _fz == fz
     assert _z == z
     assert _a == a
@@ -24,15 +16,24 @@ def apply(*given):
     assert fz._subs(z, a) == fa
     assert fz._subs(z, b) == fb
     
-    return Exists[z:Interval(a, b, left_open=True, right_open=True)](Equal(Derivative(fz, z), 0))               
+    return Any[z:Interval(a, b, left_open=True, right_open=True)](Equal(Derivative(fz, z), 0))               
 
 
-@prove(surmountable=False)
+@prove
 def prove(Eq):
+    from axiom import calculus
+
+    from axiom.calculus.integral.intermediate_value_theorem import is_continuous
+    from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import is_differentiable
+    from axiom import calculus
     a = Symbol.a(real=True)
     b = Symbol.b(domain=Interval(a, oo, left_open=True))
     f = Function.f(shape=(), real=True)
     Eq << apply(is_continuous(f, a, b), is_differentiable(f, a, b), Equal(f(a), f(b)))
+
+    Eq << Less(a, b, plausible=True)
+
+    Eq << calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle.apply(Eq[-1], Eq[0], Eq[1], Eq[2])
 
 
 if __name__ == '__main__':

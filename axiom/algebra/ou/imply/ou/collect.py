@@ -1,10 +1,7 @@
 from util import *
-import axiom
 
 
-
-@apply
-def apply(given, *, cond=None):
+def collect(given, cond=None):
     or_eqs = given.of(Or)
 
     new_or_eqs = []
@@ -25,6 +22,11 @@ def apply(given, *, cond=None):
     if and_eqs:
         new_or_eqs.append(And(Or(*and_eqs), cond))
         return Or(*new_or_eqs)
+
+
+@apply
+def apply(given, *, cond=None):
+    return collect(given, cond)
 
 
 @prove

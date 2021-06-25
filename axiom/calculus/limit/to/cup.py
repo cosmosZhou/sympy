@@ -7,7 +7,7 @@ def apply(self, simplify=True):
     return Equal(self, doit(Cup, self, simplify=simplify), evaluate=False)
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     k = Symbol.k(integer=True)
     n = Symbol.n(integer=True)

@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.to.add.doit.outer import doit
-
-
 @apply(given=None)
 def apply(self):
-    assert self.is_ForAll
-    return Equivalent(self, doit(self))
+    from axiom.algebra.sum.to.add.doit.outer import doit
+    return Equivalent(self, doit(All, self))
 
 
 @prove
@@ -20,19 +16,19 @@ def prove(Eq):
     f = Function.f(integer=True)
 
     n = 5
-    Eq << apply(ForAll[j:f(i), i:n](x[i, j] > 0))
+    Eq << apply(All[j:f(i), i:n](x[i, j] > 0))
 
     n -= 1
-    Eq << Eq[-1].this.lhs.apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.all.to.et.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.args[-1].apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.args[-1].apply(algebra.all.to.et.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.args[-1].apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.args[-1].apply(algebra.all.to.et.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.lhs.args[-1].apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.lhs.args[-1].apply(algebra.all.to.et.split, cond={n})
 
 
 if __name__ == '__main__':

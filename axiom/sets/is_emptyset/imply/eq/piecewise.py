@@ -39,7 +39,7 @@ def prove(Eq):
         Piecewise((f(x), Contains(x, A)), (f_quote(x), True)),
         Piecewise((g(x), Contains(x, B)), (g_quote(x), True)))
 
-    Eq << Eq[1].this.lhs.astype(Piecewise)
+    Eq << Eq[1].this.lhs.apply(algebra.add.to.piecewise.st.two_pieces)
 
     Eq << Eq[-1].apply(algebra.cond.given.et.all, cond=Contains(x, A))
 
@@ -49,10 +49,8 @@ def prove(Eq):
 
     Eq << Eq[-2].this().function.simplify()
 
-    Eq << sets.is_emptyset.imply.all_notcontains.apply(Eq[0], wrt=Eq[-1].variable)
-
-    Eq << Eq[-1].this.function.apply(algebra.cond.imply.eq.piecewise, Eq[-2].lhs, invert=True)
-
+    Eq << Eq[-1].subs(Eq[0])
+    
 
 if __name__ == '__main__':
     run()

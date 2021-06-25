@@ -507,18 +507,6 @@ class KroneckerDelta(Function):
         from sympy.sets.finiteset import FiniteSet
         return FiniteSet(0, 1)
 
-    @classmethod
-    def rewrite_from_Add(cls, self):
-        return self.as_KroneckerDelta()
-
-    @classmethod
-    def rewrite_from_Mul(cls, self):
-        return self.as_KroneckerDelta()
-    
-    @classmethod
-    def rewrite_from_Piecewise(cls, self):
-        return self.as_KroneckerDelta()
-    
     def enumerate_KroneckerDelta(self):
         yield self
         

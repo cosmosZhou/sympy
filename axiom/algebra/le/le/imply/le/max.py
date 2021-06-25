@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    x_less_than_a, y_less_than_a = given
+def apply(x_less_than_a, y_less_than_a):
     x, a = x_less_than_a.of(LessEqual)
     y, _a = y_less_than_a.of(LessEqual)
     assert a == _a
@@ -19,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(x <= a, y <= a)
 
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.max.to.piecewise)
 
     Eq << algebra.cond.given.ou.apply(Eq[-1])
 

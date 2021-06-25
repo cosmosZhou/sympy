@@ -1,7 +1,7 @@
 from util import *
 
 # given: A >= 1
-# Exists[x] (x in A)
+# Any[x] (x in A)
 
 
 @apply
@@ -12,7 +12,7 @@ def apply(given):
     assert abs_S.is_Abs
     S = abs_S.arg
     x = S.element_symbol()
-    return Exists[x](Contains(x, S))
+    return Any[x](Contains(x, S))
 
 
 @prove

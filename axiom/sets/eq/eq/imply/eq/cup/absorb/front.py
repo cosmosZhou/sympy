@@ -1,21 +1,14 @@
 from util import *
 
-import axiom
-
 
 @apply
-def apply(*imply):
-    cond, cond_sum = imply
+def apply(cond, cond_sum):
     fa, ga = cond.of(Equal)
 
-    fx_sum, gx_sum = cond_sum.of(Equal)
+    (fk, (k, a, b)), (gk, _limit) = cond_sum.of(Equal[Cup, Cup])
 
-    fk, *limits = fx_sum.of(Cup)
-    k, a, b = axiom.limit_is_Interval(limits)
     assert fk._subs(k, a - 1) == fa
-
-    gk, *_limits = gx_sum.of(Cup)
-    assert _limits == limits
+    assert _limit == (k, a, b)
     assert gk._subs(k, a - 1) == ga
 
     return Equal(Cup[k:a - 1:b](fk), Cup[k:a - 1:b](gk))

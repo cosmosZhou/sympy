@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 
@@ -19,7 +18,7 @@ def apply(given, j=None):
 
     assert j >= 0 and j < n
 
-    return Exists[k:n](Equal(x[k], j))
+    return Any[k:n](Equal(x[k], j))
 
 
 @prove

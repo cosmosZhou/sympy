@@ -3,18 +3,12 @@ from util import *
 
 @apply
 def apply(X, Y):
-    from sympy.stats.rv import PDF
     i = Symbol.i(integer=True)
 
-    assert Y.is_random and X.is_random
     y = pspace(Y).symbol
-    assert y >= 0
-    assert not y.is_random
-    assert Y.distribution.is_ChiSquaredDistribution
-    k = Y.distribution.k
-    assert Sum[i:k](X[i] * X[i]).is_random
-
-    return Equal(PDF(Sum[i:k](X[i] * X[i]))(y), PDF(Y)(y).doit())
+    k = Y.distribution.of(ChiSquaredDistribution)
+    
+    return Equal(Probability(Equal(Sum[i:k](X[i] * X[i]), y)), Probability(Equal(Y, y)).doit())
 
 
 @prove
@@ -22,13 +16,9 @@ def prove(Eq):
     from axiom import stats
     i = Symbol.i(integer=True, nonnegative=True)
     X = Symbol.X(shape=(oo,), distribution=NormalDistribution(0, 1))
-    assert X[i].is_extended_real
-    assert X.is_random
 
     k = Symbol.k(integer=True, positive=True)
     Y = Symbol.Y(distribution=ChiSquaredDistribution(k))
-    assert Y.is_extended_real
-    assert Y.is_random
 
     Eq << apply(X, Y)
 

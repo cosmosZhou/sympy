@@ -4,9 +4,9 @@ from sympy.sets.finiteset import FiniteSet
 from sympy.concrete.expr_with_limits import ExprWithLimits
 
 
-class Exists(ConditionalBoolean):
+class Any(ConditionalBoolean):
     """
-    Exists[x:A] q(x) <=> conditionset(x, q(x), A) != Ø
+    Any[x:A] q(x) <=> conditionset(x, q(x), A) != Ø
     """
     
     operator = Or
@@ -15,91 +15,12 @@ class Exists(ConditionalBoolean):
     def __new__(cls, function, *symbols, **assumptions):
         if assumptions:
             from sympy.core.inference import Inference
-            return Inference(Exists.__new__(cls, function, *symbols), **assumptions)
+            return Inference(Any.__new__(cls, function, *symbols), **assumptions)
         
         if function.is_BooleanAtom or len(symbols) == 0:
             return function.copy(**assumptions)
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
     
-    def combine_clauses(self, rhs):
-        if rhs.is_Exists:
-            func = []
-            if rhs.function.is_ForAll:
-                if rhs.function.function.is_Exists:
-                    dic = self.limits_common(rhs.function.function)
-                    if dic:
-                        limits = self.limits_delete(dic)
-                        limits = limits_intersect(rhs.limits, limits)
-                        func.append([Exists, rhs.function.function.limits])
-                        func.append([ForAll, rhs.function.limits])
-                        func.append([Exists, limits])
-
-                        return None, func, self.function, rhs.function.function.function
-                dic = self.limits_common(rhs.function)
-                if dic:
-                    func.append([ForAll, rhs.function.limits])
-                    limits = self.limits_delete(dic)
-                    func.append([Exists, rhs.limits_intersect(limits)])
-                    return 'given', func, self.function, rhs.function.function
-            limits = self.limits_intersect(rhs)
-            if self.variables_set == rhs.variables_set:
-                clue = 'equivalent'
-            else:
-                clue = None
-            func.append([Exists, limits])
-            return clue, func, self.function, rhs.function
-
-        if rhs.is_ForAll:
-            func = []
-            if rhs.function.is_Exists:
-                dic = self.limits_common(rhs.function)
-                if dic:
-                    clue = None
-                    func.append([Exists, rhs.function.limits])
-                    limits = self.limits_delete(dic)
-
-                    dic = self.limits_common(rhs)
-                    if dic:
-                        clue = 'given'
-                        rhs_limits = rhs.limits_delete(dic)
-                        if rhs_limits:
-                            func.append([ForAll, rhs_limits])
-                    else:
-                        func.append([ForAll, rhs.limits])
-
-                    if limits:
-                        func.append([Exists, limits])
-
-                    return clue, func, self.function, rhs.function.function
-
-            if self.function.is_ForAll:
-                rhs_limits = rhs.limits_intersect(self.function)
-                dic = self.limits_common(rhs)
-                if dic:
-                    rhs_limits = limits_delete(rhs_limits, dic)
-                    if rhs_limits:
-                        func.append([ForAll, rhs_limits])
-                    func.append([Exists, self.limits])
-                    return 'given', func, self.function.function, rhs.function
-    
-                func.append([ForAll, rhs_limits])
-                func.append([Exists, self.limits])
-                return None, func, self.function.function, rhs.function
-            else:
-                dic = self.limits_common(rhs)
-                if dic:
-                    rhs_limits = rhs.limits_delete(dic)
-                    if rhs_limits:
-                        func.append([ForAll, rhs_limits])
-                    func.append([Exists, self.limits])
-                    return 'given' if rhs.plausible else None, func, self.function, rhs.function
-    
-                func.append([ForAll, rhs.limits])
-                func.append([Exists, self.limits])
-                return None, func, self.function, rhs.function
-
-        return ConditionalBoolean.combine_clauses(self, rhs)
-
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
             if 'var' in kwargs:
@@ -155,7 +76,7 @@ class Exists(ConditionalBoolean):
             if limits:
                 return self.func(function, *limits).simplify()
             
-            if function.is_ForAll:
+            if function.is_All:
                 return function.simplify()
             return function
         
@@ -385,7 +306,6 @@ class Exists(ConditionalBoolean):
         latex = p._print(self.function)
         if self.function.is_LatticeOp:
             latex = r"\left(%s\right)" % latex
-        
 
         if all(len(limit) == 1 for limit in self.limits):
             limit = ', '.join(var.latex for var, *_ in self.limits)
@@ -410,7 +330,7 @@ class Exists(ConditionalBoolean):
 
     def __or__(self, eq):
         """Overloading for | operator"""
-        if eq.is_Exists:
+        if eq.is_Any:
             if self.limits == eq.limits:
                 return self.func(self.function | eq.function, *self.limits)
                         
@@ -420,19 +340,9 @@ class Exists(ConditionalBoolean):
         
         return ConditionalBoolean.__or__(self, eq)
 
-    def __and__(self, eq):
-        """Overloading for & operator"""
-        if eq.is_Exists:
-            if self.limits == eq.limits:
-                if self.coexist_with(eq) is not False:
-                    return ConditionalBoolean.__and__(self, eq)
-            return And(self, eq)
-        
-        return ConditionalBoolean.__and__(self, eq)
-
     @classmethod
-    def simplify_ForAll(cls, self, exists, *limits):
-        if exists.function.is_ForAll:
+    def simplify_All(cls, self, exists, *limits):
+        if exists.function.is_All:
             forall = exists.function
             dic = self.limits_common(forall)
             if dic:
@@ -448,14 +358,13 @@ class Exists(ConditionalBoolean):
                 from sympy import Basic
                 if isinstance(x, Basic) and x.is_symbol:
                     if x in self.variables_set:
-                        print('variables are given in Exists context!')
+                        print('variables are given in Any context!')
                         return self
         
         return ConditionalBoolean.apply(self, axiom, *args, **kwargs)
 
-    
-from sympy.concrete.forall import ForAll     
-Exists.invert_type = ForAll
-ForAll.invert_type = Exists
+from sympy.concrete.forall import All     
+Any.invert_type = All
+All.invert_type = Any
 
 from sympy.concrete.limits import *

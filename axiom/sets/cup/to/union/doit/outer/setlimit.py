@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self):
     from axiom.algebra.all.to.et.doit.outer.setlimit import doit
-    assert self.is_Cup
-    return Equal(self, doit(self))
+    return Equal(self, doit(Cup, self))
 
 
 @prove

@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -21,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(x >= a, y >= a)
 
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.min.to.piecewise)
 
     Eq << algebra.cond.given.ou.apply(Eq[-1])
 
@@ -30,7 +28,6 @@ def prove(Eq):
     Eq << algebra.cond.cond.imply.cond.apply(Eq[0], Eq[-1], invert=True)
 
     Eq << algebra.cond.cond.imply.cond.apply(Eq[1], Eq[-1], invert=True)
-
 
 
 if __name__ == '__main__':

@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(A, B):
     return LessEqual(abs(Intersection(A, B)), abs(A))

@@ -1,13 +1,10 @@
 from util import *
 
 
-
-
 @apply
 def apply(self):
-    assert self.is_Cap
-    f = self.function
-    return Equal(self, self.func(Piecewise((f, self.limits_cond), (f.etype.universalSet, True)), *((x,) for x, *_ in self.limits)))
+    f, *limits = self.of(Cap)
+    return Equal(self, Cap(Piecewise((f, self.limits_cond), (f.etype.universalSet, True)), *((x,) for x, *_ in self.limits)))
 
 
 @prove

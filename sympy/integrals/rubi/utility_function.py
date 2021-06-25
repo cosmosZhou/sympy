@@ -22,7 +22,7 @@ from sympy import (Basic, E, polylog, N, Wild, WildFunction, factor, gcd, Sum, S
     Add, hyper, symbols, sqf_list, sqf, Max, factorint, factorrat, Min, sign, E, Function, collect, FiniteSet, nsimplify,
     expand_trig, expand, poly, apart, lcm, And, Pow, pi, zoo, oo, Integral, UnevaluatedExpr, PolynomialError, Dummy, exp as sym_exp,
     powdenest, PolynomialDivisionFailed, discriminant, UnificationFailed, appellf1)
-from sympy.functions.special.hyper import TupleArg
+
 from sympy.functions.special.elliptic_integrals import elliptic_f, elliptic_e, elliptic_pi
 from sympy.utilities.iterables import flatten
 from random import randint
@@ -6264,7 +6264,8 @@ def _FixSimplify():
 
 @doctest_depends_on(modules=('matchpy',))
 def FixSimplify(expr):
-    if isinstance(expr, (list, tuple, TupleArg)):
+    from sympy import Tuple
+    if isinstance(expr, (list, tuple, Tuple)):
         return [replace_all(UtilityOperator(i), FixSimplify_rules) for i in expr]
     return replace_all(UtilityOperator(expr), FixSimplify_rules)
 

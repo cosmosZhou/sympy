@@ -3,12 +3,12 @@ from util import *
 
 @apply
 def apply(given):
-    function, *limits = given.of(Exists)
+    function, *limits = given.of(Any)
     assert len(limits) == 1
     variable = limits[0][0]
     cond = given.limits_cond
     assert not cond
-    return Exists[variable]((function & cond).simplify())
+    return Any[variable]((function & cond).simplify())
 
 
 @prove
@@ -18,11 +18,11 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
 
-    Eq << apply(Exists[e:g(e) > 0](f(e) > 0))
+    Eq << apply(Any[e:g(e) > 0](f(e) > 0))
 
     S = Symbol.S(conditionset(e, g(e) > 0))
 
-    Eq << Exists[e:S](f(e) > 0, plausible=True)
+    Eq << Any[e:S](f(e) > 0, plausible=True)
 
     Eq << Eq[-1].this.limits[0][1].definition
 

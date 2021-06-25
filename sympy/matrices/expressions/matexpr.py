@@ -1354,7 +1354,7 @@ class Swap(Identity):
     def is_lower(self):
         return self.i == self.j
 
-    def _eval_domain_defined(self, x): 
+    def _eval_domain_defined(self, x, **_): 
         return self.n.domain_defined(x) & x.domain_conditioned((self.i < self.n) & (self.i >= 0) & ((self.j < self.n) & (self.j >= 0)))
 
     _eval_is_extended_real = lambda self: self.arg.is_extended_real

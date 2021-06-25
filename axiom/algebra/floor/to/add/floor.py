@@ -3,11 +3,9 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    div = self.of(Floor)
-    sub_x_1, two = axiom.is_Divide(div)
-    assert two == 2
-    x = sub_x_1 + 1
+    x = self.of(Floor)
+    x = 2 * x + 1
+    assert x.is_integer
 
     return Equal(self, x - x // 2 - 1)
 

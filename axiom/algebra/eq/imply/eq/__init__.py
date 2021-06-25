@@ -10,7 +10,6 @@ from . import sum
 from . import mat_product
 from . import abs
 from . import sqrt, pow
-from . import det
 from . import exp
 from . import log
 from . import swap
@@ -23,5 +22,8 @@ from . import reversed
 from . import subs
 from . import solve
 from . import rsolve
-from . import reduced_sum
+from . import reducedSum
 from . import floor, ceiling
+from . import reducedMin
+from . import inverse
+from . import reducedMax

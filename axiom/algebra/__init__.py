@@ -33,7 +33,6 @@ from . import any_eq, all_eq, all_any_eq
 from . import ceiling
 from . import frac
 from . import piecewise
-from . import limits
 from . import sum
 from . import max
 from . import mul
@@ -52,3 +51,18 @@ from . import eq_piecewise
 from . import mul_piecewise
 from . import eq_maximize
 from . import eq_minimize
+from . import maximize
+from . import minimize
+from . import log
+from . import reducedSum
+from . import sum_mul
+from . import exp
+from . import add_ceiling
+from . import kroneckerDelta
+
+
+from . import lamda_piecewise
+
+from . import eq_mul
+
+from . import suffice_et

@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << Eq.g_squared * x
 
-    Eq << Eq[-1].this.lhs.astype(Sum)
+    Eq << Eq[-1].this.lhs.apply(algebra.mul.to.sum)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[-3])
 
@@ -58,7 +58,7 @@ def prove(Eq):
 
     Eq.negative_sqrt = Eq.ou.args[0].copy(plausible=True)
 
-    Eq.positive_sqrt = Exists[x:x < S.One / 4](Eq.ou.args[1], plausible=True)
+    Eq.positive_sqrt = Any[x:x < S.One / 4](Eq.ou.args[1], plausible=True)
 
     x_quote = Symbol("x'", domain=Interval(0, S.One / 4, left_open=True, right_open=True))
 
@@ -74,7 +74,7 @@ def prove(Eq):
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq.positive_sqrt_quote, Eq[-1], reverse=True)
 
-    Eq.any_gt = algebra.any.imply.any.relax.apply(Eq[-1], x_quote, x)
+    Eq.any_gt = algebra.any.imply.any.limits.relax.subs.apply(Eq[-1], x_quote, x)
 
     Eq << calculus.eq.imply.eq.derive.apply(Eq.g_definition, (x,), simplify=None)
 
@@ -82,7 +82,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.split({0})
 
-    Eq.g_derivative = Eq[-1].this.rhs.astype(Sum)
+    Eq.g_derivative = Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
     Eq << discrete.combinatorics.catalan.is_positive.apply(Eq[0], Eq[1])
 
@@ -168,7 +168,7 @@ def prove(Eq):
 
     Eq << Eq.g_series.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.astype(Sum)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
     Eq << Eq[-1].this.rhs.function.ratsimp()
 

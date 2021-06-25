@@ -3,7 +3,7 @@
 		packages:<br>  
 		<template v-for="package, i of packages">
 			<package :package=package :tabindex="i + 1"></package>
-			<contextmenu v-if='i == focusedIndex' :left=left :top=top></contextmenu>
+			<axiom-contextmenu v-if='i == focusedIndex' :left=left :top=top></axiom-contextmenu>
 		</template>
 		
 	</div>
@@ -13,8 +13,10 @@
 <script>
 	console.log('importing packages.vue');	
 	var package = httpVueLoader('/sympy/vue/package.vue');
-	var contextmenu = httpVueLoader('/sympy/vue/contextmenu.vue');
-	module.exports = {		
+	var axiomContextmenu = httpVueLoader('/sympy/vue/axiom-contextmenu.vue');
+	module.exports = {
+		components : {package, axiomContextmenu},
+		
 		data(){
 			return {
 				focusedIndex: -1,
@@ -22,8 +24,6 @@
 				top: 0,
 			};
 		},
-		
-		components : {package, contextmenu},
 	
 		props : [ 'packages'],
 		

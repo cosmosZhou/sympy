@@ -13,3 +13,13 @@ from . import any_all
 from . import is_zero
 from . import add
 from . import all_eq
+
+from . import is_nonpositive
+
+from . import is_nonnegative
+
+from . import all_is_positive
+
+from . import is_differentiable
+
+from . import contains

@@ -1,11 +1,12 @@
 from util import *
-import axiom
 
-from axiom.algebra.add.to.sum import piece_together
+
+
 
 
 @apply
 def apply(self):
+    from axiom.algebra.add.to.sum import piece_together
     assert self.is_Union
 
     return Equal(self, piece_together(Cup, self))
@@ -14,10 +15,10 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
+
     k = Symbol.k(integer=True)
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-
     n = Symbol.n(integer=True, positive=True)
     f = Function.f(etype=dtype.integer)
     g = Function.g(etype=dtype.integer)

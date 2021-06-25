@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.doit.inner import doit
-
-
 @apply
 def apply(self):
-    assert self.is_Cap
-    return Equal(self, doit(self))
+    from axiom.algebra.sum.doit.inner import doit
+    return Equal(self, doit(Cap, self))
 
 
 @prove
@@ -31,6 +27,7 @@ def prove(Eq):
     Eq << Eq[-2].this.rhs.apply(sets.cap.to.intersection.doit)
 
     Eq << Eq[-2].subs(Eq[-1]).reversed
+
 
 if __name__ == '__main__':
     run()

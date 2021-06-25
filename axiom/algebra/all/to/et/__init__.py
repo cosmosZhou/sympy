@@ -4,8 +4,7 @@ from util import *
 @apply(given=None)
 def apply(self, simplify=True):
     from axiom.algebra.sum.to.add import associate
-    assert self.is_ForAll
-    return Equivalent(self, associate(self, simplify=simplify))
+    return Equivalent(self, associate(All, self, simplify=simplify))
 
 
 @prove
@@ -16,7 +15,7 @@ def prove(Eq):
 
     f = Function.f(real=True)
     h = Function.h(real=True)
-    Eq << apply(ForAll[i:n]((f(i) > 0) & (h(i) > 0)))
+    Eq << apply(All[i:n]((f(i) > 0) & (h(i) > 0)))
 
     Eq << algebra.equivalent.given.suffice.apply(Eq[0])
 
@@ -28,4 +27,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-from . import doit, dissect
+from . import doit, split

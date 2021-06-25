@@ -892,36 +892,6 @@ class MutableDenseMatrix(DenseMatrix):
         List = getattr(wl, "List")        
         return List(*(List(*(e.to_wolfram(global_variables) for e in self.row(i))) for i in range(self.rows)))
     
-    @classmethod
-    def rewrite_from_Slice(cls, self):
-        return cls.rewrite_from_Expr(self)
-
-    @classmethod
-    def rewrite_from_Symbol(cls, self):
-        return cls.rewrite_from_Expr(self)
-
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        return cls.rewrite_from_Expr(self)
-
-    @classmethod
-    def rewrite_from_Expr(cls, self):
-        if len(self.shape) == 1:
-            n = self.shape[0]
-            if isinstance(n, int) or n.is_Number: 
-                array = []
-                for i in range(n):
-                    array.append(self[sympify(i)])                
-                return cls(tuple(array))
-            return self
-
-        i_shape, j_shape = self.shape
-        if isinstance(i_shape, int) or i_shape.is_Number:
-            if isinstance(j_shape, int) or j_shape.is_Number: 
-                array = tuple(tuple(self[sympify(i), sympify(j)] for j in range(j_shape)) for i in range(i_shape))
-                return cls(array)            
-        return self
-    
     # Utility functions
 
 

@@ -5,13 +5,13 @@ from util import *
 def apply(given, index=0):
     from sympy.concrete.limits import limits_cond
     assert index == 0
-    function, *limits = given.of(ForAll)
+    function, *limits = given.of(All)
 
     assert len(limits) > 1
 
     limit, *limits = limits
     cond = limits_cond((limit,))
-    return ForAll(function | cond.invert(), *limits)
+    return All(function | cond.invert(), *limits)
 
 
 @prove
@@ -23,7 +23,7 @@ def prove(Eq):
     y = Symbol.y(real=True)
     f = Function.f(real=True)
 
-    Eq << apply(ForAll[x:A, y:B](f(x, y) > 0))
+    Eq << apply(All[x:A, y:B](f(x, y) > 0))
 
     Eq << Eq[1].this.function.apply(algebra.ou.given.all, pivot=1)
 

@@ -3,14 +3,8 @@ from util import *
 
 @apply
 def apply(self, old, new):
-    expr, (i, a, b) = self.of(Cup)
-    assert old == i
-    c = new + i + 1
-    #new = c - i - 1
-    assert not c._has(i)
-    #i = a => new = c - a - 1
-    #i = b - 1 => new = c - (b - 1) - 1 = c - b
-    return Equal(self, Cup[i:c - b: c - a](expr._subs(old, new)), evaluate=False)
+    from axiom.algebra.sum.limits.subs.negate import limits_subs
+    return Equal(self, limits_subs(Cup, self, old, new), evaluate=False)
 
 
 @prove
@@ -31,10 +25,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.negate)
 
     Eq << Eq[-1].this.rhs.limits_subs(i, i - c)
-
-    
-
-    
 
 
 if __name__ == '__main__':

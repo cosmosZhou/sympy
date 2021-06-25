@@ -3,19 +3,10 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    function, *limits = self.of(Sum)
-
-    limit, *limits = limits
-    x, condset = limit
-    _x, condition, base_set = axiom.is_ConditionSet(condset)
-    assert x == _x
-    assert base_set.is_UniversalSet
-
-    _x, fx = condition.of(Equal)
-    assert x == _x
+    function, (x, (__x, (_x, (___x, fx)))), *limits = self.of(Sum[Tuple[Cup[FiniteSet, Tuple[Equal]]]])
+    assert x == _x == __x == ___x
+    
     function = function._subs(x, fx)
-
     return Equal(self, self.func(function, *limits))
 
 

@@ -23,7 +23,22 @@
 			},
 			
 			remove(){
-				console.log("remove(){");
+				console.log("this.package = " + this.package);
+				var href = location.href;
+				var m = href.match(/\/([^\/]+)\/axiom\.php\/(.+)/);
+				var user = m[1];
+				var section = m[2];
+				if (section.endsWith('/')){
+					section = section.slice(0, -1);
+				}
+				
+				var path = `${user}/axiom/${section}/${this.package}`;
+				console.log(path);
+				
+				request_post(`/${user}/php/request/delete/package.php`, {section: section.replaceAll('/', '.'), package: this.package}).done(res => {
+					console.log('res = ' + res);
+				}).fail(fail);
+
 			},
 		}
 	}

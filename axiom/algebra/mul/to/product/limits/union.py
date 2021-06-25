@@ -1,13 +1,10 @@
 from util import *
-import axiom
 
-from axiom.algebra.add.to.sum.limits.union import limits_union
 
 @apply
 def apply(self):
-    A, B = self.of(Mul)
-    function, *limits_a = A.of(Product)
-    _function, *limits_b = B.of(Product)
+    from axiom.algebra.add.to.sum.limits.union import limits_union
+    (function, *limits_a), (_function, *limits_b) = self.of(Product * Product)
     assert function == _function
 
     limits = limits_union(limits_a, limits_b, function=function)

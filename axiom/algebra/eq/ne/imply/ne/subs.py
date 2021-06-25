@@ -1,11 +1,9 @@
 
 from util import *
 
-import axiom
-
 
 @apply
-def apply(*given):    
+def apply(*given): 
     eq, f_eq = given
     if not eq.is_Equal:
         eq, f_eq = f_eq, eq    
@@ -14,14 +12,12 @@ def apply(*given):
     return Unequal(_lhs._subs(lhs, rhs), _rhs._subs(lhs, rhs))
 
 
-
-
 @prove
 def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
-    f = Function.f(nargs=(n,), real=True, shape=(m,))
-    g = Function.g(nargs=(n,), real=True, shape=(m,))
+    f = Function.f(real=True, shape=(m,))
+    g = Function.g(real=True, shape=(m,))
     
     a = Symbol.a(real=True, shape=(n,))
     b = Symbol.b(real=True, shape=(n,))

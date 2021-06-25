@@ -5,7 +5,7 @@ from _collections import defaultdict
 
 
 def axiom_directory():
-    return os.path.dirname(__file__)
+    return os.path.dirname(os.path.dirname(__file__)) + '/axiom'
 
 
 def read_directory(root):
@@ -96,7 +96,7 @@ def is_axiom_plausible(php):
     for statement in yield_from_mysql(php):
         matches = is_latex(statement)
         for match in matches:
-            if re.compile(".+tag\*\{(\?=.+)\}.+").search(match.group()):
+            if re.compile(".+tag\*\{(\?=.+)\}.+").search(match[0]):
                 return True
             
     return False
@@ -109,6 +109,19 @@ def is_latex(latex):
 def get_extension(file):
     return os.path.splitext(file)[-1]    
 
+    
+def module_to_py(theorem):
+    full_theorem_path = module_to_path(theorem)
+    py = full_theorem_path + ".py";
+    if not os.path.exists(py):
+        py = full_theorem_path + '/__init__.py';
+
+
+    return py
+
+def module_to_path(theorem):
+    theorem = theorem.replace(".", "/")
+    return os.path.dirname(os.path.dirname(__file__)) + f"/axiom/{theorem}";
     
 def py_to_module(py, delimiter='.'):
     module = []
@@ -177,7 +190,30 @@ def search(keyword, caseSensitive=True, wholeWord=False, regularExpression=False
     for module in modules:
         print_py(module, prefix)
     
-    
+def yield_from_py(py):
+    prove = False
+    for line in Text(py):
+#         print("line =", line)
+        if re.match('^def prove\(', line):
+            prove = True
+            continue
+
+        if prove:
+            if re.match(r'^    return\b', line):
+                break
+            
+            if re.match('^ *#', line):
+                continue
+            
+            for m in re.finditer(r'\b(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+', line):
+                module = m[0]        
+                m = re.match('(.+)\.apply$', module)
+                if m:
+                    module = m[1]
+    #             print("module =", module)
+                yield module
+        
+        
 if __name__ == '__main__':
 #     keyword = 'subs'
 

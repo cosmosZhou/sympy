@@ -1,6 +1,5 @@
 from util import *
 
-import axiom
 from axiom.algebra.eq.eq.imply.eq.transit import transit
 
 

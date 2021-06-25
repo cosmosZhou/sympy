@@ -5,3 +5,5 @@ from . import contraposition
 
 from . import suffice
 from . import given
+
+from . import simplify

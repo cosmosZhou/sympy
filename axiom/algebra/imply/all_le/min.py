@@ -1,13 +1,12 @@
 from util import *
 
-import axiom
 # given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 
 @apply
 def apply(minimize):
     function, *limits = minimize.of(Minimize)
-    return ForAll(LessEqual(minimize, function), *limits)
+    return All(LessEqual(minimize, function), *limits)
 
 
 @prove

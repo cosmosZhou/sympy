@@ -1,1 +1,1 @@
-from . import bisected
+from . import split

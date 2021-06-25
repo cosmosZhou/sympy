@@ -601,7 +601,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 return Range(0, oo)
             return Interval(0, oo)
         
-    def domain_defined(self, x):
+    def domain_defined(self, x, **_):
         definition = self.definition
         if definition is None:
             return Expr.domain_defined(self, x)
@@ -613,7 +613,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 
         if 'domain' in self._assumptions:
             domain = self._assumptions['domain']
-            if self.is_integer and domain.is_Interval:                
+            if self.is_integer and domain.is_Interval: 
                 domain = domain.copy(integer=True)
             if self.shape:
                 domain = CartesianSpace(domain, *self.shape)
@@ -739,15 +739,15 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return self.generate_var(excludes=excludes, var=var, **etype.dict)
 
     def equality_defined(self):
-        print('this should be axiomatized')
         from sympy import Mul, Equal
         from sympy.concrete.expr_with_limits import Lamda
-        if isinstance(self.definition, Lamda):
-            return Equal(self[tuple(var for var, *_ in self.definition.limits[::-1])], self.definition.function, evaluate=False, plausible=None)
-        elif isinstance(self.definition, Mul):
+        definition = self.definition
+        if definition.is_Lamda:
+            return Equal(self[tuple(var for var, *_ in definition.limits[::-1])], definition.function, evaluate=False, plausible=None)
+        elif definition.is_Mul:
             args = []
             ref = None
-            for arg in self.definition.args:
+            for arg in definition.args:
                 if isinstance(arg, Lamda):
                     assert ref is None
                     ref = arg
@@ -902,13 +902,13 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def sympystr(name):
         m = _re.compile("([a-zA-Z]+)(?:(\d+)|_(\w+))?").fullmatch(name)
         if m: 
-            x = m.group(1)
+            x = m[1]
             x = Symbol.ascii2greek(x)
-            d = m.group(2)
+            d = m[2]
             if d is not None:
                 x += d
             else:
-                a = m.group(3)
+                a = m[3]
                 if a is not None:
                     a = Symbol.ascii2greek(a)
                     x += '_' + a                    
@@ -1953,6 +1953,7 @@ class DtypeRealConditional(DtypeReal):
                     return True
             
         return False
+
 
 class DtypeRational(DtypeReal):
 

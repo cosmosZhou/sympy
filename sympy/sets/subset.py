@@ -146,7 +146,7 @@ class Subset(BinaryCondition):
                     return Contains(x, self.rhs).domain_conditioned(x)
 
     @classmethod
-    def simplify_ForAll(cls, self, function, *limits):
+    def simplify_All(cls, self, function, *limits):
         if function.lhs.is_FiniteSet:
             function, S = function.lhs, function.rhs
             res = self.simplify_int_limits(function)
@@ -172,8 +172,8 @@ class NotSubset(BinaryCondition):
 
     def simplify(self, deep=False):
         if self.lhs.is_Cup:
-            from sympy import Exists
-            return Exists(self.func(self.lhs.function, self.rhs), *self.lhs.limits)
+            from sympy import Any
+            return Any(self.func(self.lhs.function, self.rhs), *self.lhs.limits)
 
         if self.lhs.is_FiniteSet and len(self.lhs) == 1:
             from sympy import NotContains
@@ -404,9 +404,9 @@ class NotSupset(BinaryCondition):
         return self
 
     def simplify(self, deep=False):
-        from sympy import Exists
+        from sympy import Any
         if self.rhs.is_Cup:
-            return Exists(self.func(self.lhs, self.rhs.function), *self.rhs.limits).simplify()
+            return Any(self.func(self.lhs, self.rhs.function), *self.rhs.limits).simplify()
         return self
 
     def _sympystr(self, p):

@@ -1,13 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(self):
-    negativeOne, flr = self.of(Mul, copy=True)
-    assert negativeOne == -1
-    x = flr.of(Floor)
+    x = self.of(-Floor)
     return Equal(self, ceiling(-x))
 
 

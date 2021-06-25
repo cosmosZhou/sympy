@@ -3,11 +3,11 @@ from util import *
 
 @apply
 def apply(given, k=None):
-    n = given.of(Equal[Basic % 2, 1])
+    n = given.of(Equal[Expr % 2, 1])
     if k is None:
         k = Symbol.k(integer=True)
 
-    return Exists[k](Equal(n, k * 2 + 1))
+    return Any[k](Equal(n, k * 2 + 1))
 
 
 @prove

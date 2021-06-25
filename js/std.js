@@ -66,6 +66,10 @@ Array.prototype.insert = function(index, value){
 	return this.splice(index, 1, [value, this[index]]);
 };
 
+Array.prototype.back = function() {
+	return this[this.length - 1];
+};
+
 function request_post(url, data, dataType, contentType) {
 	return $.ajax({
 		url: url,
@@ -106,3 +110,110 @@ function fail(errInfo, errType, errDescription) {
 	}
 }
 
+/**
+ * @template T
+ */
+class Queue {
+	/**
+	 * @param {Iterable<T>=} items The initial elements.
+	 */
+	constructor(items) {
+		/** @private @type {T[]} */
+		this._list = items ? Array.from(items) : [];
+		/** @private @type {T[]} */
+		this._listReversed = [];
+	}
+
+	/**
+	 * Returns the number of elements in this queue.
+	 * @returns {number} The number of elements in this queue.
+	 */
+	get length() {
+		return this._list.length + this._listReversed.length;
+	}
+
+	isEmpty(){
+		return !this.length;
+	}
+	/**
+	 * Appends the specified element to this queue.
+	 * @param {T} item The element to add.
+	 * @returns {void}
+	 */
+	push(item) {
+		this._list.push(item);
+	}
+
+	/**
+	 * Retrieves and removes the head of this queue.
+	 * @returns {T | undefined} The head of the queue of `undefined` if this queue is empty.
+	 */
+	pop() {
+		if (this._listReversed.length === 0) {
+			if (this._list.length === 0) return undefined;
+			if (this._list.length === 1) return this._list.pop();
+			if (this._list.length < 16) return this._list.shift();
+			const temp = this._listReversed;
+			this._listReversed = this._list;
+			this._listReversed.reverse();
+			this._list = temp;
+		}
+		return this._listReversed.pop();
+	}
+
+	/**
+	 * Finds and removes an item
+	 * @param {T} item the item
+	 * @returns {void}
+	 */
+	delete(item) {
+		const i = this._list.indexOf(item);
+		if (i >= 0) {
+			this._list.splice(i, 1);
+		} else {
+			const i = this._listReversed.indexOf(item);
+			if (i >= 0) this._listReversed.splice(i, 1);
+		}
+	}
+
+	[Symbol.iterator]() {
+		let i = -1;
+		let reversed = false;
+		return {
+			next: () => {
+				if (!reversed) {
+					i++;
+					if (i < this._list.length) {
+						return {
+							done: false,
+							value: this._list[i]
+						};
+					}
+					reversed = true;
+					i = this._listReversed.length;
+				}
+				i--;
+				if (i < 0) {
+					return {
+						done: true,
+						value: undefined
+					};
+				}
+				return {
+					done: false,
+					value: this._listReversed[i]
+				};
+			}
+		};
+	}
+}
+
+function intersection(s1, s2){
+	var s = new Set();
+	for (let e of s1){
+		if (s2.has(e)){
+			s.add(e);
+		}
+	}
+	return s;
+}

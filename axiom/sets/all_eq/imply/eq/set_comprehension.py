@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Equal])
+    (lhs, rhs), *limits = given.of(All[Equal])
 
     return Equal(Cup(FiniteSet(lhs), *limits).simplify(), Cup(FiniteSet(rhs), *limits).simplify())
 
@@ -16,7 +16,7 @@ def prove(Eq):
     f = Symbol.f(shape=(oo,), etype=dtype.integer)
     g = Symbol.g(shape=(oo,), etype=dtype.integer)
 
-    Eq << apply(ForAll[i:n](Equal(f[i], g[i])))
+    Eq << apply(All[i:n](Equal(f[i], g[i])))
 
     Eq << Eq[0].this.function.apply(sets.eq.imply.eq.set, simplify=False)
 

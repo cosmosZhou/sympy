@@ -1,14 +1,10 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(ceil):
-    divide = ceil.of(Ceiling)
-    n, d = axiom.is_Divide(divide)
-
-    return Equal(ceil, (n + d - 1) // d)
+def apply(self):
+    n, d = self.of(Ceiling[Expr / Expr])
+    return Equal(self, (n + d - 1) // d)
 
 
 @prove

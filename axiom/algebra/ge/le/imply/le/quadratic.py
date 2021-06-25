@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 def quadratic_coefficient(fx, x):
@@ -14,8 +12,7 @@ def quadratic_coefficient(fx, x):
 
 
 @apply
-def apply(*given, quadratic=None):
-    greater_than, less_than = given
+def apply(greater_than, less_than, quadratic=None):
     x, m = greater_than.of(GreaterEqual)
     _x, M = less_than.of(LessEqual)
     assert x == _x
@@ -66,7 +63,7 @@ def prove(Eq):
 
     Eq << Eq[-1] - b * b / (4 * a) + c
 
-    Eq << Eq[-1].this.rhs.astype(Max)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.max)
 
 
 if __name__ == '__main__':

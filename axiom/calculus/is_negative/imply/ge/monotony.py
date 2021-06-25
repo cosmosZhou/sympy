@@ -1,18 +1,11 @@
 from util import *
-import axiom
 
 
 @apply
 def apply(given):
-    dfx = axiom.is_negative(given)
-    
-    fx, *limits = dfx.of(Derivative)
-    
-    assert len(limits) == 1
-    limit = limits[0]
-    x, n = limit
+    fx, (x, n) = given.of(Derivative < 0)
     assert n == 1
-    
+
     domain = x.domain
     
     a, b = domain.of(Interval)
@@ -21,7 +14,7 @@ def apply(given):
     return GreaterEqual(fx, fx._subs(x, b))
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)

@@ -4,7 +4,7 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_ForAll
+    assert given.is_All
     return Equal(Bool(given), 1)
 
 
@@ -16,7 +16,7 @@ def prove(Eq):
     s = Symbol.s(etype=dtype.integer)
     A = Symbol.A(etype=dtype.integer)
 
-    Eq << apply(ForAll[x:A](Contains(f(x), s)))
+    Eq << apply(All[x:A](Contains(f(x), s)))
 
     Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
 

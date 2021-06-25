@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 
@@ -7,7 +6,7 @@ import axiom
 def apply(given, index):
     x, S = given.of(Contains)
     a = given.generate_var(**x.type.dict)
-    return Exists[a:S](Equal(x[index], a[index]))
+    return Any[a:S](Equal(x[index], a[index]))
 
 
 @prove

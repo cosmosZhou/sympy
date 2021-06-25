@@ -1,20 +1,15 @@
+#!python
 import os, sys, re
 from sympy.utilities.miscellany import Text
 
 try:
     import axiom
 except ImportError as e:
-    from traceback import TracebackException
-    etype, value, tb = sys.exc_info() 
-    lines = [*TracebackException(type(value), value, tb, limit=None).format(chain=None)]
-    error_source = lines[-2]
-
-    print(error_source, file=sys.stderr)
-    error_source = error_source.strip()
-    error_message, line = error_source.splitlines()
+    from util.utility import source_error
+    error_message, line = source_error()
 
     m = re.fullmatch(r'File "([^"]+(?:\\|/)__init__\.py)", line (\d+), in <module>', error_message)
-    assert m
+    assert m, error_message
     file, line_number = m.groups()
 
     line_number = int(line_number) - 1
@@ -58,56 +53,65 @@ class Globals:
     def increment_count(cls):
         cls.count += 1
 
-    unproved = []
+    plausible = []
 
-    failures = []
+    failed = []
 
     websites = []
 
     data = []
-
+    
 
 def readFolder(rootdir, sufix='.py'):
-    for name in os.listdir(rootdir):
-        path = os.path.join(rootdir, name)
-
-        if path.endswith(sufix):
-            name = name[:-len(sufix)]
-            if name == '__init__':
-                line = Text(path).readline()                
-                if not line:
-                    lines = Text(path).readlines()
-                    for i, line in enumerate(lines):
-                        if line:
-                            break
-                    
-                    try:
-                        lines = lines[i:]
-                        Text(path).writelines(lines)
-                    except UnboundLocalError:
-                        print(f'removing empty {path}')
-                        os.remove(path)
-                        continue                    
-                    
-                if re.match('from *\. *import +\w+', line):
-                    continue
-
-                path = path[:-len(sufix) - len('/__init__')]                
-            else: 
-                path = path[:-len(sufix)]
-
-            paths = re.split(r'[\\/]+', path)
-#             print(path)
-            index = paths.index('axiom')
-
-            package = '.'.join(paths[index + 1:])
-
-            Globals.increment_count()
-            
-            yield package
-
-        elif os.path.isdir(path):
-            yield from readFolder(path, sufix)
+    names = os.listdir(rootdir)
+    if not names:
+        print(f"removing empty directory {rootdir}")                        
+        os.rmdir(rootdir)        
+    else:
+        for name in names:
+            path = os.path.join(rootdir, name)
+    
+            if path.endswith(sufix):
+                name = name[:-len(sufix)]
+                if name == '__init__':
+                    line = Text(path).readline()                
+                    if not line:
+                        lines = Text(path).readlines()
+                        for i, line in enumerate(lines):
+                            if line:
+                                break
+                        
+                        try:
+                            lines = lines[i:]
+                            Text(path).writelines(lines)
+                        except UnboundLocalError:
+                            print(f'removing {path}')                        
+                            try:
+                                os.remove(path)
+                            except PermissionError as e:
+                                print(e)
+                                
+                            continue                    
+                        
+                    if re.match('from *\. *import +\w+', line):
+                        continue
+    
+                    path = path[:-len(sufix) - len('/__init__')]                
+                else: 
+                    path = path[:-len(sufix)]
+    
+                paths = re.split(r'[\\/]+', path)
+    #             print(path)
+                index = paths.index('axiom')
+    
+                package = '.'.join(paths[index + 1:])
+    
+                Globals.increment_count()
+                
+                yield package
+    
+            elif os.path.isdir(path):
+                yield from readFolder(path, sufix)
 
 
 def project_directory():
@@ -132,7 +136,7 @@ def create_module(package, module, delete=False):
     
     for line in file:
         m = re.match('from \. import (\w+(?:, *\w+)*)', line)
-        if m and module in m.group(1).split(', *'):
+        if m and module in m[1].split(', *'):
             hit = True
             break                
     
@@ -143,7 +147,7 @@ def create_module(package, module, delete=False):
              
         addition += module
         
-        if len(file) and not file.endswith('\n'):
+        if file.size and not file.endswith('\n'):
             addition = '\n' + addition  
         file.append(addition)
 
@@ -174,18 +178,18 @@ def import_module(package, debug=False):
         return run(package, debug=debug)
 
 
-def prove_with_timing(module, debug):
+def prove_with_timing(module, **kwargs):
     lapse = time.time()
-    state, latex = module.prove(debug=debug)
+    state, latex = module.prove(**kwargs)
     lapse = time.time() - lapse
     return state, lapse, latex            
 
 
 def interpret_int_from_import(module):
     if module < 0:
-        return RetCode.failure
+        return RetCode.failed
     elif module:
-        return RetCode.success
+        return RetCode.proved
     else:
         return RetCode.plausible    
 
@@ -202,7 +206,7 @@ def process(package, debug=False):
         if debug:
             print(file)
             
-        state, lapse, latex = prove_with_timing(module, debug)
+        state, lapse, latex = prove_with_timing(module, debug=debug)
                                 
     except AttributeError as e:
         lapse = None
@@ -217,7 +221,7 @@ def process(package, debug=False):
             _package, module = m.groups()
             _package = 'axiom.' + _package
             create_module(_package, module, delete=True)
-            state = RetCode.failure
+            state = RetCode.failed
         
         file = project_directory() + sep + package.replace('.', sep) + '.py'        
             
@@ -234,8 +238,10 @@ start = time.time()
 user = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
 assert user, 'user should not be empty!'
 
-def prove(debug=False, parallel=True): 
+
+def prove(**kwargs): 
     from util import MySQL
+
     def generator(): 
         rootdir = axiom_directory()
 #         rootdir += r'\algebra\imply\le\abs'
@@ -263,8 +269,8 @@ def prove(debug=False, parallel=True):
     for module in taskSet - tasks.keys():
         tasks[module] = random.random()
         
-    packages = tuple([] for _ in range(cpu_count() * 2))
-    timings = [0 for _ in range(cpu_count() * 2)]
+    packages = tuple([] for _ in range(cpu_count()))
+    timings = [0 for _ in range(cpu_count())]
     
     total_timing = sum(timing for task, timing in tasks.items())
     
@@ -278,7 +284,7 @@ def prove(debug=False, parallel=True):
     pq = PriorityQueue()
     for i, t in enumerate(timings):
         pq.put((t, i))
-        
+
     for task, timing in tasks:
         t, i = pq.get()
         packages[i].append(task)
@@ -292,7 +298,7 @@ def prove(debug=False, parallel=True):
     print('total timing =', sum(timings))
     
     data = []
-    for array in process(packages, debug=debug, parallel=parallel):
+    for array in process(packages, **kwargs):
         data += post_process(array)
         
     MySQL.instance.load_data('tbl_axiom_py', data, replace=True)
@@ -301,14 +307,14 @@ def prove(debug=False, parallel=True):
 
     
 def print_summary():
-    if Globals.unproved:
-        print('unproved:')
-        for p in Globals.unproved:
+    if Globals.plausible:
+        print('plausible:')
+        for p in Globals.plausible:
             print(p)
 
-    if Globals.failures:
-        print('failures:')
-        for p in Globals.failures:
+    if Globals.failed:
+        print('failed:')
+        for p in Globals.failed:
             print(p)
 
     if Globals.websites:
@@ -318,24 +324,23 @@ def print_summary():
     timing = time.time() - start
     print('seconds costed =', timing)
     print('minutes costed =', timing / 60)    
-    print('total unproved =', len(Globals.unproved))
-    print('total failures =', len(Globals.failures))
+    print('total plausible =', len(Globals.plausible))
+    print('total failed    =', len(Globals.failed))
 
         
 def post_process(result):
     data = []
     for package, file, state, lapse, latex in result:
-        
         data.append((user, package, state, lapse, latex))
             
         if state is RetCode.plausible: 
-            Globals.unproved.append(file)
-        elif state is RetCode.failure:
-            Globals.failures.append(file)
+            Globals.plausible.append(file)
+        elif state is RetCode.failed:
+            Globals.failed.append(file)            
         else:
             continue
         
-        Globals.websites.append("http://localhost/sympy/axiom.php/" + package.replace('.', '/'))
+        Globals.websites.append(f"http://localhost/{user}/axiom.php/{package.replace('.', '/')}")
         
     return data
 
@@ -355,16 +360,8 @@ def _(items, debug=False, parallel=True):  # @DuplicatedSignature
             return pool.map(proc, items)
     else:
         return map(proc, items)
+
        
-# Reverse[Reverse[Minors[mat], 1], 2] == Map[Reverse, Minors[mat], {0, 1}]
-
-# adj[m_] := Map[Reverse, Minors[Transpose[m], Length[m] - 1], {0, 1}] Table[(-1)^(i + j), {i, Length[m]}, {j, Length[m]}]
-
-# to create a matrix symbol 
-# $Assumptions = M \[Element] Matrices[{n, n}, Reals, Symmetric[{1, 2}]]
-# Normal[SparseArray[{{i_, i_} -> i^2}, {10, 10}]] // MatrixForm
-
-
 def listdir(rootdir, sufix='.php'):
     for name in os.listdir(rootdir):
         path = os.path.join(rootdir, name)
@@ -406,69 +403,136 @@ def args_kwargs(argv):
     return args, kwargs
 
 
+def run_with_module(*modules):
+
+    def generator():
+        for package in modules:
+            package = package.replace('/', '.').replace('\\', '.')
+            module = import_module(package)
+            
+            if isinstance(module, int):
+                state = interpret_int_from_import(module)                    
+                file = project_directory() + '/' + package.replace('.', '/') + '.py'
+                lapse = None
+                latex = None         
+            else:                
+                try:
+                    state, lapse, latex = prove_with_timing(module, debug=debug, slow=True)
+                    file = module.__file__
+                except AttributeError as e:
+                    if re.match("module '[\w.]+' has no attribute 'prove'", str(e)):
+                        from util.search import module_to_py
+                        file = module_to_py(package)
+                        __init__ = os.path.dirname(file) + '/__init__.py'
+                        basename = os.path.basename(file)[:-3]
+                        for i, line in enumerate(Text(__init__)):
+                            if re.match('from \. import %s' % basename, line):
+                                Text(__init__).insert(i, "del " + basename)
+                                for line in run(package, debug=False):
+                                    m = re.match(r"seconds costed = (\d+\.\d+)", line)
+                                    if m:
+                                        lapse = float(m[1])
+                                        continue
+                                        
+                                    m = re.match(r"exit_code = (\S+)", line)
+                                    if m:
+                                        state = int(m[1])
+                                        if state > 0:
+                                            state = RetCode.proved
+                                        elif state < 0:
+                                            state = RetCode.failed
+                                        else:
+                                            state = RetCode.plausible                                            
+                                        continue
+                                    
+                                    m = re.match(r"latex results are saved into: (\S+)", line)
+                                    if m:
+                                        sql = m[1]
+                                        text = Text(sql)
+                                        for line in text:
+                                            m = re.match("replace into tbl_axiom_py values(\(.+\));$", line)
+                                            if m:
+                                                arr = eval(m[1])
+                                                latex = arr[-1]
+#                                         replace into tbl_axiom_py values("sympy","sets.contains.contains.imply.contains.interval.add","failed","0.046973228454589844","\\[x_{0} \\in \\left(a, b\\right]\\tag*{Eq[0]}\\]\\[x_{1} \\in \\left(c, d\\right]\\tag*{Eq[1]}\\]\\[x_{0} + x_{1} \\in \\left(a + c, b + d\\right]\\tag*{?=Eq[2]}\\]");
+                                        text.close()
+                                        os.unlink(sql)
+                                        continue
+                                    
+                                    print(line.rstrip())
+                                break
+                    else:                    
+                        continue
+                
+            yield package, file, state, lapse, latex                        
+            
+    data = post_process(generator())
+    import tempfile, uuid 
+    sql = "%s/%s.sql" % (tempfile.gettempdir(), uuid.uuid4())        
+    assert not os.path.exists(sql)
+    
+    print("latex results are saved into:", sql)
+    
+    sql = Text(sql)
+#         sql.clear()
+    file = sql.file
+    
+    from util.std import json_encode
+    for args in data: 
+        _args = []
+        for arg in args:
+            if not isinstance(arg, str):
+                arg = str(arg)
+                
+            _args.append(json_encode(arg))
+        
+        print("replace into tbl_axiom_py values(%s);" % ','.join(_args), file=file)
+    
+    print_summary()
+    
+    if Globals.plausible: 
+        exit_code = 0
+    elif Globals.failed:
+        exit_code = -1
+    else:
+        exit_code = 1
+        
+    print('exit_code =', exit_code)
+    exit(exit_code)
+
+    
 if __name__ == '__main__':
-    args, kwargs = args_kwargs(sys.argv[1:])
+    is_http = 'HTTP_HOST' in os.environ
+    if is_http:
+        print("Content-type:text/html\n")        
+        QUERY_STRING = os.environ['QUERY_STRING']
+#         print("QUERY_STRING =", QUERY_STRING, "<br>")
+        
+        kwargs = {key: value for key, value in map(lambda s: s.split('='), QUERY_STRING.split('&'))}
+        
+#         print(kwargs, "<br>")
+        args = ''
+    else: 
+        args, kwargs = args_kwargs(sys.argv[1:])
+        
     if kwargs:
         if 'clean' in kwargs:
             clean()
 
     debug = kwargs.get('debug', False)
-    parallel = kwargs.get('parallel', True)
+    parallel = kwargs.get('parallel', True)    
     if not args:
-        prove(debug=debug, parallel=parallel)
-    else: 
-
-        def generator():
-            for package in args:
-                package = package.replace('/', '.').replace('\\', '.')
-                module = import_module(package)
-                if isinstance(module, int):
-                    state = interpret_int_from_import(module)                    
-                    file = project_directory() + '/' + package.replace('.', '/') + '.py'
-                    lapse = None
-                    latex = None         
-                else:
-                    file = module.__file__
-                    try:
-                        state, lapse, latex = prove_with_timing(module, debug)
-                    except AttributeError:
-                        continue
-                    
-                yield package, file, state, lapse, latex                        
-                
-        data = post_process(generator())
-        import tempfile, uuid 
-        sql = "%s/%s.sql" % (tempfile.gettempdir(), uuid.uuid4())        
-        assert not os.path.exists(sql)
-        print("latex results are saved into:")
-        print(sql)
-        
-        sql = Text(sql)
-#         sql.clear()
-        file = sql.file
-        
-        from util.MySQL import json_encode
-        for args in data: 
-            _args = []
-            for arg in args:
-                if not isinstance(arg, str):
-                    arg = str(arg)
-                    
-                _args.append(json_encode(arg))
-            
-            print("replace into tbl_axiom_py values(%s);" % ','.join(_args), file=file)
-        
-        print_summary()
-        
-        if Globals.unproved: 
-            exit_code = 0
-        elif Globals.failures:
-            exit_code = -1
+        if kwargs:
+            for key, value in kwargs.items():
+                if key == 'hierarchy':
+                    from util.hierarchy import insert_into_hierarchy
+                    insert_into_hierarchy()
+                elif key == 'module':
+                    run_with_module(value)                    
         else:
-            exit_code = 1
-            
-        print('exit_code =', exit_code)
-        exit(exit_code)
+            prove(debug=debug, parallel=parallel)
+    else: 
+        run_with_module(*args)
         
     from util.utility import chmod
     chmod()

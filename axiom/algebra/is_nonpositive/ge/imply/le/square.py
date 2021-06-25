@@ -1,11 +1,9 @@
 from util import *
-import axiom
 
 
 @apply
-def apply(*given):
-    is_nonpositive, greater_than = given
-    x = axiom.is_nonpositive(is_nonpositive)
+def apply(is_nonpositive, greater_than):
+    x = is_nonpositive.of(Expr <= 0)
     _x, m = greater_than.of(GreaterEqual)
     assert x == _x
 

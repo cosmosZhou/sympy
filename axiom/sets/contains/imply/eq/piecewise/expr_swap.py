@@ -1,8 +1,6 @@
 from util import *
 
 
-# given: A in B
-# => A | B = B
 @apply
 def apply(given, piecewise):
     assert given.is_Contains
@@ -27,8 +25,8 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     s = Symbol.s(A & S)
 
-    f = Function.f(nargs=(1,), shape=())
-    g = Function.g(nargs=(1,), shape=())
+    f = Function.f(shape=())
+    g = Function.g(shape=())
     Eq << apply(Contains(x, S), Piecewise((f(x), Contains(x, s)), (g(x), True)))
 
     Eq << algebra.piecewise.swap.front.apply(Eq[2].lhs)

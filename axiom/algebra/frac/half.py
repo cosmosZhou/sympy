@@ -3,11 +3,9 @@ from util import *
 
 @apply
 def apply(fraction):
-    import axiom
     x = fraction.of(FractionalPart)
     x = -x
-    x, two = axiom.is_Divide(x)
-    assert two == 2
+    x = x.of(Expr / 2)
 
     return Equal(fraction, frac(x / 2))
 

@@ -1,16 +1,11 @@
 from util import *
 
-import axiom
-
 
 @apply
 def apply(given):
-    A, C = given.of(Equal)
-    if not A.is_symbol:
-        A, C = C, A    
-    x, condition, base_set = axiom.is_ConditionSet(C)
-    assert base_set.is_UniversalSet
-    return ForAll[x:A](condition)
+    A, (_x, (x, condition)) = given.of(Equal[Expr, Cup[FiniteSet]])
+    assert x == _x
+    return All[x:A](condition)
 
 
 @prove

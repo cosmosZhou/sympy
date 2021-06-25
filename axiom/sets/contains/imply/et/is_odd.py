@@ -2,22 +2,11 @@ from util import *
 
 
 @apply
-def apply(given):
-    import axiom
-    n, image_set = given.of(Contains)
-    _n, expr, cond = axiom.is_ImageSet(image_set)
+def apply(given):    
+    n, (__n, (_n, a, b)) = given.of(Contains[Cup[FiniteSet[2 * Expr + 1], Tuple[Floor, Floor + 1]]])
+    assert n == _n == __n
 
-    assert expr == 2 * n + 1
-
-    a, b = cond.of(Range)
-    b -= 1
-
-    assert n == _n
-
-    a = a.of(Floor)
     a = 2 * a
-
-    b = b.of(Floor)
     b = 2 * b + 1
 
     return And(Equal(n % 2, 1), Contains(n, Range(a, b + 1)))

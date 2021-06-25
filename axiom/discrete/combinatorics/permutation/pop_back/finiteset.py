@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(*given):
-    import axiom
+    from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
     assert len(given) == 2
     set_comprehension_equality, last_element_equality = given
 
@@ -15,15 +15,15 @@ def apply(*given):
     assert n == _n
 
     set_comprehension_p, set_comprehension_a = set_comprehension_equality.of(Equal)
-    _p = axiom.is_set_comprehension(set_comprehension_p)
-    _a = axiom.is_set_comprehension(set_comprehension_a)
+    _p = of_set_comprehension(set_comprehension_p)
+    _a = of_set_comprehension(set_comprehension_a)
     assert a[:n + 1] == _a
     assert p[:n + 1] == _p
 
     return Equal(p[:n].set_comprehension(), a[:n].set_comprehension())
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     from axiom import sets
     n = Symbol.n(integer=True, positive=True, given=True)

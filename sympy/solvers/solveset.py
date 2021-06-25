@@ -1672,7 +1672,7 @@ def solveset(f, symbol=None, domain=S.Complexes):
 
     if not domain.is_set:
         raise ValueError("%s is not a valid domain" % (domain))
-
+    
     free_symbols = f.free_symbols
 
     if symbol is None and not free_symbols:
@@ -1782,7 +1782,7 @@ def solvify(f, symbol, domain):
     if solution_set.is_EmptySet:
         result = []
 
-    elif isinstance(solution_set, ConditionSet):
+    elif solution_set.is_ConditionSet:
         raise NotImplementedError('solveset is unable to solve this equation.')
 
     elif isinstance(solution_set, FiniteSet):

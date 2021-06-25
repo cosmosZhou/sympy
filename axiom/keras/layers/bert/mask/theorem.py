@@ -17,7 +17,7 @@ def apply(a, Ξ):
 def prove(Eq):
     from axiom import algebra
     n = Symbol.n(integer=True, positive=True)
-    p = Function.p(nargs=(2,), integer=True, shape=())
+    p = Function.p(integer=True, shape=())
     a = Symbol.a(real=True, shape=(n, n))
 
     i = Symbol.i(integer=True)
@@ -35,15 +35,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].args[1].args[1].apply(algebra.bool.to.piecewise, simplify=None)
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].astype(Piecewise)
+    Eq << Eq[-1].this.rhs.args[1].args[1].apply(algebra.add.to.piecewise)
 
     Eq << Eq[-1].this.rhs.args[1].apply(algebra.mul_piecewise.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise)
 
     Eq << algebra.eq.imply.eq.exp.apply(Eq[-1])
 
-    Eq.exp_a = Eq[-1].this.rhs.astype(Piecewise)
+    Eq.exp_a = Eq[-1].this.rhs.apply(algebra.exp.to.piecewise)
 
     Eq << Eq[0].this.rhs.apply(algebra.bool.to.piecewise)
 

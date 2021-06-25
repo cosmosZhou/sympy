@@ -2342,37 +2342,9 @@ class Mul(Expr, AssocOp):
 
     def __iter__(self):
         raise TypeError
-
-    def __getitem__(self, index, **kwargs):
-        args = []
-        max_len_shape = self.max_len_shape()
-        
-        for arg in self.args:
-            shape_length = len(arg.shape)
-            if shape_length == 0:
-                args.append(arg)
-            elif shape_length < max_len_shape:
-                if isinstance(index, tuple):
-                    diff = max_len_shape - shape_length
-                    indices = index[diff:]
-                    if indices:
-                        args.append(arg[indices])
-                    else:
-                        args.append(arg)
-                else:
-                    args.append(arg)
-            elif isinstance(index, (tuple, list)):
-                args.append(arg[index[:shape_length]])
-            else:
-                if arg.is_Sum:
-                    import sys
-                    print('Sum should have a method __getitem__', file=sys.stderr)
-                    args.append(arg.func(arg.function[index], *arg.limits))
-                else:
-                    args.append(arg[index])
-
-        return self.func(*args)
-
+    
+    __getitem__ = AssocOp.getitem
+    
     def _latex(self, p):
         from sympy.core.power import Pow
         include_parens = False
@@ -2626,98 +2598,7 @@ class Mul(Expr, AssocOp):
         
         if all(arg.is_nonnegative for arg in self.args):
             return self
-
-    @classmethod
-    def rewrite_from_Exp(cls, self):
-        if self.arg.is_Add:
-            return cls(*(self.func(arg) for arg in self.args[0].args))
-        return self
-
-    @classmethod
-    def rewrite_from_Pow(cls, self):
-        if self.exp.is_Add:
-            return cls(*(self.base ** exp for exp in self.exp.args))
-        return self
     
-    @classmethod
-    def rewrite_from_Abs(cls, self):
-        if isinstance(self.arg, cls):
-            return cls(*(self.func(arg) for arg in self.arg.args))
-        return self
-
-    @classmethod
-    def rewrite_from_Tan(cls, self):
-        from sympy import sin, cos 
-        return cls(sin(self.arg), 1 / cos(self.arg))
-
-    @classmethod
-    def rewrite_from_Lamda(cls, self):
-        if isinstance(self.function, cls):
-            first, second = self.function.as_two_terms()
-            first = self.func(first, *self.limits).simplify(squeeze=True)
-            second = self.func(second, *self.limits).simplify(squeeze=True)
-             
-            function = self.function.func(first, second)
-            max_len = max(len(first.shape), len(second.shape))
-            if max_len < len(self.shape):
-                return self.func(function, *self.limits[:len(self.shape) - max_len])
-             
-            return function
-
-        return self
-
-    @classmethod
-    def rewrite_from_Sum(cls, self):
-        if isinstance(self.function, cls):
-            coefficient = []
-            factors = []
-            variables = self.variables
-            for arg in self.function.args:
-                if not arg.has(*variables):
-                    coefficient.append(arg)
-                elif arg.is_Pow and arg.exp.is_Add and any(not exp.has(*variables) for exp in arg.exp.args):
-                    base = arg.base
-                    for exp in arg.exp.args:
-                        if exp.has(*variables):
-                            factors.append(base ** exp)
-                        else:
-                            coefficient.append(base ** exp)
-                else:
-                    factors.append(arg)
-                    
-            if coefficient:
-                return cls(*coefficient, self.func(cls(*factors), *self.limits))                              
-        return self
-    
-    @classmethod
-    def rewrite_from_Piecewise(cls, self):
-        common_terms = None
-        for e, c in self.args: 
-            if isinstance(e, cls):
-                if common_terms is None:
-                    common_terms = {*e.args}
-                else:
-                    common_terms &= {*e.args}
-            else:
-                if common_terms is None:
-                    if e.is_Zero:
-                        continue
-                    else:
-                        common_terms = {e}
-                else:
-                    common_terms &= {e}
-        if common_terms:
-            args = []
-            for e, c in self.args:
-                if isinstance(e, cls):
-                    e = cls(*{*e.args} - common_terms)
-                elif e.is_Zero:
-                    ...
-                else:
-                    e = 1 
-                args.append((e, c))
-            return cls(*common_terms, self.func(*args))
-        return self
     
     @property
     def dtype(self):
@@ -2732,16 +2613,38 @@ class Mul(Expr, AssocOp):
     def of_NegatePattern(self):
         if len(self.args) == 2:
             negativeOne, basic = self.args
-            return negativeOne == -1 and basic is Basic
+            return negativeOne == -1 and basic.is_abstract
         
-    def extract(self, cls):
-        res = Expr.extract(self, cls)
-        if isinstance(res, list):            
+    def of(self, cls):
+        res = Expr.of(self, cls)
+        if isinstance(res, list): 
             if cls.of_NegatePattern():
                 return Mul(*res)        
         elif res is None:
-            if cls.is_Mul and cls.of_NegatePattern() and self._coeff_isneg():
-                return -self 
+            if cls.is_Mul:
+                if cls.of_NegatePattern():
+                    if self._coeff_isneg():
+                        return -self
+                    return
+                
+                if len(cls.args) == 2:
+                    a, b = cls.args
+                    cls = Basic.__new__(Mul, b, a)
+                    args = Expr.of(self, cls)
+                    if args is not None:
+                        _b, _a = args
+                        return [_a, _b]
+                    return args
+                if len(cls.args) == 3:
+                    if cls.args[0].is_Number:
+                        a, b, c = cls.args
+                        cls = Basic.__new__(Mul, a, c, b)
+                        args = Expr.of(self, cls)
+                        if args is not None:
+                            _c, _b = args
+                            return [_b, _c]
+                        return args
+                     
         return res
 
     

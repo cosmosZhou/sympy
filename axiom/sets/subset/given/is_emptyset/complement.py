@@ -1,7 +1,6 @@
 
 from util import *
 
-import axiom
 # given: B - A = {}
 # B in A
 

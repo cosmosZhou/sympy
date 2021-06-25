@@ -1,28 +1,76 @@
 from util import *
-import axiom
+
 
 @apply
-def apply(piecewise, additive=None):
-    ec = piecewise.of(Piecewise)
-    ec = [(e + additive, c)for e, c in ec]
+def apply(self, additive=None):
+    ec = self.of(Piecewise)
+    
+    if additive is None:
+        common_terms = None
+        for e, c in ec: 
+            if e.is_Add:
+                if common_terms is None:
+                    common_terms = {*e.args}
+                else:
+                    common_terms &= {*e.args}
+            else:
+                if common_terms is None:
+                    common_terms = {e}
+                else:
+                    common_terms &= {e}
+        if common_terms:
+            args = []
+            for e, c in self.args:
+                if e.is_Add:
+                    e = Add(*{*e.args} - common_terms)
+                else:
+                    e = 0 
+                args.append((e, c))
+            rhs = Add(*common_terms, Piecewise(*args))
+        
+    else:
+        ec = [(e + additive, c)for e, c in ec]
+        rhs = Add(Piecewise(*ec), -additive)
      
-    return Equal(piecewise, Add(piecewise.func(*ec), -additive))
+    return Equal(self, rhs, evaluate=False)
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra, sets
+
     k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,))
-    y = Symbol.y(real=True, shape=(k,))
-    z = Symbol.z(real=True, shape=())
-    A = Symbol.A(etype=dtype.real * k)
+    x = Symbol.x(real=True, shape=(k,), given=True)
+    y = Symbol.y(real=True, shape=(k,), given=True)
+    z = Symbol.z(real=True, shape=(), given=True)
+    A = Symbol.A(etype=dtype.real * k, given=True)
     g = Function.g(shape=(), real=True)
     f = Function.f(shape=(), real=True)
     h = Function.h(shape=(), real=True)
-     
     Eq << apply(Piecewise((g(x), Equal(x, y)), (f(x), Contains(y, A)), (h(x), True)), z)
-    
-    Eq << Eq[-1].this.rhs.args[1].astype(Add)
-    
+
+    Eq << Eq[-1] + z
+
+    Eq << algebra.eq.given.ou.apply(Eq[-1])
+
+    Eq << Eq[-1].this.args[1].apply(algebra.et.given.et.subs.bool)
+
+    Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.bool)
+
+    Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.bool, 1, invert=True)
+
+    Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.bool, invert=True)
+
+    Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.bool, 1, invert=True)
+
+    Eq << Eq[-1].this.args[-1].apply(sets.notcontains.given.notcontains, simplify=False)
+
+    Eq << Eq[-1].this.args[-1].args[-1].simplify()
+
+    Eq << Eq[-1].this.args[-1].args[-1].reversed
+
+    Eq << algebra.ou.given.ou.collect.apply(Eq[-1], cond=Unequal(x, y), simplify=None)
+
+
 if __name__ == '__main__':
     run()

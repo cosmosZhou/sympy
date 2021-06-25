@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.doit.outer.setlimit import doit
-
-
 @apply
 def apply(self):
-    assert self.is_Cap
-    return Equal(self, doit(self))
+    from axiom.algebra.sum.doit.outer.setlimit import doit
+    return Equal(self, doit(Cap, self))
 
 
 @prove

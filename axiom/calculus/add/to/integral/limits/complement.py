@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 def limits_complement(limits, _limits, function=None): 
@@ -20,11 +18,8 @@ def limits_complement(limits, _limits, function=None):
 
 @apply
 def apply(self):
-    A, B = axiom.is_Subtract(self)
-    function, *limits_a = A.of(Sum)
-    _function, *limits_b = B.of(Sum)    
-    assert function == _function
-    
+    (function, *limits_a), (_function, *limits_b) = self.of(Sum - Sum)
+    assert function == _function    
     limits = limits_complement(limits_a, limits_b, function=function)
     return Equal(self, Sum(function, *limits), evaluate=False)
 

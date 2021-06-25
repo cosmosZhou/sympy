@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
-    x = axiom.is_nonnegative(given)
+    x = given.of(Expr >= 0)
     return Equal(Min(x, 0), 0)
 
 
@@ -16,7 +14,7 @@ def prove(Eq):
 
     Eq << apply(x >= 0)
 
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.min.to.piecewise)
 
     Eq << algebra.cond.given.et.restrict.apply(Eq[-1], cond=Eq[0])
 

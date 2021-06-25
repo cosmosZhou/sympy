@@ -3,9 +3,9 @@ from util import *
 
 @apply
 def apply(imply):
-    eqs, *limits = imply.of(Exists[Or])
+    eqs, *limits = imply.of(Any[Or])
 
-    return Or(*(Exists(eq, *limits) for eq in eqs))
+    return Or(*(Any(eq, *limits) for eq in eqs))
 
 
 @prove
@@ -17,7 +17,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(Exists[x:A]((g(x) > 0) | (f(x) > 0)))
+    Eq << apply(Any[x:A]((g(x) > 0) | (f(x) > 0)))
 
     Eq << ~Eq[-1]
 

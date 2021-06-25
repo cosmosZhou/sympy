@@ -236,17 +236,6 @@ class Floor(RoundFunction):
         else:
             return tex
 
-    @classmethod
-    def rewrite_from_Add(cls, self):
-        for i, f in enumerate(self.args):
-            if isinstance(f, cls):
-                args = [*self.args]
-                del args[i]
-                rest = self.func(*args)
-                if rest.is_integer:
-                    return cls(f.arg + rest)
-        return self
-
 
 floor = Floor
 

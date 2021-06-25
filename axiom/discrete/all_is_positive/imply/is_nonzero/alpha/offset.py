@@ -1,16 +1,11 @@
 from util import *
-
-import axiom
-
 from axiom.discrete.imply.is_positive.alpha import alpha
 
 
 @apply
 def apply(given):
-    xj, *limits = axiom.all_is_positive(given)
-    j, a, n = axiom.limit_is_Interval(limits)
+    (x, _j), (j, a, n) = given.of(All[Indexed > 0])
 
-    x, _j = xj.of(Indexed)
     offset = _j - j
     if offset != 0:
         assert not offset._has(j)
@@ -29,7 +24,7 @@ def prove(Eq):
     b = Symbol.b(integer=True)
     i = Symbol.i(integer=True)
 
-    Eq << apply(ForAll[i:a:n](x[i + b] > 0))
+    Eq << apply(All[i:a:n](x[i + b] > 0))
 
     x_ = Symbol.x(x[a + b:])
 

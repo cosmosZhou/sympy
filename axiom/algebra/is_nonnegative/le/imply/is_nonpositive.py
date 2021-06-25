@@ -1,12 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
-def apply(*given):
-    is_nonnegative, less_than = given
-    x = axiom.is_nonnegative(is_nonnegative)
+def apply(is_nonnegative, less_than):
+    x = is_nonnegative.of(Expr >= 0)
     _x, a = less_than.of(LessEqual)
     assert x == _x
     return LessEqual(x * (x - a), 0)

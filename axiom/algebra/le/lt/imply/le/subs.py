@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 from axiom.algebra.eq.le.imply.le.subs import ratsimp
 
@@ -30,7 +29,7 @@ def prove(Eq):
 
     Eq << apply(y <= x * k + b, x < t)
 
-    Eq << algebra.lt.imply.le.multiply.apply(Eq[1], k)
+    Eq << algebra.lt.imply.le.mul.apply(Eq[1], k)
 
     Eq << Eq[-1] + b
 

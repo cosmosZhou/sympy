@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.to.add.doit import doit
-
-
 @apply(given=None)
 def apply(self):
-    assert self.is_ForAll
-    return Equivalent(self, doit(self), evaluate=False)
+    from axiom.algebra.sum.to.add.doit import doit
+    return Equivalent(self, doit(All, self), evaluate=False)
 
 
 @prove
@@ -19,19 +15,19 @@ def prove(Eq):
     i = Symbol.i(integer=True)
 
     n = 5
-    Eq << apply(ForAll[i:n](x[i] > 0))
+    Eq << apply(All[i:n](x[i] > 0))
 
     n -= 1
-    Eq << Eq[-1].this.find(ForAll).apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.find(All).apply(algebra.all.to.et.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.find(ForAll).apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.find(All).apply(algebra.all.to.et.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.find(ForAll).apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.find(All).apply(algebra.all.to.et.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.find(ForAll).apply(algebra.all.to.et.dissect, cond={n})
+    Eq << Eq[-1].this.find(All).apply(algebra.all.to.et.split, cond={n})
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
 from util import *
-import axiom
 # given : A & B = A | B => A = B
 
 

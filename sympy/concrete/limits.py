@@ -288,9 +288,9 @@ if x => y, then y | x = y
 x = !!x
 
 11:
-Exists[p] f = p & f
+Any[p] f = p & f
 12:
-ForAll[p] f = !q | f
+All[p] f = !q | f
 13:
 x & !x = false  
 14:
@@ -314,17 +314,17 @@ hence:
 x = y & x
 
 3:
-!(Exists[p] f) = ForAll[p] !f
+!(Any[p] f) = All[p] !f
 from definition
 4:
-!(ForAll[p] f) = Exists[p] !f
+!(All[p] f) = Any[p] !f
 from definition
 5:
-Exists[p] ForAll[q] f => ForAll[q] Exists[p] f
+Any[p] All[q] f => All[q] Any[p] f
 
 prove:
-Exists[p] ForAll[q] f = (!q | f) & p = = !q & p | f & p = (!q | f & p) & (p | f & p)
-ForAll[q] Exists[p] f = !q | (f & p)
+Any[p] All[q] f = (!q | f) & p = = !q & p | f & p = (!q | f & p) & (p | f & p)
+All[q] Any[p] f = !q | (f & p)
 and 
 (!q | f & p) & (p | f & p) => !q | (f & p)
 

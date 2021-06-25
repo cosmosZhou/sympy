@@ -6,7 +6,7 @@ def apply(imply):
     assert imply.is_Contains
     x = imply.generate_var(**imply.lhs.type.dict)
     
-    return Exists[x:imply.rhs](Equal(imply.lhs, x))
+    return Any[x:imply.rhs](Equal(imply.lhs, x))
 
 
 @prove

@@ -2,14 +2,12 @@ from util import *
 
 
 @apply
-def apply(*imply):
-    import axiom
-    cond, forall = imply
-    fn, *limits = forall.of(ForAll)
-    k, a, b = axiom.limit_is_Interval(limits)
+def apply(cond, forall):
+    fn, (k, a, b) = forall.of(All[Tuple])
+    assert k.is_integer
     assert fn._subs(k, a - 1) == cond
 
-    return ForAll[k:a - 1:b](fn)
+    return All[k:a - 1:b](fn)
 
 
 @prove
@@ -20,7 +18,7 @@ def prove(Eq):
     b = Symbol.b(domain=Range(a + 1, oo))
     g = Function.g(integer=True)
 
-    Eq << apply((g(a - 1) > 0), ForAll[k:a:b](g(k) > 0))
+    Eq << apply((g(a - 1) > 0), All[k:a:b](g(k) > 0))
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={a - 1})
 

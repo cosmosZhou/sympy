@@ -2,9 +2,7 @@ from util import *
 
 
 def limits_absorb(given, index):
-    assert given.is_Exists and given.function.is_And
-
-    eqs = [*given.function.args]
+    [*eqs], *limits = given.of(Any[And])
     eq = eqs[index]
     del eqs[index]
 
@@ -13,7 +11,6 @@ def limits_absorb(given, index):
     wrt = {v for v in variables if eq._has(v)}
 
     assert wrt
-    limits = [*given.limits]
     if len(wrt) == 1:
         wrt, *_ = wrt
         i = variables.index(wrt)
@@ -66,7 +63,7 @@ def limits_absorb(given, index):
     else:
         return
 
-    return Exists(function, *limits)
+    return Any(function, *limits)
 
 
 @apply
@@ -80,18 +77,18 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(oo,))
 
-    f = Function.f(nargs=(n,), shape=(), integer=True)
+    f = Function.f(shape=(), integer=True)
     f_quote = Function("f'", nargs=(n,), shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-    h = Function.h(nargs=(n + 1,), shape=(), integer=True)
+    h = Function.h(shape=(), integer=True)
 
-    Eq << apply(Exists[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
+    Eq << apply(Any[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
 
     S = Symbol.S(conditionset(x[:n + 1], (g(x[n]) > f_quote(x[:n])) & (f(x[:n]) > 0)))
 
-    Eq << algebra.any.imply.any_et.multiple_variables.apply(Eq[0])
+    Eq << algebra.any.imply.any_et.apply(Eq[0])
 
-    Eq << Exists[x[:n + 1]](Contains(x[:n + 1], S) & (h(x[:n + 1]) > 0), plausible=True)
+    Eq << Any[x[:n + 1]](Contains(x[:n + 1], S) & (h(x[:n + 1]) > 0), plausible=True)
 
     Eq << Eq[-1].this.function.args[1].rhs.definition
 

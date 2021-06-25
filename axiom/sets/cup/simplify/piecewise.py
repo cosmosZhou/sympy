@@ -3,16 +3,10 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    intersection, *limits = self.of(Cup)
-    x, S = axiom.limit_is_set(limits)
-    piecewise, gx = intersection.of(Intersection)
-    if not piecewise.is_Piecewise:
-        piecewise, gx = gx, piecewise
-
-    ecs = ((e & gx, c) for e, c in piecewise.of(Piecewise))
-
-    return Equal(self, Piecewise(*ecs).as_multiple_terms(x, S, Cup))
+    (piecewise, gx), limit = self.of(Cup[Intersection[Piecewise, Basic]])    
+    ecs = ((e & gx, c) for e, c in piecewise)
+    
+    return Equal(self, Piecewise(*ecs).as_multiple_terms(*limit.to_setlimit(), Cup))
 
 
 @prove

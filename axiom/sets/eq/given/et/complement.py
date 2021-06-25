@@ -1,7 +1,4 @@
 from util import *
-import axiom
-
-# given : A & B = A | B => A = B
 
 
 @apply
@@ -21,8 +18,7 @@ def prove(Eq):
 
     Eq << apply(Equal(A, B | C))
 
-    Eq << Eq[1].apply(sets.subset.eq.imply.eq.split.complement)
-
+    Eq << Eq[1].apply(sets.eq_complement.subset.imply.eq)
 
 
 if __name__ == '__main__':

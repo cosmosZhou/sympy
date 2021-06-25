@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 
@@ -8,7 +7,7 @@ def apply(given, wrt=None):
     fn1, fn = given.of(Necessary)
     if wrt is None:
         wrt = fn.wrt
-    return ForAll[wrt:fn](fn1)
+    return All[wrt:fn](fn1)
 
 
 @prove

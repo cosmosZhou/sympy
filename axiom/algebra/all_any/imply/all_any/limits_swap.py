@@ -1,17 +1,17 @@
 from util import *
 
-import axiom
 
 @apply
 def apply(given):
-    y = given.function.variable
+    (function, (y, Sy)), (x, Sx) = given.of(All[Any])
+
     z = Dummy('z', **y.type.dict)
-    imply = given.this.function.limits_subs(y, z)
+    function = function._subs(y, z)
+    function = function._subs(x, y)
+    function = function._subs(z, x)
+    assert not Sy._has(x)
     
-    x = given.variable
-    imply = imply.limits_subs(x, y)
-    
-    return imply.this.function.limits_subs(z, x)
+    return All[y:Sx](Any[x:Sy](function))
 
 
 @prove
@@ -26,9 +26,10 @@ def prove(Eq):
     Sx = Symbol.S_x(etype=dtype.integer.set * k)
     Sy = Symbol.S_y(etype=dtype.integer.set * k)
         
-    Eq << apply(ForAll[x:Sx](Exists[y:Sy](Equal(f(x), g(y)))))
+    Eq << apply(All[x:Sx](Any[y:Sy](Equal(f(x), g(y)))))
 
     Eq << Eq[1].limits_subs(y, Dummy('y', **y.type.dict))
+
 
 if __name__ == '__main__':
     run()

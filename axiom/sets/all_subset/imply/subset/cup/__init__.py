@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    (lhs, rhs), *limits = given.of(ForAll[Subset])
+    (lhs, rhs), *limits = given.of(All[Subset])
     return Subset(Cup(lhs, *limits).simplify(), Cup(rhs, *limits).simplify())
 
 
@@ -15,7 +15,7 @@ def prove(Eq):
     f = Function.f(shape=(), etype=dtype.integer)
     g = Function.g(shape=(), etype=dtype.integer)
 
-    Eq << apply(ForAll[i:n](Subset(f(i), g(i))))
+    Eq << apply(All[i:n](Subset(f(i), g(i))))
 
     Eq << sets.imply.suffice.subset.induct.apply(Subset(f(i), g(i)), (i, 0, n))
 

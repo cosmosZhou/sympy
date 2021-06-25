@@ -4,11 +4,11 @@ from util import *
 @apply
 def apply(all_a, all_b):
     from sympy.concrete.limits import limits_intersect
-    fn, *limits_a = all_a.of(ForAll)
-    _fn, *limits_b = all_b.of(ForAll)
+    fn, *limits_a = all_a.of(All)
+    _fn, *limits_b = all_b.of(All)
 
     limits = limits_intersect(limits_a, limits_b)
-    return ForAll(fn & _fn, *limits)
+    return All(fn & _fn, *limits)
 
 
 @prove
@@ -21,7 +21,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     g = Function.g(integer=True)
 
-    Eq << apply(ForAll[e:A](f(e) > 0), ForAll[e:B](g(e) > 0))
+    Eq << apply(All[e:A](f(e) > 0), All[e:B](g(e) > 0))
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 

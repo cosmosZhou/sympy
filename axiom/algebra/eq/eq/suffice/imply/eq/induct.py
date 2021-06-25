@@ -4,10 +4,10 @@ from util import *
 @apply
 def apply(*given, n=None, start=0):
     start = sympify(start)
-    f0, f1, sufficient = given
+    f0, f1, suffice = given
     f0.of(Equal)
     f1.of(Equal)
-    fn, fn2 = sufficient.of(Suffice)
+    fn, fn2 = suffice.of(Suffice)
     assert fn._subs(n, n + 2) == fn2
 
     assert fn._subs(n, start) == f0

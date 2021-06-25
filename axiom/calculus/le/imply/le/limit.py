@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 @apply
@@ -14,7 +13,7 @@ def apply(given, *limits, simplify=True):
     return LessEqual(lhs, rhs)
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     f = Function.f(shape=(), real=True)

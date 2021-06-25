@@ -1,14 +1,13 @@
 from util import *
-import axiom
 
 
 
 @apply
 def apply(*given, n=None, x=None, start=0, return_hypothesis=True):
     start = sympify(start)
-    f0, sufficient = given
+    f0, suffice = given
     f0.of(Equal)
-    fn, fn1 = sufficient.of(Suffice)
+    fn, fn1 = suffice.of(Suffice)
 
     x_wild = Wild('x', **x.type.dict)
     fn_hypothesis = fn

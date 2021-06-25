@@ -3,21 +3,18 @@ from util import *
 
 @apply(given=None)
 def apply(self):
-    import axiom
     [*eqs] = self.of(And)
 
     for i, eq in enumerate(eqs):
-        if isinstance(eq, ForAll):
+        if eq.is_All:
             break
     else:
         return
 
     forall = eqs.pop(i)
 
-    function, *limits = forall.args
-
-    i, a, b = axiom.limit_is_Interval(limits)
-
+    function, (i, a, b) = forall.of(All[Tuple])
+    assert i.is_integer
     try:
         while eqs:
             j = eqs.index(function._subs(i, a - 1))
@@ -26,7 +23,7 @@ def apply(self):
     except:
         return
 
-    return Equivalent(self, ForAll[i:a:b](function))
+    return Equivalent(self, All[i:a:b](function))
 
 
 @prove
@@ -38,13 +35,13 @@ def prove(Eq):
 
     x = Symbol.x(real=True, shape=(oo,))
 
-    Eq << apply(And(ForAll[i:a:n](x[i] > 0), x[a - 1] > 0, x[a - 2] > 0))
+    Eq << apply(And(All[i:a:n](x[i] > 0), x[a - 1] > 0, x[a - 2] > 0))
 
     Eq << algebra.equivalent.given.cond.apply(Eq[-1])
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.all.given.et, cond={a - 2}), Eq[-1].this.rhs.apply(algebra.all.imply.et.split, cond={a - 2})
 
-    Eq <<= Eq[-2].this.rhs.apply(algebra.all.given.et, cond={a - 1}), Eq[-1].this.rhs.find(ForAll).apply(algebra.all.imply.et.split, cond={a - 1})
+    Eq <<= Eq[-2].this.rhs.apply(algebra.all.given.et, cond={a - 1}), Eq[-1].this.rhs.find(All).apply(algebra.all.imply.et.split, cond={a - 1})
 
 
 if __name__ == '__main__':

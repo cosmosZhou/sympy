@@ -1,9 +1,9 @@
 from util import *
 
 
-def rewrite_from_MinMaxBase(self, common_terms=None):
+def from_MinMaxBase(self, common_terms=None):
     if common_terms is None:
-    
+
         for plus in self.args:
             if isinstance(plus, Add):
                 if common_terms is None:
@@ -31,27 +31,28 @@ def rewrite_from_MinMaxBase(self, common_terms=None):
 
 
 @apply
-def apply(self, common_term=None): 
+def apply(self, common_term=None):
     assert self.is_Min
-    
-    return Equal(self, rewrite_from_MinMaxBase(self, common_term))
+
+    return Equal(self, from_MinMaxBase(self, common_term))
 
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
     r = Symbol.r(real=True, positive=True)
-    
+
     Eq << apply(Min(x * r + 1, y * r + 1))
-    
-    Eq << Eq[-1].this.lhs.astype(Piecewise)
-    
-    Eq << Eq[-1].this.lhs.astype(Add)
-    
-    Eq << Eq[-1].this.rhs.astype(Piecewise)
-    
-    
+
+    Eq << Eq[-1].this.lhs.apply(algebra.min.to.piecewise)
+
+    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.to.add)
+
+    Eq << Eq[-1].this.rhs.apply(algebra.min.to.piecewise)
+
+
 if __name__ == '__main__':
     run()
-    
+

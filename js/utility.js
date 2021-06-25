@@ -1,36 +1,5 @@
 "use strict";
 
-function toggle_expansion_button() {
-	$('button').click(function() {
-		var div = $(this)[0].nextElementSibling;
-		if ($(this).text() == '>>>>') {
-
-			div.style.display = 'block';
-
-			$(this).text('<<<<');
-
-		} else {
-
-			div.style.display = null;
-
-			$(this).text('>>>>');
-
-		}
-	});
-}
-
-function click_first_expansion_button() {
-	var first_button = document.querySelector("button");
-	first_button.click();
-}
-
-function click_all_expansion_buttons() {
-	var buttons = document.querySelectorAll("button");
-	for (let button of buttons) {
-		button.click();
-	}
-}
-
 function getTextWidth(str) {
 	let result = 0;
 	let div = document.createElement("div");
@@ -155,9 +124,9 @@ function hint(cm, options) {
 		var token = cm.getTokenAt(cur);
 		var tokenString = token.string;
 		console.log('tokenString = ' + tokenString);
-
+		
 		var text = cm.getLine(cur.line);
-		var prefix = text.slice(0, token.end).match(/[\w.]+$/)[0];
+		var prefix = text.slice(0, cur.ch).match(/[\w.]+$/)[0];
 
 		var sympy = sympy_user();
 		var url = `/${sympy}/php/request/`;
@@ -199,10 +168,90 @@ function hint(cm, options) {
 
 function sympy_user() {
 	var href = location.href;
-	return href.match(/([^\/]+)\/(?:axiom.php|php\/new.php)\b/)[1];
+	return href.match(/([^\/]+)\/(?:axiom.php|php\/\w+\.php)\b/)[1];
 }
 
+
 function extraKeys() {
+	function open(cm, ch) {
+		var [first, second] = ch.split('');
+		cm.replaceSelection(first);
+
+		var cursor = cm.getCursor();
+		console.log("cursor.ch = " + cursor.ch);
+
+		var text = cm.getLine(cursor.line);
+
+		var selectionStart = cursor.ch;
+		console.log("selectionStart = " + selectionStart);
+
+		var left_parenthesis_count = 0;
+		var left_bracket_count = 0;
+		var left_brace_count = 0;
+		if (text[selectionStart] != '.') {
+			for (; selectionStart < text.length; ++selectionStart) {
+				var char = text[selectionStart];
+
+				if (char >= 'a' && char <= 'z' || char >= 'A' && char <= 'Z') {
+					continue;
+				}
+
+				switch (char) {
+					case '_':
+					case '.':
+						continue;
+					case '(':
+						++left_parenthesis_count;
+						continue;
+					case '[':
+						++left_bracket_count;
+						continue;
+					case '{':
+						++left_brace_count;
+						continue;
+
+					case ')':
+						if (left_parenthesis_count) {
+							--left_parenthesis_count;
+							continue;
+						}
+						else
+							break;
+					case ']':
+						if (left_bracket_count) {
+							--left_bracket_count;
+							continue;
+						}
+						else
+							break;
+					case '}':
+						if (left_brace_count) {
+							--left_brace_count;
+							continue;
+						}
+						else
+							break;
+					default:
+						if (left_parenthesis_count || left_bracket_count || left_brace_count)
+							continue;
+				}
+				break;
+			}
+		}
+
+		cm.setCursor(cursor.line, selectionStart);
+		cm.replaceSelection(second);
+		cm.setCursor(cursor.line, selectionStart);
+	}
+
+	function close(cm, ch) {
+		var cursor = cm.getCursor();
+		if (cursor.ch < cm.getLine(cursor.line).length && cm.getTokenAt({ ch: cursor.ch + 1, line: cursor.line }).string == ch)
+			cm.setCursor(cursor.line, cursor.ch + 1);
+		else
+			cm.replaceSelection(ch);
+	}
+
 	return {
 		Tab: function(cm) {
 			cm.replaceSelection(' '.repeat(cm.getOption('indentUnit')));
@@ -217,46 +266,27 @@ function extraKeys() {
 		},
 
 		"[": function(cm) {
-			cm.replaceSelection('[]');
-
-			var cursor = cm.getCursor();
-			cm.setCursor(cursor.line, cursor.ch - 1);
+			open(cm, '[]');
 		},
 
 		"]": function(cm) {
-			var cursor = cm.getCursor();
-			if (cm.getTokenAt({ ch: cursor.ch + 1, line: cursor.line }).string == ']')
-				cm.setCursor(cursor.line, cursor.ch + 1);
-			else  
-				cm.replaceSelection(']');
+			close(cm, ']');
 		},
 
 		"Shift-9": function(cm) {
-			cm.replaceSelection('()');
-			var cursor = cm.getCursor();
-			cm.setCursor(cursor.line, cursor.ch - 1);
+			open(cm, '()');
 		},
 
 		"Shift-0": function(cm) {
-			var cursor = cm.getCursor();
-			if (cm.getTokenAt({  ch: cursor.ch + 1, line: cursor.line }).string == ')')
-				cm.setCursor(cursor.line, cursor.ch + 1);
-			else
-				cm.replaceSelection(')');
+			close(cm, ')');
 		},
 
 		"Shift-[": function(cm) {
-			cm.replaceSelection('{}');
-			var cursor = cm.getCursor();
-			cm.setCursor(cursor.line, cursor.ch - 1);
+			open(cm, '{}');
 		},
 
 		"Shift-]": function(cm) {
-			var cursor = cm.getCursor();
-			if (cm.getTokenAt({  ch: cursor.ch + 1, line: cursor.line }).string == '}')
-				cm.setCursor(cursor.line, cursor.ch + 1);
-			else
-				cm.replaceSelection('}');
+			close(cm, '}');
 		},
 
 		"Alt-/": function(cm) {

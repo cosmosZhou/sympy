@@ -1,5 +1,4 @@
 from util import *
-import axiom
 
 
 def ratsimp(equal, eq):    

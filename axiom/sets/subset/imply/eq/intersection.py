@@ -1,13 +1,11 @@
 from util import *
 
 
-
 # given: A in B
 # A | B = B
 @apply
 def apply(given):
-    assert given.is_Subset
-    A, B = given.args
+    A, B = given.of(Subset)
 
     return Equal(A & B, A)
 
@@ -15,9 +13,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets
+
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
-
     Eq << apply(Subset(A, B))
 
     Eq << sets.subset.imply.subset.intersection.apply(Eq[0], A)

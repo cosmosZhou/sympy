@@ -17,7 +17,7 @@ def apply(A, i=None, j=None):
     return Equal(Det(A), sigmar(A[i, j] * Cofactors(A)[i, j]).simplify())
 
 
-@prove
+@prove(slow=True)
 def prove(Eq):
     from axiom import algebra
     print('this is a validation, not a proof in', __file__)

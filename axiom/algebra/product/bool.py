@@ -1,8 +1,6 @@
 from util import *
 
 
-
-
 @apply
 def apply(self):
     assert self.is_Product
@@ -21,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.find(Bool).apply(algebra.bool.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.function.astype(Piecewise)
+    Eq << Eq[-1].this.rhs.function.apply(algebra.pow.to.piecewise.exponent)
 
 
 if __name__ == '__main__':

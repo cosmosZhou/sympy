@@ -1,29 +1,27 @@
 from util import *
 
 
-def doit(self):
-    import axiom
-    xi, *limits = self.args
-    * limits, limit = limits
-    i, a, b = axiom.limit_is_Interval((limit,))
+def doit(Sum, self):
+    xi, * limits, (i, a, b) = self.of(Sum)
+
+    assert i.is_integer
     diff = b - a
     assert diff == int(diff)
 
-    sgm = self.func.identity(xi)
+    sgm = Sum.identity(xi)
 
     for t in range(diff):
         _limits = []
         for (j, *ab) in limits:
             _limits.append((j, *(c._subs(i, a + t) for c in ab)))
 
-        sgm = self.func.operator(sgm, self.func(xi._subs(i, a + t), *_limits))
+        sgm = Sum.operator(sgm, self.func(xi._subs(i, a + t), *_limits))
     return sgm
 
 
 @apply
 def apply(self):
-    assert self.is_Sum
-    return Equal(self, doit(self))
+    return Equal(self, doit(Sum, self))
 
 
 @prove

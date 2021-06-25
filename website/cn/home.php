@@ -2,7 +2,7 @@
 	<h1>什么是axiom.top?</h1>
 	<br>
 	<p>
-		<a href="../axiom">axiom.top</a>
+		<a href="../axiom.php">axiom.top</a>
 		是一个基于数学定理知识库、用于证明数学命题的网站，此工程主要依靠开源符号计算项目 <a
 			href="https://github.com/sympy/sympy"> sympy </a> 和<a
 			href="http://maxima.sourceforge.net"> Maxima </a>改写, 其中部分代码由商业性数学软件语言<a
@@ -29,8 +29,7 @@
 		href="../axiom.php/algebra/is_nonzero/suffice/imply/is_nonzero/induct">数学归纳法</a>
 		的证明；</li>
 	<li><a href="../axiom.php/sets/">sets</a> 集合论, 即sets
-		theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语‘任意’（ForAll）,
-		‘存在’（Exists），‘属于’ （Contains），‘包含’（Subset）描述的命题，比如<a
+		theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语All, Any, ‘属于’ （Contains），‘包含’（Subset）描述的命题，比如<a
 		href="../axiom.php/sets/imply/eq/principle/inclusion_exclusion/basic">容斥原理</a>的证明。可以说，集合论是数学推理的根本语法。</li>
 	<li><a href="../axiom.php/geometry/">geometry</a>几何学，主要分为初中<a
 		href="../axiom.php/geometry/plane">平面几何学，中学三角函数学</a>与高中<a

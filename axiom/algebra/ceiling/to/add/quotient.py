@@ -3,10 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    div = self.of(Ceiling)
-    n, d = axiom.is_Divide(div)
-
+    n, d = self.of(Ceiling[Expr / Expr])
     return Equal(self, (n - 1) // d + 1)
 
 

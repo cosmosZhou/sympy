@@ -3,49 +3,31 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_ForAll
-    S = given.rhs
-    n = S.etype.shape[0]
+    (((_x, ((w, i, j, _k), (___k, (__k, z_, n_)))), (k, z, n)), _S), (x, S) = given.of(All[Contains[Lamda[Indexed[MatMul[Indexed, Lamda]]]]])
+    assert S == _S    
+    assert n == S.etype.shape[0] == n_
+    assert z == 0 == z_
+    assert x == _x
+    assert __k == k == _k == ___k
 
-    ref = given.lhs
-    k = ref.variable
-    x = ref.function.base
-
-    assert len(ref.function.indices) == 1
-    index = ref.function.indices[0]
-    assert index.is_MatMul and len(index.args) == 2
-
-    assert index.args[0].is_Indexed and index.args[1].is_Lamda
-
-    w = index.args[0].base
-    i, j, _k = index.args[0].indices
-
-    assert w.definition.is_Lamda
-
-    (_j, *j_limits), (_i, *i_limits) = w.definition.limits
+    (_n, __i, __j), (_j, *j_limits), (_i, *i_limits) = w.definition.of(Lamda[Swap])
+    
     if j_limits:
         zero, n_1 = j_limits
-        assert zero.is_zero and n_1 == n - 1
+        assert zero == 0 and n_1 == n - 1
 
     if i_limits:
         zero, n_1 = i_limits
-        assert zero.is_zero and n_1 == n - 1
+        assert zero == 0 and n_1 == n - 1
 
-    assert _k == k and _i == i and _j == j
-    assert isinstance(w.definition.function, Swap)
-    _n, _i, _j = w.definition.function.args
-    assert _n == n and _i == i and _j == j
-
-    assert index.args[1].is_Lamda and len(index.args[1].limits) == 1
-
-    _k, *_ = index.args[1].limits[0]
-    assert _k == k
+    assert __i == _i == i and __j == _j == j
+    assert _n == n
 
     p = Symbol.p(shape=(oo,), integer=True, nonnegative=True)
 
     P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
 
-    return ForAll[p[:n]:P, x:S](Contains(Lamda[k:n](x[p[k]]), S))
+    return All[p[:n]:P, x:S](Contains(Lamda[k:n](x[p[k]]), S))
 
 
 @prove
@@ -63,9 +45,7 @@ def prove(Eq):
 
     k = Symbol.k(integer=True)
 
-    given = ForAll[x:S](Contains(Lamda[k:n](x[(w[i, j] @ Lamda[k:n](k))[k]]), S))
-
-    Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(given)
+    Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(All[x:S](Contains(Lamda[k:n](x[(w[i, j] @ Lamda[k:n](k))[k]]), S)))
 
     Eq << discrete.matrix.elementary.swap.identity.apply(x, w)
 

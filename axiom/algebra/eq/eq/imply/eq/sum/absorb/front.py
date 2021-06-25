@@ -1,26 +1,15 @@
 from util import *
 
 
-def absorb_front(Sum, Equal, *imply, criteria=None):
-    import axiom
-    cond, cond_sum = imply
+def absorb_front(Sum, Equal, cond, cond_sum, criteria=None):
+    fa, ga = cond.of(Equal)
 
-    assert isinstance(cond, Equal)
-    fa, ga = cond.args
+    (fk, (k, a, b)), (gk, limit) = cond_sum.of(Equal[Sum[Tuple], Sum])
 
-    assert isinstance(cond_sum, Equal)
-    fx_sum, gx_sum = cond_sum.args
-
-    assert isinstance(fx_sum, Sum)
-    fk, *limits = fx_sum.args
-
-    k, a, b = axiom.limit_is_Interval(limits)
+    assert k.is_integer
+    assert limit == (k, a, b)
+    
     assert fk._subs(k, a - 1) == fa
-
-    assert isinstance(gx_sum, Sum)
-    gk, *_limits = gx_sum.args
-
-    assert _limits == limits
     assert gk._subs(k, a - 1) == ga
 
     if criteria:

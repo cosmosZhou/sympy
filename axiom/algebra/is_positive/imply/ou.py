@@ -1,12 +1,9 @@
 from util import *
-import axiom
-
 
 
 @apply
 def apply(given):
-    xy = axiom.is_positive(given)
-    x, y = xy.of(Mul)
+    x, y = given.of(Mul > 0)
     return Or((x < 0) & (y < 0), (x > 0) & (y > 0))
 
 
@@ -36,9 +33,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[0]
 
+
 if __name__ == '__main__':
     run()
-
-
-
 

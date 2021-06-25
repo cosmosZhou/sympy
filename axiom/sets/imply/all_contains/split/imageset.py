@@ -8,7 +8,7 @@ def apply(self):
     variables, expr, base_set = image_set
 
     if isinstance(base_set, Symbol):
-        return ForAll(Contains(expr, self), (variables, base_set))
+        return All(Contains(expr, self), (variables, base_set))
 
 @prove
 def prove(Eq):

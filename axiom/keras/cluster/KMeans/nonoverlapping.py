@@ -2,9 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given, x=None):
-    import axiom
-    eq_sum, eq_union = given
+def apply(eq_sum, eq_union, x=None):
     w_sum, M = eq_sum.of(Equal)
     w_union, M_interval = eq_union.of(Equal)
 
@@ -12,20 +10,16 @@ def apply(*given, x=None):
     assert _M == M
     assert zero == 0
 
-    wi_abs, limit = w_sum.of(Sum)
-    wi, _limit = w_union.of(Cup)
+    _wi, i = w_sum.of(Sum[Abs, Tuple])
+    wi, _i = w_union.of(Cup[Tuple])
 
-    assert limit == _limit
-
-    _wi = wi_abs.of(Abs)
+    assert i == _i
     assert _wi == wi
 
-    (i,) = limit
     w, _i = wi.of(Indexed)
     assert _i == i
 
-    _M = x.shape[0]
-    assert _M == M
+    assert x.shape[0] == M
 
     w_ = Symbol("omega^'", cluster(w, x))
 
@@ -95,7 +89,7 @@ def prove(Eq):
 
     k_ = Symbol.k(integer=True)
 
-    Eq.nonoverlapping = ForAll[i:k_](Equal(w_[i] & w_[k_], w_[i].etype.emptySet), plausible=True)
+    Eq.nonoverlapping = All[i:k_](Equal(w_[i] & w_[k_], w_[i].etype.emptySet), plausible=True)
 
     Eq << Eq.omega_i_definition0.subs(i, k_)
 
@@ -107,7 +101,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this().find(Intersection).simplify()
 
-    Eq << sets.all_is_emptyset.imply.eq.nonoverlapping.util.intlimit.apply(Eq.nonoverlapping, k)
+    Eq << sets.all_is_emptyset.imply.eq.nonoverlapping.intlimit.utility.apply(Eq.nonoverlapping, k)
 
     Eq << Eq[-1].this.find(Cup).limits_subs(k_, i)
 

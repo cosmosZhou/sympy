@@ -21,9 +21,9 @@ def apply(n, w=None, left=True, P=None):
         P = Symbol.P(conditionset(x, Equal(x.set_comprehension(), Range(0, n))))
 
     if left:
-        return ForAll[x:P](Contains(w[i, j] @ x, P))
+        return All[x:P](Contains(w[i, j] @ x, P))
     else:
-        return ForAll[x:P](Contains(x @ w[i, j], P))
+        return All[x:P](Contains(x @ w[i, j], P))
 
 
 @prove

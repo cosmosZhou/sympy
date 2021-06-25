@@ -658,5 +658,35 @@ class Operator:
     def __getattr__(self, attr):
         return getattr(self.basic, attr)
 
-#     def __pow__(self, other): 
-#         return BasicMeta.__pow__(self.basic, other)
+    def __pow__(self, other): 
+        return BasicMeta.__pow__(self.basic, other)
+    
+    def __sub__(self, other): 
+        return BasicMeta.__sub__(self.basic, other)
+    
+    def __add__(self, other): 
+        return BasicMeta.__add__(self.basic, other)
+    
+    def __mul__(self, other): 
+        return BasicMeta.__mul__(self.basic, other)
+    
+    def __mod__(self, other): 
+        return BasicMeta.__mod__(self.basic, other)
+    
+    def __truediv__(self, other): 
+        return BasicMeta.__truediv__(self.basic, other)
+    
+    def __floordiv__(self, other): 
+        return BasicMeta.__floordiv__(self.basic, other)
+    
+    def __gt__(self, other): 
+        return BasicMeta.__gt__(self.basic, other)
+
+    def __ge__(self, other): 
+        return BasicMeta.__ge__(self.basic, other)
+
+    def __lt__(self, other): 
+        return BasicMeta.__lt__(self.basic, other)
+
+    def __le__(self, other): 
+        return BasicMeta.__le__(self.basic, other)

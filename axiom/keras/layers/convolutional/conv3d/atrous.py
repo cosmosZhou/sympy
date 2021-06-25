@@ -31,9 +31,10 @@ def apply(x, w, r, *indices):
     return Equal(conv3d[r](x * M0, w) * M1, Lamda[k:m](block))
 
 
-@prove
+@prove(slow=True)
 def prove(Eq):
     from axiom import algebra
+
     m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(shape=(3,), integer=True, positive=True)
     d = Symbol.d(integer=True, positive=True)
@@ -84,7 +85,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Min[Ceiling]).apply(algebra.min.to.add, 1).this.find(Min[Ceiling]).apply(algebra.min.to.add, 1).this.find(Min[Ceiling]).apply(algebra.min.to.add, 1)
 
-    Eq << Eq[-1].this.find(Add[Ceiling]).apply(algebra.add.to.floor).this.find(Add[Ceiling]).apply(algebra.add.to.floor).this.find(Add[Ceiling]).apply(algebra.add.to.floor)
+    Eq << Eq[-1].this.find(Add[Ceiling]).apply(algebra.add_ceiling.to.floor).this.find(Add[Ceiling]).apply(algebra.add_ceiling.to.floor).this.find(Add[Ceiling]).apply(algebra.add_ceiling.to.floor)
 
     Eq << Eq[-1].this.find(Min[Floor]).apply(algebra.min.to.floor).this.find(Min[Floor]).apply(algebra.min.to.floor).this.find(Min[Floor]).apply(algebra.min.to.floor)
 

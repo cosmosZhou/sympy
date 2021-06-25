@@ -1,18 +1,9 @@
 from util import *
-import axiom
 
 
 def absorb(Sum, self):
-    assert isinstance(self, Sum.operator)
-
-    sum_fx, fi = self.args
-    if not isinstance(sum_fx, Sum):
-        sum_fx, fi = fi, sum_fx
-        assert isinstance(sum_fx, Sum)
-        assert not isinstance(fi, Sum)
-
-    fx, *limits = sum_fx.args
-    k, a, b = axiom.limit_is_Interval(limits)
+    (fx, (k, a, b)), fi = self.of(Sum.operator[Sum[Tuple], Basic])
+    assert k.is_integer
     assert fx._subs(k, a - 1) == fi
     return Sum[k:a - 1:b](fx)
 
@@ -30,7 +21,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     Eq << apply(Add(Sum[k:1 + i:n](f(k)), f(i)))
 
-    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.dissect, cond={i})
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond={i})
 
 
 if __name__ == '__main__':

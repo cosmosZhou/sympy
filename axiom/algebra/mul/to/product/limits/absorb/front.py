@@ -1,11 +1,9 @@
 from util import *
-import axiom
-
-from axiom.algebra.add.to.sum.limits.absorb.front import absorb
 
 
 @apply
 def apply(self):
+    from axiom.algebra.add.to.sum.limits.absorb.front import absorb
     return Equal(self, absorb(Product, self), evaluate=False)
 
 
@@ -18,7 +16,7 @@ def prove(Eq):
     f = Function.f(integer=True)
     Eq << apply(Mul(Product[k:1 + i:n](f(k)), f(i)))
 
-    Eq << Eq[-1].this.rhs.apply(algebra.product.to.mul.dissect, cond={i})
+    Eq << Eq[-1].this.rhs.apply(algebra.product.to.mul.split, cond={i})
 
 
 if __name__ == '__main__':

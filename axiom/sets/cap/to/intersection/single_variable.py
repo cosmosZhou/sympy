@@ -3,9 +3,8 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    fx, *limits = self.of(Cap)
-    return Equal(self, fx.as_multiple_terms(*axiom.limit_is_set(limits), cls=Cap))
+    fx, (x, s) = self.of(Cap)
+    return Equal(self, fx.as_multiple_terms(x, s, cls=Cap))
 
 
 @prove

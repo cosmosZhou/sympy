@@ -11,28 +11,19 @@ def apply(*given):
 def analyze(*given):
     all_a, all_b, equality_a = given
 
-    assert all_a.is_ForAll and all_b.is_ForAll
-    assert len(all_a.variables) == len(all_b.variables) == 1
-    a = all_a.variable
-    b = all_b.variable
-
-    assert all_a.function.is_Contains and all_b.function.is_Contains
-
-    B = all_a.function.rhs
-    A = all_b.function.rhs
-
-    fa = all_a.function.lhs
-    gb = all_b.function.lhs
+    (fa, B), (a, _A) = all_a.of(All[Contains])
+    (gb, A), (b, _B) = all_b.of(All[Contains])
+    
+    assert _A == A
+    assert _B == B    
     assert fa._has(a) and gb._has(b)
 
     eqs = Equal(a, Lambda(b, gb)(fa))
-    if equality_a.is_ForAll:
-        assert equality_a.variable == a
-        assert equality_a.limits == all_a.limits
-        equality_a = equality_a.function
+    if equality_a.is_All:
+        equality_a, limit = equality_a.of(All)
+        assert limit == (a, A)
 
-    assert equality_a.is_Equal
-    assert equality_a == eqs or equality_a.reversed == eqs
+    assert {*equality_a.of(Equal)} == {*eqs.args}
 
     return A, B, a, b, fa, gb
 
@@ -50,8 +41,8 @@ def prove(Eq):
     f = Function.f(integer=True, shape=(m,))
     g = Function.g(integer=True, shape=(n,))
 
-    Eq << apply(ForAll[a:A](Contains(f(a), B)), ForAll[b:B](Contains(g(b), A)),
-                ForAll[a:A](Equal(a, g(f(a)))))
+    Eq << apply(All[a:A](Contains(f(a), B)), All[b:B](Contains(g(b), A)),
+                All[a:A](Equal(a, g(f(a)))))
 
     Eq << Eq[1].this.function.apply(sets.contains.imply.subset, simplify=False)
 
@@ -69,7 +60,7 @@ def prove(Eq):
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 
-    Eq << ForAll[a:A](Exists[b:B](Equal(f(a), b)), plausible=True)
+    Eq << All[a:A](Any[b:B](Equal(f(a), b)), plausible=True)
 
     Eq << Eq[-1].this.function.simplify()
 

@@ -1,6 +1,4 @@
 from util import *
-import axiom
-
 
 
 @apply
@@ -16,10 +14,10 @@ def apply(self, y):
     
     for i, C in enumerate(limits):
         limits[i] = (C,)
-    return Exists(eq, *limits)    
+    return Any(eq, *limits)    
 
 
-@prove(surmountable=False)
+@prove(proved=False)
 def prove(Eq):
     x = Symbol.x(real=True)
     k = Symbol.k(integer=True)

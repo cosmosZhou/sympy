@@ -5,7 +5,7 @@ from util import *
 def apply(imply):
     lhs, rhs = imply.of(Subset)
     function, *limits = lhs.of(Cup)
-    return ForAll(Subset(function, rhs).simplify(), *limits)
+    return All(Subset(function, rhs).simplify(), *limits)
 
 
 @prove

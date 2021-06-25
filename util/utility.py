@@ -7,6 +7,7 @@ from sympy.core.inference import Inference, process_options, equivalent_ancestor
 from _collections import deque, defaultdict
 from util.search import py_to_module
 from os.path import dirname, basename
+from util.std import json_encode
 
 
 def init(func):
@@ -37,18 +38,18 @@ class Eq:
             i = 0  
             res = []   
             for m in re.finditer(r"\\tag\*{(Eq(?:\[(\d+)\]|\.(\w+)))}", line):
-                expr, index, attr = m.group(1), m.group(2), m.group(3)
+                expr, index, attr = m[1], m[2], m[3]
     
                 if i < m.start():
                     res.append(line[i:m.start()])
                     
-                assert line[m.start():m.end()] == m.group(0)
-                assert line[m.start(1):m.end(1)] == m.group(1)
+                assert line[m.start():m.end()] == m[0]
+                assert line[m.start(1):m.end(1)] == m[1]
                 
                 if index:
-                    assert line[m.start(2):m.end(2)] == m.group(2)
+                    assert line[m.start(2):m.end(2)] == m[2]
                 if attr:
-                    assert line[m.start(3):m.end(3)] == m.group(3)
+                    assert line[m.start(3):m.end(3)] == m[3]
     
                 if index:
                     index = int(index)
@@ -446,11 +447,12 @@ def wolfram_decorator(py, func, debug=True, **kwargs):
 
 @unique
 class RetCode(Enum):
-    success = ()  # 0
-    failure = ()  # 1
+    proved = ()  # 0
+    failed = ()  # 1
     plausible = ()  # 2    
-    insurmountable = ()  # 3 
+    unproved = ()  # 3 
     unprovable = ()  # 4
+    slow = ()  # 5
 
     def __str__(self):
         return self.name
@@ -475,14 +477,24 @@ def run():
     
     res = import_module(package, debug=False)
     from util import MySQL
-     
     try:
-        state, lapse, latex = prove_with_timing(res, debug=True)
-        from util.MySQL import json_encode
+        state, lapse, latex = prove_with_timing(res, debug=True, slow=True)        
+        
         sql = "replace into tbl_axiom_py values('%s', '%s', '%s', %s, %s)" % (user, package, state, lapse, json_encode(latex))
     #     print(sql)
-    except AttributeError:        
-        sql = analyze_results_from_run(res, latex=False)        
+    except AttributeError as e: 
+        if re.match("module '[\w.]+' has no attribute 'prove'", str(e)): 
+            __init__ = os.path.dirname(file) + '/__init__.py'
+            basename = os.path.basename(file)[:-3]
+            for i, line in enumerate(Text(__init__)):
+                if re.match('from \. import %s' % basename, line):
+                    Text(__init__).insert(i, "del " + basename)
+                    from run import run
+                    run(package)
+                    break                    
+            return
+        else: 
+            sql = analyze_results_from_run(res, latex=False)        
     
     MySQL.instance.execute(sql)
     if file.endswith("__init__.py"):
@@ -491,16 +503,12 @@ def run():
 
 
 def analyze_results_from_run(lines, latex=True):
-    indexOfSQL = -1
-    for i, line in enumerate(lines):
+    for line in lines:
         line = line.rstrip()
-        if line == 'latex results are saved into:':
-            indexOfSQL = i                        
+        m = re.match(r'latex results are saved into: (\S+)', line)
+        if m:
+            sqlFile = m[1]                        
         print(line)
-
-    assert indexOfSQL >= 0
-    indexOfSQL += 1
-    sqlFile = lines[indexOfSQL].rstrip()
 
     file = Text(sqlFile)
 
@@ -513,17 +521,17 @@ def analyze_results_from_run(lines, latex=True):
     if latex: 
         m = re.match('exit_code = (\S+)', line)
         assert m, line                
-        ret = int(m.group(1))
+        ret = int(m[1])
         if ret < 0:
-            ret = RetCode.failure
+            ret = RetCode.failed
         elif ret > 0:
-            ret = RetCode.success
+            ret = RetCode.proved
         else:
             ret = RetCode.plausible
 
         m = re.match("replace into tbl_axiom_py values(\(.+\));$", sql)
         assert m, sql
-        * _, latex = eval(m.group(1))
+        * _, latex = eval(m[1])
         return ret, latex
     else:
         return sql[:-1]
@@ -557,88 +565,243 @@ def from_axiom_import(py, section, eqs):
     except Exception as e:
         print(e)
         traceback.print_exc()
-        return RetCode.failure, eqs.postprocess()       
+        return RetCode.failed, eqs.postprocess()       
     
+
+def _prove(func, debug=True, **_):
+    py = func.__code__.co_filename
     
-def prove(*args, **kwargs):
-
-    def prove(func, debug=True):
-        py = func.__code__.co_filename
+    website = f"http://localhost/{basename(dirname(dirname(__file__)))}/axiom.php/{py_to_module(py, '/')}"
+    
+    eqs = Eq(debug=debug)
+    
+    try: 
+        func(eqs)
         
-        website = f"http://localhost/{basename(dirname(dirname(__file__)))}/axiom.php/{py_to_module(py, '/')}"
+        if debug:
+            print(website)
+            
+        ret = RetCode.plausible if eqs.plausibles_dict else RetCode.proved
         
-        eqs = Eq(debug=debug)
-        try: 
-            func(eqs)
+    except AttributeError as e: 
+        traceback.print_exc()
+        
+        m = re.match("^module 'sympy(?:\.\w+)*\.(algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)*' has no attribute '(\w+)'$", str(e))
+        if m: 
+            import_axiom = False
+            if m[2] == 'func':
+                * _, statement = source_error()
+                statement = statement.strip()
+                if statement == 'if not isinstance(self, cls.func):':
+                    ...
+                else:
+                    import_axiom = True                                
+            else: 
+                import_axiom = True
+                
+            if import_axiom:
+                return from_axiom_import(py, m[1], eqs)
             
-            if debug:
-                print(website)
-                
-            ret = RetCode.plausible if eqs.plausibles_dict else RetCode.success
-            
-        except AttributeError as e: 
-            traceback.print_exc()
-            m = re.match("^module 'sympy(?:\.\w+)*\.(algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)*' has no attribute '(\w+)'$", str(e))
-            if m: 
-                return from_axiom_import(py, m.group(1), eqs)
-                
-            m = re.match("^'function' object has no attribute '(\w+)'$", str(e))
-            if m:
-                import sys
-                from traceback import TracebackException
-                etype, value, tb = sys.exc_info() 
-                lines = [*TracebackException(type(value), value, tb, limit=None).format(chain=None)]
-                error_source = lines[-2]
-
-                print(error_source, file=sys.stderr)
-                error_source = error_source.strip()
-                lines = error_source.splitlines()
-                * _, statement = lines
-                
+        m = re.match("^'(\w+)' object has no attribute '(\w+)'$", str(e))
+        if m:
+            t = m[1]
+            if t == 'function':
+                * _, statement = source_error()            
                 statement = statement.strip()
                 m = re.search('(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+', statement)
                 assert m
-                section, *_ = m.group().split('.')
+                section, *_ = m[0].split('.')
                 return from_axiom_import(py, section, eqs)
+            
+            if t[0].isupper():
+                messages = source_error()
+                if detect_error_in_invoke(py, e, messages) or detect_error_in_apply(py, e, messages):
+                    ...
 
-            print(website)
-            ret = RetCode.failure
-        except Exception as e:
-            print(e)
-            traceback.print_exc()
-            print(website)
-            ret = RetCode.failure
+        if str(e) == "'NoneType' object has no attribute 'definition_set'":
+            lines = Text(py).collect()
+            
+            for i, line in enumerate(lines):
+                if re.match('^def prove\(', line):
+                    break
+                
+                if re.match(r' +return( *| +None *)$', line):
+                    __line__ = i
+                    code = lines[i - 1] + '\n' + line
+            
+            __line__ -= skips_in_apply(py)
+            
+            kwargs = {}
+            kwargs['apply'] = True
+            kwargs['line'] = __line__
+            kwargs['code'] = code
+            kwargs['error'] = str(e)
+            kwargs['type'] = re.match(r"<class '(\w+)'>", str(type(e)))[1]                
+            
+            print(json_encode(kwargs))
+
+        print(website)
+        ret = RetCode.failed
+    except Exception as e: 
+        messages = source_error()       
         
-        return ret, eqs.postprocess()
-
-    if args:
-        return lambda **kwargs: prove(*args, **kwargs)
+        if detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_imply(py, e, messages): 
+            ...
+            
+        print(website)
+        ret = RetCode.failed
     
-    surmountable = kwargs.pop('surmountable', True)
-    if surmountable is False:
+    return ret, eqs.postprocess()
 
-        def insurmountable(func):
 
-            def insurmountable(**kwargs):
-                _, latex = prove(func, **kwargs)
-                return RetCode.insurmountable, latex
+def skips_in_apply(py):
+    skips = 1
+    for i, line in enumerate(Text(py)):
+        if i:
+            if line.strip():
+                break
+            else:
+                skips += 1
+    return skips
+    
 
-            return insurmountable
+def detect_error_in_prove(py, e, messages):
+    for i, line in enumerate(messages):
+        m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in prove', line)
+        if m:
+            __line__ = int(m[2]) - 1
+            pyFile = m[1]
+            assert py == pyFile
+            i += 1
+            code = messages[i]
+            lines = Text(pyFile).collect()
+            for i, line in enumerate(lines):
+                if re.match(r"^def prove\(", line):
+                    if __line__ > i:
+                        i += 1
+                        
+                        start = i
+                        skips = 0
+                        if re.match("    from axiom import \w+", lines[i]):
+                            i += 1
+                            skips += 1
+                            
+                        while not lines[i].strip():
+                            i += 1
+                            skips += 1
+                        
+                        while i < __line__:
+                            if not lines[i].strip(): 
+                                skips += 1
+                            i += 1
+                             
+                        __line__ -= start + skips
+                    break
+            
+            kwargs = {}
+            kwargs['prove'] = True
+            kwargs['line'] = __line__
+            kwargs['code'] = code
+            kwargs['error'] = str(e)
+            kwargs['type'] = re.match(r"<class '(\w+)'>", str(type(e)))[1]                
+            
+            print(json_encode(kwargs))
+            return True            
+    
 
-        return insurmountable
+def detect_error_in_apply(py, e, messages, index=-3):
+    for i, line in enumerate(messages):
+        m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in apply', line)
+        if m:
+            __line__ = int(m[2]) - 1
+            i += 1
+            pyFile = m[1]
+            code = messages[i]
+            
+            __line__ -= skips_in_apply(pyFile)
+            
+            kwargs = {}
+            kwargs['apply'] = True
+            kwargs['line'] = __line__
+            kwargs['code'] = code
+            kwargs['error'] = str(e)
+            kwargs['type'] = re.match(r"<class '(\w+)'>", str(type(e)))[1]
+            
+            if pyFile != py:
+                m = re.search(r"\baxiom[/\\](.+)\.py", pyFile)
+                if m:
+                    kwargs['module'] = m[1]  # .replace(os.path.sep, '.')
+                else:
+                    messages = source_error(index)
+                    return detect_error_in_invoke(py, e, messages, index=index - 1)
+            
+            print(json_encode(kwargs))
+            return True
 
-    provable = kwargs.pop('provable', True)
-    if provable is False:
 
-        def unprovable(func):
+def detect_error_in_imply(py, e, messages, index=-3):
+    for line in messages:
+        m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in imply', line)
+        if m:
+            messages = source_error(index)
+            return detect_error_in_prove(py, e, messages)
+        
 
-            def unprovable(**kwargs):
-                _, latex = prove(func, **kwargs)
-                return RetCode.unprovable, latex
+def detect_error_in_invoke(py, e, messages, index=-3):
+    for line in messages:
+        m = re.fullmatch(r'File "([^"]+[\\/]invoker\.py)", line (\d+), in (\w+)', line)
+        if m:
+            if m[3] in ('__getattr__', 'invoke', '__call__'):
+                messages = source_error(index)
+                return detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1)
 
-            return unprovable
 
-        return unprovable
+def unprovable(func):
+
+    def unprovable(**kwargs):
+        _, latex = _prove(func, **kwargs)
+        return RetCode.unprovable, latex
+
+    return unprovable
+
+
+def unproved(func):
+
+    def unproved(**kwargs):
+        _, latex = _prove(func, **kwargs)
+        return RetCode.unproved, latex
+
+    return unproved
+
+
+def slow(func):
+
+    def slow(**kwargs): 
+        if kwargs.pop('slow', False):
+            return _prove(func, **kwargs)
+        else:
+            from util import MySQL
+            [[latex]] = MySQL.instance.select(f"select latex from tbl_axiom_py where user = '{user}' and axiom = '{py_to_module(func.__code__.co_filename, '.')}'")            
+            return RetCode.slow, latex
+    
+    return slow
+
+    
+funcptr = {
+    ('proved', False): unproved,
+    ('unproved', True): unproved,
+    ('provable', False): unprovable,
+    ('unprovable', True): unprovable,
+    ('slow', True): slow,
+}
+
+
+def prove(*args, **kwargs):
+    if args:
+        return lambda **kwargs: _prove(*args, **kwargs)    
+        
+    for key, value in kwargs.items():
+        return funcptr[(key, value)]
 
     
 def wolfram(func):
@@ -702,7 +865,7 @@ def imply(apply, **kwargs):
         return s
 
     def imply(*args, **kwargs):
-        #nonlocal simplify
+        # nonlocal simplify
         _simplify = kwargs.pop('simplify', True) and simplify
 
         __kwdefaults__ = apply.__kwdefaults__
@@ -723,7 +886,17 @@ def imply(apply, **kwargs):
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]:
             
-            if given is not None:
+            if given is None:
+                if isinstance(statement, tuple): 
+                    statement = tuple(s.copy(plausible=None, evaluate=False) for s in statement)
+                else: 
+                    statement = statement.copy(plausible=None, evaluate=False)
+                                    
+                    if _simplify and len(args) == 1 and \
+                    (statement.is_Equal or statement.is_Equivalent) \
+                    and args[0] is statement.lhs:
+                        _simplify = False                
+            else: 
                 if isinstance(given, tuple):
                     is_not_False = all(g.plausible is not False for g in given)
                 else:
@@ -735,12 +908,7 @@ def imply(apply, **kwargs):
                     statement = tuple(s.copy(given=given, evaluate=False) for s in statement)
                 else: 
                     statement = statement.copy(given=given, evaluate=False)
-            else:
-                if isinstance(statement, tuple): 
-                    statement = tuple(s.copy(plausible=None, evaluate=False) for s in statement)
-                else: 
-                    statement = statement.copy(plausible=None, evaluate=False)                
-                
+                    
             if not _simplify:
                 if isinstance(statement, (list, tuple)) or statement.is_Inference:
                     return statement
@@ -749,7 +917,7 @@ def imply(apply, **kwargs):
             
             if isinstance(statement, (list, tuple)):
                 return tuple(s.simplify(emplace=True) for s in statement)
-             
+            
             return statement.simplify(emplace=True)            
         
         dependency = {}
@@ -891,7 +1059,7 @@ def get_function_body(func):
     source_lines = dropwhile(lambda x: x.startswith('@'), source_lines)
     source = ''.join(source_lines)
     pattern = re.compile(r'(async\s+)?def\s+\w+\s*\(.*?\)\s*:\s*(.*)', flags=re.S)
-    lines = pattern.search(source).group(2).splitlines()
+    lines = pattern.search(source)[2].splitlines()
     if len(lines) == 1:
         return lines[0]
     else:
@@ -955,7 +1123,7 @@ def detect_axiom(statement):
 #     // Eq << Eq.x_j_subset.apply(discrete.sets.subset.nonemptyset, Eq.x_j_inequality, evaluate=False)
     matches = re.compile('\.apply\((.+)\)').search(statement)
     if matches:
-        theorem = matches.group(1).split(',')[0].strip()
+        theorem = matches[1].split(',')[0].strip()
         
         yield theorem
 
@@ -1001,21 +1169,21 @@ def dependency_analysis(theorem):
         matches = re.compile("((?:Eq *<<= *|Eq\.\w+, *Eq\.\w+ *= *)([\w.]+|Eq[-\w.\[\]]*\[-?\d+\][\w.]*)\.apply%s\s*[,&]\s*)(.+)" % balancedParanthesis).match(statement) 
         if matches:
 #             // error_log('theorem detected: ' . $theorem);
-            first_statement = matches.group(1)
-            yield from detect_axiom_given_theorem(matches.group(2), first_statement)
+            first_statement = matches[1]
+            yield from detect_axiom_given_theorem(matches[2], first_statement)
 
-            second_statement = matches.group(3)
+            second_statement = matches[3]
             if second_statement != "\\":
                 matches = re.compile("([\w.]+|Eq[-\w.\[\]]*\[-?\d+\])\.apply\(").search(second_statement)
                 assert matches
-                yield from detect_axiom_given_theorem(matches.group(1), second_statement)
+                yield from detect_axiom_given_theorem(matches[1], second_statement)
                                     
             continue
         m = re.compile("([\w.]+)\.apply\(").search(statement)
         if m:
 #             // error_log('theorem detected: ' . $theorem);
-            theorem = m.group(1)
-            yield from detect_axiom_given_theorem(m.group(1), statement)
+            theorem = m[1]
+            yield from detect_axiom_given_theorem(m[1], statement)
             
             continue
         
@@ -1079,6 +1247,19 @@ def chmod():
 
            
 user = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
-            
+
+
+def source_error(index=-2):
+    from traceback import TracebackException
+    import sys
+    etype, value, tb = sys.exc_info() 
+    lines = [*TracebackException(type(value), value, tb, limit=None).format(chain=None)]
+    error_source = lines[index]
+
+    print(error_source, file=sys.stderr)
+    error_source = error_source.strip()
+    return error_source.splitlines()
+
+
 if __name__ == '__main__':
     ...

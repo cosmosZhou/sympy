@@ -1,14 +1,10 @@
 from util import *
 
 
-import axiom
-from axiom.algebra.sum.doit.outer.setlimit import doit
-
-
 @apply(given=None)
 def apply(self):
-    assert self.is_Exists
-    return Equivalent(self, doit(self))
+    from axiom.algebra.sum.doit.outer.setlimit import doit
+    return Equivalent(self, doit(Any, self))
 
 
 @prove
@@ -22,10 +18,10 @@ def prove(Eq):
 
     a = Symbol.a(integer=True)
 
-    Eq << apply(Exists[i:g(i), j:f(i, j) > 0, i:{a}](x[i, j] > 0))
+    Eq << apply(Any[i:g(i), j:f(i, j) > 0, i:{a}](x[i, j] > 0))
 
-    Eq << Equivalent(Exists[i:{a}](Equal(Bool(Exists[i:g(i), j:f(i, j) > 0](x[i, j] > 0)), 1)),
-                     Exists[i:g(i), j:f(i, j) > 0, i:{a}](x[i, j] > 0), plausible=True)
+    Eq << Equivalent(Any[i:{a}](Equal(Bool(Any[i:g(i), j:f(i, j) > 0](x[i, j] > 0)), 1)),
+                     Any[i:g(i), j:f(i, j) > 0, i:{a}](x[i, j] > 0), plausible=True)
 
     Eq << Eq[-1].this.lhs.function.lhs.apply(algebra.bool.to.piecewise)
 

@@ -1,16 +1,14 @@
 from util import *
 
-import axiom
-
 
 @apply(given=None)
-def apply(given, *limits):
+def apply(given, limit):
     xk, yk = given.of(Greater)
-    k, a, b = axiom.limit_is_Interval(limits)
+    k, a, b = limit
     assert xk._has(k)
     assert yk._has(k)
 
-    return Suffice(ForAll[k:a:b](xk > yk), Sum[k:a:b](xk) > Sum[k:a:b](yk))
+    return Suffice(All[k:a:b](xk > yk), Sum[k:a:b](xk) > Sum[k:a:b](yk))
 
 
 @prove

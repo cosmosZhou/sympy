@@ -3,9 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    import axiom
-    function, *limits = self.of(Sum)
-    x, space = axiom.limit_is_set(limits)
+    function, (x, space) = self.of(Sum)
     x, *indices = x.of(Slice)
 
     assert len(indices) == 1
@@ -37,14 +35,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Contains).simplify()
 
-    j = Eq[-1].find(ForAll).variable
-    Eq << Eq[-1].this.rhs.find(ForAll).limits_subs(j, j - i - 1)
+    j = Eq[-1].find(All).variable
+    Eq << Eq[-1].this.rhs.find(All).limits_subs(j, j - i - 1)
 
     Eq << Eq[-1].this.rhs.find(And).apply(algebra.et.to.all.limits.push_front)
 
     Eq << Eq[-1].this.lhs.find(Contains).simplify()
 
-    Eq << Eq[-1].this.lhs.find(ForAll).limits_subs(j, j - i)
+    Eq << Eq[-1].this.lhs.find(All).limits_subs(j, j - i)
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.split.slice)
 

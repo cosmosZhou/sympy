@@ -3,22 +3,15 @@ from util import *
 
 @apply
 def apply(x0, x1):
-    from sympy.stats.rv import PDF
-    assert x0.is_random and x1.is_random
-
     pspace0 = pspace(x0)
     pspace1 = pspace(x1)
-    if not pspace0.is_SingleContinuousPSpace or not pspace1.is_SingleContinuousPSpace:
-        return
-    distribution0 = pspace0.distribution
-    distribution1 = pspace1.distribution
-    if not distribution0.is_NormalDistribution or not distribution1.is_NormalDistribution:
-        return
-    Y = Symbol.y(distribution=NormalDistribution(distribution0.mean + distribution1.mean,
-                                            sqrt(distribution0.std * distribution0.std + distribution1.std * distribution1.std)))
+    mean0, std0 = pspace0.distribution.of(NormalDistribution)
+    mean1, std1 = pspace1.distribution.of(NormalDistribution)
+
+    Y = Symbol.y(distribution=NormalDistribution(mean0 + mean1, sqrt(std0 * std0 + std1 * std1)))
     y = pspace(Y).symbol
 
-    return Equal(PDF(x0 + x1)(y), PDF(Y)(y).doit())
+    return Equal(Probability(Equal(x0 + x1, y)), Probability(Equal(Y, y)).doit())
 
 
 @prove
@@ -33,13 +26,16 @@ def prove(Eq):
 
     x0 = Symbol.x0(distribution=NormalDistribution(mu0, sigma0))
     x1 = Symbol.x1(distribution=NormalDistribution(mu1, sigma1))
-    assert sqrt(sigma0 * sigma0 + sigma1 * sigma1) > 0
 
     Eq << apply(x0, x1)
 
     Eq << Eq[0].lhs.this.doit(evaluate=False)
 
-    Eq << Eq[-1].this.rhs.args[-1].args[0].doit()
+    Eq << Eq[-1].this.rhs.find(Probability).doit()
+    
+    Eq << Eq[-1].this.rhs.find(Probability).doit()
+    
+    Eq << Eq[-1].this.rhs.find(Integral, Integral).doit()
 
     Eq << stats.guassion.quadratic.apply(Eq[-1].rhs.args[-1])
 

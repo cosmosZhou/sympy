@@ -38,7 +38,7 @@ if (file_exists($new . ".py")) {
     $new .= "/__init__.py";
 
     $newFile = new \std\Text($new);
-    if ($newFile->search('/^@apply\b/')) {
+    if ($newFile->search('^@apply\b')) {
         die("$newFile already exists!");        
     }
 
