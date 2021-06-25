@@ -15,5 +15,3 @@ sed -i 's/#Include conf\/extra\/httpd-ssl.conf/Include conf\/extra\/httpd-ssl.co
 sed -i -E 's/#RewriteRule (.+)/RewriteRule \1/' /usr/local/httpd/conf/httpd.conf
 
 /usr/local/httpd/bin/apachectl -k restart
-
-python run.py
