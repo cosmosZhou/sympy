@@ -43,7 +43,7 @@ switch ($lang) {
         $privacy = "Privacy";
         $security = "Security";
         $contactAxiom = "Contact axiom.top";
-        $typingEffect = "[&quot;Welcome to axiom.top!&quot;, &quot;Let’s begin the adventure&quot;]";
+        $typingEffect = "[&quot;Welcome to axiom.top!&quot;, &quot;Let’s begin the adventure of Automated Theorem Proving&quot;]";
         
         $enterEmail = "Enter your email";
         $continue = "Continue";
