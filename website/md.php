@@ -23,8 +23,7 @@ switch ($lang) {
 
 <head>
 <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-<link rel="stylesheet"
-	href="http://cdn.jsdelivr.net/highlight.js/8.8.0/styles/default.min.css" />
+<link rel=stylesheet href="https://cdn.jsdelivr.net/highlight.js/8.8.0/styles/default.min.css" />
 <title><?php echo $title ?></title>
 <style>
 body {
@@ -41,7 +40,7 @@ body {
 
 </html>
 
-<script	src="http://cdn.jsdelivr.net/highlight.js/8.8.0/highlight.min.js"></script>
+<script	src="https://cdn.jsdelivr.net/highlight.js/8.8.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
 <script> 
