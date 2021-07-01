@@ -1,32 +1,32 @@
 from util import *
 
 
-
 @apply
 def apply(given):
     x, interval = given.of(Contains)
     a, b = interval.of(Interval)
     if interval.left_open:
         if interval.right_open:
-            return And(x > a, x < b)
+            return x > a, x < b
         else:
-            return And(x > a, x <= b)
+            return x > a, x <= b
     else:
         if interval.right_open:
-            return And(x >= a, x < b)
+            return x >= a, x < b
         else:
-            return And(x >= a, x <= b)
+            return x >= a, x <= b
 
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     x = Symbol.x(real=True, given=True)
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)
     Eq << apply(Contains(x, Interval(a, b)))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     Eq << sets.contains.imply.le.split.interval.apply(Eq[0])
 

@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << Eq[0] * Eq[-1].lhs.args[0]
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=1)
 

@@ -29,7 +29,7 @@ import warnings
 from sympy import sympify, Expr, Tuple, Dummy, Symbol
 from sympy.external import import_module
 from sympy.core.function import arity
-from sympy.core.compatibility import range, Callable
+from sympy.core.compatibility import Callable
 from sympy.utilities.iterables import is_sequence
 from .experimental_lambdify import (vectorized_lambdify, lambdify)
 
@@ -642,7 +642,7 @@ class LineOver1DRangeSeries(Line2DBaseSeries):
                 # at both ends. If there is a real value in between, then
                 # sample those points further.
                 elif p[1] is None and q[1] is None:
-                    if self.xscale is 'log':
+                    if self.xscale == 'log':
                         xarray = np.logspace(p[0], q[0], 10)
                     else:
                         xarray = np.linspace(p[0], q[0], 10)
@@ -671,14 +671,14 @@ class LineOver1DRangeSeries(Line2DBaseSeries):
     def get_points(self):
         np = import_module('numpy')
         if self.only_integers is True:
-            if self.xscale is 'log':
+            if self.xscale == 'log':
                 list_x = np.logspace(int(self.start), int(self.end),
                         num=int(self.end) - int(self.start) + 1)
             else:
                 list_x = np.linspace(int(self.start), int(self.end),
                     num=int(self.end) - int(self.start) + 1)
         else:
-            if self.xscale is 'log':
+            if self.xscale == 'log':
                 list_x = np.logspace(self.start, self.end, num=self.nb_of_points)
             else:
                 list_x = np.linspace(self.start, self.end, num=self.nb_of_points)

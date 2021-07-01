@@ -13,24 +13,23 @@ def apply(given, wrt=None):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
     A = Symbol.A(etype=dtype.real * k, given=True)
     f = Function.f(shape=(k,), real=True)
     g = Function.g(shape=(k,), real=True)
     h = Function.h(shape=(k,), real=True)
-
     p = Symbol.p(real=True, shape=(k,), given=True)
-
     Eq << apply(Greater(f(x), p) & Contains(x, A) | Greater(g(x), p) & NotContains(x, A), wrt=p)
 
     Eq << Eq[1].apply(algebra.cond.given.et.ou, cond=Contains(x, A))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq <<= Eq[-2].apply(algebra.cond.cond.imply.et, invert=True, swap=True), Eq[-1].apply(algebra.cond.cond.imply.et, swap=True)
+    Eq <<= Eq[-2].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, invert=True, swap=True), Eq[-1].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, swap=True)
 
     Eq <<= Eq[-2] & Eq[0], Eq[-1] & Eq[0]
 

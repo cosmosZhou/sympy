@@ -72,7 +72,7 @@ def prove(Eq):
 
     Eq.equivalent = Equivalent(Eq.equal.lhs.args[0].cond, Eq.equal.rhs.args[0].cond, plausible=True)
 
-    Eq.suffice, Eq.necessary = algebra.equivalent.given.cond.apply(Eq.equivalent)
+    Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq.equivalent)
 
     Eq << algebra.suffice.given.suffice.split.ou.apply(Eq.suffice)
 

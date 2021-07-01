@@ -69,7 +69,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.cancel, x[n + 1])
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 

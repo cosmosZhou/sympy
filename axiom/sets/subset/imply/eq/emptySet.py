@@ -1,9 +1,8 @@
 from util import *
 
 
-
 @apply
-def apply(given):    
+def apply(given): 
     A, B = given.of(Subset)
     assert B.is_EmptySet
 

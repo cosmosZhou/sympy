@@ -14,13 +14,12 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(integer=True)
     k = Symbol.k(integer=True)
-
     A = Symbol.A(shape=(oo,), etype=dtype.integer)
-
     Eq << apply(NotContains(x, Cup[k:n](A[k])))
 
     k = Symbol.k(domain=Range(0, n))
@@ -28,7 +27,7 @@ def prove(Eq):
 
     Eq << sets.notcontains.imply.et.split.union.apply(Eq[-1], simplify=None)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    
 
     Eq << Eq[-2].forall((k,))
 

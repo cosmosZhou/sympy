@@ -13,13 +13,14 @@ def apply(n, P_quote=None):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, sets, algebra
+    from axiom import sets, algebra, discrete
+
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
 
     Eq << sets.imply.all.conditionset.apply(Eq[-1].lhs)
 
-    Eq << algebra.all_et.imply.all.apply(Eq[-1])
+    Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 
     Eq << Eq[-3].this.function.apply(discrete.combinatorics.permutation.pop_back.interval)
 
@@ -27,7 +28,7 @@ def prove(Eq):
 
     Eq << sets.imply.all.conditionset.apply(Eq[1].lhs)
 
-    Eq << algebra.all_et.imply.all.apply(Eq[-1])
+    Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 
     Eq << Eq[-3].this.function.apply(discrete.combinatorics.permutation.push_back)
 

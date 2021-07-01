@@ -365,7 +365,7 @@ def _Sqrt(x):
     return Pow(x, S.Half)
 
 
-class Sqrt(Function):  # 'sqrt' already defined in sympy.functions.elementary.extremum
+class Sqrt(Function):  # 'sqrt' already defined in sympy.functions.elementary.miscellaneous
     """
     Represents the square root function.
 
@@ -412,7 +412,7 @@ def _Cbrt(x):
     return Pow(x, Rational(1, 3))
 
 
-class Cbrt(Function):  # 'cbrt' already defined in sympy.functions.elementary.extremum
+class Cbrt(Function):  # 'cbrt' already defined in sympy.functions.elementary.miscellaneous
     """
     Represents the cube root function.
 

@@ -22,7 +22,7 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
 
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)
@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << sets.contains.given.et.split.interval.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     #Eq << Eq[-1].reversed
     #Eq << Eq[-2].reversed

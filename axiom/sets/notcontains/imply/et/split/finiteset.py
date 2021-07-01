@@ -2,25 +2,25 @@ from util import *
 
 
 @apply
-def apply(given):
-    e, S = given.of(NotContains)
-    args = S.of(FiniteSet)
+def apply(given, index=-1):
+    e, args = given.of(NotContains[FiniteSet])
 
-    eqs = [Unequal(e, s) for s in args]
-
-    return And(*eqs)
+    lhs = FiniteSet(*args[:index])
+    rhs = FiniteSet(*args[index:])
+    
+    return NotContains(e, lhs).simplify(), NotContains(e, rhs).simplify()
 
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     x = Symbol.x(integer=True)
     a = Symbol.a(integer=True)
     b = Symbol.b(integer=True)
-
     Eq << apply(NotContains(x, {a, b}))
 
-    Eq << algebra.et.given.conds.apply(Eq[1])
+    
 
     Eq << sets.notcontains.imply.ne.apply(Eq[0])
 

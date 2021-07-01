@@ -1,5 +1,5 @@
 from sympy.core import S, Symbol, Add, sympify, Expr, PoleError, Mul
-from sympy.core.compatibility import string_types
+
 from sympy.core.exprtools import factor_terms
 from sympy.core.numbers import GoldenRatio
 from sympy.core.symbol import Dummy
@@ -172,6 +172,9 @@ class Limit(Expr):
             
         e = sympify(e)
         z = sympify(z)
+        
+        assert z.is_symbol and not z.is_given
+        
         z0 = sympify(z0)
 
         if z0 is S.Infinity:
@@ -308,6 +311,10 @@ class Limit(Expr):
     def limits(self):
         return self.args[1:]
 
+    @property
+    def variable(self):
+        return self.args[1][0]
+
     def _sympystr(self, p):
         e, (z, z0, direction) = self.args
         if direction == 1:
@@ -370,6 +377,18 @@ class Limit(Expr):
         if expr.is_symbol:
             if expr == x:
                 return x0
+            
+        if expr.is_Add:
+            const = []
+            args = []
+            for arg in expr.args:
+                if arg._has(x):
+                    args.append(arg)
+                else:
+                    const.append(arg)
+            if const:
+                return Limit[x:x0:dir](Add(*args)) + Add(*const)
+            
         return self
 
 
@@ -397,3 +416,9 @@ class Limit(Expr):
         boolean = expr._has(pattern)
 
         return boolean or any(arg._has(pattern) for arg in limits)
+
+    def _subs(self, old, new, **hints):
+        if old == self.variable:
+            return self
+        
+        return Expr._subs(self, old, new, **hints)

@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[-1].apply(algebra.is_positive.is_positive.imply.is_positive)
 
-    Eq << algebra.cond.cond.imply.cond.apply(Eq[0], Eq[-1], invert=True)
+    Eq << algebra.cond.cond.imply.cond.subs.apply(Eq[0], Eq[-1], invert=True)
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
 

@@ -13,12 +13,11 @@ from sympy.logic.boolalg import BooleanFunction, Boolean, And, Or
     
 from sympy.matrices import Matrix
 from sympy.tensor.indexed import Idx, Indexed, Slice
-from sympy.sets.sets import Interval, Set, Union, Intersection
-from sympy.sets.finiteset import FiniteSet
+from sympy.sets.sets import Interval, Set, Union, Intersection, FiniteSet
 from sympy.sets.fancysets import Range
 from sympy.utilities import flatten
 from sympy.utilities.iterables import sift, postorder_traversal
-from sympy.functions.elementary.extremum import Min, Max
+from sympy.functions.elementary.miscellaneous import Min, Max
 from _functools import reduce
 from sympy.matrices.expressions.blockmatrix import BlockMatrix
 from sympy.core.logic import fuzzy_and
@@ -279,59 +278,60 @@ class ExprWithLimits(Expr):
                                     sym = (x, domain.condition)
                                 else:
                                     sym = (x, domain.condition, domain.base_set)
-                        elif domain.is_BinaryCondition:
-                            if domain.lhs == x:
-                                if domain.is_GreaterEqual:
-                                    sym = (x, domain.rhs, S.Infinity)
-                                elif domain.is_Less:
-                                    if x.is_integer:
-                                        if x.is_nonnegative:
-                                            sym = (x, 0, domain.rhs)
-                                            function = function._subs(x, x.unbounded)
+                        elif domain.is_boolean:
+                            if domain.is_BinaryCondition:
+                                if domain.lhs == x:
+                                    if domain.is_GreaterEqual:
+                                        sym = (x, domain.rhs, S.Infinity)
+                                    elif domain.is_Less:
+                                        if x.is_integer:
+                                            if x.is_nonnegative:
+                                                sym = (x, 0, domain.rhs)
+                                                function = function._subs(x, x.unbounded)
+                                            else:
+                                                sym = (x, -S.Infinity, domain.rhs)
+                                    elif domain.is_LessEqual:
+                                        if x.is_integer:
+                                            ...
                                         else:
-                                            sym = (x, -S.Infinity, domain.rhs)
-                                elif domain.is_LessEqual:
-                                    if x.is_integer:
-                                        ...
-                                    else:
-                                        if x.is_nonnegative:
-                                            sym = (x, 0, domain.rhs)
-                                            function = function._subs(x, x.unbounded)
+                                            if x.is_nonnegative:
+                                                sym = (x, 0, domain.rhs)
+                                                function = function._subs(x, x.unbounded)
+                                            else:
+                                                sym = (x, -S.Infinity, domain.rhs)
+                                    elif domain.is_Greater:
+                                        if x.is_integer:
+                                            if domain.rhs.is_integer:
+                                                sym = (x, domain.rhs + 1, S.Infinity)
                                         else:
-                                            sym = (x, -S.Infinity, domain.rhs)
-                                elif domain.is_Greater:
-                                    if x.is_integer:
-                                        if domain.rhs.is_integer:
-                                            sym = (x, domain.rhs + 1, S.Infinity)
-                                    else:
-                                        ...    
-                                elif domain.is_Contains:
-                                    sym = (x, domain.rhs)
-                            elif domain.rhs == x:
-                                if domain.is_LessEqual:  # lhs <= x 
-                                    sym = (x, domain.lhs, S.Infinity)
-                                elif domain.is_Greater:  # lhs > x
-                                    if x.is_integer:
-                                        if x.is_nonnegative:
-                                            sym = (x, 0, domain.lhs)
-                                            function = function._subs(x, x.unbounded)
-                                        else: 
-                                            sym = (x, -S.Infinity, domain.lhs)
-                                    else:
-                                        ...
-                                elif domain.is_GreaterEqual:  # lhs >= x
-                                    if x.is_integer:
-                                        ...
-                                    else:
-                                        if x.is_nonnegative:
-                                            sym = (x, 0, domain.lhs)
-                                            function = function._subs(x, x.unbounded)
+                                            ...    
+                                    elif domain.is_Contains:
+                                        sym = (x, domain.rhs)
+                                elif domain.rhs == x:
+                                    if domain.is_LessEqual:  # lhs <= x 
+                                        sym = (x, domain.lhs, S.Infinity)
+                                    elif domain.is_Greater:  # lhs > x
+                                        if x.is_integer:
+                                            if x.is_nonnegative:
+                                                sym = (x, 0, domain.lhs)
+                                                function = function._subs(x, x.unbounded)
+                                            else: 
+                                                sym = (x, -S.Infinity, domain.lhs)
                                         else:
-                                            sym = (x, -S.Infinity, domain.lhs)
-                        elif domain.is_BooleanTrue:
-                            return function.copy(**assumptions)
-                        elif domain.is_BooleanFalse:
-                            return cls.identity(function)
+                                            ...
+                                    elif domain.is_GreaterEqual:  # lhs >= x
+                                        if x.is_integer:
+                                            ...
+                                        else:
+                                            if x.is_nonnegative:
+                                                sym = (x, 0, domain.lhs)
+                                                function = function._subs(x, x.unbounded)
+                                            else:
+                                                sym = (x, -S.Infinity, domain.lhs)
+                            elif domain:
+                                return function.copy(**assumptions)
+                            elif domain.is_BooleanFalse:
+                                return cls.identity(function)
                         
                     elif len(sym) == 3:
                         if x.is_Symbol and x.is_bounded and not ab[0].is_boolean:
@@ -341,7 +341,7 @@ class ExprWithLimits(Expr):
                             
                         a, b = ab
                         if a.is_boolean:
-                            if a.is_BooleanTrue:
+                            if a:
                                 if b.is_Range and x.is_integer:
                                     if b.is_UniversalSet:
                                         sym = (x,)
@@ -351,7 +351,7 @@ class ExprWithLimits(Expr):
                                     sym = (x, b)
                             elif b.is_UniversalSet:
                                 sym = (x, a)
-                        elif x.is_integer and not x.shape and not x.is_set and not b.is_set:
+                        elif x.type.is_DtypeInteger and not b.is_set:
                             if a == b - 1:
                                 function = function._subs(x, a)                        
                                 for j in range(i - 1, -1, -1):
@@ -1128,7 +1128,7 @@ class ExprWithLimits(Expr):
                             intersection = universe & indices
                             if intersection: 
                                 return self.func.operator(self.func(self.function, *self.limits[:-1], (x, intersection)).simplify(),
-                                                          self.func(self.function, *self.limits[:-1], (x, universe // indices)).simplify(), **kwargs)
+                                                          self.func(self.function, *self.limits[:-1], (x, universe - indices)).simplify(), **kwargs)
                     
                 return self
             
@@ -1174,7 +1174,7 @@ class ExprWithLimits(Expr):
             intersection = universe & indices
             if intersection:
                 return self.func.operator(self.func(self.function, (x, intersection)).simplify(),
-                                          self.func(self.function, (x, universe // indices)).simplify(), **kwargs)
+                                          self.func(self.function, (x, universe - indices)).simplify(), **kwargs)
             return self
 
         if len(ab) == 2:
@@ -1313,14 +1313,6 @@ class ExprWithLimits(Expr):
         dic = expr.match(self.function.subs(i, i_))
         if dic:
             return dic[i_]
-
-    def limits_swap(self):
-        if len(self.limits) == 2:
-            i_limit, j_limit = self.limits
-            j, *_ = j_limit
-            if not i_limit._has(j):
-                return self.func(self.function, j_limit, i_limit)
-        return self
 
     def simplify(self, deep=False, **kwargs):
         limits = [*self.limits]
@@ -2887,9 +2879,6 @@ class Lamda(ExprWithLimits):
                 return (x, *ab)
         return limit
         
-    def limits_swap(self):
-        return self
-
     def _eval_domain_defined(self, x, **_):
         return ExprWithLimits._eval_domain_defined(self, x, allow_empty=False)        
 
@@ -3423,14 +3412,14 @@ class Cup(Set, ExprWithLimits):
     def _inf(self):
         # We use Min so that sup is meaningful in combination with symbolic
         # interval end points.
-        from sympy.functions.elementary.extremum import Min
+        from sympy.functions.elementary.miscellaneous import Min
         return Min(*[s.inf for s in self.args])
 
     @property
     def _sup(self):
         # We use Max so that sup is meaningful in combination with symbolic
         # end points.
-        from sympy.functions.elementary.extremum import Max
+        from sympy.functions.elementary.miscellaneous import Max
         return Max(*[s.sup for s in self.args])
 
     def _contains(self, other):

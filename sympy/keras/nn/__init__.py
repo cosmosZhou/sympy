@@ -4,7 +4,7 @@
 #  
 # softmax = Function.softmax(eval=softmax, is_positive=True)
 from sympy.core.function import Function
-from sympy.functions.elementary.extremum import Max
+from sympy.functions.elementary.miscellaneous import Max
 from sympy.concrete.reduced import ReducedSum
 from sympy.functions.elementary.exponential import exp
 

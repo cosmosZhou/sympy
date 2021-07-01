@@ -3,10 +3,8 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_Subset
-    A, B = given.args
-
-    return Equal(A // B, A.etype.emptySet)
+    A, B = given.of(Subset)
+    return Equal(A - B, A.etype.emptySet)
 
 
 @prove

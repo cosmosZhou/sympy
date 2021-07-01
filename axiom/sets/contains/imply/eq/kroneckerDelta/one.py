@@ -11,23 +11,23 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     x = Symbol.x(integer=True, given=True)
     given = Contains(x, {0, 1})
-
     Eq << apply(given)
 
     Eq << Eq[-1].this.lhs.apply(algebra.kroneckerDelta.to.piecewise)
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=Equal(1, x))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq <<= ~Eq[-1], ~Eq[-2]
 
     Eq << Eq[-2].apply(algebra.eq.ne.imply.ne.subs)
 
-    Eq << Eq[-1].apply(algebra.cond.cond.imply.et, invert=True)
+    Eq << Eq[-1].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, invert=True)
 
     Eq << Eq[-1].apply(sets.ne.ne.imply.notcontains, simplify=False)
 

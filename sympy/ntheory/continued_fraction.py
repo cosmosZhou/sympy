@@ -1,6 +1,6 @@
 from sympy.core.numbers import Integer, Rational
 from sympy.core.compatibility import as_int
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 
 
 

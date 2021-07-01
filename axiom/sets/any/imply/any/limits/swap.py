@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given):    
+def apply(given):
     function, *limits = given.of(Any)
     limits = [(x,) for x, *_ in limits]
     limits[0] = (limits[0][0], function)
@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.A_definition)
 
-    Eq << sets.any_contains.imply.any_contains.limits_swap.apply(Eq[2], simplify=False)
+    Eq << sets.any_contains.imply.any_contains.limits.swap.apply(Eq[2], simplify=False)
 
     Eq << Eq[-1].this.function.rhs.definition
 

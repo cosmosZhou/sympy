@@ -20,8 +20,8 @@ def apply(*given):
     assert limit == _limit
 
     j = Symbol.j(domain=Range(0, k))
-    complement = Range(0, k) // {j}
-    return Equal(Cup[i:complement](x[i]) // x[j], Cup[i:complement](x[i]))
+    complement = Range(0, k) - {j}
+    return Equal(Cup[i:complement](x[i]) - x[j], Cup[i:complement](x[i]))
 
 
 @prove

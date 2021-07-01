@@ -5,7 +5,7 @@ import collections
 
 from sympy.core import S, Symbol, Tuple, Integer, Basic, Expr, Eq, Mul, Add
 from sympy.core.decorators import call_highest_priority
-from sympy.core.compatibility import range, SYMPY_INTS, default_sort_key, string_types
+from sympy.core.compatibility import SYMPY_INTS, default_sort_key
 from sympy.core.sympify import SympifyError, _sympify
 from sympy.functions import conjugate, adjoint
 from sympy.functions.special.tensor_functions import KroneckerDelta
@@ -636,7 +636,7 @@ class MatrixElement(Expr):
         if m is None:
             n = _sympify(n)
 
-            if isinstance(name, string_types):
+            if isinstance(name, str):
                 name = Symbol(name)
             name = _sympify(name)
             obj = Expr.__new__(cls, name, n)
@@ -646,7 +646,7 @@ class MatrixElement(Expr):
             if isinstance(name, (MatrixBase,)):
                 if n.is_Integer and m.is_Integer:
                     return name[n, m]
-            if isinstance(name, string_types):
+            if isinstance(name, str):
                 name = Symbol(name)
             name = _sympify(name)
             obj = Expr.__new__(cls, name, n, m)
@@ -714,7 +714,7 @@ class MatrixSymbol(MatrixExpr):
 
     def __new__(cls, name, n, m):
         n, m = _sympify(n), _sympify(m)
-        if isinstance(name, string_types):
+        if isinstance(name, str):
             name = Symbol(name)
         obj = Basic.__new__(cls, name, n, m)
         return obj

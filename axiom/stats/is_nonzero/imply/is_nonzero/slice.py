@@ -17,19 +17,18 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import stats, algebra
+    from axiom import algebra, stats
+
     n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(real=True, shape=(n,), random=True)
-
     Eq << apply(Unequal(Probability(x), 0))
 
     t = Symbol.t(domain=Range(1, n))
-
-    Eq << Eq[0].this.lhs.arg.apply(algebra.eq.imply.et.split.blockmatrix, Slice[:t])
+    Eq << Eq[0].this.lhs.arg.apply(algebra.eq.imply.et.split.blockmatrix, slice(0, t))
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[-1])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    
 
 
 if __name__ == '__main__':

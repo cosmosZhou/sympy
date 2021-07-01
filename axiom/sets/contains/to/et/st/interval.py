@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << apply(Contains(x, Interval(a, b)))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.contains.imply.et.split.interval, simplify=False)
 

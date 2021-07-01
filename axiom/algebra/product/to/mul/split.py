@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self, *, cond=None, wrt=None, simplify=True):
     from axiom.algebra.sum.to.add.split import split
-    assert self.is_Product
-    return Equal(self, split(self, cond, wrt=wrt, simplify=simplify), evaluate=False)
+    return Equal(self, split(Product, self, cond, wrt=wrt, simplify=simplify), evaluate=False)
 
 
 @prove

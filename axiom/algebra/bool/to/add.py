@@ -1,9 +1,6 @@
 from util import *
 
 
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
-
-
 @apply
 def apply(self):
     b = self.of(Bool)
@@ -37,6 +34,7 @@ def prove(Eq):
     Eq << Eq[1].subs(Eq[-1])
 
     Eq << Eq[-1].this.find(Or).simplify()
+
 
 if __name__ == '__main__':
     run()

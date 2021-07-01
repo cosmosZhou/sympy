@@ -375,13 +375,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
 
         return ExprWithLimits.simplify(self, deep=deep)
 
-    def limits_swap(self):
-        this = ExprWithLimits.limits_swap(self)
-        if this != self:
-            this.equivalent = self
-            return this
-        return self
-
     def doit(self, **hints):
         function = self.function.doit(**hints)
         limits = []

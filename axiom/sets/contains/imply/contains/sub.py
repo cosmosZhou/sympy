@@ -7,7 +7,7 @@ def apply(given, t):
 
     e, interval = given.args
     t = sympify(t)
-    return Contains(e - t, interval - t)
+    return Contains(e + -t, interval + -t)
 
 
 @prove

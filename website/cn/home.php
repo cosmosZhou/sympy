@@ -50,7 +50,7 @@
 		的推导）， <a href="../axiom.php/discrete/continued_fraction/HK/recurrence">连分数</a>初步理论；
 		以及与矩阵的行列式相关的若干命题。</li>
 	<li><a href="../axiom.php/stats/">stats</a>概率统计学，主要包含常见概率分布（比如二项式分布，正态分布，poisson分布，die分布，Χ<sup>2</sup>分布）相关公式的推导，以及Bayes公式相关的命题；
-		因作者没有找到Bayes定理的证明，把<a href="../axiom.php/stats/bayes/theorem">Bayes公式</a>暂时设定为不可证明的公理。</li>
+		因作者没有找到Bayes定理的证明，把<a href="../axiom.php/stats/probability/to/mul">Bayes公式</a>设定为不可证明的公理。</li>
 	<li><a href="../axiom.php/keras/">keras</a>机器学习，深度学习中的数学模型，主要包括用于研究自然语言的数学模型，
 		<a href="https://arxiv.org/abs/1412.3555v1">GRU</a>，<a
 		href="https://www.mitpressjournals.org/doi/pdf/10.1162/089976600300015015">LSTM</a>，<a

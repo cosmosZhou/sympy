@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << algebra.cond.given.suffice.split.apply(Eq[3], cond=w < 1)
 
-    Eq.open_interval, Eq.ge = Eq[-2].this.apply(algebra.suffice.simplify), Eq[-1].this.apply(algebra.suffice.simplify)
+    Eq.open_interval, Eq.ge = Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.apply(algebra.suffice.flatten)
 
     Eq << (w >= 1).this.apply(algebra.ge.imply.eq.squeeze.interval)
 

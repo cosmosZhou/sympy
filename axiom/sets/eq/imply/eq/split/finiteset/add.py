@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << sets.eq.imply.ne.apply(Eq[0])
 
-    Eq << algebra.cond.cond.imply.cond.apply(Eq[-1], Eq[-2])
+    Eq << algebra.cond.cond.imply.cond.subs.apply(Eq[-1], Eq[-2])
 
 if __name__ == '__main__':
     run()

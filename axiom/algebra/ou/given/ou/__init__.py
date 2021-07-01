@@ -17,7 +17,7 @@ def prove(Eq):
     
     f = Function.f(real=True, given=True)
     
-    Eq << apply((f(y) > 0) | (f(x) > 0) | (f(b) > 0), index=Slice[0:2])
+    Eq << apply((f(y) > 0) | (f(x) > 0) | (f(b) > 0), index=slice(0, 2))
     
     Eq << ~Eq[0]
     

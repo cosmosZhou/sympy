@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     f, *limits = self.of(Cap)
-    return Equal(self, Cap(Piecewise((f, self.limits_cond), (f.etype.universalSet, True)), *((x,) for x, *_ in self.limits)))
+    return Equal(self, Cap(Piecewise((f, self.limits_cond), (f.etype.universalSet, True)), *((x,) for x, *_ in limits)))
 
 
 @prove

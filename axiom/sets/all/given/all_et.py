@@ -13,12 +13,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     A = Symbol.A(etype=dtype.real, given=True)
     e = Symbol.e(real=True)
     f = Function.f(shape=(), integer=True)
     Eq << apply(All[e:A](f(e) > 0))
-    
-    Eq << algebra.all_et.imply.all.apply(Eq[1])
+
+    Eq << algebra.all_et.imply.et.all.apply(Eq[1])
 
 
 if __name__ == '__main__':

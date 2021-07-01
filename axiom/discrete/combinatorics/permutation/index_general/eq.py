@@ -33,17 +33,13 @@ def apply(a_size, xa_equality, j=None):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra, discrete
+    from axiom import discrete, algebra, sets
+
     n = Symbol.n(domain=Range(2, oo), given=True)
-
     x = Symbol.x(shape=(n,), integer=True, given=True)
-
     a = Symbol.a(shape=(n,), integer=True, given=True)
-
     k = Symbol.k(integer=True)
-
     j = Symbol.j(domain=Range(0, n), given=True)
-
     Eq << apply(Equal(abs(a.set_comprehension(k)), n),
                 Equal(x[:n].set_comprehension(k), a.set_comprehension(k)),
                 j=j)
@@ -59,7 +55,6 @@ def prove(Eq):
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
 
     sj = Symbol.s_j(conditionset(k, Equal(a[j], x[k]), Range(0, n)))
-
     Eq.sj_definition = sj.this.definition
 
     Eq << Sum[k:sj](k).this.limits[0][1].definition
@@ -94,7 +89,6 @@ def prove(Eq):
     Eq.inequality_ab = Eq.ou.args[1].copy(plausible=True)
 
     (a, *_), (b, *_) = Eq.inequality_ab.limits
-
     Eq << Eq[1].apply(algebra.eq.imply.eq.abs)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[0])

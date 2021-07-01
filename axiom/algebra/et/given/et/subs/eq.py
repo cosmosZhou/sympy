@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(imply, index=None, reverse=False):
     [*eqs] = imply.of(And)
@@ -22,24 +21,21 @@ def apply(imply, index=None, reverse=False):
     if reverse:
         old, new = new, old
 
-    return imply._subs(old, new) & eq
+    return eq, imply._subs(old, new)
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
     S = Symbol.S(etype=dtype.integer)
     f = Function.f(integer=True)
-
     Eq << apply(NotContains(f(x), S) & Equal(x, y))
 
-    Eq << algebra.et.imply.conds.apply(Eq[1])
+    Eq << Eq[-1].subs(Eq[-2].reversed)
 
-    Eq << Eq[-2].subs(Eq[-1].reversed)
+    Eq <<= Eq[-1] & Eq[1]
 
-    Eq <<= Eq[-1] & Eq[-2]
 
 if __name__ == '__main__':
     run()

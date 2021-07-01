@@ -1,6 +1,6 @@
 import os
 import regex as re
-from sympy.utilities.miscellany import Text
+from sympy.utilities.misc import Text
 from _collections import defaultdict
 
 

@@ -19,10 +19,9 @@ from sympy import (Basic, S, Expr, Symbol, Tuple, And, Add, Eq, lambdify, Or,
                    Lambda, sympify, Dummy, Ne, KroneckerDelta,
                    DiracDelta, Mul, Indexed, MatrixSymbol, Function)
 from sympy.core.sympify import _sympify
-from sympy.sets.sets import ProductSet
-from sympy.sets.finiteset import FiniteSet
+from sympy.sets.sets import ProductSet, FiniteSet
 from sympy.external import import_module
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 import warnings
 from sympy.core.symbol import dtype
 from sympy.matrices.expressions.blockmatrix import BlockMatrix

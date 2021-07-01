@@ -1,9 +1,9 @@
 from sympy.core.backend import (diff, expand, sin, cos, sympify,
                    eye, symbols, ImmutableMatrix as Matrix, MatrixBase)
 from sympy import (trigsimp, solve, Symbol, Dummy)
-from sympy.core.compatibility import string_types, range
+
 from sympy.physics.vector.vector import Vector, _check_vector
-from sympy.utilities.miscellany import translate
+from sympy.utilities.misc import translate
 
 __all__ = ['CoordinateSym', 'ReferenceFrame']
 
@@ -128,7 +128,7 @@ class ReferenceFrame(object):
 
         """
 
-        if not isinstance(name, string_types):
+        if not isinstance(name, str):
             raise TypeError('Need to supply a valid name')
         # The if statements below are for custom printing of basis-vectors for
         # each frame.
@@ -139,7 +139,7 @@ class ReferenceFrame(object):
             if len(indices) != 3:
                 raise ValueError('Supply 3 indices')
             for i in indices:
-                if not isinstance(i, string_types):
+                if not isinstance(i, str):
                     raise TypeError('Indices must be strings')
             self.str_vecs = [(name + '[\'' + indices[0] + '\']'),
                              (name + '[\'' + indices[1] + '\']'),
@@ -170,7 +170,7 @@ class ReferenceFrame(object):
             if len(latexs) != 3:
                 raise ValueError('Supply 3 indices')
             for i in latexs:
-                if not isinstance(i, string_types):
+                if not isinstance(i, str):
                     raise TypeError('Latex entries must be strings')
             self.latex_vecs = latexs
         self.name = name
@@ -194,7 +194,7 @@ class ReferenceFrame(object):
             if len(variables) != 3:
                 raise ValueError('Supply 3 variable names')
             for i in variables:
-                if not isinstance(i, string_types):
+                if not isinstance(i, str):
                     raise TypeError('Variable names must be strings')
         else:
             variables = [name + '_x', name + '_y', name + '_z']
@@ -211,7 +211,7 @@ class ReferenceFrame(object):
         If the index is a number, returns the coordinate variable correspon-
         -ding to that index.
         """
-        if not isinstance(ind, string_types):
+        if not isinstance(ind, str):
             if ind < 3:
                 return self.varlist[ind]
             else:

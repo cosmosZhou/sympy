@@ -7,7 +7,7 @@ from sympy.polys import cancel, ComputationFailed, parallel_poly_from_expr, redu
 from sympy.polys.monomials import Monomial, monomial_div
 from sympy.polys.polyerrors import DomainError, PolificationFailed,\
     PolynomialError
-from sympy.utilities.miscellany import debug
+from sympy.utilities.misc import debug
 
 def ratsimp(expr):
     """

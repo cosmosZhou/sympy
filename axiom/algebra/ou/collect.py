@@ -18,7 +18,7 @@ def prove(Eq):
     g = Function.g(real=True)
     Eq << apply(Unequal(x, y) | Equal(f(x), g(y)) & (y > 0) | Equal(h(x), g(y)) & (y > 0), cond=y > 0)
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.ou.imply.ou.collect, cond=y > 0)
     Eq << Eq[-1].this.lhs.apply(algebra.ou.given.ou.collect, cond=y > 0)

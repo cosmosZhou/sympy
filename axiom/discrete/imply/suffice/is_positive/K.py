@@ -14,12 +14,12 @@ def apply(x, i=None):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True, shape=(oo,))
     n = Symbol.n(integer=True, positive=True, given=False)
-
     Eq << apply(x[:n])
 
-    Eq.initial0 = Eq[-1].subs(n, 1)
+    Eq.initial0 = Eq[0].subs(n, 1)
 
     Eq << Eq.initial0.this.lhs.defun()
 
@@ -33,7 +33,7 @@ def prove(Eq):
 
     Eq.hypothesis = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.hypothesis.this.lhs.apply(algebra.all.given.all.limits.relaxed, Range(1, n + 2))
+    Eq << Eq.hypothesis.this.lhs.apply(algebra.all.given.all.limits.relax, Range(1, n + 2))
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
 
@@ -41,13 +41,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(And).apply(algebra.is_positive.is_positive.imply.is_positive)
 
-    Eq << Eq[0].this.lhs.apply(algebra.all.given.all.limits.relaxed, Range(1, n + 2))
+    Eq << Eq[0].this.lhs.apply(algebra.all.given.all.limits.relax, Range(1, n + 2))
 
     Eq <<= Eq[-1] & Eq[-2]
 
     Eq << Eq[-1].this.find(And).apply(algebra.is_positive.is_positive.imply.is_positive.add)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0] & Eq.hypothesis, Eq.induct, plausible=True)
 
     Eq << algebra.cond.cond.suffice.imply.cond.induct.apply(Eq.initial0, Eq.initial1, Eq[-1], n=n, start=1)
 

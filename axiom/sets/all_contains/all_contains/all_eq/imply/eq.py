@@ -31,16 +31,15 @@ def analyze(*given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
     A = Symbol.A(etype=dtype.integer * n)
     a = Symbol.a(integer=True, shape=(n,))
     B = Symbol.B(etype=dtype.integer * m)
     b = Symbol.b(integer=True, shape=(m,))
-
     f = Function.f(integer=True, shape=(m,))
     g = Function.g(integer=True, shape=(n,))
-
     Eq << apply(All[a:A](Contains(f(a), B)), All[b:B](Contains(g(b), A)),
                 All[a:A](Equal(a, g(f(a)))))
 

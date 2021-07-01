@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[1]
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
 
 if __name__ == '__main__':

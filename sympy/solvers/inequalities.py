@@ -5,8 +5,7 @@ from sympy.core.compatibility import iterable
 from sympy.core.exprtools import factor_terms
 from sympy.core.relational import Relational, Eq, Ge, Lt
 from sympy.sets import Interval
-from sympy.sets.sets import Union, EmptySet, Intersection
-from sympy.sets.finiteset import FiniteSet
+from sympy.sets.sets import Union, EmptySet, Intersection, FiniteSet
 from sympy.core.singleton import S
 from sympy.core.function import expand_mul
 
@@ -15,7 +14,7 @@ from sympy.logic import And
 from sympy.polys import Poly, PolynomialError, parallel_poly_from_expr
 from sympy.polys.polyutils import _nsort
 from sympy.utilities.iterables import sift
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 from sympy.sets.fancysets import Reals
 
 def solve_poly_inequality(poly, rel):
@@ -179,7 +178,7 @@ def solve_rational_inequalities(eqs):
 
             for global_interval in global_intervals:
                 for denom_interval in denom_intervals:
-                    global_interval //= denom_interval
+                    global_interval -= denom_interval
 
                 if not global_interval.is_EmptySet:
                     intervals.append(global_interval)
@@ -272,9 +271,8 @@ def reduce_rational_inequalities(exprs, gen, relational=True):
 
     if eqs:
         solution &= solve_rational_inequalities(eqs)
-        exclude = solve_rational_inequalities([[((d, d.one), '==')
-            for i in eqs for ((n, d), _) in i if d.has(gen)]])
-        solution //= exclude
+        exclude = solve_rational_inequalities([[((d, d.one), '==') for i in eqs for ((n, d), _) in i if d.has(gen)]])
+        solution -= exclude
 
     if not exact and solution:
         solution = solution.evalf()

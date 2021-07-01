@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.cond.given.et.all, cond=abs(S) >= 2)
 
-    Eq.lt, Eq.ge = algebra.et.given.conds.apply(Eq[-1])
+    Eq.lt, Eq.ge = algebra.et.given.et.apply(Eq[-1])
 
     Eq << algebra.imply.all.limits_assert.apply(Eq.lt.limits)
 

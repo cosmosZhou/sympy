@@ -7,7 +7,7 @@ from util import *
 def apply(complement, evaluate=False):
     A, BC = complement.of(Complement)
     B, C = BC.of(Complement)
-    return Equal(complement, Union(A // B, A & B & C, evaluate=evaluate))
+    return Equal(complement, Union(A - B, A & B & C, evaluate=evaluate))
 
 
 @prove
@@ -17,9 +17,9 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     C = Symbol.C(etype=dtype.integer)
 
-    Eq << apply(A // (B // C))
+    Eq << apply(A - (B - C))
 
-    D = Symbol.D(A // B)
+    D = Symbol.D(A - B)
     I = Symbol.I(A & B)
     Eq << Equal(A, D | I, plausible=True)
 

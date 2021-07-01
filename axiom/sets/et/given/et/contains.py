@@ -1,7 +1,6 @@
 from util import *
 
 
-
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
 @apply
 def apply(given):
@@ -17,27 +16,25 @@ def apply(given):
     if aset != a.set:
         B, aset = aset, B
 
-    return Equal(A // aset, B // aset) & Contains(a, A)
+    return Equal(A // aset, B // aset), Contains(a, A)
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     a = Symbol.a(integer=True)
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
-
     Eq << apply(Contains(a, A) & Equal(B | a.set, A))
 
-    Eq << Eq[1].apply(sets.contains.eq.imply.eq)
+    Eq << sets.contains.eq.imply.eq.apply(Eq[-1], Eq[-2])
 
     Eq << Eq[-1].reversed
 
-    Eq << algebra.et.imply.conds.apply(Eq[1])
+    
 
-    Eq << algebra.et.given.conds.apply(Eq[0])
-
-
+    Eq << algebra.et.given.et.apply(Eq[0])
 
 
 if __name__ == '__main__':

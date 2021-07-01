@@ -11,7 +11,7 @@ system has common roots. That is when the resultant is equal to zero.
 
 from sympy import IndexedBase, Matrix, Mul, Poly
 from sympy import rem, prod, degree_list, diag
-from sympy.core.compatibility import range
+
 from sympy.polys.monomials import monomial_deg, itermonomials
 from sympy.polys.orderings import monomial_key
 from sympy.polys.polytools import poly_from_expr, total_degree

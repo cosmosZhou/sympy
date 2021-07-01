@@ -32,15 +32,15 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-
     Eq << apply(All[i:n](Unequal(x[n], x[i]) & All[j:i](Unequal(x[i], x[j]))))
 
-    Eq << algebra.all_et.imply.all.apply(Eq[0])
+    Eq << algebra.all_et.imply.et.all.apply(Eq[0])
 
     Eq << sets.all_ne.all_ne.imply.all_ne.apply(Eq[-1], Eq[-2])
 

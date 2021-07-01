@@ -17,20 +17,17 @@ def apply(given, d):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     x = Symbol.x(real=True)
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
-
     d = Symbol.d(real=True, positive=True)
-
     Eq << apply(Contains(x, Interval(a, b, right_open=True)), d)
 
     Eq << sets.contains.imply.et.split.interval.apply(Eq[0])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
-
-    Eq <<= Eq[-1] * d, Eq[-2] * d
+    Eq <<= Eq[-2] * d, Eq[-1] * d
 
     Eq << sets.ge.lt.imply.contains.interval.apply(Eq[-2], Eq[-1])
 

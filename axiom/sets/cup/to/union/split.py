@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(self, *, cond, wrt=None, simplify=True):
     from axiom.algebra.sum.to.add.split import split
-    assert self.is_Cup
-    return Equal(self, split(self, cond, wrt=wrt, simplify=simplify))
+    return Equal(self, split(Cup, self, cond, wrt=wrt, simplify=simplify))
 
 
 @prove

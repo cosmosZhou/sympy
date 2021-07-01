@@ -8,9 +8,9 @@ def apply(given):
     assert S == _S and S.is_set
     dtype = S.etype
 
-    assert _n == n and z == 0   
-     
-    assert {*condition0.of(Equal)} == {i, j}    
+    assert _n == n and z == 0
+
+    assert {*condition0.of(Equal)} == {i, j}
     assert {*conditionj.of(Equal)} == {i, 0}
     assert conditioni
 
@@ -24,20 +24,16 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     n = Symbol.n(domain=Range(2, oo))
     S = Symbol.S(etype=dtype.integer * n)
-
     x = Symbol.x(**S.element_symbol().type.dict)
-
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-
     given = All(Contains(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S), (j, 1, n), (x, S))
-
     Eq << apply(given)
 
     w = Eq[0].lhs.base
-
     Eq << discrete.combinatorics.permutation.adjacent.swap1.helper.apply(x, w[0])
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i, 0, n), simplify=False)
@@ -54,7 +50,7 @@ def prove(Eq):
 
     Eq.given = Eq.given.subs(Eq[-1])
 
-    Eq << Eq.given.limits_swap()
+    Eq << algebra.all.imply.all.limits.swap.apply(Eq.given)
 
     Eq << All[x:S](Eq[-1].function.subs(j, 0), plausible=True)
 
@@ -62,7 +58,7 @@ def prove(Eq):
 
     Eq << Eq[-1].simplify()
 
-    Eq << algebra.all.all.imply.all_et.limits_intersect.apply(Eq[-2], Eq[-3])
+    Eq << algebra.all.all.imply.all_et.apply(Eq[-2], Eq[-3])
 
     Eq << discrete.combinatorics.permutation.adjacent.swap2.contains.apply(Eq[-1])
 

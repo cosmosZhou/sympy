@@ -11,8 +11,7 @@ from inspect import isfunction
 
 from sympy.assumptions.refine import refine
 from sympy.core.basic import Atom, Basic
-from sympy.core.compatibility import (
-    Iterable, as_int, is_sequence, range, reduce)
+from sympy.core.compatibility import (Iterable, as_int, is_sequence, reduce)
 from sympy.core.decorators import call_highest_priority
 from sympy.core.expr import Expr
 from sympy.core.function import count_ops
@@ -23,7 +22,7 @@ from sympy.functions import Abs
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 from sympy.utilities.iterables import flatten
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 
 
 class MatrixError(Exception):
@@ -770,7 +769,7 @@ class MatrixSpecial(MatrixRequired):
         keyword.
 
         >>> from sympy.matrices import ImmutableMatrix
-        >>> from sympy.utilities.miscellany import func_name
+        >>> from sympy.utilities.misc import func_name
         >>> func_name(Matrix.diag(1, cls=ImmutableMatrix))
         'ImmutableDenseMatrix'
 

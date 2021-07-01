@@ -1,7 +1,7 @@
 import copy
 
 from sympy.core.function import expand_mul
-from sympy.functions.elementary.extremum import Min, sqrt
+from sympy.functions.elementary.miscellaneous import Min, sqrt
 
 from .common import NonSquareMatrixError, NonPositiveDefiniteMatrixError
 from .utilities import _get_intermediate_simp, _iszero

@@ -1,4 +1,4 @@
-from sympy.core.compatibility import range
+
 from sympy.core.mul import Mul
 from sympy.core.singleton import S
 from sympy.concrete.expr_with_intlimits import ExprWithIntLimits

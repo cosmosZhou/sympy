@@ -21,11 +21,11 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=x >= 0)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq << Eq[1].apply(algebra.cond.imply.et.ou, cond=x >= 0)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
     Eq << algebra.ou.imply.ou.invert.apply(Eq[-2])
 
@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << Eq[0].apply(algebra.cond.imply.et.ou, cond=x > 0)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
     Eq << algebra.ou.imply.ou.invert.apply(Eq[-2])
 

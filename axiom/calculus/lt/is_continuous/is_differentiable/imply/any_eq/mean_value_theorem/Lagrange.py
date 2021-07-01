@@ -59,6 +59,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Limit).apply(calculus.limit.to.mul)
 
+    Eq <<= Eq[1] & Eq[-1]
+
+    Eq <<= Eq[-1].this.function.apply(algebra.et.given.et.subs.eq)
+
+    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << Eq[-1].this.function.simplify()
+
     Eq << Eq[-1].this.function.rhs.apply(algebra.mul.distribute)
 
     Eq.is_differentiable = Eq[2]._subs(f, g).copy(plausible=True)

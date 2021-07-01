@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(Any[i:n]((f(i) > 0) | (h(i) > 0)))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(algebra.any_ou.imply.ou.any)
 

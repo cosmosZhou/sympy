@@ -21,8 +21,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Greater) + 1
 
-    Eq << Eq[-1].this.function.apply(sets.et.given.contains.st.le_gt)
-    
+    Eq << Eq[-1].this.function.apply(sets.gt.le.given.contains)
+
     Eq << sets.imply.any_contains.real.apply(x, n)
 
 

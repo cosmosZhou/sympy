@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.apply(discrete.difference.split, Slice[:1])
+    Eq << Eq.induct.this.lhs.apply(discrete.difference.split, slice(0, 1))
 
     Eq << Eq[-1].this.lhs.expr.doit()
 
@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << Eq.split.subs(Eq[-1])
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n)
 

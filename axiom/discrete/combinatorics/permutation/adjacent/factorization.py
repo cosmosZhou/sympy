@@ -61,7 +61,7 @@ def prove(Eq):
 
     Eq << Eq.limits_assertion.this.function.apply(sets.eq.imply.et.split.finiteset)
 
-    Eq << algebra.all_et.imply.all.apply(Eq[-1])
+    Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 
     Eq << Eq[-2].this.function.apply(sets.contains.imply.eq.kroneckerDelta.zero).reversed
 
@@ -69,7 +69,7 @@ def prove(Eq):
 
     Eq.induct = Eq.hypothesis.subs(n, n + 1)
 
-    Eq << Eq.induct.function.function.rhs.args[1].this.split(Slice[-1:])
+    Eq << Eq.induct.function.function.rhs.args[1].this.split(slice(-1))
 
     Eq << discrete.matrix.elementary.swap.concatenate_product.apply(n, n, b)
 
@@ -77,7 +77,7 @@ def prove(Eq):
 
     Eq << Eq.induct.subs(Eq[-1])
 
-    Eq << Eq[-1].this.function.function.rhs.args[0].split(Slice[-1:])
+    Eq << Eq[-1].this.function.function.rhs.args[0].split(slice(-1))
 
     Eq << MatMul(*Eq[-1].function.function.rhs.args[:2]).this.expand()
 
@@ -133,7 +133,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(algebra.any.ou.imply.cond, simplify=None)
 
-    Eq << Eq.p_quote_definition.lhs.this.split(Slice[-1:])
+    Eq << Eq.p_quote_definition.lhs.this.split(slice(-1))
 
     Eq << algebra.cond.all_any.imply.all_any_et.apply(Eq[-1], Eq[-2])
 
@@ -145,7 +145,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.function.apply(algebra.eq.eq.imply.eq.subs, swap=True)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq.hypothesis, Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 

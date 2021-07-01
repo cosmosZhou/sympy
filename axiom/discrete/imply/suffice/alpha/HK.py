@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << algebra.suffice.given.suffice.et.apply(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.multiply.is_nonzero.eq)
+    Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.mul.is_nonzero.eq)
 
     Eq << Eq[-1].this.rhs.lhs.ratsimp()
 
@@ -101,7 +101,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Pow, Add).expand()
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 

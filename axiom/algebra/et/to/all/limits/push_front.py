@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << apply(And(All[i:a:n](x[i] > 0), x[a - 1] > 0, x[a - 2] > 0))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.all.given.et, cond={a - 2}), Eq[-1].this.rhs.apply(algebra.all.imply.et.split, cond={a - 2})
 

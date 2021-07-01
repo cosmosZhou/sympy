@@ -15,6 +15,7 @@ def apply(n, k=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(integer=True, positive=True, given=True)
     k = Symbol.k(domain=Range(1, n + 1), given=True)
     Eq << apply(n, k=k)
@@ -23,16 +24,14 @@ def prove(Eq):
 
     i = Symbol.i(integer=True)
     x, (_, k), *_ = Eq[-1].variable.args
-
     a = Symbol.a(Lamda[i:k](Piecewise((Range(k - 1, n), Equal(i, k - 1)), (i.set, True))))
-
     Eq << algebra.any.given.cond.subs.apply(Eq[-1], x[:k], a)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1], 1)
 
     Eq << Eq[-2].this.find(Indexed).definition
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.find(Indexed).definition
 

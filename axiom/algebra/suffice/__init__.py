@@ -6,4 +6,7 @@ from . import contraposition
 from . import suffice
 from . import given
 
-from . import simplify
+from . import flatten
+
+from . import fold
+from . import swap

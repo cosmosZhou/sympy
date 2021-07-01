@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << Eq.induct.subs(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.split(Slice[-1:])
+    Eq << Eq[-1].this.lhs.split(slice(-1))
 
     Eq << Eq[-1].this.find(Sum)().find(Add).simplify()
 
@@ -37,15 +37,15 @@ def prove(Eq):
 
     Eq.deduct = (Eq[-1] - Eq[-1].lhs.args[0]).subs(Eq[0])
 
-    Eq << Eq.deduct.find(Product).this.split(Slice[-1:])
+    Eq << Eq.deduct.find(Product).this.split(slice(-1))
 
-    Eq << Eq.deduct.find(Mul, Sum).this.split(Slice[-1:])
+    Eq << Eq.deduct.find(Mul, Sum).this.split(slice(-1))
 
     Eq << Eq.deduct.rhs.this.subs(Eq[-1], Eq[-2])
 
     Eq << Eq[-1].this.rhs.expand()
 
-    Eq << algebra.et.given.cond.transit.apply(Eq.deduct & Eq[-1])
+    Eq << algebra.et.given.et.transit.apply(Eq.deduct & Eq[-1])
 
     Eq.deduction = Eq[-1].reversed
 
@@ -61,7 +61,7 @@ def prove(Eq):
     #return Lamda(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
     Eq << (D @ column_transformation(*D.limits)).this.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.find(Sum).split(Slice[-1:])
+    Eq << Eq[-1].this.find(Sum).split(slice(-1))
 
     Eq.split = Eq[-1].this.find(Add, Lamda)().find(Mul, KroneckerDelta).simplify()
 
@@ -105,15 +105,19 @@ def prove(Eq):
     k = Eq[-1].find(Product).variable
     Eq << Product[k:n](Eq[-1].find(Product).function).this.split({i})
 
-    Eq << Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
+    Eq.det_lamda = Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
 
     Eq << Eq.column_transformation.apply(discrete.eq.imply.eq.det)
 
-    Eq << Eq[-1].subs(Eq[-2]).forall((i,))
+    Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul)
 
-    Eq << algebra.et.given.cond.subs.all_eq.apply(Eq.deduction & Eq[-1])
+    Eq << Eq[-1].this.lhs.args[0].doit()
 
-    Eq << Eq[0].induct(reverse=True)
+    Eq << Eq[-1].subs(Eq.det_lamda).forall((i,))
+
+    Eq << algebra.et.given.et.subs.all_eq.apply(Eq.deduction & Eq[-1])
+
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

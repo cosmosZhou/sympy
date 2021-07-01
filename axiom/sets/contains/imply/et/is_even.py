@@ -9,19 +9,19 @@ def apply(given):
     a = 2 * a - 1
     b = 2 * b
 # i ∈ [d + j; n) & j ∈ [a; -d + n)
-    return And(Equal(n % 2, 0), Contains(n, Range(a, b + 1)))
+    return Equal(n % 2, 0), Contains(n, Range(a, b + 1))
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     a = Symbol.a(integer=True)
     b = Symbol.b(integer=True)
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
-
     Eq << apply(Contains(n, imageset(n, 2 * n, Range((a + 1) // 2, b // 2 + 1))))
 
     S = Symbol.S(Eq[0].rhs)
@@ -39,11 +39,9 @@ def prove(Eq):
 
     Eq << sets.contains.imply.et.split.range.apply(Eq[-1], right_open=False)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.ge.ge.imply.ge.transit.apply(Eq[-2], algebra.imply.ge.floor.apply(a + 1, 2))
 
-    Eq << algebra.ge.ge.imply.ge.transit.apply(Eq[-1], algebra.imply.ge.floor.apply(a + 1, 2))
-
-    Eq << algebra.le.le.imply.le.transit.apply(Eq[-3], algebra.imply.le.floor.apply(b, 2))
+    Eq << algebra.le.le.imply.le.transit.apply(Eq[-2], algebra.imply.le.floor.apply(b, 2))
 
     Eq << sets.ge.le.imply.contains.range.apply(Eq[-2], Eq[-1])
 
@@ -57,7 +55,7 @@ def prove(Eq):
 
     Eq << Eq[-1] % 2
 
-    Eq << algebra.et.given.conds.apply(Eq[1])
+    
 
 
 if __name__ == '__main__':

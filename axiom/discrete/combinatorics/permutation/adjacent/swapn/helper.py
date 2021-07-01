@@ -1,8 +1,6 @@
 from util import *
 
 
-
-
 @apply
 def apply(x, d, w=None):
     n = x.shape[0]
@@ -57,7 +55,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[1])
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq.hypothesis, Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=m, start=1)
 

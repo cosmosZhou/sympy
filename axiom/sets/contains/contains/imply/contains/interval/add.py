@@ -25,11 +25,12 @@ def prove(Eq):
     x1 = Symbol.x1(real=True)
     Eq << apply(Contains(x0, Interval(a, b, left_open=True)), Contains(x1, Interval(c, d, left_open=True)))
 
-    Eq << sets.contains.imply.conds.split.interval.apply(Eq[0])
+    Eq << sets.contains.imply.et.split.interval.apply(Eq[0])
 
-    Eq << sets.contains.imply.conds.split.interval.apply(Eq[1])
+    Eq << sets.contains.imply.et.split.interval.apply(Eq[1])
 
     Eq <<= Eq[-2] + Eq[-4], Eq[-1] + Eq[-3]
+
     Eq << sets.gt.le.imply.contains.interval.apply(Eq[-2], Eq[-1])
 
 

@@ -2,9 +2,9 @@ from util import *
 
 
 @apply
-def apply(given, ε=None, δ=None):
+def apply(given, epsilone=None, delta=None):
     from axiom.calculus.eq.to.any_all.limit_definition import any_all
-    return any_all(given, ε, δ)
+    return any_all(given, epsilone, delta)
 
 
 @prove

@@ -41,7 +41,7 @@ def prove(Eq):
 
     i_domain = Range(0, n)
 
-    Eq << apply(All(Equal(x[i] & x[j], x[i].etype.emptySet), (j, i_domain // {i})))
+    Eq << apply(All(Equal(x[i] & x[j], x[i].etype.emptySet), (j, i_domain - {i})))
 
     Eq.initial = Eq[-1].subs(n, 2)
 
@@ -73,7 +73,7 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 

@@ -209,7 +209,7 @@ class Eq:
     
         infix = str(rhs)
             
-        if isinstance(rhs, (Boolean, Inference)):
+        if isinstance(rhs, Inference):
             index = self.add_to_list(rhs, index)
             if index != -1:
                 if isinstance(index, int):
@@ -288,17 +288,17 @@ class Eq:
                         
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
-                            rhs_equivalent, *_ = rhs_equivalent
+                            [rhs_equivalent] = rhs_equivalent
                                         
                             if lhs != rhs_equivalent or rhs.given is not None:
                                 rhs_plausibles, rhs_is_equivalent = rhs_equivalent.plausibles_set()
                                 if len(rhs_plausibles) == 1:
-                                    rhs_plausible, *_ = rhs_plausibles
+                                    [rhs_plausible] = rhs_plausibles
                                     if rhs_plausible is not lhs:
                                         if rhs_is_equivalent:
                                             lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set()
                                             if len(lhs_plausibles) == 1:
-                                                lhs_plausible, *_ = lhs_plausibles
+                                                [lhs_plausible] = lhs_plausibles
                                                 if lhs_is_equivalent:
                                                     lhs_plausible.equivalent = rhs_plausible
                                                 else:
@@ -312,18 +312,50 @@ class Eq:
                                                 
                                                 lhs_plausibles = [*lhs_plausibles]
                                                 if len(lhs_plausibles) == 1:
-                                                    lhs_plausible, *_ = lhs_plausibles
+                                                    [lhs_plausible] = lhs_plausibles
                                                     lhs_plausible.given = rhs_plausible
                                                 else: 
-                                                    rhs_plausible.imply = lhs_plausibles                                            
+                                                    rhs_plausible.imply = lhs_plausibles
+                                            else:
+                                                lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set(clue='imply')
+                                                assert not lhs_is_equivalent                                                
+                                                if len(lhs_plausibles) == 1:                                                    
+                                                    operations = []
+                                                    
+                                                    cond = lhs
+                                                    
+                                                    clue = cond.clue
+                                                    while clue:
+                                                        if clue == 'equivalent':
+                                                            imply = cond.equivalent                                                                                                                     
+                                                        else:
+                                                            assert clue == 'imply'
+                                                            imply = cond.imply
+                                                            clue = 'given'
+
+                                                        operations.append((imply, clue))
+                                                        cond = imply
+                                                                                                                    
+                                                        clue = cond.clue
+                                                    
+                                                    operations.reverse()
+                                                    
+                                                    target = rhs
+                                                    while operations:
+                                                        imply, clue = operations.pop()
+                                                        if imply.clue is not None:                                                                                                                
+                                                            setattr(imply, imply.clue, None)
+                                                        setattr(imply, clue, target)
+                                                        target = imply
+                                                        
                                 else:
                                     plausibles_set, is_equivalent = lhs.plausibles_set()
                                     if len(plausibles_set) == 1:
-                                        lhs_plausible, *_ = plausibles_set
+                                        [lhs_plausible] = plausibles_set
                                         if is_equivalent: 
                                             if rhs_is_equivalent:
                                                 rhs_plausibles.discard(lhs_plausible)
-                                                lhs_plausible.equivalent = [*rhs_plausibles]                                                
+                                                lhs_plausible.equivalent = [*rhs_plausibles]
                                             else: 
                                                 assert lhs_plausible not in rhs_plausibles, 'cyclic proof detected'
                                                 lhs_plausible.given = [*rhs_plausibles]
@@ -332,16 +364,16 @@ class Eq:
                         else:
                             rhs_plausibles, rhs_is_equivalent = rhs.plausibles_set()
                             if len(rhs_plausibles) == 1:
-                                rhs_plausible, *_ = rhs_plausibles
+                                [rhs_plausible] = rhs_plausibles
                                 if not lhs_is_plausible:
                                     lhs_equivalent = equivalent_ancestor(lhs)
                                     if len(lhs_equivalent) == 1:
-                                        lhs_equivalent, *_ = lhs_equivalent
+                                        [lhs_equivalent] = lhs_equivalent
                                         lhs_equivalent.given = rhs_plausible
                             else: 
                                 lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set()
                                 if len(lhs_plausibles) == 1:
-                                    lhs_plausible, *_ = lhs_plausibles
+                                    [lhs_plausible] = lhs_plausibles
                                     if rhs_is_equivalent and lhs_is_equivalent:
                                         ...
                                     else:
@@ -537,7 +569,7 @@ def analyze_results_from_run(lines, latex=True):
         return sql[:-1]
     
 
-from sympy.utilities.miscellany import Text
+from sympy.utilities.misc import Text
 
 
 def from_axiom_import(py, section, eqs):
@@ -583,14 +615,14 @@ def _prove(func, debug=True, **_):
             
         ret = RetCode.plausible if eqs.plausibles_dict else RetCode.proved
         
-    except AttributeError as e: 
-        traceback.print_exc()
+    except AttributeError as e:
+        messages = source_error()
         
         m = re.match("^module 'sympy(?:\.\w+)*\.(algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)*' has no attribute '(\w+)'$", str(e))
         if m: 
             import_axiom = False
             if m[2] == 'func':
-                * _, statement = source_error()
+                * _, statement = messages
                 statement = statement.strip()
                 if statement == 'if not isinstance(self, cls.func):':
                     ...
@@ -606,16 +638,15 @@ def _prove(func, debug=True, **_):
         if m:
             t = m[1]
             if t == 'function':
-                * _, statement = source_error()            
+                * _, statement = messages            
                 statement = statement.strip()
                 m = re.search('(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+', statement)
-                assert m
-                section, *_ = m[0].split('.')
-                return from_axiom_import(py, section, eqs)
+                if m:
+                    section, *_ = m[0].split('.')
+                    return from_axiom_import(py, section, eqs)
             
-            if t[0].isupper():
-                messages = source_error()
-                if detect_error_in_invoke(py, e, messages) or detect_error_in_apply(py, e, messages):
+            elif t[0].isupper():
+                if detect_error_in_invoke(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages):
                     ...
 
         if str(e) == "'NoneType' object has no attribute 'definition_set'":
@@ -635,17 +666,19 @@ def _prove(func, debug=True, **_):
             kwargs['apply'] = True
             kwargs['line'] = __line__
             kwargs['code'] = code
-            kwargs['error'] = str(e)
-            kwargs['type'] = re.match(r"<class '(\w+)'>", str(type(e)))[1]                
+            kwargs.update(get_error_info(e))                
             
             print(json_encode(kwargs))
-
+            
+        if detect_error_in_prove(py, e, messages) or detect_error_in_sympy(py, e, messages):
+            ...
+            
         print(website)
         ret = RetCode.failed
     except Exception as e: 
         messages = source_error()       
         
-        if detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_imply(py, e, messages): 
+        if detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_imply(py, e, messages) or detect_error_in_axiom(py, e, messages) or detect_error_in_sympy(py, e, messages): 
             ...
             
         print(website)
@@ -664,7 +697,10 @@ def skips_in_apply(py):
                 skips += 1
     return skips
     
-
+def get_error_info(e):
+    return {'error': str(e), 
+            'type' : re.match(r"<class '([.\w]+)'>", str(type(e)))[1]}                
+    
 def detect_error_in_prove(py, e, messages):
     for i, line in enumerate(messages):
         m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in prove', line)
@@ -702,8 +738,7 @@ def detect_error_in_prove(py, e, messages):
             kwargs['prove'] = True
             kwargs['line'] = __line__
             kwargs['code'] = code
-            kwargs['error'] = str(e)
-            kwargs['type'] = re.match(r"<class '(\w+)'>", str(type(e)))[1]                
+            kwargs.update(get_error_info(e))
             
             print(json_encode(kwargs))
             return True            
@@ -724,8 +759,7 @@ def detect_error_in_apply(py, e, messages, index=-3):
             kwargs['apply'] = True
             kwargs['line'] = __line__
             kwargs['code'] = code
-            kwargs['error'] = str(e)
-            kwargs['type'] = re.match(r"<class '(\w+)'>", str(type(e)))[1]
+            kwargs.update(get_error_info(e))
             
             if pyFile != py:
                 m = re.search(r"\baxiom[/\\](.+)\.py", pyFile)
@@ -744,7 +778,7 @@ def detect_error_in_imply(py, e, messages, index=-3):
         m = re.fullmatch(r'File "([^"]+\.py)", line (\d+), in imply', line)
         if m:
             messages = source_error(index)
-            return detect_error_in_prove(py, e, messages)
+            return detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages, index=index - 1)
         
 
 def detect_error_in_invoke(py, e, messages, index=-3):
@@ -754,6 +788,22 @@ def detect_error_in_invoke(py, e, messages, index=-3):
             if m[3] in ('__getattr__', 'invoke', '__call__'):
                 messages = source_error(index)
                 return detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1)
+
+
+def detect_error_in_sympy(py, e, messages, index=-3):
+    for line in messages:
+        m = re.fullmatch(r'File "([^"]+[\\/]sympy[\\/]([^"]+)\.py)", line (\d+), in (\w+)', line)
+        if m:
+            messages = source_error(index)
+            return detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1) or detect_error_in_sympy(py, e, messages, index=index - 1)
+
+
+def detect_error_in_axiom(py, e, messages, index=-3):
+    for line in messages:
+        m = re.fullmatch(r'File "([^"]+[\\/]axiom[\\/]([^"]+)\.py)", line (\d+), in (\w+)', line)
+        if m:
+            messages = source_error(index)
+            return detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1)
 
 
 def unprovable(func):
@@ -987,15 +1037,18 @@ def given(apply, **kwargs):
         
         statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)
         
-        imply, *args = args
-        
-        if is_given: 
-            given = tuple(eq for eq in args if isinstance(eq, (Boolean, Inference)))        
-            assert all(g.plausible is None for g in given)
-        else:
-            given = ()
-            
-        assert imply.is_Boolean
+        i = 0        
+        if isinstance(args[i], Inference):
+            imply, *args = args
+        else: 
+            while isinstance(args[i], Boolean):
+                i += 1
+                if i == len(args):
+                    break
+
+            imply, args = args[:i], args[i:]
+            if len(imply) == 1:
+                [imply] = imply
         
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]: 
@@ -1024,25 +1077,28 @@ def given(apply, **kwargs):
         else: 
             statement = process(statement, dependency)
         
-        for g in given:
-            g.definition_set(dependency)
-        
-        imply.definition_set(dependency)
-        
-        assert not imply.is_Inference
-        imply = Inference(imply, plausible=True)
+        if isinstance(imply, tuple):
+            for g in imply:
+                g.definition_set(dependency)
+
+            imply = tuple(Inference(g, plausible=True) for g in imply) 
+        else:
+            assert not imply.is_Inference
+            imply.definition_set(dependency)
+            imply = Inference(imply, plausible=True)
             
+        statement = add(imply, statement)
+        
         G = topological_sort_depth_first(dependency)
         if G:
             definition = [s.equality_defined() for s in G]
             
-            statement = add((imply,) + given, statement)
             if isinstance(statement, tuple):
-                return definition + [*statement]
-            return definition + [statement]
-            
-        else:
-            return add((imply,) + given, statement)
+                statement = definition + [*statement]
+            else:
+                statement = definition + [statement]
+                
+        return statement
 
     return given
 

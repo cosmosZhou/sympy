@@ -18,16 +18,17 @@ def apply(given, s=None):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     x = Symbol.x(integer=True)
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
-
     Eq << apply(NotContains(x, A | B))
 
     Eq << sets.notcontains.imply.et.split.union.apply(Eq[0], simplify=None)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    
+
 
 if __name__ == '__main__':
     run()

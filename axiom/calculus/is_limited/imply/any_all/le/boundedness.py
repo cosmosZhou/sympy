@@ -2,13 +2,13 @@ from util import *
 
 
 @apply
-def apply(given, δ=None, var=None):
+def apply(given, delta=None, var=None):
     from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
     from axiom.calculus.eq.to.any_all.limit_definition import any_all
     fn, (x, x0, dir) = of_limited(given)
 
     M = fn.generate_var(excludes={x}, var=var, positive=True, real=True)
-    exists = any_all(Equal(given.lhs, S.Zero), M, δ=δ)
+    exists = any_all(Equal(given.lhs, S.Zero), M, delta=delta)
 
     limits = exists.limits + (M,)
     return exists.func(exists.function, *limits)

@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[0].apply(algebra.cond.imply.et.all, cond=Contains(e, S))
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
 
 if __name__ == '__main__':

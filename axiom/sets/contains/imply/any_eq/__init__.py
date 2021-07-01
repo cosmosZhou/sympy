@@ -3,18 +3,18 @@ from util import *
 
 @apply(simplify=False)
 def apply(given, reverse=False, var=None):
-    assert given.is_Contains
+    lhs, rhs = given.of(Contains)
     if var is None:
-        x = given.generate_var(**given.rhs.etype.dict)
+        x = given.generate_var(**rhs.etype.dict)
     else:
         if isinstance(var, str):
-            x = given.generate_var(var=var, **given.rhs.etype.dict)
+            x = given.generate_var(var=var, **rhs.etype.dict)
         else:
             x = var
     
     if reverse:
-        return Any[x:given.rhs](Equal(x, given.lhs))
-    return Any[x:given.rhs](Equal(given.lhs, x))
+        return Any[x:rhs](Equal(x, lhs))
+    return Any[x:rhs](Equal(lhs, x))
 
 
 @prove

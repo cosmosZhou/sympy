@@ -18,7 +18,7 @@ from sympy.core.symbol import Wild, Dummy, symbols, Symbol
 from sympy.core.sympify import sympify
 from sympy.functions.combinatorial.factorials import binomial, factorial, rf
 from sympy.functions.elementary.integers import floor, frac, ceiling
-from sympy.functions.elementary.extremum import Min, Max
+from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.series.limits import Limit
 from sympy.series.order import Order

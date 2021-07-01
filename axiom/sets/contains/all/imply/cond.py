@@ -6,7 +6,7 @@ from util import *
 # => A | B = B
 @apply
 def apply(contains, forall):
-    function, *limits = forall.of(All)    
+    function, *limits = forall.of(All)
     b, A = contains.of(Contains)
 
     index = -1
@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[0]
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
 
 if __name__ == '__main__':

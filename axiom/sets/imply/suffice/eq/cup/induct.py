@@ -11,12 +11,12 @@ def apply(given, limit):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     n = Symbol.n(integer=True, positive=True, given=False)
     k = Symbol.k(integer=True)
     f = Function.f(shape=(), etype=dtype.integer)
     g = Function.g(shape=(), etype=dtype.integer)
-
     Eq << apply(Equal(f(k), g(k)), (k, 0, n))
 
     Eq.initial = Eq[0].subs(n, 1)
@@ -25,11 +25,11 @@ def prove(Eq):
 
     Eq << algebra.suffice.imply.suffice.et.both_sided.apply(Eq[0], cond=Equal(f(n), g(n)))
 
-    Eq << Eq[-1].this.lhs.apply(algebra.et.given.all.absorb.back)
+    Eq << Eq[-1].this.lhs.apply(algebra.cond.all.given.all.push_back)
 
-    Eq << Eq[-1].this.rhs.apply(sets.eq.eq.imply.eq.cup.absorb.back)
+    Eq << Eq[-1].this.rhs.apply(sets.eq.eq.imply.eq.cup.push_back)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=n, start=1)
 

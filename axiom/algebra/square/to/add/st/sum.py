@@ -41,14 +41,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Number * ~Sum).split({n})
 
-    
-
     Eq << Eq[-1].this.rhs.find(Number * ~Sum).simplify()
 
     j = Eq[0].find(Number * ~Sum).variable
     Eq << Eq[-1].this.rhs.find(Indexed * ~Sum).limits_subs(j, i)
 
-    Eq << Eq[0].induct(imply=True, reverse=True)
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

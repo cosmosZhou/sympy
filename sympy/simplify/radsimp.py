@@ -188,25 +188,25 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
     def parse_derivative(deriv):
         # scan derivatives tower in the input expression and return
         # underlying function and maximal differentiation order
-        expr, sym, order = deriv.expr, deriv.variables[0], 1
+        sym, *syms = deriv._variables()
+        expr, order = deriv.expr, 1
 
-        for s in deriv.variables[1:]:
+        for s in syms:
             if s == sym:
                 order += 1
             else:
-                raise NotImplementedError(
-                    'Improve MV Derivative support in collect')
+                raise NotImplementedError('Improve MV Derivative support in collect')
 
         while isinstance(expr, Derivative):
-            s0 = expr.variables[0]
+            s0, *rest = expr._variables()
 
-            for s in expr.variables:
+            for s in rest:
                 if s != s0:
                     raise NotImplementedError(
                         'Improve MV Derivative support in collect')
 
             if s0 == sym:
-                expr, order = expr.expr, order + len(expr.variables)
+                expr, order = expr.expr, order + len(rest) + 1
             else:
                 break
 

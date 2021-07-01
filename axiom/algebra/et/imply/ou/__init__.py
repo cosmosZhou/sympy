@@ -30,9 +30,9 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << algebra.et.imply.conds.apply(Eq[0])
+    Eq << algebra.et.imply.et.apply(Eq[0])
 
-    Eq << algebra.cond.cond.imply.cond.apply(Eq[-1], Eq[-3], invert=True)
+    Eq << algebra.cond.cond.imply.cond.subs.apply(Eq[-1], Eq[-3], invert=True)
 
     Eq <<= Eq[-1] & Eq[-3]
 

@@ -1,6 +1,6 @@
 from sympy.logic.boolalg import Boolean, And, Or
 from sympy.concrete.conditional_boolean import ConditionalBoolean
-from sympy.sets.finiteset import FiniteSet
+from sympy.sets.sets import FiniteSet
 from sympy.concrete.expr_with_limits import ExprWithLimits
 
 
@@ -38,11 +38,6 @@ class Any(ConditionalBoolean):
                         kwargs[clue] = self
                         return self.func(function, *self.limits, **kwargs).simplify()
                     
-                if eq.is_Exists and eq.limits == self.limits: 
-                    if eq.is_given_by(self):
-                        function = self.function.subs(eq.function)
-                        return self.func(function, *self.limits, given=self).simplify()
-                
         return ConditionalBoolean.subs(self, *args, **kwargs)
 
     def delete_independent_variables(self):
@@ -103,13 +98,13 @@ class Any(ConditionalBoolean):
                     t = self.variables.index(x)
                     if not any(limit._has(x) for limit in self.limits[:t]):
                         function = Contains(y, domain)
-                        if function.is_BooleanTrue:
+                        if function:
                             return function
                         limits = self.limits_delete(x)
                         if limits:
                             return self.func(function, *limits)
                         return function
-                    
+
         from sympy import Unequal, Equal
         if self.function.is_Contains: 
             limits_dict = self.limits_dict

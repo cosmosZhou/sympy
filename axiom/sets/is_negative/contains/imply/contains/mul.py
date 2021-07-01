@@ -12,18 +12,19 @@ def apply(is_positive, contains):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     t = Symbol.t(real=True)
     x = Symbol.x(real=True)
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
     Eq << apply(t < 0, Contains(x, Interval(a, b, left_open=True)))
-    
+
     Eq << sets.contains.imply.et.split.interval.apply(Eq[1])
+
     
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
-    
+
     Eq <<= algebra.is_negative.gt.imply.lt.mul.apply(Eq[0], Eq[-2]), algebra.is_negative.le.imply.ge.mul.apply(Eq[0], Eq[-1])
-    
+
     Eq << sets.lt.ge.imply.contains.interval.apply(Eq[-2], Eq[-1])
 
 

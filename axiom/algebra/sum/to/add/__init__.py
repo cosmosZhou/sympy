@@ -11,7 +11,7 @@ def difference_of_domain_defined(domain_defined, _domain_defined, limitsDict):
         if _domain != domain:
             if domain in _domain:
                 if domain_limited != domain:
-                    if _domain // domain & domain_limited:
+                    if _domain - domain & domain_limited:
 # consider the case: 
 # _domain = [0; n)
 # domain = [1; n)           
@@ -74,3 +74,5 @@ if __name__ == '__main__':
 from . import push_front, push_back
 from . import doit
 from . import split
+from . import pop_back
+from . import pop_front

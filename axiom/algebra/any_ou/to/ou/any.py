@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(Any[x:A]((g(x) > 0) | (f(x) > 0)))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.any_ou.imply.ou.any)
 

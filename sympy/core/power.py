@@ -7,7 +7,7 @@ from .expr import Expr
 from .evalf import PrecisionExhausted
 from .function import expand_complex, expand_multinomial, expand_mul
 from .logic import fuzzy_bool, fuzzy_not, fuzzy_and
-from .compatibility import as_int, range
+from .compatibility import as_int
 from .parameters import global_parameters
 from sympy.utilities.iterables import sift
 

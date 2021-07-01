@@ -9,6 +9,7 @@ def apply(x, y, z):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True, given=True)
     y = Symbol.y(real=True, given=True)
     z = Symbol.z(real=True, given=True)
@@ -26,11 +27,11 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=x - y <= 0)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq <<= Eq[-2].apply(algebra.cond.cond.imply.et, swap=True), Eq[-1].apply(algebra.cond.cond.imply.et, invert=True, swap=True)
+    Eq <<= Eq[-2].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, swap=True), Eq[-1].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, invert=True, swap=True)
 
     Eq <<= Eq[-2].this.args[1] + y, Eq[-1].this.args[1] + z
 

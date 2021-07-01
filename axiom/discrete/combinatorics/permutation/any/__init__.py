@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << Contains(a[n - 1], Eq[-1].rhs, plausible=True)
 
-    Eq << Eq[-1].this.rhs.split(Slice[-1:])
+    Eq << Eq[-1].this.rhs.split(slice(-1))
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq[-2].reversed, Eq[-1])
 

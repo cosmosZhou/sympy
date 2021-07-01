@@ -2,8 +2,7 @@ from __future__ import print_function, division
 
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
-from sympy.core.compatibility import (range, integer_types, with_metaclass,
-                                      is_sequence, iterable, ordered)
+from sympy.core.compatibility import (with_metaclass, is_sequence, iterable, ordered)
 from sympy.core.containers import Tuple
 from sympy.core.decorators import call_highest_priority
 from sympy.core.parameters import global_parameters
@@ -284,7 +283,7 @@ class SeqBase(Basic):
             yield self.coeff(pt)
 
     def __getitem__(self, index):
-        if isinstance(index, integer_types):
+        if isinstance(index, int):
             index = self._ith_point(index)
             return self.coeff(index)
         elif isinstance(index, slice):

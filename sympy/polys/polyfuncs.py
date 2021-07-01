@@ -1,7 +1,7 @@
 """High-level polynomials manipulation functions. """
 
 from sympy.core import S, Basic, Add, Mul, symbols
-from sympy.core.compatibility import range
+
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.polys.polyerrors import (
     PolificationFailed, ComputationFailed,

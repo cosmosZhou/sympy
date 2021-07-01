@@ -270,8 +270,9 @@
 				
 				var parent = this.$parent.$parent;
 				
-				parent.left = event.x;
-				parent.top = event.y;				
+				parent.left = event.x + self.getScrollLeft();
+				parent.top = event.y + self.getScrollTop();
+				
 				parent.focusedIndex = this.indexFocused();
 				
 				setTimeout(()=>{

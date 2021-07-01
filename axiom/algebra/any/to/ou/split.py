@@ -4,8 +4,7 @@ from util import *
 @apply(given=None)
 def apply(self, indices, wrt=None, evaluate=False):
     from axiom.algebra.sum.to.add.split import split
-    assert self.is_Any
-    return Equivalent(self, split(self, indices, wrt=wrt), evaluate=evaluate)
+    return Equivalent(self, split(Any, self, indices, wrt=wrt), evaluate=evaluate)
 
 
 @prove
@@ -18,7 +17,7 @@ def prove(Eq):
 
     Eq << apply(Any[x:A](f(x) > 0), B)
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(algebra.any.imply.ou, cond=B)
 

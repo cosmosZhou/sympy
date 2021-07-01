@@ -36,7 +36,7 @@ def prove(Eq):
     Eq << stats.eq_conditioned.imply.is_nonzero.apply(Eq[0])
     Eq.xyz_nonzero, Eq.w_nonzero = algebra.et.imply.conds.apply(Eq[-1])
     Eq << stats.is_nonzero.imply.et.apply(Eq.xyz_nonzero)
-    Eq.y_nonzero, Eq.z_nonzero = algebra.et.imply.cond.apply(Eq[-1], index=Slice[1:3])
+    Eq.y_nonzero, Eq.z_nonzero = algebra.et.imply.cond.apply(Eq[-1], index=slice(1, 3))
     Eq.xy_probability = stats.bayes.corollary.apply(Eq.y_nonzero, var=x | w)
     Eq << stats.is_nonzero.imply.is_nonzero.conditioned.apply(Eq.xyz_nonzero, wrt=w)
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Probability(x | w, y, z), y, z)

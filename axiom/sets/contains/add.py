@@ -18,7 +18,7 @@ def prove(Eq):
     t = Symbol.t(real=True)
     Eq << apply(Contains(x, Interval(a, b)), t)
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.contains.add, t), Eq[-1].this.lhs.apply(sets.contains.given.contains.add, t)
 

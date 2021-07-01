@@ -24,17 +24,16 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import stats, algebra
+    from axiom import stats
+
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
-
     given = Equal(x | y, x)
-
     Eq << apply(given, Unequal(Probability(x, y), 0))
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[1])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    
 
     Eq << stats.eq.is_nonzero.imply.eq.symmetry.apply(Eq[0], Eq[-2])
 

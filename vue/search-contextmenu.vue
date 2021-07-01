@@ -33,7 +33,11 @@
 		computed:{
 			numOfLi(){
 				return this.$el.children.length;
-			}
+			},
+			
+			href(){
+				return this.$parent.href;
+			},
 		},
 		
 		watch: {
@@ -109,27 +113,15 @@
 				}, 100);
 			},
 			
-			clickOpenInNewTab(event){				
-				window.open(this.get_href());
+			clickOpenInNewTab(event){	
+				this.focusedIndex = -1;
+				window.open(this.href);
 			},
 			
-			clickOpenInNewWindow: function(event){				
+			clickOpenInNewWindow(event){				
 //window.open(location.href + theorem, "_blank", "toolbar=yes,top=500,left=500,width=400,height=400");
-				window.open(this.get_href(), "_blank", "toolbar=yes");
-			},
-			
-			get_href: function(){
-				var icon = this.$parent.$children[this.$parent.focusedIndex];
-
-				var theorem = icon.$el.lastChild.textContent.trim();
-				var href = location.href;
-				if (!href.endsWith('/')){
-					href += '/';
-				}
-				
-				console.log("theorem = " + theorem);
-				this.$parent.focusedIndex = -1;
-				return href + theorem;				
+				this.focusedIndex = -1;
+				window.open(this.href, "_blank", "toolbar=yes");
 			},
 			
 			blur(event){
@@ -146,6 +138,7 @@
 					if (this.focusedIndex == this.numOfLi){
 						this.focusedIndex = -1;
 					}
+					event.preventDefault();
 					break;
 					
 				case 'ArrowUp':					
@@ -154,6 +147,7 @@
 					}
 					
 					--this.focusedIndex;
+					event.preventDefault();
 					break;
 				case 'Enter':
 					this.$el.children[this.focusedIndex].click();

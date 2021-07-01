@@ -8,7 +8,7 @@ from util import *
 def apply(complement, evaluate=True):
     union, C = complement.of(Complement)
     union = union.of(Union)
-    return Equal(complement, Union(*(u // C for u in union), evaluate=evaluate))
+    return Equal(complement, Union(*(u - C for u in union), evaluate=evaluate))
 
 
 @prove
@@ -18,10 +18,10 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     C = Symbol.C(etype=dtype.integer)
 
-    Eq << apply((A | B) // C, evaluate=False)
+    Eq << apply((A | B) - C, evaluate=False)
 
-    A = Symbol.A(A // C)
-    B = Symbol.B(B // C)
+    A = Symbol.A(A - C)
+    B = Symbol.B(B - C)
 
     Eq.A_definition = A.this.definition
     Eq.B_definition = B.this.definition

@@ -3,14 +3,14 @@ from __future__ import division, print_function
 import copy
 from collections import defaultdict
 
-from sympy.core.compatibility import Callable, as_int, is_sequence, range
+from sympy.core.compatibility import Callable, as_int, is_sequence
 from sympy.core.containers import Dict
 from sympy.core.expr import Expr
 from sympy.core.singleton import S
 from sympy.functions import Abs
 from sympy.core.power import sqrt
 from sympy.utilities.iterables import uniq
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 
 from .common import a2idx
 from .dense import Matrix

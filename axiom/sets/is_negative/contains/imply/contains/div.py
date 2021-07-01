@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << sets.contains.imply.et.split.interval.apply(Eq[1])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    
 
     Eq <<= algebra.is_negative.gt.imply.lt.div.apply(Eq[0], Eq[-2]), algebra.is_negative.le.imply.ge.div.apply(Eq[0], Eq[-1])
 

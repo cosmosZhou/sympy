@@ -42,21 +42,19 @@ def apply(imply, index=-1, invert=None, reverse=False):
     if reverse:
         old = old.reversed
 
-    return imply._subs(old, new) & given
+    return given, imply._subs(old, new)
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(integer=True)
     S = Symbol.S(etype=dtype.integer)
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
     h = Function.h(shape=(), integer=True)
-
     Eq << apply(Equal(Piecewise((f(x), NotContains(x, S)), (g(x), True)), h(x)) & NotContains(x, S))
-
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
 
     Eq << Equal(Bool(NotContains(x, S)), 1, plausible=True)
 
@@ -70,7 +68,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.piecewise.swap.front)
 
-    Eq <<= Eq[-1] & Eq[3]
+    Eq <<= Eq[-1] & Eq[1]
 
 
 if __name__ == '__main__':

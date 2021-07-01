@@ -57,13 +57,14 @@
 			},
 		},
 		
-		methods: {
+		methods: {			
 			contextmenu(event) {
 				//console.log("contextmenu: function(event)");
 				var self = event.target;				
 				
-				this.left = event.x;
-				this.top = event.y;				
+				this.left = event.x + self.getScrollLeft();
+				this.top = event.y + self.getScrollTop();
+				
 				this.showContextmenu = true;
 				
 				setTimeout(()=>{

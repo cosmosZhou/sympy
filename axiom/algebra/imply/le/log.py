@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(x):    
+def apply(x):
     return log(x) <= x - 1
 
 
@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond=x >= 1)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     x0 = Symbol.x0(domain=Interval(0, 1, left_open=True, right_open=True))
     x1 = Symbol.x1(domain=Interval(1, oo))
@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << calculus.is_positive.imply.lt.monotony.apply(Eq.is_positive)
 
-    Eq << algebra.lt.imply.le.relaxed.apply(Eq[-1])
+    Eq << algebra.lt.imply.le.relax.apply(Eq[-1])
 
     Eq << calculus.is_nonpositive.imply.le.monotony.apply(Eq.is_nonpositive)
 

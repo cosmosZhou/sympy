@@ -7,7 +7,7 @@ from util import *
 @apply
 def apply(a):
     U = a.universalSet
-    return Unequal(U // a.set, a.emptySet)
+    return Unequal(U - a.set, a.emptySet)
 
 
 @prove

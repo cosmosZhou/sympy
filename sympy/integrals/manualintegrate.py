@@ -1161,7 +1161,7 @@ trig_expand_rule = rewriter(
 
 def derivative_rule(integral):
     integrand = integral[0]
-    diff_variables = integrand.variables
+    diff_variables = integrand._variables()
     undifferentiated_function = integrand.expr
     integrand_variables = undifferentiated_function.free_symbols
 

@@ -1,29 +1,32 @@
 from util import *
-from axiom.algebra.cond.cond.imply.cond import process_given_conditions
 
 
 @apply
-def apply(*given, **kwargs):
-    eq, f_eq = process_given_conditions(*given, **kwargs)
-    return And(eq, f_eq.simplify())
+def apply(eq, cond, axiom, *args, swap=False, index=None, **kwargs):    
+    if swap:
+        eq, cond = cond, eq    
+    f_eq = axiom.apply(eq, cond, *args, **kwargs)
+    assert f_eq.given == (eq, cond)
+    
+    if index:
+        eq = cond
+        
+    return eq, f_eq
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    S = Symbol.S(etype=dtype.integer)
+
+    x = Symbol.x(integer=True, given=True)
+    y = Symbol.y(integer=True, given=True)
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-    h = Function.h(shape=(), integer=True)
+    axiom = algebra.ne.cond.imply.cond
+    Eq << apply(Unequal(x, y), Unequal(g(KroneckerDelta(x, y)), f(x, y)), axiom)
 
-    Eq << apply(NotContains(x, S), Equal(Piecewise((f(x), NotContains(x, S)), (g(x), True)), h(x)))
-
-    Eq << algebra.cond.cond.imply.cond.apply(Eq[0], Eq[1])
-
-    Eq <<= Eq[-1] & Eq[0]
+    Eq << algebra.ne.cond.imply.cond.apply(Eq[0], Eq[1])
 
 
 if __name__ == '__main__':
     run()
-

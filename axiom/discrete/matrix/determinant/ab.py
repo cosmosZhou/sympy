@@ -15,6 +15,7 @@ def apply(a, b):
 @prove
 def prove(Eq):
     from axiom import algebra, discrete
+
     n = 5
     a = Symbol.a(shape=(n,), complex=True, zero=False)
     b = Symbol.b(shape=(n,), complex=True, zero=False)
@@ -33,6 +34,7 @@ def prove(Eq):
     Eq << Multiplication(n, n - 1, b[n - 2]) @ Eq[-1]
 
     Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
+    Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul)
 
     Eq << Eq[-1].subs(Eq[1])
 

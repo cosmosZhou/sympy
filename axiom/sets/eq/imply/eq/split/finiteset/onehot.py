@@ -14,15 +14,15 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
-
     Eq << apply(Equal({x, y}, {0, 1}))
 
     Eq << algebra.eq.given.et.split.matrix.apply(Eq[1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     Eq << Contains(x, {x, y}, plausible=True)
 

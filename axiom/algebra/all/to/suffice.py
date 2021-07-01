@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(All[n:Equal(f[n], g[n])](Equal(f[n + 1], g[n + 1])))
 
-    Eq << algebra.equivalent.given.suffice.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.all.imply.suffice)
 

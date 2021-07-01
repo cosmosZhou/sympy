@@ -63,14 +63,13 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True, positive=True)
-
     f = Symbol.f(shape=(oo,), real=True)
     g = Symbol.g(shape=(oo, oo), real=True)
-
     d = Symbol.d(integer=True)
     a = Symbol.a(integer=True)
     Eq << apply(Sum[i:j + d:n, j:a:n - d](f[i] * g[i, j]))
@@ -81,7 +80,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.bool)
 
-    Eq << Eq[-1].this.rhs.limits_swap()
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.swap)
 
 
 if __name__ == '__main__':

@@ -8,17 +8,16 @@ def apply(x, y, W):
 
 @prove
 def prove(Eq):
-    from axiom import algebra, discrete
+    from axiom import discrete, algebra
+
     n = Symbol.n(integer=True)
     x = Symbol.x(shape=(n,), real=True)
     y = Symbol.y(shape=(n,), real=True)
     W = Symbol.W(shape=(n, n), real=True)
-
     Eq << apply(x, y, W)
 
     i = Symbol.i(domain=Range(0, n))
     j = Symbol.j(domain=Range(0, n))
-
     Eq << (x @ W).this.apply(discrete.matmul.to.lamda, var={i, j})
 
     Eq << Eq[-1] @ y
@@ -33,7 +32,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.limits_subs(i, j)
 
-    Eq << Eq[-1].this.rhs.limits_swap()
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.swap)
 
     Eq << Eq.expansion.subs(Eq[-1].reversed)
 

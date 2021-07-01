@@ -1,30 +1,32 @@
 from util import *
 
 
-
 @apply
-def apply(self):
-    for i, eq in enumerate(self.args):
+def apply(self, index=-1):
+    [*args] = self.of(Or)
+    for i, eq in enumerate(args):
         if isinstance(eq, And):
-            args = [*self.args]
             del args[i]
-            this = self.func(*args)
-            return And(*((arg | this).simplify() for arg in eq.args))
+            break
+            
+    this = Or(*args)
+    args = eq.args
+    first = And(*args[:index])
+    second = And(*args[index:])
+    
+    return (first | this).simplify(), (second | this).simplify()
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
     y = Symbol.y(real=True, shape=(k,), given=True)
-
     f = Function.f(shape=(k,), real=True)
     g = Function.g(shape=(k,), real=True)
-
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y))))
 
-    Eq << algebra.et.imply.ou.collect.apply(Eq[1], cond=Equal(f(x), g(y)))
+    Eq <<= Eq[1] & Eq[2]
 
 
 if __name__ == '__main__':

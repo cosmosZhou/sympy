@@ -24,15 +24,15 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.arg.split(Slice[-1:])
+    Eq << Eq.induct.this.lhs.arg.split(slice(-1))
 
     Eq << sets.imply.le.union.apply(*Eq[-1].lhs.arg.args)
 
     Eq << algebra.le.le.imply.le.subs.apply(Eq[-1], Eq[0])
 
-    Eq << Eq.induct.this.rhs.split(Slice[-1:])
+    Eq << Eq.induct.this.rhs.split(slice(-1))
 
-    Eq << Eq.induct.induct(imply=True)
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq[1], Eq[-1], n=n, start=1)
 

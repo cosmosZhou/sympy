@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << apply(((a < b) | (c < d)) & (f(x) < g(y)) & ((x < y) | (c < d)), cond=c < d)
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(algebra.et.imply.et.collect, cond=c < d)
 

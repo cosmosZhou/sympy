@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << apply(Contains(x, A & B), index=0)
 
-    Eq << algebra.equivalent.given.suffice.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.suffice.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(sets.contains.imply.contains.split.intersection)
 

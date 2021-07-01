@@ -9,12 +9,11 @@ def apply(imply, **kwargs):
     if not eq.is_Equal:
         eq, cond = cond, eq
     eq, f_eq = process_given_conditions(eq, cond, **kwargs)
-    return And(eq, f_eq.simplify())
+    return eq, f_eq.simplify()
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
     f = Function.f(shape=(), integer=True)
@@ -25,11 +24,9 @@ def prove(Eq):
 
     Eq << Eq[-1].simplify()
 
-    Eq << algebra.et.imply.conds.apply(Eq[1])
+    Eq << Eq[2].subs(Eq[-1].reversed)
 
-    Eq << Eq[-1].subs(Eq[2].reversed)
-
-    Eq <<= Eq[-1] & Eq[-3]
+    Eq <<= Eq[-1] & Eq[1]
 
 
 if __name__ == '__main__':

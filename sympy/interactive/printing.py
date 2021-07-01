@@ -8,8 +8,8 @@ from io import BytesIO
 
 from sympy import latex as default_latex
 from sympy import preview
-from sympy.core.compatibility import integer_types
-from sympy.utilities.miscellany import debug
+
+from sympy.utilities.misc import debug
 
 
 def _init_python_printing(stringify_func, **settings):
@@ -132,7 +132,7 @@ def _init_ipython_printing(ip, stringify_func, use_latex, euler, forecolor,
             # to use here, than these explicit imports.
             elif isinstance(o, sympy_latex_types):
                 return True
-            elif isinstance(o, (float, integer_types)) and print_builtin:
+            elif isinstance(o, (float, int)) and print_builtin:
                 return True
             return False
         except RuntimeError:
@@ -203,7 +203,7 @@ def _init_ipython_printing(ip, stringify_func, use_latex, euler, forecolor,
         from sympy.tensor.array import NDimArray
 
         printable_types = [Basic, MatrixBase, float, tuple, list, set,
-                frozenset, dict, Vector, Dyadic, NDimArray] + list(integer_types)
+                frozenset, dict, Vector, Dyadic, NDimArray] + list(int)
 
         plaintext_formatter = ip.display_formatter.formatters['text/plain']
 

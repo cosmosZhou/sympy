@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << apply(And((a < b) | (c < d), (f(x) < g(y))))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
 #     Eq << Eq[-2].this.lhs.apply(algebra.et.imply.ou, simplify=False)
 

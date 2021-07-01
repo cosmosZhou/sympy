@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << apply(Suffice(x > y, (f(x) > g(y)) & (h(x) > g(y))))
 
-    Eq << algebra.equivalent.given.suffice.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.suffice.imply.suffice.split.et)
 

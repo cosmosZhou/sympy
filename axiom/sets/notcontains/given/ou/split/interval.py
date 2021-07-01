@@ -27,12 +27,13 @@ def prove(Eq):
     b = Symbol.b(real=True, given=True)
     Eq << apply(NotContains(e, Interval(a, b)))
 
-    Eq << ~Eq[0]
+    Eq <<= ~Eq[0] & Eq[1]
+
+    Eq << Eq[-1].this.args[1].apply(sets.contains.imply.et.split.interval)
 
     
-    Eq << sets.contains.imply.et.split.interval.apply(Eq[-1])
+
     
-    Eq << ~Eq[-1]
 
 
 if __name__ == '__main__':

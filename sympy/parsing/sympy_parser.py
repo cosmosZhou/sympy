@@ -14,7 +14,7 @@ from sympy.core.compatibility import exec_, StringIO, iterable
 from sympy.core.basic import Basic
 from sympy.core import Symbol
 from sympy.core.function import arity
-from sympy.utilities.miscellany import filldedent, func_name
+from sympy.utilities.misc import filldedent, func_name
 
 
 

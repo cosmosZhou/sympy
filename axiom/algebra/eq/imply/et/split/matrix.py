@@ -2,26 +2,27 @@ from util import *
 
 
 @apply
-def apply(given):
+def apply(given, index=-1):
     lhs, rhs = given.of(Equal)
 
     assert lhs.is_Matrix and rhs.is_Matrix
+    assert len(lhs._args) == len(rhs._args)
 
-    args = [Equal(lhs, rhs).simplify() for lhs, rhs in zip(lhs._args, rhs._args)]
-    return And(*args)
+    first = Equal(Matrix(lhs._args[:index]), Matrix(rhs._args[:index])).simplify()
+    second = Equal(Matrix(lhs._args[index:]), Matrix(rhs._args[index:])).simplify()
+    
+    return first, second
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
     c = Symbol.c(real=True)
     d = Symbol.d(real=True)
-
     Eq << apply(Equal(Matrix([a, b]), Matrix([c, d])))
 
-    Eq << algebra.et.given.conds.apply(Eq[1])
+    
 
     Eq << Eq[0] @ Matrix([0, 1])
 

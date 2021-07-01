@@ -7,7 +7,7 @@ from util import *
 def apply(given):
     assert given.is_Unequal
     x, y = given.args
-    return Contains(x, y.universalSet // {y})
+    return Contains(x, y.universalSet - {y})
 
 
 @prove

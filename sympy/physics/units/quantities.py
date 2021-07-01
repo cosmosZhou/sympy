@@ -6,7 +6,7 @@ from __future__ import division
 
 from sympy import (Abs, Add, AtomicExpr, Derivative, Function, Mul,
     Pow, S, Symbol, sympify)
-from sympy.core.compatibility import string_types
+
 from sympy.physics.units import Dimension, dimensions
 from sympy.physics.units.prefixes import Prefix
 from sympy.utilities.exceptions import SymPyDeprecationWarning
@@ -33,7 +33,7 @@ class Quantity(AtomicExpr):
 
         # For Quantity(name, dim, scale, abbrev) to work like in the
         # old version of Sympy:
-        if not isinstance(abbrev, string_types) and not \
+        if not isinstance(abbrev, str) and not \
                    isinstance(abbrev, Symbol):
             dimension, scale_factor, abbrev = abbrev, dimension, scale_factor
 
@@ -55,7 +55,7 @@ class Quantity(AtomicExpr):
 
         if abbrev is None:
             abbrev = name
-        elif isinstance(abbrev, string_types):
+        elif isinstance(abbrev, str):
             abbrev = Symbol(abbrev)
 
         obj = AtomicExpr.__new__(cls, name, abbrev)

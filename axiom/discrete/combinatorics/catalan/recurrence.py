@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq.g_squared = algebra.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 
-    Eq << Eq.g_definition.this.rhs.split(Slice[1:])
+    Eq << Eq.g_definition.this.rhs.split(slice(1))
 
     Eq << Eq[-1].subs(Eq[0])
 
@@ -130,7 +130,7 @@ def prove(Eq):
 
     Eq << Eq.negative_sqrt.apply(algebra.cond.given.et.all, cond=x < S.One / 4)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq << algebra.all.given.ou.apply(Eq[-1])
 
@@ -144,7 +144,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].function.powsimp()
 
-    Eq << Eq[-1].this.rhs.args[1].split(Slice[1:])
+    Eq << Eq[-1].this.rhs.args[1].split(slice(1))
 
     Eq << 1 - Eq[-1]
 

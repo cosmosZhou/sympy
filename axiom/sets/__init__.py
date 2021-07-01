@@ -48,3 +48,6 @@ from . import interval_is_nonemptyset
 from . import interval_is_emptyset
 
 from . import is_negative
+from . import eq_sum
+from . import is_nonnegative
+from . import is_nonpositive

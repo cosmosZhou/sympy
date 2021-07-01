@@ -1,6 +1,6 @@
 from sympy.core.add import Add
 from sympy.core.basic import sympify, cacheit
-from sympy.core.compatibility import range
+
 from sympy.core.function import Function, ArgumentIndexError
 from sympy.core.logic import fuzzy_not, fuzzy_or
 from sympy.core.numbers import igcdex, Rational, pi
@@ -12,10 +12,10 @@ from sympy.functions.elementary.exponential import log, exp
 from sympy.functions.elementary.integers import floor, ceiling
 from sympy.functions.elementary.hyperbolic import (acoth, asinh, atanh, cosh,
     coth, HyperbolicFunction, sinh, tanh)
-from sympy.functions.elementary.extremum import Min, Max
+from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.core.power import sqrt
 from sympy.functions.elementary.piecewise import Piecewise
-from sympy.sets.finiteset import FiniteSet
+from sympy.sets.sets import FiniteSet
 from sympy.utilities.iterables import numbered_symbols
 
 ###############################################################################

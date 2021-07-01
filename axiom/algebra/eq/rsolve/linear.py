@@ -31,7 +31,6 @@ def prove(Eq):
     
     Eq << apply(Equal(y[n + 1], y[n] * (k + 1) + i ** n), y=y[n])
     
-    
         
 if __name__ == '__main__':
     run()

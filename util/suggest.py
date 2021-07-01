@@ -1,4 +1,3 @@
-# from axiom import MySQL, utility
 from util import utility, MySQL
 
 
@@ -37,4 +36,5 @@ if __name__ == '__main__':
 #     except Exception as e:
 #         print(e)
     
+    MySQL.instance.execute('delete from tbl_suggest_py')    
     MySQL.instance.load_data('tbl_suggest_py', data)

@@ -18,7 +18,7 @@ def prove(Eq):
     b = Symbol.b(real=True)
     Eq << apply(Contains(x, {a, b}))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.contains.imply.ou.split.finiteset.two, simplify=False)
 

@@ -1,5 +1,5 @@
 from sympy.core import S, Integer
-from sympy.core.compatibility import range, SYMPY_INTS
+from sympy.core.compatibility import SYMPY_INTS
 from sympy.core.function import Function
 from sympy.core.logic import fuzzy_not
 from sympy.core.mul import prod
@@ -504,7 +504,7 @@ class KroneckerDelta(Function):
         
     @property
     def domain(self):
-        from sympy.sets.finiteset import FiniteSet
+        from sympy.sets.sets import FiniteSet
         return FiniteSet(0, 1)
 
     def enumerate_KroneckerDelta(self):
@@ -575,7 +575,7 @@ class Bool(Function):
         
     @property
     def domain(self):
-        from sympy.sets.finiteset import FiniteSet
+        from sympy.sets.sets import FiniteSet
         return FiniteSet(0, 1)
 
     def inference_status(self, child):

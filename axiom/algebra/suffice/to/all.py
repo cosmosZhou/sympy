@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(Suffice(Contains(n, A), Equal(f[n], g[n])), wrt=n)
 
-    Eq.suffice, Eq.necessary = algebra.equivalent.given.cond.apply(Eq[0])
+    Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq[0])
 
     Eq << Eq.suffice.this.lhs.apply(algebra.suffice.imply.ou)
 

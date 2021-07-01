@@ -31,7 +31,7 @@ from sympy.matrices import eye
 from sympy.multipledispatch import dispatch
 from sympy.sets import Set
 # from sympy.sets.handlers.union import union_sets
-from sympy.utilities.miscellany import func_name
+from sympy.utilities.misc import func_name
 
 
 # How entities are ordered; used by __cmp__ in GeometryEntity

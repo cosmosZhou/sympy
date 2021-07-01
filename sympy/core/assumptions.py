@@ -150,7 +150,7 @@ from __future__ import print_function, division
 
 from sympy.core.facts import FactRules, FactKB
 from sympy.core.core import BasicMeta
-from sympy.core.compatibility import integer_types
+
 
 from random import shuffle
 
@@ -491,7 +491,7 @@ class ManagedProperties(BasicMeta):
         for k in _assume_defined:
             attrname = as_property(k)
             v = self.__dict__.get(attrname, '')
-            if isinstance(v, (bool, integer_types, type(None))):
+            if isinstance(v, (bool, int, type(None))):
                 if v is not None:
                     v = bool(v)
                 local_defs[k] = v
@@ -551,9 +551,6 @@ class ManagedProperties(BasicMeta):
             break
         
     def __getitem__(self, limits):
-        if self.is_Slice:
-            return limits
-        from sympy.core.symbol import dtype
         if isinstance(limits, tuple):
             limits = [*limits]
             for i, limit in enumerate(limits):
@@ -563,7 +560,7 @@ class ManagedProperties(BasicMeta):
                         limits[i] = (x, a, b)
                     elif isinstance(a, set):
                         limits[i] = (x, a)
-                    elif isinstance(a, int) or a.type in dtype.integer:
+                    elif isinstance(a, int) or a.type.is_DtypeInteger:
                         limits[i] = (x, 0, a)
                     else:
                         limits[i] = (x, a)
@@ -575,7 +572,7 @@ class ManagedProperties(BasicMeta):
                 limits = [(x, a, b)]
             elif isinstance(a, set):
                 limits = [(x, a)]
-            elif isinstance(a, int) or a.type in dtype.integer or a.is_Infinity:
+            elif isinstance(a, int) or a.type.is_DtypeInteger or a.is_Infinity:
                 if self.is_Limit:
                     limits = [(x, a)]
                 else:

@@ -54,7 +54,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.function.simplify()
 
-    Eq << Eq[-1].this.rhs.args[1].function.split(Slice[-1:])
+    Eq << Eq[-1].this.rhs.args[1].function.split(slice(-1))
 
     Eq << Eq[-1].this.rhs.args[1].function.apply(algebra.minimize.to.lamda)
 

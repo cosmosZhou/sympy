@@ -18,7 +18,7 @@ from sympy.polys.polytools import groebner
 from sympy.simplify.cse_main import cse
 from sympy.strategies.core import identity
 from sympy.strategies.tree import greedy
-from sympy.utilities.miscellany import debug
+from sympy.utilities.misc import debug
 
 
 

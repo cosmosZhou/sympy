@@ -6,3 +6,4 @@ from . import is_nonemptyset
 from . import subset
 
 from . import eq
+from . import is_real

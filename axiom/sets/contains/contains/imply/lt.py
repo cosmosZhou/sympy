@@ -27,9 +27,9 @@ def prove(Eq):
     y = Symbol.y(integer=True, given=True)
     Eq << apply(Contains(x, Interval(a, b, left_open=True)), Contains(y, Interval(b, c, left_open=True)))
 
-    Eq << sets.contains.imply.conds.split.interval.apply(Eq[0])
+    Eq << sets.contains.imply.et.split.interval.apply(Eq[0])
 
-    Eq << sets.contains.imply.conds.split.interval.apply(Eq[1])
+    Eq << sets.contains.imply.et.split.interval.apply(Eq[1])
 
     Eq << algebra.le.gt.imply.lt.transit.apply(Eq[-3], Eq[-2])
 

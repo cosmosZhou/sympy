@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(A, B):
-    return Equal(abs(A | B), abs(A // B) + abs(B))
+    return Equal(abs(A | B), abs(A - B) + abs(B))
 
 
 @prove

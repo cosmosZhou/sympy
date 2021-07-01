@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << apply(Contains(i, Range(d + j, n)) & Contains(j, Range(a, n - d)))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.contains.contains.imply.contains.range.i_ge_j.i_in_j)
 

@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(given, n=None, a=0):
     a = sympify(a)
@@ -37,7 +36,7 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[0], Eq[-1])
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
 
     Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n)
 

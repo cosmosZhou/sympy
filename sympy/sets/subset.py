@@ -2,7 +2,7 @@ from sympy.core import S
 from sympy.core.relational import Eq, Ne, Less, Greater, \
     LessEqual, GreaterEqual, Equal, Unequal
 from sympy.logic.boolalg import And, Or, BinaryCondition
-from sympy.utilities.miscellany import func_name
+from sympy.utilities.misc import func_name
 from sympy.core.sympify import _sympify, sympify
 
 

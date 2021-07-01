@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(given, *, cond=None):
     or_eqs = given.of(Or)
@@ -24,27 +23,32 @@ def apply(given, *, cond=None):
     assert not new_or_eqs
     assert and_eqs
 
-    return And(Or(*and_eqs), cond)
+    return cond, Or(*and_eqs)
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
+
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
     y = Symbol.y(real=True, shape=(k,), given=True)
-
     f = Function.f(shape=(k,), real=True)
     h = Function.h(shape=(k,), real=True)
     g = Function.g(shape=(k,), real=True)
-
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y)) & (y > 0), Equal(h(x), g(y)) & (y > 0)), cond=y > 0)
 
-    Eq << ~Eq[1]
+    Eq << ~(Eq[-1] & Eq[-2])
 
     Eq <<= Eq[-1] & Eq[0]
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
+
+    
+
+    
+
+    
 
 
 if __name__ == '__main__':

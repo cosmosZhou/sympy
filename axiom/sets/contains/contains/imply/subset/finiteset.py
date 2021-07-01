@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.all.to.et.doit.setlimit)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
 
 if __name__ == '__main__':

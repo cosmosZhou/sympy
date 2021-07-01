@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq.stirling_solution = Eq[-1].subs(Eq[2])
 
-    Eq << Eq.stirling_solution.this.function.apply(algebra.cond.imply.et.subs, n, k + 1)
+    Eq << Eq.stirling_solution.this.function.apply(algebra.cond.imply.et.invoke, algebra.cond.imply.cond.subs, n, k + 1)
 
     Eq << Eq[-1].this.function.apply(algebra.eq.eq.imply.eq.cancel, wrt=Eq.stirling_solution.variable)
 
@@ -59,7 +59,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
-    Eq << Eq[-1].this.rhs.split(Slice[-1:]).reversed
+    Eq << Eq[-1].this.rhs.split(slice(-1)).reversed
 
     Eq << Eq[-1].subs(Eq.powsimp.reversed)
 
@@ -85,13 +85,9 @@ def prove(Eq):
 
     Eq << Eq.induct * factorial(k + 1)
 
-    Eq << Eq[-1].this.rhs.split(Slice[-1:])
+    Eq << Eq[-1].this.rhs.split(slice(-1))
 
-    
-
-    
-
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq.hypothesis, Eq.induct, plausible=True)
 
     Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=k)
 

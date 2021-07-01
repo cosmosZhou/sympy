@@ -82,9 +82,11 @@ def prove(Eq):
 
     Eq << Eq.equation.subs(Eq[-1])
 
-    Eq << Shift(n, 0, n - 1) @ Eq[-1]
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Shift(n, 0, n - 1))
 
     Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
+
+    Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul)
 
     Eq << Eq[-1] * (-1) ** (n - 1)
 

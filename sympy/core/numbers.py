@@ -3,6 +3,7 @@ import decimal
 import fractions
 import math
 import re as regex
+import sys
 
 from .containers import Tuple
 from .sympify import converter, sympify, _sympify, SympifyError, _convert_numpy_types
@@ -12,11 +13,11 @@ from .evalf import pure_complex
 from .decorators import _sympifyit
 from .cache import cacheit, clear_cache
 from .logic import fuzzy_not
-from sympy.core.compatibility import (
-    as_int, integer_types, long, string_types, with_metaclass, HAS_GMPY,
+from sympy.core.compatibility import (as_int, with_metaclass, HAS_GMPY,
     SYMPY_INTS, int_info)
 from sympy.core.cache import lru_cache
-
+from .kind import NumberKind
+from sympy.multipledispatch import dispatch
 import mpmath
 import mpmath.libmp as mlib
 from mpmath.libmp import bitcount
@@ -27,7 +28,7 @@ from mpmath.libmp.libmpf import (
     finf as _mpf_inf, fninf as _mpf_ninf,
     fnan as _mpf_nan, fzero, _normalize as mpf_normalize,
     prec_to_dps, fone, fnone)
-from sympy.utilities.miscellany import debug, filldedent
+from sympy.utilities.misc import debug, filldedent
 from .parameters import global_parameters
 
 from sympy.utilities.exceptions import SymPyDeprecationWarning
@@ -100,7 +101,6 @@ def comp(z1, z2, tol=None):
     False
     """
     if type(z2) is str:
-        z = sympify(z2)
         if not pure_complex(z1, or_real=True):
             raise ValueError('when z2 is a str z1 must be a Number')
         return str(z1) == z2
@@ -177,7 +177,6 @@ def mpf_norm(mpf, prec):
     rv = mpf_normalize(sign, MPZ(man), expt, bc, prec, rnd)
     return rv
 
-
 # TODO: we should use the warnings module
 _errdict = {"divide": False}
 
@@ -221,8 +220,6 @@ def _decimal_to_Rational_prec(dec):
 
 
 _floatpat = regex.compile(r"[-+]?((\d*\.\d+)|(\d+\.?))")
-
-
 def _literal_float(f):
     """Return True if n starts like a floating point number."""
     return bool(_floatpat.match(f))
@@ -231,10 +228,12 @@ def _literal_float(f):
 
 # TODO caching with decorator, but not to degrade performance
 
-
 @lru_cache(1024)
 def igcd(*args):
     """Computes nonnegative integer greatest common divisor.
+
+    Explanation
+    ===========
 
     The algorithm is based on the well known Euclid's algorithm. To
     improve speed, igcd() has its own caching mechanism implemented.
@@ -256,34 +255,23 @@ def igcd(*args):
     if 1 in args_temp:
         return 1
     a = args_temp.pop()
+    if HAS_GMPY: # Using gmpy if present to speed up.
+        for b in args_temp:
+            a = gmpy.gcd(a, b) if b else a
+        return as_int(a)
     for b in args_temp:
-        a = igcd2(a, b) if b else a
+        a = math.gcd(a, b)
     return a
 
 
-try:
-    from math import gcd as igcd2
-except ImportError:
-
-    def igcd2(a, b):
-        """Compute gcd of two Python integers a and b."""
-        if (a.bit_length() > BIGBITS and
-            b.bit_length() > BIGBITS):
-            return igcd_lehmer(a, b)
-
-        a, b = abs(a), abs(b)
-        while b:
-            a, b = b, a % b
-        return a
-
-# Use Lehmer's algorithm only for very large numbers.
-# The limit could be different on Python 2.7 and 3.x.
-# If so, then this could be defined in compatibility.py.
-BIGBITS = 5000
+igcd2 = math.gcd
 
 
 def igcd_lehmer(a, b):
     """Computes greatest common divisor of two integers.
+
+    Explanation
+    ===========
 
     Euclid's algorithm for the computation of the greatest
     common divisor  gcd(a, b)  of two (positive) integers
@@ -332,7 +320,7 @@ def igcd_lehmer(a, b):
     # pair (a, b) with a pair of shorter consecutive elements
     # of the Euclidean gcd sequence until a and b
     # fit into two Python (long) int digits.
-    nbits = 2 * int_info.bits_per_digit
+    nbits = 2*sys.int_info.bits_per_digit
 
     while a.bit_length() > nbits and b != 0:
         # Quotients are mostly small integers that can
@@ -454,17 +442,20 @@ def ilcm(*args):
 def igcdex(a, b):
     """Returns x, y, g such that g = x*a + y*b = gcd(a, b).
 
-       >>> from sympy.core.numbers import igcdex
-       >>> igcdex(2, 3)
-       (-1, 1, 1)
-       >>> igcdex(10, 12)
-       (-1, 1, 2)
+    Examples
+    ========
 
-       >>> x, y, g = igcdex(100, 2004)
-       >>> x, y, g
-       (-20, 1, 4)
-       >>> x*100 + y*2004
-       4
+    >>> from sympy.core.numbers import igcdex
+    >>> igcdex(2, 3)
+    (-1, 1, 1)
+    >>> igcdex(10, 12)
+    (-1, 1, 2)
+
+    >>> x, y, g = igcdex(100, 2004)
+    >>> x, y, g
+    (-20, 1, 4)
+    >>> x*100 + y*2004
+    4
 
     """
     if (not a) and (not b):
@@ -510,7 +501,7 @@ def mod_inverse(a, m):
     3 modulo 11. This is the same as finding x such
     that 3 * x = 1 (mod 11). One value of x that satisfies
     this congruence is 4. Because 3 * 4 = 12 and 12 = 1 (mod 11).
-    This is the value return by mod_inverse:
+    This is the value returned by mod_inverse:
 
     >>> mod_inverse(3, 11)
     4
@@ -530,8 +521,9 @@ def mod_inverse(a, m):
 
     References
     ==========
-    - https://en.wikipedia.org/wiki/Modular_multiplicative_inverse
-    - https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
+
+    .. [1] https://en.wikipedia.org/wiki/Modular_multiplicative_inverse
+    .. [2] https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm
     """
     c = None
     try:
@@ -562,6 +554,9 @@ def mod_inverse(a, m):
 class Number(AtomicExpr):
     """Represents atomic numbers in SymPy.
 
+    Explanation
+    ===========
+
     Floating point numbers are represented by the Float class.
     Rational numbers (of any size) are represented by the Rational class.
     Integer numbers (of any size) are represented by the Integer class.
@@ -587,11 +582,12 @@ class Number(AtomicExpr):
     is_commutative = True
     is_number = True
 
-    __slots__ = []
+    __slots__ = ()
 
     # Used to make max(x._prec, y._prec) return x._prec when only x is a float
     _prec = -1
 
+    kind = NumberKind
     def _coeff_isneg(self):
         return self.is_extended_negative
     
@@ -612,7 +608,7 @@ class Number(AtomicExpr):
             return Rational(*obj)
         if isinstance(obj, (float, mpmath.mpf, decimal.Decimal)):
             return Float(obj)
-        if isinstance(obj, string_types):
+        if isinstance(obj, str):
             _obj = obj.lower()  # float('INF') == float('inf')
             if _obj == 'nan':
                 return S.NaN
@@ -645,8 +641,7 @@ class Number(AtomicExpr):
             if self.is_infinite or S.NaN in (self, other):
                 return (S.NaN, S.NaN)
         except TypeError:
-            msg = "unsupported operand type(s) for divmod(): '%s' and '%s'"
-            raise TypeError(msg % (type(self).__name__, type(other).__name__))
+            return NotImplemented
         if not other:
             raise ZeroDivisionError('modulo by zero')
         if self.is_Integer and other.is_Integer:
@@ -1096,7 +1091,7 @@ class Float(Number):
             raise ValueError('Both decimal and binary precision supplied. '
                              'Supply only one. ')
 
-        if isinstance(num, string_types):
+        if isinstance(num, str):
             # Float accepts spaces as digit separators
             num = num.replace(' ', '').lower()
             # in Py 3.6
@@ -1148,7 +1143,7 @@ class Float(Number):
             dps = 15
             if isinstance(num, Float):
                 return num
-            if isinstance(num, string_types) and _literal_float(num):
+            if isinstance(num, str) and _literal_float(num):
                 try:
                     Num = decimal.Decimal(num)
                 except decimal.InvalidOperation:
@@ -1161,7 +1156,7 @@ class Float(Number):
                     dps = max(15, dps)
                     precision = mlib.libmpf.dps_to_prec(dps)
         elif precision == '' and dps is None or precision is None and dps == '':
-            if not isinstance(num, string_types):
+            if not isinstance(num, str):
                 raise ValueError('The null string can only be used when '
                 'the number to Float is passed as a string or an integer.')
             ok = None
@@ -1192,7 +1187,7 @@ class Float(Number):
 
         if isinstance(num, float):
             _mpf_ = mlib.from_float(num, precision, rnd)
-        elif isinstance(num, string_types):
+        elif isinstance(num, str):
             _mpf_ = mlib.from_str(num, precision, rnd)
         elif isinstance(num, decimal.Decimal):
             if num.is_finite():
@@ -1648,7 +1643,7 @@ class Rational(Number):
                 if isinstance(p, (float, Float)):
                     return Rational(*_as_integer_ratio(p))
 
-                if not isinstance(p, string_types):
+                if not isinstance(p, str):
                     try:
                         p = sympify(p)
                     except (SympifyError, SyntaxError):
@@ -2174,7 +2169,7 @@ class Integer(Rational):
 
     @cacheit
     def __new__(cls, i):
-        if isinstance(i, string_types):
+        if isinstance(i, str):
             i = i.replace(' ', '')
         # whereas we cannot, in general, make a Rational from an
         # arbitrary expression, we can make an Integer unambiguously
@@ -2256,7 +2251,7 @@ class Integer(Rational):
             return other.__radd__(self)
 
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(self.p + other)
             elif isinstance(other, Integer):
                 return Integer(self.p + other.p)
@@ -2268,7 +2263,7 @@ class Integer(Rational):
 
     def __radd__(self, other):
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(other + self.p)
             elif isinstance(other, Rational):
                 return Rational(other.p + self.p * other.q, other.q, 1)
@@ -2277,7 +2272,7 @@ class Integer(Rational):
 
     def __sub__(self, other):
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(self.p - other)
             elif isinstance(other, Integer):
                 return Integer(self.p - other.p)
@@ -2288,7 +2283,7 @@ class Integer(Rational):
 
     def __rsub__(self, other):
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(other - self.p)
             elif isinstance(other, Rational):
                 return Rational(other.p - self.p * other.q, other.q, 1)
@@ -2300,7 +2295,7 @@ class Integer(Rational):
             return other.__rmul__(self)
 
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(self.p * other)
             elif isinstance(other, Integer):
                 return Integer(self.p * other.p)
@@ -2311,7 +2306,7 @@ class Integer(Rational):
 
     def __rmul__(self, other):
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(other * self.p)
             elif isinstance(other, Rational):
                 return Rational(other.p * self.p, other.q, igcd(self.p, other.q))
@@ -2320,7 +2315,7 @@ class Integer(Rational):
 
     def __mod__(self, other):
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(self.p % other)
             elif isinstance(other, Integer):
                 return Integer(self.p % other.p)
@@ -2329,7 +2324,7 @@ class Integer(Rational):
 
     def __rmod__(self, other):
         if global_parameters.evaluate:
-            if isinstance(other, integer_types):
+            if isinstance(other, int):
                 return Integer(other % self.p)
             elif isinstance(other, Integer):
                 return Integer(other.p % self.p)
@@ -2337,7 +2332,7 @@ class Integer(Rational):
         return Rational.__rmod__(self, other)
 
     def __eq__(self, other):
-        if isinstance(other, integer_types):
+        if isinstance(other, int):
             return (self.p == other)
         elif isinstance(other, Integer):
             return (self.p == other.p)
@@ -2526,8 +2521,7 @@ class Integer(Rational):
 
 
 # Add sympify converters
-for i_type in integer_types:
-    converter[i_type] = Integer
+converter[int] = Integer
 
 
 class AlgebraicNumber(Expr):

@@ -38,8 +38,6 @@ def prove(Eq):
     j = Eq[-1].rhs.function.args[-1].variable
     Eq << stats.is_nonzero.imply.et.apply(Eq[1])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
-
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-2], y[i])
 
     Eq.y_given_x = algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq[-3]).reversed
@@ -48,15 +46,13 @@ def prove(Eq):
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[-1])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
-
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
 
     Eq.y_given_x = Eq.y_given_x.subs(Eq[-1])
 
     Eq << algebra.eq.imply.eq.argmax.apply(Eq.y_given_x, (i,))
 
-    Eq << stats.is_nonzero.imply.is_nonzero.joint_slice.apply(Eq[1], Slice[:t, i])
+    Eq << stats.is_nonzero.imply.is_nonzero.joint_slice.apply(Eq[1], [slice(0, t), i])
 
     Eq.xt_given_x_historic = stats.eq.is_nonzero.imply.eq.joint_probability.apply(Eq[0], Eq[-1])
 
@@ -75,7 +71,7 @@ def prove(Eq):
     t = Eq[-1].rhs.variable
     Eq << Eq[-1] / Eq[-1].lhs.args[-1]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.product.limits.absorb.front)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.product.limits.push_front)
 
     Eq << Eq[-1].this.rhs.limits_subs(t, j)
 

@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << algebra.gt.imply.gt.relaxed.apply(Eq[-1], 0)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

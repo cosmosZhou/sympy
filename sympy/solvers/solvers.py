@@ -15,8 +15,7 @@ This module contain solvers for all kinds of equations:
 from __future__ import print_function, division
 
 from sympy import divisors
-from sympy.core.compatibility import (iterable, is_sequence, ordered,
-    default_sort_key, range)
+from sympy.core.compatibility import (iterable, is_sequence, ordered, default_sort_key)
 from sympy.core.sympify import sympify
 from sympy.core import (S, Add, Symbol, Equal, Dummy, Expr, Mul,
     Pow, Unequal)
@@ -46,7 +45,7 @@ from sympy.polys.polyerrors import GeneratorsNeeded, PolynomialError
 from sympy.functions.elementary.piecewise import piecewise_fold, Piecewise
 
 from sympy.utilities.lambdify import lambdify
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 from sympy.utilities.iterables import uniq, generate_bell, flatten
 from sympy.utilities.decorator import conserve_mpmath_dps
 
@@ -2216,7 +2215,7 @@ def minsolve_linear_system(system, *symbols, **flags):
         # We speed up slightly by starting at one less than the number of
         # variables the quick method manages.
         from itertools import combinations
-        from sympy.utilities.miscellany import debug
+        from sympy.utilities.misc import debug
         N = len(symbols)
         bestsol = minsolve_linear_system(system, *symbols, quick=True)
         n0 = len([x for x in bestsol.values() if x != 0])

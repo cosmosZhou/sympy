@@ -18,7 +18,8 @@ def apply(*given, n=None):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra, discrete
+    from axiom import algebra, discrete, sets
+
     n = Symbol.n(integer=True, nonnegative=True, given=False)
     f = Symbol.f(integer=True, shape=(oo,))
     Eq << apply(Unequal(f[0], 0), Suffice(Unequal(f[n], 0), Unequal(f[n + 1], 0)), n=n)
@@ -88,7 +89,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Contains).apply(sets.contains.sub, 1)
 
-    Eq << (-Eq[-1].rhs.function.args[0].args[0].expr).this.apply(algebra.mul.to.product.limits.absorb.front)
+    Eq << (-Eq[-1].rhs.function.args[0].args[0].expr).this.apply(algebra.mul.to.product.limits.push_front)
 
     Eq << Eq[-2].subs(Eq[-1])
 

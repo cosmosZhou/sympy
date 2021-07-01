@@ -86,7 +86,7 @@ def prove(Eq):
 
     Eq << Eq[-1].lhs.this.doit(evaluate=False)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=k, start=1)
 

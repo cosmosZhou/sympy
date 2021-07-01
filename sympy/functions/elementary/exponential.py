@@ -908,7 +908,7 @@ class Log(Function):
                 from sympy import Interval, oo
                 return x.domain & Interval(0, oo, left_open=True)
             else:
-                return x.domain // {0}
+                return x.domain - {0}
             
         if real:
             return arg._eval_domain_defined(x, positive=True)

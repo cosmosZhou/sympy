@@ -33,11 +33,11 @@ def prove(Eq):
     Eq << Equivalent(Unequal(a, 0) & Equal(a * b, 0),
                      Unequal(a, 0) & Equal(b, 0), plausible=True)
 
-    Eq << algebra.equivalent.given.suffice.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.suffice.apply(Eq[-1])
 
-    Eq << Eq[-2].this.lhs.apply(algebra.is_nonzero.eq.imply.eq.divide)
+    Eq << Eq[-2].this.lhs.apply(algebra.is_nonzero.eq.imply.eq.div)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_nonzero.eq.imply.eq.multiply)
+    Eq << Eq[-1].this.lhs.apply(algebra.is_nonzero.eq.imply.eq.mul)
 
     Eq << algebra.equivalent.imply.eq.apply(Eq[-3])
 

@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.suffice.given.et)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq <<= Eq[-2].this.rhs.rhs.split(B), Eq[-1].this.rhs.rhs.split(A)
 

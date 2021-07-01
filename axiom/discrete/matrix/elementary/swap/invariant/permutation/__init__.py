@@ -48,7 +48,7 @@ def prove(Eq):
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1])
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[2], Eq.induct, plausible=True)
 
     Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=m)
 

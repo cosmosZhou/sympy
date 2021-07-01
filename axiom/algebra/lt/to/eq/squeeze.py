@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(Less(x, 2))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.apply(algebra.suffice.to.ou)
 

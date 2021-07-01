@@ -8,3 +8,4 @@ from . import ge
 from . import gt
 from . import is_nonpositive
 from . import given
+from . import eq

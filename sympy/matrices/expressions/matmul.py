@@ -1,6 +1,6 @@
 from sympy import Number
 from sympy.core import Mul, Basic, sympify
-from sympy.core.compatibility import range
+
 from sympy.functions import adjoint
 from sympy.strategies import (rm_id, unpack, typed, flatten, exhaust,
         do_one, new)
@@ -255,13 +255,6 @@ class MatMul(MatrixExpr):
             return factor * trace(mmul.doit())
         else:
             raise NotImplementedError("Can't simplify any further")
-
-    def _eval_determinant(self):
-#         from sympy.matrices.expressions.determinant import Det
-        from sympy import det
-        factor, matrices = self.as_coeff_matrices()
-        square_matrices = only_squares(*matrices)
-        return factor ** self.rows * Mul(*list(map(det, square_matrices)))
 
     def _eval_inverse(self):
         try:
@@ -614,32 +607,7 @@ class MatMul(MatrixExpr):
                     return self.func(*self.args[:i] + (new.args if new.is_MatMul else (new,)) + self.args[i + len(args):]).simplify()
         return MatrixExpr._subs(self, old, new, **hints)
 
-    def _detect_multiple_products(self):
-        product = None
-        function = []
-        limits = None
-        coeff = []
-        for i, arg in enumerate(self.args):
-            if arg.is_MatProduct:
-                product = arg
-                break      
-                      
-        if product is None:
-            return 
-        
-        if i > 0:
-            before = self.func(*self.args[:i])
-        else:
-            before = None
-            
-        if i < len(self.args) - 1:
-            after = self.func(*self.args[i + 1:])
-        else:
-            after = None
-            
-        return before, product, after
 
-    
 def validate(*matrices):
     """ Checks for valid shapes for args of MatMul """
     for i in range(len(matrices) - 1):

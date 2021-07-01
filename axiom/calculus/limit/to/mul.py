@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self, evaluate=True): 
+def apply(self): 
     expr, (x, x0, dir) = self.of(Limit)
     args = expr.of(Mul)
     
@@ -17,21 +17,21 @@ def apply(self, evaluate=True):
     coefficient = Mul(*coefficient)
     factors = Mul(*factors)
     
-    limited = Limit[x:x0:dir](factors)
-    if evaluate:
-        limited = limited.doit()
+    limited = Limit[x:x0:dir](factors).simplify()
     return Equal(self, coefficient * limited)
 
 
-@prove(proved=False)
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
     x0 = Symbol.x0(real=True)
     f = Function.f(real=True)
-    
-    Eq << apply(Limit[x:x0](f(x) * y))    
+    Eq << apply(Limit[x:x0](f(x) * y))
 
-    
+    A = Symbol.A(Eq[0].rhs.args[1])
+    Eq << A.this.definition
+
+
 if __name__ == '__main__':
     run()

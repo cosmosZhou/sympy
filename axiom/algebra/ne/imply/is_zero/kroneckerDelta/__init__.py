@@ -1,3 +1,3 @@
 from . import single
 
-from . import multiply
+from . import mul

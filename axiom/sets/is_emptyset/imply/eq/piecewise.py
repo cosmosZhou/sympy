@@ -43,14 +43,14 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.cond.given.et.all, cond=Contains(x, A))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq << Eq[-1].this().function.simplify()
 
     Eq << Eq[-2].this().function.simplify()
 
     Eq << Eq[-1].subs(Eq[0])
-    
+
 
 if __name__ == '__main__':
     run()

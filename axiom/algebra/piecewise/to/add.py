@@ -37,7 +37,7 @@ def apply(self, additive=None):
 
 @prove
 def prove(Eq):
-    from axiom import algebra, sets
+    from axiom import algebra
 
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
@@ -63,11 +63,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.bool, 1, invert=True)
 
-    Eq << Eq[-1].this.args[-1].apply(sets.notcontains.given.notcontains, simplify=False)
+    
 
-    Eq << Eq[-1].this.args[-1].args[-1].simplify()
+    
 
-    Eq << Eq[-1].this.args[-1].args[-1].reversed
+    
 
     Eq << algebra.ou.given.ou.collect.apply(Eq[-1], cond=Unequal(x, y), simplify=None)
 

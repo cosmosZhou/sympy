@@ -3,7 +3,7 @@
 from __future__ import print_function, division
 
 from sympy import Dummy
-from sympy.core.compatibility import range
+
 from sympy.polys.constructor import construct_domain
 from sympy.polys.densearith import (
     dup_mul, dup_mul_ground, dup_lshift, dup_sub, dup_add

@@ -14,17 +14,17 @@ def apply(given, piecewise):
 
     g = ec[1].expr
 
-    return Equal(piecewise, Piecewise((g, Contains(x, S // s)), (f, True)).simplify())
+    return Equal(piecewise, Piecewise((g, Contains(x, S - s)), (f, True)).simplify())
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(integer=True, given=True)
     S = Symbol.S(etype=dtype.integer, given=True)
     A = Symbol.A(etype=dtype.integer, given=True)
     s = Symbol.s(A & S)
-
     f = Function.f(shape=())
     g = Function.g(shape=())
     Eq << apply(Contains(x, S), Piecewise((f(x), Contains(x, s)), (g(x), True)))
@@ -33,10 +33,8 @@ def prove(Eq):
 
     (gx, cond_contains), (fx, _) = Eq[-1].rhs.args
     p = Symbol.p(Piecewise((gx, Equal(Bool(cond_contains), 1)), (fx, _)))
-
     (gx, cond_notcontains), (fx, _) = Eq[2].rhs.args
     q = Symbol.q(Piecewise((gx, Equal(Bool(cond_notcontains), 1)), (fx, _)))
-
     Eq << p.this.definition
 
     Eq.p_definition = Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
@@ -55,11 +53,11 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=cond_contains)
 
-    Eq.all_not_s, Eq.all_s = algebra.et.given.conds.apply(Eq[-1])
+    Eq.all_not_s, Eq.all_s = algebra.et.given.et.apply(Eq[-1])
 
     Eq << ~Eq.all_not_s
 
-    Eq << Eq[-1].apply(algebra.cond.cond.imply.et)
+    Eq << Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs)
 
     Eq << Eq[-1].this.args[0].simplify()
 
@@ -67,7 +65,7 @@ def prove(Eq):
 
     Eq << ~Eq.all_s
 
-    Eq << Eq[-1].apply(algebra.cond.cond.imply.et, invert=True)
+    Eq << Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, invert=True)
 
     Eq << Eq[-1].this.args[0].simplify()
 

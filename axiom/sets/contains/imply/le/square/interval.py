@@ -14,6 +14,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     x = Symbol.x(real=True)
     m = Symbol.m(real=True)
     M = Symbol.M(real=True)
@@ -21,9 +22,7 @@ def prove(Eq):
 
     Eq << sets.contains.imply.et.split.interval.apply(Eq[0])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
-
-    Eq << algebra.ge.le.imply.le.square.apply(Eq[-1], Eq[-2])
+    Eq << algebra.ge.le.imply.le.square.apply(Eq[-2], Eq[-1])
 
 
 if __name__ == '__main__':

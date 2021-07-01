@@ -33,13 +33,13 @@ def prove(Eq):
 
     Eq << apply(Any[M](All[x:A](f(x) <= M)), Any[N](All[x:B](g(x) <= N)))
 
-    Eq << Eq[-1].this.function.apply(algebra.all_et.given.et)
+    Eq << Eq[-1].this.function.apply(algebra.all_et.given.et.all)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq << Eq[-2].this.function.apply(algebra.all.given.all.limits.relaxed, domain=A)
+    Eq << Eq[-2].this.function.apply(algebra.all.given.all.limits.relax, domain=A)
 
-    Eq << Eq[-1].this.function.apply(algebra.all.given.all.limits.relaxed, domain=B)
+    Eq << Eq[-1].this.function.apply(algebra.all.given.all.limits.relax, domain=B)
 
 
 if __name__ == '__main__':

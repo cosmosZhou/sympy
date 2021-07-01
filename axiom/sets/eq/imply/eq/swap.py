@@ -1,11 +1,5 @@
 from util import *
-
-
-
-
-
 from axiom.sets.imply.eq.swap import swap
-
 
 
 @apply
@@ -33,6 +27,7 @@ def prove(Eq):
     Eq << apply(Equal(x, y))
 
     Eq << Eq[1].subs(Eq[0])
+
     
 if __name__ == '__main__':
     run()

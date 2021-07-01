@@ -33,7 +33,7 @@ def _make_message(ipython=True, quiet=False, source=None):
     """Create a banner for an interactive session. """
     from sympy import __version__ as sympy_version
     from sympy.polys.domains import GROUND_TYPES
-    from sympy.utilities.miscellany import ARCH
+    from sympy.utilities.misc import ARCH
     from sympy import SYMPY_DEBUG
 
     import sys

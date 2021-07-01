@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << apply(Suffice(Equal(f(x), x + 1) & Contains(x, A), Equal(g(f(x)), y)))
 
-    Eq.suffice, Eq.necessary = algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << Eq.suffice.this.lhs.apply(algebra.suffice.imply.suffice.et, index=0)
 

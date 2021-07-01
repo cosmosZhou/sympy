@@ -15,7 +15,7 @@ TODO:
 from __future__ import print_function, division
 
 from .pretty_symbology import hobj, vobj, xsym, xobj, pretty_use_unicode
-from sympy.core.compatibility import string_types, range, unicode
+from sympy.core.compatibility import unicode
 
 
 class stringPict(object):
@@ -64,7 +64,7 @@ class stringPict(object):
         # convert everything to stringPicts
         objects = []
         for arg in args:
-            if isinstance(arg, string_types):
+            if isinstance(arg, str):
                 arg = stringPict(arg)
             objects.append(arg)
 
@@ -125,7 +125,7 @@ class stringPict(object):
         # convert everything to stringPicts; keep LINE
         objects = []
         for arg in args:
-            if arg is not stringPict.LINE and isinstance(arg, string_types):
+            if arg is not stringPict.LINE and isinstance(arg, str):
                 arg = stringPict(arg)
             objects.append(arg)
 
@@ -337,7 +337,7 @@ class stringPict(object):
         return ncols
 
     def __eq__(self, o):
-        if isinstance(o, string_types):
+        if isinstance(o, str):
             return '\n'.join(self.picture) == o
         elif isinstance(o, stringPict):
             return o.picture == self.picture

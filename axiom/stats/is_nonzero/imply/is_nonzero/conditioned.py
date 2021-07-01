@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[0])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    
 
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
 

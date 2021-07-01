@@ -2,12 +2,11 @@ from util import *
 
 
 @apply
-def apply(given):
-    assert given.is_Contains
-    e, domain = given.args
-    args = domain.of(Intersection)
-    
-    return And(*(Contains(e, s) for s in args))
+def apply(given, index=-1):
+    e, args = given.of(Contains[Intersection])
+    first = Intersection(*args[:index])
+    second = Intersection(*args[index:])
+    return Contains(e, first), Contains(e, second)
 
 
 @prove
@@ -16,8 +15,8 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
     Eq << apply(Contains(e, A & B))
-    
-    Eq << Eq[-1].simplify()
+
+    Eq <<= Eq[-1] & Eq[-2]
 
 
 if __name__ == '__main__':

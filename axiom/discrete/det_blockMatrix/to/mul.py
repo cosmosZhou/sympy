@@ -48,7 +48,9 @@ def prove(Eq):
 
     Eq << discrete.eq.imply.eq.det.apply(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.args[1].apply(discrete.det_blockMatrix.to.pow)
+    Eq << Eq[-1].this.lhs.apply(discrete.det_matmul.to.mul.right)
+
+    #Eq << Eq[-1].this.rhs.apply(discrete.det_blockMatrix.to.mul)
 
     Eq << Eq[-1] * (-1) ** (m*n)
 

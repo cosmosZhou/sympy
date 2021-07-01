@@ -48,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
 
-    Eq << Eq[0].induct(reverse=True)
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

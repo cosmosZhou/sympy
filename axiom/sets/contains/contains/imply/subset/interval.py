@@ -48,9 +48,8 @@ def prove(Eq):
 
     Eq <<= sets.contains.imply.et.split.interval.apply(Eq[0]), sets.contains.imply.et.split.interval.apply(Eq[1])
 
-    Eq <<= algebra.et.imply.conds.apply(Eq[-2]), algebra.et.imply.conds.apply(Eq[-1])
-
     Eq <<= Eq[-1] & Eq[-4]
+
     Eq << Eq[-1].this.args[1].reversed
 
 

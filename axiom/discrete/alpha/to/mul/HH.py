@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << algebra.is_nonzero.eq.imply.eq.inverse.apply(Eq[-1], Eq[0])
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 

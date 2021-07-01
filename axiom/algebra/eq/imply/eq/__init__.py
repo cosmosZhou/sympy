@@ -17,7 +17,7 @@ from . import getitem
 from . import geometric_progression
 from . import maximize
 from . import minimize
-from . import divide
+from . import div
 from . import reversed
 from . import subs
 from . import solve

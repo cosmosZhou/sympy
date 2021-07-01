@@ -23,16 +23,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     n = Symbol.n(domain=Range(2, oo))
     S = Symbol.S(etype=dtype.integer * n, given=True)
-
     x = Symbol.x(shape=(oo,), integer=True)
-
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
-
     w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
-
     Eq.P_definition, Eq.w_definition, Eq.swap, Eq.axiom = apply(All[x[:n]:S](Contains(w[i, j] @ x[:n], S)))
 
     Eq << discrete.combinatorics.permutation.adjacent.factorization.apply(n)
@@ -56,7 +53,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq.axiom
 
-    Eq << Eq[-1].this.function.apply(algebra.et.given.any_et, simplify=None)
+    Eq << Eq[-1].this.function.apply(algebra.cond.any.given.any_et, simplify=None)
 
     Eq << Eq[-1].this.function.function.apply(algebra.et.given.et.subs.eq)
 

@@ -22,16 +22,16 @@ def apply(given, var=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(integer=True)
     S = Symbol.A(etype=dtype.integer * n)
-
     Eq << apply(Equal(Abs(S), 1))
 
     Eq << sets.eq.imply.any_eq.one.apply(Eq[0]).reversed
 
     Eq <<= Eq[1] & Eq[-1]
 
-    Eq << algebra.et.given.any_et.apply(Eq[-1], simplify=None)
+    Eq << Eq[-1].this.apply(algebra.cond.any.given.any_et, simplify=None)
 
     Eq << Eq[-1].this.function.apply(algebra.et.given.et.subs.eq)
 

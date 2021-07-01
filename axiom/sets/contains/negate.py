@@ -16,7 +16,7 @@ def prove(Eq):
     b = Symbol.b(real=True)
     Eq << apply(Contains(x, Interval(a, b)))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq <<= Eq[-2].apply(algebra.suffice.given.ou), Eq[-1].apply(algebra.necessary.given.ou)
 

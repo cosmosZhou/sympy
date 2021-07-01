@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << apply(And(All[i:0:n](x[i] > 0), x[n] > 0, x[n + 1] > 0))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.all.given.et, cond={n + 1}), Eq[-1].this.rhs.apply(algebra.all.imply.et.split, cond={n + 1})
 

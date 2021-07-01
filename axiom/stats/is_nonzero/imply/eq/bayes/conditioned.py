@@ -25,17 +25,17 @@ def prove(Eq):
 
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x, y)
 
-    Eq.lhs = algebra.is_nonzero.eq.imply.eq.divide.apply(Eq[-2], Eq[-1])
+    Eq.lhs = algebra.is_nonzero.eq.imply.eq.div.apply(Eq[-2], Eq[-1])
 
     Eq << stats.is_nonzero.imply.is_nonzero.joint.apply(Eq[0])
 
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.divide.apply(Eq[-2], Eq[-1]).reversed
+    Eq << algebra.is_nonzero.eq.imply.eq.div.apply(Eq[-2], Eq[-1]).reversed
 
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[2], y)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.divide.apply(Eq[2], Eq[-1]).reversed
+    Eq << algebra.is_nonzero.eq.imply.eq.div.apply(Eq[2], Eq[-1]).reversed
 
     Eq << Eq[-1] * Eq[-3]
 

@@ -11,7 +11,7 @@ def apply(*given):
         _x, y = y, _x
     assert x == _x
 
-    return Contains(x, s // y.set)
+    return Contains(x, s - y.set)
 
 
 @prove

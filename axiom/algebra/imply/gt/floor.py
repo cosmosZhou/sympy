@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq << algebra.any.given.any_et.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(sets.et.given.contains.st.le_gt)
+    Eq << Eq[-1].this.function.apply(sets.gt.le.given.contains)
 
     n = Eq[-1].variable
     Eq << sets.imply.any_contains.integer.apply(x, n)

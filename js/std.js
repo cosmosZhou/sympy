@@ -9,7 +9,7 @@ String.prototype.format = function() {
 	);
 };
 
-String.prototype.capitalize = function(){
+String.prototype.capitalize = function() {
 	return this[0].toUpperCase() + this.slice(1).toLowerCase();
 };
 
@@ -56,13 +56,13 @@ HTMLCollection.prototype.indexOf = function(e) {
 };
 
 
-Array.prototype.remove = function(index){
+Array.prototype.remove = function(index) {
 	return this.splice(index, 1);
 };
 
-Array.prototype.insert = function(index, value){
+Array.prototype.insert = function(index, value) {
 	if (index == this.length)
-	 	return this.push(value);
+		return this.push(value);
 	return this.splice(index, 1, [value, this[index]]);
 };
 
@@ -88,17 +88,6 @@ function post_json(url, data, dataType) {
 		dataType: dataType ? dataType : 'json',
 		contentType: "application/json",
 	});
-}
-
-function* matchAll(str, reg) {
-	var match;
-	if (!reg.global) {
-		reg = RegExp(reg.source, 'g');
-	}
-
-	while (match = reg.exec(str)) {
-		yield match;
-	}
 }
 
 function fail(errInfo, errType, errDescription) {
@@ -132,7 +121,7 @@ class Queue {
 		return this._list.length + this._listReversed.length;
 	}
 
-	isEmpty(){
+	isEmpty() {
 		return !this.length;
 	}
 	/**
@@ -208,12 +197,37 @@ class Queue {
 	}
 }
 
-function intersection(s1, s2){
+function intersection(s1, s2) {
 	var s = new Set();
-	for (let e of s1){
-		if (s2.has(e)){
+	for (let e of s1) {
+		if (s2.has(e)) {
 			s.add(e);
 		}
 	}
 	return s;
+}
+
+
+HTMLElement.prototype.getScrollTop = function() {
+	var scrollTop = 0;
+
+	var current = this;
+	while (current !== null) {
+		scrollTop += current.scrollTop;
+		current = current.parentElement;
+	}
+
+	return scrollTop;
+};
+
+HTMLElement.prototype.getScrollLeft = function() {
+	var scrollLeft = 0;
+
+	var current = this;
+	while (current !== null) {
+		scrollLeft += current.scrollLeft;
+		current = current.parentElement;
+	}
+
+	return scrollLeft;
 }

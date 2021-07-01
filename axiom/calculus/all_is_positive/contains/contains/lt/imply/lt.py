@@ -6,13 +6,13 @@ def apply(all_is_positive, contains0, contains1, le):
     (fx, (x, d)), (x_, domain) = all_is_positive.of(All[Derivative > 0])
     assert x == x_
     assert d == 1
-    assert domain.left_open and domain.right_open    
+    assert domain.left_open and domain.right_open
     x0, domain_ = contains0.of(Contains)
     assert domain_ == domain
 
     x1, domain_ = contains1.of(Contains)
     assert domain_ == domain
-    
+
     _x0, _x1 = le.of(Less)
     assert x0 == _x0
     assert x1 == _x1
@@ -34,7 +34,7 @@ def prove(Eq):
     domain = Interval(a, b, left_open=True, right_open=True)
     Eq << apply(All[x:domain](Derivative[x](f(x)) > 0), Contains(x0, domain), Contains(x1, domain), x0 < x1)
 
-    Eq << Eq[0].this.function.apply(sets.gt.imply.contains.reals)
+    Eq << Eq[0].this.function.apply(sets.gt.imply.is_real)
 
     Eq.subset = sets.contains.contains.imply.subset.interval.apply(Eq[1], Eq[2])
 
@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << calculus.is_differentiable.imply.is_continuous.apply(Eq[-1])
 
-    Eq << algebra.lt.imply.le.relaxed.apply(Eq[3])
+    Eq << algebra.lt.imply.le.relax.apply(Eq[3])
 
     Eq.any = calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.closed.apply(Eq[-1], Eq[-2], Eq[-3])
 

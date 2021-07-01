@@ -15,7 +15,7 @@ from __future__ import division
 import collections
 
 from sympy import Integer, Matrix, S, Symbol, sympify, Basic, Tuple, Dict, default_sort_key
-from sympy.core.compatibility import reduce, string_types
+from sympy.core.compatibility import reduce
 from sympy.core.expr import Expr
 from sympy.core.power import Pow
 from sympy.utilities.exceptions import SymPyDeprecationWarning
@@ -77,7 +77,7 @@ class Dimension(Expr):
 
     def __new__(cls, name, symbol=None):
 
-        if isinstance(name, string_types):
+        if isinstance(name, str):
             name = Symbol(name)
         else:
             name = sympify(name)
@@ -85,7 +85,7 @@ class Dimension(Expr):
         if not isinstance(name, Expr):
             raise TypeError("Dimension name needs to be a valid math expression")
 
-        if isinstance(symbol, string_types):
+        if isinstance(symbol, str):
             symbol = Symbol(symbol)
         elif symbol is not None:
             assert isinstance(symbol, Symbol)
@@ -336,7 +336,7 @@ class DimensionSystem(Basic):
             ).warn()
 
         def parse_dim(dim):
-            if isinstance(dim, string_types):
+            if isinstance(dim, str):
                 dim = Dimension(Symbol(dim))
             elif isinstance(dim, Dimension):
                 pass
@@ -360,7 +360,7 @@ class DimensionSystem(Basic):
         def parse_dim_name(dim):
             if isinstance(dim, Dimension):
                 return dim.name
-            elif isinstance(dim, string_types):
+            elif isinstance(dim, str):
                 return Symbol(dim)
             elif isinstance(dim, Symbol):
                 return dim
@@ -444,7 +444,7 @@ class DimensionSystem(Basic):
     def get_dimensional_dependencies(self, name, mark_dimensionless=False):
         if isinstance(name, Dimension):
             name = name.name
-        if isinstance(name, string_types):
+        if isinstance(name, str):
             name = Symbol(name)
 
         dimdep = self._get_dimensional_dependencies_for_name(name)

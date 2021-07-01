@@ -11,6 +11,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     x = Symbol.x(real=True)
     Eq << apply(NotContains(x, Integers))
 
@@ -20,13 +21,12 @@ def prove(Eq):
 
     Eq << sets.contains.imply.et.split.interval.apply(Eq[-1])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
-
-    Eq <<= algebra.lt.imply.lt.floor.apply(Eq[-2]), algebra.gt.imply.ge.floor.apply(Eq[-1])
+    Eq <<= algebra.lt.imply.lt.floor.apply(Eq[-1]), algebra.gt.imply.ge.floor.apply(Eq[-2])
 
     Eq << algebra.lt.imply.le.strengthen.apply(Eq[-2])
 
     Eq <<= Eq[-2] & Eq[-1]
+
 
 if __name__ == '__main__':
     run()

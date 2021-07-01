@@ -15,7 +15,7 @@ def apply(equal_sum, equal_union):
     assert limit == (_i, 0, k)
 
     j = Symbol.j(domain=Range(0, k))
-    complement = Range(0, k) // {j}
+    complement = Range(0, k) - {j}
 
     return Equal(Cup[i:complement](x[i]) & x[j], xi.etype.emptySet)
 

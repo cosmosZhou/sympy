@@ -22,27 +22,25 @@ def apply(contains_i, contains_j):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     a = Symbol.a(integer=True)
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
-
     Eq << apply(Contains(i, Range(d + j, n)), Contains(j, Range(a, n - d)))
 
     Eq <<= sets.contains.given.et.split.range.apply(Eq[-2]), sets.contains.given.et.split.range.apply(Eq[-1])
 
-    Eq <<= algebra.et.given.conds.apply(Eq[-2]), algebra.et.given.conds.apply(Eq[-1])
-
-    Eq <<= algebra.et.imply.conds.apply(sets.contains.imply.et.split.range.apply(Eq[0])), algebra.et.imply.conds.apply(sets.contains.imply.et.split.range.apply(Eq[1]))
+    Eq <<= sets.contains.imply.et.split.range.apply(Eq[0]), sets.contains.imply.et.split.range.apply(Eq[1])
 
     Eq << Eq[-2] - d
 
-    Eq << algebra.ge.ge.imply.ge.transit.apply(Eq[-1], Eq[-4]) + d
+    Eq << algebra.ge.ge.imply.ge.transit.apply(Eq[-1], Eq[6]) + d
 
     Eq << Eq[-1].reversed
 
-    Eq << algebra.lt.given.le.apply(Eq[8])
+    Eq << algebra.lt.given.le.apply(Eq[7])
 
 
 if __name__ == '__main__':

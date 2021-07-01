@@ -1,6 +1,6 @@
 from .matexpr import MatrixExpr, ShapeError, Identity, ZeroMatrix
 from sympy.core import S
-from sympy.core.compatibility import range
+
 from sympy.core.sympify import _sympify
 from sympy.matrices import MatrixBase
 

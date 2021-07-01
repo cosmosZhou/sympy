@@ -22,14 +22,12 @@ def prove(Eq):
     from axiom import algebra
 
     x = Symbol.x(shape=(oo,), etype=dtype.integer)
-
     n = Symbol.n(integer=True, positive=True)
     k = Symbol.k(integer=True, positive=True)
     i = Symbol.i(integer=True)
     j = Symbol.j(domain=Range(0, k + 1))
     s = Symbol.s(etype=dtype.integer.set * (k + 1))
-
-    Eq << apply(All[i:Range(0, k + 1) // {j}, x[:k + 1]:s](Equal(x[i] & x[j], x[i].etype.emptySet)),
+    Eq << apply(All[i:Range(0, k + 1) - {j}, x[:k + 1]:s](Equal(x[i] & x[j], x[i].etype.emptySet)),
                 All[x[:k + 1]:s](Any[j](Subset({n}, x[j]))))
 
     Eq << Eq[-1].this.function.function.apply(algebra.all.given.ou)

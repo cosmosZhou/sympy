@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << apply(All[z:h(z) > 0](h(y, z) > 0), Any[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
 
-    Eq << Eq[-1].this.function.apply(algebra.all_et.given.et)
+    Eq << Eq[-1].this.function.apply(algebra.all_et.given.et.all)
 
 #     Eq << Eq[-1].this.find(All).apply(algebra.all.given.cond)
 

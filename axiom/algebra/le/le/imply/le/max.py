@@ -24,13 +24,13 @@ def prove(Eq):
 
     Eq << Eq[0].apply(algebra.cond.imply.et.ou, cond=x >= y)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
     Eq.ou = algebra.ou.imply.ou.invert.apply(Eq[-2])
 
     Eq << Eq[1].apply(algebra.cond.imply.et.ou, cond=x >= y)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
     Eq << algebra.ou.imply.ou.invert.apply(Eq[-1])
 

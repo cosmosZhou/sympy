@@ -31,19 +31,17 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     k = Symbol.k(integer=True)
     n = Symbol.n(integer=True, given=False)
-
     C = Symbol.C(shape=(oo,), integer=True)
-
     Eq << apply(Equal(C[0], 1),
                 Equal(C[n + 1], Sum[k:n + 1](C[k] * C[n - k])))
 
     Eq.initial = algebra.eq.imply.gt.apply(Eq[0], 0)
 
     k = Symbol.k(domain=Range(0, n + 1))
-
-    Eq.hypothsis_n1 = Eq[2].subs(n, n + 1)
+    Eq.induct = Eq[2].subs(n, n + 1)
 
     Eq.hypothsis_k = Eq[2].subs(n, k)
 
@@ -57,7 +55,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.subs(Eq[1].reversed)
 
-    Eq << Eq.hypothsis_n1.induct()
+    Eq << Suffice(Eq.hypothsis_k, Eq.induct, plausible=True)
 
     Eq << Eq[-1].this.lhs.forall((k,))
 

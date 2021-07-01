@@ -1,17 +1,14 @@
-from typing import Dict, Union, Type
-from sympy.utilities.exceptions import SymPyDeprecationWarning
-from .add import _unevaluated_Add, Add
+from .add import Add
 from .basic import S, Atom
 from .compatibility import ordered
 from .basic import Basic
 from .evalf import EvalfMixin
 from .function import AppliedUndef
-from .sympify import _sympify, SympifyError
+from .sympify import _sympify
 from .parameters import global_parameters
 from sympy.core.logic import fuzzy_bool, fuzzy_xor, fuzzy_and, fuzzy_not
-from sympy.logic.boolalg import Boolean, BooleanAtom, And, BinaryCondition
+from sympy.logic.boolalg import Boolean, BooleanAtom, BinaryCondition
 from sympy.core.sympify import sympify, SympifyError
-from sympy.core.basic import preorder_traversal
 
 __all__ = (
     'Rel', 'Eq', 'Ne', 'Lt', 'Le', 'Gt', 'Ge',
@@ -100,7 +97,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
                     if isinstance(a, Symbol):
                         continue
                     if isinstance(a, Boolean):
-                        from sympy.utilities.miscellany import filldedent
+                        from sympy.utilities.misc import filldedent
                         raise TypeError(filldedent('''
                             A Boolean argument can only be used in
                             Eq and Ne; all other relationals expect
@@ -432,7 +429,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         return "%s %s %s" % (p._print(self.lhs), charmap[self.rel_op], p._print(self.rhs))
 
     def domain_conditioned(self, var):
-        from sympy.sets.finiteset import FiniteSet
+        from sympy.sets.sets import FiniteSet
         domain = var.domain & self.domain_defined(var)
         if var.shape or var.is_set:
             return
@@ -485,7 +482,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
                     elif op == Greater:
                         domain &= Interval(solution, S.Infinity, left_open=True)
                     elif op == Unequal:
-                        domain //= FiniteSet(solution)
+                        domain -= FiniteSet(solution)
                     elif op == Equal:
                         domain &= FiniteSet(solution)
     
@@ -2160,13 +2157,19 @@ class Greater(_Greater):
         elif isinstance(other, Equal):
             if set(self.args) == set(other.args):
                 return S.false
-        elif isinstance(other, GreaterEqual):
+            
+        elif isinstance(other, _Greater):
             if self.lhs == other.lhs:
                 if self.rhs >= other.rhs:
                     return self
 #                 x > 0 and x >= 1
                 if self.rhs < other.rhs:
-                    return other                    
+                    return other
+                
+#                 x > a and a >= x + 1
+            if self.rhs == other.lhs:
+                if self.lhs <= other.rhs:
+                    return S.false
                  
         elif other.is_Contains:
             if other.rhs.is_Range or other.rhs.is_Interval:
@@ -2350,13 +2353,18 @@ class Less(_Less):
         elif isinstance(other, Equal):
             if set(self.args) == set(other.args):
                 return S.false
-        elif isinstance(other, LessEqual):
+        elif isinstance(other, _Less):
             if self.lhs == other.lhs:
+#                 x < 0 and x <= 1                
                 if self.rhs <= other.rhs:
                     return self
 #                 x < 1 and x <= 0
                 if self.rhs > other.rhs:
                     return other 
+            if self.rhs == other.lhs:
+#                 x < a and a < x - 1
+                if self.lhs >= other.rhs:
+                    return S.false
         
         elif other.is_Contains:
             if other.rhs.is_Range or other.rhs.is_Interval:

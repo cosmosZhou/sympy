@@ -20,16 +20,16 @@ def apply(given, old, new):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(integer=True)
     n = Symbol.n(integer=True, positive=True)
     f = Function.f(shape=(), integer=True)
     s = Symbol.s(etype=dtype.integer)
-
     Eq << apply(All[x:0:n + 1](Contains(f(x), s)), x, n)
 
     Eq << algebra.all.imply.et.split.apply(Eq[0], cond={n})
 
-    Eq << algebra.et.imply.cond.apply(Eq[-1], index=0)
+    
 
 
 if __name__ == '__main__':

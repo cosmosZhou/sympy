@@ -10,7 +10,7 @@ def apply(is_positive, eq, x=None):
     assert wi >= 0
 
     domain = x_.domain
-    assert not domain.left_open and not domain.right_open
+    assert domain.left_open and domain.right_open
     if x is None:
         x = Symbol.x(shape=(oo,), domain=domain)
     assert x.domain_assumed == domain
@@ -25,7 +25,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
-    x = Symbol.x(domain=Interval(a, b))
+    x = Symbol.x(domain=Interval(a, b, left_open=True, right_open=True))
     w = Symbol.w(shape=(oo,), nonnegative=True)
     f = Function.f(real=True)
     Eq << apply(Derivative(f(x), (x, 2)) < 0, Equal(Sum[i:n](w[i]), 1))

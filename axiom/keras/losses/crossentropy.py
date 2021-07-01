@@ -27,11 +27,11 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import calculus, algebra, discrete
+    from axiom import discrete, calculus, algebra
+
     n = Symbol.n(domain=Range(2, oo))
     t = Symbol.t(shape=(n,), real=True)
     j = Symbol.j(integer=True)
-
     Eq << apply(Equal(Sum[j](t[j]), 1))
 
     Eq << Eq[-1].lhs.expr.this.defun()
@@ -39,11 +39,12 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.args[1].apply(discrete.matmul.to.sum, var=j)
 
     i = Symbol.i(domain=Range(0, n))
-    xi = Eq[2].lhs._wrt_variables[0][i]
-
+    xi = Eq[2].lhs.variable[i]
     Eq << Eq[-1].apply(calculus.eq.imply.eq.derive, (xi,), simplify=False)
 
-    Eq.loss = Eq[-1].this.rhs.doit(deep=False)
+    Eq << Eq[-1].this.rhs.doit(deep=False)
+
+    Eq.loss = Eq[-1].this.find(Derivative[Sum]).apply(calculus.derivative.to.sum)
 
     i = xi.indices[0]
     Eq << Eq[0][i]
@@ -57,7 +58,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[-3].reversed).subs(Eq[-4].reversed) / Eq[-1].lhs.expr
 
     Eq << Eq.loss.subs(Eq[-1])
-    
+
     Eq << Eq[-1].this.rhs.expand()
 
     Eq << Eq[-1].this.rhs.args[0].simplify()

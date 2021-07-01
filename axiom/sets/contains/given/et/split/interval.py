@@ -7,29 +7,28 @@ def apply(imply):
     a, b = interval.of(Interval)
     if interval.left_open:
         if interval.right_open:
-            return And(x > a, x < b)
+            return x > a, x < b
         else:
-            return And(x > a, x <= b)
+            return x > a, x <= b
     else:
         if interval.right_open:
-            return And(x >= a, x < b)
+            return x >= a, x < b
         else:
-            return And(x >= a, x <= b)
+            return x >= a, x <= b
 
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     x = Symbol.x(complex=True, given=True)
     a = Symbol.a(integer=True, given=True)
     b = Symbol.b(integer=True, given=True)
     Eq << apply(Contains(x, Interval(a, b, right_open=True)))
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq <<= sets.lt.imply.contains.interval.apply(Eq[-1], simplify=False), sets.ge.imply.contains.interval.apply(Eq[-2], simplify=False)
 
-    Eq << sets.lt.imply.contains.interval.apply(Eq[-2], simplify=False)
-
-    Eq << sets.ge.imply.contains.interval.apply(Eq[-2], simplify=False)
+    
 
     Eq <<= Eq[-2] & Eq[-1]
 

@@ -50,7 +50,7 @@ def prove(Eq):
     i = Eq[0].lhs.variable
     Eq << Eq[-1].this.lhs.limits_subs(i, i - 1)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.all.given.all.limits.relaxed, domain=Range(1, n + 3))
+    Eq << Eq[-1].this.lhs.apply(algebra.all.given.all.limits.relax, domain=Range(1, n + 3))
 
     Eq << Suffice(All[i:1:n + 3](x[i] > 0), Unequal(alpha(x[1:n + 3]), 0), plausible=True)
 
@@ -60,7 +60,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.is_nonzero.eq.imply.eq.inverse)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

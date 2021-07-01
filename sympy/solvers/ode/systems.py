@@ -14,12 +14,12 @@ from sympy.matrices import zeros, Matrix, NonSquareMatrixError, MatrixBase, eye
 from sympy.polys import Poly
 from sympy.simplify import simplify, collect, powsimp, ratsimp
 from sympy.simplify.powsimp import powdenest
-from sympy.sets.finiteset import FiniteSet
+from sympy.sets.sets import FiniteSet
 from sympy.solvers.deutils import ode_order
 from sympy.solvers.solveset import NonlinearError, solveset
 from sympy.utilities import default_sort_key
 from sympy.utilities.iterables import ordered
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 from sympy.integrals.integrals import Integral, integrate
 
 

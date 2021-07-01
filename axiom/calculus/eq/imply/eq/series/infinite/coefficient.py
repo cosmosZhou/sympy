@@ -24,7 +24,8 @@ def apply(given, x):
 
 @prove
 def prove(Eq):
-    from axiom import calculus, algebra
+    from axiom import algebra, calculus
+
     A = Symbol.A(shape=(oo,), real=True)
     B = Symbol.B(shape=(oo,), real=True)
     x = Symbol.x(real=True)
@@ -47,10 +48,9 @@ def prove(Eq):
     Eq.induct = Eq.hypothesis.subs(m, m + 1)
 
     k = Symbol.k(domain=Range(0, m + 1))
+    Eq.hypothesis_k = Eq.hypothesis.subs(m, k)
 
-    Eq << Eq.hypothesis.subs(m, k)
-
-    Eq << Eq[-1] * x ** k
+    Eq << Eq.hypothesis_k * x ** k
 
     Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (k,))
 
@@ -70,7 +70,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum.limits.complement)
 
     r = Symbol.r(real=True, positive=True)
-
     Eq << Eq[-1].subs(x, r)
 
     Eq << Eq[-1].this.lhs.limits_subs(_k, _k + m + 1)
@@ -95,7 +94,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1]().function.doit()
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq.hypothesis_k, Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.second.apply(Eq.initial, Eq[-1], n=m + 1, k=k, hypothesis=True)
 

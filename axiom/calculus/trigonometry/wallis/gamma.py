@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expand(func=True)
 
-    Eq << Eq.induct.induct(imply=True)
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.eq.eq.suffice.imply.eq.induct.apply(Eq.one, Eq.two, Eq[-1], n=m, start=1)
 

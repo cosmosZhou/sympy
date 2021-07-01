@@ -24,27 +24,25 @@ def apply(contains_j, contains_i):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     a = Symbol.a(integer=True)
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
-
     Eq << apply(Contains(j, Range(i - d + 1, n)), Contains(i, Range(a + d, d + n - 1)))
 
     Eq << sets.contains.imply.contains.sub.apply(Eq[1], d)
 
     Eq << sets.contains.given.contains.sub.apply(Eq[2], d)
 
-    Eq <<= algebra.et.given.conds.apply(sets.contains.given.et.split.range.apply(Eq[-1])), \
-    algebra.et.given.conds.apply(sets.contains.given.et.split.range.apply(Eq[3]))
+    Eq <<= sets.contains.given.et.split.range.apply(Eq[-1]), sets.contains.given.et.split.range.apply(Eq[3])
 
-    Eq <<= algebra.et.imply.conds.apply(sets.contains.imply.et.split.range.apply(Eq[0])), \
-    algebra.et.imply.conds.apply(sets.contains.imply.et.split.range.apply(Eq[4]))
+    Eq <<= sets.contains.imply.et.split.range.apply(Eq[0]), sets.contains.imply.et.split.range.apply(Eq[4])
 
     Eq << algebra.ge.imply.gt.transit.apply(Eq[-2])
 
-    Eq << algebra.gt.ge.imply.gt.transit.apply(Eq[-1], Eq[7])
+    Eq << algebra.gt.ge.imply.gt.transit.apply(Eq[-1], Eq[6])
 
     Eq << Eq[-2].reversed
 

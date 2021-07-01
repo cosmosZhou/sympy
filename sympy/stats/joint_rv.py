@@ -22,7 +22,7 @@ from sympy.stats.crv import SingleContinuousDistribution, SingleContinuousPSpace
 from sympy.stats.drv import SingleDiscreteDistribution, SingleDiscretePSpace
 from sympy.stats.rv import (ProductPSpace, NamedArgsMixin,
                             ProductDomain, RandomSymbol, random_symbols, SingleDomain, _symbol_converter)
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 from sympy.external import import_module
 
 # __all__ = ['marginal_distribution']

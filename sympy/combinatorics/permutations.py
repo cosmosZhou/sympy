@@ -4,7 +4,7 @@ import random
 from collections import defaultdict
 
 from sympy.core import Basic
-from sympy.core.compatibility import is_sequence, reduce, range, as_int
+from sympy.core.compatibility import is_sequence, reduce, as_int
 from sympy.matrices import zeros
 from sympy.polys.polytools import lcm
 from sympy.utilities.iterables import (flatten, has_variety, minlex,

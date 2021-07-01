@@ -14,12 +14,11 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     a = Symbol.a(integer=True, given=True)
     b = Symbol.b(integer=True, given=True)
-
     x = Symbol.x(integer=True, given=True)
     y = Symbol.y(integer=True, given=True)
-
     Eq << apply(y <= b, x >= a)
 
     Eq << sets.subset.given.all_contains.apply(Eq[-1])
@@ -32,8 +31,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.args[1].apply(sets.contains.imply.et.split.range)
 
-    # if self implies a False proposition, then self must be False
-    Eq << Eq[-1].this.function.apply(algebra.et.given.ou, simplify=False)
+    #if self implies a False proposition, then self must be False
+    Eq << Eq[-1].this.function.apply(algebra.cond.cond.ou.given.ou, simplify=False)
 
     Eq.any_ax, Eq.any_by = Any(Eq[-1].function.args[0], *Eq[-1].limits, plausible=True), Any(Eq[-1].function.args[1], *Eq[-1].limits, plausible=True)
 

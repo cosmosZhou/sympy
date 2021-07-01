@@ -1,10 +1,11 @@
 from util import *
 
 
-def split(self, indices, wrt=None, simplify=True, evaluate=False):
-    if len(self.limits) > 1:
+def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
+    function, *limits = self.of(cls)
+    if len(limits) > 1:
         if wrt is None:
-            x, *ab = self.limits[-1]
+            x, *ab = limits[-1]
             if len(ab) == 2:
                 a, b = ab
                 universe = (Range if x.is_integer else Interval)(a, b)
@@ -19,16 +20,16 @@ def split(self, indices, wrt=None, simplify=True, evaluate=False):
                         if isinstance(mid, tuple):
                             ...
                             assert False
-                        return self.func.operator(self.func(self.function, *self.limits[:-1], (x, a, mid - 1)).simplify(), self.func(self.function, *self.limits[:-1], (x, mid, b)).simplify(), evaluate=evaluate)
+                        return cls.operator(cls(function, *limits[:-1], (x, a, mid - 1)).simplify(), cls(function, *limits[:-1], (x, mid, b)).simplify(), evaluate=evaluate)
                     elif isinstance(indices, (set, Set)):
                         intersection = universe & indices
                         if intersection:
-                            return self.func.operator(self.func(self.function, *self.limits[:-1], (x, intersection)).simplify(),
-                                                      self.func(self.function, *self.limits[:-1], (x, universe // indices)).simplify(), evaluate=evaluate)
+                            return cls.operator(cls(function, *limits[:-1], (x, intersection)).simplify(),
+                                                      cls(function, *limits[:-1], (x, universe - indices)).simplify(), evaluate=evaluate)
 
             return self
 
-        for i, limit in enumerate(self.limits):
+        for i, limit in enumerate(limits):
             x, *ab = limit
             if x != wrt:
                 continue
@@ -37,20 +38,20 @@ def split(self, indices, wrt=None, simplify=True, evaluate=False):
             else:
                 universe, *_ = ab
 
-            limits1 = [*self.limits]
+            limits1 = [*limits]
             limits1[i] = (x, universe & indices)
 
-            limits2 = [*self.limits]
-            limits2[i] = (x, universe // indices)
+            limits2 = [*limits]
+            limits2[i] = (x, universe - indices)
 
-            return self.func.operator(self.func(self.function, *limits1).simplify(), self.func(self.function, *limits2), evaluate=evaluate)
+            return cls.operator(cls(function, *limits1).simplify(), cls(function, *limits2), evaluate=evaluate)
         return self
 
-    (x, *ab), *_ = self.limits
+    (x, *ab), *_ = limits
     if x.is_Slice:
         if not ab:
             x, z = x.bisect(indices, allow_empty=True).args
-            return self.func(self.func(self.function, (x,)).simplify(), (z,))
+            return cls(cls(function, (x,)).simplify(), (z,))
 
     if not isinstance(indices, slice):
         if len(ab) == 1:
@@ -70,13 +71,13 @@ def split(self, indices, wrt=None, simplify=True, evaluate=False):
             indices = x.domain_conditioned(indices)
         intersection = universe & indices
         if intersection:
-            first = self.func(self.function, (x, intersection))
-            second = self.func(self.function, (x, universe // indices))
+            first = cls(function, (x, intersection))
+            second = cls(function, (x, universe - indices))
 
             if simplify:
                 first = first.simplify()
                 second = second.simplify()
-            return self.func.operator(first, second, evaluate=evaluate)
+            return cls.operator(first, second, evaluate=evaluate)
         return self
 
     if len(ab) == 2:
@@ -92,17 +93,16 @@ def split(self, indices, wrt=None, simplify=True, evaluate=False):
                 ...
                 assert False
 
-            lhs = self.func(self.function, (x, a, mid))
-            rhs = self.func(self.function, (x, mid, b))
-            return self.func.operator(lhs.simplify(), rhs.simplify(), evaluate=evaluate)
+            lhs = cls(function, (x, a, mid))
+            rhs = cls(function, (x, mid, b))
+            return cls.operator(lhs.simplify(), rhs.simplify(), evaluate=evaluate)
 
     return self
 
 
 @apply
 def apply(self, *, cond=None, wrt=None, evaluate=False):
-    assert self.is_Sum
-    return Equal(self, split(self, cond, wrt=wrt), evaluate=evaluate)
+    return Equal(self, split(Sum, self, cond, wrt=wrt), evaluate=evaluate)
 
 
 @prove

@@ -11,9 +11,7 @@ from operator import gt
 from sympy.core import Basic
 
 # this is the logical location of these functions
-from sympy.core.compatibility import (
-    as_int, default_sort_key, is_sequence, iterable, ordered, range, string_types
-)
+from sympy.core.compatibility import (as_int, default_sort_key, is_sequence, iterable, ordered)
 
 from sympy.utilities.enumerative import (
     multiset_partitions_taocp, list_visitor, MultisetPartitionTraverser)
@@ -1572,7 +1570,7 @@ def multiset_partitions(multiset, m=None):
                 yield rv
         return
 
-    if len(multiset) == 1 and isinstance(multiset, string_types):
+    if len(multiset) == 1 and isinstance(multiset, str):
         multiset = [multiset]
 
     if not has_variety(multiset):
@@ -2362,7 +2360,7 @@ def minlex(seq, directed=True, is_set=False, small=None):
     '00011001011'
 
     """
-    is_str = isinstance(seq, string_types)
+    is_str = isinstance(seq, str)
     seq = list(seq)
     if small is None:
         small = min(seq, key=default_sort_key)

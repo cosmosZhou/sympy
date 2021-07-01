@@ -2,7 +2,7 @@ import random
 
 from sympy.core import SympifyError
 from sympy.core.basic import Basic
-from sympy.core.compatibility import is_sequence, range, reduce
+from sympy.core.compatibility import is_sequence, reduce
 from sympy.core.expr import Expr
 from sympy.core.function import count_ops, expand_mul
 from sympy.core.singleton import S
@@ -14,7 +14,7 @@ from sympy.matrices.common import a2idx, classof
 from sympy.matrices.matrices import MatrixBase, ShapeError
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.decorator import doctest_depends_on
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 from sympy.core.logic import _fuzzy_group
 
 

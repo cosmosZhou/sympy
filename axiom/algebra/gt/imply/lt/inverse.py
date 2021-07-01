@@ -17,7 +17,7 @@ def prove(Eq):
     a = Symbol.a(real=True, positive=True)
     Eq << apply(x > a)
 
-    Eq << algebra.gt.imply.is_positive.apply(Eq[0])
+    Eq << algebra.gt.imply.is_positive.transit.apply(Eq[0])
 
     Eq << algebra.is_positive.imply.is_positive.div.apply(Eq[-1])
 

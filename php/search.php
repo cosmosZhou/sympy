@@ -38,7 +38,10 @@ $like = false;
 $regex = $keyword;
 if ($wholeWord) {
     $regex = "\\\\b$regex\\\\b";
-} else if (! $regularExpression) {
+} else if ($regularExpression) {
+    $regex = str_replace("\\", "\\\\", $regex);
+}
+else{
     $like = true;
 }
 

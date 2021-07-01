@@ -1,7 +1,7 @@
 from .sets import (Set, Interval, Union, EmptySet, ProductSet,
         Intersection, imageset, conditionset, Complement, SymmetricDifference, CartesianSpace)
 
-from .finiteset import FiniteSet
+from .sets import FiniteSet
 from .fancysets import ImageSet, Range, ComplexRegion  # , Reals
 from .contains import Contains, NotContains
 from .subset import Subset, Supset, NotSubset, NotSupset

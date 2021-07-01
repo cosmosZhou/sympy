@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(All[x:A](f(x) > 0))
 
-    Eq << algebra.equivalent.given.suffice.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(algebra.all.imply.ou)
 

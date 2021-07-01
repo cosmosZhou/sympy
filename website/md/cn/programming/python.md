@@ -39,7 +39,7 @@ ln -s /usr/local/python3/bin/pip3 /usr/bin/pip3
 
 
 然后在终端命令行输入python3：  
-![python3](/sympy/website/png/cn/programming/python/python3.png)  
+![python3](python/python3.png)  
 就可以输入python3代码了！  
 更新pip3  
 pip3 install --upgrade pip  
@@ -50,9 +50,9 @@ C:\Users\asus\AppData\Local\Programs\Python\Python36
 复制到  
 D:\Program Files\Python36  
 修改环境变量  
-![windows-property](/sympy/website/png/cn/programming/python/windows-property.png)  
+![windows-property](python/windows-property.png)  
 最后修改sts的python安装目录：  
-![sts-Preferences](/sympy/website/png/cn/programming/python/sts-Preferences.png)  
+![sts-Preferences](python/sts-Preferences.png)  
 
 配置pypi下载源：  
 vim ./.pip/pip.conf  
@@ -87,17 +87,17 @@ email = your_email_address
 然后安装编写开发python程序的IDE--pydev,安装方法如下：  
 STS(eclipse)->Help->Install New Software->Work with输入：http://www.pydev.org/updates/  
 然后按提示安装即可。如图所示：
-![pydev](/sympy/website/png/cn/programming/python/pydev.png)  
+![pydev](python/pydev.png)  
 
 或者可以在help->Eclipse Marketplace中输入pydev,如图所示：  
-![eclipse-market](/sympy/website/png/cn/programming/python/eclipse-market.png)  
+![eclipse-market](python/eclipse-market.png)  
 
 pydef设置：  
-![pydev-editor](/sympy/website/png/cn/programming/python/pydev-editor.png)  
+![pydev-editor](python/pydev-editor.png)  
 
 
 设置console height:  
-![console-height](/sympy/website/png/cn/programming/python/console-height.png)  
+![console-height](python/console-height.png)  
 
 ## Keras/Cuda安装
 
@@ -110,7 +110,7 @@ nvidia-smi
 如果没有，  
 如果你的服务器没有GPU显卡，则cuda, cudnn安装可以略过。  
 如果有则会输出以下信息：  
-![nvidia-smi](/sympy/website/png/cn/programming/python/nvidia-smi.png)  
+![nvidia-smi](python/nvidia-smi.png)  
 
 实时显示GPU使用情况：  
 Linux:  
@@ -118,7 +118,7 @@ watch -n 1 -d nvidia-smi     #每隔1秒刷新一次
 Windows:  
 nvidia-smi –l 5 #每隔5秒刷新一次  
 如果nvidia-smi报错如图：  
-![nvidia-smi-error](/sympy/website/png/cn/programming/python/nvidia-smi-error.png)  
+![nvidia-smi-error](python/nvidia-smi-error.png)  
 添加C:\Program Files\NVIDIA Corporation\NVSMI到环境变量
 
 ### Cuda驱动
@@ -161,14 +161,14 @@ NVIDIA cuDNN是用于深度神经网络的GPU加速库。它强调性能、易�
 https://developer.nvidia.com/cudnn  
 https://developer.nvidia.com/rdp/cudnn-download  
 需要本人用户名和密码登陆！  
-![cudnn](/sympy/website/png/cn/programming/python/cudnn.png)  
+![cudnn](python/cudnn.png)  
 
 cuda可以安装10.0或者9.0版本的，cudnn安装的版本是7；  
 Reference:  
 https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#install-windows  
 将下载的cudnn安装包移动至如下文件夹：  
-![cudnn-installation](/sympy/website/png/cn/programming/python/cudnn-installation.png)  
-![cudnn-installation-unzip](/sympy/website/png/cn/programming/python/cudnn-installation-unzip.png)  
+![cudnn-installation](python/cudnn-installation.png)  
+![cudnn-installation-unzip](python/cudnn-installation-unzip.png)  
 解压后将解压文件夹（cuda）中的所有文件复制到v10.0文件夹即可！  
 
 ### tensorflow安装
@@ -187,14 +187,14 @@ sess.run(a - b)
 sess.close()  
 如果正常则会出现以下结果：  
 
-![tensorflow-test](/sympy/website/png/cn/programming/python/tensorflow-test.png)  
+![tensorflow-test](python/tensorflow-test.png)  
 
 如果报错：  
 ImportError: libcublas.so.10.0: cannot open shared object file: No such file or directory  
 输入指令：  
 echo $PATH  
 
-![echo-path](/sympy/website/png/cn/programming/python/echo-path.png)  
+![echo-path](python/echo-path.png)  
 
 发现/usr/local/cuda-10.0/bin没有在path列表中。  
 返回至本章第2节添加环境变量即可。  
@@ -218,7 +218,7 @@ https://blog.csdn.net/yuhuqiao/article/details/83624689
 则执行以下指令  
 strings /usr/lib64/libstdc++.so.6 | grep GLIBC  
 
-![GLIBC](/sympy/website/png/cn/programming/python/GLIBC.png)  
+![GLIBC](python/GLIBC.png)  
 
 find / -name "libstdc++.so*"  
 find / -name "libstdc++.so.6.0.*"  
@@ -229,10 +229,10 @@ ln -s /usr/lib64/libstdc++.so.6.0.25 /usr/lib64/libstdc++.so.6
 然后再：  
 strings /usr/lib64/libstdc++.so.6 | grep GLIBC  
 
-![grep-GLIBC](/sympy/website/png/cn/programming/python/grep-GLIBC.png)  
+![grep-GLIBC](python/grep-GLIBC.png)  
 
 如果出现以下错误：  
-![tf-error](/sympy/website/png/cn/programming/python/tf-error.png)  
+![tf-error](python/tf-error.png)  
 请参考  
 https://blog.csdn.net/vkingnew/article/details/83317918  
 
@@ -242,7 +242,7 @@ https://blog.csdn.net/vkingnew/article/details/83317918
 keras安装最新版本即可，使用 pip3 install keras即可。  
 如果import keras报以下错误  
 
-![numpy](/sympy/website/png/cn/programming/python/numpy.png)  
+![numpy](python/numpy.png)  
 
 重新安装numpy即可：  
 pip install numpy==1.16.0  
@@ -257,7 +257,7 @@ pip install pydot_ng
 Add path: D:\Program Files (x86)\Graphviz2.38\bin  
 
 
-![Graphviz2.38](/sympy/website/png/cn/programming/python/Graphviz2.38.png)  
+![Graphviz2.38](python/Graphviz2.38.png)  
 
 然后在python代码中添加：  
 from keras.utils.vis_utils import plot_model  
@@ -311,7 +311,7 @@ LoadModule wsgi_module "d:/program files/python36/lib/site-packages/mod_wsgi/ser
 WSGIPythonHome "d:/program files/python36"  
 
 
-![WSGIPythonHome](/sympy/website/png/cn/programming/python/WSGIPythonHome.png)  
+![WSGIPythonHome](python/WSGIPythonHome.png)  
 
 ## Linux调试python程序
 

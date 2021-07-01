@@ -10,13 +10,14 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
     Eq << apply(x * y)
 
     Eq << algebra.eq.given.ou.apply(Eq[0])
 
-    Eq << Eq[-1].this.args[1].apply(algebra.et.given.is_nonzero)
+    Eq << Eq[-1].this.args[1].apply(algebra.is_nonzero.is_nonzero.given.is_nonzero)
 
     Eq << Eq[-1].this.args[0].args[0].apply(algebra.ou.given.is_zero)
 

@@ -13,9 +13,9 @@ def apply(x_less_than_y, x_greater_than_y_minus):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     y = Symbol.y(real=True)
     x = Symbol.x(real=True)
-
     Eq << apply(x <= y, x >= -y)
 
     Eq << Eq[-1].this.lhs.apply(algebra.abs.to.piecewise)
@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.subs.bool.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     Eq << -Eq[1]
 

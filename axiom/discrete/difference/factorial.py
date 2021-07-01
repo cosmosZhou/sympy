@@ -11,13 +11,12 @@ def apply(x, n):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(real=True)
 
+    x = Symbol.x(real=True)
     k = Symbol.k(integer=True, nonnegative=True)
     t = x ** k
     assert t.is_complex
     assert t.is_extended_real
-
     n = Symbol.n(integer=True, nonnegative=True, given=False)
     Eq << apply(x, n)
 
@@ -27,13 +26,13 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.apply(discrete.difference.split, Slice[:1])
+    Eq << Eq.induct.this.lhs.apply(discrete.difference.split, slice(0, 1))
 
     Eq << Eq[-1].this.lhs.expr.doit()
 
     Eq << discrete.combinatorics.binomial.theorem.apply(x, 1, n + 1) - x ** (n + 1)
 
-    Eq << Eq[-1].this.rhs.args[1].split(Slice[-1:])
+    Eq << Eq[-1].this.rhs.args[1].split(slice(-1))
 
     Eq << Eq[-3].subs(Eq[-1])
 
@@ -44,12 +43,11 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
 
     _k = Symbol.k(domain=Range(0, n))
+    Eq.hypothesis_k = Eq[0].subs(n, _k)
 
-    Eq << Eq[0].subs(n, _k)
+    Eq << discrete.eq.imply.eq.difference.apply(Eq.hypothesis_k, (x, n - _k))
 
-    Eq << discrete.eq.imply.eq.difference.apply(Eq[-1], (x, n - _k))
-
-    Eq << Eq[-1].this.lhs.as_one_term()
+    Eq << Eq[-1].this.lhs.apply(discrete.difference.merge)
 
     Eq << Eq[-1] * binomial(n + 1, _k)
 
@@ -61,7 +59,7 @@ def prove(Eq):
 
     Eq << Eq[-1] + Eq[-2]
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0] & Eq.hypothesis_k, Eq.induct, plausible=True)
 
     Eq << Eq[-1].this.lhs.forall((_k,))
 

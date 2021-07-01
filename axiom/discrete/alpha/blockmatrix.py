@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << algebra.is_nonzero.eq.imply.eq.inverse.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

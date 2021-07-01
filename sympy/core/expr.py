@@ -4,8 +4,8 @@ from .singleton import S
 from .evalf import EvalfMixin, pure_complex
 from .decorators import _sympifyit, call_highest_priority
 from .cache import cacheit
-from .compatibility import reduce, as_int, default_sort_key, range, Iterable
-from sympy.utilities.miscellany import func_name
+from .compatibility import reduce, as_int, default_sort_key, Iterable
+from sympy.utilities.misc import func_name
 from mpmath.libmp import mpf_log, prec_to_dps
 
 from collections import defaultdict
@@ -209,7 +209,12 @@ class Expr(Basic, EvalfMixin):
     @call_highest_priority('__rsub__')
     def __sub__(self, other):
         try:
+            if self.is_set:
+                from sympy import Complement
+                return Complement(self, other)
+            
             return self + (-other)
+        
         except TypeError:
             if other.is_Mul:
                 args = other.args
@@ -412,7 +417,7 @@ class Expr(Basic, EvalfMixin):
             return cmp
         
         from sympy import GreaterEqual
-        from sympy.functions.elementary.extremum import Min, Max
+        from sympy.functions.elementary.miscellaneous import Min, Max
         if isinstance(other, Min):
             for arg in other.args:
                 if self >= arg:
@@ -459,7 +464,7 @@ class Expr(Basic, EvalfMixin):
             return cmp
                             
         from sympy import LessEqual
-        from sympy.functions.elementary.extremum import Max, Min
+        from sympy.functions.elementary.miscellaneous import Max, Min
         if isinstance(other, Max):
             for arg in other.args:
                 if self <= arg:
@@ -507,7 +512,7 @@ class Expr(Basic, EvalfMixin):
             return cmp
         
         from sympy import Greater
-        from sympy.functions.elementary.extremum import Min, Max
+        from sympy.functions.elementary.miscellaneous import Min, Max
         if isinstance(other, Min):
             for arg in other.args:
                 if self > arg:
@@ -555,7 +560,7 @@ class Expr(Basic, EvalfMixin):
             return cmp
         
         from sympy import Less
-        from sympy.functions.elementary.extremum import Max, Min
+        from sympy.functions.elementary.miscellaneous import Max, Min
         if isinstance(other, Max):
             for arg in other.args:
                 if self < arg:
@@ -3248,7 +3253,7 @@ class Expr(Basic, EvalfMixin):
         never call this method directly (use .nseries() instead), so you don't
         have to write docstrings for _eval_nseries().
         """
-        from sympy.utilities.miscellany import filldedent
+        from sympy.utilities.misc import filldedent
         raise NotImplementedError(filldedent("""
                      The _eval_nseries method should be added to
                      %s to give terms up to O(x**n) at x=0
@@ -3357,7 +3362,7 @@ class Expr(Basic, EvalfMixin):
             l = l.subs(log(x), d)
         c, e = l.as_coeff_exponent(x)
         if x in c.free_symbols:
-            from sympy.utilities.miscellany import filldedent
+            from sympy.utilities.misc import filldedent
             raise ValueError(filldedent("""
                 cannot compute leadterm(%s, %s). The coefficient
                 should have been free of %s but got %s""" % (self, x, x, c)))

@@ -7,15 +7,14 @@ from itertools import combinations, product
 from sympy.core.add import Add
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
-from sympy.core.compatibility import (ordered, range, with_metaclass,
-    as_int, is_sequence)
+from sympy.core.compatibility import ordered, with_metaclass, as_int
 from sympy.core.function import Application, Derivative
 from sympy.core.numbers import Number
 from sympy.core.operations import LatticeOp
 from sympy.core.singleton import Singleton, S
 from sympy.core.sympify import converter, _sympify, sympify
 from sympy.utilities.iterables import sift, ibin
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 from sympy.logic.invoker import Invoker
 
 
@@ -326,43 +325,6 @@ class Boolean(Basic):
             if arg.is_random:
                 return True
 
-    def induct(self, **kwargs):
-        if self.given is not None:
-            given = self.given
-            if isinstance(given, list):
-                given = And(*given)
-                
-            if kwargs.get('given'):
-                return Suffice(self, given)
-            return Suffice(given, self)
-        if self.equivalent is not None:
-            equivalent = self.equivalent
-            if isinstance(equivalent, list):
-                equivalent = And(*equivalent)
-                
-            if kwargs.get('given'):
-                return Necessary(equivalent, self)
-            
-            if kwargs.get('imply', True):
-                if kwargs.get('reverse'):
-                    if self.plausible:
-                        self._assumptions['plausible'] = True
-                        equivalent.equivalent = self
-                    
-                    return Suffice(self, equivalent)
-                return Suffice(equivalent, self)
-            
-            return Equivalent(equivalent, self)
-        if self.imply is not None:
-            imply = self.imply
-            if isinstance(imply, list):
-                imply = And(*imply)
-
-            if kwargs.get('given'):
-                return Necessary(imply, self)
-                
-            return Suffice(self, imply)
-        
     @property    
     def wrt(self):
         wrt, *_ = self.free_symbols
@@ -504,105 +466,10 @@ class BinaryCondition(Boolean):
 
             return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify())
 
+
 class BooleanAssumption(BinaryCondition):
     ...
-
         
-def plausibles(parent):
-    return [eq for eq in parent if eq.plausible]
-
-
-def plausibles_false(parent):
-    return [eq for eq in parent if eq.plausible is False]
-
-
-
-def _relationship(lhs, rhs):
-    if lhs is rhs:
-        return 'equivalent'
-    
-    equivalent = rhs.equivalent
-    if equivalent is None:
-        given = rhs.given
-        if given is not None:
-            if isinstance(given, (list, tuple)):
-                for rhs in given:
-                    if _relationship(lhs, rhs):
-                        return 'given'
-            else:
-                if _relationship(lhs, given):
-                    return 'given'           
-    
-    elif isinstance(equivalent, (list, tuple)):
-        for rhs in equivalent:
-            clue = _relationship(lhs, rhs)
-            if clue:
-                return clue
-    else:
-        clue = _relationship(lhs, equivalent)
-        if clue:
-            return clue
-
-    
-# lhs.equivalent.equivalent[0].equivalent[0].equivalent[1].given is rhs.equivalent.equivalent[0].equivalent.equivalent[1].given.given.equivalent.equivalent[1]    
-def relationship(lhs, rhs):
-    if lhs is rhs:
-        return 'equivalent'
-
-    equivalent = lhs.equivalent
-    if equivalent is None:
-        given = lhs.given
-        
-        if given is not None:
-            if isinstance(given, (list, tuple)):
-                for lhs in given:
-                    if relationship(lhs, rhs):
-                        return 'given'
-            else:
-                if relationship(given, rhs):
-                    return 'given'
-                
-    elif isinstance(equivalent, (list, tuple)):
-        for lhs in equivalent:
-            clue = relationship(lhs, rhs)
-            if clue:
-                return clue
-    
-    else:
-        clue = relationship(equivalent, rhs)
-        if clue:
-            return clue
-        
-    return _relationship(lhs, rhs)
-
-    
-def given_ancestor(a):
-    if a is None:
-        return a
-    while True:
-        given = a.equivalent
-        if given is None:
-            given = a.given
-
-        if given is None:
-            return {a}
-
-        if isinstance(given, (list, tuple)):
-            res = set()
-            for e in given:
-                if e.plausible:
-                    res |= given_ancestor(e)
-            return res
-
-        a = given
-
-
-def set_equivalence_relationship(lhs, rhs):
-    if lhs.set_equivalence_relationship(rhs):
-        return
-    if rhs.set_equivalence_relationship(lhs):
-        return
-
 
 class BooleanAtom(Boolean):
     """
@@ -611,7 +478,7 @@ class BooleanAtom(Boolean):
 #     is_Boolean = True
     is_Atom = True
     _op_priority = 11  # higher than Expr
-
+    
     def simplify(self, *a, **kw):
         return self
 
@@ -643,7 +510,7 @@ class BooleanAtom(Boolean):
 
     # /// drop when Py2 is no longer supported
     def __lt__(self, other):
-        from sympy.utilities.miscellany import filldedent
+        from sympy.utilities.misc import filldedent
         raise TypeError(filldedent('''
             A Boolean argument can only be used in
             Eq and Ne; all other relationals expect
@@ -873,47 +740,6 @@ class BooleanFalse(with_metaclass(Singleton, BooleanAtom)):
         return x.emptySet
 
 
-class BooleanFalseAssumption(BooleanAtom):
-    is_BooleanFalse = True
-
-    def __nonzero__(self):
-        return False
-
-    __bool__ = __nonzero__
-
-    def __new__(cls, **kwargs):
-#         assert S.BooleanFalse.equivalent is None
-        if kwargs:
-            return Boolean.__new__(cls, **kwargs)        
-        return S.BooleanFalse
-
-    def _latex(self, _):
-        return r"\text{%s}" % False
-
-    def invert(self):
-        return S.true
-
-
-class BooleanTrueAssumption(BooleanAtom):
-    is_BooleanTrue = True
-
-    def __nonzero__(self):
-        return True
-
-    __bool__ = __nonzero__
-
-    def __new__(cls, **kwargs):
-        if kwargs:
-            return Boolean.__new__(cls, **kwargs)
-        return S.BooleanTrue
-
-    def _latex(self, _):
-        return r"\text{%s}" % True
-
-    def invert(self):
-        return S.false
-
-
 true = BooleanTrue()
 false = BooleanFalse()
 # We want S.true and S.false to work, rather than S.BooleanTrue and
@@ -958,7 +784,7 @@ class BooleanFunction(Application, Boolean):
 
     # /// drop when Py2 is no longer supported
     def __lt__(self, other):
-        from sympy.utilities.miscellany import filldedent
+        from sympy.utilities.misc import filldedent
         raise TypeError(filldedent('''
             A Boolean argument can only be used in
             Eq and Ne; all other relationals expect
@@ -1212,6 +1038,7 @@ class And(LatticeOp, BooleanFunction):
 
     def _latex(self, p):
         if len(self.args) == 2:
+
             def render(op1, op2, a, x, b):
                 a = p._print(a)
                 b = p._print(b)
@@ -1223,7 +1050,7 @@ class And(LatticeOp, BooleanFunction):
                 a, x = eq1.args
                 if eq2.is_Less:
                     _x, b = eq2.args                        
-                    if x == _x:                            
+                    if x == _x: 
                         return render('lt', 'lt', a, x, b)
                 if eq2.is_LessEqual:
                     _x, b = eq2.args
@@ -1272,25 +1099,19 @@ class And(LatticeOp, BooleanFunction):
     def invert(self):
         return self.invert_type(*(arg.invert() for arg in self.args))
 
-    def apply(self, *axiom, split=True, **kwargs):
-        if axiom[0].__name__.split(sep='.', maxsplit=3)[2] == 'et':
+    def apply(self, axiom, *args, split=True, **kwargs):
+        token = axiom.__name__.split(sep='.', maxsplit=4)
+        if token[2] == 'et' or token[-2] in ('imply', 'given'):
             split = False
             
-        if split:
-            if len(axiom) > 1:
-                eqs = []
-                for eq, axiom in zip(self.args, axiom): 
-                    eqs.append(eq.apply(axiom, **kwargs))
-                return self.func(*eqs, given=self)
-            
-            axiom = axiom[0]
-            args = []
+        if split: 
             funcs = []
             
             depth = kwargs.pop('depth', None)
             if not depth:
-                args = [*self.args]
+                _args = [*self.args]
             else:
+                _args = []
 
                 def instantiate(eq):
                     function = eq
@@ -1307,11 +1128,11 @@ class And(LatticeOp, BooleanFunction):
                         else: 
                             funcs = _funcs
                         function = instantiate(eq)
-                        args.append(function)
+                        _args.append(function)
                     else:
-                        args.append(eq)
+                        _args.append(eq)
                         
-            function = axiom.apply(*args, **kwargs)
+            function = axiom.apply(*_args, *args, **kwargs)
             if isinstance(function, tuple): 
                 clue = {f.clue for f in function}
                 assert len(clue) == 1
@@ -1328,7 +1149,7 @@ class And(LatticeOp, BooleanFunction):
                 function = function.simplify()
             return function
         else:
-            return Boolean.apply(self, *axiom, **kwargs)
+            return Boolean.apply(self, axiom, *args, **kwargs)
 
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
@@ -1338,21 +1159,15 @@ class And(LatticeOp, BooleanFunction):
             else:
                 result.equivalent = [self, *args]
             return result
-                
-        old, new = args
-        new = sympify(new)
-        if self.plausible:
-            eqs = [eq._subs(old, new) for eq in self.args]
-            return self.func(*eqs, plausible=True)
-        else:
-            result = self._subs(old, new)
-            if result.is_BooleanAtom:
-                result = result.copy(equivalent=self)
-            else:
-                result.equivalent = self
         
-            return result
-        return self
+        if len(args) == 1:
+            [dic] = args
+            for old, new in dic.items():
+                self = self._subs(old, new)
+            return self
+
+        old, new = args
+        return self._subs(old, new)
 
     def __new__(cls, *args, **options):
         valuable = set()
@@ -1384,6 +1199,14 @@ class And(LatticeOp, BooleanFunction):
     identity = S.true
 
     nargs = None
+
+    @classmethod
+    def _need_to_be_raised(cls, self):
+        return self == S.false
+
+    @classmethod
+    def _need_to_be_filtered(cls, self):
+        return self == S.true
 
     @classmethod
     def _new_args_filter(cls, args):
@@ -1493,7 +1316,7 @@ class And(LatticeOp, BooleanFunction):
                 _eqs = dict_notcontains[e]
                 sets = [contains.rhs for contains in eqs]
                 _sets = [contains.rhs for contains in _eqs]
-                contains = Contains(e, Intersection(*sets) // Union(*_sets))                
+                contains = Contains(e, Intersection(*sets) - Union(*_sets))
                 argset = self._argset - eqs - _eqs
                 return self.func(*argset, contains)                
                 
@@ -1624,6 +1447,14 @@ class Or(LatticeOp, BooleanFunction):
     
     identity = S.false
 
+    @classmethod
+    def _need_to_be_raised(cls, self):
+        return self == S.true
+
+    @classmethod
+    def _need_to_be_filtered(cls, self):
+        return self == S.false
+    
     def _latex(self, p):
         return p._print_LogOp(self.args, r"\vee")
 
@@ -2238,8 +2069,13 @@ class Suffice(BooleanAssumption):
 
     """
 
-    def __new__(cls, *args, **assumptions):
-        return BinaryCondition.eval(cls, *args, **assumptions)
+    def __new__(cls, p, q, **assumptions):
+        if assumptions.get('plausible') and p.is_Inference and q.is_Inference:
+            if q.given_by(p):            
+                from sympy.core.inference import Inference
+                return Inference(BinaryCondition.__new__(cls, p, q), plausible=None)
+            
+        return BinaryCondition.eval(cls, p, q, **assumptions)
 
     @classmethod
     def eval(cls, *args):
@@ -2259,10 +2095,10 @@ class Suffice(BooleanAssumption):
         if B.is_BooleanFalse:
             return A.invert()
         
-        if A.is_BooleanTrue:
+        if A:
             return B
         
-        if A.is_BooleanFalse or B.is_BooleanTrue or A == B:
+        if A.is_BooleanFalse or B or A == B:
             return S.true
         
         if A.is_Relational and B.is_Relational:
@@ -2286,7 +2122,6 @@ class Suffice(BooleanAssumption):
             else:
                 if A in B._argset:
                     return S.true
-                
 
     def to_nnf(self, simplify=True):
         a, b = self.args
@@ -2344,7 +2179,7 @@ class Suffice(BooleanAssumption):
             p, p_set = self.premise_set()
             
             eqs = []
-            for eq in q.args:                
+            for eq in q.args: 
                 if eq in p_set:
                     continue
                 if eq.is_Or:
@@ -2385,6 +2220,7 @@ class Suffice(BooleanAssumption):
 
     def inference_status(self, child):
         return child == 0       
+
         
 class Necessary(BooleanAssumption):
     """
@@ -2435,6 +2271,7 @@ class Necessary(BooleanAssumption):
 
     def inference_status(self, child):
         return child == 1       
+
 
 class Equivalent(BooleanAssumption):
     """
@@ -2522,6 +2359,7 @@ class Equivalent(BooleanAssumption):
 
     def inference_status(self, child):
         raise Exception("boolean conditions within Equivalent are not applicable for inequivalent inference!")       
+
        
 class NotSuffice(BooleanAssumption):
 
@@ -2546,6 +2384,7 @@ class NotSuffice(BooleanAssumption):
     def inference_status(self, child):
         return child == 1
 
+
 class Unnecessary(BooleanAssumption):
     
     @classmethod
@@ -2561,6 +2400,7 @@ class Unnecessary(BooleanAssumption):
     def inference_status(self, child):
         return child == 0
 
+
 class Inequivalent(BooleanAssumption):
 
     def _sympystr(self, p): 
@@ -2571,6 +2411,7 @@ class Inequivalent(BooleanAssumption):
 
     def inference_status(self, child):
         raise Exception("boolean conditions within Inequivalent are not applicable for inequivalent inference!")       
+
 
 Suffice.reversed_type = Necessary
 Necessary.reversed_type = Suffice
@@ -3759,7 +3600,7 @@ def bool_map(bool1, bool2):
 
 
 def simplify_patterns_and():
-    from sympy.functions.elementary.extremum import Min, Max
+    from sympy.functions.elementary.miscellaneous import Min, Max
     from sympy.core import Wild
     from sympy.core.relational import Eq, Ne, Ge, Gt, Le, Lt
     a = Wild('a')
@@ -3794,7 +3635,7 @@ def simplify_patterns_and():
 
 
 def simplify_patterns_or():
-    from sympy.functions.elementary.extremum import Min, Max
+    from sympy.functions.elementary.miscellaneous import Min, Max
     from sympy.core import Wild
     from sympy.core.relational import Eq, Ne, Ge, Gt, Le, Lt
     a = Wild('a')
@@ -3826,7 +3667,7 @@ def simplify_patterns_or():
 
 
 def simplify_patterns_xor():
-    from sympy.functions.elementary.extremum import Min, Max
+    from sympy.functions.elementary.miscellaneous import Min, Max
     from sympy.core import Wild
     from sympy.core.relational import Eq, Ne, Ge, Gt, Le, Lt
     a = Wild('a')

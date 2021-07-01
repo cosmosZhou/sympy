@@ -5,7 +5,7 @@ from util import *
 def apply(self, t):
     e, interval = self.of(Contains)
     t = sympify(t)
-    return Equivalent(self, Contains(e - t, interval - t))
+    return Equivalent(self, Contains(e + (-t), interval + (-t)))
 
 
 @prove
@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(Contains(x, Interval(a, b)), t)
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(sets.contains.imply.contains.sub, t)
 

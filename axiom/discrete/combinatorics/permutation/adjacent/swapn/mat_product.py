@@ -41,7 +41,7 @@ def prove(Eq):
 
     Eq.induct = Eq.hypothesis.subs(m, m + 1)
 
-    Eq << Eq.induct.function.lhs.args[1].this.split(Slice[-1:])
+    Eq << Eq.induct.function.lhs.args[1].this.split(slice(-1))
 
     Eq << x @ Eq[-1]
 
@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[1].reversed)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq.hypothesis, Eq.induct, plausible=True)
 
     Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=m)
 

@@ -29,8 +29,6 @@ def prove(Eq):
 
     Eq << sets.contains.imply.et.split.interval.apply(Eq[1])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
-
     Eq <<= algebra.is_positive.gt.imply.gt.mul.apply(Eq[0], Eq[-2]), algebra.is_positive.le.imply.le.mul.apply(Eq[0], Eq[-1])
 
     Eq << sets.gt.le.imply.contains.interval.apply(Eq[-2], Eq[-1])

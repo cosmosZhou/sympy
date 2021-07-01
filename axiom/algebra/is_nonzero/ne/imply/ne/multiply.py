@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << algebra.is_nonzero.eq.imply.eq.divide.apply(Eq[0], Eq[-1])
+    Eq << algebra.is_nonzero.eq.imply.eq.div.apply(Eq[0], Eq[-1])
 
     Eq <<= Eq[-1] & Eq[1]
 

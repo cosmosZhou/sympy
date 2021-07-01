@@ -12,7 +12,8 @@ def apply(n, u, v):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, sets, algebra
+    from axiom import sets, algebra, discrete
+
     n = Symbol.n(integer=True, positive=True)
     u = Symbol.u(domain=Range(0, n + 1))
     v = Symbol.v(domain=Range(0, n + 1))
@@ -20,10 +21,9 @@ def prove(Eq):
 
     w, i, j = Eq[0].lhs.args
     Q = Eq[2].lhs.base
-
     Eq << sets.imply.all.conditionset.apply(Q[u])
 
-    Eq << algebra.all_et.imply.all.apply(Eq[-1])
+    Eq << algebra.all_et.imply.all.apply(Eq[-1], 1)
 
     Eq.x_j_equality = Eq[-1].this.function.apply(discrete.combinatorics.permutation.index.any, v)
 
@@ -40,7 +40,6 @@ def prove(Eq):
     Eq << Eq[-1].subs(i, n)
 
     k = Eq[-1].function.lhs.function.arg.args[0].indices[-1]
-
     Eq << Eq[1][k].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n + 1), simplify=False)
 
     Eq.x_n1_set_comprehension = Eq[-2].subs(Eq[-1].reversed)

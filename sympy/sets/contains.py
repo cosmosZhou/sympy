@@ -71,7 +71,7 @@ class Contains(BinaryCondition):
     @classmethod
     def eval(cls, x, s):
         if not s.is_set:
-            from sympy.utilities.miscellany import func_name
+            from sympy.utilities.misc import func_name
             raise TypeError('expecting Set, not %s' % func_name(s))
 
         ret = s.contains(x)
@@ -305,7 +305,7 @@ class NotContains(BinaryCondition):
     @classmethod
     def eval(cls, x, s):
         if not s.is_set:
-            from sympy.utilities.miscellany import func_name
+            from sympy.utilities.misc import func_name
             raise TypeError('expecting Set, not %s' % func_name(s))
 
         ret = s.contains(x)
@@ -332,7 +332,7 @@ class NotContains(BinaryCondition):
         if this is not None:
             return this
             
-        domain = e.domain // s
+        domain = e.domain - s
         if domain.is_FiniteSet:
             return self.invert_type(e, domain).simplify()
         
@@ -397,7 +397,7 @@ class NotContains(BinaryCondition):
     def domain_conditioned(self, x): 
         if self.lhs == x:
             domain = x.domain & self.domain_defined(x)
-            return x.domain_conditioned(self.invert_type(x, domain // self.rhs))
+            return x.domain_conditioned(self.invert_type(x, domain - self.rhs))
         
     @classmethod
     def simplify_All(cls, self, function, *limits):

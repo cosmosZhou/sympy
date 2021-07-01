@@ -810,38 +810,6 @@ class Mul(Expr, AssocOp):
         else:
             return args[0], self._new_rawargs(*args[1:])
 
-    def _detect_multiple_products(self):
-        last_product = None
-        function = []
-        limits = None
-        coeff = []
-        for arg in self.args:
-            if arg.is_Product:
-                last_product = arg                
-                if limits is None:
-                    limits = arg.limits
-                    function.append(arg.function)
-                else:
-                    if len(arg.limits) > len(limits):
-                        if arg.limits[len(limits):] == limits:
-                            function.append(arg.func(arg.function, *arg.limits[:len(limits)]))
-                        else:
-                            return 
-                    elif len(arg.limits) < len(limits):
-                        if limits[len(limits):] == arg.limits:
-                            function = [arg.func(func, *limits[:len(arg.limits)]) for func in function]
-                            function.append(arg.function)
-                            limits = arg.limits
-                        else:
-                            return
-                    elif limits != arg.limits:
-                        return 
-                continue
-
-            coeff.append(arg)
-            
-        return function, limits, coeff, last_product
-        
     @cacheit
     def as_coefficients_dict(self):
         """Return a dictionary mapping terms to their coefficient.

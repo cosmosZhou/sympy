@@ -11,7 +11,7 @@ from bisect import bisect
 from array import array as _array
 
 from sympy import Function, S
-from sympy.core.compatibility import as_int, range
+from sympy.core.compatibility import as_int
 from .primetest import isprime
 
 

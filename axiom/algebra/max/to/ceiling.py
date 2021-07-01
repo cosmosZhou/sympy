@@ -25,7 +25,7 @@ def prove(Eq):
     y = Symbol.y(real=True)
     Eq << apply(Max(ceiling(x), ceiling(y)))
 
-    Eq << Eq[0].apply(algebra.eq.given.et.split.ceiling)
+    Eq << Eq[0].apply(algebra.eq_ceiling.given.et)
 
     Eq <<= algebra.imply.gt.ceiling.apply(x), algebra.imply.gt.ceiling.apply(y)
 

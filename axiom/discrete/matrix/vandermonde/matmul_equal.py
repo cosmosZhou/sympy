@@ -14,18 +14,15 @@ def apply(x, m, n, d, delta):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     n = Symbol.n(domain=Range(1, oo))
     m = Symbol.m(domain=Range(1, oo))
     d = Symbol.d(domain=Range(0, oo))
-
     i = Symbol.i(domain=Range(0, m - d))
     j = Symbol.j(domain=Range(0, n))
     h = Symbol.h(integer=True)
-
     delta = Symbol.delta(real=True)
-
     x = Symbol.x(real=True)
-
     Eq << apply(x, m, n, d, delta)
 
     Eq << Eq[-1].this.lhs.apply(discrete.matmul.to.lamda)
@@ -34,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1][i, j]
 
-    Eq << Eq[-1].this.rhs.args[1].limits_swap()
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum_sum.limits.swap)
 
     Eq << Eq[-1].this.rhs.args[1].limits_subs(h, h - i)
 

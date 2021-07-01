@@ -9,7 +9,7 @@ def apply(a, wrt=None):
     if wrt is None:
         wrt = a.generate_var(**a.type.dict)
     U = a.universalSet
-    return Equal(conditionset(wrt, Unequal(wrt, a)), U // a.set)
+    return Equal(conditionset(wrt, Unequal(wrt, a)), U - a.set)
 
 
 @prove

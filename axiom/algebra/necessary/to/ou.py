@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(Necessary(x > y, f(x) > g(y)))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << Eq[-2].this.lhs.apply(algebra.necessary.imply.ou)
 

@@ -2,10 +2,8 @@ from util import *
 
 
 @apply
-def apply(given, index=None):
+def apply(given, index):
     eqs, *limits = given.of(Any[And])
-    if index is None:
-        return tuple(Any(eq, *limits)for eq in eqs)
     eq = eqs[index]
     return Any(eq, *limits)
 
@@ -13,12 +11,12 @@ def apply(given, index=None):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True)
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)
     c = Symbol.c(real=True)
     f = Function.f(shape=(), real=True)
-
     Eq << apply(Any[x:a:b]((x <= c) & (f(x) >= 1)), index=0)
 
     Eq << ~Eq[-1]

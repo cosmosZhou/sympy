@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq.suffice.this.find(Contains).apply(sets.contains.imply.ou.st.piecewise)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.suffice, index=Slice[1:3])
+    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.suffice, index=slice(1, 3))
 
     Eq << Eq[-1].this.rhs.apply(sets.contains.given.ou.split.union, simplify=None)
 
@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.given.ou.st.piecewise)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.suffice, index=Slice[2:4])
+    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.suffice, index=slice(2, 4))
 
     Eq << Eq.necessary.this.find(Contains).apply(sets.contains.imply.ou.split.union, simplify=None)
 
@@ -45,11 +45,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.find(Contains).apply(sets.contains.imply.ou.st.piecewise)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.suffice, index=Slice[2:4])
+    Eq << Eq[-1].this.lhs.apply(algebra.ou.to.suffice, index=slice(2, 4))
 
     Eq << Eq[-1].this.rhs.apply(sets.contains.given.ou.st.piecewise)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.suffice, index=Slice[1:3])
+    Eq << Eq[-1].this.rhs.apply(algebra.ou.to.suffice, index=slice(1, 3))
 
 
 if __name__ == '__main__':

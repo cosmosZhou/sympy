@@ -38,7 +38,7 @@ function underline_all_theorems() {
 		// console.log('statement = ' + statement);
 		var index = 0;
 		var previousTheoremLength = 0;
-		for (let theorem of matchAll(statement, /(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+/)) {
+		for (let theorem of statement.matchAll(/(?:algebra|sets|calculus|discrete|geometry|keras|stats)(?:\.\w+)+/g)) {
 			theorem = theorem[0];
 			if (theorem.endsWith('.apply')) {
 				theorem = theorem.substring(0, theorem.length - 6);

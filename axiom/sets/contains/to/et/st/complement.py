@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(Contains(x, B // A))
 
-    Eq.suffice, Eq.necessary = algebra.equivalent.given.suffice.apply(Eq[-1])
+    Eq.suffice, Eq.necessary = algebra.equivalent.given.et.suffice.apply(Eq[-1])
 
     Eq << algebra.suffice.given.suffice.split.et.apply(Eq.suffice)
 

@@ -45,7 +45,7 @@ __all__ = [
 
 from sympy import (atan2, Expr, I, im, Matrix, oo, pi, re, sqrt, sympify,
     together)
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 
 ###
 # A, B, C, D matrices

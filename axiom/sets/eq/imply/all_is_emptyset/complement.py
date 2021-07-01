@@ -22,7 +22,7 @@ def apply(given, excludes=None):
 
     i_domain = limitsDict[i] or i.domain
 
-    limits = [(j, i_domain // {i})] + [*limits]
+    limits = [(j, i_domain - {i})] + [*limits]
     return All(Equal(xi & xj, xi.etype.emptySet).simplify(), *limits)
 
 
@@ -32,7 +32,7 @@ def prove(Eq):
     i = Symbol.i(integer=True)
     k = Symbol.k(integer=True, positive=True, given=True)
 
-    j = Symbol.j(domain=Range(0, k + 1) // {i})
+    j = Symbol.j(domain=Range(0, k + 1) - {i})
 
     assert j <= k
     assert k >= j

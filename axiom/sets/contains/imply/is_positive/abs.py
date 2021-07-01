@@ -14,7 +14,7 @@ def apply(given):
 def prove(Eq):
     from axiom import sets, algebra
     x = Symbol.x(complex=True)
-    Eq << apply(Contains(x, Reals // {0}))
+    Eq << apply(Contains(x, Reals - {0}))
 
     Eq << sets.contains.imply.ou.split.union.apply(Eq[0], simplify=False)
 

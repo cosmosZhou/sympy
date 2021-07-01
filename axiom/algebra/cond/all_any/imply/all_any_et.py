@@ -11,15 +11,13 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     y = Symbol.y(real=True)
     x = Symbol.x(real=True)
-
     B = Symbol.B(etype=dtype.real)
     A = Symbol.A(etype=dtype.real)
-
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-
     Eq << apply(f(x, y) > 0, All[y:B](Any[x:A]((g(x, y) > 0))))
 
     Eq << Eq[-1].this.function.apply(algebra.any_et.given.et, index=0)

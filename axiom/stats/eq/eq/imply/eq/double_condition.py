@@ -35,7 +35,7 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import stats, algebra, calculus
+    from axiom import stats, calculus, algebra
 
     x = Symbol.x(real=True, random=True)
     y = Symbol.y(real=True, random=True)
@@ -46,9 +46,7 @@ def prove(Eq):
 
     Eq.y_nonzero = stats.eq_conditioned.imply.is_nonzero.apply(Eq[0], reverse=True)
 
-    Eq << stats.is_nonzero.imply.et.apply(Eq.yz_nonzero)
-
-    Eq.z_nonzero = algebra.et.imply.cond.apply(Eq[-1], index=1)
+    _, Eq.z_nonzero = stats.is_nonzero.imply.et.apply(Eq.yz_nonzero)
 
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq.yz_nonzero, x)
 

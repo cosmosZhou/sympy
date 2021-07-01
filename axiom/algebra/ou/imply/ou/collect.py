@@ -32,17 +32,16 @@ def apply(given, *, cond=None):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     k = Symbol.k(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(k,), given=True)
     y = Symbol.y(real=True, shape=(k,), given=True)
-
     f = Function.f(real=True)
     h = Function.h(real=True)
     g = Function.g(real=True)
-
     Eq << apply(Unequal(x, y) | Equal(f(x), g(y)) & (y > 0) | Equal(h(x), g(y)) & (y > 0), cond=y > 0)
 
-    Eq << Eq[1].this.args[0].apply(algebra.et.given.ou, simplify=None)
+    Eq << Eq[1].this.args[0].apply(algebra.cond.ou.given.ou, simplify=None)
 
 
 if __name__ == '__main__':

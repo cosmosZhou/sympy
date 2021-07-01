@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(n, w=None):
     i = Symbol.i(domain=Range(0, n))
@@ -13,7 +12,7 @@ def apply(n, w=None):
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
 
-    return All(Equal(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Range(1, n) // {i}))
+    return All(Equal(w[0, i] @ w[0, j] @ w[0, i], w[i, j]), (j, Range(1, n) - {i}))
 
 
 @prove
@@ -29,6 +28,7 @@ def prove(Eq):
     t, i = w_ti.indices
 
     Eq << Eq[-1].subs(t, 0)
+
 
 if __name__ == '__main__':
     run()

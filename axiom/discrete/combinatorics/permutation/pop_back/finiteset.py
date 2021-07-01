@@ -33,9 +33,9 @@ def prove(Eq):
     Eq << apply(Equal(p[:n + 1].set_comprehension(), a[:n + 1].set_comprehension()),
                 Equal(p[n], a[n]))
 
-    Eq << Eq[0].this.lhs.split(Slice[-1:])
+    Eq << Eq[0].this.lhs.split(slice(-1))
 
-    Eq << Eq[-1].this.rhs.split(Slice[-1:])
+    Eq << Eq[-1].this.rhs.split(slice(-1))
 
     Eq << Eq[-1].subs(Eq[1])
 

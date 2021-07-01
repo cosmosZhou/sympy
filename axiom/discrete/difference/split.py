@@ -15,12 +15,12 @@ def apply(self, index):
     return Equal(self, rhs, evaluate=False)
 
 
-@prove(provable=False)
+@prove
 def prove(Eq):
     x = Symbol.x(real=True)
     f = Function.f(real=True)
     d = Symbol.d(integer=True, positive=True, given=False)
-    Eq << apply(Difference(f(x), x, d), Slice[:-1])
+    Eq << apply(Difference(f(x), x, d), slice(0, -1))
 
     Eq << Eq[-1].this.rhs.simplify()
 

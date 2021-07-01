@@ -34,5 +34,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del finiteset
 from . import finiteset, piecewise

@@ -1,4 +1,4 @@
-from sympy.functions.elementary.extremum import Max, Min
+from sympy.functions.elementary.miscellaneous import Max, Min
 from sympy.core.symbol import Symbol
 from sympy.concrete.expr_with_limits import Lamda
 from sympy.core.function import Function

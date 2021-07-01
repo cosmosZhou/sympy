@@ -32,7 +32,7 @@ from sympy.core.exprtools import factor_terms
 from sympy.core.function import expand, expand_mul, expand_power_base
 from sympy.core.add import Add
 from sympy.core.mul import Mul
-from sympy.core.compatibility import range
+
 from sympy.core.cache import cacheit
 from sympy.core.symbol import Dummy, Wild
 from sympy.simplify import hyperexpand, powdenest, collect
@@ -46,7 +46,7 @@ from sympy.functions.elementary.hyperbolic import \
 from sympy.functions.elementary.trigonometric import cos, sin
 from sympy.functions.special.hyper import meijerg
 from sympy.utilities.iterables import multiset_partitions, ordered
-from sympy.utilities.miscellany import debug as _debug
+from sympy.utilities.misc import debug as _debug
 from sympy.utilities import default_sort_key
 
 # keep this at top for easy reference

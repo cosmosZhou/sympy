@@ -27,7 +27,7 @@ def prove(Eq):
     w = Symbol.w(real=True)
     Eq << apply(Contains(w, Interval(0, 1, left_open=True, right_open=True)), Contains(x0, domain), Contains(x1, domain))
 
-    Eq.w_is_positive, Eq.w1_is_positive = sets.contains.imply.conds.split.interval.apply(Eq[0])
+    Eq.w_is_positive, Eq.w1_is_positive = sets.contains.imply.et.split.interval.apply(Eq[0])
 
     Eq.w1_is_positive = -Eq.w1_is_positive + 1
 
@@ -38,6 +38,7 @@ def prove(Eq):
     Eq << sets.contains.contains.imply.contains.interval.add.apply(Eq[-2], Eq[-1])
 
     Eq << Eq[-1].this.rhs.find(Mul[Add]).apply(algebra.mul.to.add)
+
     Eq << Eq[-1].this.rhs.find(Mul[Add]).apply(algebra.mul.to.add)
 
 

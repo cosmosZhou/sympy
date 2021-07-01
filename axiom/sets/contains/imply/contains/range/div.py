@@ -19,21 +19,18 @@ def apply(given, d):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     x = Symbol.x(integer=True)
     a = Symbol.a(integer=True)
     b = Symbol.b(integer=True)
-
     d = Symbol.d(integer=True, positive=True)
-
     Eq << apply(Contains(d * x, Range(a, b + 1)), d)
 
     Eq << sets.contains.imply.et.split.range.apply(Eq[0])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    Eq << algebra.lt.imply.le.strengthen.apply(Eq[-1])
 
-    Eq << algebra.lt.imply.le.strengthen.apply(Eq[-2])
-
-    Eq <<= Eq[-2] / d, Eq[-1] / d
+    Eq <<= Eq[-3] / d, Eq[-1] / d
 
     Eq <<= algebra.ge.imply.ge.ceiling.apply(Eq[-2]), algebra.le.imply.le.floor.apply(Eq[-1])
 

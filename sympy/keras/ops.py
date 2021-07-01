@@ -1,4 +1,4 @@
-from sympy.functions.elementary.extremum import Min, Max
+from sympy.functions.elementary.miscellaneous import Min, Max
 from sympy.core.function import Function
 
 

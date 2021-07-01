@@ -35,25 +35,23 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     m = Symbol.m(shape=(oo,), real=True)
     g = Symbol.g(shape=(oo,), real=True)
     t = Symbol.t(integer=True, positive=True)
     beta = Symbol.beta(real=True, nonzero=True)
-    recurrence = Equal(m[t], beta * m[t - 1] + (1 - beta) * g[t])
-    initial_condition = Equal(m[0], 0)
-
-    Eq << apply(initial_condition, recurrence)
+#     beta = Symbol.beta(real=True, zero=False)
+    Eq << apply(Equal(m[0], 0), Equal(m[t], beta * m[t - 1] + (1 - beta) * g[t]))
 
     Eq << Eq[1] / beta ** t
 
-    Eq << Eq[-1].expand()
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add)
 
-    Eq << Eq[-1].powsimp()
+    Eq << Eq[-1].this.rhs.powsimp()
 
-    Eq << Eq[-1].collect(g[t])
+    Eq << Eq[-1].this.rhs.collect(g[t])
 
     k = Eq[2].lhs.indices[0]
-
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (t, 1, k + 1))
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
@@ -64,7 +62,11 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << Eq[-1].solve(m[k])
+    Eq << Eq[-1] * beta ** k
+
+    Eq << Eq[-1].this.find(Pow[Add]).apply(algebra.pow.to.mul.split.exponent)
+    
+    Eq << Eq[-1].this.find(Add).apply(algebra.add.to.mul)
 
 
 if __name__ == '__main__':

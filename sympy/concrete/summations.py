@@ -4,7 +4,7 @@ from sympy.concrete.expr_with_limits import AddWithLimits
 from sympy.concrete.expr_with_intlimits import ExprWithIntLimits
 from sympy.concrete.gosper import gosper_sum
 from sympy.core.add import Add
-from sympy.core.compatibility import range
+
 from sympy.core.function import Derivative
 from sympy.core.mul import Mul
 from sympy.core.relational import Eq
@@ -16,8 +16,7 @@ from sympy.logic.boolalg import And
 from sympy.polys import apart, PolynomialError, together
 from sympy.series.limitseq import limit_seq
 from sympy.series.order import O
-from sympy.sets.sets import Complement, Interval, Union
-from sympy.sets.finiteset import FiniteSet
+from sympy.sets.sets import Complement, Interval, Union, FiniteSet
 from sympy.simplify import denom
 from sympy.simplify.combsimp import combsimp
 from sympy.simplify.powsimp import powsimp
@@ -1005,7 +1004,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     del args[i]
                     A = A.func(*args)
                     a, *_ = s
-                    return Piecewise((self.function._subs(self.variable, a), Contains(a, A // B)), (0, True))
+                    return Piecewise((self.function._subs(self.variable, a), Contains(a, A - B)), (0, True))
         
     def simplify(self, deep=False, **kwargs):
         from sympy import Contains, Range
@@ -1407,27 +1406,6 @@ domain & limit[1] = %s
             function = function.function
 
         return self.func(function, *self.limits, limit).simplify()
-
-    def limits_swap(self):
-        if self.function.is_Mul:
-            index = -1
-            for i in range(len(self.function.args)):
-                if self.function.args[i].is_Sum:
-                    index = i
-                    break
-            if index >= 0: 
-                args = [*self.function.args]
-                sgm = args.pop(index)
-                if isinstance(sgm.function, Mul):
-                    args.extend(sgm.function.args)
-                else:
-                    args.append(sgm.function)
-                function = Mul(*args).powsimp()
-                independent, dependent = function.as_independent(*(x for x, *_ in self.limits), as_Add=False)
-                if independent == S.One:
-                    return sgm.func(self.func(function, *self.limits), *sgm.limits)
-                return sgm.func(independent * self.func(dependent, *self.limits), *sgm.limits)
-        return ExprWithIntLimits.limits_swap(self)
 
     def min(self):
         return self.func(self.function.min(), *self.limits).doit()

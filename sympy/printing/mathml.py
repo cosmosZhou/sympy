@@ -5,7 +5,7 @@ A MathML printer.
 from __future__ import print_function, division
 
 from sympy import sympify, S, Mul
-from sympy.core.compatibility import range, string_types, default_sort_key
+from sympy.core.compatibility import default_sort_key
 from sympy.printing.conventions import split_super_sub, requires_partial
 from sympy.printing.precedence import precedence_traditional, PRECEDENCE
 from sympy.printing.pretty.pretty_symbology import greek_unicode
@@ -549,7 +549,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
                 return '&#xB7;'
             elif self._settings["mul_symbol"] == 'ldot':
                 return '&#x2024;'
-            elif not isinstance(self._settings["mul_symbol"], string_types):
+            elif not isinstance(self._settings["mul_symbol"], str):
                 raise TypeError
             else:
                 return self._settings["mul_symbol"]

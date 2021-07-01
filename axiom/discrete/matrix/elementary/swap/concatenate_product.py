@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(m, m + 1)
 
-    Eq << Eq.induct.this.rhs.split(Slice[-1:])
+    Eq << Eq.induct.this.rhs.split(slice(-1))
 
     Eq << Eq[-1].subs(Eq[0].reversed)
 
@@ -41,7 +41,7 @@ def prove(Eq):
     i = Eq[0].rhs.variable
     Eq << Eq[-1].this.rhs.args[0].arg.args[0].limits_subs(i, i - 1)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=m, start=1)
 

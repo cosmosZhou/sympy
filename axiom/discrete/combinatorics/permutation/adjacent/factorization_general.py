@@ -140,7 +140,7 @@ def prove(Eq):
     i, j = Eq[-1].rhs.args[1].indices
     Eq.d_swap = Eq[-1].subs(i, n).subs(j, b[n])
 
-    Eq << Eq.d_induction_definition.rhs.args[1].this.bisect(Slice[-1:])
+    Eq << Eq.d_induction_definition.rhs.args[1].this.bisect(slice(-1))
 
     Eq << axiom.discrete.matrix.elementary.swap.concatenate_product.apply(n, n, b)
 
@@ -148,7 +148,7 @@ def prove(Eq):
 
     Eq << Eq.d_induction_definition.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.args[0].bisect(Slice[-1:])
+    Eq << Eq[-1].this.rhs.args[0].bisect(slice(-1))
 
     Eq << MatMul(*Eq[-1].rhs.args[:2]).this.expand()
 
@@ -200,13 +200,13 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[-2].reversed)
 
-    Eq << Eq.p_quote_definition.lhs.this.bisect(Slice[-1:])
+    Eq << Eq.p_quote_definition.lhs.this.bisect(slice(-1))
 
     Eq << Eq[-1].subs(Eq[-2])
 
     Eq << Eq[-1].subs(Eq.any_n_plausible)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=2)
 

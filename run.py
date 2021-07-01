@@ -1,6 +1,6 @@
 #!python
 import os, sys, re
-from sympy.utilities.miscellany import Text
+from sympy.utilities.misc import Text
 
 try:
     import axiom
@@ -500,8 +500,8 @@ def run_with_module(*modules):
     print('exit_code =', exit_code)
     exit(exit_code)
 
-    
-if __name__ == '__main__':
+
+def cgi_run():
     is_http = 'HTTP_HOST' in os.environ
     if is_http:
         print("Content-type:text/html\n")        
@@ -519,8 +519,8 @@ if __name__ == '__main__':
         if 'clean' in kwargs:
             clean()
 
-    debug = kwargs.get('debug', False)
-    parallel = kwargs.get('parallel', True)    
+    debug = kwargs.pop('debug', False)
+    parallel = kwargs.pop('parallel', True)    
     if not args:
         if kwargs:
             for key, value in kwargs.items():
@@ -536,4 +536,6 @@ if __name__ == '__main__':
         
     from util.utility import chmod
     chmod()
-                    
+        
+if __name__ == '__main__':
+    cgi_run()

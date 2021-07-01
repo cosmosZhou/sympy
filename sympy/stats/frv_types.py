@@ -106,7 +106,7 @@ class DiscreteUniformDistribution(SingleFiniteDistribution):
         # suggestion for the user
         if len(set(args)) != len(args):
             from sympy.utilities.iterables import multiset
-            from sympy.utilities.miscellany import filldedent
+            from sympy.utilities.misc import filldedent
             weights = multiset(args)
             n = Integer(len(args))
             for k in weights:

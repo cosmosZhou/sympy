@@ -33,28 +33,24 @@ def apply(given, i=None, j=None):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
+    from axiom import algebra, discrete
 
     n = Symbol.n(domain=Range(2, oo))
-
     x = Symbol.x(shape=(n,), integer=True, given=True)
-
     k = Symbol.k(integer=True)
-
     j = Symbol.j(domain=Range(0, n), given=True)
     i = Symbol.i(domain=Range(0, n), given=True)
-
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), i, j)
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=Equal(i, j))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq <<= ~Eq[-1], ~Eq[-2]
 
     Eq << Eq[-2].apply(algebra.eq.ne.imply.ne.subs)
 
-    Eq << Eq[-1].apply(algebra.ne.cond.imply.et)
+    Eq << Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond)
 
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[0], j=j)[1]
 

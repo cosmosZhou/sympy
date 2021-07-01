@@ -29,7 +29,7 @@ def prove(Eq):
     Eq.S_supset = Eq[-1].this.function.apply(sets.contains.contains.imply.subset.finiteset, simplify=False)
 
     ab = Eq.S_supset.lhs
-    Eq << Eq.S_supset.this.function.apply(sets.subset.imply.et.union)
+    Eq << Eq.S_supset.this.function.apply(algebra.cond.imply.et.invoke, sets.subset.imply.eq.union, simplify=None)
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=1)
 

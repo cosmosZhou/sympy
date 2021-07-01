@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << algebra.ou.given.et.apply(Eq[-1])
 
-    Eq << algebra.ou.given.ou.apply(Eq[-1], Slice[:2])
+    Eq << algebra.ou.given.ou.apply(Eq[-1], slice(0, 2))
 
 
 if __name__ == '__main__':

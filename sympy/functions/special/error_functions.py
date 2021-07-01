@@ -4,7 +4,7 @@
 from __future__ import print_function, division
 
 from sympy.core import Add, S, sympify, cacheit, pi, I
-from sympy.core.compatibility import range
+
 from sympy.core.function import Function, ArgumentIndexError
 from sympy.core.symbol import Symbol
 from sympy.functions.combinatorial.factorials import factorial

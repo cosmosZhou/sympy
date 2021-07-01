@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     (xi, xj), *limits = given.of(All[Equal[Intersection, EmptySet]])
-    
+
     if len(limits) == 2:
         (j, j_domain), i_limit = limits
         assert j_domain.is_Complement
@@ -21,7 +21,7 @@ def apply(given):
         j, *_ = j.args
 
         i_limit = (i, universe)
-        
+
     if not xi._has(i):
         xi, xj = xj, xi
 
@@ -37,7 +37,7 @@ def prove(Eq):
     n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
 
-    j_domain = Range(0, n) // {i}
+    j_domain = Range(0, n) - {i}
     emptySet = x[i].etype.emptySet
     Eq << apply(All[j: j_domain, i: n](Equal(x[i] & x[j], emptySet)))
 
@@ -51,11 +51,11 @@ def prove(Eq):
 
     Eq << Eq.yi_definition.reversed
 
-    Eq << algebra.all.all.imply.all_et.limits_intersect.apply(Eq[0], Eq[-1], simplify=None)
+    Eq << algebra.all.all.imply.all_et.apply(Eq[0], Eq[-1], simplify=None)
 
     Eq << Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
 
-    Eq << algebra.all.all.imply.all_et.limits_intersect.apply(Eq[-1], Eq[-3].limits_subs(i, j), simplify=None)
+    Eq << algebra.all.all.imply.all_et.apply(Eq[-1], Eq[-3].limits_subs(i, j), simplify=None)
 
     Eq.nonoverlapping = Eq[-1].this.function.apply(algebra.eq.eq.imply.eq.subs)
 

@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq.mul_is_zero = Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.transit, reverse=True)
 
-    is_nonzero = And(Contains(Eq[0].lhs, Reals // {0}), Eq[1])
+    is_nonzero = And(Contains(Eq[0].lhs, Reals - {0}), Eq[1])
     Eq << Suffice(is_nonzero, is_nonzero, plausible=True)
 
     Eq << Eq[-1].this.rhs.apply(calculus.is_limited.is_limited.imply.eq.algebraic_limit_theorem.multiply.nonzero)

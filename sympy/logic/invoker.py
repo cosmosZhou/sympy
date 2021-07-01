@@ -35,7 +35,13 @@ class Invoker:
         if obj.is_Inference and obj.is_Boolean: 
             equivalent = obj.equivalent
             if equivalent is not None:
-                if not isinstance(equivalent, (list, tuple)):
+                if isinstance(equivalent, (list, tuple)):
+                    clue = equivalent[0].clue
+                    if clue == 'given':
+                        return self.inference_status(False)
+                    elif clue == 'imply':
+                        return self.inference_status(True)
+                else:
                     # in case of result of simplify                    
                     if equivalent is not self.target:
                         clue = equivalent.clue
@@ -178,10 +184,11 @@ class Invoker:
             
             obj = getattr(this, self.callable.__name__)(*args, **kwargs)
             if obj.is_BooleanAtom:
-                if obj.is_BooleanTrue:
+                if obj:
                     parent = self.parent
                     if parent.is_ExprCondPair:
                         if self.target is parent.cond:
+                            return obj
                             return self.target
                 return obj                
             

@@ -3,7 +3,7 @@ A Printer for generating readable representation of most sympy classes.
 """
 from sympy.core import S, Rational, Pow, Basic, Mul
 from sympy.core.mul import _keep_coeff
-from sympy.core.compatibility import string_types
+
 from .printer import Printer
 from sympy.printing.precedence import precedence, PRECEDENCE
 
@@ -33,7 +33,7 @@ class StrPrinter(Printer):
         return sep.join([self.parenthesize(item, level) for item in args])
 
     def emptyPrinter(self, expr):
-        if isinstance(expr, string_types):
+        if isinstance(expr, str):
             return expr
         elif isinstance(expr, Basic):
             return repr(expr)

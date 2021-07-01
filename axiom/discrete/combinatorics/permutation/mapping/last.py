@@ -17,14 +17,14 @@ def apply(n, P_quote=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n)
+
     x = Eq[0].rhs.variable.base
     P = Eq[0].lhs
     P_quote = Eq[1].lhs
-
     i = Symbol.i(integer=True)
-
     x_quote = Symbol("x'", Lamda[i:n + 1](Piecewise((n, Equal(i, n)), (x[i], True))))
     Eq.x_quote_definition = x_quote.this.definition
 
@@ -46,11 +46,11 @@ def prove(Eq):
 
     Eq << Eq.P2P_quote.this.function.rhs.definition
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq << sets.imply.all.conditionset.apply(P_quote)
 
-    Eq << algebra.all_et.imply.all.apply(Eq[-1])
+    Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 
     Eq << algebra.cond.all.imply.all_et.apply(Eq.x_quote_n_definition, Eq[-2], simplify=False)
 
@@ -58,7 +58,7 @@ def prove(Eq):
 
     Eq.mapping_quote = All[x[:n + 1]:P_quote](Equal(x_quote, x[:n + 1]), plausible=True)
 
-    Eq << Eq.mapping_quote.this.function.apply(algebra.eq.given.et.split.blockmatrix, Slice[-1:])
+    Eq << Eq.mapping_quote.this.function.apply(algebra.eq.given.et.split.blockmatrix, slice(-1))
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 

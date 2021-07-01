@@ -39,3 +39,4 @@ from . import det_mul
 from . import fallingFactorial
 
 from . import risingFactorial
+from . import det_matmul

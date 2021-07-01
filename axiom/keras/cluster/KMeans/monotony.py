@@ -27,16 +27,14 @@ from axiom.keras.cluster.KMeans.nonoverlapping import cluster, mean
 
 @prove(proved=False)
 def prove(Eq):
-    from axiom import keras, sets, algebra
+    from axiom import keras, algebra, sets
+
     M = Symbol.M(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
-
     k = Symbol.k(domain=Range(0, M))
-
     x = Symbol.x(real=True, shape=(M, n))
     w = Symbol.omega(shape=(k,), etype=dtype.integer, emptyset=False)
-
     Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
 
     Eq << keras.cluster.KMeans.equivalent.apply(Eq[1], Eq[2], x=x)
@@ -44,7 +42,6 @@ def prove(Eq):
     Eq << algebra.equivalent.imply.eq.sum.collapse.apply(Eq[-1], Eq[3].rhs.function)
 
     i_ = Symbol.i(Eq[-1].find(Indexed, Sum))
-
     Eq << Eq[-1].subs(i_.this.definition.reversed)
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.domain_defined.delete)
@@ -56,7 +53,6 @@ def prove(Eq):
     Eq << algebra.equivalent.imply.eq.sum.collapse.apply(Eq[-1], Eq.plausible.lhs.function)
 
     i__ = Symbol("i'", Eq[-1].find(Indexed, ArgMin))
-
     Eq << Eq[-1].subs(i__.this.definition.reversed)
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.domain_defined.delete)

@@ -13,12 +13,11 @@ def apply(given, n):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True, positive=True, given=False)
     x = Symbol.x(integer=True)
     k = Symbol.k(integer=True)
-
     A = Symbol.A(shape=(oo,), etype=dtype.integer)
-
     Eq << apply(NotContains(x, A[k]), n)
 
     Eq.initial = Eq[0].subs(n, 1)
@@ -27,9 +26,9 @@ def prove(Eq):
 
     Eq << algebra.suffice.imply.suffice.et.both_sided.apply(Eq[0], cond=NotContains(x, A[n]))
 
-    Eq << Eq[-1].this.lhs.apply(algebra.et.given.all.absorb.back)
+    Eq << Eq[-1].this.lhs.apply(algebra.cond.all.given.all.push_back)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.suffice.imply.cond.induct.apply(Eq[-1], n=n, start=1)
 

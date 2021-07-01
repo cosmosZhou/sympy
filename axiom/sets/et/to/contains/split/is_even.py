@@ -13,14 +13,14 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     a = Symbol.a(integer=True)
     b = Symbol.b(integer=True)
     n = Symbol.n(integer=True)
-
     Eq << apply(Equal(n % 2, 0) & Contains(n, Range(a, b + 1)))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[0])
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
 
     Eq << Eq[-2].this.lhs.apply(sets.is_even.contains.imply.contains)
 

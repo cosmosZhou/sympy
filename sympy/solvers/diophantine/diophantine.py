@@ -28,7 +28,7 @@ from sympy.polys.polytools import Poly, factor_list
 from sympy.simplify.simplify import signsimp
 from sympy.solvers.solveset import solveset_real
 from sympy.utilities import default_sort_key, numbered_symbols
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 
 
 

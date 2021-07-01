@@ -155,7 +155,7 @@ def dotedges(expr, atom=lambda x: not isinstance(x, Basic), pos=(), repeat=True)
     "Add(Integer(2), Symbol('x'))_()" -> "Integer(2)_(0,)";
     "Add(Integer(2), Symbol('x'))_()" -> "Symbol('x')_(1,)";
     """
-    from sympy.utilities.miscellany import func_name
+    from sympy.utilities.misc import func_name
     if atom(expr):
         return []
     else:

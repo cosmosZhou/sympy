@@ -105,7 +105,7 @@ See the appropriate docstrings for a detailed explanation of the output.
 #      - Idx with step determined by function call
 
 from sympy.core import Expr, Tuple, Symbol, sympify, S
-from sympy.core.compatibility import (is_sequence, string_types, NotIterable,
+from sympy.core.compatibility import (is_sequence, NotIterable,
                                       Iterable)
 from sympy.core.sympify import _sympify
 
@@ -221,7 +221,7 @@ class Indexed(Expr):
         if not args:
             return base
 #             raise IndexException("Indexed needs at least one index.")
-        if isinstance(base, string_types):
+        if isinstance(base, str):
             base = Symbol(base, shape=(S.Infinity,))
         elif isinstance(base, Symbol):
             assert base.shape
@@ -787,7 +787,7 @@ class Slice(Expr):
             assert start != stop, "%s != %s" % (start, stop)
             indices[i] = Tuple(start, stop)
 
-        if isinstance(base, string_types):
+        if isinstance(base, str):
             from sympy import oo
             base = Symbol(base, shape=(oo,))
         elif base.is_Symbol:
@@ -1347,7 +1347,7 @@ class SliceIndexed(Expr):
         return Cup({self.base[i]}, (i, *self.index))
 
     def __new__(cls, base, *args, **kw_args):
-        from sympy.utilities.miscellany import filldedent
+        from sympy.utilities.misc import filldedent
 
         if not args:
             raise IndexException("Indexed needs at least one index.")
@@ -1383,7 +1383,7 @@ class SliceIndexed(Expr):
             assert positionOfIndices and positionOfIndices == [*range(len(positionOfSlices), len(args))], 'SliceIndexed requires nonempty continuous indices up to the end'
             args = indices
 
-        if isinstance(base, string_types):
+        if isinstance(base, str):
             from sympy import oo
             base = Symbol(base, shape=(oo,))
         elif base.is_Symbol:
@@ -2015,9 +2015,9 @@ class Idx(Expr):
     _diff_wrt = True
 
     def __new__(cls, label, range=None, **kw_args):
-        from sympy.utilities.miscellany import filldedent
+        from sympy.utilities.misc import filldedent
 
-        if isinstance(label, string_types):
+        if isinstance(label, str):
             label = Symbol(label, integer=True)
         label, range = list(map(sympify, (label, range)))
 

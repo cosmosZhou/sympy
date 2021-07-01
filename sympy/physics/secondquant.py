@@ -13,7 +13,7 @@ from sympy import (Add, Basic, cacheit, Dummy, Expr, Function, I,
                    zeros)
 from sympy.printing.str import StrPrinter
 
-from sympy.core.compatibility import range
+
 from sympy.utilities.iterables import has_dups
 from sympy.utilities import default_sort_key
 

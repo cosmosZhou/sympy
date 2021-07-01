@@ -6,9 +6,7 @@ from mpmath.libmp.libmpf import prec_to_dps
 
 from sympy.core.add import Add
 from sympy.core.basic import Basic
-from sympy.core.compatibility import (
-    Callable, NotIterable, as_int, default_sort_key, is_sequence, range,
-    reduce, string_types)
+from sympy.core.compatibility import (Callable, NotIterable, as_int, default_sort_key, is_sequence, reduce)
 from sympy.core.decorators import deprecated
 from sympy.core.expr import Expr
 from sympy.core.function import expand_mul
@@ -18,14 +16,14 @@ from sympy.core.singleton import S
 from sympy.core.symbol import Dummy, Symbol, _uniquely_named_symbol, symbols
 from sympy.core.sympify import sympify
 from sympy.functions import exp, factorial
-from sympy.functions.elementary.extremum import Max, Min
+from sympy.functions.elementary.miscellaneous import Max, Min
 from sympy.polys import PurePoly, cancel, roots
 from sympy.printing import sstr
 from sympy.simplify import nsimplify
 from sympy.simplify import simplify as _simplify
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 from sympy.utilities.iterables import flatten, numbered_symbols
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 
 from .common import MatrixCommon, MatrixError, NonSquareMatrixError, ShapeError
 
@@ -3075,7 +3073,7 @@ class MatrixBase(MatrixCommon):
                 return Max(*[sum(m.row(i)) for i in range(m.rows)])
 
             elif (ord is None or isinstance(ord,
-                                            string_types) and ord.lower() in
+                                            str) and ord.lower() in
                 ['f', 'fro', 'frobenius', 'vector']):
                 # Reshape as vector and send back to norm function
                 return self.vec().norm(ord=2)

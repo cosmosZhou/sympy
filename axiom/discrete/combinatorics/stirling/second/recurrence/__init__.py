@@ -9,14 +9,15 @@ def apply(n, k):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
+    from axiom import algebra, discrete
+
     k = Symbol.k(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(n, k)
 
     Eq << Eq[0].apply(algebra.cond.given.et.all, cond=k < n)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     k_ = Symbol.k(domain=Range(1, n))
     Eq << discrete.combinatorics.stirling.second.recurrence.k_less_than_n.apply(n, k_)

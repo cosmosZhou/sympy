@@ -13,24 +13,21 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import calculus, sets, algebra
+    from axiom import calculus, algebra, sets
+
     a = Symbol.a(real=True)
     b = Symbol.b(real=True, domain=Interval(a, oo, left_open=True))
-
     assert b > a
     assert b - a > 0
-
     f = Function.f(shape=(), real=True)
     given = calculus.integral.intermediate_value_theorem.is_continuous(f, a, b)
-
     z = given.lhs.args[1][0]
-
     Eq << apply(given)
 
     m = Symbol.m(Minimize[z:a:b](f(z)))
     M = Symbol.M(Maximize[z:a:b](f(z)))
-
     Eq.min = m.this.definition
+
     Eq.max = M.this.definition
 
     Eq << calculus.integral.intermediate_value_theorem.apply(given)
@@ -57,7 +54,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq[-3], simplify=None)
 
-    Eq << algebra.any_et.imply.any.split.apply(Eq[-1])
+    Eq << algebra.any_et.imply.et.any.apply(Eq[-1])
 
     Eq << Eq[-1].this.function * (b - a)
 

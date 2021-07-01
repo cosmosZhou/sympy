@@ -13,7 +13,8 @@ def apply(imply, c):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     x = Symbol.x(complex=True)
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
@@ -26,8 +27,7 @@ def prove(Eq):
 
     Eq << sets.contains.given.et.split.interval.apply(Eq[0])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
-
+    
 
 
 if __name__ == '__main__':

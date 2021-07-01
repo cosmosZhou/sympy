@@ -2,21 +2,22 @@ from util import *
 
 
 @apply
-def apply(given):
-    multiply = given.of(Unequal[ZeroMatrix])
-    args = multiply.of(Mul)
-    return And(*(Unequal(arg, ZeroMatrix(*arg.shape)).simplify() for arg in args))
+def apply(given, index=-1):
+    args = given.of(Unequal[Mul, ZeroMatrix])
+    lhs = Mul(*args[:index])
+    rhs = Mul(*args[index:])
+    
+    return Unequal(lhs, ZeroMatrix(*lhs.shape)).simplify(), Unequal(rhs, ZeroMatrix(*rhs.shape)).simplify()
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
     n = Symbol.n(integer=True, positive=True)
     a = Symbol.a(real=True, given=True, shape=(n,))
     b = Symbol.b(real=True, given=True, shape=(n,))
     Eq << apply(Unequal(a * b, ZeroMatrix(n)))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     Eq <<= ~Eq[-1], ~Eq[-2]
 

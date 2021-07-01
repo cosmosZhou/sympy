@@ -17,23 +17,22 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     a = Symbol.a(integer=True, given=True)
     b = Symbol.b(integer=True, given=True)
-
     x = Symbol.x(integer=True, given=True)
-
     Eq << apply(b < x, x < a)
-#     Eq << apply(x < b, a <= x)
 
+    #Eq << apply(x < b, a <= x)
     Eq << sets.contains.given.et.split.range.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     Eq << algebra.ge.given.gt.apply(Eq[-1])
 
     Eq << Eq[-1].reversed
 
-#     Eq << Eq[-2].reversed
+    #Eq << Eq[-2].reversed
 
 
 if __name__ == '__main__':

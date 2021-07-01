@@ -1,14 +1,13 @@
 from sympy.core.basic import Basic
-from sympy.core.compatibility import as_int, with_metaclass, range, PY3
+from sympy.core.compatibility import as_int, with_metaclass, PY3
 from sympy.core.expr import Expr
 from sympy.core.function import Lambda
 from sympy.core.singleton import Singleton, S
 from sympy.core.symbol import Dummy, symbols, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
-from sympy.sets.sets import Set, Interval, Union, ProductSet
-from sympy.sets.finiteset import FiniteSet
-from sympy.utilities.miscellany import filldedent
+from sympy.sets.sets import Set, Interval, Union, ProductSet, FiniteSet
+from sympy.utilities.misc import filldedent
 Reals = Interval(S.NegativeInfinity, S.Infinity)
 
 
@@ -713,7 +712,7 @@ class Range(Set):
     def union_sets(self, b):
         if b.is_Range or b.is_Interval:
             if self._is_comparable(b):
-                from sympy.functions.elementary.extremum import Min, Max
+                from sympy.functions.elementary.miscellaneous import Min, Max
                 # Non-overlapping intervals
                 stop = Min(self.stop, b.stop)
                 start = Max(self.start, b.start)
@@ -733,11 +732,11 @@ class Range(Set):
                 if self.right_open:
                     if b.left_open:
                         if self.stop == b.start:
-                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) // FiniteSet(b.start)
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
                     else:
                         if self.stop == b.start - 1:
                             if b.start <= b.stop:                                
-                                return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) // FiniteSet(self.stop)
+                                return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
                         if self.stop == b.start:
                             return self.copy(stop=b.stop, right_open=b.right_open)
                     
@@ -749,7 +748,7 @@ class Range(Set):
             if (U.is_Range or U.is_Interval) and not A & self:
                 combined = self | U
                 if combined.is_Range or combined.is_Interval:
-                    return combined // A 
+                    return combined - A 
 
         # If I have open end points and these endpoints are contained in b
         # But only in case, when endpoints are finite. Because
@@ -1103,11 +1102,6 @@ class Range(Set):
         assert not self.left_open        
         return self.func(-self.stop + 1, -self.start + 1)
     
-    def __sub__(self, other):
-        if not other.is_set:
-            return self + (-other)
-        return Set.__sub__(self, other)
-    
     def __add__(self, other):
         other = sympify(other)
         if other.is_Range:
@@ -1429,7 +1423,7 @@ class Range(Set):
                 if e.is_extended_real:
                     return func(e, s.start).simplify()
                 return
-            complement = e.domain // s
+            complement = e.domain - s
             if complement.is_FiniteSet:
                 return self.invert_type(e, complement).simplify()                
             
@@ -1442,7 +1436,7 @@ class Range(Set):
                 return self.func(e, s, evaluate=False).simplify()
                     
             if S.One in e.args: 
-                s -= S.One
+                s += S.NegativeOne
                 e -= S.One
                 return self.func(e, s, evaluate=False).simplify()
 

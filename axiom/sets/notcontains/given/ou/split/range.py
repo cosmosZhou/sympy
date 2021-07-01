@@ -20,11 +20,11 @@ def prove(Eq):
     b = Symbol.b(integer=True, given=True)
     Eq << apply(NotContains(e, Range(a, b)))
 
-    Eq << ~Eq[0]
+    Eq <<= ~Eq[0] & Eq[1]
 
-    Eq << sets.contains.imply.et.split.range.apply(Eq[-1])
+    Eq << Eq[-1].this.args[1].apply(sets.contains.imply.et.split.range)
 
-    Eq << ~Eq[-1]
+    
 
 
 if __name__ == '__main__':

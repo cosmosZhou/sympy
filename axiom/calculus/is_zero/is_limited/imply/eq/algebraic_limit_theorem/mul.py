@@ -28,20 +28,20 @@ def prove(Eq):
     dir = S.One
     Eq << apply(Equal(Limit[x:x0:dir](f(x)), 0), Contains(Limit[x:x0:dir](g(x)), Reals))
 
-    ε = Symbol.ε(real=True, positive=True)
+    epsilon = Symbol.epsilon(real=True, positive=True)
 
-    δ0 = Symbol.δ_0(real=True, positive=True)
+    delta0 = Symbol.δ_0(real=True, positive=True)
 
-    Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[0], ε, δ0)
+    Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[0], epsilon, delta0)
 
-    δ1 = Symbol.δ_1(real=True, positive=True)
+    delta1 = Symbol.δ_1(real=True, positive=True)
 
-    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], δ=δ1, var='B')
+    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], delta=delta1, var='B')
 
     B = Eq[-1].variables[1]
 
     assert B > 0
-    Eq << Eq[-2].subs(ε, ε / B)
+    Eq << Eq[-2].subs(epsilon, epsilon / B)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq[-2])
 
@@ -53,9 +53,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.limits[0][1].args[1].simplify()
 
-    δ = Symbol.δ(real=True, positive=True)
+    delta = Symbol.delta(real=True, positive=True)
 
-    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1), δ)
+    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(delta0, delta1), delta)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
 

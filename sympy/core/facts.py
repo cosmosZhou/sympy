@@ -12,7 +12,7 @@ it's still still worth a read to understand the underlying ideas.
 In short, every rule in a system of rules is one of two forms:
 
  - atom                     -> ...      (alpha rule)
- - LogicAnd(atom1, atom2, ...)   -> ...      (beta rule)
+ - And(atom1, atom2, ...)   -> ...      (beta rule)
 
 
 The major complexity is in efficient beta-rules processing and usually for an
@@ -45,13 +45,10 @@ https://en.wikipedia.org/wiki/Propositional_formula
 https://en.wikipedia.org/wiki/Inference_rule
 https://en.wikipedia.org/wiki/List_of_rules_of_inference
 """
-from __future__ import print_function, division
 
 from collections import defaultdict
 
 from .logic import Logic, LogicAnd, LogicOr, LogicNot
-from sympy.core.compatibility import string_types, range
-
 
 def _base_fact(atom):
     """Return the literal fact of an atom.
@@ -118,7 +115,7 @@ def deduce_alpha_implications(implications):
     full_implications = transitive_closure(implications)
     for a, b in full_implications:
         if a == b:
-            continue  # skip a->a cyclic input
+            continue    # skip a->a cyclic input
 
         res[a].add(b)
 
@@ -145,14 +142,14 @@ def apply_beta_to_alpha_route(alpha_implications, beta_rules):
 
        e.g.
 
-       alpha_implications, a one-to-many mapping:
+       alpha_implications:
 
        a  ->  [b, !c, d]
        b  ->  [d]
        ...
 
 
-       beta_rules, a many-to-one mapping:
+       beta_rules:
 
        &(b,d) -> e
 
@@ -255,7 +252,7 @@ class TautologyDetected(Exception):
     pass
 
 
-class Prover(object):
+class Prover:
     """ai - prover of logic rules
 
        given a set of initial rules, Prover tries to prove all possible rules
@@ -290,8 +287,8 @@ class Prover(object):
 
     def split_alpha_beta(self):
         """split proved rules into alpha and beta chains"""
-        rules_alpha = []  # a      -> b
-        rules_beta = []  # &(...) -> b
+        rules_alpha = []    # a      -> b
+        rules_beta = []     # &(...) -> b
         for a, b in self.proved_rules:
             if isinstance(a, LogicAnd):
                 rules_beta.append((a, b))
@@ -308,7 +305,7 @@ class Prover(object):
         return self.split_alpha_beta()[1]
 
     def process_rule(self, a, b):
-        """process a -> b rule"""  # TODO write more?
+        """process a -> b rule"""   # TODO write more?
         if (not a) or isinstance(b, bool):
             return
         if isinstance(a, bool):
@@ -373,7 +370,7 @@ class Prover(object):
 ########################################
 
 
-class FactRules(object):
+class FactRules:
     """Rules that describe how to deduce facts in logic space
 
        When defined, these rules allow implications to quickly be determined
@@ -407,7 +404,7 @@ class FactRules(object):
     def __init__(self, rules):
         """Compile rules into internal lookup tables"""
 
-        if isinstance(rules, string_types):
+        if isinstance(rules, str):
             rules = rules.splitlines()
 
         # --- parse and process rules ---
@@ -432,7 +429,7 @@ class FactRules(object):
         self.beta_rules = []
         for bcond, bimpl in P.rules_beta:
             self.beta_rules.append(
-                (set(_as_pair(a) for a in bcond.args), _as_pair(bimpl)))
+                ({_as_pair(a) for a in bcond.args}, _as_pair(bimpl)))
 
         # deduce alpha implications
         impl_a = deduce_alpha_implications(P.rules_alpha)
@@ -444,19 +441,17 @@ class FactRules(object):
         impl_ab = apply_beta_to_alpha_route(impl_a, P.rules_beta)
 
         # extract defined fact names
-        self.defined_facts = set(_base_fact(k) for k in impl_ab.keys())
+        self.defined_facts = {_base_fact(k) for k in impl_ab.keys()}
 
         # build rels (forward chains)
         full_implications = defaultdict(set)
         beta_triggers = defaultdict(set)
         for k, (impl, betaidxs) in impl_ab.items():
-            full_implications[_as_pair(k)] = set(_as_pair(i) for i in impl)
+            full_implications[_as_pair(k)] = {_as_pair(i) for i in impl}
             beta_triggers[_as_pair(k)] = betaidxs
 
         self.full_implications = full_implications
-        # for (k, truth), v in self.full_implications.items(): print(k if truth else '!'+k, '=>', ' & '.join(v if truth else '!' + v for v, truth in v))
         self.beta_triggers = beta_triggers
-        # !composite : ['positive & !composite & !prime => !even', '!composite & !prime & even => !positive', 'positive & !composite & even => prime']
 
         # build prereq (backward chains)
         prereq = defaultdict(set)
@@ -474,7 +469,6 @@ class FactRules(object):
 
 
 class InconsistentAssumptions(ValueError):
-
     def __str__(self):
         kb, fact, value = self.args
         return "%s, %s=%s" % (kb, fact, value)
@@ -484,7 +478,6 @@ class FactKB(dict):
     """
     A simple propositional knowledge base relying on compiled inference rules.
     """
-
     def __str__(self):
         return '{\n%s}' % ',\n'.join(
             ["\t%s: %s" % i for i in sorted(self.items())])

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(x, y):
-    return Equivalent(Unequal(x, y), Contains(x, y.universalSet // {y}))
+    return Equivalent(Unequal(x, y), Contains(x, y.universalSet - {y}))
 
 
 @prove

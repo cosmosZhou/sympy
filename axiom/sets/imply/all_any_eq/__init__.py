@@ -43,7 +43,7 @@ def prove(Eq):
     Eq.initial = Eq[0].subs(n, 2)
 
     Eq << Eq.initial.this.function.doit(deep=True)
-    
+
     Eq << Eq[-1].this.find(Slice).apply(algebra.slice.to.blockMatrix)
 
     Eq << Eq[-1].this.function.limits[0][1].reversed
@@ -95,7 +95,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(sets.any.imply.any.limits.swap)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], start=2, n=n)
 

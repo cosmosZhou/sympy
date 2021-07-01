@@ -9,10 +9,10 @@ def apply(x, n):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     x = Symbol.x(integer=True, shape=(oo,))
     n = Symbol.n(integer=True, positive=True, given=False)
-
     Eq << apply(x, n)
 
     Eq.initial0 = Eq[-1].subs(n, 1)
@@ -32,6 +32,7 @@ def prove(Eq):
     Eq << Eq.induct.this.function.lhs.defun()
 
     Eq << Eq[0].this.function.apply(algebra.cond.imply.all.restrict, (x[n:n + 2], CartesianSpace(Range(1, oo), 2)), simplify=None)
+
     Eq.is_positive = algebra.all.imply.all.limits.merge.apply(Eq[-1])
 
     Eq.hypothesis = Eq[0].subs(n, n + 1)
@@ -52,7 +53,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(algebra.is_positive.is_positive.imply.is_positive.add)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0] & Eq.hypothesis, Eq.induct, plausible=True)
 
     Eq << algebra.cond.cond.suffice.imply.cond.induct.apply(Eq.initial0, Eq.initial1, Eq[-1], n=n, start=1)
 

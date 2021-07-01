@@ -51,7 +51,7 @@ def prove(Eq):
 
     Eq << Eq.induct.subs(Eq.Pn1_definition.reversed)
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

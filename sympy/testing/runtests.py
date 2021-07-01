@@ -2189,7 +2189,7 @@ class PyTestReporter(Reporter):
             implementation += " %s.%s.%s-%s-%s" % sys.pypy_version_info
         self.write("executable:         %s  (%s) [%s]\n" %
             (executable, python_version, implementation))
-        from sympy.utilities.miscellany import ARCH
+        from sympy.utilities.misc import ARCH
         self.write("architecture:       %s\n" % ARCH)
         from sympy.core.cache import USE_CACHE
         self.write("cache:              %s\n" % USE_CACHE)
@@ -2206,7 +2206,7 @@ class PyTestReporter(Reporter):
         self.write("numpy:              %s\n" % (None if not numpy else numpy.__version__))
         if seed is not None:
             self.write("random seed:        %d\n" % seed)
-        from sympy.utilities.miscellany import HASH_RANDOMIZATION
+        from sympy.utilities.misc import HASH_RANDOMIZATION
         self.write("hash randomization: ")
         hash_seed = os.getenv("PYTHONHASHSEED") or '0'
         if HASH_RANDOMIZATION and (hash_seed == "random" or int(hash_seed)):

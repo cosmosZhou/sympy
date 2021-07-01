@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << apply(Equivalent(a > 0, b > 0), Equivalent(x > 0, y > 0))
 
-    Eq << algebra.equivalent.given.cond.apply(Eq[-1])
+    Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
     Eq << algebra.equivalent.imply.suffice.apply(Eq[0])
 

@@ -19,27 +19,25 @@ def apply(n, k, s0=None, B=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     k = Symbol.k(integer=True, positive=True, given=True)
     n = Symbol.n(integer=True, positive=True, given=True)
     Eq << apply(n, k)
 
     s0 = Eq[0].lhs
-
     s0_quote = Symbol.s_quote_0(conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
-
     Eq << s0_quote.this.definition
+
     Eq.s0_definition = imageset(Eq[0].rhs.variable, Eq[0].rhs.function.arg, s0_quote).this.subs(Eq[-1]).subs(Eq[0].reversed).reversed
 
     e = Symbol.e(etype=dtype.integer.set)
     Eq << sets.imply.all.baseset.apply(s0_quote)
 
-    * _, Eq.x_union_s0 = algebra.all_et.imply.all.apply(Eq[-1])
+    * _, Eq.x_union_s0 = algebra.all_et.imply.et.all.apply(Eq[-1])
 
     i = Symbol.i(integer=True)
     x = Eq[0].rhs.variable.base
-
     j = Symbol.j(domain=Range(0, k + 1))
-
     B = Eq[1].lhs
     Eq.plausible_notcontains = All(NotContains({n}, e), (e, s0), plausible=True)
 
@@ -62,7 +60,6 @@ def prove(Eq):
     Eq.all_s0_equality = Eq[-1].this.function.apply(sets.is_emptyset.imply.eq.complement)
 
     x_hat = Symbol(r"\hat{x}", Lamda[i](Piecewise((x[i] // {n} , Equal(i, j)), (x[i], True))))
-
     Eq.x_hat_definition = x_hat[i].this.definition
 
     Eq << algebra.eq_piecewise.imply.ou.apply(Eq.x_hat_definition)

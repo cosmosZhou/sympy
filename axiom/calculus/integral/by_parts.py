@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(integral, u=None, dv=None):
     if len(integral.limits) != 1:
@@ -35,7 +34,7 @@ def prove(Eq):
 
     Eq << apply(Integral(u(x) * diff(v(x), x), (x, a, b)), u=u(x))
 
-    uv = Function.uv(shape=(), real=True, eval=lambda x : u(x) * v(x))
+    uv = Function.uv(shape=(), real=True, eval=lambda x: u(x) * v(x))
 
     Eq << diff(uv(x), x).this.expr.defun()
 

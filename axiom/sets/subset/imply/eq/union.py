@@ -1,8 +1,6 @@
 from util import *
 
 
-# given: A in B
-# A | B = B
 @apply
 def apply(given):
     A, B = given.of(Subset)

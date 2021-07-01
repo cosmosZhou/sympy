@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << algebra.eq.given.ou.apply(Eq[0])
 
-    Eq << Eq[-1].this.args[1].apply(algebra.et.given.et.subs.bool, index=Slice[:2])
+    Eq << Eq[-1].this.args[1].apply(algebra.et.given.et.subs.bool, index=slice(0, 2))
 
     Eq << Eq[-1].this.args[0].apply(algebra.et.given.et.subs.bool, index=0, invert=True)
 

@@ -5,7 +5,7 @@ from util import *
 def apply(self):
     (x, (_x, cond, baseset)), B = self.of(Complement[Cup[FiniteSet], Basic])
     assert _x == x
-    return Equal(self, conditionset(x, cond, baseset // B))
+    return Equal(self, conditionset(x, cond, baseset - B))
 
 
 @prove

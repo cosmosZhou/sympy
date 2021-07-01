@@ -1,6 +1,4 @@
-
 from util import *
-
 
 
 @apply
@@ -39,23 +37,20 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
 
+    n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
     k = Symbol.k(integer=True)
     j = Symbol.j(domain=Range(0, k))
-
     x = Symbol.x(real=True, shape=(oo,))
-
     f = Function.f(shape=(), integer=True)
     f_quote = Function("f'", shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-
     Eq << apply(Any[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
 
     Eq << Eq[-1].this.function.apply(algebra.cond.imply.any_et, wrt=j)
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.cond.imply.et, delta=False, simplify=None, swap=True)
+    Eq << Eq[-1].this.function.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta, delta=False, simplify=None, swap=True)
 
     Eq << algebra.any.imply.any.limits.swap.apply(Eq[-1], simplify=None)
 

@@ -29,7 +29,7 @@ def prove(Eq):
     y = Symbol.y(Eq[-1].lhs)
     Eq << y.this.definition
 
-    Eq << algebra.cond.cond.imply.cond.apply(Eq[0], Eq[-1], invert=True)
+    Eq << algebra.cond.cond.imply.cond.subs.apply(Eq[0], Eq[-1], invert=True)
 
     Eq << Eq[-2].subs(Eq[-1])
 

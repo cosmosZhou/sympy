@@ -27,7 +27,7 @@ def prove(Eq):
     g = Function.g(real=True)
 
     dir = S.One
-    Eq << apply(Contains(Limit[x:x0:dir](f(x)), Reals // {0}), Contains(Limit[x:x0:dir](g(x)), Reals))
+    Eq << apply(Contains(Limit[x:x0:dir](f(x)), Reals - {0}), Contains(Limit[x:x0:dir](g(x)), Reals))
 
     ε = Symbol.ε(real=True, positive=True)
 
@@ -52,7 +52,7 @@ def prove(Eq):
     Eq << algebra.imply.le.abs.add.mul.apply(f(x), g(x), A, B)
 
     δ2 = Symbol.δ_2(real=True, positive=True)
-    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], δ=δ2, var='B')
+    Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], delta=δ2, var='B')
 
     B = Eq[-1].function.function.rhs
 
@@ -85,9 +85,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.limits[0][1].args[1].simplify()
 
-    δ = Symbol.δ(real=True, positive=True)
+    delta = Symbol.delta(real=True, positive=True)
 
-    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1, δ2), δ)
+    Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1, δ2), delta)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
 

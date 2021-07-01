@@ -10,7 +10,7 @@ def apply(self):
 
     if limits:
         return
-    
+
     assert function.shape
     array = []
     for i in range(diff):
@@ -63,11 +63,11 @@ def prove(Eq):
 
     Eq << Eq.all_et.this.apply(algebra.all.to.et.doit)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     _i = Symbol.i(domain=Range(0, 4))
     Eq << Eq.all_et.limits_subs(i, _i)

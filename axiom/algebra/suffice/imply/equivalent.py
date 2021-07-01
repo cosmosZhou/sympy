@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(Suffice(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1])))
 
-    Eq.suffice, Eq.necessary = algebra.equivalent.given.cond.apply(Eq[1])
+    Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq[1])
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[0])
 

@@ -640,10 +640,10 @@ class LatticeOp(AssocOp):
     def _new_args_filter(cls, arg_sequence, call_cls=None):
         """Generator filtering args"""
         ncls = call_cls or cls
-        for arg in arg_sequence:
-            if arg == ncls.zero:
+        for arg in arg_sequence:            
+            if ncls._need_to_be_raised(arg):
                 raise ShortCircuit(arg)
-            elif arg == ncls.identity:
+            elif ncls._need_to_be_filtered(arg):
                 continue
             elif arg.func == ncls:
                 yield from arg.args

@@ -15,13 +15,14 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     x = Symbol.x(real=True)
     M = Symbol.M(real=True)
     Eq << apply(Contains(x, Interval(0, M)))
 
     Eq << sets.contains.imply.et.split.interval.apply(Eq[0])
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1])
+    
 
     Eq << algebra.is_nonnegative.le.imply.le.square.apply(Eq[-2], Eq[-1])
 

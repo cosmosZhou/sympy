@@ -19,33 +19,32 @@ def apply(given, pivot=0, wrt=None):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra
+
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(complex=True, shape=(n,))
-    y = Symbol.y(complex=True, shape=(n,))
-
+    y = Symbol.y(complex=True, shape=(n,), given=True)
     f = Function.f(complex=True, shape=())
     g = Function.g(complex=True, shape=())
-
     Eq << apply(Unequal(f(x), g(y)) | Equal(x, y), pivot=1)
 
-    Eq << Eq[0].apply(algebra.cond.imply.et.all, cond=Equal(x, y))
+    Eq << ~Eq[-1]
 
-    Eq << sets.imply.all.complement.apply(y, x=x)
+    Eq << algebra.any.imply.any_et.single_variable.apply(Eq[-1])
 
-    Eq <<= Eq[-2] & Eq[-1]
+    Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[-1])
 
-    Eq << algebra.all_et.imply.all.apply(Eq[-1], index=0)
+    
 
-    Eq << sets.ne.to.contains.apply(x, y)
+    
 
-    Eq << All[x: Equal(Bool(Contains(x, Eq[2].limits[0][1])), 1)](Eq[2].function, plausible=True)
+    
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    
 
-    Eq << algebra.equivalent.cond.imply.cond.apply(Eq[-2].reversed, Eq[-1])
+    
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    
 
 
 if __name__ == '__main__':

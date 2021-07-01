@@ -13,8 +13,7 @@ are_similar
 from __future__ import division, print_function
 
 from sympy import Function, Symbol, solve
-from sympy.core.compatibility import (
-    is_sequence, range, string_types, ordered)
+from sympy.core.compatibility import is_sequence, ordered
 from sympy.core.containers import OrderedSet
 from .point import Point, Point2D
 
@@ -27,7 +26,7 @@ def find(x, equation):
     """
 
     free = equation.free_symbols
-    xs = [i for i in free if (i.name if isinstance(x, string_types) else i) == x]
+    xs = [i for i in free if (i.name if isinstance(x, str) else i) == x]
     if not xs:
         raise ValueError('could not find %s' % x)
     if len(xs) != 1:

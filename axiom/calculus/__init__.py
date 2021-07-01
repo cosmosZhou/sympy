@@ -1,7 +1,6 @@
 from . import series
 from . import integral
 from . import trigonometry
-from . import limits
 from . import eq, gt, le, lt, ge
 from . import all_ge, all_gt
 from . import is_negative, is_positive
@@ -23,3 +22,5 @@ from . import all_is_positive
 from . import is_differentiable
 
 from . import contains
+from . import subs
+from . import mul

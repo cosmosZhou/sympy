@@ -38,7 +38,7 @@ from sympy import Rational, prod, Integer
 from sympy.combinatorics.tensor_can import get_symmetric_group_sgs, \
     bsgs_direct_product, canonicalize, riemann_bsgs
 from sympy.core import Basic, Expr, sympify, Add, Mul, S
-from sympy.core.compatibility import string_types, reduce, range, SYMPY_INTS
+from sympy.core.compatibility import reduce, SYMPY_INTS
 from sympy.core.containers import Tuple, Dict
 from sympy.core.decorators import deprecated
 from sympy.core.symbol import Symbol, symbols
@@ -963,7 +963,7 @@ class TensorIndexType(Basic):
     def __new__(cls, name, metric=False, dim=None, eps_dim=None,
                 dummy_fmt=None):
 
-        if isinstance(name, string_types):
+        if isinstance(name, str):
             name = Symbol(name)
         obj = Basic.__new__(cls, name, S.One if metric else S.Zero)
         obj._name = str(name)
@@ -1198,7 +1198,7 @@ class TensorIndex(Basic):
     A(L_0)*B(-L_0)
     """
     def __new__(cls, name, tensortype, is_up=True):
-        if isinstance(name, string_types):
+        if isinstance(name, str):
             name_symbol = Symbol(name)
         elif isinstance(name, Symbol):
             name_symbol = name
@@ -1266,7 +1266,7 @@ def tensor_indices(s, typ):
     >>> Lorentz = TensorIndexType('Lorentz', dummy_fmt='L')
     >>> a, b, c, d = tensor_indices('a,b,c,d', Lorentz)
     """
-    if isinstance(s, string_types):
+    if isinstance(s, str):
         a = [x.name for x in symbols(s, seq=True)]
     else:
         raise ValueError('expecting a string')
@@ -1502,7 +1502,7 @@ class TensorType(Basic):
         >>> canon_bp(W(a, b)*W(-b, -a))
         0
         """
-        if isinstance(s, string_types):
+        if isinstance(s, str):
             names = [x.name for x in symbols(s, seq=True)]
         else:
             raise ValueError('expecting a string')
@@ -1665,7 +1665,7 @@ class TensorHead(Basic):
     is_commutative = False
 
     def __new__(cls, name, typ, comm=0, **kw_args):
-        if isinstance(name, string_types):
+        if isinstance(name, str):
             name_symbol = Symbol(name)
         elif isinstance(name, Symbol):
             name_symbol = name

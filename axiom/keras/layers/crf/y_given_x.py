@@ -60,7 +60,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.mul)
 
-    Eq << Eq[-1].this.rhs.args[1].function.split(Slice[-1:])
+    Eq << Eq[-1].this.rhs.args[1].function.split(slice(-1))
 
     Eq << Eq[-1].this.rhs.args[1].function.apply(algebra.sum.to.reducedSum)
 
@@ -76,15 +76,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].apply(algebra.log.to.add)
 
-    Eq.z_definition_by_x_quote = E ** -Eq.x_quote_definition.reversed
+    Eq.z_definition_by_x_quote = algebra.eq.imply.eq.exp.apply(-Eq.x_quote_definition.reversed) 
 
     Eq << Eq[-1].subs(Eq.z_definition_by_x_quote)
 
     Eq << Eq[-1].this.rhs.args[1].args[1].arg.apply(discrete.matmul.to.exp)
 
-    Eq.xy_joint_nonzero = stats.is_nonzero.imply.is_nonzero.joint_slice.apply(given[-1], Slice[:t + 1,:t + 1])
+    Eq.xy_joint_nonzero = stats.is_nonzero.imply.is_nonzero.joint_slice.apply(given[-1], (slice(0, t + 1), slice(0, t + 1)))
 
-    Eq << algebra.et.imply.conds.apply(stats.is_nonzero.imply.et.apply(Eq.xy_joint_nonzero))
+    Eq << stats.is_nonzero.imply.et.apply(Eq.xy_joint_nonzero)
 
     y = Eq[-1].lhs.arg.lhs.base
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-2], y[:t + 1])
@@ -95,7 +95,7 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.eq.imply.ou.log)
 
-    Eq << algebra.et.imply.conds.apply(Eq[-1] & Eq.xy_joint_nonzero)
+    Eq << algebra.et.imply.et.apply(Eq[-1] & Eq.xy_joint_nonzero)
 
     Eq << Eq[-1].this.rhs.apply(algebra.log.to.add)
 

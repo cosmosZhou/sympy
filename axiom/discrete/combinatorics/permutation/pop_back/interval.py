@@ -28,7 +28,7 @@ def prove(Eq):
     Eq << apply(Equal(p[:n + 1].set_comprehension(), Range(0, n + 1)),
                 Equal(p[n], n))
 
-    Eq << Eq[0].this.lhs.split(Slice[-1:])
+    Eq << Eq[0].this.lhs.split(slice(-1))
 
     Eq << Eq[-1].subs(Eq[1])
 

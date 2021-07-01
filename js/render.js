@@ -198,6 +198,10 @@ for (let i = 0; i < proveEditors.length; ++i) {
 				cm.setCursor(cm.lineCount() - 1, cursor.ch);
 		},
 
+		"Ctrl-Enter": cm => {
+			CodeMirror.commands.newlineAndIndent(cm);			
+		},
+		
 		PageUp(cm) {
 			var cursor = cm.getCursor();
 			if (cursor.line >= 18)

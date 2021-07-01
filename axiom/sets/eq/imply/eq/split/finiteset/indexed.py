@@ -21,14 +21,14 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     x = Symbol.x(etype=dtype.complex, given=True)
     y = Symbol.y(etype=dtype.complex, given=True)
     a = Symbol.a(etype=dtype.complex, shape=(oo,), given=True)
-
     Eq << apply(Equal({x, y}, {a[0], a[1]}))
 
-    Eq << algebra.et.given.conds.apply(algebra.eq.given.et.split.matrix.apply(Eq[1]))
+    Eq << algebra.eq.given.et.split.matrix.apply(Eq[1])
 
     Eq << Contains(x, {x, y}, plausible=True)
 
@@ -38,11 +38,11 @@ def prove(Eq):
 
     Eq << Eq[2].apply(algebra.cond.given.et.ou, cond=Equal(x, a[0]))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq <<= Eq[-2].apply(algebra.ne.cond.imply.et), Eq[-1].apply(algebra.eq.cond.imply.et)
+    Eq <<= Eq[-2].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond), Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta)
 
     Eq << Eq[-1].apply(sets.ne.ne.imply.notcontains, simplify=False)
 
@@ -50,11 +50,11 @@ def prove(Eq):
 
     Eq << Eq[3].apply(algebra.cond.given.et.ou, cond=Equal(x, a[0]))
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    Eq << algebra.et.given.et.apply(Eq[-1])
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq.a00, Eq.a01 = Eq[-2].apply(algebra.ne.cond.imply.et), Eq[-1].apply(algebra.eq.cond.imply.et)
+    Eq.a00, Eq.a01 = Eq[-2].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond), Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta)
 
     Eq << Eq.a00.apply(sets.ne.ne.imply.notcontains, simplify=False)
 

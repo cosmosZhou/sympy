@@ -37,7 +37,7 @@ from sympy.matrices import Matrix
 from sympy.solvers.solveset import linear_coeffs
 from .entity import GeometryEntity, GeometrySet
 from .point import Point, Point3D
-from sympy.utilities.miscellany import Undecidable, filldedent
+from sympy.utilities.misc import Undecidable, filldedent
 
 from sympy.utilities.exceptions import SymPyDeprecationWarning
 
@@ -2130,7 +2130,7 @@ class Ray2D(LinearEntity2D, Ray):
             try:
                 p2 = Point(pt, dim=2)
             except (NotImplementedError, TypeError, ValueError):
-                from sympy.utilities.miscellany import filldedent
+                from sympy.utilities.misc import filldedent
                 raise ValueError(filldedent('''
                     The 2nd argument was not a valid Point; if
                     it was meant to be an angle it should be
@@ -2577,7 +2577,7 @@ class Ray3D(LinearEntity3D, Ray):
     """
 
     def __new__(cls, p1, pt=None, direction_ratio=[], **kwargs):
-        from sympy.utilities.miscellany import filldedent
+        from sympy.utilities.misc import filldedent
         if isinstance(p1, LinearEntity3D):
             if pt is not None:
                 raise ValueError('If p1 is a LinearEntity, pt must be None')

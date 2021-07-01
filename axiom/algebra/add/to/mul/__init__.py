@@ -19,11 +19,15 @@ def apply(self):
         if not common_terms:
             return
         
+    factor = Mul(*common_terms)
     additives = []
     for arg in args:
         if arg.is_Mul:
             arg = Mul(*{*arg.args} - common_terms)
             additives.append(arg)
+        else:
+            assert arg == factor
+            additives.append(1)
         
     return Equal(self, Add(*additives) * Mul(*common_terms))
 

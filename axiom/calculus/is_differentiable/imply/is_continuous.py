@@ -19,9 +19,9 @@ def apply(all_contains):
     return is_continuous(f, a, b, x=x)
 
 
-@prove(proved=False)
+@prove
 def prove(Eq):
-    from axiom import calculus
+    from axiom import calculus, algebra, sets
 
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
@@ -29,6 +29,14 @@ def prove(Eq):
     f = Function.f(real=True)
     from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import is_differentiable
     Eq << apply(is_differentiable(f, a, b, open=False))
+
+    xi = Symbol.xi(domain=Interval(a, b), given=True)
+    Eq << algebra.all.imply.cond.subs.apply(Eq[0], x, xi)
+
+    Eq << Eq[-1].this.lhs.apply(calculus.subs.to.limit)
+
+    Eq << sets.contains.imply.any_eq.apply(Eq[-1], var='k')
+    Eq << Eq[-1].this.function * (x - xi)
 
 
 if __name__ == '__main__':

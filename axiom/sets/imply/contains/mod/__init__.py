@@ -12,17 +12,17 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True, positive=True)
-
     Eq << apply(n % d)
 
     Eq << Eq[0].this.lhs.apply(algebra.mod.to.add)
 
     Eq << sets.contains.given.et.split.range.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     Eq <<= Eq[-2] - n, Eq[-1] - n
 

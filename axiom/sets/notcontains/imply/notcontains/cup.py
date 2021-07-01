@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(given, limit):
     assert given.is_NotContains
@@ -35,7 +34,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[1]
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq[1], Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 

@@ -9,7 +9,8 @@ def apply(le, is_positive, w=None):
 
     if w is None:
         w = Symbol.w(domain=Interval(0, 1))
-
+    else:
+        assert w >= 0 and w <= 1
     domain = x_.domain
     assert domain.left_open and domain.right_open
 
@@ -33,11 +34,6 @@ def prove(Eq):
     (w, fx0), (_w, fx1) = Eq[-1].lhs.of(Mul + Mul)
     x0 = fx0.arg
     x1 = fx1.arg
-
-    
-
-    
-
     Eq << calculus.is_positive.imply.is_differentiable.within.apply(Eq[1], x0, x1)
 
     Eq << calculus.is_differentiable.imply.is_continuous.apply(Eq[-1])

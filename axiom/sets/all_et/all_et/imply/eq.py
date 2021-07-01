@@ -30,28 +30,26 @@ def apply(all_a, all_b):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
     A = Symbol.A(etype=dtype.integer * n)
     a = Symbol.a(integer=True, shape=(n,))
     B = Symbol.B(etype=dtype.integer * m)
     b = Symbol.b(integer=True, shape=(m,))
-
     f = Function.f(integer=True, shape=(m,))
     g = Function.g(integer=True, shape=(n,))
-
     assert f.is_integer
     assert g.is_integer
     assert f.shape == (m,)
     assert g.shape == (n,)
-
     Eq << apply(All[a:A](Contains(f(a), B) & Equal(a, g(f(a)))),
                 All[b:B](Contains(g(b), A) & Equal(b, f(g(b)))))
 
-    Eq << algebra.all_et.imply.all.apply(Eq[0])
+    Eq << algebra.all_et.imply.et.all.apply(Eq[0])
 
-    Eq << algebra.all_et.imply.all.apply(Eq[1])
+    Eq << algebra.all_et.imply.et.all.apply(Eq[1])
 
     Eq << sets.all_contains.all_contains.all_eq.all_eq.imply.eq.apply(Eq[-3], Eq[-1], Eq[-4], Eq[-2])
 

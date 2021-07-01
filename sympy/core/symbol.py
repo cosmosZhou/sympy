@@ -1,6 +1,5 @@
 from sympy.core.assumptions import StdFactKB, ManagedProperties
-from sympy.core.compatibility import (string_types, range, is_sequence,
-    ordered, NotIterable)
+from sympy.core.compatibility import is_sequence, ordered, NotIterable
 from .basic import Basic, Atom
 from .sympify import sympify
 from .singleton import S
@@ -114,7 +113,7 @@ def _symbol(s, matching_symbol=None, **assumptions):
     sympy.core.symbol.Symbol
 
     """
-    if isinstance(s, string_types):
+    if isinstance(s, str):
         if matching_symbol and matching_symbol.name == s:
             return matching_symbol
         return Symbol(s, **assumptions)
@@ -423,6 +422,21 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             domain = assumptions.get('domain')
             if domain is None:
                 return
+                keys = [*assumptions]
+                for key in keys:
+                    if key == 'nonzero':
+#                     if key.startswith('non'):
+                        value = assumptions.pop(key)                        
+                        key = key[3:]
+                        if value == True:
+                            value = False
+                        elif value == False:
+                            value = True                        
+                            
+                        assumptions[key] = value
+                        
+                        
+                return
             else:
                 integer = domain.is_integer
                          
@@ -447,7 +461,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
 #         return Symbol.__xnew_cached_(cls, name, **assumptions)
 
     def __new_stage2__(cls, name, **assumptions):
-        if not isinstance(name, string_types):
+        if not isinstance(name, str):
             raise TypeError("name should be a string, not %s" % repr(type(name)))
 
         obj = Expr.__new__(cls)
@@ -654,7 +668,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 
     def domain_nonzero(self, x):
         if self == x:
-            return x.domain // {0}
+            return x.domain - {0}
         return Expr.domain_nonzero(self, x)
 
     @property
@@ -704,8 +718,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         """Helper for .has()"""
         if Expr._has(self, pattern):
             return True
-
-        from sympy.core.assumptions import ManagedProperties
 
         if not isinstance(pattern, (FunctionClass, ManagedProperties)):
             if 'definition' in self._assumptions:
@@ -1478,7 +1490,7 @@ def symbols(names, **args):
     """
     result = []
 
-    if isinstance(names, string_types):
+    if isinstance(names, str):
         marker = 0
         literals = [r'\,', r'\:', r'\ ']
         for i in range(len(literals)):
@@ -1711,6 +1723,7 @@ class Dtype:
     is_complex = True
     is_extended_positive = None
     is_extended_negative = None
+    is_DtypeInteger = None
     
     def as_Set(self):
         ...
@@ -2013,6 +2026,8 @@ class DtypeRationalConditional(DtypeRational):
 
 
 class DtypeInteger(DtypeRational):
+    
+    is_DtypeInteger = True
     
     is_integer = True
     

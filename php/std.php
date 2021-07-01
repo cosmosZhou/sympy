@@ -758,7 +758,7 @@ class Text implements IteratorAggregate
 
     public function read($size)
     {
-        fread($this->file, $size);
+        return fread($this->file, $size);
     }
 
     public function readlines()

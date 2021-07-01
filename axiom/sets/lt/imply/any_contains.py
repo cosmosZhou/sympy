@@ -6,8 +6,8 @@ def apply(given, x=None, left_open=True, right_open=True):
     a, b = given.of(Less)
     if x is None:
         x = given.generate_var(var='x', real=True)
-        
-    assert left_open or right_open        
+
+    assert left_open or right_open
     return Any[x](Contains(x, Interval(a, b, left_open=left_open, right_open=right_open)))
 
 
@@ -24,11 +24,9 @@ def prove(Eq):
 
     Eq << sets.contains.given.et.split.interval.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
-
     Eq <<= Eq[-2] * 2, Eq[-1] * 2
 
-    Eq <<= Eq[-2] - b, Eq[-1] - a
+    Eq <<= Eq[-1] - b, Eq[-2] - a
 
     Eq << Eq[-1].reversed
 

@@ -570,55 +570,63 @@ function delete_from_init($package, $theorem = null)
     error_log("theorem = $theorem");
     $initPy = $folder . "/__init__.py";
 
-    $__init__ = new Text($initPy);
     $lineNum = - 1;
 
     $imports = 0;
-    
-    $lineNumIndex = -1;
+
+    $lineNumIndex = - 1;
     $content = null;
-    
-    foreach ($__init__ as $line) {
-        ++ $lineNum;
-        if (! preg_match('/^from *. *import +(.+)/', $line, $m))
-            continue;
+    $emptyLines = 0;
 
-        ++ $imports;
-        $theorems = preg_split('/\s*,\s*/', $m[1]);
-        error_log(\std\jsonify($theorems));
+    {
+        $__init__ = new Text($initPy);
+        foreach ($__init__ as $line) {
+            if (trim($line) == "")
+                $emptyLines += 1;
+            ++ $lineNum;
+            if (! preg_match('/^from *. *import +(.+)/', $line, $m))
+                continue;
 
-        $index = array_search($theorem, $theorems);
-        if ($index !== false) {
+            ++ $imports;
+            $theorems = preg_split('/\s*,\s*/', $m[1]);
+            error_log(\std\jsonify($theorems));
 
-            error_log("index = $index");
+            $index = array_search($theorem, $theorems);
+            if ($index !== false) {
 
-            \std\array_delete($theorems, $index);
+                error_log("index = $index");
 
-            $theorems = implode(', ', $theorems);
+                \std\array_delete($theorems, $index);
 
-            error_log("theorems = $theorems");
+                $theorems = implode(', ', $theorems);
 
-            if ($theorems == "") {                
-                $lineNumIndex = $lineNum;                
-            } else{
-                ++ $imports;
-                $content = "from . import $theorems";
+                error_log("theorems = $theorems");
+
+                if ($theorems != "") {
+                    ++ $imports;
+                    $content = "from . import $theorems";
+                }
+
+                $lineNumIndex = $lineNum;
             }
         }
+
+        if ($content)
+            $__init__->setitem($lineNum, $content);
+        else
+            $__init__->delitem($lineNumIndex);
     }
-    
-    if ($content)
-        $__init__->setitem($lineNum, $content);
-    else
-        $__init__->delitem($lineNum);
-    
-    if ($imports == 1){
+
+    if ($imports == 1) {
         error_log("imports = 1");
-        if ($lineNum > 0){
+        $lineNum -= $emptyLines;
+        if ($lineNum > 0) {
             rename($initPy, "$folder.py");
+            \std\deleteDirectory($folder);
+        } else {
+            \std\deleteDirectory($folder);
+            delete_from_init($package);
         }
-        
-        \std\deleteDirectory($folder);
     }
 }
 
@@ -793,10 +801,13 @@ function run($py)
 {
     $module = py_to_module($py);
     $logs[] = "module = $module";
-
-    $array = file_get_contents("http://localhost/sympy/run.py?module=$module");
-
-    $array = explode(\std\is_linux() ? "\n" : "\r\n", $array);
+    if (\std\is_linux()) {
+        $array = file_get_contents("http://localhost/sympy/run_linux.py?module=$module");
+        $array = explode("\n", $array);
+    } else {
+        $array = file_get_contents("http://localhost/sympy/run.py?module=$module");
+        $array = explode("\r\n", $array);
+    }
 
     array_push($logs, ...$array);
 

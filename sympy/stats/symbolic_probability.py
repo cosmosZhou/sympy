@@ -1,11 +1,11 @@
 import itertools
 
 from sympy import (Expr, Add, Mul, S, Integral, Eq, Sum, Symbol,
-                    expand as _expand, Not, Slice)
+                    expand as _expand, Not)
 from sympy.core.compatibility import default_sort_key, ordered
 from sympy.core.parameters import global_parameters
 from sympy.core.sympify import _sympify
-from sympy.core.relational import Relational, Equal, Unequal
+from sympy.core.relational import Equal, Unequal
 from sympy.logic.boolalg import BooleanFunction, And
 from sympy.stats import variance, covariance, rv
 from sympy.stats.rv import (RandomSymbol, pspace, dependent,
@@ -222,11 +222,11 @@ class Probability(Expr):
                                 expr.append(eq)
                                 continue                                                       
                                                                                                   
-                            lhs = lhs.split(Slice[start:stop])
+                            lhs = lhs.split(slice(start, stop))
                             if not lhs.is_BlockMatrix:
                                 hit = True
                             else:
-                                rhs = rhs.split(Slice[start:stop])                                
+                                rhs = rhs.split(slice(start, stop))                                
                                 for lhs, rhs in zip(lhs.args, rhs.args):
                                     eq = Equal(lhs, rhs)
                                     if lhs == given:
@@ -243,11 +243,11 @@ class Probability(Expr):
         elif condition.is_Equal:
             if given.is_Slice:
                 start, stop = given.index
-                lhs, rhs = condition.lhs.split(Slice[start:stop]), condition.rhs.split(Slice[start:stop])
+                lhs, rhs = condition.lhs.split(slice(start, stop)), condition.rhs.split(slice(start, stop))
                 assert lhs.is_BlockMatrix and rhs.is_BlockMatrix                
                 condition = And(*(condition.func(l, r) for l, r in zip(lhs.args, rhs.args)))
-            elif given.is_Indexed:
-                condition = condition.split(Slice[given.indices])
+            elif given.is_Indexed:                
+                condition = condition.split([slice(*index) for index in given.indices])
             if condition.is_And:
                 return cls.marginalize_condition(condition, given)
             

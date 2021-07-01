@@ -9,7 +9,7 @@ from sympy.polys.polyerrors import (ComputationFailed,
     PolificationFailed, CoercionFailed)
 from sympy.simplify import rcollect
 from sympy.utilities import default_sort_key, postfixes
-from sympy.utilities.miscellany import filldedent
+from sympy.utilities.misc import filldedent
 
 
 class SolveFailed(Exception):

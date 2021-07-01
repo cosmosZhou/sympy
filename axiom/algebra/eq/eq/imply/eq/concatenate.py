@@ -5,16 +5,16 @@ from util import *
 def apply(eq_historic, eq_n):
     lhs, rhs = eq_historic.of(Equal)
     n = lhs.shape[0]
-    
+
     if lhs.is_Lamda and rhs.is_Lamda and lhs.variable == rhs.variable:
         k = rhs.variable
     else:
-        k = eq_historic.generate_var(integer=True)        
-    
+        k = eq_historic.generate_var(integer=True)
+
     fx = lhs[k]
     gy = rhs[k]
 
-    _lhs, _rhs = eq_n.of(Equal)   
+    _lhs, _rhs = eq_n.of(Equal)
 
     assert fx._subs(k, n) == _lhs
     assert gy._subs(k, n) == _rhs
@@ -31,9 +31,9 @@ def prove(Eq):
     g = Function.g(real=True)
     Eq << apply(Equal(Lamda[k:n](f(k)), Lamda[k:n](g(k))), Equal(f(n), g(n)))
 
-    Eq << Eq[-1].apply(algebra.eq.given.et.split.blockmatrix, Slice[-1:])
+    Eq << algebra.eq.given.et.split.blockmatrix.apply(Eq[-1], slice(-1), simplify=None)
 
-    Eq << algebra.et.given.conds.apply(Eq[-1], simplify=None)
+    
 
 
 if __name__ == '__main__':

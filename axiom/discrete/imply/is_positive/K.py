@@ -1,5 +1,4 @@
 from util import *
-
 from axiom.discrete.K.to.add.definition import K
 
 
@@ -12,12 +11,12 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True, positive=True, shape=(oo,))
     n = Symbol.n(integer=True, positive=True, given=False)
-
     Eq << apply(x[:n])
 
-    Eq.initial0 = Eq[-1].subs(n, 1)
+    Eq.initial0 = Eq[0].subs(n, 1)
 
     Eq << Eq.initial0.this.lhs.defun()
 
@@ -33,7 +32,7 @@ def prove(Eq):
 
     Eq << Eq.hypothesis * x[n + 1] + Eq[0]
 
-    Eq << Eq.induct.induct()
+    Eq << Suffice(Eq.hypothesis & Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.cond.cond.suffice.imply.cond.induct.apply(Eq.initial0, Eq.initial1, Eq[-1], n=n, start=1)
 

@@ -39,7 +39,7 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import algebra, stats
+    from axiom import stats, algebra
 
     Eq.x_independence, Eq.y_independence, Eq.xy_independence, Eq.xy_nonzero_assumption, Eq.factorization = apply(*assumptions())
 
@@ -47,7 +47,7 @@ def prove(Eq):
     y, k = Eq.y_independence.rhs.lhs.of(Indexed)
     Eq << stats.eq_conditioned.imply.is_nonzero.apply(Eq.x_independence)
 
-    Eq << algebra.et.imply.conds.apply(stats.is_nonzero.imply.et.apply(Eq[-1]))
+    Eq << stats.is_nonzero.imply.et.apply(Eq[-1])
 
     Eq << stats.is_nonzero.imply.is_nonzero.conditioned.apply(Eq[-3], y[:k])
 
@@ -56,6 +56,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.arg.apply(algebra.et.concatenate, i=1, j=2)
 
     Eq << stats.is_nonzero.imply.eq.bayes.conditioned.apply(Eq[-3], x[k], y[k])
+
     Eq << Eq[-1].this.lhs.find(And).apply(algebra.et.concatenate, i=0, j=1)
 
     Eq << Eq[-3].subs(Eq[-1])
@@ -82,11 +83,11 @@ def prove(Eq):
 
     Eq << algebra.ou.imply.all.apply(Eq[-1], pivot=1)
 
-    _, Eq.y_nonzero_assumption = algebra.et.imply.conds.apply(stats.is_nonzero.imply.et.apply(Eq.xy_nonzero_assumption))
+    _, Eq.y_nonzero_assumption = stats.is_nonzero.imply.et.apply(Eq.xy_nonzero_assumption)
 
     Eq <<= Eq[-1] & Eq.y_nonzero_assumption
 
-    Eq.y_joint_y_historic = Eq[-1].this.lhs.arg.apply(algebra.eq.imply.et.split.blockmatrix, Slice[-1:])
+    Eq.y_joint_y_historic = Eq[-1].this.lhs.arg.apply(algebra.eq.imply.et.split.blockmatrix, slice(-1))
 
     Eq << stats.is_nonzero.imply.is_nonzero.conditioned.apply(Eq.y_joint_y_historic, y[:k])
 

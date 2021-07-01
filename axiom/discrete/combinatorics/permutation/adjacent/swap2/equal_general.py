@@ -11,7 +11,7 @@ def apply(n, w=None):
     if w is None:
         w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
 
-    return All(Equal(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain // {i, t}))
+    return All(Equal(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
 
 
 @prove

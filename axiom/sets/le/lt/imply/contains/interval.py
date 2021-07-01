@@ -24,18 +24,17 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import sets
+
     a = Symbol.a(real=True, given=True)
     b = Symbol.b(real=True, given=True)
-
     x = Symbol.x(real=True, given=True)
-
-#     Eq << apply(x >= b, a > x)
+    #Eq << apply(x >= b, a > x)
     Eq << apply(x <= b, a < x)
 
     Eq << sets.contains.given.et.split.interval.apply(Eq[-1])
 
-    Eq << algebra.et.given.conds.apply(Eq[-1])
+    
 
     Eq << Eq[-1].reversed
 
