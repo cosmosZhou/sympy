@@ -24,7 +24,7 @@ def prove(Eq):
     x1 = Symbol.x1(domain=Interval(a, b, left_open=True, right_open=True))
     Eq << apply(Derivative(f(x), (x, 2)) > 0, x0, x1)
 
-    Eq << Eq[0].forall((x,))
+    Eq << algebra.cond.imply.all.apply(Eq[0], x)
 
     Eq << calculus.all_is_positive.imply.is_differentiable.apply(Eq[-1])
 

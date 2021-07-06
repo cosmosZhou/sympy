@@ -5,15 +5,15 @@ from util import *
 def apply(*given):
     from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
     limited_f, limited_g = given
-    fx, (x, x0, dir) = of_limited(limited_f)
+    fx, (x, x0, dir) = of_limited(limited_f, positive=True)
     assert dir == 0
-    gx, (_x, _x0, dir) = of_limited(limited_g)
+    gx, (_x, _x0, dir) = of_limited(limited_g, real=True)
     assert dir == 0
 
     assert x == _x
     assert x0 == _x0
 
-    return Equal(Limit[x:x0](fx + gx), limited_f.lhs + limited_g.lhs)
+    return Equal(Limit[x:x0](fx ** gx), limited_f.lhs ** limited_g.lhs)
 
 
 @prove
@@ -24,7 +24,7 @@ def prove(Eq):
     f = Function.f(real=True)
     g = Function.g(real=True)
 
-    Eq << apply(Contains(Limit[x:x0](f(x)), Reals), Contains(Limit[x:x0](g(x)), Reals))
+    Eq << apply(Contains(Limit[x:x0](f(x)), Interval(0, oo, left_open=True)), Contains(Limit[x:x0](g(x)), Reals))
 
     ε = Symbol.ε(real=True, positive=True)
 

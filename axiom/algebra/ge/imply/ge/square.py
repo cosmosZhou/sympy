@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << apply(GreaterEqual(x, y))
 
-    Eq << algebra.ge.ge.imply.ge.multiply.apply(Eq[0], Eq[0])
+    Eq << algebra.ge.ge.imply.ge.mul.apply(Eq[0], Eq[0])
 
 
 

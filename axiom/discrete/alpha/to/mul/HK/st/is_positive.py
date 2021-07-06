@@ -2,7 +2,6 @@ from util import *
 
 from axiom.discrete.H.to.add.definition import H
 from axiom.discrete.K.to.add.definition import K
-
 from axiom.discrete.imply.is_positive.alpha import alpha
 
 
@@ -33,7 +32,7 @@ def prove(Eq):
 
     Eq << discrete.alpha.to.mul.HK.induct.apply(alpha(x[:_n + 1]))
 
-    Eq << Eq[-1].forall((_n,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], _n)
 
     Eq.n1 = Suffice(Equal(n, 1), Eq.hypothesis, plausible=True)
 

@@ -27,14 +27,14 @@ def apply(*given, n=None, k=None, hypothesis=False):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True, nonnegative=True)
     k = Symbol.k(domain=Range(0, n))
     f = Symbol.f(shape=(oo,), real=True)
     g = Symbol.g(shape=(oo,), real=True)
-
     Eq << apply(f[0] > g[0], Suffice(f[k] > g[k], f[n] > g[n]), n=n, k=k, hypothesis=True)
 
-    Eq << Eq[1].this.lhs.forall((k,))
+    Eq << Eq[1].this.lhs.apply(algebra.cond.given.all, k)
 
     Eq << algebra.cond.suffice.imply.cond.induct.second.split.all.apply(Eq[0], Eq[-1], n=n)
 

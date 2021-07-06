@@ -41,7 +41,7 @@ def prove(Eq):
 
     Eq << discrete.all_ge.imply.gt.K.apply(Eq[-1])
 
-    Eq << Eq[-1].forall((_n,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], _n)
 
     Eq << Eq[-1].this.function.apply(algebra.gt.imply.ge.relax)
 

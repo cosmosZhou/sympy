@@ -53,7 +53,7 @@ function rename_folder()
         insert_into_init($package, $new);
     } else {
         \std\renameDirectory($folder . $old, $folder . $new);
-        
+
         if (file_exists($folder . $new . ".py")) {
             $newPy = new Text($folder . $new . ".py");
             $lines = $newPy->readlines();
@@ -62,14 +62,12 @@ function rename_folder()
 
             $__init__ = new Text($folder . $new . "/__init__.py");
             $__init__->insert(0, $lines);
-            
+
             insert_into_init($package, $new);
-            delete_from_init($package, $old);                        
-        }
-        else{
+            delete_from_init($package, $old);
+        } else {
             replace_into_init($package, $old, $new);
         }
-        
     }
 }
 
@@ -177,8 +175,8 @@ if (strpos($new, '.') !== false) {
     } else
         $new = "$package.$new";
 
+    \mysql\update_hierarchy($old, $new, true);
     \mysql\update_axiom($old, $new, true);
-    \mysql\update_hierarchy($old, $new);
 }
 
 echo \std\jsonify("renamed!");

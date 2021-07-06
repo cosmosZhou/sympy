@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq.greater_than, Eq.less_than = sets.contains.imply.et.split.range.apply(Eq[-1], right_open=False)
 
-    Eq.strict_greater_than = algebra.ge.imply.gt.transit.apply(Eq.greater_than)
+    Eq.strict_greater_than = algebra.ge.imply.gt.relax.apply(Eq.greater_than)
 
     Eq << algebra.gt.ge.imply.gt.transit.apply(Eq.strict_greater_than, algebra.imply.ge.floor.apply(a, 2))
 
@@ -61,7 +61,7 @@ def prove(Eq):
 
     Eq << Eq[-1] % 2
 
-    
+
 
 
 if __name__ == '__main__':

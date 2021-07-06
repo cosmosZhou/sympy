@@ -3,6 +3,8 @@ from util import *
 
 @apply
 def apply(cond, forall):
+    if not forall.is_All:
+        cond, forall = forall, cond
     fn, (k, a, b) = forall.of(All[Tuple])
 
     assert k.is_integer
@@ -22,8 +24,6 @@ def prove(Eq):
     Eq << apply((g(b) > 0), All[k:a:b](g(k) > 0))
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={b})
-
-    
 
 
 if __name__ == '__main__':

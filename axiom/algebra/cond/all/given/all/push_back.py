@@ -3,6 +3,8 @@ from util import *
 
 @apply
 def apply(cond, all):
+    if not all.is_All:
+        cond, all = all, cond
     fn, (k, a, b) = all.of(All)
     
     assert k.is_integer
@@ -21,8 +23,6 @@ def prove(Eq):
     Eq << apply(g(b) > 0, All[k:a:b](g(k) > 0))
 
     Eq << algebra.all.imply.et.split.apply(Eq[-1], cond={b})
-
-    
 
 
 if __name__ == '__main__':

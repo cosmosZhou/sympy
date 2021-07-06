@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << apply(abs(S) >= 1)
 
-    Eq << algebra.ge.imply.gt.transit.apply(Eq[0], 0)
+    Eq << algebra.ge.imply.gt.relax.apply(Eq[0], 0)
 
     Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[-1])
 

@@ -124,7 +124,7 @@ def prove(Eq):
 
     Eq << algebra.all.imply.ou.apply(Eq[-1])
 
-    Eq << Eq[-1].forall((x,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], x)
 
     Eq << algebra.all.imply.ou.apply(Eq[-1])
 

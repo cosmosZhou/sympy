@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply((g(b) >= f(b)), Product[k:a:b](g(k)) >= Product[k:a:b](f(k)))
 
-    Eq << algebra.ge.ge.imply.ge.multiply.apply(Eq[0], Eq[1])
+    Eq << algebra.ge.ge.imply.ge.mul.apply(Eq[0], Eq[1])
 
     Eq << Eq[2].this.lhs.split({b})
 

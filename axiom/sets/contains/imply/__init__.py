@@ -18,3 +18,5 @@ from . import is_nonnegative
 from . import is_nonpositive
 from . import is_zero
 
+from . import is_nonzero
+from . import is_real

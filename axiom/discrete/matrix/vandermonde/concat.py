@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << Eq[-1].forall((_i,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], _i)
 
     Eq << Eq[3].rhs.args[1].function.this.limits_subs(k, k - 1)
 

@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << apply(abs(S) >= 1)
 
-    Eq << algebra.ge.imply.gt.transit.apply(Eq[0], 0)
+    Eq << algebra.ge.imply.gt.relax.apply(Eq[0], 0)
 
     Eq << sets.is_positive.imply.any_contains.apply(Eq[-1], simplify=False)
 

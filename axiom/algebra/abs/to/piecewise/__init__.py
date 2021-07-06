@@ -18,3 +18,5 @@ if __name__ == '__main__':
     
 from . import is_positive
 from . import is_zero
+from . import is_nonpositive
+from . import is_negative

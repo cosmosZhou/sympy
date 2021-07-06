@@ -10,3 +10,4 @@ from . import mul
 from . import square
 from . import st
 from . import integral
+from . import log

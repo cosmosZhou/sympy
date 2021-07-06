@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq <<= sets.contains.imply.et.split.range.apply(Eq[0]), sets.contains.imply.et.split.range.apply(Eq[4])
 
-    Eq << algebra.ge.imply.gt.transit.apply(Eq[-2])
+    Eq << algebra.ge.imply.gt.relax.apply(Eq[-2])
 
     Eq << algebra.gt.ge.imply.gt.transit.apply(Eq[-1], Eq[6])
 

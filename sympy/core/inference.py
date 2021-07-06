@@ -484,10 +484,11 @@ class Inference:
                     
                     cond = self.func(self.function, *limits) | NotContains(new, domain)
             else:
-                cond = self.forall((old,))
-                old = old.unbounded
-                if old != new:
-                    cond = cond._subs(old, new, **kwargs)
+                from sympy import All
+                _old = old.unbounded
+                cond = All(self._subs(old, _old), (_old, old.domain)).simplify()
+                if _old != new:                    
+                    cond = cond._subs(_old, new, **kwargs)
         else:
             cond = self._subs(old, new, **kwargs)
             
@@ -510,10 +511,7 @@ class Inference:
     @property
     def reversed(self):
         return Inference(self.cond.reversed, equivalent=self)
-    
-    def forall(self, *limits, **kwargs):
-        return Inference(self.cond.forall(*limits, **kwargs), equivalent=self)
-    
+        
     def __and__(self, other):
         return Inference(self.cond & other.cond, equivalent=(self, other))
     

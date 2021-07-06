@@ -393,6 +393,7 @@ class MinMaxBase(Expr, LatticeOp):
         for arg in self._argset:
             domain |= arg.domain
         return domain
+
     
 class Max(MinMaxBase, Application):
     """
@@ -481,6 +482,7 @@ class Max(MinMaxBase, Application):
     """
     zero = S.Infinity
     identity = S.NegativeInfinity
+
     def fdiff(self, argindex):
         from sympy import Heaviside
         n = len(self.args)

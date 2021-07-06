@@ -319,7 +319,7 @@ class Eq:
                                             else:
                                                 lhs_plausibles, lhs_is_equivalent = lhs.plausibles_set(clue='imply')
                                                 assert not lhs_is_equivalent                                                
-                                                if len(lhs_plausibles) == 1:                                                    
+                                                if len(lhs_plausibles) == 1: 
                                                     operations = []
                                                     
                                                     cond = lhs
@@ -343,7 +343,7 @@ class Eq:
                                                     target = rhs
                                                     while operations:
                                                         imply, clue = operations.pop()
-                                                        if imply.clue is not None:                                                                                                                
+                                                        if imply.clue is not None: 
                                                             setattr(imply, imply.clue, None)
                                                         setattr(imply, clue, target)
                                                         target = imply
@@ -515,7 +515,7 @@ def run():
         sql = "replace into tbl_axiom_py values('%s', '%s', '%s', %s, %s)" % (user, package, state, lapse, json_encode(latex))
     #     print(sql)
     except AttributeError as e: 
-        if re.match("module '[\w.]+' has no attribute 'prove'", str(e)): 
+        if re.match("module '[\w.]+' has no attribute 'prove'", str(e)) or re.match("'function' object has no attribute 'prove'", str(e)): 
             __init__ = os.path.dirname(file) + '/__init__.py'
             basename = os.path.basename(file)[:-3]
             for i, line in enumerate(Text(__init__)):
@@ -646,8 +646,10 @@ def _prove(func, debug=True, **_):
                     return from_axiom_import(py, section, eqs)
             
             elif t[0].isupper():
-                if detect_error_in_invoke(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages):
-                    ...
+                kwargs = detect_error_in_invoke(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages)
+                print(json_encode(kwargs))
+                if kwargs and not kwargs['error']:
+                    kwargs['error'] = str(e)    
 
         if str(e) == "'NoneType' object has no attribute 'definition_set'":
             lines = Text(py).collect()
@@ -666,21 +668,19 @@ def _prove(func, debug=True, **_):
             kwargs['apply'] = True
             kwargs['line'] = __line__
             kwargs['code'] = code
-            kwargs.update(get_error_info(e))                
-            
-            print(json_encode(kwargs))
-            
-        if detect_error_in_prove(py, e, messages) or detect_error_in_sympy(py, e, messages):
-            ...
+            kwargs.update(get_error_info(e))        
+        else:
+            kwargs = detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_sympy(py, e, messages)
+                    
+        print(json_encode(kwargs))
             
         print(website)
         ret = RetCode.failed
     except Exception as e: 
         messages = source_error()       
         
-        if detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_imply(py, e, messages) or detect_error_in_axiom(py, e, messages) or detect_error_in_sympy(py, e, messages): 
-            ...
-            
+        kwargs = detect_error_in_prove(py, e, messages) or detect_error_in_apply(py, e, messages) or detect_error_in_imply(py, e, messages) or detect_error_in_axiom(py, e, messages) or detect_error_in_sympy(py, e, messages)
+        print(json_encode(kwargs))
         print(website)
         ret = RetCode.failed
     
@@ -696,10 +696,12 @@ def skips_in_apply(py):
             else:
                 skips += 1
     return skips
+
     
 def get_error_info(e):
-    return {'error': str(e), 
-            'type' : re.match(r"<class '([.\w]+)'>", str(type(e)))[1]}                
+    return {'error': str(e),
+            'type': re.match(r"<class '([.\w]+)'>", str(type(e)))[1]}                
+
     
 def detect_error_in_prove(py, e, messages):
     for i, line in enumerate(messages):
@@ -739,9 +741,7 @@ def detect_error_in_prove(py, e, messages):
             kwargs['line'] = __line__
             kwargs['code'] = code
             kwargs.update(get_error_info(e))
-            
-            print(json_encode(kwargs))
-            return True            
+            return kwargs            
     
 
 def detect_error_in_apply(py, e, messages, index=-3):
@@ -768,9 +768,7 @@ def detect_error_in_apply(py, e, messages, index=-3):
                 else:
                     messages = source_error(index)
                     return detect_error_in_invoke(py, e, messages, index=index - 1)
-            
-            print(json_encode(kwargs))
-            return True
+            return kwargs
 
 
 def detect_error_in_imply(py, e, messages, index=-3):
@@ -798,12 +796,18 @@ def detect_error_in_sympy(py, e, messages, index=-3):
             return detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1) or detect_error_in_sympy(py, e, messages, index=index - 1)
 
 
-def detect_error_in_axiom(py, e, messages, index=-3):
-    for line in messages:
+def detect_error_in_axiom(py, e, _messages, index=-3):
+    for line in _messages:
         m = re.fullmatch(r'File "([^"]+[\\/]axiom[\\/]([^"]+)\.py)", line (\d+), in (\w+)', line)
         if m:
             messages = source_error(index)
-            return detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1)
+            kwargs = detect_error_in_apply(py, e, messages) or detect_error_in_prove(py, e, messages) or detect_error_in_invoke(py, e, messages, index=index - 1)
+            if kwargs:
+                if isinstance(e, AssertionError):
+                    if not kwargs['error']:
+                        kwargs['error'] = _messages[1]
+                        
+                return kwargs
 
 
 def unprovable(func):
@@ -1053,7 +1057,13 @@ def given(apply, **kwargs):
         s = traceback.extract_stack()
         if apply.__code__.co_filename != s[-2][0]: 
             if isinstance(statement, tuple):
-                if imply.is_Inference:
+                if isinstance(imply, tuple):
+                    statement = tuple(s.copy(imply=imply) for s in statement)
+                    if _simplify:
+                        statement = tuple((s.simplify(emplace=True) for s in statement))
+                        
+                    return statement
+                elif imply.is_Inference:
                     statement = tuple(s.copy(imply=imply) for s in statement)
                     if _simplify:
                         statement = tuple((s.simplify(emplace=True) for s in statement))
@@ -1316,6 +1326,14 @@ def source_error(index=-2):
     error_source = error_source.strip()
     return error_source.splitlines()
 
+
+class cout:
+
+    def __lshift__(self, rhs):
+        print(rhs)
+
+        
+cout = cout()
 
 if __name__ == '__main__':
     ...

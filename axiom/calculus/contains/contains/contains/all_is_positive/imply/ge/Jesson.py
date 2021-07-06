@@ -53,21 +53,21 @@ def prove(Eq):
 
     Eq << calculus.is_positive.imply.ge.Jesson.apply(Eq[-1], w=w_)
 
-    Eq << Eq[-1].forall((w_,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], w_)
 
     Eq << algebra.all.imply.suffice.apply(Eq[-1])
 
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
 
     x0 = Eq[-1].lhs.find(f).arg
-    Eq << Eq[-1].forall((x0,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], x0)
 
     Eq << algebra.all.imply.suffice.apply(Eq[-1])
 
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[1], Eq[-1])
 
     x1 = Eq[-1].lhs.find(Add * ~f).arg
-    Eq << Eq[-1].forall((x1,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], x1)
 
     Eq << algebra.all.imply.suffice.apply(Eq[-1])
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[2], Eq[-1])

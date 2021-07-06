@@ -112,37 +112,6 @@ class Boolean(Basic):
                     return eqs.rhs
         return eqs
 
-    def forall(self, *limits, simplify=True):
-        if len(limits) == 1:
-            x, *args = limits[0]
-            assert not x.is_given
-            if not self._has(x): 
-                return self
-            from sympy import All
-            if len(args) == 2:
-                from sympy import Interval, Range    
-                domain = (Range if x.is_integer else Interval)(*args)
-                
-            elif len(args) == 1:
-                domain = args[0]
-                if not domain.is_set:
-                    domain = x.domain_conditioned(domain)
-            else:
-                _x = x.unbounded
-                self = All(self._subs(x, _x), (_x, x.domain))
-                return self.simplify() if simplify else self
-                
-            x_domain = x.domain
-            if domain == x_domain:
-                if not simplify:
-                    _x = x.unbounded
-                    self = All(self._subs(x, _x), (_x, x.domain))
-                    return self
-        else:
-            return
-
-        return self
-
     def existent_symbols(self):
         from sympy.tensor.indexed import Indexed, Slice
         from sympy.stats.rv import RandomSymbol
@@ -438,33 +407,13 @@ class BinaryCondition(Boolean):
             return self._subs_slice(old, new)
         if not old.is_symbol:
             return self
-        new = sympify(new)
         
-        if self.plausible:
-            lhs, rhs = self.lhs._subs(old, new), self.rhs._subs(old, new)
-            if new._has(old):
-                assumptions = {'plausible': True}
-            else:
-                assumptions = {'given': self}
-            eq = self.func(lhs, rhs, **assumptions)
-            if not new._has(old):
-                return eq
-            return eq
-        else:
-            if new in old.domain:
-                lhs = self.lhs._subs(old, new)
-                rhs = self.rhs._subs(old, new)            
-                return self.func(lhs, rhs, given=self)
-            
-            domain = old.domain_bounded
-            if domain is not None and new not in domain:
-                self = self.forall((old,))
-                old = old.unbounded
-                if old != new:
-                    self = self.subs(old, new)
-                return self
+        new = sympify(new)
+        domain = old.domain_bounded
+        if domain is not None and new not in domain:
+            return self
 
-            return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify())
+        return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify())
 
 
 class BooleanAssumption(BinaryCondition):
@@ -1136,7 +1085,7 @@ class And(LatticeOp, BooleanFunction):
             if isinstance(function, tuple): 
                 clue = {f.clue for f in function}
                 assert len(clue) == 1
-                clue, *_ = clue
+                [clue] = clue
                 function = And(*function, **{clue: self})
             else:
                 clue = function.clue

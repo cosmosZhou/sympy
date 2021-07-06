@@ -34,8 +34,9 @@ $indexOfImply = - 1;
 $res = \mysql\yield_from_mysql($module);
 
 error_log("res = ".\std\jsonify($res));
+error_log("statementsFromSQLFile = ".\std\jsonify($statementsFromSQLFile));
 
-foreach ($statementsFromSQLFile === null ? \mysql\yield_from_mysql($module) : $statementsFromSQLFile as $statement) {
+foreach ($statementsFromSQLFile === null ? $res : $statementsFromSQLFile as $statement) {
 
     if ($i == $indexOfYield) {
 

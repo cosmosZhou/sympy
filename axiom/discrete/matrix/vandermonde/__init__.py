@@ -89,7 +89,9 @@ def prove(Eq):
     D = Eq.recursion.rhs.args[1].function.args[1].arg
     _i = i.copy(positive=True)
     D = D._subs(i, _i)
-    Eq << discrete.matrix.determinant.expansion_by_minors.apply(D, j=0).forall((_i,))
+    Eq << discrete.matrix.determinant.expansion_by_minors.apply(D, j=0)
+    
+    Eq << algebra.cond.imply.all.apply(Eq[-1], _i)
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq[-1], Eq.recursion)
 

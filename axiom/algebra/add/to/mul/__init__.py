@@ -18,7 +18,7 @@ def apply(self):
                 common_terms &= {arg}
         if not common_terms:
             return
-        
+
     factor = Mul(*common_terms)
     additives = []
     for arg in args:
@@ -28,7 +28,7 @@ def apply(self):
         else:
             assert arg == factor
             additives.append(1)
-        
+
     return Equal(self, Add(*additives) * Mul(*common_terms))
 
 
@@ -37,14 +37,16 @@ def prove(Eq):
     a = Symbol.a(complex=True)
     x = Symbol.x(complex=True)
     y = Symbol.y(complex=True)
-    
+
     Eq << apply(a * x - a * y)
-    
+
     Eq << Eq[0].this.rhs.expand()
-    
-    
+
+
 if __name__ == '__main__':
     run()
 
 from . import st
 
+del together
+from . import together

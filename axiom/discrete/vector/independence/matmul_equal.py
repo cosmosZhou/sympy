@@ -1,8 +1,6 @@
 from util import *
 
 
-
-
 @apply
 def apply(given):
     assert given.is_Equal
@@ -40,14 +38,13 @@ def prove(Eq):
     x = Symbol.x(shape=(n,), complex=True, given=True)
     y = Symbol.y(shape=(n,), complex=True, given=True)
     k = Symbol.k(domain=Range(1, oo))
-    assert x.is_given and y.is_given
-    given = Equal(Lamda[k:n](p ** k) @ x, Lamda[k:n](p ** k) @ y)
-    Eq << apply(given)
+    assert x.is_given and y.is_given 
+    Eq << apply(Equal(Lamda[k:n](p ** k) @ x, Lamda[k:n](p ** k) @ y))
 
     i = Symbol.i(domain=Range(1, n + 1))
-    Eq << given.subs(p, i)
+    Eq << Eq[0].subs(p, i)
 
-    Eq << Eq[-1].forall((i,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], i)
 
     Eq << Eq[-1].this.function.apply(algebra.eq.imply.eq.lamda, *Eq[-1].limits, simplify=False)
 

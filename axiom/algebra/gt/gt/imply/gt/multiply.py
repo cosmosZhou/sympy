@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << apply(a > b, x > y)
 
-    Eq << algebra.lt.lt.imply.lt.multiply.apply(Eq[0].reversed, Eq[1].reversed)
+    Eq << algebra.lt.lt.imply.lt.mul.apply(Eq[0].reversed, Eq[1].reversed)
 
     Eq << Eq[-1].reversed
 

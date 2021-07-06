@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << apply(abs(x) < a, abs(y) < b)
 
-    Eq << algebra.lt.lt.imply.lt.multiply.apply(Eq[0], Eq[1])
+    Eq << algebra.lt.lt.imply.lt.mul.apply(Eq[0], Eq[1])
 
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.abs)
 

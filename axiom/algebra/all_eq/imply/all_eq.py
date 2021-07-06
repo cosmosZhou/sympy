@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.doit()
 
-    Eq << Eq[-1].forall((_n,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], _n)
 
     Eq << Eq[-1].limits_subs(n, n - 1).reversed
 

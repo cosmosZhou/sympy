@@ -20,7 +20,7 @@ def prove(Eq):
     b = Symbol.b(integer=True, given=True)
     Eq << apply(Contains(x, Range(a, b)), right_open=False)
 
-    Eq << algebra.le.imply.lt.transit.apply(Eq[-1], upper=b)
+    Eq << algebra.le.imply.lt.relax.apply(Eq[-1], upper=b)
 
     Eq << sets.lt.imply.contains.range.apply(Eq[-1], simplify=False)
 

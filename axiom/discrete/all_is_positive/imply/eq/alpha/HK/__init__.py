@@ -54,7 +54,7 @@ def prove(Eq):
 
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].forall((n_,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], n_)
 
     _n = Eq[-1].variable
     Eq << algebra.all.imply.suffice.apply(Eq[-1])

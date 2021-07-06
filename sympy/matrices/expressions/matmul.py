@@ -27,7 +27,6 @@ class MatMul(MatrixExpr):
     >>> MatMul(A, B, C)
     A*B*C
     """
-    is_commutative = True
 
     identity = GenericIdentity()
 
@@ -642,7 +641,7 @@ def any_zeros(mul):
 def merge_explicit(matmul):
     """ Merge explicit MatrixBase arguments
 
-    >>> from sympy import MatrixSymbol, eye, Matrix, MatMul, pprint
+    >>> from sympy import MatrixSymbol, Matrix, MatMul, pprint
     >>> from sympy.matrices.expressions.matmul import merge_explicit
     >>> A = MatrixSymbol('A', 2, 2)
     >>> B = Matrix([[1, 1], [1, 1]])

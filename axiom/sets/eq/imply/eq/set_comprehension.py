@@ -13,7 +13,7 @@ def apply(given, *limits, simplify=True):
 
 @prove
 def prove(Eq):
-    from axiom import sets
+    from axiom import sets, algebra
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(domain=Range(0, n))
     f = Function.f(shape=(), etype=dtype.integer)
@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << apply(Equal(f(i), g(i)), (i, 0, n))
 
-    Eq << Eq[0].forall((i,))
+    Eq << algebra.cond.imply.all.apply(Eq[0], i)
 
     Eq << sets.all_eq.imply.eq.set_comprehension.apply(Eq[-1])
 

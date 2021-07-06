@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(*given):
     x_less_than_a, y_less_than_b = given
@@ -25,14 +24,15 @@ def prove(Eq):
 
     Eq << apply(abs(x) < a, abs(y) < b)
 
-    Eq << algebra.lt.given.cond.split.abs.apply(Eq[-1])
+    Eq << algebra.lt.given.et.split.abs.apply(Eq[-1])
 
-    Eq << algebra.lt.imply.cond.split.abs.apply(Eq[0])
+    Eq << algebra.lt.imply.et.split.abs.apply(Eq[0])
 
-    Eq << algebra.lt.imply.cond.split.abs.apply(Eq[1])
+    Eq << algebra.lt.imply.et.split.abs.apply(Eq[1])
 
     Eq <<= Eq[-4] + (-Eq[-1]), Eq[-3] + (-Eq[-2])
     return
+
 
 if __name__ == '__main__':
     run()

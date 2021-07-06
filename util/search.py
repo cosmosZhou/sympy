@@ -88,8 +88,7 @@ def read_all_plausibles(plausible):
 
 
 def section(axiom):
-    _, section, *_ = axiom.split('.', 3)
-    return section
+    return axiom.split('.', 3)[0]
 
 
 def is_axiom_plausible(php):
@@ -116,12 +115,13 @@ def module_to_py(theorem):
     if not os.path.exists(py):
         py = full_theorem_path + '/__init__.py';
 
-
     return py
+
 
 def module_to_path(theorem):
     theorem = theorem.replace(".", "/")
     return os.path.dirname(os.path.dirname(__file__)) + f"/axiom/{theorem}";
+
     
 def py_to_module(py, delimiter='.'):
     module = []
@@ -189,6 +189,7 @@ def search(keyword, caseSensitive=True, wholeWord=False, regularExpression=False
     print("in all, there are %d hits:" % len(modules))
     for module in modules:
         print_py(module, prefix)
+
     
 def yield_from_py(py):
     prove = False

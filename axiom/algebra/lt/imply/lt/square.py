@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << apply(Less(x, y))
 
-    Eq << algebra.lt.lt.imply.lt.multiply.apply(Eq[0], Eq[0])
+    Eq << algebra.lt.lt.imply.lt.mul.apply(Eq[0], Eq[0])
 
 
 

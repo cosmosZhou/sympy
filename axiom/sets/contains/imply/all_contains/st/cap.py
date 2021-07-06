@@ -17,7 +17,7 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets
+    from axiom import sets, algebra
     n = Symbol.n(positive=True, integer=True, given=True)
     x = Symbol.x(integer=True, given=True)
     k = Symbol.k(integer=True)
@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << sets.contains.imply.contains.split.intersection.apply(Eq[-1], index=0)
 
-    Eq << Eq[-1].forall((k,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], k)
 
 
 if __name__ == '__main__':

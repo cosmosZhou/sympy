@@ -1,3 +1,3 @@
-from . import cond
+from . import et
 from . import le, is_nonpositive, is_nonnegative
 from . import lt

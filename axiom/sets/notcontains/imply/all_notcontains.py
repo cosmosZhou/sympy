@@ -14,7 +14,7 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets
+    from axiom import sets, algebra
 
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(integer=True)
@@ -27,9 +27,7 @@ def prove(Eq):
 
     Eq << sets.notcontains.imply.et.split.union.apply(Eq[-1], simplify=None)
 
-    
-
-    Eq << Eq[-2].forall((k,))
+    Eq << algebra.cond.imply.all.apply(Eq[-2], k)
 
 
 if __name__ == '__main__':

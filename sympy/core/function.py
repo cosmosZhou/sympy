@@ -219,7 +219,7 @@ class FunctionClass(ManagedProperties):
 
         return __new__
 
-
+    
 class Application(Basic, metaclass=FunctionClass):
     """
     Base class for applied functions.
@@ -2761,6 +2761,27 @@ class Subs(Expr):
     @property
     def shape(self):
         return self.expr.shape
+
+    def simplify(self, deep=False, **kwargs):
+        old, new = self.args[1:]
+        expr = self.expr
+        
+        deletes = []
+        
+        olds = []
+        news = []
+        for old, new in zip(old, new):
+            if old.is_symbol and not old.is_given:
+                expr = expr._subs(old, new)
+                deletes.append(old)
+            else:
+                olds.append(old) 
+                news.append(new)
+        
+        if olds:
+            return Subs(expr, olds, news, evaluate=False)
+        
+        return expr
 
 
 def diff(f, *symbols, **kwargs):

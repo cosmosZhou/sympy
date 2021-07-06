@@ -52,7 +52,7 @@ def prove(Eq):
 
     Eq.le = Eq[-1].this.lhs.apply(algebra.add.collect, factor=x1)
 
-    Eq.all_is_positive = Eq[1].forall((x,))
+    Eq.all_is_positive = algebra.cond.imply.all.apply(Eq[1], x)
 
     Eq.x0_contains, Eq.x1_contains = Contains(x0, domain, plausible=True), Contains(x1, domain, plausible=True)
 

@@ -5,4 +5,4 @@ from . import min
 from . import max
 from . import add
 from . import sum, product
-from . import multiply
+from . import mul

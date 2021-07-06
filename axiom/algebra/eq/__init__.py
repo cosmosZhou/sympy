@@ -10,3 +10,4 @@ from . import simplify
 from . import rsolve
 from . import to
 from . import suffice
+from . import transposition

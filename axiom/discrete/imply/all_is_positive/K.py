@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.args[1].apply(sets.contains.imply.ge.split.range)
 
-    Eq << Eq[-1].this.function.args[1].apply(algebra.ge.imply.gt.transit, 0)
+    Eq << Eq[-1].this.function.args[1].apply(algebra.ge.imply.gt.relax, 0)
 
     Eq << Eq[-1].this.function.apply(algebra.is_positive.is_positive.imply.is_positive)
 

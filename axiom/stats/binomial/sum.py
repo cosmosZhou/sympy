@@ -17,14 +17,12 @@ def apply(X0, X1):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     n0 = Symbol.n0(integer=True, positive=True)
     n1 = Symbol.n1(integer=True, positive=True)
-
     p = Symbol.p(domain=Interval(0, 1, left_open=True, right_open=True))
-
     X0 = Symbol.X0(distribution=BinomialDistribution(n0, p))
     X1 = Symbol.X1(distribution=BinomialDistribution(n1, p))
-
     Eq << apply(X0, X1)
 
     Eq << Eq[0].lhs.this.doit(evaluate=False)
@@ -46,7 +44,9 @@ def prove(Eq):
     (k, *_), (l, *_) = Eq[-1].lhs.limits
     Eq << Eq[-1].this.lhs.limits_subs(k, k - l)
 
-    Eq << Eq[-1].this.lhs.as_separate_limits()
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.swap.intlimit.parallel)
+
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.separate)
 
     Eq << Eq[-1].this.lhs.apply(discrete.sum.to.matmul)
 

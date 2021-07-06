@@ -9,7 +9,8 @@ def apply(given, old, new):
     assert domain is not None and new not in domain
     assert given._has(old)
 
-    cond = given.forall((old,))
+    from axiom.algebra.cond.imply.all import all
+    cond = all(given, old)
     old = old.unbounded
     assert old != new
     ou = rewrite_as_Or(cond)
@@ -20,17 +21,17 @@ def apply(given, old, new):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True, shape=(oo,))
     j = Symbol.j(integer=True)
     t = Symbol.t(domain=Range(0, n + 1))
-
     f = Function.f(integer=True)
     g = Function.g(integer=True)
     Eq << apply(f(x, t) > g(t), t, y[j])
 
-    Eq << Eq[0].forall((t,))
+    Eq << algebra.cond.imply.all.apply(Eq[0], t)
 
     t = Eq[-1].variable
     Eq << algebra.all.imply.ou.subs.apply(Eq[-1], t, y[j])

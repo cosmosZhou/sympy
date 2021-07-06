@@ -113,7 +113,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.args[0].doit()
 
-    Eq << Eq[-1].subs(Eq.det_lamda).forall((i,))
+    Eq << Eq[-1].subs(Eq.det_lamda).apply(algebra.cond.imply.all, i)
 
     Eq << algebra.et.given.et.subs.all_eq.apply(Eq.deduction & Eq[-1])
 

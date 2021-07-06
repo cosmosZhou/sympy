@@ -2,34 +2,28 @@ from util import *
 
 
 @apply
-def apply(given, epsilone=None, delta=None):
+def apply(given, epsilon=None, delta=None):
     from axiom.calculus.eq.to.any_all.limit_definition import any_all
-    return any_all(given, epsilone, delta)
+    return any_all(given, epsilon, delta)
 
 
 @prove
 def prove(Eq):
     from axiom import calculus, algebra
+
     n = Symbol.n(integer=True, positive=True)
-
     x = Symbol.x(real=True)
-#     x = Symbol.x(real=True, shape=(n,))
+    #x = Symbol.x(real=True, shape=(n,))
     x = Symbol.x(integer=True)
-
     f = Function.f(real=True, shape=())
-
     x0 = Symbol.x0(real=True)
-#     x0 = Symbol.x0(real=True, shape=(n,))
-
+    #x0 = Symbol.x0(real=True, shape=(n,))
     x0 = oo
-#     x0 = -oo
-
+    #x0 = -oo
     a = Symbol.a(real=True)
-#     a = oo
-#     a = -oo
-
+    #a = oo
+    #a = -oo
     direction = 1
-
     Eq << apply(Equal(Limit[x:x0:direction](f(x)), a))
 
     Eq << calculus.eq.to.any_all.limit_definition.apply(Eq[0])

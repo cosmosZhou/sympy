@@ -24,3 +24,4 @@ from . import is_differentiable
 from . import contains
 from . import subs
 from . import mul
+from . import is_nonzero

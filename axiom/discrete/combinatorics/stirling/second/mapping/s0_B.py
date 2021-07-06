@@ -64,8 +64,6 @@ def prove(Eq):
 
     Eq << algebra.eq_piecewise.imply.ou.apply(Eq.x_hat_definition)
 
-    Eq << Eq[-1].forall((i, Unequal(i, j)))
-
     Eq.B_assertion = sets.imply.all_any_eq.split.imageset.apply(B)
 
     Eq << Eq.B_assertion.this.function.function.apply(sets.eq.imply.eq.complement, {n.set})

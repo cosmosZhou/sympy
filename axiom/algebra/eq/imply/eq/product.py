@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << apply(Equal(f(i), g(i)), (i, 0, n))
 
-    Eq << Eq[0].forall((i,))
+    Eq << algebra.cond.imply.all.apply(Eq[0], i)
 
     Eq << algebra.all_eq.imply.eq.product.apply(Eq[-1])
 

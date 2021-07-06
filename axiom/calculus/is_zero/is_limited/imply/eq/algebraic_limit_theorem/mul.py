@@ -8,7 +8,10 @@ def apply(*given):
     limited_f = limited_f.of(Equal[0])
     fx, (x, x0, dir) = limited_f.of(Limit)
 
-    gx, (_x, _x0, _dir) = of_limited(limited_g)
+    gx, (_x, _x0, _dir), R = of_limited(limited_g)
+    
+    assert R.is_Interval
+    
     assert dir == _dir
 
     assert x == _x

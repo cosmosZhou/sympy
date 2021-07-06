@@ -2219,9 +2219,24 @@ class Union(Set, LatticeOp, EvalfMixin):
             raise Exception("could not add %s, %s" % (self, other))
         return self.func(*(arg + other for arg in self.args))
 
+    #perform lhs in self
     def _eval_Subset_reversed(self, lhs):
         if lhs in self._argset:
             return S.true
+
+    #perform self in rhs
+    def _eval_Subset(self, rhs):
+        from sympy import Subset
+        for s in self._argset:            
+            cond = Subset(s, rhs)
+            if cond:
+                continue
+            elif cond == False:
+                return S.false
+            else:
+                return
+        return S.true
+
 
     def simplify(self, deep=False, **kwargs):
         if deep:
@@ -2500,10 +2515,25 @@ class Intersection(Set, LatticeOp):
             raise Exception("could not add %s, %s" % (self, other))
         return self.func(*(arg + other for arg in self.args))
 
+    #perform self in rhs
     def _eval_Subset(self, rhs):
         for e in self._argset:
             if e in rhs:
                 return S.true
+
+    #perform lhs in self
+    def _eval_Subset_reversed(self, lhs):
+        from sympy import Subset
+        for e in self._argset:
+            cond = Subset(lhs, e)
+            if cond:
+                continue
+            if cond == False:
+                return S.false
+            else:
+                return
+        return S.true
+                    
 
     def _subs(self, old, new, **hints):
         if old.is_Intersection:

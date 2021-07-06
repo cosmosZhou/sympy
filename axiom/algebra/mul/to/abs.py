@@ -8,9 +8,14 @@ def apply(self, evaluate=False):
     for arg in self.of(Mul):
         if arg.is_Abs:
             args.append(arg.of(Abs))
-        else:
-            assert arg >= 0
-            args.append(arg)
+            continue
+        elif arg.is_Pow:
+            if arg.base.is_Abs and arg.exp.is_integer:
+                args.append(Pow(arg.base.of(Abs), arg.exp))
+                continue
+            
+        assert arg >= 0
+        args.append(arg)
 
     return Equal(self, Abs(Mul(*args), evaluate=evaluate))
 

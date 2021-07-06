@@ -387,7 +387,12 @@ class Limit(Expr):
                 else:
                     const.append(arg)
             if const:
-                return Limit[x:x0:dir](Add(*args)) + Add(*const)
+                expr = Add(*args)
+                const = Add(*const)
+                if expr == x:
+                    return x0 + const
+                
+                return Limit[x:x0:dir](expr) + const
             
         return self
 

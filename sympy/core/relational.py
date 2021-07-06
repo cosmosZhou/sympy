@@ -434,59 +434,37 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         if var.shape or var.is_set:
             return
         
-        from sympy import solve
         equation = self.lhs - self.rhs
-        if var.is_integer and not var.is_random:
-            from sympy import Dummy
-            x = Dummy('x', real=True)
-            equation = equation._subs(var, x)
-        else:
-            x = var
-            
-        try:
-            solution = solve(equation, x)
-        except:
+        
+        p = equation.as_poly(var)
+        if not p or p.degree() != 1:
             return
-            
-        if len(solution) == 1:
-            solution = solution[0]
+         
+        a = p.nth(1)
+        if a.is_nonzero:
+            b = p.nth(0)
+            solution = -b / a
             op = type(self)
-    
-            from sympy import limit
-            b = limit(equation, x, S.Infinity)
-            a = limit(equation, x, S.NegativeInfinity)
-    
-            if b.is_extended_negative:
-                b = -b
+            if a.is_extended_negative:
                 a = -a
                 dic = {Equal: Equal, Greater: Less, GreaterEqual: LessEqual, Less: Greater, LessEqual: GreaterEqual, Unequal: Unequal}
                 op = dic[op]
-    
-            if b.is_extended_positive:
-                if a.is_extended_positive:
-                    # equation >= 0
-                    if op in (LessEqual, Equal):  # <=
-                        domain &= FiniteSet(solution)
-                    elif op == Less:
-                        domain = solution.emptySet
-                    elif op == (Greater, Unequal):  # >
-                        domain -= FiniteSet(solution)
-                else:
-                    from sympy import Interval
-                    if op == LessEqual:
-                        domain &= Interval(S.NegativeInfinity, solution)
-                    elif op == GreaterEqual:
-                        domain &= Interval(solution, S.Infinity)
-                    elif op == Less:
-                        domain &= Interval(S.NegativeInfinity, solution, right_open=True)
-                    elif op == Greater:
-                        domain &= Interval(solution, S.Infinity, left_open=True)
-                    elif op == Unequal:
-                        domain -= FiniteSet(solution)
-                    elif op == Equal:
-                        domain &= FiniteSet(solution)
-    
-            return domain
+                            
+            from sympy import Interval
+            if op == LessEqual:
+                domain &= Interval(S.NegativeInfinity, solution)
+            elif op == GreaterEqual:
+                domain &= Interval(solution, S.Infinity)
+            elif op == Less:
+                domain &= Interval(S.NegativeInfinity, solution, right_open=True)
+            elif op == Greater:
+                domain &= Interval(solution, S.Infinity, left_open=True)
+            elif op == Unequal:
+                domain -= FiniteSet(solution)
+            elif op == Equal:
+                domain &= FiniteSet(solution)
+
+        return domain
 
     def rewrite(self, *args, **hints):
         return self.func(self.lhs.rewrite(*args, **hints), self.rhs.rewrite(*args, **hints))
@@ -1971,6 +1949,10 @@ class LessEqual(_Less):
             if self.lhs == other.lhs:
                 if other.rhs >= self.rhs:
                     return S.false
+            elif self.rhs == other.rhs:
+                if other.lhs <= self.lhs:
+                    return S.false
+                
         elif other.is_Contains:
             if other.rhs.is_Range:
                 if self.lhs == other.lhs:
@@ -2149,6 +2131,9 @@ class Greater(_Greater):
         elif isinstance(other, LessEqual):
             if self.lhs == other.lhs:
                 if other.rhs <= self.rhs: 
+                    return S.false
+            elif self.rhs == other.rhs:
+                if other.lhs >= self.lhs: 
                     return S.false
                     
         elif isinstance(other, Unequal):

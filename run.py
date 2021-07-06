@@ -1,3 +1,5 @@
+#!/usr/local/python
+#!/home/lizhi/python/bin/python
 #!python
 import os, sys, re
 from sympy.utilities.misc import Text
@@ -403,7 +405,7 @@ def args_kwargs(argv):
     return args, kwargs
 
 
-def run_with_module(*modules):
+def run_with_module(*modules, debug=True):
 
     def generator():
         for package in modules:
@@ -420,7 +422,7 @@ def run_with_module(*modules):
                     state, lapse, latex = prove_with_timing(module, debug=debug, slow=True)
                     file = module.__file__
                 except AttributeError as e:
-                    if re.match("module '[\w.]+' has no attribute 'prove'", str(e)):
+                    if re.match("module '[\w.]+' has no attribute 'prove'", str(e)) or re.match("'function' object has no attribute 'prove'", str(e)):
                         from util.search import module_to_py
                         file = module_to_py(package)
                         __init__ = os.path.dirname(file) + '/__init__.py'
@@ -506,12 +508,17 @@ def cgi_run():
     if is_http:
         print("Content-type:text/html\n")        
         QUERY_STRING = os.environ['QUERY_STRING']
-#         print("QUERY_STRING =", QUERY_STRING, "<br>")
+        # print("QUERY_STRING =", QUERY_STRING, "<br>")
         
+        if not QUERY_STRING:
+            from util.summary import summary
+            summary()
+            exit()
+            
         kwargs = {key: value for key, value in map(lambda s: s.split('='), QUERY_STRING.split('&'))}
-        
 #         print(kwargs, "<br>")
         args = ''
+        
     else: 
         args, kwargs = args_kwargs(sys.argv[1:])
         
@@ -524,18 +531,18 @@ def cgi_run():
     if not args:
         if kwargs:
             for key, value in kwargs.items():
-                if key == 'hierarchy':
+                if key == 'module':
+                    run_with_module(value, debug=debug)                    
+                elif key == 'hierarchy':
                     from util.hierarchy import insert_into_hierarchy
-                    insert_into_hierarchy()
-                elif key == 'module':
-                    run_with_module(value)                    
+                    insert_into_hierarchy()                                                            
         else:
             prove(debug=debug, parallel=parallel)
     else: 
         run_with_module(*args)
         
-    from util.utility import chmod
-    chmod()
+#     from util.utility import chmod
+#     chmod()
         
 if __name__ == '__main__':
     cgi_run()

@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << sets.any_contains.imply.is_nonemptyset.apply(Eq[-3])
 
-    Eq << Eq[-1].forall((_t,))
+    Eq << algebra.cond.imply.all.apply(Eq[-1], _t)
 
 
 if __name__ == '__main__':

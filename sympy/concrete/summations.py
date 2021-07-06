@@ -1196,7 +1196,7 @@ domain & limit[1] = %s
                 return self.simplify_finiteset(x, universe)
 
             if self.function.is_Piecewise:
-                has_x = [c._has(x) for _, c in self.function.args[:-1]]                                
+                has_x = [c._has(x) for _, c in self.function.args[:-1]]
                 if not any(has_x):
                     return self.function.func(*((self.func(e, (x, universe)).simplify(), c) for e, c in self.function.args)).simplify()
                 
@@ -1212,7 +1212,7 @@ domain & limit[1] = %s
                     independent_of_x = self.function.func(*independent_of_x)
                     
                     dependent_on_x = []
-                    for arg in self.function.args[:index]: 
+                    for arg in self.function.args[:index]:
                         dependent_on_x.append(arg)
                                             
                     dependent_on_x.append((independent_of_x, True))
@@ -1275,7 +1275,6 @@ domain & limit[1] = %s
                     piecewise = piecewise0.func(*args)
                     
                     return self.func(piecewise, *self.limits).simplify()
-
  
             domain = self.function.domain_nonzero(x)
 
@@ -1571,6 +1570,7 @@ domain & limit[1] = %s
 
     def __getitem__(self, indices):
         return self.func(self.function[indices], *self.limits)
+
 
 def summation(f, *symbols, **kwargs):
     r"""

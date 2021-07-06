@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Suffice(Eq.hypothsis_k, Eq.induct, plausible=True)
 
-    Eq << Eq[-1].this.lhs.forall((k,))
+    Eq << Eq[-1].this.lhs.apply(algebra.cond.given.all, k)
 
     Eq << algebra.cond.suffice.imply.cond.induct.second.split.all.apply(Eq.initial, Eq[-1], n=n)
 

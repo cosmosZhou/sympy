@@ -1,10 +1,8 @@
 from util import *
 
 
-
 @apply
-def apply(*given):
-    x_less_than_y, x_greater_than_y_minus = given
+def apply(x_less_than_y, x_greater_than_y_minus):
     x, a = x_less_than_y.of(Less)
     _x, b = x_greater_than_y_minus.of(Greater)
     assert x == _x
@@ -20,9 +18,9 @@ def prove(Eq):
 
     Eq << apply(x < a, x > b)
 
-    Eq << algebra.lt.given.cond.split.abs.apply(Eq[-1])
+    Eq << algebra.lt.given.et.split.abs.apply(Eq[-1])
 
-    Eq <<= ~Eq[-2], -~Eq[-1]
+    Eq <<= ~Eq[-2], - ~Eq[-1]
 
     Eq <<= algebra.ge.imply.ge.relaxed.apply(Eq[-2], abs(a)), -algebra.ge.imply.ge.relaxed.apply(Eq[-1], abs(b))
 

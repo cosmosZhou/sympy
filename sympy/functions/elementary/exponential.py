@@ -859,20 +859,20 @@ class Log(Function):
         return self.func(arg)
     
     def simplify(self, **_):
-        from sympy import exp
         arg = self.arg
-        if isinstance(arg, exp):
+        if arg.is_Exp:
             return arg.arg
-        if type(arg) == Mul:
+        if arg.is_Mul:
             coeff = []
             exponent = []
             for e in arg.args:
-                if isinstance(e, exp):
+                if e.is_Exp:
                     coeff.append(e.arg)
                 else:
                     exponent.append(e)
-            return Add(*coeff) + self.func(Mul(*exponent)).simplify()
-        if isinstance(arg, Pow):
+            if coeff:
+                return Add(*coeff) + self.func(Mul(*exponent)).simplify()
+        elif arg.is_Pow:
             base, exponent = arg.args
             if exponent._coeff_isneg():
                 exponent = -exponent
@@ -892,7 +892,7 @@ class Log(Function):
 
     def _latex(self, p):
         arg = p._print(self.arg)
-        if self.arg.is_Mul or self.arg.is_MatMul:
+        if self.arg.is_AssocOp or self.arg.is_MatMul:
             return r"\log \left(%s\right)" % arg
         return r"\log {%s}" % arg
 

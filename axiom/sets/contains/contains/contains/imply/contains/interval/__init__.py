@@ -27,8 +27,8 @@ def prove(Eq):
     w = Symbol.w(domain=Eq[0].rhs)
     Eq << sets.contains.contains.imply.contains.interval.apply(Eq[1], Eq[2], w=w)
 
-    Eq << Eq[-1].forall((w,))
-
+    Eq << algebra.cond.imply.all.apply(Eq[-1], w)
+    
     Eq << algebra.all.imply.suffice.apply(Eq[-1])
 
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])

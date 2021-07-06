@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(given):
     lhs, rhs = given.of(Equal)
-    assert lhs.is_nonzero
-    assert rhs.is_nonzero
+    assert lhs > 0 or rhs > 0
 
     return Equal(log(lhs), log(rhs))
 
@@ -13,13 +12,19 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    f = Function.f(shape=(), real=True, positive=True)
-    g = Function.g(shape=(), real=True, positive=True)
 
+    x = Symbol.x(real=True)
+    f = Function.f(shape=(), positive=True)
+    g = Function.g(shape=(), real=True)
     Eq << apply(Equal(f(x), g(x)))
 
-    Eq << algebra.eq.imply.eq.invoke.apply(Eq[0], log)
+    Eq << Eq[1].subs(Eq[0])
+
+    Eq << Greater(f(x), 0, plausible=True)
+
+    Eq << Eq[-1].subs(Eq[0])
+
+    Eq << algebra.is_positive.imply.is_nonzero.apply(Eq[-1])
 
 
 if __name__ == '__main__':

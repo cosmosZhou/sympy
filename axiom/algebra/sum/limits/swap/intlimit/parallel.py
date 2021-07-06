@@ -1,0 +1,69 @@
+from util import *
+
+
+def limits_swap(Sum, self):
+    function, limit_i, limit_j = self.of(Sum)
+    j, *_ = limit_j
+    assert limit_i._has(j)
+
+    try:
+        i, _a, _b = limit_i
+    except:
+        (i,) = limit_i
+        _ab = function.domain_defined(i)
+        _a, _b = _ab.of(Range)
+
+    try:
+        j, a, b = limit_j
+    except:
+        (j,) = limit_j
+        ab = function.domain_defined(j)
+        a, b = ab.of(Range)
+
+    _a -= j
+    _b -= j
+    assert not _a._has(j)
+    assert not _b._has(j)
+    
+# _a + j <= i < _b + j
+# _a <= i - j < _b
+# a <= j < b
+# then
+# i - _b < j <= i - _a
+# i - _b + 1 <= j < i - _a + 1
+# max(a, i - _b + 1) <= j < min(b, i - _a + 1) 
+    _a, _b, a, b = _a + a, _b + b - 1, Max(a, i - _b + 1), Min(b, i - _a + 1)
+# _a + a <= _a + j <= i < _b + j <= _b + b - 1
+    return Sum(function, (j, a, b), (i, _a, _b))
+
+
+@apply
+def apply(self):
+    return Equal(self, limits_swap(Sum, self))
+
+
+@prove
+def prove(Eq):
+    from axiom import algebra, sets
+
+    i = Symbol.i(integer=True)
+    j = Symbol.j(integer=True)
+    n = Symbol.n(integer=True, positive=True)
+    m = Symbol.m(integer=True, positive=True)
+    f = Symbol.f(shape=(oo,), real=True)
+    g = Symbol.g(shape=(oo, oo), real=True)
+    d = Symbol.d(integer=True)
+    a = Symbol.a(integer=True)
+    Eq << apply(Sum[i:j + d:j + n, j:a:m](f[i] * g[i, j]))
+
+    Eq << Eq[0].this.lhs.apply(algebra.sum.bool)
+
+    Eq << Eq[-1].this.lhs.function.args[-1].arg.apply(sets.et.transform.ij_parallel)
+
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.bool)
+
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.swap)
+
+
+if __name__ == '__main__':
+    run()

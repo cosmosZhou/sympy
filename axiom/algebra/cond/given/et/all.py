@@ -11,7 +11,8 @@ def apply(given, *, cond=None, wrt=None):
     assert not wrt.is_given
 
     if wrt.is_bounded:
-        given = given.forall((wrt,), simplify=False)
+        from axiom.algebra.cond.imply.all import all
+        given = all(given, wrt)
     else:
         given = All(given, (wrt,))
     assert given.is_All

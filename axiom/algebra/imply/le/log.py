@@ -15,11 +15,11 @@ def prove(Eq):
 
     Eq << Eq[0] - x
 
-    Eq << algebra.cond.given.all.apply(Eq[-1])
+    Eq << algebra.cond.given.all.domain_defined.apply(Eq[-1])
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond=x >= 1)
 
-    
+
 
     x0 = Symbol.x0(domain=Interval(0, 1, left_open=True, right_open=True))
     x1 = Symbol.x1(domain=Interval(1, oo))

@@ -5,7 +5,7 @@ from util import *
 def apply(given, delta=None, var=None):
     from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
     from axiom.calculus.eq.to.any_all.limit_definition import any_all
-    fn, (x, x0, dir) = of_limited(given)
+    fn, (x, x0, dir) = of_limited(given, real=True)
 
     M = fn.generate_var(excludes={x}, var=var, positive=True, real=True)
     exists = any_all(Equal(given.lhs, S.Zero), M, delta=delta)
@@ -44,7 +44,7 @@ def prove(Eq):
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], var='A')
 
     A = -Eq[-1].function.function.lhs.arg.args[0]
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.imply.cond.split.abs)
+    Eq << Eq[-1].this.function.function.apply(algebra.lt.imply.et.split.abs)
 
     Eq << Eq[-1].this.function.function.args[0] + A
 

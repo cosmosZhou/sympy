@@ -8,3 +8,4 @@ from . import imageset
 from . import neg
 from . import add
 from . import sub
+from . import log

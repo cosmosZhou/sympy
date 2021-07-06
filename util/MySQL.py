@@ -3,7 +3,6 @@ import re
 
 import random
 import configparser
-from DBUtils.PooledDB import PooledDB
 import time
 
 import os
@@ -18,42 +17,15 @@ class Database:
         except Exception as err:
             print("Failed creating database: {}".format(err))
 
-    def __init__(self, creator):
+    def __init__(self):
         conf = configparser.ConfigParser()
         conf.read(os.path.dirname(os.path.dirname(__file__)) + '/config.ini')
-        kwargs = conf[creator.__name__]
+        kwargs = conf['client']
         
         try:
-            self.pool = PooledDB(creator, mincached=5, blocking=True, **kwargs)
-#             self.cursor_stack = []
-#             self.cursor = None
-        except mysql.connector.errors.ProgrammingError as e:
-            
-            m = re.compile("Unknown database '(\w+)'").search(e.msg)
-            assert m
-            database = m[1]
-            assert database == kwargs['database']
-            kwargs.pop('database')
-            
-            self.pool = PooledDB(creator, mincached=5, blocking=True, **kwargs)
-            with self:
-                self.execute('create database ' + database)
-                self.execute('use ' + database)
-                self.commit()
-                
+            self.conn = mysql.connector.connect(**kwargs)
         except Exception as e:
             print(type(e), e)
-
-    def __enter__(self):
-        self.conn = self.pool.connection()
-        return self
-
-    def __exit__(self, *_):
-        try:
-#             print('shut down connector')
-            self.conn.close()
-        except Exception as e:
-            print(e)
 
     @property
     def cursor(self):
@@ -87,7 +59,7 @@ class Database:
 
         cursor = self.cursor
         cursor.execute(sql)
-        yield from cursor._cursor
+        yield from cursor
 
     def execute(self, sql, *args):
         cursor = self.cursor
@@ -121,41 +93,11 @@ class Database:
         return [*self.select("desc %s" % table)]
 
 
-class Invoker:
-
-    def __init__(self, instance):
-        self.instance = instance
-
-# https://dev.mysql.com/doc/connectors/en/connector-python-api-mysqlcursor-executemany.html
-    def executemany(self, *args):
-        with self.instance as instance:
-            return instance.executemany(*args)
-        
-    def execute(self, *args):
-        with self.instance as instance:
-            return instance.execute(*args)
-
-    def select(self, *args, **kwargs):
-        with self.instance as instance:
-            yield from instance.select(*args, **kwargs)
-
-    def load_data(self, *args, **kwargs):
-        with self.instance as instance:
-            instance.load_data(*args, **kwargs)
-
-
 class MySQLConnector(Database):
 
     def __init__(self):
-        Database.__init__(self, mysql.connector)
+        Database.__init__(self)
         
-#         with self:
-#             cursor = self.cursor
-#             cursor.execute('SET NAMES UTF8')
-
-    def __call__(self):
-        return Invoker(self)
-
     def load_data_from_list(self, table, array, step=10000, replace=False, ignore=False, truncate=False):
         desc = self.desc_table(table)
         
@@ -241,6 +183,13 @@ class MySQLConnector(Database):
         if not local_infile:
             self.execute('set global local_infile = 1')
             
+# in my.ini:            
+# [mysql]
+# local-infile=1
+# 
+# [mysqld]
+# local-infile=1
+            
         try:
             self.execute(sql)
         except Exception as e:
@@ -256,7 +205,7 @@ class MySQLConnector(Database):
                 exit()
 
 
-instance = MySQLConnector()()            
+instance = MySQLConnector()
 
     
 def select_axiom_lapse_from_tbl_axiom_py(user='root'):
@@ -334,6 +283,23 @@ PARTITION BY KEY () PARTITIONS 8
         print(type(e), e)
         
     return {}
+
+
+user = os.path.basename(os.path.dirname(os.path.dirname(__file__)))
+
+
+def select_axiom_by_state_not(state):
+    yield from instance.select(f"select axiom, state from tbl_axiom_py where user = '{user}' and state != '{state}'")
+
+
+def select_count(state=None):
+    sql = f"select count(*) from tbl_axiom_py where user = '{user}'"
+    if state:
+        sql += f" and state = '{state}'"
+
+    [[count]] = instance.select(sql)
+    return count
+
 
 if __name__ == '__main__':
     ...

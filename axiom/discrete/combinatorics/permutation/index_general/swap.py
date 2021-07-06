@@ -35,21 +35,17 @@ def prove(Eq):
     from axiom import discrete, sets, algebra
 
     n = Symbol.n(domain=Range(2, oo))
-
     x = Symbol.x(shape=(n,), integer=True)
-
     k = Symbol.k(integer=True)
-
     j = Symbol.j(domain=Range(0, n), given=True)
     i = Symbol.i(domain=Range(0, n), given=True)
-
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), i, j)
 
     _, di, dj = Eq[2].lhs.arg.args[0].args
     dj = Symbol("d_j", dj)
     di = Symbol("d_i", di)
-
     Eq.dj_definition = dj.this.definition
+
     Eq.di_definition = di.this.definition
 
     Eq << Eq[-1].subs(Eq.di_definition.reversed).subs(Eq.dj_definition.reversed)
@@ -70,6 +66,7 @@ def prove(Eq):
     Eq.expand = Eq.expand.subs(Eq.x_dj_eqaulity)
 
     Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[1], j=i)
+
     Eq.di_domain, Eq.x_di_eqaulity = Eq[-2].subs(Eq.di_definition.reversed), Eq[-1].subs(Eq.di_definition.reversed)
 
     Eq << sets.contains.contains.imply.subset.finiteset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)

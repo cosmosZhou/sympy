@@ -1,6 +1,6 @@
 from . import le
 from . import lt
-from . import cond
+from . import et
 from . import is_nonpositive
 from . import is_nonnegative
 from . import is_negative

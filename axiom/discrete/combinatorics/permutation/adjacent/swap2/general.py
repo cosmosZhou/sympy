@@ -52,7 +52,7 @@ def prove(Eq):
 
     Eq << algebra.all.imply.all.limits.swap.apply(Eq.given)
 
-    Eq << All[x:S](Eq[-1].function.subs(j, 0), plausible=True)
+    Eq << All[x:S](Eq[-1].function._subs(j, 0), plausible=True)
 
     Eq << Eq[-1].subs(w[0, 0].this.definition)
 

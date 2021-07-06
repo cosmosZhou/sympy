@@ -8,7 +8,7 @@ def apply(all_contains):
         domain = Interval(*domain)
     else:
         [domain] = domain
-        
+
     assert R == Interval(-oo, oo)
     assert x == x_
     assert d == 1
@@ -21,7 +21,7 @@ def apply(all_contains):
 
 @prove
 def prove(Eq):
-    from axiom import calculus, algebra, sets
+    from axiom import calculus, algebra
 
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
@@ -30,13 +30,26 @@ def prove(Eq):
     from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import is_differentiable
     Eq << apply(is_differentiable(f, a, b, open=False))
 
-    xi = Symbol.xi(domain=Interval(a, b), given=True)
-    Eq << algebra.all.imply.cond.subs.apply(Eq[0], x, xi)
+    xi = Symbol.xi(domain=Interval(a, b))
+    Eq << Contains(Subs(Eq[0].function.lhs, x, xi), Eq[0].function.rhs, plausible=True)
 
-    Eq << Eq[-1].this.lhs.apply(calculus.subs.to.limit)
+    Eq << Eq[-1].this.lhs.simplify()
 
-    Eq << sets.contains.imply.any_eq.apply(Eq[-1], var='k')
-    Eq << Eq[-1].this.function * (x - xi)
+    Eq << algebra.cond.given.all.apply(Eq[-1], xi)
+
+    Eq << Eq[-2].this.lhs.apply(calculus.subs.to.limit)
+
+    Eq << Contains(Limit[x:xi](x - xi), Reals, plausible=True)
+
+    Eq << Eq[-1].this.lhs.simplify()
+
+    Eq << calculus.is_limited.is_limited.imply.eq.algebraic_limit_theorem.mul.apply(Eq[-1], Eq[-2])
+
+    Eq << Eq[-1].this.rhs.args[1].simplify()
+
+    Eq << Eq[-1].this.lhs.simplify().reversed
+
+    Eq << algebra.cond.imply.all.apply(Eq[-1], xi)
 
 
 if __name__ == '__main__':

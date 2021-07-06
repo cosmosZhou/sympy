@@ -78,3 +78,14 @@ from . import all_is_negative
 from . import all_is_nonpositive
 from . import sum_sum
 from . import suffice_suffice
+from . import abs_is_positive
+from . import abs_is_zero
+from . import abs_is_nonzero
+from . import ge_max
+from . import gt_max
+from . import lt_max
+from . import le_max
+from . import lt_min
+from . import ge_min
+from . import le_min
+from . import gt_min

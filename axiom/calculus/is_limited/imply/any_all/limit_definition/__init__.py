@@ -1,20 +1,34 @@
 from util import *
 
 
-def of_limited(given):
+def of_limited(given, **kwargs):
     limit, R = given.of(Contains)
     assert R.is_set
     
     expr, *limits = limit.of(Limit)
-    if R.is_UniversalSet:
+    if kwargs.get('real'):
+        assert R.is_UniversalSet
         return (expr, *limits)
+    
+    if kwargs.get('nonzero'):
+        a, b = R.of(Union)
+        assert a.is_Interval and b.is_Interval
+        assert a.right_open and b.left_open
+        assert a.args == (-oo, 0)
+        assert b.args == (0, oo)
+        return (expr, *limits)
+    
+    if kwargs.get('positive'):
+        assert R == Interval(0, oo, left_open=True)
+        return (expr, *limits)
+    
     return (expr, *limits, R)
-
+    
 
 @apply
 def apply(given, ε=None, δ=None):
     from axiom.calculus.eq.to.any_all.limit_definition import any_all
-    fn, (x, x0, dir) = of_limited(given)
+    fn, (x, x0, dir) = of_limited(given, real=True)
 #     A = given.generate_var(definition=given)
 
     A = fn.generate_var(excludes={x}, **fn.type.dict)

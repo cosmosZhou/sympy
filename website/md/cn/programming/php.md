@@ -148,11 +148,11 @@ Debug with getopt:
 
 ## 配置cgi调用python脚本
 
-如果在Linux系统下：
-去掉注释：
- #LoadModule cgid_module modules/mod_cgid.so
-改为：
-LoadModule cgid_module modules/mod_cgid.so 
+如果在Linux系统下：  
+去掉注释：  
+ #LoadModule cgid_module modules/mod_cgid.so  
+改为：  
+LoadModule cgid_module modules/mod_cgid.so   
 
 找到 httpd.conf中DocumentRoot的配置：  
 DocumentRoot "E:/gitlab"  
@@ -160,6 +160,8 @@ DocumentRoot "E:/gitlab"
 标签下添加+ExecCGI：  
 
 Options +Indexes +FollowSymLinks +Multiviews +ExecCGI  
+或者：  
+Options Indexes FollowSymLinks Multiviews ExecCGI  
 
 在\<IfModule alias_module\>标签下修改：  
  #ScriptAlias /cgi-bin/ "${SRVROOT}/cgi-bin/"  

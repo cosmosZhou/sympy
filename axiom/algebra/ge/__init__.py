@@ -8,3 +8,4 @@ from . import given
 from . import simplify
 
 from . import to
+from . import transposition

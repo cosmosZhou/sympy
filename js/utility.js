@@ -168,7 +168,7 @@ function hint(cm, options) {
 
 function sympy_user() {
 	var href = location.href;
-	return href.match(/([^\/]+)\/(?:axiom.php|php\/\w+\.php)\b/)[1];
+	return href.match(/([^\/]+)\/(?:axiom.php|run.py|php\/\w+\.php)\b/)[1];
 }
 
 

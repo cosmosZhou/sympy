@@ -139,7 +139,7 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.suffice.apply(Eq[0], cond=Eq.induct1.lhs)
 
-    Eq << Eq[-1].this.find(Greater).forall((Eq[-1].find(Derivative).variable,))
+    Eq << Eq[-1].this.find(Greater).apply(algebra.cond.imply.all, Eq[-1].find(Derivative).variable)
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
 

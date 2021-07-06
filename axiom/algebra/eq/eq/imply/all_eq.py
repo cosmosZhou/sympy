@@ -31,9 +31,7 @@ def prove(Eq):
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={n})
 
-    
-
-    Eq << Eq[0].forall((k,))
+    Eq << algebra.cond.imply.all.apply(Eq[0], k)
 
 
 if __name__ == '__main__':
