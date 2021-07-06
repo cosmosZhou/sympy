@@ -255,8 +255,8 @@ mkdir cert
 <VirtualHost *:80>  
     RewriteEngine on  
     RewriteCond %{SERVER_PORT} !^443$  
-    RewriteRule ^(.*)$ https://%{SERVER_NAME}$1 [L,R]  
-</VirtualHost>  
+    RewriteRule ^(.\*)$ https://%{SERVER_NAME}$1 [L,R]  
+\</VirtualHost>  
 最后保存退出。  
 
 
