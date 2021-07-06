@@ -1,4 +1,4 @@
-#!/usr/local/python
+#!/usr/local/python/bin/python3
 #!/home/lizhi/python/bin/python
 #!python
 import os, sys, re

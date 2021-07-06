@@ -11,10 +11,8 @@ def apply(self, simplify=True):
 def prove(Eq):
     i = Symbol.i(integer=True)
     n = Symbol.n(integer=True, positive=True, given=False)
-
     f = Function.f(real=True)
     h = Function.h(real=True)
-
     Eq << apply(Product[i:n](f(i) * h(i)))
 
 

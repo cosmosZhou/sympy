@@ -802,8 +802,8 @@ function run($py)
     $module = py_to_module($py);
     $logs[] = "module = $module";
     if (\std\is_linux()) {
-        $array = file_get_contents("http://localhost:8000/sympy/run.py?module=$module");
-//         $array = file_get_contents("http://localhost/sympy/run.py?module=$module");
+//        $array = file_get_contents("http://localhost:8000/sympy/run.py?module=$module");
+         $array = file_get_contents("http://localhost/sympy/run.py?module=$module");
         $array = explode("\n", $array);
     } else {
         $array = file_get_contents("http://localhost/sympy/run.py?module=$module");
