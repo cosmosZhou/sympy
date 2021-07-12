@@ -16,7 +16,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.real)
     B = Symbol.B(etype=dtype.real)
 
-    Eq << apply(Contains(x, B // A))
+    Eq << apply(Contains(x, B - A))
 
     Eq.suffice, Eq.necessary = algebra.equivalent.given.et.suffice.apply(Eq[-1])
 

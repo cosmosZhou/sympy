@@ -22,9 +22,9 @@ def prove(Eq):
 
     Eq << algebra.le.imply.lt.relax.apply(Eq[-1], upper=b)
 
-    Eq << sets.lt.imply.contains.range.apply(Eq[-1], simplify=False)
+    Eq << sets.lt.imply.contains.range.apply(Eq[-1])
 
-    Eq << sets.ge.imply.contains.range.apply(Eq[1], simplify=False)
+    Eq << sets.ge.imply.contains.range.apply(Eq[1])
 
     Eq <<= Eq[-2] & Eq[-1]
 

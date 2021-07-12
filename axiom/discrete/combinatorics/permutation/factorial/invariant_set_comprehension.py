@@ -4,14 +4,14 @@ from util import *
 @apply
 def apply(*given):
     all_x, all_p, equality = given
-    
+
     (x_set_comprehension, e), (x, S) = all_x.of(All[Equal])
     (((__x, (_p, _k)), (k, z, n)), __S), (_x, _S), (p, P) = all_p.of(All[Contains[Lamda[Indexed[Indexed]]]])
 
     assert x_set_comprehension == x.set_comprehension()
     assert S == _S == __S
     assert z == 0
-    assert n == x.shape[0]    
+    assert n == x.shape[0]
     assert __x == _x == x
     assert _p == p
     assert _k == k
@@ -54,7 +54,7 @@ def prove(Eq):
                 All[x:S, p[:n]:P](Contains(Lamda[k:n](x[p[k]]), S)),
                 Equal(abs(e), n))
 
-    Eq << sets.eq.imply.any_eq.apply(Eq[3])
+    Eq << sets.eq.imply.any_eq.condset.all.apply(Eq[3])
 
     Eq << algebra.all.any.imply.any_all_et.apply(Eq[1], Eq[-1])
 

@@ -9,7 +9,7 @@ def apply(given, simplify=True):
     A, B = domain.of(Union)
 
     first = Contains(e, A)
-    second = Contains(e, B // A)
+    second = Contains(e, B - A)
 
     if simplify:
         first = first.simplify()

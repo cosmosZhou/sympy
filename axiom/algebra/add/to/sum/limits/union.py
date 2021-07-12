@@ -34,7 +34,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
     f = Function.f(integer=True)
-    Eq << apply(Add(Sum[k:A // B](f(k)), Sum[k:A & B](f(k))))
+    Eq << apply(Add(Sum[k:A - B](f(k)), Sum[k:A & B](f(k))))
 
     Eq << Eq[0].this.find(Sum).apply(algebra.sum.bool)
 

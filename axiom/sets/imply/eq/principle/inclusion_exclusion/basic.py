@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-1].rhs.args[1]
 
-    Eq << sets.imply.eq.principle.addition.apply(B // A, A & B).reversed
+    Eq << sets.imply.eq.principle.addition.apply(B - A, A & B).reversed
 
 
 if __name__ == '__main__':

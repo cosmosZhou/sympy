@@ -15,7 +15,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
-    Eq << apply(Equal(A // B, A))
+    Eq << apply(Equal(A - B, A))
 
     Eq << Eq[0].apply(sets.eq.imply.eq.intersection, B).reversed
 

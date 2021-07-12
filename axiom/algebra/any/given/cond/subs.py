@@ -7,6 +7,8 @@ def apply(self, old, new):
     exists = self.limits_dict        
     if old in exists:
         domain = exists[old]
+        if not domain:
+            domain = old.domain
         eqs = []
 
         if not isinstance(domain, list):

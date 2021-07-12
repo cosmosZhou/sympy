@@ -6,3 +6,4 @@ from . import piecewise
 from . import log
 from . import min
 from . import max
+from . import sum

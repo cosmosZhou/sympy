@@ -35,7 +35,7 @@ def prove(Eq):
                 piecewise=Piecewise((f(x), Contains(x, A)), (g(x), Contains(x, B)), (h(x), True)))
 
     Eq.plausible = Or(Equal(Bool(Contains(f(x), S)), 1) & Contains(x, A),
-                      Equal(Bool(Contains(g(x), S)), 1) & Contains(x, B // A),
+                      Equal(Bool(Contains(g(x), S)), 1) & Contains(x, B - A),
                       Equal(Bool(Contains(h(x), S)), 1) & NotContains(x, A | B), plausible=True)
 
     Eq.bool_fx = sets.contains.imply.eq.bool.contains.apply(Eq[0])

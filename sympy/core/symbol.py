@@ -251,12 +251,8 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         return mid        
 
     def split(self, indices):
-        from sympy import Union
-        if self.is_set:
-            return Union(self & indices, self // indices, evaluate=False)
         if self.shape: 
             return self.slice(indices, 0, self.shape[0])
-            
         return self
 
     # performing other in self

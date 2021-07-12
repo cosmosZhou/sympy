@@ -13,8 +13,8 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
-#     Eq << apply(Equal(abs(B // A), 0))
-    Eq << apply(Equal(0, abs(B // A)))
+#     Eq << apply(Equal(abs(B - A), 0))
+    Eq << apply(Equal(0, abs(B - A)))
 
     Eq << sets.is_zero.imply.is_emptyset.apply(Eq[0])
 

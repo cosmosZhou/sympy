@@ -22,7 +22,7 @@ def prove(Eq):
 
     S = Symbol.S(etype=dtype.real * k, given=True)
 
-    Eq << apply(Contains(f(x), S) & Contains(x, A) | Contains(g(x), S) & Contains(x, B // A) | Contains(h(x), S) & NotContains(x, A | B), wrt=S)
+    Eq << apply(Contains(f(x), S) & Contains(x, A) | Contains(g(x), S) & Contains(x, B - A) | Contains(h(x), S) & NotContains(x, A | B), wrt=S)
 
     Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.split.complement, simplify=None)
 

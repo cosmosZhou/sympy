@@ -15,7 +15,7 @@ def prove(Eq):
     e = Symbol.e(real=True)
     t = Symbol.t(real=True)
 
-    Eq << apply(Any[e, t:S](Contains(e, S // {t})))
+    Eq << apply(Any[e, t:S](Contains(e, S - {t})))
 
     Eq << Eq[-1].simplify()
 

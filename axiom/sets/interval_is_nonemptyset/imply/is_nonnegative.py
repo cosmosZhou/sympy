@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << Eq[-1] + a
 
-    Eq << sets.lt.imply.eq.emptySet.apply(Eq[-1])
+    Eq << sets.lt.imply.is_emptyset.apply(Eq[-1])
 
     Eq << ~Eq[-1]
 

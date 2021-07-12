@@ -18,7 +18,7 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
     f = Function.f(integer=True)
-    Eq << apply(Mul(Product[k:A // B](f(k)), Product[k:A & B](f(k))))
+    Eq << apply(Mul(Product[k:A - B](f(k)), Product[k:A & B](f(k))))
 
     Eq << Eq[0].this.find(Product).apply(algebra.product.bool)
 

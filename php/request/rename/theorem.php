@@ -78,25 +78,20 @@ if (strpos($new, '.') !== false) {
                     $statement[] = $line;
             }
 
-            if ($subPackage == $old) {
-                $import[] = "from . import $new";
-            }
-
+//             $import[] = "from . import $subPackages[1]";
             $text->writelines($import);
 
             $py = new \std\Text($subFolder . $new . ".py");
             $py->writelines($statement);
 
-            if ($subPackage == $old) {
-                $old = "$package.$old";
-                $new = "$package.$subPackage.$new";
+            $old = "$package.$old";
+            $new = "$package." . implode(".", $subPackages);
 
-                \mysql\insert_into_suggest($new);
-                \mysql\update_axiom($old, $new);
-                \mysql\update_hierarchy($old, $new);
-            } else {
-                die("$subPackage unimplemented!");
-            }
+            \mysql\insert_into_suggest($new);
+            \mysql\update_axiom($old, $new);
+            \mysql\update_hierarchy($old, $new);
+            
+            insert_into_init($new);
         }
     }
 } else {
@@ -124,15 +119,15 @@ if (strpos($new, '.') !== false) {
             replace_into_init($package, $old, $new);
         } else {
             $oldPath = $folder . $old . "/__init__.py";
-            
-            assert(file_exists($oldPath));            
+
+            assert(file_exists($oldPath));
             $oldText = new Text($oldPath);
             $lines = $oldText->retain('from \. import \w+');
             $newText = new Text($folder . $new . ".py");
             $newText->writelines($lines);
-            
+
             insert_into_init($package, $new);
-        }        
+        }
     }
 
     \mysql\update_suggest($package, $old, $new);

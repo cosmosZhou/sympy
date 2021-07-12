@@ -47,7 +47,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(algebra.is_nonzero.imply.eq.kroneckerDelta)
 
-    Eq << algebra.any.imply.any_et.apply(Eq[-1])
+    Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1])
 
     Eq << ~Eq[-2]
 
@@ -57,7 +57,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(sets.is_zero.imply.subset)
 
-    Eq << algebra.any.imply.any_et.apply(Eq[-1])
+    Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1])
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=1)
 

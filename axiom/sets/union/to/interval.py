@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << Suffice(a > b, Equal(Interval(a, b), a.emptySet), plausible=True)
 
-    Eq << Eq[-1].this.lhs.apply(sets.gt.imply.eq.emptySet)
+    Eq << Eq[-1].this.lhs.apply(sets.gt.imply.is_emptyset)
 
     Eq <<= Eq[-2] & Eq[-1]
 

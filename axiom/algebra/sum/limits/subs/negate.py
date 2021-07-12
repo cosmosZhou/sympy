@@ -3,6 +3,7 @@ from util import *
 
 def limits_subs(Sum, self, old, new):
     expr, (i, a, b) = self.of(Sum)
+    assert i.is_integer
     assert old == i
     c = new + i + 1
     #new = c - i - 1

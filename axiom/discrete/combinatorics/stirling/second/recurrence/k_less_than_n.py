@@ -10,7 +10,8 @@ def apply(n, k):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
+    from axiom import discrete, sets, algebra
+
     n = Symbol.n(integer=True, positive=True)
     k = Symbol.k(domain=Range(1, n))
     Eq << apply(n, k)
@@ -35,9 +36,10 @@ def prove(Eq):
     Eq << s1.this.definition
 
     Eq.stirling1 = Eq.stirling1.subs(Eq[-1].reversed)
-    e = Symbol.e(etype=dtype.integer.set)
 
-    Eq << s2.this.split(conditionset(e, Contains({n}, e), s2))
+    e = Symbol.e(etype=dtype.integer.set)
+    Eq << sets.imply.eq.union.apply(s2, conditionset(e, Contains({n}, e), s2))
+    
 
     Eq.s2_abs = Eq[-1].apply(algebra.eq.imply.eq.abs)
 
@@ -46,10 +48,9 @@ def prove(Eq):
     Eq << discrete.combinatorics.stirling.second.mapping.s2_A.apply(n, k, s2)
 
     A = Eq[-1].rhs.function.base
-
     Eq << discrete.combinatorics.stirling.second.mapping.s2_B.apply(n, k, s2)
-    B = Eq[-1].rhs
 
+    B = Eq[-1].rhs
     Eq.s2_abs = Eq.s2_abs.subs(Eq[-1], Eq[-2])
 
     Eq << discrete.combinatorics.stirling.second.mapping.s0_B.apply(n, k, s0, B)

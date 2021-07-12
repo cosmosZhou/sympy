@@ -11,7 +11,7 @@ def limits_complement(limits, _limits, function=None):
 
         assert x == _x
         assert _domain in domain
-        new_limits.append((x, domain // _domain))
+        new_limits.append((x, domain - _domain))
         
     return new_limits
 

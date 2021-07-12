@@ -9,7 +9,8 @@ def apply(self, *, cond=None, wrt=None, simplify=True):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     x = Symbol.x(integer=True)
     f = Function.f(real=True)
     A = Symbol.A(etype=dtype.integer)

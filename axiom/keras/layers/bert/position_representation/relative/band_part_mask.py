@@ -36,13 +36,13 @@ def apply(seq_length, dx, dz, k, num_lower, num_upper):
     a_K_quote = Symbol("a^K'", Lamda[j:Min(seq_length, gram_width), i:seq_length](w_K[k + clip(j - Min(i, num_lower), -k, k)]))
     a_V_quote = Symbol("a^V'", Lamda[j:Min(seq_length, gram_width), i:seq_length](w_V[k + clip(j - Min(i, num_lower), -k, k)]))
 
-    β = Symbol.beta(Lamda[i:seq_length](relu(start)))
+    beta = Symbol.beta(Lamda[i:seq_length](relu(start)))
 
-    ζ = Symbol.zeta(Lamda[i:seq_length](Min(stop, seq_length)))
+    zeta = Symbol.zeta(Lamda[i:seq_length](Min(stop, seq_length)))
 
-    assert β.is_integer and ζ.is_integer
-    indices = slice(β[i], ζ[i])
-    indices0 = slice(0, ζ[i] - β[i])
+    assert beta.is_integer and zeta.is_integer
+    indices = slice(beta[i], zeta[i])
+    indices0 = slice(0, zeta[i] - beta[i])
 
     return Equal(z[i], softmax(Q[i] @ (K[indices] + a_K_quote[i][indices0]).T / sqrt(dz)) @ (V[indices] + a_V_quote[i][indices0]))
 
@@ -65,10 +65,10 @@ def prove(Eq):
 
     Eq <<= Eq[-2].subs(Eq[9].reversed), Eq[-1].subs(Eq[9].reversed)
 
-    β = Eq[9].lhs.base
-    ζ = Eq[10].lhs.base
+    beta = Eq[9].lhs.base
+    zeta = Eq[10].lhs.base
     i, j = Eq[2].lhs.indices
-    Eq <<= Eq[2].subs(j, j + β[i]), Eq[7].subs(j, j + β[i])
+    Eq <<= Eq[2].subs(j, j + beta[i]), Eq[7].subs(j, j + beta[i])
 
     Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
 
@@ -77,7 +77,7 @@ def prove(Eq):
 
     Eq.V_equality = algebra.eq.imply.eq.lamda.apply(Eq[-1], (j, 0, Min(n, gram_width)))
 
-    Eq.le = LessEqual(ζ[i], β[i] + Min(n, l + u + 1), plausible=True)
+    Eq.le = LessEqual(zeta[i], beta[i] + Min(n, l + u + 1), plausible=True)
 
     Eq << Eq.le.this.lhs.definition
 
@@ -85,7 +85,7 @@ def prove(Eq):
 
     Eq << keras.nn.relu.min.ge.apply(i + u + 1, l + u + 1, n)
 
-    Eq.le = Eq.le - β[i]
+    Eq.le = Eq.le - beta[i]
 
     Eq << algebra.le.eq.imply.eq.slice.apply(Eq.le, Eq.K_equality)
 
@@ -94,15 +94,15 @@ def prove(Eq):
     Eq.objective = Eq[13].subs(Eq[-1], Eq[-2])
 
     a = Eq[3].lhs
-    band_part = Eq[4].rhs.args[1].args[1].args[1].args[1]
+    band_part = Eq[4].find(BandPart)
     Eq << keras.layers.bert.mask.theorem.apply(a, band_part)
 
     Eq << Eq[-1].subs(Eq[4].reversed)
 
-    Ξ = Symbol.Ξ(band_part)
-    Eq.Ξ_definition = Ξ.this.definition
+    Xi = Symbol.Xi(band_part)
+    Eq.Xi_definition = Xi.this.definition
 
-    Eq << Eq[-1].subs(Eq.Ξ_definition.reversed)
+    Eq << Eq[-1].subs(Eq.Xi_definition.reversed)
 
     Eq << Eq[-1][i]
 
@@ -112,13 +112,13 @@ def prove(Eq):
 
     Eq.z_definition = Eq[-1].this.rhs.subs(Eq[-3])
 
-    Eq << Eq.Ξ_definition.this.rhs.defun()
+    Eq << Eq.Xi_definition.this.rhs.defun()
 
     Eq << Eq[-1][i]
 
-    Eq.Ξ_definition = Eq[-1].this.rhs.function.apply(algebra.bool.to.piecewise)
+    Eq.Xi_definition = Eq[-1].this.rhs.function.apply(algebra.bool.to.piecewise)
 
-    Eq << Eq.z_definition.rhs.args[-1].args[0].this.arg.args[0].subs(Eq.Ξ_definition)
+    Eq << Eq.z_definition.rhs.args[-1].args[0].this.arg.args[0].subs(Eq.Xi_definition)
 
     Eq << Eq[-1].this.rhs.apply(algebra.reducedSum.to.sum)
 
@@ -134,7 +134,7 @@ def prove(Eq):
 
     Eq << Eq[3][i]
 
-    Eq << Eq[-1][β[i]:ζ[i]]
+    Eq << Eq[-1][beta[i]:zeta[i]]
 
     Eq << Eq.objective.this.rhs.subs(Eq[-1].reversed)
 
@@ -145,7 +145,7 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Sum).apply(algebra.sum.limits.domain_defined.insert)
 
     k = Eq[-1].rhs.function.variable
-    Eq << Eq.Ξ_definition[k]
+    Eq << Eq.Xi_definition[k]
 
     Eq << Eq[-2].this.rhs.function.function.subs(Eq[-1])
 
@@ -155,7 +155,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.function.T
 
-    Eq << Eq[-1].this.rhs.function.args[1].apply(algebra.lamda.to.add)
+    Eq << Eq[-1].this.find(MatMul[~Lamda]).apply(algebra.lamda.to.add)
 
     Eq << Eq[-1].this.rhs.apply(discrete.lamda_matmul.to.matmul)
 

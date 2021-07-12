@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(sets.contains.given.et.split.intersection, simplify=False)
 
-    Eq << Eq[-1].apply(algebra.suffice.given.et)
+    Eq << Eq[-1].apply(algebra.suffice.given.et.suffice)
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 

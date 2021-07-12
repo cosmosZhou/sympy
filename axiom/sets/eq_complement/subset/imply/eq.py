@@ -33,7 +33,7 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer, given=True)
     C = Symbol.C(etype=dtype.integer, given=True)
 
-    Eq << apply(Subset(C, A), Equal(A // C, B // C))
+    Eq << apply(Subset(C, A), Equal(A - C, B - C))
 
     Eq << sets.eq.imply.eq.union.apply(Eq[1], C)
 

@@ -14,7 +14,7 @@ def prove(Eq):
     e = Symbol.e(integer=True, given=True)
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
-    Eq << apply(Contains(e, A // B))
+    Eq << apply(Contains(e, A - B))
 
     
 

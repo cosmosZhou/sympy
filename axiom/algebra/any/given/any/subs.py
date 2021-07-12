@@ -8,6 +8,8 @@ def apply(self, old, new):
     exists = self.limits_dict        
     if old in exists:
         domain = exists[old]
+        if not domain:
+            domain = old.domain
         eqs = []
 
         if not isinstance(domain, list):
@@ -76,20 +78,19 @@ def apply(self, old, new):
         return self.func(And(*eqs), *limits)        
 
 @prove
-def prove(Eq): 
+def prove(Eq):
     e = Symbol.e(real=True)
     x = Symbol.x(integer=True)
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-
     Eq << apply(Any[x](x > g(x)), x, f(e))
-    
+
     Eq << ~Eq[0]
-    
+
     Eq << Eq[-1].simplify()
-    
+
     Eq << Eq[-1].subs(x, f(e))
-    
+
     Eq << ~Eq[-1]
 
 

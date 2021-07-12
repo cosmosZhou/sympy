@@ -5,7 +5,7 @@ from util import *
 def apply(given, S):
     e, s = given.of(Contains)
     
-    return NotContains(e, S // s)
+    return NotContains(e, S - s)
 
 
 @prove

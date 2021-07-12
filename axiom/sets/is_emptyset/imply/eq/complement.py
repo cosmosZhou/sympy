@@ -17,9 +17,9 @@ def apply(given, reverse=False):
     A, B = AB.args
 
     if reverse:
-        return Equal(B // A, B)
+        return Equal(B - A, B)
 
-    return Equal(A // B, A)
+    return Equal(A - B, A)
 
 
 
@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << apply(Equal(A & B, A.etype.emptySet))
 
-    Eq << Eq[0].apply(sets.eq.imply.eq.union, A // B).reversed
+    Eq << Eq[0].apply(sets.eq.imply.eq.union, A - B).reversed
 
 
 if __name__ == '__main__':

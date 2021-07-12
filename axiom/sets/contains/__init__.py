@@ -4,8 +4,8 @@ from . import given
 from . import contains
 from . import subset
 from . import all
-from . import eq
 from . import suffice
 from . import sub
 from . import negate
 from . import add
+from . import notcontains

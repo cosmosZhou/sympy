@@ -1,4 +1,13 @@
 "use strict";
+function request_get(url, data, dataType) {
+	return $.ajax({
+		url: url,
+		type: 'get',
+		data: data,
+		dataType: dataType ? dataType: 'json',
+	});
+}
+
 String.prototype.format = function() {
 	var args = arguments;
 	var index = 0;

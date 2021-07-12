@@ -48,6 +48,7 @@ from sympy.polys import gcd, cancel, PolynomialError, Poly, reduced, RootSum, Do
 from sympy.utilities.iterables import numbered_symbols
 
 from types import GeneratorType
+from sympy.concrete.expr_with_limits import AddWithLimits
 
 
 def integer_powers(exprs):
@@ -1584,7 +1585,7 @@ def integrate_nonlinear_no_specials(a, d, DE, z=None):
     return (ret, b)
 
 
-class NonElementaryIntegral(Integral):
+class NonElementaryIntegral(AddWithLimits):
     """
     Represents a nonelementary Integral.
 
@@ -1627,8 +1628,28 @@ class NonElementaryIntegral(Integral):
     # NonElementaryIntegral) will tell if the integral has been proven to be
     # elementary. But should we do more?  Perhaps a no-op .doit() if
     # elementary=True?  Or maybe some information on why the integral is
-    # nonelementary.
-    pass
+    # nonelementary.    
+    __new__ = Integral.__new__
+    __getnewargs__ = Integral.__getnewargs__
+    free_symbols = Integral.free_symbols
+    _eval_is_zero = Integral._eval_is_zero
+    transform = Integral.transform
+    doit = Integral.doit
+    _eval_derivative = Integral._eval_derivative
+    _eval_integral = Integral._eval_integral
+    _eval_lseries = Integral._eval_lseries
+    _eval_nseries = Integral._eval_nseries
+    _eval_as_leading_term = Integral._eval_as_leading_term
+    _eval_simplify = Integral._eval_simplify
+    simplify = Integral.simplify
+    _subs = Integral._subs
+    limits_subs = Integral.limits_subs
+    as_sum = Integral.as_sum
+    principal_value = Integral.principal_value
+    _eval_is_finite = Integral._eval_is_finite
+    _eval_is_integer = Integral._eval_is_integer
+    _sympystr = Integral._sympystr
+    _latex = Integral._latex
 
 
 def risch_integrate(f, x, extension=None, handle_first='log',

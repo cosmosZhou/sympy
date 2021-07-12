@@ -59,7 +59,7 @@ def prove(Eq):
 
     Eq.all_s0_equality = Eq[-1].this.function.apply(sets.is_emptyset.imply.eq.complement)
 
-    x_hat = Symbol(r"\hat{x}", Lamda[i](Piecewise((x[i] // {n} , Equal(i, j)), (x[i], True))))
+    x_hat = Symbol(r"\hat{x}", Lamda[i](Piecewise((x[i] - {n} , Equal(i, j)), (x[i], True))))
     Eq.x_hat_definition = x_hat[i].this.definition
 
     Eq << algebra.eq_piecewise.imply.ou.apply(Eq.x_hat_definition)

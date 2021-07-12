@@ -2,8 +2,8 @@ from util import *
 
 
 @apply
-def apply(given):    
-    (x, y), rhs = given.of(Equal[Conditioned])    
+def apply(given):
+    (x, y), rhs = given.of(Equal[Conditioned])
     return Unequal(Probability(y), 0)
 
 
@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(stats.probability.to.mul)
 
-    Eq << algebra.eq_mul.imply.is_nonzero.apply(Eq[-1])
+    Eq << algebra.eq.imply.is_nonzero.domain_definition.apply(Eq[-1])
 
 
 if __name__ == '__main__':

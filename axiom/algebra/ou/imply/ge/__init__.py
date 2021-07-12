@@ -22,7 +22,7 @@ def prove(Eq):
 
     p = Symbol.p(shape=(k,), real=True, given=True)
 
-    Eq << apply(GreaterEqual(f(x), p) & Contains(x, A) | GreaterEqual(g(x), p) & Contains(x, B // A) | GreaterEqual(h(x), p) & NotContains(x, A | B), wrt=p)
+    Eq << apply(GreaterEqual(f(x), p) & Contains(x, A) | GreaterEqual(g(x), p) & Contains(x, B - A) | GreaterEqual(h(x), p) & NotContains(x, A | B), wrt=p)
 
     Eq << Eq[0].this.args[1].args[1].apply(sets.contains.imply.et.split.complement, simplify=None)
 

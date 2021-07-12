@@ -47,7 +47,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.rhs.definition
 
-    Eq << Eq[-1].this.rhs.apply(algebra.any.given.any_et)
+    Eq << Eq[-1].this.rhs.apply(algebra.any.given.any_et.limits.unleash)
 
     Eq << Eq[-1].this.lhs.args[1].apply(sets.contains.imply.any_eq.split.imageset)
 
@@ -59,7 +59,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(sets.contains.imply.any_eq.split.imageset)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any_et.single_variable)
+    Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any_et.limits.single_variable)
 
     Eq << Eq[-1].this.rhs.function.apply(algebra.et.imply.et.subs, reverse=True)
 

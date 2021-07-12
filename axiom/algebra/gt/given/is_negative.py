@@ -5,7 +5,7 @@ from util import *
 @apply
 def apply(given):
     x, y = given.of(Greater)
-    return Greater(x - y, 0)
+    return Less(y - x, 0)
 
 
 @prove
@@ -15,6 +15,8 @@ def prove(Eq):
     Eq << apply(x > y)
     
     Eq << Eq[0] - y
+    
+    Eq << -Eq[-1]
     
 
 if __name__ == '__main__':

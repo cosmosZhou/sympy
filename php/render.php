@@ -121,6 +121,10 @@ foreach ($statementsFromSQLFile === null ? $res : $statementsFromSQLFile as $sta
 	cursor: pointer;
 }
 
+[v-cloak]{
+    display: none !important;
+}
+
 </style>
 
 <div id=root>
@@ -155,7 +159,7 @@ foreach ($statementsFromSQLFile === null ? $res : $statementsFromSQLFile as $sta
 		<h3>debugging information is printed as follows:</h3>
 	</template>
 
-	<div v-for="log in logs">
+	<div v-for="log in logs" v-cloak>
 		<p v-if="typeof log == 'string'">{{log}}</p>
 		<font v-else class=error :title=log.module @click=click>
 			{{log.code}}<br>

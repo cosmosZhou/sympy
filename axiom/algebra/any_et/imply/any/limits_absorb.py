@@ -54,7 +54,9 @@ def limits_absorb(given, index):
                     limit_a = (a, fa & eq)
                     limits[0] = limit_a
                 else:
-                    return
+                    eq = eq.domain_conditioned(a)
+                    limit_a = (a, fa & eq)
+                    limits[0] = limit_a
             elif len(limit_a) == 1:
                 a = limit_a[0]
                 limits[0] = (a, eq)
@@ -86,7 +88,7 @@ def prove(Eq):
 
     S = Symbol.S(conditionset(x[:n + 1], (g(x[n]) > f_quote(x[:n])) & (f(x[:n]) > 0)))
 
-    Eq << algebra.any.imply.any_et.apply(Eq[0])
+    Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[0])
 
     Eq << Any[x[:n + 1]](Contains(x[:n + 1], S) & (h(x[:n + 1]) > 0), plausible=True)
 

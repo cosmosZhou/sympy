@@ -1373,15 +1373,11 @@ class Range(Set):
             elif self.stop.is_Zero:
                 if self.right_open:
                     return r"\mathbb{Z}^-"
-                else:
-                    return r"\overline{\mathbb{Z}^+}"
                                     
         elif self.stop.is_Infinity:
             if self.start.is_Zero:
                 if self.left_open:
                     return r"\mathbb{Z}^+"
-                else:
-                    return r"\overline{\mathbb{Z}^-}"
         
         if self.left_open:
             left = '('

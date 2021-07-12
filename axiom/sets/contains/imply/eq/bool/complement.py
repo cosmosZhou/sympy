@@ -13,7 +13,7 @@ def prove(Eq):
     e = Symbol.e(integer=True)
     s = Symbol.s(etype=dtype.integer)
     S = Symbol.S(etype=dtype.integer)
-    Eq << apply(Contains(e, S // s))
+    Eq << apply(Contains(e, S - s))
 
     Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
 

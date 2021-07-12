@@ -1104,12 +1104,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if domain.is_ConditionSet and domain.variable == x:
                     return self.func[x:domain.condition:domain.base_set](self.function).simplify()
                 
-                image_set = domain.image_set()
-                if image_set:
-                    sym, expr, base_set = image_set
-                    function = self.function._subs(x, expr)
-                    return self.func(function, (sym, base_set))
-                    
             domain_nonzero = self.function.domain_nonzero(x)
             domain &= domain_nonzero
             

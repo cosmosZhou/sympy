@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << algebra.any.given.any_et.apply(Eq[-1])
+    Eq << algebra.any.given.any_et.limits.unleash.apply(Eq[-1])
 
     Eq << Eq[-1].this.function.apply(sets.gt.le.given.contains)
 

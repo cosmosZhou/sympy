@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given):    
+def apply(given):
     fn, (x, *S) = given.of(All)
     if len(S) == 1:
         [S] = S
@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << algebra.any.imply.any_et.single_variable.apply(Eq[-1], simplify=None)
+    Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
     Eq << Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
 

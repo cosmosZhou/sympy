@@ -2,13 +2,9 @@ from util import *
 
 
 @apply
-def apply(given, left_open=False, right_open=False):
+def apply(given):
     a, b = given.of(GreaterEqual)
-    if left_open or right_open:
-        rhs = a.emptySet
-    else:
-        rhs = a.set & b.set
-    return Equal(Interval(a, b, left_open=left_open, right_open=right_open), rhs)
+    return Equal(Interval(a, b), a.set & b.set)
 
 
 @prove
@@ -21,7 +17,7 @@ def prove(Eq):
 
     Eq << algebra.cond.given.suffice.split.apply(Eq[-1], cond=x > y)
 
-    Eq.is_zero = (x > y).this.apply(sets.gt.imply.eq.emptySet)
+    Eq.is_zero = (x > y).this.apply(sets.gt.imply.is_emptyset)
 
     Eq << sets.imply.subset.intersection.apply(x, y)
 
@@ -40,6 +36,7 @@ def prove(Eq):
     Eq << algebra.suffice.given.ou.apply(Eq[-1])
 
     Eq <<= Eq[3] & Eq[-1]
+
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=1)
 
 

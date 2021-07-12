@@ -8,7 +8,7 @@ def apply(given, var=None):
     assert n.is_extended_positive
     if var is None:
         var = S.element_symbol()
-    return Any[var:S](Equal(abs(S // var.set), n - 1))
+    return Any[var:S](Equal(abs(S - var.set), n - 1))
 
 
 @prove

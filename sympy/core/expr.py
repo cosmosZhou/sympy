@@ -326,9 +326,6 @@ class Expr(Basic, EvalfMixin):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rfloordiv__')
     def __floordiv__(self, other): 
-        if self.is_set:
-            from sympy import Complement
-            return Complement(self, other)
         from sympy.functions.elementary.integers import floor
         return floor(self / other)
 

@@ -374,7 +374,7 @@ class Pow(Expr):
 
                 try:
                     obj = b._eval_power(e)
-                except AttributeError:
+                except (AttributeError, TypeError):
                     from sympy import sympify, Basic  
                     if isinstance(e, int):
                         e = sympify(e)
@@ -739,6 +739,9 @@ class Pow(Expr):
                 return False
             if self.base.is_infinite or self.base.is_nonzero:
                 return True
+            if self.base.is_finite:
+                return True
+            
         c1 = self.base.is_finite
         if c1 is None:
             return

@@ -2,36 +2,36 @@ from util import *
 
 
 @apply
-def apply(given):
+def apply(given, M=None):
     lim, a = given.of(Equal)
     expr, (n, *_) = lim.args
     assert n.is_integer
-    M = Symbol.M(real=True, positive=True)
+    if M is None:
+        M = Symbol.M(positive=True)
+    else:
+        assert M.domain == Interval(0, oo, left_open=True)
     return Any[M](All[n](abs(expr) <= M))
 
 
 @prove
 def prove(Eq):
-    from axiom import calculus, algebra
+    from axiom import calculus, algebra, sets
+
     n = Symbol.n(integer=True)
     x = Symbol.x(real=True, shape=(oo,), given=True)
     a = Symbol.a(real=True, given=True)
-
     Eq << apply(Equal(Limit[n:oo](x[n]), a))
 
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[0])
 
     ε = Eq[-1].function.function.rhs
-
     Eq << Eq[-1].this.function.function.apply(algebra.lt.imply.lt.abs.max)
 
     Eq.lt = Eq[-1].subs(ε, S.Half)
 
     N = Eq.lt.variable
-
     a_max = Eq.lt.function.function.rhs
     M = Symbol.M(Max(a_max, Maximize[n:N + 1](abs(x[n]))))
-
     Eq << M.this.definition
 
     Eq << LessEqual(a_max, M, plausible=True)
@@ -52,9 +52,41 @@ def prove(Eq):
 
     Eq << algebra.any_all.all.imply.any_all.apply(Eq.less_than, Eq[-1])
 
-    Eq << Eq[-1].this.function.simplify()
+    Eq.any = Eq[-1].this.function.simplify()
 
     Eq << algebra.any.given.any.subs.apply(Eq[1], Eq[1].variable, M)
+
+    Eq << Eq[-1].this.find(Contains).apply(sets.contains.given.is_positive)
+
+    Eq.is_nonzero = Unequal(M, 0, plausible=True)
+
+    Eq << Eq.is_nonzero.this.lhs.definition
+
+    Eq << ~Eq[-1]
+
+    Eq << Eq[-1].this.function.apply(algebra.eq_max.imply.et.ge, index=1, simplify=None)
+
+    Eq << Eq[-1].this.function.args[0].apply(algebra.is_nonpositive.imply.is_zero, simplify=None)
+
+    Eq << Eq[-1].this.function.args[1].apply(algebra.eq_max.imply.et.ge, simplify=None)
+
+    Eq << Eq[-1].this.function.apply(algebra.et.imply.et.delete, index=0)
+
+    Eq << Eq[-1].this.args[0].apply(algebra.abs_is_nonpositive.imply.is_zero)
+
+    Eq << Eq[-1].this.args[0].apply(algebra.abs_is_nonpositive.imply.is_zero)
+
+    
+
+    
+
+    Eq << Eq[-1].this.apply(algebra.eq.eq.imply.eq.sub)
+
+    Eq << GreaterEqual(M, 0, plausible=True)
+
+    Eq << algebra.is_nonzero.is_nonnegative.imply.is_positive.apply(Eq.is_nonzero, Eq[-1])
+
+    Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq.any)
 
 
 if __name__ == '__main__':

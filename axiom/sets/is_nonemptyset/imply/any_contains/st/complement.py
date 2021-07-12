@@ -18,12 +18,12 @@ def prove(Eq):
 
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
-    Eq << apply(Unequal(A // B, A.etype.emptySet))
+    Eq << apply(Unequal(A - B, A.etype.emptySet))
 
     Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[0])
 
     i = Eq[-1].variable
-    Eq << Suffice(Contains(i, A // B), And(Contains(i, A // B), Contains(i, A)), plausible=True)
+    Eq << Suffice(Contains(i, A - B), And(Contains(i, A - B), Contains(i, A)), plausible=True)
 
     Eq << algebra.suffice.given.suffice.st.et.apply(Eq[-1])
 

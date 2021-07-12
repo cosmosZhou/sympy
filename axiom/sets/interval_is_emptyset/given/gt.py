@@ -17,17 +17,17 @@ def prove(Eq):
     b = Symbol.b(real=True, given=True)
     Eq << apply(Equal(Interval(a, b), a.emptySet))
 
-    Eq << sets.gt.imply.eq.emptySet.apply(Eq[1])
+    Eq << sets.gt.imply.is_emptyset.apply(Eq[1])
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
 
 
 if __name__ == '__main__':

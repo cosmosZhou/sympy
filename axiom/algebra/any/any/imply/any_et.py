@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(any_x, any_y):
     from sympy.concrete.limits import limits_dependent
-    any_x, any_y = given
     fx, *limits_x = any_x.of(Any)
     fy, *limits_y = any_y.of(Any)
 
@@ -16,15 +15,13 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
-
     A = Symbol.A(etype=dtype.real)
     B = Symbol.B(etype=dtype.real)
-
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-
     Eq << apply(Any[x:A](f(x, y) > 0), Any[y:B](g(y, x) > 0))
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[1])

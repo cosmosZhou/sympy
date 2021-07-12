@@ -32,44 +32,44 @@ def prove(Eq):
     m = Symbol.m(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(n,), random=True)
     y = Symbol.y(real=True, shape=(m,), random=True)
-    Eq << apply(Equal(x[t] | x[:t], x[t]), Unequal(Probability(x, y), 0))
+    Eq << apply(Equal(y[t] | y[:t], y[t]), Unequal(Probability(y, x), 0))
 
     i = Eq[-1].lhs.variable
     j = Eq[-1].rhs.function.args[-1].variable
     Eq << stats.is_nonzero.imply.et.apply(Eq[1])
 
-    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-2], y[i])
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x[i])
 
-    Eq.y_given_x = algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq[-3]).reversed
+    Eq.x_given_p = algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq[-2]).reversed
 
-    Eq << stats.is_nonzero.imply.is_nonzero.joint_slice.apply(Eq[1], [j, i])
+    Eq << stats.is_nonzero.imply.is_nonzero.joint_slice.apply(Eq[1], [i, j])
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[-1])
 
-    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
+    Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-2], y)
 
-    Eq.y_given_x = Eq.y_given_x.subs(Eq[-1])
+    Eq.x_given_p = Eq.x_given_p.subs(Eq[-1])
 
-    Eq << algebra.eq.imply.eq.argmax.apply(Eq.y_given_x, (i,))
+    Eq << algebra.eq.imply.eq.argmax.apply(Eq.x_given_p, (i,))
 
-    Eq << stats.is_nonzero.imply.is_nonzero.joint_slice.apply(Eq[1], [slice(0, t), i])
+    Eq << stats.is_nonzero.imply.is_nonzero.joint_slice.apply(Eq[1], [i, slice(0, t)])
 
-    Eq.xt_given_x_historic = stats.eq.is_nonzero.imply.eq.joint_probability.apply(Eq[0], Eq[-1])
+    Eq.yt_given_y_historic = stats.eq.is_nonzero.imply.eq.joint_probability.apply(Eq[0], Eq[-1])
 
-    Eq.xt_given_yi_nonzero = stats.is_nonzero.imply.is_nonzero.conditioned.apply(Eq[-1], wrt=y[i])
+    Eq.yt_given_xi_nonzero = stats.is_nonzero.imply.is_nonzero.conditioned.apply(Eq[-1], wrt=x[i])
 
-    Eq << stats.is_nonzero.imply.eq.bayes.conditioned.apply(Eq.xt_given_yi_nonzero, x[t])
+    Eq << stats.is_nonzero.imply.eq.bayes.conditioned.apply(Eq.yt_given_xi_nonzero, y[t])
 
     Eq << Eq[-1].this.lhs.find(And).apply(algebra.eq.eq.imply.eq.concatenate)
 
-    Eq << Eq[-1].subs(Eq.xt_given_x_historic)
+    Eq << Eq[-1].subs(Eq.yt_given_y_historic)
 
-    Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.xt_given_yi_nonzero)
+    Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.yt_given_xi_nonzero)
 
-    Eq << algebra.eq.imply.eq.product.apply(Eq[-1], (t, 1, n))
+    Eq << algebra.eq.imply.eq.product.apply(Eq[-1], (t, 1, m))
 
     t = Eq[-1].rhs.variable
-    Eq << Eq[-1] / Eq[-1].lhs.args[-1]
+    Eq << Eq[-1] * Eq[-1].find(Pow).base
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.product.limits.push_front)
 

@@ -12,17 +12,17 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     n = Symbol.n(integer=True, given=True)
     a = Symbol.a(integer=True, given=True)
-
     Eq << apply(NotContains(n, Range(a, n + 1)))
 
     Eq << ~Eq[-1]
 
     Eq << algebra.gt.imply.ge.strengthen.apply(Eq[-1])
 
-    Eq << sets.ge.imply.contains.range.apply(Eq[-1], simplify=False)
+    Eq << sets.ge.imply.contains.range.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[0]
 

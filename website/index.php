@@ -144,11 +144,46 @@ switch ($lang) {
 				</div>
 			</div>
 
-			<div id='content'>
-				<?php require_once "$lang/$section.php";?>			
+			<div id='content'>			
 			</div>
 		</div>
 	</div>
 
 </body>
 </html>
+
+<script	src="https://cdn.jsdelivr.net/highlight.js/8.8.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<script src="/sympy/js/std.js"></script>
+<script> 
+	hljs.initHighlightingOnLoad();
+
+	var url = `/sympy/website/md/<?php echo "$lang/$section.md" ?>`;
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "text", 
+        success: function(text) {
+        	url = url.slice(0, -3);
+        	var newText = [];
+        	var start = 0;
+        	for (let m of text.matchAll(/(?<=\n)!\[(.+)\]\((.+)\)/g)){            	
+            	var title = m[1];            	
+            	var address = url + m[2].match(/[^\/]+(\/.+)/)[1];
+            	var link = `![${title}](${address})`;
+            	console.log(link);
+
+            	newText.push(text.slice(start, m.index));
+            	newText.push(link);
+            	start = m.index + m[0].length;
+            }
+
+        	newText.push(text.slice(start));
+        	text = newText.join('');
+        	
+            $("#content").html(marked(text));
+        }
+     })
+    
+</script>

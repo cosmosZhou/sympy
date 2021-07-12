@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << algebra.lt.imply.le.relax.apply(Eq[3])
 
-    Eq.any = calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.closed.apply(Eq[-1], Eq[-2], Eq[-3])
+    Eq.any = calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq[-1], Eq[-2], Eq[-3])
 
     Eq << sets.subset.all.imply.all.apply(Eq.subset, Eq[0])
 

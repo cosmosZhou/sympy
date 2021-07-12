@@ -26,7 +26,6 @@
 		
 		methods: {
 			keydown(event){
-				console.log("keydown(event){ in axiom-contents.vue");
 				switch(event.key){
 				case 'f':
 					if (event.ctrlKey){

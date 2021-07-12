@@ -1515,22 +1515,6 @@ class Integral(AddWithLimits):
             I += limit(((F.subs(x, s - r)) - F.subs(x, s + r)), r, 0, True)
         return I
 
-    def as_polar_coordinate(self):
-        if len(self.limits) != 2:
-            return self
-        from sympy import Matrix, sin, cos
-        rho = Symbol('rho', real=True)
-        theta = Symbol('theta', real=True)
-        _x = rho * cos(theta)
-        _y = rho * sin(theta)
-
-        J = Matrix([_x, _y]).jacobian(Matrix([rho, theta]))
-        J = J.det().trigsimp()
-        x, y = (var for var, *_ in self.limits)
-        function = self.function.subs({x:_x, y:_y}, simultaneous=True).trigsimp()
-        limits = [(rho, 0, oo), (theta, -pi, pi)]
-        return self.func(J * function, *limits)
-
     def _eval_is_finite(self):
         function = self.function                
         for x, domain in self.limits_dict.items():

@@ -508,7 +508,7 @@ def cgi_run():
     if is_http:
         print("Content-type:text/html\n")        
         QUERY_STRING = os.environ['QUERY_STRING']
-        # print("QUERY_STRING =", QUERY_STRING, "<br>")
+#         print("QUERY_STRING =", QUERY_STRING, "<br>")
         
         if not QUERY_STRING:
             from util.summary import summary
@@ -535,7 +535,10 @@ def cgi_run():
                     run_with_module(value, debug=debug)                    
                 elif key == 'hierarchy':
                     from util.hierarchy import insert_into_hierarchy
-                    insert_into_hierarchy()                                                            
+                    insert_into_hierarchy()
+#                 elif key == 'console':
+#                     from util.console import run
+#                     run(5000)
         else:
             prove(debug=debug, parallel=parallel)
     else: 

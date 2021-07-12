@@ -20,5 +20,5 @@ https://acrobat.adobe.com/cn/zh-Hans/acrobat/pdf-reader.html
 
 ![security](windows/security.png)   
 
-
+当应用程序启动时出现确定对话框时，如果想去掉该对话框，可以修改以下设置：  
 ![account](windows/account.png)   

@@ -24,7 +24,7 @@ def apply(*given):
         assert B == C
         C = _B
 
-    return Equal(C // A, C)
+    return Equal(C - A, C)
 
 
 @prove

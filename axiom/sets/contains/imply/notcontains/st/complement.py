@@ -16,7 +16,7 @@ def prove(Eq):
     
     S = Symbol.S(etype=dtype.integer, given=True)
     
-    Eq << apply(Contains(e, S // s, evaluate=False))
+    Eq << apply(Contains(e, S - s, evaluate=False))
     
     Eq << ~Eq[-1]
     

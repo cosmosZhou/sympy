@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.apply(sets.notcontains.imply.ou.split.interval)
 
-    Eq << algebra.any.imply.any_et.single_variable.apply(Eq[-1], simplify=None)
+    Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
     Eq << Eq[-1].this.function.args[1].apply(sets.contains.imply.et.split.interval)
 

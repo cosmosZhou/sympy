@@ -1,0 +1,46 @@
+from util import *
+import traceback
+
+
+@apply
+def apply(self): 
+    try:
+        (fx, (x, *xab)), (fy, (y, *yab)) = self.of(Integral * Integral)
+    except Exception as e:
+        print(e)
+        print('self =', self)
+        print("self.of(Integral * Integral) =", self.of(Integral * Integral))
+        print('Integral.__subclasses__() =', Integral.__subclasses__())
+        print('Integral.is_abstract =', Integral.is_abstract)
+        
+        
+        traceback.print_exc()
+    
+    if x == y:
+        _y = self.generate_var(excludes=x, **y.type.dict)
+        fy = fy._subs(y, _y)
+        y = _y
+    rhs = Integral(fx * fy, (x, *xab), (y, *yab))
+    return Equal(self, rhs, evaluate=False)
+
+
+@prove
+def prove(Eq):
+    from axiom import calculus
+
+    a = Symbol.a(real=True)
+    b = Symbol.b(real=True)
+    c = Symbol.c(real=True)
+    d = Symbol.d(real=True)
+    x = Symbol.x(real=True)
+    f = Function.f(real=True)
+    g = Function.g(real=True)
+    Eq << apply(Integral[x:a:b](f(x)) * Integral[x:c:d](g(x)))
+
+    Eq << Eq[-1].this.rhs.apply(calculus.integral.limits.separate)
+
+    Eq << Eq[-1].this.rhs.simplify()
+
+
+if __name__ == '__main__':
+    run()

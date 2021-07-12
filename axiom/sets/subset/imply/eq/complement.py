@@ -5,7 +5,7 @@ from util import *
 def apply(given):
     A, B = given.of(Subset)
 
-    return Equal(abs(B // A), abs(B) - abs(A))
+    return Equal(abs(B - A), abs(B) - abs(A))
 
 
 @prove
@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << apply(Subset(A, B, evaluate=False))
 
-    Eq << sets.imply.eq.principle.addition.apply(B // A, B & A)
+    Eq << sets.imply.eq.principle.addition.apply(B - A, B & A)
 
     Eq << Eq[1].subs(Eq[-1])
 

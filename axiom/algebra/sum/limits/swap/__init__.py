@@ -2,11 +2,16 @@ from util import *
 
 
 @apply
-def apply(self):
-    i_limit, j_limit = self.limits
-    j, *_ = j_limit
-    assert not i_limit._has(j)
-    return Equal(self, self.func(self.function, j_limit, i_limit))
+def apply(self, i=0, j=1):
+    assert i < j
+    
+    [function, *limits] = self.of(Sum)
+    i_limit, j_limit = self.limits[i], self.limits[j]    
+    
+    assert not i_limit._has(j_limit[0])
+    limits[i], limits[j] = limits[j], limits[i]
+    
+    return Equal(self, Sum(function, *limits))
 
 
 @prove

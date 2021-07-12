@@ -21,11 +21,11 @@ def apply(given, x):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, sets, algebra
+    from axiom import sets, algebra, discrete
+
     n = Symbol.n(integer=True, positive=True)
     p = Symbol.p(integer=True, shape=(n,))
     x = Symbol.x(integer=True, shape=(n,))
-
     Eq << apply(Equal(p.set_comprehension(), Range(0, n)), x)
 
     A = Symbol.A(Eq[1].lhs)
@@ -34,12 +34,12 @@ def prove(Eq):
 
     i = Eq[1].lhs.variable
     _i = Symbol.i(domain=Range(0, n))
-
     Eq.A_definition = Eq.A_definition.this.rhs.limits_subs(i, _i)
+
     j = Eq[1].rhs.variable
     _j = Symbol.j(domain=Range(0, n))
-
     Eq.B_definition = B.this.definition
+
     Eq.B_definition = Eq.B_definition.this.rhs.limits_subs(Eq.B_definition.rhs.variable, _j)
 
     Eq.subset = Subset(Eq.A_definition.rhs, Eq.B_definition.rhs, plausible=True)
@@ -62,6 +62,7 @@ def prove(Eq):
     Eq << Eq.definition.subs(Eq[-1].reversed)
 
     Eq << algebra.any.given.any.subs.apply(Eq[-1], Eq[-1].variable, index_j)
+    Eq << algebra.any.given.cond.apply(Eq[-1])
 
     Eq <<= Eq.subset & Eq.supset
 

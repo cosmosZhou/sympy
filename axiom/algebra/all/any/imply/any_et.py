@@ -44,9 +44,9 @@ def prove(Eq):
 
     Eq << apply(All[y:g(y) > 0](f(y) > 0), Any[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
 
-    Eq << algebra.any.given.any_et.apply(Eq[-1])
+    Eq << algebra.any.given.any_et.limits.unleash.apply(Eq[-1])
 
-    Eq.any = algebra.any.imply.any_et.apply(Eq[1], simplify=False)
+    Eq.any = algebra.any.imply.any_et.limits.unleash.apply(Eq[1], simplify=False)
 
     Eq << algebra.all.imply.suffice.apply(Eq[0])
 

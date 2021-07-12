@@ -12,6 +12,7 @@ def apply(n):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(integer=True, positive=True, given=True)
     Eq << apply(n)
 
@@ -24,10 +25,14 @@ def prove(Eq):
     Eq << Eq[-1].this.function.rhs.definition
 
     i = Symbol.i(integer=True)
-
     Eq << algebra.any.given.cond.subs.apply(Eq[-1], x[:n], Lamda[i:n](i))
 
+    Eq << algebra.et.given.et.apply(Eq[-1])
+
     Eq << Eq[-1].this.lhs.simplify()
+
+    Eq << algebra.all.given.suffice.apply(Eq[-2])
+    Eq << Eq[-1].this.lhs.apply(sets.contains.imply.ge.split.range)
 
 
 if __name__ == '__main__':

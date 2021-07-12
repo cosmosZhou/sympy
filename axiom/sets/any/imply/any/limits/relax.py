@@ -32,7 +32,7 @@ def prove(Eq):
     t = Symbol.t(real=True)
     f = Function.f(shape=(), integer=True)
 
-    Eq << apply(Any[e:S // {t}](f(e) > 0), domain=S)
+    Eq << apply(Any[e:S - {t}](f(e) > 0), domain=S)
 
     Eq << algebra.any.given.ou.apply(Eq[-1], cond={t})
 

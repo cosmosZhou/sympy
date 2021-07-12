@@ -8,28 +8,25 @@ def apply(self):
     return Equal(self, Sum[n:(a + 1) // 2:(b + 1) // 2](function._subs(n, 2 * n)))
 
 
-@prove
+@prove(proved=False)
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     n = Symbol.n(integer=True)
-
     f = Symbol.f(shape=(oo,), real=True)
-
     a = Symbol.a(integer=True)
-
     b = Symbol.b(integer=True)
-
     Eq << apply(Sum[n:Equal(n % 2, 0):Range(a, b + 1)](f[n]))
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.bool)
 
     S = Symbol.S(imageset(n, 2 * n, Eq[-1].rhs.limits_cond))
-
     Eq << S.this.definition
 
     Eq << algebra.sum.bool.apply(Sum[n:S](f[n]))
 
     Eq << Eq[-1].this.lhs.limits[0][1].definition
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.imageset)
 
     Eq << Eq[1].subs(Eq[-1])
 

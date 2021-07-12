@@ -26,9 +26,7 @@ def prove(Eq):
     b = Symbol.b(integer=True, given=True)
     Eq << apply(Contains(x, Interval(a, b, right_open=True)))
 
-    Eq <<= sets.lt.imply.contains.interval.apply(Eq[-1], simplify=False), sets.ge.imply.contains.interval.apply(Eq[-2], simplify=False)
-
-    
+    Eq <<= sets.lt.imply.contains.interval.apply(Eq[-1]), sets.ge.imply.contains.interval.apply(Eq[-2])
 
     Eq <<= Eq[-2] & Eq[-1]
 

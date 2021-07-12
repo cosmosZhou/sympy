@@ -1410,8 +1410,7 @@ class Mul(Expr, AssocOp):
 
     def _eval_is_polar(self):
         has_polar = any(arg.is_polar for arg in self.args)
-        return has_polar and \
-            all(arg.is_polar or arg.is_positive for arg in self.args)
+        return has_polar and all(arg.is_polar or arg.is_positive for arg in self.args)
 
     def _eval_is_extended_real(self):
         return self._eval_real_imag(True)
@@ -2174,37 +2173,6 @@ class Mul(Expr, AssocOp):
                     positive[i] = positive[i].func(positive[i].function, *limits)
                     del positive[j]
                     return True
-
-    def as_multiple_limits(self):
-        integral = []
-        function = []
-        free_symbols = self.free_symbols
-        for arg in self.args:
-            if arg.is_AddWithLimits:
-                integral.append(arg)
-            else:
-                function.append(arg)
-        if integral:
-            func = integral[0].func
-            limits = []
-            for it in integral:
-                if it.func != func:
-                    return self
-
-                var_list = set(var for var, *_ in limits)
-                for limit in it.limits:
-                    x = limit[0]
-                    if x in var_list:
-                        _x = x.generate_var(free_symbols, integer=x.is_integer)
-                        it = it.limits_subs(x, _x)
-
-                limits += it.limits
-                if isinstance(it.function, Mul):
-                    function += it.function.args
-                else:
-                    function.append(it.function)
-            return func(Mul(*function).powsimp(), *limits)
-        return self
 
     def _eval_transpose(self):
         max_len_shape = self.max_len_shape()

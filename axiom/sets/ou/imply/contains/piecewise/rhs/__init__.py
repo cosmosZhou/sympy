@@ -22,7 +22,7 @@ def prove(Eq):
 
     y = Symbol.y(real=True, shape=(k,), given=True)
 
-    Eq << apply(Contains(y, f(x)) & Contains(x, A) | Contains(y, g(x)) & Contains(x, B // A) | Contains(y, h(x)) & NotContains(x, A | B), wrt=y)
+    Eq << apply(Contains(y, f(x)) & Contains(x, A) | Contains(y, g(x)) & Contains(x, B - A) | Contains(y, h(x)) & NotContains(x, A | B), wrt=y)
 
     Eq << Eq[0].this.args[1].args[0].apply(sets.contains.imply.et.split.complement, simplify=None)
 

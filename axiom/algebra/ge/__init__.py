@@ -9,3 +9,4 @@ from . import simplify
 
 from . import to
 from . import transposition
+from . import all

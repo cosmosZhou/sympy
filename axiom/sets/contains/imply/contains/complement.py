@@ -6,7 +6,7 @@ def apply(given, U):
     e, domain = given.of(Contains)
     S, s = domain.of(Complement)
     assert S in U
-    return Contains(e, U // s)
+    return Contains(e, U - s)
 
 
 @prove
@@ -18,7 +18,7 @@ def prove(Eq):
     S = Symbol.S(A & U)
     s = Symbol.s(etype=dtype.integer)
 
-    Eq << apply(Contains(x, S // s), U)
+    Eq << apply(Contains(x, S - s), U)
 
     Eq << Subset(Eq[1].rhs, Eq[2].rhs, plausible=True)
 

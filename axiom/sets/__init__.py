@@ -51,3 +51,4 @@ from . import is_negative
 from . import eq_sum
 from . import is_nonnegative
 from . import is_nonpositive
+from . import intersection_is_emptyset

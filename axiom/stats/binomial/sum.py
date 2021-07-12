@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << discrete.combinatorics.binomial.theorem.apply(p, 1, n0 + n1).subs(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.as_multiple_limits()
+    Eq << Eq[-1].this.lhs.apply(algebra.mul.to.sum.as_multiple_limits)
 
     (k, *_), (l, *_) = Eq[-1].lhs.limits
     Eq << Eq[-1].this.lhs.limits_subs(k, k - l)

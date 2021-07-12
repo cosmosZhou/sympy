@@ -14,13 +14,13 @@ def prove(Eq):
 
     Eq << apply(A, B)
 
-    C = Symbol.C(A // B)
+    C = Symbol.C(A - B)
 
     Eq << Equal(C & B, B.etype.emptySet, plausible=True)
 
     Eq << Eq[-1].subs(C.this.definition)
 
-    Eq << sets.is_emptyset.imply.eq.addition_principle.apply(Eq[-1])
+    Eq << sets.intersection_is_emptyset.imply.eq.apply(Eq[-1])
 
     Eq << Eq[-1].subs(C.this.definition)
 

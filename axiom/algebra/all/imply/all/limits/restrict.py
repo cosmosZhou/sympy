@@ -41,7 +41,7 @@ def prove(Eq):
     e = Symbol.e(real=True)
     t = Symbol.t(real=True, given=True)
     f = Function.f(shape=(), integer=True)
-    Eq << apply(All[e:S](f(e) > 0), domain=S // {t})
+    Eq << apply(All[e:S](f(e) > 0), domain=S - {t})
 
     Eq << ~Eq[-1]
 

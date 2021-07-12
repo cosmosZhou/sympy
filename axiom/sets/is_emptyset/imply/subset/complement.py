@@ -13,8 +13,8 @@ def prove(Eq):
     A = Symbol.A(etype=dtype.integer, given=True)
     B = Symbol.B(etype=dtype.integer, given=True)
 
-    Eq << apply(Equal(A.etype.emptySet, B // A))
-#     Eq << apply(Equal(B // A, A.etype.emptySet))
+    Eq << apply(Equal(A.etype.emptySet, B - A))
+#     Eq << apply(Equal(B - A, A.etype.emptySet))
 
     Eq << Eq[0].apply(sets.eq.imply.eq.union, A)
 

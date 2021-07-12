@@ -17,11 +17,7 @@ def prove(Eq):
     b = Symbol.b(real=True, given=True)
     Eq << apply(Equal(Interval(a, b, left_open=True), a.emptySet))
 
-    Eq << sets.ge.imply.eq.interval.apply(Eq[1], left_open=True)
-
-    
-
-    
+    Eq << sets.ge.imply.is_emptyset.apply(Eq[1], left_open=True)
 
 
 if __name__ == '__main__':

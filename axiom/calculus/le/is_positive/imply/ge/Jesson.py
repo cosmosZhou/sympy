@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << calculus.is_differentiable.imply.is_continuous.apply(Eq[-1])
 
-    Eq << calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.closed.apply(Eq[0], Eq[-1], Eq[-2])
+    Eq << calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq[0], Eq[-1], Eq[-2])
 
     Eq << Eq[-1].this.function * w
 
@@ -68,7 +68,7 @@ def prove(Eq):
 
     Eq <<= calculus.is_differentiable.imply.is_continuous.apply(Eq[-2]), calculus.is_differentiable.imply.is_continuous.apply(Eq[-1])
 
-    Eq <<= calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.closed.apply(Eq.ge.reversed, Eq[-2], Eq[-4]), calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.closed.apply(Eq.le, Eq[-1], Eq[-3])
+    Eq <<= calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq.ge.reversed, Eq[-2], Eq[-4]), calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq.le, Eq[-1], Eq[-3])
 
     Eq <<= Eq[-2].this.function.rhs.args[0].apply(algebra.add.collect), Eq[-1].this.function.rhs.find(Mul[Add]).apply(algebra.mul.to.add)
 

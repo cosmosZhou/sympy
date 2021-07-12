@@ -15,7 +15,7 @@ def apply(*given, evaluate=False):
             return
 
     assert A == _A and B == _B or A == _B and B == _A
-    return Unequal(B // A, A.etype.emptySet, evaluate=evaluate)
+    return Unequal(B - A, A.etype.emptySet, evaluate=evaluate)
 
 
 @prove

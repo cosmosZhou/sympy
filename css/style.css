@@ -38,13 +38,6 @@ a {
 	background-color: rgb(180, 220, 190);
 }
 
-.non-arrowed {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	border: 0;
-	font-size: inherit;
-}
-
 form {
 	margin-left: 1.5em;
 }

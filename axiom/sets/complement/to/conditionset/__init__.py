@@ -16,7 +16,7 @@ def prove(Eq):
     x = Symbol.x(integer=True)
     f = Function.f(integer=True)
 
-    Eq << apply(conditionset(x, f(x) > 0, A) // B)
+    Eq << apply(conditionset(x, f(x) > 0, A) - B)
 
     Eq << sets.eq.given.suffice.apply(Eq[0])
 

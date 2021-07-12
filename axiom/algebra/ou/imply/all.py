@@ -30,21 +30,21 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << algebra.any.imply.any_et.single_variable.apply(Eq[-1])
+    Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1])
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[-1])
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

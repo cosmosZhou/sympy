@@ -1,25 +1,23 @@
 from util import *
 
 
-
-# given: A ∈ B
-# => A ∪ B = B
 @apply
-def apply(given):
-    assert given.is_Contains
-    A, B = given.args
+def apply(given, reverse=False):
+    x, B = given.of(Contains)
+    A = x.set | B
+    if reverse:
+        A, B = B, A
 
-    return Equal(A.set | B, B)
+    return Equal(x.set | B, B)
 
 
 @prove
 def prove(Eq):
     from axiom import sets
-    e = Symbol.e(integer=True)
-    s = Symbol.s(etype=dtype.integer)
-    contains = Contains(e, s)
 
-    Eq << apply(contains)
+    e = Symbol.e(integer=True)
+    S = Symbol.S(etype=dtype.integer)
+    Eq << apply(Contains(e, S))
 
     Eq << Eq[0].apply(sets.contains.imply.subset, simplify=False)
 

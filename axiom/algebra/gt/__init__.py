@@ -7,3 +7,4 @@ from . import lt
 from . import given
 from . import simplify
 from . import transposition
+from . import all

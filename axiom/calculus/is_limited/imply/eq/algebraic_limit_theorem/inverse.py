@@ -37,12 +37,8 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.is_limited)
 
-    delta = Symbol.delta(positive=True)
-    epsilon = Symbol.epsilon(positive=True)
-    Eq << Eq[-2].this.apply(calculus.eq.to.any_all.limit_definition, delta=delta, epsilon=epsilon)
-
     delta1 = Symbol.delta1(positive=True)
-    Eq << calculus.contains.eq.imply.any_all.lt.half.apply(Eq.is_nonzero_real, Eq.is_limited, delta=delta1)
+    Eq << calculus.eq.contains.imply.any_all.lt.half.apply(Eq.is_limited, Eq.is_nonzero_real, delta=delta1)
 
     Eq.A_is_positive = sets.contains.imply.is_positive.abs.apply(Eq.is_nonzero_real)
 
@@ -72,13 +68,17 @@ def prove(Eq):
 
     Eq << Eq[-1].this.function.limits[0][1].args[1].simplify()
 
+    epsilon = Symbol.epsilon(positive=True)
     Eq << algebra.cond.imply.ou.subs.apply(Eq[-1], epsilon0, abs(A) ** 2 / 2 * epsilon)
 
     Eq << algebra.is_positive.imply.is_positive.square.apply(Eq.A_is_positive) * epsilon / 2
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[-1], Eq[-2])
 
+    delta = Symbol.delta(positive=True)
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(delta0, delta1), delta)
+
+    Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
 
 
 if __name__ == '__main__':

@@ -60,7 +60,7 @@ def prove(Eq):
 
     Eq << calculus.is_differentiable.imply.is_continuous.apply(Eq[-1])
 
-    Eq.any = calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.closed.apply(Eq[3], Eq[-1], Eq[-2])
+    Eq.any = calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq[3], Eq[-1], Eq[-2])
 
     Eq << sets.subset.all.imply.all.apply(Eq.subset, Eq[0])
 

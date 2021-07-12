@@ -16,7 +16,7 @@ def apply(given):
     if aset != a.set:
         B, aset = aset, B
 
-    return Equal(A // aset, B // aset), Contains(a, A)
+    return Equal(A - aset, B - aset), Contains(a, A)
 
 
 @prove
@@ -28,11 +28,11 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer)
     Eq << apply(Contains(a, A) & Equal(B | a.set, A))
 
-    Eq << sets.contains.eq.imply.eq.apply(Eq[-1], Eq[-2])
+    Eq << sets.eq.contains.imply.eq.apply(Eq[-1], Eq[-2])
 
     Eq << Eq[-1].reversed
 
-    
+
 
     Eq << algebra.et.given.et.apply(Eq[0])
 

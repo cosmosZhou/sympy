@@ -27,16 +27,15 @@ def prove(Eq):
 
     i, j = Eq[1].rhs.args[0].cond.args
     x = Eq[1].rhs.args[1].expr.base
-    x_hat = Symbol(r"\hat{x}", Lamda[i:k + 1](Piecewise((x[i] // {n} , Equal(i, j)), (x[i], True))))
-
+    x_hat = Symbol(r"\hat{x}", Lamda[i:k + 1](Piecewise((x[i] - {n} , Equal(i, j)), (x[i], True))))
     Eq.x_hat_definition = x_hat.this.definition[i]
-    
+
     s1 = Eq[0].lhs
     x_quote = Eq[1].lhs.base
-    Aj = Eq[3].lhs    
+    Aj = Eq[3].lhs
     e = Symbol.e(**s1.etype.dict)
 
-    
+
 if __name__ == '__main__':
     run()
 

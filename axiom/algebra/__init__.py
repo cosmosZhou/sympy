@@ -63,7 +63,6 @@ from . import kroneckerDelta
 
 from . import lamda_piecewise
 
-from . import eq_mul
 
 from . import suffice_et
 
@@ -89,3 +88,6 @@ from . import lt_min
 from . import ge_min
 from . import le_min
 from . import gt_min
+from . import eq_max
+from . import eq_min
+from . import abs_is_nonpositive

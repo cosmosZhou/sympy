@@ -1459,59 +1459,6 @@ class AddWithLimits(ExprWithLimits):
         
         return self
 
-    def as_multiple_limits(self):
-        if self.function.is_Mul:
-            integral = []
-            function = []
-            for arg in self.function:
-                if isinstance(arg, self.func):
-                    integral.append(arg)
-                else:
-                    function.append(arg)
-            if integral:
-                limits = self.limits[:]
-                for it in integral:
-                    limits += it.limits
-                    if isinstance(it.function, Mul):
-                        function += it.function.args
-                    else:
-                        function.append(it.function)
-                return self.func(Mul(*function), *limits)
-        return self
-
-    def as_separate_limits(self):
-        if len(self.limits) < 2:
-            return self
-        limit = self.limits[0]
-        x, a, b = limit
-
-        limits = []
-        for i in range(1, len(self.limits)):
-            t, *domain = self.limits[i]
-            if domain:
-                domain = (Range if t.is_integer else Interval)(*domain)
-            else: 
-                domain = (Range if t.is_integer else Interval)(-S.oo, S.oo)
-
-            if a._has(t):
-                domain &= t.domain_conditioned(a <= x)
-                a = Minimize(a, self.limits[i]).doit()
-            if b._has(t):
-                if t.is_integer:
-                    domain &= t.domain_conditioned(x < b)
-                else:
-                    domain &= t.domain_conditioned(x <= b)
-                b = Maximize(b, self.limits[i]).doit()
-
-            if t.is_integer:
-                limit = (t, domain.min(), domain.max() + 1)
-            else:
-                limit = (t, domain.start, domain.stop)
-            limits.append(limit)
-
-        function = self.func(self.function, *limits).simplify()
-        return self.func(function, (x, a, b))
-
     def _eval_is_extended_real(self):
         function = self.function                
         for x, domain in self.limits_dict.items():
