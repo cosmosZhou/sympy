@@ -10,26 +10,26 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     k = Symbol.k(integer=True, positive=True)
     n = 5
     x = Symbol.x(real=True, shape=(n, k))
     i = Symbol.i(integer=True)
-
     Eq << apply(Product[i](x[i]))
 
     Eq << Eq[-1].this.lhs.apply(algebra.product.limits.domain_defined.insert)
 
     n -= 1
-    Eq << Eq[-1].this.lhs.split({n})
+    Eq << Eq[-1].this.lhs.apply(algebra.product.to.mul.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.find(Product).split({n})
+    Eq << Eq[-1].this.find(Product).apply(algebra.product.to.mul.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.find(Product).split({n})
+    Eq << Eq[-1].this.find(Product).apply(algebra.product.to.mul.split, cond={n})
 
     n -= 1
-    Eq << Eq[-1].this.find(Product).split({n})
+    Eq << Eq[-1].this.find(Product).apply(algebra.product.to.mul.split, cond={n})
 
 
 if __name__ == '__main__':

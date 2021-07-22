@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << discrete.matrix.elementary.swap.invariant.permutation.basic.apply(n, w, left=False).subs(i, m).subs(j, d[m])
 
-    Eq << algebra.all.imply.ou.subs.apply(Eq[-1], Eq[-1].variable, Eq[2].function.lhs)
+    Eq << algebra.all.imply.ou.subs.apply(Eq[-1], Eq[-1].variable, Eq[2].expr.lhs)
 
     Eq << Eq[-1].this.args[0].lhs.simplify()
 

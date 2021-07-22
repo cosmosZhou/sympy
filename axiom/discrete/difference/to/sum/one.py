@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.doit()
 
-    Eq << Eq[-1].this.rhs.function.doit()
+    Eq << Eq[-1].this.rhs.expr.doit()
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
 
 

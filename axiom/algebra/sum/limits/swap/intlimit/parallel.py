@@ -58,7 +58,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(algebra.sum.bool)
 
-    Eq << Eq[-1].this.lhs.function.args[-1].arg.apply(sets.et.transform.ij_parallel)
+    Eq << Eq[-1].this.lhs.expr.args[-1].arg.apply(sets.et.transform.ij_parallel)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.bool)
 

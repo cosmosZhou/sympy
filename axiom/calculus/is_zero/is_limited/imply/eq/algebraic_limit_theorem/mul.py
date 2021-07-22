@@ -48,13 +48,13 @@ def prove(Eq):
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.lt.imply.lt.abs.mul)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.lt.imply.lt.abs.mul)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[1].simplify()
+    Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
     delta = Symbol.delta(real=True, positive=True)
 

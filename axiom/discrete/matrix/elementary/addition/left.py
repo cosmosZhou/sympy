@@ -34,13 +34,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.function.args[1]().expr.simplify()
+    Eq << Eq[-1].this.rhs.expr.args[1]().expr.simplify()
 
     Eq << (w_quote[i, j] @ Eq[-1]).this.rhs.subs(Eq[0])
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.function.simplify(wrt=j)
+    Eq << Eq[-1].this.rhs.expr.simplify(wrt=j)
 
 
 if __name__ == '__main__':

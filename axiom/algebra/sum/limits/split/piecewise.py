@@ -46,19 +46,19 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(algebra.sum.bool)
 
-    Eq << Eq[-1].this.rhs.function.args[0].expr.apply(algebra.sum.bool)
-    Eq << Eq[-1].this.rhs.function.args[1].expr.apply(algebra.sum.bool)
-    Eq << Eq[-1].this.rhs.function.args[2].expr.apply(algebra.sum.bool)
+    Eq << Eq[-1].this.rhs.expr.args[0].expr.apply(algebra.sum.bool)
+    Eq << Eq[-1].this.rhs.expr.args[1].expr.apply(algebra.sum.bool)
+    Eq << Eq[-1].this.rhs.expr.args[2].expr.apply(algebra.sum.bool)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.bool)
 
-    Eq << Eq[-1].this.lhs.function.args[0].expr.args[1].apply(algebra.bool.to.mul)
-    Eq << Eq[-1].this.lhs.function.args[1].expr.args[1].apply(algebra.bool.to.mul)
-    Eq << Eq[-1].this.lhs.function.args[2].expr.args[1].apply(algebra.bool.to.mul)
+    Eq << Eq[-1].this.lhs.expr.args[0].expr.args[1].apply(algebra.bool.to.mul)
+    Eq << Eq[-1].this.lhs.expr.args[1].expr.args[1].apply(algebra.bool.to.mul)
+    Eq << Eq[-1].this.lhs.expr.args[2].expr.args[1].apply(algebra.bool.to.mul)
 
-    Eq << Sum(Eq[-1].lhs.function, Eq[-1].lhs.limits[0]).this.apply(algebra.sum.to.piecewise)
+    Eq << Sum(Eq[-1].lhs.expr, Eq[-1].lhs.limits[0]).this.apply(algebra.sum.to.piecewise)
 
-    Eq << Eq[-2].this.rhs.function.subs(Eq[-1].reversed)
+    Eq << Eq[-2].this.rhs.expr.subs(Eq[-1].reversed)
 
 
 if __name__ == '__main__':

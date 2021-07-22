@@ -18,7 +18,7 @@ def prove(Eq):
     x_ = Symbol.x(integer=True)
     Eq << apply(Sum[x_](Probability(x | y)))
 
-    Eq << Eq[-1].this.lhs.function.apply(stats.probability.to.mul)
+    Eq << Eq[-1].this.lhs.expr.apply(stats.probability.to.mul)
 
     Eq << Eq[-1].this.find(Sum).apply(stats.sum.to.probability)
 

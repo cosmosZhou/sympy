@@ -883,12 +883,12 @@ class Equal(Relational):
     def simplify_All(cls, self, function, *limits):
         limits_dict = self.limits_dict
         x = None
-        if self.function.lhs in limits_dict:
-            x = self.function.lhs
-            y = self.function.rhs
-        elif self.function.rhs in limits_dict:
-            x = self.function.rhs
-            y = self.function.lhs
+        if self.expr.lhs in limits_dict:
+            x = self.expr.lhs
+            y = self.expr.rhs
+        elif self.expr.rhs in limits_dict:
+            x = self.expr.rhs
+            y = self.expr.lhs
 
         if x is not None and not y._has(x):
             domain = limits_dict[x]
@@ -1795,7 +1795,7 @@ class GreaterEqual(_Greater):
     def simplify(self, deep=False, wrt=None):
         if self.lhs.is_Maximize:
             maximize = self.lhs 
-            if maximize.function == self.rhs:
+            if maximize.expr == self.rhs:
                 if all(len(limit) == 1 for limit in maximize.limits):
                     return S.true
         return Relational.simplify(self, deep=deep, wrt=wrt)
@@ -2033,7 +2033,7 @@ class LessEqual(_Less):
     def simplify(self, deep=False, wrt=None):
         if self.lhs.is_Minimize:
             minimize = self.lhs 
-            if minimize.function == self.rhs:
+            if minimize.expr == self.rhs:
                 if all(len(limit) == 1 for limit in minimize.limits):
                     return S.true
         return Relational.simplify(self, deep=deep, wrt=wrt)

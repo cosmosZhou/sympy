@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(Cap[x:A](Union(Piecewise((f(x), Contains(x, C)), (h(x), True)), g(x), evaluate=False)))
 
-    Eq << Eq[0].this.lhs.function.apply(sets.union.to.piecewise)
+    Eq << Eq[0].this.lhs.expr.apply(sets.union.to.piecewise)
 
     Eq << Eq[-1].this.lhs.apply(sets.cap.to.intersection.st.piecewise)
 

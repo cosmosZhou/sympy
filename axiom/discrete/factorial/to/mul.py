@@ -10,7 +10,8 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import discrete
+    from axiom import discrete, algebra
+
     n = Symbol.n(integer=True, positive=True)
     Eq << apply(factorial(n))
 
@@ -18,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(factorial).apply(discrete.factorial.to.product)
 
-    Eq << Eq[-1].this.lhs.split({n})
+    Eq << Eq[-1].this.lhs.apply(algebra.product.to.mul.split, cond={n})
 
 
 if __name__ == '__main__':

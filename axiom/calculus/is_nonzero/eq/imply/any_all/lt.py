@@ -35,11 +35,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
-    Eq << Eq[-1].this.rhs.function.function.apply(algebra.cond.imply.et.invoke, algebra.gt.imply.is_positive.transit)
+    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.cond.imply.et.invoke, algebra.gt.imply.is_positive.transit)
 
-    Eq << Eq[-1].this.rhs.function.function.args[0].apply(algebra.is_positive.imply.eq.abs)
+    Eq << Eq[-1].this.rhs.expr.expr.args[0].apply(algebra.is_positive.imply.eq.abs)
 
-    Eq << Eq[-1].this.rhs.function.function.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
+    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
     Eq << And(A <= 0, Eq[0]).this.apply(algebra.is_nonzero.is_nonpositive.imply.is_negative)
 
@@ -59,14 +59,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
-    Eq << Eq[-1].this.rhs.function.function.apply(algebra.cond.imply.et.invoke, algebra.lt.imply.is_negative.transit)
+    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.cond.imply.et.invoke, algebra.lt.imply.is_negative.transit)
 
-    Eq << Eq[-1].this.rhs.function.function.args[1].apply(algebra.is_negative.imply.eq.abs)
+    Eq << Eq[-1].this.rhs.expr.expr.args[1].apply(algebra.is_negative.imply.eq.abs)
 
-    Eq << -Eq[-1].this.rhs.function.function.args[1]
+    Eq << -Eq[-1].this.rhs.expr.expr.args[1]
 
-    Eq << Eq[-1].this.rhs.function.function.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
-    Eq << -Eq[-1].this.rhs.function.function
+    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
+    Eq << -Eq[-1].this.rhs.expr.expr
 
 
 if __name__ == '__main__':

@@ -34,14 +34,14 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.split({n})
+    Eq << Eq.induct.this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
     s = Symbol.s(Sum[j:0:n + 1](f[i] * g[i, j]))
     Eq << s.this.definition
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (i, 0, m))
 
-    Eq << Eq[-2].this.rhs.split({n})
+    Eq << Eq[-2].this.rhs.apply(algebra.sum.to.add.split, cond={n})
 
     Eq << Eq[-1].this.rhs.args[1].apply(algebra.mul.to.sum)
 

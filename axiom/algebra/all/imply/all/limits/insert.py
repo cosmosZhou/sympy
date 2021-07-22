@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << apply(All[x:A](f(x, y) > 0), (y, B))
 
-    Eq << Eq[0].this.function.apply(algebra.cond.imply.all.restrict, (y, B))
+    Eq << Eq[0].this.expr.apply(algebra.cond.imply.all.restrict, (y, B))
 
     Eq << algebra.all.imply.all.limits.swap.apply(Eq[-1])
 

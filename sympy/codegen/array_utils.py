@@ -905,7 +905,7 @@ def _get_argindex(subindices, ind):
 
 def _codegen_array_parse(expr):
     if isinstance(expr, Sum):
-        function = expr.function
+        function = expr.expr
         summation_indices = expr.variables
         subexpr, subindices = _codegen_array_parse(function)
         # Check dimensional consistency:

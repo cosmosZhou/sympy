@@ -17,7 +17,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     Eq << apply(Any[e:S](f(e) > 0))
 
-    Eq << Any[e:S](Contains(e, S) & Eq[0].function, plausible=True)
+    Eq << Any[e:S](Contains(e, S) & Eq[0].expr, plausible=True)
 
     Eq << Eq[-1].simplify()
 

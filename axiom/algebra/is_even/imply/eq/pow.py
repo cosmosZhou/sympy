@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << algebra.is_even.imply.any.apply(Eq[0])
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.imply.eq.pow, base=-1)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.imply.eq.pow, base=-1)
 
 
 if __name__ == '__main__':

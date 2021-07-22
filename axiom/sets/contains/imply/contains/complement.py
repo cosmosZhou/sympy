@@ -12,17 +12,17 @@ def apply(given, U):
 @prove
 def prove(Eq):
     from axiom import sets
+
     x = Symbol.x(integer=True)
     U = Symbol.U(etype=dtype.integer)
     A = Symbol.A(etype=dtype.integer)
     S = Symbol.S(A & U)
     s = Symbol.s(etype=dtype.integer)
-
     Eq << apply(Contains(x, S - s), U)
 
-    Eq << Subset(Eq[1].rhs, Eq[2].rhs, plausible=True)
+    Eq << Subset(Eq[0].rhs, Eq[2].rhs, plausible=True)
 
-    Eq << sets.contains.subset.imply.contains.apply(Eq[1], Eq[-1])
+    Eq << sets.contains.subset.imply.contains.apply(Eq[0], Eq[-1])
 
 
 if __name__ == '__main__':

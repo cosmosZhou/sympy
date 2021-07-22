@@ -3,11 +3,11 @@ from util import *
 
 @apply
 def apply(self, simplify=True):
-    if isinstance(self.function, Mul):
+    if isinstance(self.expr, Mul):
         coefficient = []
         factors = []
         variables = self.variables
-        for arg in self.function.args:
+        for arg in self.expr.args:
             if not arg.has(*variables):
                 coefficient.append(arg)
             elif arg.is_Pow and arg.exp.is_Add and any(not exp.has(*variables) for exp in arg.exp.args):
@@ -21,7 +21,7 @@ def apply(self, simplify=True):
                 factors.append(arg)
 
         if coefficient:
-            return Equal(self, Mul(*coefficient, self.func(Mul(*factors), *self.limits)))
+            return Equal(self, Mul(*coefficient, self.func(Mul(*factors), *self.limits)), evaluate=False)
 
 
 @prove

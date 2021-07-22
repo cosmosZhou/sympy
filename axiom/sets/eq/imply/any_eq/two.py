@@ -26,10 +26,10 @@ def prove(Eq):
 
     Eq << sets.any.imply.any.limits.swap.apply(Eq[-1], simplify=False)
 
-    Eq.S_supset = Eq[-1].this.function.apply(sets.contains.contains.imply.subset.finiteset, simplify=False)
+    Eq.S_supset = Eq[-1].this.expr.apply(sets.contains.contains.imply.subset.finiteset, simplify=False)
 
     ab = Eq.S_supset.lhs
-    Eq << Eq.S_supset.this.function.apply(algebra.cond.imply.et.invoke, sets.subset.imply.eq.union, simplify=None)
+    Eq << Eq.S_supset.this.expr.apply(algebra.cond.imply.et.invoke, sets.subset.imply.eq.union, simplify=None)
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=1)
 
@@ -39,13 +39,13 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << Eq[-1].this.function - 2
+    Eq << Eq[-1].this.expr - 2
 
-    Eq << Eq[-1].this.function.apply(algebra.is_zero.imply.eq)
+    Eq << Eq[-1].this.expr.apply(algebra.is_zero.imply.eq)
 
     Eq << Any(Unequal(Eq[-1].rhs, 0), *Eq.S_supset.limits, plausible=True)
 
-    Eq << Eq[-1].this.function.apply(algebra.is_nonzero.imply.eq.kroneckerDelta)
+    Eq << Eq[-1].this.expr.apply(algebra.is_nonzero.imply.eq.kroneckerDelta)
 
     Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1])
 
@@ -53,15 +53,15 @@ def prove(Eq):
 
     Eq << algebra.all.any.imply.any_et.apply(Eq[-1], Eq[-4])
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.eq.imply.eq.transit)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.eq.imply.eq.transit)
 
-    Eq << Eq[-1].this.function.apply(sets.is_zero.imply.subset)
+    Eq << Eq[-1].this.expr.apply(sets.is_zero.imply.subset)
 
     Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1])
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=1)
 
-    Eq << Eq[-1].this.function.apply(sets.subset.subset.imply.eq.squeeze)
+    Eq << Eq[-1].this.expr.apply(sets.subset.subset.imply.eq.squeeze)
 
 
 if __name__ == '__main__':

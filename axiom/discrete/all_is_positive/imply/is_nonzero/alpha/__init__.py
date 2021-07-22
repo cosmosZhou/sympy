@@ -12,10 +12,10 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     x = Symbol.x(real=True, shape=(oo,))
     n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
-
     Eq << apply(All[i:0:n](x[i] > 0))
 
     x_ = Symbol.x(real=True, positive=True, shape=(oo,))
@@ -23,8 +23,9 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(x_[:n], x[:n])
 
-    Eq << algebra.all.imply.suffice.apply(Eq[-1])
+    Eq << algebra.ou.imply.suffice.apply(Eq[-1], 1)
 
+    Eq << Eq[-1].this.lhs.simplify()
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 

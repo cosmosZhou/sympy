@@ -393,11 +393,11 @@ class ConnectMysqli
 
 function select_axiom_by_state($state)
 {
-    global $user;
+    global $user;    
     $result = select("select axiom from tbl_axiom_py where user = '$user' and state = '$state'");
     $array = [];
     foreach ($result as &$value) {
-        $array = $value[0];
+        $array[] = $value[0];
     }
     return $array;
 }
@@ -466,31 +466,6 @@ function select_axiom_by_state_not($state)
 {
     global $user;
     yield from select("select axiom, state from tbl_axiom_py where user = '$user' and state != '$state'");
-}
-
-function unprovable_axioms()
-{
-    return select_axiom_by_state('unprovable');
-}
-
-function insurmontable_axioms()
-{
-    return select_axiom_by_state('insurmontable');
-}
-
-function failure_axioms()
-{
-    return select_axiom_by_state('failure');
-}
-
-function success_axioms()
-{
-    return select_axiom_by_state('success');
-}
-
-function plausible_axioms()
-{
-    return select_axiom_by_state('plausible');
 }
 
 function yield_from_mysql($axiom)
@@ -802,15 +777,15 @@ function replace_with_callee($old, $new)
         $pyFile = new Text($pyFile);
 
         $pyFile->preg_replace($old_regex, $new);
-        
     }
 }
 
-function reaplce_axiom_in_hierarchy($old, $new){
+function reaplce_axiom_in_hierarchy($old, $new)
+{
     global $user;
     error_log("sql = update tbl_hierarchy_py set caller = '$new' where user = '$user' and caller = '$old'");
     $rows_affected = \mysql\execute("update tbl_hierarchy_py set caller = '$new' where user = '$user' and caller = '$old'");
-    
+
     error_log("sql = update tbl_hierarchy_py set callee = '$new' where user = '$user' and callee = '$old'");
     $rows_affected = \mysql\execute("update tbl_hierarchy_py set callee = '$new' where user = '$user' and callee = '$old'");
 }
@@ -837,7 +812,6 @@ function update_hierarchy($old, $new, $is_folder = false)
 
             $replaceDict[$oldAxiom] = $newAxiom;
             error_log("replace $oldAxiom with $newAxiom");
-            
         }
 
         foreach ($replaceDict as $old => $new) {

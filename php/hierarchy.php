@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-<link rel="stylesheet" href="/sympy/css/style.css">
+<link rel="stylesheet" href="static/css/style.css">
 <title>hierarchy</title>
 <?php
 require_once 'utility.php';
@@ -69,13 +69,14 @@ if ($parent) {
 		:key-input=keyInput></hierarchy>
 </div>
 
-<script
-	src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
 <script
 	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
-<script src="/sympy/js/std.js"></script>
-<script src="/sympy/js/utility.js"></script>
+<script src="static/js/std.js"></script>
+<script src="static/js/utility.js"></script>
 <script>
 	var data = {
 		module : <?php echo \std\jsonify($module)?>,
@@ -86,7 +87,7 @@ if ($parent) {
 	};
 
 	Vue.use(httpVueLoader);
-	Vue.component('hierarchy', 'url:/sympy/vue/hierarchy.vue');
+	Vue.component('hierarchy', 'url:static/vue/hierarchy.vue');
 		
 	var app = new Vue({
 		el : '#root',

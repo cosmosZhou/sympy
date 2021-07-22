@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.cond.given.et.all, cond=Unequal(S, S.etype.emptySet))
 
-    Eq << Eq[-1].this.function.apply(sets.any_contains.given.is_nonemptyset)
+    Eq << Eq[-1].this.expr.apply(sets.any_contains.given.is_nonemptyset)
 
 
 if __name__ == '__main__':

@@ -30,9 +30,9 @@ def prove(Eq):
 
     Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[-1], simplify=False)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.subset, simplify=False)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.subset, simplify=False)
 
-    Eq << Eq[-1].this.function.apply(sets.eq.subset.imply.eq, Eq[0])
+    Eq << Eq[-1].this.expr.apply(sets.eq.subset.imply.eq, Eq[0])
 
 
 if __name__ == '__main__':

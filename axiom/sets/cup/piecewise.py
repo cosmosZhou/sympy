@@ -18,9 +18,9 @@ def prove(Eq):
 
     Eq << apply(Cup[x:A, y:B](f(x, y)))
 
-    Eq << Eq[0].this.rhs.function.apply(sets.piecewise.to.intersection)
+    Eq << Eq[0].this.rhs.expr.apply(sets.piecewise.to.intersection)
 
-    Eq << Equal(Cup[x](Eq[-1].rhs.function), Cup[x:A](f(x, y) & Eq[-1].rhs.function.args[1]), plausible=True)
+    Eq << Equal(Cup[x](Eq[-1].rhs.expr), Cup[x:A](f(x, y) & Eq[-1].rhs.expr.args[1]), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(sets.cup.simplify.piecewise)
 

@@ -54,7 +54,7 @@ def prove(Eq):
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
 
-    Eq << Eq.any.this.function.args[2].apply(algebra.cond.suffice.imply.cond.transit, Eq[-1])
+    Eq << Eq.any.this.expr.args[2].apply(algebra.cond.suffice.imply.cond.transit, Eq[-1])
 
 
 if __name__ == '__main__':

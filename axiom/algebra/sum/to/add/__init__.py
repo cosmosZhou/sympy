@@ -12,14 +12,14 @@ def difference_of_domain_defined(domain_defined, _domain_defined, limitsDict):
             if domain in _domain:
                 if domain_limited != domain:
                     if _domain - domain & domain_limited:
-# consider the case: 
+# consider the case:
 # _domain = [0; n)
-# domain = [1; n)           
-# domain_limited = [1; t + 1)                             
+# domain = [1; n)
+# domain_limited = [1; t + 1)
                         diff_set[key] = domain & domain_limited
                 else:
                     diff_set[key] = domain
-            
+
     return diff_set
 
 
@@ -29,9 +29,9 @@ def associate(Sum, self, simplify=True):
     function, *limits = self.of(Sum)
     limits = tuple(limits)
     domain_defined = function.domain_defined_for_limits(limits)
-    
+
     limitsDict = limits_dictionary(limits)
-    
+
     for arg in function.of(Sum.operator):
         arg_domain_defined = arg.domain_defined_for_limits(limits)
         diff_set = difference_of_domain_defined(domain_defined, arg_domain_defined, limitsDict)
@@ -40,7 +40,7 @@ def associate(Sum, self, simplify=True):
         else:
             _limits = limits
         arg = Sum(arg, *_limits)
-        
+
         if simplify:
             arg = arg.simplify()
         args.append(arg)
@@ -49,7 +49,7 @@ def associate(Sum, self, simplify=True):
 
 
 @apply
-def apply(self, simplify=True):        
+def apply(self, simplify=True):
     return Equal(self, associate(Sum, self, simplify=simplify))
 
 

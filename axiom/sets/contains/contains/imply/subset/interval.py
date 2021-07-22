@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << sets.subset.given.all_contains.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(sets.contains.given.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.contains.given.et.split.interval)
 
     Eq << algebra.all.given.ou.apply(Eq[-1])
 
@@ -34,15 +34,15 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.function.apply(algebra.et.imply.ou, simplify=None)
+    Eq << Eq[-1].this.expr.apply(algebra.et.imply.ou, simplify=None)
 
-    Eq << Eq[-1].this.function.args[0].apply(algebra.et.imply.et.delete, index=-1, simplify=None)
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.et.imply.et.delete, index=-1, simplify=None)
 
-    Eq << Eq[-1].this.function.args[0].apply(algebra.gt.le.imply.lt.transit)
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.gt.le.imply.lt.transit)
 
-    Eq << Eq[-1].this.args[1].function.apply(algebra.et.imply.et.delete, index=1)
+    Eq << Eq[-1].this.args[1].expr.apply(algebra.et.imply.et.delete, index=1)
 
-    Eq << Eq[-1].this.args[1].function.apply(algebra.le.ge.imply.le.transit)
+    Eq << Eq[-1].this.args[1].expr.apply(algebra.le.ge.imply.le.transit)
 
     Eq << ~Eq[-1]
 

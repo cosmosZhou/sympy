@@ -8,11 +8,11 @@ def apply(integral, u=None, dv=None):
 
     (x, a, b), *_ = integral.limits
     if u is not None:
-        dv = integral.function / u
+        dv = integral.expr / u
         v = integral.func(dv, x).doit()
         du = diff(u, x)
     elif dv is not None:
-        u = integral.function / dv
+        u = integral.expr / dv
         v = integral.func(dv, x).doit()
         du = diff(u, x)
     else:

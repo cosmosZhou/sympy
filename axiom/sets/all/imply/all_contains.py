@@ -27,7 +27,7 @@ def prove(Eq):
     P = Symbol.P(conditionset(y, Equal(f(y), 1)))
     Eq << apply(All[x:A](Equal(f(g(x)), 1)), P)
     
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ def apply(*given):
     if equality_b.is_All:
         assert equality_b.variable == b
         assert equality_b.limits == all_b.limits
-        equality_b = equality_b.function
+        equality_b = equality_b.expr
 
     assert equality_b.is_Equal
     assert equality_b == eqs or equality_b.reversed == eqs

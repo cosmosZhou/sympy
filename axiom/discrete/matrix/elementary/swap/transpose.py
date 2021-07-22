@@ -33,9 +33,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.simplify(deep=True, wrt=Eq[-1].rhs.variable)
 
-    Eq << Eq[-1].this.rhs.function.args[-1].expr.args[0].apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[-1].expr.args[0].apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.to.kroneckerDelta)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.piecewise.to.kroneckerDelta)
 
     Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.identity)
 

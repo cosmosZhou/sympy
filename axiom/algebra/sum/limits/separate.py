@@ -22,7 +22,7 @@ def prove(Eq):
     g = Symbol.g(shape=(oo, oo), real=True)
     Eq << apply(Sum[i:0:n, j:0:n](f[j] * g[i, j]))
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.mul.to.sum)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.sum)
 
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.product.apply(Eq[-1], (i, 0, k), simplify=False)
 
-    Eq << Eq[-1].this.lhs.function.definition
+    Eq << Eq[-1].this.lhs.expr.definition
 
     Eq << Eq[-1].reversed
 

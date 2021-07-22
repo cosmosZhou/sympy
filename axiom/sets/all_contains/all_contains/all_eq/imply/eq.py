@@ -43,7 +43,7 @@ def prove(Eq):
     Eq << apply(All[a:A](Contains(f(a), B)), All[b:B](Contains(g(b), A)),
                 All[a:A](Equal(a, g(f(a)))))
 
-    Eq << Eq[1].this.function.apply(sets.contains.imply.subset, simplify=False)
+    Eq << Eq[1].this.expr.apply(sets.contains.imply.subset, simplify=False)
 
     Eq.subset_A = sets.all_subset.imply.subset.cup.lhs.apply(Eq[-1])
 
@@ -51,19 +51,19 @@ def prove(Eq):
 
     Eq << sets.supset.given.all_contains.apply(Eq.supset_A, var=Eq[0].variable)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.given.any_eq.split.imageset)
+    Eq << Eq[-1].this.expr.apply(sets.contains.given.any_eq.split.imageset)
 
     Eq <<= Eq[-1] & Eq[2]
 
-    Eq << Eq[-1].this.function.apply(algebra.et.given.et.subs.eq)
+    Eq << Eq[-1].this.expr.apply(algebra.et.given.et.subs.eq)
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 
     Eq << All[a:A](Any[b:B](Equal(f(a), b)), plausible=True)
 
-    Eq << Eq[-1].this.function.simplify()
+    Eq << Eq[-1].this.expr.simplify()
 
-    Eq << Eq[-1].this.function.function.apply(algebra.eq.imply.eq.invoke, g)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.eq.imply.eq.invoke, g)
 
     Eq <<= Eq.supset_A & Eq.subset_A
 

@@ -37,8 +37,6 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(discrete.det_blockMatrix.to.mul)
 
-    
-
     Eq << Eq[-1].this.rhs.apply(discrete.det_blockMatrix.to.mul)
 
     Eq << Eq[-1].this.rhs.find(Det).apply(discrete.det_mul.to.mul)

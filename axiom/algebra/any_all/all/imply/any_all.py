@@ -19,6 +19,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     N = Symbol.N(integer=True)
     g = Function.g(shape=(), integer=True)
     M = Symbol.M(g(N))
@@ -26,7 +27,7 @@ def prove(Eq):
     f = Function.f(shape=(), integer=True)
     Eq << apply(Any[N](All[n:N:oo](f(n) <= M)), All[n:N](f(n) <= M))
 
-    Eq << Eq[1].this.function.apply(algebra.all.all.imply.all.limits_union, Eq[2])
+    Eq << Eq[0].this.expr.apply(algebra.all.all.imply.all.limits_union, Eq[1])
 
 
 if __name__ == '__main__':

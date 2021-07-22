@@ -31,13 +31,13 @@ def prove(Eq):
 
     Eq << Eq[0].apply(algebra.cond.imply.all.restrict, (k, 2, oo))
 
-    Eq << Eq[-1].this().function.lhs.rhs.args[1].apply(algebra.eq.imply.et.split.blockmatrix, slice(-1))
+    Eq << Eq[-1].this().expr.lhs.rhs.args[1].apply(algebra.eq.imply.et.split.blockmatrix, slice(-1))
 
     Eq << stats.eq.imply.eq.single_condition_w.apply(Eq[-1], wrt=Eq[-1].lhs.rhs.args[1].lhs)
 
     Eq << Eq[1].apply(algebra.cond.given.et.all, cond=k >= 2)
 
-    Eq << Eq[-1].this().function.lhs.rhs.apply(algebra.eq.given.et.split.blockmatrix, slice(-1))
+    Eq << Eq[-1].this().expr.lhs.rhs.apply(algebra.eq.given.et.split.blockmatrix, slice(-1))
 
 
 if __name__ == '__main__':

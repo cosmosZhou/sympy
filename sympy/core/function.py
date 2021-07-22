@@ -18,15 +18,11 @@ There are three types of functions implemented in SymPy:
     Examples
     ========
 
-    >>> import sympy
-    >>> f = sympy.Function("f")
-    >>> from sympy.abc import x
-    >>> f(x)
-    f(x)
-    >>> print(sympy.srepr(f(x).func))
-    Function('f')
-    >>> f(x).args
-    (x,)
+    >>> x = Symbol.x(real=True)
+    >>> f = Function.f(real=True)
+    >>> g = Function.g(real=True)
+    >>> f(x) * g(x)
+    >>> calculus.derivative.to.add.apply(Derivative[x](f(x) + g(x))) 
 
 """
 
@@ -49,7 +45,6 @@ from sympy.core.containers import Tuple, Dict
 from sympy.core.parameters import global_parameters
 from sympy.core.logic import fuzzy_and, fuzzy_or, fuzzy_not, FuzzyBool
 from sympy.utilities import default_sort_key
-from sympy.utilities.exceptions import SymPyDeprecationWarning
 from sympy.utilities.iterables import has_dups, sift
 from sympy.utilities.misc import filldedent
 
@@ -342,9 +337,10 @@ class Function(Application, Expr):
     function classes:
 
     >>> from sympy import Function, Symbol
-    >>> x = Symbol('x')
-    >>> f = Function('f')
-    >>> g = Function('g')(x)
+    >>> x = Symbol.x(real=True)
+    >>> f = Function.f(real=True)
+    >>> g = Function.g(real=True)
+    >>> g = g(x)
     >>> f
     f
     >>> f(x)
@@ -359,10 +355,10 @@ class Function(Application, Expr):
     Assumptions can be passed to Function, and if function is initialized with a
     Symbol, the function inherits the name and assumptions associated with the Symbol:
 
-    >>> f_real = Function('f', real=True)
+    >>> f_real = Function.f(real=True)
     >>> f_real(x).is_real
     True
-    >>> f_real_inherit = Function(Symbol('f', real=True))
+    >>> f_real_inherit = Function(Symbol.f(real=True))
     >>> f_real_inherit(x).is_real
     True
 

@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(self):
     function, *limits_d = self.of(Derivative)

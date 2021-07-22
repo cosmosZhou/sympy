@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq <<= Eq[-2].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond), Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta)
+    Eq <<= Eq[-2].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond.subs), Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta)
 
     Eq << Eq[-1].apply(sets.ne.ne.imply.notcontains, simplify=False)
 
@@ -54,7 +54,7 @@ def prove(Eq):
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq.a00, Eq.a01 = Eq[-2].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond), Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta)
+    Eq.a00, Eq.a01 = Eq[-2].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond.subs), Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta)
 
     Eq << Eq.a00.apply(sets.ne.ne.imply.notcontains, simplify=False)
 

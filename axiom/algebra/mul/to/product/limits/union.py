@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.product)
 
-    Eq << Eq[-1].this.lhs.function.apply(algebra.mul.to.pow.add.exponent)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.mul.to.pow.add.exponent)
 
     Eq << Eq[-1].this.find(Add).apply(algebra.add.inclusive_exclusive_principle)
 

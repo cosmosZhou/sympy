@@ -33,7 +33,7 @@ class Eq:
 
     def postprocess(self):
         lines = []
-        
+                
         for line in self.latex:
             i = 0  
             res = []   
@@ -160,8 +160,11 @@ class Eq:
 
             if len(_index) == 1:
                 _index = _index[0]
-            if not _index:
-                return -1
+            else: 
+                if not _index:
+                    return -1
+                print("todo:")
+                _index = _index[0]
         else:
             _index = self.index(equivalent, False)
             if _index == -1:
@@ -200,7 +203,7 @@ class Eq:
         return len(self.list) - 1
 
     def __getitem__(self, index):
-        if isinstance(index, int):
+        if isinstance(index, (int, slice)):
             return self.list[index]
         return self.__dict__[index]
 
@@ -511,7 +514,6 @@ def run():
     from util import MySQL
     try:
         state, lapse, latex = prove_with_timing(res, debug=True, slow=True)        
-        
         sql = "replace into tbl_axiom_py values('%s', '%s', '%s', %s, %s)" % (user, package, state, lapse, json_encode(latex))
     #     print(sql)
     except AttributeError as e: 
@@ -603,7 +605,7 @@ def from_axiom_import(py, section, eqs):
 def _prove(func, debug=True, **_):
     py = func.__code__.co_filename
     
-    website = f"http://localhost/{basename(dirname(dirname(__file__)))}/axiom.php/{py_to_module(py, '/')}"
+    website = f"http://localhost/{basename(dirname(dirname(__file__)))}/axiom.php?module={py_to_module(py, '.')}"
     
     eqs = Eq(debug=debug)
     
@@ -612,7 +614,8 @@ def _prove(func, debug=True, **_):
         
         if debug:
             print(website)
-            
+         
+        assert eqs.latex, "empty latex from " + py   
         ret = RetCode.plausible if eqs.plausibles_dict else RetCode.proved
         
     except AttributeError as e:
@@ -654,6 +657,7 @@ def _prove(func, debug=True, **_):
         if str(e) == "'NoneType' object has no attribute 'definition_set'":
             lines = Text(py).collect()
             
+            __line__ = -1
             for i, line in enumerate(lines):
                 if re.match('^def prove\(', line):
                     break
@@ -661,6 +665,10 @@ def _prove(func, debug=True, **_):
                 if re.match(r' +return( *| +None *)$', line):
                     __line__ = i
                     code = lines[i - 1] + '\n' + line
+            
+            if __line__ < 0:
+                __line__ = i - 2
+                code = ''
             
             __line__ -= skips_in_apply(py)
             
@@ -764,7 +772,7 @@ def detect_error_in_apply(py, e, messages, index=-3):
             if pyFile != py:
                 m = re.search(r"\baxiom[/\\](.+)\.py", pyFile)
                 if m:
-                    kwargs['module'] = m[1]  # .replace(os.path.sep, '.')
+                    kwargs['module'] = m[1].replace(os.path.sep, '.')
                 else:
                     messages = source_error(index)
                     return detect_error_in_invoke(py, e, messages, index=index - 1)
@@ -835,8 +843,11 @@ def slow(func):
             return _prove(func, **kwargs)
         else:
             from util import MySQL
-            [[latex]] = MySQL.instance.select(f"select latex from tbl_axiom_py where user = '{user}' and axiom = '{py_to_module(func.__code__.co_filename, '.')}'")            
-            return RetCode.slow, latex
+            try:
+                [[latex]] = MySQL.instance.select(f"select latex from tbl_axiom_py where user = '{user}' and axiom = '{py_to_module(func.__code__.co_filename, '.')}'")            
+                return RetCode.slow, latex
+            except ValueError:
+                return _prove(func, **kwargs)
     
     return slow
 
@@ -888,27 +899,28 @@ def apply(*args, **kwargs):
         return lambda axiom: apply(axiom, **kwargs)
 
 
-def imply(apply, **kwargs):
-    is_given = kwargs['given'] if 'given' in kwargs else True
-    simplify = kwargs['simplify'] if 'simplify' in kwargs else True
-    
-    def add(given, statement):
-        if isinstance(statement, tuple):
-            if given is None:
-                return statement
-            
-            if isinstance(given, tuple):
-                return given + statement
-            
-            return (given,) + statement
-        
+def add(given, statement):
+    if isinstance(statement, tuple):
         if given is None:
             return statement
         
         if isinstance(given, tuple):
-            return given + (statement,)
+            return given + statement
         
-        return (given, statement)
+        return (given,) + statement
+    
+    if given is None:
+        return statement
+    
+    if isinstance(given, tuple):
+        return given + (statement,)
+    
+    return (given, statement)
+
+
+def imply(apply, **kwargs):
+    is_given = kwargs['given'] if 'given' in kwargs else True
+    simplify = kwargs['simplify'] if 'simplify' in kwargs else True
 
     def process(s, dependency):
         s.definition_set(dependency)
@@ -994,13 +1006,12 @@ def imply(apply, **kwargs):
         if G:
             definition = tuple(s.equality_defined() for s in G)
             
-            statement = add(given, statement)
             if isinstance(statement, tuple):
-                return definition + statement
-            return definition + (statement,)
-            
-        else:
-            return add(given, statement)
+                statement = definition + statement
+            else:
+                statement = definition + (statement,)
+                 
+        return add(given, statement)
 
     return imply
 
@@ -1008,24 +1019,6 @@ def imply(apply, **kwargs):
 def given(apply, **kwargs):
     is_given = kwargs['given'] if 'given' in kwargs else True
     simplify = kwargs['simplify'] if 'simplify' in kwargs else True
-    
-    def add(given, statement):
-        if isinstance(statement, tuple):
-            if given is None:
-                return statement
-            
-            if isinstance(given, tuple):
-                return tuple(given) + statement
-            
-            return (given,) + statement
-        
-        if given is None:
-            return statement
-        
-        if isinstance(given, tuple):
-            return tuple(given) + (statement,)
-        
-        return (given, statement)
 
     def process(s, dependency):
         s.definition_set(dependency)
@@ -1097,18 +1090,16 @@ def given(apply, **kwargs):
             imply.definition_set(dependency)
             imply = Inference(imply, plausible=True)
             
-        statement = add(imply, statement)
-        
         G = topological_sort_depth_first(dependency)
         if G:
-            definition = [s.equality_defined() for s in G]
+            definition = tuple(s.equality_defined() for s in G)
             
             if isinstance(statement, tuple):
-                statement = definition + [*statement]
+                statement = definition + statement
             else:
-                statement = definition + [statement]
-                
-        return statement
+                statement = definition + (statement,)
+        
+        return add(imply, statement)
 
     return given
 

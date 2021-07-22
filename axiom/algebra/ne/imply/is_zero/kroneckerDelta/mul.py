@@ -1,8 +1,7 @@
 from util import *
 
 
-
-@apply
+@apply(simplify=False)
 def apply(given, var=None):
     lhs, rhs = given.of(Unequal)
     if var is None:
@@ -21,7 +20,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.function.apply(algebra.is_nonzero.imply.et)
+    Eq << Eq[-1].this.expr.apply(algebra.is_nonzero.imply.et)
 
     Eq << algebra.any_et.imply.any.limits_delete.apply(Eq[-1])
 

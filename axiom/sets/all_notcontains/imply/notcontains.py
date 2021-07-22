@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(All[k:n](NotContains(x, A[k])))
 
-    Eq << sets.imply.suffice.notcontains.induct.apply(Eq[0].function, n)
+    Eq << sets.imply.suffice.notcontains.induct.apply(Eq[0].expr, n)
 
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
 

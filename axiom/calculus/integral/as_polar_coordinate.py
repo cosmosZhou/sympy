@@ -15,7 +15,7 @@ def apply(self, rho=None, theta=None):
     J = J.det().trigsimp()
     
     x, y = (var for var, *_ in self.limits)
-    function = self.function.subs({x:_x, y:_y}, simultaneous=True).trigsimp()
+    function = self.expr.subs({x:_x, y:_y}, simultaneous=True).trigsimp()
     limits = [(rho, 0, oo), (theta, -pi, pi)]
     rhs = self.func(J * function, *limits)
 

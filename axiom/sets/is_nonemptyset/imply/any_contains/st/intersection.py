@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << algebra.et.imply.et.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.split.intersection, simplify=None)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.et.split.intersection, simplify=None)
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=1, simplify=None)
 

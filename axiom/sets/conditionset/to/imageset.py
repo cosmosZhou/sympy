@@ -51,7 +51,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.args[1].apply(sets.contains.imply.any_eq.split.imageset)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.et.given.et.split.eq, reverse=True)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.et.given.et.split.eq, reverse=True)
 
     Eq.necessary = Necessary(Contains(y, B), Contains(y, B_quote), plausible=True)
 
@@ -61,7 +61,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any_et.limits.single_variable)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.et.imply.et.subs, reverse=True)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.et.imply.et.subs, reverse=True)
 
     Eq << Eq[-1].this.lhs.rhs.definition
 

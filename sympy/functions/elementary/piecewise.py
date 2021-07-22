@@ -1649,8 +1649,8 @@ class Piecewise(Function):
                 union |= _domain
     
             if _domain.is_FiniteSet:
-                for e in _domain:
-                    args.append(f.subs(x, e))
+                if _domain:
+                    args.append(cls[x:_domain](f).simplify())
             elif _domain:
                 if _domain.is_Range:
                     if x.is_integer:

@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(algebra.product.bool)
 
-    Eq << Eq[-1].this.lhs.function.args[-1].arg.apply(sets.et.transform.i_lt_j.left_close)
+    Eq << Eq[-1].this.lhs.expr.args[-1].arg.apply(sets.et.transform.i_lt_j.left_close)
 
     Eq << Eq[-1].this.rhs.apply(algebra.product.bool)
 

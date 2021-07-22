@@ -22,12 +22,12 @@
 <br>
 <p>
 	按照箭头方向所指单击即可进入<a
-		href='../axiom/discrete/combinatorics/binomial/theorem.php'>牛顿二项式定理</a>的论证过程，
-	用户也可以直接访问get api: <a href='../axiom/search.php?keyword=binomial'>www.axiom.top/sympy/php/search.php?keyword=binomial</a>
+		href='../axiom.php?module=discrete.combinatorics.binomial.theorem'>牛顿二项式定理</a>的论证过程，
+	用户也可以直接访问get api: <a href='../axiom.php?keyword=binomial'>www.axiom.top/sympy/axiom.php?keyword=binomial</a>
 	来获取搜索结果。 图形界面和get api同时也支持<a
 		href='http://www.regular-expressions.info/tutorial.html'>正则表达式</a>以及全字(whole
 	word)匹配，比如： <a
-		href='../axiom/search.php?keyword=discrete.*binomial&regularExpression=true'>www.axiom.top/sympy/php/search.php?keyword=discrete.*binomial&amp;regularExpression=true</a>
+		href='../axiom.php?keyword=discrete.*binomial&regularExpression=true'>www.axiom.top/sympy/axiom.php?keyword=discrete.*binomial&amp;regularExpression=true</a>
 	表示搜索在同时包含discrete和binomial单词的定理。
 </p>
 <hr />
@@ -36,7 +36,7 @@
 <br>
 <h4>上层定理引用关系</h4>
 以下以
-<a href='../axiom/discrete/combinatorics/binomial/theorem.php'>牛顿二项式定理</a>
+<a href='../axiom.php?module=discrete.combinatorics.binomial.theorem'>牛顿二项式定理</a>
 为例 ：
 <br>
 鼠标指向网页第一个超链接，会出现悬浮提示“callee hierarchy”。如图所示：
@@ -45,20 +45,20 @@
 <br>
 单击该超链接即可进入
 <a
-	href='../axiom/hierarchy.php?callee=axiom.discrete.combinatorics.binomial.theorem'>上层定理引用层级图</a>
+	href='../axiom.php?callee=axiom.discrete.combinatorics.binomial.theorem'>上层定理引用层级图</a>
 。如图所示：
 <img class=zoom src="png/hierarchy/callee.png" />
 <br>
 以上结果显示有以下几个定理在论证过程中引用了二项式定理：
 <ul>
-	<li><a href='../axiom/discrete/difference/factorial'>axiom.discrete.difference.factorial</a></li>
-	<li><a href='../axiom/discrete/matrix/vandermonde/concatenate'>axiom.discrete.matrix.vandermonde.concatenate</a></li>
+	<li><a href='../axiom.php?module=discrete.difference.factorial'>axiom.discrete.difference.factorial</a></li>
+	<li><a href='../axiom.php?module=discrete.matrix.vandermonde.concatenate'>axiom.discrete.matrix.vandermonde.concatenate</a></li>
 </ul>
 在“上层定理引用层级图”中单击>>>>(展开按钮)，可以进一步查看上层定理的更上一层定理。单击<<<<(隐藏按钮)，可以隐藏展开后的定理。
 <br>
 在“上层定理引用层级图”中单击
 <a
-	href='../axiom/hierarchy.php?callee=axiom.discrete.combinatorics.binomial.theorem&deep=true'>callee</a>
+	href='../axiom.php?callee=axiom.discrete.combinatorics.binomial.theorem#deep'>callee</a>
 超链接，可以展开所有上层定理引用关系图。如图所示：
 <img class=zoom src="png/hierarchy/deep/callee.png" />
 <hr />
@@ -69,22 +69,22 @@
 <br>
 在“上层定理引用层级图”中单击
 <a
-	href='../axiom/hierarchy.php?caller=axiom.discrete.combinatorics.binomial.theorem'>caller</a>
+	href='../axiom.php?caller=axiom.discrete.combinatorics.binomial.theorem'>caller</a>
 超链接，可以查看下层定理引用关系图。如图所示：
 <img class=zoom src="png/hierarchy/caller.png" />
 <hr />
 以上结果显示在二项式定理的论证过程中引用了以下几个定理：
 <ul>
-	<li><a href='../axiom/discrete/combinatorics/binomial/Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>组合数学中的<a
+	<li><a href='../axiom.php?module=discrete.combinatorics.binomial.Pascal'>axiom.discrete.combinatorics.binomial.Pascal</a>组合数学中的<a
 		href='https://en.wikipedia.org/wiki/Pascal%27s_rule'>Pascal法则</a>，以法国数学家Pascal命名。</li>
-	<li><a href='../axiom/algebra/suffice/imply/cond/induction'>axiom.algebra.suffice.imply.cond.induction</a>第一<a
+	<li><a href='../axiom.php?module=algebra.suffice.imply.cond.induction'>axiom.algebra.suffice.imply.cond.induction</a>第一<a
 		href='https://en.wikipedia.org/wiki/Mathematical_induction'>数学归纳法</a>，一种递归证明方法。</li>
 </ul>
 <br>
 
 在“下层定理引用层级图”中单击
 <a
-	href='../axiom/hierarchy.php?caller=axiom.discrete.combinatorics.binomial.theorem&deep=true'>caller</a>
+	href='../axiom.php?caller=axiom.discrete.combinatorics.binomial.theorem#deep'>caller</a>
 超链接，可以展开所有下层定理引用关系图。如图所示：
 <img class=zoom src="png/hierarchy/deep/caller.png" />
 <hr />
@@ -104,7 +104,7 @@ make<br>
 sh start.sh port=80 DocumentRoot=/home/github<br>
 DocumentRoot设定为所需的工程(网页)文件夹目录。<br>
 
-线下使用还必须安装python开发环境。建议使用python3.6版的。
+线下使用还必须安装python开发环境。建议使用python3.9版的。
 以下介绍python工程的使用方法：
 <br>
 <br>

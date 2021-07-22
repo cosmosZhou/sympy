@@ -18,24 +18,23 @@ def prove(Eq):
     x = Symbol.x(real=True, shape=(n,))
     y = Symbol.y(real=True, shape=(n,))
     t = Symbol.t(real=True, shape=(n,))
-    
     alpha = Symbol.alpha(real=True, positive=True)
     Eq << apply(Norm(x - y) > 0, t, alpha)
-    
+
     Eq << Eq[-1].this.lhs.arg.args[0].definition
-    
+
     Eq << Eq[-1].this.lhs.arg.args[0].args[1].definition
-    
+
     Eq << Eq[-1].this.lhs.arg.ratsimp()
 
     Eq << Eq[-1] * (1 + alpha)
-    
+
     Eq << Eq[-1] - Eq[-1].lhs
-    
+
     Eq << Eq[-1].this.rhs.collect(Norm(x - y)).reversed
-    
-    Eq << Eq[2] * alpha
-    
+
+    Eq << Eq[0] * alpha
+
 
 if __name__ == '__main__':
     run()

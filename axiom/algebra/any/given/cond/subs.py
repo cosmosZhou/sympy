@@ -15,7 +15,7 @@ def apply(self, old, new):
             if not domain.is_set:
                 domain = old.domain_conditioned(domain)
             if new.is_symbol:
-                _eval_domain_defined = self.function.domain_defined(new)
+                _eval_domain_defined = self.expr.domain_defined(new)
                 if _eval_domain_defined in domain:
                     ...
                 else:
@@ -23,11 +23,11 @@ def apply(self, old, new):
             else:
                 eqs.append(Contains(new, domain))
 
-        if self.function.is_And:
-            for equation in self.function.args:
+        if self.expr.is_And:
+            for equation in self.expr.args:
                 eqs.append(equation.subs(old, new))
         else:
-            eqs.append(self.function._subs(old, new))
+            eqs.append(self.expr._subs(old, new))
             
         assert not self.limits_delete(old)
         
@@ -56,17 +56,17 @@ def apply(self, old, new):
                     domain = old.domain_conditioned(domain)                    
                 eqs.append(Contains(new, domain))
 
-        if self.function.is_And:
-            for equation in self.function.args:
+        if self.expr.is_And:
+            for equation in self.expr.args:
                 eqs.append(equation._subs(old, new))
         else:
             if old.is_Tuple:
-                function = self.function
+                function = self.expr
                 for i in range(len(old)):
                     function = function._subs(old[i], new[i])
                 eqs.append(function)
             else:
-                eqs.append(self.function._subs(old, new))
+                eqs.append(self.expr._subs(old, new))
                 
         assert not self.limits_delete(old)
         assert not new.is_symbol

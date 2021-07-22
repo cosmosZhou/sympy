@@ -14,7 +14,7 @@ def apply(self):
                 variables = variables[:size]
                 rest = rest[variables[::-1]]
 
-            rhs = Lamda(rest + lamda.function, *lamda.limits)
+            rhs = Lamda(rest + lamda.expr, *lamda.limits)
             break
 
     return Equal(self, rhs, evaluate=False)

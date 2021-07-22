@@ -21,15 +21,15 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq <<= algebra.imply.all.limits_assert.apply(Eq[-2].limits).this.function.apply(algebra.is_even.imply.any), algebra.imply.all.limits_assert.apply(Eq[-1].limits).this.function.apply(algebra.is_nonzero.imply.any)
+    Eq <<= algebra.imply.all.limits_assert.apply(Eq[-2].limits).this.expr.apply(algebra.is_even.imply.any), algebra.imply.all.limits_assert.apply(Eq[-1].limits).this.expr.apply(algebra.is_nonzero.imply.any)
 
     Eq <<= Eq[2] & Eq[-2], Eq[3] & Eq[-1]
 
-    Eq <<= Eq[-2].this.function.apply(algebra.cond.any.given.any_et, simplify=None), Eq[-1].this.function.apply(algebra.cond.any.given.any_et, simplify=None)
+    Eq <<= Eq[-2].this.expr.apply(algebra.cond.any.given.any_et, simplify=None), Eq[-1].this.expr.apply(algebra.cond.any.given.any_et, simplify=None)
 
-    Eq << Eq[-2].this.function.function.apply(algebra.et.given.et.subs.eq, index=1)
+    Eq << Eq[-2].this.expr.expr.apply(algebra.et.given.et.subs.eq, index=1)
 
-    Eq << Eq[-1].this.function.function.apply(algebra.et.given.et.subs.eq, index=1)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.et.given.et.subs.eq, index=1)
 
 
 if __name__ == '__main__':

@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << apply(Sum[j, i:C](Piecewise((f(i, j), Equal(j, a)), (g(i, j), Equal(j, b)), (0, True))))
 
-    Eq << Sum[j](Eq[0].lhs.function).this.simplify()
+    Eq << Sum[j](Eq[0].lhs.expr).this.simplify()
 
     Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (i, C))
 

@@ -12,7 +12,7 @@ def limits_absorb(given, index):
 
     assert wrt
     if len(wrt) == 1:
-        wrt, *_ = wrt
+        [wrt] = wrt
         i = variables.index(wrt)
         wrt, *ab = limits[i]
         if ab:
@@ -92,7 +92,7 @@ def prove(Eq):
 
     Eq << Any[x[:n + 1]](Contains(x[:n + 1], S) & (h(x[:n + 1]) > 0), plausible=True)
 
-    Eq << Eq[-1].this.function.args[1].rhs.definition
+    Eq << Eq[-1].this.expr.args[1].rhs.definition
 
     Eq << Eq[-1].simplify()
 

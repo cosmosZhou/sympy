@@ -91,3 +91,7 @@ from . import gt_min
 from . import eq_max
 from . import eq_min
 from . import abs_is_nonpositive
+from . import all_ne
+from . import sum_square
+from . import le_abs
+from . import abs_sum

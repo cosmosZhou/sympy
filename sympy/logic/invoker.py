@@ -63,7 +63,15 @@ class Invoker:
         for i in range(-1, -len(self.index) - 1, -1):
             this = self._objs[i - 1]
             args = [*this.args]
-            args[self.index[i]] = obj
+            
+            index = self.index[i]
+            try:
+                args[index] = obj
+            except TypeError:
+                assert this.is_And or this.is_Or
+                for i in index[::-1]:
+                    del args[i]
+                args.append(obj)
             
             stop = i == -len(self.index)
             
@@ -329,7 +337,7 @@ class Invoker:
 
     @property
     def latex(self):
-        return self.value.latex
+        return self.target.latex
 
     def _pretty(self, p):
         return p._print(self.target)
@@ -339,7 +347,16 @@ class Invoker:
         
         if isinstance(target, tuple):
             obj = target[indices]
-            self.index.append(self.parent.args.index(obj))
+             
+            parent = self.parent
+            try:
+                index = parent.args.index(obj)
+            except ValueError:
+                assert parent.is_And or parent.is_Or
+                index = tuple(parent.args.index(o) for o in obj)
+                obj = parent.func(*obj)
+                
+            self.index.append(index)
             self._objs[-1] = obj
         elif target.is_Tuple:
             self.index.append(indices)
@@ -371,7 +388,7 @@ class Invoker:
                 for limit in target.limits:
                     x, *ab = limit
                     if not ab and x.is_integer:
-                        limit = (x, target.function.domain_defined(x))
+                        limit = (x, target.expr.domain_defined(x))
                     limits.append(limit)
                 limits.reverse()      
             else:

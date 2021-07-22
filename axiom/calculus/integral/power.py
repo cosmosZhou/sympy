@@ -17,12 +17,10 @@ def prove(Eq):
 
     x = Symbol.x(real=True)
     n = Symbol.n(integer=True, nonnegative=True)
-
     Eq << apply(n, b=x)
 
     f = Symbol.f(Eq[0].lhs)
     g = Symbol.g(Eq[0].rhs)
-
     Eq << diff(f, x).this.expr.definition
 
     Eq << Eq[-1].this.rhs.doit()
@@ -41,15 +39,15 @@ def prove(Eq):
 
     Eq << calculus.is_zero.imply.any_eq.constant.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.function.lhs.args[0].definition
+    Eq << Eq[-1].this.expr.expr.lhs.args[0].definition
 
-    Eq << Eq[-1].this.find(- ~Symbol).definition
+    Eq << Eq[-1].this.find(-~Symbol).definition
 
     Eq << algebra.any_all.imply.any_et.subs.apply(Eq[-1], x, 0)
 
-    Eq << Eq[-1].this.function.function.args[1].lhs.doit()
+    Eq << Eq[-1].this.expr.expr.args[1].lhs.doit()
 
-    Eq << Eq[-1].this.function.function.apply(algebra.eq.eq.imply.eq.transit)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.eq.eq.imply.eq.transit)
 
     Eq << Eq[-1].reversed
 

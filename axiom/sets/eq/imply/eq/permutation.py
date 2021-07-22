@@ -10,8 +10,8 @@ def apply(given, x):
     i, zero, n_1 = p_set_comprehension.limits[0]
     assert zero.is_zero
     n = n_1
-    assert p_set_comprehension.function.is_FiniteSet
-    p = p_set_comprehension.function.arg.base
+    assert p_set_comprehension.expr.is_FiniteSet
+    p = p_set_comprehension.expr.arg.base
     assert p_set_comprehension == p[:n].set_comprehension()
     zero, _n = interval.args
     assert zero.is_zero
@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq.definition = Eq[-1].apply(sets.contains.given.any_contains.st.cup)
 
-    Eq << discrete.combinatorics.permutation.index.eq.apply(Eq[0], _j)
+    Eq << discrete.eq.imply.et.index.apply(Eq[0], _j)
 
     index_j = Eq[-1].lhs.indices[0]
     Eq << Eq.definition.subs(Eq[-1].reversed)

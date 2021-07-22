@@ -1065,7 +1065,7 @@ class And(LatticeOp, BooleanFunction):
                 def instantiate(eq):
                     function = eq
                     for _ in range(depth):
-                        function = function.function
+                        function = function.expr
                     return function
                 
                 for eq in self.args: 

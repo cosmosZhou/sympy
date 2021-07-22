@@ -3,10 +3,10 @@ from util import *
 
 @apply
 def apply(imply):
-    assert imply.function.is_And
+    assert imply.expr.is_And
 
     limits_dict = imply.limits_dict
-    for i, eq in enumerate(imply.function.args):
+    for i, eq in enumerate(imply.expr.args):
         if eq.is_Equal:
             if eq.lhs in limits_dict:
                 old, new = eq.args
@@ -19,7 +19,7 @@ def apply(imply):
             if any(limit._has(old) for limit in limits):
                 continue
 
-            eqs = [*imply.function.args]
+            eqs = [*imply.expr.args]
             del eqs[i]
             eqs = [eq._subs(old, new) for eq in eqs]
 
@@ -48,13 +48,13 @@ def prove(Eq):
     g = Function.g(shape=(), integer=True)
     Eq << apply(Any[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
 
-    Eq << Eq[-1].this.function.apply(algebra.cond.imply.any_et, wrt=j)
+    Eq << Eq[-1].this.expr.apply(algebra.cond.imply.any_et, wrt=j)
 
-    Eq << Eq[-1].this.function.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta, delta=False, simplify=None, swap=True)
+    Eq << Eq[-1].this.expr.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta, delta=False, simplify=None, swap=True)
 
     Eq << algebra.any.imply.any.limits.swap.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[0].this.function.apply(algebra.et.given.et.split.eq, delta=False, simplify=None)
+    Eq << Eq[0].this.expr.apply(algebra.et.given.et.split.eq, delta=False, simplify=None)
 
 
 if __name__ == '__main__':

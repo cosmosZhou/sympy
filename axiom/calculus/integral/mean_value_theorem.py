@@ -56,9 +56,9 @@ def prove(Eq):
 
     Eq << algebra.any_et.imply.et.any.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function * (b - a)
+    Eq << Eq[-1].this.expr * (b - a)
 
-    Eq << Eq[-1].this.function.rhs.ratsimp().reversed
+    Eq << Eq[-1].this.expr.rhs.ratsimp().reversed
 
 
 if __name__ == '__main__':

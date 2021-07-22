@@ -21,20 +21,20 @@ def apply(given, w=None):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     n = Symbol.n(domain=Range(2, oo))
     x = Symbol.x(shape=(n,), integer=True)
-
     S = Symbol.S(etype=dtype.integer)
     i = Symbol.i(integer=True)
     Eq << apply(Contains(x[i], S))
 
-    Eq << discrete.matrix.elementary.swap.invariant.contains.apply(Eq[1])
+    Eq << discrete.matrix.elementary.swap.invariant.contains.apply(Eq[0])
 
     k = Eq[-1].lhs.args[0].indices[-1]
-
     Eq << algebra.cond.imply.all.restrict.apply(Eq[-1], (k, 0, n), simplify=False)
 
     Eq << Eq[2].simplify()
+
 
 if __name__ == '__main__':
     run()

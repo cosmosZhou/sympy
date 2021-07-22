@@ -1135,7 +1135,7 @@ def _factor_sum_int(expr, **kwargs):
     >>> eq.subs(y, x).doit()
     6
     """
-    result = expr.function
+    result = expr.expr
     if result == 0:
         return S.Zero
     limits = expr.limits

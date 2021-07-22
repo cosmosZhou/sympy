@@ -35,7 +35,7 @@ def prove(Eq):
     Eq << apply(Equal(y[t] | y[:t], y[t]), Unequal(Probability(y, x), 0))
 
     i = Eq[-1].lhs.variable
-    j = Eq[-1].rhs.function.args[-1].variable
+    j = Eq[-1].rhs.expr.args[-1].variable
     Eq << stats.is_nonzero.imply.et.apply(Eq[1])
 
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x[i])

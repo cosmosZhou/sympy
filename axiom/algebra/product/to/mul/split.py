@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.product)
 
-    Eq << Eq[-1].this.rhs.function.powsimp()
+    Eq << Eq[-1].this.rhs.expr.powsimp()
 
     Eq << Eq[-1].this.find(Contains).apply(sets.contains.to.ou.split, B)
 

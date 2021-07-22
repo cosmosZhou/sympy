@@ -541,7 +541,7 @@ def rsolve_hyper(coeffs, f, n, **hints):
                 inhomogeneous.append(g + h)
         elif isinstance(f, Sum):
 
-            g = f.function
+            g = f.expr
             if not g.is_hypergeometric(n):
                 return None
 

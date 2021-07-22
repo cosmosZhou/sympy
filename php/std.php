@@ -604,28 +604,27 @@ function renameDirectory($directory, $newDirectory)
     if (! file_exists($directory)) {
         return;
     }
-    
+
     if ($dir_handle = opendir($directory)) {
-        
+
         while ($filename = readdir($dir_handle)) {
-            
+
             if ($filename != '.' && $filename != '..') {
-                
+
                 $subFile = $directory . "/" . $filename;
                 $_subFile = $newDirectory . "/" . $filename;
-                
+
                 if (is_dir($subFile)) {
                     renameDirectory($subFile, $_subFile);
                 } elseif (is_file($subFile)) {
-                    
-                    
+
                     rename($subFile, $_subFile);
                 }
             }
         }
-        
+
         closedir($dir_handle);
-        
+
         rmdir($directory);
     }
 }
@@ -651,14 +650,12 @@ class Text implements IteratorAggregate
     public function __construct($path)
     {
         // error_log("path = " . $path);
-        if (file_exists($path)){
+        if (file_exists($path)) {
             $this->file = fopen($path, "r+");
-        }
-        else{
-            createNewFile($path);            
+        } else {
+            createNewFile($path);
             $this->file = fopen($path, "w+");
         }
-        
 
         if ($this->file === false) {
             createNewFile($path);
@@ -895,17 +892,17 @@ class Text implements IteratorAggregate
         $this->write(implode("\n", $lines));
         $this->truncate();
     }
-    
+
     public function preg_match($regex)
     {
         $regex = "/$regex/";
         $lines = [];
         foreach ($this as $line) {
-            if (preg_match($regex, $line)){
+            if (preg_match($regex, $line)) {
                 $lines[] = $line;
-            }            
+            }
         }
-        
+
         return $lines;
     }
 
@@ -915,10 +912,9 @@ class Text implements IteratorAggregate
         $lines = [];
         $linesRemoved = [];
         foreach ($this as $line) {
-            if (preg_match($regex, $line)){
+            if (preg_match($regex, $line)) {
                 $lines[] = $line;
-            }
-            else{
+            } else {
                 $linesRemoved[] = $line;
             }
         }
@@ -1281,6 +1277,30 @@ function is_linux()
     return DIRECTORY_SEPARATOR == '/';
 }
 
+function post($url, $data = null, $json = True)
+{
+    if ($data == null)
+        $data = [];
 
+    $postdata = http_build_query($data);
+
+    $opts = [
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-type: application/x-www-form-urlencoded',
+            'content' => $postdata,
+            "timeout" => 3600
+        ]
+    ];
+
+    $context = stream_context_create($opts);
+
+    $result = file_get_contents($url, false, $context);
+
+    if ($json)
+        return json_decode($result, True);
+    
+    return $result;
+}
 
 ?>

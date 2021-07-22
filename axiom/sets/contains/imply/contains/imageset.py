@@ -30,9 +30,9 @@ def prove(Eq):
 
     Eq.all_contains = All[x:s](Contains(f(x), S), plausible=True)
 
-    Eq << Eq.all_contains.this.function.rhs.definition
+    Eq << Eq.all_contains.this.expr.rhs.definition
 
-    Eq << Eq[-1].this.function.apply(sets.contains.given.subset, simplify=False)
+    Eq << Eq[-1].this.expr.apply(sets.contains.given.subset, simplify=False)
 
     Eq << sets.all_subset.given.subset.lhs.apply(Eq[-1])
 

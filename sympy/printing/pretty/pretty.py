@@ -388,7 +388,7 @@ class PrettyPrinter(Printer):
         return cyc
 
     def _print_Integral(self, integral):
-        f = integral.function
+        f = integral.expr
 
         # Add parentheses if arg involves addition of terms and
         # create a pretty form for the argument

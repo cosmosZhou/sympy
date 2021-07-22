@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.subs, simplify=None)
+    Eq << Eq[-1].this.expr.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.subs, simplify=None)
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
@@ -33,7 +33,7 @@ def prove(Eq):
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=0, simplify=None)
 
-    Eq << Eq[-1].this.function.apply(calculus.is_nonzero.eq.imply.any_all.lt)
+    Eq << Eq[-1].this.expr.apply(calculus.is_nonzero.eq.imply.any_all.lt)
 
 
 if __name__ == '__main__':

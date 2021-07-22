@@ -1,23 +1,36 @@
 from util import *
 
 
-@apply
-def apply(self):
-    A, B = self.of(MatMul)
+def matmul(A, B, deep=False):
     if A.is_BlockMatrix:
         args_A = A.args
-        rhs = BlockMatrix(*[MatMul(arg, B).simplify() for arg in args_A])    
+        if B.is_BlockMatrix and deep:
+            return BlockMatrix(*[matmul(arg, B, deep=True) for arg in args_A])
+        else:
+            return BlockMatrix(*[MatMul(arg, B).simplify() for arg in args_A])        
+            
     elif A.is_Transpose:
         args_B = B.of(BlockMatrix)
         args_A = A.arg.of(BlockMatrix)
         assert len(args_A) == len(args_B)
         
-        args = [a.T @ b for a, b in zip(args_A, args_B)]
-        rhs = Add(*args)
+        if deep:
+            args = [matmul(b.T, a) for a, b in zip(args_A, args_B)]
+            s = args[0]
+            for i in range(1, len(args)):
+                s += args[i]
+            return s.T            
+        else:
+            args = [a.T @ b for a, b in zip(args_A, args_B)]
+        return Add(*args)
     else:
         args_B = B.of(Transpose[BlockMatrix])
-        rhs = BlockMatrix(*[MatMul(arg, A.T).simplify() for arg in args_B]).T    
-    
+        return BlockMatrix(*[MatMul(arg, A.T).simplify() for arg in args_B]).T    
+     
+@apply
+def apply(self, deep=False):
+    A, B = self.of(MatMul)
+    rhs = matmul(A, B, deep=deep)
     return Equal(self, rhs, evaluate=False)
 
 
@@ -40,10 +53,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(MatMul).apply(discrete.matmul.to.lamda)
 
-    i = Symbol.i(domain=Range(0, a + b))    
+    i = Symbol.i(domain=Range(0, a + b))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], i)
-    
-    j = Symbol.j(domain=Range(0, n))    
+
+    j = Symbol.j(domain=Range(0, n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], j)
 
 

@@ -17,10 +17,10 @@ def apply(A):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     n = Symbol.n(domain=Range(2, oo))
     A = Symbol.A(etype=dtype.integer, shape=(n,))
-
     Eq << apply(A)
 
     _k = Eq[-1].lhs.variable
@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.domain_defined.insert)
 
-    Eq << Eq[-1].this.lhs.split({0})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={0})
 
     Eq << Eq[-1] - Eq[-1].lhs.args[1]
 
@@ -41,7 +41,9 @@ def prove(Eq):
 
     Eq << Eq[0].subs(_k, k)
 
-    Eq << Eq[-2].this.lhs.subs(Eq[-1])
+    Eq << algebra.ou.imply.all.apply(Eq[-1], 1)
+
+    Eq << Eq[-3].this.lhs.subs(Eq[-1])
 
     Eq << sets.imply.eq.principle.inclusion_exclusion.deduction.apply(A)
 

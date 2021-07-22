@@ -33,40 +33,93 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
 
     y_ = Symbol("y'", integer=True, given=True)
     y = Symbol.y(integer=True)
     x = Symbol.x(integer=True)
-    a = Symbol.a(real=True, shape=(oo,), given=True)
+    t = Symbol.t(real=True, shape=(oo,), given=True)
     X = Symbol.X(etype=dtype.integer, finiteset=True, given=True)
     Y = Symbol.Y(etype=dtype.integer, finiteset=True, given=True)
-    Eq << apply(abs(a[y_] - Sum[x:X](a[x]) / abs(X)) <= abs(a[y_] - Sum[y:Y](a[y]) / abs(Y)), abs(Y) >= 2, Contains(y_, Y), NotContains(y_, X))
+    Eq << apply(abs(t[y_] - Sum[x:X](t[x]) / abs(X)) <= abs(t[y_] - Sum[y:Y](t[y]) / abs(Y)), abs(Y) >= 2, Contains(y_, Y), NotContains(y_, X))
 
-    Eq << sets.ge.imply.contains.range.apply(Eq[1])
-
-    m = Symbol.m(domain=Range(2, oo))
-    Eq << sets.contains.imply.any_eq.apply(Eq[-1], var=m)
+    Eq << algebra.ge.imply.is_positive.apply(Eq[1])
 
     b = Symbol.b(shape=(oo,), integer=True)
-    Eq.any_Y = Eq[-1].this.function.apply(sets.eq.imply.any_eq.condset.all, b)
+    Eq << sets.abs_is_positive.imply.any_eq.apply(Eq[-1], b)
+
+    Eq << Eq[-1].this.expr.apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].rhs.args[1].find(Pow, Sum))
+
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].rhs.args[1])
+
+    Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], 0)
+
+    Eq.any_Y = Eq[-1].this.expr.apply(algebra.cond.cond.imply.et, algebra.eq.eq.imply.eq.subs.rhs, swap=True)
 
     Eq << algebra.le.imply.is_nonzero.domain_definition.st.abs.apply(Eq[0])
 
-    Eq << algebra.is_nonzero.imply.is_positive.apply(Eq[-1])
+    Eq.X_abs_is_positive = algebra.is_nonzero.imply.is_positive.apply(Eq[-1])
 
-    Eq << algebra.gt.imply.ge.strengthen.apply(Eq[-1])
+    a = Symbol.a(shape=(oo,), integer=True)
+    Eq << sets.abs_is_positive.imply.any_eq.apply(Eq.X_abs_is_positive, a)
 
-    Eq << sets.ge.imply.contains.range.apply(Eq[-1])
+    Eq << Eq[-1].this.expr.apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].rhs.args[0].find(Pow, Sum))
 
-    n = Symbol.n(positive=True, integer=True)
-    Eq << sets.contains.imply.any_eq.apply(Eq[-1], var=n)
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].rhs.args[0])
 
-    Eq << Eq[-1].this.function.apply(sets.eq.imply.any_eq.condset.all)
+    Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], 0)
 
-    Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1])
+    Eq.any_X = Eq[-1].this.expr.apply(algebra.cond.cond.imply.et, algebra.eq.eq.imply.eq.subs.rhs, swap=True)
 
-    Eq << algebra.any.any.imply.any_et.apply(Eq[-1], Eq.any_Y)
+    Eq.abs_complement = sets.contains.imply.eq.abs.complement.apply(Eq[2])
+
+    Eq << Eq[1] - 1
+
+    Eq << algebra.ge.imply.is_positive.apply(Eq[-1])
+
+    Eq << algebra.eq.gt.imply.gt.add.apply(Eq.abs_complement, Eq[-1])
+
+    b_ = Symbol("b'", shape=(oo,), integer=True)
+    Eq << sets.abs_is_positive.imply.any_eq.apply(Eq[-1], b_)
+
+    Eq << Eq[-1].this.expr.apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].lhs.args[1].find(Pow, Sum))
+
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].lhs.args[1])
+
+    Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], 0)
+
+    Eq << Eq[-1].this.expr.apply(algebra.eq.eq.imply.eq.subs.rhs, swap=True)
+
+    Eq.any_Y_complement = Eq[-1].subs(Eq.abs_complement)
+
+    Eq.abs_union = sets.notcontains.imply.eq.abs.apply(Eq[3])
+
+    Eq << algebra.eq.imply.is_positive.apply(Eq.abs_union)
+
+    a_ = Symbol("a'", shape=(oo,), integer=True)
+    Eq << sets.abs_is_positive.imply.any_eq.apply(Eq[-1], a_)
+
+    Eq << Eq[-1].this.expr.apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].lhs.args[0].find(Pow, Sum))
+
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.cond.imply.et.invoke, sets.eq_cup.imply.eq.sum, Eq[4].lhs.args[0])
+
+    Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], 0)
+
+    Eq << Eq[-1].this.expr.apply(algebra.eq.eq.imply.eq.subs.rhs, swap=True)
+
+    Eq.any_X_union = Eq[-1].subs(Eq.abs_union)
+
+    Eq << algebra.any.any.imply.any_et.apply(Eq.any_X, Eq.any_X_union)
+
+    Eq << algebra.any.any.imply.any_et.apply(Eq.any_Y, Eq.any_Y_complement)
+
+    Eq << algebra.any.any.imply.any_et.apply(Eq[-2], Eq[-1])
+
+    Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[-1])
+
+    Eq << Eq[-1].this.expr.args[::3].apply(algebra.eq.eq.cond.imply.cond.subs)
+
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.le_abs.imply.le)
 
 
 if __name__ == '__main__':

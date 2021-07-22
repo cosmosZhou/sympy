@@ -19,7 +19,7 @@ def prove(Eq):
     w = Symbol.w(complex=True, shape=(oo,))
     Eq << apply(All[i:n](Equal(f(i), 0)), w=w)
 
-    Eq << Eq[0].this.function * w[i]
+    Eq << Eq[0].this.expr * w[i]
 
     Eq << algebra.all_is_zero.imply.sum_is_zero.apply(Eq[-1])
 

@@ -1,10 +1,69 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-<link rel="stylesheet" href="/sympy/css/style.css">
+<link rel="stylesheet" href="static/css/style.css">
 <?php
 // ^ *error_log
 require_once 'php/utility.php';
 require_once 'php/mysql.php';
+
+error_log("_GET = " . \std\jsonify($_GET));
+error_log("_POST = " . \std\jsonify($_POST));
+
+// if (! $_GET) {
+//     // https://www.php.net/manual/en/function.getopt.php
+//     $_GET = getopt("", [
+//         'module::'
+//     ]);
+//     $_GET['module'] = str_replace('/', '.', $_GET['module']);
+// }
+
+$key = array_keys($_GET);
+switch (count($key)) {
+    case 0:
+        $key = array_keys($_POST);
+        switch (count($key)) {
+            case 0:
+                require_once 'php/summary.php';
+                exit();
+            default:
+                if (array_key_exists('module', $_POST)) {
+                    $module = $_POST['module'];
+                    break;
+                } else {
+                    require_once 'php/search.php';
+                    exit();
+                }
+        }
+        break;
+    case 1:
+        list ($key) = $key;
+        switch ($key) {
+            case "symbol":
+                require_once 'php/symbol.php';
+                exit();
+            case "module":
+                $module = $_GET['module'];
+                break;
+            case "callee":
+                require_once 'php/hierarchy.php';
+                exit();
+            case "caller":
+                require_once 'php/hierarchy.php';
+                exit();
+            case "new":
+                require_once 'php/new.php';
+                exit();
+            case "state":
+                require_once 'php/search.php';
+                exit();
+        }
+        break;
+    case 2:
+        $module = $_GET['module'];
+        break;
+    default:
+        break;
+}
 
 function piece_together(&$input)
 {
@@ -13,24 +72,9 @@ function piece_together(&$input)
     return $code;
 }
 
-if (array_key_exists("PATH_INFO", $_SERVER)) {
-    $PATH_INFO = $_SERVER["PATH_INFO"];
-    if (\std\equals($PATH_INFO, '/')) {
-        $PATH_INFO = null;
-    }
-} else {
-    $PATH_INFO = null;
-}
+$PATH_INFO = str_replace('.', '/', $module);
 
-if (! $PATH_INFO) {
-    require_once 'php/summary.php';
-    die();
-}
-
-error_log("PATH_INFO = $PATH_INFO");
-// \std\println("PATH_INFO = $PATH_INFO");
-
-$path_info = substr(__FILE__, 0, - 4) . $PATH_INFO;
+$path_info = substr(__FILE__, 0, - 4) . "/" . $PATH_INFO;
 
 $indexOfYield = - 1;
 if (! \std\endsWith($path_info, '/')) {
@@ -200,6 +244,6 @@ if (! \std\endsWith($path_info, '/')) {
 }
 
 error_log("indexOfYield = $indexOfYield");
-require_once $indexOfYield < 0 ? 'php/folderView.php' : 'php/render.php';
+require_once $indexOfYield < 0 ? 'php/package.php' : 'php/theorem.php';
 ?>
 

@@ -11,24 +11,22 @@ def apply(given):
             _v = v.generate_var(given.free_symbols, **v.type.dict)
             S = S.limits_subs(v, _v)
 
-    contains = Contains(x, S.function).simplify()
+    contains = Contains(x, S.expr).simplify()
     return All(contains, *S.limits)
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(positive=True, integer=True, given=True)
     x = Symbol.x(integer=True, given=True)
     k = Symbol.k(integer=True)
-
     A = Symbol.A(shape=(oo,), etype=dtype.integer, given=True)
-
     Eq << apply(Contains(x, Cap[k:n](A[k])))
 
     k = Symbol.k(domain=Range(0, n))
-
-    Eq << Eq[0].this.rhs.split({k})
+    Eq << Eq[0].this.rhs.apply(sets.cap.to.intersection.split, {k})
 
     Eq << sets.contains.imply.contains.split.intersection.apply(Eq[-1], index=0)
 

@@ -40,9 +40,9 @@ def prove(Eq):
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq[-3])
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.lt.imply.lt.abs.sub)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.lt.imply.lt.abs.sub)
 
-    Eq << Eq[-1].this.function.limits[0][1].apply(algebra.gt.gt.given.gt)
+    Eq << Eq[-1].this.expr.limits[0][1].apply(algebra.gt.gt.given.gt)
 
     N = Symbol.N(real=True, positive=True)
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Max(N0, N1), N)

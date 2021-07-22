@@ -56,7 +56,7 @@ def prove(Eq):
     x = Eq[0].lhs.variable
     Eq << algebra.ge.imply.ge.sum.apply(Eq[-1], (x,))
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.add)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
 

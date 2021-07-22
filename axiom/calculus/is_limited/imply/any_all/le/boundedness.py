@@ -11,7 +11,7 @@ def apply(given, delta=None, var=None):
     exists = any_all(Equal(given.lhs, S.Zero), M, delta=delta)
 
     limits = exists.limits + (M,)
-    return exists.func(exists.function, *limits)
+    return exists.func(exists.expr, *limits)
 
 
 @prove
@@ -43,16 +43,16 @@ def prove(Eq):
 
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], var='A')
 
-    A = -Eq[-1].function.function.lhs.arg.args[0]
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.imply.et.split.abs)
+    A = -Eq[-1].expr.expr.lhs.arg.args[0]
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.imply.et.split.abs)
 
-    Eq << Eq[-1].this.function.function.args[0] + A
+    Eq << Eq[-1].this.expr.expr.args[0] + A
 
-    Eq << Eq[-1].this.function.function.args[0] + A
+    Eq << Eq[-1].this.expr.expr.args[0] + A
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.gt.imply.lt.abs.max)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.gt.imply.lt.abs.max)
 
-    Eq << algebra.cond.imply.any.subs.apply(Eq[-1], Eq[-1].function.function.rhs, M)
+    Eq << algebra.cond.imply.any.subs.apply(Eq[-1], Eq[-1].expr.expr.rhs, M)
 
 
 if __name__ == '__main__':

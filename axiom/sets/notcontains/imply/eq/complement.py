@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << sets.notcontains.imply.is_emptyset.intersection.apply(Eq[0])
 
-    Eq << sets.is_emptyset.imply.eq.complement.apply(Eq[-1])
+    Eq << sets.intersection_is_emptyset.imply.eq.complement.apply(Eq[-1])
 
 
 if __name__ == '__main__':

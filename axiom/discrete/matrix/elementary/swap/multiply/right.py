@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.add.to.piecewise)
 
 
 if __name__ == '__main__':

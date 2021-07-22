@@ -1,4 +1,4 @@
-from sympy.logic.boolalg import Boolean, BooleanTrue
+from sympy.logic.boolalg import Boolean
 from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.core.sympify import sympify
 from sympy.utilities.iterables import postorder_traversal
@@ -12,33 +12,33 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     _op_priority = 12.1  # higher than Relational
 
     def __getitem__(self, rhs):
-        return self.func(self.function[rhs], *self.limits)
+        return self.func(self.expr[rhs], *self.limits)
 
     def __mul__(self, rhs):
-        return self.func(self.function * rhs, *self.limits)
+        return self.func(self.expr * rhs, *self.limits)
         
     def __mod__(self, rhs):
-        return self.func(self.function % rhs, *self.limits)
+        return self.func(self.expr % rhs, *self.limits)
     
     def __truediv__(self, rhs):
-        return self.func(self.function / rhs, *self.limits)
+        return self.func(self.expr / rhs, *self.limits)
 
     def __matmul__(self, rhs):
-        return self.func(self.function @ rhs, *self.limits)
+        return self.func(self.expr @ rhs, *self.limits)
     
     def __rmatmul__(self, lhs):
-        return self.func(lhs @ self.function, *self.limits)
+        return self.func(lhs @ self.expr, *self.limits)
     
     @property
     def T(self):
-        return self.func(self.function.T, *self.limits)
+        return self.func(self.expr.T, *self.limits)
     
     def inverse(self):
-        return self.func(self.function.inverse(), *self.limits)
+        return self.func(self.expr.inverse(), *self.limits)
 
     def funcs(self):
         funcs = [(self.func, self.limits)]
-        function = self.function
+        function = self.expr
         if function.is_ConditionalBoolean:
             sub_funcs, function = function.funcs()
             funcs = sub_funcs + funcs
@@ -75,14 +75,14 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                 kwargs['depth'] -= 1
         else:
             return Boolean.apply(self, axiom, *args, **kwargs)
-        return self.this.function.apply(axiom, *args, **kwargs)
+        return self.this.expr.apply(axiom, *args, **kwargs)
 
     @property
     def reversed(self):
-        return self.func(self.function.reversed, *self.limits)
+        return self.func(self.expr.reversed, *self.limits)
 
     def __neg__(self):
-        return self.func(-self.function, *self.limits)
+        return self.func(-self.expr, *self.limits)
 
     def limits_include(self, eq):
         variables = self.variables_set
@@ -101,11 +101,11 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
         return not _variables
 
     def __invert__(self):
-        function = self.function.invert()
+        function = self.expr.invert()
         return self.invert_type(function, *self.limits, negation=self)
 
     def invert(self):
-        function = self.function.invert()
+        function = self.expr.invert()
         return self.invert_type(function, *self.limits)
 
     def __and__(self, eq):
@@ -121,39 +121,39 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                 else:
                     limits = self.limits + eq.limits
 
-                result = getattr(self.function, bfn)(eq.function)
+                result = getattr(self.expr, bfn)(eq.expr)
             else:
                 limits = self.limits
-                result = getattr(self.function, bfn)(eq)
+                result = getattr(self.expr, bfn)(eq)
         else:
             if eq.is_Exists:
-                if self.function.is_Exists and self.function.limits == eq.limits:
+                if self.expr.is_Exists and self.expr.limits == eq.limits:
                     func = self.func
                     limits = self.limits
-                    result = getattr(self.function, bfn)(eq)
+                    result = getattr(self.expr, bfn)(eq)
                 else:
                     limits = eq.limits
                     func = eq.func
 
                     dic = eq.limits_common(self)
                     if dic:
-                        _self = self.func(self.function, *self.limits_delete(dic))
+                        _self = self.func(self.expr, *self.limits_delete(dic))
 
-                        result = getattr(_self, bfn)(eq.function)
+                        result = getattr(_self, bfn)(eq.expr)
                         result.given = True
                     else:
-                        result = self.bfn(bfn, eq.function)
+                        result = self.bfn(bfn, eq.expr)
             elif eq.is_All:
                 func = self.func
                 if self.limits == eq.limits:
                     limits = self.limits
                 else:
                     limits = self.limits + eq.limits
-                result = getattr(self.function, bfn)(eq.function)
+                result = getattr(self.expr, bfn)(eq.expr)
             else:
                 func = self.func
                 limits = self.limits
-                result = getattr(self.function, bfn)(eq)
+                result = getattr(self.expr, bfn)(eq)
 
         equivalent = [self, eq] if eq.is_Boolean else self
         kwargs = {}
@@ -166,15 +166,15 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
 
     @property
     def etype(self):
-        return self.function.etype
+        return self.expr.etype
 
     @property
     def lhs(self):
-        return self.function.lhs
+        return self.expr.lhs
 
     @property
     def rhs(self):
-        return self.function.rhs
+        return self.expr.rhs
 
     def __add__(self, eq):
         eq = sympify(eq)
@@ -189,15 +189,15 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
 
     def simplify(self, deep=False):
         from sympy import S
-        if self.function.func == self.func:
-            exists = self.function
-            return self.func(exists.function, *exists.limits + self.limits).simplify()
+        if self.expr.func == self.func:
+            exists = self.expr
+            return self.func(exists.expr, *exists.limits + self.limits).simplify()
 
         this = self.delete_independent_variables()
         if this is not None:
             return this
         
-        function = self.function
+        function = self.expr
         if function.is_And or function.is_Or:
             for t in range(len(self.limits)):
                 x, *domain = self.limits[t]            
@@ -225,17 +225,17 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                     else:
                         return function.func(*eqs)
             limits_cond = self.limits_cond
-            for i, eq in enumerate(self.function.args):
+            for i, eq in enumerate(self.expr.args):
                 eq &= limits_cond
                 copy = False
                 shrink = False
                 if eq:
-                    if self.function.is_Or:
+                    if self.expr.is_Or:
                         copy = True
                     else:
                         shrink = True
                 elif eq.is_BooleanFalse:
-                    if self.function.is_And:
+                    if self.expr.is_And:
                         copy = True
                     else:
                         shrink = True
@@ -243,13 +243,13 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                 if copy:
                     return eq
                 if shrink:
-                    args = [*self.function.args]
+                    args = [*self.expr.args]
                     del args[i]
-                    function = self.function.func(*args)
+                    function = self.expr.func(*args)
                     return self.func(function, *self.limits).simplify()
 
         if deep:
-            function = self.function
+            function = self.expr
             reps = {}
             for x, domain in limits_dict.items():
                 if domain.is_set and domain.is_integer:
@@ -259,7 +259,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             if reps:
                 for _x, x in reps.items():
                     function = function._subs(_x, x)
-                if function != self.function:
+                if function != self.expr:
                     return self.func(function, *self.limits).simplify()
 
         for i, (x, *domain) in enumerate(self.limits):
@@ -272,7 +272,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                     if domain.lhs == x:
                         domain = domain.rhs
                         limits = self.limits_update({x:domain})
-                        return self.func(self.function, *limits).simplify()
+                        return self.func(self.expr, *limits).simplify()
                 elif domain.is_ConditionSet:
                     if x == domain.variable: 
                         condition = domain.condition
@@ -284,11 +284,11 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                         limits[i] = (x, condition)
                     else:
                         limits[i] = (x, condition, domain.base_set)
-                    return self.func(self.function, *limits).simplify()
+                    return self.func(self.expr, *limits).simplify()
                 elif domain.is_UniversalSet:
                     limits = [*self.limits]
                     limits[i] = (x,)
-                    return self.func(self.function, *limits).simplify()
+                    return self.func(self.expr, *limits).simplify()
 
         for i, limit in enumerate(self.limits):
             if len(limit) == 1:
@@ -296,7 +296,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             if len(limit) == 3:
                 e, cond, baseset = limit
                 if baseset.is_set:
-                    if cond == self.function: 
+                    if cond == self.expr: 
                         return S.BooleanTrue
             else:
                 e, s = limit
@@ -310,15 +310,15 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                         
                             limits = [*self.limits]
                             limits[i] = (e, s)
-                            return self.func(self.function, *limits).simplify()
+                            return self.func(self.expr, *limits).simplify()
                         continue
                     
                     image_set = s.image_set()
                     if image_set is not None:
                         sym, expr, base_set = image_set
-                        if self.function.is_ExprWithLimits:
-                            if sym in self.function.bound_symbols:
-                                _sym = base_set.element_symbol(self.function.variables_set)
+                        if self.expr.is_ExprWithLimits:
+                            if sym in self.expr.bound_symbols:
+                                _sym = base_set.element_symbol(self.expr.variables_set)
                                 assert sym.shape == _sym.shape
                                 _expr = expr.subs(sym, _sym)
                                 if _expr == expr:
@@ -330,9 +330,9 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     
                                 expr = _expr
                                 sym = _sym
-                            assert sym not in self.function.bound_symbols
+                            assert sym not in self.expr.bound_symbols
                         
-                        function = self.function
+                        function = self.expr
                         if e != expr:
                             if sym.type == e.type:
                                 _expr = expr._subs(sym, e)                        
@@ -370,13 +370,13 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                             if limits:
                                 return self.func(function, *limits)
                             return function
-                    if s == self.function or s.dummy_eq(self.function):  # s.invert() | self.function
+                    if s == self.expr or s.dummy_eq(self.expr):  # s.invert() | self.expr
                         return S.BooleanTrue
 
         return ExprWithLimits.simplify(self, deep=deep)
 
     def doit(self, **hints):
-        function = self.function.doit(**hints)
+        function = self.expr.doit(**hints)
         limits = []
         for i in range(len(self.limits) - 1, -1, -1):
             limit = self.limits[i]            
@@ -418,7 +418,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
         from sympy.printing.pretty.stringpict import prettyForm, stringPict                    
         prettyFunc = p._print("%s[%s]" % (func,
                                           ','.join([limit._format_ineq(p) for limit in self.limits])))
-        prettyArgs = prettyForm(*p._print_seq([self.function], delimiter=', ').parens())
+        prettyArgs = prettyForm(*p._print_seq([self.expr], delimiter=', ').parens())
         
         pform = prettyForm(binding=prettyForm.FUNC, *stringPict.next(prettyFunc, prettyArgs))
 
@@ -447,5 +447,126 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             
         return free_symbols                    
 
+    def detect_previous_dependence(self, i, x):
+        for j in range(i - 1, -1, -1):
+            limit = self.limits[j]
+            t, *ab = limit
+            if t == x:
+                if len(ab) == 2:
+                    a, b = ab
+                    if b._has(x) or not b.is_set and a._has(x):
+                        return True
+                                                                
+                elif len(ab) == 1:
+                    [cond] = ab
+                    if not cond.is_boolean and cond._has(x):
+                        return True
+                break
+            
+            if limit._has(x):
+                return True
+        
+    def subs_with_independent_variable(self, i, x, y):
+        limits = [*self.limits]  
+        for j in range(i - 1, -1, -1):
+            t, *ab = self.limits[j]
+            if t == x:
+                if len(ab) == 2:
+                    a, b = ab
+                    b = b._subs(x, y)
+                    if not b.is_set:
+                        a = a._subs(x, y)
+                    # else:
+                        # t is controled by conditionset or imageset!
+                    limits[j] = (t, a, b)                                        
+                elif len(ab) == 1:
+                    [cond] = ab
+                    if not cond.is_boolean:
+                        cond = cond._subs(x, y)
+                        limits[j] = (t, cond)
+
+                break
+            t = t._subs(x, y)
+            limits[j] = (t, *(c._subs(x, y) for c in ab))
+            
+        del limits[i]
+        return self.func(self.expr, *limits).simplify()
+        
+
+    def delete_independent_variables(self):
+        limits_dict = self.limits_dict
+        function = self.expr
+        for i, x in enumerate(self.variables):
+            if function._has(x):
+                continue
+            
+            cond = limits_dict[x]
+            if isinstance(cond, list):
+                if cond:
+                    cond, baseset = cond
+                    if self.detect_previous_dependence(i, x):
+                        continue
+                    
+                    limits = [*self.limits]
+                    del limits[i]
+                    if cond.is_boolean:
+                        # conditionset
+                        cond = self.reduced_cond(x, cond, baseset)
+                    else:
+                        # imageset
+                        cond = self.reduced_cond(x, baseset)
+                        
+                    if limits:
+                        expr = self.func(self.expr, *limits).simplify()
+                    else:
+                        expr = self.expr
+                    return self.invert_type.operator(cond, expr)
+
+                if self.detect_previous_dependence(i, x):
+                    continue
+                
+                limits = [*self.limits]
+                del limits[i]
+                if limits:
+                    return self.func(self.expr, *limits).simplify()
+                else:
+                    return self.expr.simplify()
+                    
+            if cond.is_boolean:
+                if cond.is_Equal and x in cond.args:
+                    y = cond.rhs if x == cond.lhs else cond.lhs
+                    return self.subs_with_independent_variable(i, x, y)
+                if cond.is_Contains and cond.lhs == x and cond.rhs.is_FiniteSet and len(cond.rhs) == 1:
+                    [y] = cond.rhs.args
+                    return self.subs_with_independent_variable(i, x, y)
+                
+                if self.detect_previous_dependence(i, x):
+                    continue
+                
+                limits = [*self.limits]
+                del limits[i]          
+                cond = self.reduced_cond(x, cond)
+                if limits:
+                    expr = self.func(self.expr, *limits).simplify()
+                else:
+                    expr = self.expr
+                return self.invert_type.operator(cond, expr)
+            
+            if cond.is_FiniteSet and len(cond) == 1: 
+                [y] = cond.args
+                return self.subs_with_independent_variable(i, x, y)
+            
+            if self.detect_previous_dependence(i, x):
+                continue
+            
+            limits = [*self.limits]
+            del limits[i]                        
+            cond = self.reduced_cond(x, cond)
+            if limits:
+                expr = self.func(self.expr, *limits).simplify()
+            else:
+                expr = self.expr
+            return self.invert_type.operator(cond, expr)
+                    
 
 from sympy.concrete.limits import *

@@ -12,22 +12,26 @@ from sympy.matrices.matrices import MatrixBase
 from sympy.core.logic import fuzzy_and
 
 
-class MatMul(MatrixExpr):
-    precedence = 45
+class MatMul(MatrixExpr):    
     """
     A product of matrix expressions
 
     Examples
     ========
 
-    >>> from sympy import MatMul, MatrixSymbol
-    >>> A = MatrixSymbol('A', 5, 4)
-    >>> B = MatrixSymbol('B', 4, 3)
-    >>> C = MatrixSymbol('C', 3, 6)
-    >>> MatMul(A, B, C)
-    A*B*C
+    >>> m = 2
+    >>> n = 2    
+    >>> a = Symbol.a(real=True, shape=(m, n))
+    >>> m1 = Matrix([[a[i, j] for j in range(n)] for i in range(m)])
+    >>> m1
+    >>> l = 2
+    >>> b = Symbol.b(real=True, shape=(n, l))
+    >>> m2 = Matrix([[b[i, j] for j in range(l)] for i in range(n)])
+    >>> m2
+    >>> discrete.matmul.to.matrix.apply(MatMul(m1, m2))    
     """
 
+    precedence = 45
     identity = GenericIdentity()
 
     def __new__(cls, *args, **kwargs):

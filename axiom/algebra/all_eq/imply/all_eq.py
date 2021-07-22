@@ -34,7 +34,7 @@ def prove(Eq):
     f = Function.f(shape=())
     Eq << apply(All[n:a:oo](Equal(f(n + 1), f(n))))
 
-    Eq << Eq[0].this.function - Eq[0].rhs
+    Eq << Eq[0].this.expr - Eq[0].rhs
 
     _n = Symbol.n(domain=Range(a, oo))
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[-1], Range(a, _n))

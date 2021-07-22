@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], _n)
 
-    Eq << Eq[-1].this.function.apply(algebra.gt.imply.ge.relax)
+    Eq << Eq[-1].this.expr.apply(algebra.gt.imply.ge.relax)
 
     Eq << algebra.suffice.given.all.apply(Eq.case2)
 

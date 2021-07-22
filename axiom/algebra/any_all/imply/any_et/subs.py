@@ -8,9 +8,7 @@ def apply(given, old, new):
     limits_f_dict = limits_dict(limits_f)
 
     domain = limits_f_dict[old]
-    if domain == []:
-        ...
-    else:
+    if domain:
         assert new in domain
 
     return Any(All(function._subs(old, new) & function, *limits_f), *limits_e)
@@ -29,9 +27,11 @@ def prove(Eq):
     f = Function.f(integer=True)
     Eq << apply(Any[C](All[x:A](f(x, C) > 0)), x, x0)
 
-    Eq << Eq[-1].this.function.apply(algebra.all_et.given.et.all)
+    Eq << Eq[-1].this.expr.apply(algebra.all_et.given.et.all)
 
-    Eq << Eq[0].this.function.apply(algebra.cond.imply.et.invoke, algebra.all.imply.cond.subs, x, x0)
+    Eq << Eq[-1].this.find(Or).apply(algebra.ou.given.cond, 1)
+
+    Eq << Eq[0].this.expr.apply(algebra.cond.imply.et.invoke, algebra.all.imply.cond.subs, x, x0)
 
 
 if __name__ == '__main__':

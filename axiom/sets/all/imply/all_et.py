@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
 
 
 if __name__ == '__main__':

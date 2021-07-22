@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(All[x:A](Contains(x, B)))
 
-    Eq << Eq[0].this.function.apply(sets.contains.imply.subset, simplify=False)
+    Eq << Eq[0].this.expr.apply(sets.contains.imply.subset, simplify=False)
 
     Eq << Eq[-1].apply(sets.all_subset.imply.subset.cup.lhs)
 

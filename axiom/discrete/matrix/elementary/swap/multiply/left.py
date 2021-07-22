@@ -34,12 +34,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.function.args[-1].expr.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[-1].expr.apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs().function.simplify()
+    Eq << Eq[-1].this.rhs().expr.simplify()
     
     k = Eq[-1].rhs.variable
-    Eq << Eq[-1].this.rhs.function.simplify(wrt=k)
+    Eq << Eq[-1].this.rhs.expr.simplify(wrt=k)
 
 
 if __name__ == '__main__':

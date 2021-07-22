@@ -61,7 +61,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[0].simplify()
 
-    Eq <<= Eq[-1] & Eq[1]
+    Eq <<= Eq[-1] & Eq[0]
 
     Eq << ~Eq.all_s
 

@@ -26,22 +26,22 @@ def prove(Eq):
 
     Eq << sets.any_contains.imply.any_contains.limits_restricted.apply(Eq[-1], simplify=False)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.eq.union)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.eq.union)
 
     i = Eq[-1].variable
-    Eq << Eq[-1].this.function.apply(algebra.eq.imply.eq.abs)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.imply.eq.abs)
 
     Eq << sets.imply.eq.principle.addition.apply(S, i.set)
 
     Eq << Eq[-2].subs(Eq[-1])
 
-    Eq << Eq[-1].this.function - 1
+    Eq << Eq[-1].this.expr - 1
 
     Eq << Eq[0] - 1
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq[-2].reversed, Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(sets.ge.imply.is_nonemptyset, simplify=False)
+    Eq << Eq[-1].this.expr.apply(sets.ge.imply.is_nonemptyset, simplify=False)
 
     i, j = Eq[1].variables
     Eq << Any[i:S, j:S](Contains(j, Eq[-1].lhs), plausible=True)

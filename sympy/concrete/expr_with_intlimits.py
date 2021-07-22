@@ -127,7 +127,7 @@ class ExprWithIntLimits(ExprWithLimits):
             else:
                 limits.append(limit)
 
-        function = self.function.subs(var, (var - beta) / alpha)
+        function = self.expr.subs(var, (var - beta) / alpha)
         function = function.subs(var, newvar)
 
         return self.func(function, *limits)
@@ -281,7 +281,7 @@ class ExprWithIntLimits(ExprWithLimits):
                 else:
                     limits.append(limit)
 
-            return type(expr)(expr.function, *limits)
+            return type(expr)(expr.expr, *limits)
         else:
             raise ReorderError(expr, "could not interchange the two limits specified")
 
@@ -343,9 +343,9 @@ class ExprWithIntLimits(ExprWithLimits):
             else:
                 tex += r"\limits_{\substack{%s}} " % str.join('\\\\', [_format_ineq(l) for l in self.limits])
 
-        if self.function.is_Add:
-            tex += r"\left(%s\right)" % p._print(self.function)
+        if self.expr.is_Add:
+            tex += r"\left(%s\right)" % p._print(self.expr)
         else:
-            tex += p._print(self.function)
+            tex += p._print(self.expr)
 
         return tex

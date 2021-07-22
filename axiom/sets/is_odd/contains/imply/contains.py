@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[1], Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.et.imply.et.subs)
+    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.subs)
 
     Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.sub, 1, simplify=None)
 

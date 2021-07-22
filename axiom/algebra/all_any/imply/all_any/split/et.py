@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << apply(All[x:0:a](Any[y:0:b]((g(x, y, z) <= 1) & (f(x, y, z) >= 1))), index=0)
 
-    Eq << Eq[0].this.function.function.apply(algebra.et.imply.cond, index=0)
+    Eq << Eq[0].this.expr.expr.apply(algebra.et.imply.cond, index=0)
 
 
 if __name__ == '__main__':

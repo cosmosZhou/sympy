@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-1].simplify()
 
-    Eq << Eq[-1].this.function.apply(sets.contains.subset.imply.contains, Eq[0])
+    Eq << Eq[-1].this.expr.apply(sets.contains.subset.imply.contains, Eq[0])
 
 
 if __name__ == '__main__':

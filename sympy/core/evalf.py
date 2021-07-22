@@ -1180,7 +1180,7 @@ def evalf_sum(expr, prec, options):
     from sympy import Float
     if 'subs' in options:
         expr = expr.subs(options['subs'])
-    func = expr.function
+    func = expr.expr
     limits = expr.limits
     if len(limits) != 1 or len(limits[0]) != 3:
         raise NotImplementedError
@@ -1533,7 +1533,7 @@ def N(x, n=15, **options):
     ========
 
     >>> from sympy import Sum, oo, N
-    >>> from sympy.abc import k
+    >>> k = Symbol.k(integer=True)
     >>> Sum(1/k**k, (k, 1, oo))
     Sum(k**(-k), (k, 1, oo))
     >>> N(_, 4)

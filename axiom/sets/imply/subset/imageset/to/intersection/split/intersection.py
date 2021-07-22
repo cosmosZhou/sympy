@@ -10,22 +10,18 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(integer=True, positive=True)
     m = Symbol.m(integer=True, positive=True)
-
     x = Symbol.x(complex=True, shape=(n,))
     f = Function.f(complex=True, shape=(m,))
-
     A = Symbol.A(etype=dtype.complex * n)
     B = Symbol.B(etype=dtype.complex * n)
-
     Eq << apply(imageset(x, f(x), A & B))
 
     y = Symbol.y(complex=True, shape=(m,))
-
     S = Symbol.S(Eq[0].lhs)
     S_quote = Symbol("S'", Eq[0].rhs)
-
     Eq.suffice = Suffice(Contains(y, S), Contains(y, S_quote), plausible=True)
 
     Eq << Eq.suffice.this.lhs.rhs.definition
@@ -38,7 +34,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq <<= Eq[-2].this.rhs.rhs.split(B), Eq[-1].this.rhs.rhs.split(A)
+    Eq <<= Eq[-2].this.rhs.rhs.apply(sets.cup.to.union.split, cond=B), Eq[-1].this.rhs.rhs.apply(sets.cup.to.union.split, cond=A)
 
     Eq <<= Eq[-2].this.rhs.apply(sets.contains.given.ou.split.union, simplify=False), Eq[-1].this.rhs.apply(sets.contains.given.ou.split.union, simplify=False)
 

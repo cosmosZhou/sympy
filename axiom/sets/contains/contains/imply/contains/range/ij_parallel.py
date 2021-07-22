@@ -34,9 +34,9 @@ def prove(Eq):
 
     Eq.ge, Eq.lt = sets.contains.imply.et.split.range.apply(Eq[0])
 
-    Eq << Eq.ge.this.apply(algebra.ge.transposition, index=0, right=True)
+    Eq << Eq.ge.this.apply(algebra.ge.transposition, rhs=0)
 
-    Eq << Eq.lt.this.apply(algebra.lt.transposition, right=True)
+    Eq << Eq.lt.this.apply(algebra.lt.transposition, rhs=-1)
 
     Eq << sets.lt.ge.imply.contains.range.apply(Eq[-1], Eq[-2])
 
@@ -47,6 +47,7 @@ def prove(Eq):
     Eq <<= algebra.ge.ge.imply.ge.transit.apply(Eq.ge, Eq[-2] + d), algebra.lt.imply.le.strengthen.apply(Eq[-1])
 
     Eq << algebra.lt.le.imply.lt.transit.apply(Eq.lt, Eq[-1] + n)
+
     Eq << sets.lt.ge.imply.contains.range.apply(Eq[-1], Eq[-3])
 
 

@@ -45,9 +45,9 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq << Eq[-1].this().function.simplify()
+    Eq << Eq[-1].this().expr.simplify()
 
-    Eq << Eq[-2].this().function.simplify()
+    Eq << Eq[-2].this().expr.simplify()
 
     Eq << Eq[-1].subs(Eq[0])
 

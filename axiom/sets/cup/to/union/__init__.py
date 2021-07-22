@@ -36,8 +36,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.rhs.apply(algebra.ou.given.any_ou), \
     Eq[-1].this.lhs.apply(algebra.ou.imply.any_ou)
 
-    Eq <<= Eq[-2].this.rhs.function.apply(sets.ou.given.contains), \
-    Eq[-1].this.lhs.function.apply(sets.ou.imply.contains)
+    Eq <<= Eq[-2].this.rhs.expr.apply(sets.ou.given.contains), \
+    Eq[-1].this.lhs.expr.apply(sets.ou.imply.contains)
 
     Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.any_contains.st.cup), \
     Eq[-1].this.rhs.apply(sets.contains.given.any_contains.st.cup)

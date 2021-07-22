@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.find(Log).apply(algebra.log.to.add, pivot=2)
 
-    Eq << Eq[-1].this.lhs.function.apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.mul.to.add)
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add)
 

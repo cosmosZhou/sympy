@@ -8,7 +8,7 @@ def apply(self):
             args = [*self.args]
             del args[i]
             this = self.func(*args)
-            function = union.function & this
+            function = union.expr & this
             return Equal(self, union.func(function, *union.limits), evaluate=False)
 
 

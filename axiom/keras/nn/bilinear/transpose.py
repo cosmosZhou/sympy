@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
-    Eq.expansion = Eq[-1].this.rhs.function.apply(algebra.mul.to.sum)
+    Eq.expansion = Eq[-1].this.rhs.expr.apply(algebra.mul.to.sum)
 
     Eq << Eq.expansion.subs(W, W.T)
 

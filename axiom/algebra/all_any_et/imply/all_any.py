@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.find(All).apply(algebra.all_et.imply.et.all)
 
-    Eq << Eq[-1].this.function.apply(algebra.any_et.imply.et.any)
+    Eq << Eq[-1].this.expr.apply(algebra.any_et.imply.et.any)
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1], index=0)
 

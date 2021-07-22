@@ -34,29 +34,29 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs().function.args[1].args[0].args[-1].args[1].args[0].cond.simplify()
+    Eq << Eq[-1].this.rhs().expr.args[1].args[0].args[-1].args[1].args[0].cond.simplify()
 
-    Eq << Eq[-1].this.rhs().function.args[-1].args[0].cond.simplify()
+    Eq << Eq[-1].this.rhs().expr.args[-1].args[0].cond.simplify()
 
-    Eq << Eq[-1].this.rhs.args[1].function.apply(algebra.piecewise.to.kroneckerDelta)
+    Eq << Eq[-1].this.rhs.args[1].expr.apply(algebra.piecewise.to.kroneckerDelta)
 
-    Eq << Eq[-1].this.rhs.args[1].function.expand()
+    Eq << Eq[-1].this.rhs.args[1].expr.expand()
 
-    Eq << Eq[-1].this.rhs.args[1].function.simplify()
+    Eq << Eq[-1].this.rhs.args[1].expr.simplify()
 
     Eq << (Eq[-1] @ w_quote[i, j]).this.rhs.subs(Eq[1])
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs().function.args[1].args[0].args[-1].args[1].args[0].cond.simplify()
+    Eq << Eq[-1].this.rhs().expr.args[1].args[0].args[-1].args[1].args[0].cond.simplify()
 
-    Eq << Eq[-1].this.rhs().function.args[-1].args[0].cond.simplify()
+    Eq << Eq[-1].this.rhs().expr.args[-1].args[0].cond.simplify()
 
-    Eq << Eq[-1].this.rhs.args[1].function.apply(algebra.piecewise.to.kroneckerDelta)
+    Eq << Eq[-1].this.rhs.args[1].expr.apply(algebra.piecewise.to.kroneckerDelta)
 
-    Eq << Eq[-1].this.rhs.args[1].function.expand()
+    Eq << Eq[-1].this.rhs.args[1].expr.expand()
 
-    Eq << Eq[-1].this.rhs.args[1].function.simplify()
+    Eq << Eq[-1].this.rhs.args[1].expr.simplify()
 
 
 if __name__ == '__main__':

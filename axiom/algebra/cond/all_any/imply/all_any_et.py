@@ -20,7 +20,7 @@ def prove(Eq):
     g = Function.g(shape=(), integer=True)
     Eq << apply(f(x, y) > 0, All[y:B](Any[x:A]((g(x, y) > 0))))
 
-    Eq << Eq[-1].this.function.apply(algebra.any_et.given.et, index=0)
+    Eq << Eq[-1].this.expr.apply(algebra.any_et.given.et, index=0)
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 

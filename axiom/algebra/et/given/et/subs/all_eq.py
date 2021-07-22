@@ -9,12 +9,12 @@ def apply(imply, simplify=True):
     limits = tuple(limits)
 
     for expr in cond.findall(ExprWithLimits):
-        if expr.function._has(old) and expr.limits == limits:
+        if expr.expr._has(old) and expr.limits == limits:
             break
     else:
         return
 
-    function = expr.function._subs(old, new)
+    function = expr.expr._subs(old, new)
     if simplify:
         function = function.simplify()
 

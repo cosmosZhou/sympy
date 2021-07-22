@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.args[1].function.expand()
+    Eq << Eq[-1].this.rhs.args[1].expr.expand()
 
 
 if __name__ == '__main__':

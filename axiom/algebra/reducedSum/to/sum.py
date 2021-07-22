@@ -2,8 +2,10 @@ from util import *
 
 
 @apply
-def apply(self):
-    i = self.arg.generate_var(integer=True)
+def apply(self, i=None):
+    if i is None:
+        i = self.arg.generate_var(integer=True)
+    
     [n] = self.arg.shape
     rhs = Sum[i:n](self.arg[i])    
         

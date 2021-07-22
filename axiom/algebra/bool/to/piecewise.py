@@ -13,8 +13,6 @@ def prove(Eq):
     y = Symbol.y(real=True)
     Eq << apply(Bool(x > y))
 
-    
-
 
 if __name__ == '__main__':
     run()

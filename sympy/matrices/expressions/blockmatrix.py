@@ -14,6 +14,30 @@ from sympy.core.logic import _fuzzy_group
 
 
 class BlockMatrix(MatrixExpr): 
+    """
+    Represents a block matrix.
+    Examples
+    ========
+
+    >>> n = Symbol.n(integer=True, positive=True)
+    >>> A = Symbol.A(shape=(n, n), real=True)
+    >>> B = Symbol.B(shape=(n, n), real=True)
+    >>> C = Symbol.C(shape=(n, n), real=True)
+    >>> D = Symbol.D(shape=(n, n), real=True)
+    >>> block1 = BlockMatrix([[A, B], [C, D]])
+    >>> block1
+    [[A, B], [C, D]]
+    >>> _A = Symbol("A'", shape=(n, n), real=True)
+    >>> _B = Symbol("B'", shape=(n, n), real=True)
+    >>> _C = Symbol("C'", shape=(n, n), real=True)
+    >>> _D = Symbol("D'", shape=(n, n), real=True)
+    >>> block2 = BlockMatrix([[_A, _C], [_B, _D]])
+    >>> block2
+    [[A, B], [C, D]]
+    >>> discrete.matmul.to.blockMatrix.apply(block1 @ block2, deep=True)
+    
+    
+    """
 
     @property
     def dtype(self):

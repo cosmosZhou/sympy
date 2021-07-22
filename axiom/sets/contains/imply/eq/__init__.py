@@ -4,3 +4,4 @@ from . import intersection
 
 from . import kroneckerDelta
 from . import piecewise
+from . import abs

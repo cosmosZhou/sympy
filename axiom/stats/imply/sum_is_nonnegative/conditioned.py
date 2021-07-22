@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << algebra.ge.imply.ge.sum.apply(Eq[-1], (y,))
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.add)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
     Eq << Eq[-1].this.rhs.args[0].apply(stats.sum.to.one.conditioned)

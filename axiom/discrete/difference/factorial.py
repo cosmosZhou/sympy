@@ -30,15 +30,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.expr.doit()
 
-    Eq << discrete.combinatorics.binomial.theorem.apply(x, 1, n + 1) - x ** (n + 1)
+    Eq << discrete.pow.to.sum.binomial.theorem.apply(x, 1, n + 1) - x ** (n + 1)
 
-    Eq << Eq[-1].this.rhs.args[1].split(slice(-1))
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum.to.add.pop_back)
 
     Eq << Eq[-3].subs(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(discrete.difference.to.sum)
 
-    Eq << Eq[-1].this.lhs.split(n.set)
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond=n.set)
 
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
 

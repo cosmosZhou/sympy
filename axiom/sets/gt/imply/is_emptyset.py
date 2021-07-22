@@ -20,9 +20,9 @@ def prove(Eq):
 
     Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.et.split.interval)
 
-    Eq << Eq[-1].this.function.apply(algebra.le.ge.imply.le.transit)
+    Eq << Eq[-1].this.expr.apply(algebra.le.ge.imply.le.transit)
 
     Eq << ~Eq[-1]
 

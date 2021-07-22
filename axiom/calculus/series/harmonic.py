@@ -28,16 +28,16 @@ def prove(Eq):
 
     Eq << algebra.imply.all.limits_assert.apply(Eq[-1].limits)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.contains.interval.inverse)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.contains.interval.inverse)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.et.split.interval)
 
     Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 
     Eq <<= algebra.all.any.imply.any_et.apply(Eq[-2], Eq.mean_value_theorem), algebra.all.any.imply.any_et.apply(Eq[-1], Eq.mean_value_theorem)
 
-    Eq <<= Eq[-2].this.function.apply(algebra.eq.cond.imply.cond.subs, reverse=True), \
-    Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
+    Eq <<= Eq[-2].this.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True), \
+    Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
     Eq <<= Eq[-2].apply(algebra.cond.imply.all.restrict, (k, 1, n)), Eq[-1].apply(algebra.cond.imply.all.restrict, (k, 1, n - 1))
 

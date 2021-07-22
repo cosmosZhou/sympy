@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << sets.eq.imply.eq.cup.apply(Eq[-1], (k, x[k] > a[i], Range(0, n)))
 
-    Eq << Eq[-1].this.lhs.function.definition
+    Eq << Eq[-1].this.lhs.expr.definition
 
     Eq << Eq[-1].reversed
 

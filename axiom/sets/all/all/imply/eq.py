@@ -36,11 +36,11 @@ def prove(Eq):
 
     Eq << All[x:A](Contains(x, B), plausible=True)
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << All[x:B](Contains(x, A), plausible=True)
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << sets.all_contains.all_contains.imply.eq.apply(Eq[-2], Eq[-1])
 

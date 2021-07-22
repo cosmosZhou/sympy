@@ -17,12 +17,11 @@ def apply(given, n=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     n = Symbol.n(integer=True, positive=True, given=False)
-
     x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-
     Eq << apply(All[j:i](Equal(x[i] & x[j], x[i].etype.emptySet)), n=n)
 
     Eq << Eq[0].subs(i, 1)
@@ -31,7 +30,7 @@ def prove(Eq):
 
     Eq.induct = Eq[1].subs(n, n + 1)
 
-    Eq << Eq.induct.lhs.arg.this.split({n})
+    Eq << Eq.induct.lhs.arg.this.apply(sets.cup.to.union.split, cond={n})
 
     Eq << sets.imply.eq.principle.inclusion_exclusion.basic.apply(*Eq[-1].rhs.args)
 
@@ -43,7 +42,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[1])
 
-    Eq << Eq.induct.rhs.this.split({n})
+    Eq << Eq.induct.rhs.this.apply(algebra.sum.to.add.split, cond={n})
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 

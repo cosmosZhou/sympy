@@ -89,7 +89,7 @@ class ReducedSum(Function):
     def simplify(self, deep=False, **kwargs):
         if self.arg.is_Lamda:
             if len(self.arg.limits) == 1 and not self.arg.variable.shape:
-                function = self.arg.function
+                function = self.arg.expr
                 self = Sum(function, *self.arg.limits).simplify(**kwargs)
         elif self.arg.is_Piecewise:
             self = self.arg.func(*((self.func(e).simplify(), c) for e, c in self.arg.args)).simplify()
@@ -195,7 +195,7 @@ class ReducedMin(Function):
     def simplify(self, deep=False, **kwargs):
         if self.arg.is_Lamda:
             if len(self.arg.limits) == 1 and not self.arg.variable.shape:
-                function = self.arg.function
+                function = self.arg.expr
                 from sympy import Minimize
                 self = Minimize(function, *self.arg.limits).simplify(**kwargs)
         elif self.arg.is_Piecewise:
@@ -302,7 +302,7 @@ class ReducedMax(Function):
     def simplify(self, deep=False, **kwargs):
         if self.arg.is_Lamda:
             if len(self.arg.limits) == 1 and not self.arg.variable.shape:
-                function = self.arg.function
+                function = self.arg.expr
                 from sympy import Maximize
                 self = Maximize(function, *self.arg.limits).simplify(**kwargs)
         elif self.arg.is_Piecewise:

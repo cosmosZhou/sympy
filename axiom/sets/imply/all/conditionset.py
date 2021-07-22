@@ -21,7 +21,7 @@ def prove(Eq):
     
     Eq << Eq[-1].simplify()
     
-    Eq << Eq[-1].this.function.subs(Eq[0])
+    Eq << Eq[-1].this.expr.subs(Eq[0])
     
 
 if __name__ == '__main__':

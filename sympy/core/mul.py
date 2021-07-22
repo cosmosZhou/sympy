@@ -2168,9 +2168,9 @@ class Mul(Expr, AssocOp):
             for j in range(i + 1, len(positive)):
                 if not positive[i].is_Product or not positive[j].is_Product:
                     continue
-                if positive[i].function == positive[j].function:
+                if positive[i].expr == positive[j].expr:
                     limits = positive[i].limits_union(positive[j])
-                    positive[i] = positive[i].func(positive[i].function, *limits)
+                    positive[i] = positive[i].func(positive[i].expr, *limits)
                     del positive[j]
                     return True
 

@@ -52,3 +52,7 @@ from . import eq_sum
 from . import is_nonnegative
 from . import is_nonpositive
 from . import intersection_is_emptyset
+from . import abs_is_positive
+from . import eq_abs
+from . import eq_cup
+from . import le_abs

@@ -42,13 +42,13 @@ def prove(Eq):
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq[-3])
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.lt.imply.lt.abs.add)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.lt.imply.lt.abs.add)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[1].simplify()
+    Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
     δ = Symbol.δ(real=True, positive=True)
 

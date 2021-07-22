@@ -1,10 +1,9 @@
-
 from util import *
-# given : A & B = A | B => A = B
 
 
 @apply
 def apply(given, S):
+    # given : A & B = A | B => A = B
     A, B = given.of(Equal)
     return Equal(A & S, B & S)
 

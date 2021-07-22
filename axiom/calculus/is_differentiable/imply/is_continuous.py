@@ -31,7 +31,7 @@ def prove(Eq):
     Eq << apply(is_differentiable(f, a, b, open=False))
 
     xi = Symbol.xi(domain=Interval(a, b))
-    Eq << Contains(Subs(Eq[0].function.lhs, x, xi), Eq[0].function.rhs, plausible=True)
+    Eq << Contains(Subs(Eq[0].expr.lhs, x, xi), Eq[0].expr.rhs, plausible=True)
 
     Eq << Eq[-1].this.lhs.simplify()
 

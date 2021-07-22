@@ -19,7 +19,7 @@ def prove(Eq):
     
     Eq << apply(All[x:A](Any[y:B](f(x, y) > 0)))  
     
-    Eq << Eq[1].this.function.simplify()    
+    Eq << Eq[1].this.expr.simplify()    
 
 
 if __name__ == '__main__':

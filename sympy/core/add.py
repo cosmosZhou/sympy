@@ -1214,7 +1214,7 @@ class Add(Expr, AssocOp):
             return self
         
         return self.func(*matrix) + self.func(*scalar)
-
+    
     def simplify_OneMatrix(self): 
         max_len = self.max_len_shape()
         
@@ -1236,8 +1236,8 @@ class Add(Expr, AssocOp):
         for arg in self.args:
 
             if isinstance(arg, Sum):
-                if arg.function._coeff_isneg():
-                    arg = arg.func(-arg.function, *arg.limits)
+                if arg.expr._coeff_isneg():
+                    arg = arg.func(-arg.expr, *arg.limits)
                     key = S.NegativeOne
                 else:
                     key = S.One                    
@@ -1292,11 +1292,11 @@ class Add(Expr, AssocOp):
                 t = pos.limits[0][0]
                 if t.shape:
                     continue
-                pattern = pos.function._subs(t, Wild(t.name, **t.assumptions0), symbol=False)
+                pattern = pos.expr._subs(t, Wild(t.name, **t.assumptions0), symbol=False)
                 for i, neg in enumerate(negative):
                     if not (len(pos.limits) == len(neg.limits) == 1 and len(pos.limits[0]) == len(neg.limits[0]) == 3):
                         continue
-                    res = neg.function.match(pattern)
+                    res = neg.expr.match(pattern)
                     if not res:
                         continue
 
@@ -1316,7 +1316,7 @@ class Add(Expr, AssocOp):
                         else:
                             continue
                     
-                    neg = Sum[t:a:b](pos.function)
+                    neg = Sum[t:a:b](pos.expr)
                     
                     try_sub = pos.try_sub(neg)
                     if try_sub is not None:
@@ -1343,7 +1343,7 @@ class Add(Expr, AssocOp):
             for j in range(i + 1, len(positive)):
                 if not positive[i].is_Sum or not positive[j].is_Sum:
                     continue
-                if positive[i].function == positive[j].function:
+                if positive[i].expr == positive[j].expr:
                     limits = positive[i].limits_intersect(positive[j])
                     if not limits_empty(limits):
                         if positive[i].limits == positive[j].limits:
@@ -1352,7 +1352,7 @@ class Add(Expr, AssocOp):
                             return True                            
                         continue
                     limits = positive[i].limits_union(positive[j])
-                    positive[i] = positive[i].func(positive[i].function, *limits)
+                    positive[i] = positive[i].func(positive[i].expr, *limits)
                     del positive[j]
                     return True
 

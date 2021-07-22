@@ -50,23 +50,23 @@ def prove(Eq):
 
     Eq << Eq.y_definition.apply(algebra.cond.imply.all.restrict, (i, 0, n))
 
-    Eq.yi_definition = Eq[-1].this().function.rhs.simplify()
+    Eq.yi_definition = Eq[-1].this().expr.rhs.simplify()
 
     Eq << Eq.yi_definition.reversed
 
     Eq << algebra.all.all.imply.all_et.apply(Eq[0], Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
 
     Eq << algebra.all.all.imply.all_et.apply(Eq[-1], Eq[-3].limits_subs(i, j), simplify=None)
 
-    Eq.nonoverlapping = Eq[-1].this.function.apply(algebra.eq.cond.imply.cond.subs)
+    Eq.nonoverlapping = Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
 
     Eq << Eq.y_definition.apply(algebra.cond.imply.all.restrict, (i, n, oo))
 
-    Eq << Eq[-1].this().function.rhs.simplify()
+    Eq << Eq[-1].this().expr.rhs.simplify()
 
-    Eq << Eq[-1].this.function.apply(sets.eq.imply.eq.intersection, y[j])
+    Eq << Eq[-1].this.expr.apply(sets.eq.imply.eq.intersection, y[j])
 
     Eq << Eq[-1].apply(algebra.cond.imply.all.restrict, (j, j_domain))
 

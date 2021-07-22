@@ -9,7 +9,8 @@ def apply(x):
 
 @prove
 def prove(Eq):
-    from axiom import geometry, calculus, sets, algebra
+    from axiom import calculus, algebra, sets, geometry
+
     x = Symbol.x(real=True)
     Eq << apply(x)
 
@@ -17,8 +18,7 @@ def prove(Eq):
     Eq << calculus.series.maclaurin.exp.apply(i * x)
 
     n = Eq[-1].rhs.variable
-
-    Eq << Eq[-1].this.rhs.split(Equal(n % 2, 0))
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond=Equal(n % 2, 0))
 
     Eq << Eq[-1].this.rhs.args[0].limits[0][1].apply(sets.complement.to.conditionset.is_odd)
 
@@ -26,9 +26,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[0].apply(algebra.sum.odd)
 
-    Eq << Eq[-1].this.rhs.args[0].function.expand()
+    Eq << Eq[-1].this.rhs.args[0].expr.expand()
 
-    Eq.expand = Eq[-1].this.rhs.args[0].function.expand()
+    Eq.expand = Eq[-1].this.rhs.args[0].expr.expand()
 
     Eq << geometry.cos.to.sum.apply(cos(x))
 
@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << Eq[-2] + i * Eq[-1]
 
-    Eq << Eq[-1].this.rhs.args[0].args[1].function.expand()
+    Eq << Eq[-1].this.rhs.args[0].args[1].expr.expand()
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.expand, Eq[-1])
 

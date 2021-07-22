@@ -71,7 +71,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.all.given.et, cond={n})
 
-    Eq << Eq[-1].this.find(All)().function.simplify()
+    Eq << Eq[-1].this.find(All)().expr.simplify()
 
     Eq << Eq[-1].this.find(Greater).apply(algebra.is_positive.given.is_positive.split.add)
 

@@ -8,7 +8,7 @@ def apply(self):
     return Equal(self, Sum[n:a // 2:b // 2](function._subs(n, 2 * n + 1)))
 
 
-@prove(proved=False)
+@prove
 def prove(Eq):
     from axiom import algebra, sets
 
@@ -26,6 +26,7 @@ def prove(Eq):
     Eq << algebra.sum.bool.apply(Sum[n:S](f[n]))
 
     Eq << Eq[-1].this.lhs.limits[0][1].definition
+
     Eq << Eq[-1].this.lhs.apply(algebra.sum.imageset)
 
     Eq << Eq[1].subs(Eq[-1])

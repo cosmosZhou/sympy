@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq[-1].simplify()
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
 
 if __name__ == '__main__':

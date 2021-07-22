@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << ~Eq[1]
 
-    Eq << Eq[-1].this.function.apply(sets.ne.imply.notcontains)
+    Eq << Eq[-1].this.expr.apply(sets.ne.imply.notcontains)
 
     Eq << sets.all_notcontains.imply.notcontains.apply(Eq[-1])
 

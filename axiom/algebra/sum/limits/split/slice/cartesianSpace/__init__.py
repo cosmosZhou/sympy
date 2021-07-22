@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.find(All).limits_subs(j, j - i)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.split.slice)
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.split.slice.pop_front)
 
 
 if __name__ == '__main__':

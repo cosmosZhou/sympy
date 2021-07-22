@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(All[i:n](GreaterEqual(f(i), g(i))))
 
-    Eq << algebra.imply.suffice.ge.induct.sum.apply(Eq[0].function, (i, 0, n))
+    Eq << algebra.imply.suffice.ge.induct.sum.apply(Eq[0].expr, (i, 0, n))
 
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
 

@@ -18,13 +18,13 @@ def prove(Eq):
 
     Eq << Symbol.L(Eq[0].lhs.arg).this.definition
 
-    shift = Eq[-1].rhs.function.args[0].base
+    shift = Eq[-1].rhs.expr.args[0].base
     Eq.L_definition = Eq[-1].this.rhs.doit()
 
     Eq << (shift @ A).this.apply(discrete.matmul.to.lamda)
 
-    #Eq << Eq[-1].this.rhs.function.apply(algebra.piecewise.flatten, index=1)
-    #Eq << Eq[-1].this.rhs.function.args[1].cond.args[0].apply(sets.contains.imply.contains.interval.substract, 1)
+    #Eq << Eq[-1].this.rhs.expr.apply(algebra.piecewise.flatten, index=1)
+    #Eq << Eq[-1].this.rhs.expr.args[1].cond.args[0].apply(sets.contains.imply.contains.interval.substract, 1)
     Eq << Eq[-1].this.rhs.doit()
 
     Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], shift)

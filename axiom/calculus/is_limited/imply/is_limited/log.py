@@ -23,7 +23,7 @@ def prove(Eq):
     delta0 = Symbol.delta0(positive=True)
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], epsilon0, delta0, var='A')
 
-    A = Eq[-1].function.function.find(Add[-~Symbol])
+    A = Eq[-1].expr.expr.find(Add[-~Symbol])
     Eq.is_limited = A.this.definition.reversed
 
     Eq << Eq[0].subs(Eq.is_limited)

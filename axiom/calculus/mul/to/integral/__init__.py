@@ -22,7 +22,7 @@ def apply(self):
                     sgm = sgm.limits_subs(v, _v)
                     excludes.add(_v)                        
                     
-            args[i] = sgm.function
+            args[i] = sgm.expr
             function = self.func(*args).powsimp()
             return Equal(self, Integral(function, *sgm.limits))
 

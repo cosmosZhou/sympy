@@ -33,13 +33,13 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.find(Sum).split({n})
+    Eq << Eq.induct.this.find(Sum).apply(algebra.sum.to.add.split, cond={n})
 
     Eq << Eq[-1].this.lhs.expand()
 
-    Eq << Eq[-1].this.rhs.find(Sum).split({n})
+    Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum.to.add.split, cond={n})
 
-    Eq << Eq[-1].this.rhs.find(Number * ~Sum).split({n})
+    Eq << Eq[-1].this.rhs.find(Number * ~Sum).apply(algebra.sum.to.add.split, cond={n})
 
     Eq << Eq[-1].this.rhs.find(Number * ~Sum).simplify()
 

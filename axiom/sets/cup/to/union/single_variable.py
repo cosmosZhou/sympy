@@ -24,8 +24,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.any_contains.st.cup), \
     Eq[-1].this.rhs.apply(sets.contains.given.any_contains.st.cup)
 
-    Eq <<= Eq[-2].this.lhs.function.apply(sets.contains.imply.ou.st.piecewise), \
-    Eq[-1].this.rhs.function.apply(sets.contains.given.ou.st.piecewise)
+    Eq <<= Eq[-2].this.lhs.expr.apply(sets.contains.imply.ou.st.piecewise), \
+    Eq[-1].this.rhs.expr.apply(sets.contains.given.ou.st.piecewise)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.any_ou.imply.ou.any), \
     Eq[-1].this.rhs.apply(algebra.any_ou.given.ou.any)

@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << algebra.all.imply.all.split.apply(Eq[0], cond={n})
 
-    Eq << Eq[-1].this.function.apply(algebra.ge.imply.is_positive)
+    Eq << Eq[-1].this.expr.apply(algebra.ge.imply.is_positive)
 
     Eq << discrete.all_is_positive.imply.is_positive.K.apply(Eq[-1])
 

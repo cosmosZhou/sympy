@@ -2,11 +2,9 @@ from util import *
 
 
 @apply(given=None)
-def apply(given, index=-1, left=True, right=False):
+def apply(given, lhs=-1, rhs=None):
     from axiom.algebra.eq.transposition import transposition
-    if right:
-        left = False
-    return Equivalent(given, transposition(Less, given, index=index, left=left), evaluate=False)
+    return Equivalent(given, transposition(Less, given, lhs=lhs, rhs=rhs), evaluate=False)
 
 
 @prove

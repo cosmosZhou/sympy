@@ -19,3 +19,6 @@ if __name__ == '__main__':
 
 
 from . import fallingFactorial
+del expand
+from . import expand
+from . import half

@@ -63,9 +63,9 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this().function.find(Piecewise, Contains).simplify()
+    Eq << Eq[-1].this().expr.find(Piecewise, Contains).simplify()
 
-    Eq.any_is_negative = Eq[-1].this.function.apply(algebra.eq.gt.imply.lt.sub)
+    Eq.any_is_negative = Eq[-1].this.expr.apply(algebra.eq.gt.imply.lt.sub)
 
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq.all_is_nonnegative, Range(0, n) - {i})
 

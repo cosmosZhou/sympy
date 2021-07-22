@@ -173,7 +173,7 @@ class NotSubset(BinaryCondition):
     def simplify(self, deep=False):
         if self.lhs.is_Cup:
             from sympy import Any
-            return Any(self.func(self.lhs.function, self.rhs), *self.lhs.limits)
+            return Any(self.func(self.lhs.expr, self.rhs), *self.lhs.limits)
 
         if self.lhs.is_FiniteSet and len(self.lhs) == 1:
             from sympy import NotContains
@@ -406,7 +406,7 @@ class NotSupset(BinaryCondition):
     def simplify(self, deep=False):
         from sympy import Any
         if self.rhs.is_Cup:
-            return Any(self.func(self.lhs, self.rhs.function), *self.rhs.limits).simplify()
+            return Any(self.func(self.lhs, self.rhs.expr), *self.rhs.limits).simplify()
         return self
 
     def _sympystr(self, p):

@@ -235,7 +235,7 @@ def lambdify(args, expr, modules=None, printer=None, use_imps=True,
 
     If it is a matrix, an array will be returned (for the NumPy module).
 
-    >>> from sympy import Matrix
+    >>> x = Symbol.x(real=True)
     >>> f = lambdify(x, Matrix([x, x + 1]))
     >>> f(1)
     [[1]

@@ -87,7 +87,7 @@ class Integral(AddWithLimits):
         return obj
 
     def __getnewargs__(self):
-        return (self.function,) + tuple([tuple(xab) for xab in self.limits])
+        return (self.expr,) + tuple([tuple(xab) for xab in self.limits])
 
     @property
     def free_symbols(self):
@@ -120,7 +120,7 @@ class Integral(AddWithLimits):
         # is zero but this routine should return None for that case. But, like
         # Mul, there are trivial situations for which the integral will be
         # zero so we check for those.
-        if self.function.is_zero:
+        if self.expr.is_zero:
             return True
         got_none = False
         for l in self.limits:
@@ -130,7 +130,7 @@ class Integral(AddWithLimits):
                     return True
                 elif z is None:
                     got_none = True
-        free = self.function.free_symbols
+        free = self.expr.free_symbols
         for xab in self.limits:
             if len(xab) == 1:
                 free.add(xab[0])
@@ -146,7 +146,7 @@ class Integral(AddWithLimits):
             # add in the new symbols
             for i in xab[1:]:
                 free.update(i.free_symbols)
-        if self.function.is_zero == False and got_none is False:
+        if self.expr.is_zero == False and got_none is False:
             return False
 
     def transform(self, x, u):
@@ -317,7 +317,7 @@ class Integral(AddWithLimits):
                 raise ValueError('no solution for solve(F(x) - f(u), u)')
             F = [fi.subs(xvar, d) for fi in soln]
 
-        newfuncs = {(self.function.subs(xvar, fi) * fi.diff(d)
+        newfuncs = {(self.expr.subs(xvar, fi) * fi.diff(d)
                         ).subs(d, uvar) for fi in f}
         if len(newfuncs) > 1:
             raise ValueError(filldedent('''
@@ -428,7 +428,7 @@ class Integral(AddWithLimits):
             return S.Zero
 
         # now compute and check the function
-        function = self.function
+        function = self.expr
         if deep:
             function = function.doit(**hints)
         if function.is_zero:
@@ -703,7 +703,7 @@ class Integral(AddWithLimits):
         # check for regularity conditions (TODO), see issue 4215
 
         # get limits and the function
-        f, limits = self.function, list(self.limits)
+        f, limits = self.expr, list(self.limits)
 
         # the order matters if variables of integration appear in the limits
         # so work our way in from the outside to the inside.
@@ -1100,7 +1100,7 @@ class Integral(AddWithLimits):
             if x in l[1:]:
                 symb = l[0]
                 break
-        for term in expr.function.lseries(symb, logx):
+        for term in expr.expr.lseries(symb, logx):
             yield integrate(term, *expr.limits)
 
     def _eval_nseries(self, x, n, logx, cdir=0):
@@ -1110,7 +1110,7 @@ class Integral(AddWithLimits):
             if x in l[1:]:
                 symb = l[0]
                 break
-        terms, order = expr.function.nseries(
+        terms, order = expr.expr.nseries(
             x=symb, n=n, logx=logx).as_coeff_add(Order)
         order = [o.subs(symb, x) for o in order]
         return integrate(terms, *expr.limits) + Add(*order) * x
@@ -1137,13 +1137,13 @@ class Integral(AddWithLimits):
         limit = self.limits[0]
         if len(limit) > 1:
             x, a, b = limit
-            domain = self.function.domain_nonzero(x)
+            domain = self.expr.domain_nonzero(x)
             from sympy.sets.sets import Interval
             domain &= Interval(a, b)
 
-            if isinstance(self.function, Piecewise):
+            if isinstance(self.expr, Piecewise):
                 sgm = []
-                for f, condition in self.function.args:
+                for f, condition in self.expr.args:
                     if f == 0:
                         continue
                     _domain = x.domain_conditioned(condition) & domain
@@ -1156,7 +1156,7 @@ class Integral(AddWithLimits):
                 return self
         var = limit[0]
 
-        function = self.function
+        function = self.expr
         independent, dependent = function.as_independent(var, as_Add=False)
         if independent == S.One:
             if limit != self.limits[0]:
@@ -1166,9 +1166,9 @@ class Integral(AddWithLimits):
         if dependent == S.One:
             if len(limit) > 1:
                 x, a, b = limit
-                return self.function * (b - a)
+                return self.expr * (b - a)
             else:
-                return self.function * var.dimension
+                return self.expr * var.dimension
         return self.func(dependent, limit) * independent
 
     def _subs(self, old, new, **hints):
@@ -1181,8 +1181,8 @@ class Integral(AddWithLimits):
             if len(limit) == 1:
                 # deal with indefinite integrals
                 x = limit[0]
-#                 domain = self.function.domain_nonzero(x)
-                function = self.function.subs(old, new)
+#                 domain = self.expr.domain_nonzero(x)
+                function = self.expr.subs(old, new)
                 return self.func(function, (x,))
 
             if old in self.variables_set:
@@ -1191,8 +1191,8 @@ class Integral(AddWithLimits):
                     ab = [t._subs(old, new) for t in ab]
                     limits.append((x, *ab))
                 
-                return self.func(self.function, *limits)
-            function = self.function._subs(old, new)
+                return self.func(self.expr, *limits)
+            function = self.expr._subs(old, new)
 
             if len(limit) == 3:
                 x, a, b = limit
@@ -1202,7 +1202,7 @@ class Integral(AddWithLimits):
                 x = limit[0]
                 return self.func(function, (x.subs(old, new)))
         elif len(self.limits) == 0:
-            function = self.function.subs(old, new)
+            function = self.expr.subs(old, new)
 
             return self.func(function, *self.limits)
 
@@ -1214,7 +1214,7 @@ class Integral(AddWithLimits):
         if len(self.limits) == 1:
             limit = self.limits[0]
             from sympy import sin, cos
-            function = self.function._subs(old, new)
+            function = self.expr._subs(old, new)
 
             if isinstance(new, (Mul, Add)):
                 function = function.expand()
@@ -1295,7 +1295,7 @@ class Integral(AddWithLimits):
                 x = limit[0]
                 return self.func(function, (x.subs(old, new)))
         elif len(self.limits) == 0:
-            function = self.function.subs(old, new)
+            function = self.expr.subs(old, new)
 
             return self.func(function, *self.limits)
 
@@ -1420,7 +1420,7 @@ class Integral(AddWithLimits):
         x, a, b = limit
         dx = (b - a) / n
         k = Dummy('k', integer=True, positive=True)
-        f = self.function
+        f = self.expr
 
         if method == "left":
             result = dx * Sum(f.subs(x, a + (k - 1) * dx), (k, 1, n))
@@ -1437,7 +1437,7 @@ class Integral(AddWithLimits):
 
     def _sage_(self):
         import sage.all as sage
-        f, limits = self.function._sage_(), list(self.limits)
+        f, limits = self.expr._sage_(), list(self.limits)
         for limit_ in limits:
             if len(limit_) == 1:
                 x = limit_[0]
@@ -1498,7 +1498,7 @@ class Integral(AddWithLimits):
         if a == b:
             return 0
         r = Dummy('r')
-        f = self.function
+        f = self.expr
         singularities_list = [s for s in singularities(f, x) if s.is_comparable and a <= s <= b]
         for i in singularities_list:
             if (i == b) or (i == a):
@@ -1516,7 +1516,7 @@ class Integral(AddWithLimits):
         return I
 
     def _eval_is_finite(self):
-        function = self.function                
+        function = self.expr                
         for x, domain in self.limits_dict.items():
             if not isinstance(domain, list):
                 if domain.is_infinite:
@@ -1531,7 +1531,7 @@ class Integral(AddWithLimits):
 
     def _sympystr(self, p):
         limits = ','.join([':'.join([p._print(arg) for arg in limit]) for limit in self.limits])
-        return '\N{INTEGRAL}[%s](%s)' % (limits, p._print(self.function))
+        return '\N{INTEGRAL}[%s](%s)' % (limits, p._print(self.expr))
 
     def _latex(self, p):
         tex, symbols = "", []
@@ -1563,7 +1563,7 @@ class Integral(AddWithLimits):
                 symbols.insert(0, r"\, d%s" % p._print(symbol))
 
         from sympy.printing.precedence import PRECEDENCE
-        return r"%s %s%s" % (tex, p.parenthesize(self.function, PRECEDENCE["Mul"], strict=True), "".join(symbols))
+        return r"%s %s%s" % (tex, p.parenthesize(self.expr, PRECEDENCE["Mul"], strict=True), "".join(symbols))
 
     def to_wolfram(self, global_variables):        
         from wolframclient.language import wl, wlexpr
@@ -1575,7 +1575,7 @@ class Integral(AddWithLimits):
             limit, *_ = limit
             global_variables.add(self.variable)
         
-        function = self.function.to_wolfram(local_variables)
+        function = self.expr.to_wolfram(local_variables)
         local_variables -= self.variables_set
         
         conditions = []

@@ -1,24 +1,20 @@
 from util import *
 
 
-# given: A in B
-# => A | B = B
 @apply
 def apply(given):
-    assert given.is_Contains
-    A, B = given.args
+    A, B = given.of(Contains)
 
-    return Equal(A.set & B, A.set)
+    return Equal({A} & B, {A})
 
 
 @prove
 def prove(Eq):
     from axiom import sets
+
     e = Symbol.e(integer=True)
     s = Symbol.s(etype=dtype.integer)
-    contains = Contains(e, s)
-
-    Eq << apply(contains)
+    Eq << apply(Contains(e, s))
 
     Eq << sets.contains.imply.subset.apply(Eq[0], simplify=False)
 

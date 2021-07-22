@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(sets.contains.imply.contains.st.complement)
 
-    Eq << Eq[2].this.function.apply(algebra.cond.suffice.imply.cond.transit, Eq[-2], simplify=None)
+    Eq << Eq[2].this.expr.apply(algebra.cond.suffice.imply.cond.transit, Eq[-2], simplify=None)
 
     Eq << Eq[-1].apply(algebra.any_et.imply.any.limits_absorb, index=0, simplify=None)
 

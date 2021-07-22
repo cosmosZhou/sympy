@@ -15,19 +15,20 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
+    from axiom import algebra, sets
+
     n = Symbol.n(integer=True, positive=True, given=True)
-    x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True, given=True)
+    x = Symbol.x(shape=(oo,), etype=dtype.integer, finiteset=True, given=True)
     Eq << apply(Equal(abs(x[:n].set_comprehension()), n))
 
-    xi, xj = Eq[1].function.args
+    xi, xj = Eq[1].expr.args
     x, i = xi.args
     b = Symbol.b(Lamda[i:n](x[i].set))
-    Eq << abs(Cup[i:n](b[i])).this.arg.function.definition
+    Eq << abs(Cup[i:n](b[i])).this.arg.expr.definition
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[0], Eq[-1])
 
-    Eq << Sum[i:n](abs(b[i])).this.function.arg.definition
+    Eq << Sum[i:n](abs(b[i])).this.expr.arg.definition
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 

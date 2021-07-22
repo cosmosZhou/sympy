@@ -30,15 +30,15 @@ def prove(Eq):
     Eq << apply(All[i:Range(0, k + 1) - {j}, x[:k + 1]:s](Equal(x[i] & x[j], x[i].etype.emptySet)),
                 All[x[:k + 1]:s](Any[j](Subset({n}, x[j]))))
 
-    Eq << Eq[-1].this.function.function.apply(algebra.all.given.ou)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.all.given.ou)
 
-    Eq << Eq[-1].this.function.apply(algebra.any_ou.given.ou.any, simplify=None)
+    Eq << Eq[-1].this.expr.apply(algebra.any_ou.given.ou.any, simplify=None)
 
     Eq << Eq[-1].this.find(Any).apply(algebra.any.given.cond, simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.ou.given.all)
+    Eq << Eq[-1].this.expr.apply(algebra.ou.given.all)
 
-    Eq << Eq[-1].this.function.apply(algebra.any_et.given.et, index=0)
+    Eq << Eq[-1].this.expr.apply(algebra.any_et.given.et, index=0)
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 

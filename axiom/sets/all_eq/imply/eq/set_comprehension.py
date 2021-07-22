@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(All[i:n](Equal(f[i], g[i])))
 
-    Eq << Eq[0].this.function.apply(sets.eq.imply.eq.set, simplify=False)
+    Eq << Eq[0].this.expr.apply(sets.eq.imply.eq.set, simplify=False)
 
     Eq << sets.all_eq.imply.eq.union.apply(Eq[-1])
 

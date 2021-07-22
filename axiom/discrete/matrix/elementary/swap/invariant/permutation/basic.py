@@ -37,9 +37,9 @@ def prove(Eq):
 
     x = Eq[2].variable
 
-    Eq << discrete.matrix.elementary.swap.invariant.set_comprehension.cup.apply(x, w)
+    Eq << discrete.set_comprehension.rmatmul.apply(x, w)
 
-    Eq << Eq[2].this.function.rhs.definition.subs(Eq[-1])
+    Eq << Eq[2].this.expr.rhs.definition.subs(Eq[-1])
 
     Eq << Eq[-1].subs(Eq[1])
 

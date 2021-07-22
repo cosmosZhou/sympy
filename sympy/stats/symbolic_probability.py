@@ -479,7 +479,7 @@ class Expectation(ExprWithLimits):
 
     def doit(self, **hints):
         if self.limits:
-            function = self.function
+            function = self.expr
             for limit in self.limits:
                 x, distribution = limit                
                 _x = x.copy(distribution=distribution)
@@ -593,10 +593,10 @@ class Expectation(ExprWithLimits):
             else:
                 tex += r"\limits_{\begin{subarray}{c}%s\end{subarray}} " % str.join('\\\\', [_format_ineq(l) for l in limits])
 
-        if self.function.is_Add or self.function.is_Conditioned:
-            tex += r"\left(%s\right)" % p._print(self.function)
+        if self.expr.is_Add or self.expr.is_Conditioned:
+            tex += r"\left(%s\right)" % p._print(self.expr)
         else:
-            tex += p._print(self.function)
+            tex += p._print(self.expr)
 
         return tex
 

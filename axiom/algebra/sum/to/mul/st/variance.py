@@ -55,7 +55,7 @@ def prove(Eq):
 
     Eq << apply(Sum[i:n]((x[i] - Sum[j:n](x[j]) / n) ** 2))
 
-    Eq << Eq[-1].this.lhs.function.expand()
+    Eq << Eq[-1].this.lhs.expr.expand()
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add)
 
@@ -91,7 +91,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum)
 
-    Eq << Eq[-1].this.rhs.function.expand()
+    Eq << Eq[-1].this.rhs.expr.expand()
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
 

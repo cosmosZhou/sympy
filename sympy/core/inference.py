@@ -224,7 +224,7 @@ class Inference:
                     def instantiate(eq):
                         function = eq
                         for _ in range(depth):
-                            function = function.function
+                            function = function.expr
                         return function
                     
                     for eq in self.args: 
@@ -453,7 +453,7 @@ class Inference:
         if new in old.domain:
             if self.is_ConditionalBoolean:
                 assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.cond.subs.apply(...)'
-                function = self.function._subs(old, new, **kwargs)
+                function = self.expr._subs(old, new, **kwargs)
                 limits = []
                 for x, *ab in self.limits:
                     if x.is_Indexed or x.is_Slice:
@@ -467,13 +467,14 @@ class Inference:
                 cond = self._subs(old, new, **kwargs)
             return Inference(cond, given=self)
         
+        assert not old.is_given
         domain = old.domain_bounded
         if domain is not None and new not in domain:
-            if self.is_All:
-                from sympy import NotContains
+            from sympy import NotContains
+            if self.is_All:                
                 assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.ou.subs'
-                if self.function._has(old):
-                    function = self.function._subs(old, new) | NotContains(new, domain)
+                if self.expr._has(old):
+                    function = self.expr._subs(old, new) | NotContains(new, domain)
                     cond = self.func(function, *limits)
                 else: 
                     limits = []
@@ -482,12 +483,11 @@ class Inference:
                         limit = (x, *[a._subs(old, new) for a in ab])
                         limits.append(limit)
                     
-                    cond = self.func(self.function, *limits) | NotContains(new, domain)
+                    cond = self.func(self.expr, *limits) | NotContains(new, domain)
             else:
-                from sympy import All
-                _old = old.unbounded
-                cond = All(self._subs(old, _old), (_old, old.domain)).simplify()
-                if _old != new:                    
+                _old = old.unbounded                
+                cond = self._subs(old, _old) | NotContains(_old, old.domain)
+                if _old != new:
                     cond = cond._subs(_old, new, **kwargs)
         else:
             cond = self._subs(old, new, **kwargs)
@@ -517,7 +517,7 @@ class Inference:
     
     def __add__(self, other):
         if self.is_ConditionalBoolean:
-            return self.this.function + other
+            return self.this.expr + other
         
         if isinstance(other, int):
             other = sympify(other)
@@ -545,7 +545,7 @@ class Inference:
     
     def __sub__(self, other):
         if self.is_ConditionalBoolean:
-            return self.this.function - other
+            return self.this.expr - other
                 
         if isinstance(other, int):
             other = sympify(other)
@@ -568,7 +568,7 @@ class Inference:
             if other.is_positive:
                 return self.func(self.lhs ** other, self.rhs ** other, given=self)
         elif self.is_ConditionalBoolean:
-            return self.this.function * other
+            return self.this.expr * other
         
     def __mod__(self, other):
         other = sympify(other)
@@ -576,11 +576,11 @@ class Inference:
         if self.is_Equal: 
             return self.func(self.lhs % other, self.rhs % other, given=self)
         elif self.is_ConditionalBoolean:
-            return self.this.function % other
+            return self.this.expr % other
             
     def __mul__(self, other):
         if self.is_ConditionalBoolean:
-            return self.this.function * other
+            return self.this.expr * other
                 
         if isinstance(other, int):
             other = sympify(other)
@@ -614,7 +614,7 @@ class Inference:
         
     def __matmul__(self, rhs):
         if self.is_ConditionalBoolean:
-            return self.this.function @ rhs
+            return self.this.expr @ rhs
         
         if rhs.is_Equal:
             if rhs.lhs.is_invertible or rhs.rhs.is_invertible:
@@ -629,7 +629,7 @@ class Inference:
             
     def __truediv__(self, other):
         if self.is_ConditionalBoolean:
-            return self.this.function / other
+            return self.this.expr / other
         
         if isinstance(other, int):
             other = sympify(other)
@@ -688,7 +688,7 @@ class Inference:
                         return All(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
             return self.func(self.lhs[indices], self.rhs[indices], given=self)
         elif self.is_ConditionalBoolean:
-            return self.this.function[indices]
+            return self.this.expr[indices]
 
     def is_equivalent_of(self, rhs):
         while True:

@@ -31,21 +31,21 @@ def prove(Eq):
     Eq << (w[i, j] @ x).this.subs(Eq[0])
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.function.args[-1].expr.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[-1].expr.apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs().function.args[2]().expr.simplify(wrt=Eq[-1].rhs.variable)
+    Eq << Eq[-1].this.rhs().expr.args[2]().expr.simplify(wrt=Eq[-1].rhs.variable)
 
-    Eq << Eq[-1].this.rhs().function.args[2].expr.args[2]().expr.simplify()
+    Eq << Eq[-1].this.rhs().expr.args[2].expr.args[2]().expr.simplify()
 
     Eq << (w[i, j].T @ Eq[-1]).this.rhs.subs(Eq[0])
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.function.args[1].expr.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[1].expr.apply(algebra.add.to.piecewise)
 
-    Eq << Eq[-1].this.rhs().function.args[2]().expr.simplify(wrt=Eq[-1].rhs.variable)
+    Eq << Eq[-1].this.rhs().expr.args[2]().expr.simplify(wrt=Eq[-1].rhs.variable)
 
-    Eq << Eq[-1].this.rhs().function.args[1]().expr.simplify()
+    Eq << Eq[-1].this.rhs().expr.args[1]().expr.simplify()
 
 
 if __name__ == '__main__':

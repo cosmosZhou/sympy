@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     function, ((x, (start, stop)), cond, (domain, *shape)) = self.of(Sum[Tuple[Slice, CartesianSpace]])
 
     [n] = shape
@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.find(All).apply(algebra.all.to.et.split, cond={i})
 
-    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.split.slice)
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.split.slice.pop_front)
 
 
 if __name__ == '__main__':

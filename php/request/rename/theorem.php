@@ -24,7 +24,11 @@ $new = $dict['new'];
 error_log("package = $package");
 error_log("old = $old");
 error_log("new = $new");
-$folder = axiom_directory() . str_replace('.', '/', $package) . '/';
+$folder = axiom_directory() . str_replace('.', '/', $package);
+
+if (!\std\endsWith($folder, "/")){
+    $folder .= '/';
+}
 
 error_log("folder = $folder");
 

@@ -28,17 +28,17 @@ def prove(Eq):
 #     Integration by parts
     Eq << Eq[-1].this.rhs.apply(calculus.integral.by_parts, dv=sin(x)) / n
 
-    Eq << Eq[-1].this.lhs.args[1].function.powsimp()
+    Eq << Eq[-1].this.lhs.args[1].expr.powsimp()
 
-    Eq << Eq[-1].this.rhs.function.powsimp()
+    Eq << Eq[-1].this.rhs.expr.powsimp()
 
     Eq << geometry.plane.trigonometry.cosine.squared.apply(x)
 
     Eq << Eq[-2].this.rhs.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.add)
 
-    Eq << Eq[-1].this.rhs.function.args[0].powsimp()
+    Eq << Eq[-1].this.rhs.expr.args[0].powsimp()
 
     Eq << Eq[-1].this.rhs.apply(calculus.integral.to.add)
 
@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.solve.apply(Eq[-1], -Eq[-1].rhs.args[1])
 
-    Eq << Eq[-1].this.rhs.find(Integral).function.powsimp()
+    Eq << Eq[-1].this.rhs.find(Integral).expr.powsimp()
 
     Eq << algebra.eq.eq.imply.eq.subs.apply(Eq[0], Eq[-1])
 

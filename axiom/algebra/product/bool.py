@@ -5,7 +5,7 @@ from util import *
 def apply(self):
     assert self.is_Product
 
-    return Equal(self, self.func(self.function ** Bool(self.limits_cond), *((x,) for x, *_ in self.limits)))
+    return Equal(self, self.func(self.expr ** Bool(self.limits_cond), *((x,) for x, *_ in self.limits)))
 
 
 @prove
@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.find(Bool).apply(algebra.bool.to.piecewise)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.pow.to.piecewise.exponent)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.pow.to.piecewise.exponent)
 
 
 if __name__ == '__main__':

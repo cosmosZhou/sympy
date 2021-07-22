@@ -1,4 +1,4 @@
-# SymPy
+# axiom
 
 reference website:
 

@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(m, m + 2)
 
-    Eq << Eq.induct.this.lhs.function.expand()
+    Eq << Eq.induct.this.lhs.expr.expand()
 
     Eq << Eq[-1].this.lhs.apply(calculus.integral.by_parts, u=cos(x) ** m)
 

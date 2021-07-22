@@ -729,8 +729,8 @@ class Log(Function):
                 else:
                     return unpolarify(e) * a
         elif isinstance(arg, Product):
-            if arg.function.is_positive:
-                return Sum(log(arg.function), *arg.limits)
+            if arg.expr.is_positive:
+                return Sum(log(arg.expr), *arg.limits)
 
         return self.func(arg)
 

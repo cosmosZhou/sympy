@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (i, 0, k))
 
-    Eq << Eq[-1].this.lhs.function.definition
+    Eq << Eq[-1].this.lhs.expr.definition
 
     Eq << Eq[-1].reversed
 

@@ -12,10 +12,10 @@ def apply(self):
         return
     
     sgm = args.pop(index)
-    if isinstance(sgm.function, Mul):
-        args.extend(sgm.function.args)
+    if isinstance(sgm.expr, Mul):
+        args.extend(sgm.expr.args)
     else:
-        args.append(sgm.function)
+        args.append(sgm.expr)
         
     function = Mul(*args).powsimp()
     independent, dependent = function.as_independent(*(x for x, *_ in self.limits), as_Add=False)
@@ -39,7 +39,7 @@ def prove(Eq):
     h = Symbol.h(shape=(oo,), real=True)
     Eq << apply(Sum[i:m](h[i] * Sum[j:n](g[i, j])))
 
-    Eq << Eq[0].this.lhs.function.apply(algebra.mul.to.sum)
+    Eq << Eq[0].this.lhs.expr.apply(algebra.mul.to.sum)
     Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.swap)
 
 

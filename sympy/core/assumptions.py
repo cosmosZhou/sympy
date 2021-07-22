@@ -658,6 +658,9 @@ class Operator:
     def __pow__(self, other): 
         return BasicMeta.__pow__(self.basic, other)
     
+    def __neg__(self): 
+        return BasicMeta.__neg__(self.basic)
+    
     def __sub__(self, other): 
         return BasicMeta.__sub__(self.basic, other)
     

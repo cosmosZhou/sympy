@@ -769,7 +769,7 @@ class MathMLPresentationPrinter(MathMLPrinterBase):
                     msubsup.appendChild(self._print(lim[2]))
                     mrow.appendChild(msubsup)
         # print function
-        mrow.appendChild(self.parenthesize(expr.function, PRECEDENCE["Mul"],
+        mrow.appendChild(self.parenthesize(expr.expr, PRECEDENCE["Mul"],
                                            strict=True))
         # print integration variables
         for lim in reversed(expr.limits):

@@ -28,13 +28,13 @@ def prove(Eq):
 
     Eq << algebra.cond.all.imply.all_et.apply(Eq[-1], Eq[-3])
 
-    Eq << Eq[-1].this.function.apply(algebra.le.ge.imply.le.transit)
+    Eq << Eq[-1].this.expr.apply(algebra.le.ge.imply.le.transit)
 
     Eq << ~Eq[-1]
 
     Eq << algebra.any.given.any_et.limits.unleash.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(sets.gt.le.given.contains)
+    Eq << Eq[-1].this.expr.apply(sets.gt.le.given.contains)
 
     n = Eq[-1].variable
     Eq << sets.imply.any_contains.integer.apply(x, n)

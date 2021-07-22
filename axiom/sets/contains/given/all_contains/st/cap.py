@@ -11,7 +11,7 @@ def apply(given):
             _v = v.generate_var(given.free_symbols, **v.type.dict)
             S = S.limits_subs(v, _v)
 
-    contains = Contains(x, S.function).simplify()
+    contains = Contains(x, S.expr).simplify()
     return All(contains, *S.limits)
 
 

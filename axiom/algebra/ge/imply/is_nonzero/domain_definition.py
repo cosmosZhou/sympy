@@ -19,7 +19,7 @@ def prove(Eq):
     Eq << sets.ge.imply.contains.interval.apply(Eq[0])
     
     Eq << sets.contains.imply.any_eq.apply(Eq[-1])
-    Eq << Eq[-1].this.function.apply(algebra.eq.imply.is_nonzero.domain_definition)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.imply.is_nonzero.domain_definition)
 
 
 if __name__ == '__main__':

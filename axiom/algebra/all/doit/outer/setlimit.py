@@ -22,7 +22,7 @@ def prove(Eq):
     Eq << Equivalent(All[i:{a}](Equal(Bool(All[j:f(i, j) > 0](x[i, j] > 0)), 1)),
                      All[j:f(i, j) > 0, i:{a}](x[i, j] > 0), plausible=True)
 
-    Eq << Eq[-1].this.lhs.function.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.expr.lhs.apply(algebra.bool.to.piecewise)
 
     Eq << Eq[-1].this.lhs.simplify()
 

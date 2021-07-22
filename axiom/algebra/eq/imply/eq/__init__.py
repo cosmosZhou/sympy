@@ -7,7 +7,6 @@ from . import argmin
 from . import argmax
 from . import min
 from . import sum
-from . import mat_product
 from . import abs
 from . import sqrt, pow
 from . import exp

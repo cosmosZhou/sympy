@@ -184,20 +184,12 @@ class Symbol(ManagedProperties):
 
 
 class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
-# class Symbol(AtomicExpr, Boolean):
     """
-    Assumptions:
-       commutative = True
-
-    You can override the default assumptions in the constructor:
-
-    >>> from sympy import symbols
-    >>> A,B = symbols('A,B', commutative = False)
-    >>> bool(A*B != B*A)
-    True
-    >>> bool(A*B*2 == 2*A*B) == True # multiplication by scalars is commutative
-    True
-
+    >>> a = Symbol.a(real=True)
+    >>> b = Symbol.b(real=True)
+    >>> c = Symbol.c(real=True)
+    >>> (b - sqrt(b * b - 4 * a * c)) / (2 * a)
+    (b - √(-4*a*c + b**2))/(2*a)
     """
 
     is_comparable = False
@@ -751,7 +743,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         from sympy.concrete.expr_with_limits import Lamda
         definition = self.definition
         if definition.is_Lamda:
-            return Equal(self[tuple(var for var, *_ in definition.limits[::-1])], definition.function, evaluate=False, plausible=None)
+            return Equal(self[tuple(var for var, *_ in definition.limits[::-1])], definition.expr, evaluate=False, plausible=None)
         elif definition.is_Mul:
             args = []
             ref = None
@@ -763,7 +755,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                     args.append(arg)
             if ref is not None:
                 (var, *_), *_ = ref.limits
-                return Equal(self[var], Mul(*args) * ref.function, evaluate=False, plausible=None)
+                return Equal(self[var], Mul(*args) * ref.expr, evaluate=False, plausible=None)
         
         return Equal(self, self.definition, evaluate=False, plausible=None)
         
@@ -865,7 +857,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 if isinstance(self.definition, Lamda):
                     ref = self.definition
                     from sympy.stats.rv import RandomSymbol
-                    if len(ref.limits) == 1 and isinstance(ref.function, RandomSymbol):
+                    if len(ref.limits) == 1 and isinstance(ref.expr, RandomSymbol):
                         return ref[indices]
             boolean = indices < self.shape[0]
             assert boolean is True or not boolean.is_BooleanFalse

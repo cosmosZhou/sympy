@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << apply(All[x:A, y:B](f(x, y) > 0))
 
-    Eq << Eq[1].this.function.apply(algebra.ou.imply.all, pivot=1)
+    Eq << Eq[1].this.expr.apply(algebra.ou.imply.all, pivot=1)
 
 
 if __name__ == '__main__':

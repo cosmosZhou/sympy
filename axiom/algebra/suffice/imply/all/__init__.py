@@ -34,7 +34,7 @@ def prove(Eq):
 
     Eq << algebra.suffice.imply.all.single_variable.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(algebra.suffice.imply.all.single_variable)
+    Eq << Eq[-1].this.expr.apply(algebra.suffice.imply.all.single_variable)
 
 
 if __name__ == '__main__':

@@ -9,7 +9,7 @@ def apply(self):
             args = [*self.args]
             del args[i]
             this = self.func(*args)
-            function = union.function | this
+            function = union.expr | this
             return Equal(self, union.func(function, *union.limits), evaluate=False)
 
 
@@ -27,8 +27,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.rhs.apply(sets.contains.given.all_contains.st.cap),\
     Eq[-1].this.lhs.apply(sets.contains.imply.all_contains.st.cap)
 
-    Eq <<= Eq[-2].this.rhs.function.apply(sets.contains.given.ou.split.union),\
-    Eq[-1].this.lhs.function.apply(sets.contains.imply.ou.split.union)
+    Eq <<= Eq[-2].this.rhs.expr.apply(sets.contains.given.ou.split.union),\
+    Eq[-1].this.lhs.expr.apply(sets.contains.imply.ou.split.union)
 
     Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.ou.split.union),\
     Eq[-1].this.rhs.apply(sets.contains.given.ou.split.union)

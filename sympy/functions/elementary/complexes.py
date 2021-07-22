@@ -1171,7 +1171,7 @@ def _polarify(eq, lift, pause=False):
         return eq.func(*[_polarify(arg, lift, pause=False) for arg in eq.args])
     elif isinstance(eq, Integral):
         # Don't lift the integration variable
-        func = _polarify(eq.function, lift, pause=pause)
+        func = _polarify(eq.expr, lift, pause=pause)
         limits = []
         for limit in eq.args[1:]:
             var = _polarify(limit[0], lift=False, pause=pause)

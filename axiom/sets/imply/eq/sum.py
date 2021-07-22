@@ -16,9 +16,9 @@ def prove(Eq):
 
     Eq << apply(S)
 
-    Eq << Eq[-1].this.lhs.function.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.bool.to.piecewise)
 
-    Eq << Eq[-1].this.lhs().function.simplify()
+    Eq << Eq[-1].this.lhs().expr.simplify()
 
 
 if __name__ == '__main__':

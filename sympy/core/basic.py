@@ -1700,7 +1700,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         return self.typeof(cls.func)
     
     def of(self, cls, copy=False):
-        args = self.extract(cls)
+        args = self._extract(cls)
         if copy and isinstance(args, tuple):
             return [*args]
         return args
@@ -1861,7 +1861,7 @@ class Basic(Printable, metaclass=ManagedProperties):
             
         return True
     
-    def extract(self, cls):
+    def _extract(self, cls):
         if isinstance(cls, type):
             if isinstance(self, cls):
                 args = self.args
@@ -1940,7 +1940,9 @@ class Basic(Printable, metaclass=ManagedProperties):
                     query.append(s)
                     break
                 
-                assert s.is_Basic
+                if not s.is_Basic:
+                    assert s.is_Operator
+                    s = s.basic
                 
                 query.append(s.func)
                 

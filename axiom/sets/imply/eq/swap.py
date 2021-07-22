@@ -46,13 +46,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.defun()
 
-    w = Eq[-1].lhs.function.indices[0].args[1].base
+    w = Eq[-1].lhs.expr.indices[0].args[1].base
 
     Eq << discrete.matrix.elementary.swap.identity.apply(w[i, j], left=False, w=w, reference=False)
 
     k = Eq[-1].rhs.args[1].indices[-1]
 
-    Eq << Eq[-2].lhs.function.index.this.subs(Eq[-1])
+    Eq << Eq[-2].lhs.expr.index.this.subs(Eq[-1])
 
     Eq << discrete.matrix.elementary.swap.square.apply(w)
 

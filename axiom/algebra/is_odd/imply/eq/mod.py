@@ -17,13 +17,13 @@ def prove(Eq):
 
     Eq << algebra.is_odd.imply.any.apply(Eq[0])
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.imply.eq.div, 2, simplify=None)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.imply.eq.div, 2, simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.cond.imply.et.invoke, algebra.eq.imply.eq.floor)
+    Eq << Eq[-1].this.expr.apply(algebra.cond.imply.et.invoke, algebra.eq.imply.eq.floor)
 
-    Eq << Eq[-1].this.function.args[0] - S.One / 2
+    Eq << Eq[-1].this.expr.args[0] - S.One / 2
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.eq.imply.eq.transit)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.eq.imply.eq.transit)
 
     Eq << Eq[-1].reversed
 

@@ -24,13 +24,13 @@ def prove(Eq):
 
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[0])
 
-    ε = Eq[-1].function.function.rhs
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.imply.lt.abs.max)
+    ε = Eq[-1].expr.expr.rhs
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.imply.lt.abs.max)
 
     Eq.lt = Eq[-1].subs(ε, S.Half)
 
     N = Eq.lt.variable
-    a_max = Eq.lt.function.function.rhs
+    a_max = Eq.lt.expr.expr.rhs
     M = Symbol.M(Max(a_max, Maximize[n:N + 1](abs(x[n]))))
     Eq << M.this.definition
 
@@ -38,9 +38,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.definition
 
-    Eq << Eq.lt.this.function.function.apply(algebra.lt.le.imply.lt.transit, Eq[-1])
+    Eq << Eq.lt.this.expr.expr.apply(algebra.lt.le.imply.lt.transit, Eq[-1])
 
-    Eq.less_than = Eq[-1].this.function.function.apply(algebra.lt.imply.le.relax)
+    Eq.less_than = Eq[-1].this.expr.expr.apply(algebra.lt.imply.le.relax)
 
     Eq << algebra.imply.all_ge.max.apply(Maximize[n:N + 1](abs(x[n])))
 
@@ -48,11 +48,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.definition
 
-    Eq << Eq[-2].this.function.apply(algebra.ge.le.imply.le.transit, Eq[-1])
+    Eq << Eq[-2].this.expr.apply(algebra.ge.le.imply.le.transit, Eq[-1])
 
     Eq << algebra.any_all.all.imply.any_all.apply(Eq.less_than, Eq[-1])
 
-    Eq.any = Eq[-1].this.function.simplify()
+    Eq.any = Eq[-1].this.expr.simplify()
 
     Eq << algebra.any.given.any.subs.apply(Eq[1], Eq[1].variable, M)
 
@@ -64,13 +64,13 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.function.apply(algebra.eq_max.imply.et.ge, index=1, simplify=None)
+    Eq << Eq[-1].this.expr.apply(algebra.eq_max.imply.et.ge, index=1, simplify=None)
 
-    Eq << Eq[-1].this.function.args[0].apply(algebra.is_nonpositive.imply.is_zero, simplify=None)
+    Eq << Eq[-1].this.expr.args[0].apply(algebra.is_nonpositive.imply.is_zero, simplify=None)
 
-    Eq << Eq[-1].this.function.args[1].apply(algebra.eq_max.imply.et.ge, simplify=None)
+    Eq << Eq[-1].this.expr.args[1].apply(algebra.eq_max.imply.et.ge, simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.et.imply.et.delete, index=0)
+    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.delete, index=0)
 
     Eq << Eq[-1].this.args[0].apply(algebra.abs_is_nonpositive.imply.is_zero)
 

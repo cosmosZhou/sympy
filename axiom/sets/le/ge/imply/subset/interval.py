@@ -26,20 +26,20 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.function.apply(sets.notcontains.imply.ou.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.notcontains.imply.ou.split.interval)
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.function.args[1].apply(sets.contains.imply.et.split.interval)
+    Eq << Eq[-1].this.expr.args[1].apply(sets.contains.imply.et.split.interval)
 
     #if self implies a False proposition, then self must be False
-    Eq << Eq[-1].this.function.apply(algebra.cond.cond.ou.given.ou, simplify=False)
+    Eq << Eq[-1].this.expr.apply(algebra.cond.cond.ou.given.ou, simplify=False)
 
-    Eq.any_ax, Eq.any_by = Any(Eq[-1].function.args[0], *Eq[-1].limits, plausible=True), Any(Eq[-1].function.args[1], *Eq[-1].limits, plausible=True)
+    Eq.any_ax, Eq.any_by = Any(Eq[-1].expr.args[0], *Eq[-1].limits, plausible=True), Any(Eq[-1].expr.args[1], *Eq[-1].limits, plausible=True)
 
     Eq <<= algebra.any_et.imply.any.limits_absorb.apply(Eq.any_ax, index=1), algebra.any_et.imply.any.limits_absorb.apply(Eq.any_by, index=2)
 
-    Eq <<= Eq[-2].this.function.apply(algebra.lt.ge.imply.lt.transit), Eq[-1].this.function.apply(algebra.gt.le.imply.gt.transit)
+    Eq <<= Eq[-2].this.expr.apply(algebra.lt.ge.imply.lt.transit), Eq[-1].this.expr.apply(algebra.gt.le.imply.gt.transit)
 
     Eq <<= Eq[-2] & Eq[1], Eq[-1] & Eq[0]
 

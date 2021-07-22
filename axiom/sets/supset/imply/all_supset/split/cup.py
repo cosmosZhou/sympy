@@ -6,7 +6,7 @@ from util import *
 def apply(given):
     lhs, rhs = given.of(Supset)
     assert rhs.is_Cup
-    return All(Supset(lhs, rhs.function, ).simplify(), *rhs.limits)
+    return All(Supset(lhs, rhs.expr, ).simplify(), *rhs.limits)
 
 @prove
 def prove(Eq):

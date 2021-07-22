@@ -19,13 +19,13 @@ def prove(Eq):
 
     Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[-1], simplify=False)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.et.split.complement, simplify=None)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.et.split.complement, simplify=None)
 
     Eq << sets.any_et.imply.any.single_variable.limits_absorb.apply(Eq[-1], index=0, simplify=None)
 
     Eq << sets.any.imply.any.limits.swap.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(sets.contains.subset.imply.contains, Eq[0])
+    Eq << Eq[-1].this.expr.apply(sets.contains.subset.imply.contains, Eq[0])
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1])
 

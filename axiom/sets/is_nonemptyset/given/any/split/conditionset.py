@@ -26,7 +26,7 @@ def prove(Eq):
     
     Eq << Any[x:S](Contains(x, A), plausible=True)
     
-    Eq << Eq[-1].this.function.subs(Eq[2])
+    Eq << Eq[-1].this.expr.subs(Eq[2])
     
     Eq << Eq[-1].simplify()
 

@@ -1,7 +1,7 @@
 from util import *
 
 
-@apply
+@apply(simplify=None)
 def apply(given):
     n, b = given.of(Greater)
     assert n.is_integer
@@ -11,9 +11,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True, given=True)
     b = Symbol.b(integer=True, given=True)
-
     Eq << apply(n > b)
 
     Eq << Eq[-1].simplify()

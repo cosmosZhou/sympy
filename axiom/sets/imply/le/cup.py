@@ -9,6 +9,7 @@ def apply(expr, *limits):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     n = Symbol.n(integer=True, positive=True, given=False)
     k = Symbol.k(integer=True)
     A = Symbol.A(shape=(oo,), etype=dtype.integer)
@@ -24,13 +25,13 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.arg.split(slice(-1))
+    Eq << Eq.induct.this.lhs.arg.apply(sets.cup.to.union.split, cond=slice(-1))
 
     Eq << sets.imply.le.union.apply(*Eq[-1].lhs.arg.args)
 
     Eq << algebra.le.le.imply.le.subs.apply(Eq[-1], Eq[0])
 
-    Eq << Eq.induct.this.rhs.split(slice(-1))
+    Eq << Eq.induct.this.rhs.apply(algebra.sum.to.add.pop_back)
 
     Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 

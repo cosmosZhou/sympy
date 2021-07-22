@@ -125,6 +125,9 @@ class DenseMatrix(MatrixBase):
     def __setitem__(self, key, value):
         raise NotImplementedError()
 
+    def __iter__(self):
+        raise TypeError
+    
     def _cholesky(self, hermitian=True):
         """Helper function of cholesky.
         Without the error checks.

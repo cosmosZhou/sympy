@@ -1,7 +1,5 @@
 from util import *
 
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
-
 
 @apply
 def apply(self):

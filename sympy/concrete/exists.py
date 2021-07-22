@@ -2,6 +2,7 @@ from sympy.logic.boolalg import Boolean, And, Or
 from sympy.concrete.conditional_boolean import ConditionalBoolean
 from sympy.sets.sets import FiniteSet
 from sympy.concrete.expr_with_limits import ExprWithLimits
+from sympy.core.relational import Unequal
 
 
 class Any(ConditionalBoolean):
@@ -29,9 +30,9 @@ class Any(ConditionalBoolean):
 
             if len(args) == 1:
                 eq, *_ = args
-                if self.function.is_And:
-                    if eq in self.function.args:
-                        function = self.function.subs(eq)
+                if self.expr.is_And:
+                    if eq in self.expr.args:
+                        function = self.expr.subs(eq)
                         clue = function.clue
                         
                         kwargs.clear()
@@ -40,53 +41,18 @@ class Any(ConditionalBoolean):
                     
         return ConditionalBoolean.subs(self, *args, **kwargs)
 
-    def delete_independent_variables(self):
-        limits_dict = self.limits_dict
-        variables = self.variables
-
-        deletes = set()
-        function = self.function
-        for i, x in enumerate(variables):
-            if not function._has(x):
-                needsToDelete = True
-                for j in range(i):
-                    dependent = variables[j]
-                    domain = limits_dict[dependent]
-                    if not isinstance(domain, list) and domain.has(x) and dependent not in deletes:
-                        needsToDelete = False
-                        break
-
-                if needsToDelete:
-                    deletes.add(x)
-            
-            domain = limits_dict[x]
-            if isinstance(domain, tuple) and domain.is_FiniteSet and len(domain) == 1:
-                needsToDelete = True
-                deletes.add(x)
-                _x, *_ = limits_dict[x].args
-                function = function._subs(x, _x)
-                    
-        if deletes:
-            limits = self.limits_delete(deletes)
-            if limits:
-                return self.func(function, *limits).simplify()
-            
-            if function.is_All:
-                return function.simplify()
-            return function
-        
     def simplify(self, **kwargs):
         from sympy import S
         from sympy.sets.contains import Contains, NotContains
-        if self.function.is_Equal:
+        if self.expr.is_Equal:
             limits_dict = self.limits_dict
             x = None
-            if self.function.lhs in limits_dict:
-                x = self.function.lhs
-                y = self.function.rhs
-            elif self.function.rhs in limits_dict:
-                x = self.function.rhs
-                y = self.function.lhs
+            if self.expr.lhs in limits_dict:
+                x = self.expr.lhs
+                y = self.expr.rhs
+            elif self.expr.rhs in limits_dict:
+                x = self.expr.rhs
+                y = self.expr.lhs
 
             if x is not None and not y.has(x):
                 domain = limits_dict[x]
@@ -105,13 +71,13 @@ class Any(ConditionalBoolean):
                             return self.func(function, *limits)
                         return function
 
-        from sympy import Unequal, Equal
-        if self.function.is_Contains: 
+        from sympy import Equal
+        if self.expr.is_Contains: 
             limits_dict = self.limits_dict
             x = None
-            if self.function.lhs in limits_dict:
-                x = self.function.lhs
-                S = self.function.rhs                
+            if self.expr.lhs in limits_dict:
+                x = self.expr.lhs
+                S = self.expr.rhs                
             
             if x is not None:
                 domain = limits_dict[x]
@@ -135,12 +101,12 @@ class Any(ConditionalBoolean):
                             return function
                         return function
 
-        elif self.function.is_NotContains: 
+        elif self.expr.is_NotContains: 
             limits_dict = self.limits_dict
             x = None
-            if self.function.lhs in limits_dict:
-                x = self.function.lhs
-                S = self.function.rhs
+            if self.expr.lhs in limits_dict:
+                x = self.expr.lhs
+                S = self.expr.rhs
                 
             if x is not None:
                 domain = limits_dict[x]
@@ -163,18 +129,18 @@ class Any(ConditionalBoolean):
                             return function
                         return function
                     
-        if self.function.is_And:
+        if self.expr.is_And:
             limits_dict = self.limits_dict
-            for i, eq in enumerate(self.function.args):
+            for i, eq in enumerate(self.expr.args):
                 if eq.is_Contains and eq.lhs in limits_dict:
                     domain = limits_dict[eq.lhs]
                     if isinstance(domain, list):
-                        eqs = [*self.function.args]
+                        eqs = [*self.expr.args]
                         del eqs[i]  
                         if not eq.rhs.has(*self.variables[:i]): 
                             return self.func(And(*eqs), *self.limits_update(eq.lhs, eq.rhs)).simplify()
                     elif domain == eq.rhs:
-                        eqs = [*self.function.args]
+                        eqs = [*self.expr.args]
                         del eqs[i]
                         return self.func(And(*eqs), *self.limits)
 
@@ -188,13 +154,13 @@ class Any(ConditionalBoolean):
                     
                     continue 
                 
-        if self.function.is_Or:
+        if self.expr.is_Or:
             limits_dict = self.limits_dict
-            for i, eq in enumerate(self.function.args):
+            for i, eq in enumerate(self.expr.args):
                 if eq.is_NotContains and eq.lhs in limits_dict:
                     domain = limits_dict[eq.lhs]
                     if not isinstance(domain, list) and domain in eq.rhs:
-                        eqs = [*self.function.args]
+                        eqs = [*self.expr.args]
                         del eqs[i]
                         return self.func(And(*eqs), *self.limits)
 
@@ -211,7 +177,7 @@ class Any(ConditionalBoolean):
                     if any(limit._has(old) for limit in limits):
                         continue
                     
-                    eqs = [*self.function.args] 
+                    eqs = [*self.expr.args] 
                     del eqs[i]
                     eqs = [eq._subs(old, new) for eq in eqs]
                     
@@ -225,15 +191,15 @@ class Any(ConditionalBoolean):
                      
                     return self.func(And(*eqs), *limits).simplify()
                 
-        if self.function.is_Equal:
+        if self.expr.is_Equal:
             limits_dict = self.limits_dict
             x = None
-            if self.function.lhs in limits_dict:
-                x = self.function.lhs
-                y = self.function.rhs
-            elif self.function.rhs in limits_dict:
-                x = self.function.rhs
-                y = self.function.lhs
+            if self.expr.lhs in limits_dict:
+                x = self.expr.lhs
+                y = self.expr.rhs
+            elif self.expr.rhs in limits_dict:
+                x = self.expr.rhs
+                y = self.expr.lhs
 
         return ConditionalBoolean.simplify(self, **kwargs)
 
@@ -242,32 +208,14 @@ class Any(ConditionalBoolean):
             i, *args = self.limits[0]
             if len(args) == 2:
                 a, b = args
-                if self.function.subs(i, b + 1) == expr:
-                    return self.func(self.function, (i, a, b + 1))
-                if self.function.subs(i, a - 1) == expr:
-                    return self.func(self.function, (i, a - 1 , b))
-            elif len(args) == 1:
-                domain = args[0]
-                if domain.is_Complement:
-                    A, B = domain.args
-                    if isinstance(B, FiniteSet):
-                        deletes = set()
-                        for b in B:
-                            if self.function.subs(i, b) == expr:
-                                deletes.add(b)
-                        if deletes:
-                            B -= FiniteSet(*deletes)
-                            if B:
-                                domain = Complement(A, B, evaluate=False)
-                                return self.func(self.function, (i, domain))
-                            domain = A
-                            if domain.is_Range:
-                                return self.func(self.function, (i, domain.start, domain.stop))
-                            return self.func(self.function, (i, domain))
+                if self.expr.subs(i, b + 1) == expr:
+                    return self.func(self.expr, (i, a, b + 1))
+                if self.expr.subs(i, a - 1) == expr:
+                    return self.func(self.expr, (i, a - 1 , b))
 
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])
-        return '\N{THERE EXISTS}[%s](%s)' % (limits, p.doprint(self.function))
+        return '\N{THERE EXISTS}[%s](%s)' % (limits, p.doprint(self.expr))
 
     def _pretty(self, p):
         return ConditionalBoolean._pretty(self, p, '\N{THERE EXISTS}')
@@ -287,7 +235,7 @@ class Any(ConditionalBoolean):
             return limit
 
     def expr_iterable(self):
-        function = self.function
+        function = self.expr
 
         if isinstance(function, FiniteSet):
             if len(function) == 1:
@@ -298,8 +246,8 @@ class Any(ConditionalBoolean):
                     return expr.base[expr.indices[:-1]]
 
     def _latex(self, p):
-        latex = p._print(self.function)
-        if self.function.is_LatticeOp:
+        latex = p._print(self.expr)
+        if self.expr.is_LatticeOp:
             latex = r"\left(%s\right)" % latex
 
         if all(len(limit) == 1 for limit in self.limits):
@@ -327,18 +275,18 @@ class Any(ConditionalBoolean):
         """Overloading for | operator"""
         if eq.is_Any:
             if self.limits == eq.limits:
-                return self.func(self.function | eq.function, *self.limits)
+                return self.func(self.expr | eq.expr, *self.limits)
                         
-            if self.function == eq.function:
+            if self.expr == eq.expr:
                 limits = self.limits_union(eq)
-                return self.func(self.function, *limits).simplify()
+                return self.func(self.expr, *limits).simplify()
         
         return ConditionalBoolean.__or__(self, eq)
 
     @classmethod
     def simplify_All(cls, self, exists, *limits):
-        if exists.function.is_All:
-            forall = exists.function
+        if exists.expr.is_All:
+            forall = exists.expr
             dic = self.limits_common(forall)
             if dic:
                 forall = forall.func(forall.function, *forall.limits_update(dic))
@@ -357,6 +305,14 @@ class Any(ConditionalBoolean):
                         return self
         
         return ConditionalBoolean.apply(self, axiom, *args, **kwargs)
+
+    def reduced_cond(self, x, cond, baseset=None):
+        if baseset:
+            return self.func[x:baseset](cond)
+        if cond.is_set:
+            return Unequal(cond, x.emptySet)
+        return self.func[x](cond)
+
 
 from sympy.concrete.forall import All     
 Any.invert_type = All

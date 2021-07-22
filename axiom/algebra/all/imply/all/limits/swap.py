@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << algebra.ou.imply.all.apply(Eq[-1], pivot=1, wrt=x)
 
-    Eq << Eq[-1].this.function.apply(algebra.ou.imply.all, pivot=1, wrt=y)
+    Eq << Eq[-1].this.expr.apply(algebra.ou.imply.all, pivot=1, wrt=y)
 
 
 if __name__ == '__main__':

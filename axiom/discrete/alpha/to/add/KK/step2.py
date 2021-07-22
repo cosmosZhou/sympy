@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.together()
 
-    Eq << discrete.continued_fraction.HK.step2.apply(x[:n + 1])
+    Eq << discrete.add.to.mul.HK.step2.apply(x[:n + 1])
 
 
 if __name__ == '__main__':

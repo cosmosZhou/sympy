@@ -11,9 +11,10 @@ def apply(fx, x, n):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     f = Function.f(real=True)
     x = Symbol.x(real=True)
-    fx = f(x)    
+    fx = f(x)
     n = Symbol.n(integer=True, nonnegative=True, given=False)
     Eq << apply(fx, x, n)
 
@@ -29,9 +30,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(discrete.difference.to.add)
 
-    Eq << Eq[-1].this.rhs.split({0})
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond={0})
 
-    Eq << Eq[-1].this.find(Sum).split({n + 1})
+    Eq << Eq[-1].this.find(Sum).apply(algebra.sum.to.add.split, cond={n + 1})
 
     Eq.hypothesis = algebra.cond.imply.cond.subs.apply(Eq[0], x, x + 1)
 
@@ -42,15 +43,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[0].apply(algebra.mul.to.sum)
 
-    Eq << Eq[-1].this.find(Sum[2]).split({n + 1})
+    Eq << Eq[-1].this.find(Sum[2]).apply(algebra.sum.to.add.split, cond={n + 1})
 
-    Eq.split = Eq[-1].this.find(Sum).split({0})
+    Eq.split = Eq[-1].this.find(Sum).apply(algebra.sum.to.add.split, cond={0})
 
     Eq << Add(*Eq.split.rhs.args[2:]).this.apply(algebra.add.to.sum)
 
-    Eq << Eq[-1].this.rhs.function.collect(Mul(*Eq[-1].rhs.function.args[0].args[:-1]))
+    Eq << Eq[-1].this.rhs.expr.collect(Mul(*Eq[-1].rhs.expr.args[0].args[:-1]))
 
-    Eq << discrete.combinatorics.binomial.Pascal.apply(n + 1, i)
+    Eq << discrete.binomial.to.add.Pascal.apply(n + 1, i)
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
@@ -59,7 +60,6 @@ def prove(Eq):
     Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
     Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq[-1], n=n)
-
 
 
 if __name__ == '__main__':

@@ -303,7 +303,12 @@ class Expr(Basic, EvalfMixin):
             if isinstance(self.args[-1], (Infinitesimal, NegativeInfinitesimal)):
                 return self.func(*self.args[:-1]) / other + self.args[-1] / other
 
-        return Mul(self, Pow(other, S.NegativeOne))
+        try:
+            return Mul(self, Pow(other, S.NegativeOne))
+        except TypeError:
+            other = Basic.__new__(Pow, other, S.NegativeOne)
+            return Basic.__new__(Mul, self, other)
+            
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__div__')

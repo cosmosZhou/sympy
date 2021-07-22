@@ -23,6 +23,7 @@ def prove(Eq):
     Eq << apply(f(y) > 0, Any[x:A](g(x) > 0))
 
     Eq << algebra.any_et.imply.et.any.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
 
 if __name__ == '__main__':

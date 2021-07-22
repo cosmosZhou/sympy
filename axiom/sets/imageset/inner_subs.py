@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << Eq[0].this.lhs.apply(sets.cup.piecewise)
 
-    Eq << Eq[-1].this.lhs.function.apply(algebra.piecewise.subs)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.piecewise.subs)
 
 
 if __name__ == '__main__':

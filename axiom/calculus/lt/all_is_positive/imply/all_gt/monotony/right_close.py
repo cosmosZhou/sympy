@@ -23,7 +23,7 @@ def prove(Eq):
     f = Function.f(real=True)
     Eq << apply(a < b, All[x:domain](Derivative[x](f(x)) > 0))
 
-    Eq << Eq[1].this.function.apply(sets.is_positive.imply.is_real)
+    Eq << Eq[1].this.expr.apply(sets.is_positive.imply.is_real)
 
     Eq.is_continuous = calculus.is_differentiable.imply.is_continuous.apply(Eq[-1])
 
@@ -58,17 +58,17 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.any_et.imply.any.limits_absorb, index=1)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.is_positive.is_positive.imply.is_positive)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.is_positive.is_positive.imply.is_positive)
 
     Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any_et.limits.unleash)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.gt.eq.imply.gt.transit)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.gt.eq.imply.gt.transit)
 
-    #Eq << Eq[-1].subs(t, x)
+    Eq << algebra.suffice.imply.suffice.split.et.apply(Eq[-1], 1)
 
     Eq << algebra.suffice.imply.all.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(algebra.is_positive.imply.gt)
+    Eq << Eq[-1].this.expr.apply(algebra.is_positive.imply.gt)
 
 
 if __name__ == '__main__':

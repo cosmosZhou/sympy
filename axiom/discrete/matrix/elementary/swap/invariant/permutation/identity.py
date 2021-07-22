@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << Any[x](Eq.ou.args[1], plausible=True)
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << Eq[-1].this.lhs.simplify()
 

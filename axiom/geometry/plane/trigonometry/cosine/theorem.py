@@ -82,13 +82,13 @@ def prove(Eq):
 
     Eq.xy_bound = Eq[-1].this.lhs.ratsimp()
 
-    Eq << Eq[3].this.function.subs(Eq.x_definition, Eq.y_definition)
+    Eq << Eq[3].this.expr.subs(Eq.x_definition, Eq.y_definition)
 
-    Eq << Eq[-1].this.function / (z * z)
+    Eq << Eq[-1].this.expr / (z * z)
 
-    Eq << Eq[-1].this.function - (Eq[-1].function.rhs.args[-1] + 1)
+    Eq << Eq[-1].this.expr - (Eq[-1].expr.rhs.args[-1] + 1)
 
-    Eq.cos = Eq[-1].this.function / (2 * x * y)
+    Eq.cos = Eq[-1].this.expr / (2 * x * y)
 
     Eq << algebra.le.le.imply.le.quadratic.apply(Eq.x_bound, Eq.y_bound)
 

@@ -41,15 +41,15 @@ def prove(Eq):
 
     Eq << ~Eq[3]
 
-    Eq << Eq[-1].this.function.apply(algebra.is_nonzero.imply.is_positive)
+    Eq << Eq[-1].this.expr.apply(algebra.is_nonzero.imply.is_positive)
 
     Eq << Eq[-3].this.lhs.apply(algebra.sum.to.add.split, cond={i})
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this().function.find(Piecewise, Contains).simplify()
+    Eq << Eq[-1].this().expr.find(Piecewise, Contains).simplify()
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.gt.imply.lt.sub)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.gt.imply.lt.sub)
 
 
 if __name__ == '__main__':

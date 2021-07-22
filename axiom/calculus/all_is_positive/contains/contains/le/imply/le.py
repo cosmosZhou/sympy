@@ -52,7 +52,7 @@ def prove(Eq):
     domain = Interval(a, b, left_open=True, right_open=True)
     Eq << apply(All[x:domain](Derivative[x](f(x)) > 0), Contains(x0, domain), Contains(x1, domain), x0 <= x1)
 
-    Eq << Eq[0].this.function.apply(sets.gt.imply.is_real)
+    Eq << Eq[0].this.expr.apply(sets.gt.imply.is_real)
 
     Eq.subset = sets.contains.contains.imply.subset.interval.apply(Eq[1], Eq[2])
 
@@ -68,13 +68,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Unequal).apply(sets.interval_is_nonemptyset.imply.is_nonnegative, simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.is_nonnegative.is_positive.imply.is_nonnegative)
+    Eq << Eq[-1].this.expr.apply(algebra.is_nonnegative.is_positive.imply.is_nonnegative)
 
     Eq << algebra.all.any.imply.any_et.apply(Eq[-1], Eq.any)
 
-    Eq << Eq[-1].this.function.apply(algebra.ge.eq.imply.ge.transit)
+    Eq << Eq[-1].this.expr.apply(algebra.ge.eq.imply.ge.transit)
 
-    Eq << algebra.is_nonnegative.imply.le.apply(Eq[-1])
+    Eq << algebra.et.imply.et.apply(Eq[-1])
+    Eq << algebra.is_nonnegative.imply.le.apply(Eq[-2])
 
 
 if __name__ == '__main__':

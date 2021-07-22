@@ -17,18 +17,16 @@ def apply(given, t, alpha, beta):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True, positive=True)
     x = Symbol.x(real=True, shape=(n,))
     y = Symbol.y(real=True, shape=(n,))
-
     x = Symbol.x(real=True, shape=())
     y = Symbol.y(real=True, shape=())
     a = Symbol.a(real=True)
     b = Symbol.b(real=True)
-
     lamda = Symbol.lamda(domain=Interval(0, 1))
     t = Symbol.t(lamda * x + (1 - lamda) * y)
-
     alpha = Symbol.alpha(real=True, positive=True)
     beta = Symbol.beta(real=True, positive=True)
     Eq << apply(abs(x - y) > 0, t=t, alpha=alpha, beta=beta)
@@ -43,7 +41,7 @@ def prove(Eq):
 
     Eq.less_than = algebra.imply.le.abs.substract.apply(Eq[-1].lhs.arg, x - y)
 
-    Eq << Eq[0] * (alpha - beta)
+    Eq << Eq[1] * (alpha - beta)
 
     Eq << Eq[-1].this.rhs.expand()
 
@@ -83,7 +81,7 @@ def prove(Eq):
 
     Eq << algebra.le.lt.imply.lt.add.apply(Eq[-2], Eq[-1])
 
-    Eq << algebra.is_positive.lt.imply.lt.mul.apply(Eq[3], Eq.lt)
+    Eq << algebra.is_positive.lt.imply.lt.mul.apply(Eq[0], Eq.lt)
 
     Eq << algebra.le.lt.imply.lt.transit.apply(Eq.less_than, Eq[-1])
 

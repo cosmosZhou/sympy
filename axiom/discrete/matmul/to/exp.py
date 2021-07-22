@@ -31,11 +31,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.reducedSum.to.lamda, var=Eq[1].lhs.function.variable)
+    Eq << Eq[-1].this.rhs.apply(algebra.reducedSum.to.lamda, var=Eq[1].lhs.expr.variable)
 
     Eq << Eq[-1].this.rhs.simplify()
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.exp.to.mul)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.exp.to.mul)
 
 
 if __name__ == '__main__':

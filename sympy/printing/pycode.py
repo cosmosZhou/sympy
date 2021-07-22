@@ -277,7 +277,7 @@ class AbstractPythonCodePrinter(CodePrinter):
                 b=self._print(b))
             for i, a, b in expr.limits)
         return '(builtins.sum({function} {loops}))'.format(
-            function=self._print(expr.function),
+            function=self._print(expr.expr),
             loops=' '.join(loops))
 
     def _print_ImaginaryUnit(self, expr):

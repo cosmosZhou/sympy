@@ -64,7 +64,7 @@ def prove(Eq):
 
     Eq << sets.contains.imply.any_eq.apply(Eq[0], var='A')
 
-    Eq << Eq[-1].this.function.apply(calculus.eq.imply.any_all.limit_definition.limit)
+    Eq << Eq[-1].this.expr.apply(calculus.eq.imply.any_all.limit_definition.limit)
 
 
 if __name__ == '__main__':

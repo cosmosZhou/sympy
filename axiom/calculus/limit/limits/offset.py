@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(algebra.all.imply.all.limits.subs.offset, -x0)
+    Eq << Eq[-1].this.expr.apply(algebra.all.imply.all.limits.subs.offset, -x0)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[1])

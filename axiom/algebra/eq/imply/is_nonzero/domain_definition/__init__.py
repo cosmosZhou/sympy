@@ -35,7 +35,8 @@ def prove(Eq):
     d = Symbol.d(complex=True)
     Eq << apply(Equal(a / b + d, c))
 
-    Eq << Eq[0].this.apply(algebra.eq.transposition, index=0)
+    Eq << Eq[0].this.apply(algebra.eq.transposition, lhs=0)
+
     Eq << algebra.eq.imply.is_nonzero.domain_definition.st.mul.apply(Eq[-1])
 
 

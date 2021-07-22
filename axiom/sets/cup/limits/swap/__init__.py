@@ -12,35 +12,30 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)
     m = Symbol.m(integer=True, positive=True)
     n = Symbol.n(integer=True, positive=True, given=False)
-
     f = Symbol.f(shape=(oo,), etype=dtype.real)
     g = Symbol.g(shape=(oo, oo), etype=dtype.real)
-
     Eq << apply(Cup[i:0:m, j:0:n](f[i] & g[i, j]))
 
-#     Eq.initial = Eq[0].subs(n, 1)
-
-#     Eq << Eq.initial.this.lhs.apply(sets.cup.doit.outer)
-
-#     Eq << Eq[-1].this.rhs.apply(algebra.sum.doit.inner)
-
+    #Eq.initial = Eq[0].subs(n, 1)
+    #Eq << Eq.initial.this.lhs.apply(sets.cup.doit.outer)
+    #Eq << Eq[-1].this.rhs.apply(algebra.sum.doit.inner)
     Eq.induct = Eq[0].subs(n, n + 1)
 
-    Eq << Eq.induct.this.lhs.split({n})
+    Eq << Eq.induct.this.lhs.apply(sets.cup.to.union.split, cond={n})
 
     Eq.induct_dissected = Eq[-1].this.lhs.find(Cup).apply(sets.cup.to.union.doit.outer.setlimit)
 
     s = Symbol.s(Cup[j:0:n + 1](f[i] & g[i, j]))
-
     Eq << s.this.definition
 
     Eq << Eq[-1].apply(sets.eq.imply.eq.cup, (i, 0, m))
 
-    Eq << Eq[-2].this.rhs.split({n})
+    Eq << Eq[-2].this.rhs.apply(sets.cup.to.union.split, cond={n})
 
     Eq << Eq[-1].this.rhs.args[1].apply(sets.intersection.to.cup)
 

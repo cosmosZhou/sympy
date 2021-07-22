@@ -2,6 +2,7 @@ from sympy.logic.boolalg import Boolean, And, Or
 from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.concrete.conditional_boolean import ConditionalBoolean
 from sympy.core.sympify import sympify
+from sympy.core.relational import Equal
 
 
 class All(ConditionalBoolean):
@@ -60,11 +61,11 @@ class All(ConditionalBoolean):
             limit_cond = NotContains(new, domain).simplify()
             eqs.append(limit_cond)
 
-            if self.function.is_Or:
-                for equation in self.function.args:
+            if self.expr.is_Or:
+                for equation in self.expr.args:
                     eqs.append(equation._subs(old, new))
             else:
-                eqs.append(self.function._subs(old, new))
+                eqs.append(self.expr._subs(old, new))
 
             limits = self.limits_delete(old)
             if limits:
@@ -78,62 +79,6 @@ class All(ConditionalBoolean):
                 
         return ConditionalBoolean.subs(self, *args, **kwargs)
         
-    def detect_previous_dependence(self, i):
-        x = self.variables[i]
-        for j in range(i):
-            var, *ab = self.limits[j]
-            if not ab:
-                continue
-            if len(ab) == 1:
-                domain = ab[0]
-                if domain._has(x):
-                    return True
-            else:
-                a, b = ab
-                if a._has(x) or b._has(x):
-                    return True
-            
-        return False
-        
-    def delete_independent_variables(self):
-        limits_dict = self.limits_dict
-        variables = self.variables
-
-        deletes = set()
-        function = self.function
-        limits = self.limits
-        needsToDelete = False
-        for i, x in enumerate(variables):
-            if not function._has(x) and not self.detect_previous_dependence(i):
-                needsToDelete = True
-                domain = limits_dict[x]
-                if not isinstance(domain, list) and domain.is_boolean:
-                    free_symbols = domain.free_symbols & function.free_symbols
-                    if free_symbols:
-                        free_symbols = {sym for sym in free_symbols if not sym.is_given}
-                        if free_symbols and domain.free_symbols - free_symbols - {x}:
-                            limits = [*limits]
-                            x, *_ = free_symbols
-                            limits[i] = (x, domain)
-                            break
-                                                  
-                deletes.add(x)
-        
-            domain = limits_dict[x]
-            if not isinstance(domain, list) and domain.is_FiniteSet and len(domain) == 1:                
-                _x, *_ = limits_dict[x].args
-                if not self.detect_previous_dependence(i):
-                    needsToDelete = True
-                    deletes.add(x)
-                    function = function._subs(x, _x)
-                    
-        if needsToDelete:
-            limits = limits_delete(limits, deletes)
-            if limits:
-                return self.func(function, *limits).simplify()
-
-            return function
-
     def simplify(self, local=None, **kwargs):
         deletes = []
         for i in range(len(self.limits) - 1, -1, -1):
@@ -150,16 +95,15 @@ class All(ConditionalBoolean):
                 from sympy import Range
                 domain = (Range if x.is_integer else Interval)(a, b)
                 
-                
-            if self.function._has(x) and domain.is_set:
-                _eval_domain_defined = self.function.domain_defined(x)
+            if self.expr._has(x) and domain.is_set:
+                _eval_domain_defined = self.expr.domain_defined(x)
                 if _eval_domain_defined in domain:
                     deletes.append(x)
                 domain &= _eval_domain_defined
                 if domain.is_FiniteSet:
                     if len(domain) == 1:
                         x0, *_ = domain
-                        function = self.function._subs(x, x0)
+                        function = self.expr._subs(x, x0)
                         if function.is_BooleanAtom:
                             return function
                         
@@ -176,14 +120,14 @@ class All(ConditionalBoolean):
         if deletes:
             limits = self.limits_delete(deletes)
             if limits:
-                return self.func(self.function, *limits).simplify()
+                return self.func(self.expr, *limits).simplify()
 
             if local:
-                limits = [(x,) for x, *_ in self.limits if self.function._has(x)]
-                return self.func(self.function, *limits)
-            return self.function
+                limits = [(x,) for x, *_ in self.limits if self.expr._has(x)]
+                return self.func(self.expr, *limits)
+            return self.expr
 
-        this = self.function.func.simplify_All(self, *self.args)
+        this = self.expr.func.simplify_All(self, *self.args)
         if this is not None:
             return this
 
@@ -242,14 +186,14 @@ class All(ConditionalBoolean):
             i, *args = self.limits[0]
             if len(args) == 2:
                 a, b = args
-                if self.function.subs(i, b + 1) == expr:
-                    return self.func(self.function, (i, a, b + 1))
-                if self.function.subs(i, a - 1) == expr:
-                    return self.func(self.function, (i, a - 1 , b))
+                if self.expr.subs(i, b + 1) == expr:
+                    return self.func(self.expr, (i, a, b + 1))
+                if self.expr.subs(i, a - 1) == expr:
+                    return self.func(self.expr, (i, a - 1 , b))
 
     def _sympystr(self, p):
         limits = ','.join([limit._format_ineq(p) for limit in self.limits])        
-        return '\N{FOR ALL}[%s](%s)' % (limits, p.doprint(self.function))
+        return '\N{FOR ALL}[%s](%s)' % (limits, p.doprint(self.expr))
 
     def _pretty(self, p):
         return ConditionalBoolean._pretty(self, p, '\N{FOR ALL}')    
@@ -269,10 +213,9 @@ class All(ConditionalBoolean):
             return limit
 
     def _latex(self, p):
-        latex = p._print(self.function)
-        if self.function.is_LatticeOp:
+        latex = p._print(self.expr)
+        if self.expr.is_LatticeOp:
             latex = r"\left(%s\right)" % latex
-
 
         if all(len(limit) == 1 for limit in self.limits):
             limit = ', '.join(var.latex for var, *_ in self.limits)
@@ -302,22 +245,22 @@ class All(ConditionalBoolean):
     def __and__(self, eq):
         """Overloading for & operator"""
         if eq.is_All: 
-            if self.function == eq.function:
+            if self.expr == eq.expr:
                 limits = self.limits_union(eq)
-                return self.func(self.function, *limits).simplify()
+                return self.func(self.expr, *limits).simplify()
 
             if self.limits == eq.limits:
-                return All(self.function & eq.function, *self.limits)                
+                return All(self.expr & eq.expr, *self.limits)                
                                                     
         for i, (x, *ab) in enumerate(self.limits):
             if len(ab) == 1:
                 cond, *_ = ab
                 if cond.is_Unequal:
                     invert = cond.invert()
-                    if self.function._subs(*invert.args) == eq:
+                    if self.expr._subs(*invert.args) == eq:
                         limits = [self.limits]
                         del limits[i]                        
-                        return self.func(self.function, *limits).simplify()                        
+                        return self.func(self.expr, *limits).simplify()                        
                     
         return ConditionalBoolean.__and__(self, eq)
 
@@ -344,5 +287,13 @@ class All(ConditionalBoolean):
 
     def inference_status(self, child):
         return child > 0
+
+    def reduced_cond(self, x, cond, baseset=None):
+        if baseset:
+            return self.func.invert_type[x:baseset](cond.invert())
+        if cond.is_set:
+            return Equal(cond, x.emptySet)
+        return self.func.invert_type[x](cond.invert())
+
 
 from sympy.concrete.limits import *

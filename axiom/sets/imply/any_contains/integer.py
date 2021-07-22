@@ -17,11 +17,11 @@ def prove(Eq):
     n = Symbol.n(integer=True)
     Eq << apply(x, n)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.given.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.contains.given.et.split.interval)
 
     Eq << Eq[-1].this.find(Greater) + 1
 
-    Eq << Eq[-1].this.function.apply(sets.gt.le.given.contains)
+    Eq << Eq[-1].this.expr.apply(sets.gt.le.given.contains)
 
     Eq << sets.imply.any_contains.real.apply(x, n)
 

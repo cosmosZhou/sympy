@@ -7,7 +7,7 @@ def apply(self):
     
     assert limit[0].is_integer
 
-    rhs = ReducedSum(Lamda(self.function, limit).simplify())
+    rhs = ReducedSum(Lamda(self.expr, limit).simplify())
     if limits:       
         rhs = Sum(rhs, *limits)
 
@@ -23,7 +23,7 @@ def prove(Eq):
     n = Symbol.n(integer=True, positive=True, given=False)
     y = Symbol.y(shape=(n, n), real=True)
     Eq << apply(Sum[i:n, j:n](y[j, i]))
-    Eq << Eq[-1].this.rhs.function.apply(algebra.reducedSum.to.sum)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.reducedSum.to.sum)
 
 
 if __name__ == '__main__':

@@ -20,7 +20,9 @@ def apply(given, *, cond=None, wrt=None):
     domain = wrt.domain_conditioned(cond)
     if not domain.is_integer:
         domain = wrt.domain_conditioned(cond)
-    given = given.split(wrt.domain_conditioned(cond))
+        
+    from axiom.algebra.sum.to.add.split import split    
+    given = split(All, given, wrt.domain_conditioned(cond))    
     if given.is_And:
         lhs, rhs = given.of(And)
         return lhs, rhs

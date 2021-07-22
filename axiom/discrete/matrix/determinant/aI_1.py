@@ -27,19 +27,19 @@ def prove(Eq):
 
     Eq << Eq.induct.subs(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.split(slice(-1))
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.pop_back)
 
     Eq << Eq[-1].this.find(Sum)().find(Add).simplify()
 
-    Eq << Eq[-1].this.find(Lamda)().function.simplify()
+    Eq << Eq[-1].this.find(Lamda)().expr.simplify()
 
     Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.identity)
 
     Eq.deduct = (Eq[-1] - Eq[-1].lhs.args[0]).subs(Eq[0])
 
-    Eq << Eq.deduct.find(Product).this.split(slice(-1))
+    Eq << Eq.deduct.find(Product).this.apply(algebra.product.to.mul.split, cond={n})
 
-    Eq << Eq.deduct.find(Mul, Sum).this.split(slice(-1))
+    Eq << Eq.deduct.find(Mul, Sum).this.apply(algebra.sum.to.add.pop_back)
 
     Eq << Eq.deduct.rhs.this.subs(Eq[-1], Eq[-2])
 
@@ -49,7 +49,7 @@ def prove(Eq):
 
     Eq.deduction = Eq[-1].reversed
 
-    D = Eq.deduction.lhs.function.args[1].arg
+    D = Eq.deduction.lhs.expr.args[1].arg
     i = Eq.deduction.lhs.variable.copy(domain=Range(0, n))
     D = D._subs(Eq.deduction.lhs.variable, i)
     def column_transformation(*limits):
@@ -61,7 +61,7 @@ def prove(Eq):
     #return Lamda(Piecewise((KroneckerDelta(i, j), i < n - 1), (2 * KroneckerDelta(j, n - 1) - 1, True)), *limits)
     Eq << (D @ column_transformation(*D.limits)).this.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.find(Sum).split(slice(-1))
+    Eq << Eq[-1].this.find(Sum).apply(algebra.sum.to.add.pop_back)
 
     Eq.split = Eq[-1].this.find(Add, Lamda)().find(Mul, KroneckerDelta).simplify()
 
@@ -103,7 +103,7 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Product).limits_subs(v, v - 1)
 
     k = Eq[-1].find(Product).variable
-    Eq << Product[k:n](Eq[-1].find(Product).function).this.split({i})
+    Eq << Product[k:n](Eq[-1].find(Product).expr).this.apply(algebra.product.to.mul.split, cond={i})
 
     Eq.det_lamda = Eq[-2].subs((Eq[-1] / Eq[-1].rhs.args[0]).reversed)
 

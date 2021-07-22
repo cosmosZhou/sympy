@@ -9,7 +9,7 @@ def piece_together(Sum, self):
 
         if limits is None:
             limits = arg.limits
-            func = arg.function
+            func = arg.expr
         else:
             i = -1
             while i >= -len(limits) and i >= -len(arg.limits):
@@ -30,9 +30,9 @@ def piece_together(Sum, self):
                 function = [Sum(f, *inner_limits) for f in function]
 
             if _inner_limits:
-                func = Sum(arg.function, *_inner_limits)
+                func = Sum(arg.expr, *_inner_limits)
             else:
-                func = arg.function
+                func = arg.expr
 
         function.append(func)
 

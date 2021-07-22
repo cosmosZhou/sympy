@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[-1])
 
-    Eq << Eq[-1].this.function.limits_subs(Eq[-1].function.variable, x)
+    Eq << Eq[-1].this.expr.limits_subs(Eq[-1].expr.variable, x)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])
 

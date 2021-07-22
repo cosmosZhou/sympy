@@ -26,7 +26,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[1])
 
-    Eq << Eq[-1].this.function.apply(algebra.cond.any.imply.any_et)
+    Eq << Eq[-1].this.expr.apply(algebra.cond.any.imply.any_et)
 
 
 if __name__ == '__main__':

@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq.limit_A_definition = calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, δ0, var='A')
 
-    A = -Eq.limit_A_definition.function.function.lhs.arg.args[0]
+    A = -Eq.limit_A_definition.expr.expr.lhs.arg.args[0]
 
     Eq << Eq[0].subs(A.this.definition.reversed)
 
@@ -43,43 +43,43 @@ def prove(Eq):
 
     Eq.limit_B_definition = calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε1, δ1, var='B')
 
-    B = -Eq.limit_B_definition.function.function.lhs.arg.args[0]
+    B = -Eq.limit_B_definition.expr.expr.lhs.arg.args[0]
 
     Eq << algebra.imply.le.abs.add.mul.apply(f(x), g(x), A, B)
 
     δ2 = Symbol.δ_2(real=True, positive=True)
     Eq << calculus.is_limited.imply.any_all.le.boundedness.apply(Eq[1], delta=δ2, var='B')
 
-    B = Eq[-1].function.function.rhs
+    B = Eq[-1].expr.expr.rhs
 
-    Eq.le = Eq[-1].this.function.function.apply(algebra.le.lt.imply.le.subs, Eq[-2])
+    Eq.le = Eq[-1].this.expr.expr.apply(algebra.le.lt.imply.le.subs, Eq[-2])
 
     assert B > 0
     Eq << Eq.limit_A_definition.subs(ε0, ε / B / 2)
 
-    Eq.lt_fx = Eq[-1].this.function.function * B
+    Eq.lt_fx = Eq[-1].this.expr.expr * B
 
     Eq << algebra.is_positive.imply.is_positive.div.apply(Eq.is_positive, ε / 2, simplify=None)
 
     Eq << Eq.limit_B_definition.subs(ε1, Eq[-1].lhs)
 
-    Eq << Eq[-1].this.function.function.apply(algebra.is_positive.lt.imply.lt.mul, Eq.is_positive)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.is_positive.lt.imply.lt.mul, Eq.is_positive)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq.lt_fx)
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.lt.imply.lt.add)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.lt.imply.lt.add)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq.le, Eq[-1])
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.le.imply.lt.transit)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.le.imply.lt.transit)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
 
-    Eq << Eq[-1].this.function.limits[0][1].args[1].simplify()
+    Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
     delta = Symbol.delta(real=True, positive=True)
 

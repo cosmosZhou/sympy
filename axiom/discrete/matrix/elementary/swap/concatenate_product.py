@@ -12,11 +12,11 @@ def apply(n, m, b):
 
 @prove
 def prove(Eq):
-    from axiom import algebra, discrete
+    from axiom import discrete, algebra
+
     n = Symbol.n(domain=Range(2, oo))
     m = Symbol.m(positive=True, integer=True, given=False)
     b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
-
     Eq << apply(n, m, b)
 
     Eq.initial = Eq[0].subs(m, 1)
@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq.induct = Eq[0].subs(m, m + 1)
 
-    Eq << Eq.induct.this.rhs.split(slice(-1))
+    Eq << Eq.induct.this.rhs.apply(discrete.matProduct.to.matmul.pop_back)
 
     Eq << Eq[-1].subs(Eq[0].reversed)
 

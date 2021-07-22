@@ -6,7 +6,7 @@ def apply(self, old, new):
     from sympy.concrete.limits import limits_sort
     function, *limits = self.of(Any)
     assert not new.is_given
-    assert not self.function._has(new)
+    assert not self.expr._has(new)
 
     limits_dict = self.limits_dict
     assert new not in limits_dict

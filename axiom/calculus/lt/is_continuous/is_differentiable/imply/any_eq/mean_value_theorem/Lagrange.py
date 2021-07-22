@@ -5,7 +5,7 @@ from util import *
 def apply(lt, is_continuous, is_differentiable):
     from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import of_differentiable, of_continuous
     a, b = lt.of(Less)
-    if is_continuous.function.is_Contains:
+    if is_continuous.expr.is_Contains:
         is_continuous, is_differentiable = is_differentiable, is_continuous
     
     fz, (z, _a, _b) = of_continuous(is_continuous)
@@ -49,46 +49,46 @@ def prove(Eq):
 
     Eq.is_continuous = Eq[1]._subs(f, g).copy(plausible=True)
 
-    Eq << Eq.is_continuous.this.function.lhs.expr.defun()
+    Eq << Eq.is_continuous.this.expr.lhs.expr.defun()
 
-    Eq << Eq[-1].this.function.rhs.defun()
+    Eq << Eq[-1].this.expr.rhs.defun()
 
-    Eq << Eq[-1].this.function.lhs.apply(calculus.limit.to.add)
+    Eq << Eq[-1].this.expr.lhs.apply(calculus.limit.to.add)
 
-    Eq << Eq[-1].this.function.lhs.args[0].apply(calculus.limit.to.mul)
+    Eq << Eq[-1].this.expr.lhs.args[0].apply(calculus.limit.to.mul)
 
     Eq << Eq[-1].this.find(Limit).apply(calculus.limit.to.mul)
 
     Eq <<= Eq[1] & Eq[-1]
 
-    Eq <<= Eq[-1].this.function.apply(algebra.et.given.et.subs.eq)
+    Eq <<= Eq[-1].this.expr.apply(algebra.et.given.et.subs.eq)
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
-    Eq << Eq[-1].this.function.simplify()
+    Eq << Eq[-1].this.expr.simplify()
 
-    Eq << Eq[-1].this.function.rhs.apply(algebra.mul.distribute)
+    Eq << Eq[-1].this.expr.rhs.apply(algebra.mul.distribute)
 
     Eq.is_differentiable = Eq[2]._subs(f, g).copy(plausible=True)
 
-    Eq << Eq.is_differentiable.this.function.lhs.expr.defun()
+    Eq << Eq.is_differentiable.this.expr.lhs.expr.defun()
 
-    Eq << Eq[-1].this.function.lhs.apply(calculus.derivative.to.add)
+    Eq << Eq[-1].this.expr.lhs.apply(calculus.derivative.to.add)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.given.contains.add, f(b) - f(a))
+    Eq << Eq[-1].this.expr.apply(sets.contains.given.contains.add, f(b) - f(a))
 
     Eq << sets.all.imply.all_et.apply(Eq[2], simplify=None)
 
     Eq << Eq[-1].this.find(Unequal).apply(sets.interval_is_nonemptyset.imply.is_positive, simplify=None)
 
-    Eq << Eq[-1].this.function.apply(sets.is_positive.contains.imply.contains.mul)
+    Eq << Eq[-1].this.expr.apply(sets.is_positive.contains.imply.contains.mul)
 
     Eq << calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle.apply(Eq[0], Eq.is_continuous, Eq.is_differentiable, Eq.equal)
 
-    Eq << Eq[-1].this.function.lhs.expr.defun()
+    Eq << Eq[-1].this.expr.lhs.expr.defun()
 
-    Eq << Eq[-1].this.function.lhs.apply(calculus.derivative.to.add)
+    Eq << Eq[-1].this.expr.lhs.apply(calculus.derivative.to.add)
 
-    Eq << Eq[-1].this.function - f(a)
+    Eq << Eq[-1].this.expr - f(a)
 
 
 if __name__ == '__main__':

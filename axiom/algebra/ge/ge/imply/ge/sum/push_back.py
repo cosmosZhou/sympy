@@ -20,9 +20,9 @@ def prove(Eq):
 
     Eq << algebra.ge.ge.imply.ge.add.apply(Eq[0], Eq[1])
 
-    Eq << Eq[2].this.lhs.split({b})
+    Eq << Eq[2].this.lhs.apply(algebra.sum.to.add.split, cond={b})
 
-    Eq << Eq[-1].this.rhs.split({b})
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond={b})
 
 
 if __name__ == '__main__':

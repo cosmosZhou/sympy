@@ -38,9 +38,9 @@ def prove(Eq):
 
     Eq << Eq[3].subs(x, 0)
 
-    Eq << Eq[-1].this.lhs().function.simplify()
+    Eq << Eq[-1].this.lhs().expr.simplify()
 
-    Eq.initial = Eq[-1].this.rhs().function.simplify()
+    Eq.initial = Eq[-1].this.rhs().expr.simplify()
 
     m = Symbol.m(integer=True, given=False, nonnegative=True)
     Eq.hypothesis = Eq[1].subs(n, m)
@@ -86,21 +86,21 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(calculus.limit.to.sum)
 
-    Eq << Eq[-1].this.lhs.split({0})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={0})
 
-    Eq << Eq[-1].this.rhs.split({0})
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond={0})
 
-    Eq << Eq[-1].this.lhs.args[1]().function.doit()
+    Eq << Eq[-1].this.lhs.args[1]().expr.doit()
 
-    Eq << Eq[-1].this.rhs.args[1]().function.doit()
+    Eq << Eq[-1].this.rhs.args[1]().expr.doit()
 
     Eq << Suffice(Eq.hypothesis_k, Eq.induct, plausible=True)
 
     Eq << algebra.cond.suffice.imply.cond.induct.second.apply(Eq.initial, Eq[-1], n=m + 1, k=k, hypothesis=True)
 
-    Eq << Eq.induct.subs(m, m - 1)
-
     Eq << Eq.hypothesis.subs(m, n)
+
+    Eq << algebra.ou.imply.all.apply(Eq[-1], 1)
 
 
 if __name__ == '__main__':

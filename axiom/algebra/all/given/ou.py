@@ -20,11 +20,11 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.cond.imply.eq.bool, split=False)
+    Eq << Eq[-1].this.expr.apply(algebra.cond.imply.eq.bool, split=False)
 
     Eq << algebra.cond.imply.eq.bool.invert.apply(Eq[1])
 
-    Eq << Eq[-2].this.function.apply(algebra.eq.eq.imply.eq.transit, Eq[-1])
+    Eq << Eq[-2].this.expr.apply(algebra.eq.eq.imply.eq.transit, Eq[-1])
 
 
 if __name__ == '__main__':

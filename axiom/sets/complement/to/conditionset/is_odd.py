@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq.all_contains_in_B.this.limits[0][1].definition
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << algebra.all.given.ou.apply(Eq[-1])
 
@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq << Eq.all_contains_in_A.this.limits[0][1].definition
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << algebra.all.given.ou.apply(Eq[-1])
 

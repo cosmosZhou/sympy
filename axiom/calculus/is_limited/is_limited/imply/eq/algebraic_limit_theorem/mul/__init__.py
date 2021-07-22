@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.cond.any.imply.any_et, simplify=None)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.eq.eq.imply.eq.mul)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.eq.eq.imply.eq.mul)
 
     Eq << algebra.suffice.suffice.imply.suffice.et.apply(Eq.is_zero, Eq[-1])
 

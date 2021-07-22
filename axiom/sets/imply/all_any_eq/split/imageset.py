@@ -28,7 +28,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.rhs.definition
     Eq << Eq[-1].this.lhs.apply(sets.contains.imply.any_eq.split.imageset)
 
-    Eq << Eq[-1].this.args[0].function.reversed
+    Eq << Eq[-1].this.args[0].expr.reversed
 
 
 if __name__ == '__main__':

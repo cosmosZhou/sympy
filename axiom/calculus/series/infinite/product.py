@@ -25,10 +25,10 @@ def prove(Eq):
 
     Eq << Eq[0].lhs.this.apply(algebra.mul.to.sum)
 
-    Eq << Eq[-1].this.rhs.function.apply(algebra.mul.to.sum)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.sum)
 
     i, n = Eq[-1].rhs.variables
-    k = Eq[0].rhs.function.args[1].variable
+    k = Eq[0].rhs.expr.args[1].variable
     Eq << Eq[-1].this.rhs.limits_subs(i, k)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.swap)

@@ -901,6 +901,11 @@ class Number(AtomicExpr):
         if rhs._has(Symbol):
             return self.reversed_type(rhs, lhs)
 
+    def instanceof(self, cls):
+        if isinstance(cls, type):
+            return isinstance(self, cls)
+        
+        return self == cls
     
 class Float(Number):
     """Represent a floating-point number of arbitrary precision.

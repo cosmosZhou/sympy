@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << sets.any.imply.any_et.single_variable.apply(Eq[-1], simplify=False)
 
-    Eq << Eq[-1].this.function.args[0].rhs.definition
+    Eq << Eq[-1].this.expr.args[0].rhs.definition
 
 
 if __name__ == '__main__':

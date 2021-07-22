@@ -10,11 +10,11 @@ def apply(self, indices, wrt=None, evaluate=False):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(integer=True)
     f = Function.f(real=True)
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
-
     Eq << apply(Any[x:A](f(x) > 0), B)
 
     Eq << algebra.equivalent.given.et.apply(Eq[-1])

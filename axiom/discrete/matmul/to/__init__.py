@@ -4,3 +4,4 @@ from . import blockMatrix
 from . import sum
 
 from . import exp
+from . import matrix

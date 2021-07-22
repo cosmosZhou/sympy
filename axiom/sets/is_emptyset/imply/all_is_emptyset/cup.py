@@ -13,7 +13,7 @@ def apply(given):
         assert emptyset.is_EmptySet
 
     assert x_union.is_Cup
-    return All(Equal(x_union.function, emptyset), *x_union.limits)
+    return All(Equal(x_union.expr, emptyset), *x_union.limits)
 
 
 @prove
@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq.paradox = ~Eq[-1]
 
-    Eq.positive = Eq.paradox.this.function.apply(sets.is_nonemptyset.imply.is_positive)
+    Eq.positive = Eq.paradox.this.expr.apply(sets.is_nonemptyset.imply.is_positive)
 
     Eq.union_empty = Eq[0].apply(algebra.eq.imply.eq.abs)
 

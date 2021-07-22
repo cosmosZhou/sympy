@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << sets.subset.imply.all_contains.apply(Eq[0])
 
-    Eq << Eq[-1].this.function.apply(sets.contains.subset.imply.contains, Eq[1])
+    Eq << Eq[-1].this.expr.apply(sets.contains.subset.imply.contains, Eq[1])
 
     Eq << sets.all_contains.imply.subset.apply(Eq[-1])
 

@@ -16,9 +16,9 @@ def prove(Eq):
 
     Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[0], simplify=False)
 
-    Eq << Eq[-1].this.function.apply(sets.contains.imply.eq.union)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.eq.union)
 
-    Eq.any = Eq[-1].this.function.apply(algebra.eq.imply.eq.abs)
+    Eq.any = Eq[-1].this.expr.apply(algebra.eq.imply.eq.abs)
 
     Eq << sets.imply.eq.principle.addition.apply(A, Eq[-1].variable.set)
 
@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-2], Eq[-1])
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.ne.imply.ne.transit)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.ne.imply.ne.transit)
 
 
 if __name__ == '__main__':

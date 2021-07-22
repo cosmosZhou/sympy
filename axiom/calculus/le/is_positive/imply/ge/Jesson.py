@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq[0], Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this.function * w
+    Eq << Eq[-1].this.expr * w
 
     Eq.is_nonpositive = Eq[0] - x1
 
@@ -70,25 +70,25 @@ def prove(Eq):
 
     Eq <<= calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq.ge.reversed, Eq[-2], Eq[-4]), calculus.le.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange.close.apply(Eq.le, Eq[-1], Eq[-3])
 
-    Eq <<= Eq[-2].this.function.rhs.args[0].apply(algebra.add.collect), Eq[-1].this.function.rhs.find(Mul[Add]).apply(algebra.mul.to.add)
+    Eq <<= Eq[-2].this.expr.rhs.args[0].apply(algebra.add.collect), Eq[-1].this.expr.rhs.find(Mul[Add]).apply(algebra.mul.to.add)
 
-    Eq <<= Eq[-2].this.function.rhs.args[0].apply(algebra.add.collect, factor=1 - w), Eq[-1].this.function.rhs.find(Add[Mul]).apply(algebra.add.to.mul)
+    Eq <<= Eq[-2].this.expr.rhs.args[0].apply(algebra.add.collect, factor=1 - w), Eq[-1].this.expr.rhs.find(Add[Mul]).apply(algebra.add.to.mul)
 
-    Eq <<= Eq[-2].this.function * w, Eq[-1].this.function * (1 - w)
+    Eq <<= Eq[-2].this.expr * w, Eq[-1].this.expr * (1 - w)
 
     Eq << algebra.any.any.imply.any_et.apply(Eq[-2], Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.function.apply(algebra.eq.eq.imply.eq.sub)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.eq.imply.eq.sub)
 
-    Eq << Eq[-1].this.function.lhs.find(Mul[Add]).apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.expr.lhs.find(Mul[Add]).apply(algebra.mul.to.add)
 
-    Eq << Eq[-1].this.function.lhs.find(Mul[Add]).apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.expr.lhs.find(Mul[Add]).apply(algebra.mul.to.add)
 
-    Eq << Eq[-1].this.function.lhs.find(Mul[Add]).apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.expr.lhs.find(Mul[Add]).apply(algebra.mul.to.add)
 
-    Eq << Eq[-1].this.function.lhs.apply(algebra.add.collect, factor=f(x1))
+    Eq << Eq[-1].this.expr.lhs.apply(algebra.add.collect, factor=f(x1))
 
-    Eq.any = Eq[-1].this.function.rhs.apply(algebra.add.collect, factor=w * (1 - w) * (x1 - x0))
+    Eq.any = Eq[-1].this.expr.rhs.apply(algebra.add.collect, factor=w * (1 - w) * (x1 - x0))
 
     Eq.suffice = Eq.any.limits_cond.this.apply(sets.contains.contains.imply.le)
 
@@ -124,7 +124,8 @@ def prove(Eq):
 
     Eq << algebra.all.any.imply.any_et.apply(Eq[-1], Eq.any)
 
-    Eq << Eq[-1].this.function.apply(algebra.ge.eq.imply.ge.transit)
+    Eq << Eq[-1].this.expr.apply(algebra.ge.eq.imply.ge.transit)
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
     Eq << Eq[-1] + Eq[2].rhs
 

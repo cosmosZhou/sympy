@@ -28,13 +28,13 @@ def prove(Eq):
 
     Eq << Any[e:A](Contains(e, B), plausible=True)
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << Eq[-1].subs(Eq.A_definition)
 
     Eq << sets.any_contains.imply.any_contains.limits.swap.apply(Eq[2], simplify=False)
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << Eq[-1].subs(Eq.B_definition)
 

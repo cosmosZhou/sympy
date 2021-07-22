@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << ~Eq[1]
 
-    Eq << Eq[-1].this.function.solve(Eq[-1].lhs)
+    Eq << Eq[-1].this.expr.solve(Eq[-1].lhs)
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq[-1], Eq[2])
 

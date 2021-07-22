@@ -5,10 +5,10 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.function.is_And
+    assert given.expr.is_And
 
     limits_dict = given.limits_dict
-    for i, eq in enumerate(given.function.args):
+    for i, eq in enumerate(given.expr.args):
         if eq.is_Equal:
             if eq.lhs in limits_dict:
                 old, new = eq.args
@@ -21,7 +21,7 @@ def apply(given):
             if any(limit._has(old) for limit in limits):
                 continue
 
-            eqs = [*given.function.args]
+            eqs = [*given.expr.args]
             del eqs[i]
             eqs = [eq._subs(old, new) for eq in eqs]
 
@@ -39,21 +39,19 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
 
+    n = Symbol.n(integer=True, positive=True)
     i = Symbol.i(integer=True)
     k = Symbol.k(integer=True)
     j = Symbol.j(domain=Range(0, k))
-
     x = Symbol.x(real=True, shape=(oo,))
-
     f = Function.f(shape=(), integer=True)
     f_quote = Function("f'", shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-
     Eq << apply(Any[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
 
-    Eq << Eq[0].this.function.apply(algebra.eq.cond.imply.cond.subs)
+    Eq << Eq[0].this.expr.apply(algebra.eq.cond.imply.cond.subs)
+    Eq << algebra.et.imply.et.apply(Eq[-1])
 
 
 if __name__ == '__main__':

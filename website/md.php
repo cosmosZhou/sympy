@@ -43,7 +43,7 @@ body {
 <script	src="https://cdn.jsdelivr.net/highlight.js/8.8.0/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-<script src="/sympy/js/std.js"></script>
+<script src="/sympy/static/js/std.js"></script>
 <script> 
 	hljs.initHighlightingOnLoad();
 

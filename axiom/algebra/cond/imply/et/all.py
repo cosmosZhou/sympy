@@ -17,7 +17,9 @@ def apply(given, *, cond=None, wrt=None):
     else:
         given = All(given, (wrt,))
     assert given.is_All
-    given = given.split(wrt.domain_conditioned(cond))
+    
+    from axiom.algebra.sum.to.add.split import split
+    given = split(All, given, wrt.domain_conditioned(cond))
     lhs, rhs = given.of(And)
     return lhs, rhs
 
@@ -33,8 +35,6 @@ def prove(Eq):
     Eq <<= algebra.all.given.ou.apply(Eq[-2]), algebra.all.given.ou.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[-2]
-
-    
 
 
 if __name__ == '__main__':

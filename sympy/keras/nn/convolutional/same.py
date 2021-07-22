@@ -4,6 +4,7 @@ from sympy.concrete.expr_with_limits import Lamda
 from sympy.core.function import Function
 from sympy.concrete.summations import Sum
 
+
 def initial_offset(r, w, i=0):
     return (w.shape[i] - 1) // 2 * r[i] + (r[i] // 2) * (1 - w.shape[i] % 2)
 
@@ -18,6 +19,17 @@ def shape(self):
 
 
 def conv1d(x, w, *limits):
+    """
+    >>> m = Symbol.m(integer=True, positive=True)
+    >>> n = Symbol.n(integer=True, positive=True)
+    >>> d = Symbol.d(integer=True, positive=True)
+    >>> x = Symbol.x(real=True, shape=(m, n, d))
+    >>> d_ = Symbol("d'", integer=True, positive=True)
+    >>> l = Symbol.l(integer=True, positive=True)
+    >>> w = Symbol.w(real=True, shape=(l, d, d_))
+    >>> r = Symbol.r(integer=True, positive=True)
+    >>> conv1d[r](x, w).this.defun()
+    """    
     if limits:
         (r,), *_ = limits
     else:
@@ -46,7 +58,7 @@ def conv1d(x, w, *limits):
         return conv1d(x, w)    
 
 
-conv1d = Function.conv1d(real=True, nargs=(2,), eval=conv1d, shape=property(shape))
+conv1d = Function.conv1d(real=True, eval=conv1d, shape=property(shape), __doc__=conv1d.__doc__)
 
 
 def conv2d(x, w, *limits):

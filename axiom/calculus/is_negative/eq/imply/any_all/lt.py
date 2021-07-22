@@ -28,11 +28,11 @@ def prove(Eq):
 
     Eq << algebra.cond.ou.imply.cond.apply(-Eq[0] / 2, Eq[-1])
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.imply.et.split.abs)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.imply.et.split.abs)
 
-    Eq << Eq[-1].this.function.function.apply(algebra.et.imply.cond)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.et.imply.cond)
 
-    Eq << Eq[-1].this.function.function.apply(algebra.lt.transposition, index=0)
+    Eq << Eq[-1].this.expr.expr.apply(algebra.lt.transposition, lhs=0)
 
 
 if __name__ == '__main__':

@@ -66,55 +66,62 @@ class Globals:
 
 def readFolder(rootdir, sufix='.py'):
     names = os.listdir(rootdir)
-    if not names:
-        print(f"removing empty directory {rootdir}")                        
-        os.rmdir(rootdir)        
-    else:
-        for name in names:
-            path = os.path.join(rootdir, name)
-    
-            if path.endswith(sufix):
-                name = name[:-len(sufix)]
-                if name == '__init__':
-                    line = Text(path).readline()                
-                    if not line:
-                        lines = Text(path).readlines()
-                        for i, line in enumerate(lines):
-                            if line:
-                                break
-                        
-                        try:
-                            lines = lines[i:]
-                            Text(path).writelines(lines)
-                        except UnboundLocalError:
-                            print(f'removing {path}')                        
-                            try:
-                                os.remove(path)
-                            except PermissionError as e:
-                                print(e)
-                                
-                            continue                    
-                        
-                    if re.match('from *\. *import +\w+', line):
-                        continue
-    
-                    path = path[:-len(sufix) - len('/__init__')]                
-                else: 
-                    path = path[:-len(sufix)]
-    
-                paths = re.split(r'[\\/]+', path)
-    #             print(path)
-                index = paths.index('axiom')
-    
-                package = '.'.join(paths[index + 1:])
-    
-                Globals.increment_count()
-                
-                yield package
-    
-            elif os.path.isdir(path):
-                yield from readFolder(path, sufix)
+    unused = 0
+    for name in names:
+        path = os.path.join(rootdir, name)
 
+        if path.endswith(sufix):
+            name = name[:-len(sufix)]
+            if name == '__init__':
+                line = Text(path).readline()                
+                if not line:
+                    lines = Text(path).readlines()
+                    for i, line in enumerate(lines):
+                        if line:
+                            break
+                    
+                    try:
+                        lines = lines[i:]
+                        Text(path).writelines(lines)
+                    except UnboundLocalError:
+                        print(f'removing {path}')                        
+                        try:
+                            os.remove(path)
+                        except PermissionError as e:
+                            print(e)
+                            
+                        continue                    
+                    
+                if re.match('from *\. *import +\w+', line):
+                    continue
+
+                path = path[:-len(sufix) - len('/__init__')]                
+            else: 
+                path = path[:-len(sufix)]
+
+            paths = re.split(r'[\\/]+', path)
+#             print(path)
+            index = paths.index('axiom')
+
+            package = '.'.join(paths[index + 1:])
+
+            Globals.increment_count()
+            
+            yield package
+
+        elif os.path.isdir(path):
+            if name == '__pycache__':
+                unused += 1
+            else:
+                yield from readFolder(path, sufix)
+        else:
+            unused += 1
+
+    if unused == len(names):
+        print(f"removing empty directory {rootdir}")
+        import shutil
+        shutil.rmtree(rootdir)                
+            
 
 def project_directory():
     return os.path.dirname(axiom_directory())
@@ -183,7 +190,7 @@ def import_module(package, debug=False):
 def prove_with_timing(module, **kwargs):
     lapse = time.time()
     state, latex = module.prove(**kwargs)
-    lapse = time.time() - lapse
+    lapse = time.time() - lapse    
     return state, lapse, latex            
 
 
@@ -251,7 +258,8 @@ def prove(**kwargs):
             path = os.path.join(rootdir, name)
             
             if os.path.isdir(path):
-                yield from readFolder(path)
+                if name != '__pycache__':
+                    yield from readFolder(path)
 
     taskSet = {*generator()}
     
@@ -342,7 +350,7 @@ def post_process(result):
         else:
             continue
         
-        Globals.websites.append(f"http://localhost/{user}/axiom.php/{package.replace('.', '/')}")
+        Globals.websites.append(f"http://localhost/{user}/axiom.php?module={package}")
         
     return data
 
@@ -417,7 +425,7 @@ def run_with_module(*modules, debug=True):
                 file = project_directory() + '/' + package.replace('.', '/') + '.py'
                 lapse = None
                 latex = None         
-            else:                
+            else: 
                 try:
                     state, lapse, latex = prove_with_timing(module, debug=debug, slow=True)
                     file = module.__file__
@@ -463,7 +471,7 @@ def run_with_module(*modules, debug=True):
                                     
                                     print(line.rstrip())
                                 break
-                    else:                    
+                    else: 
                         continue
                 
             yield package, file, state, lapse, latex                        
@@ -503,7 +511,7 @@ def run_with_module(*modules, debug=True):
     exit(exit_code)
 
 
-def cgi_run():
+if __name__ == '__main__':
     is_http = 'HTTP_HOST' in os.environ
     if is_http:
         print("Content-type:text/html\n")        
@@ -543,9 +551,3 @@ def cgi_run():
             prove(debug=debug, parallel=parallel)
     else: 
         run_with_module(*args)
-        
-#     from util.utility import chmod
-#     chmod()
-        
-if __name__ == '__main__':
-    cgi_run()

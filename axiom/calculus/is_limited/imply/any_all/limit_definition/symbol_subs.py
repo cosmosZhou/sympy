@@ -34,9 +34,9 @@ def prove(Eq):
     direction = 1
     Eq << apply(Contains(Limit[x:x0:direction](f(x)), Reals), var='A')
 
-    Eq << calculus.is_limited.imply.any_all.limit_definition.apply(Eq[1])
+    Eq << calculus.is_limited.imply.any_all.limit_definition.apply(Eq[0])
 
-    Eq << Eq[-1].subs(Eq[0].reversed)
+    Eq << Eq[-1].subs(Eq[1].reversed)
 
 
 if __name__ == '__main__':

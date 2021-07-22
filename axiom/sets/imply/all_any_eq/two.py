@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << algebra.imply.all.limits_assert.apply(Eq[0].limits)
 
-    Eq << Eq[-1].this.function.apply(sets.eq.imply.any_eq.two)
+    Eq << Eq[-1].this.expr.apply(sets.eq.imply.any_eq.two)
 
 
 if __name__ == '__main__':

@@ -11,7 +11,8 @@ def apply(given, *, cond=None, wrt=None):
 
         cond = wrt.domain_conditioned(cond)
 
-    return given.split(cond, wrt=wrt)
+    from axiom.algebra.sum.to.add.split import split
+    return split(Any, given, cond, wrt=wrt)
 
 
 @prove
@@ -26,8 +27,6 @@ def prove(Eq):
     Eq <<= ~Eq[0] & Eq[1]
 
     Eq << Eq[-1].this.args[0].apply(algebra.all.imply.et.split, cond=x > 0)
-
-    
 
 
 if __name__ == '__main__':

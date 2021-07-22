@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << sets.any.imply.any_et.apply(Eq[-2], simplify=False)
 
-    Eq << Bool(Eq[-1].function).this.arg.args[1].rhs.definition
+    Eq << Bool(Eq[-1].expr).this.arg.args[1].rhs.definition
 
     Eq << Eq[-1].this.rhs.arg.args[2].rhs.definition
 

@@ -28,17 +28,17 @@ def prove(Eq):
 
     Eq << Eq.all_contains_in_B.this.limits[0][1].definition
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
     Eq.all_contains_in_A = All[a:B](Contains(a, A), plausible=True)
 
     Eq << Eq.all_contains_in_A.this.limits[0][1].definition
 
-    Eq << Eq[-1].this.function.rhs.definition
+    Eq << Eq[-1].this.expr.rhs.definition
 
-    Eq << All[a:Eq[-1].function.invert()](Eq[-1].limits_cond.invert(), plausible=True)
+    Eq << All[a:Eq[-1].expr.invert()](Eq[-1].limits_cond.invert(), plausible=True)
 
-    Eq << Eq[-1].this.function.simplify()
+    Eq << Eq[-1].this.expr.simplify()
 
     Eq << algebra.all.imply.all.limits.invert.apply(Eq[-1])
 

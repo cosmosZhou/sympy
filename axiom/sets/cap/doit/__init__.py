@@ -23,23 +23,24 @@ def apply(self):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
+
     x = Symbol.x(real=True, shape=(oo,))
     i = Symbol.i(integer=True)
-     
     n = 5
     Eq << apply(Sum[i:n](x[i]))
-    
+
     n -= 1
-    Eq << Eq[-1].this.lhs.split({n})
-    
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
+
     n -= 1
-    Eq << Eq[-1].this.lhs.split({n})
-    
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
+
     n -= 1
-    Eq << Eq[-1].this.lhs.split({n})
-    
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
+
     n -= 1
-    Eq << Eq[-1].this.lhs.split({n})
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
 
 if __name__ == '__main__':

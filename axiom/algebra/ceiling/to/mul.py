@@ -18,13 +18,13 @@ def prove(Eq):
 
     Eq << Eq[-2].this.lhs.apply(sets.contains.imply.any_eq)
 
-    Eq << Eq[-1].this.lhs.function.apply(algebra.cond.imply.et.invoke, algebra.eq.imply.eq.ceiling)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.cond.imply.et.invoke, algebra.eq.imply.eq.ceiling)
 
-    Eq << -Eq[-1].this.lhs.function.args[0]
+    Eq << -Eq[-1].this.lhs.expr.args[0]
 
-    Eq << Eq[-1].this.lhs.function.args[0].apply(algebra.eq.imply.eq.floor)
+    Eq << Eq[-1].this.lhs.expr.args[0].apply(algebra.eq.imply.eq.floor)
 
-    Eq << Eq[-1].this.lhs.function.apply(algebra.eq.eq.imply.eq.add)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.eq.eq.imply.eq.add)
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.given.is_zero)
 

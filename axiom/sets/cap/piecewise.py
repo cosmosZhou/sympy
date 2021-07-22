@@ -18,9 +18,9 @@ def prove(Eq):
 
     Eq << apply(Cap[x:A, y:B](f(x, y)))
 
-    Eq << Eq[0].this.rhs.function.apply(sets.piecewise.to.union)
+    Eq << Eq[0].this.rhs.expr.apply(sets.piecewise.to.union)
 
-    Eq << Equal(Cap[x](Eq[-1].rhs.function), Cap[x:A](f(x, y) | Eq[-1].rhs.function.args[1]), plausible=True)
+    Eq << Equal(Cap[x](Eq[-1].rhs.expr), Cap[x:A](f(x, y) | Eq[-1].rhs.expr.args[1]), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(sets.cap.simplify.piecewise)
 

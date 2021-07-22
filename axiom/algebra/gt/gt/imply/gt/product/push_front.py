@@ -20,9 +20,9 @@ def prove(Eq):
 
     Eq << algebra.gt.gt.imply.gt.multiply.apply(Eq[0], Eq[1])
 
-    Eq << Eq[2].this.lhs.split({a - 1})
+    Eq << Eq[2].this.lhs.apply(algebra.product.to.mul.split, cond={a - 1})
 
-    Eq << Eq[-1].this.rhs.split({a - 1})
+    Eq << Eq[-1].this.rhs.apply(algebra.product.to.mul.split, cond={a - 1})
 
 
 if __name__ == '__main__':

@@ -12,17 +12,17 @@ def apply(self):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
+
     i = Symbol.i(integer=True)
     n = Symbol.n(integer=True, positive=True)
-    
     f = Function.f(real=True)
     h = Function.h(real=True)
-    
     Eq << apply(Sum[i:0:n](f(i) + h(i)))
 
-    Eq << Eq[-1].this.rhs.find(Sum).split({n})
+    Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum.to.add.split, cond={n})
 
-    
+
 if __name__ == '__main__':
     run()
 

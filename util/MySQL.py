@@ -146,6 +146,7 @@ class MySQLConnector(Database):
                                     print('args[%d] exceeds the allowable length %d' % (i, char_length[i]))
                                     args = None
                                     break
+                            assert not arg or arg[-1] != '\r', arg 
                             args[i] = arg
                         
                         if args:
@@ -277,6 +278,17 @@ PARTITION BY KEY () PARTITIONS 8
         instance.execute(sql)
         
         sql = "insert into tbl_login_py values('sympy', '123456', 'chenlizhibeing@126.com', 'protected')"
+        instance.execute(sql)
+        
+        sql = '''\
+CREATE TABLE `tbl_console_py` (  
+  `symbol` varchar(64) NOT NULL,
+  `script` text NOT NULL,
+  `latex` text NOT NULL,
+  PRIMARY KEY (`symbol`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4  
+PARTITION BY KEY () PARTITIONS 8
+'''
         instance.execute(sql)
         
     except Exception as e:
