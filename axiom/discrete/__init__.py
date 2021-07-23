@@ -37,7 +37,6 @@ from . import stirling2
 from . import indexed
 from . import pow
 from . import add
-from . import abs
 from . import cup
 from . import condset
 from . import abs_condset

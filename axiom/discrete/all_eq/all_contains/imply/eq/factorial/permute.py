@@ -58,7 +58,7 @@ def prove(Eq):
 
     Eq << Eq.permutation.limits[0][1].this.definition
 
-    Eq << discrete.abs.to.factorial.apply(n)
+    Eq << discrete.abs_cup.to.factorial.apply(n)
 
     Eq << Eq[-1].this.lhs.arg.limits_subs(Eq[-1].lhs.arg.variable, Eq[-2].rhs.variable)
 
