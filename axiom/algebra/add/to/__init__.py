@@ -6,3 +6,4 @@ from . import floor
 from . import transpose
 from . import blockMatrix
 from . import log
+from . import ceiling

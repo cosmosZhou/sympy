@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << algebra.imply.all.limits_assert.apply(Eq[-1].limits)
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.imply.contains.interval.inverse)
+    Eq << Eq[-1].this.expr.apply(sets.contains.imply.contains.inverse.interval)
 
     Eq << Eq[-1].this.expr.apply(sets.contains.imply.et.split.interval)
 

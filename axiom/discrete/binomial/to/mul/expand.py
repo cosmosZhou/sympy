@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << apply(n, k)
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[0], cond=Equal(n, 0))
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=Equal(n, 0))
 
     Eq << Eq[-2].this.apply(algebra.suffice.subs)
 

@@ -1,7 +1,7 @@
 from util import *
 
 
-def convert(self):
+def convert(self, deep=False):
     [*args] = self.of(Mul)
     for i, arg in enumerate(args):
         if arg.is_Add: 
@@ -9,12 +9,16 @@ def convert(self):
             for e in arg.args:
                 _args = [*args]
                 _args[i] = e 
-                summand.append(Mul(*_args))
+                prod = Mul(*_args)
+                if deep and prod.is_Mul:
+                    prod = convert(prod, True)
+                summand.append(prod)
             return Add(*summand).simplify()
+    return self
                 
 @apply
-def apply(self):
-    rhs = convert(self)
+def apply(self, deep=False):
+    rhs = convert(self, deep=deep)
     return Equal(self, rhs, evaluate=False)
 
 
@@ -32,3 +36,5 @@ if __name__ == '__main__':
     run()
 
 from . import st, square
+del poly
+from . import poly

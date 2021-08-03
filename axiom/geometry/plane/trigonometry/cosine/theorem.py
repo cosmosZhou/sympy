@@ -100,9 +100,9 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(sets.gt.le.imply.contains.interval)
 
-    Eq << sets.contains.imply.contains.interval.div.apply(Eq[-1], 2 * x * y)
+    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], 2 * x * y)
 
-    Eq << sets.contains.imply.contains.interval.acos.apply(Eq[-1])
+    Eq << sets.contains.imply.contains.acos.interval.apply(Eq[-1])
 
     Eq << algebra.any.given.any.subs.apply(Eq.cos, Eq.cos.variable, Eq[-1].lhs)
 

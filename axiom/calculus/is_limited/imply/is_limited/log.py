@@ -8,14 +8,12 @@ def apply(is_limited):
     return Contains(Limit[x:x0:dir](log(fx)), Reals)
 
 
-@prove
+@prove(proved=False)
 def prove(Eq):
     from axiom import calculus, sets, algebra
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, x0 = Symbol(real=True)
+    f, g = Function(real=True)
     Eq << apply(Contains(Limit[x:x0](f(x)), Interval(0, oo, left_open=True)))
 
     epsilon = Symbol.epsilon(positive=True)
@@ -27,6 +25,7 @@ def prove(Eq):
     Eq.is_limited = A.this.definition.reversed
 
     Eq << Eq[0].subs(Eq.is_limited)
+
     Eq << sets.contains.imply.is_positive.apply(Eq[-1])
 
     Eq << algebra.is_positive.eq.imply.eq.log.apply(Eq[-1], Eq.is_limited)

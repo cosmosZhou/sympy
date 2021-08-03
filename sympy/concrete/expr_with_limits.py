@@ -533,7 +533,7 @@ class ExprWithLimits(Expr):
         integrand = self.expr
         return self.func(integrand, *limits)
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         """
         Perform substitutions over non-dummy variables
         of an expression with limits.  Also, can be used
@@ -1188,7 +1188,10 @@ class ExprWithLimits(Expr):
                 domain &= var.domain_defined(x)
             for e in ab:
                 domain &= e.domain_defined(x)
-        
+                
+#             if var.is_integer:
+#                 domain &= x.domain_conditioned(a <= b)
+
         if self.expr._has(x):
             domain &= self.expr.domain_defined(x)
             if x not in self.expr.free_symbols:
@@ -1501,6 +1504,24 @@ class MINMAXBase(ExprWithLimits):
                 return self.expr.etype
         return self.expr.dtype
 
+    def doit(self, **hints):
+        if len(self.limits) > 1:
+            return self
+        
+        x, *domain = self.limits[0]
+        if x.is_set:
+            return self
+
+        if not domain:
+            domain = x.domain             
+            if domain.is_CartesianSpace:
+                return self
+            
+            if domain.is_ComplexRegion:
+                return self
+        
+        return self
+
 
 class Minimize(MINMAXBase):
     r"""Represents unevaluated MIN operator.
@@ -1523,19 +1544,20 @@ class Minimize(MINMAXBase):
             return True
 
     def doit(self, **hints):
-        if len(self.limits) != 1:
-            return self
-        x, *domain = self.limits[0]
-        if x.is_set:
-            return self
-
-        if domain:
+        x, *domain = self.limits[0]        
+        if len(self.limits) != 1 or x.is_set:
+            return MINMAXBase.doit(self, **hints)
+        
+        if len(domain) == 1:
+            [domain] = domain  
+        elif len(domain) == 2:            
             domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
-            if domain.is_CartesianSpace or domain.is_ComplexRegion:
-                return self
-            
+                         
+        if domain.is_CartesianSpace or domain.is_ComplexRegion:
+            return MINMAXBase.doit(self, **hints)
+
         if self.expr.is_infinitesimal is not None:
             function, epsilon = self.expr.clear_infinitesimal()
             return self.func(function, *self.limits).doit() + epsilon
@@ -1567,21 +1589,6 @@ class Minimize(MINMAXBase):
                 return self.expr
         elif self.expr.is_MinMaxBase:
             return self.expr.func(*(self.func(arg, *self.limits).doit() for arg in self.expr.args))
-#         else:
-#             p = self.expr.as_inverse_proportional_function(x)
-#             if p is not None:
-# #                 y = a / x + b
-#                 a = p.ratio
-#                 b = p.height
-#                 
-#                 x = p.variable + p.offset
-#                 
-#                 if a.is_positive or a.is_nonnegative:
-#                     if x.is_extended_positive or x.is_extended_negative:
-#                         return a / domain.max() + b
-#                 elif a.is_negative or a.is_nonpositive:
-#                     if x.is_extended_positive or x.is_extended_negative:
-#                         return a / domain.min() + b
             
         return self
     
@@ -1629,18 +1636,19 @@ class Maximize(MINMAXBase):
             return True
 
     def doit(self, **hints):
-        if len(self.limits) != 1:
-            return self
-        x, *domain = self.limits[0]
-        if x.is_set:
-            return self
-        
-        if domain:
+        x, *domain = self.limits[0]        
+        if len(self.limits) != 1 or x.is_set:
+            return MINMAXBase.doit(self, **hints)
+            
+        if len(domain) == 1:
+            [domain] = domain  
+        elif len(domain) == 2:            
             domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
-            if domain.is_CartesianSpace or domain.is_ComplexRegion:
-                return self
+            
+        if domain.is_CartesianSpace or domain.is_ComplexRegion:
+            return MINMAXBase.doit(self, **hints)
 
         if self.expr.is_infinitesimal is not None:
             function, epsilon = self.expr.clear_infinitesimal()
@@ -1673,20 +1681,6 @@ class Maximize(MINMAXBase):
                 return self.expr
         elif self.expr.is_MinMaxBase:
             return self.expr.func(*(self.func(arg, *self.limits).doit() for arg in self.expr.args))
-#         else:
-#             p = self.expr.as_inverse_proportional_function(x)
-#             if p is not None:
-# #                 y = a / (x + d) + b
-#                 a = p.ratio
-#                 b = p.height
-#                 
-#                 x = p.variable + p.offset
-#                 if a.is_positive or a.is_nonnegative:
-#                     if x.is_extended_positive or x.is_extended_negative:
-#                         return a / domain.min() + b
-#                 elif a.is_negative or a.is_nonpositive:
-#                     if x.is_extended_positive or x.is_extended_negative:
-#                         return a / domain.max() + b
                 
         return self
     
@@ -1827,7 +1821,9 @@ class ArgMin(ArgMinMaxBase):
         if x.is_set:
             return self
 
-        if domain:
+        if len(domain) == 1:
+            [domain] = domain  
+        elif len(domain) == 2:            
             domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain        
@@ -1882,7 +1878,9 @@ class ArgMax(ArgMinMaxBase):
             return self
         x, *domain = self.limits[0]
 
-        if domain:
+        if len(domain) == 1:
+            [domain] = domain  
+        elif len(domain) == 2:            
             domain = (Range if x.is_integer else Interval)(*domain)
         else:
             domain = x.domain
@@ -3498,6 +3496,59 @@ class Cup(Set, ExprWithLimits):
     def identity(cls, self, **_):
         return self.etype.emptySet
 
+    @property
+    def is_range_stepped(self):
+        expr = self.expr
+        if expr.is_FiniteSet:
+            limits = self.limits
+            if len(limits) == 1 and len(expr) == 1:
+                [(i, *ab)] = limits
+                if not i.is_integer:
+                    return
+                
+                p = expr.arg.as_poly(i)
+                if p and p.degree() == 1:
+                    if len(ab) == 1:
+                        [domain] = ab
+                        if domain.is_boolean:
+                            from sympy import conditionset
+                            domain = conditionset(i, domain)
+                    elif len(ab) == 2:
+                        a, b = ab
+                        if b.is_set:
+                            return
+                        domain = Range(a, b)
+                    else:
+                        domain = expr.domain_defined(i)
+                        
+                    return p, domain
+                         
+    def range_contains(self, s):
+        if s.is_FiniteSet:
+            range_stepped = self.is_range_stepped
+            if not range_stepped:
+                return
+            
+            p, domain = range_stepped
+            k = p.nth(1)
+            h = p.nth(0)
+            from sympy import Contains
+            
+            b = None
+            for y in s.args:
+                cond = Contains((y - h) / k, domain)
+                if cond.is_BooleanTrue:
+                    _b = True
+                elif cond.is_BooleanFalse:
+                    _b = False
+                else:
+                    return
+                if b is None:
+                    b = _b
+                    
+                if b != _b:
+                    return
+            return b
     
 class Cap(Set, ExprWithLimits):
     """

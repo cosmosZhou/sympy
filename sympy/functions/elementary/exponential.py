@@ -166,13 +166,13 @@ class exp_polar(ExpBase):
     is_comparable = False  # cannot be evalf'd
 
     def _eval_Abs(self):   # Abs is never a polar number
-        from sympy.functions.elementary.complexes import re
-        return exp(re(self.args[0]))
+        from sympy.functions.elementary.complexes import Re
+        return exp(Re(self.args[0]))
 
     def _eval_evalf(self, prec):
         """ Careful! any evalf of polar numbers is flaky """
-        from sympy import im, pi, re
-        i = im(self.args[0])
+        from sympy import Im, pi, Re
+        i = Im(self.args[0])
         try:
             bad = (i <= -pi or i > pi)
         except TypeError:
@@ -180,9 +180,9 @@ class exp_polar(ExpBase):
         if bad:
             return self  # cannot evalf for this argument
         res = exp(self.args[0])._eval_evalf(prec)
-        if i > 0 and im(res) < 0:
+        if i > 0 and Im(res) < 0:
             # i ~ pi, but exp(I*i) evaluated to argument slightly bigger than pi
-            return re(res)
+            return Re(res)
         return res
 
     def _eval_power(self, other):
@@ -317,7 +317,7 @@ class Exp(ExpBase):
         cos, sin = sympy.cos(im), sympy.sin(im)
         return (exp(re) * cos, exp(re) * sin)
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         # keep processing of power-like args centralized in Pow
         if old.is_Pow:  # handle (exp(3*log(x))).subs(x**2, z) -> z**(3/2)
             old = exp(old.exp*log(old.base))
@@ -624,7 +624,7 @@ class Log(Function):
                     elif i_.is_negative:
                         return -S.Pi * I * S.Half + cls(coeff * -i_)
                 else:
-                    from sympy.simplify import ratsimp
+                    from sympy import ratsimp, sqrt
                     # Check for arguments involving rational multiples of pi
                     t = (i_/r_).cancel()
                     t1 = (-t).cancel()

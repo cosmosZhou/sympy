@@ -2,11 +2,11 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     from axiom.algebra.eq.imply.is_nonzero.domain_definition import find_denominator
     num, rhs = given.of(LessEqual[Abs, Expr])
     den = find_denominator(num)
-        
+
     return Unequal(den, 0)
 
 
@@ -20,7 +20,7 @@ def prove(Eq):
     d = Symbol.d(real=True)
     Eq << apply(abs(a / b + d) <= c)
 
-    Eq << algebra.le.imply.et.split.abs.apply(Eq[0])
+    Eq << algebra.le_abs.imply.et.apply(Eq[0])
 
     Eq << algebra.le.imply.is_nonzero.domain_definition.apply(Eq[-2])
 

@@ -9,10 +9,8 @@ def apply(given, index=0):
 
 @prove
 def prove(Eq):
-    M = Symbol.M(real=True)
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    M, x = Symbol(real=True)
+    f, g = Function(real=True)        
     Eq << apply(Equal(M, Max(f(x), g(x))))
 
     Eq << GreaterEqual(Max(f(x), g(x)), f(x), plausible=True)

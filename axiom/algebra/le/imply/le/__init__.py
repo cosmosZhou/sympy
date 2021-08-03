@@ -11,3 +11,4 @@ from . import square
 from . import st
 from . import integral
 from . import log
+from . import add

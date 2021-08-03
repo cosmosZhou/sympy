@@ -69,7 +69,7 @@ from sympy.core.mod import Mod
 from sympy.functions import (exp, sqrt, root, log, lowergamma, cos,
         besseli, gamma, uppergamma, expint, erf, sin, besselj, Ei, Ci, Si, Shi,
         sinh, cosh, Chi, fresnels, fresnelc, polar_lift, exp_polar, floor, ceiling,
-        rf, factorial, lerchphi, Piecewise, re, elliptic_k, elliptic_e)
+        rf, factorial, lerchphi, Piecewise, elliptic_k, elliptic_e)
 from sympy.functions.elementary.complexes import polarify, unpolarify
 from sympy.functions.special.hyper import (hyper, HyperRep_atanh,
         HyperRep_power1, HyperRep_power2, HyperRep_log1, HyperRep_asin1,
@@ -2378,13 +2378,14 @@ def _meijergexpand(func, z0, allow_hyper=False, rewrite='default',
         cond2 = cond2.subs(t, 1/z)
 
     m = func(z)
+    from sympy import Re
     if m.delta > 0 or \
         (m.delta == 0 and len(m.ap) == len(m.bq) and
-            (re(m.nu) < -1) is not False and polar_lift(z0) == polar_lift(1)):
+            (Re(m.nu) < -1) is not False and polar_lift(z0) == polar_lift(1)):
         # The condition delta > 0 means that the convergence region is
         # connected. Any expression we find can be continued analytically
         # to the entire convergence region.
-        # The conditions delta==0, p==q, re(nu) < -1 imply that G is continuous
+        # The conditions delta==0, p==q, Re(nu) < -1 imply that G is continuous
         # on the positive reals, so the values at z=1 agree.
         if cond1 is not False:
             cond1 = True

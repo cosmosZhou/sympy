@@ -3,6 +3,9 @@ from util import *
 
 @apply
 def apply(le, contains):
+    if le.is_Contains:
+        le, contains = contains, le
+        
     from axiom.algebra.abs_sum.to.mul.sum import dissect_distance
     dx, dy = le.of(LessEqual)
 
@@ -24,8 +27,18 @@ def apply(le, contains):
     t, s = contains.of(Contains)
     assert s in Range(0, m)
     assert y[t] == yt
+    
+    if yt._has(i):
+        i_ = le.generate_var(i, integer=True)
+    else:
+        i_ = i
+        
+    if yt._has(j):
+        j_ = le.generate_var(j, integer=True)
+    else:
+        j_ = j
 
-    return LessEqual(Sum[i:n]((x[i] - (Sum[i:n](x[i]) + yt) / (n + 1)) ** 2) + (yt - (Sum[i:n](x[i]) + yt) / (n + 1)) ** 2 + Sum[j:m]((y[j] - (Sum[j:m](y[j]) - yt) / (m - 1)) ** 2) - (yt - (Sum[j:m](y[j]) - yt) / (m - 1)) ** 2,
+    return LessEqual(Sum[i_:n]((x[i_] - (Sum[i:n](x[i]) + yt) / (n + 1)) ** 2) + (yt - (Sum[i:n](x[i]) + yt) / (n + 1)) ** 2 + Sum[j_:m]((y[j_] - (Sum[j:m](y[j]) - yt) / (m - 1)) ** 2) - (yt - (Sum[j:m](y[j]) - yt) / (m - 1)) ** 2,
                      Sum[i:n]((x[i] - Sum[i:n](x[i]) / n) ** 2) + Sum[j:m]((y[j] - Sum[j:m](y[j]) / m) ** 2))
 
 

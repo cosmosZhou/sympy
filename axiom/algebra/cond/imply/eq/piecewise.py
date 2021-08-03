@@ -3,10 +3,7 @@ from util import *
 
 @apply
 def apply(given, piecewise, invert=None):
-    assert given.is_NotContains
-
-    piecewise.of(Piecewise)
-
+    assert piecewise.is_Piecewise
     eq = given
     if invert:
         eq = eq.invert()
@@ -19,11 +16,11 @@ def apply(given, piecewise, invert=None):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(integer=True)
     S = Symbol.S(etype=dtype.integer)
     f = Function.f(shape=(), integer=True)
     g = Function.g(shape=(), integer=True)
-
     Eq << apply(NotContains(x, S), Piecewise((f(x), Contains(x, S)), (g(x), True)), invert=True)
 
     y = Symbol.y(Eq[-1].lhs)

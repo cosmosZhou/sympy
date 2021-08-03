@@ -26,6 +26,7 @@ def apply(imply, index=None, reverse=False):
 
 @prove
 def prove(Eq):
+    from axiom import algebra
     x = Symbol.x(integer=True)
     y = Symbol.y(integer=True)
     S = Symbol.S(etype=dtype.integer)

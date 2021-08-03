@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq.contains = sets.contains.imply.contains.range.mul.apply(Eq[-1], d)
+    Eq.contains = sets.contains.imply.contains.mul.range.apply(Eq[-1], d)
 
     Eq << algebra.imply.le.floor.apply(b, d)
 

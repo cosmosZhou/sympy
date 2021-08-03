@@ -24,11 +24,9 @@ def prove(Eq):
     Eq << apply(Unequal(Probability(x), 0))
 
     t = Symbol.t(domain=Range(1, n))
-    Eq << Eq[0].this.lhs.arg.apply(algebra.eq.imply.et.split.blockmatrix, slice(0, t))
+    Eq << Eq[0].this.lhs.arg.apply(algebra.eq.imply.et.eq.blockmatrix, t)
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[-1])
-
-    
 
 
 if __name__ == '__main__':

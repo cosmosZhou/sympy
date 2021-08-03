@@ -33,7 +33,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(sets.eq.imply.any_et, simplify=None)
 
-    Eq << Eq[-1].this.expr.apply(algebra.cond.cond.imply.et, algebra.eq.eq.imply.eq.subs, swap=True, reverse=True, simplify=None)
+    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.invoke, algebra.eq.eq.imply.eq.subs, swap=True, reverse=True, simplify=None, ret=1)
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], 1)
 

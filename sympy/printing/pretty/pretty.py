@@ -53,7 +53,7 @@ class PrettyPrinter(Printer):
     @property
     def _use_unicode(self):
         if self._settings['use_unicode']:
-            return True
+            return False
         else:
             return pretty_use_unicode()
 
@@ -1406,19 +1406,22 @@ class PrettyPrinter(Printer):
             return prettyForm(binding=prettyForm.NEG, *p)
 
         for i, term in enumerate(terms):
-            if term.is_Mul and term._coeff_isneg():
-                coeff, other = term.as_coeff_mul(rational=False)
-                pform = self._print(Mul(-coeff, *other, evaluate=False))
-                pforms.append(pretty_negative(pform, i))
-            elif term.is_Rational and term.q > 1:
-                pforms.append(None)
-                indices.append(i)
-            elif term.is_Number and term < 0:
-                pform = self._print(-term)
-                pforms.append(pretty_negative(pform, i))
-            elif term.is_Relational:
-                pforms.append(prettyForm(*self._print(term).parens()))
-            else:
+            try:
+                if term.is_Mul and term._coeff_isneg():                
+                    coeff, other = term.as_coeff_mul(rational=False)
+                    pform = self._print(Mul(-coeff, *other, evaluate=False))
+                    pforms.append(pretty_negative(pform, i))
+                elif term.is_Rational and term.q > 1:
+                    pforms.append(None)
+                    indices.append(i)
+                elif term.is_Number and term < 0:
+                    pform = self._print(-term)
+                    pforms.append(pretty_negative(pform, i))
+                elif term.is_Relational:
+                    pforms.append(prettyForm(*self._print(term).parens()))
+                else:
+                    pforms.append(self._print(term))
+            except:
                 pforms.append(self._print(term))
 
         if indices:

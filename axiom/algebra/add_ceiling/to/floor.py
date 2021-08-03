@@ -10,9 +10,10 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(integer=True)
     d = Symbol.d(integer=True)
-    Eq << apply(ceiling(n / d) - 1)
+    Eq << apply(Ceiling(n / d) - 1)
 
     Eq << Eq[0].this.find(Ceiling).apply(algebra.ceiling.to.floor)
 

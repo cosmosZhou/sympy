@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.cond.imply.any_et, wrt=j)
 
-    Eq << Eq[-1].this.expr.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.kroneckerDelta, delta=False, simplify=None, swap=True)
+    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.kroneckerDelta, delta=False, simplify=None, swap=True, ret=1)
 
     Eq << algebra.any.imply.any.limits.swap.apply(Eq[-1], simplify=None)
 

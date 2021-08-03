@@ -10,9 +10,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-#     n = q * d + r
-    n = Symbol.n(integer=True)
 
+    #n = q * d + r
+    n = Symbol.n(integer=True)
     Eq << apply(Equal(n % 2, 0))
 
     Eq << algebra.is_even.imply.any.apply(Eq[0])

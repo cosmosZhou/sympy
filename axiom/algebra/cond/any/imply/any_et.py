@@ -6,7 +6,7 @@ def apply(cond, exists):
     if not exists.is_Any:
         cond, exists = exists, cond
 
-    if cond.is_ConditionalBoolean:
+    if cond.is_Quantifier:
         assert not cond.variables_set & exists.variables_set
 
     fn, *limits = exists.of(Any)

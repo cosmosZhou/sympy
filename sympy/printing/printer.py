@@ -294,4 +294,7 @@ class Printer(object):
         if order == 'old':
             return sorted(Add.make_args(expr), key=cmp_to_key(Basic._compare_pretty))
         else:
-            return expr.as_ordered_terms(order=order)
+            try:
+                return expr.as_ordered_terms(order=order)
+            except TypeError:
+                return Add.make_args(expr)

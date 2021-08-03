@@ -1,6 +1,5 @@
 from util import *
 
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
 
 def limits_insert(self):
     function, *limits = self.args

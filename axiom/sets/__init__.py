@@ -56,3 +56,8 @@ from . import abs_is_positive
 from . import eq_abs
 from . import eq_cup
 from . import le_abs
+from . import ge_abs
+from . import abs_is_nonzero
+from . import range
+from . import imageset, finiteset
+from . import eq_mod

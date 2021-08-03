@@ -5,7 +5,7 @@ from sympy.core.decorators import deprecated
 from sympy.core.function import Function, ArgumentIndexError
 from sympy.core.logic import fuzzy_not
 from sympy.core.relational import Eq
-from sympy.functions.elementary.complexes import im, sign
+from sympy.functions.elementary.complexes import Im, sign
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.polys.polyerrors import PolynomialError
 from sympy.utilities import filldedent
@@ -195,11 +195,11 @@ class DiracDelta(Function):
             return S.NaN
         if arg.is_nonzero:
             return S.Zero
-        if fuzzy_not(im(arg).is_zero):
+        if fuzzy_not(Im(arg).is_zero):
             raise ValueError(filldedent('''
                 Function defined only for Real Values.
                 Complex part: %s  found in %s .''' % (
-                repr(im(arg)), repr(arg))))
+                repr(Im(arg)), repr(arg))))
         c, nc = arg.args_cnc()
         if c and c[0] == -1:
             # keep this fast and simple instead of using
@@ -513,8 +513,8 @@ class Heaviside(Function):
             return H0
         elif arg is S.NaN:
             return S.NaN
-        elif fuzzy_not(im(arg).is_zero):
-            raise ValueError("Function defined only for Real Values. Complex part: %s  found in %s ." % (repr(im(arg)), repr(arg)))
+        elif fuzzy_not(Im(arg).is_zero):
+            raise ValueError("Function defined only for Real Values. Complex part: %s  found in %s ." % (repr(Im(arg)), repr(arg)))
         else:
             if arg.is_Add:    
                 for arg in arg.args:            

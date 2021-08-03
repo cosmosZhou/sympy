@@ -7,7 +7,7 @@ from sympy.core.relational import Eq, Equal
 from sympy.core.symbol import Dummy, Symbol
 from sympy.core.function import (expand_mul, expand, Derivative,
                                  AppliedUndef, Function, Subs)
-from sympy.functions import (exp, im, cos, sin, re, Piecewise,
+from sympy.functions import (exp, cos, sin, Piecewise,
                              piecewise_fold, sqrt, log)
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.matrices import zeros, Matrix, NonSquareMatrixError, MatrixBase, eye

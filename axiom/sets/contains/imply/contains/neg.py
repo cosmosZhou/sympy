@@ -3,9 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_Contains
-
-    e, interval = given.args
+    e, interval = given.of(Contains)
 
     return Contains(-e, -interval)
 
@@ -24,8 +22,6 @@ def prove(Eq):
     Eq <<= Eq[-1].reversed, Eq[-2].reversed
 
     Eq << sets.contains.given.et.split.interval.apply(Eq[1])
-
-    
 
 
 if __name__ == '__main__':

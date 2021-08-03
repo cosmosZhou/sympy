@@ -21,9 +21,9 @@ def prove(Eq):
     f = Function.f(real=True)
     Eq << apply(Unequal(A, 0), Equal(Limit[x:x0](f(x)), A))
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[2], cond=A > 0)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[2], cond=A > 0)
 
-    Eq.gt, Eq.le = algebra.cond.imply.suffice.split.apply(Eq[1], cond=A > 0)
+    Eq.gt, Eq.le = algebra.cond.imply.et.suffice.split.apply(Eq[1], cond=A > 0)
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq.gt)
 

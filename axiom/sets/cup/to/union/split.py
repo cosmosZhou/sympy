@@ -7,16 +7,17 @@ def apply(self, *, cond, wrt=None, simplify=True):
     return Equal(self, split(Cup, self, cond, wrt=wrt, simplify=simplify))
 
 
-@prove
+@prove(provable=False)
 def prove(Eq):
     from axiom import sets, algebra
+
     x = Symbol.x(integer=True)
     f = Function.f(etype=dtype.real)
     A = Symbol.A(etype=dtype.integer)
     B = Symbol.B(etype=dtype.integer)
-
     Eq << apply(Cup[x:A](f(x)), cond=B)
 
+    return #the following will result in recursive proving!
     Eq << sets.eq.given.suffice.apply(Eq[0], wrt='y')
 
     Eq <<= Eq[-2].this.rhs.apply(sets.contains.given.ou.split.union), \

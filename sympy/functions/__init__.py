@@ -14,8 +14,8 @@ from sympy.functions.combinatorial.numbers import (carmichael, fibonacci, lucas,
         harmonic, bernoulli, bell, euler, catalan, genocchi, partition)
 from sympy.core.power import sqrt, cbrt, root, real_root
 from sympy.functions.elementary.miscellaneous import (Min, Max, Id)
-from sympy.functions.elementary.complexes import (re, im, sign, Abs, Norm,
-        conjugate, arg, polar_lift, periodic_argument, unbranched_argument,
+from sympy.functions.elementary.complexes import (Re, Im, sign, Abs, Norm,
+        Conjugate, conjugate, Arg, arg, polar_lift, periodic_argument, unbranched_argument,
         principal_branch, transpose, adjoint, polarify, unpolarify)
 from sympy.functions.elementary.trigonometric import (sin, cos, tan, 
         sec, csc, cot, sinc, asin, acos, atan, asec, acsc, acot, atan2)

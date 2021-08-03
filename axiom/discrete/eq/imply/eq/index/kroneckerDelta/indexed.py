@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq << Eq[-2].apply(algebra.eq.ne.imply.ne.subs)
 
-    Eq << Eq[-1].this.apply(algebra.cond.cond.imply.et, algebra.ne.cond.imply.cond.subs)
+    Eq << Eq[-1].this.apply(algebra.et.imply.et.invoke, algebra.ne.cond.imply.cond.subs)
 
     Eq << Eq[0].apply(algebra.eq.imply.eq.abs)
 

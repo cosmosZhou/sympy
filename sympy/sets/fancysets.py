@@ -1247,33 +1247,13 @@ class Range(Set):
 
     def retain_odd(self):
         i = self.generate_var(integer=True)
-        a, b = self.min(), self.max()
-        if a.is_finite:
-            a = (a / 2).floor()
-        if b.is_finite:
-            b = ((b - 1) / 2).floor()
-            
-        if a.is_infinite and b.is_infinite:
-            domain = self
-        else:
-            domain = self.func(a, b, integer=True)
         from sympy import Cup
-        return Cup[i:domain]((2 * i + 1).set)
+        return Cup[i:self]((2 * i + 1).set)
         
     def retain_even(self):
-        i = self.generate_var(integer=True)
-        a, b = self.min(), self.max()
-        if a.is_finite:
-            a = (a / 2).floor()
-        if b.is_finite:
-            b = (b / 2).floor()
-            
-        if a.is_infinite and b.is_infinite:
-            domain = self
-        else:
-            domain = self.func(a, b + 1)
+        i = self.generate_var(integer=True)        
         from sympy import Cup
-        return Cup[i:domain]((2 * i).set)
+        return Cup[i:self]((2 * i).set)
         
     def _subs(self, old, new, **hints):
         assert old != new

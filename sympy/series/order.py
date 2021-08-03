@@ -410,9 +410,9 @@ class Order(Expr):
             raise TypeError('contains did not evaluate to a bool')
         return result
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if old in self.variables:
-            newexpr = self.expr.subs(old, new)
+            newexpr = self.expr._subs(old, new, **hints)
             i = self.variables.index(old)
             newvars = list(self.variables)
             newpt = list(self.point)

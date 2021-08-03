@@ -16,28 +16,27 @@ def apply(*given):
     return Equal(Limit[x:x0](fx ** gx), limited_f.lhs ** limited_g.lhs)
 
 
-@prove
+@prove(proved=False)
 def prove(Eq):
-    from axiom import calculus, sets, algebra
+    from axiom import calculus, algebra, sets
+
     x = Symbol.x(real=True)
     x0 = Symbol.x0(real=True)
     f = Function.f(real=True)
     g = Function.g(real=True)
-
     Eq << apply(Contains(Limit[x:x0](f(x)), Interval(0, oo, left_open=True)), Contains(Limit[x:x0](g(x)), Reals))
 
     ε = Symbol.ε(real=True, positive=True)
-
     ε0 = Symbol.ε_0(real=True, positive=True)
     δ0 = Symbol.δ_0(real=True, positive=True)
-
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, δ0, var='A')
+
     Eq << Eq[-1].subs(ε0, ε / 2)
 
     ε1 = Symbol.ε_1(real=True, positive=True)
     δ1 = Symbol.δ_1(real=True, positive=True)
-
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[1], ε1, δ1, var='B')
+
     Eq << Eq[-1].subs(ε1, ε / 2)
 
     Eq << algebra.any_all.any_all.imply.any_all_et.limits_intersect.apply(Eq[-1], Eq[-3])
@@ -51,7 +50,6 @@ def prove(Eq):
     Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
     δ = Symbol.δ(real=True, positive=True)
-
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1), δ)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])

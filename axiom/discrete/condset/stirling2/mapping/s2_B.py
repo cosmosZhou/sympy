@@ -62,7 +62,7 @@ def prove(Eq):
     i = Eq.x_union_s0.lhs.limits[0][0]
     x = Eq.x_union_s0.variable.base
     Eq.x_k_definition = Any[x[k]](Equal(x[k], {n}), plausible=True)
-
+    return
     Eq << Eq.x_k_definition.simplify()
 
     Eq << Eq.x_union_s0.this.expr.apply(sets.eq.imply.eq.union, x[k])

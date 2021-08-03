@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq.contains = Eq[-1].subs(Eq[-2]).simplify()
 
-    Eq << sets.contains.imply.contains.range.mul.apply(Eq.contains, 2)
+    Eq << sets.contains.imply.contains.mul.range.apply(Eq.contains, 2)
 
     Eq.greater_than, Eq.less_than = sets.contains.imply.et.split.range.apply(Eq[-1], right_open=False)
 

@@ -50,7 +50,7 @@ def associate(Sum, self, simplify=True):
 
 @apply
 def apply(self, simplify=True):
-    return Equal(self, associate(Sum, self, simplify=simplify))
+    return Equal(self, associate(Sum, self, simplify=simplify), evaluate=False)
 
 
 @prove(provable=False)
@@ -76,3 +76,4 @@ from . import doit
 from . import split
 from . import pop_back
 from . import pop_front
+from . import telescope

@@ -34,7 +34,7 @@ def prove(Eq):
     (w, fx0), (_w, fx1) = Eq[1].lhs.of(Mul + Mul)
     x0 = fx0.arg
     x1 = fx1.arg
-    Eq << algebra.cond.given.suffice.split.apply(Eq[-1], cond=x0 <= x1)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=x0 <= x1)
 
     Eq << algebra.cond.imply.suffice.apply(Eq[0], cond=x0 <= x1)
 

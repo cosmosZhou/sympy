@@ -6,7 +6,7 @@ def apply(any_eq, cond, reverse=False):
     if not any_eq.is_Any:
         any_eq, cond = cond, any_eq
 
-    assert not cond.is_ConditionalBoolean
+    assert not cond.is_Quantifier
     (x, y), *limits = any_eq.of(Any[Equal])
 
     if reverse:

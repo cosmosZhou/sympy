@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div v-finish>
 		<form name=form spellcheck=false enctype="multipart/form-data"
 			method=post action="">
 			<render-apply v-if=apply ref=apply :apply=apply :apply-arg=applyArg></render-apply>
@@ -125,13 +125,9 @@
     	},
 
 		updated(){
-//    		if (window.MathJax)
-//    			MathJax.typesetPromise();	
     	},
     	
 		mounted(){
-//    		if (window.MathJax)
-//    			MathJax.typesetPromise();	
     	},
     	
 		methods: {
@@ -186,49 +182,39 @@
 			
 		},
 		
-/*		directives: {
-			render: {
-			    // after dom is inserted into the document
-			    inserted(el, binding, vnode) {
-			    	let options = MathJax.getMetricsFor(el);			    	
-					options.display = true;					
-					options.format = 'TeX';
-					
-					console.log('render');
-					console.log(el);
-					var tex = [];
-					
-					for (let m of el.textContent.matchAll(/\\\[(.+?)\\\]/g)){
-						tex.push(m[1]);
-					}
-					
-					el.innerHTML = '';
-					//el.firstChild.remove();
-					
-					for (let t of tex){
-						MathJax.texReset();
-						MathJax.tex2chtmlPromise(t, options).then((el => html => {
-							el.appendChild(html);
-							MathJax.startup.document.updateDocument();
-						})(el));
-					}
-			    },
-			},
-			
-			finish :{
-				bind(el, binding, vnode){
-					console.log('before rendering');
-					MathJax.texReset();					
-				},
-				
+		directives: {
+			finish :{				
 				componentUpdated(el, binding, vnode){
-					console.log('finish rendering');
-					console.log(el);
-	    	        MathJax.startup.document.clear();
-	    	        MathJax.startup.document.updateDocument();
+					var self = vnode.context;
+					//console.log('finish rendering');
+					//console.log(el);
+					
+					console.log('module = ' + self.module);
+
+					form_post("php/request.php", { detect: self.module }).then(theorem => {
+						console.log('theorem = ' + theorem);
+						if (!theorem)
+							return;
+
+						for (let cm of self.proveEditor) {
+							cm = cm.editor;
+							cm.eachLine(line => {
+								var text = line.text;
+								var selectionStart = text.indexOf(theorem);
+								if (selectionStart >= 0) {
+									console.log(text);
+									var lineNo = line.lineNo();
+
+									cm.setCursor(lineNo, selectionStart);
+									cm.addSelection({ line: lineNo, ch: selectionStart }, { line: lineNo, ch: selectionStart + theorem.length });
+									cm.focus();
+								}
+							});
+						}
+					}).catch(fail);					
 				},
 			},
-		},*/
+		},
 	};
 	
 //http://docs.mathjax.org/en/latest/web/typeset.html#typeset-clear

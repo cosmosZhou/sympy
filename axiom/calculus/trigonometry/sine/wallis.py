@@ -11,30 +11,34 @@ def apply(n):
 
 @prove
 def prove(Eq):
-    from axiom import geometry, calculus, algebra
+    from axiom import calculus, geometry, algebra
+
     n = Symbol.n(integer=True, positive=True, given=False)
     Eq << apply(n)
-    (x, *_), *_ = Eq[0].lhs.limits
 
+    (x, *_), *_ = Eq[0].lhs.limits
     Eq << Eq[0].subs(n, 1)
+
     Eq << Eq[-1].this.lhs.doit()
 
     Eq << Eq[0].subs(n, 2)
+
     Eq << Eq[-1].this.lhs.doit()
 
     Eq.induct = Eq[0].subs(n, n + 2)
 
     Eq << Eq.induct.lhs.this.expand()
-#     Integration by parts
+
+    #Integration by parts
     Eq << Eq[-1].this.rhs.apply(calculus.integral.by_parts, dv=sin(x)) / n
 
     Eq << Eq[-1].this.lhs.args[1].expr.powsimp()
 
     Eq << Eq[-1].this.rhs.expr.powsimp()
 
-    Eq << geometry.plane.trigonometry.cosine.squared.apply(x)
+    Eq << Eq[-1].this.find(Cos ** 2).apply(geometry.square_cos.to.add.square_sin)
 
-    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+    
 
     Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.add)
 
@@ -44,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].simplify()
 
-    Eq << algebra.eq.imply.eq.solve.apply(Eq[-1], -Eq[-1].rhs.args[1])
+    Eq << algebra.eq.imply.eq.simple_equation.apply(Eq[-1], -Eq[-1].rhs.args[1])
 
     Eq << Eq[-1].this.rhs.find(Integral).expr.powsimp()
 

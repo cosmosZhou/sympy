@@ -7,7 +7,7 @@ def apply(self, indices, wrt=None, *, simplify=True):
     return Equal(self, split(Cap, self, indices, wrt=wrt, simplify=simplify))
 
 
-@prove
+@prove(provable=False)
 def prove(Eq):
     from axiom import sets, algebra
 
@@ -17,6 +17,7 @@ def prove(Eq):
     B = Symbol.B(etype=dtype.integer)
     Eq << apply(Cap[x:A](f(x)), B)
 
+    return # the following will result recursive proving
     Eq << sets.eq.given.suffice.apply(Eq[0], wrt='y')
 
     Eq <<= Eq[-2].this.rhs.apply(sets.contains.given.contains.split.intersection, simplify=False), \

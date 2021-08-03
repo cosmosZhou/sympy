@@ -47,7 +47,7 @@ def limits_absorb(given, index):
             wrt = x_slice.base[start:stop + 1]
             limits[i] = (wrt, cond & eq)
         else:
-            limit_a, limit_b = limits
+            limit_a, *limit_b = limits
             if len(limit_a) == 2:
                 a, fa = limit_a
                 if fa.is_boolean:
@@ -61,7 +61,8 @@ def limits_absorb(given, index):
                 a = limit_a[0]
                 limits[0] = (a, eq)
             else:
-                return
+                x, a, b = limit_a
+                limits[0] = (x, eq, Range(a, b) if x.is_integer else Interval(a, b))
     else:
         return
 

@@ -15,7 +15,7 @@ from sympy.core.power import Pow, root
 from sympy.core.relational import Eq
 from sympy.core.symbol import Dummy, Symbol, symbols
 from sympy.core.sympify import sympify
-from sympy.functions import exp, sqrt, im, cos, acos, Piecewise
+from sympy.functions import exp, sqrt, cos, acos, Piecewise
 from sympy.ntheory import divisors, isprime, nextprime
 from sympy.polys.polyerrors import (PolynomialError, GeneratorsNeeded,
     DomainError)
@@ -596,8 +596,9 @@ def roots_quintic(f):
     r1 = Res[1][0]
     r1_n = Res_n[1][0]
 
+    from sympy import Im 
     for i in range(5):
-        if comp(im(r1_n * Res_n[4][i]), 0, tol):
+        if comp(Im(r1_n * Res_n[4][i]), 0, tol):
             r4 = Res[4][i]
             break
 

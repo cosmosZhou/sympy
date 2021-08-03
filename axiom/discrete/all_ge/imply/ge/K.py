@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << apply(All[i:1:n + 1](x[i] >= 1))
 
-    Eq.case2, Eq.case1 = algebra.cond.given.suffice.split.apply(Eq[-1], cond=n >= 2)
+    Eq.case2, Eq.case1 = algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=n >= 2)
 
     Eq << Eq.case1.this.lhs.apply(algebra.lt.to.eq.squeeze)
 

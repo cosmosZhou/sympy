@@ -456,9 +456,6 @@ class DenseMatrix(MatrixBase):
             interval = S.Complexes
         return CartesianSpace(interval, *shape)        
     
-    def split(self, indices):
-        return self.slice(indices, 0, self.shape[0])
-    
     _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self._args), quick_exit=True)
     _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self._args), quick_exit=True)
     _eval_is_integer = lambda self: _fuzzy_group((a.is_integer for a in self._args), quick_exit=True)

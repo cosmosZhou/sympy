@@ -10,7 +10,7 @@ from sympy.functions.combinatorial.factorials import factorial
 from sympy.functions.elementary.trigonometric import sin, cos, csc, cot
 from sympy.functions.elementary.complexes import Abs
 from sympy.core.power import sqrt, root
-from sympy.functions.elementary.complexes import re, im
+from sympy.functions.elementary.complexes import Re, Im
 from sympy.functions.special.gamma_functions import gamma
 from sympy.functions.special.hyper import hyper
 from sympy.polys.orthopolys import spherical_bessel_fn as fn
@@ -160,9 +160,9 @@ class besselj(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.One
-            elif (nu.is_integer and nu.is_zero == False) or re(nu).is_positive:
+            elif (nu.is_integer and nu.is_zero == False) or Re(nu).is_positive:
                 return S.Zero
-            elif re(nu).is_negative and not (nu.is_integer == True):
+            elif Re(nu).is_negative and not (nu.is_integer == True):
                 return S.ComplexInfinity
             elif nu.is_imaginary:
                 return S.NaN
@@ -259,9 +259,9 @@ class bessely(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.NegativeInfinity
-            elif re(nu).is_zero == False:
+            elif Re(nu).is_zero == False:
                 return S.ComplexInfinity
-            elif re(nu).is_zero:
+            elif Re(nu).is_zero:
                 return S.NaN
         if z is S.Infinity or z is S.NegativeInfinity:
             return S.Zero
@@ -337,14 +337,14 @@ class besseli(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.One
-            elif (nu.is_integer and nu.is_zero == False) or re(nu).is_positive:
+            elif (nu.is_integer and nu.is_zero == False) or Re(nu).is_positive:
                 return S.Zero
-            elif re(nu).is_negative and not (nu.is_integer == True):
+            elif Re(nu).is_negative and not (nu.is_integer == True):
                 return S.ComplexInfinity
             elif nu.is_imaginary:
                 return S.NaN
         if z.is_imaginary:
-            if im(z) is S.Infinity or im(z) is S.NegativeInfinity:
+            if Im(z) is S.Infinity or Im(z) is S.NegativeInfinity:
                 return S.Zero
 
         if z.could_extract_minus_sign():
@@ -435,12 +435,12 @@ class besselk(BesselBase):
         if z.is_zero:
             if nu.is_zero:
                 return S.Infinity
-            elif re(nu).is_zero == False:
+            elif Re(nu).is_zero == False:
                 return S.ComplexInfinity
-            elif re(nu).is_zero:
+            elif Re(nu).is_zero:
                 return S.NaN
         if z.is_imaginary:
-            if im(z) is S.Infinity or im(z) is S.NegativeInfinity:
+            if Im(z) is S.Infinity or Im(z) is S.NegativeInfinity:
                 return S.Zero
 
         if nu.is_integer:
@@ -1146,14 +1146,14 @@ class airyai(AiryBase):
         ot = Rational(1, 3)
         tt = Rational(2, 3)
         a = Pow(-z, Rational(3, 2))
-        if re(z).is_negative:
+        if Re(z).is_negative:
             return ot*sqrt(-z) * (besselj(-ot, tt*a) + besselj(ot, tt*a))
 
     def _eval_rewrite_as_besseli(self, z, **kwargs):
         ot = Rational(1, 3)
         tt = Rational(2, 3)
         a = Pow(z, Rational(3, 2))
-        if re(z).is_positive:
+        if Re(z).is_positive:
             return ot*sqrt(z) * (besseli(-ot, tt*a) - besseli(ot, tt*a))
         else:
             return ot*(Pow(a, ot)*besseli(-ot, tt*a) - z*Pow(a, -ot)*besseli(ot, tt*a))
@@ -1314,14 +1314,14 @@ class airybi(AiryBase):
         ot = Rational(1, 3)
         tt = Rational(2, 3)
         a = Pow(-z, Rational(3, 2))
-        if re(z).is_negative:
+        if Re(z).is_negative:
             return sqrt(-z/3) * (besselj(-ot, tt*a) - besselj(ot, tt*a))
 
     def _eval_rewrite_as_besseli(self, z, **kwargs):
         ot = Rational(1, 3)
         tt = Rational(2, 3)
         a = Pow(z, Rational(3, 2))
-        if re(z).is_positive:
+        if Re(z).is_positive:
             return sqrt(z)/sqrt(3) * (besseli(-ot, tt*a) + besseli(ot, tt*a))
         else:
             b = Pow(a, ot)
@@ -1463,14 +1463,14 @@ class airyaiprime(AiryBase):
     def _eval_rewrite_as_besselj(self, z, **kwargs):
         tt = Rational(2, 3)
         a = Pow(-z, Rational(3, 2))
-        if re(z).is_negative:
+        if Re(z).is_negative:
             return z/3 * (besselj(-tt, tt*a) - besselj(tt, tt*a))
 
     def _eval_rewrite_as_besseli(self, z, **kwargs):
         ot = Rational(1, 3)
         tt = Rational(2, 3)
         a = tt * Pow(z, Rational(3, 2))
-        if re(z).is_positive:
+        if Re(z).is_positive:
             return z/3 * (besseli(tt, a) - besseli(-tt, a))
         else:
             a = Pow(z, Rational(3, 2))
@@ -1619,14 +1619,14 @@ class airybiprime(AiryBase):
     def _eval_rewrite_as_besselj(self, z, **kwargs):
         tt = Rational(2, 3)
         a = tt * Pow(-z, Rational(3, 2))
-        if re(z).is_negative:
+        if Re(z).is_negative:
             return -z/sqrt(3) * (besselj(-tt, a) + besselj(tt, a))
 
     def _eval_rewrite_as_besseli(self, z, **kwargs):
         ot = Rational(1, 3)
         tt = Rational(2, 3)
         a = tt * Pow(z, Rational(3, 2))
-        if re(z).is_positive:
+        if Re(z).is_positive:
             return z/sqrt(3) * (besseli(-tt, a) + besseli(tt, a))
         else:
             a = Pow(z, Rational(3, 2))

@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(given, expr):
     fn, fn1 = given.of(Equivalent)

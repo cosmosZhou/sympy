@@ -8,7 +8,7 @@ def apply(lt, given):
     assert a == _a and b == _b
     assert n == 1
     assert x == _x
-    
+
     return All[x:Interval(a, b, left_open=True)](Greater(fx, fx._subs(x, a)))
 
 
@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(calculus.lt.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any_et.limits_cond, simplify=None)
+    Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any_et.limits.cond, simplify=None)
 
     Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.imply.is_nonemptyset, simplify=None)
 

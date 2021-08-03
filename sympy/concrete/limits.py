@@ -96,7 +96,11 @@ def limits_update(limits, *args):
         if isinstance(domain, Interval):
             if new.is_integer:
                 domain = domain.copy(integer=True)
-                limit = (new, domain.start, domain.stop)
+                if domain.is_Interval:
+                    limit = (new, domain.start, domain.stop)
+                else:
+                    assert domain.is_FiniteSet
+                    limit = (new, domain)
             else:
                 if domain.left_open or domain.right_open:
                     limit = (new, domain)

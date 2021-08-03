@@ -317,7 +317,7 @@ class Application(Basic, metaclass=FunctionClass):
     def func(self):
         return self.__class__
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if (old.is_Function and new.is_Function and
             callable(old) and callable(new) and
             old == self.func and len(self.args) in new.nargs):
@@ -424,7 +424,7 @@ class Function(Application, Expr):
     def allow_variable_argslist(cls):
         return cls.nargs.is_FiniteSet and S.One in cls.nargs 
     
-    @cacheit
+#     @cacheit #UndefinedFunction should not be cached!
     def __new__(cls, *args, limits=(), **options):
         # Handle calls like Function('f')
         if cls is Function:
@@ -929,7 +929,10 @@ class Function(Application, Expr):
                 name += r"^{%s}" % exp
 
             return name % ",".join(args)
-
+        
+    def __invert__(self):
+        from sympy import Conjugate
+        return Conjugate(self)
 
 class AppliedUndef(Function):
     """
@@ -1042,7 +1045,7 @@ class AppliedUndef(Function):
         return fuzzy_and(a.is_complex for a in self.inputs)
 
     def _eval_is_extended_real(self):
-        return fuzzy_and(a.is_complex for a in self.inputs)
+        return fuzzy_and(a.is_extended_real for a in self.inputs)
 
     def defun(self):
         return self.func(*self.args, evaluate=True)
@@ -1107,7 +1110,7 @@ class UndefinedFunction(FunctionClass):
     The (meta)class of undefined functions.
     """
 
-    def __new__(mcl, name, bases=(AppliedUndef,), __dict__=None, **kwargs):
+    def __new__(mcl, name=None, bases=(AppliedUndef,), __dict__=None, **kwargs):
         __dict__ = __dict__ or {}
         # put the `is_*` for into __dict__
         __dict__.update({'is_' + arg: val for arg, val in kwargs.items() if arg in _assume_defined})
@@ -1135,6 +1138,14 @@ class UndefinedFunction(FunctionClass):
         __dict__.update({'_kwargs': kwargs})
         # do this for pickling
         __dict__['__module__'] = None
+        
+        if name is None:
+            import traceback, re
+            line = traceback.extract_stack()[-3].line            
+            name = re.match('(.+?) *= *Function\(.+\) *$', line)[1]
+            if ',' in name:
+                return (Function(name.strip(), bases, __dict__=__dict__, **kwargs) for name in name.split(','))
+            
         obj = super().__new__(mcl, name, bases, __dict__)
         obj.name = name
         obj._sage_ = _undef_sage_helper
@@ -1954,7 +1965,7 @@ class Derivative(Expr):
     def kind(self):
         return self.args[0].kind
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         # The substitution (old, new) cannot be done inside
         # Derivative(expr, vars) for a variety of reasons
         # as handled below.
@@ -2672,7 +2683,7 @@ class Subs(Expr):
             ) + tuple(ordered([(v, p) for v, p in
             zip(self.variables, self.point) if not self.expr.has(v)]))
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         # Subs doit will do the variables in order; the semantics
         # of subs for Subs is have the following invariant for
         # Subs object foo:
@@ -4282,7 +4293,7 @@ class Difference(Expr):
     def free_symbols(self):
         return self.expr.free_symbols
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         # The substitution (old, new) cannot be done inside
         # Difference(expr, vars) for a variety of reasons
         # as handled below.

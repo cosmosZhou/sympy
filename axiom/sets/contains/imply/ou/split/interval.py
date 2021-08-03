@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << apply(Contains(e, Range(a, a + 4)))
 
-    Eq << Eq[0].this.rhs.apply(sets.interval.to.finiteset)
+    Eq << Eq[0].this.rhs.apply(sets.range.to.finiteset)
 
     Eq << sets.contains.imply.ou.split.finiteset.apply(Eq[-1])
 

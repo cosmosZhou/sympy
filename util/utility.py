@@ -292,7 +292,7 @@ class Eq:
                         rhs_equivalent = equivalent_ancestor(rhs)
                         if len(rhs_equivalent) == 1:
                             [rhs_equivalent] = rhs_equivalent
-                                        
+
                             if lhs != rhs_equivalent or rhs.given is not None:
                                 rhs_plausibles, rhs_is_equivalent = rhs_equivalent.plausibles_set()
                                 if len(rhs_plausibles) == 1:
@@ -868,19 +868,6 @@ def prove(*args, **kwargs):
     for key, value in kwargs.items():
         return funcptr[(key, value)]
 
-    
-def wolfram(func):
-
-    def decorator(func):
-        from wolframclient.evaluation.cloud import cloudsession
-        session = cloudsession.session
-# from wolframclient.evaluation.kernel.localsession import WolframLanguageSession
-# session = WolframLanguageSession()
-        
-        return lambda py, **kwargs: wolfram_decorator(py, func, wolfram=session, **kwargs)
-
-    return decorator
-
 
 def apply(*args, **kwargs):
     if args:
@@ -931,7 +918,6 @@ def imply(apply, **kwargs):
         return s
 
     def imply(*args, **kwargs):
-        # nonlocal simplify
         _simplify = kwargs.pop('simplify', True) and simplify
 
         __kwdefaults__ = apply.__kwdefaults__
@@ -948,9 +934,8 @@ def imply(apply, **kwargs):
                 given = None        
         else:
             given = None            
-            
-        s = traceback.extract_stack()
-        if apply.__code__.co_filename != s[-2][0]:
+             
+        if apply.__code__.co_filename != traceback.extract_stack()[-2][0]:
             
             if given is None:
                 if isinstance(statement, tuple): 
@@ -1029,11 +1014,23 @@ def given(apply, **kwargs):
         return s
 
     def given(*args, **kwargs):
-#         nonlocal simplify
+        is_applying = apply.__code__.co_filename != traceback.extract_stack()[-2][0]        
+        __kwdefaults__ = apply.__kwdefaults__
+        
+        if not is_applying:
+            given = ()
+            if __kwdefaults__ and 'given' in __kwdefaults__:
+                given = kwargs['given']
+                if not isinstance(given, tuple):
+                    given = (given,)            
+                assert all(g.plausible is None for g in given)
+        
         _simplify = kwargs.pop('simplify', True) and simplify
+        if __kwdefaults__ and 'simplify' in __kwdefaults__ and _simplify != __kwdefaults__['simplify']:
+            kwargs['simplify'] = _simplify
         
         statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)
-        
+            
         i = 0        
         if isinstance(args[i], Inference):
             imply, *args = args
@@ -1047,8 +1044,7 @@ def given(apply, **kwargs):
             if len(imply) == 1:
                 [imply] = imply
         
-        s = traceback.extract_stack()
-        if apply.__code__.co_filename != s[-2][0]: 
+        if is_applying: 
             if isinstance(statement, tuple):
                 if isinstance(imply, tuple):
                     statement = tuple(s.copy(imply=imply) for s in statement)
@@ -1093,11 +1089,16 @@ def given(apply, **kwargs):
         G = topological_sort_depth_first(dependency)
         if G:
             definition = tuple(s.equality_defined() for s in G)
+        else:
+            definition = ()
             
-            if isinstance(statement, tuple):
-                statement = definition + statement
-            else:
-                statement = definition + (statement,)
+        given = tuple(Inference(g, plausible=None) for g in given)
+        given = definition + given
+             
+        if isinstance(statement, tuple):
+            statement = given + statement
+        else:
+            statement = given + (statement,)
         
         return add(imply, statement)
 
@@ -1188,8 +1189,6 @@ def detect_axiom(statement):
 def detect_axiom_given_theorem(theorem, statement):
     if theorem.startswith('.') or theorem.startswith('Eq'):
 #         // consider the case
-#         // Eq << Eq[-1].reversed.apply(discrete.sets.ne.notcontains, evaluate=False)
-
 #         // consider the case
 #         // Eq[-2].this.args[0].apply(algebra.cond.cond.imply.et, invert=True, swap=True)
 

@@ -1,24 +1,14 @@
-
-
-
 from util import *
 
 
-
-
-
-
-
 @apply
-def apply(x):    
+def apply(x): 
     return Equal(sin(x) ** 2, 1 - cos(x) ** 2)
-
-
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
         
     Eq << apply(x)
     

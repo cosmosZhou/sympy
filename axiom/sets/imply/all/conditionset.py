@@ -1,9 +1,9 @@
 from util import *
-# P is condition set;
 
 
 @apply
 def apply(P):
+    # P is condition set;
     definition = P.definition
     assert definition.is_ConditionSet    
     x = definition.variable

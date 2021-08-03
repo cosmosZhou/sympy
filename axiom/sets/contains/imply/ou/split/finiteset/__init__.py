@@ -1,12 +1,9 @@
 from util import *
 
 
-
 @apply
 def apply(given):
-    assert given.is_Contains
-    e, finiteset = given.args
-    finiteset = finiteset.of(FiniteSet)
+    e, finiteset = given.of(Contains[FiniteSet])    
 
     return Or(*(Equal(e, s) for s in finiteset))
 
@@ -14,10 +11,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets
-    e = Symbol.e(integer=True, given=True)
-    a = Symbol.a(integer=True, given=True)
-    b = Symbol.b(integer=True, given=True)
-    c = Symbol.c(integer=True, given=True)
+
+    e, a, b, c = Symbol(integer=True, given=True)
     Eq << apply(Contains(e, {a, b, c}))
 
     u = Symbol.u(FiniteSet(a, b))

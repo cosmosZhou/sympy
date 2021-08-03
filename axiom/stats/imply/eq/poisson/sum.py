@@ -18,15 +18,14 @@ def apply(x0, x1):
 @prove
 def prove(Eq):
     from axiom import discrete
+
     lamda0 = Symbol.lamda0(positive=True)
     lamda1 = Symbol.lamda1(positive=True)
-
     x0 = Symbol.x0(distribution=PoissonDistribution(lamda0))
     x1 = Symbol.x1(distribution=PoissonDistribution(lamda1))
-
     Eq << apply(x0, x1)
 
-    Eq << Eq[0].this.lhs.this.doit(evaluate=False)
+    Eq << Eq[0].this.lhs.doit(evaluate=False)
 
     Eq << Eq[-1].this.lhs.powsimp()
 

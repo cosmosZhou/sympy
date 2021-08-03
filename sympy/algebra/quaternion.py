@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 from sympy import Rational
-from sympy import re, im, conjugate
+from sympy import conjugate
 from sympy import sqrt, sin, cos, acos, exp, ln
 from sympy import trigsimp
 from sympy import integrate

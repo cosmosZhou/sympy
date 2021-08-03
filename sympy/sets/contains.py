@@ -1,7 +1,8 @@
 from sympy.core import S
 from sympy.core.relational import Eq, Ne, Less, Greater, \
-    LessEqual, GreaterEqual, Equal, Unequal
-from sympy.logic.boolalg import And, Or, BinaryCondition
+    LessEqual, GreaterEqual, Equal
+from sympy.logic.boolalg import BinaryCondition
+from sympy.core.sympify import sympify
 
 
 class Contains(BinaryCondition):
@@ -35,6 +36,7 @@ class Contains(BinaryCondition):
         return BinaryCondition.eval(cls, *args, **assumptions)
 
     def subs(self, *args, **kwargs):
+        [*args] = map(sympify, args)
         if len(args) == 1:
             eq, *_ = args
             if isinstance(eq, Equal):
@@ -44,7 +46,7 @@ class Contains(BinaryCondition):
                 return self.subs_assumptions_for_equality(eq, result)
             if isinstance(eq, dict):
                 return self
-            if eq.is_ConditionalBoolean:
+            if eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
             return self
         
@@ -278,7 +280,7 @@ class NotContains(BinaryCondition):
                 for k, v in eq.items():
                     self = self._subs(k, v)
                 return self
-            if eq.is_ConditionalBoolean:
+            if eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
             return self
 
@@ -312,7 +314,6 @@ class NotContains(BinaryCondition):
         if ret is None:
             return
         if not isinstance(ret, Contains) and (ret in (S.true, S.false) or ret.is_set):
-            from sympy.core.sympify import sympify
             return sympify(not ret)
 
     def as_set(self):

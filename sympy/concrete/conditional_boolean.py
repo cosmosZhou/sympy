@@ -4,8 +4,8 @@ from sympy.core.sympify import sympify
 from sympy.utilities.iterables import postorder_traversal
 
 
-class ConditionalBoolean(Boolean, ExprWithLimits):
-    """A boolean object is an object for which logic operations make sense."""
+class Quantifier(Boolean, ExprWithLimits):
+    """Quantifier is the base class for All and Any"""
     
     __slots__ = []
 
@@ -39,7 +39,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
     def funcs(self):
         funcs = [(self.func, self.limits)]
         function = self.expr
-        if function.is_ConditionalBoolean:
+        if function.is_Quantifier:
             sub_funcs, function = function.funcs()
             funcs = sub_funcs + funcs
 
@@ -213,7 +213,7 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
                     if len(domain) == 1 and domain[0].is_boolean:
                         continue
                     
-                    index = index[0]
+                    [index] = index
                     eqs = [*function.args]
 
                     eqs[index] = self.func(eqs[index], (x, *domain)).simplify()
@@ -491,7 +491,6 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             
         del limits[i]
         return self.func(self.expr, *limits).simplify()
-        
 
     def delete_independent_variables(self):
         limits_dict = self.limits_dict
@@ -567,6 +566,36 @@ class ConditionalBoolean(Boolean, ExprWithLimits):
             else:
                 expr = self.expr
             return self.invert_type.operator(cond, expr)
-                    
+
+    def _latex(self, p):
+        latex = p._print(self.expr)
+        if self.expr.is_LatticeOp:
+            latex = r"\left(%s\right)" % latex
+
+        if all(len(limit) == 1 for limit in self.limits):
+            limit = ', '.join(var.latex for var, *_ in self.limits)
+        else:
+            limits = []
+            for limit in self.limits:
+                var, *args = limit
+                if len(args) == 0:
+                    limit = var.latex
+                elif len(args) == 1:
+                    limit = var.domain_latex(args[0])
+                else:
+                    a, b = args
+                    if b.is_set:
+                        limit = var.domain_latex(a, baseset=b)
+                    else:
+                        from sympy import Range
+                        limit = var.domain_latex((Range if var.is_integer else Interval)(*args))
+
+                limits.append(limit)
+
+            limit = r'\substack{%s}' % '\\\\'.join(limits)
+
+        latex = r"\%s_{%s}{%s}" % (self.latexname, limit, latex)
+        return latex
+
 
 from sympy.concrete.limits import *

@@ -149,7 +149,7 @@ class GeometryEntity(Basic):
         from sympy.printing import sstr
         return type(self).__name__ + sstr(self.args)
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         from sympy.geometry.point import Point, Point3D
         if is_sequence(old) or is_sequence(new):
             if isinstance(self, Point3D):

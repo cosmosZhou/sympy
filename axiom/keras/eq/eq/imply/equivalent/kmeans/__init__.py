@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given, x=None):
-    eq_sum, eq_union = given
+def apply(eq_sum, eq_union, x=None):
     w_sum, M = eq_sum.of(Equal)
     w_union, M_interval = eq_union.of(Equal)
 
@@ -36,16 +35,12 @@ def apply(*given, x=None):
 
 @prove(proved=False)
 def prove(Eq):
-    M = Symbol.M(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-
-    k = Symbol.k(domain=Range(0, M))
-
-    x = Symbol.x(real=True, shape=(M, n))
-    w = Symbol.omega(shape=(k,), etype=dtype.integer, emptyset=False)
-
-    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
+    M, n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    k = Symbol(domain=Range(0, M))
+    x = Symbol(real=True, shape=(M, n))
+    omega = Symbol(shape=(k,), etype=dtype.integer, emptyset=False)
+    Eq << apply(Equal(Sum[i](abs(omega[i])), M), Equal(Cup[i](omega[i]), k.domain), x=x)
 
 
 if __name__ == '__main__':

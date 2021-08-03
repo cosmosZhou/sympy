@@ -3,21 +3,19 @@ from util import *
 
 @apply
 def apply(self):    
-    *args, x = self.of(Expr + Floor)
-    rhs = Floor(x + Add(*args))
-    return Equal(self, rhs, evaluate=False)
+    t, x = self.of(Expr + Floor)
+    return Equal(self, Floor(x + t), evaluate=False)
 
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True)
-    d = Symbol.d(integer=True)
-    Eq << apply(floor(n / d - S.One / 2) + 1)
+    x = Symbol(real=True)
+    Eq << apply(Floor(x - S.One / 2) + 1)
 
-    x = Symbol.x(Eq[0].find(Floor).arg)
-    Eq << Eq[0].subs(x.this.definition.reversed)
+    x = Symbol(Eq[0].find(Floor).arg)
+    Eq << x.this.definition
 
-    
+    Eq << Eq[0].subs(Eq[-1].reversed)
 
 
 if __name__ == '__main__':

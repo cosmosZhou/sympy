@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << apply(All[j:1:n](x[j] > 0))
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[1], cond=n >= 3)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=n >= 3)
 
     Eq.case1, Eq.case2 = algebra.suffice.given.suffice.split.apply(Eq[-1], cond=n < 2)
 

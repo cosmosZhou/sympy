@@ -96,7 +96,7 @@ def _create_lookup_table(table):
                 return arg <= 0
 
     # Section 8.4.2
-    from sympy import (gamma, pi, cos, exp, re, sin, sinc, sqrt, sinh, cosh,
+    from sympy import (gamma, Re, sinc, sqrt, sinh, cosh,
                        factorial, log, erf, erfc, erfi, polar_lift)
     # TODO this needs more polar_lift (c/f entry for exp)
     add(Heaviside(t - b)*(t - b)**(a - 1), [a], [], [], [0], t/b,
@@ -110,7 +110,7 @@ def _create_lookup_table(table):
     add((b + t)**(-a), [1 - a], [], [0], [], t/b, b**(-a)/gamma(a),
         hint=Not(IsNonPositiveInteger(a)))
     add(abs(b - t)**(-a), [1 - a], [(1 - a)/2], [0], [(1 - a)/2], t/b,
-        2*sin(pi*a/2)*gamma(1 - a)*abs(b)**(-a), re(a) < 1)
+        2*sin(pi*a/2)*gamma(1 - a)*abs(b)**(-a), Re(a) < 1)
     add((t**a - b**a)/(t - b), [0, a], [], [0, a], [], t/b,
         b**(a - 1)*sin(a*pi)/pi)
 
@@ -736,7 +736,7 @@ def _check_antecedents_1(g, x, helper=False):
     int_1^\infty g dx exists.
     """
     # NOTE if you update these conditions, please update the documentation as well
-    from sympy import Eq, Not, ceiling, Ne, re, unbranched_argument as arg
+    from sympy import Eq, Not, ceiling, Ne, Re, unbranched_argument as arg
     delta = g.delta
     eta, _ = _get_coeff_exp(g.argument, x)
     m, n, p, q = S([len(g.bm), len(g.an), len(g.ap), len(g.bq)])
@@ -751,18 +751,18 @@ def _check_antecedents_1(g, x, helper=False):
 
     tmp = []
     for b in g.bm:
-        tmp += [-re(b) < 1]
+        tmp += [-Re(b) < 1]
     for a in g.an:
-        tmp += [1 < 1 - re(a)]
+        tmp += [1 < 1 - Re(a)]
     cond_3 = And(*tmp)
 
     for b in g.bother:
-        tmp += [-re(b) < 1]
+        tmp += [-Re(b) < 1]
     for a in g.aother:
-        tmp += [1 < 1 - re(a)]
+        tmp += [1 < 1 - Re(a)]
     cond_3_star = And(*tmp)
 
-    cond_4 = (-re(g.nu) + (q + 1 - p)/2 > q - p)
+    cond_4 = (-Re(g.nu) + (q + 1 - p)/2 > q - p)
 
     def debug(*msg):
         _debug(*msg)
@@ -823,7 +823,7 @@ def _check_antecedents_1(g, x, helper=False):
     s = []
     for a, b in zip(g.ap, g.bq):
         s += [b - a]
-    case_extra += [re(Add(*s)) < 0]
+    case_extra += [Re(Add(*s)) < 0]
     case_extra = And(*case_extra)
     conds += [case_extra]
     debug('  extra case:', [case_extra])
@@ -979,15 +979,15 @@ def _check_antecedents(g1, g2, x):
                         return False
         return True
     c1 = _c1()
-    c2 = And(*[re(1 + i + j) > 0 for i in g1.bm for j in g2.bm])
-    c3 = And(*[re(1 + i + j) < 1 + 1 for i in g1.an for j in g2.an])
-    c4 = And(*[(p - q)*re(1 + i - 1) - re(mu) > -S(3)/2 for i in g1.an])
-    c5 = And(*[(p - q)*re(1 + i) - re(mu) > -S(3)/2 for i in g1.bm])
-    c6 = And(*[(u - v)*re(1 + i - 1) - re(rho) > -S(3)/2 for i in g2.an])
-    c7 = And(*[(u - v)*re(1 + i) - re(rho) > -S(3)/2 for i in g2.bm])
-    c8 = (abs(phi) + 2*re((rho - 1)*(q - p) + (v - u)*(q - p) + (mu -
+    c2 = And(*[Re(1 + i + j) > 0 for i in g1.bm for j in g2.bm])
+    c3 = And(*[Re(1 + i + j) < 1 + 1 for i in g1.an for j in g2.an])
+    c4 = And(*[(p - q)*Re(1 + i - 1) - Re(mu) > -S(3)/2 for i in g1.an])
+    c5 = And(*[(p - q)*Re(1 + i) - Re(mu) > -S(3)/2 for i in g1.bm])
+    c6 = And(*[(u - v)*Re(1 + i - 1) - Re(rho) > -S(3)/2 for i in g2.an])
+    c7 = And(*[(u - v)*Re(1 + i) - Re(rho) > -S(3)/2 for i in g2.bm])
+    c8 = (abs(phi) + 2*Re((rho - 1)*(q - p) + (v - u)*(q - p) + (mu -
           1)*(v - u)) > 0)
-    c9 = (abs(phi) - 2*re((rho - 1)*(q - p) + (v - u)*(q - p) + (mu -
+    c9 = (abs(phi) - 2*Re((rho - 1)*(q - p) + (v - u)*(q - p) + (mu -
           1)*(v - u)) > 0)
     c10 = (abs(arg(sigma)) < bstar*pi)
     c11 = Eq(abs(arg(sigma)), bstar*pi)
@@ -996,7 +996,7 @@ def _check_antecedents(g1, g2, x):
 
     # The following condition is *not* implemented as stated on the wolfram
     # function site. In the book of Prudnikov there is an additional part
-    # (the And involving re()). However, I only have this book in russian, and
+    # (the And involving Re()). However, I only have this book in russian, and
     # I don't read any russian. The following condition is what other people
     # have told me it means.
     # Worryingly, it is different from the condition implemented in REDUCE.
@@ -1010,8 +1010,8 @@ def _check_antecedents(g1, g2, x):
     zso = unpolarify(z0*sigma/omega)
     if zos == 1/zso:
         c14 = And(Eq(phi, 0), bstar + cstar <= 1,
-                  Or(Ne(zos, 1), re(mu + rho + v - u) < 1,
-                     re(mu + rho + q - p) < 1))
+                  Or(Ne(zos, 1), Re(mu + rho + v - u) < 1,
+                     Re(mu + rho + q - p) < 1))
     else:
         def _cond(z):
             '''Returns True if abs(arg(1-z)) < pi, avoiding arg(0).
@@ -1027,11 +1027,11 @@ def _check_antecedents(g1, g2, x):
 
         c14 = And(Eq(phi, 0), bstar - 1 + cstar <= 0,
                   Or(And(Ne(zos, 1), _cond(zos)),
-                     And(re(mu + rho + v - u) < 1, Eq(zos, 1))))
+                     And(Re(mu + rho + v - u) < 1, Eq(zos, 1))))
 
         c14_alt = And(Eq(phi, 0), cstar - 1 + bstar <= 0,
                   Or(And(Ne(zso, 1), _cond(zso)),
-                     And(re(mu + rho + q - p) < 1, Eq(zso, 1))))
+                     And(Re(mu + rho + q - p) < 1, Eq(zso, 1))))
 
         # Since r=k=l=1, in our case there is c14_alt which is the same as calling
         # us with (g1, g2) = (g2, g1). The conditions below enumerate all cases
@@ -1069,8 +1069,8 @@ def _check_antecedents(g1, g2, x):
                  And(Ne(arg(sigma), 0), Eq(arg(omega), 0))),
                 (lambda_s0(sign(arg(omega)), sign(arg(sigma))), True))
             tmp = [lambda_c > 0,
-                   And(Eq(lambda_c, 0), Ne(lambda_s, 0), re(eta) > -1),
-                   And(Eq(lambda_c, 0), Eq(lambda_s, 0), re(eta) > 0)]
+                   And(Eq(lambda_c, 0), Ne(lambda_s, 0), Re(eta) > -1),
+                   And(Eq(lambda_c, 0), Eq(lambda_s, 0), Re(eta) > 0)]
             c15 = Or(*tmp)
     except TypeError:
         c15 = False
@@ -1087,18 +1087,18 @@ def _check_antecedents(g1, g2, x):
     conds += [And(m*n*s*t != 0, bstar.is_positive == True, cstar.is_positive == True, c1, c2, c3, c10,
                   c12)]  # 1
     pr(1)
-    conds += [And(Eq(u, v), Eq(bstar, 0), cstar.is_positive == True, sigma.is_positive == True, re(rho) < 1,
+    conds += [And(Eq(u, v), Eq(bstar, 0), cstar.is_positive == True, sigma.is_positive == True, Re(rho) < 1,
                   c1, c2, c3, c12)]  # 2
     pr(2)
-    conds += [And(Eq(p, q), Eq(cstar, 0), bstar.is_positive == True, omega.is_positive == True, re(mu) < 1,
+    conds += [And(Eq(p, q), Eq(cstar, 0), bstar.is_positive == True, omega.is_positive == True, Re(mu) < 1,
                   c1, c2, c3, c10)]  # 3
     pr(3)
     conds += [And(Eq(p, q), Eq(u, v), Eq(bstar, 0), Eq(cstar, 0),
-                  sigma.is_positive == True, omega.is_positive == True, re(mu) < 1, re(rho) < 1,
+                  sigma.is_positive == True, omega.is_positive == True, Re(mu) < 1, Re(rho) < 1,
                   Ne(sigma, omega), c1, c2, c3)]  # 4
     pr(4)
     conds += [And(Eq(p, q), Eq(u, v), Eq(bstar, 0), Eq(cstar, 0),
-                  sigma.is_positive == True, omega.is_positive == True, re(mu + rho) < 1,
+                  sigma.is_positive == True, omega.is_positive == True, Re(mu + rho) < 1,
                   Ne(omega, sigma), c1, c2, c3)]  # 5
     pr(5)
     conds += [And(p > q, s.is_positive == True, bstar.is_positive == True, cstar >= 0,
@@ -1114,16 +1114,16 @@ def _check_antecedents(g1, g2, x):
                   c1, c2, c3, c6, c11, c12)]  # 9
     pr(9)
     conds += [And(p > q, Eq(u, v), Eq(bstar, 0), cstar >= 0, sigma.is_positive == True,
-                  re(rho) < 1, c1, c2, c3, c5, c13)]  # 10
+                  Re(rho) < 1, c1, c2, c3, c5, c13)]  # 10
     pr(10)
     conds += [And(p < q, Eq(u, v), Eq(bstar, 0), cstar >= 0, sigma.is_positive == True,
-                  re(rho) < 1, c1, c2, c3, c4, c13)]  # 11
+                  Re(rho) < 1, c1, c2, c3, c4, c13)]  # 11
     pr(11)
     conds += [And(Eq(p, q), u > v, bstar >= 0, Eq(cstar, 0), omega.is_positive == True,
-                  re(mu) < 1, c1, c2, c3, c7, c11)]  # 12
+                  Re(mu) < 1, c1, c2, c3, c7, c11)]  # 12
     pr(12)
     conds += [And(Eq(p, q), u < v, bstar >= 0, Eq(cstar, 0), omega.is_positive == True,
-                  re(mu) < 1, c1, c2, c3, c6, c11)]  # 13
+                  Re(mu) < 1, c1, c2, c3, c6, c11)]  # 13
     pr(13)
     conds += [And(p < q, u > v, bstar >= 0, cstar >= 0,
                   c1, c2, c3, c4, c7, c11, c13)]  # 14
@@ -1278,7 +1278,7 @@ def _rewrite_inversion(fac, po, g, x):
 
 def _check_antecedents_inversion(g, x):
     """ Check antecedents for the laplace inversion integral. """
-    from sympy import re, im, Or, And, Eq, exp, I, Add, nan, Ne
+    from sympy import Re, Im, Or, And, Eq, exp, I, Add, nan, Ne
     _debug('Checking antecedents for inversion:')
     z = g.argument
     _, e = _get_coeff_exp(z, x)
@@ -1293,16 +1293,16 @@ def _check_antecedents_inversion(g, x):
         b *= coeff**c
         c *= exponent
         conds = []
-        wp = b*exp(I*re(c)*pi/2)
-        wm = b*exp(-I*re(c)*pi/2)
+        wp = b*exp(I*Re(c)*pi/2)
+        wm = b*exp(-I*Re(c)*pi/2)
         if plus:
             w = wp
         else:
             w = wm
-        conds += [And(Or(Eq(b, 0), re(c) <= 0), re(a) <= -1)]
-        conds += [And(Ne(b, 0), Eq(im(c), 0), re(c) > 0, re(w) < 0)]
-        conds += [And(Ne(b, 0), Eq(im(c), 0), re(c) > 0, re(w) <= 0,
-                      re(a) <= -1)]
+        conds += [And(Or(Eq(b, 0), Re(c) <= 0), Re(a) <= -1)]
+        conds += [And(Ne(b, 0), Eq(im(c), 0), Re(c) > 0, Re(w) < 0)]
+        conds += [And(Ne(b, 0), Eq(im(c), 0), Re(c) > 0, Re(w) <= 0,
+                      Re(a) <= -1)]
         return Or(*conds)
 
     def statement(a, b, c, z):

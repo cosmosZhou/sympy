@@ -4,13 +4,11 @@ A Printer which converts an expression into its LaTeX equivalent.
 
 import itertools
 
-from sympy.core import S, Add, Symbol, Mod
+from sympy.core import S, Add, Symbol
 from sympy.core.alphabets import greeks
 from sympy.core.containers import Tuple
-from sympy.core.function import AppliedUndef, Derivative
-# from sympy.core.operations import AssocOp
+from sympy.core.function import Derivative
 from sympy.core.sympify import SympifyError
-from sympy.logic.boolalg import true
 
 # sympy.printing imports
 from sympy.printing.precedence import precedence_traditional
@@ -593,22 +591,6 @@ class LatexPrinter(Printer):
         else:
             return tex
 
-    def _print_re(self, expr, exp=None):
-        if self._settings['gothic_re_im']:
-            tex = r"\Re{%s}" % self.parenthesize(expr.args[0], PRECEDENCE['Atom'])
-        else:
-            tex = r"\operatorname{{re}}{{{}}}".format(self.parenthesize(expr.args[0], PRECEDENCE['Atom']))
-
-        return self._do_exponent(tex, exp)
-
-    def _print_im(self, expr, exp=None):
-        if self._settings['gothic_re_im']:
-            tex = r"\Im{%s}" % self.parenthesize(expr.args[0], PRECEDENCE['Atom'])
-        else:
-            tex = r"\operatorname{{im}}{{{}}}".format(self.parenthesize(expr.args[0], PRECEDENCE['Atom']))
-
-        return self._do_exponent(tex, exp)
-
     def _print_Not(self, e):
         from sympy import Equivalent, Suffice
         if isinstance(e.args[0], Equivalent):
@@ -639,14 +621,6 @@ class LatexPrinter(Printer):
     def _print_Xor(self, e):
         args = sorted(e.args, key=default_sort_key)
         return self._print_LogOp(args, r"\veebar")
-
-    def _print_conjugate(self, expr, exp=None):
-        tex = r"\overline{%s}" % self._print(expr.args[0])
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
-        else:
-            return tex
 
     def _print_polar_lift(self, expr, exp=None):
         func = r"\operatorname{polar\_lift}"

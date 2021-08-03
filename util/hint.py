@@ -22,7 +22,7 @@ keywords += ['emptyset', 'etype', 'evaluate', 'expand', 'expr',
              'deep',
              'index', 'integer', 'invertible', 'is_complex', 'is_emptyset', 'is_integer', 'is_invertible', 'is_negative', 'is_nonemptyset', 'is_nonnegative', 'is_nonpositive', 'is_nonzero', 'is_positive', 'is_prime', 'is_real', 'is_singular', 'is_zero',
              'negative', 'nonemptyset', 'nonnegative', 'nonpositive', 'nonzero',
-             'plausible', 'positive', 'prime',
+             'plausible', 'positive', 'prime', 'provable', 'proved'
              'real',
              'set_comprehension', 'simplify', 'singular',
              'this',

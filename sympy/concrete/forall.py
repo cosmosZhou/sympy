@@ -1,11 +1,11 @@
 from sympy.logic.boolalg import Boolean, And, Or
 from sympy.concrete.expr_with_limits import ExprWithLimits
-from sympy.concrete.conditional_boolean import ConditionalBoolean
+from sympy.concrete.conditional_boolean import Quantifier
 from sympy.core.sympify import sympify
 from sympy.core.relational import Equal
 
 
-class All(ConditionalBoolean):
+class All(Quantifier):
     """
     All[p] q <=> !p | q
     """
@@ -36,7 +36,7 @@ class All(ConditionalBoolean):
 
     def subs(self, *args, **kwargs):
         if all(isinstance(arg, Boolean) for arg in args):
-            return ConditionalBoolean.subs(self, *args, **kwargs)
+            return Quantifier.subs(self, *args, **kwargs)
         old, new = args
         if old.is_Slice:
             return self._subs_slice(old, new)
@@ -77,7 +77,7 @@ class All(ConditionalBoolean):
             else:
                 return Or(*eqs, given=self).simplify()
                 
-        return ConditionalBoolean.subs(self, *args, **kwargs)
+        return Quantifier.subs(self, *args, **kwargs)
         
     def simplify(self, local=None, **kwargs):
         deletes = []
@@ -131,7 +131,7 @@ class All(ConditionalBoolean):
         if this is not None:
             return this
 
-        return ConditionalBoolean.simplify(self, **kwargs)
+        return Quantifier.simplify(self, **kwargs)
         
     def simplify_int_limits(self, function):
         for i, domain in self.limits_dict.items():
@@ -196,7 +196,7 @@ class All(ConditionalBoolean):
         return '\N{FOR ALL}[%s](%s)' % (limits, p.doprint(self.expr))
 
     def _pretty(self, p):
-        return ConditionalBoolean._pretty(self, p, '\N{FOR ALL}')    
+        return Quantifier._pretty(self, p, '\N{FOR ALL}')    
 
     def int_limit(self):
         if len(self.limits) != 1:
@@ -211,36 +211,6 @@ class All(ConditionalBoolean):
         limit = self.limits[0]
         if len(limit) == 2:
             return limit
-
-    def _latex(self, p):
-        latex = p._print(self.expr)
-        if self.expr.is_LatticeOp:
-            latex = r"\left(%s\right)" % latex
-
-        if all(len(limit) == 1 for limit in self.limits):
-            limit = ', '.join(var.latex for var, *_ in self.limits)
-        else:
-            limits = []
-            for limit in self.limits:
-                var, *args = limit
-                if len(args) == 0:
-                    limit = var.latex
-                elif len(args) == 1:
-                    limit = var.domain_latex(args[0])
-                else:
-                    a, b = args
-                    if b.is_set:
-                        limit = var.domain_latex(a, baseset=b)
-                    else:
-                        from sympy import Range
-                        limit = var.domain_latex((Range if var.is_integer else Interval)(*args))
-
-                limits.append(limit)
-
-            limit = r'\substack{%s}' % '\\\\'.join(limits)
-
-        latex = r"\forall_{%s}{%s}" % (limit, latex)
-        return latex
 
     def __and__(self, eq):
         """Overloading for & operator"""
@@ -262,7 +232,7 @@ class All(ConditionalBoolean):
                         del limits[i]                        
                         return self.func(self.expr, *limits).simplify()                        
                     
-        return ConditionalBoolean.__and__(self, eq)
+        return Quantifier.__and__(self, eq)
 
     def apply(self, axiom, *args, **kwargs):
         for arg in args:
@@ -283,7 +253,7 @@ class All(ConditionalBoolean):
                                 print("variables' are beyond the bound given in All context!")
                                 return self
         
-        return ConditionalBoolean.apply(self, axiom, *args, **kwargs)    
+        return Quantifier.apply(self, axiom, *args, **kwargs)    
 
     def inference_status(self, child):
         return child > 0
@@ -294,6 +264,8 @@ class All(ConditionalBoolean):
         if cond.is_set:
             return Equal(cond, x.emptySet)
         return self.func.invert_type[x](cond.invert())
+    
+    latexname = 'forall'
 
 
 from sympy.concrete.limits import *

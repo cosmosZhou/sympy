@@ -17,13 +17,15 @@ error_log("module = $module");
 
 $content = [];
 
-$res = \mysql\yield_from_mysql($module);
+if (!$statementsFromSQLFile){
+    $statementsFromSQLFile = \mysql\yield_from_mysql($module);
+}
 
 preg_match("/([\w.]+)\.(imply|given)\./", $module, $m);
 $numOfRequisites = $m ? count(explode(".", $m[1])) - 1 : 0;
 
 $where = '';
-foreach ($statementsFromSQLFile === null ? $res : $statementsFromSQLFile as $statement) {
+foreach ($statementsFromSQLFile as $statement) {
 
     if ($i == $indexOfYield) {
         -- $lengths[$i];
@@ -143,7 +145,7 @@ for ($i = 0; $i < $size; ++ $i) {
               	        		break;
               	        	}
           	        	}      	        		      	        		
-      				}, 1000);
+      				}, 500);
       	      	});      			
 			}
   		},
@@ -177,6 +179,8 @@ for ($i = 0; $i < $size; ++ $i) {
 
 <script>
 	logs = <?php echo \std\jsonify($logs)?>;
+
+	console.log(logs);
 	for (let i = 0; i < logs.length; ++i){
 		var log = logs[i];
 		if (log.startsWith('{') && log.endsWith('}')){
@@ -327,27 +331,6 @@ for ($i = 0; $i < $size; ++ $i) {
     			break;
     	}
     }
-
-	console.log('module = ' + data.module);
-
-	form_post("php/request.php", { detect: data.module }).then(theorem => {
-		console.log('theorem = ' + theorem);
-
-		for (let cm of app.$refs.prove) {
-			cm.editor.eachLine(line => {
-				var text = line.text;
-				var selectionStart = text.indexOf(theorem);
-				if (selectionStart >= 0) {
-					console.log(text);
-					var lineNo = line.lineNo();
-
-					editor.setCursor(lineNo, selectionStart);
-					editor.addSelection({ line: lineNo, ch: selectionStart }, { line: lineNo, ch: selectionStart + theorem.length });
-					editor.focus();
-				}
-			});
-		}
-	}).catch(fail);
 
     var sqlFile = `<?php echo $sql_statement?>`;
     if (sqlFile) {

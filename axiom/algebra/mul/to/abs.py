@@ -23,6 +23,7 @@ def apply(self, evaluate=False):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
     Eq << apply(abs(x) * abs(y))
@@ -55,7 +56,7 @@ def prove(Eq):
 
     Eq.suffice = Suffice(Eq.equal.lhs.args[1].cond, Equal(x * y, 0), plausible=True)
 
-    Eq << algebra.suffice.given.suffice.split.ou.apply(Eq.suffice)
+    Eq << algebra.suffice.given.et.suffice.split.ou.apply(Eq.suffice)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.et.imply.cond, index=1), Eq[-1].this.lhs.apply(algebra.et.imply.cond, index=0)
 
@@ -79,7 +80,7 @@ def prove(Eq):
 
     Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq.equivalent)
 
-    Eq << algebra.suffice.given.suffice.split.ou.apply(Eq.suffice)
+    Eq << algebra.suffice.given.et.suffice.split.ou.apply(Eq.suffice)
 
     Eq << Eq[-2].this.lhs.apply(algebra.is_negative.is_negative.imply.is_positive)
 

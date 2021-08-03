@@ -2,7 +2,8 @@ from util import *
 
 
 @apply
-def apply(eq, f_eq, swap=False, reverse=False):
+def apply(eq, f_eq, swap=False, reverse=False, simplify=True, assumptions={}):
+    from axiom.algebra.all_eq.cond.imply.all.subs import subs
     if swap:
         f_eq, eq = eq, f_eq
         
@@ -12,7 +13,7 @@ def apply(eq, f_eq, swap=False, reverse=False):
     if reverse:
         old, new = new, old
     
-    return Equal(lhs, rhs._subs(old, new))
+    return Equal(lhs, subs(rhs, old, new, simplify=simplify, assumptions=assumptions))
 
 
 @prove

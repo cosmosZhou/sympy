@@ -94,13 +94,8 @@ function post_json(url, data, dataType) {
 	});
 }
 
-function fail(errInfo, errType, errDescription) {
-	if (errInfo.responseText) {
-		console.log('debugging info = ');
-		console.log(errInfo);
-		console.log(errType);
-		console.log(errDescription);
-	}
+function fail(errInfo) {
+	console.log(errInfo);
 }
 
 /**

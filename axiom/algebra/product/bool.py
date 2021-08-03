@@ -11,9 +11,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    S = Symbol.S(etype=dtype.integer)
-    x = Symbol.x(integer=True)
-    f = Function.f(real=True)
+    S = Symbol(etype=dtype.integer)
+    x = Symbol(integer=True)
+    f = Function(real=True)
 
     Eq << apply(Product[x:S](f(x)))
 

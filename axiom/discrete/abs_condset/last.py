@@ -58,7 +58,7 @@ def prove(Eq):
 
     Eq.mapping_quote = All[x[:n + 1]:P_quote](Equal(x_quote, x[:n + 1]), plausible=True)
 
-    Eq << Eq.mapping_quote.this.expr.apply(algebra.eq.given.et.split.blockmatrix, slice(-1))
+    Eq << Eq.mapping_quote.this.expr.apply(algebra.eq.given.et.eq.blockmatrix)
 
     Eq << algebra.all_et.given.all.apply(Eq[-1])
 

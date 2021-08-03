@@ -8,6 +8,6 @@ from . import ge
 from . import cond
 from . import simplify
 from . import rsolve
-from . import to
 from . import suffice
 from . import transposition
+from . import reverse

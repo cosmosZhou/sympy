@@ -1069,7 +1069,7 @@ class And(LatticeOp, BooleanFunction):
                     return function
                 
                 for eq in self.args: 
-                    if eq.is_ConditionalBoolean:
+                    if eq.is_Quantifier:
                         _funcs, function = eq.funcs()
                         _funcs = _funcs[-depth:]
                         if funcs:
@@ -1548,7 +1548,7 @@ class Or(LatticeOp, BooleanFunction):
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq = args[0]
-            if eq.is_ConditionalBoolean:
+            if eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
             
             if eq.is_Equal:
@@ -1582,6 +1582,14 @@ class Or(LatticeOp, BooleanFunction):
             result = result.copy(equivalent=self)
             
         return result
+
+    def _subs(self, old, new, **hints):
+        if old.is_Or:
+            if not old._argset - self._argset:
+                complement = self._argset - old._argset
+                complement |= {new}
+                return Or(*complement)
+        return LatticeOp._subs(self, old, new, **hints)
 
     def __and__(self, other):
         this = self

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(all_any, cond, reverse=False):
-    assert not cond.is_ConditionalBoolean
+    assert not cond.is_Quantifier
     (fn, *limits_e), *limits_f = all_any.of(All[Any])
 
     x, y = fn.of(Equal)

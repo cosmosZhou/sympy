@@ -182,7 +182,7 @@ class FourierSeries(SeriesBase):
     def L(self):
         return abs(self.period[1] - self.period[0]) / 2
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         x = self.x
         if old.has(x):
             return self

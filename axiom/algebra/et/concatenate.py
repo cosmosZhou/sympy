@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq << algebra.equivalent.given.et.apply(Eq[0])
 
-    Eq <<= algebra.suffice_et.given.suffice.delete.apply(Eq[-2]), Eq[-1].this.rhs.args[0].apply(algebra.eq.imply.et.split.blockmatrix, slice(-1), simplify=None)
+    Eq <<= algebra.suffice_et.given.suffice.delete.apply(Eq[-2]), Eq[-1].this.rhs.args[0].apply(algebra.eq.imply.et.eq.blockmatrix, simplify=None)
 
     Eq << Eq[-1].this.lhs.apply(algebra.eq.eq.imply.eq.concatenate, simplify=None)
 

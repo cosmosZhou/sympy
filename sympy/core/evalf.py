@@ -308,7 +308,7 @@ def get_integer_part(expr, no, options, return_ints=False):
 
     Note: this function either gives the exact result or signals failure.
     """
-    from sympy.functions.elementary.complexes import re, im
+    from sympy.functions.elementary.complexes import Re, Im
     # The expression is likely less than 2^30 or so
     assumed_size = 30
     ire, iim, ire_acc, iim_acc = evalf(expr, assumed_size, options)
@@ -396,9 +396,9 @@ def get_integer_part(expr, no, options, return_ints=False):
     re_, im_, re_acc, im_acc = None, None, None, None
 
     if ire:
-        re_, re_acc = calc_part(re(expr, evaluate=False), ire)
+        re_, re_acc = calc_part(Re(expr, evaluate=False), ire)
     if iim:
-        im_, im_acc = calc_part(im(expr, evaluate=False), iim)
+        im_, im_acc = calc_part(Im(expr, evaluate=False), iim)
 
     if return_ints:
         return int(to_int(re_ or fzero)), int(to_int(im_ or fzero))
@@ -1253,7 +1253,7 @@ def _create_evalf_table():
     from sympy.core.numbers import Exp1, Float, Half, ImaginaryUnit, Integer, NaN, NegativeOne, One, Pi, Rational, Zero
     from sympy.core.power import Pow
     from sympy.core.symbol import Dummy, Symbol
-    from sympy.functions.elementary.complexes import Abs, im, re
+    from sympy.functions.elementary.complexes import Abs, Im, Re
     from sympy.functions.elementary.exponential import exp, log
     from sympy.functions.elementary.integers import ceiling, floor
     from sympy.functions.elementary.piecewise import Piecewise
@@ -1289,8 +1289,8 @@ def _create_evalf_table():
         atan: evalf_atan,
         Abs: evalf_abs,
 
-        re: evalf_re,
-        im: evalf_im,
+        Re: evalf_re,
+        Im: evalf_im,
         floor: evalf_floor,
         ceiling: evalf_ceiling,
 
@@ -1307,7 +1307,7 @@ def _create_evalf_table():
 
 
 def evalf(x, prec, options):
-    from sympy import re as re_, im as im_
+    from sympy import Re as re_, Im as im_
     try:
         rf = evalf_table[x.func]
         r = rf(x, prec, options)

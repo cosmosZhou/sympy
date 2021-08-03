@@ -10,10 +10,10 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True)
-    A = Symbol.A(etype=dtype.integer)
+    x = Symbol(integer=True)
+    A = Symbol(etype=dtype.integer)
     
-    f = Function.f(integer=True)
+    f = Function(integer=True)
 
     Eq << apply(Equal(conditionset(x, f(x) > 0), A))
     

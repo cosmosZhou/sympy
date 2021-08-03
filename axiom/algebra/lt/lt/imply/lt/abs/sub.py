@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << apply(abs(x) < a, abs(y) < b)
 
-    Eq << algebra.lt.given.et.split.abs.apply(Eq[-1])
+    Eq << algebra.lt_abs.given.et.apply(Eq[-1])
 
     Eq << algebra.lt.imply.et.split.abs.apply(Eq[0])
 

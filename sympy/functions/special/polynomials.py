@@ -13,7 +13,6 @@ from sympy.core.function import Function, ArgumentIndexError
 from sympy.core.singleton import S
 from sympy.core.symbol import Dummy
 from sympy.functions.combinatorial.factorials import binomial, factorial, RisingFactorial
-from sympy.functions.elementary.complexes import re
 from sympy.functions.elementary.exponential import exp
 from sympy.functions.elementary.integers import floor
 from sympy.core.power import sqrt
@@ -358,7 +357,8 @@ class gegenbauer(OrthogonalPolynomial):
         if not n.is_Number:
             # Handle this before the general sign extraction rule
             if x == S.NegativeOne:
-                if (re(a) > S.Half) == True:
+                from sympy import Re
+                if (Re(a) > S.Half) == True:
                     return S.ComplexInfinity
                 else:
                     # No sec function available yet

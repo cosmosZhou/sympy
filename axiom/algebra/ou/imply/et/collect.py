@@ -4,7 +4,19 @@ from util import *
 @apply
 def apply(given, *, cond=None):
     or_eqs = given.of(Or)
-
+    if cond is None:
+        common_terms = None
+        for et in or_eqs:
+            if et.is_And:
+                if common_terms is None:
+                    common_terms = et._argset
+                else:
+                    common_terms &= et._argset
+            else:
+                common_terms &= {et}
+                
+        cond = And(*common_terms)
+            
     new_or_eqs = []
 
     and_eqs = []
@@ -43,12 +55,6 @@ def prove(Eq):
     Eq <<= Eq[-1] & Eq[0]
 
     Eq << algebra.et.imply.ou.apply(Eq[-1])
-
-    
-
-    
-
-    
 
 
 if __name__ == '__main__':

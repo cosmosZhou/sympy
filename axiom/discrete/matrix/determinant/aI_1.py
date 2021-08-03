@@ -63,7 +63,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Sum).apply(algebra.sum.to.add.pop_back)
 
-    Eq.split = Eq[-1].this.find(Add, Lamda)().find(Mul, KroneckerDelta).simplify()
+    Eq.split = Eq[-1].this.rhs().find(Mul, Add, KroneckerDelta).simplify()
 
     Eq << Eq.split.find(Sum).this().find(Add[2]).simplify()
 

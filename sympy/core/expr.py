@@ -208,28 +208,11 @@ class Expr(Basic, EvalfMixin):
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__rsub__')
     def __sub__(self, other):
-        try:
-            if self.is_set:
-                from sympy import Complement
-                return Complement(self, other)
-            
-            return self + (-other)
+        if self.is_set:
+            from sympy import Complement
+            return Complement(self, other)
         
-        except TypeError:
-            if other.is_Mul:
-                args = other.args
-                if args[0].is_Number:
-                    args[0] = -args[0]
-                else:
-                    args = (sympify(-1),) + args
-                other = Basic.__new__(Mul, *args)
-            else:
-                other = Basic.__new__(Mul, sympify(-1), other)
-            
-            if self.is_Add:
-                return Basic.__new__(Add, *self.args, other)
-            return Basic.__new__(Add, self, other)            
-                
+        return self + (-other)
 
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__sub__')
@@ -270,12 +253,7 @@ class Expr(Basic, EvalfMixin):
 
     def __pow__(self, other, mod=None):
         if mod is None:
-            try:
-                return self._pow(other)
-            except TypeError:
-                if isinstance(other, int):
-                    other = sympify(other)
-                return Basic.__new__(Pow, self, other)
+            return self._pow(other)
         try:
             _self, other, mod = as_int(self), as_int(other), as_int(mod)
             if other >= 0:
@@ -302,14 +280,9 @@ class Expr(Basic, EvalfMixin):
             from sympy.core.numbers import Infinitesimal, NegativeInfinitesimal
             if isinstance(self.args[-1], (Infinitesimal, NegativeInfinitesimal)):
                 return self.func(*self.args[:-1]) / other + self.args[-1] / other
-
-        try:
-            return Mul(self, Pow(other, S.NegativeOne))
-        except TypeError:
-            other = Basic.__new__(Pow, other, S.NegativeOne)
-            return Basic.__new__(Mul, self, other)
-            
-
+        
+        return Mul(self, Pow(other, S.NegativeOne))
+    
     @_sympifyit('other', NotImplemented)
     @call_highest_priority('__div__')
     def __rdiv__(self, other):
@@ -591,9 +564,9 @@ class Expr(Basic, EvalfMixin):
         for me in (self, other):
             if me.is_complex and me.is_extended_real == False:
                 return Basic.__new__(Less, self, other)
-#                 raise TypeError("Invalid comparison of complex %s" % me)
             if me is S.NaN:
                 raise TypeError("Invalid NaN comparison")
+        
         n2 = _n2(self, other)
         if n2 is not None:
             return _sympify(n2 < 0)
@@ -2130,12 +2103,12 @@ class Expr(Basic, EvalfMixin):
            >>> (z + w*I).as_real_imag()
            (re(z) - im(w), re(w) + im(z))
 
-        """
-        from sympy import im, re
+        """        
         if hints.get('ignore') == self:
             return None
         else:
-            return (re(self), im(self))
+            from sympy import Im, Re
+            return (Re(self), Im(self))
 
     def as_powers_dict(self):
         """Return self as a dictionary of factors with each factor being
@@ -4092,26 +4065,6 @@ class Expr(Basic, EvalfMixin):
             from sympy.sets import conditionset       
             return conditionset(self, condition, self.domain)
         return domain
-
-    def slice(self, index, self_start, self_stop, allow_empty=False):
-        from sympy import BlockMatrix, Symbol 
-        mid = Symbol.process_slice(index, self_start, self_stop)
-        if mid is None:
-            return self
-        
-        if allow_empty:
-            assert mid >= self_start, "mid >= self_start => %s" % (mid >= self_start)
-        else: 
-            assert mid > self_start, "mid > self_start => %s" % (mid > self_start)
-             
-        assert mid < self_stop, "mid < self_stop => %s" % (mid < self_stop)
-        
-        if isinstance(mid, tuple):
-            start, stop = mid
-            assert start < stop, "start < stop => %s" % (start < stop)
-            return BlockMatrix(self[self_start: start], self[start: stop], self[stop:self_stop])
-        
-        return BlockMatrix(self[self_start:mid], self[mid:self_stop])
         
       
 class AtomicExpr(Atom, Expr):

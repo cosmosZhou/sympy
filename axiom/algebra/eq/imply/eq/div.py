@@ -3,18 +3,18 @@ from util import *
 
 @apply
 def apply(given, divisor=None):
-    lhs, rhs = given.of(Equal)    
+    lhs, rhs = given.of(Equal)
+    divisor = sympify(divisor)
+    assert divisor.is_nonzero
     return Equal(lhs / divisor, rhs / divisor)
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     d = Symbol.d(real=True, zero=False)
-    
     Eq << apply(Equal(x, y), d)
-    
+
     Eq << Eq[-1].subs(Eq[0])
 
 

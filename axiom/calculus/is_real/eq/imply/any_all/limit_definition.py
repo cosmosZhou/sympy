@@ -32,9 +32,10 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[1], Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.expr.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.subs)
+    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.subs)
 
     Eq << Eq[-1].this.expr.args[1].apply(calculus.eq.imply.any_all.limit_definition)
+
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
 

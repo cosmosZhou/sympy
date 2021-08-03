@@ -20,7 +20,7 @@ def prove(Eq):
     b = Symbol.b(real=True)
     Eq << apply(Interval(a, b) | Interval(b, a))
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[0], cond=a > b)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=a > b)
 
     Eq << Suffice(a > b, Equal(Min(a, b), b), plausible=True)
 
@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.suffice.split.et.apply(Eq[-1])
+    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
 
     Eq << Suffice(a > b, Equal(Max(a, b), a), plausible=True)
 
@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.suffice.split.et.apply(Eq[-1])
+    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
 
     Eq << Suffice(a > b, Equal(Interval(a, b), a.emptySet), plausible=True)
 
@@ -58,7 +58,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.suffice.split.et.apply(Eq[-1])
+    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
 
     Eq << Suffice(a <= b, Equal(Min(a, b), a), plausible=True)
 
@@ -68,7 +68,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq, index=0)
 
-    Eq << algebra.suffice.given.suffice.split.et.apply(Eq[-1])
+    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
 
     Eq << Suffice(a <= b, Subset(Interval(b, a), Interval(a, b)), plausible=True)
 

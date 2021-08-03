@@ -33,9 +33,10 @@ def prove(Eq):
 
     Eq << discrete.mul.binomial.fraction.apply(k + 1, i).reversed * (k + 1 - i)
 
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq[-2])
 
-    Eq.stirling_solution = Eq[-1].subs(Eq[2])
+    Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[2], Eq[-1])
+    Eq.stirling_solution = Eq[-1].this.find(Sum).expr.ratsimp()
 
     Eq << Eq.stirling_solution.this.expr.apply(algebra.cond.imply.et.invoke, algebra.cond.imply.cond.subs, n, k + 1)
 
@@ -53,8 +54,6 @@ def prove(Eq):
 
     Eq.ratsimp = Eq[-1].this.rhs.args[0].ratsimp()
 
-    Eq.powsimp = Eq[-1].rhs.args[1].args[-1].this.expr.powsimp()
-
     Eq << discrete.factorial.to.sum.apply(k + 1)
 
     Eq << Eq[-1] * (-1) ** (k + 1)
@@ -62,8 +61,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond={0, k + 1}).reversed
-
-    Eq << Eq[-1].subs(Eq.powsimp.reversed)
 
     Eq << Eq[-1] - Eq[-1].lhs.args[0]
 
@@ -79,7 +76,6 @@ def prove(Eq):
 
     Eq << Eq[-1] - Eq[-1].lhs.args[1]
 
-    #Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
     Eq << Eq[-1].this.find(Mul[Sum]).apply(algebra.mul.to.sum)
 
     Eq.induct = Eq.hypothesis.subs(k, k + 1)

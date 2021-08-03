@@ -322,7 +322,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
             return self.func(self.lhs + other.lhs, self.rhs + other.rhs, **other.add_sub_assumptions(self)).simplify()
         elif isinstance(other, Relational):
             return other.func(self.lhs + other.lhs, self.rhs + other.rhs, given=[self, other]).simplify()
-        elif other.is_ConditionalBoolean:
+        elif other.is_Quantifier:
             return self.bfn(self.__add__, other)
         else:
             return self.func(self.lhs + other, self.rhs + other)
@@ -331,7 +331,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         other = sympify(other)
         if other.is_Equal: 
             return self.func(self.lhs - other.lhs, self.rhs - other.rhs, **other.add_sub_assumptions(self))
-        elif other.is_ConditionalBoolean:
+        elif other.is_Quantifier:
             return self.bfn(self.__sub__, other)
         else: 
             assert not other.is_set
@@ -782,6 +782,7 @@ class Equal(Relational):
         return self
 
     def subs(self, *args, simplify=True, **kwargs):
+        [*args] = map(sympify, args)
         if len(args) == 1:
             arg = args[0]
             if isinstance(arg, dict):
@@ -809,7 +810,7 @@ class Equal(Relational):
                 
                 result = self.func(lhs, rhs)
                 return self.subs_assumptions_for_equality(eq, result, simplify=simplify)
-            elif arg.is_ConditionalBoolean:
+            elif arg.is_Quantifier:
                 return self.bfn(self.subs, arg)
             else:
                 return self
@@ -1051,17 +1052,19 @@ class Equal(Relational):
                 a, b = cls.args
                 cls = Basic.__new__(Equal, b, a)
                 res = Boolean.of(self, cls)
-                if b.is_Number:
+                if b.is_Number or b.is_EmptySet:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]
-        elif isinstance(res, list):
-            if cls.is_Equal and len(cls.args) == 1:
-                _a, _b = res
-                a, b = self.args
-                if a is _a:
-                    return [_b, _a]
+                    return (a, b)
+        elif isinstance(res, tuple):
+            if cls.is_Equal:
+                args = cls.args
+                if isinstance(args, tuple) and len(args) == 1:
+                    _a, _b = res
+                    a, b = self.args
+                    if a is _a:
+                        return (_b, _a)
             
         return res 
 
@@ -1686,7 +1689,7 @@ class GreaterEqual(_Greater):
                     return subs
                 else:
                     return self
-            elif eq.is_ConditionalBoolean:
+            elif eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
 
             return self
@@ -1813,18 +1816,18 @@ class GreaterEqual(_Greater):
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]
+                    return (a, b)
             elif cls.is_LessEqual:
                 a, b = cls.args
                 cls = Basic.__new__(GreaterEqual, b, a)
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]                
+                    return (a, b)         
             
         return res 
 
@@ -1875,7 +1878,7 @@ class LessEqual(_Less):
                 for k, v in eq.items():
                     res = res._subs(k, v)
                 return res
-            elif eq.is_ConditionalBoolean:
+            elif eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
 
             return self
@@ -2051,18 +2054,18 @@ class LessEqual(_Less):
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]
+                    return (a, b)
             elif cls.is_GreaterEqual:
                 a, b = cls.args
                 cls = Basic.__new__(LessEqual, b, a)
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]                
+                    return (a, b)         
             
         return res 
 
@@ -2105,7 +2108,7 @@ class Greater(_Greater):
                     return subs
                 else:
                     return self
-            elif eq.is_ConditionalBoolean:
+            elif eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
 
             return self
@@ -2251,18 +2254,18 @@ class Greater(_Greater):
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]
+                    return (a, b)
             elif cls.is_Less:
                 a, b = cls.args
                 cls = Basic.__new__(Greater, b, a)
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]                
+                    return (a, b)         
             
         return res 
 
@@ -2307,7 +2310,7 @@ class Less(_Less):
                     return subs
                 else:
                     return self
-            elif eq.is_ConditionalBoolean:
+            elif eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
 
             return self
@@ -2449,18 +2452,18 @@ class Less(_Less):
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]
+                    return (a, b)
             elif cls.is_Greater:
                 a, b = cls.args
                 cls = Basic.__new__(Less, b, a)
                 res = Boolean.of(self, cls)
                 if b.is_Number:
                     return res
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]                
+                    return (a, b)         
             
         return res 
 

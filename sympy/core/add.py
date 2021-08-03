@@ -2,10 +2,9 @@ from collections import defaultdict
 from functools import cmp_to_key
 from .basic import Basic
 from .compatibility import reduce, is_sequence
-from .parameters import global_parameters
-from .logic import _fuzzy_group, fuzzy_or, fuzzy_not
+from .logic import _fuzzy_group, fuzzy_not
 from .singleton import S
-from .operations import AssocOp, AssocOpDispatcher
+from .operations import AssocOp
 from .cache import cacheit
 from .numbers import ilcm, igcd
 from .expr import Expr
@@ -110,7 +109,7 @@ class Add(Expr, AssocOp):
                 return rv
 #                 return [], rv[0], None
 
-        terms = {}  # term -> coeff
+        terms = {}      # term -> coeff
                         # e.g. x**2 -> 5   for ... + 5*x**2 + ...
 
         coeff = S.Zero  # coefficient (Number or zoo) to always be in slot 0
@@ -118,6 +117,7 @@ class Add(Expr, AssocOp):
         order_factors = []
 
         infinitesimal = None
+
         for o in seq:
 
             # O(x)
@@ -318,7 +318,20 @@ class Add(Expr, AssocOp):
         """Nice order of classes"""
         return 3, 1, cls.__name__
 
-    def as_coefficients_dict(self):
+    @property
+    def kind(self):
+        k = attrgetter('kind')
+        kinds = map(k, self.args)
+        kinds = frozenset(kinds)
+        if len(kinds) != 1:
+            # Since addition is group operator, kind must be same.
+            # We know that this is unexpected signature, so return this.
+            result = UndefinedKind
+        else:
+            result, = kinds
+        return result
+
+    def as_coefficients_dict(a):
         """Return a dictionary mapping terms to their Rational coefficient.
         Since the dictionary is a defaultdict, inquiries about terms which
         were not present will return a coefficient of 0. If an expression is
@@ -626,11 +639,6 @@ class Add(Expr, AssocOp):
         if self.is_number:
             return Expr._eval_is_extended_positive(self)
         
-#         from sympy import Infinitesimal, NegativeInfinitesimal
-#         if self.has(Infinitesimal, NegativeInfinitesimal):
-#             print(self.args)
-#         assert not self.has(Infinitesimal, NegativeInfinitesimal), self.args
-        
         f = self.min()
         if f is not self and f.is_extended_positive:
             return True
@@ -663,12 +671,12 @@ class Add(Expr, AssocOp):
             if any(arg.is_extended_negative for arg in self.args):
                 return True            
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hint):
         if not old.is_Add:
             if old is S.Infinity and -old in self.args:
                 # foo - oo is foo + (-oo) internally
                 return self.xreplace({-old:-new})
-            return
+            return None
 
         coeff_self, terms_self = self.as_coeff_Add()
         coeff_old, terms_old = old.as_coeff_Add()
@@ -690,7 +698,7 @@ class Add(Expr, AssocOp):
                 if old_set < self_set:
                     ret_set = self_set - old_set
                     return self.func(new, coeff_self, -coeff_old,
-                               *[s._subs(old, new) for s in ret_set])
+                               *[s._subs(old, new, **hint) for s in ret_set])
 
                 args_old = self.func.make_args(
                     -terms_old)  # (a+b+c+d).subs(-b-c,x) -> a-x+d
@@ -698,7 +706,7 @@ class Add(Expr, AssocOp):
                 if old_set < self_set:
                     ret_set = self_set - old_set
                     return self.func(-new, coeff_self, coeff_old,
-                               *[s._subs(old, new) for s in ret_set])
+                               *[s._subs(old, new, **hint) for s in ret_set])
 
     def removeO(self):
         args = [a for a in self.args if not a.is_Order]
@@ -973,36 +981,6 @@ class Add(Expr, AssocOp):
 
         return con, prim
 
-    def as_inverse_proportional_function(self, wrt):
-        f = S.Zero
-        for a in self.args:
-            if a._has(wrt):
-                a = a.as_inverse_proportional_function(wrt)
-                if a is None:
-                    return a
-            if a.is_InverseProportionalFunction:
-                f = a + f
-            else:
-                f += a
-            if f is None:
-                return f                
-        return f
-
-    def as_linear_function(self, wrt):
-        f = S.Zero
-        for a in self.args:
-            if wrt.linear_match(a):
-                a = a.as_linear_function(wrt)
-                if a is None:
-                    return a
-            if a.is_LinearFunction:
-                f = a + f
-            else:
-                f += a
-            if f is None:
-                return f                
-        return f
-    
     @property
     def _sorted_args(self):
         from sympy.core.compatibility import default_sort_key
@@ -1369,6 +1347,13 @@ class Add(Expr, AssocOp):
             else:
                 domain += arg.domain
         if coeff:
+            if domain is None:
+                if self.is_extended_real:
+                    from sympy import Reals
+                    return Reals
+                else:
+                    from sympy import Complexes
+                    return Complexes
             return domain + Add(*coeff)
         return domain
 
@@ -1503,12 +1488,8 @@ class Add(Expr, AssocOp):
         if all(arg.is_nonnegative for arg in self.args):
             return self
         
-    def of_two_terms(self):
-        if len(self.args) == 2:
-            basic, mul = self.args
-            return basic is Basic
-        
     def of(self, cls):
+        from sympy.core.of import Basic 
         res = Expr.of(self, cls)
         if res is None:
             if cls.is_Add:
@@ -1517,10 +1498,11 @@ class Add(Expr, AssocOp):
                     cls = Basic.__new__(Add, b, a)
                     args = Expr.of(self, cls)
                     if args is not None:
-                        if b.is_Number:
+                        if b.is_Number: #b.is_constant()
                             return args
-                        _b, _a = args
-                        return [_a, _b]
+                        if isinstance(args, tuple):
+                            _b, _a = args
+                            return (_a, _b)
                     return args
                 if len(cls.args) == 3:
                     a, b, c = cls.args
@@ -1528,13 +1510,13 @@ class Add(Expr, AssocOp):
                     args = Expr.of(self, cls)
                     if args is not None:
                         _b, _a, _c = args
-                        return [_a, _b, _c]
+                        return (_a, _b, _c)
                     
                     cls = Basic.__new__(Add, b, c, a)
                     args = Expr.of(self, cls)
                     if args is not None:
                         _b, _c, _a = args
-                        return [_a, _b, _c]
+                        return (_a, _b, _c)
                     return args
             elif cls.is_Mul:
                 args = []
@@ -1548,13 +1530,28 @@ class Add(Expr, AssocOp):
                 [c] = common_terms
                 return Add(*args), c                    
                     
-        elif isinstance(res, list):
-            if len(res) > 2 and cls.of_two_terms():
-                *res, mul = res
-                return Mul(*res), mul
+        elif isinstance(res, tuple):
+            if isinstance(cls, Basic) and len(res) > 2:
+                if cls.of_subtraction_pattern():
+                    negative = []
+                    positive = []
+                    for arg in self.args:
+                        if arg._coeff_isneg():
+                            negative.append(-arg)
+                        else:
+                            positive.append(arg)
+                    
+                    return Add(*positive), Add(*negative)
+                elif cls.of_two_terms():
+                    *res, mul = res
+                    return Add(*res), mul
                 
         return res
 
+    __invert__ = _eval_conjugate
+    
+    def __call__(self, other):
+        return self * other
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

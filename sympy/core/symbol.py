@@ -214,40 +214,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             if definition in b:
                 return b
 
-    @staticmethod
-    def process_slice(index, self_start, self_stop):
-        start, stop = index.start, index.stop
-        if start is None:
-            start = self_start
-        else:
-            start = sympify(start)
-            
-        if stop is None:
-            stop = self_stop
-        else:
-            stop = sympify(stop)
-
-        if stop == self_stop:
-            if start == self_start:
-                return
-            if start < 0:
-                start = self_stop + start
-            mid = start            
-        elif start == self_start:
-            if stop < 0:
-                stop = self_stop + stop
-            mid = stop 
-        else:
-            return start, stop
-        
-        return mid        
-
-    def split(self, indices):
-        if self.shape: 
-            return self.slice(indices, 0, self.shape[0])
-        return self
-
-    # performing other in self
     def __contains__(self, other): 
         contains = self.contains_with_subset(other)
         if contains is not None:
@@ -423,14 +389,13 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                             
                         assumptions[key] = value
                         
-                        
                 return
             else:
                 integer = domain.is_integer
                          
         Symbol.process_assumptions(assumptions, integer)
         
-    def __new__(cls, name, *args, **assumptions):
+    def __new__(cls, *args, **assumptions):
         """Symbols are identified by name and assumptions::
 
         >>> from sympy import Symbol
@@ -440,11 +405,27 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         False
 
         """
-        cls._sanitize(assumptions, cls)
-        if args:
-            assert len(args) == 1
-            definition, *_ = args
+        cls._sanitize(assumptions, cls)        
+        if len(args) == 1:
+            [definition] = args
+            if isinstance(definition, str):
+                name = definition
+            else:
+                assumptions['definition'] = definition
+                name = None
+        elif len(args) == 2:
+            name, definition = args
             assumptions['definition'] = definition
+        else:
+            name = None
+            
+        if name is None:
+            import traceback, re
+            line = traceback.extract_stack()[-2].line
+            name = re.match('(.+?) *= *Symbol\(.+\) *$', line)[1]
+            if ',' in name:
+                return (Symbol(name.strip(), **assumptions) for name in name.split(','))
+            
         return Symbol.__xnew__(cls, name, **assumptions)
 #         return Symbol.__xnew_cached_(cls, name, **assumptions)
 
@@ -496,10 +477,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             self._assumptions[fact] = S.false
         return a
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         from sympy.core.power import Pow
         if old.is_Pow:
-            return Pow(self, S.One, evaluate=False)._eval_subs(old, new)
+            return Pow(self, S.One, evaluate=False)._eval_subs(old, new, **hints)
 
     @property
     def assumptions0(self):
@@ -520,12 +501,12 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def as_dummy(self):
         return Dummy(self.name)
 
-    def as_real_imag(self, deep=True, **hints):
-        from sympy import im, re
+    def as_real_imag(self, deep=True, **hints):        
         if hints.get('ignore') == self:
             return None
         else:
-            return (re(self), im(self))
+            from sympy import Im, Re
+            return (Re(self), Im(self))
 
     def _sage_(self):
         import sage.all as sage
@@ -863,6 +844,10 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             assert boolean is True or not boolean.is_BooleanFalse
             return Indexed(self, indices, **kw_args)
 
+    def __invert__(self):
+        from sympy import Conjugate
+        return Conjugate(self)
+    
     def has_match(self, exp):
         if exp == self:
             return True 
@@ -1157,12 +1142,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                         return self.func(r"{\color{ADAD00} %s}" % self.name, _definition, **assumptions)
         return self
 
-    def as_linear_function(self, wrt):
-        if self == wrt:
-            from sympy.polys.polytools import LinearFunction 
-            return LinearFunction(wrt, 1, 0)
-        return self
-    
     def linear_match(self, a):
         return a._has(self)
 

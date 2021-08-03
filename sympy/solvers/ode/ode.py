@@ -251,7 +251,7 @@ from sympy.core.sympify import sympify
 
 from sympy.logic.boolalg import (BooleanAtom, BooleanTrue,
                                 BooleanFalse)
-from sympy.functions import cos, cosh, exp, im, log, re, sin, sinh, sqrt, \
+from sympy.functions import cos, cosh, exp, log, sin, sinh, sqrt, \
     atan2, conjugate, cbrt, besselj, bessely, airyai, airybi
 from sympy.functions.combinatorial.factorials import factorial
 from sympy.integrals.integrals import Integral, integrate

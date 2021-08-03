@@ -1,13 +1,24 @@
 from util import *
 
 
+def applicable(multiplicand, e):
+    if not e.is_rational:
+        return 
+    if e.is_integer:
+        return True
+    unrealCount = 0
+    for x in multiplicand:
+        if not x.is_real:
+            unrealCount += 1
+    return unrealCount < 2
 
+    
 @apply
-def apply(self):
+def apply(self): 
     base, e = self.of(Pow)
-    assert e.is_integer
-
     multiplicand = base.of(Mul)
+    assert applicable(multiplicand, e)
+    
     pows = []
 
     for x in multiplicand:
@@ -19,11 +30,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True, nonnegative=True)
-    b = Symbol.b(real=True, nonnegative=True)
 
+    a, b = Symbol(real=True, nonnegative=True)
     n = Symbol.n(integer=True, nonnegative=True, given=False)
-
     Eq << apply((a * b) ** n)
 
     Eq << Eq[0].subs(n, 0)

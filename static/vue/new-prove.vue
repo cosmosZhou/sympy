@@ -67,7 +67,12 @@
 
 	            		extraKeys: _extraKeys,
 
-	            		hintOptions: { hint: hint },
+	            		hintOptions: { 
+	            			hint(cm, options) {
+	            				options.context = self;
+	            				return hint(cm, options);	
+	            			}, 
+	            		},
 	            	});
 			    },
 			},

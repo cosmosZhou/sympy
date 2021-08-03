@@ -20,7 +20,7 @@ class RoundFunction(Function):
 
     @classmethod
     def eval(cls, arg):
-        from sympy import im
+        from sympy import Im
         v = cls._eval_number(arg)
         if v is not None:
             return v
@@ -29,7 +29,7 @@ class RoundFunction(Function):
             if arg.is_infinitesimal is None:
                 return arg
         if arg.is_imaginary or (S.ImaginaryUnit * arg).is_real:
-            i = im(arg)
+            i = Im(arg)
             if not i.has(S.ImaginaryUnit):
                 return cls(i) * S.ImaginaryUnit
             return cls(arg, evaluate=False)
@@ -41,7 +41,7 @@ class RoundFunction(Function):
         terms = Add.make_args(arg)
 
         for t in terms:
-            if t.is_integer or (t.is_imaginary and im(t).is_integer):
+            if t.is_integer or (t.is_imaginary and Im(t).is_integer):
                 ipart += t
             elif t.has(Symbol):
                 spart += t
@@ -68,7 +68,7 @@ class RoundFunction(Function):
         if not spart:
             return ipart
         elif spart.is_imaginary or (S.ImaginaryUnit * spart).is_real:
-            return ipart + cls(im(spart), evaluate=False) * S.ImaginaryUnit
+            return ipart + cls(Im(spart), evaluate=False) * S.ImaginaryUnit
         elif isinstance(spart, (floor, ceiling)):
             return ipart + spart
         else:
@@ -457,7 +457,7 @@ class FractionalPart(Function):
 
     @classmethod
     def eval(cls, arg):
-        from sympy import AccumBounds, im
+        from sympy import AccumBounds, Im
 
         def _eval(arg):
             if arg is S.Infinity or arg is S.NegativeInfinity:
@@ -480,7 +480,7 @@ class FractionalPart(Function):
             # Two checks are needed for complex arguments
             # see issue-7649 for details
             if t.is_imaginary or (S.ImaginaryUnit * t).is_real:
-                i = im(t)
+                i = Im(t)
                 if not i.has(S.ImaginaryUnit):
                     imag += i
                 else:

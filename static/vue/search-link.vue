@@ -1,5 +1,5 @@
 <template>
-	<input v-if="is_edit" v-focus spellcheck=false 
+	<input v-if="mode != 'a'" v-focus spellcheck=false 
 		:size='module.length + 1' :value=module 
 		@blur=blur @keydown=keydown />
 	<a v-else v-focus tabindex=2 :href=href 
@@ -19,7 +19,7 @@
 		
 		data(){
 			return {
-				is_edit: false,
+				mode: 'a',
 				showContextmenu: false,
 				left: -1,
 				top: -1,
@@ -47,7 +47,7 @@
 				}).catch(fail);
 			},
 			
-			is_edit(newValue, oldValue){
+			mode(newValue, oldValue){
 				if (oldValue == newValue){
 					return;
 				}
@@ -83,23 +83,33 @@
 			},
 			
 			blur(event){
-				this.module = event.target.value;
-				this.is_edit = false;
+				if (this.mode == 'F3'){
+					this.mode = 'input';
+				}
+				else{
+					this.module = event.target.value;
+					this.mode = 'a';	
+				}				
 			},
 			
 			keydown(event){
 				switch(event.key){
 				case 'Enter':
 					this.module = event.target.value;
-					this.is_edit = false;					
+					this.mode = 'a';					
 					break;
+				case 'F3':
+					console.log("F3 is pressed");
+					this.mode = 'F3';
+					find_and_jump(event);
+					break;					
 				}
 			},
 			
 			keydown_a(event){
 				switch(event.key){
 				case 'F2':
-					this.is_edit = true;
+					this.mode = 'input';
 					break;
 				}				
 			},

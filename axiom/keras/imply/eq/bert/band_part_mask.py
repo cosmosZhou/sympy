@@ -41,12 +41,8 @@ def apply(seq_length, dx, dz, num_lower, num_upper):
 def prove(Eq):
     from axiom import keras, algebra, sets, discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    l = Symbol.l(integer=True, positive=True)
-    u = Symbol.u(integer=True, positive=True)
-    dx = Symbol.d_x(integer=True, positive=True)
-    dz = Symbol.d_z(integer=True, positive=True)
-    Eq << apply(n, dx, dz, l, u)
+    n, l, u, d_x, d_z = Symbol(integer=True, positive=True) 
+    Eq << apply(n, d_x, d_z, l, u)
 
     beta = Eq[7].lhs.base
     zeta = Eq[8].lhs.base
@@ -122,8 +118,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.expr.apply(discrete.sum.to.matmul)
 
     Eq << Eq[-1].this.rhs.expr.T
-
-
 
     Eq << Eq[-1].this.rhs.apply(discrete.lamda_matmul.to.matmul)
 

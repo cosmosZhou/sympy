@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.sub, 1, simplify=None)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.range.div, 2, simplify=None)
+    Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.div.range, 2, simplify=None)
 
     Eq << Eq[-1].this.find(Equal) - 1
 

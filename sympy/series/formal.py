@@ -1051,7 +1051,7 @@ class FormalPowerSeries(SeriesBase):
 
         return term.collect(self.x)
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         x = self.x
         if old.has(x):
             return self

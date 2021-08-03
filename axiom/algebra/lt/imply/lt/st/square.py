@@ -5,11 +5,8 @@ from util import *
 def apply(given):
     dx, dy = given.of(Less[Expr ** 2, Expr ** 2])
 
-    y2, *x01_mean = dx.of(Expr - Expr - Expr)
-    _y2, *y01_mean = dy.of(Expr - Expr - Expr)
-
-    x01_mean = Add(*x01_mean)
-    y01_mean = Add(*y01_mean)
+    y2, x01_mean = dx.of(Expr - Expr)
+    _y2, y01_mean = dy.of(Expr - Expr)
 
     y01_mean *= 3
     y0, y1 = y01_mean.of(Add)
@@ -26,12 +23,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x0 = Symbol.x0(real=True)
-    x1 = Symbol.x1(real=True)
-    y0 = Symbol.y0(real=True)
-    y1 = Symbol.y1(real=True)
-    y2 = Symbol.y2(real=True)
-
+    x0, x1, y0, y1, y2 = Symbol(real=True)
     Eq << apply((y2 - (x0 + x1) / 2) ** 2 < (y2 - (y0 + y1 + y2) / 3) ** 2)
 
     Eq << Eq[0] * 9

@@ -17,15 +17,11 @@ def apply(*given):
 def prove(Eq):
     from axiom import sets
 
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
-    x = Symbol.x(real=True, given=True)
+    a, b, x = Symbol(real=True, given=True)
     #Eq << apply(x >= b, a >= x)
     Eq << apply(x <= b, x >= a)
 
     Eq << sets.contains.given.et.split.interval.apply(Eq[-1])
-
-    
 
     #Eq << Eq[-2].reversed
 

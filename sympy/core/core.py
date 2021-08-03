@@ -93,95 +93,91 @@ class BasicMeta(type):
             return (n1 > n2) - (n1 < n2)
         return (i1 > i2) - (i1 < i2)
 
-    def __lshift__(self, other):
+    # self < other
+    def lt(self, other):
         if self.__cmp__(other) == -1:
             return True
         return False
 
-    def __rshift__(self, other):
+    # self > other
+    def gt(self, other):
         if self.__cmp__(other) == 1:
             return True
         return False
 
     def __or__(self, other):
-        from sympy import Basic
+        from sympy.core.of import Basic, sympify
+        other = sympify(other)
         if self.is_Boolean:
             from sympy import Or
             obj = Basic.__new__(Or, self, other)
         else:
             from sympy import Union
             obj = Basic.__new__(Union, self, other)
-        obj._argset = (self, other)
         return obj            
     
     def __and__(self, other):
-        from sympy import Basic
+        from sympy.core.of import Basic, sympify
+        other = sympify(other)
         if self.is_Boolean:
             from sympy import And
             obj = Basic.__new__(And, self, other)
         else:
             from sympy import Intersection
             obj = Basic.__new__(Intersection, self, other)
-        obj._argset = (self, other)
         return obj
                     
     def __add__(self, other):
-        from sympy import Basic, Add, sympify
+        from sympy.core.of import Basic, sympify
+        from sympy import Add
         other = sympify(other)
         return Basic.__new__(Add, self, other)
 
     def __radd__(self, lhs):
-        from sympy import Basic, Add, sympify
+        from sympy.core.of import Basic, sympify
+        from sympy import Add
         lhs = sympify(lhs)
         return Basic.__new__(Add, lhs, self)
     
     def __mul__(self, other):
-        from sympy import Basic, Mul
-        return Basic.__new__(Mul, self, other)
+        from sympy.core.of import Basic
+        return Basic.__mul__(self, other)
 
-    def __matmul__(self, other):
-        from sympy import Basic, MatMul
-        return Basic.__new__(MatMul, self, other)
-    
     def __rmul__(self, lhs):
-        from sympy import Basic, Mul, sympify
+        from sympy.core.of import Basic, sympify
+        from sympy import Mul
         return Basic.__new__(Mul, sympify(lhs), self)
     
+    def __matmul__(self, other):
+        from sympy.core.of import Basic, sympify
+        from sympy import MatMul
+        other = sympify(other)
+        return Basic.__new__(MatMul, self, other)
+    
     def __sub__(self, other):
-        from sympy import Basic, Add, sympify
-        try:
-            other = -other
-        except TypeError:
-            if other.is_Mul:
-                args = other.args
-                if args[0].is_Number:
-                    args[0] = -args[0]
-                else:
-                    args = (sympify(-1),) + args
-                other = Basic.__new__(other.func, *args)
-            else:
-                raise
-        if isinstance(other, int):
-            other = sympify(other)
-            if not self.is_Number:
-                return Basic.__new__(Add, other, self)
-        return Basic.__new__(Add, self, other)
+        from sympy.core.of import Basic
+        return Basic.__sub__(self, other)
 
     def __neg__(self):
-        from sympy import Basic, Mul, S
+        from sympy.core.of import Basic
+        from sympy import Mul, S
         return Basic.__new__(Mul, S.NegativeOne, self)
     
     def __invert__(self):
         return Wanted(self)
     
     def __floordiv__(self, other):
-        from sympy import Basic, Floor        
+        from sympy.core.of import Basic, sympify
+        from sympy import Floor
+        other = sympify(other)
         return Basic.__new__(Floor, self / other)
         
     def __truediv__(self, other):
-        from sympy import Basic, Mul, Pow, S, sympify
-        if isinstance(other, int):
-            other = 1 / sympify(other)
+        from sympy.core.of import Basic, sympify
+        from sympy import Mul, Pow, S
+        other = sympify(other)
+        if other.is_Integer:
+            other = 1 / other
             self, other = other, self
         else:
             other = Basic.__new__(Pow, other, S.NegativeOne)
@@ -189,7 +185,8 @@ class BasicMeta(type):
 
 #     lhs / self
     def __rtruediv__(self, lhs):
-        from sympy import Basic, Mul, Pow, S, sympify
+        from sympy.core.of import Basic, sympify
+        from sympy import Mul, Pow, S
         lhs = sympify(lhs)
         
         pow = Basic.__new__(Pow, self, S.NegativeOne)
@@ -198,58 +195,76 @@ class BasicMeta(type):
         return Basic.__new__(Mul, lhs, pow)
 
     def __mod__(self, other):
-        from sympy import Basic, Mod, sympify
-        if isinstance(other, int):
-            other = sympify(other)
+        from sympy.core.of import Basic, sympify
+        from sympy import Mod
+        other = sympify(other)
         return Basic.__new__(Mod, self, other)
 
     def __pow__(self, other):
-        from sympy import Basic, Pow, sympify
-        if isinstance(other, int):
-            other = sympify(other)
+        from sympy.core.of import Basic, sympify
+        from sympy import Pow
+        other = sympify(other)
+                    
         return Basic.__new__(Pow, self, other)
 
     def __rpow__(self, lhs):
-        from sympy import Basic, Pow, sympify
-        if isinstance(lhs, int):
-            lhs = sympify(lhs)
+        from sympy.core.of import Basic, sympify
+        from sympy import Pow
+        lhs = sympify(lhs)
         return Basic.__new__(Pow, lhs, self)
     
     def __gt__(self, other):
-        from sympy import Basic, Greater, sympify
-        if isinstance(other, int):
-            other = sympify(other)
+        from sympy.core.of import Basic, sympify
+        from sympy import Greater
+        other = sympify(other)
         return Basic.__new__(Greater, self, other)
 
     def __ge__(self, other):
-        from sympy import Basic, GreaterEqual, sympify
-        if isinstance(other, int):
-            other = sympify(other)
+        from sympy.core.of import Basic, sympify
+        from sympy import GreaterEqual
+        other = sympify(other)
         return Basic.__new__(GreaterEqual, self, other)
 
     def __lt__(self, other):
-        from sympy import Basic, Less, sympify
-        if isinstance(other, int):
-            other = sympify(other)
+        from sympy.core.of import Basic, sympify
+        from sympy import Less
+        other = sympify(other)
         return Basic.__new__(Less, self, other)
 
     def __le__(self, other):
-        from sympy import Basic, LessEqual, sympify
-        if isinstance(other, int):
-            other = sympify(other)
+        from sympy.core.of import Basic, sympify
+        from sympy import LessEqual
+        other = sympify(other)
         return Basic.__new__(LessEqual, self, other)
+    
+    # self < other
+    def __lshift__(self, other):
+        from sympy.core.of import Basic, sympify
+        from sympy import Necessary
+        other = sympify(other)
+        return Basic.__new__(Necessary, self, other)
 
+    # self > other
+    def __rshift__(self, other):
+        from sympy.core.of import Basic, sympify
+        from sympy import Suffice
+        other = sympify(other)
+        return Basic.__new__(Suffice, self, other)
     
     @property
     @cacheit
     def is_abstract(self):
         return bool(self.__subclasses__())
 
+
 class Wanted:
     is_Wanted = True
     
     def __str__(self):
-        return str(self.func)
+        func = self.func
+        if isinstance(func, type):
+            return func.__name__
+        return str(func)
     
     __repr__ = __str__
     

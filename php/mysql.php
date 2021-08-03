@@ -585,23 +585,33 @@ function suggest($prefix, $phrase)
 {
     global $user;
     $phrases = [];
-    // error_log($prefix);
     try {
         // $sql = "select phrase from tbl_suggest_py where user = '$user' and prefix = '$prefix' order by usage";
         $sql = "select phrase from tbl_suggest_py where user = '$user' and prefix = '$prefix'";
-        if ($phrase != '') {
+        if ($phrase) {
             $sql .= " and phrase like '%$phrase%'";
         }
 
-        error_log("in suggest: " . $sql);
+//        error_log("in suggest: " . $sql);
 
-        foreach (select($sql) as list ($phrase,)) {
-            $phrases[] = $phrase;
+        foreach (select($sql) as list ($word,)) {
+            $phrases[] = $word;
         }
     } catch (Exception $e) {
         return [];
     }
 
+    if ($phrase) {
+        $dict = [];
+        
+        foreach ($phrases as &$word){
+            $dict[$word] = \std\startsWith($word, $phrase);
+        }
+
+        arsort($dict);
+        $phrases = array_keys($dict);        
+    }
+    
     return $phrases;
 }
 

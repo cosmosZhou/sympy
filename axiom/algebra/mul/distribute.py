@@ -15,17 +15,13 @@ def apply(self, index=0):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    c = Symbol.c(real=True)
-    d = Symbol.d(real=True)
-    r = Symbol.r(real=True)
-    Eq << apply(-r * (a - b - c) / d)   
-    
+    a, b, c, d, r = Symbol(real=True)
+    Eq << apply(-r * (a - b - c) / d)
+
     Eq << Eq[-1].this.lhs.expand()
-    
+
     Eq << Eq[-1].this.rhs.expand()
-    
-    
+
+
 if __name__ == '__main__':
     run()

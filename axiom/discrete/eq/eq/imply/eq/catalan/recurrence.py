@@ -50,7 +50,7 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[-3])
 
-    Eq.ou = Eq[-1].apply(algebra.eq.imply.ou.quadratic, x=g(x), simplify=False)
+    Eq.ou = Eq[-1].apply(algebra.add_is_zero.imply.et.suffice.quadratic, x=g(x), simplify=False)
 
     Eq.negative_sqrt = Eq.ou.args[0].copy(plausible=True)
 
@@ -135,7 +135,7 @@ def prove(Eq):
 
     Eq << discrete.binomial.to.mul.half.apply(n)
 
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq[-2])
 
     Eq << Eq[-1].this.rhs.args[1].expr.powsimp()
 
@@ -147,7 +147,7 @@ def prove(Eq):
 
     Eq << Eq[-1] / (x * 2)
 
-    Eq << Eq[-1].this.rhs.ratsimp()
+    
 
     Eq << Eq[-1] + Eq.negative_sqrt
 
@@ -161,7 +161,7 @@ def prove(Eq):
 
     Eq << Eq[-2].subs(Eq[-1]) * (2 * n + 2)
 
-    Eq << Eq.g_series.subs(Eq[-1])
+    Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq.g_series)
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.sum)
 

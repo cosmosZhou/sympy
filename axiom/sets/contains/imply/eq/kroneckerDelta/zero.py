@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << Eq[-2].apply(algebra.eq.ne.imply.ne.subs)
 
-    Eq << Eq[-1].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, invert=True, reverse=True, swap=True)
+    Eq << Eq[-1].apply(algebra.et.imply.et.invoke, algebra.cond.cond.imply.cond.subs, invert=True, reverse=True, swap=True, ret=1)
 
     Eq << Eq[-1].apply(sets.ne.ne.imply.notcontains, simplify=False)
 

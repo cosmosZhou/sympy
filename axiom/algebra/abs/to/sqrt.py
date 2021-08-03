@@ -4,15 +4,17 @@ from util import *
 @apply
 def apply(self):
     z = self.of(Abs)
-    x = re(z)
-    y = im(z)
+    x = Re(z)
+    y = Im(z)
     return Equal(self, sqrt(x * x + y * y))
 
 
-@prove(provable=False)
+@prove
 def prove(Eq):
-    z = Symbol.z(complex=True)
+    from axiom import algebra
+    z = Symbol(complex=True)
     Eq << apply(abs(z))
+    Eq << Eq[0].this.lhs.arg.apply(algebra.expr.to.add.complex)
 
 
 if __name__ == '__main__':

@@ -19,6 +19,7 @@ def prove(Eq):
     Eq << Eq[-1].this.find(FallingFactorial).apply(discrete.fallingFactorial.to.product)
 
     Eq << Eq[-1].this.lhs.apply(discrete.binomial.to.mul)
+    Eq << Eq[-1] * Factorial(k)
 
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.product)
 
@@ -28,6 +29,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.args[0].apply(algebra.product.limits.subs.negate, i, n - i)
 
     Eq << Eq[-1].this.find((~Product) ** -1).apply(algebra.product.limits.subs.negate, i, n - i)
+
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.product.limits.complement)
 
 

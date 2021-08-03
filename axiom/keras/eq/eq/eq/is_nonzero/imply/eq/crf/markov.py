@@ -87,7 +87,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq.y_nonzero_assumption
 
-    Eq.y_joint_y_historic = Eq[-1].this.lhs.arg.apply(algebra.eq.imply.et.split.blockmatrix, slice(-1))
+    Eq.y_joint_y_historic = Eq[-1].this.lhs.arg.apply(algebra.eq.imply.et.eq.blockmatrix)
 
     Eq << stats.is_nonzero.imply.is_nonzero.conditioned.apply(Eq.y_joint_y_historic, y[:k])
 

@@ -42,7 +42,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[-1].args[1].apply(algebra.sum.to.add)
 
-    Eq << Eq[-1].subs(Eq.x_definition.reversed).subs(Eq.G_definition.reversed)
+    Eq << algebra.eq.cond.imply.cond.subs.apply(-Eq.x_definition.reversed, Eq[-1])
+
+    Eq << algebra.eq.cond.imply.cond.subs.apply(-Eq.G_definition.reversed, Eq[-1])
 
     Eq << Eq[-1].this.rhs.args[-1].apply(algebra.sum.to.add.push_front)
 

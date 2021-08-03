@@ -15,7 +15,7 @@ def prove(Eq):
     y = Symbol.y(real=True, given=True)
     Eq << apply(x >= y)
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[-1], cond=x > y)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=x > y)
 
     Eq.is_zero = (x > y).this.apply(sets.gt.imply.is_emptyset)
 

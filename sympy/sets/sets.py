@@ -56,12 +56,6 @@ class Set(Basic):
     @property
     def shape(self):
         return ()
-    
-    def split(self, indices):
-        if self.is_ExprWithLimits:
-            from sympy.concrete.expr_with_limits import ExprWithLimits
-            return ExprWithLimits.split(self, indices)
-        return Union(self & indices, self - indices, evaluate=False)
 
     def image_set(self):
         ...
@@ -1902,16 +1896,17 @@ class Interval(Set, EvalfMixin):
             
     @classmethod
     def simplify_NotContains(cls, self, e, s):
-        if s.is_integer and e.is_Add:
-            if S.NegativeOne in e.args:
-                s += S.One
-                e += S.One
-                return self.func(e, s, evaluate=False).simplify()
-                    
-            if S.One in e.args: 
-                s -= S.One
-                e -= S.One
-                return self.func(e, s, evaluate=False).simplify()
+        if e.is_real:
+            if s.stop.is_infinite:
+                if s.left_open:
+                    return e <= s.start 
+                else:
+                    return e < s.start
+            elif s.start.is_infinite:
+                if s.right_open:
+                    return e >= s.start 
+                else:
+                    return e > s.start
 
 # perform self in rhs
     def _eval_Subset(self, rhs):
@@ -2219,15 +2214,15 @@ class Union(Set, LatticeOp, EvalfMixin):
             raise Exception("could not add %s, %s" % (self, other))
         return self.func(*(arg + other for arg in self.args))
 
-    #perform lhs in self
+    # perform lhs in self
     def _eval_Subset_reversed(self, lhs):
         if lhs in self._argset:
             return S.true
 
-    #perform self in rhs
+    # perform self in rhs
     def _eval_Subset(self, rhs):
         from sympy import Subset
-        for s in self._argset:            
+        for s in self._argset: 
             cond = Subset(s, rhs)
             if cond:
                 continue
@@ -2236,7 +2231,6 @@ class Union(Set, LatticeOp, EvalfMixin):
             else:
                 return
         return S.true
-
 
     def simplify(self, deep=False, **kwargs):
         if deep:
@@ -2515,13 +2509,13 @@ class Intersection(Set, LatticeOp):
             raise Exception("could not add %s, %s" % (self, other))
         return self.func(*(arg + other for arg in self.args))
 
-    #perform self in rhs
+    # perform self in rhs
     def _eval_Subset(self, rhs):
         for e in self._argset:
             if e in rhs:
                 return S.true
 
-    #perform lhs in self
+    # perform lhs in self
     def _eval_Subset_reversed(self, lhs):
         from sympy import Subset
         for e in self._argset:
@@ -2533,7 +2527,6 @@ class Intersection(Set, LatticeOp):
             else:
                 return
         return S.true
-                    
 
     def _subs(self, old, new, **hints):
         if old.is_Intersection:
@@ -2749,6 +2742,8 @@ class Complement(Set, EvalfMixin):
                         if A.base_set == base_set:
                             return A
                         return conditionset(A.variable, A.condition, base_set)
+            elif A.range_contains(B) is False:
+                return A
                     
         if B.is_Intersection and A in B._argset:
             B = B.func(*B._argset - {A}, evaluate=False)
@@ -3444,6 +3439,9 @@ class FiniteSet(Set):
             return Union(*(other + arg for arg in self.args))
         return self.func(*(arg + other for arg in self.args))
 
+    def __neg__(self):
+        return self.func(*(-arg for arg in self.args))
+    
     def handle_finite_sets(self, unk):
         if len(unk) == len(self) == 1:
             return Intersection(unk, self, evaluate=False)

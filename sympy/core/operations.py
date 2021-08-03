@@ -84,11 +84,7 @@ class AssocOp(Basic):
 
         c_part, nc_part, other_symbols = cls.flatten(args)
         is_commutative = not nc_part
-        try:
-            obj = cls._from_args(c_part + nc_part, is_commutative)
-        except TypeError:
-            return Basic.__new__(cls, *c_part)
-#         obj = cls._exec_constructor_postprocessors(obj)
+        obj = cls._from_args(c_part + nc_part, is_commutative)
 
         if other_symbols is not None:
             if isinstance(other_symbols, tuple):
@@ -122,12 +118,8 @@ class AssocOp(Basic):
             return args[0]
 
         args = tuple(ordered(args, default_sort_key))
-#         args = tuple(sorted(args, key=lambda x: str(x)))
 
         obj = super(AssocOp, cls).__new__(cls, *args)
-#         if is_commutative is None:
-#             is_commutative = fuzzy_and(a.is_commutative for a in args)
-#         obj.is_commutative = is_commutative
         return obj
 
     def _new_rawargs(self, *args, **kwargs):
@@ -678,12 +670,13 @@ class LatticeOp(AssocOp):
         res = AssocOp.of(self, cls)
         if res is None:
             if cls.is_LatticeOp:
-                a, b = cls._args
+                a, b = cls.args
+                from sympy.core.of import Basic
                 cls = Basic.__new__(cls.func, b, a)
                 res = AssocOp.of(self, cls)
-                if isinstance(res, list):
+                if isinstance(res, tuple):
                     b, a = res
-                    return [a, b]
+                    return (a, b)
         return res 
 
 class AssocOpDispatcher:

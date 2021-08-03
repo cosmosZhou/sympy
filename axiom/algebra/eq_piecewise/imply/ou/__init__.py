@@ -11,6 +11,9 @@ def piecewise_to_ou(given):
     piecewise, sym = given.args
     if sym.is_Piecewise:
         piecewise, sym = sym, piecewise
+        func = lambda x, y: given.func(y, x)
+    else:
+        func = given.func 
 
     piecewise = piecewise.of(Piecewise)
 
@@ -24,7 +27,7 @@ def piecewise_to_ou(given):
             invert = condition.invert()
             univeralSet &= invert
 
-        eq = condition & given.func(sym, expr).simplify()
+        eq = condition & func(expr, sym).simplify()
         args.append(eq)
 
     return Or(*args)
@@ -50,7 +53,7 @@ def prove(Eq):
 
     Eq <<= algebra.ou.imply.ou.invert.apply(Eq[-2], pivot=1), algebra.ou.imply.ou.invert.apply(Eq[-1], pivot=1)
 
-    Eq <<= Eq[-2].this.args[0].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, invert=True, swap=True), Eq[-1].this.args[0].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, swap=True)
+    Eq <<= Eq[-2].this.args[0].apply(algebra.et.imply.et.invoke, algebra.cond.cond.imply.cond.subs, invert=True, swap=True, ret=1), Eq[-1].this.args[0].apply(algebra.et.imply.et.invoke, algebra.cond.cond.imply.cond.subs, swap=True, ret=1)
 
     Eq <<= Eq[-2] & Eq[-1]
 

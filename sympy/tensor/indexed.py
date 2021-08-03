@@ -357,11 +357,15 @@ class Indexed(Expr):
 
     @property
     def free_symbols(self):
-        base_free_symbols = self.base.free_symbols
-        indices_free_symbols = {
-            fs for i in self.indices for fs in i.free_symbols}
+        base = self.base
+        if 'definition' in base._assumptions:
+            base_free_symbols = base.free_symbols
+        else:
+            base_free_symbols = base.free_symbols | {self}
+            
+        indices_free_symbols = {fs for i in self.indices for fs in i.free_symbols}
         if base_free_symbols:
-            return {self} | base_free_symbols | indices_free_symbols
+            return base_free_symbols | indices_free_symbols
         else:
             return indices_free_symbols
 
@@ -658,12 +662,6 @@ class Indexed(Expr):
         if indices == self.indices:
             return self
         return self.base[indices] 
-
-    def as_linear_function(self, wrt):
-        if self == wrt:
-            from sympy.polys.polytools import LinearFunction 
-            return LinearFunction(wrt, 1, 0)
-        return self
 
     def linear_match(self, a):
         for a in a.preorder_traversal(): 
@@ -972,8 +970,7 @@ class Slice(Expr):
     @property
     def free_symbols(self):
         base_free_symbols = self.base.free_symbols
-        indices_free_symbols = {
-            fs for i in self.indices for fs in i.free_symbols}
+        indices_free_symbols = {fs for i in self.indices for fs in i.free_symbols}
         if base_free_symbols:
             return {self} | base_free_symbols | indices_free_symbols
         else:
@@ -983,9 +980,6 @@ class Slice(Expr):
     def expr_free_symbols(self):
         return {self}
 
-    def split(self, index, allow_empty=False):
-        return self.base.slice(index, self.start, self.stop, allow_empty=allow_empty)
-        
     # return exp._has(self)
     def has_match(self, expr):
         if expr.is_Indexed and expr.base == self.base:
@@ -1687,14 +1681,16 @@ class SliceIndexed(Expr):
             return Equal(self, pspace(self).symbol)
 
     def _eval_domain_defined(self, x, allow_empty=False, **_):
-        eqs = []
-        for start, stop in self.slices: 
+        domain = self.base.domain_defined(x)
+        for s in self.slices:
+            start, stop = s
             if allow_empty:
-                eqs.append(x.domain_conditioned(start <= stop))
+                domain &= x.domain_conditioned(start <= stop)
             else:
-                eqs.append(x.domain_conditioned(start < stop))
-        from sympy import And
-        return And(*eqs)
+                domain &= x.domain_conditioned(start < stop)
+        
+        return domain
+
 
     def domain_definition(self):
         eqs = []

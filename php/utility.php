@@ -230,7 +230,6 @@ function detect_axiom_given_theorem(&$theorem, &$statement)
 {
     if (startsWith($theorem, '.') || startsWith($theorem, 'Eq')) {
         // consider the case
-        // Eq << Eq[-1].reversed.apply(discrete.sets.ne.notcontains, evaluate=False)
         // Eq[-2].this.args[0].apply(algebra.cond.cond.imply.et, invert=True, swap=True)
         return detect_axiom($statement);
     }
@@ -352,7 +351,7 @@ function yield_from_py($python_file)
             }
 
             // stop analyzing if return statement is encountered.
-            if (preg_match('/^    return\s*$/', $statement, $matches)) {
+            if (preg_match('/^    return\b.*$/', $statement, $matches)) {
                 // error_log($statement);
                 $statement = rtrim($statement);
                 $statement = substr($statement, 4);
@@ -800,13 +799,14 @@ function look_for_executable_python()
 function run($py)
 {
     $module = py_to_module($py);
-    $logs[] = "module = $module";
+    $logs[] = "module = ".str_replace(".", "/", $module);
+    $user = basename(dirname(dirname(__file__)));
     if (\std\is_linux()) {
 //         $array = file_get_contents("http://localhost:8000/sympy/run.py?module=$module");
-        $array = file_get_contents("https://www.axiom.top/sympy/run.py?module=$module");
+        $array = file_get_contents("https://www.axiom.top/$user/run.py?module=$module");
         $array = explode("\n", $array);
-    } else {
-        $array = file_get_contents("http://localhost/sympy/run.py?module=$module");
+    } else {        
+        $array = file_get_contents("http://localhost/$user/run.py?module=$module");
         $array = explode("\r\n", $array);
     }
 
@@ -837,6 +837,25 @@ function run($py)
         $sql_statement,
         $statementsFromSQLFile
     ];
+}
+
+function compile_python_file($py)
+{
+    $text = new \std\Text($py);
+    foreach ($text as $line){
+        
+        error_log($line);
+    }
+//     $user = basename(dirname(dirname(__file__)));
+//     if (\std\is_linux()) {
+//         $url = "https://www.axiom.top:5000/compile";
+//     } else {
+//         $url = "http://localhost:5000/compile";
+//     }
+    
+//     $data = ["py"=> $py];
+//     return \std\form_post($url, $data);
+    return "error detected!";
 }
 
 function fetch_codes($module, $fetch_prove = false)

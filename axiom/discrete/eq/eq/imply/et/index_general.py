@@ -52,7 +52,8 @@ def prove(Eq):
 
     Eq << Eq[-1].rhs.expr.args[1].this.apply(algebra.kroneckerDelta.to.piecewise)
 
-    Eq << Eq[-2].this.rhs.subs(Eq[-1])
+    Eq << algebra.eq.eq.imply.eq.subs.rhs.apply(Eq[-1], Eq[-2])
+    
 
     sj = Symbol.s_j(conditionset(k, Equal(a[j], x[k]), Range(0, n)))
     Eq.sj_definition = sj.this.definition

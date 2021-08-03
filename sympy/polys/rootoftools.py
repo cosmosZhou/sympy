@@ -771,7 +771,7 @@ class ComplexRootOf(RootOf):
             reals_count = len(_reals_cache[self.poly])
             _complexes_cache[self.poly][self.index - reals_count] = interval
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         # don't allow subs to change anything
         return self
 

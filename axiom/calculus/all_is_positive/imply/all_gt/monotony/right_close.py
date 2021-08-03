@@ -6,7 +6,7 @@ def apply(given):
     (fx, (x, n)), (_x, a, b) = given.of(All[Derivative > 0])
     assert n == 1
     assert x == _x
-    
+
     return All[x:Interval(a, b, left_open=True)](Greater(fx, fx._subs(x, a)))
 
 
@@ -21,7 +21,7 @@ def prove(Eq):
     f = Function.f(real=True)
     Eq << apply(All[x:domain](Derivative[x](f(x)) > 0))
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[1], cond=a < b)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=a < b)
 
     Eq << Eq[-1].this.rhs.apply(algebra.all.given.all_et.limits_cond, simplify=None)
 

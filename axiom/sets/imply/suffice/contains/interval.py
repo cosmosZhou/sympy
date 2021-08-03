@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Contains[~Sum]).apply(algebra.sum.to.add.pop_back)
 
-    Eq.lt, Eq.ge = algebra.cond.given.suffice.split.apply(Eq[-1], cond=w[n] < 1)
+    Eq.lt, Eq.ge = algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=w[n] < 1)
 
     Eq << Eq.ge.this.rhs.apply(algebra.suffice.fold, 1, swap=True)
 
@@ -55,7 +55,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Equal) - w[n]
 
-    Eq << Eq[-1].this.lhs.apply(algebra.cond.cond.imply.et, algebra.eq.lt.imply.eq.div)
+    Eq << Eq[-1].this.lhs.apply(algebra.et.imply.et.invoke, algebra.eq.lt.imply.eq.div)
 
     Eq << Eq[-1].this.find(Mul[Sum]).apply(algebra.mul.to.sum)
 
@@ -71,7 +71,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.cond.all.imply.all_et, simplify=None)
 
-    Eq << Eq[-1].this.lhs.find(And).apply(algebra.cond.cond.imply.et, algebra.lt.ge.imply.ge.div, index=1)
+    Eq << Eq[-1].this.lhs.find(And).apply(algebra.et.imply.et.invoke, algebra.lt.ge.imply.ge.div, ret=1)
 
     Eq << Eq[-1].this.apply(algebra.suffice.swap)
 
@@ -111,7 +111,7 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.find(Sum).simplify()
 
     Eq << Suffice(Eq[0], Eq.induct, plausible=True)
-    
+
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 

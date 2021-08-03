@@ -1,4 +1,4 @@
-from sympy import Order, S, log, limit, lcm_list, Abs, im, re, Dummy
+from sympy import Order, S, log, limit, lcm_list, Abs, Dummy
 from sympy.core import Add, Mul, Pow
 from sympy.core.basic import Basic
 from sympy.core.compatibility import iterable

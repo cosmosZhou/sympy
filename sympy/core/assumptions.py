@@ -36,7 +36,7 @@ Here follows a list of possible assumption names:
     imaginary
         object value is a number that can be written as a real
         number multiplied by the imaginary unit ``I``.  See
-        [3]_.  Please note, that ``0`` is not considered to be an
+        [3]_.  Please note that ``0`` is not considered to be an
         imaginary number, see
         `issue #7649 <https://github.com/sympy/sympy/issues/7649>`_.
 
@@ -125,9 +125,51 @@ See Also
 Notes
 =====
 
-Assumption values are stored in obj._assumptions dictionary or
-are returned by getter methods (with property decorators) or are
-attributes of objects/classes.
+The fully-resolved assumptions for any SymPy expression
+can be obtained as follows:
+
+    >>> from sympy.core.assumptions import assumptions
+    >>> x = Symbol('x',positive=True)
+    >>> assumptions(x + I)
+    {'commutative': True, 'complex': True, 'composite': False, 'even':
+    False, 'extended_negative': False, 'extended_nonnegative': False,
+    'extended_nonpositive': False, 'extended_nonzero': False,
+    'extended_positive': False, 'extended_real': False, 'finite': True,
+    'imaginary': False, 'infinite': False, 'integer': False, 'irrational':
+    False, 'negative': False, 'noninteger': False, 'nonnegative': False,
+    'nonpositive': False, 'nonzero': False, 'odd': False, 'positive':
+    False, 'prime': False, 'rational': False, 'real': False, 'zero':
+    False}
+
+Developers Notes
+================
+
+The current (and possibly incomplete) values are stored
+in the ``obj._assumptions dictionary``; queries to getter methods
+(with property decorators) or attributes of objects/classes
+will return values and update the dictionary.
+
+    >>> eq = x**2 + I
+    >>> eq._assumptions
+    {}
+    >>> eq.is_finite
+    True
+    >>> eq._assumptions
+    {'finite': True, 'infinite': False}
+
+For a Symbol, there are two locations for assumptions that may
+be of interest. The ``assumptions0`` attribute gives the full set of
+assumptions derived from a given set of initial assumptions. The
+latter assumptions are stored as ``Symbol._assumptions.generator``
+
+    >>> Symbol('x', prime=True, even=True)._assumptions.generator
+    {'even': True, 'prime': True}
+
+The ``generator`` is not necessarily canonical nor is it filtered
+in any way: it records the assumptions used to instantiate a Symbol
+and (for storage purposes) represents a more compact representation
+of the assumptions needed to recreate the full set in
+`Symbol.assumptions0`.
 
 
 References
@@ -146,7 +188,6 @@ References
 .. [11] https://en.wikipedia.org/wiki/Algebraic_number
 
 """
-from __future__ import print_function, division
 
 from sympy.core.facts import FactRules, FactKB
 from sympy.core.core import BasicMeta
@@ -154,15 +195,16 @@ from sympy.core.core import BasicMeta
 
 from random import shuffle
 
+
 _assume_rules = FactRules([
 
     'integer        ->  rational',
     'rational       ->  real',
     'rational       ->  algebraic',
-    'algebraic      ->  complex & finite',
-    'transcendental ==  complex & !algebraic & finite',
+    'algebraic      ->  complex',
+    'transcendental ==  complex & !algebraic',
     'real           ->  hermitian',
-    'imaginary      ->  complex & finite',
+    'imaginary      ->  complex',
     'imaginary      ->  antihermitian',
     'extended_real  ->  commutative',
     'complex        ->  commutative',
@@ -193,7 +235,9 @@ _assume_rules = FactRules([
     'negative       ==  extended_negative & finite',
     'nonpositive    ==  extended_nonpositive & finite',
     'nonnegative    ==  extended_nonnegative & finite',
-    'nonzero        ->  extended_nonzero & finite',
+#    'nonzero        ->  extended_nonzero & finite',
+# a complex number can also be nonzero
+    'nonzero        ->  !zero', 
 
     'zero           ->  even & finite',
     'zero           ==  extended_nonnegative & extended_nonpositive',
@@ -208,7 +252,7 @@ _assume_rules = FactRules([
 
     'imaginary      ->  !extended_real',
 
-    'infinite       ->  !finite',
+    'infinite       ==  !finite',
     'noninteger     ==  extended_real & !integer',
     'extended_nonzero == extended_real & !zero',
     'invertible == !singular',
@@ -344,6 +388,14 @@ def check_assumptions(expr, against=None, **assume):
     >>> check_assumptions(2*x + 1, x)
     True
 
+    To see if a number matches the assumptions of an expression, pass
+    the number as the first argument, else its specific assumptions
+    may not have a non-None value in the expression:
+
+    >>> check_assumptions(x, 3)
+    >>> check_assumptions(3, x)
+    True
+
     ``None`` is returned if ``check_assumptions()`` could not conclude.
 
     >>> check_assumptions(2*x - 1, x)
@@ -358,8 +410,8 @@ def check_assumptions(expr, against=None, **assume):
 
     """
     expr = sympify(expr)
-    if against:
-        if against is not None and assume:
+    if against is not None:
+        if assume:
             raise ValueError(
                 'Expecting `against` or `assume`, not both.')
         assume = assumptions(against)
@@ -376,13 +428,12 @@ def check_assumptions(expr, against=None, **assume):
 
 
 class StdFactKB(FactKB):
-    """A FactKB specialised for the built-in rules
+    """A FactKB specialized for the built-in rules
 
     This is the only kind of FactKB that Basic objects should use.
     """
-
     def __init__(self, facts=None):
-        super(StdFactKB, self).__init__(_assume_rules)
+        super().__init__(_assume_rules)
         # save a copy of the facts dict
         if not facts:
             self._generator = {}
@@ -409,7 +460,7 @@ def as_property(fact):
 def make_property(fact):
     """Create the automagic property corresponding to a fact."""
 
-    def _getit(self):
+    def getit(self):
         try:
             return self._assumptions[fact]
         except KeyError:
@@ -417,7 +468,7 @@ def make_property(fact):
                 self._assumptions = self.default_assumptions.copy()
             return self._ask(fact)
 
-    return property(_getit)
+    return property(getit)
 
 
 def _ask(fact, obj):
@@ -484,68 +535,69 @@ def _ask(fact, obj):
 class ManagedProperties(BasicMeta):
     """Metaclass for classes with old-style assumptions"""
 
-    def __init__(self, *args, **kws):
-        BasicMeta.__init__(self, *args, **kws)
+    is_Operator = False
+    
+    def __init__(cls, *args, **kws):
+        BasicMeta.__init__(cls, *args, **kws)
 
         local_defs = {}
         for k in _assume_defined:
             attrname = as_property(k)
-            v = self.__dict__.get(attrname, '')
+            v = cls.__dict__.get(attrname, '')
             if isinstance(v, (bool, int, type(None))):
                 if v is not None:
                     v = bool(v)
                 local_defs[k] = v
 
         defs = {}
-        for base in reversed(self.__bases__):
+        for base in reversed(cls.__bases__):
             assumptions = getattr(base, '_explicit_class_assumptions', None)
             if assumptions is not None:
                 defs.update(assumptions)
         defs.update(local_defs)
 
-        self._explicit_class_assumptions = defs
-        self.default_assumptions = StdFactKB(defs)
+        cls._explicit_class_assumptions = defs
+        cls.default_assumptions = StdFactKB(defs)
 
-        self._prop_handler = {}
+        cls._prop_handler = {}
         for k in _assume_defined:
-            eval_is_meth = getattr(self, '_eval_is_%s' % k, None)
+            eval_is_meth = getattr(cls, '_eval_is_%s' % k, None)
             if eval_is_meth is not None:
-                self._prop_handler[k] = eval_is_meth
+                cls._prop_handler[k] = eval_is_meth
 
         # Put definite results directly into the class dict, for speed
-        for k, v in self.default_assumptions.items():
-            setattr(self, as_property(k), v)
+        for k, v in cls.default_assumptions.items():
+            setattr(cls, as_property(k), v)
 
         # protection e.g. for Integer.is_even=F <- (Rational.is_integer=F)
         derived_from_bases = set()
-        for base in self.__bases__:
+        for base in cls.__bases__:
             default_assumptions = getattr(base, 'default_assumptions', None)
             # is an assumption-aware class
             if default_assumptions is not None:
                 derived_from_bases.update(default_assumptions)
 
-        for fact in derived_from_bases - set(self.default_assumptions):
+        for fact in derived_from_bases - set(cls.default_assumptions):
             pname = as_property(fact)
-            if pname not in self.__dict__:
-                setattr(self, pname, make_property(fact))
+            if pname not in cls.__dict__:
+                setattr(cls, pname, make_property(fact))
 
-        # add any missing automagic property (e.g. for Basic)
+        # Finally, add any missing automagic property (e.g. for Basic)
         for fact in _assume_defined:
             pname = as_property(fact)
-            if not hasattr(self, pname):
-                setattr(self, pname, make_property(fact))
-                
-        # Finally, add class name property for Basic and self, eg, Basic.is_CLASSNAME = None, and CLASSNAME.is_CLASSNAME = True
-        pname = as_property(self.__name__)
-        if pname not in self.__dict__: 
-            setattr(self, pname, True)
+            if not hasattr(cls, pname):
+                setattr(cls, pname, make_property(fact))
+
+        pname = as_property(cls.__name__)
+        if pname not in cls.__dict__: 
+            setattr(cls, pname, True)
         
 #         look in Method Resolution Order
-        for base in reversed(self.__mro__):
+        for base in reversed(cls.__mro__):
             if not isinstance(base, ManagedProperties):
                 continue
         
-            assert base.__name__ == 'Basic', "self = %s, base = %s" % (self, base)
+            assert base.__name__ == 'Basic', "cls = %s, base = %s" % (cls, base)
             if pname not in base.__dict__:
                 setattr(base, pname, False)
             break
@@ -582,9 +634,6 @@ class ManagedProperties(BasicMeta):
         else:
             limits = [(limits,)]            
                     
-#         def operator(*args, **kwargs):
-#             return self(*args, *limits, **kwargs)# 
-#         return operator
         return Operator(self, limits)
 
     def __iter__(self):
@@ -611,9 +660,7 @@ class Operator:
             cls = self.cls
             limits = self.limits
             assert isinstance(cls, type)
-            from sympy import Basic, sympify
-            from sympy.core.core import Wanted
-            
+            from sympy.core.of import Basic, sympify            
             if len(limits) == 1: 
                 children = limits[0]
                 
@@ -621,9 +668,14 @@ class Operator:
                     child = children[0]
                     if isinstance(child, int):
                         if child > 1:
-                            children = [cls] * child                                                    
-                            children[-1] = Wanted(children[-1])                            
-                            cls = Basic
+                            children = [cls] * child
+                            children[-1] = ~cls
+
+                            if hasattr(cls.__mro__[-3], 'is_Basic'):
+                                cls = cls.__mro__[-3]
+                            else:
+                                cls = cls.__mro__[-4]
+                            assert cls.is_Basic
                         else: 
                             children = [sympify(child)]                            
                             
@@ -635,8 +687,6 @@ class Operator:
                     children.append(sympify(child))
             
             obj = Basic.__new__(cls, *children)
-            if cls.is_LatticeOp:
-                obj._argset = tuple(children)
             self._basic = obj
         return self._basic
         
@@ -652,6 +702,11 @@ class Operator:
 #     def args(self):
 #         return self.basic.args
 
+    def __repr__(self):
+        return repr(self.basic)
+    
+    __str__ = __repr__
+        
     def __getattr__(self, attr):
         return getattr(self.basic, attr)
 
@@ -690,3 +745,9 @@ class Operator:
 
     def __le__(self, other): 
         return BasicMeta.__le__(self.basic, other)
+
+    def __or__(self, other): 
+        return BasicMeta.__or__(self.basic, other)
+
+    def __and__(self, other): 
+        return BasicMeta.__and__(self.basic, other)

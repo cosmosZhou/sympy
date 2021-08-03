@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[1].this.find(Equal & ~Equal).apply(algebra.is_even.to.eq)
 
-    Eq << Eq[-1].this.find(Unequal).apply(algebra.is_nonzero.to.is_odd)
+    Eq << Eq[-1].this.find(Unequal).apply(algebra.mod_is_nonzero.to.is_odd)
 
     Eq << Eq[-1].this.find(Equal & ~Equal).apply(algebra.is_odd.to.eq)
 

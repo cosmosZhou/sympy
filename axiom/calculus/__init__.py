@@ -26,3 +26,5 @@ from . import subs
 from . import mul
 from . import is_nonzero
 from . import is_real
+from . import cos
+from . import sin

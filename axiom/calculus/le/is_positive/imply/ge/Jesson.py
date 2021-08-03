@@ -8,7 +8,7 @@ def apply(le, is_positive, w=None):
     assert d == 2
 
     if w is None:
-        w = Symbol.w(domain=Interval(0, 1))
+        w = Symbol(domain=Interval(0, 1))
     else:
         assert w >= 0 and w <= 1
     domain = x_.domain
@@ -21,14 +21,13 @@ def apply(le, is_positive, w=None):
 def prove(Eq):
     from axiom import calculus, algebra, sets
 
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
+    a, b = Symbol(real=True, given=True)
     domain = Interval(a, b, left_open=True, right_open=True)
-    x = Symbol.x(domain=domain)
-    f = Function.f(real=True)
-    x0 = Symbol.x0(domain=domain, given=True)
-    x1 = Symbol.x1(domain=domain, given=True)
-    w = Symbol.w(domain=Interval(0, 1), given=True)
+    x = Symbol(domain=domain)
+    f = Function(real=True)
+    x0 = Symbol(domain=domain, given=True)
+    x1 = Symbol(domain=domain, given=True)
+    w = Symbol(domain=Interval(0, 1), given=True)
     Eq << apply(x0 <= x1, Derivative(f(x), (x, 2)) > 0, w=w)
 
     (w, fx0), (_w, fx1) = Eq[-1].lhs.of(Mul + Mul)
@@ -125,6 +124,7 @@ def prove(Eq):
     Eq << algebra.all.any.imply.any_et.apply(Eq[-1], Eq.any)
 
     Eq << Eq[-1].this.expr.apply(algebra.ge.eq.imply.ge.transit)
+
     Eq << algebra.et.imply.et.apply(Eq[-1])
 
     Eq << Eq[-1] + Eq[2].rhs

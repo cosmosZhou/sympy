@@ -31,13 +31,10 @@ def prove(Eq):
 
     Eq << Eq[1].this.find(Binomial).apply(discrete.binomial.to.mul.fallingFactorial.doit)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add)
-
-    Eq << Eq[-1].this.find(Mul).apply(algebra.mul.to.add)
-
-    Eq << Eq[-1].this.find(Mul[Add]).apply(algebra.mul.to.add)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add, deep=True)
 
     Eq << Eq[2].subs(Eq[-1])
+
     Eq << Eq[0].this.find(Mul).apply(algebra.mul.to.add)
 
 

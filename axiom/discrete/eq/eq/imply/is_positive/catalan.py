@@ -53,7 +53,8 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.limits_subs(k, k.copy(domain=None))
 
-    Eq << Eq[-1].this.lhs.subs(Eq[1].reversed)
+    Eq << Eq[-1] + Eq[1]
+    Eq << Eq[-1].this.apply(algebra.gt.transposition)
 
     Eq << Suffice(Eq.hypothsis_k, Eq.induct, plausible=True)
 

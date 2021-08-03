@@ -110,6 +110,7 @@ function resizeHeight(cm, h) {
 }
 
 function hint(cm, options) {
+	var Pos = CodeMirror.Pos;	
 	return new Promise(function(accept) {
 		var cur = cm.getCursor();
 		var token = cm.getTokenAt(cur);
@@ -126,6 +127,29 @@ function hint(cm, options) {
 		if (tokenString == '.') {
 
 			token.start += 1;
+			if (prefix == 'Eq.') {
+				var list = new Set();
+				var self = options.context;
+				for (let editor of self.$parent.proveEditor){
+					var text = editor.editor.getValue();
+					for (var text of text.split("\n")){
+						console.log(text);
+						for (let m of text.matchAll(/\bEq\.(\w+)/g)){
+							list.add(m[1]);
+						}		
+					}
+				}
+				
+				list = Array.from(list);
+				list.sort();
+				console.log('list = ' + list);				
+				return accept({
+					list: list,
+					from: Pos(cur.line, token.start),
+					to: Pos(cur.line, token.end)
+				});
+			}
+
 			kwargs = { prefix: prefix, phrase: '' };
 			url += `suggest.php`;
 		}
@@ -166,8 +190,6 @@ function hint(cm, options) {
 
 			// Find the token at the cursor
 			console.log('list = ' + list);
-			var Pos = CodeMirror.Pos;
-
 			return accept({
 				list: list,
 				from: Pos(cur.line, token.start),
@@ -337,7 +359,7 @@ function textFocused(text, selectionStart) {
 
 function find_and_jump(event) {
 	var self = event.target;
-	
+
 	var module = textFocused(self.value, self.selectionStart);
 	console.log('module = ' + module);
 	var href;
@@ -373,7 +395,7 @@ function find_and_jump(event) {
 
 }
 
-function saveDocument(){
+function saveDocument() {
 	console.log("'Ctrl-S' is pressed!");
 	var module = document.querySelector('input').value;
 	console.log("module = " + module);

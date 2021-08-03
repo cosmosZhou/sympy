@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.any.limits.subs.negate.real, x, b - x)
 
-    Eq << algebra.any.imply.any_et.limits_cond.apply(Eq[-1], simplify=None)
+    Eq << algebra.any.imply.any_et.limits.cond.apply(Eq[-1], simplify=None)
 
     Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.gt.split.interval)
 

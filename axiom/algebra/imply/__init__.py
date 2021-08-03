@@ -7,3 +7,4 @@ from . import lt
 from . import ge
 from . import is_nonnegative
 from . import suffice
+from . import et

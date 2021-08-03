@@ -4,6 +4,7 @@ from util import *
 @apply
 def apply(self):
     x = self.of(Abs)    
+    assert x.is_extended_real
     return Equal(self, Piecewise((x, x >= 0), (-x, True)))
 
 
@@ -12,7 +13,7 @@ def prove(Eq):
     x = Symbol.x(real=True)
     Eq << apply(abs(x))
 
-    
+
 if __name__ == '__main__':
     run()
     

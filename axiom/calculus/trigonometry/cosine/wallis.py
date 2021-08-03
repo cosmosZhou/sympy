@@ -48,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].simplify()
 
-    Eq << algebra.eq.imply.eq.solve.apply(Eq[-1], -Eq[-1].rhs.args[1])
+    Eq << algebra.eq.imply.eq.simple_equation.apply(Eq[-1], -Eq[-1].rhs.args[1])
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.cancel, n)
 

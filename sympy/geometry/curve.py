@@ -83,7 +83,7 @@ class Curve(GeometrySet):
 
         return GeometryEntity.__new__(cls, Tuple(*fun), Tuple(*limits))
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if old == self.parameter:
             return Point(*[f.subs(old, new) for f in self.functions])
 

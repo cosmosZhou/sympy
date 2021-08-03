@@ -10,6 +10,7 @@ def apply(n):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
+
     n = Symbol.n(integer=True, positive=True, given=False)
     Eq << apply(n)
 
@@ -22,7 +23,6 @@ def prove(Eq):
     Eq << discrete.cup.to.condset.P2Q_union.apply(n)
 
     Q = Eq[-1].lhs.expr.base
-
     Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
 
     Eq << discrete.abs_cup.to.sum_abs.permutation.nonoverlapping.apply(n, Q=Q)
@@ -32,7 +32,8 @@ def prove(Eq):
     Eq << discrete.abs_condset.inbetween.apply(n, Q=Q)
 
     P_quote = Eq[-1].rhs.arg
-    Eq << Eq[-2].subs(Eq[-1])
+    Eq << Eq[-2].this.rhs.expr.subs(Eq[-1])
+
     Eq << discrete.abs_condset.last.apply(n, P_quote=P_quote)
 
     Eq.P_definition = Eq[-1].lhs.arg.this.definition

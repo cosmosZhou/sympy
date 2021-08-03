@@ -7,7 +7,7 @@ def apply(le, contains, notcontains):
     ___y_, __X = notcontains.of(NotContains)
 
     ((a, _y_), (((_a, _x), (x, X)), _X)), ((__a, __y_), (((___a, y), (_y, _Y)), __Y))= le.of(Abs[Indexed - Sum[Indexed] / Abs] <= Abs[Indexed - Sum[Indexed] / Abs])
-    
+
     assert a == _a == __a == ___a
     assert X == _X == __X and x == _x
     assert y_ == _y_ == __y_ == ___y_
@@ -31,7 +31,7 @@ def prove(Eq):
     Y = Symbol.Y(etype=dtype.integer, finiteset=True, given=True)
     Eq << apply(abs(a[y_] - Sum[x:X](a[x]) / abs(X)) <= abs(a[y_] - Sum[y:Y](a[y]) / abs(Y)), Contains(y_, Y), NotContains(y_, X))
 
-    Eq.eq, Eq.ne = algebra.cond.given.suffice.split.apply(Eq[-1], cond=Equal(abs(Y), 1))
+    Eq.eq, Eq.ne = algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=Equal(abs(Y), 1))
 
     Eq.suffice_et = algebra.cond.imply.suffice.et.apply(Eq[1], cond=Eq.eq.lhs)
 

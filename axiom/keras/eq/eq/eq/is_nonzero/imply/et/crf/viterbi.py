@@ -7,8 +7,8 @@ def apply(*given):
     x, y = process_assumptions(*given)
 
     n, d = x.shape
-    t = Symbol.t(domain=Range(0, n))
-    i = Symbol.i(integer=True)
+    t = Symbol(domain=Range(0, n))
+    i = Symbol(integer=True)
 
     joint_probability_t = Probability(x[:t + 1], y[:t + 1])
     joint_probability = Probability(x, y)
@@ -16,13 +16,13 @@ def apply(*given):
     transition_probability = Probability(y[i] | y[i - 1])
     y = pspace(y).symbol
 
-    G = Symbol.G(Lamda[y[i - 1], y[i]](-log(transition_probability)))
+    G = Symbol(Lamda[y[i - 1], y[i]](-log(transition_probability)))
     assert G.shape == (d, d)
-    s = Symbol.s(Lamda[t](-log(joint_probability_t)))
+    s = Symbol(Lamda[t](-log(joint_probability_t)))
     assert s.shape == (n,)
-    x = Symbol.x(Lamda[y[i], i](-log(emission_probability)))
+    x = Symbol(Lamda[y[i], i](-log(emission_probability)))
     assert x.shape == (n, d)
-    x_quote = Symbol.x_quote(Lamda[y[t], t](Minimize[y[:t]](s[t])))
+    x_quote = Symbol(Lamda[y[t], t](Minimize[y[:t]](s[t])))
     assert x_quote.shape == (n, d)
 
     assert x_quote.is_real
@@ -64,9 +64,10 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.subs.rhs)
 
-    Eq << Eq[-1].this.rhs.rhs.expr.simplify()
+    
 
     Eq << Eq[-1].this.rhs.rhs.args[1].expr.apply(algebra.minimize.limits.split.slice.pop_back)
+
     Eq << Eq[-1].this.rhs.rhs.args[1].expr.simplify()
 
     Eq << Eq[-1].this.rhs.rhs.args[1].expr.apply(algebra.minimize.to.lamda)

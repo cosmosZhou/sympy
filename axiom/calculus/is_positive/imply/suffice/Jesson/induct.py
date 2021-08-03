@@ -28,18 +28,17 @@ def apply(is_positive, x=None, w=None, i=None, n=None):
 def prove(Eq):
     from axiom import algebra, sets, calculus
 
-    n = Symbol.n(integer=True, positive=True, given=False)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    a, b = Symbol(real=True)
     domain = Interval(a, b, left_open=True, right_open=True)
-    x = Symbol.x(domain=domain)
-    w = Symbol.w(shape=(oo,), real=True)
-    f = Function.f(real=True)
+    x = Symbol(domain=domain)
+    w = Symbol(shape=(oo,), real=True)
+    f = Function(real=True)
     Eq << apply(Derivative(f(x), (x, 2)) > 0, w=w, n=n)
 
     Eq.initial = Eq[1].subs(n, 1)
 
-    Eq << Eq.initial.this.lhs.apply(algebra.cond.cond.imply.et, algebra.eq.cond.imply.cond.subs)
+    Eq << Eq.initial.this.lhs.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.subs)
 
     Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
 
@@ -49,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(f[~Sum]).apply(algebra.sum.to.add.pop_back)
 
-    Eq.lt, Eq.ge = algebra.cond.given.suffice.split.apply(Eq[-1], cond=w[n] < 1)
+    Eq.lt, Eq.ge = algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=w[n] < 1)
 
     Eq << Eq.ge.this.apply(algebra.suffice.flatten)
 
@@ -67,7 +66,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.et.given.et.subs.eq)
 
-    Eq << algebra.suffice.given.suffice.split.et.apply(Eq[-1])
+    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
 
     x = fxi.arg.base
     Eq << Eq[-1].lhs.this.apply(algebra.all_is_zero.imply.sum_is_zero.mul, x)
@@ -86,7 +85,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.suffice.fold, index=1)
 
-    Eq << Eq[-1].this.find(And).apply(algebra.cond.cond.imply.et, algebra.is_positive.eq.imply.eq.div, simplify=None)
+    Eq << Eq[-1].this.find(And).apply(algebra.et.imply.et.invoke, algebra.is_positive.eq.imply.eq.div, simplify=None)
 
     Eq << Eq[-1].this.find(Mul[Sum]).apply(algebra.mul.to.sum)
 
@@ -100,7 +99,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(And).apply(algebra.cond.all.imply.all_et, simplify=None)
 
-    Eq << Eq[-1].this.find(And).apply(algebra.cond.cond.imply.et, algebra.is_positive.ge.imply.ge.div)
+    Eq << Eq[-1].this.find(And).apply(algebra.et.imply.et.invoke, algebra.is_positive.ge.imply.ge.div)
 
     Eq << Eq[-1].this.rhs.apply(algebra.suffice.flatten)
 
@@ -111,7 +110,13 @@ def prove(Eq):
     w_ = Symbol.w(Lamda[i:n](w[i] / (1 - w[n])))
     Eq << w_[i].this.definition * (1 - w[n])
 
-    Eq << Eq[-2].subs(Eq[-1].reversed)
+    Eq << algebra.cond.given.cond.subs.apply(Eq[-2], given=Eq[-1].reversed, simplify=None)
+
+    Eq << Eq[-1].this.find(Sum[Tuple[0]]).simplify()
+
+    Eq << Eq[-1].this.find(Sum[Tuple[0]]).simplify()
+
+    Eq << Eq[-1].this.find(Sum[Tuple[0]]).simplify()
 
     Eq << Eq[-1].this.find(Add[~Sum]).apply(algebra.sum.to.mul)
 
@@ -180,6 +185,7 @@ def prove(Eq):
     Eq << Eq[-1].this.find(GreaterEqual & GreaterEqual).apply(algebra.ge.ge.imply.ge.transit)
 
     Eq << Suffice(Eq[1], Eq.induct, plausible=True)
+
     Eq << algebra.cond.suffice.imply.cond.induct.apply(Eq.initial, Eq[-1], n=n, start=1)
 
 

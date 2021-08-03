@@ -6,7 +6,6 @@ from sympy.core.numbers import Rational
 from sympy.core.power import Pow
 from sympy.functions.special.zeta_functions import zeta
 from sympy.functions.special.error_functions import erf, erfc, Ei
-from sympy.functions.elementary.complexes import re
 from sympy.functions.elementary.exponential import exp, log
 from sympy.functions.elementary.integers import ceiling, floor
 from sympy.core.power import sqrt
@@ -498,14 +497,14 @@ class uppergamma(Function):
 
     @classmethod
     def eval(cls, a, z):
-        from sympy import unpolarify, I, expint
+        from sympy import unpolarify, I, expint, Re
         if z.is_Number:
             if z is S.NaN:
                 return S.NaN
             elif z is S.Infinity:
                 return S.Zero
             elif z.is_zero:
-                if re(a).is_positive:
+                if Re(a).is_positive:
                     return gamma(a)
 
         # We extract branching information here. C/f lowergamma.
@@ -544,7 +543,7 @@ class uppergamma(Function):
         if a.is_zero and z.is_positive:
             return -Ei(-z)
 
-        if z.is_zero and re(a).is_positive:
+        if z.is_zero and Re(a).is_positive:
             return gamma(a)
 
     def _eval_conjugate(self):

@@ -23,7 +23,7 @@ def prove(Eq):
     X = Symbol.X(etype=dtype.integer, finiteset=True, given=True)
     Eq << apply(Equal(a[y], Sum[x:X](a[x]) / abs(X)))
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[1], cond=Contains(y, X))
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=Contains(y, X))
 
     Eq << Contains(y, X).this.apply(sets.contains.imply.eq.union)
 

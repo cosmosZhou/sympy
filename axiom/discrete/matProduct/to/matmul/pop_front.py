@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self):    
+def apply(self):
     function, (i, a, b) = self.of(MatProduct)
     assert i.is_integer
     front = function._subs(i, a)
@@ -21,7 +21,7 @@ def prove(Eq):
     f = Function.f(real=True, shape=(m, m))
     Eq << apply(MatProduct[i:0:n + 1](f(i)))
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[0], cond=n > 0)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=n > 0)
 
     Eq << Eq[2].this.lhs.apply(algebra.is_nonpositive.imply.is_zero)
 

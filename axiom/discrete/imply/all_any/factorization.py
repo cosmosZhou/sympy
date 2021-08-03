@@ -133,7 +133,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.any.ou.imply.cond, simplify=None)
 
-    Eq << Eq.p_quote_definition.lhs.this.split(slice(-1))
+    Eq << Eq.p_quote_definition.lhs.this.apply(algebra.symbol.to.blockmatrix)
 
     Eq << algebra.cond.all_any.imply.all_any_et.apply(Eq[-1], Eq[-2])
 

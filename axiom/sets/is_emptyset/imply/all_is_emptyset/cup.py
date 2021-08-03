@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(given):
     assert given.is_Equal

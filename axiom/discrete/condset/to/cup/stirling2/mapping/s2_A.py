@@ -40,7 +40,9 @@ def prove(Eq):
     x_slice = Eq[-1].limits[0][0]
     x = x_slice.base
     Eq.x_abs_positive_s1 = algebra.all_et.imply.all.apply(Eq[-1])
+
     Eq.x_abs_sum_s1 = algebra.all_et.imply.all.apply(Eq[-1], 1)
+
     Eq.x_union_s1 = algebra.all_et.imply.all.apply(Eq[-1], 2)
 
     j = Symbol.j(domain=Range(0, k + 1))
@@ -144,7 +146,7 @@ def prove(Eq):
 
     Eq.set_size_inequality = Eq[-1].this.expr.apply(algebra.eq.lt.imply.lt.subs, Less(Eq[-1].expr.rhs, Eq[-1].expr.rhs + 1, plausible=True))
 
-    Eq << Eq.x_quote_union.this.expr.lhs.split({i, j})
+    Eq << Eq.x_quote_union.this.expr.lhs.apply(sets.cup.to.union.split, cond={i, j})
 
     Eq << sets.imply.le.union.apply(*Eq[-1].lhs.args)
 

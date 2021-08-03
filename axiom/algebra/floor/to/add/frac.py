@@ -10,7 +10,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(floor(x))
 
     Eq << Eq[-1].this.find(frac).apply(algebra.frac.to.add)

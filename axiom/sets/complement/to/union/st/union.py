@@ -1,8 +1,5 @@
 from util import *
 
-# reference
-# www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
-
 
 @apply
 def apply(complement, evaluate=True):
@@ -31,6 +28,9 @@ def prove(Eq):
     Eq << Eq[0].this.rhs.subs(Eq.A_definition.reversed, Eq.B_definition.reversed)
 
     Eq << Eq[-1].subs(Eq[1])
+
+# reference
+# www.cut-the-knot.org/arithmetic/combinatorics/InclusionExclusion.shtml
 
 
 if __name__ == '__main__':

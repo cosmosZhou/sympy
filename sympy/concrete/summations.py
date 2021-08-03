@@ -82,33 +82,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
     ========
 
     >>> from sympy.abc import i, k, m, n, x
-    >>> from sympy import Sum, factorial, oo, IndexedBase, Function
-    >>> Sum(k, (k, 1, m))
+    >>> n = Symbol.n(integer=True)
+    >>> Sum(1 / (n * (n + 1)), (n, 1, oo))
     Sum(k, (k, 1, m))
-    >>> Sum(k, (k, 1, m)).doit()
-    m**2/2 + m/2
-    >>> Sum(k**2, (k, 1, m))
-    Sum(k**2, (k, 1, m))
-    >>> Sum(k**2, (k, 1, m)).doit()
-    m**3/3 + m**2/2 + m/6
-    >>> Sum(x**k, (k, 0, oo))
-    Sum(x**k, (k, 0, oo))
-    >>> Sum(x**k, (k, 0, oo)).doit()
-    Piecewise((1/(1 - x), Abs(x) < 1), (Sum(x**k, (k, 0, oo)), True))
-    >>> Sum(x**k/factorial(k), (k, 0, oo)).doit()
-    exp(x)
-
-    Here are examples to do summation with symbolic indices.  You
-    can use either Function of IndexedBase classes:
-
-    >>> f = Function('f')
-    >>> Sum(f(n), (n, 0, 3)).doit()
-    f(0) + f(1) + f(2) + f(3)
-    >>> Sum(f(n), (n, 0, oo)).doit()
-    Sum(f(n), (n, 0, oo))
-    >>> f = IndexedBase('f')
-    >>> Sum(f[n]**2, (n, 0, 3)).doit()
-    f[0]**2 + f[1]**2 + f[2]**2 + f[3]**2
+    >>> Sum(1 / (n * (n + 1)), (n, 1, oo)).this.expr.apart(n)
 
     An example showing that the symbolic result of a summation is still
     valid for seemingly nonsensical values of the limits. Then the Karr
@@ -816,18 +793,18 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 if len(ab) == 1:
                     domain = ab[0]
                     if not old._has(x) or new._has(x):
-                        _domain = domain._subs(old, new)
-                        function = self.expr._subs(old, new)
+                        _domain = domain._subs(old, new, **hints)
+                        function = self.expr._subs(old, new, **hints)
                         if _domain != domain or function != self.expr: 
                             if x.is_Indexed or x.is_Slice:
-                                indices = tuple(index._subs(old, new) for index in x.indices)
+                                indices = tuple(index._subs(old, new, **hints) for index in x.indices)
                                 if x.indices != indices:
                                     x = x.func(x.base, *indices)                
 
                             return self.func(function, (x, _domain)).simplify()
                     else:
                         if domain.is_set:
-                            _domain = domain._subs(old, new)
+                            _domain = domain._subs(old, new, **hints)
                             if _domain != domain:
                                 return self.func(self.expr, (x, _domain)).simplify()
 
@@ -838,18 +815,26 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             p = None if old.is_set else old.as_poly(x)
 
             if p is None or p.degree() != 1:
+                assumptions = hints.get('assumptions')
+                if assumptions:
+                    for x, *ab in self.limits:
+                        if old._has(x):
+                            domain = assumptions.get(x)
+                            if domain is False:
+                                return self
+                
                 function = self.expr._subs(old, new, **hints).simplify()
 
                 if ab:
                     if x.is_Indexed or x.is_Slice:
-                        indices = tuple(index._subs(old, new) for index in x.indices)
+                        indices = tuple(index._subs(old, new, **hints) for index in x.indices)
                         if x.indices != indices:
                             x = x.func(x.base, *indices)                
             
-                    return self.func(function, (x, a._subs(old, new), b._subs(old, new))).simplify()
+                    return self.func(function, (x, a._subs(old, new, **hints), b._subs(old, new, **hints))).simplify()
 
                 if (x.is_Slice or x.is_Indexed) and x.base != old:
-                    x = x._subs(old, new)
+                    x = x._subs(old, new, **hints)
                 domain = self.expr.domain_defined(x)
                 _domain = function.domain_defined(x)
                 if domain != _domain:
@@ -858,7 +843,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     limit = (x,)
                 return self.func(function, limit)
 
-            if new.has(x):
+            if new._has(x):
                 diff = old - new
                 if old != x:
                     if diff.has(x):
@@ -885,7 +870,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 return self
             _x, *_ = _x
 
-            function = self.expr.subs(x, new)
+            function = self.expr._subs(x, new, **hints)
 
             if ab:
                 a = solve(new - a, _x)
@@ -906,7 +891,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             return self.func(function, (_x))
 
         elif len(self.limits) == 0:
-            function = self.expr.subs(old, new)
+            function = self.expr._subs(old, new, **hints)
 
             return self.func(function, *self.limits)
         else:
@@ -920,10 +905,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 #                     continue
 #                 
 #                 if p.degree() == 0:
-                limits[i] = (x, *[a._subs(old, new) for a in ab])
+                limits[i] = (x, *[a._subs(old, new, **hints) for a in ab])
                 hit |= limits[i] != self.limits[i] 
             
-            function = self.expr._subs(old, new)
+            function = self.expr._subs(old, new, **hints)
             hit |= function != self.expr
             
             if hit:
@@ -936,6 +921,9 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             (x, a, b), *_ = self.limits
             (_x, _a, _b), *_ = autre.limits
 
+            if (b - a).is_Integer or (_b - _a).is_Integer:
+                return
+            
             if x == _x:
                 a_diff = a - _a
                 b_diff = b - _b
@@ -966,11 +954,11 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             if len(ab) == 2 and expr:
                 a, b = ab
                 if not b.is_set:
-                    if self.expr.subs(i, b) == expr:
+                    if self.expr._subs(i, b) == expr:
                         return self.func(self.expr, (i, a, b + 1))
                     a -= 1
                     try:
-                        if self.expr.subs(i, a) == expr:
+                        if self.expr._subs(i, a) == expr:
                             return self.func(self.expr, (i, a, b))
                     except:
                         ...

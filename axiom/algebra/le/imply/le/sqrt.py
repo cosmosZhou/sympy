@@ -3,20 +3,17 @@ from util import *
 
 @apply
 def apply(given):
-    lhs, rhs = given.of(LessEqual[Expr ** 2, Expr ** 2])
-
-    assert lhs.is_real
-    assert rhs.is_real
-
-    return LessEqual(abs(lhs), abs(rhs))
+    lhs, rhs = given.of(LessEqual[Expr, Expr])
+    assert lhs >= 0
+    return LessEqual(sqrt(lhs), sqrt(rhs))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True)
     y = Symbol.y(real=True)
-
     Eq << apply(LessEqual(x * x, y * y))
 
     Eq << Eq[0] - Eq[0].rhs

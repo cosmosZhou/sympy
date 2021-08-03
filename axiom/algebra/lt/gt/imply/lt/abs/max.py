@@ -18,7 +18,7 @@ def prove(Eq):
 
     Eq << apply(x < a, x > b)
 
-    Eq << algebra.lt.given.et.split.abs.apply(Eq[-1])
+    Eq << algebra.lt_abs.given.et.apply(Eq[-1])
 
     Eq <<= ~Eq[-2], - ~Eq[-1]
 

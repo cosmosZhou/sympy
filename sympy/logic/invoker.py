@@ -1,3 +1,4 @@
+from types import MethodType  # , FunctionType
 
 
 class Invoker:
@@ -69,8 +70,8 @@ class Invoker:
                 args[index] = obj
             except TypeError:
                 assert this.is_And or this.is_Or
-                for i in index[::-1]:
-                    del args[i]
+                for j in index[::-1]:
+                    del args[j]
                 args.append(obj)
             
             stop = i == -len(self.index)
@@ -135,13 +136,6 @@ class Invoker:
         
         this = self.this
         
-        funcname = self.callable.__name__
-        if funcname == 'subs':
-            if not this.is_ConditionalBoolean:
-                assert all(arg.is_Equal for arg in args)
-                assert all(arg.plausible is None for arg in args)                
-                args = map(lambda inf: inf.cond, args)
-        
         if this.is_All: 
             if self.callable.__func__ is this.func.simplify:
                 if self.parent.is_Any:
@@ -150,6 +144,12 @@ class Invoker:
         evaluate = kwargs.pop('evaluate', None)
         obj = self.invoke(*args, **kwargs)
         
+        if self.callable.__name__ == 'subs':
+            if not this.is_Quantifier:
+                assert all(arg.is_Equal for arg in args)
+                assert all(arg.plausible is None for arg in args)                
+            self.watch_domain_defined(obj)
+                
         return self.result(obj,
                            simplify=kwargs.get('simplify', True) is not None,
                            evaluate=evaluate)
@@ -208,6 +208,21 @@ class Invoker:
                         _obj = _obj.copy(equivalent=obj)
                 obj = _obj                    
         else: 
+            if self.callable.__func__.__code__.co_name == 'apply':
+                axiom = args[0]
+                __kwdefaults__ = axiom.apply.__closure__[0].cell_contents.__kwdefaults__
+                if __kwdefaults__ and 'assumptions' in __kwdefaults__:
+                    assumptions = {}
+                    for obj in self._objs:
+                        if obj.is_ExprWithLimits:
+                            if obj.is_Any:
+                                for x in obj.variables:
+                                    assumptions[x] = False 
+                            else:
+                                for x, *ab in obj.limits:
+                                    assumptions[x] = ab
+                    kwargs['assumptions'] = assumptions
+                
             obj = self.callable(*args, **kwargs)
         return obj
         
@@ -244,12 +259,39 @@ class Invoker:
                                     
     method2index = {'rhs': 1,
                     'lhs': 0,
-                    'function': 0,
                     'arg': 0,
                     'cond': 1,
                     'expr': 0,
                     'base': 0}
 
+    def watch_domain_defined(self, obj):
+            # beware that application of definition may cause the domain definition to be altered, thus causing logic error!
+        target = self.target
+        target_keys = target._domain_defined.keys()
+        # obj_keys = obj._domain_defined.keys()
+        for key in target_keys:
+            original_domain = target.domain_defined(key)
+            altered_domain = obj.domain_defined(key)
+            if original_domain != altered_domain:
+                
+                if original_domain not in altered_domain:
+                    from sympy.core.function import AppliedUndef
+                    if not target._has(AppliedUndef):
+                        target._domain_defined[key] = None
+                        print(target.domain_defined(key))
+                        obj._domain_defined[key] = None
+                        print(obj.domain_defined(key))
+                    assert target._has(AppliedUndef)
+#                             print(original_domain)
+#                             print(altered_domain)
+                    assert altered_domain in original_domain
+                    target._domain_defined[key] = altered_domain
+                    original_domain = altered_domain
+                    
+                assert original_domain in altered_domain, "original domain of definition must lie in transformed domain of definition!"                    
+                assert key not in self._domain_defined                    
+                self._domain_defined[key] = original_domain
+        
     def __getattr__(self, method): 
         target = self.target
         if method == 'T':
@@ -259,28 +301,9 @@ class Invoker:
         obj = getattr(target, method)
         
         if method == 'definition':
-            # beware that application of definition may cause the domain definition to be altered, thus causing logic error!
-            target_keys = target._domain_defined.keys()
-            obj_keys = obj._domain_defined.keys()
-            for key in target_keys & obj_keys:
-                original_domain = target.domain_defined(key)
-                altered_domain = obj.domain_defined(key)
-                if original_domain != altered_domain:
-                    
-                    if original_domain not in altered_domain:
-                        from sympy.core.function import AppliedUndef
-                        assert target._has(AppliedUndef)
-#                             print(original_domain)
-#                             print(altered_domain)
-                        assert altered_domain in original_domain
-                        target._domain_defined[key] = altered_domain
-                        original_domain = altered_domain
-                        
-                    assert original_domain in altered_domain, "original domain of definition must lie in transformed domain of definition!"                    
-                    assert key not in self._domain_defined                    
-                    self._domain_defined[key] = original_domain
+            self.watch_domain_defined(obj)
             
-        if callable(obj):
+        if isinstance(obj, MethodType):
             self.callable = obj
             return self
 
@@ -452,7 +475,7 @@ class Identity(Invoker):
                     (x, *_), *_ = this.limits
                     # domain might be different!
                     assert args[0].name == x.name
-#             elif self.obj.__self__.is_ConditionalBoolean:
+#             elif self.obj.__self__.is_Quantifier:
 #                 ...
             else: 
                 assert all(arg.is_Equal and arg.plausible is None for arg in args)                

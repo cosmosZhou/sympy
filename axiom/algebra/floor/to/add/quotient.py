@@ -29,6 +29,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(integer=True)
     d = Symbol.d(integer=True)
     k = Symbol.k(integer=True)

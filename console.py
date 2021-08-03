@@ -111,6 +111,7 @@ def evaluate():
         latex = r'\[%s\]' % result.latex        
     return latex    
 
+
 def extract_latex(symbol):
     symbol = globals()[symbol]
     
@@ -139,6 +140,21 @@ def extract_latex(symbol):
     return lines
 
     
+@app.route('/compile', methods=['POST'])
+def compile_python_file():
+    python = request.form.get('py')
+    
+    try:
+        with open(python, 'r', encoding='utf8') as file:
+            eval(file.read(), __globals__) 
+    except Exception as e:
+        typname = type(e).__name__
+        print(type(e), e)
+        msg = str(e)                
+        return f'{typname}: {msg}'
+    
+    return 'success'    
+    
 @app.route('/hint', methods=['POST', 'GET'])
 def hint():
     
@@ -147,11 +163,6 @@ def hint():
         symbol = request.form.get('symbol')
 
     return utility.json_encode(extract_latex(symbol))
-
-
-@app.route('/restful/postTask', methods=['POST'])
-def post_tasks():
-    return jsonify({'tasks':tasks})
 
 
 def run(port):

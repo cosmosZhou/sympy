@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq <<= Eq[-2].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, invert=True, swap=True), Eq[-1].apply(algebra.cond.cond.imply.et, algebra.cond.cond.imply.cond.subs, swap=True)
+    Eq <<= Eq[-2].apply(algebra.et.imply.et.invoke, algebra.cond.cond.imply.cond.subs, invert=True, swap=True, ret=1), Eq[-1].apply(algebra.et.imply.et.invoke, algebra.cond.cond.imply.cond.subs, swap=True, ret=1)
 
     Eq <<= Eq[-2] & Eq[0], Eq[-1] & Eq[0]
 

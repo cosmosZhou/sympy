@@ -3,25 +3,50 @@
 
 [axiom.top](../axiom.php)是一个基于数学定理知识库、用于证明数学命题的网站，此工程主要依靠开源符号计算项目 
 [sympy](https://github.com/sympy/sympy) 和 
-[Maxima](http://maxima.sourceforge.net) 改写, 其中部分代码由商业性数学软件语言
+[Maxima](http://maxima.sourceforge.net) 改写, 其中函数命名主要参考数学软件语言
 [Mathematica](https://reference.wolfram.com/language/index.html.en?source=footer)
-写成。 其主要特征在于：半机械化、公理化、底层算法基于符号计算。
+。 其主要特征在于：半机械化、公理化、追求逻辑严密性。目前该工具可以应用于求证数学课本上的证明题。
 	
 	
-* 所谓半机械化，是指目前做不到全自动根据数学命题题设直接打印出证明过程，而是需要人脑的辅助，人必须告诉计算机，面对什么样的题型使用什么样的定理；
+* 所谓半机械化，是指目前做不到全自动根据数学命题题设直接打印出证明过程，而是需要人脑的辅助，人必须通过检索定理库，告诉计算机，面对什么样的题型使用什么样的定理；
 * 所谓公理化，是指所有数学定理，归根结底可以用公理来解释，而公理是不需要证明的，其真伪是人为假定成立的，整个数学定理库就是建立在公理的假设之上展开构建的；
-* 所谓基于符号计算，就是在论证过程中，把命题的推导最终表示成一个符号计算问题，从而把抽象、复杂的理性思辨机器化。  
+* 所谓追求逻辑严密性，就是在论证过程中，以纯数学的逻辑来引导程序进行推理，力求确保计算结果在纯数学语言的语法规则内有效，所有推理都依据某个公理或者定理进行。
+
+该系统的三个基本元素是[Symbol](../axiom.php?symbol=Symbol), [Function](../axiom.php?symbol=Function), Theorem；
+* Symbol是一个字母或者数字组合的变量。变量命名规则与python一致。用于定义任意类型的抽象数学符号，比如  
+n = Symbol(integer=True, positive=True, random=True)表示一个正整数随机变量,   
+p, q = Symbol(prime=True)表示p是一个素数, q也是一个素数；   
+a = Symbol(integer=True, shape=(oo,))表示一个无限大的整数向量，  
+b = Symbol(real=True, shape=(oo, oo))表示一个无限大的实数矩阵，  
+c = Symbol(complex=True, shape=(n, n, n))表示一个n * n * n的复数张量，  
+A = Symbol(etype=dtype.real)，表示一个实数集合，etype意思为element type;  
+B = Symbol(etype=dtype.integer, shape=(n,))，表示一个整数集合的列表，该列表有n个元素；  
+Q = Symbol(etype=dtype.rational.set)，表示一个集合，它的元素是一个有理数集合。
+* Function表示对其它符号或者函数的某种运算；  
+f, f1 = Function(real=True)，表示f, f1都是抽象实数函数。  
+g = Function(real=True, eval=lambda x: x \* x)，表示一个实数函数, 定义为g(x) = x<sup>2</sup>。  
+h = Function(etype=dtype.integer)，表示一个返回值是一个整数集合的抽象函数。  
+以及系统内置函数，比如[cos](../axiom.php?symbol=cos)(x), [sin](../axiom.php?symbol=sin)(x), [tan](../axiom.php?symbol=tan)(x), [log](../axiom.php?symbol=log)(x), [exp](../axiom.php?symbol=exp)(x), 以及大型运算符[Sum](../axiom.php?symbol=Sum)\[k:a:b\](h\[k\]), [Product](../axiom.php?symbol=Product)\[k:a:b\](h\[k\]), [All](../axiom.php?symbol=All)\[k:a:b\](h\[k\] > t\[k\]), [Any](../axiom.php?symbol=Any)\[k:a:b\](h\[k\] > t\[k\])等等，所有函数都不会进行浮点数运算，因为在定理推导系统中，没有浮点数的概念，一切都是严格意义上的数学符号与函数。  
+* Theorem表示一个定理或者公理；    
+Theorem的入参是一个表达式，出参是一个判断表达式。它以定理库的形式储存。基本用法就是Theorem.apply(...);  
+比如  
+a, b, c = Symbol(complex=True)  
+[algebra.add_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x),  表示对一个一元三次方程在复数域内求解。  
+比较Mathematica的方程解：
+https://www.wolframcloud.com/obj/744984949/Published/cubic_root  
+可以看出，axiom对解集给出了更全面的讨论，考虑了所有极端特殊边界问题，且打印出了详细的证明过程。仔细观察可以发现：Mathematica没有经过数学严密性论证，给出的解可能出现0/0的错误，没有考虑某些表达式的分母是否为0.
 <br><br>
 ------
+
 
 # 数学定理库的建设
   <br>
   
 目前积累了<label id=count>____</label>个已知数学定理用于半机械化数学推导。主要涉及：	
 	
-* [algebra](../axiom.php?module=algebra) 初等代数，主要涉及等式的恒等、换元变换、有限级数∑裂项求和、∏裂项求积技巧，不等式的传递性质的命题，一元低次方程的求解问题，初等函数的各种常见性质；
+* [algebra](../axiom.php?module=algebra) 初等代数，主要涉及等式的恒等、换元变换、有限级数[∑裂项求和](../axiom.php?module=algebra.sum.to.add.telescope)、∏裂项求积技巧，不等式的传递性质的命题，一元低次方程的求解问题，初等函数的各种常见性质；
 [数学归纳法](../axiom.php?module=algebra.is_nonzero.suffice.imply.is_nonzero.induct)的证明；
-* [sets](../axiom.php?module=sets) 集合论, 即sets theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语All, Any, ‘属于’ （Contains），‘包含’（Subset）描述的命题，比如
+* [sets](../axiom.php?module=sets) 集合论, 即sets theory，集合论是整个数学分析、数学推导系统的理论核心；涉及大量用集合论术语All（任意）, Any（存在）, ‘属于’ （Contains），‘包含’（Subset）描述的命题，比如
 [容斥原理](../axiom.php?module=sets/imply/eq/principle/inclusion_exclusion/basic)的证明。可以说，集合论是数学推理的根本语法。
 * [geometry](../axiom.php?module=geometry) 几何学，主要分为初中
 [平面几何学](../axiom.php?module=geometry/plane)，(中学三角函数学) 与高中
@@ -47,7 +72,7 @@
 <br><br>
 -------
 该公理化半机械化数学证明工具主要可以用于理论性数学证明，对数学学院的学生，算法工程师、研究员在算法研究，数学分析过程中有一定参考价值，
-也可以用于数学教师整理数学定理知识，无需手动编辑繁琐的数学公式，无需手动进行纸笔演算就可以完成数学定理的整理工作。
+也可以用于数学工作者整理数学定理知识，无需手动编辑繁琐的数学公式，无需手动进行纸笔演算，通过在线的python开发环境IDE,就可以对定理过程进行编辑，从而完成数学定理的整理工作。其中在线IDE提供F3快捷键可以方便定位任意定理，函数，符号的定义，
 对于研究和教学都有化繁为简的实用价值，是一本电子版的数学定理、算法模型参考书。
 <br><br>
 

@@ -8,14 +8,12 @@ def apply(is_limited):
     return Equal(Limit[x:x0:dir](log(fx)), log(Limit[x:x0:dir](fx)))
 
 
-@prove
+@prove(proved=False)
 def prove(Eq):
     from axiom import calculus, sets, algebra
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, x0 = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(Contains(Limit[x:x0](f(x)), Interval(0, oo, left_open=True)))
 
     epsilon0 = Symbol.epsilon0(positive=True)

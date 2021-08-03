@@ -1,7 +1,6 @@
 from util import *
 
 
-
 def extract(x_constraint, y_constraint, z_constraint):
     if isinstance(x_constraint, LessEqual):
         x, z = x_constraint.args
@@ -101,13 +100,14 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(sets.gt.le.imply.contains.interval)
 
-    Eq << sets.contains.imply.contains.interval.div.apply(Eq[-1], 2 * x * y)
+    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], 2 * x * y)
 
-    Eq << sets.contains.imply.contains.interval.acos.apply(Eq[-1])
+    Eq << sets.contains.imply.contains.acos.interval.apply(Eq[-1])
 
     Eq << algebra.any.given.any.subs.apply(Eq.cos, Eq.cos.variable, Eq[-1].lhs)
 
     Eq << algebra.any.given.cond.apply(Eq[-1])
+
 
 # https://baike.baidu.com/item/%E5%92%8C%E8%A7%92%E5%85%AC%E5%BC%8F
 if __name__ == '__main__':

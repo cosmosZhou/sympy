@@ -29,13 +29,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.subs)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.range.div, 2, simplify=None)
+    Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.div.range, 2, simplify=None)
 
     Eq << Eq[-1].this.find(Equal).apply(algebra.eq.imply.eq.div, 2, simplify=None)
 
-    Eq << Eq[-1].this.find(Equal).apply(algebra.eq.imply.eq.reversed, simplify=None)
-
-
+    Eq << Eq[-1].this.find(Equal).apply(algebra.eq.imply.eq.reverse, simplify=None)
 
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
 

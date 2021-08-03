@@ -11,10 +11,9 @@ def apply(given):
 
 @prove
 def prove(Eq):    
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    a, b = Symbol(real=True)
     Eq << apply(Unequal(KroneckerDelta(a, b), 0))
-    
+
     Eq << Eq[0].simplify()
 
 

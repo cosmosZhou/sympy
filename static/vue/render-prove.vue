@@ -66,9 +66,8 @@
 	            	Object.assign(_extraKeys, {
 	            		'Ctrl-O': function(cm) {
 	            			console.log("'Ctrl-O' is pressed!");
-	            			var module = self.module;
-	            			module = module.replaceAll('.', '/');
-	            			location.href = `/${self.user}/axiom.php?new=${module}`;
+	            			var href = `/${self.user}/axiom.php?new=${self.module}`;
+	            			window.open(href);
 	            		},
 
 	            		'Ctrl-S': function(cm) {
@@ -217,7 +216,26 @@
 	            			cm = cm.editor;
 	            			cm.focus();
 	            			return cm.extendSelection(CodeMirror.Pos(cm.firstLine(), 0));
-	            		},            		
+	            		},       
+	            		
+	            		/*'Shift-Down': cm => {
+	            			var cursor = cm.getCursor();
+	            			if (cursor.line + 1 < cm.lineCount())
+	            				return cm.moveV(1, "line");
+
+	            			cm = self.nextSibling.editor;
+	            			cm.focus();
+
+	            			if (cursor.ch == 0) {
+	            				var linesToMove = cm.getCursor().line;
+	            				for (let i = 0; i < linesToMove; ++i) {
+	            					cm.moveV(-1, "line");
+	            				}
+	            			}
+	            			else
+	            				cm.setCursor(0, cursor.ch);
+	            		},*/
+	            		
 	            	});
 	            	
 	            	self.editor = CodeMirror.fromTextArea(el, {
@@ -236,7 +254,13 @@
 
 	            		extraKeys: _extraKeys,
 
-	            		hintOptions: { hint: hint }
+	            		hintOptions: { 
+	            			hint(cm, options){
+	            				options.context = self;
+	            				return hint(cm, options);
+	            			},  
+            			},
+
 	            		//equivalently:		
 	            		//CodeMirror.registerHelper("hint", "python", hint);
 	            	});

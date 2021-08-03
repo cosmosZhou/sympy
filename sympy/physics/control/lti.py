@@ -212,9 +212,9 @@ class TransferFunction(Basic, EvalfMixin):
         """
         return self._var
 
-    def _eval_subs(self, old, new):
-        arg_num = self.num.subs(old, new)
-        arg_den = self.den.subs(old, new)
+    def _eval_subs(self, old, new, **hints):
+        arg_num = self.num._subs(old, new, **hints)
+        arg_den = self.den._subs(old, new, **hints)
         argnew = TransferFunction(arg_num, arg_den, self.var)
         return self if old == self.var else argnew
 

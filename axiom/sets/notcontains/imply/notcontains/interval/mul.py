@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << sets.contains.imply.contains.interval.div.apply(Eq[-1], d)
+    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], d)
 
     Eq <<= Eq[-1] & Eq[0]
 

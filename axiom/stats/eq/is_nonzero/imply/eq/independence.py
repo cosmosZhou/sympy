@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.collect(Probability(x))
 
-    Eq << algebra.is_zero.imply.ou.apply(Eq[-1])
+    Eq << algebra.mul_is_zero.imply.ou.is_zero.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[1]
 

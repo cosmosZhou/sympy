@@ -115,7 +115,7 @@ class Subset(BinaryCondition):
                 args = eq.args
                 result = self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
                 return self.subs_assumptions_for_equality(eq, result)                
-            elif eq.is_ConditionalBoolean:
+            elif eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
             return self
 

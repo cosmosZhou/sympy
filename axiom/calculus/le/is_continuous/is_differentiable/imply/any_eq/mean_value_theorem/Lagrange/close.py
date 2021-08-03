@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(le, is_continuous, is_differentiable):
     a, b = le.of(LessEqual)
-    from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import of_differentiable, of_continuous     
+    from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import of_differentiable, of_continuous
     fz, (z, _a, _b) = of_continuous(is_continuous)
     _fz, (_z, __a, __b) = of_differentiable(is_differentiable, open=False)
     assert _fz == fz
@@ -29,7 +29,7 @@ def prove(Eq):
     f = Function.f(shape=(), real=True)
     Eq << apply(a <= b, is_continuous(f, a, b), is_differentiable(f, a, b, open=False))
 
-    Eq << algebra.cond.given.suffice.split.apply(Eq[-1], cond=b > a)
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=b > a)
 
     Eq << Suffice(b <= a, Equal(a, b), plausible=True)
 

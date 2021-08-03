@@ -27,7 +27,8 @@ def apply(n, d, b):
 
 @prove
 def prove(Eq):
-    from axiom import geometry, algebra
+    from axiom import algebra, geometry
+
     n = Symbol.n(positive=True, integer=True)
     b = Symbol.b(positive=True)
     d = Symbol("d_model", integer=True, positive=True, even=True)
@@ -35,10 +36,8 @@ def prove(Eq):
 
     PE_quote = Eq[0].lhs.base
     PE = Eq[1].lhs.base
-
     i, j = Eq[0].lhs.indices
     k = Eq[3].lhs.indices[0]
-
     Eq.PE_definition = PE[i + k, j].this.definition
 
     Eq.PE_quote_definition = PE_quote[i + k, j].this.definition
@@ -47,13 +46,9 @@ def prove(Eq):
 
     Eq << Eq.PE_definition.rhs.args[1].expr.this.arg.apply(algebra.mul.to.add)
 
-    Eq <<= geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-1].rhs.arg.args)
+    Eq <<= Eq[-2].this.rhs.apply(geometry.sin.to.add.principle.add), Eq[-1].this.rhs.apply(geometry.cos.to.add.principle.add)
 
-    Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
-
-    Eq << Eq.PE_definition.this.rhs.args[0].expr.subs(Eq[-2])
-
-    Eq.cossin = Eq[-1].this.rhs.args[1].expr.subs(Eq[-2])
+    Eq.cossin = Eq.PE_definition.this.rhs.subs(Eq[-2], Eq[-1])
 
     Eq << Eq[1] * Eq[3]
 
@@ -77,13 +72,13 @@ def prove(Eq):
 
     Eq << Eq.PE_quote_definition.rhs.args[1].expr.args[1].this.arg.apply(algebra.mul.to.add)
 
-    Eq <<= geometry.plane.trigonometry.cosine.principle.add.apply(*Eq[-2].rhs.arg.args), geometry.plane.trigonometry.sine.principle.add.apply(*Eq[-1].rhs.arg.args)
+    Eq <<= Eq[-2].this.rhs.apply(geometry.cos.to.add.principle.add), Eq[-1].this.rhs.apply(geometry.sin.to.add.principle.add)
 
-    Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2]), algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[-1])
+    Eq <<= algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[-2])
 
-    Eq << Eq.PE_quote_definition.this.rhs.args[0].expr.subs(Eq[-2])
+    Eq << Eq.PE_quote_definition.this.rhs.subs(Eq[-3])
 
-    Eq.coscos = Eq[-1].this.rhs.args[1].expr.subs(Eq[-2])
+    Eq.coscos = Eq[-1].this.rhs.subs(Eq[-3])
 
     Eq << Eq[1] * Eq[4]
 
@@ -113,7 +108,6 @@ def prove(Eq):
     Eq.collect = Eq[-1].this.rhs.collect(PE_quote[i])
 
     z = Eq[5].lhs
-
     Eq << z[k].this.definition
 
     Eq << Eq[-1] * I

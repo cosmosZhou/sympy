@@ -21,7 +21,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.apply(Eq[-1])
 
-    Eq <<= algebra.imply.all.limits_assert.apply(Eq[-2].limits).this.expr.apply(algebra.is_even.imply.any), algebra.imply.all.limits_assert.apply(Eq[-1].limits).this.expr.apply(algebra.is_nonzero.imply.any)
+    Eq <<= algebra.imply.all.limits_assert.apply(Eq[-2].limits).this.expr.apply(algebra.is_even.imply.any), algebra.imply.all.limits_assert.apply(Eq[-1].limits).this.expr.apply(algebra.mod_is_nonzero.imply.any)
 
     Eq <<= Eq[2] & Eq[-2], Eq[3] & Eq[-1]
 

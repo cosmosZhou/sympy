@@ -2,6 +2,7 @@ from util import *
 
 
 def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
+    from axiom.algebra.symbol.to.blockmatrix import process_slice
     function, *limits = self.of(cls)
     if len(limits) > 1:
         if wrt is None:
@@ -11,7 +12,7 @@ def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
                 universe = (Range if x.is_integer else Interval)(a, b)
                 if x.is_integer:
                     if isinstance(indices, slice):
-                        mid = Symbol.process_slice(indices, a, b)
+                        mid = process_slice(indices, a, b)
                         assert mid >= a, "mid >= a => %s" % (mid >= a)
                         assert mid <= b, "mid <= b => %s" % (mid <= b)
 
@@ -83,7 +84,7 @@ def split(cls, self, indices, wrt=None, simplify=True, evaluate=False):
     if len(ab) == 2:
         a, b = ab
         if x.is_integer:
-            mid = Symbol.process_slice(indices, a, b)
+            mid = process_slice(indices, a, b)
             assert mid >= a, "mid >= a => %s" % (mid >= a)
             assert mid <= b, "mid <= b => %s" % (mid <= b)
 

@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    is_nonnegative, less_than = given
+def apply(is_nonnegative, less_than):
     if not less_than.is_Less:
         less_than, is_nonnegative = given
 
@@ -17,25 +16,13 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
 
+    x = Symbol.x(real=True)
     Eq << apply(x >= 0, x < 1)
 
     Eq << Eq[-1].this.rhs.apply(algebra.frac.to.add).reversed
 
-    Eq << algebra.imply.le.floor.apply(x)
-
-    Eq << algebra.le.lt.imply.lt.transit.apply(Eq[-1], Eq[1])
-
-    Eq << algebra.lt.imply.le.strengthen.apply(Eq[-1])
-
-    Eq << algebra.imply.gt.floor.apply(x)
-
-    Eq << algebra.gt.ge.imply.gt.transit.apply(Eq[-1], Eq[0] - 1)
-
-    Eq << algebra.gt.imply.ge.strengthen.apply(Eq[-1])
-
-    Eq <<= Eq[-4] & Eq[-1]
+    Eq << algebra.is_nonnegative.lt.imply.floor_is_zero.apply(Eq[0], Eq[1])
 
 
 if __name__ == '__main__':

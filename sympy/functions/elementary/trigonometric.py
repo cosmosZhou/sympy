@@ -116,6 +116,12 @@ class TrigonometricFunction(Function):
     def __getitem__(self, index):
         return self.func(self.arg[index])
 
+    def simplify(self, deep=False, **kwargs):
+        x = self.arg
+        if x.is_Piecewise:
+            return Piecewise(*((self.func(e), c) for e, c in x.args))
+        return self
+
 
 def _peeloff_pi(arg):
     """
@@ -519,7 +525,6 @@ class Sin(TrigonometricFunction):
             return self
         if b <= 2 and a >= 1:
             return -self
-
 
     def _eval_is_extended_negative(self):
         from sympy import Interval
@@ -1627,7 +1632,7 @@ class cot(TrigonometricFunction):
         if arg.is_imaginary:
             return True
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if self == old:
             return new
         arg = self.args[0]
@@ -3041,17 +3046,17 @@ class atan2(InverseTrigonometricFunction):
 
     @classmethod
     def eval(cls, y, x):
-        from sympy import Heaviside, im, re
+        from sympy import Heaviside, Im, Re
         if x is S.NegativeInfinity:
             if y.is_zero:
                 # Special case y = 0 because we define Heaviside(0) = 1/2
                 return S.Pi
-            return 2 * S.Pi * (Heaviside(re(y))) - S.Pi
+            return 2 * S.Pi * (Heaviside(Re(y))) - S.Pi
         elif x is S.Infinity:
             return S.Zero
         elif x.is_imaginary and y.is_imaginary and x.is_number and y.is_number:
-            x = im(x)
-            y = im(y)
+            x = Im(x)
+            y = Im(y)
 
         if x.is_extended_real and y.is_extended_real:
             if x.is_positive:
@@ -3067,7 +3072,7 @@ class atan2(InverseTrigonometricFunction):
                 elif y.is_negative:
                     return -S.Pi / 2
                 elif y.is_zero:
-                    return S.NaN
+                    return S.Zero # here we define atan2(0, 0) = 0, previous definition : return S.NaN
         if y.is_zero and x.is_extended_real and fuzzy_not(x.is_zero):
             return S.Pi * (S.One - Heaviside(x))
         if x.is_number and y.is_number:

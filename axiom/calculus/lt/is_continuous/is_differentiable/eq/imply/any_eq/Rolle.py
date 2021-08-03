@@ -32,7 +32,7 @@ def of_differentiable(cond, open=True):
     return fx, (x, a, b)
 
 
-def is_differentiable(f, a, b, x=None, open=True):
+def is_differentiable(f, a, b, x=None, open=True, plausible=None):
     if x is None: 
         x = Symbol.x(real=True)
         
@@ -41,7 +41,11 @@ def is_differentiable(f, a, b, x=None, open=True):
     else:
         left_open = right_open = False
         
-    return All[x:Interval(a, b, left_open=left_open, right_open=right_open)](Contains(Derivative(f(x), x), Reals))
+    kwargs = {}
+    if plausible:
+        kwargs['plausible'] = plausible
+        
+    return All[x:Interval(a, b, left_open=left_open, right_open=right_open)](Contains(Derivative(f(x), x), Reals), **kwargs)
 
 
 @apply

@@ -6,7 +6,7 @@ import configparser
 import time
 
 import os
-from util.std import json_encode
+from util.std import json_encode, eol_convert
 
 class Database:
 
@@ -153,6 +153,8 @@ class MySQLConnector(Database):
                             if has_training_field:
                                 args.append(str(random.randint(0, 1)))               
                             print('\t'.join(args), file=file)
+                            
+                eol_convert(csv)
                 yield csv
                 
         for csv in create_csv(array, step):

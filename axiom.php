@@ -10,11 +10,11 @@ error_log("_GET = " . \std\jsonify($_GET));
 error_log("_POST = " . \std\jsonify($_POST));
 
 // if (! $_GET) {
-//     // https://www.php.net/manual/en/function.getopt.php
-//     $_GET = getopt("", [
-//         'module::'
-//     ]);
-//     $_GET['module'] = str_replace('/', '.', $_GET['module']);
+// // https://www.php.net/manual/en/function.getopt.php
+// $_GET = getopt("", [
+// 'module::'
+// ]);
+// $_GET['module'] = str_replace('/', '.', $_GET['module']);
 // }
 
 $key = array_keys($_GET);
@@ -160,6 +160,13 @@ if (! \std\endsWith($path_info, '/')) {
         error_log("logs = " . \std\jsonify($logs));
         error_log("sql_statement = $sql_statement");
         error_log("statementsFromSQLFile = " . \std\jsonify($statementsFromSQLFile));
+        
+        if (!$sql_statement){
+            error_log("error detected in python file:");
+            error_log("python file = $py");
+            
+            $logs[] = compile_python_file($py);
+        }
     }
 
     $lengths = [];

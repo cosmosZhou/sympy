@@ -730,9 +730,9 @@ class MatrixSymbol(MatrixExpr):
     def name(self):
         return self.args[0].name
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         # only do substitutions in shape
-        shape = Tuple(*self.shape)._subs(old, new)
+        shape = Tuple(*self.shape)._subs(old, new, **hints)
         return MatrixSymbol(self.name, *shape)
 
     def __call__(self, *args):

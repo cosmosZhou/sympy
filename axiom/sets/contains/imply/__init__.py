@@ -20,3 +20,5 @@ from . import is_zero
 
 from . import is_nonzero
 from . import is_real
+from . import floor_is_zero
+from . import ceiling_is_zero

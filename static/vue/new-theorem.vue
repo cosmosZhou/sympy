@@ -25,7 +25,13 @@
 			};
 		},
 		
+		
 		computed: {
+    		proveEditor(){
+    			var prove = [];
+    			prove.push(this.$refs.prove);
+    			return prove;
+    		},
 		},
 		
 		methods: {

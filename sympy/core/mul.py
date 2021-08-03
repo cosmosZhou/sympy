@@ -7,7 +7,7 @@ from .basic import Basic
 from .singleton import S
 from .operations import AssocOp, AssocOpDispatcher
 from .cache import cacheit
-from .logic import fuzzy_not, _fuzzy_group, fuzzy_and
+from .logic import fuzzy_not, _fuzzy_group
 from .compatibility import reduce
 from .expr import Expr
 from .parameters import global_parameters
@@ -868,7 +868,7 @@ class Mul(Expr, AssocOp):
         return S.One, self
 
     def as_real_imag(self, deep=True, **hints):
-        from sympy import Abs, expand_mul, im, re
+        from sympy import Abs, expand_mul, Im, Re
         other = []
         coeffr = []
         coeffi = []
@@ -898,13 +898,13 @@ class Mul(Expr, AssocOp):
         if hints.get('ignore') == m:
             return
         if len(coeffi) % 2:
-            imco = im(coeffi.pop(0))
+            imco = Im(coeffi.pop(0))
             # all other pairs make a real factor; they will be
             # put into reco below
         else:
             imco = S.Zero
         reco = self.func(*(coeffr + coeffi))
-        r, i = (reco * re(m), reco * im(m))
+        r, i = (reco * Re(m), reco * Im(m))
         if addterms == 1:
             if m == 1:
                 if imco.is_zero:
@@ -1604,7 +1604,7 @@ class Mul(Expr, AssocOp):
         if number_of_args > 1:
             return True
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hint):
         from sympy.functions.elementary.complexes import sign
         from sympy.ntheory.factor_ import multiplicity
         from sympy.simplify.powsimp import powdenest
@@ -1617,7 +1617,7 @@ class Mul(Expr, AssocOp):
         if old.args[0].is_Number and old.args[0] < 0:
             if self.args[0].is_Number:
                 if self.args[0] < 0:
-                    return self._subs(-old, -new)
+                    return self._subs(-old, -new, **hint)
                 return None
 
         def base_exp(a):
@@ -1675,9 +1675,9 @@ class Mul(Expr, AssocOp):
         n, d = fraction(self)
         self2 = self
         if d is not S.One:
-            self2 = n._subs(old, new) / d._subs(old, new)
+            self2 = n._subs(old, new, **hint) / d._subs(old, new, **hint)
             if not self2.is_Mul:
-                return self2._subs(old, new)
+                return self2._subs(old, new, **hint)
             if self2 != self:
                 rv = self2
 
@@ -1838,7 +1838,7 @@ class Mul(Expr, AssocOp):
 
                 failed.extend(range(i, len(nc)))
                 for i in failed:
-                    nc[i] = rejoin(*nc[i]).subs(old, new)
+                    nc[i] = rejoin(*nc[i])._subs(old, new, **hint)
 
         # rebuild the expression
 
@@ -1858,7 +1858,7 @@ class Mul(Expr, AssocOp):
                 e = c[b] - old_c[b] * do
                 margs.append(rejoin(b, e))
             else:
-                margs.append(rejoin(b.subs(old, new), c[b]))
+                margs.append(rejoin(b._subs(old, new, **hint), c[b]))
         if cdid and not ncdid:
 
             # in case we are replacing commutative with non-commutative,
@@ -1886,20 +1886,19 @@ class Mul(Expr, AssocOp):
         return self.func(*[t.adjoint() for t in self.args[::-1]])
 
     def _eval_exp(self):
-        from sympy.assumptions import ask, Q
         from sympy import logcombine, log
         if self.is_number or self.is_Symbol:
             coeff = self.coeff(S.Pi * S.ImaginaryUnit)
             if coeff:
-                if ask(Q.integer(2 * coeff)):
-                    if ask(Q.even(coeff)):
-                        return S.One
-                    elif ask(Q.odd(coeff)):
-                        return S.NegativeOne
-                    elif ask(Q.even(coeff + S.Half)):
-                        return -S.ImaginaryUnit
-                    elif ask(Q.odd(coeff + S.Half)):
-                        return S.ImaginaryUnit
+                if coeff.is_even:
+                    return S.One
+                if coeff.is_odd:
+                    return S.NegativeOne 
+                coeff += S.Half
+                if coeff.is_even:
+                    return -S.ImaginaryUnit
+                if coeff.is_odd:
+                    return S.ImaginaryUnit
 
         # Warning: code in risch.py will be very sensitive to changes
         # in this (see DifferentialExtension).
@@ -2203,37 +2202,6 @@ class Mul(Expr, AssocOp):
 
         return self.func(*args), summation
 
-    def as_inverse_proportional_function(self, wrt):
-        f = S.One
-        for a in self.args:
-            if a._has(wrt):
-                a = a.as_inverse_proportional_function(wrt)
-                if a is None:
-                    return a
-            if a.is_InverseProportionalFunction:
-                f = a * f
-            else:
-                f *= a
-            if f is None:
-                return f
-        return f
-
-    def as_linear_function(self, wrt):
-        f = S.One
-        
-        for a in self.args:
-            if wrt.linear_match(a):
-                a = a.as_linear_function(wrt)
-                if a is None:
-                    return a
-            if a.is_LinearFunction:
-                f = a * f
-            else:
-                f *= a
-            if f is None:
-                return f
-        return f
-
     @property
     def domain(self): 
         if self.is_integer:
@@ -2435,7 +2403,10 @@ class Mul(Expr, AssocOp):
         b = []  # items that are in the denominator (if any)
 
         if p.order not in ('old', 'none'):
-            args = self.as_ordered_factors()
+            try:
+                args = self.as_ordered_factors()
+            except TypeError:
+                args = list(self.args)
         else:
             args = list(self.args)
 
@@ -2546,40 +2517,78 @@ class Mul(Expr, AssocOp):
     def squeeze(self):
         return self.func(*[t for t in self.args if not t.is_OneMatrix])
 
-    def of_NegatePattern(self):
-        if len(self.args) == 2:
-            negativeOne, basic = self.args
-            return negativeOne == -1 and basic.is_abstract
-        
     def of(self, cls):
+        from sympy.core.of import Basic
         res = Expr.of(self, cls)
-        if isinstance(res, list): 
-            if cls.of_NegatePattern():
-                return Mul(*res)        
+        if isinstance(res, tuple): 
+            if cls.is_Mul:
+                if isinstance(cls, type):
+                    ...
+                else:
+                    try:
+                        if cls.of_LinearPattern():
+                            return Mul(*res)
+                        
+                        if len(cls.args) == 2:
+                            if len(res) > 2:
+                                a, b = cls.args
+                                if a is Expr and (b is not Expr):
+                                    *res, b = res
+                                    a = Mul(*res)
+                                    return (a, b)
+                                 
+                    except AttributeError:
+                        cls = Basic.__new__(Mul, *cls.args)
+                        if cls.of_LinearPattern():
+                            return Mul(*res)
+                    
         elif res is None:
             if cls.is_Mul:
-                if cls.of_NegatePattern():
+                if cls.of_LinearPattern():
                     if self._coeff_isneg():
                         return -self
                     return
                 
                 if len(cls.args) == 2:
-                    a, b = cls.args
+                    a, b = cls.args                    
                     cls = Basic.__new__(Mul, b, a)
                     args = Expr.of(self, cls)
                     if args is not None:
-                        _b, _a = args
-                        return [_a, _b]
+                        if cls.of_LinearPattern():
+                            if isinstance(args, tuple):
+                                return Mul(*args)
+                        else:
+                            if isinstance(args, tuple):
+                                if len(args) > 2:
+                                    *_b, _a = args
+                                    _b = Mul(*_b)
+                                else:
+                                    _b, _a = args
+                                return (_a, _b)
                     return args
                 if len(cls.args) == 3:
-                    if cls.args[0].is_Number:
-                        a, b, c = cls.args
-                        cls = Basic.__new__(Mul, a, c, b)
+                    coeff, b, c = cls.args
+                    if coeff.is_Number or coeff.is_ImaginaryUnit:
+                        if isinstance(coeff, type) and not isinstance(self.args[0], coeff) and isinstance(self.args[1], coeff):
+                            cls = Basic.__new__(Mul, c, coeff, b)
+                        else:
+                            cls = Basic.__new__(Mul, coeff, c, b)
+                            
                         args = Expr.of(self, cls)
                         if args is not None:
                             _c, _b = args
-                            return [_b, _c]
+                            return (_b, _c)
                         return args
+                    
+            elif cls.is_Pow:
+                if len(cls.args) == 2 and cls.args[1] in (-1, 2):
+                    args = []
+                    for arg in self.args:
+                        arg = arg.of(cls)
+                        if arg is None:
+                            break
+                        args.append(arg)
+                    return Mul(*args)
                      
         return res
 

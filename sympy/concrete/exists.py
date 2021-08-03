@@ -1,11 +1,11 @@
 from sympy.logic.boolalg import Boolean, And, Or
-from sympy.concrete.conditional_boolean import ConditionalBoolean
+from sympy.concrete.conditional_boolean import Quantifier
 from sympy.sets.sets import FiniteSet
 from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.core.relational import Unequal
 
 
-class Any(ConditionalBoolean):
+class Any(Quantifier):
     """
     Any[x:A] q(x) <=> conditionset(x, q(x), A) != Ø
     """
@@ -39,7 +39,7 @@ class Any(ConditionalBoolean):
                         kwargs[clue] = self
                         return self.func(function, *self.limits, **kwargs).simplify()
                     
-        return ConditionalBoolean.subs(self, *args, **kwargs)
+        return Quantifier.subs(self, *args, **kwargs)
 
     def simplify(self, **kwargs):
         from sympy import S
@@ -59,7 +59,9 @@ class Any(ConditionalBoolean):
                 if isinstance(domain, list):
                     if len(self.limits) == 1:
                         if all(not var.is_given for var in y.free_symbols):
-                            return S.BooleanTrue
+                            domain_bounded = x.domain_bounded
+                            if domain_bounded is None or y.domain in domain_bounded:
+                                return S.BooleanTrue
                 elif domain.is_set:
                     t = self.variables.index(x)
                     if not any(limit._has(x) for limit in self.limits[:t]):
@@ -201,7 +203,7 @@ class Any(ConditionalBoolean):
                 x = self.expr.rhs
                 y = self.expr.lhs
 
-        return ConditionalBoolean.simplify(self, **kwargs)
+        return Quantifier.simplify(self, **kwargs)
 
     def union_sets(self, expr):
         if len(self.limits) == 1:
@@ -218,7 +220,7 @@ class Any(ConditionalBoolean):
         return '\N{THERE EXISTS}[%s](%s)' % (limits, p.doprint(self.expr))
 
     def _pretty(self, p):
-        return ConditionalBoolean._pretty(self, p, '\N{THERE EXISTS}')
+        return Quantifier._pretty(self, p, '\N{THERE EXISTS}')
     
     def int_limit(self):
         if len(self.limits) != 1:
@@ -245,32 +247,8 @@ class Any(ConditionalBoolean):
                         return expr.base
                     return expr.base[expr.indices[:-1]]
 
-    def _latex(self, p):
-        latex = p._print(self.expr)
-        if self.expr.is_LatticeOp:
-            latex = r"\left(%s\right)" % latex
-
-        if all(len(limit) == 1 for limit in self.limits):
-            limit = ', '.join(var.latex for var, *_ in self.limits)
-        else:
-            limits = []
-            for limit in self.limits:
-                var, *args = limit
-                if len(args) == 0:
-                    limit = var.latex
-                elif len(args) == 1:
-                    limit = var.domain_latex(args[0])
-                else:
-                    from sympy import Range
-                    limit = var.domain_latex((Range if var.is_integer else Interval)(*args))
-
-                limits.append(limit)
-
-            limit = r'\substack{%s}' % '\\\\'.join(limits)
-
-        latex = r"\exists_{%s}{%s}" % (limit, latex)
-        return latex
-
+    latexname = 'exists'
+    
     def __or__(self, eq):
         """Overloading for | operator"""
         if eq.is_Any:
@@ -281,7 +259,7 @@ class Any(ConditionalBoolean):
                 limits = self.limits_union(eq)
                 return self.func(self.expr, *limits).simplify()
         
-        return ConditionalBoolean.__or__(self, eq)
+        return Quantifier.__or__(self, eq)
 
     @classmethod
     def simplify_All(cls, self, exists, *limits):
@@ -304,7 +282,7 @@ class Any(ConditionalBoolean):
                         print('variables are given in Any context!')
                         return self
         
-        return ConditionalBoolean.apply(self, axiom, *args, **kwargs)
+        return Quantifier.apply(self, axiom, *args, **kwargs)
 
     def reduced_cond(self, x, cond, baseset=None):
         if baseset:

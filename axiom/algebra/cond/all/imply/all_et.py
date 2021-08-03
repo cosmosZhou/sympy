@@ -6,7 +6,7 @@ def apply(cond, forall):
     if not forall.is_All:
         cond, forall = forall, cond
 
-    if cond.is_ConditionalBoolean:
+    if cond.is_Quantifier:
         assert not cond.variables_set & forall.variables_set
         
     fn, *limits = forall.of(All)

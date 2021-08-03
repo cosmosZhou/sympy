@@ -9,7 +9,7 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import sets
+    from axiom import sets, algebra
     x = Symbol.x(etype=dtype.real, shape=(oo, oo))
     i = Symbol.i(integer=True)
     j = Symbol.j(integer=True)

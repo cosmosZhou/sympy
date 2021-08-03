@@ -25,7 +25,7 @@ def prove(Eq):
     i = Eq[-1].variable
     Eq << Suffice(Contains(i, A - B), And(Contains(i, A - B), Contains(i, A)), plausible=True)
 
-    Eq << algebra.suffice.given.suffice.st.et.apply(Eq[-1])
+    Eq << algebra.suffice.given.et.suffice.split.et.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.apply(sets.contains.imply.contains.st.complement)
 

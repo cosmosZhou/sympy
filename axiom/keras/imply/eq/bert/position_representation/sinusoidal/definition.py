@@ -41,6 +41,7 @@ def apply(n, d, b):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol.n(positive=True, integer=True)
     b = Symbol.b(positive=True)
     d = Symbol("d_model", integer=True, positive=True, even=True)
@@ -48,7 +49,6 @@ def prove(Eq):
 
     PE = Symbol("PE'", Eq[2].rhs)
     j, i = Eq[2].rhs.variables
-
     Eq << PE[i, j].this.definition
 
     Eq << Eq[-1].rhs.args[0].expr.arg.this.args[1].arg.args[1].base.definition

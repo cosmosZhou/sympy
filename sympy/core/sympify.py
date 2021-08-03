@@ -433,15 +433,15 @@ def sympify(a, locals=None, convert_xor=True, strict=False, rational=False,
             a = str(a)
         except Exception as exc:
             raise SympifyError(a, exc)
-        from sympy.utilities.exceptions import SymPyDeprecationWarning
-        SymPyDeprecationWarning(
-            feature="String fallback in sympify",
-            useinstead= \
-                'sympify(str(obj)) or ' + \
-                'sympy.core.sympify.converter or obj._sympy_',
-            issue=18066,
-            deprecated_since_version='1.6'
-        ).warn()
+        # from sympy.utilities.exceptions import SymPyDeprecationWarning
+        # SymPyDeprecationWarning(
+        #     feature="String fallback in sympify",
+        #     useinstead= \
+        #         'sympify(str(obj)) or ' + \
+        #         'sympy.core.sympify.converter or obj._sympy_',
+        #     issue=18066,
+        #     deprecated_since_version='1.6'
+        # ).warn()
 
     from sympy.parsing.sympy_parser import (parse_expr, TokenError,
                                             standard_transformations)

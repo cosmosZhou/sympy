@@ -55,7 +55,7 @@ switch ($lang) {
         $foreignLanguageName = 'English';
         $foreignLanguageHint = '其它语言';
 
-        $history = '发展简史';
+        $history = '探索历程';
         $userManual = '操作手册';
         $signIn = '登陆';
         $signUp = '注册';

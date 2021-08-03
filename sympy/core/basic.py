@@ -94,6 +94,8 @@ class Basic(Printable, metaclass=ManagedProperties):
     # Wanted is used in expression: Product + {Sum[Sum]}
     is_Wanted = False
     
+    is_Operator = False
+    
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
 
@@ -283,7 +285,7 @@ class Basic(Printable, metaclass=ManagedProperties):
             return 0
         n1 = self.__class__
         n2 = other.__class__
-        c = (n1 >> n2) - (n1 << n2)
+        c = (n1.gt(n2)) - (n1.lt(n2))
         if c:
             return c
         #
@@ -728,6 +730,7 @@ class Basic(Printable, metaclass=ManagedProperties):
     def _recursive_call(expr_to_call, on_args):
         """Helper for rcall method."""
         from sympy import Symbol
+
         def the_call_method_is_overridden(expr):
             for cls in getmro(type(expr)):
                 if '__call__' in cls.__dict__:
@@ -735,7 +738,7 @@ class Basic(Printable, metaclass=ManagedProperties):
 
         if callable(expr_to_call) and the_call_method_is_overridden(expr_to_call):
             if isinstance(expr_to_call, Symbol):  # XXX When you call a Symbol it is
-                return expr_to_call               # transformed into an UndefFunction
+                return expr_to_call  # transformed into an UndefFunction
             else:
                 return expr_to_call(*on_args)
         elif expr_to_call.args:
@@ -903,12 +906,6 @@ class Basic(Printable, metaclass=ManagedProperties):
         except PolynomialError:
             return None
 
-    def as_inverse_proportional_function(self, wrt):
-        return self
-        
-    def as_linear_function(self, wrt):
-        return self
-        
     def as_content_primitive(self, radical=False, clear=True):
         """A stub to allow Basic args (like Tuple) to be skipped when computing
         the content and primitive components of an expression.
@@ -1052,8 +1049,8 @@ class Basic(Printable, metaclass=ManagedProperties):
                 assert sequence.is_Equal
                 sequence = [sequence.args]
         else:
-            if isinstance(args[0], Equal):
-                assert all(isinstance(eq, Equal) for eq in args)                
+            if args[0].is_Equal:
+                assert all(eq.is_Equal for eq in args)                
                 sequence = [eq.args for eq in args]
             else:
                 assert len(args) == 2, "subs accepts either 1 or 2 arguments"
@@ -1220,7 +1217,7 @@ class Basic(Printable, metaclass=ManagedProperties):
             Try to replace old with new in any of self's arguments.
             """
             hit = False
-            args = list(self.args)
+            args = [*self.args]
             for i, arg in enumerate(args):
                 if not hasattr(arg, '_eval_subs'):
                     continue
@@ -1250,12 +1247,12 @@ class Basic(Printable, metaclass=ManagedProperties):
         if _aresame(self, old) or self.dummy_eq(old):
             return new
 
-        rv = self._eval_subs(old, new)
+        rv = self._eval_subs(old, new, **hints)
         if rv is None:
             rv = fallback(self, old, new)
         return rv
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         """Override this stub if you want to do anything more than
         attempt a replacement of old with new in the arguments of self.
 
@@ -1745,7 +1742,6 @@ class Basic(Printable, metaclass=ManagedProperties):
             if isinstance(s, type) or s.is_Wanted: 
                 break
             
-            assert isinstance(s, Basic)
             root_index -= 1
             
             for i in range(-1, -len(s.args) - 1, -1): 
@@ -1770,13 +1766,13 @@ class Basic(Printable, metaclass=ManagedProperties):
         return self
     
     def isinstance(self, cls, index, *path):
-        assert isinstance(cls, Basic)
+        assert cls.is_Basic
         
         if not isinstance(self, cls.func):
             return False
         
         for wantedIndex, s in enumerate(cls.args):
-            if s.is_Wanted or isinstance(s, Basic) and s.is_wanted():                
+            if s.is_Wanted or not isinstance(s, type) and (s.is_Basic or s.is_Operator) and s.is_wanted(): 
                 if not self.args[index].instanceof(s):
                     return False
                 break
@@ -1872,7 +1868,7 @@ class Basic(Printable, metaclass=ManagedProperties):
                 return
         
         if not isinstance(self, cls.func):
-            return        
+            return
         j = 0
         i = 0
         
@@ -1885,7 +1881,8 @@ class Basic(Printable, metaclass=ManagedProperties):
                 if arg == ():
                     from sympy import Symbol
                     if this.is_Symbol and (struct is Symbol or not struct.is_Symbol) or \
-                    this.is_Number and not struct.is_Number:
+                    this.is_Number and not struct.is_Number or \
+                    this.is_Pi and not struct.is_Pi:
                         args.append(this)
                 else:
                     is_abstract = struct.is_abstract if isinstance(struct, type) else False
@@ -1905,7 +1902,8 @@ class Basic(Printable, metaclass=ManagedProperties):
             else:
                 return
             
-        while isinstance(args, (tuple, list)):
+        args = tuple(args)
+        while isinstance(args, tuple):
             if len(args) == 1:
                 args = args[0]
             elif not args:
@@ -2003,8 +2001,11 @@ class Basic(Printable, metaclass=ManagedProperties):
                                                     fetch=fetch,
                                                     output=output + _output,
                                                     **kwargs)
-            except:
+            except RuntimeError:
                 continue
+            except Exception as e:
+                continue
+            
             
         raise
                     
@@ -2848,6 +2849,7 @@ class preorder_traversal:
     [z*(x + y), z, x + y, x, y]
 
     """
+
     def __init__(self, node, keys=None):
         self._skip_flag = False
         self._pt = self._preorder_traversal(node, keys)

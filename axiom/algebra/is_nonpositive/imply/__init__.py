@@ -4,3 +4,4 @@ from . import ge
 
 from . import is_nonpositive
 from . import is_zero
+from . import ceiling_is_nonpositive

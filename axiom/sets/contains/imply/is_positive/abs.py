@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.is_negative.imply.is_nonzero)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.is_nonzero.imply.is_positive.abs)
+    Eq << Eq[-1].this.lhs.apply(algebra.is_nonzero.imply.abs_is_positive)
 
     Eq.is_positive = Suffice(Eq[2].args[1], Eq[1], plausible=True)
 

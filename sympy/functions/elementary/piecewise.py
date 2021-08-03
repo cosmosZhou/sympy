@@ -1630,11 +1630,11 @@ class Piecewise(Function):
 
     def _latex(self, p): 
         
-        ecpairs = [r"{%s} & {\color{7f0055} {\text{if}}}\ \: {%s}" % (p._print(e), p._print(c)) for e, c in self.args[:-1]]
+        ecpairs = [r"{%s} & {\color{blue} {\text{if}}}\ \: {%s}" % (p._print(e), p._print(c)) for e, c in self.args[:-1]]
         if self.args[-1].cond == true:
-            ecpairs.append(r"{%s} & {\color{7f0055} {\text{else}}}" % p._print(self.args[-1].expr))
+            ecpairs.append(r"{%s} & {\color{blue} {\text{else}}}" % p._print(self.args[-1].expr))
         else:
-            ecpairs.append(r"{%s} & {\color{7f0055} {\text{if}}}\ \: {%s}" % (p._print(self.args[-1].expr), p._print(self.args[-1].cond)))
+            ecpairs.append(r"{%s} & {\color{blue} {\text{if}}}\ \: {%s}" % (p._print(self.args[-1].expr), p._print(self.args[-1].cond)))
         tex = r"\begin{cases} %s \end{cases}"
         return tex % r" \\".join(ecpairs)
 

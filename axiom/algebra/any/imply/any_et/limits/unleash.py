@@ -1,10 +1,32 @@
 from util import *
 
 
+def limits_cond(limits, index):
+    x, *ab = limits[index]
+    assert ab
+    if len(ab) == 1:
+        [cond] = ab
+        if cond.is_set:
+            cond = Contains(x, domain)
+    else:
+        a, b = ab
+        if b.is_set:
+            cond = Contains(x, b) & a
+        else:
+            cond = Contains(x, Range(a, b) if x.is_integer else Interval(a, b))
+    return x, cond
+
 @apply
-def apply(given):
+def apply(given, index=None):
     function, *limits = given.of(Any)
-    return Any[given.variables]((function & given.limits_cond).simplify())
+    if index is None:
+        cond = given.limits_cond
+        limits = given.variables
+    else:
+        x, cond = limits_cond(limits, index)
+        limits[index] = (x,)
+
+    return Any((function & cond).simplify(), *limits)
 
 
 @prove
@@ -32,9 +54,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.arg.args[2].rhs.definition
 
-    Eq << algebra.eq.imply.equivalent.apply(Eq[-1])
+    Eq << algebra.eq_bool.imply.equivalent.apply(Eq[-1])
 
-    Eq << algebra.equivalent.cond.imply.cond.apply(Eq[-1], Eq[-4])
+    Eq << algebra.equivalent.cond.imply.cond.subs.apply(Eq[-1], Eq[-4])
 
 
 if __name__ == '__main__':

@@ -5,11 +5,9 @@ from util import *
 def apply(eq, sgm):
     (ai, (i, n)), X = eq.of(Equal[Cup[FiniteSet, Tuple[0]]])
     _X = n.of(Abs)
-    assert X == _X
-    
     fx, (x, __X) = sgm.of(Sum)
     assert X == _X == __X
-    
+
     return Equal(sgm, Sum[i:n](fx._subs(x, ai)))
 
 
@@ -28,7 +26,7 @@ def prove(Eq):
 
     Eq << Eq[0].subs(Eq[-1])
 
-    Eq << sets.eq.eq.imply.eq.sum.apply(Eq[-1], Eq[-2], Eq[1].lhs)
+    Eq << sets.eq_cup.eq_abs.imply.eq.sum.apply(Eq[-1], Eq[-2], Eq[1].lhs)
 
     Eq << Eq[1].subs(Eq[2])
 

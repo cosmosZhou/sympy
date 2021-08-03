@@ -2,9 +2,11 @@ from util import *
 
 
 @apply
-def apply(*given):
-    a_less_than_x, x_less_than_b = given
-    a, x = a_less_than_x.of(Equal)    
+def apply(eq, x_less_than_b):
+    if not eq.is_Equal:
+        eq, x_less_than_b = x_less_than_b, eq
+        
+    a, x = eq.of(Equal)    
     b, y = x_less_than_b.of(GreaterEqual)
 
     return GreaterEqual(a + b, x + y)
@@ -12,18 +14,13 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    x = Symbol.x(real=True)
-    b = Symbol.b(real=True)
-    y = Symbol.y(real=True)
-
+    a, x, b, y = Symbol(real=True)
     Eq << apply(Equal(a, x), y >= b)
-    
+
     Eq << Eq[-1].subs(Eq[0])
-    
+
     Eq << Eq[-1] - x
-    
-    
-    
+
+
 if __name__ == '__main__':
     run()

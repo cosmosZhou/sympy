@@ -3,7 +3,7 @@
 at present Inference is mainly needed for process of theorem proof
 """
 from sympy.logic.invoker import Invoker
-from sympy.logic.boolalg import And, Suffice, Necessary, Equivalent
+from sympy.logic.boolalg import And
 
 
 class Inference:
@@ -228,7 +228,7 @@ class Inference:
                         return function
                     
                     for eq in self.args: 
-                        if eq.is_ConditionalBoolean:
+                        if eq.is_Quantifier:
                             _funcs, function = eq.funcs()
                             _funcs = _funcs[-depth:]
                             if funcs:
@@ -451,7 +451,7 @@ class Inference:
             return Inference(cond, plausible=True)
         
         if new in old.domain:
-            if self.is_ConditionalBoolean:
+            if self.is_Quantifier:
                 assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.cond.subs.apply(...)'
                 function = self.expr._subs(old, new, **kwargs)
                 limits = []
@@ -516,7 +516,7 @@ class Inference:
         return Inference(self.cond & other.cond, equivalent=(self, other))
     
     def __add__(self, other):
-        if self.is_ConditionalBoolean:
+        if self.is_Quantifier:
             return self.this.expr + other
         
         if isinstance(other, int):
@@ -544,7 +544,7 @@ class Inference:
             return self.func(other - self.lhs, other - self.rhs, equivalent=self).simplify()
     
     def __sub__(self, other):
-        if self.is_ConditionalBoolean:
+        if self.is_Quantifier:
             return self.this.expr - other
                 
         if isinstance(other, int):
@@ -567,7 +567,7 @@ class Inference:
             other = sympify(other)
             if other.is_positive:
                 return self.func(self.lhs ** other, self.rhs ** other, given=self)
-        elif self.is_ConditionalBoolean:
+        elif self.is_Quantifier:
             return self.this.expr * other
         
     def __mod__(self, other):
@@ -575,11 +575,11 @@ class Inference:
         assert other.is_integer
         if self.is_Equal: 
             return self.func(self.lhs % other, self.rhs % other, given=self)
-        elif self.is_ConditionalBoolean:
+        elif self.is_Quantifier:
             return self.this.expr % other
             
     def __mul__(self, other):
-        if self.is_ConditionalBoolean:
+        if self.is_Quantifier:
             return self.this.expr * other
                 
         if isinstance(other, int):
@@ -613,7 +613,7 @@ class Inference:
                         return self.reversed_type(self.lhs * other.lhs, self.rhs * other.rhs, given=(self, other))
         
     def __matmul__(self, rhs):
-        if self.is_ConditionalBoolean:
+        if self.is_Quantifier:
             return self.this.expr @ rhs
         
         if rhs.is_Equal:
@@ -628,7 +628,7 @@ class Inference:
             return self.func(self.lhs @ rhs, self.rhs @ rhs, given=self)
             
     def __truediv__(self, other):
-        if self.is_ConditionalBoolean:
+        if self.is_Quantifier:
             return self.this.expr / other
         
         if isinstance(other, int):
@@ -648,6 +648,9 @@ class Inference:
                 return Inference(self.func(self.lhs / other, self.rhs / other), equivalent=self)
             if other.is_negative:
                 return Inference(self.func.reversed_type(self.lhs / other, self.rhs / other), equivalent=self)
+        
+    def __iter__(self):
+        raise TypeError
             
     def __getitem__(self, indices):
         if self.is_Equal: 
@@ -687,7 +690,7 @@ class Inference:
                         from sympy import All
                         return All(self.func(self.lhs[x], self.rhs[x]), (x, *args), given=self)
             return self.func(self.lhs[indices], self.rhs[indices], given=self)
-        elif self.is_ConditionalBoolean:
+        elif self.is_Quantifier:
             return self.this.expr[indices]
 
     def is_equivalent_of(self, rhs):
@@ -756,6 +759,8 @@ class Inference:
                     return True
             
             if equivalent is self:
+                if given.imply is not None:
+                    return self.given_by(given.imply)
                 return False
             self = equivalent
             
@@ -838,9 +843,11 @@ def process_imply(imply, value):
             else:
                 plausibles = [g for g in imply.given if g.plausible]
                 if len(plausibles) == 1:
-#                  imply will be dependent only on the singlee plausible theorem, so removing given links!
+#                  imply will be dependent only on the single plausible theorem, so removing given links!
                     [given] = plausibles                
                     imply.given = None
+                    if not imply._assumptions:
+                        imply._assumptions['plausible'] = True
                     assert given.imply is imply
         else:
             imply.plausible = True

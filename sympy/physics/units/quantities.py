@@ -153,7 +153,7 @@ class Quantity(AtomicExpr):
         return None
         q = self.func(self.name, self.abbrev)
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if isinstance(new, Quantity) and self != old:
             return self
 

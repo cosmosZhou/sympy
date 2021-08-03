@@ -18,11 +18,9 @@ def apply(x0, x1):
 def prove(Eq):
     from axiom import stats, algebra
 
-    mu0 = Symbol.mu0(real=True)
-    mu1 = Symbol.mu1(real=True)
+    mu0, mu1 = Symbol(real=True)
 
-    sigma0 = Symbol.sigma0(positive=True)
-    sigma1 = Symbol.sigma1(positive=True)
+    sigma0, sigma1 = Symbol(positive=True)
 
     x0 = Symbol.x0(distribution=NormalDistribution(mu0, sigma0))
     x1 = Symbol.x1(distribution=NormalDistribution(mu1, sigma1))

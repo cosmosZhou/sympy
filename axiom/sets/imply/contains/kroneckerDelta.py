@@ -9,10 +9,9 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    from axiom import algebra, sets
 
+    x, y = Symbol(real=True)
     Eq << apply(KroneckerDelta(x, y))
 
     Eq << Eq[-1].this.lhs.apply(algebra.kroneckerDelta.to.piecewise)

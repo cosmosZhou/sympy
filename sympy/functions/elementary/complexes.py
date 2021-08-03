@@ -17,7 +17,7 @@ from sympy.functions.elementary.trigonometric import atan, atan2
 ###############################################################################
 
 
-class re(Function):
+class Re(Function):
     """
     Returns real part of expression. This function performs only
     elementary analysis and so it will fail to decompose properly
@@ -28,20 +28,19 @@ class re(Function):
     Examples
     ========
 
-    >>> from sympy import re, im, I, E
     >>> from sympy.abc import x, y
-    >>> re(2*E)
+    >>> Re(2*E)
     2*E
-    >>> re(2*I + 17)
+    >>> Re(2*I + 17)
     17
-    >>> re(2*I)
+    >>> Re(2*I)
     0
-    >>> re(im(x) + x*I + 2)
+    >>> Re(Im(x) + x*I + 2)
     2
 
     See Also
     ========
-    im
+    Im
     """
 
     is_extended_real = True
@@ -60,7 +59,7 @@ class re(Function):
         elif arg.is_Matrix:
             return arg.as_real_imag()[0]
         elif arg.is_Function and isinstance(arg, conjugate):
-            return re(arg.args[0])
+            return Re(arg.args[0])
         else:
 
             included, reverted, excluded = [], [], []
@@ -75,7 +74,7 @@ class re(Function):
                     excluded.append(term)
                 else:
                     # Try to do some advanced expansion.  If
-                    # impossible, don't try to do re(arg) again
+                    # impossible, don't try to do Re(arg) again
                     # (because this is what we are trying to do now).
                     real_imag = term.as_real_imag(ignore=arg)
                     if real_imag:
@@ -86,7 +85,7 @@ class re(Function):
             if len(args) != len(included):
                 a, b, c = (Add(*xs) for xs in [included, reverted, excluded])
 
-                return cls(a) - im(b) + c
+                return cls(a) - Im(b) + c
 
     def as_real_imag(self, deep=True, **hints):
         """
@@ -96,13 +95,13 @@ class re(Function):
 
     def _eval_derivative(self, x):
         if x.is_extended_real or self.args[0].is_extended_real:
-            return re(Derivative(self.args[0], x, evaluate=True))
+            return Re(Derivative(self.args[0], x, evaluate=True))
         if x.is_imaginary or self.args[0].is_imaginary:
             return -S.ImaginaryUnit \
-                * im(Derivative(self.args[0], x, evaluate=True))
+                * Im(Derivative(self.args[0], x, evaluate=True))
 
     def _eval_rewrite_as_im(self, arg, **kwargs):
-        return self.args[0] - S.ImaginaryUnit * im(self.args[0])
+        return self.args[0] - S.ImaginaryUnit * Im(self.args[0])
 
     def _eval_is_algebraic(self):
         return self.args[0].is_algebraic
@@ -123,8 +122,17 @@ class re(Function):
         import sage.all as sage
         return sage.real_part(self.args[0]._sage_())
 
+    def _latex(self, p, exp=None):
+        from sympy.printing.precedence import PRECEDENCE
+        if p._settings['gothic_re_im']:
+            tex = r"\Re{%s}" % p.parenthesize(self.args[0], PRECEDENCE['Atom'])
+        else:
+            tex = r"\operatorname{{Re}}{{{}}}".format(p.parenthesize(self.args[0], PRECEDENCE['Atom']))
 
-class im(Function):
+        return p._do_exponent(tex, exp)
+
+
+class Im(Function):
     """
     Returns imaginary part of expression. This function performs only
     elementary analysis and so it will fail to decompose properly more
@@ -135,21 +143,20 @@ class im(Function):
     Examples
     ========
 
-    >>> from sympy import re, im, E, I
     >>> from sympy.abc import x, y
-    >>> im(2*E)
+    >>> Im(2*E)
     0
-    >>> re(2*I + 17)
+    >>> Re(2*I + 17)
     17
-    >>> im(x*I)
-    re(x)
-    >>> im(re(x) + y)
-    im(y)
+    >>> Im(x*I)
+    Re(x)
+    >>> Im(Re(x) + y)
+    Im(y)
 
     See Also
     ========
 
-    re
+    Re
     """
 
     is_extended_real = True
@@ -168,7 +175,7 @@ class im(Function):
         elif arg.is_Matrix:
             return arg.as_real_imag()[1]
         elif arg.is_Function and isinstance(arg, conjugate):
-            return -im(arg.args[0])
+            return -Im(arg.args[0])
         else:
             included, reverted, excluded = [], [], []
             args = Add.make_args(arg)
@@ -182,7 +189,7 @@ class im(Function):
                         excluded.append(coeff)
                 elif term.has(S.ImaginaryUnit) or not term.is_extended_real:
                     # Try to do some advanced expansion.  If
-                    # impossible, don't try to do im(arg) again
+                    # impossible, don't try to do Im(arg) again
                     # (because this is what we are trying to do now).
                     real_imag = term.as_real_imag(ignore=arg)
                     if real_imag:
@@ -193,7 +200,7 @@ class im(Function):
             if len(args) != len(included):
                 a, b, c = (Add(*xs) for xs in [included, reverted, excluded])
 
-                return cls(a) + re(b) + c
+                return cls(a) + Re(b) + c
 
     def as_real_imag(self, deep=True, **hints):
         """
@@ -202,26 +209,26 @@ class im(Function):
         Examples
         ========
 
-        >>> from sympy.functions import im
+        >>> from sympy.functions import Im
         >>> from sympy import I
-        >>> im(2 + 3*I).as_real_imag()
+        >>> Im(2 + 3*I).as_real_imag()
         (3, 0)
         """
         return (self, S.Zero)
 
     def _eval_derivative(self, x):
         if x.is_extended_real or self.args[0].is_extended_real:
-            return im(Derivative(self.args[0], x, evaluate=True))
+            return Im(Derivative(self.args[0], x, evaluate=True))
         if x.is_imaginary or self.args[0].is_imaginary:
             return -S.ImaginaryUnit \
-                * re(Derivative(self.args[0], x, evaluate=True))
+                * Re(Derivative(self.args[0], x, evaluate=True))
 
     def _sage_(self):
         import sage.all as sage
         return sage.imag_part(self.args[0]._sage_())
 
     def _eval_rewrite_as_re(self, arg, **kwargs):
-        return -S.ImaginaryUnit * (self.args[0] - re(self.args[0]))
+        return -S.ImaginaryUnit * (self.args[0] - Re(self.args[0]))
 
     def _eval_is_algebraic(self):
         return self.args[0].is_algebraic
@@ -236,6 +243,16 @@ class im(Function):
     def _eval_is_complex(self):
         if self.args[0].is_finite:
             return True
+
+    def _latex(self, p, exp=None):
+        from sympy.printing.precedence import PRECEDENCE
+        if p._settings['gothic_re_im']:
+            tex = r"\Im{%s}" % p.parenthesize(self.args[0], PRECEDENCE['Atom'])
+        else:
+            tex = r"\operatorname{{Im}}{{{}}}".format(p.parenthesize(self.args[0], PRECEDENCE['Atom']))
+
+        return p._do_exponent(tex, exp)
+
 
 ###############################################################################
 ############### SIGN, ABSOLUTE VALUE, ARGUMENT and CONJUGATION ################
@@ -254,8 +271,8 @@ class sign(Function):
 
     If the expression is imaginary the sign will be:
 
-        * I if im(expression) is positive
-        * -I if im(expression) is negative
+        * I if Im(expression) is positive
+        * -I if Im(expression) is negative
 
     Otherwise an unevaluated expression will be returned. When evaluated, the
     result (in general) will be ``cos(arg(expr)) + I*sin(arg(expr))``.
@@ -304,7 +321,7 @@ class sign(Function):
                 elif a.is_extended_positive:
                     pass
                 else:
-                    ai = im(a)
+                    ai = Im(a)
                     if a.is_imaginary and ai.is_comparable:  # i.e. a = I*real
                         s *= S.ImaginaryUnit
                         if ai.is_extended_negative:
@@ -480,7 +497,7 @@ class Abs(Function):
         if arg is S.ComplexInfinity:
             return S.Infinity
         if isinstance(arg, exp):
-            return exp(re(arg.args[0]))
+            return exp(Re(arg.args[0]))
         if isinstance(arg, AppliedUndef) or arg.is_set:
             return
         if arg.is_Add and arg.has(S.Infinity, S.NegativeInfinity):
@@ -540,11 +557,33 @@ class Abs(Function):
         return self.args[0].is_algebraic
 
     def _eval_power(self, exponent):
-        if self.args[0].is_extended_real and exponent.is_integer:
+        x = self.args[0]
+        if x.is_extended_real and exponent.is_integer:
             if exponent.is_even:
-                return self.args[0] ** exponent
+                return x ** exponent
             elif exponent is not S.NegativeOne and exponent.is_Integer:
-                return self.args[0] ** (exponent - 1) * self
+                return x ** (exponent - 1) * self
+        elif exponent.is_Rational:
+            q = exponent.q
+            if x.is_Pow:
+                b, e = x.args
+                if not e % q: 
+                    x = b ** (e / q)
+                    return abs(x) ** exponent.p
+            elif x.is_Mul:
+                args = []
+                for t in x.args:
+                    if not t.is_Pow:
+                        break
+                    b, e = t.args
+                    if e % q:
+                        break
+                    
+                    t = b ** (e / q)
+                    args.append(t)
+                else:
+                    x = Mul(*args)
+                    return abs(x) ** exponent.p 
         return
 
     def _eval_nseries(self, x, n, logx):
@@ -564,8 +603,8 @@ class Abs(Function):
         if self.args[0].is_extended_real or self.args[0].is_imaginary:
             return Derivative(self.args[0], x, evaluate=True) \
                 * sign(conjugate(self.args[0]))
-        rv = (re(self.args[0]) * Derivative(re(self.args[0]), x,
-            evaluate=True) + im(self.args[0]) * Derivative(im(self.args[0]),
+        rv = (Re(self.args[0]) * Derivative(Re(self.args[0]), x,
+            evaluate=True) + Im(self.args[0]) * Derivative(Im(self.args[0]),
                 x, evaluate=True)) / Abs(self.args[0])
         return rv.rewrite(sign)
 
@@ -709,7 +748,7 @@ class Norm(Function):
     
 
     
-class arg(Function):
+class Arg(Function):
     """
     Returns the argument (in radians) of a complex number. For a positive
     number, the argument is always 0.
@@ -761,9 +800,30 @@ class arg(Function):
     def _eval_rewrite_as_atan2(self, arg, **kwargs):
         x, y = self.args[0].as_real_imag()
         return atan2(y, x)
+    
+    @property
+    def domain(self):
+        from sympy import Interval
+        return Interval(-S.Pi, S.Pi, left_open=True)
 
+    def simplify(self, deep=False, **kwargs):
+        expri = self.arg
+        if expri.is_Exp:
+            i_exp = expri.arg
+            if i_exp.is_Mul:
+                args = i_exp.args
+                if len(args) == 2:
+                    i, arg = args                 
+                    if i.is_ImaginaryUnit:
+                        if arg.is_Arg:
+#                             Arg(exp(i * Arg(z))) = Arg(z)
+                            return arg
+            
+        return Function.simplify(self, deep, **kwargs)
+    
+arg = Arg
 
-class conjugate(Function):
+class Conjugate(Function):
     """
     Returns the `complex conjugate` Ref[1] of an argument.
     In mathematics, the complex conjugate of a complex number
@@ -819,6 +879,16 @@ class conjugate(Function):
     def _eval_is_algebraic(self):
         return self.args[0].is_algebraic
 
+    def _latex(self, p, exp=None):
+        tex = r"\overline{%s}" % p._print(self.args[0])
+
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+
+
+conjugate = Conjugate
 
 class transpose(Function):
     """

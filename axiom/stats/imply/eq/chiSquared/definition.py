@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(X, Y):
-    i = Symbol.i(integer=True)
+    i = Symbol(integer=True)
 
     y = pspace(Y).symbol
     k = Y.distribution.of(ChiSquaredDistribution)
@@ -14,11 +14,11 @@ def apply(X, Y):
 @prove
 def prove(Eq):
     from axiom import stats
-    i = Symbol.i(integer=True, nonnegative=True)
-    X = Symbol.X(shape=(oo,), distribution=NormalDistribution(0, 1))
+    i = Symbol(integer=True, nonnegative=True)
+    X = Symbol(shape=(oo,), distribution=NormalDistribution(0, 1))
 
-    k = Symbol.k(integer=True, positive=True)
-    Y = Symbol.Y(distribution=ChiSquaredDistribution(k))
+    k = Symbol(integer=True, positive=True)
+    Y = Symbol(distribution=ChiSquaredDistribution(k))
 
     Eq << apply(X, Y)
 

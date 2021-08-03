@@ -15,12 +15,12 @@
 		
 		computed: {
 			nextSibling(){
-				var prove = this.$parent.$refs.prove;
+				var prove = this.$parent.proveEditor;
 				return prove[0];				
 			},
 			
 			lastSibling(){
-				var prove = this.$parent.$refs.prove;
+				var prove = this.$parent.proveEditor;
 				return prove[prove.length - 1];				
 			},
 			
@@ -53,7 +53,8 @@
 	            	Object.assign(_extraKeys, {
 	            		'Ctrl-O': function(cm) {
 	            			console.log("'Ctrl-O' is pressed!");
-	            			location.href = `/${self.user}/axiom.php?new=${self.module}`;
+	            			var href = `/${self.user}/axiom.php?new=${self.module}`;
+	            			window.open(href);
 	            		},
 
 	            		'Ctrl-S': function(cm) {

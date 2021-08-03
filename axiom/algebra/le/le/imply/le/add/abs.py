@@ -24,11 +24,11 @@ def prove(Eq):
 
     Eq << apply(abs(x) <= a, abs(y) <= b)
 
-    Eq << algebra.le.given.et.split.abs.apply(Eq[-1])
+    Eq << algebra.le_abs.given.et.apply(Eq[-1])
 
-    Eq << algebra.le.imply.et.split.abs.apply(Eq[0])
+    Eq << algebra.le_abs.imply.et.apply(Eq[0])
 
-    Eq << algebra.le.imply.et.split.abs.apply(Eq[1])
+    Eq << algebra.le_abs.imply.et.apply(Eq[1])
 
     Eq <<= Eq[-4] + Eq[-2], Eq[-3] + Eq[-1]
 

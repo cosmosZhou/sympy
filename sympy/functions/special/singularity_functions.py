@@ -4,7 +4,6 @@ from sympy.core import S, sympify, oo, diff
 from sympy.core.function import Function, ArgumentIndexError
 from sympy.core.logic import fuzzy_not
 from sympy.core.relational import Eq
-from sympy.functions.elementary.complexes import im
 from sympy.functions.elementary.piecewise import Piecewise
 from sympy.functions.special.delta_functions import Heaviside
 
@@ -148,11 +147,12 @@ class SingularityFunction(Function):
         x = sympify(variable)
         a = sympify(offset)
         n = sympify(exponent)
+        from sympy import Im
         shift = (x - a)
 
-        if fuzzy_not(im(shift).is_zero):
+        if fuzzy_not(Im(shift).is_zero):
             raise ValueError("Singularity Functions are defined only for Real Numbers.")
-        if fuzzy_not(im(n).is_zero):
+        if fuzzy_not(Im(n).is_zero):
             raise ValueError("Singularity Functions are not defined for imaginary exponents.")
         if shift is S.NaN or n is S.NaN:
             return S.NaN

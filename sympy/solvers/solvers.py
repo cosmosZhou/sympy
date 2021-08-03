@@ -32,7 +32,7 @@ from sympy.logic.boolalg import And, Or, BooleanAtom
 from sympy.core.basic import preorder_traversal
 
 from sympy.functions import (log, exp, LambertW, cos, sin, tan, acos, asin, atan,
-                             Abs, re, im, arg, sqrt, atan2)
+                             Abs, arg, sqrt, atan2)
 from sympy.functions.elementary.trigonometric import (TrigonometricFunction,
                                                       HyperbolicFunction)
 from sympy.simplify import (simplify, collect, powsimp, posify, powdenest,
@@ -956,6 +956,8 @@ def solve(f, *symbols, **flags):
 
     # preprocess equation(s)
     ###########################################################################
+    from sympy import Re, Im, Arg
+    
     for i, fi in enumerate(f):
         if isinstance(fi, (Equal, Unequal)):
             if 'ImmutableDenseMatrix' in [type(a).__name__ for a in fi.args]:
@@ -1004,9 +1006,9 @@ def solve(f, *symbols, **flags):
         if freei and all(s.is_extended_real or s.is_imaginary for s in freei):
             fr, fi = f[i].as_real_imag()
             # accept as long as new re, im, arg or atan2 are not introduced
-            had = f[i].atoms(re, im, arg, atan2)
+            had = f[i].atoms(Re, Im, Arg, atan2)
             if fr and fi and fr != fi and not any(
-                    i.atoms(re, im, arg, atan2) - had for i in (fr, fi)):
+                    i.atoms(Re, Im, Arg, atan2) - had for i in (fr, fi)):
                 if bare_f:
                     bare_f = False
                 f[i: i + 1] = [fr, fi]
@@ -1034,7 +1036,7 @@ def solve(f, *symbols, **flags):
         # arg
         _arg = [a for a in fi.atoms(arg) if a.has(*symbols)]
         fi = fi.xreplace(dict(list(zip(_arg,
-            [atan(im(a.args[0]) / re(a.args[0])) for a in _arg]))))
+            [atan(Im(a.args[0]) / Re(a.args[0])) for a in _arg]))))
 
         # save changes
         f[i] = fi
@@ -1045,14 +1047,14 @@ def solve(f, *symbols, **flags):
         if s.is_extended_real or s.is_imaginary:
             continue  # neither re(x) nor im(x) will appear
         # if re(s) or im(s) appear, the auxiliary equation must be present
-        if any(fi.has(re(s), im(s)) for fi in f):
-            irf.append((s, re(s) + S.ImaginaryUnit * im(s)))
+        if any(fi.has(Re(s), Im(s)) for fi in f):
+            irf.append((s, Re(s) + S.ImaginaryUnit * Im(s)))
     if irf:
         for s, rhs in irf:
             for i, fi in enumerate(f):
                 f[i] = fi.xreplace({s: rhs})
             f.append(s - rhs)
-            symbols.extend([re(s), im(s)])
+            symbols.extend([Re(s), Im(s)])
         if bare_f:
             bare_f = False
         flags['dict'] = True
@@ -1125,7 +1127,7 @@ def solve(f, *symbols, **flags):
                     p in symset or
                     p.is_Add or p.is_Mul or
                     p.is_Pow and not implicit or
-                    p.is_Function and not implicit) and p.func not in (re, im):
+                    p.is_Function and not implicit) and p.func not in (Re, Im):
                 continue
             elif not p in seen:
                 seen.add(p)

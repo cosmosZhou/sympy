@@ -12,18 +12,12 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-
+    x, y, a, b = Symbol(integer=True)
+    f, g = Function(real=True)
     Eq << apply(a > b, Suffice(x > y, f(x) > g(y)))
 
-    Eq << algebra.suffice.given.suffice.split.et.apply(Eq[-1])
+    Eq << algebra.suffice.given.et.suffice.apply(Eq[-1])
 
     Eq << algebra.suffice.given.ou.apply(Eq[-1])
 

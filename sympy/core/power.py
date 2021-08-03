@@ -361,13 +361,13 @@ class Pow(Expr):
             else:
                 # recognize base as E
                 if not e.is_Atom and b is not S.Exp1 and not isinstance(b, exp_polar):
-                    from sympy import numer, denom, log, sign, im, factor_terms
+                    from sympy import numer, denom, log, sign, Im, factor_terms
                     c, ex = factor_terms(e, sign=False).as_coeff_Mul()
                     den = denom(ex)
                     if isinstance(den, log) and den.args[0] == b:
                         return S.Exp1 ** (c * numer(ex))
                     elif den.is_Add:
-                        s = sign(im(b))
+                        s = sign(Im(b))
                         if s.is_Number and s and den == \
                                 log(-factor_terms(b, sign=False)) + s * S.ImaginaryUnit * S.Pi:
                             return S.Exp1 ** (c * numer(ex))
@@ -424,7 +424,7 @@ class Pow(Expr):
                 return -Pow(-b, e)
 
     def _eval_power(self, other):
-        from sympy import Abs, arg, exp, floor, im, log, re, sign
+        from sympy import arg, exp, floor, Im, log, Re, sign
         b, e = self.as_base_exp()
         if b is S.NaN:
             return (b ** e) ** other  # let __new__ handle it
@@ -468,20 +468,20 @@ class Pow(Expr):
                         if b.is_negative == True:
                             return S.NegativeOne ** other * Pow(-b, e * other)
                         if b.is_extended_real == False:
-                            return Pow(b.conjugate() / Abs(b) ** 2, other)
+                            return Pow(b, -other)
                 elif e.is_even:
                     if b.is_extended_real:
                         b = abs(b)
                     if b.is_imaginary:
-                        b = abs(im(b)) * S.ImaginaryUnit
+                        b = abs(Im(b)) * S.ImaginaryUnit
 
                 if (abs(e) < 1) == True or e == 1:
                     s = 1  # floor = 0
                 elif b.is_extended_nonnegative:
                     s = 1  # floor = 0
-                elif re(b).is_extended_nonnegative and (abs(e) < 2) == True:
+                elif Re(b).is_extended_nonnegative and (abs(e) < 2) == True:
                     s = 1  # floor = 0
-                elif fuzzy_not(im(b).is_zero) and abs(e) == 2:
+                elif fuzzy_not(Im(b).is_zero) and abs(e) == 2:
                     s = 1  # floor = 0
                 elif _half(other):
                     s = exp(2 * S.Pi * S.ImaginaryUnit * other * floor(
@@ -496,7 +496,7 @@ class Pow(Expr):
                 #     floor(S.Half - im(e*log(b))/2/pi) == 0
                 try:
                     s = exp(2 * S.ImaginaryUnit * S.Pi * other * 
-                        floor(S.Half - im(e * log(b)) / 2 / S.Pi))
+                        floor(S.Half - Im(e * log(b)) / 2 / S.Pi))
                     # be careful to test that s is -1 or 1 b/c sign(I) == I:
                     # so check that s is real
                     if s.is_extended_real and _n2(sign(s) - s) == 0:
@@ -771,7 +771,7 @@ class Pow(Expr):
     def _eval_is_polar(self):
         return self.base.is_polar
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         from sympy import exp, log, Symbol
 
         def _check(ct1, ct2, old):
@@ -1048,10 +1048,14 @@ class Pow(Expr):
 
         rv = S.One
         if cargs:
+            if e.is_Rational:
+                npow, cargs = sift(cargs, lambda x: x.is_Pow and
+                    x.exp.is_Rational and x.base.is_number,
+                    binary=True)
+                rv = Mul(*[self.func(b.func(*b.args), e) for b in npow])
             rv *= Mul(*[self.func(b, e, evaluate=True) for b in cargs])
-#             rv *= Mul(*[self.func(b, e, evaluate=False) for b in cargs])
         if other:
-            rv *= self.func(Mul(*other), e, evaluate=False)
+            rv *= self.func(Mul(*other), e, evaluate=cargs)
         return rv
 
     def _eval_expand_multinomial(self, **hints):
@@ -1177,7 +1181,7 @@ class Pow(Expr):
             return result
 
     def as_real_imag(self, deep=True, **hints):
-        from sympy import atan2, cos, im, re, sin
+        from sympy import atan2, cos, sin
         from sympy.polys.polytools import poly
 
         if self.exp.is_Integer:
@@ -1237,7 +1241,7 @@ class Pow(Expr):
 
             return (rp * cos(tp), rp * sin(tp))
         else:
-
+            from sympy import Im, Re
             if deep:
                 hints['complex'] = False
 
@@ -1245,9 +1249,9 @@ class Pow(Expr):
                 if hints.get('ignore') == expanded:
                     return None
                 else:
-                    return (re(expanded), im(expanded))
+                    return (Re(expanded), Im(expanded))
             else:
-                return (re(self), im(self))
+                return (Re(self), Im(self))
 
     def _eval_derivative(self, s):
         from sympy import log
@@ -1783,18 +1787,17 @@ class Pow(Expr):
             return domain & self.domain_defined(x)
         return self.domain_defined(x)
 
-    def _eval_domain_defined(self, x, **_):
+    def _eval_domain_defined(self, x, **kwargs):
         domain = self.base.domain_defined(x) & self.exp.domain_defined(x)
         if self.exp < 0:
             domain &= self.base.domain_nonzero(x)
         if self.exp.is_integer == False:
-            domain &= x.domain_conditioned(self.base >= 0)
+            if x.is_real and kwargs.get('real'):
+                domain &= x.domain_conditioned(self.base >= 0)
         return domain
 
     def _eval_Abs(self):
-        from sympy.functions.elementary.complexes import Abs
-        from sympy.functions.elementary.complexes import re, im
-        from sympy import exp, log
+        from sympy import exp, log, Abs, Re, Im
         base, exponent = self.as_base_exp()
         if base.is_extended_real:
             if exponent.is_integer:
@@ -1806,15 +1809,15 @@ class Pow(Expr):
                     return self
                 return Abs(base) ** exponent
             if base.is_extended_nonnegative:
-                return base ** re(exponent)
+                return base ** Re(exponent)
             if base.is_extended_negative:
-                return (-base) ** re(exponent) * exp(-S.Pi * im(exponent))
+                return (-base) ** Re(exponent) * exp(-S.Pi * Im(exponent))
             return
         elif not base.has(Symbol):  # complex base
             # express base**exponent as exp(exponent*log(base))
             a, b = log(base).as_real_imag()
-            z = a + S.I * b
-            return exp(re(exponent * z))
+            z = a + S.ImaginaryUnit * b
+            return exp(Re(exponent * z))
         elif not self.is_complex and not exponent.is_integer:
             return self
 
@@ -1958,14 +1961,26 @@ class Pow(Expr):
                     
         return self
 
-    def as_inverse_proportional_function(self, wrt):
+    def of(self, cls):
+        res = Expr.of(self, cls)
+        if res is None:
+            if cls.is_Pow:
+                if cls.exp == -1:
+                    if self.exp._coeff_isneg():
+                        self = self.func(self.base, -self.exp)
+                        base = cls.base
+                        if not base.is_abstract:
+                            self = self.of(base)
+                        return self
+                                             
+        return res
+    
+    def __invert__(self):
+        from sympy import Conjugate
         b, e = self.args
-        if e == -1:
-            h = b - wrt
-            if not h._has(wrt):
-                from sympy.polys.polytools import InverseProportionalFunction
-                return InverseProportionalFunction(wrt, 1, h, 0)
-
+        if e.is_integer:
+            return Conjugate(b) ** e
+        return Conjugate(self)
     
 from .add import Add
 from .numbers import Integer
@@ -2158,7 +2173,7 @@ def real_root(arg, n=None, evaluate=None):
     sympy.core.power.integer_nthroot
     root, sqrt
     """
-    from sympy.functions.elementary.complexes import Abs, im, sign
+    from sympy.functions.elementary.complexes import Abs, Im, sign
     from sympy.functions.elementary.piecewise import Piecewise
     from sympy import Or, Eq, And, Mod, sympify 
     from sympy.core.rules import Transform
@@ -2166,7 +2181,7 @@ def real_root(arg, n=None, evaluate=None):
         return Piecewise(
             (root(arg, n, evaluate=evaluate), Or(Eq(n, S.One), Eq(n, S.NegativeOne))),
             (Mul(sign(arg), root(Abs(arg), n, evaluate=evaluate), evaluate=evaluate),
-            And(Eq(im(arg), S.Zero), Eq(Mod(n, 2), S.One))),
+            And(Eq(Im(arg), S.Zero), Eq(Mod(n, 2), S.One))),
             (root(arg, n, evaluate=evaluate), True))
     rv = sympify(arg)
     n1pow = Transform(lambda x:-(-x.base) ** x.exp,

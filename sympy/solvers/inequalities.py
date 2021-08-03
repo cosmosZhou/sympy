@@ -450,12 +450,11 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
     Interval.open(0, pi)
 
     """
-    from sympy import im
+    from sympy import Im
     from sympy.calculus.util import (continuous_domain, periodicity,
         function_range)
     from sympy.solvers.solvers import denoms
-    from sympy.solvers.solveset import solveset_real, solvify, solveset
-    from sympy.solvers.solvers import solve
+    from sympy.solvers.solveset import solvify, solveset
 
     # This keeps the function independent of the assumptions about `gen`.
     # `solveset` makes sure this function is called only when the domain is
@@ -598,11 +597,11 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
             # If expr contains imaginary coefficients, only take real
             # values of x for which the imaginary part is 0
             make_real = Reals
-            if im(expanded_e) != S.Zero:
+            if Im(expanded_e) != S.Zero:
                 check = True
                 im_sol = FiniteSet()
                 try:
-                    a = solveset(im(expanded_e), gen, domain)
+                    a = solveset(Im(expanded_e), gen, domain)
                     if not isinstance(a, Interval):
                         for z in a:
                             if z not in singularities and valid(z) and z.is_extended_real:
@@ -671,7 +670,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
             if valid(_pt(start, end)):
                 sol_sets.append(Interval.open(start, end))
 
-            if im(expanded_e) != S.Zero and check:
+            if Im(expanded_e) != S.Zero and check:
                 rv = (make_real).intersect(_domain)
             else:
                 rv = Intersection((Union(*sol_sets)), make_real, _domain).subs(gen, _gen)

@@ -42,7 +42,7 @@ class Distributed(BooleanFunction):
                 return self.func(self.lhs._subs(*args, **kwargs).simplify(), self.rhs._subs(*args, **kwargs).simplify(), equivalent=[self, eq]).simplify()
             if isinstance(eq, dict):
                 return self
-            if eq.is_ConditionalBoolean:
+            if eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
         return BooleanFunction.subs(self, *args, **kwargs)
 

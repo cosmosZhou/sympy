@@ -715,7 +715,7 @@ class Number(AtomicExpr):
         # Order(5, x, y) -> Order(1,x,y)
         return Order(S.One, *symbols)
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if old == -self:
             return -new
         return self  # there is no other possibility
@@ -2098,36 +2098,66 @@ class Rational(Number):
         """Efficiently extract the coefficient of a summation. """
         return self, S.Zero
 
-    def to_wolfram(self, _):
-        from wolframclient.language import wl        
-        return getattr(wl, "Rational")(self.p, self.q)
-
     def of(self, cls):
-        if cls.is_Pow:
-            b, e = cls.args
-            if e == -1 and (b is Expr or b is Basic):
-                p, q = self.p, self.q
-                if p == 1:
-                    return sympify(q)
-            return
-        
-        if cls.is_Mul:
-            p, q = cls.args
-            if q.is_Pow and q.exp == -1:
-                q = q.base
-                
-                if p is Expr or p is Basic:
-                    if q is Expr or q is Basic:
-                        return sympify(self.p), sympify(self.q) 
-            return
+        if isinstance(cls, int):
+            if self == cls:
+                return ()
+            else:
+                return
             
         if isinstance(cls, type):
             if isinstance(self, cls):
                 return ()
-        else:
-            if self == cls:
-                return ()        
+            else:
+                return
+            
+        if cls.is_Pow:
+            b, e = cls.args
+            if e == -1:
+                if b is Expr or b is Basic:
+                    p, q = self.p, self.q                
+                    if p == 1:
+                        return sympify(q)
+            elif e == 2:
+                if b is Expr or b is Basic:
+                    p, q = self.p, self.q
+                    from sympy import sqrt
+                    p = sqrt(p)                    
+                    if p.is_integer:
+                        q = sqrt(q)
+                        if q.is_integer:
+                            return Rational(p, q)                
+            return
+        
+        if cls.is_Mul:
+            p, q = cls.args
+            if q.is_Pow:
+                if len(q.args) == 2 and q.args[1] == -1:
+                    q = q.args[0]
+                    if p is Expr or p is Basic:
+                        if q is Expr or q is Basic:
+                            return sympify(self.p), sympify(self.q)
+            elif p == -1:
+                if self.p < 0:
+                    try:
+                        if q.is_abstract:
+                            return Rational(-self.p, self.q)                        
+                    except AttributeError:
+                        ...
+            elif p.is_Rational:
+                if q is Expr:                
+                    num_, den_ = p.p, p.q
+                    if num_ == 1:
+                        num, den = self.p, self.q
+                        if den_ == den:
+                            return Integer(num)
+            return
+            
+        if self == cls:
+            return ()        
 
+    def __invert__(self):
+        return self
 
 class Integer(Rational):
     """Represents integer numbers of any size.
@@ -3053,7 +3083,7 @@ class Infinity(with_metaclass(Singleton, Number)):
     def _sympystr(self, p):
         return '\N{INFINITY}'
     
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if self == old:
             return new
 
@@ -3135,7 +3165,7 @@ class Infinity(with_metaclass(Singleton, Number)):
         NegativeInfinity
 
         """
-        from sympy.functions import re
+        from sympy.functions import Re
 
         if expt.is_extended_positive:
             return S.Infinity
@@ -3146,7 +3176,7 @@ class Infinity(with_metaclass(Singleton, Number)):
         if expt is S.ComplexInfinity:
             return S.NaN
         if expt.is_extended_real == False and expt.is_number:
-            expt_real = re(expt)
+            expt_real = Re(expt)
             if expt_real.is_positive:
                 return S.ComplexInfinity
             if expt_real.is_negative:
@@ -3270,7 +3300,7 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
     def _sympystr(self, p):
         return '-\N{INFINITY}'
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if self == old:
             return new
 
@@ -4317,7 +4347,7 @@ class Infinitesimal(with_metaclass(Singleton, Number)):
     def _latex(self, printer):
         return r"0^{+}"
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if self == old:
             return new
 
@@ -4538,7 +4568,7 @@ class NegativeInfinitesimal(with_metaclass(Singleton, Number)):
     def _latex(self, printer):
         return r"0^{-}"
 
-    def _eval_subs(self, old, new):
+    def _eval_subs(self, old, new, **hints):
         if self == old:
             return new
 

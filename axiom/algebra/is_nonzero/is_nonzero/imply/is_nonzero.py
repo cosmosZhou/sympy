@@ -15,9 +15,9 @@ def prove(Eq):
     y = Symbol.y(complex=True)
     Eq << apply(Unequal(x, 0), Unequal(y, 0))
 
-    Eq << algebra.is_nonzero.imply.is_positive.abs.apply(Eq[0])
+    Eq << algebra.is_nonzero.imply.abs_is_positive.apply(Eq[0])
 
-    Eq << algebra.is_nonzero.imply.is_positive.abs.apply(Eq[1])
+    Eq << algebra.is_nonzero.imply.abs_is_positive.apply(Eq[1])
 
     Eq << algebra.is_positive.is_positive.imply.is_positive.apply(Eq[-1], Eq[-2])
 
