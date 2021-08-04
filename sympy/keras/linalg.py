@@ -7,6 +7,12 @@ from sympy import Range
 
 # https://tensorflow.google.cn/api_docs/python/tf/linalg/band_part
 def BandPart(x, *limits):
+    '''
+    >>> m, n, l, u = Symbol(integer=True, positive=True)
+    >>> x = Symbol(real=True, shape=(m, n))
+    >>> BandPart[l, u](x).this.defun()
+    '''
+    
     (num_lower,), (num_upper,) = limits
     m, n = x.shape
     excludes = num_lower.free_symbols | num_upper.free_symbols
@@ -17,5 +23,5 @@ def BandPart(x, *limits):
     return x * Lamda[j:n, i:m](Bool(Contains(i - j, Range(-num_upper, num_lower + 1))))
 
    
-BandPart = Function.BandPart(eval=BandPart, complex=True)
+BandPart = Function.BandPart(eval=BandPart, complex=True, __doc__=BandPart.__doc__)
 band_part = BandPart

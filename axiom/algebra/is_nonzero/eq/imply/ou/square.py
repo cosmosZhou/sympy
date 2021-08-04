@@ -12,7 +12,7 @@ def apply(is_nonzero, eq, x=None):
     if not rhs.is_Zero:
         fx -= rhs
 
-    _a, b, c = quadratic_coefficient(fx, x=x)
+    x, _a, b, c = quadratic_coefficient(fx, x=x)
     assert b.is_Zero
     assert a == _a
     delta = -4 * a * c

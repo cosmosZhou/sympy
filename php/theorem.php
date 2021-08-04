@@ -149,6 +149,11 @@ for ($i = 0; $i < $size; ++ $i) {
       	      	});      			
 			}
   		},
+
+  		tex: {
+  		    maxBuffer: 10 * 1024,       // maximum size for the internal TeX string (10K)
+  		  //reference: http://docs.mathjax.org/en/latest/options/input/tex.html?highlight=MAXBUFFER#the-configuration-block
+  	  	},
 	};
 </script>
 <script async

@@ -15,7 +15,7 @@ def apply(given, x=None):
     delta = 4 * p ** 3 / 27 + q ** 2
     U = sqrt(delta) - q
     V = -sqrt(delta) - q
-    
+
     A = (sqrt(delta) / 2 - q / 2) ** (S.One / 3)
     B = (-sqrt(delta) / 2 - q / 2) ** (S.One / 3)
     w = -S.One / 2 + sqrt(3) / 2 * S.ImaginaryUnit
@@ -23,7 +23,7 @@ def apply(given, x=None):
     #arg_AB = Ceiling(3 * Arg(A * B) / (S.Pi * 2) - S.One / 2)
     arg_AB = Piecewise((0, Equal(p * Ceiling((Arg(U) + Arg(V)) / (2 * S.Pi) - S.One / 2), 0)), (1, Arg(U) + Arg(V) > S.Pi), (-1, True))
     d = arg_p - arg_AB
-    
+
     return Suffice(Equal(d, 0), Or(Equal(x, A + B - a / 3), Equal(x, A * w + B * ~w - a / 3), Equal(x, A * ~w + B * w - a / 3))), \
             Suffice(Equal(d % 3, 1), Or(Equal(x, A * w + B - a / 3), Equal(x, A * ~w + B * ~w - a / 3), Equal(x, A + B * w - a / 3))), \
             Suffice(Equal(d % 3, 2), Or(Equal(x, A * ~w + B - a / 3), Equal(x, A + B * ~w - a / 3), Equal(x, A * w + B * w - a / 3)))
@@ -51,7 +51,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Mul[Add]).apply(algebra.mul.to.add, simplify=None)
 
-    Eq << algebra.add_is_zero.imply.et.suffice.cubic.withno_square.apply(Eq[-1], x=x)
+    Eq << algebra.add_is_zero.imply.et.suffice.cubic.depressed.apply(Eq[-1], x=x)
 
     Eq <<= Eq[-3].subs(Eq.x_def), Eq[-2].subs(Eq.x_def), Eq[-1].subs(Eq.x_def)
 

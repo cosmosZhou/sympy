@@ -37,7 +37,8 @@ def prove(Eq):
     Eq << Eq[-1].this.args[1].apply(algebra.eq.eq.imply.eq.subs, swap=True)
 
     Eq << algebra.et.imply.cond.apply(Eq[-1], 1)
-    Eq << sets.ou.imply.contains.finiteset.apply(Eq[-1])
+
+    Eq << sets.ou_eq.imply.contains.finiteset.apply(Eq[-1])
 
 
 if __name__ == '__main__':

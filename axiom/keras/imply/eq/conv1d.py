@@ -24,17 +24,12 @@ def apply(x, w, β, ζ, r):
 def prove(Eq):
     from axiom import algebra
 
-    m = Symbol.m(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    d = Symbol.d(integer=True, positive=True)
-    d_ = Symbol("d'", integer=True, positive=True)
-    l = Symbol.l(integer=True, positive=True)
-    #r = dilation rate
-    r = Symbol.r(integer=True, positive=True)
-    β = Symbol.β(shape=(m,), domain=Range(0, n))
-    ζ = Symbol.ζ(shape=(m,), domain=Range(1, n + 1))
-    x = Symbol.x(real=True, shape=(m, n, d))
-    w = Symbol.w(real=True, shape=(l, d, d_))
+    m, n, d, d_quote, l, r = Symbol(integer=True, positive=True)
+    #r is the dilation rate
+    β = Symbol(shape=(m,), domain=Range(0, n))
+    ζ = Symbol(shape=(m,), domain=Range(1, n + 1))
+    x = Symbol(real=True, shape=(m, n, d))
+    w = Symbol(real=True, shape=(l, d, d_quote))
     Eq << apply(x, w, β, ζ, r)
 
     Eq << Eq[-1].rhs.expr.args[1].this.defun()

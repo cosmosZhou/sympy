@@ -122,6 +122,9 @@ class Invoker:
             if 'equivalent' in assumptions:
                 from sympy import Equivalent
                 return Equivalent(self.source, obj, plausible=None)
+            if 'imply' in assumptions:
+                from sympy import Necessary
+                return Necessary(self.source, obj, plausible=None)
             
         return obj
 

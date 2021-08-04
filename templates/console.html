@@ -11,8 +11,42 @@
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
-<script	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
+<script>
+	MathJax = {
+  		startup: {
+    		ready(){
+      			console.log('MathJax is loaded, but not yet initialized');
+      			MathJax.startup.defaultReady();
+      			console.log('MathJax is initialized, and the initial typeset is queued');
+      			
+				MathJax.startup.promise.then(() => {					
+      	        	console.log('MathJax initial typesetting complete');
+      	        	setTimeout(() => {      	        		
+      	        		for (let p of document.querySelectorAll('p')){
+          	        		if (p.innerText.startsWith("\\[")) {
+              	        		console.log("unfinished work detected!");
+              	        		console.log(p.innerText);
+              	        		console.log('trying MathJax.typesetPromise() again;');
+              	        		MathJax.typesetPromise();
+              	        		break;
+              	        	}
+          	        	}      	        		      	        		
+      				}, 500);
+      	      	});      			
+			}
+  		},
+
+  		tex: {
+  		    maxBuffer: 10 * 1024,       // maximum size for the internal TeX string (10K)
+  		  //reference: http://docs.mathjax.org/en/latest/options/input/tex.html?highlight=MAXBUFFER#the-configuration-block
+  	  	},
+	};
+</script>
+
+<script async
+	src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 
 <script src="static/js/std.js"></script>
 <script src="static/js/utility.js"></script>

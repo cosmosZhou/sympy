@@ -25,7 +25,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.ou.st.abs.apply(Eq[-1])
 
-    Eq << sets.ou.imply.contains.finiteset.apply(Eq[-1])
+    Eq << sets.ou_eq.imply.contains.finiteset.apply(Eq[-1])
 
     Eq << Eq[-1].this.lhs.definition
 

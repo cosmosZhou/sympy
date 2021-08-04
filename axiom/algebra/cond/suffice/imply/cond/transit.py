@@ -15,10 +15,9 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True, given=True)
-    f = Symbol.f(integer=True, shape=(oo,), given=True)
-    g = Symbol.g(integer=True, shape=(oo,), given=True)
 
+    n = Symbol(integer=True, nonnegative=True, given=True)
+    f, g = Symbol(integer=True, shape=(oo,), given=True)
     Eq << apply(LessEqual(f[0], g[0]), Suffice(LessEqual(f[0], g[0]), LessEqual(f[n], g[n])))
 
     Eq << Eq[1].apply(algebra.suffice.imply.ou)

@@ -11,14 +11,14 @@ def apply(is_zero, x=None, d=0):
     delta = 4 * p ** 3 / 27 + q ** 2
     U = sqrt(delta) - q
     V = -sqrt(delta) - q
-    
+
     A = (sqrt(delta) / 2 - q / 2) ** (S.One / 3)
     B = (-sqrt(delta) / 2 - q / 2) ** (S.One / 3)
 
     w = -S.One / 2 + S.ImaginaryUnit * sqrt(3) / 2
-    arg_p = Ceiling(3 * Arg(-p / 3) / (S.Pi * 2) - S.One / 2)    
+    arg_p = Ceiling(3 * Arg(-p / 3) / (S.Pi * 2) - S.One / 2)
     arg_AB = Piecewise((0, Equal(p * Ceiling((Arg(U) + Arg(V)) / (2 * S.Pi) - S.One / 2), 0)), (1, Arg(U) + Arg(V) > S.Pi), (-1, True))
-    
+
     if d == 0:
         x0 = A + B
     elif d == 1:
@@ -27,7 +27,7 @@ def apply(is_zero, x=None, d=0):
         x0 = A * ~w + B
     else:
         ...
-        
+
     return Equal((arg_p - arg_AB) % 3, d), Equal(x, x0)
 
 
@@ -55,13 +55,14 @@ def prove(Eq):
 
     Eq << sets.contains.contains.imply.contains.add.finiteset.apply(Eq[-1], Eq[-3])
 
-    Eq << sets.eq_mod.contains.imply.contains.sift.apply(Eq[1], Eq[-1])
+    Eq.contains = sets.eq_mod.contains.imply.contains.sift.apply(Eq[1], Eq[-1])
 
-    Eq <<= sets.contains.imply.ou.split.finiteset.apply(Eq[-1]) & Eq[2]
+    Eq <<= Eq[0].cond.this.apply(algebra.add_is_zero.given.et_eq.cubic.depressed, x, 1), Eq[0].cond.this.apply(algebra.add_is_zero.given.et_eq.cubic.depressed, x, -2)
 
-    Eq << algebra.et.imply.ou.apply(Eq[-1], simplify=None)
+    Eq <<= algebra.cond.cond.imply.cond.subs.apply(Eq[2], Eq[-2]) & algebra.cond.cond.imply.cond.subs.apply(Eq[2], Eq[-1])
 
-    #Eq << Eq[0].cond.this.apply(algebra.add_is_zero.given.et_eq.cubic.withno_square, x, 1)
+    Eq << Eq[-1].this.rhs.apply(sets.ou_eq.given.contains.finiteset)
+    Eq << algebra.cond.necessary.imply.cond.transit.apply(Eq.contains, Eq[-1])
 
 
 if __name__ == '__main__':

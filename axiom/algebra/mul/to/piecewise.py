@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[1].apply(algebra.is_nonzero.is_nonzero.given.is_nonzero)
 
-    Eq << Eq[-1].this.args[0].args[0].apply(algebra.ou.given.is_zero)
+    Eq << Eq[-1].this.args[0].args[0].apply(algebra.ou_is_zero.given.mul_is_zero)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,43 @@
+from util import *
+
+
+from axiom.algebra.add_is_zero.given.et_eq.cubic.one_leaded import cubic_solve
+from axiom.algebra.is_nonzero.add_is_zero.imply.ne import cubic_delta
+
+@apply
+def apply(fx, x=None):
+    from axiom.algebra.add_is_zero.imply.et.suffice.quartic.one_leaded import quartic_coefficient
+    fx = fx.of(Equal[0])
+    _1, _0, alpha, beta, gamma = quartic_coefficient(fx, x=x)
+    assert _0 == 0 and _1 == 1
+    
+    w = -S.One / 2 + sqrt(3) * S.ImaginaryUnit / 2
+    
+    y_delta = cubic_delta(x, alpha, beta, gamma)
+    _d, Y0, Y1, Y2 = cubic_solve(y_delta, x)
+    
+    delta = -(alpha ** 2 / 3 + 4 * gamma) ** 3 / 27 + (-alpha ** 3 / 27 + 4 * alpha * gamma / 3 - beta ** 2 / 2) ** 2
+
+    V = alpha ** 3 / 27 - 4 * alpha * gamma / 3 + beta ** 2 / 2 - sqrt(delta)
+    U = alpha ** 3 / 27 - 4 * alpha * gamma / 3 + beta ** 2 / 2 + sqrt(delta)
+    
+    A = U ** (S.One / 3)
+    B = V ** (S.One / 3)
+    
+    from axiom.algebra.add_is_zero.is_nonzero.imply.et.suffice.quartic.depressed import solver_set
+    return Suffice(Unequal(beta, 0) & Equal(_d, 0), solver_set(0, A, B, x, alpha, beta, w)), Suffice(Unequal(beta, 0) & Equal(_d % 3, 1), solver_set(1, A, B, x, alpha, beta, w)), Suffice(Unequal(beta, 0) & Equal(_d % 3, 2), solver_set(2, A, B, x, alpha, beta, w))
+
+
+
+@prove
+def prove(Eq):
+    from axiom import algebra
+
+    x, alpha, beta, gamma = Symbol(complex=True, given=True)
+    fx = x ** 4 + alpha * x ** 2 + beta * x + gamma
+    Eq << apply(Equal(fx, 0), x=x)
+    Eq << algebra.cond.imply.et.suffice.split.apply(Eq[0], cond=Equal(beta, 0))
+
+
+if __name__ == '__main__':
+    run()

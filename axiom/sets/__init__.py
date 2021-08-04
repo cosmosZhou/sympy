@@ -61,3 +61,4 @@ from . import abs_is_nonzero
 from . import range
 from . import imageset, finiteset
 from . import eq_mod
+from . import ou_eq

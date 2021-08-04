@@ -50,6 +50,8 @@ def prove(Eq):
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq[-3])
 
+    Eq << algebra.eq.imply.is_zero.apply(Eq[-1])
+
     Eq.ou = Eq[-1].apply(algebra.add_is_zero.imply.et.suffice.quadratic, x=g(x), simplify=False)
 
     Eq.negative_sqrt = Eq.ou.args[0].copy(plausible=True)
@@ -146,8 +148,6 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.limits_subs(n, n + 1)
 
     Eq << Eq[-1] / (x * 2)
-
-    
 
     Eq << Eq[-1] + Eq.negative_sqrt
 

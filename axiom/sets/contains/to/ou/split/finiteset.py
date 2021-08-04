@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << Eq[-2].this.lhs.apply(sets.contains.imply.ou.split.finiteset.two, simplify=False)
 
-    Eq << Eq[-1].this.rhs.apply(sets.ou.imply.contains.finiteset)
+    Eq << Eq[-1].this.rhs.apply(sets.ou_eq.imply.contains.finiteset)
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 from util import *
 
 
-@apply
+@apply(simplify=False)
 def apply(given): 
     x, y = given.of(Equal)
         
@@ -13,9 +13,9 @@ def prove(Eq):
     a = Symbol.a(real=True)
     b = Symbol.b(real=True, zero=False)
     Eq << apply(Equal(a, b))
-    
+
     Eq << Eq[1].subs(Eq[0])
-    
-    
+
+
 if __name__ == '__main__':
     run()

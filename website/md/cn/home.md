@@ -52,17 +52,17 @@ https://www.wolframcloud.com/obj/744984949/Published/cubic_root
 [平面几何学](../axiom.php?module=geometry/plane)，(中学三角函数学) 与高中
 [立体几何学](../axiom.php?module=geometry/solid)； 包含不少三角函数恒等式，比如
 [和差化积](../axiom.php?module=geometry/plane/trigonometry/cosine/principle/add)，积化和差，等等。
-* [calculus](../axiom.php?module=calculus/) 微积分，主要包含以下内容： 
+* [calculus](../axiom.php?module=calculus) 微积分，主要包含以下内容： 
 [极限定义](../axiom.php?module=calculus/eq/to/any_all/limit_definition) 及其理论，它是微积分的理论基础； 
 [无穷级数](../axiom.php?module=calculus/series/infinite) 的运算性质；
 [分部积分](../axiom.php?module=calculus/integral/by_parts) 定理；
 三角函数及其它少数超越函数的积分；
-* [discrete](../axiom.php?module=discrete/) 数论，离散数学，组合数学，线性代数，包含一些基本的排列组合的计算公式的证明（比如
+* [discrete](../axiom.php?module=discrete) 数论，离散数学，组合数学，线性代数，包含一些基本的排列组合的计算公式的证明（比如
 [排列数](../axiom.php?module=discrete.abs_cup.to.factorial) 的组合学计算，组合数的组合学计算， [第二类Stirling数](../axiom.php?module=discrete.stirling2.to.add.recurrence) 的组合学推导， 
 [Catalan数](../axiom.php?module=discrete.eq.eq.imply.eq.catalan.recurrence) 的推导）， 
 [连分数](../axiom.php?module=discrete.add.to.pow.HK.recurrence) 初步理论；以及与矩阵的行列式相关的若干命题。
-* [stats](../axiom.php?module=stats/) 概率统计学，主要包含常见概率分布（比如二项式分布，正态分布，poisson分布，die分布，Χ<sup>2</sup>分布）相关公式的推导，以及[Bayes公式](../axiom.php?module=stats/probability/to/mul)相关的命题；
-* [keras](../axiom.php?module=keras/) 机器学习，深度学习中的数学模型，主要包括用于研究自然语言的数学模型，
+* [stats](../axiom.php?module=stats) 概率统计学，主要包含常见概率分布（比如二项式分布，正态分布，poisson分布，die分布，Χ<sup>2</sup>分布）相关公式的推导，以及[Bayes公式](../axiom.php?module=stats/probability/to/mul)相关的命题；
+* [keras](../axiom.php?module=keras) 机器学习，深度学习中的数学模型，主要包括用于研究自然语言的数学模型，
 [GRU](https://arxiv.org/abs/1412.3555v1)，
 [LSTM](https://www.mitpressjournals.org/doi/pdf/10.1162/089976600300015015)，
 [BERT](https://arxiv.org/abs/1706.03762)，

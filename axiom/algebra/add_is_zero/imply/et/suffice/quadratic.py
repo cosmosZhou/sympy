@@ -1,16 +1,12 @@
 from util import *
-
-
 from axiom.algebra.ge.le.imply.le.quadratic import quadratic_coefficient
 
 
 @apply
 def apply(given, x=None):
-    fx, rhs = given.of(Equal)
-    if not rhs.is_Zero:
-        fx -= rhs
-
-    a, b, c = quadratic_coefficient(fx, x=x)
+    fx = given.of(Equal[0])
+    
+    x, a, b, c = quadratic_coefficient(fx, x=x)
 
     delta = b * b - 4 * a * c
 
@@ -22,7 +18,7 @@ def prove(Eq):
     from axiom import algebra
 
     x, a, b, c = Symbol(complex=True, given=True)
-    Eq << apply(Equal(a * x ** 2 + b * x + c, 0), x=x)
+    Eq << apply(Equal(a * x ** 2 + b * x + c, 0))
 
     Eq << algebra.cond.imply.et.suffice.split.apply(Eq[0], cond=Equal(a, 0))
 

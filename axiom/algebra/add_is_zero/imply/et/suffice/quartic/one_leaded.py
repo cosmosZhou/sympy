@@ -51,7 +51,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Mul[Add]).apply(algebra.mul.to.add, simplify=None)
 
-    Eq << algebra.add_is_zero.imply.et.suffice.quartic.withno_cubic.apply(Eq[-1], x)
+    Eq << algebra.add_is_zero.imply.et.suffice.quartic.depressed.apply(Eq[-1], x)
 
 
 if __name__ == '__main__':

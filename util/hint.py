@@ -1,4 +1,5 @@
 from util import MySQL
+from console import compile_definition_statement
 
 keywords = ['False', 'None', 'True', 
             'and', 'as', 'assert', 'abs',
@@ -98,7 +99,11 @@ if __name__ == '__main__':
         if not script:
             continue
         __locals__ = {**__globals__}
-        latex = [local_eval(line, __locals__) for line in script]                
+        
+        latex = []
+        for line in script:
+            latex.append(local_eval(compile_definition_statement(line), __locals__))
+                            
         script = [s.replace('\\', r'\\').replace('"', '\\"') for s in script]
         latex = [s.replace('\\', r'\\').replace('"', '\\"') for s in latex]
         datum = (symbol, script, latex)
@@ -106,4 +111,11 @@ if __name__ == '__main__':
         data.append(datum) 
             
     MySQL.instance.execute('delete from tbl_console_py')
+    
+    print('len(data) =', len(data))
     MySQL.instance.load_data('tbl_console_py', data)
+
+
+# exec(open('./util/hint.py').read())
+# update tbl_axiom_py set latex = '\\[\\color{red}{This\\ technique\\ is\\ proprietory,\\ please\\ contact\\ software\\ developer\\ for\\ details!}\\]'where axiom in ('keras.imply.eq.conv1d', 'keras.imply.eq.conv2d', 'keras.imply.eq.conv3d', 'keras.imply.eq.bert.band_part_mask', 'keras.imply.eq.bert.position_representation.relative.band_part_mask');
+# delete from tbl_axiom_py where axiom in ('keras.imply.eq.conv1d', 'keras.imply.eq.conv2d', 'keras.imply.eq.conv3d', 'keras.imply.eq.bert.band_part_mask', 'keras.imply.eq.bert.position_representation.relative.band_part_mask');

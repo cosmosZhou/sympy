@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    e, finiteset = given.of(Contains[FiniteSet])    
+    e, finiteset = given.of(Contains[FiniteSet])
 
     return Or(*(Equal(e, s) for s in finiteset))
 
@@ -15,17 +15,17 @@ def prove(Eq):
     e, a, b, c = Symbol(integer=True, given=True)
     Eq << apply(Contains(e, {a, b, c}))
 
-    Eq << sets.ou.imply.contains.finiteset.apply(Eq[1])
+    Eq << sets.ou_eq.imply.contains.finiteset.apply(Eq[1])
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
 
 
 if __name__ == '__main__':

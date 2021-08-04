@@ -126,3 +126,5 @@ from . import floor_piecewise
 from . import pow_is_zero
 from . import arg
 from . import ceiling_arg
+from . import eq_square
+from . import ou_is_zero

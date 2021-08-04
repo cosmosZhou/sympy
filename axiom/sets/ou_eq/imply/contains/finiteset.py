@@ -29,17 +29,12 @@ def apply(given):
 def prove(Eq):
     from axiom import sets
 
-    x = Symbol.x(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
-    c = Symbol.c(real=True, given=True)
+    x, a, b, c = Symbol(real=True, given=True)
     Eq << apply(Equal(x, a) | Equal(x, b) | Equal(x, c))
 
     Eq <<= ~Eq[-1] & Eq[0]
 
     Eq << Eq[-1].this.args[-1].apply(sets.notcontains.imply.et.split.finiteset)
-
-    
 
 
 if __name__ == '__main__':

@@ -82,6 +82,18 @@ def local_eval(python, __globals__):
     return latex
 
         
+def compile_definition_statement(line):
+    m = re.match('(.+?) *= *(Symbol|Function)\((.+)\) *$', line)
+    if m:
+        name, func, kwargs = m.groups()
+        if ',' in name:
+            line = "%s = %s" % (name, ', '.join(["%s.%s(%s)" % (func, n, kwargs) for n in name.split(',')]))
+        else:
+            line = "%s = %s.%s(%s)" % (name, func, name, kwargs)
+            
+    return line          
+
+
 @app.route('/eval', methods=['POST', 'GET'])
 def evaluate():
     python = request.json.get('py')
@@ -96,8 +108,13 @@ def evaluate():
         try:
             result = eval(python, __globals__)
         except SyntaxError:
-            exec(python, __globals__)
-            return ''
+            try:
+                exec(python, __globals__)
+                return ''
+            except TypeError:
+                for line in python.splitlines():
+                    exec(compile_definition_statement(line), __globals__)
+                return ''
         except Exception as e:
             typname = type(e).__name__
             print(type(e), e)
@@ -105,12 +122,18 @@ def evaluate():
                     
             return f'{typname}: {msg}'
     
-    if isinstance(result, type) or not hasattr(result, "is_Basic"):
-        latex = str(result)
-    else:
-        latex = r'\[%s\]' % result.latex        
-    return latex    
+    if isinstance(result, tuple):
+        return ''.join([to_str(r) for r in result])
+            
+    return to_str(result)
 
+
+def to_str(result):
+    if isinstance(result, type) or not hasattr(result, "is_Basic"):
+        return str(result)
+    else:
+        return r'\[%s\]' % result.latex
+    
 
 def extract_latex(symbol):
     symbol = globals()[symbol]
@@ -154,6 +177,7 @@ def compile_python_file():
         return f'{typname}: {msg}'
     
     return 'success'    
+
     
 @app.route('/hint', methods=['POST', 'GET'])
 def hint():

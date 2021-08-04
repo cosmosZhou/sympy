@@ -15,13 +15,11 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
+
+    a, b = Symbol(real=True, given=True)
     Eq << apply(Equal(a, 0) | Equal(b, 0))
 
     Eq << ~Eq[0]
-
-#     Eq << Eq[-1].apply(algebra.is_nonzero.is_nonzero.imply.is_nonzero)
 
     Eq <<= Eq[-1] & Eq[1]
 

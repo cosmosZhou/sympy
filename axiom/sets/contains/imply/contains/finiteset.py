@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[1] + t
 
-    Eq << sets.ou.imply.contains.finiteset.apply(Eq[-1])
+    Eq << sets.ou_eq.imply.contains.finiteset.apply(Eq[-1])
 
 
 if __name__ == '__main__':

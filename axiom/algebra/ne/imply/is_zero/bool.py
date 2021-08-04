@@ -14,8 +14,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
+
+    x, y = Symbol(integer=True, given=True)
     Eq << apply(Unequal(Bool(x > y), 1))
 
     Eq << Eq[0].this.lhs.apply(algebra.bool.to.piecewise)

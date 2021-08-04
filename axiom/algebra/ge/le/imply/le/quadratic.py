@@ -1,14 +1,25 @@
 from util import *
 
 
-def quadratic_coefficient(fx, x):
-    fx = fx.as_poly(x)
-    if fx.degree() != 2:
-        return None
-    b = fx.coeff_monomial(x)
-    a = fx.coeff_monomial(x * x)
-    c = fx.coeff_monomial(1)
-    return a, b, c
+def quadratic_coefficient(fx, x=None):
+    if x is None:
+        for x in fx.free_symbols:
+            p = fx.as_poly(x)
+            if p is None:
+                continue
+            if p.degree() == 2:
+                break
+        else:
+            return
+    else:
+        p = fx.as_poly(x)
+        if p.degree() != 2:
+            return
+        
+    b = p.coeff_monomial(x)
+    a = p.coeff_monomial(x * x)
+    c = p.coeff_monomial(1)
+    return x, a, b, c
 
 
 @apply
@@ -16,7 +27,7 @@ def apply(greater_than, less_than, quadratic=None):
     x, m = greater_than.of(GreaterEqual)
     _x, M = less_than.of(LessEqual)
     assert x == _x
-    a, b, c = quadratic_coefficient(quadratic, x)
+    x, a, b, c = quadratic_coefficient(quadratic, x)
 
     assert a > 0
     return LessEqual(quadratic, Max(a * m * m + b * m + c, a * M * M + b * M + c))
@@ -25,18 +36,16 @@ def apply(greater_than, less_than, quadratic=None):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x = Symbol.x(real=True)
     m = Symbol.m(real=True)
     M = Symbol.M(real=True)
-
     a = Symbol.a(real=True, positive=True)
     b = Symbol.b(real=True)
     c = Symbol.c(real=True)
-
     Eq << apply(x >= m, x <= M, quadratic=a * x * x + b * x + c)
 
     x = Symbol.x(x + b / (2 * a))
-
     Eq.x_definition = x.this.definition
 
     Eq << Eq.x_definition - Eq.x_definition.rhs.args[1]

@@ -7,3 +7,4 @@ from . import ne
 from . import eq
 from . import is_nonzero
 from . import given
+from . import add_is_zero
