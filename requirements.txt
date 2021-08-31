@@ -1,3 +1,2 @@
-regex
 mysql-connector
-DBUtils==1.3
+flask

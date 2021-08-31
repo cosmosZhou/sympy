@@ -332,3 +332,5 @@ def select_count(state=None):
 
 if __name__ == '__main__':
     ...
+
+#ln -s /usr/local/mysql/mysql.sock /tmp/mysql.sock

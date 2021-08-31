@@ -92,6 +92,10 @@ def update_timestamp():
     rowcount = MySQL.instance.executemany("update tbl_axiom_py set timestamp = %s where user = 'sympy' and axiom = %s", seq_params)
     print("rowcount =", rowcount)
 
+#from util.hierarchy import update_timestamp
+#update_timestamp()
 if __name__ == '__main__':
     insert_into_hierarchy()
 #     update_timestamp()    
+
+#exec(open('./util/hierarchy.py').read())
