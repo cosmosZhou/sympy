@@ -463,30 +463,6 @@ class LatexPrinter(Printer):
             outstr = outstr[1:]
         return outstr
 
-    def _print_Derivative(self, expr):
-        if requires_partial(expr):
-            diff_symbol = r'\partial'
-        else:
-            diff_symbol = r'd'
-
-        tex = ""
-        dim = 0
-        for x, num in reversed(expr.variable_count):
-            dim += num
-            if num == 1:
-                tex += r"%s %s" % (diff_symbol, self._print(x))
-            else:
-                tex += r"%s %s^{%s}" % (diff_symbol, self._print(x), num)
-
-        if dim == 1:
-            tex = r"\frac{%s}{%s}" % (diff_symbol, tex)
-        else:
-            tex = r"\frac{%s^{%s}}{%s}" % (diff_symbol, dim, tex)
-
-        return r"%s %s" % (tex, self.parenthesize(expr.expr,
-                                                  PRECEDENCE["Mul"],
-                                                  strict=True))
-
     def _print_Subs(self, subs):
         expr, old, new = subs.args
         latex_expr = self._print(expr)
@@ -577,14 +553,6 @@ class LatexPrinter(Printer):
 
         else:
             tex = r"\ln{\left(%s \right)}" % self._print(expr.args[0])
-
-        if exp is not None:
-            return r"%s^{%s}" % (tex, exp)
-        else:
-            return tex
-
-    def _print_Abs(self, expr, exp=None):
-        tex = r"\left|{%s}\right|" % self._print(expr.args[0])
 
         if exp is not None:
             return r"%s^{%s}" % (tex, exp)
@@ -1276,12 +1244,6 @@ class LatexPrinter(Printer):
         shift = self._print(expr.args[0] - expr.args[1])
         power = self._print(expr.args[2])
         tex = r"{\left\langle %s \right\rangle}^{%s}" % (shift, power)
-        return tex
-
-    def _print_Heaviside(self, expr, exp=None):
-        tex = r"\theta\left(%s\right)" % self._print(expr.args[0])
-        if exp:
-            tex = r"\left(%s\right)^{%s}" % (tex, exp)
         return tex
 
     def _print_LeviCivita(self, expr, exp=None):

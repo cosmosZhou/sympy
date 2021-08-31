@@ -23,13 +23,12 @@ def apply(given, x):
 def prove(Eq):
     from axiom import sets, algebra, discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    p = Symbol.p(integer=True, shape=(n,))
-    x = Symbol.x(integer=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    p, x = Symbol(integer=True, shape=(n,))
     Eq << apply(Equal(p.set_comprehension(), Range(0, n)), x)
 
-    A = Symbol.A(Eq[1].lhs)
-    B = Symbol.B(Eq[1].rhs)
+    A = Symbol(Eq[1].lhs)
+    B = Symbol(Eq[1].rhs)
     Eq.A_definition = A.this.definition
 
     i = Eq[1].lhs.variable
@@ -46,7 +45,7 @@ def prove(Eq):
 
     Eq << sets.subset.given.all_subset.split.cup.apply(Eq.subset)
 
-    Eq << Eq[-1].apply(sets.contains.given.any_contains.st.cup)
+    Eq << Eq[-1].apply(sets.el.given.any_el.st.cup)
 
     Eq << algebra.any.given.any.subs.apply(Eq[-1], Eq[-1].variable, p[_i])
 
@@ -54,7 +53,7 @@ def prove(Eq):
 
     Eq << sets.supset.given.all_supset.split.cup.apply(Eq.supset)
 
-    Eq.definition = Eq[-1].apply(sets.contains.given.any_contains.st.cup)
+    Eq.definition = Eq[-1].apply(sets.el.given.any_el.st.cup)
 
     Eq << discrete.eq.imply.et.index.apply(Eq[0], _j)
 

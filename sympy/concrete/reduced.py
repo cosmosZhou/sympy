@@ -29,8 +29,8 @@ class ReducedSum(Function):
         if f.is_FiniteSet:
             x, *args = f.args
             rest = f.func(*args)
-            from sympy import NotContains, Bool
-            sgm = x * Bool(NotContains(x, rest).simplify()).simplify()
+            from sympy import NotElement, Bool
+            sgm = x * Bool(NotElement(x, rest).simplify()).simplify()
             if not rest:
                 return sgm             
             return self.func(rest).doit(deep=deep) + sgm
@@ -135,8 +135,8 @@ class ReducedMin(Function):
         if f.is_FiniteSet:
             x, *args = f.args
             rest = f.func(*args)
-            from sympy import NotContains, Bool
-            sgm = x * Bool(NotContains(x, rest).simplify()).simplify()
+            from sympy import NotElement, Bool
+            sgm = x * Bool(NotElement(x, rest).simplify()).simplify()
             if not rest:
                 return sgm             
             return self.func(rest).doit(deep=deep) + sgm
@@ -196,8 +196,8 @@ class ReducedMin(Function):
         if self.arg.is_Lamda:
             if len(self.arg.limits) == 1 and not self.arg.variable.shape:
                 function = self.arg.expr
-                from sympy import Minimize
-                self = Minimize(function, *self.arg.limits).simplify(**kwargs)
+                from sympy import Minima
+                self = Minima(function, *self.arg.limits).simplify(**kwargs)
         elif self.arg.is_Piecewise:
             self = self.arg.func(*((self.func(e).simplify(), c) for e, c in self.arg.args)).simplify()
         elif self.arg.is_Mul:
@@ -242,8 +242,8 @@ class ReducedMax(Function):
         if f.is_FiniteSet:
             x, *args = f.args
             rest = f.func(*args)
-            from sympy import NotContains, Bool
-            sgm = x * Bool(NotContains(x, rest).simplify()).simplify()
+            from sympy import NotElement, Bool
+            sgm = x * Bool(NotElement(x, rest).simplify()).simplify()
             if not rest:
                 return sgm             
             return self.func(rest).doit(deep=deep) + sgm
@@ -303,8 +303,8 @@ class ReducedMax(Function):
         if self.arg.is_Lamda:
             if len(self.arg.limits) == 1 and not self.arg.variable.shape:
                 function = self.arg.expr
-                from sympy import Maximize
-                self = Maximize(function, *self.arg.limits).simplify(**kwargs)
+                from sympy import Maxima
+                self = Maxima(function, *self.arg.limits).simplify(**kwargs)
         elif self.arg.is_Piecewise:
             self = self.arg.func(*((self.func(e).simplify(), c) for e, c in self.arg.args)).simplify()
         elif self.arg.is_Mul:

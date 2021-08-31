@@ -2,8 +2,7 @@ from util import *
 
 
 def sinusoid_position_encoding(n, d, b, inverse=False):
-    j = Symbol.j(integer=True)
-    i = Symbol.i(integer=True)
+    j, i = Symbol(integer=True)
 
     if inverse:
         return Symbol("PE'", Lamda[j:d, i:n](Piecewise((cos(i / b ** (j / d)), (-1) ** j > 0),
@@ -42,8 +41,8 @@ def apply(n, d, b):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(positive=True, integer=True)
-    b = Symbol.b(positive=True)
+    n = Symbol(positive=True, integer=True)
+    b = Symbol(positive=True)
     d = Symbol("d_model", integer=True, positive=True, even=True)
     Eq << apply(n, d, b)
 

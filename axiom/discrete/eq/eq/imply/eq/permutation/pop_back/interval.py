@@ -23,8 +23,8 @@ def apply(set_comprehension_equality, last_element_equality):
 def prove(Eq):
     from axiom import sets, algebra
 
-    n = Symbol.n(integer=True, positive=True, given=True)
-    p = Symbol.p(shape=(oo,), integer=True, nonnegative=True, given=True)
+    n = Symbol(integer=True, positive=True, given=True)
+    p = Symbol(shape=(oo,), integer=True, nonnegative=True, given=True)
     Eq << apply(Equal(p[:n + 1].set_comprehension(), Range(0, n + 1)),
                 Equal(p[n], n))
 
@@ -36,11 +36,11 @@ def prove(Eq):
 
     Eq << Eq[2].subs(Eq[-1].reversed).reversed
 
-    Eq.plausible = NotContains(n, Eq[-1].rhs, plausible=True)
+    Eq.plausible = NotElement(n, Eq[-1].rhs, plausible=True)
 
     Eq << ~Eq.plausible
 
-    Eq << Eq[-1].apply(sets.contains.imply.any_contains.st.cup)
+    Eq << Eq[-1].apply(sets.el.imply.any_el.st.cup)
 
     i = Eq[-1].variable
     _i = i.copy(domain=Range(0, n))
@@ -62,13 +62,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.le.simplify.terms.common)
 
-    Eq << Eq.paradox.this.expr.apply(algebra.eq.imply.eq.abs)
+    Eq << Eq.paradox.this.expr.apply(sets.eq.imply.eq.card)
 
     Eq << Eq[-1].subs(Eq[0])
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq[-1].reversed, Eq[-3])
 
-    Eq << sets.notcontains.imply.eq.complement.apply(Eq.plausible)
+    Eq << sets.notin.imply.eq.complement.apply(Eq.plausible)
 
 
 if __name__ == '__main__':

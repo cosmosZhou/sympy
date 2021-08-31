@@ -10,17 +10,17 @@ def apply(x):
 def prove(Eq):
     from axiom import algebra, sets
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(x)
 
-    Eq << algebra.floor.to.maximize.apply(Eq[0].lhs)
+    Eq << algebra.floor.to.maxima.apply(Eq[0].lhs)
 
-    y = Symbol.y(Eq[1].lhs)
+    y = Symbol(Eq[1].lhs)
     Eq << y.this.definition
 
     Eq << Eq[1].subs(Eq[-1].reversed)
 
-    Eq << algebra.eq_maximize.imply.all_ge.apply(Eq[-1])
+    Eq << algebra.eq_maxima.imply.all_ge.apply(Eq[-1])
 
     Eq << Eq[0].subs(y.this.definition.reversed)
 
@@ -34,10 +34,10 @@ def prove(Eq):
 
     Eq << algebra.any.given.any_et.limits.unleash.apply(Eq[-1])
 
-    Eq << Eq[-1].this.expr.apply(sets.gt.le.given.contains)
+    Eq << Eq[-1].this.expr.apply(sets.gt.le.given.el)
 
     n = Eq[-1].variable
-    Eq << sets.imply.any_contains.integer.apply(x, n)
+    Eq << sets.imply.any_el.integer.apply(x, n)
 
 
 if __name__ == '__main__':

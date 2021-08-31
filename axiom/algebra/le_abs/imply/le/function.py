@@ -31,13 +31,11 @@ def apply(given, t):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Function.x(real=True)
-    m = Symbol.m(domain=Range(2, oo))
-    y = Function.y(real=True)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    t = Symbol.t(domain=Range(0, m))
+    n = Symbol(integer=True, positive=True)
+    x, y = Function(real=True)
+    m = Symbol(domain=Range(2, oo))
+    i, j = Symbol(integer=True)
+    t = Symbol(domain=Range(0, m))
     Eq << apply(abs(y(t) - Sum[i:n](x(i)) / n) <= abs(y(t) - Sum[j:m](y(j)) / m), t)
 
     x_ = Symbol.x(Lamda[i:n](x(i)))

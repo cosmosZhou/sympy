@@ -12,10 +12,10 @@ def apply(fx, x, n):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    f = Function.f(real=True)
-    x = Symbol.x(real=True)
+    f = Function(real=True)
+    x = Symbol(real=True)
     fx = f(x)
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
+    n = Symbol(integer=True, nonnegative=True, given=False)
     Eq << apply(fx, x, n)
 
     Eq.initial = Eq[0].subs(n, 0)
@@ -39,7 +39,7 @@ def prove(Eq):
     Eq << Eq.hypothesis - Eq[0]
 
     i = Eq[-1].find(Sum).variable
-    Eq << Eq[-1].this.find(Sum).limits_subs(i, i - 1)
+    Eq << Eq[-1].this.find(Sum).apply(algebra.sum.limits.subs.offset, -1)
 
     Eq << Eq[-1].this.rhs.args[0].apply(algebra.mul.to.sum)
 

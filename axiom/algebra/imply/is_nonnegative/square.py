@@ -12,9 +12,8 @@ def apply(function):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
 
+    x, y = Symbol(real=True)
     Eq << apply(x + y)
 
     Eq << ((x + y) ** 2).this.apply(algebra.square.to.add)

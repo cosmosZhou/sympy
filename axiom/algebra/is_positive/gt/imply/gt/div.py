@@ -7,7 +7,7 @@ def apply(is_positive, gt):
     if x is None:
         is_positive, gt = gt, is_positive
         x = is_positive.of(Expr > 0)
-        
+
     lhs, rhs = gt.of(Greater)
     return Greater(lhs / x, rhs / x)
 
@@ -16,9 +16,7 @@ def apply(is_positive, gt):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, a, b = Symbol(real=True)
     Eq << apply(x > 0, a > b)
 
     Eq << algebra.is_positive.imply.is_positive.div.apply(Eq[0])

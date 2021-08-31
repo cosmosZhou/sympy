@@ -4,8 +4,7 @@ from util import *
 # given: x | y = x
 # imply: x | y & z = x | z
 @apply
-def apply(*given):
-    equality, unequal = given
+def apply(equality, unequal):
     if equality.is_Unequal:
         equality, unequal = unequal, equality
     assert unequal.is_Unequal
@@ -38,9 +37,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import stats
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
-    z = Symbol.z(real=True, random=True)
+    x, y, z = Symbol(real=True, random=True)
 
     Eq << apply(Equal(x | y, x), Unequal(Probability(y, z), 0))
 

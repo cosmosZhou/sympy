@@ -20,9 +20,8 @@ def prove(Eq):
     from axiom import algebra
 
     a, b, c = Symbol(integer=True)
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    n = Symbol(integer=True, nonnegative=True)
+    f, g = Symbol(integer=True, shape=(oo,))
     Eq << apply(Suffice(Equal(a, 0) & Equal(b, 0), Equal(c, 0)), index=1)
 
     Eq << algebra.suffice.imply.suffice.split.et.apply(Eq[1], index=1)

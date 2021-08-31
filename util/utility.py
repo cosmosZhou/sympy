@@ -7,8 +7,12 @@ from sympy.core.inference import Inference, process_options, equivalent_ancestor
 from _collections import deque, defaultdict
 from util.search import py_to_module
 from os.path import dirname, basename
-from util.std import json_encode
+from util.std import json_encode, skip_first_permutation
+from datetime import datetime
+import time
 
+def current_timestamp():
+    return datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d %H:%M:%S")
 
 def init(func):
 
@@ -68,21 +72,27 @@ class Eq:
                     
                     if eq.equivalent is not None:
                         if isinstance(eq.equivalent, tuple):
-                            arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                            # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                            arrow = '=='
                         else:
                             _expr_reference = self[index]
                             if _expr_reference == eq.equivalent:
-                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                arrow = '=='
                             elif _expr_reference.equivalent == eq:
-                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                arrow = '=='
                             elif _expr_reference == eq.equivalent.given:
-                                arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                                # arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                                arrow = '=>'
                             elif _expr_reference == eq.equivalent.imply:
-                                arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                                # arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                                arrow = '=>'
                             elif _expr_reference == eq.equivalent.negation:
                                 arrow = '='
                             elif _expr_reference == eq.equivalent.equivalent:
-                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                arrow = '=='
                             elif index == -1:
                                 arrow = '='
                             else:
@@ -96,16 +106,20 @@ class Eq:
 #                                 print(eq)
 #                                 print(eq.equivalent)
 #                                 print(eq.equivalent.negation)
-                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                arrow = '=='
                         
                     elif eq.given is not None:
-                        arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                        # arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                        arrow = '=>'
                         
                     elif eq.imply is not None:
                         if isinstance(eq.imply.given, (tuple, list)):
-                            arrow = '\N{LEFTWARDS ARROW}'
+                            # arrow = '\N{LEFTWARDS ARROW}'
+                            arrow = '<-'
                         else:
-                            arrow = '\N{LEFTWARDS DOUBLE ARROW}'
+                            # arrow = '\N{LEFTWARDS DOUBLE ARROW}'
+                            arrow = '<='
                                 
                     else:
                         arrow = '='
@@ -454,30 +468,7 @@ def topological_sort(graph):
     if len(Seq) == vertex_num:
         return Seq
 
-#         print("there's a circle.")
-    return None
-
-
-def wolfram_decorator(py, func, debug=True, **kwargs):
-    eqs = Eq(py.replace('.py', '.php'), debug=debug)
-    website = "http://localhost" + func.__code__.co_filename[len(dirname(dirname(dirname(__file__)))):-3] + ".php"
-    try: 
-        wolfram = kwargs['wolfram']
-        with wolfram: 
-            func(eqs, wolfram)
-    except Exception as e:
-        print(e)
-        traceback.print_exc()
-        print(website)
-        return
-    
-    if debug:
-        print(website)
-    plausibles = eqs.plausibles_dict
-    if plausibles:
-        return False
-
-    return True
+#         print("there's a circle.")    
 
 
 @unique
@@ -513,24 +504,29 @@ def run():
     res = import_module(package, debug=False)
     from util import MySQL
     try:
-        state, lapse, latex = prove_with_timing(res, debug=True, slow=True)        
-        sql = "replace into tbl_axiom_py values('%s', '%s', '%s', %s, %s)" % (user, package, state, lapse, json_encode(latex))
-    #     print(sql)
+        state, lapse, latex = prove_with_timing(res, debug=True, slow=True)
+        if len(latex) > 65535:
+            print('truncating date to 65535 bytes, original length =', len(latex))
+            latex = latex[:65535]
+        
+        sql = 'update tbl_axiom_py set state = "%s", lapse = %s, latex = %s where user = "%s" and axiom = "%s"' % (state, lapse, json_encode(latex), user, package)
+        # print(sql)
     except AttributeError as e: 
-        if re.match("module '[\w.]+' has no attribute 'prove'", str(e)) or re.match("'function' object has no attribute 'prove'", str(e)): 
-            __init__ = os.path.dirname(file) + '/__init__.py'
-            basename = os.path.basename(file)[:-3]
-            for i, line in enumerate(Text(__init__)):
-                if re.match('from \. import %s' % basename, line):
-                    Text(__init__).insert(i, "del " + basename)
-                    from run import run
-                    run(package)
-                    break                    
-            return
+        if re.match("module '[\w.]+' has no attribute 'prove'", str(e)) or re.match("'function' object has no attribute 'prove'", str(e)):
+            raise e 
         else: 
             sql = analyze_results_from_run(res, latex=False)        
     
-    MySQL.instance.execute(sql)
+    rowcount = MySQL.instance.execute(sql)
+    if rowcount <= 0:
+        
+        m = re.match('update tbl_axiom_py set state = "(\w+)", lapse = (\S+), latex = "([\s\S]+)" where user = "(\w+)" and axiom = "(\S+)"', sql)
+        state, lapse, latex, _, axiom = m.groups()
+        timestamp = current_timestamp()
+        sql = 'insert into tbl_axiom_py values("%s", "%s", "%s", %s, "%s", "%s")' % (user, axiom, state, lapse, latex, timestamp)
+        rowcount = MySQL.instance.execute(sql)
+        assert rowcount > 0
+          
     if file.endswith("__init__.py"):
         import sys
         sys.exit()
@@ -549,7 +545,7 @@ def analyze_results_from_run(lines, latex=True):
     sql, *_ = file
     
     file.file.close()
-# PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'C:\\Users\\dell\\AppData\\Local\\Temp/****.sql'
+# PermissionError: [WinError 32]
     os.unlink(sqlFile)
        
     if latex: 
@@ -562,10 +558,10 @@ def analyze_results_from_run(lines, latex=True):
             ret = RetCode.proved
         else:
             ret = RetCode.plausible
-
-        m = re.match("replace into tbl_axiom_py values(\(.+\));$", sql)
+            
+        re.match('update tbl_axiom_py set state = "\w+", lapse = \S+, latex = ("[\s\S]+") where user = "\w+" and axiom = "\S+"', sql)
         assert m, sql
-        * _, latex = eval(m[1])
+        latex = eval(m[1])
         return ret, latex
     else:
         return sql[:-1]
@@ -919,12 +915,31 @@ def imply(apply, **kwargs):
 
     def imply(*args, **kwargs):
         _simplify = kwargs.pop('simplify', True) and simplify
+        ret = kwargs.pop('ret', None)
 
         __kwdefaults__ = apply.__kwdefaults__
         if __kwdefaults__ is not None and 'simplify' in __kwdefaults__ and _simplify != __kwdefaults__['simplify']:
             kwargs['simplify'] = _simplify
             
-        statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)        
+        try:
+            statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)
+        except Exception as e:
+            _args = [*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args)]
+            for i, cond in enumerate(_args):
+                if not cond.is_Boolean:
+                    break
+            else:
+                i += 1
+                
+            conds, _args = _args[:i], _args[i:]
+            for conds in skip_first_permutation(conds):
+                try:
+                    statement = apply(*conds, *_args, **kwargs)
+                    break
+                except:
+                    ...
+            else:
+                raise e
         
         if is_given:
             given = tuple(eq for eq in args if isinstance(eq, (Boolean, Inference)))
@@ -950,8 +965,12 @@ def imply(apply, **kwargs):
             else: 
                 if isinstance(given, tuple):
                     is_not_False = all(g.plausible is not False for g in given)
+                    if ret is not None:
+                        statement = add(given[ret], statement)
                 else:
                     is_not_False = given.plausible is not False
+                    if ret is not None:
+                        statement = add(given, statement)
                     
                 assert is_not_False , 'a False proposition can not be used to imply any other proposition!'
                     
@@ -961,17 +980,18 @@ def imply(apply, **kwargs):
                     statement = statement.copy(given=given, evaluate=False)
                     
             if not _simplify:
-                if isinstance(statement, (list, tuple)) or statement.is_Inference:
+                if isinstance(statement, tuple) or statement.is_Inference:
                     return statement
                 
                 return Inference(statement, plausible=None)
             
-            if isinstance(statement, (list, tuple)):
+            if isinstance(statement, tuple):
                 return tuple(s.simplify(emplace=True) for s in statement)
             
             return statement.simplify(emplace=True)            
         
         dependency = {}
+        
         if isinstance(statement, tuple):
             statement = tuple(process(s, dependency) for s in statement)                
         else:
@@ -990,11 +1010,7 @@ def imply(apply, **kwargs):
         G = topological_sort_depth_first(dependency)
         if G:
             definition = tuple(s.equality_defined() for s in G)
-            
-            if isinstance(statement, tuple):
-                statement = definition + statement
-            else:
-                statement = definition + (statement,)
+            statement = add(definition, statement)
                  
         return add(given, statement)
 
@@ -1029,7 +1045,25 @@ def given(apply, **kwargs):
         if __kwdefaults__ and 'simplify' in __kwdefaults__ and _simplify != __kwdefaults__['simplify']:
             kwargs['simplify'] = _simplify
         
-        statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)
+        try:
+            statement = apply(*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args), **kwargs)
+        except Exception as e:
+            _args = [*map(lambda inf: inf.cond if isinstance(inf, Inference) else inf, args)]
+            for i, cond in enumerate(_args):
+                if not cond.is_Boolean:
+                    break
+            else:
+                i += 1
+                
+            conds, _args = _args[:i], _args[i:]
+            for conds in skip_first_permutation(conds):
+                try:
+                    statement = apply(*conds, *_args, **kwargs)
+                    break
+                except:
+                    ...
+            else:
+                raise e
             
         i = 0        
         if isinstance(args[i], Inference):
@@ -1095,11 +1129,7 @@ def given(apply, **kwargs):
         given = tuple(Inference(g, plausible=None) for g in given)
         given = definition + given
              
-        if isinstance(statement, tuple):
-            statement = given + statement
-        else:
-            statement = given + (statement,)
-        
+        statement = add(given, statement)
         return add(imply, statement)
 
     return given
@@ -1178,7 +1208,7 @@ balancedParanthesis = balancedParentheses(7)
 
 
 def detect_axiom(statement):
-#     // Eq << Eq.x_j_subset.apply(discrete.sets.subset.nonemptyset, Eq.x_j_inequality, evaluate=False)
+#     // Eq << Eq.x_j_subset.apply(discrete.sets.subset.nonempty, Eq.x_j_inequality, evaluate=False)
     matches = re.compile('\.apply\((.+)\)').search(statement)
     if matches:
         theorem = matches[1].split(',')[0].strip()

@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given, n=None, start=0):
+def apply(f0, f1, suffice, n=None, start=0):
     start = sympify(start)
-    f0, f1, suffice = given
     f0.of(Equal)
     f1.of(Equal)
     fn, fn2 = suffice.of(Suffice)
@@ -20,15 +19,13 @@ def apply(*given, n=None, start=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
 
+    n = Symbol(integer=True, positive=True)
+    f, g = Symbol(integer=True, shape=(oo,))
     Eq << apply(Equal(f[1], g[1]), Equal(f[2], g[2]), Suffice(Equal(f[n], g[n]), Equal(f[n + 2], g[n + 2])), n=n, start=1)
 
-    m = Symbol.m(integer=True, nonnegative=True, given=False)
-    h = Symbol.h(Lamda[m](f[2 * m + 1] - g[2 * m + 1]))
-
+    m = Symbol(integer=True, nonnegative=True, given=False)
+    h = Symbol(Lamda[m](f[2 * m + 1] - g[2 * m + 1]))
     Eq << h[0].this.definition
 
     Eq.is_zero = Eq[-1].this.rhs.subs(Eq[0])
@@ -52,7 +49,6 @@ def prove(Eq):
     Eq.odd = Eq[-1].reversed
 
     h = Symbol("h'", Lamda[m](f[2 * m + 2] - g[2 * m + 2]))
-
     Eq << h[0].this.definition
 
     Eq.is_zero_even = Eq[-1].this.rhs.subs(Eq[1])
@@ -79,7 +75,7 @@ def prove(Eq):
 
     Eq << algebra.eq.imply.all_eq.limit_is_even.apply(Eq.even, m)
 
-    Eq << Eq[-1].limits_subs(m, m - 2)
+    Eq << Eq[-1].this.apply(algebra.all.limits.subs.offset, -2)
 
     Eq <<= Eq[-1] & Eq[-3]
 

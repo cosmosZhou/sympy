@@ -10,8 +10,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True)
-    d = Symbol.d(integer=True)
+    n, d = Symbol(integer=True)
     Eq << apply(ceiling(n / d))
 
     Eq << Eq[0].this.lhs.apply(algebra.ceiling.to.floor)

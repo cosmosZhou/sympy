@@ -20,10 +20,9 @@ def apply(imply, i=None, j=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(positive=True, integer=True)
+    n = Symbol(positive=True, integer=True)
 
-    x = Symbol.x(shape=(n,), etype=dtype.integer)
-    y = Symbol.y(shape=(n,), etype=dtype.integer)
+    x, y = Symbol(shape=(n,), etype=dtype.integer)
 
     Eq << apply(Equal(x, y))
 

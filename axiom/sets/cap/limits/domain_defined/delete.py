@@ -1,11 +1,9 @@
 from util import *
 
-from axiom.algebra.sum.limits.domain_defined.delete import limits_delete
-# given : {e} ∩ s = a, |a| > 0 => e ∈ s
-
 
 @apply
 def apply(self):
+    from axiom.algebra.sum.limits.domain_defined.delete import limits_delete
     assert self.is_Cap
     return Equal(self, limits_delete(self))
 
@@ -13,17 +11,16 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(shape=(k,), integer=True)
+    i, j = Symbol(integer=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(shape=(k,), integer=True)
 
-    f = Function.f(etype=dtype.integer)
-    h = Function.h(etype=dtype.real)
+    f = Function(etype=dtype.integer)
+    h = Function(etype=dtype.real)
 
     Eq << apply(Cap[j:f(i), i:0:k](h(x[i], j)))
 
-    s = Symbol.s(Cap[j:f(i)](h(x[i], j)))
+    s = Symbol(Cap[j:f(i)](h(x[i], j)))
     Eq << s.this.definition
 
     Eq << sets.eq.imply.eq.cap.apply(Eq[-1], (i, 0, k))

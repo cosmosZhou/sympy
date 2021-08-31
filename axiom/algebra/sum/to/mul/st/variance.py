@@ -14,7 +14,7 @@ def apply(self):
         z, n = domain.of(Range)
 
     assert i.is_integer
-    
+
     assert z == 0
     xi, x_means = x_sub_x_means.of(Expr - Expr)
 
@@ -48,10 +48,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(integer=True, shape=(oo,))
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(Sum[i:n]((x[i] - Sum[j:n](x[j]) / n) ** 2))
 

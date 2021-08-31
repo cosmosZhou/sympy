@@ -12,12 +12,12 @@ def apply(x, n):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    x = Symbol.x(real=True)
-    k = Symbol.k(integer=True, nonnegative=True)
+    x = Symbol(real=True)
+    k = Symbol(integer=True, nonnegative=True)
     t = x ** k
     assert t.is_complex
     assert t.is_extended_real
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
+    n = Symbol(integer=True, nonnegative=True, given=False)
     Eq << apply(x, n)
 
     Eq.initial = Eq[0].subs(n, 0)

@@ -12,27 +12,25 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets
-    S = Symbol.S(etype=dtype.real)
-    e = Symbol.e(real=True)
-    t = Symbol.t(real=True)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    S = Symbol(etype=dtype.real)
+    e, t = Symbol(real=True)
+    f, g = Function(shape=(), integer=True)
 
     Eq << apply(Any[e:g(e) > 0](f(e) > 0))
 
-    A = Symbol.A(conditionset(e, g(e) > 0))
-    B = Symbol.B(conditionset(e, f(e) > 0))
+    A = Symbol(conditionset(e, g(e) > 0))
+    B = Symbol(conditionset(e, f(e) > 0))
 
     Eq.A_definition = A.this.definition
     Eq.B_definition = B.this.definition
 
-    Eq << Any[e:A](Contains(e, B), plausible=True)
+    Eq << Any[e:A](Element(e, B), plausible=True)
 
     Eq << Eq[-1].this.expr.rhs.definition
 
     Eq << Eq[-1].subs(Eq.A_definition)
 
-    Eq << sets.any_contains.imply.any_contains.limits.swap.apply(Eq[2], simplify=False)
+    Eq << sets.any_el.imply.any_el.limits.swap.apply(Eq[2], simplify=False)
 
     Eq << Eq[-1].this.expr.rhs.definition
 

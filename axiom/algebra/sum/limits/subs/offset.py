@@ -1,36 +1,44 @@
 from util import *
 
 
-@apply
-def apply(self, offset):
-    fx, (x, *ab) = self.of(Sum)    
+def limits_subs(cls, self, offset, simplify=True):
+    fx, (x, *ab), *limits = self.of(cls)
     fx = fx._subs(x, x + offset)
     if len(ab) == 2:
         a, b = ab
-        a -= offset
-        b -= offset
+        if a.is_boolean:
+            a = a._subs(x, x + offset)
+            b -= offset
+        else:
+            a -= offset
+            b -= offset
         limit = (x, a, b)
-    else:
+    elif ab:
         [domain] = ab
         if domain.is_boolean:
             domain = domain._subs(x, x + offset)
-            limit = (x, domain)
-    
-    return Equal(self, Sum(fx, limit), evaluate=False)
+        else:
+            domain -= offset
+        limit = (x, domain)
+    else:
+        limit = (x,)    
+    self = cls(fx, limit, *limits)
+    if simplify:
+        self = self.simplify()
+    return self
+
+@apply
+def apply(self, offset):
+    return Equal(self, limits_subs(Sum, self, offset), evaluate=False)
 
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True)
-    m = Symbol.m(integer=True)
-    f = Function.f(integer=True)
-    Eq << apply(Sum[n:1:m + 1](f(n)), 1)
+    a, b, n, d = Symbol(integer=True)
+    f = Function(integer=True)
+    Eq << apply(Sum[n:a:b](f(n)), d)
 
     Eq << Eq[0] - Eq[0].lhs
-
-    
-
-    
 
 
 if __name__ == '__main__':

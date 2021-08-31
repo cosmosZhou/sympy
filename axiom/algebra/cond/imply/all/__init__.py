@@ -1,10 +1,10 @@
 from util import *
 
 
-def all(self, x):    
+def all(self, x):
     assert not x.is_given
     assert self._has(x)
-    
+
     _x = x.unbounded
     return All(self._subs(x, _x), (_x, x.domain))
 
@@ -20,13 +20,13 @@ def apply(given, var=None):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(positive=True)
-    f = Function.f(shape=(), integer=True)
+    e = Symbol(positive=True)
+    f = Function(shape=(), integer=True)
     Eq << apply(f(e) > 0)
 
     Eq << algebra.all.given.ou.apply(Eq[1])
 
-    
+
 
 
 if __name__ == '__main__':

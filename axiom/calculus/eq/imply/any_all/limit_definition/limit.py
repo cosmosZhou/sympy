@@ -13,26 +13,18 @@ def apply(given, ε=None, δ=None):
 @prove
 def prove(Eq):
     from axiom import calculus, algebra
-    n = Symbol.n(integer=True, positive=True)
 
-    x = Symbol.x(real=True)
-#     x = Symbol.x(real=True, shape=(n,))
-    x = Symbol.x(integer=True)
-
-    f = Function.f(real=True, shape=())
-
-    x0 = Symbol.x0(real=True)
-#     x0 = Symbol.x0(real=True, shape=(n,))
-
+    n = Symbol(integer=True, positive=True)
+    x, x0, a = Symbol(real=True)
+    #x = Symbol.x(real=True, shape=(n,))
+    x = Symbol(integer=True)
+    f = Function(real=True, shape=())
+    #x0 = Symbol.x0(real=True, shape=(n,))
     x0 = oo
-#     x0 = -oo
-
-    a = Symbol.a(real=True)
-#     a = oo
-#     a = -oo
-
+    #x0 = -oo
+    #a = oo
+    #a = -oo
     direction = 1
-
     Eq << apply(Equal(Limit[x:x0:direction](f(x)), a))
 
     Eq << calculus.eq.to.any_all.limit_definition.apply(Eq[0])

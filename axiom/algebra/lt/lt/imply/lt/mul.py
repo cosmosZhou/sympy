@@ -14,10 +14,8 @@ def apply(a_less_than_b, x_less_than_y):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True, nonnegative=True)
-    x = Symbol.x(real=True, nonnegative=True)
-    b = Symbol.b(real=True)
-    y = Symbol.y(real=True)
+    a, x = Symbol(real=True, nonnegative=True)
+    b, y = Symbol(real=True)
 
     Eq << apply(a < b, x < y)
 
@@ -29,7 +27,7 @@ def prove(Eq):
 
     Eq << Eq[0].reversed
 
-    Eq << algebra.gt.imply.gt.relaxed.apply(Eq[-1], 0)
+    Eq << algebra.gt.imply.gt.relax.apply(Eq[-1], 0)
 
     Eq << Eq[1] - x
 

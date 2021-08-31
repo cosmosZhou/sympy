@@ -15,13 +15,13 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     from axiom import algebra
-    S = Symbol.S(etype=dtype.real)
-    e = Symbol.e(real=True)
-    f = Function.f(shape=(), integer=True)
+    S = Symbol(etype=dtype.real)
+    e = Symbol(real=True)
+    f = Function(shape=(), integer=True)
 
     Eq << apply(f(e) > 0, (e, S))
 
-    Eq << Eq[0].apply(algebra.cond.imply.et.all, cond=Contains(e, S))
+    Eq << Eq[0].apply(algebra.cond.imply.et.all, cond=Element(e, S))
 
     Eq << algebra.et.imply.et.apply(Eq[-1])
 

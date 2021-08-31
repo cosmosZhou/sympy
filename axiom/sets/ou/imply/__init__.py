@@ -1,2 +1,4 @@
-from . import contains
-from . import notcontains
+from . import notin
+from . import subset
+from . import supset
+from . import el

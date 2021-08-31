@@ -12,9 +12,8 @@ def apply(self):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    A = Symbol.A(shape=(n, n), complex=True)
-    B = Symbol.B(shape=(n, n), complex=True)
+    n = Symbol(integer=True, positive=True)
+    A, B = Symbol(shape=(n, n), complex=True)
     Eq << apply(Determinant(A @ B))
 
     Eq << (BlockMatrix([[A, ZeroMatrix(n, n)], [Identity(n), B]]) @ BlockMatrix([[Identity(n), -B], [ZeroMatrix(n, n), Identity(n)]])).this.apply(discrete.matmul.to.blockMatrix)

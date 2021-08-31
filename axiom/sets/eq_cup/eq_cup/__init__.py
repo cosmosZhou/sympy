@@ -1,2 +1,2 @@
-from . import notcontains
+from . import notin
 from . import eq_cup

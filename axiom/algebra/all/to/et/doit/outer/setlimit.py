@@ -3,7 +3,7 @@ from util import *
 
 def doit(All, self):
     xi, * limits, (i, s) = self.of(All)
-    
+
     assert limits
     assert s.is_FiniteSet
 
@@ -26,15 +26,10 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
+    x = Symbol(real=True, shape=(oo, oo))
+    i, j, a, b, c, d = Symbol(integer=True)
+    f = Function(integer=True)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    c = Symbol.c(integer=True)
-    d = Symbol.d(integer=True)
 
     Eq << apply(All[j:f(i), i:{a, b, c, d}](x[i, j] > 0))
 

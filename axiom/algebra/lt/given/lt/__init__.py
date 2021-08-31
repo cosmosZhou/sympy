@@ -1,1 +1,1 @@
-from . import relaxed
+from . import relax

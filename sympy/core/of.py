@@ -375,12 +375,12 @@ class Basic:
         return self.func.is_GreaterEqual
 
     @property
-    def is_Contains(self):
-        return self.func.is_Contains
+    def is_Element(self):
+        return self.func.is_Element
     
     @property
-    def is_NotContains(self):
-        return self.func.is_NotContains
+    def is_NotElement(self):
+        return self.func.is_NotElement
     
     @property
     def is_Subset(self):
@@ -423,15 +423,14 @@ class Basic:
         return self.func.is_Necessary
     
     @property
-    def is_All(self):
-        return self.func.is_All
+    def is_ForAll(self):
+        return self.func.is_ForAll
 
     @property
-    def is_Any(self):
-        return self.func.is_Any
+    def is_Exists(self):
+        return self.func.is_Exists
 
     def __str__(self):
-
 
         def repr(arg):
             if isinstance(arg, type):
@@ -465,6 +464,7 @@ class Basic:
             return ' @ '.join(args)
         
         if self.is_Pow:
+
             def need_parenthesis(e):
                 return e.is_Add or e.is_Mul or (e.is_Rational and not e.is_Integer)
             
@@ -2219,103 +2219,6 @@ class Basic:
         else:
             return None
 
-    def rewrite(self, *args, **hints):
-        """ Rewrite functions in terms of other functions.
-
-        Rewrites expression containing applications of functions
-        of one kind in terms of functions of different kind. For
-        example you can rewrite trigonometric functions as complex
-        exponentials or combinatorial functions as gamma function.
-
-        As a pattern this function accepts a list of functions to
-        to rewrite (instances of DefinedFunction class). As rule
-        you can use string or a destination function instance (in
-        this case rewrite() will use the str() function).
-
-        There is also the possibility to pass hints on how to rewrite
-        the given expressions. For now there is only one such hint
-        defined called 'deep'. When 'deep' is set to False it will
-        forbid functions to rewrite their contents.
-
-        Examples
-        ========
-
-        >>> from sympy import sin, exp
-        >>> from sympy.abc import x
-
-        Unspecified pattern:
-
-        >>> sin(x).rewrite(exp)
-        -I*(exp(I*x) - exp(-I*x))/2
-
-        Pattern as a single function:
-
-        >>> sin(x).rewrite(sin, exp)
-        -I*(exp(I*x) - exp(-I*x))/2
-
-        Pattern as a list of functions:
-
-        >>> sin(x).rewrite([sin, ], exp)
-        -I*(exp(I*x) - exp(-I*x))/2
-
-        """
-        if not args:
-            return self
-        else:
-            pattern = args[:-1]
-            if isinstance(args[-1], str):
-                rule = '_eval_rewrite_as_' + args[-1]
-            else:
-                try:
-                    rule = '_eval_rewrite_as_' + args[-1].__name__
-                except:
-                    rule = '_eval_rewrite_as_' + args[-1].__class__.__name__
-
-            if not pattern:
-                return self._eval_rewrite(None, rule, **hints)
-            else:
-                if iterable(pattern[0]):
-                    pattern = pattern[0]
-
-                pattern = [p for p in pattern if self.has(p)]
-
-                if pattern:
-                    return self._eval_rewrite(tuple(pattern), rule, **hints)
-                else:
-                    return self
-
-    _constructor_postprocessor_mapping = {}
-
-    @classmethod
-    def _exec_constructor_postprocessors(cls, obj):
-
-        # WARNING: This API is experimental.
-
-        # This is an experimental API that introduces constructor
-        # postprosessors for SymPy Core elements. If an argument of a SymPy
-        # expression has a `_constructor_postprocessor_mapping` attribute, it will
-        # be interpreted as a dictionary containing lists of postprocessing
-        # functions for matching expression node names.
-
-        clsname = obj.__class__.__name__
-        postprocessors = defaultdict(list)
-        for i in obj.args:
-            try:
-                postprocessor_mappings = (
-                    Basic._constructor_postprocessor_mapping[cls].items()
-                    for cls in type(i).mro()
-                    if cls in Basic._constructor_postprocessor_mapping
-                )
-                for k, v in chain.from_iterable(postprocessor_mappings):
-                    postprocessors[k].extend([j for j in v if j not in postprocessors[k]])
-            except TypeError:
-                pass
-
-        for f in postprocessors.get(clsname, []):
-            obj = f(obj)
-
-        return obj
-
     @property
     def latex(self):
         from sympy.printing.latex import latex
@@ -2395,37 +2298,7 @@ class Basic:
             
         if other.type in self.type or self.type in other.type:
             return other.is_subset(self)
-
-    def _contains(self, other):
-        ...
         
-    def contains(self, other):
-        other = sympify(other, strict=True)
-        ret = sympify(self._contains(other))
-        if ret is not None and ret.is_BooleanAtom:
-            return ret
-            
-        domain_assumed = other.domain_assumed
-        if domain_assumed:
-            intersect = domain_assumed & self
-            if not intersect:
-                return S.false
-            if intersect == domain_assumed:
-                return S.true
-
-    def infimum(self):
-        return self
-    
-    def supremum(self):
-        return self
-        
-    def handle_finite_sets(self, _):
-        ...
-        
-    @property
-    def domain_assumed(self):
-        ...
-    
     def _ask(self, fact):
         """
         Find the truth value for a property of an object.
@@ -2530,18 +2403,6 @@ class Basic:
             return self._assumptions['shape']
         return ()
     
-    def to_wolfram(self, global_variables):
-        from wolframclient.language import wl        
-        return getattr(wl, self.__class__.__name__)(*[arg.to_wolfram(global_variables) for arg in self.args])
-
-    def _eval_wolfram(self, session):
-        global_variables = set()
-        wlexpr = self.to_wolfram(global_variables)                
-        wlexpr = session.evaluate(wlexpr)
-        global_variables = {'Global`' + x.name: x for x in global_variables}
-        from wolframclient.language import expression        
-        return expression.sympify(wlexpr, **global_variables)
-
     @property
     def this(self):
         from sympy.logic.invoker import Identity
@@ -2551,7 +2412,7 @@ class Basic:
         return S.true
       
     @classmethod
-    def simplify_All(cls, self, *args):
+    def simplify_ForAll(cls, self, *args):
         ...
 
     @classmethod
@@ -2559,11 +2420,11 @@ class Basic:
         ...
 
     @classmethod
-    def simplify_Contains(cls, self, lhs, rhs):
+    def simplify_Element(cls, self, lhs, rhs):
         ...
 
     @classmethod
-    def simplify_NotContains(cls, self, lhs, rhs):
+    def simplify_NotElement(cls, self, lhs, rhs):
         ...
         
     @classmethod
@@ -2599,10 +2460,7 @@ class Basic:
     def universalSet(self):
         from sympy.sets.sets import UniversalSet
         return UniversalSet(etype=self.type)
-    
-    def astype(self, cls, *args, **kwargs):
-        return getattr(cls, 'rewrite_from_' + self.__class__.__name__)(self, *args, **kwargs)    
-    
+   
     def _eval_Subset_reversed(self, lhs):
         ...
     
@@ -2622,9 +2480,6 @@ class Basic:
     def ceiling(self):
         from sympy import Ceiling
         return Ceiling(self)
-    
-    def inference_status(self, child):
-        return False
     
     is_given = True
       
@@ -2704,7 +2559,7 @@ class Basic:
         else:
             other = Basic.__new__(Pow, other, S.NegativeOne)
             if self.is_Mul:
-                args = self.args + (other, )
+                args = self.args + (other,)
             else:
                 args = (self, other)
         return Basic.__new__(Mul, *args)
@@ -2768,8 +2623,6 @@ class Basic:
                     return basic.is_abstract
                 except AttributeError:
                     ...
-             
-             
 
     def of_subtraction_pattern(self):
         if self.is_Add and len(self.args) == 2:
@@ -2777,7 +2630,6 @@ class Basic:
             if mul.is_Mul:
                 if len(mul.args) == 2:
                     return mul.args[0] == -1
-
         
     def of_two_terms(self):
         if self.is_Add and len(self.args) == 2:

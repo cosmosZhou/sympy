@@ -19,17 +19,13 @@ def apply(any_all_0, any_all_1):
 @prove
 def prove(Eq):
     from axiom import algebra
-    N = Symbol.N(integer=True)
-    M = Symbol.M(integer=True)
+    N, M = Symbol(integer=True)
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
 
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
+    A, B = Symbol(etype=dtype.real)
 
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    f, g = Function(shape=(), integer=True)
 
     Eq << apply(Any[M](All[x:A](f(x) <= M)), Any[N](All[x:B](g(x) <= N)))
 

@@ -3,9 +3,8 @@ from util import *
 
 
 @apply
-def apply(*given, n=None, start=0):
+def apply(f0, f1, suffice, n=None, start=0):
     start = sympify(start)
-    f0, f1, suffice = given
     fn_fn1, fn2 = suffice.of(Suffice)
     fn, fn1 = fn_fn1.of(And)
 
@@ -25,9 +24,8 @@ def apply(*given, n=None, start=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    f, g = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(f[1] < g[1], f[2] < g[2], Suffice((f[n] < g[n]) & (f[n + 1] < g[n + 1]), f[n + 2] < g[n + 2]), n=n, start=1)
 

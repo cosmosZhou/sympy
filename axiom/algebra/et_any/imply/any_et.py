@@ -5,7 +5,7 @@ from util import *
 def apply(given):
     [*eqs] = given.of(And)
     for i, eq in enumerate(eqs):
-        if eq.is_Any:
+        if eq.is_Exists:
             break
     else:
         return
@@ -19,14 +19,11 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    y = Symbol.y(real=True, shape=(k,), given=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    h = Function.h(real=True)
-    b = Symbol.b(shape=(k,), real=True)
-    B = Symbol.B(etype=dtype.real * k, given=True)
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(k,), given=True)
+    f, g, h = Function(real=True)
+    b = Symbol(shape=(k,), real=True)
+    B = Symbol(etype=dtype.real * k, given=True)
     Eq << apply(And(Unequal(x, y), Unequal(f(x), g(y)), Any[b:B](Equal(f(x), h(b)))))
 
     Eq << Eq[0].this.args[1:].apply(algebra.cond.any.imply.any_et, simplify=None)

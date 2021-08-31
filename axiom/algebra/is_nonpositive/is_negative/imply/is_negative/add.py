@@ -12,11 +12,10 @@ def apply(is_nonpositive, is_negative):
 @prove
 def prove(Eq):
     from axiom import algebra
-    
-    a = Symbol.a(real=True)
-    y = Symbol.y(real=True)
+
+    a, y = Symbol(real=True)
     Eq << apply(a <= 0, y < 0)
-    
+
     Eq << algebra.le.lt.imply.lt.add.apply(Eq[0], Eq[1])
 
 

@@ -20,20 +20,12 @@ def apply(self, index=-1):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    i, j, a, b = Symbol(integer=True)
+    A, B, C, D = Symbol(etype=dtype.integer)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
 
-    C = Symbol.C(etype=dtype.integer)
-    D = Symbol.D(etype=dtype.integer)
 
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    h = Function.h(real=True)
+    f, g, h = Function(real=True)
 
     Eq << apply(Sum[j, i:C](Piecewise((f(i, j), Equal(j, a)), (g(i, j), Equal(j, b)), (0, True))))
 

@@ -9,12 +9,11 @@ def apply(n, k):
 
 @prove(proved=False)
 def prove(Eq):
-    k = Symbol.k(integer=True, nonnegative=True)
+    k, n = Symbol(integer=True, nonnegative=True)
 
-    n = Symbol.n(integer=True, nonnegative=True)
     Eq << apply(n, k)
 
-    
+
 if __name__ == '__main__':
     run()
 

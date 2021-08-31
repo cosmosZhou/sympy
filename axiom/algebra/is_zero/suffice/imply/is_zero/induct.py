@@ -2,10 +2,9 @@ from util import *
 
 
 @apply
-def apply(*given, n=None):
+def apply(f0, suffice, n=None):
     assert n.is_given == False
 
-    f0, suffice = given
     f0.of(Equal[0])
     fn, fn1 = suffice.of(Suffice)
 
@@ -20,11 +19,11 @@ def apply(*given, n=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
-    f = Symbol.f(integer=True, shape=(oo,))
+    n = Symbol(integer=True, nonnegative=True, given=False)
+    f = Symbol(integer=True, shape=(oo,))
     Eq << apply(Equal(f[0], 0), Suffice(Equal(f[n], 0), Equal(f[n + 1], 0)), n=n)
 
-    g = Symbol.g(Lamda[n](KroneckerDelta(f[n], 0)))
+    g = Symbol(Lamda[n](KroneckerDelta(f[n], 0)))
 
     Eq << g[0].this.definition
 

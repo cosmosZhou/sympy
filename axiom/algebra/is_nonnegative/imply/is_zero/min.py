@@ -10,11 +10,11 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
 
     Eq << apply(x >= 0)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.min.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.min.to.piece)
 
     Eq << algebra.cond.given.et.restrict.apply(Eq[-1], cond=Eq[0])
 

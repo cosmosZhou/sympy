@@ -2028,15 +2028,14 @@ class Stirling(Function):
     @classmethod
     def conditionset(cls, n, k, x=None):
         if x is None:
-            from sympy.core.numbers import oo
-            from sympy.core.symbol import dtype
-            x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-        from sympy import Cup, All, Range, Equal, Sum, conditionset
-        i = Symbol.i(integer=True)
+            from sympy import oo, dtype
+            x = Symbol(shape=(oo,), etype=dtype.integer, finite=True)
+        from sympy import Cup, All, Range, Equal, Sum, conditionset, Card
+        i = Symbol(integer=True)
         return conditionset(x[:k],
                                 Equal(Cup[i:k](x[i]), Range(0, n)) & 
-                                    Equal(Sum[i:k](abs(x[i])), n) & 
-                                    All[i:k](abs(x[i]) > 0))
+                                    Equal(Sum[i:k](Card(x[i])), n) & 
+                                    All[i:k](Card(x[i]) > 0))
 
     @classmethod
     def _eval(self, n, k):

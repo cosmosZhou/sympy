@@ -6,22 +6,22 @@ def find_denominator(expr):
         e = expr.exp
         if e.is_integer and e < 0:
             return expr.base
-        return 
-    
+        return
+
     if expr.is_Mul or expr.is_Add:
-        for arg in expr.args: 
+        for arg in expr.args:
             den = find_denominator(arg)
             if den is not None:
-                return den        
+                return den
 
-        
+
 @apply
-def apply(given): 
+def apply(given):
     lhs, rhs = given.of(Equal)
     den = find_denominator(lhs)
     if den is None:
         den = find_denominator(rhs)
-        
+
     return Unequal(den, 0)
 
 
@@ -29,10 +29,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(complex=True)
-    b = Symbol.b(complex=True)
-    c = Symbol.c(complex=True)
-    d = Symbol.d(complex=True)
+    a, b, c, d = Symbol(complex=True)
     Eq << apply(Equal(a / b + d, c))
 
     Eq << Eq[0].this.apply(algebra.eq.transposition, lhs=0)
@@ -42,5 +39,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
-    
+
 from . import st

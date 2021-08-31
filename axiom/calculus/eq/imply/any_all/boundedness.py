@@ -17,9 +17,9 @@ def apply(given, M=None):
 def prove(Eq):
     from axiom import calculus, algebra, sets
 
-    n = Symbol.n(integer=True)
-    x = Symbol.x(real=True, shape=(oo,), given=True)
-    a = Symbol.a(real=True, given=True)
+    n = Symbol(integer=True)
+    x = Symbol(real=True, shape=(oo,), given=True)
+    a = Symbol(real=True, given=True)
     Eq << apply(Equal(Limit[n:oo](x[n]), a))
 
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[0])
@@ -31,7 +31,7 @@ def prove(Eq):
 
     N = Eq.lt.variable
     a_max = Eq.lt.expr.expr.rhs
-    M = Symbol.M(Max(a_max, Maximize[n:N + 1](abs(x[n]))))
+    M = Symbol(Max(a_max, Maxima[n:N + 1](abs(x[n]))))
     Eq << M.this.definition
 
     Eq << LessEqual(a_max, M, plausible=True)
@@ -42,9 +42,9 @@ def prove(Eq):
 
     Eq.less_than = Eq[-1].this.expr.expr.apply(algebra.lt.imply.le.relax)
 
-    Eq << algebra.imply.all_ge.max.apply(Maximize[n:N + 1](abs(x[n])))
+    Eq << algebra.imply.all_ge.max.apply(Maxima[n:N + 1](abs(x[n])))
 
-    Eq << LessEqual(Maximize[n:N + 1](abs(x[n])), M, plausible=True)
+    Eq << LessEqual(Maxima[n:N + 1](abs(x[n])), M, plausible=True)
 
     Eq << Eq[-1].this.rhs.definition
 
@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << algebra.any.given.any.subs.apply(Eq[1], Eq[1].variable, M)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.given.is_positive)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.given.is_positive)
 
     Eq.is_nonzero = Unequal(M, 0, plausible=True)
 
@@ -76,9 +76,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.args[0].apply(algebra.abs_is_nonpositive.imply.is_zero)
 
-    
 
-    
+
+
 
     Eq << Eq[-1].this.apply(algebra.eq.eq.imply.eq.sub)
 

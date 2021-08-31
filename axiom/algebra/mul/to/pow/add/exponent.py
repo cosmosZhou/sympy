@@ -20,9 +20,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    t = Symbol.t(real=True)
+    x, y, t = Symbol(real=True)
     Eq << apply(t ** x * t ** y)
 
     Eq << Eq[-1].this.rhs.apply(algebra.pow.to.mul.split.exponent)

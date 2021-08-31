@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     (fi, (i, *iab)), (fj, (j, *jab)) = self.of(Sum * Sum)
     if i == j:
         _j = self.generate_var(excludes=i, integer=True)
@@ -18,11 +18,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    n, m = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    f, g = Function(integer=True)
     Eq << apply(Sum[i:m](f(i)) * Sum[i:n](g(i)))
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.separate)

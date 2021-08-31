@@ -16,9 +16,8 @@ def apply(given, upper=None, lower=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(domain=Interval(a, oo, left_open=True))
+    x, a = Symbol(real=True)
+    b = Symbol(domain=Interval(a, oo, left_open=True))
     Eq << apply(x <= a, b)
 
     Eq << Less(a, b, plausible=True)

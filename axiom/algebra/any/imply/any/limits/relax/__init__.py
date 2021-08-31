@@ -36,11 +36,9 @@ def apply(given, domain=None, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
-    x = Symbol.x(real=True)
-    z = Symbol.z(real=True)
-    f = Function.f(shape=(), integer=True)
+    a, b = Symbol(real=True, given=True)
+    x, z = Symbol(real=True)
+    f = Function(shape=(), integer=True)
     Eq << apply(Any[x:Interval(a, b, right_open=True)](f(x) > 0), domain=Interval(a, b))
 
     Eq << ~Eq[-1]

@@ -13,7 +13,7 @@ def prove(Eq):
     from axiom import algebra
 
     n = Symbol(integer=True, positive=True)
-    x = Symbol.x(complex=True, given=True)
+    x = Symbol(complex=True, given=True)
     Eq << apply(Equal(x ** n, 0))
 
     Eq << algebra.imply.suffice.is_zero.st.pow_is_zero.apply(x, n)

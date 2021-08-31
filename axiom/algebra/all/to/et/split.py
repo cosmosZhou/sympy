@@ -11,10 +11,9 @@ def apply(self, *, cond=None, wrt=None, evaluate=False):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True)
-    f = Function.f(real=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    x = Symbol(integer=True)
+    f = Function(real=True)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(All[x:A](f(x) > 0), cond=B)
 
     Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])

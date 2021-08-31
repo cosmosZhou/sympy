@@ -13,7 +13,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    a = Symbol.a(integer=True)
+    a = Symbol(integer=True)
 
     Eq << apply(Range(a, a + 4))
 

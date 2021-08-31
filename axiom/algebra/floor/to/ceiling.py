@@ -12,8 +12,8 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True)
-    d = Symbol.d(integer=True, positive=True)
+    n = Symbol(integer=True)
+    d = Symbol(integer=True, positive=True)
     Eq << apply(n // d)
 
     Eq << algebra.ceiling.to.floor.apply(Eq[0].rhs).reversed

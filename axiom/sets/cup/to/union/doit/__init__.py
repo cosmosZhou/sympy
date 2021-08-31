@@ -11,8 +11,8 @@ def apply(self):
 def prove(Eq):
     from axiom import sets
     n = 5
-    x = Symbol.x(etype=dtype.real, shape=(n,))
-    i = Symbol.i(integer=True)
+    x = Symbol(etype=dtype.real, shape=(n,))
+    i = Symbol(integer=True)
 
     Eq << apply(Cup[i](x[i]))
 

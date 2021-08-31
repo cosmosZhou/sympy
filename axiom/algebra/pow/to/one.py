@@ -20,11 +20,10 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, discrete
 
-    n = Symbol.n(integer=True)
-    a = Symbol.a(integer=True)
+    n, a = Symbol(integer=True)
     Eq << apply((-1) ** (n ** 2 + n * (2 * a + 1) + a ** 2 + a))
 
-    t = Symbol.t(2 * binomial(n + a + 1, 2))
+    t = Symbol(2 * binomial(n + a + 1, 2))
     Eq << t.this.definition
 
     Eq << algebra.eq.imply.eq.pow.apply(Eq[1], base=-1)

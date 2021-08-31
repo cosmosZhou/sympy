@@ -18,11 +18,10 @@ def apply(X0, X1):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n0 = Symbol.n0(integer=True, positive=True)
-    n1 = Symbol.n1(integer=True, positive=True)
-    p = Symbol.p(domain=Interval(0, 1, left_open=True, right_open=True))
-    X0 = Symbol.X0(distribution=BinomialDistribution(n0, p))
-    X1 = Symbol.X1(distribution=BinomialDistribution(n1, p))
+    n0, n1 = Symbol(integer=True, positive=True)
+    p = Symbol(domain=Interval(0, 1, left_open=True, right_open=True))
+    X0 = Symbol(distribution=BinomialDistribution(n0, p))
+    X1 = Symbol(distribution=BinomialDistribution(n1, p))
     Eq << apply(X0, X1)
 
     Eq << Eq[0].lhs.this.doit(evaluate=False)
@@ -41,8 +40,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.sum.as_multiple_limits)
 
-    (k, *_), (l, *_) = Eq[-1].lhs.limits
-    Eq << Eq[-1].this.lhs.limits_subs(k, k - l)
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.subs.offset, -Eq[-1].lhs.variables[1])
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.swap.intlimit.parallel)
 
@@ -54,7 +52,7 @@ def prove(Eq):
 
     Eq << discrete.eq.imply.eq.vector.independence.matmul_equal.apply(Eq[-1])
 
-    Eq << Eq[-1].limits_subs(k, Eq[0].lhs.arg.rhs)
+    Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[0].lhs.arg.rhs)
 
     Eq << Eq[-1].this.lhs.limits_subs(Eq[-1].lhs.variable, Eq[1].find(Sum).variable)
 

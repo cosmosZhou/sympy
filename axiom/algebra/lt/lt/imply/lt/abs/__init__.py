@@ -13,8 +13,7 @@ def apply(x_less_than_y, neg_x_less_than_y):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
 
     Eq << apply(x < y, -x < y)
 
@@ -42,8 +41,6 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del add
 from . import add
 from . import sub
-del mul
 from . import mul

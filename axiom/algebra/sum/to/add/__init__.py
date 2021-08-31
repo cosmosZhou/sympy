@@ -55,18 +55,15 @@ def apply(self, simplify=True):
 
 @prove(provable=False)
 def prove(Eq):
-    from axiom import algebra
-
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    C = Symbol.C(etype=dtype.integer, given=True)
-    f = Function.f(real=True)
-    h = Function.h(real=True)
-    x = Symbol.x(shape=(n,), real=True)
-    y = Symbol.y(shape=(n, n), real=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    C = Symbol(etype=dtype.integer, given=True)
+    f, h = Function(real=True)
+    x = Symbol(shape=(n,), real=True)
+    y = Symbol(shape=(n, n), real=True)
     #Eq << apply(Sum[i:C, j](f(i) + x[i] + h(j) + x[j] + y[i, j]))
     Eq << apply(Sum[i:n](f(i) + h(i)))
+
 
 if __name__ == '__main__':
     run()

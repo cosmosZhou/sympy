@@ -20,14 +20,10 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo, k))
-    i = Symbol.i(integer=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo, k))
+    i, a, b, c, d = Symbol(integer=True)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    c = Symbol.c(integer=True)
-    d = Symbol.d(integer=True)
 
     Eq << apply(All[i:{a, b, c, d}](x[i] > 0))
 

@@ -19,11 +19,9 @@ def apply(self, index=-1):
 
 @prove
 def prove(Eq):
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    y = Symbol.y(real=True, shape=(k,), given=True)
-    f = Function.f(shape=(k,), real=True)
-    g = Function.g(shape=(k,), real=True)
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(k,), given=True)
+    f, g = Function(shape=(k,), real=True)
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y))))
 
     Eq <<= Eq[1] & Eq[2]
@@ -32,5 +30,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del collect
 from . import collect

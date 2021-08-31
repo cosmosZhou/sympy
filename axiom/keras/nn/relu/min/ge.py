@@ -10,16 +10,14 @@ def apply(x, y, z):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    z = Symbol.z(real=True, given=True)
+    x, y, z = Symbol(real=True, given=True)
     Eq << apply(x, y, z)
 
     Eq << Eq[0].this.lhs.args[1].defun()
 
-    Eq << Eq[-1].this.lhs.args[0].apply(algebra.max.to.piecewise)
+    Eq << Eq[-1].this.lhs.args[0].apply(algebra.max.to.piece)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.add.to.piece)
 
     Eq << Eq[-1].this.lhs.args[1].expr.apply(algebra.add.to.min)
 
@@ -31,7 +29,7 @@ def prove(Eq):
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq <<= Eq[-2].apply(algebra.et.imply.et.invoke, algebra.cond.cond.imply.cond.subs, swap=True, ret=1), Eq[-1].apply(algebra.et.imply.et.invoke, algebra.cond.cond.imply.cond.subs, invert=True, swap=True, ret=1)
+    Eq <<= Eq[-2].apply(algebra.cond.cond.imply.cond.subs, swap=True, ret=1), Eq[-1].apply(algebra.cond.cond.imply.cond.subs, invert=True, swap=True, ret=1)
 
     Eq <<= Eq[-2].this.args[1] + y, Eq[-1].this.args[1] + z
 

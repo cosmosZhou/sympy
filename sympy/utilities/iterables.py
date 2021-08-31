@@ -946,7 +946,7 @@ def topological_sort_depth_first(graph):
             raise
 
         temporary_mark.add(n)
-
+        
         for m in graph[n]:
             visit(m)
 
@@ -959,8 +959,8 @@ def topological_sort_depth_first(graph):
     try:
         for n in graph:
             visit(n)
-    except Exception:
-        return None
+    except:
+        return
 
     return L
 

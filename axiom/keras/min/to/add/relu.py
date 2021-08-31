@@ -15,8 +15,7 @@ def apply(self, swap=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(Min(x, y))
 
     Eq << Eq[0].this.rhs.args[1].args[1].defun()

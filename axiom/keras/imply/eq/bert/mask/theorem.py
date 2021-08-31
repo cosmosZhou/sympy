@@ -16,14 +16,13 @@ def apply(a, Ξ):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    p = Function.p(integer=True, shape=())
-    a = Symbol.a(real=True, shape=(n, n))
+    n = Symbol(integer=True, positive=True)
+    p = Function(integer=True, shape=())
+    a = Symbol(real=True, shape=(n, n))
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
 
-    Ξ = Symbol.Ξ(Lamda[j:n, i:n](Bool(p(i, j) > 0)))
+    Ξ = Symbol(Lamda[j:n, i:n](Bool(p(i, j) > 0)))
     Eq << apply(a, Ξ)
 
     a_quote = Symbol.a(a - (1 - Ξ) * oo)
@@ -33,23 +32,23 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].args[1].args[1].args[1].definition
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].args[1].apply(algebra.bool.to.piecewise, simplify=None)
+    Eq << Eq[-1].this.rhs.args[1].args[1].args[1].apply(algebra.bool.to.piece, simplify=None)
 
-    Eq << Eq[-1].this.rhs.args[1].args[1].apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.args[1].args[1].apply(algebra.add.to.piece)
 
-    Eq << Eq[-1].this.rhs.args[1].apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.mul_piece.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece)
 
     Eq << algebra.eq.imply.eq.exp.apply(Eq[-1])
 
-    Eq.exp_a = Eq[-1].this.rhs.apply(algebra.exp.to.piecewise)
+    Eq.exp_a = Eq[-1].this.rhs.apply(algebra.exp.to.piece)
 
-    Eq << Eq[0].this.rhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[0].this.rhs.apply(algebra.bool.to.piece)
 
     Eq << Eq[-1] * exp(a[i, j])
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.exp_a, Eq[-1])
 

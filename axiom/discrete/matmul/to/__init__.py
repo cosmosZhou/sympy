@@ -5,3 +5,5 @@ from . import sum
 
 from . import exp
 from . import matrix
+from . import expr
+from . import mul

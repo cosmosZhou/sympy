@@ -13,8 +13,7 @@ def apply(is_negative, is_nonpositive):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    y = Symbol.y(real=True)
+    a, y = Symbol(real=True)
     Eq << apply(y < 0, a <= 0)
 
     Eq << algebra.lt.le.imply.lt.add.apply(Eq[0], Eq[1])

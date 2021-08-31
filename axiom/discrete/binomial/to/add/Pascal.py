@@ -9,9 +9,9 @@ def apply(n, k):
 @prove
 def prove(Eq):
     from axiom import discrete
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
 
-    k = Symbol.k(domain=Range(1, n))
+    k = Symbol(domain=Range(1, n))
 
     Eq << apply(n, k)
 

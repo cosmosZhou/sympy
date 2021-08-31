@@ -15,10 +15,10 @@ def apply(self):
 def prove(Eq):
     from axiom import sets, calculus
 
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
     Eq << apply(Cup[k:oo](Interval(k, k + 1, left_open=True)))
 
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
     Eq << sets.cup.to.interval.induct.left_open.apply(Cup[k:n](Interval(k, k + 1, left_open=True)))
 
     Eq << calculus.eq.imply.eq.limit.apply(Eq[-1], (n, oo))

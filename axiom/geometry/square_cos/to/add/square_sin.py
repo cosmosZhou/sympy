@@ -2,14 +2,14 @@ from util import *
 
 
 @apply
-def apply(self):    
+def apply(self):
     x = self.of(Cos ** 2)
     return Equal(self, 1 - sin(x) ** 2)
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(cos(x) ** 2)
 
     Eq << Eq[-1] - Eq[-1].rhs.args[1]

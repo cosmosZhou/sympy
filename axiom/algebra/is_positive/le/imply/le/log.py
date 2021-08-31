@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(is_positive, le):
-    x = is_positive.of(Expr > 0)    
+    x = is_positive.of(Expr > 0)
     lhs, rhs = le.of(LessEqual)
     assert lhs == x
     return LessEqual(log(lhs), log(rhs))
@@ -13,11 +13,10 @@ def apply(is_positive, le):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    b = Symbol.b(real=True)
+    x, b = Symbol(real=True)
     Eq << apply(x > 0, x <= b)
 
-    t = Symbol.t(positive=True)
+    t = Symbol(positive=True)
     Eq << (t <= b).this.apply(algebra.le.imply.le.log)
 
     Eq << algebra.suffice.imply.ou.apply(Eq[-1])

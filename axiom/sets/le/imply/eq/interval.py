@@ -14,13 +14,13 @@ def apply(given, left_open=False, right_open=False):
 
 @prove
 def prove(Eq):
-    from axiom import algebra, sets
+    from axiom import sets
 
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y = Symbol(real=True, given=True)
     Eq << apply(x <= y)
 
     Eq << Eq[0].reversed
+
     Eq << sets.ge.imply.eq.interval.apply(Eq[-1])
 
 

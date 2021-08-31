@@ -9,8 +9,7 @@ def apply(ne):
 
 @prove
 def prove(Eq):
-    b = Symbol.b(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
+    b, a = Symbol(real=True, given=True)
     Eq << apply(Unequal(a, b))
 
     Eq << ~Eq[1]

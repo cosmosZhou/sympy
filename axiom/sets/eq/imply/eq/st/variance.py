@@ -3,29 +3,29 @@ from util import *
 
 @apply
 def apply(eq):
-    (a, y), (((_a, _x), (x, X)), _X) = eq.of(Equal[Indexed, Sum[Indexed] / Abs])
+    (a, y), (((_a, _x), (x, X)), _X) = eq.of(Equal[Indexed, Sum[Indexed] / Card])
 
     assert a == _a
     assert X == _X and x == _x
 
     X_ = X | {y}
-    return Equal(Sum[x:X_]((a[x] - (Sum[x:X_](a[x])) / (abs(X_))) ** 2),
-                 Sum[x:X]((a[x] - (Sum[x:X](a[x])) / abs(X)) ** 2))
+    return Equal(Sum[x:X_]((a[x] - (Sum[x:X_](a[x])) / (Card(X_))) ** 2),
+                 Sum[x:X]((a[x] - (Sum[x:X](a[x])) / Card(X)) ** 2))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra, sets
 
-    y = Symbol.y(integer=True, given=True)
-    x = Symbol.x(integer=True)
-    a = Symbol.a(real=True, shape=(oo,), given=True)
-    X = Symbol.X(etype=dtype.integer, finiteset=True, given=True)
-    Eq << apply(Equal(a[y], Sum[x:X](a[x]) / abs(X)))
+    y = Symbol(integer=True, given=True)
+    x = Symbol(integer=True)
+    a = Symbol(real=True, shape=(oo,), given=True)
+    X = Symbol(etype=dtype.integer, finiteset=True, given=True)
+    Eq << apply(Equal(a[y], Sum[x:X](a[x]) / Card(X)))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=Contains(y, X))
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=Element(y, X))
 
-    Eq << Contains(y, X).this.apply(sets.contains.imply.eq.union)
+    Eq << Element(y, X).this.apply(sets.el.imply.eq.union)
 
     Eq <<= Eq[-1] & Eq[-3]
 
@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.apply(sets.eq.notcontains.imply.eq.st.variance)
+    Eq << Eq[-1].this.rhs.apply(sets.eq.notin.imply.eq.st.variance)
 
 
 if __name__ == '__main__':

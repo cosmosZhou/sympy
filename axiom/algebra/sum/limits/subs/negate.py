@@ -21,24 +21,21 @@ def apply(self, old, new):
 def prove(Eq):
     from axiom import algebra, sets
 
-    i = Symbol.i(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    c = Symbol.c(integer=True)
-    f = Function.f(real=True)
+    i, a, b, c = Symbol(integer=True)
+    f = Function(real=True)
     Eq << apply(Sum[i:a:b](f(i)), i, c - i)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.bool)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.negate.infinity)
 
-    Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.negate)
+    Eq << Eq[-1].this.rhs.find(Element).apply(sets.el.negate)
 
-    Eq << Eq[-1].this.rhs.limits_subs(i, i - c)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.subs.offset, -c)
 
-    Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.add, c)
+    Eq << Eq[-1].this.rhs.find(Element).apply(sets.el.add, c)
 
-    Eq << Eq[-1].this.rhs().find(Contains).simplify()
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.bool)
 
 
 if __name__ == '__main__':

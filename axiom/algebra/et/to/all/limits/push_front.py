@@ -6,7 +6,7 @@ def apply(self):
     [*eqs] = self.of(And)
 
     for i, eq in enumerate(eqs):
-        if eq.is_All:
+        if eq.is_ForAll:
             break
     else:
         return
@@ -29,11 +29,11 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(domain=Range(0, n))
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    a = Symbol(domain=Range(0, n))
 
-    x = Symbol.x(real=True, shape=(oo,))
+    x = Symbol(real=True, shape=(oo,))
 
     Eq << apply(And(All[i:a:n](x[i] > 0), x[a - 1] > 0, x[a - 2] > 0))
 

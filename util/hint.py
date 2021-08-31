@@ -18,15 +18,29 @@ keywords = ['False', 'None', 'True',
             'while', 'with', 
             'yield']
 
-keywords += ['emptyset', 'etype', 'evaluate', 'expand', 'expr',
+keywords += ['axiom',
              'base',
+             'countable', 'continuous',
              'deep',
-             'index', 'integer', 'invertible', 'is_complex', 'is_emptyset', 'is_integer', 'is_invertible', 'is_negative', 'is_nonemptyset', 'is_nonnegative', 'is_nonpositive', 'is_nonzero', 'is_positive', 'is_prime', 'is_real', 'is_singular', 'is_zero',
-             'negative', 'nonemptyset', 'nonnegative', 'nonpositive', 'nonzero',
+             'differentiable'
+             'empty', 'etype', 'evaluate', 'expand', 'expr',
+             'finite', 'finiteset',
+             'generate_var',
+             'index', 'infinite', 'integer', 'integrable', 'invertible',
+              
+             'is_complex', 'is_continuous', 'is_contable', 'is_empty', 'is_integer', 'is_integrable', 'is_invertible', 
+             'is_measurable', 'is_negative', 
+             'is_nonempty', 'is_nonnegative', 'is_nonpositive', 'is_nonzero', 
+             'is_positive', 'is_prime', 'is_real', 'is_singular', 'is_zero',
+             
+             'left_open', 
+             'measurable', 
+             'negative', 'nonempty', 'nonnegative', 'nonpositive', 'nonzero',
              'plausible', 'positive', 'prime', 'provable', 'proved'
-             'real',
+             'real', 'right_open',
              'set_comprehension', 'simplify', 'singular',
              'this',
+             'uncountable', 
              'zero']
 
 sections = ['algebra', 'calculus', 'discrete', 'geometry', 'keras', 'sets', 'stats']

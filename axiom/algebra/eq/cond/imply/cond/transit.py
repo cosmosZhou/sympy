@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given): 
-    equal, cond = given
+def apply(equal, cond): 
     b, x = equal.of(Equal)
     _x, a = cond.of(BinaryCondition)
     
@@ -17,11 +16,7 @@ def apply(*given):
 
 @prove
 def prove(Eq):
-    y = Symbol.y(real=True)
-    
-    x = Symbol.x(real=True)
-    
-    t = Symbol.t(real=True)
+    t, x, y = Symbol(real=True)
     
     Eq << apply(Equal(x, y), x >= t)
     

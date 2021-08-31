@@ -18,10 +18,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, y = Symbol(real=True)
+    f, g = Function(integer=True)
 
     Eq << apply(All[x:g(x) > 0, y:g(y) > 0](f(x, y) > 0))
 

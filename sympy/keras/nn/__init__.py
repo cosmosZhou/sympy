@@ -53,6 +53,10 @@ softmax = Softmax
 
 # https://tensorflow.google.cn/api_docs/python/tf/nn/relu?hl=en
 def relu(x):
+    '''
+    >>> x = Symbol(real=True) 
+    >>> relu(x).this.defun()
+    '''
     return Max(x, 0)
 
 
@@ -60,7 +64,8 @@ relu = Function.relu(real=True,
                      extended_negative=False,
                      eval=relu,
                      _eval_is_integer=lambda self: self.arg.is_integer,
-                     _eval_is_extended_positive=lambda self: self.arg.is_extended_positive
+                     _eval_is_extended_positive=lambda self: self.arg.is_extended_positive,
+                     __doc__=relu.__doc__
                      )
 
 

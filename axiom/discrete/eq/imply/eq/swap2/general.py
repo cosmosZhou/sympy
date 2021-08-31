@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    ((((x0, condition0), (xj, conditionj), (xi, conditioni)), (i, z, _n)), _S), (j, a, n), (x, S) = given.of(All[Contains[Lamda[Piecewise]]])
+    ((((x0, condition0), (xj, conditionj), (xi, conditioni)), (i, z, _n)), _S), (j, a, n), (x, S) = given.of(All[Element[Lamda[Piecewise]]])
     assert a == 1
     assert S == _S and S.is_set
     dtype = S.etype
@@ -16,30 +16,29 @@ def apply(given):
 
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.type
 
-    w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](Swap(n, i, j)))
 
-    return All(Contains(w[i, j] @ x, S), (x, S))
+    return All(Element(w[i, j] @ x, S), (x, S))
 
 
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(domain=Range(2, oo))
-    S = Symbol.S(etype=dtype.integer * n)
-    x = Symbol.x(**S.element_symbol().type.dict)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    Eq << apply(All(Contains(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S), (j, 1, n), (x, S)))
+    n = Symbol(domain=Range(2, oo))
+    S = Symbol(etype=dtype.integer * n)
+    x = Symbol(**S.element_symbol().type.dict)
+    i, j = Symbol(integer=True)
+    Eq << apply(All(Element(Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))), S), (j, 1, n), (x, S)))
 
     w = Eq[1].lhs.base
-    Eq << discrete.indexed.to.piecewise.swap1.helper.apply(x, w[0])
+    Eq << discrete.indexed.to.piece.swap1.helper.apply(x, w[0])
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i, 0, n), simplify=False)
 
     Eq.given = Eq[0].subs(Eq[-1].reversed)
 
-    Eq << discrete.matrix.elementary.swap.identity.apply(x, w)
+    Eq << discrete.lamda_indexed.to.matmul.swap.apply(x, w)
 
     Eq << Eq[-1].subs(Eq[-1].rhs.args[0].indices[0], 0)
 
@@ -59,7 +58,7 @@ def prove(Eq):
 
     Eq << algebra.all.all.imply.all_et.apply(Eq[-2], Eq[-3])
 
-    Eq << discrete.all_contains.imply.all_contains.swap2.apply(Eq[-1])
+    Eq << discrete.all_el.imply.all_el.swap2.apply(Eq[-1])
 
 
 if __name__ == '__main__':

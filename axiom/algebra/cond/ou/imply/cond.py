@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    cond, ou = given
+def apply(cond, ou):
     cond = cond.invert()
     for i, c in enumerate(ou.of(Or)):
         if c == cond:
@@ -16,12 +15,11 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    S = Symbol.S(etype=dtype.integer)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    x = Symbol(integer=True)
+    S = Symbol(etype=dtype.integer)
+    f, g = Function(shape=(), integer=True)
 
-    Eq << apply(Contains(x, S), NotContains(x, S) | (f(x) > g(x)))
+    Eq << apply(Element(x, S), NotElement(x, S) | (f(x) > g(x)))
 
     Eq <<= Eq[0] & Eq[1]
 

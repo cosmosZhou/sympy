@@ -4,12 +4,10 @@ from util import *
 @apply
 def apply(n, w=None):
     domain = Range(0, n)
-    t = Symbol.t(domain=domain)
-    i = Symbol.i(domain=domain)
-    j = Symbol.j(domain=domain)
+    t, i, j = Symbol(domain=domain)
     assert n >= 2
     if w is None:
-        w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
+        w = Symbol(Lamda[j, i](Swap(n, i, j)))
 
     return All(Equal(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
 
@@ -18,14 +16,14 @@ def apply(n, w=None):
 def prove(Eq):
     from axiom import discrete, algebra, sets
 
-    n = Symbol.n(domain=Range(2, oo))
+    n = Symbol(domain=Range(2, oo))
     Eq << apply(n)
 
     i, _ = Eq[-1].rhs.indices
-    j = Symbol.j(domain=Range(0, n))
+    j = Symbol(domain=Range(0, n))
     w = Eq[0].lhs.base
     t = Eq[1].expr.lhs.args[0].indices[0]
-    p = Symbol.p(complex=True)
+    p = Symbol(complex=True)
     x = Lamda[i:n](p ** i)
     eq = Eq[0].subs(i, t)
     assert eq.lhs.args[-1] == j
@@ -40,23 +38,23 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.lamda)
 
-    Eq << Eq[-1].this.rhs.expr.args[-1].expr.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[-1].expr.apply(algebra.add.to.piece)
 
-    Eq << Eq[-1].this.rhs.expr.args[1].expr.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[1].expr.apply(algebra.add.to.piece)
 
     Eq << Eq[-1].this.rhs().expr.simplify(wrt=True)
 
     Eq << Eq[-1].this.rhs.expr.args[-1].expr.apply(algebra.mul.to.add)
 
-    Eq << Eq[-1].this.rhs().expr.apply(algebra.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs().expr.apply(algebra.piece.swap, -2)
 
     Eq << Eq[-1].this.rhs().expr.args[2].cond.simplify()
 
-    Eq << Eq[-1].this.rhs.expr.args[2].cond.apply(sets.contains.to.ou.split.finiteset)
+    Eq << Eq[-1].this.rhs.expr.args[2].cond.apply(sets.el.to.ou.split.finiteset)
 
-    Eq << Eq[-1].this.rhs().expr.apply(algebra.piecewise.invert, index=1)
+    Eq << Eq[-1].this.rhs().expr.apply(algebra.piece.invert, 1)
 
-    Eq << Eq[-1].this.rhs.expr.apply(algebra.piecewise.subs, index=2)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.piece.subs, index=2)
 
     Eq << algebra.cond.imply.all.restrict.apply(Eq[-1], (j,))
 
@@ -72,9 +70,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this().expr.rhs().expr.simplify(wrt=True)
 
-    Eq << Eq[-1].this().expr.rhs().expr.args[-1].expr.args[1].apply(algebra.piecewise.swap.front)
+    Eq << Eq[-1].this().expr.rhs().expr.args[-1].expr.args[1].apply(algebra.piece.swap)
 
-    Eq << Eq[-1].this.expr.rhs.expr.apply(algebra.piecewise.to.kroneckerDelta)
+    Eq << Eq[-1].this.expr.rhs.expr.apply(algebra.piece.to.kroneckerDelta)
 
     Eq.www_expansion = Eq[-1].this().expr.rhs.expr.simplify()
 
@@ -83,9 +81,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this(j).rhs().expr.simplify(wrt=True)
 
-    Eq << Eq[-1].this.rhs.expr.apply(algebra.piecewise.to.kroneckerDelta)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.piece.to.kroneckerDelta)
 
-    
+
 
     Eq << Eq.www_expansion.subs(Eq[-1].reversed)
 

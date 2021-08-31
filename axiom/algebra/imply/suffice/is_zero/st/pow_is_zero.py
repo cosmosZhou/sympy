@@ -12,7 +12,7 @@ def prove(Eq):
     from axiom import algebra
 
     n = Symbol(integer=True, positive=True, given=False)
-    x = Symbol.x(complex=True, given=True)
+    x = Symbol(complex=True, given=True)
     Eq << apply(x, n)
 
     Eq << Eq[0].subs(n, 1)

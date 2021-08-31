@@ -11,11 +11,10 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
 
-    f = Function.f(shape=(), etype=dtype.real)
-    g = Function.g(shape=(), etype=dtype.real)
+    f, g = Function(shape=(), etype=dtype.real)
 
     Eq << apply(Subset(f(i), g(i)), (i, 0, n))
 

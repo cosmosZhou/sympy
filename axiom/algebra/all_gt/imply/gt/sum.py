@@ -11,10 +11,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    f, g = Function(shape=(), real=True)
 
     Eq << apply(All[i:n](Greater(f(i), g(i))))
 

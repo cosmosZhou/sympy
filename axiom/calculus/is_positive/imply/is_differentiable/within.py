@@ -16,12 +16,10 @@ def apply(is_positive, x0, x1, x=None):
 def prove(Eq):
     from axiom import calculus, algebra
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(domain=Interval(a, b, left_open=True, right_open=True))
-    f = Function.f(real=True)
-    x0 = Symbol.x0(domain=Interval(a, b, left_open=True, right_open=True))
-    x1 = Symbol.x1(domain=Interval(a, b, left_open=True, right_open=True))
+    a, b = Symbol(real=True)
+    f = Function(real=True)
+
+    x, x0, x1 = Symbol(domain=Interval(a, b, left_open=True, right_open=True))
     Eq << apply(Derivative(f(x), (x, 2)) > 0, x0, x1)
 
     Eq << algebra.cond.imply.all.apply(Eq[0], x)

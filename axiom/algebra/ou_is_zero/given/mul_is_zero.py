@@ -26,7 +26,7 @@ def prove(Eq):
     Eq << Equivalent(Equal(Bool(Unequal(a, 0) & Equal(a * b, 0)), 1) & Unequal(b, 0),
                      Eq[-1], plausible=True)
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
     Eq << Equivalent(Unequal(a, 0) & Equal(a * b, 0),
                      Unequal(a, 0) & Equal(b, 0), plausible=True)
@@ -41,7 +41,7 @@ def prove(Eq):
 
     Eq << Eq[4].subs(Eq[-1])
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
     Eq << Eq[-1].subs(Eq[1])
 

@@ -7,7 +7,7 @@ def process_slice(index, self_start, self_stop):
         start = self_start
     else:
         start = sympify(start)
-        
+
     if stop is None:
         stop = self_stop
     else:
@@ -18,40 +18,40 @@ def process_slice(index, self_start, self_stop):
             return
         if start < 0:
             start = self_stop + start
-        mid = start            
+        mid = start
     elif start == self_start:
         if stop < 0:
             stop = self_stop + stop
-        mid = stop 
+        mid = stop
     else:
         return start, stop
-    
-    return mid        
+
+    return mid
 
 def symbol_split(self, indices):
     assert self.shape
     return symbol_slice(self, indices, 0, self.shape[0])
-    
-def symbol_slice(self, index, self_start, self_stop, allow_empty=False): 
+
+def symbol_slice(self, index, self_start, self_stop, allow_empty=False):
     mid = process_slice(index, self_start, self_stop)
     if mid is None:
         return self
-    
+
     if allow_empty:
         assert mid >= self_start, "mid >= self_start => %s" % (mid >= self_start)
-    else: 
+    else:
         assert mid > self_start, "mid > self_start => %s" % (mid > self_start)
-         
+
     assert mid < self_stop, "mid < self_stop => %s" % (mid < self_stop)
-    
+
     if isinstance(mid, tuple):
         start, stop = mid
         assert start < stop, "start < stop => %s" % (start < stop)
         return BlockMatrix(self[self_start: start], self[start: stop], self[stop:self_stop])
-    
+
     return BlockMatrix(self[self_start:mid], self[mid:self_stop])
-     
-        
+
+
     return self
 
 @apply
@@ -64,14 +64,15 @@ def apply(self, index=-1):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n + 1,))
-    y = Symbol.y(real=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n + 1,))
+    y = Symbol(real=True, shape=(oo,))
     Eq << apply(x)
 
-    i = Symbol.i(domain=Range(0, n + 1))
+    i = Symbol(domain=Range(0, n + 1))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
-    Eq << Eq[-1].this.rhs.apply(algebra.piecewise.to.kroneckerDelta)
+
+    Eq << Eq[-1].this.rhs.apply(algebra.piece.to.kroneckerDelta)
 
 
 if __name__ == '__main__':

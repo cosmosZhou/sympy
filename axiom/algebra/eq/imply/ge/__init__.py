@@ -2,15 +2,14 @@ from util import *
 
 
 @apply
-def apply(given):
-    assert given.is_Equal
-    return GreaterEqual(*given.args)
+def apply(eq):
+    args = eq.of(Equal)
+    return GreaterEqual(*args)
 
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    a, b = Symbol(real=True)
     Eq << apply(Equal(a, b))
 
     Eq << Eq[1].subs(Eq[0])

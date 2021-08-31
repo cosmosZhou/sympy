@@ -10,7 +10,7 @@ def rewrite_as_Or(given):
         if isinstance(domain, list):
             cond = conditionset(var, *domain).simplify()
         elif domain.is_set:
-            cond = Contains(var, domain).simplify()
+            cond = Element(var, domain).simplify()
         else:
             assert domain.is_boolean
             cond = domain
@@ -23,7 +23,7 @@ def rewrite_as_Or(given):
 
     return Or(*eqs)
 
-    
+
 @apply
 def apply(given):
     return rewrite_as_Or(given)
@@ -31,14 +31,14 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True)
-    f = Function.f(shape=(), integer=True)    
-    A = Symbol.A(etype=dtype.integer, given=True)
-    
+    x = Symbol(integer=True)
+    f = Function(shape=(), integer=True)
+    A = Symbol(etype=dtype.integer, given=True)
+
     Eq << apply(All[x:A](f(x) > 0))
-    
+
     Eq << ~Eq[-1]
-    
+
     Eq <<= Eq[0] & Eq[-1]
 
 

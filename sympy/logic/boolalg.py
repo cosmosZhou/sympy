@@ -1123,8 +1123,8 @@ class And(LatticeOp, BooleanFunction):
         for arg in args:
             if arg:
                 continue            
-            if arg.is_BooleanFalse:
-                return arg.copy(**options)
+            if arg == False:
+                return S.BooleanFalse.copy(**options)
             valuable.add(arg)
 
         args = valuable
@@ -1244,35 +1244,35 @@ class And(LatticeOp, BooleanFunction):
         dict_notcontains = defaultdict(set)
         dict_domain = defaultdict(set)
         for eq in self._argset:
-            if eq.is_Contains:
+            if eq.is_Element:
                 e, S = eq.args
                 dict_contains[e].add(eq)
-            elif eq.is_NotContains:
+            elif eq.is_NotElement:
                 e, S = eq.args
                 dict_notcontains[e].add(eq)
             elif eq.is_Relational:
                 x, y = eq.args
                 dict_domain[x].add(eq)
                 
-        from sympy.sets import Intersection, Contains, NotContains, Union
+        from sympy.sets import Intersection, Element, NotElement, Union
         for e, eqs in dict_contains.items(): 
             if len(eqs) > 1: 
                 sets = [contains.rhs for contains in eqs] 
-                contains = Contains(e, Intersection(*sets))
+                contains = Element(e, Intersection(*sets))
                 argset = self._argset - eqs
                 return self.func(*argset, contains)
             if e in dict_notcontains:
                 _eqs = dict_notcontains[e]
                 sets = [contains.rhs for contains in eqs]
                 _sets = [contains.rhs for contains in _eqs]
-                contains = Contains(e, Intersection(*sets) - Union(*_sets))
+                contains = Element(e, Intersection(*sets) - Union(*_sets))
                 argset = self._argset - eqs - _eqs
                 return self.func(*argset, contains)                
                 
         for e, eqs in dict_notcontains.items(): 
             if len(eqs) > 1: 
                 sets = [contains.rhs for contains in eqs] 
-                eq = NotContains(e, Union(*sets))
+                eq = NotElement(e, Union(*sets))
                 argset = self._argset - eqs
                 return self.func(*argset, eq)
                             
@@ -1283,7 +1283,7 @@ class And(LatticeOp, BooleanFunction):
                 eq &= And(*eqs)
                 if eq.is_And:
                     return self
-                if eq.is_Contains:
+                if eq.is_Element:
                     return self
                 return self.func(*argset, eq).simplify()
                             
@@ -1339,7 +1339,7 @@ class And(LatticeOp, BooleanFunction):
         return sol
 
     @classmethod
-    def simplify_All(cls, self, function, *limits):
+    def simplify_ForAll(cls, self, function, *limits):
         res = self.simplify_int_limits(function)
         if res:
             function, limits = res
@@ -1363,6 +1363,13 @@ class And(LatticeOp, BooleanFunction):
             return Inference(self, **kwargs)
         return self
 
+    def _subs(self, old, new, **hints):
+        if old.is_And:
+            if not old._argset - self._argset:
+                complement = self._argset - old._argset
+                complement |= {new}
+                return And(*complement)
+        return LatticeOp._subs(self, old, new, **hints)
         
 class Or(LatticeOp, BooleanFunction):
     """
@@ -1493,48 +1500,51 @@ class Or(LatticeOp, BooleanFunction):
             if not common_terms: 
                 dict_contains = defaultdict(set)        
                 dict_notcontains = defaultdict(set)
-                dict_domain = defaultdict(set)
+                dict_domain = defaultdict(list)
                 for eq in self._argset:
-                    if eq.is_Contains:
+                    if eq.is_Element:
                         e, S = eq.args
                         dict_contains[e].add(eq)
-                    elif eq.is_NotContains:
+                    elif eq.is_NotElement:
                         e, S = eq.args
                         dict_notcontains[e].add(eq)
                     elif eq.is_Relational:
                         x, y = eq.args
-                        dict_domain[x].add(eq)
+                        dict_domain[x].append(eq)
                         
-                from sympy.sets import Intersection, Contains, NotContains, Union
+                from sympy.sets import Intersection, Element, NotElement, Union
                 for e, eqs in dict_contains.items(): 
                     if len(eqs) > 1: 
                         sets = [contains.rhs for contains in eqs] 
-                        contains = Contains(e, Union(*sets))
+                        contains = Element(e, Union(*sets))
                         argset = self._argset - eqs
                         return self.func(*argset, contains)
                     if e in dict_notcontains:
                         _eqs = dict_notcontains[e]
                         sets = [contains.rhs for contains in eqs]
                         _sets = [contains.rhs for contains in _eqs]
-                        contains = NotContains(e, Intersection(*_sets) - Union(*sets))                
+                        contains = NotElement(e, Intersection(*_sets) - Union(*sets))                
                         argset = self._argset - eqs - _eqs
                         return self.func(*argset, contains)                
                         
                 for e, eqs in dict_notcontains.items(): 
                     if len(eqs) > 1: 
                         sets = [contains.rhs for contains in eqs] 
-                        eq = NotContains(e, Intersection(*sets))
+                        eq = NotElement(e, Intersection(*sets))
                         argset = self._argset - eqs
                         return self.func(*argset, eq)
                                     
                 for e, eqs in dict_domain.items(): 
                     if len(eqs) > 1:
-                        argset = self._argset - eqs
-                        eq, *eqs = eqs
-                        eq |= Or(*eqs)
-                        if eq.is_Or:
-                            return self                        
-                        return self.func(*argset, eq).simplify()
+                        argset = self._argset - {*eqs}
+                        for i in range(1, len(eqs)):
+                            for j in range(i):
+                                cond = eqs[i] | eqs[j]
+                                if not cond.is_Or:
+                                    del eqs[i]
+                                    del eqs[j]
+                                    eqs.append(cond)                                    
+                                    return self.func(*argset, *eqs).simplify()
                                     
                 return self
         
@@ -1548,6 +1558,9 @@ class Or(LatticeOp, BooleanFunction):
     def subs(self, *args, **kwargs):
         if len(args) == 1:
             eq = args[0]
+            if isinstance(eq, dict):
+                return LatticeOp.subs(eq)
+            
             if eq.is_Quantifier:
                 return self.bfn(self.subs, eq)
             
@@ -1572,8 +1585,8 @@ class Or(LatticeOp, BooleanFunction):
             if new.is_Symbol:
                 if new.is_real:
                     if new.domain not in domain:
-                        from sympy import NotContains
-                        return Or(NotContains(new, domain), self._subs(old, new), equivalent=self)        
+                        from sympy import NotElement
+                        return Or(NotElement(new, domain), self._subs(old, new), equivalent=self)        
         
         result = LatticeOp.subs(self, *args, **kwargs)
         if all(isinstance(arg, Boolean) for arg in args): 

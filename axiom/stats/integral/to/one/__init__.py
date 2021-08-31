@@ -5,13 +5,13 @@ from util import *
 def apply(self):
     (X, x), (_x, *_) = self.of(Integral[Probability[Equal[Symbol, Symbol]]])
     assert x == _x
-    
-    return Equal(self, 1)    
+
+    return Equal(self, 1)
 
 
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(real=True, random=True)
+    x = Symbol(real=True, random=True)
     x_ = Symbol.x(real=True)
     Eq << apply(Integral[x_](Probability(x)))
 

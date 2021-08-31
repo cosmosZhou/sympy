@@ -16,8 +16,7 @@ def apply(is_positive, ge):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
+    x, a = Symbol(real=True, given=True)
     Eq << apply(a > 0, x > a)
 
     Eq << ~Eq[-1]

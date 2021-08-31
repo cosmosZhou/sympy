@@ -4,7 +4,7 @@ from util import *
 def doit(Sum, self):
     xi, (i, a, b), *limits = self.of(Sum[Tuple])
     assert i.is_integer
-    
+
     diff = b - a
     assert diff == int(diff)
 
@@ -23,15 +23,14 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    m = Symbol.m(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo, oo))
+    i, j = Symbol(integer=True)
+    m = Symbol(integer=True, positive=True)
 
     n = 5
     Eq << apply(Sum[j:n, i:m](x[i, j]))
 
-    s = Symbol.s(Lamda[i](Sum[j:n](x[i, j])))
+    s = Symbol(Lamda[i](Sum[j:n](x[i, j])))
 
     Eq << s[i].this.definition
 

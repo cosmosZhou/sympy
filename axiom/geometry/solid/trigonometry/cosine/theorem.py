@@ -35,23 +35,19 @@ def extract(x_constraint, y_constraint, z_constraint):
     if x > 0 and y > 0:
         return x, y, z
 
-    return None
-
 
 @apply
-def apply(*given):
-    x, y, z = extract(*given)
+def apply(le, le1, lt):
+    x, y, z = extract(le, le1, lt)
 
-    theta = Symbol.theta(real=True)
+    theta = Symbol(real=True)
     return Any[theta:Interval(pi / 3, pi, right_open=True)](Equal(z ** 2, x ** 2 + y ** 2 - 2 * x * y * cos(theta)))
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    x = Symbol.x(positive=True)
-    y = Symbol.y(positive=True)
-    z = Symbol.z(positive=True)
+    x, y, z = Symbol(positive=True)
     x_constraint = x <= z
     y_constraint = y <= z
     z_constraint = z < x + y
@@ -98,11 +94,11 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[-3]
 
-    Eq << Eq[-1].apply(sets.gt.le.imply.contains.interval)
+    Eq << Eq[-1].apply(sets.gt.le.imply.el.interval)
 
-    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], 2 * x * y)
+    Eq << sets.el.imply.el.div.interval.apply(Eq[-1], 2 * x * y)
 
-    Eq << sets.contains.imply.contains.acos.interval.apply(Eq[-1])
+    Eq << sets.el.imply.el.acos.interval.apply(Eq[-1])
 
     Eq << algebra.any.given.any.subs.apply(Eq.cos, Eq.cos.variable, Eq[-1].lhs)
 

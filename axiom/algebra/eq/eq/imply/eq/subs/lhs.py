@@ -6,24 +6,20 @@ def apply(eq, f_eq, swap=False, reverse=False, simplify=True, assumptions={}):
     from axiom.algebra.all_eq.cond.imply.all.subs import subs
     if swap:
         f_eq, eq = eq, f_eq
-        
+
     old, new = eq.of(Equal)
     lhs, rhs = f_eq.of(Equal)
-    
+
     if reverse:
         old, new = new, old
-    
+
     return Equal(subs(lhs, old, new, simplify=simplify, assumptions=assumptions), rhs)
 
 
 @prove
 def prove(Eq):
-    m = Symbol.m(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(real=True, shape=(m, n))
-    b = Symbol.b(real=True, shape=(m, n))
-    c = Symbol.c(real=True, shape=(m, n))
-    d = Symbol.d(real=True, shape=(m, n))
+    m, n = Symbol(integer=True, positive=True)
+    a, b, c, d = Symbol(real=True, shape=(m, n))
     Eq << apply(Equal(a, 2 * c), Equal(a * b, d * a))
 
     Eq << Eq[1].subs(Eq[0])

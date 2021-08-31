@@ -1,9 +1,9 @@
 from util import *
-from axiom.algebra.ge.le.imply.le.quadratic import quadratic_coefficient
 
 
 @apply
 def apply(given, x=None):
+    from axiom.algebra.le.ge.imply.le.quadratic import quadratic_coefficient
     fx = given.of(Equal[0])
     
     x, a, b, c = quadratic_coefficient(fx, x=x)
@@ -30,7 +30,7 @@ def prove(Eq):
 
     Eq << algebra.suffice.imply.et.suffice.apply(Eq[-1])
 
-    Eq <<= Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.apply(algebra.suffice.flatten)
+    #Eq <<= Eq[-2].this.apply(algebra.suffice.flatten), Eq[-1].this.apply(algebra.suffice.flatten)
 
 
 if __name__ == '__main__':

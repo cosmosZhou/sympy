@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    unequality, equality = given
+def apply(unequality, equality):
     if not unequality.is_Unequal:
         unequality, equality = equality, unequality
     assert unequality.is_Unequal
@@ -17,9 +16,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, a, b = Symbol(real=True)
     Eq << apply(Unequal(x, 0), Equal(x * a, b))
 
     Eq << Eq[1] / x

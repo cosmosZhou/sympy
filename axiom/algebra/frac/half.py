@@ -14,7 +14,7 @@ def apply(fraction):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True)
+    n = Symbol(integer=True)
     Eq << apply(frac(-n / 2))
 
     Eq << Eq[0].apply(algebra.cond.given.et.all, cond=Equal(n % 2, 0))

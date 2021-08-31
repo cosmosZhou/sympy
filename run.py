@@ -1,4 +1,4 @@
-#!/usr/local/python/bin/python3
+#!/usr/local/python3/bin/python3
 #!/home/lizhi/python/bin/python
 
 import os, sys, re
@@ -37,9 +37,9 @@ from multiprocessing import cpu_count
 from queue import PriorityQueue
 from functools import singledispatch 
 import random
-from util.utility import RetCode
-sep = os.path.sep
+from util.utility import RetCode, current_timestamp
 
+sep = os.path.sep
 
 def axiom_directory():
     directory = os.path.dirname(__file__)
@@ -73,13 +73,23 @@ def readFolder(rootdir, sufix='.py'):
         if path.endswith(sufix):
             name = name[:-len(sufix)]
             if name == '__init__':
-                line = Text(path).readline()                
+                line = Text(path).readline()                                
                 if not line:
+                    
                     lines = Text(path).readlines()
                     for i, line in enumerate(lines):
                         if line:
                             break
-                    
+                    else:
+                        i = len(lines)
+                        
+                    if not i:
+                        try:
+                            os.remove(path)
+                        except PermissionError as e:
+                            print(e)                            
+                        continue
+ 
                     try:
                         lines = lines[i:]
                         Text(path).writelines(lines)
@@ -131,7 +141,7 @@ def working_directory():
     return os.path.dirname(project_directory())
 
 
-def create_module(package, module, delete=False):
+def create_module(package, module):
     print('package =', package)
     print('module =', module)
     
@@ -151,9 +161,6 @@ def create_module(package, module, delete=False):
     
     if not hit:
         addition = 'from . import '
-        if delete:
-            addition = ('del %s\n' % module) + addition
-             
         addition += module
         
         if file.size and not file.endswith('\n'):
@@ -166,7 +173,10 @@ def run(package, debug=True):
     if debug:
         return os.system('python %s %s debug=True' % args)
     else: 
-        return os.popen('python %s %s' % args).readlines() 
+        try:
+            return os.popen('python %s %s' % args).readlines()
+        except UnicodeDecodeError as e:
+            print(e)
 
     
 def import_module(package, debug=False):
@@ -229,7 +239,7 @@ def process(package, debug=False):
             m = re.match('(.*)\.(\w+)', package)
             _package, module = m.groups()
             _package = 'axiom.' + _package
-            create_module(_package, module, delete=True)
+            create_module(_package, module)
             state = RetCode.failed
         
         file = project_directory() + sep + package.replace('.', sep) + '.py'        
@@ -246,7 +256,6 @@ start = time.time()
 
 user = os.path.basename(os.path.dirname(os.path.realpath(__file__)))
 assert user, 'user should not be empty!'
-
 
 def prove(**kwargs): 
     from util import MySQL
@@ -277,29 +286,31 @@ def prove(**kwargs):
         del tasks[key]
     
     for module in taskSet - tasks.keys():
-        tasks[module] = random.random()
+        tasks[module] = (random.random(), current_timestamp())
         
     packages = tuple([] for _ in range(cpu_count()))
     timings = [0 for _ in range(cpu_count())]
     
-    total_timing = sum(timing for task, timing in tasks.items())
+    total_timing = sum(timing for task, (timing, *_) in tasks.items())
     
     average_timing = total_timing / len(packages)
     print('total_timing =', total_timing)
     print('average_timing =', average_timing)
     
     tasks = [*tasks.items()]
-    tasks.sort(key=lambda pair: pair[1], reverse=True)
+    tasks.sort(key=lambda pair: pair[1][0], reverse=True)
     
     pq = PriorityQueue()
     for i, t in enumerate(timings):
         pq.put((t, i))
 
-    for task, timing in tasks:
+    timestampDict = {}
+    for task, (timing, timestamp) in tasks:
         t, i = pq.get()
         packages[i].append(task)
         timings[i] += timing
         pq.put((timings[i], i))
+        timestampDict[task] = timestamp
         
     for proc, timing in zip(packages, timings):
         print('timing =', timing)
@@ -308,10 +319,11 @@ def prove(**kwargs):
     print('total timing =', sum(timings))
     
     data = []
+    
     for array in process(packages, **kwargs):
-        data += post_process(array)
+        data += post_process(array, True, timestampDict=timestampDict)
         
-    MySQL.instance.load_data('tbl_axiom_py', data, replace=True)
+    MySQL.instance.load_data('tbl_axiom_py', data, replace=True, ignore=True)
     print('in all %d axioms' % Globals.count)
     print_summary()
 
@@ -338,10 +350,18 @@ def print_summary():
     print('total failed    =', len(Globals.failed))
 
         
-def post_process(result):
+def post_process(result, truncate=False, timestampDict=None):
     data = []
     for package, file, state, lapse, latex in result:
-        data.append((user, package, state, lapse, latex))
+        if truncate and len(latex) > 65535:
+            latex = latex[:65535]
+            
+        if timestampDict:
+            timestamp = timestampDict[package]
+        else:
+            timestamp = current_timestamp()
+            
+        data.append((user, package, state, lapse, latex, timestamp))
             
         if state is RetCode.plausible: 
             Globals.plausible.append(file)
@@ -435,9 +455,8 @@ def run_with_module(*modules, debug=True):
                         file = module_to_py(package)
                         __init__ = os.path.dirname(file) + '/__init__.py'
                         basename = os.path.basename(file)[:-3]
-                        for i, line in enumerate(Text(__init__)):
+                        for line in Text(__init__):
                             if re.match('from \. import %s' % basename, line):
-                                Text(__init__).insert(i, "del " + basename)
                                 for line in run(package, debug=False):
                                     m = re.match(r"seconds costed = (\d+\.\d+)", line)
                                     if m:
@@ -460,11 +479,10 @@ def run_with_module(*modules, debug=True):
                                         sql = m[1]
                                         text = Text(sql)
                                         for line in text:
-                                            m = re.match("replace into tbl_axiom_py values(\(.+\));$", line)
+                                            m = re.match('update tbl_axiom_py set state = "\w+", lapse = \S+, latex = ("[\s\S]+") where user = "\w+" and axiom = "\S+"', line)
                                             if m:
-                                                arr = eval(m[1])
-                                                latex = arr[-1]
-#                                         replace into tbl_axiom_py values("sympy","sets.contains.contains.imply.contains.interval.add","failed","0.046973228454589844","\\[x_{0} \\in \\left(a, b\\right]\\tag*{Eq[0]}\\]\\[x_{1} \\in \\left(c, d\\right]\\tag*{Eq[1]}\\]\\[x_{0} + x_{1} \\in \\left(a + c, b + d\\right]\\tag*{?=Eq[2]}\\]");
+                                                latex = eval(m[1])
+
                                         text.close()
                                         os.unlink(sql)
                                         continue
@@ -478,25 +496,24 @@ def run_with_module(*modules, debug=True):
             
     data = post_process(generator())
     import tempfile, uuid 
-    sql = "%s/%s.sql" % (tempfile.gettempdir(), uuid.uuid4())        
-    assert not os.path.exists(sql)
+    sqlFile = "%s/%s.sql" % (tempfile.gettempdir(), uuid.uuid4())        
+    assert not os.path.exists(sqlFile)
     
-    print("latex results are saved into:", sql)
+    print("latex results are saved into:", sqlFile)
     
-    sql = Text(sql)
-#         sql.clear()
-    file = sql.file
-    
-    from util.std import json_encode
-    for args in data: 
-        _args = []
-        for arg in args:
-            if not isinstance(arg, str):
-                arg = str(arg)
-                
-            _args.append(json_encode(arg))
-        
-        print("replace into tbl_axiom_py values(%s);" % ','.join(_args), file=file)
+    with open(sqlFile, 'w') as file:
+        for args in data: 
+            _args = []
+            for arg in args:
+                if not isinstance(arg, str):
+                    arg = str(arg)
+                    
+                _args.append(arg)
+            
+            user, axiom, state, lapse, latex, *_ = _args
+            statement = 'update tbl_axiom_py set state = "%s", lapse = %s, latex = "%s" where user = "%s" and axiom = "%s";' % (state, lapse, latex, user, axiom)
+            statement = statement.encode(encoding='utf8')
+            print(statement, file=file)                    
     
     print_summary()
     
@@ -544,9 +561,6 @@ if __name__ == '__main__':
                 elif key == 'hierarchy':
                     from util.hierarchy import insert_into_hierarchy
                     insert_into_hierarchy()
-#                 elif key == 'console':
-#                     from util.console import run
-#                     run(5000)
         else:
             prove(debug=debug, parallel=parallel)
     else: 

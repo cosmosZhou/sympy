@@ -1,8 +1,6 @@
-
 from util import *
 
 
-# given: A = B
 @apply
 def apply(given):
     assert given.is_Equal
@@ -13,8 +11,7 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    A = Symbol.A(etype=dtype.integer, given=True)
-    B = Symbol.B(etype=dtype.integer, given=True)
+    A, B = Symbol(etype=dtype.integer, given=True)
 
     equality = Equal(A, B, evaluate=False)
 

@@ -11,15 +11,13 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
+    x, y = Symbol(integer=True, given=True)
     Eq << apply(Unequal(x, y))
 
-    Eq << Eq[1].this.lhs.apply(algebra.kroneckerDelta.to.piecewise)
+    Eq << Eq[1].this.lhs.apply(algebra.kroneckerDelta.to.piece)
 
 
 if __name__ == '__main__':
     run()
 
-del mul
 from . import mul

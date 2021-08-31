@@ -3,9 +3,6 @@ from util import *
 
 @apply
 def apply(cond, exists):
-    if not exists.is_Any:
-        cond, exists = exists, cond
-
     if cond.is_Quantifier:
         assert not cond.variables_set & exists.variables_set
 
@@ -17,12 +14,11 @@ def apply(cond, exists):
 @prove
 def prove(Eq):
     from axiom import algebra
-    y = Symbol.y(real=True)
+    y = Symbol(real=True)
 
-    B = Symbol.B(etype=dtype.real, given=True)
+    B = Symbol(etype=dtype.real, given=True)
 
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    f, g = Function(shape=(), integer=True)
 
     Eq << apply(f(y) > 0, Any[y:B](g(y) > 0))
 

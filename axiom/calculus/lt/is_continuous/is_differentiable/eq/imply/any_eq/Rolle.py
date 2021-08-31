@@ -1,51 +1,49 @@
 from util import *
-
-
-from axiom.calculus.integral.intermediate_value_theorem import is_continuous
+from axiom.calculus.all_eq.imply.all_any_eq.intermediate_value_theorem import is_continuous
 
 
 def of_continuous(cond):
     (limit, fxi), (xi, a, b) = cond.of(All[Equal])
     fz, (z, _xi, dirt) = limit.of(Limit)
-    assert xi == _xi    
+    assert xi == _xi
     assert fz._subs(z, xi) == fxi
     assert dirt == 0
-    return fz, (z, a, b)    
+    return fz, (z, a, b)
 
 
 def of_differentiable(cond, open=True):
     if open:
-        (derivative, R), (x, ab) = cond.of(All[Contains])
-        a, b = ab.of(Interval)    
+        (derivative, R), (x, ab) = cond.of(All[Element])
+        a, b = ab.of(Interval)
         assert ab.left_open and ab.right_open
     else:
-        (derivative, R), (x, a, b) = cond.of(All[Contains])
-        
+        (derivative, R), (x, a, b) = cond.of(All[Element])
+
     assert R.is_UniversalSet
-    
+
     fx, *limits_d = derivative.of(Derivative)
     assert len(limits_d) == 1
     _x, one = limits_d[0]
     assert _x == x
     assert one == 1
-    
+
     return fx, (x, a, b)
 
 
 def is_differentiable(f, a, b, x=None, open=True, plausible=None):
-    if x is None: 
+    if x is None:
         x = Symbol.x(real=True)
-        
+
     if open:
         left_open = right_open = True
     else:
         left_open = right_open = False
-        
+
     kwargs = {}
     if plausible:
         kwargs['plausible'] = plausible
-        
-    return All[x:Interval(a, b, left_open=left_open, right_open=right_open)](Contains(Derivative(f(x), x), Reals), **kwargs)
+
+    return All[x:Interval(a, b, left_open=left_open, right_open=right_open)](Element(Derivative(f(x), x), Reals), **kwargs)
 
 
 @apply
@@ -57,19 +55,18 @@ def apply(lt, is_continuous, is_differentiable, equal):
     assert _z == z
     assert _a == a == __a
     assert _b == b == __b
-    
+
     fa, fb = equal.of(Equal)
     assert fz._subs(z, a) == fa
     assert fz._subs(z, b) == fb
-    
-    return Any[z:Interval(a, b, left_open=True, right_open=True)](Equal(Derivative(fz, z), 0))               
+
+    return Any[z:Interval(a, b, left_open=True, right_open=True)](Equal(Derivative(fz, z), 0))
 
 
 @prove(proved=False)
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    f = Function.f(shape=(), real=True)
+    a, b = Symbol(real=True)
+    f = Function(shape=(), real=True)
     Eq << apply(a < b, is_continuous(f, a, b), is_differentiable(f, a, b), Equal(f(a), f(b)))
 
 

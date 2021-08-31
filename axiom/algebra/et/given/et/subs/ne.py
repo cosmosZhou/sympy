@@ -26,11 +26,10 @@ def apply(imply, index=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    S = Symbol.S(etype=dtype.integer)
-    f = Function.f(integer=True)
-    Eq << apply(NotContains(KroneckerDelta(x, y) + f(x), S) & Unequal(x, y))
+    x, y = Symbol(integer=True)
+    S = Symbol(etype=dtype.integer)
+    f = Function(integer=True)
+    Eq << apply(NotElement(KroneckerDelta(x, y) + f(x), S) & Unequal(x, y))
 
     Eq << algebra.ne.imply.is_zero.kroneckerDelta.apply(Eq[1], simplify=None)
 

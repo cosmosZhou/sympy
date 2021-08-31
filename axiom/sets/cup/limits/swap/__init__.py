@@ -13,12 +13,11 @@ def apply(self):
 def prove(Eq):
     from axiom import sets, algebra
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    m = Symbol.m(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    f = Symbol.f(shape=(oo,), etype=dtype.real)
-    g = Symbol.g(shape=(oo, oo), etype=dtype.real)
+    i, j = Symbol(integer=True)
+    m = Symbol(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    f = Symbol(shape=(oo,), etype=dtype.real)
+    g = Symbol(shape=(oo, oo), etype=dtype.real)
     Eq << apply(Cup[i:0:m, j:0:n](f[i] & g[i, j]))
 
     #Eq.initial = Eq[0].subs(n, 1)
@@ -30,14 +29,14 @@ def prove(Eq):
 
     Eq.induct_dissected = Eq[-1].this.lhs.find(Cup).apply(sets.cup.to.union.doit.outer.setlimit)
 
-    s = Symbol.s(Cup[j:0:n + 1](f[i] & g[i, j]))
+    s = Symbol(Cup[j:0:n + 1](f[i] & g[i, j]))
     Eq << s.this.definition
 
     Eq << Eq[-1].apply(sets.eq.imply.eq.cup, (i, 0, m))
 
     Eq << Eq[-2].this.rhs.apply(sets.cup.to.union.split, cond={n})
 
-    Eq << Eq[-1].this.rhs.args[1].apply(sets.intersection.to.cup)
+    Eq << Eq[-1].this.rhs.args[1].apply(sets.intersect.to.cup)
 
     Eq << Eq[-1].this.rhs.args[0].find(Cup).apply(sets.cup.to.union.doit.setlimit, simplify=None, evaluate=False)
 

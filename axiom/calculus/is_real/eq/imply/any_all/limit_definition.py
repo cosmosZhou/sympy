@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(is_real, given, epsilon=None, delta=None):
-    _a, R = is_real.of(Contains)
+    _a, R = is_real.of(Element)
     assert R == Reals
     l, a = given.of(Equal)
     if a.is_Limit:
@@ -20,19 +20,18 @@ def apply(is_real, given, epsilon=None, delta=None):
 def prove(Eq):
     from axiom import sets, algebra, calculus
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True)
-    f = Function.f(real=True, shape=())
-    x0 = Symbol.x0(real=True)
-    a = Symbol.a(complex=True)
+    n = Symbol(integer=True, positive=True)
+    x, x0 = Symbol(real=True)
+    f = Function(real=True, shape=())
+    a = Symbol(complex=True)
     direction = 1
-    Eq << apply(Contains(a, Reals), Equal(Limit[x:x0:direction](f(x)), a))
+    Eq << apply(Element(a, Reals), Equal(Limit[x:x0:direction](f(x)), a))
 
-    Eq << sets.contains.imply.any_eq.apply(Eq[0], var='A')
+    Eq << sets.el.imply.any_eq.apply(Eq[0], var='A')
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[1], Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.subs)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs, ret=0)
 
     Eq << Eq[-1].this.expr.args[1].apply(calculus.eq.imply.any_all.limit_definition)
 

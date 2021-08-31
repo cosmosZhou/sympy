@@ -19,11 +19,9 @@ def apply(given, i=None):
 def prove(Eq):
     from axiom import discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(shape=(n,), real=True, given=True)
-    y = Symbol.y(shape=(n,), real=True, given=True)
-    i = Symbol.i(domain=Range(0, n))
-    j = Symbol.j(domain=Range(0, n))
+    n = Symbol(integer=True, positive=True)
+    x, y = Symbol(shape=(n,), real=True, given=True)
+    i, j = Symbol(domain=Range(0, n))
     Eq << apply(Equal(x @ Swap(n, i, j), y))
 
     y_ = Symbol.y(Eq[0].lhs)

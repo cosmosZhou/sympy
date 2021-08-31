@@ -2,9 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given, n=None, k=None, hypothesis=False):
-    f0, suffice = given
-
+def apply(f0, suffice, n=None, k=None, hypothesis=False):
     fk, fn = suffice.of(Suffice)
 
     start, _n = k.domain.of(Range)
@@ -28,10 +26,9 @@ def apply(*given, n=None, k=None, hypothesis=False):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, nonnegative=True)
-    k = Symbol.k(domain=Range(0, n))
-    f = Symbol.f(shape=(oo,), real=True)
-    g = Symbol.g(shape=(oo,), real=True)
+    n = Symbol(integer=True, nonnegative=True)
+    k = Symbol(domain=Range(0, n))
+    f, g = Symbol(shape=(oo,), real=True)
     Eq << apply(f[0] > g[0], Suffice(f[k] > g[k], f[n] > g[n]), n=n, k=k, hypothesis=True)
 
     Eq << Eq[1].this.lhs.apply(algebra.cond.given.all, k)

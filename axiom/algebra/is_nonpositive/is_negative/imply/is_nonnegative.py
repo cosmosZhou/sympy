@@ -11,8 +11,7 @@ def apply(is_nonpositive_x, is_negative_y):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
 
     Eq << apply(x <= 0, y < 0)
 

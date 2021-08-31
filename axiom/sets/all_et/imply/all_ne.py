@@ -6,7 +6,7 @@ def apply(given):
     (all_historic, all_n), (i, zero, n_1) = given.of(All[And])
     assert zero.is_zero
 
-    if all_n.is_All:
+    if all_n.is_ForAll:
         all_n, all_historic = all_historic, all_n
 
     (lhs, rhs), (j, zero, i_1) = all_historic.of(All[Unequal])
@@ -34,10 +34,9 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, sets
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(shape=(oo,), etype=dtype.integer, finite=True)
     Eq << apply(All[i:n](Unequal(x[n], x[i]) & All[j:i](Unequal(x[i], x[j]))))
 
     Eq << algebra.all_et.imply.et.all.apply(Eq[0])

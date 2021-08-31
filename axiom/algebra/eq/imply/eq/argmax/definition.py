@@ -2,21 +2,20 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     x0, argmax_fx = given.of(Equal)
     function, limit = argmax_fx.of(ArgMax)
     x = limit[0]
     fx0 = function._subs(x, x0)
-    return Equal(fx0, Maximize(function, limit))
+    return Equal(fx0, Maxima(function, limit))
 
 
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
+    x, x0 = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(Equal(x0, ArgMax[x](f(x))))
-    
-    
+
+
 if __name__ == '__main__':
     run()

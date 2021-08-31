@@ -12,9 +12,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True, given=True)
-    a = Symbol.a(integer=True, given=True)
-    b = Symbol.b(integer=True, given=True)
+    x, a, b = Symbol(integer=True, given=True)
 
     Eq << apply(x < Min(a, b))
 

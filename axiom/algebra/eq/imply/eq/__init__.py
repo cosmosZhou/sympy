@@ -1,7 +1,5 @@
-from . import piecewise
 from . import lamda
 from . import invoke
-from . import product
 from . import max
 from . import argmin
 from . import argmax
@@ -14,8 +12,6 @@ from . import log
 from . import swap
 from . import getitem
 from . import geometric_progression
-from . import maximize
-from . import minimize
 from . import div
 from . import subs
 from . import rsolve
@@ -29,3 +25,9 @@ from . import simple_equation
 from . import conjugate
 from . import arg
 from . import mod
+from . import prod
+from . import minima
+from . import maxima
+from . import sup
+from . import piece
+from . import inf

@@ -1570,7 +1570,7 @@ class Shift(Identity):
         from sympy.concrete.expr_with_limits import Lamda
         from sympy.functions.elementary.piecewise import Piecewise
         from sympy.core.relational import Equal, Less 
-        from sympy.sets import Contains, Range
+        from sympy.sets import Element, Range
         if j is None:
             return_reference = True
             j = self.generate_var(excludes=i.free_symbols, integer=True)
@@ -1587,7 +1587,7 @@ class Shift(Identity):
 #            i col    j col      
 # delete i th row insert into after j th row        
         piecewise_ij = Piecewise((KroneckerDelta(self.i, j), Equal(i, self.j)),
-                                 (KroneckerDelta(i + 1, j), Contains(i, Range(self.i, self.j))),
+                                 (KroneckerDelta(i + 1, j), Element(i, Range(self.i, self.j))),
                                  (KroneckerDelta(i, j), True))
         
 #     1   0   0   0   0   0
@@ -1601,7 +1601,7 @@ class Shift(Identity):
 #            j col    i col      
 # delete i th row insert into before j th row        
         piecewise_ji = Piecewise((KroneckerDelta(i, self.j), Equal(j, self.i)),
-                                 (KroneckerDelta(i, j + 1), Contains(j, Range(self.j, self.i))),
+                                 (KroneckerDelta(i, j + 1), Element(j, Range(self.j, self.i))),
                                  (KroneckerDelta(i, j), True))
         
         piecewise = Piecewise((KroneckerDelta(i, j), Equal(self.i, self.j)),

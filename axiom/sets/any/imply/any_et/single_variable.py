@@ -8,18 +8,18 @@ def apply(given):
         rhs = Range(*rhs) if lhs.is_integer else Interval(*rhs)
     else:
         [rhs] = rhs
-    
-    return Any[lhs]((function & Contains(lhs, rhs)).simplify())
+
+    return Any[lhs]((function & Element(lhs, rhs)).simplify())
 
 
 @prove
 def prove(Eq):
-    S = Symbol.S(etype=dtype.real)
-    e = Symbol.e(real=True)
-    f = Function.f(shape=(), integer=True)
+    S = Symbol(etype=dtype.real)
+    e = Symbol(real=True)
+    f = Function(shape=(), integer=True)
 
     Eq << apply(Any[e:S](f(e) > 0))
-    
+
     Eq << Eq[-1].simplify()
 
 

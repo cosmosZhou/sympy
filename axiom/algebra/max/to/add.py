@@ -37,17 +37,16 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    r = Symbol.r(real=True, positive=True)
+    x, y = Symbol(real=True)
+    r = Symbol(real=True, positive=True)
 
     Eq << apply(Max(x * r + 1, y * r + 1))
 
-    Eq << Eq[-1].this.lhs.apply(algebra.max.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.max.to.piece)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.to.add)
+    Eq << Eq[-1].this.lhs.apply(algebra.piece.to.add)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.max.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.max.to.piece)
 
 if __name__ == '__main__':
     run()

@@ -24,12 +24,10 @@ def apply(self):
 def prove(Eq):
     from axiom import calculus
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    y = Symbol.y(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, x0, y = Symbol(real=True)
+    f, g = Function(real=True)
     Eq << apply(Limit[x:x0](f(x)) * y)
+
     Eq << Eq[0].this.rhs.apply(calculus.limit.to.mul)
 
 

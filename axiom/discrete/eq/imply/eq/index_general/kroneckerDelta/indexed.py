@@ -2,24 +2,26 @@ from util import *
 
 
 @apply
-def apply(*given, i=None, j=None):
-    nonoverlapping, x_equal = given
-    a_set_comprehension, n = nonoverlapping.of(Equal[Abs])
+def apply(nonoverlapping, x_equal, i=None, j=None):
+    a_set_comprehension, n = nonoverlapping.of(Equal[Card])
     (xk, limit), _a_set_comprehension = x_equal.of(Equal[Cup[FiniteSet]])
-    x = Lamda(xk, limit).simplify()
-    assert x.shape == (n,)
+    x = Lamda(xk, limit).simplify()    
+    [_n] = x.shape
+    assert n == _n
     
     assert _a_set_comprehension == a_set_comprehension
         
     ak, limit = a_set_comprehension.of(Cup[FiniteSet])
     a = Lamda(ak, limit).simplify()
-    assert a.shape == (n,)
+    [_n] = a.shape
+    assert n == _n
+    
     
     if j is None:
-        j = Symbol.j(domain=Range(0, n), given=True)
+        j = Symbol(domain=Range(0, n), given=True)
 
     if i is None:
-        i = Symbol.i(domain=Range(0, n), given=True)
+        i = Symbol(domain=Range(0, n), given=True)
 
     assert j >= 0 and j < n
     assert i >= 0 and i < n
@@ -30,18 +32,14 @@ def apply(*given, i=None, j=None):
 @prove(proved=False)
 def prove(Eq):
 
-    n = Symbol.n(domain=Range(2, oo))
+    n = Symbol(domain=Range(2, oo))
 
-    x = Symbol.x(shape=(oo,), integer=True)
-    
-    a = Symbol.a(shape=(oo,), integer=True)
+    x, a = Symbol(shape=(oo,), integer=True)
+    k = Symbol(integer=True)
 
-    k = Symbol.k(integer=True)
+    i, j = Symbol(domain=Range(0, n), given=True)
 
-    j = Symbol.j(domain=Range(0, n), given=True)
-    i = Symbol.i(domain=Range(0, n), given=True)
-
-    Eq << apply(Equal(abs(a[:n].set_comprehension(k)), n),
+    Eq << apply(Equal(Card(a[:n].set_comprehension(k)), n),
                 Equal(x[:n].set_comprehension(k), a[:n].set_comprehension(k)),
                 i=i, j=j)
 

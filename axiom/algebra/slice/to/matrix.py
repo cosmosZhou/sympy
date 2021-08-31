@@ -19,21 +19,20 @@ def convert(self):
     else:
         return
 
-    
+
 @apply
 def apply(self):
     rhs = convert(self)
-    
+
     return Equal(self, rhs, evaluate=False)
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
     n = 4
-    a = Symbol.a(real=True, shape=(oo,))
+    a = Symbol(real=True, shape=(oo,))
 
     Eq << apply(a[i:i + 4])
 

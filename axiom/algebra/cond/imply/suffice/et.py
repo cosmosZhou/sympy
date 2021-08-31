@@ -11,8 +11,8 @@ def apply(given, *, cond=None):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(integer=True)
-    f = Function.f(integer=True, shape=())
+    e = Symbol(integer=True)
+    f = Function(integer=True)
     Eq << apply(f(e) > 0, cond=e > 0)
 
     Eq << Eq[-1].apply(algebra.suffice.given.ou)

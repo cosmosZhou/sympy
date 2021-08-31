@@ -11,14 +11,14 @@ def apply(x, d=1, evaluate=False):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True)
-    d = Symbol.d(integer=True, positive=True)
-     
+    x = Symbol(integer=True)
+    d = Symbol(integer=True, positive=True)
+
     Eq << apply(x, d)
-    
+
     Eq << Eq[-1] / d
 
-        
+
 if __name__ == '__main__':
     run()
 

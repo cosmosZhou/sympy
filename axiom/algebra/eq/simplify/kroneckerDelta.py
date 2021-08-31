@@ -11,17 +11,16 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    y = Symbol.y(real=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(n,))
 
     Eq << apply(Equal(KroneckerDelta(x, y), 1))
 
     Eq << algebra.equivalent.given.et.apply(Eq[-1])
 
-    Eq << Eq[-2].this.lhs.lhs.apply(algebra.kroneckerDelta.to.piecewise)
+    Eq << Eq[-2].this.lhs.lhs.apply(algebra.kroneckerDelta.to.piece)
 
-    Eq << Eq[-1].this.lhs.lhs.apply(algebra.kroneckerDelta.to.piecewise)
+    Eq << Eq[-1].this.lhs.lhs.apply(algebra.kroneckerDelta.to.piece)
 
 
 if __name__ == '__main__':

@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    is_nonnegative, ge = given
+def apply(is_nonnegative, ge):
     if 0 not in is_nonnegative.args:
         ge, is_nonnegative = given
 
@@ -16,9 +15,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, a, b = Symbol(real=True)
 
     Eq << apply(x >= 0, a < b)
 

@@ -16,14 +16,12 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, calculus, sets
 
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
+    a, b = Symbol(real=True, given=True)
     domain = Interval(a, b, right_open=True)
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
+    x, t, e = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(All[x:domain](Derivative[x](f(x)) > 0))
 
-    t = Symbol.t(real=True)
     Eq << algebra.cond.imply.suffice.apply(Eq[0], cond=t < b)
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
@@ -32,7 +30,6 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(calculus.all_is_positive.imply.all_gt.monotony.right_close)
 
-    e = Symbol.e(real=True)
     Eq << Eq[-1].subs(t, b - e)
 
     Eq << Eq[-1].this.lhs.simplify()
@@ -47,9 +44,9 @@ def prove(Eq):
 
     Eq << algebra.any.imply.any_et.limits.cond.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.gt.split.interval)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.gt.split.interval)
 
-    eta = Symbol.eta(real=True, positive=True)
+    eta = Symbol(real=True, positive=True)
     Eq << Eq[-1].this.find(Greater).apply(algebra.is_positive.imply.any_gt, var=eta)
 
     Eq << Eq[-1].this.find(And).apply(algebra.cond.any.imply.any_et, simplify=None)

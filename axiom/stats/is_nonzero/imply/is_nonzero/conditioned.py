@@ -19,13 +19,12 @@ def apply(given, wrt):
 def prove(Eq):
     from axiom import stats, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
+    x, y = Symbol(real=True, random=True)
     Eq << apply(Unequal(Probability(x, y), 0), y)
 
     Eq << stats.is_nonzero.imply.et.apply(Eq[0])
 
-    
+
 
     Eq << stats.is_nonzero.imply.eq.bayes.apply(Eq[-1], x)
 

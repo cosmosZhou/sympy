@@ -227,7 +227,7 @@ def _default_integrator(f, x):
 @_noconds
 def _mellin_transform(f, x, s_, integrator=_default_integrator, simplify=True):
     """ Backend function to compute Mellin transforms. """
-    from sympy import re, Max, Min, count_ops
+    from sympy import Re, Max, Min, count_ops
     # We use a fresh dummy, because assumptions on s might drop conditions on
     # convergence of the integral.
     s = _dummy('s', 'mellin-transform', f, real=True)
@@ -259,7 +259,7 @@ def _mellin_transform(f, x, s_, integrator=_default_integrator, simplify=True):
             aux_ = []
             for d in disjuncts(c):
                 d_ = d.replace(
-                    re, lambda x: x.as_real_imag()[0]).subs(re(s), t)
+                    Re, lambda x: x.as_real_imag()[0]).subs(Re(s), t)
                 if not d.is_Relational or \
                     d.rel_op in ('==', '!=') \
                         or d_.has(s) or not d_.has(t):

@@ -6,7 +6,7 @@ from util import *
 def apply(self, evaluate=False):
     from axiom.algebra.mul.to.min import extract
     rhs = extract(Max, self)
-    
+
     return Equal(self, rhs, evaluate=evaluate)
 
 
@@ -14,9 +14,8 @@ def apply(self, evaluate=False):
 def prove(Eq):
     from axiom import algebra
 
-    t = Symbol.t(real=True, positive=True)
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    t = Symbol(real=True, positive=True)
+    x, y = Symbol(real=True)
     Eq << apply(t * Max(x, y))
     Eq << Eq[0].this.rhs.apply(algebra.max.to.mul)
 

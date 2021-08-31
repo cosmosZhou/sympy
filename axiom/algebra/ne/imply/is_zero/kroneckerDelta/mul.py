@@ -13,9 +13,8 @@ def apply(given, var=None):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True)
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
+    k = Symbol(integer=True)
+    x, y = Symbol(integer=True, given=True)
     Eq << apply(Unequal(x, y), k)
 
     Eq << ~Eq[-1]

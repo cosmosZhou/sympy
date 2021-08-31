@@ -4,8 +4,7 @@ from flask import Flask, render_template, jsonify
 from util import * 
 from axiom import *
 from util import MySQL    
-import regex as re
-import os, json
+import os, json, re
  
 app = Flask(__name__)
 
@@ -136,11 +135,14 @@ def to_str(result):
     
 
 def extract_latex(symbol):
-    symbol = globals()[symbol]
+    try:
+        symbol = globals()[symbol]
+    except KeyError:
+        return
     
     doc = symbol.__doc__
     if doc is None:
-        return None
+        return
     
     lines = []
     for line in doc.splitlines():

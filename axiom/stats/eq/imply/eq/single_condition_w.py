@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, wrt=None):
-    (x, yzw), (_x, w) = given.of(Equal[Conditioned, Conditioned])     
+    (x, yzw), (_x, w) = given.of(Equal[Conditioned, Conditioned])
     assert x == _x
 
     assert w in yzw.args
@@ -26,10 +26,7 @@ def apply(given, wrt=None):
 def prove(Eq):
     from axiom import stats, algebra, calculus
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
-    z = Symbol.z(real=True, random=True)
-    w = Symbol.w(real=True, random=True)
+    x, y, z, w = Symbol(real=True, random=True)
     Eq << apply(Equal(x | y.as_boolean() & z.as_boolean() & w.as_boolean(), x | w), wrt=y)
 
     return

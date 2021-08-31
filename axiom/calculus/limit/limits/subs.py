@@ -7,7 +7,7 @@ def apply(self, y):
     assert not self._has(y)
     assert y.is_symbol and not y.is_given
     fy = fx._subs(x, y)
-    
+
     return Equal(self, Limit[y:x0:dir](fy))
 
 
@@ -15,15 +15,12 @@ def apply(self, y):
 def prove(Eq):
     from axiom import calculus, algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, y, x0 = Symbol(real=True)
+    f, g = Function(real=True)
     Eq << apply(Limit[x:x0](f(x)), y)
 
     #we assume this limit exists and is real
-    A = Symbol.A(Eq[0].rhs, real=True)
+    A = Symbol(Eq[0].rhs, real=True)
     Eq << A.this.definition
 
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[-1])

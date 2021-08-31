@@ -23,10 +23,8 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(shape=(n, n), complex=True)
-    a = Symbol.a(shape=(n, n), complex=True)
-    b = Symbol.b(shape=(n, n), complex=True)
+    n = Symbol(integer=True, positive=True)
+    x, a, b = Symbol(shape=(n, n), complex=True)
     Eq << apply(x @ (a + b))
 
     Eq << Eq[-1].this.lhs.apply(discrete.matmul.to.lamda)
@@ -38,7 +36,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.apply(algebra.lamda.to.add)
 
     Eq << Eq[-1].this.find(MatMul).apply(discrete.matmul.to.lamda)
-    
+
     Eq << Eq[-1].this.find(MatMul).apply(discrete.matmul.to.lamda)
 
 

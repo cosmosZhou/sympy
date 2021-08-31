@@ -19,15 +19,13 @@ def apply(limited_f, limited_g):
 def prove(Eq):
     from axiom import calculus, sets, algebra
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    Eq << apply(Contains(Limit[x:x0](f(x)), Reals), Contains(Limit[x:x0](g(x)), Reals - {0}))
+    x, x0 = Symbol(real=True)
+    f, g = Function(real=True)
+    Eq << apply(Element(Limit[x:x0](f(x)), Reals), Element(Limit[x:x0](g(x)), Reals - {0}))
 
     Eq.inverse = calculus.is_limited.imply.eq.algebraic_limit_theorem.inverse.apply(Eq[1])
 
-    Eq << sets.contains.imply.is_real.inverse.apply(Eq[1])
+    Eq << sets.el.imply.is_real.inverse.apply(Eq[1])
 
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq.inverse, Eq[-1], reverse=True)
 

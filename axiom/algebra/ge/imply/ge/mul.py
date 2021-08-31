@@ -13,9 +13,8 @@ def apply(given, factor):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    k = Symbol.k(real=True, given=True, nonnegative=True)
+    x, y = Symbol(real=True, given=True)
+    k = Symbol(real=True, given=True, nonnegative=True)
 
     Eq << apply(GreaterEqual(x, y), k)
 

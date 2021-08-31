@@ -9,16 +9,16 @@ def apply(is_positive, x=None, w=None, i=None, n=None):
     domain = x_.domain
     assert domain.left_open and domain.right_open
     if x is None:
-        x = Symbol.x(shape=(oo,), domain=domain)
+        x = Symbol(shape=(oo,), domain=domain)
 
     if w is None:
-        w = Symbol.w(shape=(oo,), real=True)
+        w = Symbol(shape=(oo,), real=True)
 
     if i is None:
-        i = Symbol.i(integer=True)
+        i = Symbol(integer=True)
 
     if n is None:
-        n = Symbol.n(integer=True, positive=True)
+        n = Symbol(integer=True, positive=True)
 
     assert x.domain_assumed == domain
     return Suffice(Equal(Sum[i:n](w[i]), 1) & All[i:n](w[i] >= 0), GreaterEqual(Sum[i:n](w[i] * fx._subs(x_, x[i])), fx._subs(x_, Sum[i:n](w[i] * x[i]))))
@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq.initial = Eq[1].subs(n, 1)
 
-    Eq << Eq.initial.this.lhs.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.subs)
+    Eq << Eq.initial.this.lhs.apply(algebra.eq.cond.imply.cond.subs, ret=0)
 
     Eq << algebra.suffice.given.suffice.subs.apply(Eq[-1])
 
@@ -85,7 +85,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.suffice.fold, index=1)
 
-    Eq << Eq[-1].this.find(And).apply(algebra.et.imply.et.invoke, algebra.is_positive.eq.imply.eq.div, simplify=None)
+    Eq << Eq[-1].this.find(And).apply(algebra.is_positive.eq.imply.eq.div, simplify=None, ret=0)
 
     Eq << Eq[-1].this.find(Mul[Sum]).apply(algebra.mul.to.sum)
 
@@ -99,7 +99,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(And).apply(algebra.cond.all.imply.all_et, simplify=None)
 
-    Eq << Eq[-1].this.find(And).apply(algebra.et.imply.et.invoke, algebra.is_positive.ge.imply.ge.div)
+    Eq << Eq[-1].this.find(And).apply(algebra.is_positive.ge.imply.ge.div, ret=0)
 
     Eq << Eq[-1].this.rhs.apply(algebra.suffice.flatten)
 
@@ -122,7 +122,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Add[~Sum]).apply(algebra.sum.to.mul)
 
-    Eq.induct1 = Eq[-1].this.lhs.apply(sets.lt.ge.imply.contains.interval)
+    Eq.induct1 = Eq[-1].this.lhs.apply(sets.lt.ge.imply.el.interval)
 
     Eq << algebra.cond.imply.cond.subs.apply(Eq[1], w[:n], w_)
 
@@ -136,7 +136,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.suffice_suffice.imply.suffice_suffice.et)
 
-    Eq <<  Eq[-1].this.find(And[~Contains]).apply(sets.contains.imply.lt.split.interval)
+    Eq <<  Eq[-1].this.find(And[~Element]).apply(sets.el.imply.lt.split.interval)
 
     Eq << Eq[-1].this.find(And[Less]).apply(algebra.lt.ge.imply.ge.mul)
 
@@ -148,7 +148,7 @@ def prove(Eq):
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[-1])
 
-    Eq << Contains(x[n], domain, plausible=True)
+    Eq << Element(x[n], domain, plausible=True)
 
     Eq << algebra.cond.imply.suffice.apply(Eq[-1], cond=Eq[-2].lhs)
 
@@ -156,7 +156,7 @@ def prove(Eq):
 
     Eq.suffices = Eq[-1].this.rhs.apply(algebra.cond.imply.suffice, cond=Eq.induct1.rhs.lhs)
 
-    Eq << Contains(x[i], domain, plausible=True)
+    Eq << Element(x[i], domain, plausible=True)
 
     Eq << algebra.cond.imply.suffice.apply(Eq[-1], cond=Eq.induct1.rhs.lhs)
 
@@ -168,13 +168,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum.limits.domain_defined.insert)
 
-    Eq << Eq[-1].this.rhs.apply(sets.eq_sum.all.imply.contains.mean)
+    Eq << Eq[-1].this.rhs.apply(sets.eq_sum.all.imply.el.mean)
 
     Eq << algebra.cond.imply.suffice.apply(Eq[-1], cond=Eq.suffices.lhs)
 
     Eq <<= Eq.suffices & Eq[-1]
 
-    Eq << Eq[-1].this.rhs.rhs.apply(calculus.contains.contains.contains.all_is_positive.imply.ge.Jesson)
+    Eq << Eq[-1].this.rhs.rhs.apply(calculus.el.el.el.all_is_positive.imply.ge.Jesson, swap=True)
 
     Eq << Eq[-1].this.find(Sum[Mul]).simplify()
 

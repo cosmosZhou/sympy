@@ -10,7 +10,7 @@ def apply(self):
     for i in range(i_shape):
         array.append(self[sympify(i)])
     rhs = BlockMatrix(*array)
-    
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -18,10 +18,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(real=True, shape=(oo, n))
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    a = Symbol(real=True, shape=(oo, n))
     Eq << apply(a[i:i + 4])
 
     Eq << Equal(a[i:i + 4], Lamda[j:4](a[i + j]), plausible=True)

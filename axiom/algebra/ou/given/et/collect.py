@@ -30,12 +30,9 @@ def apply(given, *, cond=None):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    y = Symbol.y(real=True, shape=(k,), given=True)
-    f = Function.f(shape=(k,), real=True)
-    h = Function.h(shape=(k,), real=True)
-    g = Function.g(shape=(k,), real=True)
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(k,), given=True)
+    f, h, g = Function(shape=(k,), real=True)
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y)) & (y > 0), Equal(h(x), g(y)) & (y > 0)), cond=y > 0)
 
     Eq << algebra.et.imply.ou.apply(Eq[1] & Eq[2], simplify=False)

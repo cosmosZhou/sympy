@@ -12,10 +12,9 @@ def apply(self, n=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
 
-    n = Symbol.n(integer=True, positive=True, given=False)
+    n = Symbol(integer=True, positive=True, given=False)
 
     Eq << apply(Bool(x > y), n)
 

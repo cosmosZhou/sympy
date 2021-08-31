@@ -28,16 +28,16 @@ def apply(n, **kwargs):
 
         x = S.generate_var(shape=shape, **kwargs)
 
-    return All[S:Equal(abs(S), n)](Any[x[:n]:All[j:i, i:n](Unequal(x[i], x[j]))](Equal(S, Cup[i:n]({x[i]}))))
+    return All[S:Equal(Card(S), n)](Any[x[:n]:All[j:i, i:n](Unequal(x[i], x[j]))](Equal(S, Cup[i:n]({x[i]}))))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra, sets
 
-    n = Symbol.n(domain=Range(2, oo), given=False)
-    k = Symbol.k(integer=True, positive=True)
-    S = Symbol.S(etype=dtype.integer * k)
+    n = Symbol(domain=Range(2, oo), given=False)
+    k = Symbol(integer=True, positive=True)
+    S = Symbol(etype=dtype.integer * k)
     Eq << apply(n, set=S)
 
     Eq.initial = Eq[0].subs(n, 2)
@@ -67,11 +67,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.et.imply.cond, index=0)
 
-    Eq << Eq[-1].this.expr.expr.apply(sets.eq.imply.eq.union_intersection, A[n].set)
+    Eq << Eq[-1].this.expr.expr.apply(sets.eq.imply.eq.union_intersect, A[n].set)
 
     Eq << algebra.imply.all.limits_assert.apply(Eq.size_deduction.expr.limits)
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.imply.eq.union)
+    Eq << Eq[-1].this.expr.apply(sets.el.imply.eq.union)
 
     Eq << algebra.cond.all.imply.all_et.apply(Eq[-1], Eq[-3])
 
@@ -81,9 +81,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.et.imply.et.delete, index=1)
 
-    Eq << Eq[-1].this.find(Equal[2]).apply(sets.intersection_is_emptyset.imply.notcontains, simplify=None)
+    Eq << Eq[-1].this.find(Equal[2]).apply(sets.intersect_is_empty.imply.notin, simplify=None)
 
-    Eq << Eq[-1].this.find(NotContains).apply(sets.notcontains.imply.all_notcontains)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.imply.all_notin)
 
     Eq << Eq[-1].this.expr.apply(sets.any.imply.any.limits.relax, wrt=A[n])
 

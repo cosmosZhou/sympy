@@ -7,26 +7,23 @@ def apply(self, y):
     if solution is None:
         return
     solution, limits = solution
-    
+
     eq = self.func(y, solution)
-    if len(limits) == 0: 
+    if len(limits) == 0:
         return eq
-    
+
     for i, C in enumerate(limits):
         limits[i] = (C,)
-    return Any(eq, *limits)    
+    return Any(eq, *limits)
 
 
 @prove(proved=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    k = Symbol.k(integer=True)
-    n = Symbol.n(integer=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    c = Symbol.c(real=True, positive=True)
-    i = Symbol.i(domain=Range(0, k + 1))
-    y = Symbol.y(real=True, shape=(oo,))
+    x, a, b = Symbol(real=True)
+    k, n = Symbol(integer=True)
+    c = Symbol(real=True, positive=True)
+    i = Symbol(domain=Range(0, k + 1))
+    y = Symbol(real=True, shape=(oo,))
     Eq << apply(Equal(y[n + 1], y[n] * (k + 1) + i ** n), y=y[n])
 
 

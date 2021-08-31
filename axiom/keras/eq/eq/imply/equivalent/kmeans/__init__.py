@@ -15,7 +15,7 @@ def apply(eq_sum, eq_union, x=None):
 
     assert limit == _limit
 
-    _wi = wi_abs.of(Abs)
+    _wi = wi_abs.of(Card)
     assert _wi == wi
 
     (i,) = limit
@@ -25,12 +25,12 @@ def apply(eq_sum, eq_union, x=None):
     _M = x.shape[0]
     assert _M == M
 
-    j = Symbol.j(integer=True)
+    j = Symbol(integer=True)
 
     k = w.shape[0]
 
-    return Equivalent(Contains(j, w[i]) & Contains(i, Range(0, k)),
-                      Equal(i, Sum[i](i * Bool(Contains(j, w[i])))) & Contains(j, Range(0, M)))
+    return Equivalent(Element(j, w[i]) & Element(i, Range(0, k)),
+                      Equal(i, Sum[i](i * Bool(Element(j, w[i])))) & Element(j, Range(0, M)))
 
 
 @prove(proved=False)
@@ -39,8 +39,8 @@ def prove(Eq):
     i = Symbol(integer=True)
     k = Symbol(domain=Range(0, M))
     x = Symbol(real=True, shape=(M, n))
-    omega = Symbol(shape=(k,), etype=dtype.integer, emptyset=False)
-    Eq << apply(Equal(Sum[i](abs(omega[i])), M), Equal(Cup[i](omega[i]), k.domain), x=x)
+    omega = Symbol(shape=(k,), etype=dtype.integer, empty=False)
+    Eq << apply(Equal(Sum[i](Card(omega[i])), M), Equal(Cup[i](omega[i]), k.domain), x=x)
 
 
 if __name__ == '__main__':

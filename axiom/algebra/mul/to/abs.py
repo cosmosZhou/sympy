@@ -13,7 +13,7 @@ def apply(self, evaluate=False):
             if arg.base.is_Abs and arg.exp.is_integer:
                 args.append(Pow(arg.base.of(Abs), arg.exp))
                 continue
-            
+
         assert arg >= 0
         args.append(arg)
 
@@ -24,29 +24,28 @@ def apply(self, evaluate=False):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(abs(x) * abs(y))
 
-    Eq << Eq[-1].this.lhs.args[0].apply(algebra.abs.to.piecewise)
+    Eq << Eq[-1].this.lhs.args[0].apply(algebra.abs.to.piece)
 
-    Eq << Eq[-1].this.lhs.args[1].apply(algebra.abs.to.piecewise)
+    Eq << Eq[-1].this.lhs.args[1].apply(algebra.abs.to.piece)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.mul_piece.to.piece)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.flatten)
+    Eq << Eq[-1].this.lhs.apply(algebra.piece.flatten)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.swap.back)
-
-    Eq << Eq[-1].this.lhs.args[0].cond.apply(algebra.et.to.ou)
-
-    Eq << Eq[-1].this.lhs.args[0].expr.apply(algebra.mul.to.piecewise)
-
-    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.flatten, index=0)
+    Eq << Eq[-1].this.lhs.apply(algebra.piece.swap, -2)
 
     Eq << Eq[-1].this.lhs.args[0].cond.apply(algebra.et.to.ou)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.invert, index=0)
+    Eq << Eq[-1].this.lhs.args[0].expr.apply(algebra.mul.to.piece)
+
+    Eq << Eq[-1].this.lhs.apply(algebra.piece.flatten, index=0)
+
+    Eq << Eq[-1].this.lhs.args[0].cond.apply(algebra.et.to.ou)
+
+    Eq << Eq[-1].this.lhs.apply(algebra.piece.invert, 0)
 
     Eq << Eq[-1].this.lhs.args[1].cond.apply(algebra.et.to.ou)
 
@@ -70,11 +69,11 @@ def prove(Eq):
 
     Eq << algebra.equivalent.imply.eq.subs.apply(Eq[-1], Eq.equal.lhs)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.piecewise.subs, index=1, reverse=True)
+    Eq << Eq[-1].this.rhs.apply(algebra.piece.subs, index=1, reverse=True)
 
     Eq << Eq.equal.this.lhs.subs(Eq[-1])
 
-    Eq.equal = Eq[-1].this.rhs.apply(algebra.abs.to.piecewise.is_positive)
+    Eq.equal = Eq[-1].this.rhs.apply(algebra.abs.to.piece.is_positive)
 
     Eq.equivalent = Equivalent(Eq.equal.lhs.args[0].cond, Eq.equal.rhs.args[0].cond, plausible=True)
 

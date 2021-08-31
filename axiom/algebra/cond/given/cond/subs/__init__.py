@@ -14,13 +14,10 @@ def apply(f_eq, *, given=None, reverse=False, simplify=True, assumptions={}):
 def prove(Eq):
     from axiom import algebra
 
-    m = Symbol.m(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(real=True, shape=(m, n))
-    b = Symbol.b(real=True, shape=(m, n))
-    c = Symbol.c(real=True, shape=(m, n))
-    S = Symbol.S(etype=dtype.real * (m, n))
-    Eq << apply(Contains(a * b, S), given=Equal(a, 2 * c))
+    m, n = Symbol(integer=True, positive=True)
+    a, b, c = Symbol(real=True, shape=(m, n))
+    S = Symbol(etype=dtype.real * (m, n))
+    Eq << apply(Element(a * b, S), given=Equal(a, 2 * c))
 
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[1].reversed, Eq[2])
 

@@ -16,11 +16,10 @@ def apply(lt, given):
 def prove(Eq):
     from axiom import sets, calculus, algebra
 
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
+    a, b = Symbol(real=True, given=True)
     domain = Interval(a, b)
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
+    x, t = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(a < b, All[x:domain](Derivative[x](f(x)) > 0))
 
     Eq << Eq[1].this.expr.apply(sets.is_positive.imply.is_real)
@@ -29,22 +28,21 @@ def prove(Eq):
 
     Eq.is_differentiable = algebra.all.imply.all.limits.restrict.apply(Eq[-1], Interval(a, b, left_open=True, right_open=True))
 
-    t = Symbol.t(real=True)
-    Eq.le = Contains(t, Interval(a, b, left_open=True)).this.apply(sets.contains.imply.le.split.interval)
+    Eq.le = Element(t, Interval(a, b, left_open=True)).this.apply(sets.el.imply.le.split.interval)
 
     Eq <<= algebra.cond.suffice.imply.suffice.et.rhs.apply(Eq.is_continuous, Eq.le), algebra.cond.suffice.imply.suffice.et.rhs.apply(Eq.is_differentiable, Eq.le)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.le.all.imply.all.limits.restrict), Eq[-1].this.rhs.apply(algebra.le.all.imply.all.limits.restrict)
 
-    Eq <<= Contains(t, Interval(a, b, left_open=True)).this.apply(sets.contains.imply.lt.split.interval) & Eq[-1] & Eq[-2]
+    Eq <<= Element(t, Interval(a, b, left_open=True)).this.apply(sets.el.imply.lt.split.interval) & Eq[-1] & Eq[-2]
 
     Eq << Eq[-1].this.rhs.apply(calculus.lt.is_continuous.is_differentiable.imply.any_eq.mean_value_theorem.Lagrange)
 
     Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any_et.limits.cond, simplify=None)
 
-    Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.imply.is_nonemptyset, simplify=None)
+    Eq << Eq[-1].this.rhs.find(Element).apply(sets.el.imply.is_nonempty, simplify=None)
 
-    Eq.any = Eq[-1].this.rhs.find(Unequal).apply(sets.interval_is_nonemptyset.imply.is_positive, simplify=None)
+    Eq.any = Eq[-1].this.rhs.find(Unequal).apply(sets.interval_is_nonempty.imply.is_positive, simplify=None)
 
     Eq << algebra.cond.suffice.imply.suffice.et.rhs.apply(Eq[1], Eq.le)
 

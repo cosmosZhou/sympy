@@ -1,0 +1,42 @@
+from util import *
+
+
+@apply
+def apply(lt, contains, contains_y):
+    x, domain_x = contains.of(Element)
+    y, domain_y = contains_y.of(Element)
+    assert domain_x in Interval(0, 1, right_open=True)
+    assert domain_y in Interval(0, 1, right_open=True)
+    _x, _y = lt.of(Less)
+    assert _x == x
+    assert _y == y
+    return y * sqrt(1 - x ** 2) > x * sqrt(1 - y ** 2)
+
+
+@prove
+def prove(Eq):
+    from axiom import sets, algebra
+
+    x, y = Symbol(real=True)
+    Eq << apply(x < y, Element(x, Interval(0, 1, right_open=True)), Element(y, Interval(0, 1, right_open=True)))
+
+    Eq << sets.el.imply.ge.split.interval.apply(Eq[1])
+
+    Eq << algebra.ge.lt.imply.gt.transit.apply(Eq[-1], Eq[0])
+
+    Eq.y_contains = sets.gt.el.imply.el.intersect.apply(Eq[-1], Eq[2])
+
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[3], cond=Equal(x, 0))
+
+    Eq <<= algebra.suffice.given.suffice.subs.apply(Eq[-2]), algebra.cond.imply.suffice.et.apply(Eq[1], cond=Eq[-1].lhs)
+
+    Eq << algebra.suffice.given.cond.apply(Eq[-2])
+
+    Eq << Eq[-1].this.rhs.apply(sets.ne.el.imply.el)
+
+    Eq << algebra.cond.suffice.imply.suffice.et.rhs.apply(Eq.y_contains & Eq[0], Eq[-1])
+    Eq << Eq[-1].this.rhs.apply(sets.lt.el.el.imply.gt.sqrt.open.positive)
+
+
+if __name__ == '__main__':
+    run()

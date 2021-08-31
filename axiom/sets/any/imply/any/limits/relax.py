@@ -28,10 +28,9 @@ def apply(given, domain=None, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    S = Symbol.S(etype=dtype.real)
-    e = Symbol.e(real=True)
-    t = Symbol.t(real=True)
-    f = Function.f(shape=(), integer=True)
+    S = Symbol(etype=dtype.real)
+    e, t = Symbol(real=True)
+    f = Function(shape=(), integer=True)
     Eq << apply(Any[e:S - {t}](f(e) > 0), domain=S)
 
     Eq << algebra.any.given.ou.apply(Eq[-1], cond={t})

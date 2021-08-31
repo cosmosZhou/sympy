@@ -19,11 +19,10 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    A = Symbol.A(etype=dtype.real)
+    x = Symbol(real=True)
+    A = Symbol(etype=dtype.real)
 
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    f, g = Function(integer=True)
 
     Eq << apply(Or(Any[x:A]((g(x) > 0)), Any[x:A](f(x) > 0)))
 

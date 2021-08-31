@@ -12,10 +12,14 @@ function package_is_theorem($file)
             return ! preg_match("/from *\. *import \w+/", $line, $m);
         }
     }
-    
+
     return false;
 }
-// \std\println("path_info = $path_info");
+
+// error_log("path_info = $path_info");
+if (! \std\endsWith($path_info, '/')) {
+    $path_info .= "/";
+}
 
 $theorems = [];
 
@@ -30,6 +34,7 @@ foreach (scandir($path_info) as $file) {
         case "__init__.py":
             break;
         default:
+//             error_log("file = $file");
 
             if (\std\endsWith($file, '.py')) {
                 $theorems[] = substr($file, 0, - 3);
@@ -48,6 +53,9 @@ if (\std\endsWith($module, '/')) {
     $module = substr($module, 0, - 1);
 }
 
+// error_log("theorems = " . \std\jsonify($theorems));
+// error_log("packages = " . \std\jsonify($packages));
+
 ?>
 
 <title><?php echo $module;?></title>
@@ -57,12 +65,15 @@ if (\std\endsWith($module, '/')) {
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/vue-async-computed@3.3.1/dist/vue-async-computed.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/vue-async-computed@3.3.1/dist/vue-async-computed.min.js"></script>
+<script
+	src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
 <script src='static/js/std.js'></script>
 <script src='static/js/utility.js'></script>
 <script>

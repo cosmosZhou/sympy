@@ -17,13 +17,11 @@ def apply(eq, f_eq, index=None, reverse=False, swap=False):
 @prove
 def prove(Eq):
     x, y = Symbol(integer=True)
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol(etype=dtype.integer)
     f, g = Function(integer=True)
     Eq << apply(Equal(f(x), g(y)), Equal(x, y), swap=True)
 
     Eq << Eq[0].subs(Eq[1])
-
-    
 
 
 if __name__ == '__main__':

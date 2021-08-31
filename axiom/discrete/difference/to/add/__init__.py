@@ -4,9 +4,9 @@ from util import *
 @apply
 def apply(self):
     [*args], *variable_count = self.of(Difference[Add])
-    
+
     rhs = Add(*(Difference(arg, *variable_count).simplify() for arg in args))
-        
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -14,10 +14,9 @@ def apply(self):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    x = Symbol.x(real=True)
-    d = Symbol.d(integer=True, positive=True, given=False)
+    f, g = Function(real=True)
+    x = Symbol(real=True)
+    d = Symbol(integer=True, positive=True, given=False)
     Eq << apply(Difference(f(x) + g(x), x, d))
 
     Eq.initial = Eq[0].subs(d, 1)

@@ -10,15 +10,14 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    x = Symbol.x(etype=dtype.real, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
+    x = Symbol(etype=dtype.real, shape=(oo, oo))
+    i, j = Symbol(integer=True)
+    f = Function(integer=True)
 
     n = 5
     Eq << apply(Cup[j:f(i), i:n](x[i, j]))
 
-    s = Symbol.s(Lamda[i](Cup[j:f(i)](x[i, j])))
+    s = Symbol(Lamda[i](Cup[j:f(i)](x[i, j])))
 
     Eq << s[i].this.definition
 

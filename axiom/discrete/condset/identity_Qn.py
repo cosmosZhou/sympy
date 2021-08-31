@@ -15,7 +15,7 @@ def apply(n, P_quote=None):
 def prove(Eq):
     from axiom import sets, algebra, discrete
 
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
     Eq << apply(n)
 
     Eq << sets.imply.all.conditionset.apply(Eq[-1].lhs)

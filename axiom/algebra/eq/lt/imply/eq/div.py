@@ -17,10 +17,8 @@ def apply(eq, lt):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    h = Function.h(real=True)
+    x = Symbol(real=True, given=True)
+    f, g, h = Function(real=True)
     Eq << apply(f(x) < g(x), Equal(g(x) * (g(x) - f(x)), h(x) * f(x) + x))
 
     Eq << algebra.lt.imply.is_positive.apply(Eq[0])

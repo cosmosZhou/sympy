@@ -18,10 +18,9 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, calculus
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(domain=Interval(a, b, right_open=True))
-    f = Function.f(real=True)
+    a, b = Symbol(real=True)
+    x = Symbol(domain=Interval(a, b, right_open=True))
+    f = Function(real=True)
     Eq << apply(Derivative[x](f(x)) > 0)
 
     Eq << algebra.cond.imply.all.apply(Eq[0], x)

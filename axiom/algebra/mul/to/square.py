@@ -19,8 +19,7 @@ def apply(self, evaluate=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(4 * (x + y) ** 2)
 
     Eq << Eq[-1].this.find(Pow).apply(algebra.square.to.add)

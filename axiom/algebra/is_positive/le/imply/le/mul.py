@@ -11,9 +11,7 @@ def apply(is_positive_x, less_than):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, a, b = Symbol(real=True)
 
     Eq << apply(x > 0, a <= b)
 

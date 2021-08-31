@@ -16,13 +16,10 @@ def apply(all_any, cond, reverse=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, y = Symbol(integer=True)
+    f, g = Function(integer=True)
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
 
     Eq << apply(All[y:B](Any[x:A](Equal(g(x, y), f(x, y)))), g(x, y) > y)
 

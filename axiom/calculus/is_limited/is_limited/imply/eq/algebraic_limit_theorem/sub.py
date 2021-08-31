@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(limited_f, limited_g):
     from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
-    limited_f, limited_g = given
     fx, (x, x0, dir) = of_limited(limited_f, real=True)
 
     gx, (_x, _x0, _dir) = of_limited(limited_g, real=True)
@@ -20,12 +19,11 @@ def apply(*given):
 def prove(Eq):
     from axiom import calculus, algebra
 
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    Eq << apply(Contains(Limit[x:oo](f(x)), Reals), Contains(Limit[x:oo](g(x)), Reals))
+    x = Symbol(real=True)
+    f, g = Function(real=True)
+    Eq << apply(Element(Limit[x:oo](f(x)), Reals), Element(Limit[x:oo](g(x)), Reals))
 
-    ε = Symbol.ε(real=True, positive=True)
+    ε, N = Symbol(real=True, positive=True)
     ε0 = Symbol.ε_0(real=True, positive=True)
     N0 = Symbol.N_0(real=True, positive=True)
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, N0, var='A')
@@ -44,7 +42,6 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.limits[0][1].apply(algebra.gt.gt.given.gt)
 
-    N = Symbol.N(real=True, positive=True)
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Max(N0, N1), N)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])

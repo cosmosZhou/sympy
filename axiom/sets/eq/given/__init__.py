@@ -1,4 +1,3 @@
 from . import et
-from . import contains
+from . import el
 from . import eq
-from . import suffice

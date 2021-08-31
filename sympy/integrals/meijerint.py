@@ -937,7 +937,7 @@ def _rewrite_saxena(fac, po, g1, g2, x, full_pb=False):
 
 def _check_antecedents(g1, g2, x):
     """ Return a condition under which the integral theorem applies. """
-    from sympy import re, Eq, Ne, cos, I, exp, sin, sign, unpolarify
+    from sympy import Re, Eq, Ne, cos, I, exp, sin, sign, unpolarify
     from sympy import arg as arg_, unbranched_argument as arg
     #  Yes, this is madness.
     # XXX TODO this is a testing *nightmare*
@@ -1444,7 +1444,7 @@ def _rewrite_single(f, x, recursive=True):
         return [(1, 0, meijerg(f.an, f.aother, f.bm, f.bother, coeff*m))], True
 
     f_ = f
-    f = f.subs(x, z)
+    f = f._subs(x, z)
     t = _mytype(f, z)
     if t in _lookup_table:
         l = _lookup_table[t]
@@ -1468,10 +1468,10 @@ def _rewrite_single(f, x, recursive=True):
                     terms = terms(subs)
                 res = []
                 for fac, g in terms:
-                    r1 = _get_coeff_exp(unpolarify(fac.subs(subs).subs(z, x),
+                    r1 = _get_coeff_exp(unpolarify(fac.subs(subs)._subs(z, x),
                                                    exponents_only=True), x)
                     try:
-                        g = g.subs(subs).subs(z, x)
+                        g = g.subs(subs)._subs(z, x)
                     except ValueError:
                         continue
                     # NOTE these substitutions can in principle introduce oo,
@@ -1532,10 +1532,10 @@ def _rewrite_single(f, x, recursive=True):
         a = _dummy_('a', 'rewrite-single')
         if a not in f.free_symbols and _is_analytic(f, x):
             try:
-                F, strip, _ = mellin_transform(f.subs(x, a*x), x, s,
+                F, strip, _ = mellin_transform(f._subs(x, a*x), x, s,
                                                integrator=my_integrator,
                                                needeval=True, simplify=False)
-                g = my_imt(F, s, x, strip).subs(a, 1)
+                g = my_imt(F, s, x, strip)._subs(a, 1)
             except IntegralTransformError:
                 g = None
     if g is None or g.has(oo, nan, zoo):
@@ -1618,10 +1618,10 @@ def meijerint_indefinite(f, x):
 
     results = []
     for a in sorted(_find_splitting_points(f, x) | {S(0)}, key=default_sort_key):
-        res = _meijerint_indefinite_1(f.subs(x, x + a), x)
+        res = _meijerint_indefinite_1(f._subs(x, x + a), x)
         if not res:
             continue
-        res = res.subs(x, x - a)
+        res = res._subs(x, x - a)
         if _has(res, hyper, meijerg):
             results.append(res)
         else:
@@ -1681,9 +1681,9 @@ def _meijerint_indefinite_1(f, x):
         # The antiderivative is most often expected to be defined
         # in the neighborhood of  x = 0.
         place = 0
-        if b < 0 or f.subs(x, 0).has(nan, zoo):
+        if b < 0 or f._subs(x, 0).has(nan, zoo):
             place = None
-        r = hyperexpand(r.subs(t, a*x**b), place=place)
+        r = hyperexpand(r._subs(t, a*x**b), place=place)
 
         # now substitute back
         # Note: we really do want the powers of x to combine.
@@ -1771,7 +1771,7 @@ def meijerint_definite(f, x, a, b):
 
     # Let's use a dummy in case any of the boundaries has x.
     d = Dummy('x')
-    f = f.subs(x, d)
+    f = f._subs(x, d)
     x = d
 
     if a == b:
@@ -1779,7 +1779,7 @@ def meijerint_definite(f, x, a, b):
 
     results = []
     if a == -oo and b != oo:
-        return meijerint_definite(f.subs(x, -x), x, -b, -a)
+        return meijerint_definite(f._subs(x, -x), x, -b, -a)
 
     elif a == -oo:
         # Integrating -oo to oo. We need to find a place to split the integral.
@@ -1791,11 +1791,11 @@ def meijerint_definite(f, x, a, b):
             if not c.is_extended_real:
                 _debug('  Non-real splitting point.')
                 continue
-            res1 = _meijerint_definite_2(f.subs(x, x + c), x)
+            res1 = _meijerint_definite_2(f._subs(x, x + c), x)
             if res1 is None:
                 _debug('  But could not compute first integral.')
                 continue
-            res2 = _meijerint_definite_2(f.subs(x, c - x), x)
+            res2 = _meijerint_definite_2(f._subs(x, c - x), x)
             if res2 is None:
                 _debug('  But could not compute second integral.')
                 continue
@@ -1826,7 +1826,7 @@ def meijerint_definite(f, x, a, b):
             for split in _find_splitting_points(f, x):
                 if (a - split >= 0) == True:
                     _debug('Trying x -> x + %s' % split)
-                    res = _meijerint_definite_2(f.subs(x, x + split)
+                    res = _meijerint_definite_2(f._subs(x, x + split)
                                                 *Heaviside(x + split - a), x)
                     if res:
                         if _has(res[0], meijerg):
@@ -1834,13 +1834,13 @@ def meijerint_definite(f, x, a, b):
                         else:
                             return res
 
-        f = f.subs(x, x + a)
+        f = f._subs(x, x + a)
         b = b - a
         a = 0
         if b != oo:
             phi = exp(I*arg(b))
             b = abs(b)
-            f = f.subs(x, phi*x)
+            f = f._subs(x, phi*x)
             f *= Heaviside(b - x)*phi
             b = oo
 
@@ -1915,7 +1915,7 @@ def _meijerint_definite_2(f, x):
     # use a positive dummy - we integrate from 0 to oo
     # XXX if a nonnegative symbol is used there will be test failures
     dummy = _dummy('x', 'meijerint-definite2', f, positive=True)
-    f = f.subs(x, dummy)
+    f = f._subs(x, dummy)
     x = dummy
 
     if f == 0:
@@ -2046,7 +2046,7 @@ def meijerint_inversion(f, x, t):
     f_ = f
     t_ = t
     t = Dummy('t', polar=True)  # We don't want sqrt(t**2) = abs(t) etc
-    f = f.subs(t_, t)
+    f = f._subs(t_, t)
     _debug('Laplace-inverting', f)
     if not _is_analytic(f, x):
         _debug('But expression is not analytic.')
@@ -2109,7 +2109,7 @@ def meijerint_inversion(f, x, t):
         res = f*DiracDelta(t + shift)
         _debug('Result is a delta function, possibly conditional:', res, cond)
         # cond is True or Eq
-        return Piecewise((res.subs(t, t_), cond))
+        return Piecewise((res._subs(t, t_), cond))
 
     gs = _rewrite1(f, x)
     if gs is not None:
@@ -2130,9 +2130,9 @@ def meijerint_inversion(f, x, t):
             res = _my_unpolarify(hyperexpand(res))
             if not res.has(Heaviside):
                 res *= Heaviside(t)
-            res = res.subs(t, t + shift)
+            res = res._subs(t, t + shift)
             if not isinstance(cond, bool):
-                cond = cond.subs(t, t + shift)
+                cond = cond._subs(t, t + shift)
             from sympy import InverseLaplaceTransform
-            return Piecewise((res.subs(t, t_), cond),
-                             (InverseLaplaceTransform(f_.subs(t, t_), x, t_, None), True))
+            return Piecewise((res._subs(t, t_), cond),
+                             (InverseLaplaceTransform(f_._subs(t, t_), x, t_, None), True))

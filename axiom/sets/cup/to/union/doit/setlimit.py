@@ -10,15 +10,10 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    x = Symbol.x(etype=dtype.real, shape=(oo,))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
+    x = Symbol(etype=dtype.real, shape=(oo,))
+    i, j, a, b, c, d = Symbol(integer=True)
+    f = Function(integer=True)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    c = Symbol.c(integer=True)
-    d = Symbol.d(integer=True)
 
     Eq << apply(Cup[i:{a, b, c, d}](x[i]))
 

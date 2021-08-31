@@ -15,9 +15,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    z = Symbol.z(integer=True)
+    x, y, z = Symbol(integer=True)
     Eq << apply(Equal(1 / x + y, z) & Unequal(x, 0))
 
     Eq << algebra.is_nonzero.eq.imply.eq.div.apply(Eq[1], Eq[2])

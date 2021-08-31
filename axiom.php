@@ -108,7 +108,7 @@ if (! \std\endsWith($path_info, '/')) {
             modify_codes($py, $proveCodes, $applyCodes);
         } else {
             error_log("create new py file = $py");
-
+            
             $base_py = dirname($py) . ".py";
             if (file_exists($base_py)) {
                 $base_init = dirname($py) . "/__init__.py";
@@ -116,9 +116,6 @@ if (! \std\endsWith($path_info, '/')) {
                 \std\createDirectory(dirname($py));
 
                 rename($base_py, $base_init);
-                // $base_init = new \std\Text($base_init);
-                // $moduleName = substr(basename($py), 0, - 3);
-                // $base_init->append("\n\nfrom . import $moduleName");
             }
 
             $imports = [];
@@ -157,14 +154,22 @@ if (! \std\endsWith($path_info, '/')) {
 
         list ($logs, $sql_statement, $statementsFromSQLFile) = run($py);
 
-        error_log("logs = " . \std\jsonify($logs));
+        error_log("logs collected from running python script:");
+        foreach ($logs as &$line) {
+            error_log($line);
+        }
+
         error_log("sql_statement = $sql_statement");
-        error_log("statementsFromSQLFile = " . \std\jsonify($statementsFromSQLFile));
         
-        if (!$sql_statement){
+        error_log("statementsFromSQLFile = ");
+        foreach ($statementsFromSQLFile as &$line) {
+            error_log($line);
+        }
+        
+        if (! $sql_statement) {
             error_log("error detected in python file:");
             error_log("python file = $py");
-            
+
             $logs[] = compile_python_file($py);
         }
     }

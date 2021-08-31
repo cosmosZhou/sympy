@@ -3,33 +3,32 @@ from util import *
 
 @apply
 def apply(seq_length, dx, dz, num_lower, num_upper):
-    x = Symbol.x(shape=(seq_length, dx), real=True)
+    x = Symbol(shape=(seq_length, dx), real=True)
     W_Q = Symbol("W^Q", shape=(dx, dz), real=True)
     W_K = Symbol("W^K", shape=(dx, dz), real=True)
     W_V = Symbol("W^V", shape=(dx, dz), real=True)
 
-    Q = Symbol.Q(x @ W_Q)
-    K = Symbol.K(x @ W_K)
-    V = Symbol.V(x @ W_V)
+    Q = Symbol(x @ W_Q)
+    K = Symbol(x @ W_K)
+    V = Symbol(x @ W_V)
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
 
-    a = Symbol.a(Q @ K.T / sqrt(dz))
+    a = Symbol(Q @ K.T / sqrt(dz))
 
     a_quote = Symbol("a'", a - (1 - linalg.band_part[num_lower, num_upper](OneMatrix(seq_length, seq_length))) * oo)
 
-    s = Symbol.s(softmax(a_quote))
+    s = Symbol(softmax(a_quote))
 
-    z = Symbol.z(s @ V)
+    z = Symbol(s @ V)
 
     gram_width = num_lower + num_upper + 1
     start = i - num_lower
     stop = start + gram_width  # i + k_max + 1
 
-    beta = Symbol.beta(Lamda[i:seq_length](relu(start)))
+    beta = Symbol(Lamda[i:seq_length](relu(start)))
 
-    zeta = Symbol.zeta(Lamda[i:seq_length](Min(stop, seq_length)))
+    zeta = Symbol(Lamda[i:seq_length](Min(stop, seq_length)))
 
     assert beta.is_integer and zeta.is_integer
     indices = slice(beta[i], zeta[i])
@@ -41,7 +40,7 @@ def apply(seq_length, dx, dz, num_lower, num_upper):
 def prove(Eq):
     from axiom import keras, algebra, sets, discrete
 
-    n, l, u, d_x, d_z = Symbol(integer=True, positive=True) 
+    n, l, u, d_x, d_z = Symbol(integer=True, positive=True)
     Eq << apply(n, d_x, d_z, l, u)
 
     beta = Eq[7].lhs.base
@@ -63,7 +62,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq[3].reversed)
 
-    Xi = Symbol.Xi(band_part)
+    Xi = Symbol(band_part)
     Eq.Xi_definition = Xi.this.definition
 
     Eq << Eq[-1].subs(Eq.Xi_definition.reversed)
@@ -80,13 +79,13 @@ def prove(Eq):
 
     Eq << Eq[-1][i]
 
-    Eq.Xi_definition = Eq[-1].this.rhs.expr.apply(algebra.bool.to.piecewise)
+    Eq.Xi_definition = Eq[-1].this.rhs.expr.apply(algebra.bool.to.piece)
 
     Eq << Eq.z_definition.rhs.args[-1].args[0].this.arg.args[0].subs(Eq.Xi_definition)
 
     Eq << Eq[-1].this.rhs.apply(algebra.reducedSum.to.sum)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.negate)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.negate)
 
     Eq.start_definition = Eq[7].this.rhs.defun()
 

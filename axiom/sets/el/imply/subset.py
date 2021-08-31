@@ -1,0 +1,27 @@
+from util import *
+
+
+# given: A in B
+# => {A} subset B
+@apply(simplify=False)
+def apply(given):
+    assert given.is_Element
+    e, s = given.args
+
+    return Subset(e.set, s)
+
+
+@prove
+def prove(Eq):
+    e = Symbol(integer=True)
+    s = Symbol(etype=dtype.integer)
+    contains = Element(e, s, evaluate=False)
+
+    Eq << apply(contains)
+
+    Eq << Eq[-1].simplify()
+
+
+if __name__ == '__main__':
+    run()
+

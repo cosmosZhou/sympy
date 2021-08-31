@@ -10,16 +10,15 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    
-    S = Symbol.S(etype=dtype.integer)
+    x, y = Symbol(integer=True)
+
+    S = Symbol(etype=dtype.integer)
 
     Eq << apply(Any[x:S](Equal(x, y)))
-    
+
     Eq << Eq[0].simplify()
 
-    
+
 if __name__ == '__main__':
     run()
 

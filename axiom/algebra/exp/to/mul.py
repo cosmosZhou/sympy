@@ -2,11 +2,11 @@ from util import *
 
 
 @apply
-def apply(self): 
-    args = self.of(Exp[Add])    
-    
+def apply(self):
+    args = self.of(Exp[Add])
+
     args = [exp(e) for e in args]
-        
+
     return Equal(self, Mul(*args), evaluate=False)
 
 
@@ -14,8 +14,7 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    b = Symbol.b(real=True)
-    a = Symbol.a(real=True)
+    b, a = Symbol(real=True)
     Eq << apply(exp(a + b))
 
     Eq << algebra.eq.given.eq.log.apply(Eq[-1])

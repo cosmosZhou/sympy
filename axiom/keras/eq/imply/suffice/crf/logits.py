@@ -14,20 +14,19 @@ def prove(Eq):
 
     #d is the number of output labels
     #oo is the length of the sequence
-    d = Symbol.d(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(shape=(n, d), real=True, random=True, given=True)
-    y = Symbol.y(shape=(n,), domain=Range(0, d), random=True, given=True)
-    i = Symbol.i(integer=True)
-    t = Symbol.t(domain=Range(0, n + 1))
+    d, n = Symbol(integer=True, positive=True)
+    x = Symbol(shape=(n, d), real=True, random=True, given=True)
+    y = Symbol(shape=(n,), domain=Range(0, d), random=True, given=True)
+    i = Symbol(integer=True)
+    t = Symbol(domain=Range(0, n + 1))
     joint_probability_t = Probability(x[:t + 1], y[:t + 1])
     emission_probability = Probability(x[i] | y[i])
     transition_probability = Probability(y[i] | y[i - 1])
     given = Equal(joint_probability_t, Probability(x[0] | y[0]) * Probability(y[0]) * Product[i:1:t + 1](transition_probability * emission_probability))
     y = pspace(y).symbol
-    G = Symbol.G(Lamda[y[i - 1], y[i]](-log(transition_probability)))
-    s = Symbol.s(Lamda[t](-log(joint_probability_t)))
-    x = Symbol.x(Lamda[y[i], i](-log(emission_probability)))
+    G = Symbol(Lamda[y[i - 1], y[i]](-log(transition_probability)))
+    s = Symbol(Lamda[t](-log(joint_probability_t)))
+    x = Symbol(Lamda[y[i], i](-log(emission_probability)))
     Eq.given, Eq.s_definition, Eq.G_definition, Eq.x_definition, Eq.logits_recursion = apply(given, G, x, s)
 
     Eq << Eq.s_definition.this.rhs.subs(Eq.given)
@@ -50,7 +49,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(t, t + 1)
 
-    Eq << Eq[-1].this.args[1].apply(sets.notcontains.imply.notcontains.sub, 1)
+    Eq << Eq[-1].this.args[1].apply(sets.notin.imply.notin.sub, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1], 1)
 
@@ -62,7 +61,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(t, t - 1)
 
-    Eq << Eq[-1].this.args[1].apply(sets.notcontains.imply.notcontains.add, 1)
+    Eq << Eq[-1].this.args[1].apply(sets.notin.imply.notin.add, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1], 1)
 

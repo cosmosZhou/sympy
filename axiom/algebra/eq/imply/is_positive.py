@@ -8,14 +8,14 @@ def apply(given):
         x = lhs
     elif lhs.is_positive:
         x = rhs
-    
+
     return Greater(x, 0)
 
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(positive=True)
+    a = Symbol(real=True)
+    b = Symbol(positive=True)
     Eq << apply(Equal(a, b))
 
     Eq << Eq[1].subs(Eq[0])

@@ -12,7 +12,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(Equal(x ** 2, 0))
 
     Eq << algebra.eq.imply.eq.pow.apply(Eq[0], exp=S.One / 2)

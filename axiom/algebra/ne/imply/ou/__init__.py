@@ -1,1 +1,1 @@
-from . import divide
+from . import div

@@ -29,7 +29,7 @@ def apply(given):
     assert not b.has(k)
     assert e.as_poly(k).degree() == 1
 
-    if given.is_Any:
+    if given.is_Exists:
         return Any(Equal(x, y), (x,), (y,))
     else:
         return Equal(x, y)
@@ -38,16 +38,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete
-    p = Symbol.p(complex=True)
-    m = Symbol.m(domain=Range(1, oo))
-    n = Symbol.n(domain=Range(1, oo))
-    x = Symbol.x(shape=(m, n))
-    y = Symbol.y(shape=(m, n))
-    k = Symbol.k(domain=Range(1, oo))
+    p = Symbol(complex=True)
+    m, n, k = Symbol(domain=Range(1, oo))
+    x, y = Symbol(shape=(m, n))
 
     Eq << apply(Equal(x @ Lamda[k:n](p ** k), y @ Lamda[k:n](p ** k)))
 
-    i = Symbol.i(integer=True)
+    i = Symbol(integer=True)
     Eq << Eq[0][i]
 
     Eq << discrete.eq.imply.eq.vector.independence.rmatmul_equal.apply(Eq[-1])

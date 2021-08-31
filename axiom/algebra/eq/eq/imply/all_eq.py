@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given, wrt=None):
-    eq_k, eq_n = given
+def apply(eq_k, eq_n, wrt=None):
     eq_k.of(Equal)
     eq_n.of(Equal)
 
@@ -23,10 +22,9 @@ def apply(*given, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
-    k = Symbol.k(domain=Range(0, n))
+    n = Symbol(integer=True, positive=True)
+    f, g = Symbol(integer=True, shape=(oo,))
+    k = Symbol(domain=Range(0, n))
     Eq << apply(Equal(f[k], g[k]), Equal(f[n], g[n]), wrt=k)
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={n})

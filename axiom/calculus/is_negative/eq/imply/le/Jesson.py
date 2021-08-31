@@ -21,13 +21,12 @@ def apply(is_positive, eq, x=None):
 def prove(Eq):
     from axiom import calculus, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(domain=Interval(a, b, left_open=True, right_open=True))
-    w = Symbol.w(shape=(oo,), nonnegative=True)
-    f = Function.f(real=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    a, b = Symbol(real=True)
+    x = Symbol(domain=Interval(a, b, left_open=True, right_open=True))
+    w = Symbol(shape=(oo,), nonnegative=True)
+    f = Function(real=True)
     Eq << apply(Derivative(f(x), (x, 2)) < 0, Equal(Sum[i:n](w[i]), 1))
 
     Eq << -Eq[0]

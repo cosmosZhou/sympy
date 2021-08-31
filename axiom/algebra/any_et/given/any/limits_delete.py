@@ -38,19 +38,17 @@ def apply(imply):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    k = Symbol.k(integer=True)
-    j = Symbol.j(domain=Range(0, k))
-    x = Symbol.x(real=True, shape=(oo,))
-    f = Function.f(shape=(), integer=True)
+    n = Symbol(integer=True, positive=True)
+    i, k = Symbol(integer=True)
+    j = Symbol(domain=Range(0, k))
+    x = Symbol(real=True, shape=(oo,))
+    f, g = Function(shape=(), integer=True)
     f_quote = Function("f'", shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
     Eq << apply(Any[x[:n]:f(x[:n]) > 0, i:k]((g(i) > f_quote(j, x[:n])) & Equal(i, j)))
 
     Eq << Eq[-1].this.expr.apply(algebra.cond.imply.any_et, wrt=j)
 
-    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.kroneckerDelta, delta=False, simplify=None, swap=True, ret=1)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.kroneckerDelta, delta=False, simplify=None, swap=True, ret=1)
 
     Eq << algebra.any.imply.any.limits.swap.apply(Eq[-1], simplify=None)
 

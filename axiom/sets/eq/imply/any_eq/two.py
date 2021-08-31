@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, x=None, y=None):
-    S = given.of(Equal[Abs, 2])
+    S = given.of(Equal[Card, 2])
 
     if x is None:
         x = S.generate_var(**S.etype.dict)
@@ -16,9 +16,9 @@ def apply(given, x=None, y=None):
 def prove(Eq):
     from axiom import algebra, sets
 
-    k = Symbol.k(integer=True, positive=True)
-    S = Symbol.S(etype=dtype.integer * k)
-    Eq << apply(Equal(abs(S), 2))
+    k = Symbol(integer=True, positive=True)
+    S = Symbol(etype=dtype.integer * k)
+    Eq << apply(Equal(Card(S), 2))
 
     Eq << algebra.eq.imply.ge.apply(Eq[0])
 
@@ -26,14 +26,14 @@ def prove(Eq):
 
     Eq << sets.any.imply.any.limits.swap.apply(Eq[-1], simplify=False)
 
-    Eq.S_supset = Eq[-1].this.expr.apply(sets.contains.contains.imply.subset.finiteset, simplify=False)
+    Eq.S_supset = Eq[-1].this.expr.apply(sets.el.el.imply.subset.finiteset, simplify=False)
 
     ab = Eq.S_supset.lhs
-    Eq << Eq.S_supset.this.expr.apply(algebra.cond.imply.et.invoke, sets.subset.imply.eq.union, simplify=None)
+    Eq << Eq.S_supset.this.expr.apply(sets.subset.imply.eq.union, simplify=None, ret=0)
 
     Eq << algebra.any_et.imply.any.limits_absorb.apply(Eq[-1], index=1)
 
-    Eq << sets.imply.eq.principle.addition.apply(S, ab)
+    Eq << sets.imply.eq.principle.add.apply(S, ab)
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq[-2], Eq[-1])
 

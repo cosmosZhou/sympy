@@ -19,8 +19,8 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
-    n = Symbol.n(integer=True)
+    x = Symbol(real=True, positive=True, shape=(oo,))
+    n = Symbol(integer=True)
 
     Eq.hypothesis = apply(alpha(x[:n + 1]))
 

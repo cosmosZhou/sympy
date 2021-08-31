@@ -10,8 +10,7 @@ def apply(x, y):
 def prove(Eq):
     from axiom import geometry
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(x, y)
 
     Eq << Eq[0].this.lhs.apply(geometry.tan.to.mul)
@@ -28,7 +27,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Cos[Add]).apply(geometry.cos.to.add.principle.add)
 
-    
+
 
 
 if __name__ == '__main__':

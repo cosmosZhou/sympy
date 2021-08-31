@@ -16,9 +16,9 @@ def apply(A):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
-    y = Symbol.y(real=True, positive=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
+    x = Symbol(real=True, positive=True, shape=(oo,))
+    y = Symbol(real=True, positive=True)
+    n = Symbol(integer=True, positive=True, given=False)
 
     Eq << apply(alpha(BlockMatrix(x[:n], y)))
 

@@ -14,10 +14,9 @@ def apply(x):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    a, b = Symbol(real=True)
     domain=Interval(a, b)
-    x = Symbol.x(domain=domain)
+    x = Symbol(domain=domain)
     Eq << apply(x)
 
     Eq << algebra.imply.le.symbol.domain_defined.apply(x)

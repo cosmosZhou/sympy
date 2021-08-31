@@ -16,11 +16,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    y = Symbol.y(real=True, shape=(k,), given=True)
-    f = Function.f(shape=(k,), real=True)
-    g = Function.g(shape=(k,), real=True)
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(k,), given=True)
+    f, g = Function(shape=(k,), real=True)
     Eq << apply(Or(Unequal(x, y) & (y > 0), Equal(f(x), g(y))))
 
     Eq << algebra.equivalent.given.et.apply(Eq[0])

@@ -4,17 +4,17 @@ from util import *
 
 @apply
 def apply(n):
-    i = Symbol.i(integer=True)
+    i = Symbol(integer=True)
     return Equal(factorial(n), Sum[i:n + 1]((-1) ** (n - i) * i ** n * binomial(n, i)))
 
 
 @prove
 def prove(Eq):
     from axiom import discrete
-    n = Symbol.n(integer=True, nonnegative=True)
+    n = Symbol(integer=True, nonnegative=True)
     Eq << apply(n)
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
 
     Eq << discrete.difference.definition.apply(x ** n, x, n)
 

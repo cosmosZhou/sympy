@@ -12,21 +12,17 @@ def apply(self):
 
 @prove(proved=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    
+    x, x0 = Symbol(real=True)
+    f, g = Function(real=True)
     Eq << apply(Limit[x:x0](f(x) + g(x)))
-    
-    A = Symbol.A(Eq[0].rhs.args[0])    
-    B = Symbol.B(Eq[0].rhs.args[1])
-    
+
+    A = Symbol(Eq[0].rhs.args[0])
+    B = Symbol(Eq[0].rhs.args[1])
     Eq << A.this.definition
-    
+
     Eq << B.this.definition
 
-    
+
 if __name__ == '__main__':
     run()
 

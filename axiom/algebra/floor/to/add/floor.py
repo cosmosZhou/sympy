@@ -13,7 +13,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
+    x = Symbol(integer=True)
     Eq << apply((x - 1) // 2)
 
     Eq << Eq[-1].this.lhs.apply(algebra.floor.to.ceiling)

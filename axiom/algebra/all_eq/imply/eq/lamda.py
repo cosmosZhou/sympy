@@ -19,10 +19,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True, given=True)
-    i = Symbol.i(integer=True)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    n = Symbol(integer=True, positive=True, given=True)
+    i = Symbol(integer=True)
+    f, g = Function(shape=(), integer=True)
 
     Eq << apply(All[i:n](Equal(f(i), g(i))))
 

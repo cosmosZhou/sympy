@@ -11,16 +11,14 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(real=True)
+    A, B = Symbol(etype=dtype.integer)
+    x, y = Symbol(integer=True)
+    f = Function(real=True)
     Eq << apply(Sum[x:A, y:B](f(x, y)))
 
     Eq << Eq[0].this.rhs.expr.args[1].apply(algebra.bool.to.mul)
 
-    Eq << Sum[x](Eq[-1].rhs.expr).this.expr.args[1].apply(algebra.bool.to.piecewise)
+    Eq << Sum[x](Eq[-1].rhs.expr).this.expr.args[1].apply(algebra.bool.to.piece)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.mul)
 
@@ -28,7 +26,7 @@ def prove(Eq):
 
     Eq << Eq[1].this.rhs.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.expr.args[0].apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[0].apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':

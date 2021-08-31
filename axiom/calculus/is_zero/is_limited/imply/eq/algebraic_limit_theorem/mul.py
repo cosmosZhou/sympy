@@ -2,16 +2,15 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(limited_f, limited_g):
     from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
-    limited_f, limited_g = given
     limited_f = limited_f.of(Equal[0])
     fx, (x, x0, dir) = limited_f.of(Limit)
 
     gx, (_x, _x0, _dir), R = of_limited(limited_g)
-    
+
     assert R.is_Interval
-    
+
     assert dir == _dir
 
     assert x == _x
@@ -23,15 +22,13 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import calculus, sets, algebra
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, x0 = Symbol(real=True)
+    f, g = Function(real=True)
 
     dir = S.One
-    Eq << apply(Equal(Limit[x:x0:dir](f(x)), 0), Contains(Limit[x:x0:dir](g(x)), Reals))
+    Eq << apply(Equal(Limit[x:x0:dir](f(x)), 0), Element(Limit[x:x0:dir](g(x)), Reals))
 
-    epsilon = Symbol.epsilon(real=True, positive=True)
+    epsilon = Symbol(real=True, positive=True)
 
     delta0 = Symbol.δ_0(real=True, positive=True)
 
@@ -50,13 +47,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.lt.lt.imply.lt.abs.mul)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
     Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
-    delta = Symbol.delta(real=True, positive=True)
+    delta = Symbol(real=True, positive=True)
 
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(delta0, delta1), delta)
 

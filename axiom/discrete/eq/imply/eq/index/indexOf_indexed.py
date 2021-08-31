@@ -27,17 +27,17 @@ def apply(given, j=None):
 @prove
 def prove(Eq):
     from axiom import discrete, sets, algebra
-    n = Symbol.n(domain=Range(2, oo), given=True)
+    n = Symbol(domain=Range(2, oo), given=True)
 
-    x = Symbol.x(shape=(oo,), integer=True, given=True)
+    x = Symbol(shape=(oo,), integer=True, given=True)
 
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
 
-    j = Symbol.j(domain=Range(0, n), given=True)
+    j = Symbol(domain=Range(0, n), given=True)
 
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), j)
 
-    t = Symbol.t(domain=Range(0, n))
+    t, i = Symbol(domain=Range(0, n))
 
     Eq << discrete.eq.imply.et.index.apply(Eq[0], j=t)
 
@@ -55,7 +55,6 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq.xj_notcontains
 
-    i = Symbol.i(domain=Range(0, n))
     Eq << discrete.eq.imply.eq.index.kroneckerDelta.indexed.apply(Eq[0], i, j)
 
     Eq.ou1 = algebra.cond.imply.ou.subs.apply(Eq[-1], i, Eq[1].lhs)

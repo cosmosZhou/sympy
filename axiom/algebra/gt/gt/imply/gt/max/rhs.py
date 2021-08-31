@@ -12,14 +12,12 @@ def apply(x_less_than_y, x_less_than_b):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y, b = Symbol(real=True, given=True)
 
-    b = Symbol.b(real=True, given=True)
 
     Eq << apply(x > y, x > b)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.max.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.max.to.piece)
 
     Eq << algebra.cond.given.ou.apply(Eq[-1])
 

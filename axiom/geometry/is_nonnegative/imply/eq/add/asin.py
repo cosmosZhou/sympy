@@ -25,21 +25,21 @@ def prove(Eq):
 
     Eq << LessEqual(x, 1, plausible=True)
 
-    Eq << sets.le.ge.imply.contains.interval.apply(Eq[-1], Eq[0])
+    Eq << sets.le.ge.imply.el.interval.apply(Eq[-1], Eq[0])
 
-    Eq <<= geometry.contains.imply.contains.asin.apply(Eq[-1]), sets.contains.imply.contains.sqrt.apply(Eq[-1])
+    Eq <<= geometry.el.imply.el.asin.apply(Eq[-1]), sets.el.imply.el.sqrt.apply(Eq[-1])
 
-    Eq << geometry.contains.imply.contains.asin.apply(Eq[-1])
+    Eq << geometry.el.imply.el.asin.apply(Eq[-1])
 
-    Eq << sets.contains.contains.imply.contains.add.interval.apply(Eq[-1], Eq[-3])
+    Eq << sets.el.el.imply.el.add.interval.apply(Eq[-1], Eq[-3])
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq.any_eq, simplify=None)
 
-    Eq << Eq[-1].this.expr.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.subs)
+    Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs, ret=0)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.sub, S.Pi / 2)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.el.sub, S.Pi / 2)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.imply.contains.div.interval, S.Pi)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.imply.el.div.interval, S.Pi)
 
     #https://en.wikipedia.org/wiki/Argument_(complex_analysis)
 

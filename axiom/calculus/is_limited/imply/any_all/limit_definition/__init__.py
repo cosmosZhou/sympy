@@ -2,14 +2,14 @@ from util import *
 
 
 def of_limited(given, **kwargs):
-    limit, R = given.of(Contains)
+    limit, R = given.of(Element)
     assert R.is_set
-    
+
     expr, *limits = limit.of(Limit)
     if kwargs.get('real'):
         assert R.is_UniversalSet
         return (expr, *limits)
-    
+
     if kwargs.get('nonzero'):
         a, b = R.of(Union)
         assert a.is_Interval and b.is_Interval
@@ -17,13 +17,13 @@ def of_limited(given, **kwargs):
         assert a.args == (-oo, 0)
         assert b.args == (0, oo)
         return (expr, *limits)
-    
+
     if kwargs.get('positive'):
         assert R == Interval(0, oo, left_open=True)
         return (expr, *limits)
-    
+
     return (expr, *limits, R)
-    
+
 
 @apply
 def apply(given, ε=None, δ=None):
@@ -40,29 +40,27 @@ def apply(given, ε=None, δ=None):
 @prove
 def prove(Eq):
     from axiom import calculus, sets
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
 
-    x = Symbol.x(real=True)
+    x, x0, a = Symbol(real=True)
 #     x = Symbol.x(real=True, shape=(n,))
-    x = Symbol.x(integer=True)
+    x = Symbol(integer=True)
 
-    f = Function.f(real=True, shape=())
+    f = Function(real=True, shape=())
 
-    x0 = Symbol.x0(real=True)
 #     x0 = Symbol.x0(real=True, shape=(n,))
 
     x0 = oo
 #     x0 = -oo
 
-    a = Symbol.a(real=True)
 #     a = oo
 #     a = -oo
 
     direction = 1
 
-    Eq << apply(Contains(Limit[x:x0:direction](f(x)), Reals))
+    Eq << apply(Element(Limit[x:x0:direction](f(x)), Reals))
 
-    Eq << sets.contains.imply.any_eq.apply(Eq[0], var='A')
+    Eq << sets.el.imply.any_eq.apply(Eq[0], var='A')
 
     Eq << Eq[-1].this.expr.apply(calculus.eq.imply.any_all.limit_definition.limit)
 

@@ -11,8 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import sets
 
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y = Symbol(real=True, given=True)
     Eq << apply(x >= y)
 
     Eq << Eq[0].reversed

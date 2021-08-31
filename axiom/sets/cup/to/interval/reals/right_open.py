@@ -15,7 +15,7 @@ def apply(self):
 def prove(Eq):
     from axiom import sets
 
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
     Eq << apply(Cup[k](Interval(k, k + 1, right_open=True)))
 
     Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=k >= 0)

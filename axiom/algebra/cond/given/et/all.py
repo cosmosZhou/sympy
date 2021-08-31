@@ -15,14 +15,14 @@ def apply(given, *, cond=None, wrt=None):
         given = all(given, wrt)
     else:
         given = All(given, (wrt,))
-    assert given.is_All
+    assert given.is_ForAll
 
     domain = wrt.domain_conditioned(cond)
     if not domain.is_integer:
         domain = wrt.domain_conditioned(cond)
-        
-    from axiom.algebra.sum.to.add.split import split    
-    given = split(All, given, wrt.domain_conditioned(cond))    
+
+    from axiom.algebra.sum.to.add.split import split
+    given = split(All, given, wrt.domain_conditioned(cond))
     if given.is_And:
         lhs, rhs = given.of(And)
         return lhs, rhs
@@ -33,8 +33,8 @@ def apply(given, *, cond=None, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(real=True)
-    f = Function.f(real=True)
+    e = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(f(e) > 0, cond=e > 0)
 
     Eq << algebra.all.all.imply.all.limits_union.apply(Eq[1], Eq[2])

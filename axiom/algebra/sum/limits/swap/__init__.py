@@ -4,13 +4,13 @@ from util import *
 @apply
 def apply(self, i=0, j=1):
     assert i < j
-    
+
     [function, *limits] = self.of(Sum)
-    i_limit, j_limit = self.limits[i], self.limits[j]    
-    
+    i_limit, j_limit = self.limits[i], self.limits[j]
+
     assert not i_limit._has(j_limit[0])
     limits[i], limits[j] = limits[j], limits[i]
-    
+
     return Equal(self, Sum(function, *limits))
 
 
@@ -18,12 +18,11 @@ def apply(self, i=0, j=1):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    m = Symbol.m(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    f = Symbol.f(shape=(oo,), real=True)
-    g = Symbol.g(shape=(oo, oo), real=True)
+    i, j = Symbol(integer=True)
+    m = Symbol(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    f = Symbol(shape=(oo,), real=True)
+    g = Symbol(shape=(oo, oo), real=True)
     Eq << apply(Sum[i:0:m, j:0:n](f[i] * g[i, j]))
 
     Eq.initial = Eq[0].subs(n, 1)
@@ -36,7 +35,7 @@ def prove(Eq):
 
     Eq << Eq.induct.this.lhs.apply(algebra.sum.to.add.split, cond={n})
 
-    s = Symbol.s(Sum[j:0:n + 1](f[i] * g[i, j]))
+    s = Symbol(Sum[j:0:n + 1](f[i] * g[i, j]))
     Eq << s.this.definition
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (i, 0, m))

@@ -2,23 +2,21 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     (num, den), rhs = given.of(GreaterEqual[Expr / Expr, Expr])
-        
+
     return Unequal(den, 0)
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    a = Symbol.a(real=True)
-    c = Symbol.c(real=True)
-    b = Symbol.b(real=True)
+    a, c, b = Symbol(real=True)
     Eq << apply(a / b >= c)
-    
-    Eq << sets.ge.imply.contains.interval.apply(Eq[0])
-    
-    Eq << sets.contains.imply.any_eq.apply(Eq[-1])
+
+    Eq << sets.ge.imply.el.interval.apply(Eq[0])
+
+    Eq << sets.el.imply.any_eq.apply(Eq[-1])
     Eq << Eq[-1].this.expr.apply(algebra.eq.imply.is_nonzero.domain_definition)
 
 

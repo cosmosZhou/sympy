@@ -1,17 +1,13 @@
 from util import *
 
-from axiom.algebra.eq.le.imply.le.subs import ratsimp
 
 @apply
-def apply(*given):
-    less_than_f, less_than = given
-    if not less_than_f.is_LessEqual:
-        less_than, less_than_f = given
+def apply(le, lt):
+    from axiom.algebra.eq.le.imply.le.subs import ratsimp
+    assert le.is_LessEqual
+    assert lt.is_Less
 
-    assert less_than_f.is_LessEqual
-    assert less_than.is_Less
-
-    lhs, rhs, k = ratsimp(less_than_f, less_than)
+    lhs, rhs, k = ratsimp(le, lt)
     assert k >= 0
     return LessEqual(lhs, rhs)
 
@@ -19,13 +15,8 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    y = Symbol.y(real=True)
-    b = Symbol.b(real=True)
-    k = Symbol.k(real=True, nonnegative=True)
-
-    x = Symbol.x(real=True)
-
-    t = Symbol.t(real=True)
+    t, x, y, b = Symbol(real=True)
+    k = Symbol(real=True, nonnegative=True)
 
     Eq << apply(y <= x * k + b, x < t)
 

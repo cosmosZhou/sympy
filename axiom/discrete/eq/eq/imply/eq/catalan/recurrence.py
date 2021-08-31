@@ -2,9 +2,9 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(eq, eq1):
     from axiom.discrete.eq.eq.imply.is_positive.catalan import is_catalan_series
-    Cn, n = is_catalan_series(*given)
+    Cn, n = is_catalan_series(eq, eq1)
     return Equal(Cn, binomial(n * 2, n) / (n + 1))
 
 
@@ -12,23 +12,20 @@ def apply(*given):
 def prove(Eq):
     from axiom import algebra, calculus, discrete, sets
 
-    k = Symbol.k(integer=True)
-    n = Symbol.n(integer=True)
-    C = Symbol.C(shape=(oo,), integer=True)
+    n, k = Symbol(integer=True)
+    C = Symbol(shape=(oo,), integer=True)
     Eq << apply(Equal(C[0], 1),
                 Equal(C[n + 1], Sum[k:n + 1](C[k] * C[n - k])))
 
-    x = Symbol.x(domain=Interval(0, S.One / 4, left_open=True))
-    def g(x):
-        return Sum[n:oo](C[n] * x ** n)
-    g = Function.g(eval=g)
+    x = Symbol(domain=Interval(0, S.One / 4, left_open=True))
+    g = Function(eval=lambda x: Sum[n:oo](C[n] * x ** n))
     Eq.g_definition = g(x).this.defun()
 
     Eq << Eq[1] * x ** n
 
     Eq << algebra.eq.imply.eq.sum.apply(Eq[-1], (n, 0, oo))
 
-    Eq << calculus.series.infinite.product.apply(C, C, n=n, k=k, x=x)
+    Eq << calculus.mul_sum.to.sum_sum.apply(C, C, n=n, k=k, x=x)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 
@@ -42,7 +39,7 @@ def prove(Eq):
 
     Eq << Eq[-1] - 1
 
-    Eq << Eq[-1].this.rhs.limits_subs(n, n + 1)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.subs.offset, 1)
 
     Eq << Eq.g_squared * x
 
@@ -58,7 +55,7 @@ def prove(Eq):
 
     Eq.positive_sqrt = Any[x:x < S.One / 4](Eq.ou.args[1], plausible=True)
 
-    x_quote = Symbol("x'", domain=Interval(0, S.One / 4, left_open=True, right_open=True))
+    x_quote = Symbol(domain=Interval(0, S.One / 4, left_open=True, right_open=True))
     Eq.positive_sqrt_quote = Eq.positive_sqrt.limits_subs(x, x_quote)
 
     Eq << Derivative[x_quote](Eq.positive_sqrt_quote.rhs).this.doit()
@@ -85,7 +82,7 @@ def prove(Eq):
 
     Eq << Eq[-1] * x ** (n - 1)
 
-    Eq << algebra.gt.imply.gt.sum.multiply.apply(Eq[-1], (n, 0, oo))
+    Eq << algebra.gt.imply.gt.sum.mul.apply(Eq[-1], (n, 0, oo))
 
     Eq << Eq[-1].this.lhs.subs(Eq.g_derivative.reversed)
 
@@ -111,7 +108,7 @@ def prove(Eq):
 
     Eq << algebra.all.imply.ou.subs.apply(Eq[-1], Eq[-1].variable, x)
 
-    Eq << Eq[-1].this.find(NotContains).simplify()
+    Eq << Eq[-1].this.find(NotElement).simplify()
 
     Eq << algebra.ou.imply.all.apply(Eq[-1], pivot=-1, wrt=x)
 
@@ -131,9 +128,9 @@ def prove(Eq):
 
     Eq << algebra.all.given.ou.apply(Eq[-1])
 
-    Eq << Eq[-1].this.args[1].apply(sets.notcontains.given.ou.interval)
+    Eq << Eq[-1].this.args[1].apply(sets.notin.given.ou.interval)
 
-    Eq << calculus.series.infinite.binomial.apply(S.One / 2, x=-4 * x, n=n)
+    Eq << calculus.pow.to.sum.binomial.apply(S.One / 2, x=-4 * x, n=n)
 
     Eq << discrete.binomial.to.mul.half.apply(n)
 
@@ -145,7 +142,7 @@ def prove(Eq):
 
     Eq << 1 - Eq[-1]
 
-    Eq << Eq[-1].this.rhs.limits_subs(n, n + 1)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.subs.offset, 1)
 
     Eq << Eq[-1] / (x * 2)
 

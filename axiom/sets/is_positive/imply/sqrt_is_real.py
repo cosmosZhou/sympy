@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     x = given.of(Expr > 0)
-    return Contains(sqrt(x), Reals)
+    return Element(sqrt(x), Reals)
 
 
 @prove

@@ -4,19 +4,17 @@ from util import *
 @apply
 def apply(given, factor):
     lhs, rhs = given.of(LessEqual)
-
     assert factor >= 0
 
-    return LessEqual(lhs * factor, rhs * factor)
+    return LessEqual(lhs * factor, rhs * factor, evaluate=False)
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    k = Symbol.k(real=True, given=True, nonnegative=True)
+    x, y = Symbol(real=True, given=True)
+    k = Symbol(real=True, given=True, nonnegative=True)
     Eq << apply(x <= y, k)
 
     Eq << GreaterEqual(k, 0, plausible=True)

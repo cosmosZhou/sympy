@@ -4,10 +4,10 @@ from util import *
 @apply
 def apply(given, index):
     [*eqs], *limits = given.of(Any[And])
-    
+
     eq = eqs[index]
     del eqs[index]
-    wrt, B = eq.of(Contains)
+    wrt, B = eq.of(Element)
 
     i = given.variables.index(wrt)
 
@@ -25,15 +25,14 @@ def apply(given, index):
 @prove
 def prove(Eq):
     from axiom import sets
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo,))
 
-    A = Symbol.A(etype=dtype.real * n)
-    B = Symbol.B(etype=dtype.real * n)
+    A, B = Symbol(etype=dtype.real * n)
 
-    f = Function.f(shape=(), integer=True)
+    f = Function(shape=(), integer=True)
 
-    Eq << apply(Any[x[:n]: A](Contains(x[:n], B) & (f(x[:n]) > 0)), index=1)
+    Eq << apply(Any[x[:n]: A](Element(x[:n], B) & (f(x[:n]) > 0)), index=1)
 
     Eq << sets.any.imply.any_et.single_variable.apply(Eq[0])
 

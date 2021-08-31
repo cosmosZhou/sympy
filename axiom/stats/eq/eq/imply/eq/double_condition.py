@@ -6,8 +6,7 @@ from util import *
 # given: x | y & z = x | y
 # imply: x | z = x
 @apply
-def apply(*given):
-    eq_x_given_yz, z_given_y = given
+def apply(eq_x_given_yz, z_given_y):
     assert z_given_y.is_Equal
     assert z_given_y.lhs.is_Conditioned
     z, y = z_given_y.lhs.args
@@ -37,9 +36,7 @@ def apply(*given):
 def prove(Eq):
     from axiom import stats, calculus, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
-    z = Symbol.z(real=True, random=True)
+    x, y, z = Symbol(real=True, random=True)
     Eq << apply(Equal(x | y.as_boolean() & z.as_boolean(), x | y), Equal(z | y, z))
 
     Eq.yz_nonzero = stats.eq_conditioned.imply.is_nonzero.apply(Eq[0])

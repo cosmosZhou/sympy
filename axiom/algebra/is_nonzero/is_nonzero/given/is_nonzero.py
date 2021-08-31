@@ -11,12 +11,11 @@ def apply(is_nonzero_x, is_nonzero_y):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y = Symbol(real=True, given=True)
     Eq << apply(Unequal(x, 0), Unequal(y, 0))
-    
+
     Eq << algebra.is_nonzero.imply.et.apply(Eq[-1])
-    
+
 
 
 if __name__ == '__main__':

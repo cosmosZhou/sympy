@@ -1,2 +1,2 @@
 from . import eq
-from . import contains
+from . import el

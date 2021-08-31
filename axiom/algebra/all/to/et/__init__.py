@@ -11,10 +11,9 @@ def apply(self, simplify=True):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    f = Function.f(real=True)
-    h = Function.h(real=True)
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    f, h = Function(real=True)
     Eq << apply(All[i:n]((f(i) > 0) & (h(i) > 0)))
 
     Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])

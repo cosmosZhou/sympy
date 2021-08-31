@@ -10,7 +10,7 @@ from sympy.stats.rv import (NamedArgsMixin, SinglePSpace, SingleDomain,
 from sympy.stats.symbolic_probability import Probability
 from sympy.sets.fancysets import Range, FiniteSet
 from sympy.sets.sets import Union
-from sympy.sets.contains import Contains
+from sympy.sets.contains import Element
 from sympy.utilities import filldedent
 from sympy.core.sympify import _sympify
 from sympy.external import import_module
@@ -310,7 +310,7 @@ class DiscreteDomain(RandomDomain):
 class SingleDiscreteDomain(DiscreteDomain, SingleDomain):
 
     def as_boolean(self):
-        return Contains(self.symbol, self.set)
+        return Element(self.symbol, self.set)
 
 
 class ConditionalDiscreteDomain(DiscreteDomain, ConditionalDomain):

@@ -33,11 +33,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete
-    p = Symbol.p(complex=True)
-    n = Symbol.n(domain=Range(1, oo))
-    x = Symbol.x(shape=(n,), given=True, complex=True)
-    y = Symbol.y(shape=(n,), given=True, complex=True)
-    k = Symbol.k(domain=Range(1, oo))
+    p = Symbol(complex=True)
+    n, k = Symbol(domain=Range(1, oo))
+    x, y = Symbol(shape=(n,), given=True, complex=True)
 
     Eq << apply(Equal(x @ Lamda[k:n](p ** k), y @ Lamda[k:n](p ** k)))
 

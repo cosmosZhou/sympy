@@ -29,13 +29,8 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    c = Symbol.c(real=True)
-    d = Symbol.d(real=True)
-    f = Function.f(real=True)
+    x, y, a, b, c, d = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(Integral[x:a:b](f(x)) * y)
 
     Eq << Eq[-1].this.rhs.simplify()

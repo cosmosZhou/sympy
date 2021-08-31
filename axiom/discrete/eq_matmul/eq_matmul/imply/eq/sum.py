@@ -22,13 +22,9 @@ def apply(eq_xy, eq_ab, i=None):
 def prove(Eq):
     from axiom import discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(shape=(n,), real=True, given=True)
-    y = Symbol.y(shape=(n,), real=True, given=True)
-    a = Symbol.a(shape=(n,), real=True, given=True)
-    b = Symbol.b(shape=(n,), real=True, given=True)
-    i = Symbol.i(domain=Range(0, n))
-    j = Symbol.j(domain=Range(0, n))
+    n = Symbol(integer=True, positive=True)
+    x, y, a, b = Symbol(shape=(n,), real=True, given=True)
+    i, j = Symbol(domain=Range(0, n))
     Eq << apply(Equal(x @ Swap(n, i, j), y), Equal(a @ Swap(n, i, j), b))
 
     _i = Eq[-1].lhs.variable
@@ -44,21 +40,21 @@ def prove(Eq):
 
     Eq << Eq[2].subs(Eq[-1])
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

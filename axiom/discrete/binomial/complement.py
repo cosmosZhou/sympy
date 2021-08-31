@@ -10,8 +10,7 @@ def apply(n, k):
 @prove
 def prove(Eq):
     from axiom import discrete
-    n = Symbol.n(integer=True)
-    k = Symbol.k(integer=True)
+    n, k = Symbol(integer=True)
 
     Eq << apply(n, k)
 

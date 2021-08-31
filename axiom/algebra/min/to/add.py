@@ -40,17 +40,16 @@ def apply(self, common_term=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    r = Symbol.r(real=True, positive=True)
+    x, y = Symbol(real=True)
+    r = Symbol(real=True, positive=True)
 
     Eq << apply(Min(x * r + 1, y * r + 1))
 
-    Eq << Eq[-1].this.lhs.apply(algebra.min.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.min.to.piece)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.to.add)
+    Eq << Eq[-1].this.lhs.apply(algebra.piece.to.add)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.min.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.min.to.piece)
 
 
 if __name__ == '__main__':

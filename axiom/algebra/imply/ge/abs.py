@@ -12,10 +12,11 @@ def apply(x, negate=False):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(x)
 
     Eq << -Eq[-1]
+
     Eq << algebra.imply.le.abs.apply(-x)
 
 

@@ -3,9 +3,6 @@ from util import *
 
 @apply
 def apply(forall, exists):
-    if forall.is_Any:
-        forall, exists = exists, forall
-
     fx, *limits_f = forall.of(All)
     fy, *limits_e = exists.of(Any)
 
@@ -37,10 +34,8 @@ def apply(forall, exists):
 @prove
 def prove(Eq):
     from axiom import algebra
-    y = Symbol.y(real=True)
-    x = Symbol.x(real=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    y, x = Symbol(real=True)
+    f, g = Function(integer=True)
 
     Eq << apply(All[y:g(y) > 0](f(y) > 0), Any[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
 

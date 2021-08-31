@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, exclude=None):
-    (xi, (i, zero, n)), _n = given.of(Equal[Abs[Cup[FiniteSet]]])
+    (xi, (i, zero, n)), _n = given.of(Equal[Card[Cup[FiniteSet]]])
     assert zero == 0
     assert n == _n
 
@@ -16,22 +16,22 @@ def apply(given, exclude=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True, given=True)
-    x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True, given=True)
-    Eq << apply(Equal(abs(x[:n].set_comprehension()), n))
+    n = Symbol(integer=True, positive=True, given=True)
+    x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True, given=True)
+    Eq << apply(Equal(Card(x[:n].set_comprehension()), n))
 
-    xi, xj = Eq[1].expr.args
+    xi = Eq[1].expr.args[0]
     x, i = xi.args
-    b = Symbol.b(Lamda[i:n](x[i].set))
-    Eq << abs(Cup[i:n](b[i])).this.arg.expr.definition
+    b = Symbol(Lamda[i:n](x[i].set))
+    Eq << Card(Cup[i:n](b[i])).this.arg.expr.definition
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[0], Eq[-1])
 
-    Eq << Sum[i:n](abs(b[i])).this.expr.arg.definition
+    Eq << Sum[i:n](Card(b[i])).this.expr.arg.definition
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[-2], Eq[-1])
 
-    Eq << sets.eq.imply.all_is_emptyset.complement.apply(Eq[-1])
+    Eq << sets.eq.imply.all_is_empty.complement.apply(Eq[-1])
 
     Eq << Eq[-1].this.find(Indexed).definition
 

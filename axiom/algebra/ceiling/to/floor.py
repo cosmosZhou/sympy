@@ -10,8 +10,8 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True)
-    d = Symbol.d(integer=True, positive=True)
+    n = Symbol(integer=True)
+    d = Symbol(integer=True, positive=True)
     Eq << apply(ceiling(n / d))
 
     Eq << Eq[-1].this.lhs.apply(algebra.ceiling.to.mul)

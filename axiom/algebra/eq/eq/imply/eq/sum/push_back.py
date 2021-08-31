@@ -2,13 +2,13 @@ from util import *
 
 
 def absorb_back(Sum, Equal, cond, cond_sum, criteria=None):
-    
-    fb, gb = cond.of(Equal) 
+
+    fb, gb = cond.of(Equal)
     (fk, (k, a, b)), (gk, limit) = cond_sum.of(Equal[Sum[Tuple], Sum])
-    
+
     assert k.is_integer
     assert limit == (k, a, b)
-    
+
     assert fk._subs(k, b) == fb
     assert gk._subs(k, b) == gb
 
@@ -28,11 +28,9 @@ def apply(*imply):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(domain=Range(a + 1, oo))
-    g = Function.g(integer=True)
-    f = Function.f(integer=True)
+    k, a = Symbol(integer=True)
+    b = Symbol(domain=Range(a + 1, oo))
+    g, f = Function(integer=True)
     Eq << apply(Equal(g(b), f(b)), Equal(Sum[k:a:b](g(k)), Sum[k:a:b](f(k))))
 
     Eq << algebra.eq.eq.imply.eq.add.apply(Eq[0], Eq[1])

@@ -29,9 +29,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True)
-    a = Symbol.a(integer=True)
-    f = Function.f(shape=())
+
+    n, a = Symbol(integer=True)
+    f = Function(shape=())
     Eq << apply(All[n:a:oo](Equal(f(n + 1), f(n))))
 
     Eq << Eq[0].this.expr - Eq[0].rhs
@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], _n)
 
-    Eq << Eq[-1].limits_subs(n, n - 1).reversed
+    Eq << Eq[-1].this.apply(algebra.all.limits.subs.offset, -1).reversed
 
     Eq << algebra.all.given.et.apply(Eq[1], cond={a})
 

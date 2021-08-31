@@ -4,6 +4,6 @@ from . import add
 from . import mul
 from . import sub
 from . import subs
-from . import sum, product
-
+from . import prod
+from . import sum
 from . import cancel

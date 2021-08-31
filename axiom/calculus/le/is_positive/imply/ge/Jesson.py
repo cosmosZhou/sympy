@@ -25,8 +25,7 @@ def prove(Eq):
     domain = Interval(a, b, left_open=True, right_open=True)
     x = Symbol(domain=domain)
     f = Function(real=True)
-    x0 = Symbol(domain=domain, given=True)
-    x1 = Symbol(domain=domain, given=True)
+    x0, x1 = Symbol(domain=domain, given=True)
     w = Symbol(domain=Interval(0, 1), given=True)
     Eq << apply(x0 <= x1, Derivative(f(x), (x, 2)) > 0, w=w)
 
@@ -53,11 +52,11 @@ def prove(Eq):
 
     Eq.all_is_positive = algebra.cond.imply.all.apply(Eq[1], x)
 
-    Eq.x0_contains, Eq.x1_contains = Contains(x0, domain, plausible=True), Contains(x1, domain, plausible=True)
+    Eq.x0_contains, Eq.x1_contains = Element(x0, domain, plausible=True), Element(x1, domain, plausible=True)
 
-    Eq.x_mean_contains = sets.contains.contains.imply.contains.interval.apply(Eq.x0_contains, Eq.x1_contains, w)
+    Eq.x_mean_contains = sets.el.el.imply.el.interval.apply(Eq.x0_contains, Eq.x1_contains, w)
 
-    Eq <<= calculus.contains.contains.all_is_positive.imply.is_differentiable.apply(Eq.x0_contains, Eq.x_mean_contains, Eq.all_is_positive), calculus.contains.contains.all_is_positive.imply.is_differentiable.apply(Eq.x_mean_contains, Eq.x1_contains, Eq.all_is_positive)
+    Eq <<= calculus.el.el.all_is_positive.imply.is_differentiable.apply(Eq.x0_contains, Eq.x_mean_contains, Eq.all_is_positive), calculus.el.el.all_is_positive.imply.is_differentiable.apply(Eq.x_mean_contains, Eq.x1_contains, Eq.all_is_positive)
 
     x_ = Symbol("x'", real=True)
     Eq << Eq[-2].limits_subs(Eq[-2].variable, x_)
@@ -89,15 +88,15 @@ def prove(Eq):
 
     Eq.any = Eq[-1].this.expr.rhs.apply(algebra.add.collect, factor=w * (1 - w) * (x1 - x0))
 
-    Eq.suffice = Eq.any.limits_cond.this.apply(sets.contains.contains.imply.le)
+    Eq.suffice = Eq.any.limits_cond.this.apply(sets.el.el.imply.le)
 
-    Eq <<= sets.contains.contains.imply.subset.interval.apply(Eq.x0_contains, Eq.x_mean_contains), sets.contains.contains.imply.subset.interval.apply(Eq.x_mean_contains, Eq.x1_contains)
+    Eq <<= sets.el.el.imply.subset.interval.apply(Eq.x0_contains, Eq.x_mean_contains), sets.el.el.imply.subset.interval.apply(Eq.x_mean_contains, Eq.x1_contains)
 
     Eq <<= algebra.cond.imply.suffice.apply(Eq[-2], cond=Eq.suffice.lhs.args[0]), algebra.cond.imply.suffice.apply(Eq[-1], cond=Eq.suffice.lhs.args[1])
 
     Eq <<= algebra.suffice.imply.suffice.et.apply(Eq[-2]), algebra.suffice.imply.suffice.et.apply(Eq[-1])
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.contains.subset.imply.contains), Eq[-1].this.rhs.apply(sets.contains.subset.imply.contains)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el.subset.imply.el), Eq[-1].this.rhs.apply(sets.el.subset.imply.el)
 
     Eq << algebra.suffice.suffice.imply.suffice.et.apply(Eq[-2], Eq[-1])
 
@@ -105,7 +104,7 @@ def prove(Eq):
 
     Eq <<= Eq[-1] & Eq[-2] & Eq.suffice
 
-    Eq << Eq[-1].this.rhs.apply(calculus.all_is_positive.contains.contains.le.imply.le)
+    Eq << Eq[-1].this.rhs.apply(calculus.le.el.el.all_is_positive.imply.le)
 
     Eq.is_nonnegative = Eq[-1].this.rhs.apply(algebra.le.imply.is_nonnegative)
 

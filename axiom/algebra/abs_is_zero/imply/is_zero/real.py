@@ -12,12 +12,12 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(Equal(abs(x), 0))
 
-    Eq << Eq[0].this.lhs.apply(algebra.abs.to.piecewise)
+    Eq << Eq[0].this.lhs.apply(algebra.abs.to.piece)
 
-    Eq << algebra.eq_piecewise.imply.ou.apply(Eq[-1])
+    Eq << algebra.eq_piece.imply.ou.apply(Eq[-1])
     Eq << Eq[-1].reversed
 
 

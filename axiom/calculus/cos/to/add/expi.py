@@ -11,7 +11,7 @@ def apply(cosx):
 @prove
 def prove(Eq):
     from axiom import calculus, geometry
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(cos(x))
 
     Eq << Eq[0].find(Exp).this.apply(geometry.expi.to.add.euler.formula)

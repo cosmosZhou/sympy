@@ -11,9 +11,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    S = Symbol.S(etype=dtype.real)
-    e = Symbol.e(real=True)
-    f = Function.f(shape=(), integer=True)
+    S = Symbol(etype=dtype.real)
+    e = Symbol(real=True)
+    f = Function(shape=(), integer=True)
 
     Eq << apply(All[e:S](f(e) > 0))
 

@@ -14,9 +14,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True, given=True)
-    x = Symbol.x(domain=Range(a, b + 1), given=True)
+    a = Symbol(integer=True)
+    b = Symbol(integer=True, given=True)
+    x = Symbol(domain=Range(a, b + 1), given=True)
     Eq << apply(x >= b)
 
     Eq << algebra.equivalent.given.et.apply(Eq[0])

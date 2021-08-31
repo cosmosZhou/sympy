@@ -23,8 +23,8 @@ def is_catalan_series(*given):
 
 
 @apply
-def apply(*given):
-    Cn, n = is_catalan_series(*given)
+def apply(eq, eq1):
+    Cn, n = is_catalan_series(eq, eq1)
     return Greater(Cn, 0)
 
 
@@ -32,15 +32,15 @@ def apply(*given):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True)
-    n = Symbol.n(integer=True, given=False)
-    C = Symbol.C(shape=(oo,), integer=True)
+    k = Symbol(integer=True)
+    n = Symbol(integer=True, given=False)
+    C = Symbol(shape=(oo,), integer=True)
     Eq << apply(Equal(C[0], 1),
                 Equal(C[n + 1], Sum[k:n + 1](C[k] * C[n - k])))
 
     Eq.initial = algebra.eq.imply.gt.apply(Eq[0], 0)
 
-    k = Symbol.k(domain=Range(0, n + 1))
+    k = Symbol(domain=Range(0, n + 1))
     Eq.induct = Eq[2].subs(n, n + 1)
 
     Eq.hypothsis_k = Eq[2].subs(n, k)

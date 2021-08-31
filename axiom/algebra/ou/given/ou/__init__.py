@@ -11,11 +11,8 @@ def apply(imply, index=None):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
-    
-    f = Function.f(real=True, given=True)
+    x, y, b = Symbol(real=True, given=True)
+    f = Function(real=True)
     
     Eq << apply((f(y) > 0) | (f(x) > 0) | (f(b) > 0), index=slice(0, 2))
     
@@ -27,6 +24,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-
-del collect
 from . import collect

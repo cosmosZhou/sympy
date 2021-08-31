@@ -10,23 +10,18 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    x = Symbol.x(etype=dtype.real, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    m = Symbol.m(integer=True, positive=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    c = Symbol.c(integer=True)
-    d = Symbol.d(integer=True)
+    x = Symbol(etype=dtype.real, shape=(oo, oo))
+    i, j, a, b, c, d = Symbol(integer=True)
+    m = Symbol(integer=True, positive=True)
 
     Eq << apply(Cap[j:{a, b, c, d}, i:m](x[i, j]))
 
-    s = Function.s(eval=lambda i: Cap[j:{a, b, c, d}](x[i, j]), etype=dtype.real)
+    s = Function(eval=lambda i: Cap[j:{a, b, c, d}](x[i, j]), etype=dtype.real)
     Eq << s(i).this.defun()
 
     Eq << sets.eq.imply.eq.cap.apply(Eq[-1], (i, 0, m))
 
-    Eq << Eq[-2].this.rhs.apply(sets.cap.to.intersection.doit.setlimit)
+    Eq << Eq[-2].this.rhs.apply(sets.cap.to.intersect.doit.setlimit)
 
     Eq << Eq[-2].subs(Eq[-1])
 

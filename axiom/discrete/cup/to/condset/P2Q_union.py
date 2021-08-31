@@ -15,27 +15,27 @@ def apply(n):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True)
+
+    n = Symbol(integer=True, positive=True)
     Eq << apply(n)
 
     Q = Eq[0].lhs.base
     t = Q.definition.variable
-
     Eq << Subset(Eq[0].lhs, Eq[2].rhs, plausible=True)
 
     Eq.subset_P = sets.subset.imply.subset.cup.lhs.apply(Eq[-1], (t,), simplify=False)
 
     Eq.subset_Q = Subset(Eq.subset_P.rhs, Eq.subset_P.lhs, plausible=True)
 
-    Eq << sets.subset.given.all_contains.apply(Eq.subset_Q)
+    Eq << sets.subset.given.all_el.apply(Eq.subset_Q)
 
     Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[0].rhs.variable)
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.given.any_contains.st.cup)
+    Eq << Eq[-1].this.expr.apply(sets.el.given.any_el.st.cup)
 
     Eq << Eq[-1].this.expr.expr.rhs.definition
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq << Eq[-1].this.limits[0][1].definition
 
@@ -43,7 +43,7 @@ def prove(Eq):
 
     Eq << algebra.all.given.suffice.apply(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.apply(sets.eq.imply.contains.st.cup, index=n)
+    Eq << Eq[-1].this.lhs.apply(sets.eq.imply.el.st.cup, index=n)
 
     Eq <<= Eq.subset_P & Eq.subset_Q
 

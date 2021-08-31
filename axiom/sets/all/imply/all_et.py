@@ -16,18 +16,18 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
-    S = Symbol.S(etype=dtype.real, given=True)
+    x = Symbol(real=True)
+    f = Function(real=True)
+    S = Symbol(etype=dtype.real, given=True)
     Eq << apply(All[x:S](f(x) > 0))
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1], simplify=None)
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1], simplify=None)
 
-    Eq << ~Eq[-1]
+    
 
-    Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
+    
 
-    Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
+    
 
 
 if __name__ == '__main__':

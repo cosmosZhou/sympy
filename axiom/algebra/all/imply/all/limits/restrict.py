@@ -37,10 +37,11 @@ def apply(given, domain=None, wrt=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    S = Symbol.S(etype=dtype.real, given=True)
-    e = Symbol.e(real=True)
-    t = Symbol.t(real=True, given=True)
-    f = Function.f(shape=(), integer=True)
+
+    S = Symbol(etype=dtype.real, given=True)
+    e = Symbol(real=True)
+    t = Symbol(real=True, given=True)
+    f = Function(shape=(), integer=True)
     Eq << apply(All[e:S](f(e) > 0), domain=S - {t})
 
     Eq << ~Eq[-1]

@@ -13,7 +13,7 @@ def apply(le, given):
         a, b = ab.of(Interval)
         limit = (x, Interval(a, c, left_open=ab.left_open, right_open=ab.right_open))
     assert _b == b
-    
+
     return All(function, limit)
 
 
@@ -21,14 +21,12 @@ def apply(le, given):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
-    c = Symbol.c(real=True, given=True)
-    x = Symbol.x(real=True)
-    f = Function.f(shape=(), real=True)
+    a, b, c = Symbol(real=True, given=True)
+    x = Symbol(real=True)
+    f = Function(shape=(), real=True)
     Eq << apply(c <= b, All[x:a:b](f(x) > 0))
 
-    e = Symbol.e(nonnegative=True)
+    e = Symbol(nonnegative=True)
     Eq << algebra.all.imply.all.limits.restrict.apply(Eq[1], Interval(a, b - e))
 
     Eq << algebra.cond.imply.suffice.unbounded.apply(Eq[-1], e)

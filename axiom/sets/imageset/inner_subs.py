@@ -5,7 +5,7 @@ from util import *
 def apply(self):
     expr, (x, et) = self.of(Cup[FiniteSet])
     if et.is_ConditionSet:
-        et = et.condition & Contains(x, et.base_set)
+        et = et.condition & Element(x, et.base_set)
     if et.is_And:
         eqs = et._argset
     else:
@@ -19,20 +19,18 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
+    n, m = Symbol(integer=True, positive=True)
 
-    x = Symbol.x(complex=True, shape=(n,))
-    f = Function.f(complex=True, shape=(m,))
-    g = Function.g(complex=True, shape=(m,))
+    x = Symbol(complex=True, shape=(n,))
+    f, g = Function(complex=True, shape=(m,))
 
-    h = Function.h(shape=(), real=True)
+    h = Function(shape=(), real=True)
 
     Eq << apply(imageset(x, f(x), Equal(f(x), g(x)) & (h(x) > 0)))
 
-    Eq << Eq[0].this.lhs.apply(sets.cup.piecewise)
+    Eq << Eq[0].this.lhs.apply(sets.cup.piece)
 
-    Eq << Eq[-1].this.lhs.expr.apply(algebra.piecewise.subs)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.piece.subs)
 
 
 if __name__ == '__main__':

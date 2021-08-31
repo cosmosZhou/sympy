@@ -1,3 +1,4 @@
 from . import imageset
 
-from . import intersection
+from . import interval
+from . import intersect

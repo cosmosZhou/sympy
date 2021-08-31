@@ -8,20 +8,20 @@ def apply(given):
     assert given.is_Unequal
     assert given.lhs.is_Probability
     assert given.rhs.is_zero
-        
+
     return Greater(given.lhs, 0)
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, random=True)
- 
+    x = Symbol(real=True, random=True)
+
     Eq << apply(Unequal(Probability(x), 0))
-    
+
     Eq << GreaterEqual(Probability(x), 0, plausible=True)
-    
+
     Eq <<= Eq[-1] & Eq[0]
 
-    
+
 if __name__ == '__main__':
     run()

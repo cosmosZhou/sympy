@@ -11,7 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(Less(x, 0))
 
     Eq << -algebra.is_negative.imply.eq.abs.apply(Eq[0])

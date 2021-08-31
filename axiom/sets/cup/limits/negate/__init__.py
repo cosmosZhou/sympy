@@ -13,9 +13,9 @@ def apply(self):
 def prove(Eq):
     from axiom import sets, algebra
 
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
-    f = Function.f(etype=dtype.real)
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, nonnegative=True, given=False)
+    f = Function(etype=dtype.real)
     Eq << apply(Cup[i:-n:n + 1](f(i)))
 
     Eq << Eq[0].subs(n, 0)

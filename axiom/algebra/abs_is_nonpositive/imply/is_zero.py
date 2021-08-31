@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    x = given.of(Abs <= 0)    
+    x = given.of(Abs <= 0)
     return Equal(x, 0)
 
 
@@ -11,7 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(abs(x) <= 0)
 
     Eq << algebra.is_nonpositive.imply.is_zero.apply(Eq[0])

@@ -9,9 +9,7 @@ def apply(given, divisor=None):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    d = Symbol.d(real=True)
+    x, y, d = Symbol(real=True)
     Eq << apply(Equal(x, y), d)
 
     Eq << Eq[-1] * d

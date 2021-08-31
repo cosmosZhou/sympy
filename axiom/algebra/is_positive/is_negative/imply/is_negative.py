@@ -10,15 +10,14 @@ def apply(is_positive_x, is_negative_y):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    
+    x, y = Symbol(real=True)
+
     Eq << apply(x > 0, y < 0)
-    
+
     Eq << -Eq[1] * Eq[0]
-    
+
     Eq << -Eq[-1]
 
-    
+
 if __name__ == '__main__':
     run()

@@ -9,8 +9,7 @@ def apply(x, y):
 @prove
 def prove(Eq):
     from axiom import geometry
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
 
     Eq << apply(x, y)
 

@@ -3,24 +3,21 @@ from util import *
 
 @apply
 def apply(self):
-    from axiom.algebra.sum.doit.outer.setlimit import doit    
+    from axiom.algebra.sum.doit.outer.setlimit import doit
     return Equal(self, doit(Cup, self))
 
 
 @prove
 def prove(Eq):
     from axiom import sets
-    x = Symbol.x(etype=dtype.real, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    m = Symbol.m(integer=True, positive=True)
+    x = Symbol(etype=dtype.real, shape=(oo, oo))
+    i, j, a = Symbol(integer=True)
+    m = Symbol(integer=True, positive=True)
 
-    a = Symbol.a(integer=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    f, g = Function(real=True)
     Eq << apply(Cup[i:g(i, j) > 0, j:f(i, j) > 0, i:{a}](x[i, j]))
 
-    u = Function.u(eval=lambda a: Cup[i:g(i, j) > 0, j:f(a, j) > 0](x[i, j]))
+    u = Function(eval=lambda a: Cup[i:g(i, j) > 0, j:f(a, j) > 0](x[i, j]))
 
     Eq << u(i).this.defun()
 

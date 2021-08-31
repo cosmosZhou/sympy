@@ -8,7 +8,7 @@ def apply(x):
 
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(x)
     return
     Eq << Eq[-1].this.lhs.apply(algebra.ceiling.to.mul)

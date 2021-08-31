@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given, n=None, x=None, start=0):
+def apply(f0, suffice, n=None, x=None, start=0):
     start = sympify(start)
-    f0, suffice = given
     f0.of(Equal)
     fn_and_fnt, fn1 = suffice.of(Suffice)
 
@@ -27,10 +26,9 @@ def apply(*given, n=None, x=None, start=0):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
-    x = Symbol.x(real=True)
+    n = Symbol(integer=True, nonnegative=True)
+    f, g = Function(shape=(), real=True)
+    x = Symbol(real=True)
     Eq << apply(Equal(f[0](x), g[0](x)), Suffice(Equal(f[n](x), g[n](x)) & Equal(f[n](x + 1), g[n](x + 1)), Equal(f[n + 1](x), g[n + 1](x))), n=n, x=x)
 
     Eq << Suffice(Eq[2], Eq[2]._subs(x, x + 1), plausible=True)
@@ -45,7 +43,7 @@ def prove(Eq):
 
     Eq << Eq[2].subs(x, x + 1)
 
-    
+
 
 
 if __name__ == '__main__':

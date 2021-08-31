@@ -2,19 +2,19 @@ from util import *
 
 
 @apply
-def apply(given, wrt=None):
-    assert given._has(wrt)
-    return Any[wrt](given)
+def apply(cond, wrt=None):
+    assert cond._has(wrt)
+    return Any[wrt](cond)
 
 
 @prove
 def prove(Eq):
     from axiom import sets
-    e = Symbol.e(integer=True)
-    f = Function.f(integer=True, shape=())
+    e = Symbol(integer=True)
+    f = Function(integer=True)
     Eq << apply(f(e) > 0, wrt=e)
 
-    S = Symbol.S(Integers)
+    S = Symbol(Integers)
     Eq << All[e:S](f(e) > 0, plausible=True)
 
     Eq << Eq[-1].this.limits[0][1].definition
@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.definition
 
-    Eq << sets.is_nonemptyset.all.imply.any.apply(Eq[-1], Eq[2])
+    Eq << sets.is_nonempty.all.imply.any.apply(Eq[-1], Eq[2])
 
     Eq << Eq[-1].this.limits[0][1].definition
 

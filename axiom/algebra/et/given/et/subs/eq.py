@@ -27,11 +27,10 @@ def apply(imply, index=None, reverse=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    S = Symbol.S(etype=dtype.integer)
-    f = Function.f(integer=True)
-    Eq << apply(NotContains(f(x), S) & Equal(x, y))
+    x, y = Symbol(integer=True)
+    S = Symbol(etype=dtype.integer)
+    f = Function(integer=True)
+    Eq << apply(NotElement(f(x), S) & Equal(x, y))
 
     Eq << Eq[-1].subs(Eq[-2].reversed)
 

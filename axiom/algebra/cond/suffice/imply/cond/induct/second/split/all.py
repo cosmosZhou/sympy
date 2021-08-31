@@ -24,10 +24,9 @@ def apply(f0, suffice, n=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    k = Symbol.k(integer=True)
-    f = Symbol.f(shape=(oo,), real=True)
-    g = Symbol.g(shape=(oo,), real=True)
+    n = Symbol(integer=True, nonnegative=True)
+    k = Symbol(integer=True)
+    f, g = Symbol(shape=(oo,), real=True)
 
     Eq << apply(f[0] > g[0], Suffice(All[k:n](f[k] > g[k]), f[n] > g[n]), n=n)
 

@@ -10,15 +10,16 @@ def apply(ceil):
 
 @prove
 def prove(Eq):
-    from axiom import sets, algebra
-    x = Symbol.x(real=True)
+    from axiom import algebra, sets
+
+    x = Symbol(real=True)
     Eq << apply(ceiling(x))
 
-    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=Contains(x, Integers))
+    Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=Element(x, Integers))
 
-    Eq << Eq[-2].this.lhs.apply(sets.contains.imply.any_eq)
+    Eq << Eq[-2].this.lhs.apply(sets.el.imply.any_eq)
 
-    Eq << Eq[-1].this.lhs.expr.apply(algebra.cond.imply.et.invoke, algebra.eq.imply.eq.ceiling)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.eq.imply.eq.ceiling, ret=0)
 
     Eq << -Eq[-1].this.lhs.expr.args[0]
 
@@ -28,9 +29,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.given.is_zero)
 
-    Eq << Eq[2].this.lhs.apply(algebra.cond.imply.et.invoke, sets.notcontains.imply.eq.ceiling)
+    Eq << Eq[2].this.lhs.apply(sets.notin.imply.eq.ceiling, ret=0)
 
-    Eq << Eq[-1].this.lhs.args[0].apply(sets.notcontains.imply.eq.floor_frac)
+    Eq << Eq[-1].this.lhs.args[0].apply(sets.notin.imply.eq.floor_frac)
 
     Eq << Eq[-1].this.find(frac).apply(algebra.frac.to.add)
 

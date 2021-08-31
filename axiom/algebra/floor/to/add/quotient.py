@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     n, d = self.of(Floor[Expr / Expr])
 
     q = 0
@@ -30,16 +30,14 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True)
-    d = Symbol.d(integer=True)
-    k = Symbol.k(integer=True)
+    x, d, k = Symbol(integer=True)
     Eq << apply((x + d * k - 1 - d) // d)
 
-    Eq << Eq[0].this.lhs.apply(algebra.floor.to.mul.divide)
+    Eq << Eq[0].this.lhs.apply(algebra.floor.to.mul.div)
 
     Eq << Eq[-1].this.lhs.expand()
 
-    Eq << Eq[-1].this.rhs.apply(algebra.floor.to.mul.divide)
+    Eq << Eq[-1].this.rhs.apply(algebra.floor.to.mul.div)
 
     Eq << Eq[-1].this.rhs.expand()
 

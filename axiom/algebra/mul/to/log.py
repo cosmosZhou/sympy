@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     *t, x = self.of(Expr * Log)
-    t = Mul(*t)    
+    t = Mul(*t)
     rhs = log(x ** t)
     return Equal(self, rhs, evaluate=False)
 
@@ -13,13 +13,13 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    t = Symbol.t(real=True)
-    x = Symbol.x(real=True, positive=True)
+    t = Symbol(real=True)
+    x = Symbol(real=True, positive=True)
     Eq << apply(t * log(x))
 
     Eq << algebra.eq.given.eq.exp.apply(Eq[0])
 
-    y = Symbol.y(log(x))
+    y = Symbol(log(x))
     Eq << y.this.definition
 
     Eq <<= Eq[-1] * t, algebra.eq.imply.eq.exp.apply(Eq[-1])

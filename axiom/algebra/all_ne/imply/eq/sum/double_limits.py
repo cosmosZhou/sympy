@@ -23,13 +23,12 @@ def apply(all_ne, sgm):
 def prove(Eq):
     from axiom import sets, algebra
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    X = Symbol.X(etype=dtype.real)
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True, shape=(oo,))
-    f = Function.f(real=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    X = Symbol(etype=dtype.real)
+    x = Symbol(real=True)
+    a = Symbol(real=True, shape=(oo,))
+    f = Function(real=True)
     s = a[:n].set_comprehension()
     Eq << apply(All[j:i, i:n](Unequal(a[i], a[j])), Sum[x:s](f(x)))
 

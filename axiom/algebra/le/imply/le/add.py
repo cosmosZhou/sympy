@@ -9,9 +9,7 @@ def apply(given, x):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    z = Symbol.z(real=True, given=True)
+    x, y, z = Symbol(real=True, given=True)
     Eq << apply(x <= y, z)
 
     Eq << Eq[0] + z

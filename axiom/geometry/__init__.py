@@ -13,8 +13,10 @@ from . import ou_is_nonzero
 from . import acos
 from . import square_cos
 from . import is_nonnegative
-from . import contains
+from . import el
 from . import cos_is_zero
 from . import is_nonpositive
 from . import is_negative
 from . import expi
+from . import imply
+from . import lt

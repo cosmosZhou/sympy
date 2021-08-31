@@ -11,8 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, sets
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(Supset(A, B))
 
     Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])

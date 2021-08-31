@@ -13,10 +13,10 @@ def apply(given, limit):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True, given=False)
-    k = Symbol.k(integer=True)
-    f = Function.f(shape=(), etype=dtype.integer)
-    A = Symbol.A(etype=dtype.integer)
+    n = Symbol(integer=True, positive=True, given=False)
+    k = Symbol(integer=True)
+    f = Function(shape=(), etype=dtype.integer)
+    A = Symbol(etype=dtype.integer)
     Eq << apply(Subset(f(k), A), (k, 0, n))
 
     Eq.initial = Eq[0].subs(n, 1)

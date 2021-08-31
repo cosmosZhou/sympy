@@ -4,14 +4,13 @@ from util import *
 @apply
 def apply(given):
     x, y = given.of(Less)
-    
+
     return GreaterEqual(y, x)
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
+    x, y = Symbol(integer=True, given=True)
     Eq << apply(x < y)
 
     Eq << ~Eq[-1]

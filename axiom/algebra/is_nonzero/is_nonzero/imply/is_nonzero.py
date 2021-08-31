@@ -11,8 +11,7 @@ def apply(is_nonzero_x, is_nonzero_y):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(complex=True)
-    y = Symbol.y(complex=True)
+    x, y = Symbol(complex=True)
     Eq << apply(Unequal(x, 0), Unequal(y, 0))
 
     Eq << algebra.is_nonzero.imply.abs_is_positive.apply(Eq[0])

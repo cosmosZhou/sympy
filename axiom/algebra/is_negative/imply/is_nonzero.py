@@ -9,14 +9,14 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, given=True)
-    
+    x = Symbol(real=True, given=True)
+
     Eq << apply(x < 0)
-    
+
     Eq << ~Eq[1]
-    
+
     Eq <<= Eq[-1] & Eq[0]
 
-    
+
 if __name__ == '__main__':
     run()

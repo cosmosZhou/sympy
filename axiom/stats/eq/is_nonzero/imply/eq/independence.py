@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    equality, inequality = given
+def apply(equality, inequality):
     lhs, rhs = equality.of(Equal)
     x = inequality.of(Unequal[Probability, 0])
 
@@ -21,8 +20,7 @@ def apply(*given):
 def prove(Eq):
     from axiom import stats, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
+    x, y = Symbol(real=True, random=True)
     given = Equal(Probability(x, y), Probability(x) * Probability(y))
     Eq << apply(given, Unequal(Probability(x), 0))
 

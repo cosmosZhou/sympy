@@ -14,29 +14,29 @@ def K_step(x):
                      (K(x[:n - 1]) * x[n - 1] + K(x[:n - 2]), True))
 
 
-K = Function.K(integer=True, eval=K_step, shape=())    
+K = Function.K(integer=True, eval=K_step, shape=())
 
 
 @apply
-def apply(self): 
+def apply(self):
     assert self.is_K
     x = self.arg
     n = x.shape[0]
-    n -= 2 
-    assert n > 0    
-        
-    return Equal(self, K(x[:n]) + K(x[:n + 1]) * x[n + 1]) 
+    n -= 2
+    assert n > 0
+
+    return Equal(self, K(x[:n]) + K(x[:n + 1]) * x[n + 1])
 
 
 @prove
-def prove(Eq): 
-    x = Symbol.x(integer=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True)
-    
+def prove(Eq):
+    x = Symbol(integer=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+
     Eq << apply(K(x[:n + 2]))
-    
+
     Eq << Eq[-1].this.lhs.defun()
-    
+
 
 if __name__ == '__main__':
     run()

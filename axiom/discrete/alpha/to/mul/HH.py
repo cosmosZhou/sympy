@@ -22,9 +22,9 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
+    x = Symbol(real=True, positive=True, shape=(oo,))
 #     x = Symbol.x(real=True, shape=(oo,))
-    n = Symbol.n(domain=Range(2, oo), given=False)
+    n = Symbol(domain=Range(2, oo), given=False)
 
     Eq << apply(x[:n])
 

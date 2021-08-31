@@ -23,14 +23,14 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
+    i = Symbol(integer=True)
     n = 4
-    a = Symbol.a(real=True, shape=(oo,))
+    a = Symbol(real=True, shape=(oo,))
 
     Eq << apply(Lamda[i:n](a[i]))
 
-    A = Symbol.A(Eq[0].lhs)
-    B = Symbol.B(Eq[0].rhs)
+    A = Symbol(Eq[0].lhs)
+    B = Symbol(Eq[0].rhs)
     j = 0
     Eq << Equal(A[j], B[j], plausible=True)
 

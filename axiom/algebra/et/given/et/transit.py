@@ -15,14 +15,11 @@ def apply(imply, swap=False, reverse=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    a = Symbol.a(integer=True, shape=(oo,))
-    b = Symbol.b(integer=True, shape=(oo,))
-    c = Symbol.c(integer=True, shape=(oo,))
+    x, i = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    a, b, c = Symbol(integer=True, shape=(oo,))
 
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol(etype=dtype.integer)
 
     Eq << apply(Equal(a[i], b[i]) & Equal(b[i], c[i]))
 

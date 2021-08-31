@@ -5,25 +5,22 @@ from util import *
 def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     X, index = X_definition(n, w, x)
-    return All[x[:n + 1]:Q[u]](Contains(X[v], Q[v]) & Equal(x[:n + 1], w[n, index[u](X[v])] @ X[v]))
+    return All[x[:n + 1]:Q[u]](Element(X[v], Q[v]) & Equal(x[:n + 1], w[n, index[u](X[v])] @ X[v]))
 
 
 def X_definition(n, w, x):
     from axiom.discrete.eq.imply.et.index import index_function
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    j = Symbol(integer=True)
 
     index = index_function(n + 1)
     return Symbol("X", Lamda[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
 
 
 def predefined_symbols(n):
-    x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
-    t = Symbol.t(integer=True)
-    Q = Symbol.Q(Lamda[t:n + 1](conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(0, n + 1)) & Equal(x[n], t))))
-    j = Symbol.j(integer=True)
-    i = Symbol.i(integer=True)
-    w = Symbol.w(Lamda[j, i](Swap(n + 1, i, j)))
+    x = Symbol(shape=(oo,), integer=True, nonnegative=True)
+    t, i, j = Symbol(integer=True)
+    Q = Symbol(Lamda[t:n + 1](conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(0, n + 1)) & Equal(x[n], t))))
+    w = Symbol(Lamda[j, i](Swap(n + 1, i, j)))
 
     return Q, w, x
 
@@ -32,9 +29,9 @@ def predefined_symbols(n):
 def prove(Eq):
     from axiom import sets, algebra, discrete
 
-    n = Symbol.n(integer=True, positive=True, given=True)
-    u = Symbol.u(domain=Range(0, n + 1), given=True)
-    v = Symbol.v(domain=Range(0, n + 1))
+    n = Symbol(integer=True, positive=True, given=True)
+    u = Symbol(domain=Range(0, n + 1), given=True)
+    v = Symbol(domain=Range(0, n + 1))
     Eq << apply(n, u, v)
 
     w, i, j = Eq[0].lhs.args
@@ -48,7 +45,7 @@ def prove(Eq):
     Eq.h_domain, Eq.x_h_equality = algebra.all_et.imply.et.all.apply(Eq[-1])
 
     hv = Eq.x_h_equality.expr.lhs.indices[0]
-    Eq << discrete.matrix.elementary.swap.invariant.permutation.basic.apply(n + 1, w=w)
+    Eq << discrete.imply.all_el.permutation.apply(n + 1, w=w)
 
     Eq << Subset(Eq[-2].limits[0][1], Eq[-1].rhs, plausible=True)
 
@@ -91,8 +88,7 @@ def prove(Eq):
     Eq << Eq.x_slice_domain.this.expr.apply(discrete.eq.imply.et.index, u)
     Eq.indexu_contains, Eq.x_indexu_equality = algebra.all_et.imply.all.apply(Eq[-1], simplify=None)
     Eq.equality_of_indexu_and_n = (Eq.x_indexu_equality & Eq.x_slice_last).this.expr.apply(algebra.eq.eq.imply.eq.transit)
-    i = Symbol.i(domain=Range(0, n + 1))
-    j = Symbol.j(domain=Range(0, n + 1))
+    i, j, m = Symbol(domain=Range(0, n + 1))
     Eq << Eq.x_slice_domain.this.expr.apply(discrete.combinatorics.permutation.index.kronecker_delta.indexOf, i, j)
     x = Eq[-1].variable.base
     Eq.ou = Eq[-1].subs(i, x[n])
@@ -100,7 +96,6 @@ def prove(Eq):
     Eq << algebra.all.any.imply.any_et.apply(Eq.x_slice_last, Eq[-1])
     Eq <<= Eq.ou & ~Eq[-1]
     Eq << algebra.all_et.imply.all.apply(Eq[-1], index=1)
-    m = Symbol.m(domain=Range(0, n + 1))
     Eq.indexOf_indexed = Eq.x_slice_domain.this.expr.apply(discrete.combinatorics.permutation.index.indexOf_indexed, j=m)
     Eq << Eq.indexOf_indexed.subs(m, n)
     Eq << (Eq[-2] & Eq[-1]).this.expr.apply(algebra.eq.eq.imply.eq.subs)
@@ -113,7 +108,7 @@ def prove(Eq):
     Eq << Any(Eq.ou.function.args[0], *Eq.ou.limits, plausible=True)
     Eq <<= Eq.indexu_contains & Eq[-1]
     Eq.index_equality = algebra.all_et.imply.all.apply(Eq.ou & ~Eq[-1], index=1)
-    Eq << discrete.combinatorics.permutation.is_nonemptyset.Qu.apply(n, u)
+    Eq << discrete.combinatorics.permutation.is_nonempty.Qu.apply(n, u)
     Eq <<= Eq[-3] & Eq.index_equality
     Eq << Eq[-1].this.expr.apply(algebra.eq.eq.imply.eq.subs)
     Eq <<= Eq[-1] & Eq.equality_of_indexu_and_n

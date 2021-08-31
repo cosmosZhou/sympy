@@ -10,14 +10,11 @@ def apply(given, index):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo,))
 
-    f = Function.f(shape=(), integer=True)
-    f_quote = Function("f'", shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
-    h = Function.h(shape=(), integer=True)
-
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo,))
+    f, g, h = Function(shape=(), integer=True)
+    f_quote = Function(shape=(), integer=True)
     Eq << apply(Any[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[1])

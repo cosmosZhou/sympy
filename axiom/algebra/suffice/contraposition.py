@@ -11,16 +11,15 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
 
+    x, y = Symbol(integer=True)
+    f, g = Function(integer=True)
     Eq << apply(Suffice(x > y, f(x) > g(y)))
 
     Eq << Eq[0].this.lhs.apply(algebra.suffice.to.ou)
 
     Eq << Eq[-1].this.rhs.apply(algebra.suffice.to.ou)
+
 
 if __name__ == '__main__':
     run()

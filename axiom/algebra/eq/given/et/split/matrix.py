@@ -9,19 +9,16 @@ def apply(given, index=-1):
 
     first = Equal(Matrix(lhs._args[:index]), Matrix(rhs._args[:index])).simplify()
     second = Equal(Matrix(lhs._args[index:]), Matrix(rhs._args[index:])).simplify()
-        
+
     return first, second
 
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    c = Symbol.c(real=True)
-    d = Symbol.d(real=True)
+    a, b, c, d = Symbol(real=True)
     Eq << apply(Equal(Matrix([a, b]), Matrix([c, d])))
 
-    
+
 
     Eq << Eq[0].this.lhs.subs(Eq[-2]).subs(Eq[-1])
 

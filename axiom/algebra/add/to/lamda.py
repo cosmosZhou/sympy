@@ -24,17 +24,15 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    j = Symbol.j(integer=True)
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    f = Function.f(integer=True)
-    g = Symbol.g(shape=(n, n), integer=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    f = Function(integer=True)
+    g = Symbol(shape=(n, n), integer=True)
     Eq << apply(Lamda[i:n, j:n](f(j, i)) + g)
 
-    i = Symbol.i(domain=Range(0, n))    
+    i, j = Symbol(domain=Range(0, n))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
-    
-    j = Symbol.j(domain=Range(0, n))
+
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], j)
 
 

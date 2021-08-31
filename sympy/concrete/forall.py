@@ -5,7 +5,7 @@ from sympy.core.sympify import sympify
 from sympy.core.relational import Equal
 
 
-class All(Quantifier):
+class ForAll(Quantifier):
     """
     All[p] q <=> !p | q
     """
@@ -16,12 +16,12 @@ class All(Quantifier):
     def __new__(cls, function, *symbols, is_in_exists=False, **assumptions):
         if assumptions:
             from sympy.core.inference import Inference
-            return Inference(All.__new__(cls, function, *symbols), **assumptions)
+            return Inference(ForAll.__new__(cls, function, *symbols), **assumptions)
         
+        function = sympify(function)
         if function.is_BooleanAtom or len(symbols) == 0:
             if not function:
                 eqs = []
-                from sympy import Equal
                 for _, *ab in symbols:
                     if len(ab) == 1:
                         domain = ab[0]
@@ -57,8 +57,8 @@ class All(Quantifier):
             if not domain.is_set:
                 domain = old.domain_conditioned(domain)
 
-            from sympy.sets.contains import NotContains
-            limit_cond = NotContains(new, domain).simplify()
+            from sympy.sets.contains import NotElement
+            limit_cond = NotElement(new, domain).simplify()
             eqs.append(limit_cond)
 
             if self.expr.is_Or:
@@ -127,7 +127,7 @@ class All(Quantifier):
                 return self.func(self.expr, *limits)
             return self.expr
 
-        this = self.expr.func.simplify_All(self, *self.args)
+        this = self.expr.func.simplify_ForAll(self, *self.args)
         if this is not None:
             return this
 
@@ -214,7 +214,7 @@ class All(Quantifier):
 
     def __and__(self, eq):
         """Overloading for & operator"""
-        if eq.is_All: 
+        if eq.is_ForAll: 
             if self.expr == eq.expr:
                 limits = self.limits_union(eq)
                 return self.func(self.expr, *limits).simplify()
@@ -269,3 +269,5 @@ class All(Quantifier):
 
 
 from sympy.concrete.limits import *
+
+All = ForAll

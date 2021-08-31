@@ -7,27 +7,18 @@ def apply(self, old, new):
     return Equivalent(self, limits_subs(Any, self, old, new), evaluate=False)
 
 
-@prove(proved=False)
+@prove
 def prove(Eq):
-    from axiom import algebra, sets
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    c = Symbol.c(real=True)
-    f = Function.f(real=True)
+    from axiom import algebra
+
+    x, a, b, c = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(Any[x:Interval(a, b, right_open=True)](f(x) > 0), x, c - x)
-    
-    Eq << Eq[-1].this.rhs.apply(algebra.product.bool)
-    
-    Eq << Eq[-1].this.rhs.apply(algebra.product.limits.negate.infinity)
-    
-    Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.negate)
-    
-    Eq << Eq[-1].this.rhs.limits_subs(i, i - c)
-    
-    Eq << Eq[-1].this.rhs.find(Contains).apply(sets.contains.add, c)
-    
-    Eq << Eq[-1].this.lhs.apply(algebra.product.bool)
+
+    Eq << algebra.equivalent.given.et.apply(Eq[0])
+
+    Eq << Eq[-2].this.lhs.apply(algebra.any.imply.any.limits.subs.negate.real, x, c - x)
+    Eq << Eq[-1].this.rhs.apply(algebra.any.imply.any.limits.subs.negate.real, x, c - x)
 
 
 if __name__ == '__main__':

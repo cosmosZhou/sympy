@@ -16,7 +16,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import discrete
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
     Eq << apply(n * factorial(n - 1))
 
     Eq << Eq[0].this.rhs.apply(discrete.factorial.to.mul)

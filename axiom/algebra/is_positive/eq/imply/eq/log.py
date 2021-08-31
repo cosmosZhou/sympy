@@ -14,9 +14,8 @@ def apply(is_positive, eq):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
+    x = Symbol(real=True)
+    f, g = Function(shape=(), real=True)
     Eq << apply(f(x) > 0, Equal(f(x), g(x)))
 
     Eq << Eq[-1].subs(Eq[1])

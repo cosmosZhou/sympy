@@ -10,8 +10,8 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(integer=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True)
+    x = Symbol(integer=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
 
     Eq << apply(x[:n])
 

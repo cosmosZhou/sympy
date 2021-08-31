@@ -3,9 +3,9 @@ from util import *
 
 @apply
 def apply(given, *vars):
-    S, positive = given.of(Abs >= Expr)
-    assert positive > 1    
-    
+    S, positive = given.of(Card >= Expr)
+    assert positive > 1
+
     if vars:
         x, y = vars
     else:
@@ -19,19 +19,19 @@ def apply(given, *vars):
 def prove(Eq):
     from axiom import sets, algebra
 
-    S = Symbol.S(etype=dtype.integer, given=True)
-    Eq << apply(abs(S) >= 2)
+    S = Symbol(etype=dtype.integer, given=True)
+    Eq << apply(Card(S) >= 2)
 
-    Eq << sets.ge.imply.any_contains.apply(Eq[0], simplify=False)
+    Eq << sets.ge.imply.any_el.apply(Eq[0], simplify=False)
 
-    Eq << sets.any_contains.imply.any_contains.limits_restricted.apply(Eq[-1], simplify=False)
+    Eq << sets.any_el.imply.any_el.limits_restricted.apply(Eq[-1], simplify=False)
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.imply.eq.union)
+    Eq << Eq[-1].this.expr.apply(sets.el.imply.eq.union)
 
     i = Eq[-1].variable
-    Eq << Eq[-1].this.expr.apply(algebra.eq.imply.eq.abs)
+    Eq << Eq[-1].this.expr.apply(sets.eq.imply.eq.card)
 
-    Eq << sets.imply.eq.principle.addition.apply(S, i.set)
+    Eq << sets.imply.eq.principle.add.apply(S, i.set)
 
     Eq << Eq[-2].subs(Eq[-1])
 
@@ -41,10 +41,10 @@ def prove(Eq):
 
     Eq << algebra.any_eq.cond.imply.any.subs.apply(Eq[-2].reversed, Eq[-1])
 
-    Eq << Eq[-1].this.expr.apply(sets.ge.imply.is_nonemptyset, simplify=False)
+    Eq << Eq[-1].this.expr.apply(sets.ge.imply.is_nonempty, simplify=False)
 
     i, j = Eq[1].variables
-    Eq << Any[i:S, j:S](Contains(j, Eq[-1].lhs), plausible=True)
+    Eq << Any[i:S, j:S](Element(j, Eq[-1].lhs), plausible=True)
 
     Eq << Eq[-1].simplify()
 

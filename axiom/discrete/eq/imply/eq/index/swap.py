@@ -37,11 +37,10 @@ def apply(given, i=None, j=None, w=None):
 def prove(Eq):
     from axiom import discrete, sets
 
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(shape=(n,), integer=True)
-    k = Symbol.k(integer=True)
-    j = Symbol.j(domain=Range(0, n), given=True)
-    i = Symbol.i(domain=Range(0, n), given=True)
+    n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n,), integer=True)
+    k = Symbol(integer=True)
+    j, i = Symbol(domain=Range(0, n), given=True)
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), i, j)
 
     _, di, dj = Eq[2].lhs.arg.args[0].args
@@ -72,7 +71,7 @@ def prove(Eq):
 
     Eq.di_domain, Eq.x_di_eqaulity = Eq[-2].subs(Eq.di_definition.reversed), Eq[-1].subs(Eq.di_definition.reversed)
 
-    Eq << sets.contains.contains.imply.subset.finiteset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
+    Eq << sets.el.el.imply.subset.finiteset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
 
     Eq << Eq.expand.subs(Eq.x_di_eqaulity)
 
@@ -85,9 +84,9 @@ def prove(Eq):
     Eq << Eq.di_definition.this.rhs.defun().this.rhs.expand()
     Eq << Eq[-2].subs(Eq[-1].reversed)
     Eq.piecewise_equality = Eq.piecewise_equality.subs(Eq[-1])
-    Eq << sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
-    Eq << sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.di_domain, Eq.piecewise_equality.lhs.args[-1])
-    Eq << sets.contains.imply.eq.intersection.apply(Eq.dj_domain)
+    Eq << sets.element.imply.eq.piecewise.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
+    Eq << sets.element.imply.eq.piecewise.expr_swap.apply(Eq.di_domain, Eq.piecewise_equality.lhs.args[-1])
+    Eq << sets.element.imply.eq.intersection.apply(Eq.dj_domain)
     Eq << Eq[-2].subs(Eq[-1])
     Eq << Eq[-4] + Eq[-1]
     Eq << Eq.piecewise_equality.subs(Eq[-1])

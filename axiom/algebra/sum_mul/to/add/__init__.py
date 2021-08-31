@@ -6,10 +6,10 @@ def apply(self):
     mul, *limits = self.of(Sum)
     from axiom.algebra.mul.to.add import convert
     add = convert(mul)
-    
+
     from axiom.algebra.sum.to.add import associate
     rhs = associate(Sum, Sum(add, *limits))
-    
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -17,11 +17,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    f = Function.f(real=True)
-    h = Function.h(real=True)
-    g = Function.g(real=True)
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    f, h, g = Function(real=True)
     Eq << apply(Sum[i:n]((f(i) + h(i)) * g(i)))
 
     Eq << Eq[-1].this.lhs.expr.apply(algebra.mul.to.add)
@@ -30,5 +28,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
-    
+
 from . import st

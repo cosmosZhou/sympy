@@ -31,10 +31,9 @@ def apply(given, domain=None, wrt=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
-    e = Symbol.e(real=True)
-    f = Function.f(shape=(), integer=True)
+    A, B = Symbol(etype=dtype.real)
+    e = Symbol(real=True)
+    f = Function(shape=(), integer=True)
 
     Eq << apply(All[e:A](f(e) > 0), domain=A | B)
 

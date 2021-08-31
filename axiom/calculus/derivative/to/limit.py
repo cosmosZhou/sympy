@@ -15,12 +15,9 @@ def apply(self, var=None):
     
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
-    epsilon = Symbol.epsilon(real=True)
-    Eq << apply(Derivative(f(x), x), var=epsilon)
-
-    
+    x, epsilon = Symbol(real=True)
+    f = Function(real=True)
+    Eq << apply(Derivative[x](f(x)), var=epsilon)
 
 
 if __name__ == '__main__':

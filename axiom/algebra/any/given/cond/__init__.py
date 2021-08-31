@@ -12,9 +12,9 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import algebra
-    e = Symbol.e(real=True)
-    f = Function.f(shape=(), integer=True)
 
+    e = Symbol(real=True)
+    f = Function(integer=True)
     Eq << apply(Any[e](f(e) > 0))
 
     Eq << algebra.cond.imply.any.apply(Eq[1], wrt=e)

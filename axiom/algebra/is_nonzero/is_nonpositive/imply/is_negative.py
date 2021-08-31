@@ -2,9 +2,9 @@ from util import *
 
 
 @apply
-def apply(is_nonzero, is_nonpositive):    
+def apply(is_nonzero, is_nonpositive):
     x = is_nonzero.of(Unequal[0])
-    is_nonpositive.of(x <= 0)    
+    is_nonpositive.of(x <= 0)
     return Less(x, 0)
 
 
@@ -12,7 +12,7 @@ def apply(is_nonzero, is_nonpositive):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(Unequal(x, 0), LessEqual(x, 0))
 
     Eq << ~Eq[-1]
@@ -21,11 +21,11 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    
 
-    
 
-    
+
+
+
 
 
 if __name__ == '__main__':

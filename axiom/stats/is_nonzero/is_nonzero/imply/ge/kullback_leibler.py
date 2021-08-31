@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(is_nonzero, is_nonzero_, Y, Y_):
-    y = Symbol.y(integer=True)
+    y = Symbol(integer=True)
     X, x = is_nonzero.of(Unequal[Probability[Equal], 0])
     X_, x_ = is_nonzero_.of(Unequal[Probability[Equal], 0])
     assert x_ == x
@@ -16,13 +16,11 @@ def apply(is_nonzero, is_nonzero_, Y, Y_):
 def prove(Eq):
     from axiom import stats, algebra
 
-    p = Function.p(shape=(), integer=True)
-    q = Function.q(shape=(), integer=True)
-    X = Symbol.X(random=True, integer=True)
-    Y = Symbol.Y(random=True, integer=True)
+    p, q = Function(shape=(), integer=True)
+    X, Y = Symbol(random=True, integer=True)
     X_ = Symbol("X'", random=True, integer=True)
     Y_ = Symbol("Y'", random=True, integer=True)
-    x = Symbol.x(integer=True)
+    x = Symbol(integer=True)
     Eq << apply(Unequal(Probability(Equal(X, x)), 0),
                 Unequal(Probability(Equal(X_, x)), 0),
                 Y, Y_)

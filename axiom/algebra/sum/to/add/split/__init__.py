@@ -110,10 +110,9 @@ def apply(self, *, cond=None, wrt=None, evaluate=False):
 def prove(Eq):
     from axiom import algebra, sets
 
-    x = Symbol.x(integer=True)
-    f = Function.f(real=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    x = Symbol(integer=True)
+    f = Function(real=True)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(Sum[x:A](f(x)), cond=B)
 
     Eq << Eq[-1].this.find(Sum).apply(algebra.sum.bool)
@@ -126,7 +125,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.expr.apply(algebra.add.to.mul)
 
-    Eq << Eq[-1].this.find(Contains).apply(sets.contains.to.ou.split, B)
+    Eq << Eq[-1].this.find(Element).apply(sets.el.to.ou.split, B)
 
     Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.add)
 

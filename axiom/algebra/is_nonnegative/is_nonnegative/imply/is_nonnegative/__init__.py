@@ -11,8 +11,7 @@ def apply(is_positive_x, is_nonnegative_y):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(x >= 0, y >= 0)
 
     Eq.case0 = Suffice(Equal(x, 0), x * y >= 0, plausible=True)
@@ -32,5 +31,5 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
-del add
+
 from . import add

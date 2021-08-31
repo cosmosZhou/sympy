@@ -19,10 +19,10 @@ def apply(A):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
-    x = Symbol.x(real=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True, given=False)
+    from axiom import algebra, discrete
 
+    x = Symbol(real=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True, given=False)
     Eq << apply(alpha(x[:n + 2]))
 
     Eq.initial = Eq[-1].subs(n, 1)
@@ -47,11 +47,12 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.cond.subs.apply(Eq[0], x[:n + 2], x[1:n + 3])
 
-    i = Eq[0].lhs.variable
-    Eq << Eq[-1].this.lhs.limits_subs(i, i - 1)
+    
+    Eq << Eq[-1].this.lhs.apply(algebra.all.limits.subs.offset, -1)
 
     Eq << Eq[-1].this.lhs.apply(algebra.all.given.all.limits.relax, domain=Range(1, n + 3))
 
+    i = Eq[0].lhs.variable
     Eq << Suffice(All[i:1:n + 3](x[i] > 0), Unequal(alpha(x[1:n + 3]), 0), plausible=True)
 
     Eq << Eq[-1].this.lhs.apply(discrete.all_is_positive.imply.is_nonzero.alpha.offset)

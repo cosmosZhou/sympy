@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    a_less_than_x, x_less_than_b = given
+def apply(a_less_than_x, x_less_than_b):
     A, X = a_less_than_x.of(Subset)
     B, _X = x_less_than_b.of(Supset)
     if X != _X:
@@ -15,9 +14,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import sets
-    A = Symbol.A(etype=dtype.complex)
-    X = Symbol.X(etype=dtype.complex)
-    B = Symbol.B(etype=dtype.complex)
+    A, X, B = Symbol(etype=dtype.complex)
 
     Eq << apply(Subset(A, X), Supset(B, X))
 

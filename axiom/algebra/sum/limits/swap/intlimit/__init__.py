@@ -65,13 +65,10 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, sets
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    f = Symbol.f(shape=(oo,), real=True)
-    g = Symbol.g(shape=(oo, oo), real=True)
-    d = Symbol.d(integer=True)
-    a = Symbol.a(integer=True)
+    i, j, d, a = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    f = Symbol(shape=(oo,), real=True)
+    g = Symbol(shape=(oo, oo), real=True)
     Eq << apply(Sum[i:j + d:n, j:a:n - d](f[i] * g[i, j]))
 
     Eq << Eq[0].this.lhs.apply(algebra.sum.bool)

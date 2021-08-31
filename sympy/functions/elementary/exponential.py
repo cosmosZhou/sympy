@@ -444,6 +444,9 @@ class Exp(ExpBase):
         else:
             return Interval(-oo, oo)
 
+    def is_continuous(self, *args):
+        return True
+    
 exp = Exp
     
 def match_real_imag(expr):

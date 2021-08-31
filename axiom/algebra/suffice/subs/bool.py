@@ -25,31 +25,29 @@ def apply(given, index=None, invert=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    A = Symbol.A(etype=dtype.real)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, y = Symbol(real=True)
+    A = Symbol(etype=dtype.real)
+    f, g = Function(real=True)
 
-    Eq << apply(Suffice(Equal(f(x), x + 1) & Contains(x, A),
+    Eq << apply(Suffice(Equal(f(x), x + 1) & Element(x, A),
                            Equal(Piecewise((g(x), Equal(f(x), x + 1)), (g(y), True)), y)),
                            index=0)
 
-    Eq << Equivalent(Suffice(Equal(f(x), x + 1) & Contains(x, A),
+    Eq << Equivalent(Suffice(Equal(f(x), x + 1) & Element(x, A),
                                 Equal(Piecewise((g(x), Equal(f(x), x + 1)), (g(y), True)), y)),
 
-                     Suffice(Equal(Bool(Equal(f(x), x + 1)), 1) & Contains(x, A),
+                     Suffice(Equal(Bool(Equal(f(x), x + 1)), 1) & Element(x, A),
                                 Equal(Piecewise((g(x), Equal(Bool(Equal(f(x), x + 1)), 1)), (g(y), True)), y)),
 
                      plausible=True)
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
     Eq << Eq[1].this.rhs.apply(algebra.suffice.subs)
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':

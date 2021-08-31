@@ -13,11 +13,11 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True, nonnegative=True)
+    x = Symbol(real=True)
+    y = Symbol(real=True, nonnegative=True)
     Eq << apply(Greater(x, y))
 
-    Eq << algebra.gt.gt.imply.gt.multiply.apply(Eq[0], Eq[0])
+    Eq << algebra.gt.gt.imply.gt.mul.apply(Eq[0], Eq[0])
 
 
 if __name__ == '__main__':

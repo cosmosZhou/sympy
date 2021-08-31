@@ -1,7 +1,6 @@
 from util import *
 
 
-
 @apply
 def apply(given, *, cond=None):
     assert cond.is_boolean
@@ -11,8 +10,9 @@ def apply(given, *, cond=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    e = Symbol.e(integer=True)
-    f = Function.f(integer=True, shape=())
+
+    e = Symbol(integer=True)
+    f = Function(integer=True)
     Eq << apply(f(e) > 0, cond=e > 0)
 
     Eq <<= Eq[-2].apply(algebra.suffice.given.ou), Eq[-1].apply(algebra.suffice.given.ou)

@@ -1,3 +1,3 @@
-from . import notcontains
-from . import intersection_is_emptyset
+from . import intersect_is_empty
 from . import eq
+from . import notin

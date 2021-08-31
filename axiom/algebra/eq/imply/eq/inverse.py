@@ -10,15 +10,15 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True, shape=(n,), zero=False)
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,))
+    a = Symbol(real=True)
+    b = Symbol(real=True, shape=(n,), zero=False)
     Eq << apply(Equal(x * a, b))
 
     Eq << Eq[-1].subs(Eq[0])
 
-    
+
 
 
 if __name__ == '__main__':

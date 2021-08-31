@@ -30,12 +30,11 @@ def apply(is_positive, x=None, w=None, i=None, n=None):
 def prove(Eq):
     from axiom import calculus
 
-    n = Symbol.n(integer=True, positive=True, given=False)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(domain=Interval(a, b, left_open=True, right_open=True))
-    w = Symbol.w(shape=(oo,), nonnegative=True)
-    f = Function.f(real=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    a, b = Symbol(real=True)
+    x = Symbol(domain=Interval(a, b, left_open=True, right_open=True))
+    w = Symbol(shape=(oo,), nonnegative=True)
+    f = Function(real=True)
     Eq << apply(Derivative(f(x), (x, 2)) > 0, w=w, n=n)
 
     Eq << calculus.is_positive.imply.suffice.Jesson.induct.apply(Eq[0], w=w, n=n)

@@ -21,17 +21,17 @@ def apply(given, n, start=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
+    n = Symbol(integer=True, nonnegative=True)
 
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(integer=True, shape=(k,))
-    i = Symbol.i(integer=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(integer=True, shape=(k,))
+    i = Symbol(integer=True)
 
-    w = Symbol.w(integer=True, shape=(oo, k, k))
+    w = Symbol(integer=True, shape=(oo, k, k))
 
-    S = Symbol.S(etype=dtype.integer * k)
+    S = Symbol(etype=dtype.integer * k)
 
-    Eq << apply(Suffice(All[x:S](Contains(x @ MatProduct[i:n](w[i]), S)), All[x:S](Contains(x @ MatProduct[i:n + 1](w[i]), S))), n=n)
+    Eq << apply(Suffice(All[x:S](Element(x @ MatProduct[i:n](w[i]), S)), All[x:S](Element(x @ MatProduct[i:n + 1](w[i]), S))), n=n)
 
     Eq << Eq[0].lhs._subs(n, Zero()).copy(plausible=True)
 

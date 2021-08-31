@@ -34,9 +34,9 @@ def apply(given, index=-1):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n + 1,))
-    y = Symbol.y(real=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n + 1,))
+    y = Symbol(real=True, shape=(oo,))
     Eq << apply(Equal(x, y[:n + 1]))
 
     Eq << Eq[-2] @ BlockMatrix([Identity(n), ZeroMatrix(n)]).T

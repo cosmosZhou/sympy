@@ -5,7 +5,7 @@ from util import *
 def apply(eq, ge):
     if ge.is_Equal:
         eq, ge = ge, eq
-        
+
     (xi, (i, _0, n)), a = eq.of(Equal[Sum])
     xn, _a = ge.of(GreaterEqual)
     assert a == _a
@@ -20,10 +20,10 @@ def apply(eq, ge):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, negative=False, shape=(oo,), given=True)
-    n = Symbol.n(integer=True, negative=False, given=True)
-    i = Symbol.i(integer=True)
-    a = Symbol.a(real=True, negative=False)
+    x = Symbol(real=True, negative=False, shape=(oo,), given=True)
+    n = Symbol(integer=True, negative=False, given=True)
+    i, j = Symbol(integer=True)
+    a = Symbol(real=True, negative=False)
     Eq << apply(Equal(Sum[i:n + 1](x[i]), a), x[n] >= a)
 
     Eq.eq = Eq[0].this.lhs.apply(algebra.sum.to.add.split, cond={n})
@@ -36,7 +36,6 @@ def prove(Eq):
 
     Eq << Eq.eq.subs(Eq[2]).this.apply(algebra.eq.simplify.terms.common)
 
-    j = Symbol.j(integer=True)
     Eq << Eq[-1].this.lhs.limits_subs(i, j)
 
     Eq << ~Eq[3]
@@ -47,7 +46,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this().expr.find(Piecewise, Contains).simplify()
+    Eq << Eq[-1].this().expr.find(Piecewise, Element).simplify()
 
     Eq << Eq[-1].this.expr.apply(algebra.eq.gt.imply.lt.sub)
 

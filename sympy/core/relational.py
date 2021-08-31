@@ -371,7 +371,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         raise TypeError
 
     def solve(self, x):
-        from sympy.sets.contains import Contains
+        from sympy.sets.contains import Element
         if not x.is_Symbol:
             _x = self.generate_var(x.free_symbols, **x.type.dict)
             this = self._subs(x, _x)
@@ -383,7 +383,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         if domain.is_ConditionSet:
             self
             
-        return Contains(x, domain).simplify()
+        return Element(x, domain).simplify()
 
     def is_positive_relationship(self):
         ...
@@ -466,11 +466,9 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
 
         return domain
 
-    def rewrite(self, *args, **hints):
-        return self.func(self.lhs.rewrite(*args, **hints), self.rhs.rewrite(*args, **hints))
-
     def _eval_domain_defined(self, x, **_):
         return self.lhs.domain_defined(x, real=True) & self.rhs.domain_defined(x, real=True)
+
                     
 Rel = Relational
 
@@ -563,8 +561,8 @@ class Equal(Relational):
                 return S.false  # True != False
             elif not (lhs.is_Symbol or rhs.is_Symbol) and (lhs.is_Boolean != rhs.is_Boolean):
                 return S.false  # only Booleans can equal Booleans
-            from sympy import Contains
-            if Contains(rhs, lhs.domain).is_BooleanFalse or Contains(lhs, rhs.domain).is_BooleanFalse:
+            from sympy import Element
+            if Element(rhs, lhs.domain).is_BooleanFalse or Element(lhs, rhs.domain).is_BooleanFalse:
                 return S.false.copy(**options)
 
             if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.dtype.is_set and not rhs.dtype.is_set:
@@ -881,7 +879,7 @@ class Equal(Relational):
         return self
 
     @classmethod
-    def simplify_All(cls, self, function, *limits):
+    def simplify_ForAll(cls, self, function, *limits):
         limits_dict = self.limits_dict
         x = None
         if self.expr.lhs in limits_dict:
@@ -933,20 +931,20 @@ class Equal(Relational):
         elif other.is_GreaterEqual or other.is_LessEqual:
             if set(self.args) == set(other.args):
                 return self
-        elif other.is_NotContains:
+        elif other.is_NotElement:
             if self.lhs == other.lhs:
                 if self.rhs in other.rhs:
                     return S.false
             elif self.rhs == other.lhs:
                 if self.lhs in other.rhs:
                     return S.false
-        elif other.is_Contains:
-            from sympy import Contains
+        elif other.is_Element:
+            from sympy import Element
             if self.lhs == other.lhs: 
-                if Contains(self.rhs, other.rhs).is_BooleanFalse:
+                if Element(self.rhs, other.rhs).is_BooleanFalse:
                     return S.false
             elif self.rhs == other.lhs:
-                if Contains(self.lhs, other.rhs).is_BooleanFalse:
+                if Element(self.lhs, other.rhs).is_BooleanFalse:
                     return S.false
         return Relational.__and__(self, other)
 
@@ -1011,7 +1009,6 @@ class Equal(Relational):
                 return GreaterEqual(*self.args)
             
         return Relational.__or__(self, other)
-
 
     def simplify_condition_on_random_variable(self):
         lhs, rhs = self.args
@@ -1337,7 +1334,6 @@ class _Greater(Inequality):
     __slots__ = ()
 
     def __and__(self, other):
-        x = None
         if isinstance(other, _Greater): 
             if self.lhs == other.lhs:
                 from sympy import Max
@@ -1667,8 +1663,8 @@ class GreaterEqual(_Greater):
         if self.rhs.is_extended_positive:
             if self.lhs.is_extended_positive:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs)
-            from sympy.sets import Contains, Interval
-            return Contains(1 / self.lhs, Interval(0, 1 / self.rhs, left_open=True))
+            from sympy.sets import Element, Interval
+            return Element(1 / self.lhs, Interval(0, 1 / self.rhs, left_open=True))
         if self.rhs.is_extended_negative:
             if self.lhs.is_extended_negative:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs)
@@ -1725,7 +1721,7 @@ class GreaterEqual(_Greater):
         elif isinstance(other, Equal):
             if {*self.args} == {*other.args}:
                 return other            
-        elif other.is_Contains:
+        elif other.is_Element:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if other.rhs.right_open:
@@ -1734,7 +1730,7 @@ class GreaterEqual(_Greater):
                     else:
                         if self.rhs > other.rhs.stop:
                             return S.false           
-        elif other.is_NotContains:
+        elif other.is_NotElement:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if other.rhs.left_open and self.rhs > other.rhs.start or \
@@ -1796,7 +1792,7 @@ class GreaterEqual(_Greater):
         return Relational.__or__(self, other)
 
     def simplify(self, deep=False, wrt=None):
-        if self.lhs.is_Maximize:
+        if self.lhs.is_Maxima:
             maximize = self.lhs 
             if maximize.expr == self.rhs:
                 if all(len(limit) == 1 for limit in maximize.limits):
@@ -1855,8 +1851,8 @@ class LessEqual(_Less):
         if self.rhs.is_extended_negative:
             if self.lhs.is_extended_negative:
                 return self.reversed_type(1 / self.lhs, 1 / self.rhs)
-            from sympy.sets import Contains, Interval
-            return Contains(1 / self.lhs, Interval(1 / self.rhs, 0, right_open=True))
+            from sympy.sets import Element, Interval
+            return Element(1 / self.lhs, Interval(1 / self.rhs, 0, right_open=True))
 
         return self
 
@@ -1956,7 +1952,7 @@ class LessEqual(_Less):
                 if other.lhs <= self.lhs:
                     return S.false
                 
-        elif other.is_Contains:
+        elif other.is_Element:
             if other.rhs.is_Range:
                 if self.lhs == other.lhs:
                     if self.rhs < other.rhs.start:
@@ -1978,7 +1974,7 @@ class LessEqual(_Less):
             if {*self.args} == {*other.args}:
                 return Less(*self.args)
             
-        elif other.is_NotContains:
+        elif other.is_NotElement:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if other.rhs.right_open and self.rhs < other.rhs.stop or \
@@ -2034,7 +2030,7 @@ class LessEqual(_Less):
         return Relational.__or__(self, other)
 
     def simplify(self, deep=False, wrt=None):
-        if self.lhs.is_Minimize:
+        if self.lhs.is_Minima:
             minimize = self.lhs 
             if minimize.expr == self.rhs:
                 if all(len(limit) == 1 for limit in minimize.limits):
@@ -2159,13 +2155,13 @@ class Greater(_Greater):
                 if self.lhs <= other.rhs:
                     return S.false
                  
-        elif other.is_Contains:
+        elif other.is_Element:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if self.rhs >= other.rhs.stop:
                             return S.false
                 
-        elif other.is_NotContains:
+        elif other.is_NotElement:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs: 
                     if self.rhs >= other.rhs.start:
@@ -2189,8 +2185,7 @@ class Greater(_Greater):
                 if self.rhs == other.lhs:
                     return other
                 if self.lhs <= other.lhs:
-                    return (self.lhs < other.lhs) | self
-                
+                    return (self.lhs < other.lhs) | self                
         elif isinstance(other, Equal):
             if set(self.args) == set(other.args):
                 return GreaterEqual(self.lhs, self.rhs)
@@ -2204,12 +2199,29 @@ class Greater(_Greater):
             if self.rhs == other.rhs:
                 if self.lhs > other.lhs:
                     return S.true
+        elif isinstance(other, Greater):
+            if self.lhs == other.rhs:
+                if other.lhs > self.rhs:
+                    return S.true
+                if other.lhs == self.rhs:
+                    return Unequal(*self.args)
+            if self.rhs == other.lhs:
+                if self.lhs > other.rhs:
+                    return S.true
+                
         elif isinstance(other, LessEqual):
             if self.lhs == other.lhs:
                 if self.rhs <= other.rhs:
                     return S.true
             if self.rhs == other.rhs:
                 if other.lhs <= self.lhs:
+                    return S.true                              
+        elif isinstance(other, GreaterEqual):
+            if self.lhs == other.rhs:
+                if self.rhs <= other.lhs:
+                    return S.true
+            if self.rhs == other.lhs:
+                if other.rhs <= self.lhs:
                     return S.true                              
             
         return _Greater.__or__(self, other)
@@ -2354,12 +2366,12 @@ class Less(_Less):
                 if self.lhs >= other.rhs:
                     return S.false
         
-        elif other.is_Contains:
+        elif other.is_Element:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs:
                     if self.rhs <= other.rhs.start:
                         return S.false
-        elif other.is_NotContains:
+        elif other.is_NotElement:
             if other.rhs.is_Range or other.rhs.is_Interval:
                 if self.lhs == other.lhs: 
                     if self.rhs <= other.rhs.stop:
@@ -2384,10 +2396,10 @@ class Less(_Less):
                     return other
                 if self.lhs >= other.lhs:
                     return (self.lhs > other.lhs) | self
-                
         elif isinstance(other, Equal):
             if set(self.args) == set(other.args):
                 return LessEqual(self.lhs, self.rhs)
+            
         elif isinstance(other, Greater):
             if self.lhs == other.lhs:
                 if self.rhs > other.rhs:
@@ -2397,6 +2409,16 @@ class Less(_Less):
             if self.rhs == other.rhs:
                 if other.lhs > self.lhs:
                     return S.true                              
+        elif isinstance(other, Less):
+            if self.lhs == other.rhs:
+                if self.rhs > other.lhs:
+                    return S.true
+                if other.lhs == self.rhs:
+                    return Unequal(*self.args)
+            if self.rhs == other.lhs:
+                if other.rhs > self.lhs:
+                    return S.true                            
+            
         elif isinstance(other, GreaterEqual):
             if self.lhs == other.lhs:
                 if self.rhs >= other.rhs:
@@ -2404,7 +2426,14 @@ class Less(_Less):
             if self.rhs == other.rhs:
                 if other.lhs >= self.lhs:
                     return S.true                              
-            
+        elif isinstance(other, LessEqual):
+            if self.lhs == other.rhs:
+                if self.rhs >= other.lhs:
+                    return S.true
+            if self.rhs == other.lhs:
+                if other.rhs >= self.lhs:
+                    return S.true
+                                              
         return _Less.__or__(self, other)
 
     def __mul__(self, other):

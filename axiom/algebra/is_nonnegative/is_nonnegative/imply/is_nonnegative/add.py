@@ -12,11 +12,10 @@ def apply(is_nonnegative, is_nonnegative1):
 @prove
 def prove(Eq):
     from axiom import algebra
-    
-    a = Symbol.a(real=True)
-    y = Symbol.y(real=True)
+
+    a, y = Symbol(real=True)
     Eq << apply(y >= 0, a >= 0)
-    
+
     Eq << algebra.ge.ge.imply.ge.add.apply(Eq[1], Eq[0])
 
 

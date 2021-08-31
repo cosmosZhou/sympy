@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    is_nonzero, equality = given
+def apply(is_nonzero, equality):
     if is_nonzero.is_Equal:
         equality, is_nonzero = given
 
@@ -17,10 +16,8 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    h = Function.h(real=True)
+    x = Symbol(real=True, given=True)
+    f, g, h = Function(real=True)
 
     Eq << apply(Unequal(f(x), 0), Equal(g(x) / f(x), h(x) / f(x) + x))
 

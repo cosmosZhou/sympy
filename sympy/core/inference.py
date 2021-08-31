@@ -4,6 +4,8 @@ at present Inference is mainly needed for process of theorem proof
 """
 from sympy.logic.invoker import Invoker
 from sympy.logic.boolalg import And
+from sympy.sets.sets import conditionset, imageset
+from sympy.core.basic import Basic
 
 
 class Inference:
@@ -470,11 +472,11 @@ class Inference:
         assert not old.is_given
         domain = old.domain_bounded
         if domain is not None and new not in domain:
-            from sympy import NotContains
-            if self.is_All:                
+            from sympy import NotElement
+            if self.is_ForAll:                
                 assert old not in self.variables, 'not supported in built-in axioms, please employ proved theorems: algebra.all.imply.ou.subs'
                 if self.expr._has(old):
-                    function = self.expr._subs(old, new) | NotContains(new, domain)
+                    function = self.expr._subs(old, new) | NotElement(new, domain)
                     cond = self.func(function, *limits)
                 else: 
                     limits = []
@@ -483,10 +485,10 @@ class Inference:
                         limit = (x, *[a._subs(old, new) for a in ab])
                         limits.append(limit)
                     
-                    cond = self.func(self.expr, *limits) | NotContains(new, domain)
+                    cond = self.func(self.expr, *limits) | NotElement(new, domain)
             else:
                 _old = old.unbounded                
-                cond = self._subs(old, _old) | NotContains(_old, old.domain)
+                cond = self._subs(old, _old) | NotElement(_old, old.domain)
                 if _old != new:
                     cond = cond._subs(_old, new, **kwargs)
         else:
@@ -792,7 +794,20 @@ converter[Operator] = lambda op: op.basic
 from sympy.core.core import Wanted
 converter[Wanted] = lambda wanted: wanted
 
-# converter[slice] = lambda s: s
+def sympify_dict(dic):
+    if len(dic) == 1:
+        [(key, value)] = dic.items()
+        if isinstance(key, Basic):
+            if key.is_Element:
+                x, domain = key.args
+                return conditionset(x, value, domain)
+            elif key.is_symbol:
+                return conditionset(key, value)
+            elif value.is_Element:
+                sym, base = value.args
+                return imageset(sym, key, base)
+ 
+converter[dict] = lambda dic: sympify_dict(dic)
 
 
 def process_equivalent(equivalent, value):

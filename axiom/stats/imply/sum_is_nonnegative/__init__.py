@@ -45,7 +45,7 @@ def apply(X, Y, x=None):
 def prove(Eq):
     from axiom import algebra, stats
 
-    X = Symbol.X(random=True, integer=True)
+    X = Symbol(random=True, integer=True)
     X_ = Symbol("X'", random=True, integer=True)
     Eq << apply(X, X_)
 

@@ -1,4 +1,4 @@
 from . import imply
-from . import contains
-from . import eq_abs
+from . import el
+from . import eq_card
 from . import eq_cup

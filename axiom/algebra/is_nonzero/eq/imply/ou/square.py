@@ -3,10 +3,7 @@ from util import *
 
 @apply
 def apply(is_nonzero, eq, x=None):
-    from axiom.algebra.ge.le.imply.le.quadratic import quadratic_coefficient
-    if not is_nonzero.is_Unequal:
-        is_nonzero, eq = eq, is_nonzero
-
+    from axiom.algebra.le.ge.imply.le.quadratic import quadratic_coefficient
     a = is_nonzero.of(Unequal[0])
     fx, rhs = eq.of(Equal)
     if not rhs.is_Zero:
@@ -23,16 +20,15 @@ def apply(is_nonzero, eq, x=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(complex=True, given=True)
-    a = Symbol.a(complex=True, given=True)
-    c = Symbol.c(complex=True, given=True)
+
+    x, a, c = Symbol(complex=True, given=True)
     Eq << apply(Unequal(a, 0), Equal(a * x ** 2 + c, 0), x=x)
 
     Eq << Eq[1] - c
 
     Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[0], Eq[-1])
 
-    t = Symbol.t(sqrt(-c / a))
+    t = Symbol(sqrt(-c / a))
     Eq << t.this.definition
 
     Eq.t_squared = Eq[-1] ** 2

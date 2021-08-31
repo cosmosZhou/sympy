@@ -1,11 +1,9 @@
 from util import *
 
 
-
 @apply
-def apply(*given, n=None, x=None, start=0, hypothesis=True):
+def apply(f0, suffice, n=None, x=None, start=0, hypothesis=True):
     start = sympify(start)
-    f0, suffice = given
     fn_and_fnt, fn1 = suffice.of(Suffice)
 
     fn, fnt = fn_and_fnt.of(And)
@@ -31,11 +29,9 @@ def apply(*given, n=None, x=None, start=0, hypothesis=True):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
-    t = Function.t(shape=(), real=True)
-    x = Symbol.x(real=True)
+    n = Symbol(integer=True, nonnegative=True)
+    f, g, t = Function(shape=(), real=True)
+    x = Symbol(real=True)
 
     Eq << apply(f[0](x) > g[0](x), Suffice((f[n](x) > g[n](x)) & (f[n](t(x)) > g[n](t(x))), (f[n + 1](x) > g[n + 1](x))), n=n, x=x)
 

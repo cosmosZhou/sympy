@@ -2,9 +2,9 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption):
     from axiom.keras.eq.eq.eq.is_nonzero.imply.eq.crf.markov import process_assumptions
-    x, y = process_assumptions(*given)
+    x, y = process_assumptions(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption)
 
     n, d = x.shape
     t = Symbol(domain=Range(0, n))
@@ -22,12 +22,12 @@ def apply(*given):
     assert s.shape == (n,)
     x = Symbol(Lamda[y[i], i](-log(emission_probability)))
     assert x.shape == (n, d)
-    x_quote = Symbol(Lamda[y[t], t](Minimize[y[:t]](s[t])))
+    x_quote = Symbol(Lamda[y[t], t](Minima[y[:t]](s[t])))
     assert x_quote.shape == (n, d)
 
     assert x_quote.is_real
     return Suffice(t > 0, Equal(x_quote[t], x[t] + ReducedMin(x_quote[t - 1] + G))), \
-        Equal(Maximize[y](joint_probability), exp(-ReducedMin(x_quote[n - 1])))
+        Equal(Maxima[y](joint_probability), exp(-ReducedMin(x_quote[n - 1])))
 
 
 @prove
@@ -50,13 +50,13 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(t, t + 1)
 
-    Eq << Eq[-1].this.args[1].apply(sets.notcontains.imply.notcontains.sub, 1)
+    Eq << Eq[-1].this.args[1].apply(sets.notin.imply.notin.sub, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1], 1)
 
     Eq << Eq.x_quote_definition.subs(t, t + 1)
 
-    Eq << Eq[-1].this.args[0].apply(sets.notcontains.imply.notcontains.sub, 1)
+    Eq << Eq[-1].this.args[0].apply(sets.notin.imply.notin.sub, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1])
 
@@ -64,13 +64,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.eq.imply.eq.subs.rhs)
 
-    
-
-    Eq << Eq[-1].this.rhs.rhs.args[1].expr.apply(algebra.minimize.limits.split.slice.pop_back)
+    Eq << Eq[-1].this.rhs.rhs.args[1].expr.apply(algebra.minima.limits.split.slice.pop_back)
 
     Eq << Eq[-1].this.rhs.rhs.args[1].expr.simplify()
 
-    Eq << Eq[-1].this.rhs.rhs.args[1].expr.apply(algebra.minimize.to.lamda)
+    Eq << Eq[-1].this.rhs.rhs.args[1].expr.apply(algebra.minima.to.reducedMin)
 
     Eq << Eq[-1].this.rhs.rhs.args[1].apply(algebra.lamda.to.reducedMin)
 
@@ -78,7 +76,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(t, t - 1)
 
-    Eq << Eq[-1].this.args[0].apply(sets.notcontains.imply.notcontains.add, 1)
+    Eq << Eq[-1].this.args[0].apply(sets.notin.imply.notin.add, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1])
 
@@ -88,9 +86,9 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(algebra.eq.imply.eq.exp)
 
-    Eq << algebra.eq.imply.eq.maximize.apply(Eq[-1], (y[:t + 1],))
+    Eq << algebra.eq.imply.eq.maxima.apply(Eq[-1], (y[:t + 1],))
 
-    Eq << Eq[-1].this.rhs.apply(algebra.maximize.to.exp)
+    Eq << Eq[-1].this.rhs.apply(algebra.maxima.to.exp)
 
     Eq << algebra.eq.imply.eq.reducedMin.apply(Eq.x_quote_definition).this.rhs.simplify(wrt=t)
 

@@ -12,10 +12,10 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    f = Function.f(shape=(), integer=True)
-    A = Symbol.A(etype=dtype.integer)
 
+    x = Symbol(integer=True)
+    f = Function(integer=True)
+    A = Symbol(etype=dtype.integer)
     Eq << apply(All[x:A](f(x) > 0))
 
     Eq << algebra.all_et.imply.all.apply(Eq[1])

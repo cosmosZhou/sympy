@@ -21,28 +21,27 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(domain=Range(0, n - 1))
-    x = Symbol.x(integer=True, shape=(oo,))
-    f = Function.f(real=True, shape=())
+
+    a, b = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(domain=Range(0, n - 1))
+    x = Symbol(integer=True, shape=(oo,))
+    f = Function(real=True, shape=())
     Eq << apply(Sum[x[i:n]:CartesianSpace(Range(a, b + 1), n - i)](f(x[i:n])))
 
     Eq << Eq[0].this.lhs.apply(algebra.sum.bool)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.bool)
 
-    Eq << Eq[-1].this.rhs.find(Contains).simplify()
+    Eq << Eq[-1].this.rhs.find(Element).simplify()
 
-    j = Eq[-1].find(All).variable
-    Eq << Eq[-1].this.rhs.find(All).limits_subs(j, j - i - 1)
+    Eq << Eq[-1].this.rhs.find(All).apply(algebra.all.limits.subs.offset, -i - 1)
 
     Eq << Eq[-1].this.rhs.find(And).apply(algebra.et.to.all.limits.push_front)
 
-    Eq << Eq[-1].this.lhs.find(Contains).simplify()
+    Eq << Eq[-1].this.lhs.find(Element).simplify()
 
-    Eq << Eq[-1].this.lhs.find(All).limits_subs(j, j - i)
+    Eq << Eq[-1].this.lhs.find(All).apply(algebra.all.limits.subs.offset, -i)
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.split.slice.pop_front)
 

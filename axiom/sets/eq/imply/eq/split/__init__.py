@@ -1,2 +1,2 @@
 from . import finiteset
-from . import union_intersection
+from . import union_intersect

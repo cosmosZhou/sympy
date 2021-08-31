@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(limited_f, limited_g):
     from axiom.calculus.is_limited.imply.any_all.limit_definition import of_limited
-    limited_f, limited_g = given
     fx, (x, x0, dir) = of_limited(limited_f, positive=True)
     assert dir == 0
     gx, (_x, _x0, dir) = of_limited(limited_g, real=True)
@@ -20,13 +19,11 @@ def apply(*given):
 def prove(Eq):
     from axiom import calculus, algebra, sets
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    Eq << apply(Contains(Limit[x:x0](f(x)), Interval(0, oo, left_open=True)), Contains(Limit[x:x0](g(x)), Reals))
+    x, x0 = Symbol(real=True)
+    f, g = Function(real=True)
+    Eq << apply(Element(Limit[x:x0](f(x)), Interval(0, oo, left_open=True)), Element(Limit[x:x0](g(x)), Reals))
 
-    ε = Symbol.ε(real=True, positive=True)
+    ε = Symbol(real=True, positive=True)
     ε0 = Symbol.ε_0(real=True, positive=True)
     δ0 = Symbol.δ_0(real=True, positive=True)
     Eq << calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, δ0, var='A')
@@ -43,13 +40,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.lt.lt.imply.lt.abs.add)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
     Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
-    δ = Symbol.δ(real=True, positive=True)
+    δ = Symbol(real=True, positive=True)
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1), δ)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])

@@ -10,10 +10,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
+    x = Symbol(real=True, shape=(oo, oo))
+    i, j = Symbol(integer=True)
+    f = Function(integer=True)
 
     n = 5
     Eq << apply(All[j:f(i), i:n](x[i, j] > 0))

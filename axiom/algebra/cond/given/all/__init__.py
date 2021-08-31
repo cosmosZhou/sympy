@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given, var=None):
     if var is None:
-        var = given.wrt    
+        var = given.wrt
     from axiom.algebra.cond.imply.all import all
     return all(given, var)
 
@@ -13,8 +13,8 @@ def apply(given, var=None):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(positive=True)
-    f = Function.f(shape=(), integer=True)
+    e = Symbol(positive=True)
+    f = Function(shape=(), integer=True)
     Eq << apply(f(e) > 0)
 
     Eq << algebra.all.imply.ou.apply(Eq[1])

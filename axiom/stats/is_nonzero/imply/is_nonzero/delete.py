@@ -4,11 +4,11 @@ from util import *
 @apply
 def apply(given, index=-1):
     [*eqs] = given.of(Unequal[Probability[And], 0])
-    
+
     del eqs[index]
-    
+
     eq = And(*eqs)
-    
+
     return Unequal(Probability(eq), 0)
 
 
@@ -16,8 +16,7 @@ def apply(given, index=-1):
 def prove(Eq):
     from axiom import stats, calculus, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
+    x, y = Symbol(real=True, random=True)
     Eq << apply(Unequal(Probability(x, y), 0))
 
     _y = pspace(y).symbol

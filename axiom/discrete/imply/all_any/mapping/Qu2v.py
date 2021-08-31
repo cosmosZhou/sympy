@@ -7,16 +7,15 @@ def apply(n, u, v):
     Q, w, x = predefined_symbols(n)
     j = w.definition.variables[0]
     x_quote = Symbol("x'", w[n, j] @ x[:n + 1])
-    return All[x[:n + 1]:Q[u]](Any[j:0:n + 1](Contains(x_quote, Q[v])))
+    return All[x[:n + 1]:Q[u]](Any[j:0:n + 1](Element(x_quote, Q[v])))
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra, discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    u = Symbol.u(domain=Range(0, n + 1))
-    v = Symbol.v(domain=Range(0, n + 1))
+    n = Symbol(integer=True, positive=True)
+    u, v = Symbol(domain=Range(0, n + 1))
     Eq << apply(n, u, v)
 
     w, i, j = Eq[0].lhs.args
@@ -29,7 +28,7 @@ def prove(Eq):
 
     Eq << Eq.x_j_equality.this.expr.limits_subs(Eq.x_j_equality.expr.variable, j)
 
-    Eq << discrete.matrix.elementary.swap.invariant.permutation.basic.apply(n + 1, w=w)
+    Eq << discrete.imply.all_el.permutation.apply(n + 1, w=w)
 
     Eq << Subset(Eq[-2].limits[0][1], Eq[-1].rhs, plausible=True)
 

@@ -1,10 +1,8 @@
 from util import *
 
 
-
 @apply
-def apply(*given):
-    cond, suffice = given
+def apply(cond, suffice):
     p, q = suffice.of(Suffice)
     return Suffice(p, q & cond)
 

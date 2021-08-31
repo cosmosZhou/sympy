@@ -13,8 +13,8 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(positive=True)
+    x = Symbol(real=True)
+    y = Symbol(positive=True)
     Eq << apply(GreaterEqual(x, y))
 
     Eq << Eq[1].this.apply(algebra.ge.given.is_nonnegative)
@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq.is_nonnegative = Eq[0] / y - 1
 
-    t = Symbol.t(nonnegative=True)
+    t = Symbol(nonnegative=True)
     Eq << GreaterEqual(log(1 + t), 0, plausible=True)
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], t)

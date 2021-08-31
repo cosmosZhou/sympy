@@ -17,7 +17,7 @@ def doit(Sum, self):
         sgm = Sum.operator(sgm, Sum(xi._subs(i, t), *_limits))
 
         s = FiniteSet(*args)
-        assert Contains(t, s).is_BooleanFalse
+        assert Element(t, s).is_BooleanFalse
 
     return sgm
 
@@ -30,17 +30,16 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
+    x = Symbol(real=True, shape=(oo, oo))
+    i, j = Symbol(integer=True)
+    f = Function(integer=True)
 
     n = 5
     finiteset = {i for i in range(n)}
 
     Eq << apply(Sum[j:f(i), i:finiteset](x[i, j]))
 
-    s = Symbol.s(Lamda[i](Sum[j:f(i)](x[i, j])))
+    s = Symbol(Lamda[i](Sum[j:f(i)](x[i, j])))
 
     Eq << s[i].this.definition
 

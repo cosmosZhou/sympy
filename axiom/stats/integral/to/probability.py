@@ -19,9 +19,7 @@ def apply(self):
 
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
-    z = Symbol.z(real=True, random=True)
+    x, y, z = Symbol(real=True, random=True)
     x_ = Symbol.x(real=True)
     Eq << apply(Integral[x_](Probability(x, y, z)))
 

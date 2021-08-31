@@ -11,10 +11,9 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True, given=True)
-    i = Symbol.i(domain=Range(0, n))
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    n = Symbol(integer=True, positive=True, given=True)
+    i = Symbol(domain=Range(0, n))
+    f, g = Function(shape=(), integer=True)
 
     Eq << apply(Equal(f(i), g(i)), (i,))
 

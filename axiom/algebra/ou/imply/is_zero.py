@@ -17,12 +17,9 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    f = Function.f(shape=(k,), real=True)
-    g = Function.g(shape=(k,), real=True)
-    h = Function.h(shape=(k,), real=True)
-    p = Symbol.p(real=True, shape=(k,), given=True)
+    k = Symbol(integer=True, positive=True)
+    x, p = Symbol(real=True, shape=(k,), given=True)
+    f, g, h = Function(shape=(k,), real=True)
     Eq << apply(Equal(p, f(x)) | Equal(p, g(x)) | Equal(p, h(x)))
 
     Eq <<= ~Eq[1] & Eq[0]

@@ -14,13 +14,12 @@ def apply(given, wrt=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True)
+    n = Symbol(integer=True)
 
-    A = Symbol.A(etype=dtype.integer)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    A = Symbol(etype=dtype.integer)
+    f, g = Symbol(integer=True, shape=(oo,))
 
-    Eq << apply(Suffice(Contains(n, A), Equal(f[n], g[n])), wrt=n)
+    Eq << apply(Suffice(Element(n, A), Equal(f[n], g[n])), wrt=n)
 
     Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq[0])
 

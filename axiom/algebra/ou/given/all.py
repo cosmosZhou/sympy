@@ -20,12 +20,10 @@ def apply(given, pivot=0, wrt=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(complex=True, shape=(n,))
-    y = Symbol.y(complex=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    x, y = Symbol(complex=True, shape=(n,))
 
-    f = Function.f(complex=True, shape=())
-    g = Function.g(complex=True, shape=())
+    f, g = Function(complex=True, shape=())
 
     Eq << apply(Unequal(f(x), g(y)) | Equal(x, y), pivot=1)
 

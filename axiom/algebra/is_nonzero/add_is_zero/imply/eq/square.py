@@ -1,11 +1,9 @@
 from util import *
 
 
-from axiom.algebra.ge.le.imply.le.quadratic import quadratic_coefficient
-
-
 @apply
 def apply(is_nonzero, delta_is_zero, fx):
+    from axiom.algebra.le.ge.imply.le.quadratic import quadratic_coefficient
     _a = is_nonzero.of(Unequal[0])
     [x] = fx.free_symbols - delta_is_zero.free_symbols
     delta = delta_is_zero.of(Equal[0])

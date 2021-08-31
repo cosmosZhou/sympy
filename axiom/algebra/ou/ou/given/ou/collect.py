@@ -5,7 +5,7 @@ from util import *
 def apply(*eqs, cond=None):
     matched = []
     unmatch = []
-    
+
     for eq in eqs:
         if eq.is_Or:
             if cond in eq.args:
@@ -21,21 +21,16 @@ def apply(*eqs, cond=None):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(integer=True, given=True)
-    b = Symbol.b(integer=True, given=True)
-    c = Symbol.c(integer=True, given=True)
-    d = Symbol.d(integer=True, given=True)
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    a, b, c, d = Symbol(integer=True, given=True)
+    x, y = Symbol(real=True, given=True)
+    f, g = Function(real=True)
     Eq << apply((a < b) | (c < d), (f(x) < g(y)) | (c < d), (x < y) | (c < d), cond=c < d)
 
     Eq <<= Eq[0] & Eq[1] & Eq[2]
 
-    
 
-    
+
+
 
 
 if __name__ == '__main__':

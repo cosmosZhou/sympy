@@ -28,20 +28,17 @@ def apply(given, index, wrt=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    c = Symbol.c(real=True)
+    x, a, b, c = Symbol(real=True)
 
-    f = Function.f(shape=(), real=True)
+    f = Function(shape=(), real=True)
 
     Eq << apply(All[x:a:b]((x <= c) | (f(x) >= 1)), index=1)
 
     Eq << algebra.all.given.ou.apply(Eq[1])
 
-    Eq << Eq[-1].this.find(NotContains).apply(sets.notcontains.given.ou.split.intersection, simplify=None)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.given.ou.split.intersect, simplify=None)
 
-    Eq << Eq[-1].this.find(NotContains).apply(sets.notcontains.given.le.real, simplify=None)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.given.le.real, simplify=None)
 
     Eq << algebra.all.imply.ou.apply(Eq[0])
 

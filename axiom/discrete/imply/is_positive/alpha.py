@@ -35,8 +35,8 @@ def apply(x, n):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True, given=False)
+    x = Symbol(real=True, positive=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True, given=False)
 
     Eq << apply(x, n)
 
@@ -54,7 +54,7 @@ def prove(Eq):
 
     Eq << Eq[-1] + x[0]
 
-    Eq << algebra.gt.imply.gt.relaxed.apply(Eq[-1], 0)
+    Eq << algebra.gt.imply.gt.relax.apply(Eq[-1], 0)
 
     Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 

@@ -13,12 +13,10 @@ def apply(pX, pY):
 def prove(Eq):
     from axiom import algebra, stats
 
-    Y = Symbol.Y(random=True, integer=True)
+    Y, X = Symbol(random=True, integer=True)
     Y_ = Symbol("Y'", random=True, integer=True)
-    X = Symbol.X(random=True, integer=True)
     X_ = Symbol("X'", random=True, integer=True)
-    y = Symbol.y(integer=True)
-    x = Symbol.x(integer=True)
+    y, x = Symbol(integer=True)
     Eq << apply(Probability(Equal(Y, y), given=Equal(X, x)), Probability(Equal(Y_, y), given=Equal(X_, x)))
 
     Eq << algebra.imply.ge.log.apply(Eq[0].find(Log).arg)

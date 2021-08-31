@@ -6,12 +6,12 @@ from util import *
 def apply(given, function):
     et_j, et_i = given.of(Equivalent)
     Aj_contains_j, Ai_contains_i = et_j.of(And)
-    j, Aj = Aj_contains_j.of(Contains)
-    i, Ai = Ai_contains_i.of(Contains)
+    j, Aj = Aj_contains_j.of(Element)
+    i, Ai = Ai_contains_i.of(Element)
 
     Bi_contains_i, Bj_contains_j = et_i.of(And)
-    _i, Bi = Bi_contains_i.of(Contains)
-    _j, Bj = Bj_contains_j.of(Contains)
+    _i, Bi = Bi_contains_i.of(Element)
+    _j, Bj = Bj_contains_j.of(Element)
 
     if i != _i:
         _i, Bi, _j, Bj = _j, Bj, _i, Bi
@@ -27,17 +27,14 @@ def apply(given, function):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
 
-    f = Function.f(etype=dtype.integer)
-    g = Function.g(etype=dtype.integer)
-    h = Function.h(complex=True)
+    f, g = Function(etype=dtype.integer)
+    h = Function(complex=True)
 
-    Eq << apply(Equivalent(Contains(i, A) & Contains(j, f(i)), Contains(j, B) & Contains(i, g(j))), h(i, j))
+    Eq << apply(Equivalent(Element(i, A) & Element(j, f(i)), Element(j, B) & Element(i, g(j))), h(i, j))
 
     Eq << Eq[1].this.lhs.apply(algebra.sum.bool)
 

@@ -13,21 +13,18 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, y, a, b = Symbol(real=True)
     Eq << apply(Bool((x > y) & (a > b)))
 
-    Eq << Eq[0].this.rhs.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[0].this.rhs.find(Bool).apply(algebra.bool.to.piece)
 
-    Eq << Eq[-1].this.rhs.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.rhs.find(Bool).apply(algebra.bool.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.piecewise.flatten, index=0)
+    Eq << Eq[-1].this.rhs.apply(algebra.piece.flatten, index=0)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':

@@ -10,8 +10,7 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(Subset(A, B))
 
     Eq << Subset(B, B, plausible=True)

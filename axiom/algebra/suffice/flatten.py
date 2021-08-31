@@ -11,13 +11,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    z = Symbol.z(real=True)
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
-    C = Symbol.C(etype=dtype.real)
-    Eq << apply(Suffice(Contains(x, A), Suffice(Contains(y, B), Contains(z, C))))
+    x, y, z = Symbol(real=True)
+    A, B, C = Symbol(etype=dtype.real)
+    Eq << apply(Suffice(Element(x, A), Suffice(Element(y, B), Element(z, C))))
 
     Eq << Eq[-1].this.find(Suffice[~Suffice]).apply(algebra.suffice.to.ou)
 
@@ -25,13 +21,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.suffice.to.ou)
 
-    
 
-    
 
-    
 
-    
+
+
+
+
 
 
 if __name__ == '__main__':

@@ -12,8 +12,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True, given=True)
-    a = Symbol.a(integer=True, given=True)
+    x, a = Symbol(integer=True, given=True)
     Eq << apply(x ** 2 < a ** 2)
 
     Eq << algebra.lt.gt.imply.lt.abs.apply(Eq[-2], Eq[-1].reversed)

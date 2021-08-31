@@ -30,10 +30,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    f = Function.f(integer=True)
+    k = Symbol(integer=True)
+    A, B = Symbol(etype=dtype.integer)
+    f = Function(integer=True)
     Eq << apply(Add(Sum[k:A - B](f(k)), Sum[k:A & B](f(k))))
 
     Eq << Eq[0].this.find(Sum).apply(algebra.sum.bool)

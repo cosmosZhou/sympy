@@ -16,12 +16,12 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, nonnegative=True)
-    y = Symbol.y(real=True)
+    x = Symbol(real=True, nonnegative=True)
+    y = Symbol(real=True)
 
     Eq << apply(LessEqual(x, y))
 
-    Eq << algebra.le.le.imply.le.multiply.apply(Eq[0], Eq[0])
+    Eq << algebra.le.le.imply.le.mul.apply(Eq[0], Eq[0])
 
 
 

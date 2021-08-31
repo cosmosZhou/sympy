@@ -57,7 +57,7 @@ class ExprCondPair(Basic):
         return self.func(*[a.simplify() for a in self.args])
 
     def inference_status(self, child):
-        assert child is not self.cond, "boolean conditions within ExprCondPair are not applicable for inequivalent inference!"
+        assert child == 0, "boolean conditions within ExprCondPair are not applicable for inequivalent inference!"
         return False
     
     def __getitem__(self, i):
@@ -136,7 +136,7 @@ class Piecewise(Function):
     def scope_variables(self):
         s = None
         for _, c in self.args[:-1]:
-            if c.is_Contains: 
+            if c.is_Element: 
                 free_symbols = c.lhs.free_symbols
             else:
                 free_symbols = c.free_symbols
@@ -906,6 +906,11 @@ class Piecewise(Function):
         args = [(abs(ec.expr), ec.cond) for ec in self.args]
         return self.func(*args)
 
+    def _eval_Card(self):
+        from sympy import Card
+        args = [(Card(ec.expr), ec.cond) for ec in self.args]
+        return self.func(*args)
+    
     def _eval_power(self, s):
         return self.func(*[(e ** s, c) for e, c in self.args])
 
@@ -957,7 +962,7 @@ class Piecewise(Function):
             elif b != a:
                 return
         return b
-
+    
     _eval_is_finite = lambda self: self._eval_template_is_attr('is_finite')
     _eval_is_complex = lambda self: self._eval_template_is_attr('is_complex')
     _eval_is_even = lambda self: self._eval_template_is_attr('is_even')
@@ -1155,8 +1160,8 @@ class Piecewise(Function):
             e_diff = e0 - e1                   
             if lhs.is_symbol: 
                 domain_defined = e_diff.domain_defined(lhs)
-                from sympy import Contains
-                if Contains(rhs, domain_defined) == False:
+                from sympy import Element
+                if Element(rhs, domain_defined) == False:
                     return
                 
             delta = KroneckerDelta(lhs, rhs)
@@ -1375,8 +1380,8 @@ class Piecewise(Function):
                 if res is not None:
                     return res     
                 
-            from sympy.sets.contains import NotContains, Contains
-            if c0.is_Contains:
+            from sympy.sets.contains import NotElement, Element
+            if c0.is_Element:
                 x, A = c0.args
                 if A.is_FiniteSet:
                     args = []
@@ -1391,23 +1396,23 @@ class Piecewise(Function):
                 if A.is_Complement:
                     U, C = A.args
                     if domain in U: 
-                        return self.func((e0, NotContains(x, C)), (e1, True)).simplify(deep=deep)
+                        return self.func((e0, NotElement(x, C)), (e1, True)).simplify(deep=deep)
                     complement = domain - A
                     if complement.is_FiniteSet:
-                        return self.func((e1, Contains(x, complement)), (e0, True)).simplify(deep=deep)
+                        return self.func((e1, Element(x, complement)), (e0, True)).simplify(deep=deep)
                 if domain in A:
                     if e1._has(x):
                         universe = self.domain_defined(x)
                         if universe != domain:
                             diff = universe - A
                             if diff.is_FiniteSet:
-                                return self.func((e1, Contains(x, diff)), (e0, True)).simplify()
+                                return self.func((e1, Element(x, diff)), (e0, True)).simplify()
                             return self
                     return e0     
                 if e1.is_EmptySet:
                     if e0 == x.set:
                         return A & e0
-            elif c0.is_NotContains: 
+            elif c0.is_NotElement: 
                 return self.func((e1, c0.invert()), (e0, True)).simplify(deep=deep)
                 
         if expr.is_Piecewise:
@@ -1418,7 +1423,7 @@ class Piecewise(Function):
         
         if len(self.scope_variables) == 1:
             for i, (e, c) in enumerate(self.args):
-                if c.is_Contains:
+                if c.is_Element:
                     x, domain = c.args
                     if x in self.scope_variables:
                         if domain.is_Intersection:

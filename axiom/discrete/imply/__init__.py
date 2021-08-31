@@ -5,5 +5,7 @@ from . import suffice
 from . import ge
 from . import all_any
 from . import all_eq
-from . import is_nonemptyset
+from . import is_nonempty
 from . import all_et
+from . import el
+from . import all_el

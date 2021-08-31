@@ -1,5 +1,4 @@
 from . import difference
-from . import fermat
 from . import factorial, mul
 from . import binomial
 from . import det
@@ -31,7 +30,7 @@ from . import fallingFactorial
 
 from . import risingFactorial
 from . import det_matmul
-from . import all_contains
+from . import all_el
 from . import all_eq
 from . import stirling2
 from . import indexed
@@ -43,8 +42,15 @@ from . import abs_condset
 from . import abs_imageset
 from . import abs_cup
 from . import eq_matmul
-from . import matrix
 from . import eq
 from . import all_ge
 from . import set_comprehension
-from . import matProduct
+from . import matProd
+from . import blockMatrix
+from . import swapMatrix
+from . import matpow
+from . import lamda_indexed
+from . import imply
+from . import det_lamda
+from . import det_add
+from . import ge

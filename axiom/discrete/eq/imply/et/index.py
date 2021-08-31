@@ -2,9 +2,9 @@ from util import *
 
 
 def index_function(n):
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
 
-    def index(*args):
+    def eval(*args):
         if len(args) == 3:
             x, a, (j,) = args
             j = a[j]
@@ -13,9 +13,9 @@ def index_function(n):
 
         return Lamda[k:n](KroneckerDelta(x[k], j)) @ Lamda[k:n](k)
 
-    f = Function.index(shape=(), integer=True)
-    f.eval = index
-    return f
+    index = Function(shape=(), integer=True)
+    index.eval = eval
+    return index
 
 
 @apply
@@ -30,36 +30,36 @@ def apply(given, j=None):
     x = Lamda(x_set_comprehension.expr.arg, *x_set_comprehension.limits).simplify()
 
     if j is None:
-        j = Symbol.j(domain=Range(0, n), given=True)
+        j = Symbol(domain=Range(0, n), given=True)
 
     assert j >= 0 and j < n
 
     index = index_function(n)
     index_j = index[j](x[:n], evaluate=False)
 #     index_j = index[j](x[:n])
-    return Contains(index_j, Range(0, n)), Equal(x[index_j], j)
+    return Element(index_j, Range(0, n)), Equal(x[index_j], j)
 
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
+    from axiom import discrete, algebra, sets
 
-    n = Symbol.n(domain=Range(2, oo))
+    n = Symbol(domain=Range(2, oo))
 
-    x = Symbol.x(shape=(oo,), integer=True)
+    x = Symbol(shape=(oo,), integer=True)
 
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
 
-    j = Symbol.j(domain=Range(0, n), given=True)
+    j = Symbol(domain=Range(0, n), given=True)
 
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), j)
 
-    a = Symbol.a(Lamda[k:n](k))
+    a = Symbol(Lamda[k:n](k))
     Eq.aj_definition = a.this.definition[j]
 
     Eq << a.set_comprehension().this.expr.arg.base.definition
 
-    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(sets.eq.imply.eq.card)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq[0], Eq[-2])
 

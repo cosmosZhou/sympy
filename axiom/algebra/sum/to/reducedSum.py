@@ -4,11 +4,11 @@ from util import *
 @apply
 def apply(self):
     function, limit, *limits = self.of(Sum)
-    
+
     assert limit[0].is_integer
 
     rhs = ReducedSum(Lamda(self.expr, limit).simplify())
-    if limits:       
+    if limits:
         rhs = Sum(rhs, *limits)
 
     return Equal(self, rhs, evaluate=False)
@@ -18,10 +18,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    y = Symbol.y(shape=(n, n), real=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    y = Symbol(shape=(n, n), real=True)
     Eq << apply(Sum[i:n, j:n](y[j, i]))
     Eq << Eq[-1].this.rhs.expr.apply(algebra.reducedSum.to.sum)
 

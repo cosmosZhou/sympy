@@ -8,6 +8,7 @@ def apply(self):
     _k1, _k = interval.of(Interval)
     assert _k == -k and _k1 == -k - 1
     assert not interval.left_open and interval.right_open
+    assert n >= 0
 
     return Equal(self, Interval(-n, 0, right_open=True))
 
@@ -16,8 +17,8 @@ def apply(self):
 def prove(Eq):
     from axiom import sets, algebra
 
-    n = Symbol.n(integer=True, positive=True, given=False)
-    k = Symbol.k(integer=True)
+    n = Symbol(integer=True, nonnegative=True, given=False)
+    k = Symbol(integer=True)
     Eq << apply(Cup[k:n](Interval(-k - 1, -k, right_open=True)))
 
     Eq.induct = Eq[0].subs(n, n + 1)
@@ -28,7 +29,7 @@ def prove(Eq):
 
     Eq << Suffice(Eq[0], Eq.induct, plausible=True)
 
-    Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=1)
+    Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=0)
 
 
 if __name__ == '__main__':

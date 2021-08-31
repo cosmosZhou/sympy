@@ -30,7 +30,7 @@ def _init_python_printing(stringify_func, **settings):
             print(stringify_func(arg, **settings))
             builtins._ = arg
 
-    sys.displayhook = _displayhook
+#     sys.displayhook = _displayhook
 
 
 def _init_ipython_printing(ip, stringify_func, use_latex, euler, forecolor,

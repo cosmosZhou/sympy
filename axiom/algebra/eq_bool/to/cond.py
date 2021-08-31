@@ -17,12 +17,12 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    A = Symbol.A(etype=dtype.real)
+    x = Symbol(real=True)
+    A = Symbol(etype=dtype.real)
 
-    Eq << apply(Equal(Bool(Contains(x, A)), 1))
+    Eq << apply(Equal(Bool(Element(x, A)), 1))
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':

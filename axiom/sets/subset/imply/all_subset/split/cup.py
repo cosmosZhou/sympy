@@ -12,13 +12,13 @@ def apply(given):
 def prove(Eq):
     from axiom import sets, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    x = Symbol.x(shape=(oo,), etype=dtype.complex * n)
-    A = Symbol.A(etype=dtype.complex * n)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    x = Symbol(shape=(oo,), etype=dtype.complex * n)
+    A = Symbol(etype=dtype.complex * n)
     Eq << apply(Subset(Cup[i:n](x[i]), A))
 
-    k = Symbol.k(domain=Range(0, n))
+    k = Symbol(domain=Range(0, n))
     Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=k.set)
 
     Eq << sets.subset.imply.subset.split.union.apply(Eq[-1])

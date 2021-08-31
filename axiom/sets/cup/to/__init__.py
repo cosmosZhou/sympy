@@ -1,4 +1,3 @@
-from . import union, piecewise
 from . import interval
-del union
+from . import piece
 from . import union

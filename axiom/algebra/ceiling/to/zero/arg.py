@@ -19,13 +19,13 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     Eq << apply(Ceiling(Arg(z) / (2 * S.Pi) / n - S.One / 2))
 
-    Eq << sets.imply.contains.arg.apply(z)
+    Eq << sets.imply.el.arg.apply(z)
 
-    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], n, simplify=None)
+    Eq << sets.el.imply.el.div.interval.apply(Eq[-1], n, simplify=None)
 
-    Eq << sets.contains.imply.contains.sub.apply(Eq[-1], S.Pi, simplify=None)
+    Eq << sets.el.imply.el.sub.apply(Eq[-1], S.Pi, simplify=None)
 
-    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], S.Pi * 2, simplify=None)
+    Eq << sets.el.imply.el.div.interval.apply(Eq[-1], S.Pi * 2, simplify=None)
 
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.add)
 
@@ -44,9 +44,9 @@ def prove(Eq):
     Eq << Eq.ge * (2 * n)
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add)
 
-    Eq << sets.le.ge.contains.imply.contains.interval.apply(Eq.le, Eq.ge, Eq.contains)
+    Eq << sets.le.ge.el.imply.el.interval.apply(Eq.le, Eq.ge, Eq.contains)
 
-    Eq << sets.contains.imply.ceiling_is_zero.apply(Eq[-1])
+    Eq << sets.el.imply.ceiling_is_zero.apply(Eq[-1])
 
 
 if __name__ == '__main__':

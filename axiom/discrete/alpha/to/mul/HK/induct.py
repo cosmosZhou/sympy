@@ -18,8 +18,8 @@ from axiom.discrete.imply.is_positive.alpha import alpha
 def prove(Eq):
     from axiom import discrete, algebra
     from axiom.discrete.imply.is_positive.alpha import alpha
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
-    n = Symbol.n(domain=Range(2, oo), given=False)
+    x = Symbol(real=True, positive=True, shape=(oo,))
+    n = Symbol(domain=Range(2, oo), given=False)
 
     Eq << apply(alpha(x[:n + 1]))
 

@@ -17,15 +17,13 @@ def apply(cond, cond_sum):
 @prove
 def prove(Eq):
     from axiom import sets
-    k = Symbol.k(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(domain=Range(a + 1, oo))
-    g = Function.g(etype=dtype.integer)
-    f = Function.f(etype=dtype.integer)
+    k, a = Symbol(integer=True)
+    b = Symbol(domain=Range(a + 1, oo))
+    g, f = Function(etype=dtype.integer)
 
     Eq << apply(Equal(g(b), f(b)), Equal(Cap[k:a:b](g(k)), Cap[k:a:b](f(k))))
 
-    Eq << sets.eq.eq.imply.eq.intersection.apply(Eq[0], Eq[1])
+    Eq << sets.eq.eq.imply.eq.intersect.apply(Eq[0], Eq[1])
 
 #     Eq << Eq[2].this.lhs.bisect({b})
 

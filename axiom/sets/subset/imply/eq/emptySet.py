@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     A, B = given.of(Subset)
     assert B.is_EmptySet
 
@@ -13,10 +13,10 @@ def apply(given):
 def prove(Eq):
     from axiom import sets
 
-    A = Symbol.A(etype=dtype.integer)
+    A = Symbol(etype=dtype.integer)
     Eq << apply(Subset(A, A.emptySet))
 
-    Eq << sets.subset.imply.eq.intersection.apply(Eq[0])
+    Eq << sets.subset.imply.eq.intersect.apply(Eq[0])
     Eq << Eq[-1].reversed
 
 

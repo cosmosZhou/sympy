@@ -19,14 +19,9 @@ def apply(given, index=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    z = Symbol.z(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, y, z, a, b = Symbol(real=True)
 
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
+    f, g = Function(shape=(), real=True)
 
     Eq << apply(All[x:0:a](Any[y:0:b]((g(x, y, z) <= 1) & (f(x, y, z) >= 1))), index=0)
 

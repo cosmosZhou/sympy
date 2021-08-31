@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(eq_sum, eq_union, x=None):
-    ((_w, ___i), i), M = eq_sum.of(Equal[Sum[Abs[Indexed], Tuple]])
+    ((_w, ___i), i), M = eq_sum.of(Equal[Sum[Card[Indexed], Tuple]])
     ((w, __i), _i), (zero, _M) = eq_union.of(Equal[Cup[Indexed, Tuple], Range])
 
     assert _M == M
@@ -16,7 +16,7 @@ def apply(eq_sum, eq_union, x=None):
 
     w_ = Symbol("omega^'", cluster(w, x))
 
-    j = Symbol.j(integer=True)
+    j = Symbol(integer=True)
 
     return LessEqual(Sum[j:w_[i], i](Norm(x[j] - mean(w_[i], x)) ** 2),
                      Sum[j:w[i], i](Norm(x[j] - mean(w[i], x)) ** 2))
@@ -29,15 +29,14 @@ from axiom.keras.eq.eq.imply.eq.kmeans.nonoverlapping import cluster, mean
 def prove(Eq):
     from axiom import keras, algebra, sets
 
-    M = Symbol.M(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    k = Symbol.k(domain=Range(0, M))
-    x = Symbol.x(real=True, shape=(M, n))
-    w = Symbol.omega(shape=(k,), etype=dtype.integer, emptyset=False)
-    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
+    M, n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    k = Symbol(domain=Range(0, M))
+    x = Symbol(real=True, shape=(M, n))
+    w = Symbol(shape=(k,), etype=dtype.integer, empty=False)
+    Eq << apply(Equal(Sum[i](Card(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
 
-    Eq << keras.eq.eq.imply.equivalent.kmeans.apply(Eq[1], Eq[2], x=x)
+    Eq << keras.eq.eq.imply.equivalent.kmeans.apply(Eq[0], Eq[1], x=x)
 
     Eq << algebra.equivalent.imply.eq.sum.collapse.apply(Eq[-1], Eq[3].rhs.expr)
 
@@ -48,7 +47,7 @@ def prove(Eq):
 
     Eq.plausible = Eq[3].subs(Eq[-1])
 
-    Eq << keras.eq.eq.imply.equivalent.kmeans.w_quote.apply(Eq[1], Eq[2], x=x)
+    Eq << keras.eq.eq.imply.equivalent.kmeans.w_quote.apply(Eq[0], Eq[1], x=x)
 
     Eq << algebra.equivalent.imply.eq.sum.collapse.apply(Eq[-1], Eq.plausible.lhs.expr)
 
@@ -89,7 +88,7 @@ def prove(Eq):
 
     Eq << algebra.le.given.is_nonnegative.apply(Eq[-1])
 
-    Eq << Eq[-1].this.lhs.apply(algebra.add.to.sum.subtract)
+    Eq << Eq[-1].this.lhs.apply(algebra.add.to.sum.sub)
 
     Eq << Eq[-1].this.lhs.expr.expand()
 

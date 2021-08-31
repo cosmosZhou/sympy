@@ -11,14 +11,14 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(shape=(n,), real=True)
+    n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n,), real=True)
 
     Eq << apply(softmax(x))
 
-    y = Symbol.y(softmax(x))
+    y = Symbol(softmax(x))
 
-    i = Symbol.i(integer=True)
+    i = Symbol(integer=True)
 
     Eq << y[i].this.definition
 

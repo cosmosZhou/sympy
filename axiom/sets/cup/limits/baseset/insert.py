@@ -21,16 +21,13 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    k = Symbol.k(integer=True)
-    n = Symbol.n(integer=True, positive=True)
+    i, j, k = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
 
-    x = Symbol.x(shape=(n,), integer=True)
-    a = Symbol.a(shape=(n,), integer=True)
+    x, a = Symbol(shape=(n,), integer=True)
 
-    f = Function.f(etype=dtype.integer)
-    h = Function.h(etype=dtype.real)
+    f = Function(etype=dtype.integer)
+    h = Function(etype=dtype.real)
 
     Eq << apply(Cup[j:f(k), k: x[k] > a[i]](h(x[k], j)))
 

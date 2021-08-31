@@ -13,8 +13,7 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     n = 4
     Eq << apply((x + y) ** n)
 

@@ -12,10 +12,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    f = Function.f(shape=(), etype=dtype.integer)
-    g = Function.g(shape=(), etype=dtype.integer)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    f, g = Function(shape=(), etype=dtype.integer)
 
     Eq << apply(All[i:n](Equal(f(i), g(i))))
 

@@ -9,12 +9,11 @@ def apply(is_positive, w=None):
     if w is None:
         w = Symbol.w(domain=Interval(0, 1))
     else:
-        assert Contains(w, Interval(0, 1))
+        assert Element(w, Interval(0, 1))
 
     domain = x_.domain
     assert domain.left_open and domain.right_open
-    x0 = Symbol.x0(domain=domain)
-    x1 = Symbol.x1(domain=domain)
+    x0, x1 = Symbol(domain=domain)
     return GreaterEqual(w * fx._subs(x_, x0) + (1 - w) * fx._subs(x_, x1), fx._subs(x_, w * x0 + (1 - w) * x1))
 
 
@@ -22,13 +21,12 @@ def apply(is_positive, w=None):
 def prove(Eq):
     from axiom import algebra, calculus
 
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(domain=Interval(a, b, left_open=True, right_open=True))
-    w = Symbol.w(domain=Interval(0, 1))
-    f = Function.f(real=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    a, b = Symbol(real=True)
+    x = Symbol(domain=Interval(a, b, left_open=True, right_open=True))
+    w = Symbol(domain=Interval(0, 1))
+    f = Function(real=True)
     Eq << apply(Derivative(f(x), (x, 2)) > 0)
 
     (w, fx0), (_w, fx1) = Eq[1].lhs.of(Mul + Mul)

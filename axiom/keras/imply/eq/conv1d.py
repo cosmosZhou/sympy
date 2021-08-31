@@ -3,14 +3,12 @@ from util import *
 
 @apply
 def apply(x, w, β, ζ, r):
-    k = Symbol.k(integer=True)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    k, i, j = Symbol(integer=True)
     m, n, d = x.shape
     l, _d, d_ = w.shape
     assert d == _d
 
-    M = Symbol.M(Lamda[i:n, k:m](Bool((i >= β[k]) & (i < ζ[k]))))
+    M = Symbol(Lamda[i:n, k:m](Bool((i >= β[k]) & (i < ζ[k]))))
 
     M0 = Lamda[j:d, i:n, k:m](M[k, i])
     M1 = Lamda[j:d_, i:n, k:m](M[k, i])
@@ -34,10 +32,10 @@ def prove(Eq):
 
     Eq << Eq[-1].rhs.expr.args[1].this.defun()
 
-    d0 = Symbol.d0((l - 1) // 2 * r + (r // 2) * (1 - l % 2))
+    d0 = Symbol((l - 1) // 2 * r + (r // 2) * (1 - l % 2))
     Eq.conv1d = Eq[-1].subs(d0.this.definition.reversed, evaluate=False)
 
-    C = Symbol.C(Eq[1].lhs)
+    C = Symbol(Eq[1].lhs)
     Eq << C.this.definition
 
     Eq << Eq[-1].this.rhs.args[0].defun()
@@ -49,7 +47,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Sum, Lamda).expr.definition
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
     Eq << Eq[-1].this.find(Min, Add).apply(algebra.add.to.min)
 
@@ -69,9 +67,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(~Indexed * Sum).definition
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
-    Eq.convolution_definition = Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq.convolution_definition = Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
     C_quote = Symbol("C'", Eq[1].rhs)
     Eq << C_quote.this.definition
@@ -82,7 +80,7 @@ def prove(Eq):
 
     Eq << Eq[-1][i]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.piecewise.swap.front)
+    Eq << Eq[-1].this.rhs.apply(algebra.piece.swap)
 
     Eq << Eq[-1].this.find(-Floor).apply(algebra.mul.to.ceiling)
 

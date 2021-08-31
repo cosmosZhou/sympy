@@ -11,7 +11,7 @@ def transposition(Equal, given, lhs=-1, rhs=None):
             x = _lhs[lhs]
             del _lhs[lhs]
             x = Add(*x)
-            
+
         _lhs = Add(*_lhs)
         _rhs -= x
     else:
@@ -22,23 +22,21 @@ def transposition(Equal, given, lhs=-1, rhs=None):
             x = _rhs[rhs]
             del _rhs[rhs]
             x = Add(*x)
-            
+
         _rhs = Add(*_rhs)
         _lhs -= x
 
     return Equal(_lhs, _rhs, evaluate=False)
 
-    
+
 @apply(given=None)
-def apply(given, lhs=-1, rhs=None): 
+def apply(given, lhs=-1, rhs=None):
     return Equivalent(given, transposition(Equal, given, lhs=lhs, rhs=rhs), evaluate=False)
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    a = Symbol.a(real=True)
+    x, y, a = Symbol(real=True)
     Eq << apply(Equal(x + a, y), lhs=-1)
 
     Eq << Eq[-1].this.rhs + x

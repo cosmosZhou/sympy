@@ -18,9 +18,8 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import sets
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(integer=True, shape=(n,))
-    b = Symbol.b(integer=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    a, b = Symbol(integer=True, shape=(n,))
 
     Eq << apply(Equal(a.set_comprehension(), b.set_comprehension()))
 

@@ -5,6 +5,7 @@ namespace std;
 // ^ *error_log
 use Iterator, JsonSerializable, IteratorAggregate, RuntimeException;
 use curl_init, curl_setopt, curl_exec, curl_errno, curl_close;
+use mb_detect_encoding, mb_convert_encoding;
 
 // implement common collections like: Set, Queue, Graph
 class QueueIterator implements Iterator
@@ -1337,4 +1338,19 @@ function json_post($url, $data = NULL)
     return $res;
 }
 
+function detect_encoding($str)
+{
+    return mb_detect_encoding($str, array(
+        "ASCII",
+        "GB2312",
+        "GBK",
+        'BIG5',
+        'UTF-8'
+    ));
+}
+
+function str_to_utf8($str, $current_encode)
+{
+    return mb_convert_encoding($str, 'UTF-8', $current_encode);
+}
 ?>

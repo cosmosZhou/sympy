@@ -4,8 +4,8 @@ from util import *
 @apply(given=None)
 def apply(given):
     contains_i, contains_j = given.of(And)
-    i, Si = contains_i.of(Contains)
-    j, Sj = contains_j.of(Contains)
+    i, Si = contains_i.of(Element)
+    j, Sj = contains_j.of(Element)
 
     if not Si._has(j):
         i, Si, j, Sj = j, Sj, i, Si
@@ -18,25 +18,21 @@ def apply(given):
     a -= 1
     assert d == a_d - a
 
-    return Equivalent(given, And(Contains(i, Range(a + d, n_d - 1 + d)), Contains(j, Range(i - d + 1, n_d))))
+    return Equivalent(given, And(Element(i, Range(a + d, n_d - 1 + d)), Element(j, Range(i - d + 1, n_d))))
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    a = Symbol.a(integer=True)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True)
-    d = Symbol.d(integer=True)
+    a, i, j, n, d = Symbol(integer=True)
 
-    Eq << apply(And(Contains(i, Range(a + d, j + d)), Contains(j, Range(a + 1, n))))
+    Eq << apply(And(Element(i, Range(a + d, j + d)), Element(j, Range(a + 1, n))))
 
     Eq << algebra.equivalent.given.et.apply(Eq[0])
 
-    Eq << Eq[-2].this.lhs.apply(sets.contains.contains.imply.contains.range.i_lt_j.i_in_j)
+    Eq << Eq[-2].this.lhs.apply(sets.el.el.imply.el.range.i_lt_j.i_in_j)
 
-    Eq << Eq[-1].this.rhs.apply(sets.contains.contains.imply.contains.range.i_lt_j.j_in_i)
+    Eq << Eq[-1].this.rhs.apply(sets.el.el.imply.el.range.i_lt_j.j_in_i)
 
 
 if __name__ == '__main__':

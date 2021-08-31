@@ -11,10 +11,9 @@ def apply(x, y):
 @prove
 def prove(Eq):
     from axiom import discrete
-    n = Symbol.n(integer=True)
-    x = Symbol.x(shape=(n,), real=True)
-    y = Symbol.y(shape=(n,), real=True)
-    i = Symbol.i(domain=Range(0, n))
+    n = Symbol(integer=True)
+    x, y = Symbol(shape=(n,), real=True)
+    i = Symbol(domain=Range(0, n))
     Eq << apply(x, y)
 
     Eq << Eq[0].lhs.this.apply(discrete.matmul.to.sum, var=i)

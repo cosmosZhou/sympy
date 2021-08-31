@@ -2,12 +2,9 @@ from util import *
 
 
 @apply
-def apply(is_nonnegative, less_than):
-    if not less_than.is_Less:
-        less_than, is_nonnegative = given
-
+def apply(is_nonnegative, lt):
     x = is_nonnegative.of(Expr >= 0)
-    _x, M = less_than.of(Less)
+    _x, M = lt.of(Less)
     assert x == _x
 
     return Equal(x, frac(x))
@@ -17,7 +14,7 @@ def apply(is_nonnegative, less_than):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(x >= 0, x < 1)
 
     Eq << Eq[-1].this.rhs.apply(algebra.frac.to.add).reversed

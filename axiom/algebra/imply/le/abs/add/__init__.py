@@ -10,8 +10,7 @@ def apply(x, y):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y = Symbol(real=True, given=True)
 
     Eq << apply(x, y)
 
@@ -41,5 +40,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del mul
 from . import mul

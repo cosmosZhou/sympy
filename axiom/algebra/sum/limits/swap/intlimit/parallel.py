@@ -24,14 +24,14 @@ def limits_swap(Sum, self):
     _b -= j
     assert not _a._has(j)
     assert not _b._has(j)
-    
+
 # _a + j <= i < _b + j
 # _a <= i - j < _b
 # a <= j < b
 # then
 # i - _b < j <= i - _a
 # i - _b + 1 <= j < i - _a + 1
-# max(a, i - _b + 1) <= j < min(b, i - _a + 1) 
+# max(a, i - _b + 1) <= j < min(b, i - _a + 1)
     _a, _b, a, b = _a + a, _b + b - 1, Max(a, i - _b + 1), Min(b, i - _a + 1)
 # _a + a <= _a + j <= i < _b + j <= _b + b - 1
     return Sum(function, (j, a, b), (i, _a, _b))
@@ -46,14 +46,10 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, sets
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
-    f = Symbol.f(shape=(oo,), real=True)
-    g = Symbol.g(shape=(oo, oo), real=True)
-    d = Symbol.d(integer=True)
-    a = Symbol.a(integer=True)
+    i, j, d, a = Symbol(integer=True)
+    n, m = Symbol(integer=True, positive=True)
+    f = Symbol(shape=(oo,), real=True)
+    g = Symbol(shape=(oo, oo), real=True)
     Eq << apply(Sum[i:j + d:j + n, j:a:m](f[i] * g[i, j]))
 
     Eq << Eq[0].this.lhs.apply(algebra.sum.bool)

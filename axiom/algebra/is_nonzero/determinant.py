@@ -14,11 +14,11 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    n = Symbol.n(integer=True, positive=True)
-    A = Symbol.A(complex=True, shape=(n, n))
+    n = Symbol(integer=True, positive=True)
+    A = Symbol(complex=True, shape=(n, n))
     Eq << apply(Unequal(Determinant(A), 0))
 
-    Eq << discrete.matrix.determinant.adjugate.apply(A)
+    Eq << discrete.matmul.to.mul.adjugate.apply(A)
 
     Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[0], Eq[-1])
 

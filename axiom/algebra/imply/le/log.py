@@ -10,7 +10,7 @@ def apply(x):
 def prove(Eq):
     from axiom import algebra, calculus
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(x)
 
     Eq << Eq[0] - x
@@ -21,8 +21,8 @@ def prove(Eq):
 
 
 
-    x0 = Symbol.x0(domain=Interval(0, 1, left_open=True, right_open=True))
-    x1 = Symbol.x1(domain=Interval(1, oo))
+    x0 = Symbol(domain=Interval(0, 1, left_open=True, right_open=True))
+    x1 = Symbol(domain=Interval(1, oo))
     Eq <<= algebra.all.given.cond.subs.apply(Eq[-2], x, x0), algebra.all.given.cond.subs.apply(Eq[-1], x, x1)
 
     Eq.is_positive, Eq.is_nonpositive = Greater(Derivative[x0](Eq[-2].lhs), 0, plausible=True), LessEqual(Derivative[x1](Eq[-1].lhs), 0, plausible=True)

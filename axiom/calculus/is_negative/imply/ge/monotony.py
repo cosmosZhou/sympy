@@ -7,22 +7,21 @@ def apply(given):
     assert n == 1
 
     domain = x.domain
-    
+
     a, b = domain.of(Interval)
     assert not domain.right_open
-    
+
     return GreaterEqual(fx, fx._subs(x, b))
 
 
 @prove(proved=False)
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    
-    x = Symbol.x(domain=Interval(a, b))
-    
-    f = Function.f(real=True)
-    
+    a, b = Symbol(real=True)
+
+    x = Symbol(domain=Interval(a, b))
+
+    f = Function(real=True)
+
     Eq << apply(Derivative[x](f(x)) < 0)
 
 

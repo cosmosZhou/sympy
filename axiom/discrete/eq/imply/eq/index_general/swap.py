@@ -34,11 +34,10 @@ def apply(given, i=None, j=None, w=None):
 def prove(Eq):
     from axiom import discrete, sets, algebra
 
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(shape=(n,), integer=True)
-    k = Symbol.k(integer=True)
-    j = Symbol.j(domain=Range(0, n), given=True)
-    i = Symbol.i(domain=Range(0, n), given=True)
+    n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n,), integer=True)
+    k = Symbol(integer=True)
+    j, i = Symbol(domain=Range(0, n), given=True)
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), i, j)
 
     _, di, dj = Eq[2].lhs.arg.args[0].args
@@ -69,8 +68,8 @@ def prove(Eq):
 
     Eq.di_domain, Eq.x_di_eqaulity = Eq[-2].subs(Eq.di_definition.reversed), Eq[-1].subs(Eq.di_definition.reversed)
 
-    Eq << sets.contains.contains.imply.subset.finiteset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
-    Eq.eq_intersection = sets.subset.imply.eq.intersection.apply(Eq[-1])
+    Eq << sets.el.el.imply.subset.finiteset.apply(Eq.dj_domain, Eq.di_domain, simplify=False)
+    Eq.eq_intersection = sets.subset.imply.eq.intersect.apply(Eq[-1])
 
     Eq << Eq.expand.subs(Eq.x_di_eqaulity)
 
@@ -80,9 +79,9 @@ def prove(Eq):
 
     Eq << Eq.piecewise_equality.lhs.args[-1].this.apply(algebra.sum.to.add.split.complement)
 
-    
+
     Eq << Eq[-1].subs(Eq.eq_intersection)
-    
+
     Eq << Eq[-1].subs(Eq.x_dj_eqaulity).subs(Eq.x_di_eqaulity)
 
     Eq << Eq[-1].this.rhs.subs(Eq.union_equality)
@@ -93,15 +92,15 @@ def prove(Eq):
 
     Eq.piecewise_equality = Eq.piecewise_equality.subs(Eq[-1])
 
-    Eq.dj_eq = sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
+    Eq.dj_eq = sets.el.imply.eq.piece.expr_swap.apply(Eq.dj_domain, Eq.piecewise_equality.lhs.args[2])
 
-    Eq << sets.contains.imply.eq.piecewise.expr_swap.apply(Eq.di_domain, Eq.piecewise_equality.lhs.args[-1])
+    Eq << sets.el.imply.eq.piece.expr_swap.apply(Eq.di_domain, Eq.piecewise_equality.lhs.args[-1])
 
-    Eq << sets.contains.imply.eq.intersection.apply(Eq.dj_domain)
+    Eq << sets.el.imply.eq.intersect.apply(Eq.dj_domain)
 
     Eq << algebra.eq.eq.imply.eq.subs.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this.rhs.find(Contains).simplify()
+    Eq << Eq[-1].this.rhs.find(Element).simplify()
 
     Eq << Eq.dj_eq + Eq[-1]
 

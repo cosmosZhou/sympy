@@ -1,7 +1,7 @@
 from util import *
 
 
-@apply
+@apply(simplify=False)
 def apply(given, index=None):
     from sympy.concrete.limits import limits_cond
     fn, *limits = given.of(All)
@@ -19,13 +19,12 @@ def apply(given, index=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
 
+    x = Symbol(real=True)
+    f, g = Function(real=True)
     Eq << apply(All[x:g(x) > 0](f(x) > 0))
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
 
 if __name__ == '__main__':

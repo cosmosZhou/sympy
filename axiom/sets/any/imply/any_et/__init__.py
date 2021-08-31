@@ -9,11 +9,9 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
-    f = Function.f(shape=(), integer=True)
+    x, y = Symbol(real=True)
+    A, B = Symbol(etype=dtype.real)
+    f = Function(shape=(), integer=True)
 
     Eq << apply(Any[x:A, y:B](f(x, y) > 0))
 

@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given, n=None, start=0):
+def apply(f0, suffice, n=None, start=0):
     start = sympify(start)
-    f0, suffice = given
     fn, fn1 = suffice.of(Suffice)
     assert fn._subs(n, n + 1) == fn1
 
@@ -25,13 +24,12 @@ def apply(*given, n=None, start=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    n = Symbol(integer=True, nonnegative=True)
+    f, g = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(LessEqual(f[0], g[0]), Suffice(LessEqual(f[n], g[n]), LessEqual(f[n + 1], g[n + 1])), n=n)
 
-    h = Symbol.h(Lamda[n](Bool(f[n] <= g[n])))
+    h = Symbol(Lamda[n](Bool(f[n] <= g[n])))
 
     Eq << h[0].this.definition
 
@@ -43,17 +41,17 @@ def prove(Eq):
 
     Eq << Eq.suffice.this.lhs.lhs.definition
 
-    Eq << Eq[-1].this.lhs.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.lhs.apply(algebra.bool.to.piece)
 
     Eq << Eq[-1].this.rhs.lhs.definition
 
-    Eq << Eq[-1].this.rhs.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.rhs.lhs.apply(algebra.bool.to.piece)
 
     Eq << algebra.eq.suffice.imply.eq.induct.apply(Eq.initial, Eq.suffice, n=n)
 
     Eq << Eq[-1].this.lhs.definition
 
-    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':

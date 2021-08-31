@@ -11,14 +11,14 @@ def apply(is_zero, x=None, d=0):
     delta = 4 * p ** 3 / 27 + q ** 2
     U = sqrt(delta) - q
     V = -sqrt(delta) - q
-    
+
     A = (sqrt(delta) / 2 - q / 2) ** (S.One / 3)
     B = (-sqrt(delta) / 2 - q / 2) ** (S.One / 3)
 
     w = -S.One / 2 + S.ImaginaryUnit * sqrt(3) / 2
-    arg_p = Ceiling(3 * Arg(-p / 3) / (S.Pi * 2) - S.One / 2)    
+    arg_p = Ceiling(3 * Arg(-p / 3) / (S.Pi * 2) - S.One / 2)
     arg_AB = Piecewise((0, Equal(p * Ceiling((Arg(U) + Arg(V)) / (2 * S.Pi) - S.One / 2), 0)), (1, Arg(U) + Arg(V) > S.Pi), (-1, True))
-    
+
     if d == 0:
         x0 = A + B
     elif d % 3 == 1:
@@ -27,7 +27,7 @@ def apply(is_zero, x=None, d=0):
         x0 = A * ~w + B
     else:
         ...
-        
+
     return Equal(arg_p - arg_AB, d), Equal(x, x0)
 
 
@@ -81,7 +81,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.subs(Eq.A, Eq.B)
 
-    Eq << Eq[-1].this.find(Ceiling).apply(algebra.ceiling_arg.to.piecewise)
+    Eq << Eq[-1].this.find(Ceiling).apply(algebra.ceiling_arg.to.piece)
 
     Eq << Eq[-1].subs(Eq[1])
 

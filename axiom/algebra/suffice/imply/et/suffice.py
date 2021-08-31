@@ -1,18 +1,32 @@
 from util import *
 
 
+def new(p, q, simplify=True):    
+    if simplify:
+        if q.is_Suffice:
+            _p, q = q.args
+            p &= _p
+        cond = Suffice(p, q)
+        cond = cond.simplify()
+    else:
+        cond = Suffice(p, q)
+    return cond
+
 @apply
-def apply(given, index=-1):
+def apply(given, index=-1, *, simplify=True):
     fx, fy = given.of(Suffice)
     eqs = fy.of(And)
+    
+    
     if index is not None:
         first = eqs[:index]
         second = eqs[index:]
     
-        first = And(*(Suffice(fx, eq) for eq in first))
-        second = And(*(Suffice(fx, eq) for eq in second))
+        first = And(*(new(fx, eq, simplify) for eq in first))
+        second = And(*(new(fx, eq, simplify) for eq in second))
         return first, second
-    return tuple(Suffice(fx, eq) for eq in eqs)
+    
+    return tuple(new(fx, eq, simplify) for eq in eqs)
 
 
 @prove

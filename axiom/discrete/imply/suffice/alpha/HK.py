@@ -21,10 +21,10 @@ def apply(x, wrt=None):
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
-    x = Symbol.x(real=True, shape=(oo,))
-    n = Symbol.n(domain=Range(2, oo), given=False)
+    from axiom import algebra, discrete
 
+    x = Symbol(real=True, shape=(oo,))
+    n = Symbol(domain=Range(2, oo), given=False)
     Eq << apply(x[:n + 1])
 
     Eq.initial = Eq[0].subs(n, 2)
@@ -73,7 +73,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(All)().expr.simplify()
 
-    Eq << Eq[-1].this.find(Greater).apply(algebra.is_positive.given.is_positive.split.add)
+    Eq << Eq[-1].this.find(Greater).apply(algebra.add_is_positive.given.et.is_positive)
 
     Eq << Eq[-1].this.find(Greater).apply(algebra.is_positive.given.is_positive.inverse)
 

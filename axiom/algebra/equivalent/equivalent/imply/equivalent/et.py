@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    eq_ab, eq_xy = given
+def apply(eq_ab, eq_xy):
     a, b = eq_ab.of(Equivalent)
     x, y = eq_xy.of(Equivalent)
     return Equivalent(a & x, b & y)
@@ -13,13 +12,9 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    a, b, x, y = Symbol(integer=True)
+    n = Symbol(integer=True, nonnegative=True)
+    f, g = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(Equivalent(a > 0, b > 0), Equivalent(x > 0, y > 0))
 

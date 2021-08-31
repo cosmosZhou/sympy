@@ -13,9 +13,8 @@ def apply(given, *, simplify=True):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    n = Symbol(integer=True, nonnegative=True)
+    f, g = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(All[n:Equal(f[n], g[n])](Equal(f[n + 1], g[n + 1])))
 

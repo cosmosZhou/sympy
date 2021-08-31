@@ -39,7 +39,7 @@ def prove(Eq):
     (k, *_), *_ = Eq[-1].rhs.limits
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
 
-    Eq << Eq[-1].this.rhs.args[1].limits_subs(k, k - 1)
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum.limits.subs.offset, -1)
 
     Eq << algebra.cond.given.cond.subs.apply(Eq.induct, given=discrete.binomial.to.add.Pascal.apply(n + 1, k))
 

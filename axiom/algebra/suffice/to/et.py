@@ -13,11 +13,8 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
-    h = Function.h(integer=True)
+    x, y = Symbol(integer=True)
+    f, g, h = Function(integer=True)
     Eq << apply(Suffice(x > y, (f(x) > g(y)) & (h(x) > g(y))))
 
     Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])

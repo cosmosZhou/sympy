@@ -6,18 +6,17 @@ def apply(given, index=-1):
     args = given.of(Unequal[Mul, ZeroMatrix])
     lhs = Mul(*args[:index])
     rhs = Mul(*args[index:])
-    
+
     return Unequal(lhs, ZeroMatrix(*lhs.shape)).simplify(), Unequal(rhs, ZeroMatrix(*rhs.shape)).simplify()
 
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(real=True, given=True, shape=(n,))
-    b = Symbol.b(real=True, given=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    a, b = Symbol(real=True, given=True, shape=(n,))
     Eq << apply(Unequal(a * b, ZeroMatrix(n)))
 
-    
+
 
     Eq <<= ~Eq[-1], ~Eq[-2]
 

@@ -25,8 +25,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
 #     z = Symbol.z(real=True)
 #     Eq << apply(Min(floor(x), floor(y), floor(z)))
     Eq << apply(floor(Min(x, y)))

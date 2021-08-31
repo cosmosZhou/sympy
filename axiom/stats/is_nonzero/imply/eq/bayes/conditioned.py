@@ -16,9 +16,7 @@ def apply(eq, *vars):
 def prove(Eq):
     from axiom import stats, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
-    z = Symbol.z(real=True, random=True)
+    x, y, z = Symbol(real=True, random=True)
     Eq << apply(Unequal(Probability(y | z), 0), x)
 
     Eq << stats.is_nonzero.imply.is_nonzero.condition.apply(Eq[0])

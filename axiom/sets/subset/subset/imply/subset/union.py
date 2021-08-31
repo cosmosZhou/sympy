@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    subset_ab, subset_xy = given
+def apply(subset_ab, subset_xy):
     a, b = subset_ab.of(Subset)
     x, y = subset_xy.of(Subset)
 
@@ -14,10 +13,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import sets
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    X = Symbol.X(etype=dtype.integer)
-    Y = Symbol.Y(etype=dtype.integer)
+    A, B, X, Y = Symbol(etype=dtype.integer)
 
     Eq << apply(Subset(A, B), Subset(X, Y))
 

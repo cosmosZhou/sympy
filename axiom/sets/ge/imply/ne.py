@@ -1,29 +1,26 @@
 from util import *
 
-# given: |A| >= 1
-# A != {}
 
 
 @apply
 def apply(given):
-    assert isinstance(given, GreaterEqual)
-    A_abs, positive = given.args
-    assert A_abs.is_Abs and positive.is_positive
-    A = A_abs.arg
+    A_abs, positive = given.of(GreaterEqual)
+    assert positive.is_positive
+    A = A_abs.of(Card)
 
     return Unequal(A, A.etype.emptySet)
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
-    A = Symbol.A(etype=dtype.integer, given=True)
+    from axiom import sets
+    A = Symbol(etype=dtype.integer, given=True)
 
-    Eq << apply(abs(A) >= 1)
+    Eq << apply(Card(A) >= 1)
 
     Eq << ~Eq[1]
 
-    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(sets.eq.imply.eq.card)
 
     Eq << Eq[0].subs(Eq[-1])
 

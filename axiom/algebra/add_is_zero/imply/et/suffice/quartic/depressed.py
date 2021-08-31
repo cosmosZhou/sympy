@@ -10,22 +10,27 @@ def apply(fx, x=None):
     fx = fx.of(Equal[0])
     _1, _0, alpha, beta, gamma = quartic_coefficient(fx, x=x)
     assert _0 == 0 and _1 == 1
-    
+
     w = -S.One / 2 + sqrt(3) * S.ImaginaryUnit / 2
-    
+
     y_delta = cubic_delta(x, alpha, beta, gamma)
     _d, Y0, Y1, Y2 = cubic_solve(y_delta, x)
-    
+
     delta = -(alpha ** 2 / 3 + 4 * gamma) ** 3 / 27 + (-alpha ** 3 / 27 + 4 * alpha * gamma / 3 - beta ** 2 / 2) ** 2
 
     V = alpha ** 3 / 27 - 4 * alpha * gamma / 3 + beta ** 2 / 2 - sqrt(delta)
     U = alpha ** 3 / 27 - 4 * alpha * gamma / 3 + beta ** 2 / 2 + sqrt(delta)
-    
+
     A = U ** (S.One / 3)
     B = V ** (S.One / 3)
-    
+
     from axiom.algebra.add_is_zero.is_nonzero.imply.et.suffice.quartic.depressed import solver_set
-    return Suffice(Unequal(beta, 0) & Equal(_d, 0), solver_set(0, A, B, x, alpha, beta, w)), Suffice(Unequal(beta, 0) & Equal(_d % 3, 1), solver_set(1, A, B, x, alpha, beta, w)), Suffice(Unequal(beta, 0) & Equal(_d % 3, 2), solver_set(2, A, B, x, alpha, beta, w))
+    delta = alpha ** 2 - 4 * gamma
+    
+    return Suffice(Equal(beta, 0), Equal(x, sqrt(sqrt(delta) / 2 - alpha / 2)) | Equal(x, -sqrt(sqrt(delta) / 2 - alpha / 2)) | Equal(x, sqrt(-sqrt(delta) / 2 - alpha / 2)) | Equal(x, -sqrt(-sqrt(delta) / 2 - alpha / 2))),\
+        Suffice(Unequal(beta, 0) & Equal(_d, 0), solver_set(0, A, B, x, alpha, beta, w)),\
+        Suffice(Unequal(beta, 0) & Equal(_d % 3, 1), solver_set(1, A, B, x, alpha, beta, w)),\
+        Suffice(Unequal(beta, 0) & Equal(_d % 3, 2), solver_set(2, A, B, x, alpha, beta, w))
 
 
 
@@ -36,7 +41,18 @@ def prove(Eq):
     x, alpha, beta, gamma = Symbol(complex=True, given=True)
     fx = x ** 4 + alpha * x ** 2 + beta * x + gamma
     Eq << apply(Equal(fx, 0), x=x)
+
     Eq << algebra.cond.imply.et.suffice.split.apply(Eq[0], cond=Equal(beta, 0))
+
+    Eq <<= algebra.suffice.imply.suffice.subs.apply(Eq[-2]), algebra.suffice.imply.suffice.et.apply(Eq[-1])
+
+    Eq << Eq[-2].this.rhs.apply(algebra.add_is_zero.imply.ou_eq.biquadratic, x)
+
+    Eq << algebra.suffice.imply.et.suffice.apply(Eq[-1].this.rhs.apply(algebra.add_is_zero.is_nonzero.imply.et.suffice.quartic.depressed, x), None)
+
+    #Eq << Eq[-3].this.apply(algebra.suffice.flatten)
+    #Eq << Eq[-2].this.apply(algebra.suffice.flatten)
+    #Eq << Eq[-1].this.apply(algebra.suffice.flatten)
 
 
 if __name__ == '__main__':

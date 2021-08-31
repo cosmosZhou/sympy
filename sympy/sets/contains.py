@@ -5,7 +5,7 @@ from sympy.logic.boolalg import BinaryCondition
 from sympy.core.sympify import sympify
 
 
-class Contains(BinaryCondition):
+class Element(BinaryCondition):
     """
     Asserts that x is an element of the set S
 
@@ -13,14 +13,14 @@ class Contains(BinaryCondition):
     ========
 
     >>> from sympy import Symbol, Integer, S
-    >>> from sympy.sets.contains import Contains
-    >>> Contains(Integer(2), S.Integers)
+    >>> from sympy.sets.contains import Element
+    >>> Element(Integer(2), S.Integers)
     True
-    >>> Contains(Integer(-2), S.Naturals)
+    >>> Element(Integer(-2), S.Naturals)
     False
     >>> i = Symbol('i', integer=True)
-    >>> Contains(i, S.Naturals)
-    Contains(i, Naturals)
+    >>> Element(i, S.Naturals)
+    Element(i, Naturals)
 
     References
     ==========
@@ -77,7 +77,7 @@ class Contains(BinaryCondition):
             raise TypeError('expecting Set, not %s' % func_name(s))
 
         ret = s.contains(x)
-        if ret is None or not isinstance(ret, Contains) and (ret in (S.true, S.false) or ret.is_set):
+        if ret is None or not isinstance(ret, Element) and (ret in (S.true, S.false) or ret.is_set):
             return ret
 
     @property
@@ -129,24 +129,22 @@ class Contains(BinaryCondition):
 
     def simplify(self, *_, **__):
         e, s = self.args
-        this = s.func.simplify_Contains(self, e, s)
+        this = s.func.simplify_Element(self, e, s)
         if this is not None:
             return this
         return self
 
     def __and__(self, other):
         """Overloading for & operator"""
-        if other.is_NotContains:
+        if other.is_NotElement:
             if self.element == other.element:
-                from sympy import Complement
-                s = Complement(self.rhs, other.rhs)
-                return self.func(self.element, s)
-        elif other.is_Contains:
+                return self.func(self.element, self.rhs - other.rhs)
+        elif other.is_Element:
             if self.element == other.element:
                 s = self.rhs & other.rhs
                 return self.func(self.element, s)
         elif self.rhs.is_Range or self.rhs.is_Interval:
-            if other.is_LessEqual:            
+            if other.is_LessEqual: 
                 if self.lhs == other.lhs:
                     if self.rhs.left_open:
                         if other.rhs <= self.rhs.start:
@@ -174,13 +172,13 @@ class Contains(BinaryCondition):
         return BinaryCondition.__and__(self, other)
 
     def __or__(self, other):
-        if other.is_Contains:
+        if other.is_Element:
             x, X = self.args
             y, Y = other.args
             if x == y: 
                 return self.func(x, X | Y).simplify()
             
-        elif other.is_Or:            
+        elif other.is_Or: 
             return other.func(self, *other.args)
         
         return BinaryCondition.__or__(self, other)
@@ -188,7 +186,7 @@ class Contains(BinaryCondition):
     def __truediv__(self, other):
         if other.is_nonzero:
             e, s = self.args
-            return self.func(e / other, s / other, given=self)
+            return self.func(e / other, s / other)
             
         return self
 
@@ -227,7 +225,7 @@ class Contains(BinaryCondition):
                     return domain & interval
                                  
     @classmethod
-    def simplify_All(cls, self, function, *limits):
+    def simplify_ForAll(cls, self, function, *limits):
         x = function.lhs
         limits_dict = self.limits_dict
         if x in limits_dict:
@@ -238,7 +236,7 @@ class Contains(BinaryCondition):
                         return S.BooleanTrue
 
 
-class NotContains(BinaryCondition):
+class NotElement(BinaryCondition):
     """
     Asserts that x is not an element of the set S
 
@@ -246,21 +244,21 @@ class NotContains(BinaryCondition):
     ========
 
     >>> from sympy import Symbol, Integer, S
-    >>> from sympy.sets.contains import Contains
-    >>> Contains(Integer(2), S.Integers)
+    >>> from sympy.sets.contains import Element
+    >>> Element(Integer(2), S.Integers)
     True
-    >>> Contains(Integer(-2), S.Naturals)
+    >>> Element(Integer(-2), S.Naturals)
     False
     >>> i = Symbol('i', integer=True)
-    >>> Contains(i, S.Naturals)
-    Contains(i, Naturals)
+    >>> Element(i, S.Naturals)
+    Element(i, Naturals)
 
     References
     ==========
 
     .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
     """
-    invert_type = Contains
+    invert_type = Element
 
     def __new__(cls, *args, **assumptions):
         if len(args) == 1 and isinstance(args[0], frozenset):
@@ -276,7 +274,7 @@ class NotContains(BinaryCondition):
                 args = eq.args
                 result = self.func(self.lhs._subs(*args, **kwargs), self.rhs._subs(*args, **kwargs))
                 return self.subs_assumptions_for_equality(eq, result)
-            if isinstance(eq, dict):                
+            if isinstance(eq, dict): 
                 for k, v in eq.items():
                     self = self._subs(k, v)
                 return self
@@ -313,7 +311,7 @@ class NotContains(BinaryCondition):
         ret = s.contains(x)
         if ret is None:
             return
-        if not isinstance(ret, Contains) and (ret in (S.true, S.false) or ret.is_set):
+        if not isinstance(ret, Element) and (ret in (S.true, S.false) or ret.is_set):
             return sympify(not ret)
 
     def as_set(self):
@@ -329,7 +327,7 @@ class NotContains(BinaryCondition):
 
     def simplify(self, deep=False):
         e, s = self.args
-        this = s.func.simplify_NotContains(self, e, s)
+        this = s.func.simplify_NotElement(self, e, s)
         if this is not None:
             return this
             
@@ -340,15 +338,13 @@ class NotContains(BinaryCondition):
         return self
 
     def __and__(self, other):
-        if other.is_NotContains:
+        if other.is_NotElement:
             if self.element == other.element:
-                s = self.set | other.set
+                s = self.rhs | other.rhs
                 return self.func(self.element, s)
-        elif other.is_Contains:
+        elif other.is_Element:
             if self.element == other.element:
-                from sympy import Complement
-                s = Complement(other.set, self.set)
-                return other.func(self.element, s)
+                return other.func(self.element, other.set - self.set)
         
         elif other.is_Unequal:
             x, X = self.args
@@ -382,7 +378,7 @@ class NotContains(BinaryCondition):
         return BinaryCondition.__and__(self, other)
 
     def __or__(self, other):
-        if other.is_NotContains:
+        if other.is_NotElement:
             x, X = self.args
             y, Y = other.args
             if x == y: 
@@ -401,12 +397,193 @@ class NotContains(BinaryCondition):
             return x.domain_conditioned(self.invert_type(x, domain - self.rhs))
         
     @classmethod
-    def simplify_All(cls, self, function, *limits):
+    def simplify_ForAll(cls, self, function, *limits):
         element, container = function.args
         forall = self.limits_dict
         if element in forall:
             if forall[element] == container:
                 return S.BooleanFalse
 
+
+class Contains(BinaryCondition):
+    """
+    Asserts that x is an element of the set S
+
+    Examples
+    ========
+
+    >>> from sympy import Symbol, Integer, S
+    >>> from sympy.sets.contains import Element
+    >>> Contains(S.Integers, Integer(2))
+    True
+    >>> Contains(S.Naturals, Integer(-2))
+    False
+    >>> i = Symbol('i', integer=True)
+    >>> Contains(S.Naturals, i)
+    Contains(Naturals, i)
+
+    References
+    ==========
+
+    .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
+    """
+
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
+
+    def _latex(self, p):
+        return r"%s \ni %s" % tuple(p._print(a) for a in self.args)
+
+    def _sympystr(self, p):
+        # unicodedata.lookup('CONTAINS AS MEMBER'), '\N{CONTAINS AS MEMBER}'
+        return "%s \N{CONTAINS AS MEMBER} %s" % tuple(p._print(a) for a in self.args)
+
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm, stringPict
+        from sympy.printing.str import sstr
+        
+        var, s = self.args
+        if p._use_unicode:
+            el = u" \N{CONTAINS AS MEMBER} "
+            return prettyForm(*stringPict.next(p._print(var),
+                                               el, p._print(s)), binding=8)
+        else:
+            return prettyForm(sstr(self))
+
+    @classmethod
+    def eval(cls, s, x):
+        if not s.is_set:
+            from sympy.utilities.misc import func_name
+            raise TypeError('expecting Set, not %s' % func_name(s))
+
+        ret = s.contains(x)
+        if ret is None or not isinstance(ret, Element) and (ret in (S.true, S.false) or ret.is_set):
+            return ret
+
+    @property
+    def binary_symbols(self):
+        binary_symbols = [i.binary_symbols for i in self.args[1].args if hasattr(i, 'binary_symbols') and (i.is_Boolean or i.is_Symbol or isinstance(i, (Eq, Ne)))]
+        return set().union(*binary_symbols)
+
+    def as_set(self):
+        return self
+
+    def simplify(self, *_, **__):
+        return self
+
+    def __and__(self, other):
+        """Overloading for & operator"""
+        return BinaryCondition.__and__(self, other)
+
+    def __or__(self, other):
+        return BinaryCondition.__or__(self, other)
+
+    def __truediv__(self, other):
+        if other.is_nonzero:
+            s, e = self.args
+            return self.func(s / other, e / other)
+            
+        return self
+
+    @property
+    def T(self):
+        assert len(self.lhs.shape) <= 1
+        return self.func(self.lhs, self.rhs.T)
+      
+    def domain_conditioned(self, x):
+        ...
+
+
+class NotContains(BinaryCondition):
+    """
+    Asserts that x is not an element of the set S
+
+    Examples
+    ========
+
+    >>> from sympy import Symbol, Integer, S
+    >>> from sympy.sets.contains import Element
+    >>> Element(Integer(2), S.Integers)
+    True
+    >>> Element(Integer(-2), S.Naturals)
+    False
+    >>> i = Symbol('i', integer=True)
+    >>> Element(i, S.Naturals)
+    Element(i, Naturals)
+
+    References
+    ==========
+
+    .. [1] https://en.wikipedia.org/wiki/Element_%28mathematics%29
+    """
+    invert_type = Contains
+
+    def __new__(cls, *args, **assumptions):
+        if len(args) == 1 and isinstance(args[0], frozenset):
+            _args = args[0]
+        else:
+            _args = args
+        return BinaryCondition.eval(cls, *args, **assumptions)
+
+    def _latex(self, p):
+        return r"%s \not\ni %s" % tuple(p._print(a) for a in self.args)
+
+    def _sympystr(self, p):
+        return "%s \N{DOES NOT CONTAIN AS MEMBER} %s" % tuple(p._print(a) for a in self.args)
+
+    def _pretty(self, p):
+        from sympy.printing.pretty.stringpict import prettyForm, stringPict
+        from sympy.printing.str import sstr
+        
+        var, s = self.args
+        if p._use_unicode:
+            el = u" \N{DOES NOT CONTAIN AS MEMBER} "
+            return prettyForm(*stringPict.next(p._print(var),
+                                               el, p._print(s)), binding=8)
+        else:
+            return prettyForm(sstr(self))
+
+    @classmethod
+    def eval(cls, x, s):
+        if not s.is_set:
+            from sympy.utilities.misc import func_name
+            raise TypeError('expecting Set, not %s' % func_name(s))
+
+        ret = s.contains(x)
+        if ret is None:
+            return
+        if not isinstance(ret, Element) and (ret in (S.true, S.false) or ret.is_set):
+            return sympify(not ret)
+
+    def as_set(self):
+        return self
+
+    def simplify(self, *_, **__):
+        return self
+
+    def __and__(self, other):
+        return BinaryCondition.__and__(self, other)
+
+    def __or__(self, other):
+        return BinaryCondition.__or__(self, other)
+
+    @property
+    def T(self):
+        assert len(self.lhs.shape) <= 1
+        return self.func(self.lhs, self.rhs.T)
+
+    def domain_conditioned(self, x): 
+        ...
+        
         
 Contains.invert_type = NotContains
+Element.invert_type = NotElement
+
+Element.reversed_type = Contains
+NotElement.reversed_type = NotContains
+Contains.reversed_type = Element
+NotContains.reversed_type = NotElement

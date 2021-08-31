@@ -16,8 +16,8 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True, given=False)
+    x = Symbol(integer=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True, given=False)
 
     Eq << apply(x[:n + 1])
     Eq.initial = Eq[-1].subs(n, 1)

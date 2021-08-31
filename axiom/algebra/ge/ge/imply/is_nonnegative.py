@@ -12,10 +12,7 @@ def apply(greater_than, less_than):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, y, a, b = Symbol(real=True)
 
     Eq << apply(x >= a, y >= b)
 

@@ -13,10 +13,9 @@ def apply(imply, index=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y = Symbol(real=True, given=True)
 
-    f = Function.f(real=True, given=True)
+    f = Function(real=True, given=True)
 
     Eq << apply((f(y) > 0) | (f(x) > 0), index=0)
 

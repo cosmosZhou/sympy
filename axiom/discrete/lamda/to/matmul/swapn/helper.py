@@ -6,9 +6,7 @@ def apply(x, d, w=None):
     n = x.shape[0]
     m = d.shape[0]
     assert m.is_integer and m.is_finite
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    k = Symbol.k(integer=True)
+    i, j, k = Symbol(integer=True)
 
     if w is None:
         w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
@@ -23,14 +21,14 @@ def apply(x, d, w=None):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    n = Symbol.n(domain=Range(2, oo))
+    n = Symbol(domain=Range(2, oo))
     assert n.is_integer
 
-    m = Symbol.m(domain=Range(1, oo), given=False)
+    m = Symbol(domain=Range(1, oo), given=False)
     assert m.is_integer
 
-    x = Symbol.x(complex=True, shape=(n,))
-    d = Symbol.d(integer=True, shape=(oo,))
+    x = Symbol(complex=True, shape=(n,))
+    d = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(x, d[:m])
 
@@ -43,11 +41,11 @@ def prove(Eq):
     Eq.initial = Eq.hypothesis.subs(m, 1)
 
     d = Eq[1].rhs.args[1].expr.indices[1].base
-    Eq << discrete.matrix.elementary.swap.identity.apply(x, w, left=False, reference=None).subs(i, 0).subs(j, d[0])
+    Eq << discrete.lamda_indexed.to.matmul.swap.apply(x, w, left=False, reference=None).subs(i, 0).subs(j, d[0])
 
     Eq.induct = Eq.hypothesis.subs(m, m + 1)
 
-    Eq << discrete.matrix.elementary.swap.identity_general.apply(x, Lamda[k](Eq[1].lhs.expr.indices[0]).simplify(), w)
+    Eq << discrete.indexed.to.matmul.swap.apply(x, Lamda[k](Eq[1].lhs.expr.indices[0]).simplify(), w)
 
     Eq << Eq[-1].subs(i, m).subs(j, d[m])
 

@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, t, alpha, beta):
-    x, y = given.of(Abs[Expr - Expr] > 0)    
+    x, y = given.of(Abs[Expr - Expr] > 0)
 
     assert x.shape == y.shape == t.shape
     assert alpha > 0
@@ -18,17 +18,13 @@ def apply(given, t, alpha, beta):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    y = Symbol.y(real=True, shape=(n,))
-    x = Symbol.x(real=True, shape=())
-    y = Symbol.y(real=True, shape=())
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    lamda = Symbol.lamda(domain=Interval(0, 1))
-    t = Symbol.t(lamda * x + (1 - lamda) * y)
-    alpha = Symbol.alpha(real=True, positive=True)
-    beta = Symbol.beta(real=True, positive=True)
+    n = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(n,))
+    x, y = Symbol(real=True, shape=())
+    a, b = Symbol(real=True)
+    lamda = Symbol(domain=Interval(0, 1))
+    t = Symbol(lamda * x + (1 - lamda) * y)
+    alpha, beta = Symbol(real=True, positive=True)
     Eq << apply(abs(x - y) > 0, t=t, alpha=alpha, beta=beta)
 
     Eq << Eq[-1].this.lhs.arg.args[0].definition

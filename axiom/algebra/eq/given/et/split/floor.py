@@ -15,8 +15,8 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(integer=True)
+    x = Symbol(real=True)
+    y = Symbol(integer=True)
     Eq << apply(Equal(y, floor(x)))
 
     Eq << algebra.lt.le.imply.eq.apply(Eq[1], Eq[2])

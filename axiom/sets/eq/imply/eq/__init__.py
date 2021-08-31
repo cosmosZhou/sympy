@@ -6,7 +6,7 @@ from . import set_comprehension
 from . import swap
 from . import complement
 from . import cap
-from . import intersection
 from . import union
-from . import union_intersection
-from . import st
+from . import st, card
+from . import union_intersect
+from . import intersect

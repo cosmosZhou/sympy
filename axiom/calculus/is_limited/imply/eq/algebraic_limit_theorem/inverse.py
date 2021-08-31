@@ -13,10 +13,9 @@ def apply(is_limited):
 def prove(Eq):
     from axiom import calculus, sets, algebra
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    g = Function.g(real=True)
-    Eq << apply(Contains(Limit[x:x0](g(x)), Reals - {0}))
+    x, x0 = Symbol(real=True)
+    g = Function(real=True)
+    Eq << apply(Element(Limit[x:x0](g(x)), Reals - {0}))
 
     epsilon0 = Symbol.epsilon_0(real=True, positive=True)
     delta0 = Symbol.delta_0(real=True, positive=True)
@@ -27,7 +26,7 @@ def prove(Eq):
 
     Eq.is_nonzero_real = Eq[0].subs(Eq.is_limited)
 
-    Eq << sets.contains.imply.is_nonzero.apply(Eq.is_nonzero_real)
+    Eq << sets.el.imply.is_nonzero.apply(Eq.is_nonzero_real)
 
     Eq << algebra.is_nonzero.eq.imply.eq.inverse.apply(Eq[-1], Eq.is_limited)
 
@@ -37,10 +36,10 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.is_limited)
 
-    delta1 = Symbol.delta1(positive=True)
-    Eq << calculus.eq.contains.imply.any_all.lt.half.apply(Eq.is_limited, Eq.is_nonzero_real, delta=delta1)
+    delta1 = Symbol(positive=True)
+    Eq << calculus.eq.el.imply.any_all.lt.half.apply(Eq.is_limited, Eq.is_nonzero_real, delta=delta1)
 
-    Eq.A_is_positive = sets.contains.imply.is_positive.abs.apply(Eq.is_nonzero_real)
+    Eq.A_is_positive = sets.el.imply.is_positive.card.apply(Eq.is_nonzero_real)
 
     Eq << algebra.cond.any_all.imply.any_all_et.apply(Eq.A_is_positive / 2, Eq[-1])
 
@@ -62,20 +61,19 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.lhs.apply(algebra.abs.neg)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
     Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
-    epsilon = Symbol.epsilon(positive=True)
+    epsilon, delta = Symbol(positive=True)
     Eq << algebra.cond.imply.ou.subs.apply(Eq[-1], epsilon0, abs(A) ** 2 / 2 * epsilon)
 
     Eq << algebra.is_positive.imply.is_positive.square.apply(Eq.A_is_positive) * epsilon / 2
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[-1], Eq[-2])
 
-    delta = Symbol.delta(positive=True)
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(delta0, delta1), delta)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])

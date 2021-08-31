@@ -2,16 +2,19 @@ from util import *
 
 
 @apply
-def apply(given):
+def apply(given, *, simplify=True):
     lhs, rhs = given.of(Equal)
-    return Equal(sin(lhs), sin(rhs))
+    lhs, rhs = sin(lhs), sin(rhs)
+    if simplify:
+        lhs, rhs = lhs.simplify(), rhs.simplify()    
+    return Equal(lhs, rhs)
 
 
 @prove
 def prove(Eq):
     x, y = Symbol(complex=True)
     Eq << apply(Equal(x, y))
-    
+
     Eq << Eq[1].subs(Eq[0])
 
 

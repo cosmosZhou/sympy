@@ -6,5 +6,5 @@ from . import reducedSum
 from . import reducedMax
 from . import add
 from . import pow
-from . import piecewise
 from . import blockMatrix
+from . import piece

@@ -11,8 +11,8 @@ def apply(x, n):
 def prove(Eq):
     from axiom import algebra, sets
 
-    x = Symbol.x(integer=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True, given=False)
+    x = Symbol(integer=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True, given=False)
     Eq << apply(x, n)
 
     Eq.initial0 = Eq[-1].subs(n, 1)
@@ -39,11 +39,11 @@ def prove(Eq):
 
     Eq << Eq.hypothesis.this.expr.apply(algebra.cond.imply.all.restrict, (x[n + 1], 1, oo), simplify=None)
 
-    Eq << algebra.all.imply.all_et.apply(Eq[-1], index=0, simplify=None)
+    Eq << algebra.all.imply.all_et.apply(Eq[-1], index=0)
 
     Eq << algebra.all.imply.all.limits.merge.apply(Eq[-1])
 
-    Eq << Eq[-1].this.expr.args[1].apply(sets.contains.imply.ge.split.range)
+    Eq << Eq[-1].this.expr.args[1].apply(sets.el.imply.ge.split.range)
 
     Eq << Eq[-1].this.expr.args[1].apply(algebra.ge.imply.gt.relax, 0)
 

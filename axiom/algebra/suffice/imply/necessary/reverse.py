@@ -11,12 +11,12 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    n = Symbol(integer=True)
+    f, g = Function(integer=True)
     Eq << apply(Suffice(f(n) < g(n), f(n + 1) < g(n + 1)))
 
     Eq << algebra.necessary.given.ou.apply(Eq[1])
+
     Eq << algebra.suffice.imply.ou.apply(Eq[0])
 
 

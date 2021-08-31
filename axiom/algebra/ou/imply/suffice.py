@@ -1,9 +1,6 @@
 from util import *
 
 
-
-# given: f(a) != f(b) or a = b
-# All[a: a!=b](f(a) != f(b))
 @apply
 def apply(given, pivot=0):
     [*conds] = given.of(Or)
@@ -24,13 +21,10 @@ def apply(given, pivot=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(complex=True, shape=(n,))
-    y = Symbol.y(complex=True, shape=(n,))
 
-    f = Function.f(complex=True, shape=())
-    g = Function.g(complex=True, shape=())
-
+    n = Symbol(integer=True, positive=True)
+    x, y = Symbol(complex=True, shape=(n,))
+    f, g = Function(complex=True, shape=())
     Eq << apply(Unequal(f(x), 1) | Unequal(g(x), 1) | Equal(x, y), pivot=(0, 1))
 
     Eq << Eq[1].apply(algebra.suffice.given.ou)

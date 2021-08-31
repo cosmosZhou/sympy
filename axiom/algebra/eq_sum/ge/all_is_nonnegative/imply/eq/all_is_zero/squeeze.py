@@ -2,17 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    for cond in given:
-        if cond.is_Equal:
-            eq_sum = cond
-        elif cond.is_GreaterEqual:
-            ge = cond
-        elif cond.is_All:
-            all_is_nonnegative = cond
-        else:
-            return
-        
+def apply(eq_sum, ge, all_is_nonnegative):
     (xi, (i, _0, n)), a = eq_sum.of(Equal[Sum])
     xn, _a = ge.of(GreaterEqual)
     assert a == _a
@@ -32,10 +22,10 @@ def apply(*given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, shape=(oo,), given=True)
-    n = Symbol.n(integer=True, given=True, negative=False)
-    i = Symbol.i(integer=True)
-    a = Symbol.a(real=True)
+    x = Symbol(real=True, shape=(oo,), given=True)
+    n = Symbol(integer=True, given=True, negative=False)
+    i, j = Symbol(integer=True)
+    a = Symbol(real=True)
     Eq << apply(Equal(Sum[i:n + 1](x[i]), a), x[n] >= a, All[i:n + 1](x[i] >= 0))
 
     Eq.eq = Eq[0].this.lhs.apply(algebra.sum.to.add.pop_back)
@@ -52,7 +42,6 @@ def prove(Eq):
 
     Eq << Eq[-1].this.apply(algebra.eq.simplify.terms.common)
 
-    j = Symbol.j(integer=True)
     Eq << Eq[-1].this.lhs.limits_subs(i, j)
 
     Eq << ~Eq[4]
@@ -63,7 +52,7 @@ def prove(Eq):
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq[-2])
 
-    Eq << Eq[-1].this().expr.find(Piecewise, Contains).simplify()
+    Eq << Eq[-1].this().expr.find(Piecewise, Element).simplify()
 
     Eq.any_is_negative = Eq[-1].this.expr.apply(algebra.eq.gt.imply.lt.sub)
 

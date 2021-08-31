@@ -11,12 +11,11 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
+    x, y = Symbol(integer=True, given=True)
     Eq << apply(x < y)
 
     Eq << ~Eq[0]
-    
+
     Eq <<= Eq[-1] & Eq[1]
 
 

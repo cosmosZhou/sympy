@@ -594,7 +594,8 @@ class Product(ExprWithIntLimits):
             if domain.is_FiniteSet and len(domain) == 1:
                 return self.finite_aggregate(x, domain)
             if not self.expr._has(x):
-                return self.expr ** abs(domain)
+                from sympy import Card
+                return self.expr ** Card(domain)
                             
         elif len(limit) == 3:
             x, a, b = limit

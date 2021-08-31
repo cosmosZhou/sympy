@@ -3,9 +3,10 @@ from sympy.concrete.conditional_boolean import Quantifier
 from sympy.sets.sets import FiniteSet
 from sympy.concrete.expr_with_limits import ExprWithLimits
 from sympy.core.relational import Unequal
+from sympy.core.sympify import sympify
 
 
-class Any(Quantifier):
+class Exists(Quantifier):
     """
     Any[x:A] q(x) <=> conditionset(x, q(x), A) != Ø
     """
@@ -16,8 +17,9 @@ class Any(Quantifier):
     def __new__(cls, function, *symbols, **assumptions):
         if assumptions:
             from sympy.core.inference import Inference
-            return Inference(Any.__new__(cls, function, *symbols), **assumptions)
+            return Inference(Exists.__new__(cls, function, *symbols), **assumptions)
         
+        function = sympify(function)
         if function.is_BooleanAtom or len(symbols) == 0:
             return function.copy(**assumptions)
         return ExprWithLimits.__new__(cls, function, *symbols, **assumptions)
@@ -43,7 +45,7 @@ class Any(Quantifier):
 
     def simplify(self, **kwargs):
         from sympy import S
-        from sympy.sets.contains import Contains, NotContains
+        from sympy.sets.contains import Element, NotElement
         if self.expr.is_Equal:
             limits_dict = self.limits_dict
             x = None
@@ -60,12 +62,15 @@ class Any(Quantifier):
                     if len(self.limits) == 1:
                         if all(not var.is_given for var in y.free_symbols):
                             domain_bounded = x.domain_bounded
-                            if domain_bounded is None or y.domain in domain_bounded:
+                            if domain_bounded is None:
+                                return Element(y, x.domain).simplify()
+                            
+                            if y.domain in domain_bounded:
                                 return S.BooleanTrue
                 elif domain.is_set:
                     t = self.variables.index(x)
                     if not any(limit._has(x) for limit in self.limits[:t]):
-                        function = Contains(y, domain)
+                        function = Element(y, domain)
                         if function:
                             return function
                         limits = self.limits_delete(x)
@@ -74,7 +79,7 @@ class Any(Quantifier):
                         return function
 
         from sympy import Equal
-        if self.expr.is_Contains: 
+        if self.expr.is_Element: 
             limits_dict = self.limits_dict
             x = None
             if self.expr.lhs in limits_dict:
@@ -88,7 +93,7 @@ class Any(Quantifier):
 #                     function = Unequal(S, x.emptySet)
                 elif domain.is_set:
                     if domain.is_FiniteSet:
-                        function = Contains(domain.arg, S)
+                        function = Element(domain.arg, S)
                     else:
                         function = Unequal(S & domain, x.emptySet)                        
                 else:
@@ -103,7 +108,7 @@ class Any(Quantifier):
                             return function
                         return function
 
-        elif self.expr.is_NotContains: 
+        elif self.expr.is_NotElement: 
             limits_dict = self.limits_dict
             x = None
             if self.expr.lhs in limits_dict:
@@ -116,7 +121,7 @@ class Any(Quantifier):
                     function = Equal(S, x.emptySet)
                 elif domain.is_set:
                     if domain.is_FiniteSet:
-                        function = NotContains(domain.arg, S)
+                        function = NotElement(domain.arg, S)
                     else:
                         function = Unequal(domain // S, x.emptySet)                        
                 else:
@@ -134,7 +139,7 @@ class Any(Quantifier):
         if self.expr.is_And:
             limits_dict = self.limits_dict
             for i, eq in enumerate(self.expr.args):
-                if eq.is_Contains and eq.lhs in limits_dict:
+                if eq.is_Element and eq.lhs in limits_dict:
                     domain = limits_dict[eq.lhs]
                     if isinstance(domain, list):
                         eqs = [*self.expr.args]
@@ -159,7 +164,7 @@ class Any(Quantifier):
         if self.expr.is_Or:
             limits_dict = self.limits_dict
             for i, eq in enumerate(self.expr.args):
-                if eq.is_NotContains and eq.lhs in limits_dict:
+                if eq.is_NotElement and eq.lhs in limits_dict:
                     domain = limits_dict[eq.lhs]
                     if not isinstance(domain, list) and domain in eq.rhs:
                         eqs = [*self.expr.args]
@@ -251,7 +256,7 @@ class Any(Quantifier):
     
     def __or__(self, eq):
         """Overloading for | operator"""
-        if eq.is_Any:
+        if eq.is_Exists:
             if self.limits == eq.limits:
                 return self.func(self.expr | eq.expr, *self.limits)
                         
@@ -262,8 +267,8 @@ class Any(Quantifier):
         return Quantifier.__or__(self, eq)
 
     @classmethod
-    def simplify_All(cls, self, exists, *limits):
-        if exists.expr.is_All:
+    def simplify_ForAll(cls, self, exists, *limits):
+        if exists.expr.is_ForAll:
             forall = exists.expr
             dic = self.limits_common(forall)
             if dic:
@@ -293,6 +298,7 @@ class Any(Quantifier):
 
 
 from sympy.concrete.forall import All     
+Any = Exists
 Any.invert_type = All
 All.invert_type = Any
 

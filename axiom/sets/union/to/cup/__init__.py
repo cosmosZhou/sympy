@@ -16,12 +16,9 @@ def apply(self):
 def prove(Eq):
     from axiom import sets
 
-    k = Symbol.k(integer=True)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    f = Function.f(etype=dtype.integer)
-    g = Function.g(etype=dtype.integer)
+    k, i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    f, g = Function(etype=dtype.integer)
     Eq << apply(Cup[j:n, k:n](f(k)) | Cup[i:j, j:k, k:n](g(k)))
 
     Eq << Eq[0].this.rhs.apply(sets.cup.to.union)
@@ -30,5 +27,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del limits
 from . import limits

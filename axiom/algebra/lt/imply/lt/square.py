@@ -16,8 +16,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, nonnegative=True)
-    y = Symbol.y(real=True)
+    x = Symbol(real=True, nonnegative=True)
+    y = Symbol(real=True)
 
     Eq << apply(Less(x, y))
 

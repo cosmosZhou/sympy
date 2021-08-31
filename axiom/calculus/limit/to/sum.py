@@ -2,15 +2,15 @@ from util import *
 
 
 def doit(cls, self, simplify=True):
-    from sympy.concrete.limits import limits_dict 
+    from sympy.concrete.limits import limits_dict
     (expr, *limits), limit = self.of(Limit[cls])
-    
+
     x = limit[0]
     assert x not in limits_dict(limits)
     expr = Limit(expr, limit)
     if simplify:
         expr = expr.doit()
-        
+
     for i, (x, *ab) in enumerate(limits):
         for j, t in enumerate(ab):
             t = Limit(t, limit)
@@ -18,8 +18,8 @@ def doit(cls, self, simplify=True):
                 t = t.doit()
             ab[j] = t
         limits[i] = (x, *ab)
-        
-                
+
+
     return cls(expr, *limits)
 
 @apply
@@ -29,9 +29,8 @@ def apply(self, simplify=True):
 
 @prove(proved=False)
 def prove(Eq):
-    k = Symbol.k(integer=True)
-    n = Symbol.n(integer=True)
-    s = Function.s(real=True)
+    k, n = Symbol(integer=True)
+    s = Function(real=True)
     Eq << apply(Limit[n:oo](Sum[k:n](s(k))))
 
 

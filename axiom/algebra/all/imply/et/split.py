@@ -28,9 +28,9 @@ def apply(given, *, cond=None, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    f = Function.f(integer=True, shape=())
-    d = Symbol.d(real=True, positive=True)
+    x = Symbol(real=True)
+    f = Function(integer=True, shape=())
+    d = Symbol(real=True, positive=True)
     #for x > 0
     #Eq << apply(All[x:-d:d](f(x) > 0), cond=x > 0)
     #

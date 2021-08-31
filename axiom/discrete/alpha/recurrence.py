@@ -20,8 +20,8 @@ def apply(A):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True, given=False)
+    x = Symbol(real=True, positive=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True, given=False)
 
     Eq << apply(alpha(x[:n + 2]))
 

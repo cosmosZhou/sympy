@@ -1,2 +1,2 @@
-from . import eq, contains
-from . import is_emptyset
+from . import eq, el
+from . import is_empty

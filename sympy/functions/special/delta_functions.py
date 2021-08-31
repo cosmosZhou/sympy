@@ -618,3 +618,13 @@ class Heaviside(Function):
     def _sage_(self):
         import sage.all as sage
         return sage.heaviside(self.args[0]._sage_())
+
+    def _sympystr(self, p):        
+        return "H(%s)" % p._print(self.arg)
+
+    def _latex(self, p, exp=None):
+        tex = r"H\left(%s\right)" % p._print(self.args[0])
+        if exp:
+            tex = r"\left(%s\right)^{%s}" % (tex, exp)
+        return tex
+

@@ -2,9 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given, reverse=False):
-    any_eq, forall = given
-
+def apply(any_eq, forall, reverse=False):
     (x, y), *limits = any_eq.of(Any[Equal])
     cond, *_limits = forall.of(All)
     assert limits == _limits
@@ -17,12 +15,10 @@ def apply(*given, reverse=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, y = Symbol(integer=True)
+    f, g = Function(integer=True)
 
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol(etype=dtype.integer)
 
     Eq << apply(Any[x:S](Equal(g(x), f(x))), All[x:S](g(x) > y))
 

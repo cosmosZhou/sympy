@@ -11,7 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(complex=True, given=True)
+    a = Symbol(complex=True, given=True)
     Eq << apply(Unequal(a, 0))
 
     Eq << ~Eq[0]

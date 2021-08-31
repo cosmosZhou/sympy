@@ -10,11 +10,8 @@ def apply(x, y, a, b):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y, a, b = Symbol(real=True)
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
 
     Eq << apply(x, y, a, b)
 

@@ -11,11 +11,11 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, calculus
 
-    i = Symbol.i(integer=True)
-    f = Function.f(real=True)
+    i = Symbol(integer=True)
+    f = Function(real=True)
     Eq << apply(Sum[i](f(i)))
 
-    n = Symbol.n(integer=True, nonnegative=True)
+    n = Symbol(integer=True, nonnegative=True)
     Eq << algebra.sum.limits.negate.apply(Sum[i:-n:n + 1](f(i)))
 
     Eq << calculus.eq.imply.eq.limit.apply(Eq[-1], (n, oo))

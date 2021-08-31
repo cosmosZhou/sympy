@@ -18,8 +18,13 @@ error_log("module = $module");
 $content = [];
 
 if (!$statementsFromSQLFile){
-    $statementsFromSQLFile = \mysql\yield_from_mysql($module);
+    list($statementsFromSQLFile, $timestamp) = \mysql\yield_from_mysql($module);
 }
+else{
+    $timestamp = date('Y-m-d h:i:s', time());
+}
+
+error_log("timestamp = $timestamp");
 
 preg_match("/([\w.]+)\.(imply|given)\./", $module, $m);
 $numOfRequisites = $m ? count(explode(".", $m[1])) - 1 : 0;
@@ -108,6 +113,16 @@ for ($i = 0; $i < $size; ++ $i) {
     ];
 }
 
+$logStr = [];
+foreach ($logs as $log){
+    $log = str_replace("\\", "\\\\", $log);
+    $log = str_replace("'", "\\'", $log);    
+    $logStr[] = "'$log'";
+}
+
+$logStr = implode(",", $logStr);
+$logStr = "[$logStr]";
+
 ?>
 
 <title><?php echo $module;?></title>
@@ -122,7 +137,7 @@ for ($i = 0; $i < $size; ++ $i) {
 <div id=root>
 	<render ref=render :logs=logs :prove=prove :given=given :imply=imply
 		:where=where :module=module :apply=apply :apply-arg=applyArg
-		:unused=unused></render>
+		:unused=unused :timestamp=timestamp></render>
 </div>
 
 <script>
@@ -151,7 +166,7 @@ for ($i = 0; $i < $size; ++ $i) {
   		},
 
   		tex: {
-  		    maxBuffer: 10 * 1024,       // maximum size for the internal TeX string (10K)
+  		    maxBuffer: 60 * 1024,       // maximum size for the internal TeX string (10K)
   		  //reference: http://docs.mathjax.org/en/latest/options/input/tex.html?highlight=MAXBUFFER#the-configuration-block
   	  	},
 	};
@@ -183,7 +198,7 @@ for ($i = 0; $i < $size; ++ $i) {
 <script src='static/js/utility.js'></script>
 
 <script>
-	logs = <?php echo \std\jsonify($logs)?>;
+	var logs = <?php echo $logStr?>;
 
 	console.log(logs);
 	for (let i = 0; i < logs.length; ++i){
@@ -206,8 +221,11 @@ for ($i = 0; $i < $size; ++ $i) {
 		given: <?php echo \std\jsonify($given)?>,
 		imply: <?php echo \std\jsonify($imply)?>,
 		where: <?php echo \std\jsonify($where)?>,
+		timestamp: <?php echo \std\jsonify($timestamp)?>,
 	};
 
+	console.log(data);
+	
     Vue.use(httpVueLoader);
     Vue.component('render', 'url:static/vue/render.vue');
 

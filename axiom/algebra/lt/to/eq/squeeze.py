@@ -15,7 +15,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(domain=Range(1, oo))
+    x = Symbol(domain=Range(1, oo))
 
     Eq << apply(Less(x, 2))
 

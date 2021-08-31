@@ -14,10 +14,8 @@ def apply(given, index=0):
 @prove
 def prove(Eq):
     from axiom import sets
-    n = Symbol.n(integer=True, positive=True)
-    A = Symbol.A(etype=dtype.complex * n)
-    B = Symbol.B(etype=dtype.complex * n)
-    S = Symbol.S(etype=dtype.complex * n)
+    n = Symbol(integer=True, positive=True)
+    A, B, S = Symbol(etype=dtype.complex * n)
 
     Eq << apply(Subset(A | B, S))
 

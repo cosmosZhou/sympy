@@ -16,7 +16,7 @@ from sympy.core.singleton import S
 from sympy.core.symbol import Symbol, Dummy, _uniquely_named_symbol, dtype
 from sympy.core.sympify import _sympify, sympify
 from sympy.logic.boolalg import And, Or
-from sympy.sets.contains import Contains
+from sympy.sets.contains import Element
 from sympy.utilities.iterables import sift
 from sympy.utilities.misc import func_name, filldedent
 
@@ -61,8 +61,7 @@ class Set(Basic):
         ...
 
     def element_symbol(self, excludes=None):
-        etype = self.etype
-        return self.generate_var(excludes, **etype.dict)
+        return self.generate_var(excludes, **self.etype.dict)
 
     @property
     def dtype(self):
@@ -582,10 +581,6 @@ class Set(Basic):
         
         return sympify(self.contains(other))
 
-    def __abs__(self):
-        from sympy.functions.elementary.complexes import Abs
-        return Abs(self)
-
     def conjugate(self):
         from sympy.functions.elementary.complexes import conjugate
         return conjugate(self)
@@ -832,7 +827,7 @@ class CartesianSpace(Set):
             else:
                 domain = self.space
                 
-            cond = Contains(other[i], domain)
+            cond = Element(other[i], domain)
             if cond:
                 return cond
             if cond == False:
@@ -849,9 +844,9 @@ class CartesianSpace(Set):
                     if block.shape: 
                         n = block.shape[0]
                         i = Dummy('i', domain=Range(0, n))
-                        cond = Contains(other[i], domain)
+                        cond = Element(other[i], domain)
                     else:
-                        cond = Contains(block, domain)
+                        cond = Element(block, domain)
                         
                     if cond:
                         continue                        
@@ -889,7 +884,7 @@ class CartesianSpace(Set):
         return "{%s}^{%s}" % (p._print(self.space), p._print(space_shape))
 
     @classmethod
-    def simplify_Contains(cls, self, e, s):
+    def simplify_Element(cls, self, e, s):
         k = self.generate_var(integer=True)
         n = e.shape[0]
         if n.is_Infinity:
@@ -899,7 +894,7 @@ class CartesianSpace(Set):
             return All[k:n](self.func(e[k], cls(s.space, *s.space_shape[1:])).simplify())
     
     @classmethod
-    def simplify_NotContains(cls, self, e, s): 
+    def simplify_NotElement(cls, self, e, s): 
         k = self.generate_var(integer=True)
         n = e.shape[0]
         if n.is_Infinity:
@@ -1136,23 +1131,54 @@ class Interval(Set, EvalfMixin):
             return interval.copy(integer=True)
         return interval
 
-    def _union_sets(self, b):
-        from sympy import Min, Max
+    def _union_sets(self, b):        
         if self.max() in b:
+            from sympy import Min
             return b.copy(start=Min(self.min(), b.min()), left_open=False, integer=None)
-        elif self.min() in b:
+        
+        if self.min() in b:
+            from sympy import Max
             return b.copy(stop=Max(self.max(), b.max()), right_open=False, integer=None)
-        elif self in b:
+        
+        if self in b:
             return b
-        elif b in self:
+        
+        if b in self:
             return self
-        elif not self.right_open and b.left_open or self.right_open and not b.left_open:
-            if self.stop == b.start:
-                return Interval(self.start, b.stop, left_open=self.left_open, right_open=b.right_open)
-        elif not b.right_open and self.left_open or b.right_open and not self.left_open:
-            if b.stop == self.start: 
-                return Interval(b.start, self.stop, left_open=b.left_open, right_open=self.right_open)
-
+        
+        if self.right_open and not b.left_open:
+            if self.stop == b.start and b.start <= b.stop:
+                if self.left_open:
+                    if self.stop > self.start:
+                        return Interval(self.start, b.stop, left_open=True, right_open=b.right_open)
+                else:
+                    if self.stop >= self.start:
+                        return Interval(self.start, b.stop, left_open=False, right_open=b.right_open)
+        elif not self.right_open and b.left_open:
+            if self.stop == b.start and self.start <= self.stop:
+                if b.right_open:
+                    if b.stop > b.start:
+                        return Interval(self.start, b.stop, left_open=self.left_open, right_open=True)
+                else:
+                    if b.stop >= b.start:
+                        return Interval(self.start, b.stop, left_open=self.left_open, right_open=False)
+        elif not b.right_open and self.left_open:
+            if b.stop == self.start and b.start <= b.stop:
+                if self.right_open:
+                    if self.stop > self.start:
+                        return Interval(b.start, self.stop, left_open=b.left_open, right_open=True)
+                else: 
+                    if self.stop >= self.start:
+                        return Interval(b.start, self.stop, left_open=b.left_open, right_open=False)
+        elif b.right_open and not self.left_open:
+            if b.stop == self.start and self.start <= self.stop:
+                if b.left_open:
+                    if b.stop > b.start:
+                        return Interval(b.start, self.stop, left_open=True, right_open=self.right_open)
+                else:
+                    if b.stop >= b.start:
+                        return Interval(b.start, self.stop, left_open=False, right_open=self.right_open)
+                                     
     def union_sets(self, b):
         if b.is_Interval or b.is_Range:
             if self._is_comparable(b):
@@ -1291,7 +1317,7 @@ class Interval(Set, EvalfMixin):
         return self        
 
     def element_symbol(self, excludes=set()):
-        return self.generate_var(excludes, integer=self.is_integer)
+        return self.generate_var(excludes, **self.etype.dict)
 
     @property
     def size(self):
@@ -1308,9 +1334,8 @@ class Interval(Set, EvalfMixin):
         else:
             return self.stop - self.start
 
-    def _eval_Abs(self):
-        if self.is_integer:
-            return self.size
+    def _eval_Card(self):
+        ...
 
     @property
     def start(self):
@@ -1606,6 +1631,9 @@ class Interval(Set, EvalfMixin):
             left_open, right_open = self.left_open, self.right_open
                 
             return self.func(start, stop, left_open=left_open, right_open=right_open)
+        
+        if other.is_Surreals or other.is_Surcomplexes:
+            return other
 
         return Set.__add__(self, other)
 
@@ -1877,7 +1905,7 @@ class Interval(Set, EvalfMixin):
         return r"\left%s%s, %s\right%s" % (left, p._print(self.start), p._print(self.stop), right)
 
     @classmethod
-    def simplify_Contains(cls, self, e, s): 
+    def simplify_Element(cls, self, e, s): 
         if s.start is S.NegativeInfinity:
             from sympy import Less, LessEqual
             func = Less if s.right_open else LessEqual
@@ -1895,7 +1923,7 @@ class Interval(Set, EvalfMixin):
             return self.invert_type(e, complement).simplify()                
             
     @classmethod
-    def simplify_NotContains(cls, self, e, s):
+    def simplify_NotElement(cls, self, e, s):
         if e.is_real:
             if s.stop.is_infinite:
                 if s.left_open:
@@ -1915,14 +1943,15 @@ class Interval(Set, EvalfMixin):
         if rhs.is_Interval:
             if self.left_open == rhs.left_open:
                 if rhs.start == self.start:
-                    if self.right_open == rhs.right_open:
+                    if self.right_open == rhs.right_open or self.right_open and not rhs.right_open:
                         if self.stop <= rhs.stop:
                             return S.true
             if self.right_open == rhs.right_open:
                 if rhs.stop == self.stop:
-                    if self.left_open == rhs.left_open:
+                    if self.left_open == rhs.left_open or self.left_open and not rhs.left_open:
                         if self.start >= rhs.start:
-                            return S.true               
+                            return S.true                        
+                                       
 
     @property
     def kwargs(self):
@@ -2017,7 +2046,7 @@ class Union(Set, LatticeOp, EvalfMixin):
         return Max(*[s.sup for s in self.args])
 
     def _contains(self, other):
-        return Or(*[Contains(other, s) for s in self.args])
+        return Or(*[Element(other, s) for s in self.args])
 
     @property
     def _measure(self):
@@ -2153,14 +2182,7 @@ class Union(Set, LatticeOp, EvalfMixin):
 
         return dtype
 
-    def rewrite(self, *args, **hints):
-        if 'complement' in hints:
-            complement = hints['complement']
-            A = self.args[complement]
-            return self.func(*[(arg if i == complement else A.complement(arg)) for i, arg in enumerate(self.args)], evaluate=False)
-        return self
-
-    def _eval_Abs(self):
+    def _eval_Card(self):
         non_intersect = []
         args = [*self.args]
         for A in self.args:
@@ -2180,10 +2202,11 @@ class Union(Set, LatticeOp, EvalfMixin):
         from sympy.core.add import Add
         if non_intersect:
             if args:
-                s = abs(Union(*args))
+                s = Card(Union(*args))
             else:
                 s = 0
-            return Add(*[abs(A) for A in non_intersect]) + s
+            from sympy import Card
+            return Add(*[Card(A) for A in non_intersect]) + s
 
     def min(self):
         from sympy.functions.elementary.miscellaneous import Min        
@@ -2313,7 +2336,14 @@ class Intersection(Set, LatticeOp):
         if b.is_Intersection:
             C = self._argset & b._argset
             if C: 
-                return Intersection((self.func(*self._argset - C, evaluate=False) | b.func(*b._argset - C, evaluate=False)), self.func(*C), evaluate=False)
+                a_set = self._argset - C
+                b_set = b._argset - C
+                if not a_set or not b_set:
+                    return self.func(*C)
+                
+                a_set = self.func(*a_set, evaluate=False)
+                b_set = self.func(*b_set, evaluate=False)
+                return Intersection(a_set | b_set, self.func(*C), evaluate=False)
         
     @property
     def zero(self):
@@ -2365,7 +2395,7 @@ class Intersection(Set, LatticeOp):
         raise NotImplementedError()
 
     def _contains(self, other):
-        return And(*[Contains(other, s) for s in self.args])
+        return And(*[Element(other, s) for s in self.args])
 
     def __iter__(self):
         no_iter = True
@@ -2412,19 +2442,9 @@ class Intersection(Set, LatticeOp):
         res = FiniteSet(*res) if res else s.emptySet
         if unk:
             symbolic_s_list = [x for x in s if x.has(Symbol)]
-            non_symbolic_s = Complement(s, FiniteSet(*symbolic_s_list))
             while fs_args:
                 v = fs_args.pop()
-                if all(i == j for i, j in zip_longest(symbolic_s_list, (x for x in v if x.has(Symbol)))):
-                    # all the symbolic elements of `v` are the same
-                    # as in `s` so remove the non-symbol containing
-                    # expressions from `unk`, since they cannot be
-                    # contained
-                    if non_symbolic_s.is_FiniteSet:
-                        for x in non_symbolic_s:
-                            if x in unk:
-                                unk.remove(x)
-                else:
+                if not all(i == j for i, j in zip_longest(symbolic_s_list, (x for x in v if x.has(Symbol)))):
                     # if only a subset of elements in `s` are
                     # contained in `v` then remove them from `v`
                     # and add this as a new arg
@@ -2433,7 +2453,6 @@ class Intersection(Set, LatticeOp):
                         other.append(Complement(v, FiniteSet(*contained)))
                     else:
                         other.append(v)
-#                         pass  # for coverage
 
             other_sets = Intersection(*other)
             if not other_sets:
@@ -2469,7 +2488,7 @@ class Intersection(Set, LatticeOp):
         return Min(*(arg.max() for arg in self.args))
 
     def _sympystr(self, p):
-        return ' ∩ '.join(["(%s)" % p._print(a) if a.is_Complement else p._print(a) for a in self.args])
+        return ' ∩ '.join(["(%s)" % p._print(a) if a.is_Complement or a.is_Union else p._print(a) for a in self.args])
 
     def _latex(self, p):
         args = []
@@ -2608,7 +2627,7 @@ class Complement(Set, EvalfMixin):
         x = A.min()
             
         if x.is_infinite:
-            if Contains(x, B) == False:
+            if Element(x, B) == False:
                 return x
             
         if self.is_connected_interval():
@@ -2621,7 +2640,7 @@ class Complement(Set, EvalfMixin):
                 M += epsilon
                 
             from sympy.functions.elementary.piecewise import Piecewise
-            return Piecewise((M, Contains(x, B).simplify()), (x, True)).simplify()
+            return Piecewise((M, Element(x, B).simplify()), (x, True)).simplify()
         
         m = B.min()
         if x < m:
@@ -2635,7 +2654,7 @@ class Complement(Set, EvalfMixin):
         x = A.max()      
           
         if x.is_infinite:
-            if Contains(x, B) == False:
+            if Element(x, B) == False:
                 return x
         
         if self.is_connected_interval():
@@ -2648,7 +2667,7 @@ class Complement(Set, EvalfMixin):
                 m -= epsilon
                 
             from sympy.functions.elementary.piecewise import Piecewise
-            return Piecewise((m, Contains(x, B).simplify()), (x, True)).simplify()
+            return Piecewise((m, Element(x, B).simplify()), (x, True)).simplify()
         
         M = B.max()
         if x > M:
@@ -2760,15 +2779,16 @@ class Complement(Set, EvalfMixin):
                     return Complement(A, B)
                      
         if A.is_Complement:
-            _, _B = A.args
+            _A, _B = A.args
             if B in _B:
                 return A
+            A, B = _A, _B | B
         return Complement(A, B, evaluate=False)
 
     def _contains(self, other):
         A = self.args[0]
         B = self.args[1]
-        return And(Contains(other, A), Contains(other, B).invert())
+        return And(Element(other, A), Element(other, B).invert())
 
     def union_sets(self, C):
         A, B = self.args
@@ -2792,7 +2812,7 @@ class Complement(Set, EvalfMixin):
                 return
         if C in B:
             B = Complement(B, C)
-            return self.func(A, B, evaluate=False)
+            return self.func(A | C, B, evaluate=False)
         if C.is_Complement:
             _A, _B = C.args
             if B == _B:
@@ -2871,7 +2891,7 @@ class Complement(Set, EvalfMixin):
             return NotSubset(A, B).simplify()
 
     @classmethod
-    def simplify_Contains(cls, self, e, s):
+    def simplify_Element(cls, self, e, s):
         """
         precondition: self.rhs is a Complement object!
         """
@@ -2886,7 +2906,7 @@ class Complement(Set, EvalfMixin):
                 return Unequal(e, _e)
 
     @classmethod
-    def simplify_NotContains(cls, self, e, s):
+    def simplify_NotElement(cls, self, e, s):
         """
         precondition: self.rhs is a Complement object!
         """
@@ -2948,7 +2968,7 @@ class EmptySet(Set):
     def etype(self):
         return self._assumptions['etype']
 
-    def _eval_Abs(self):
+    def _eval_Card(self):
         return 0
 
     def intersection_sets(self, b):
@@ -3013,10 +3033,10 @@ class EmptySet(Set):
         return S.true
 
     def _eval_Eq(self, rhs):
-        if rhs.is_emptyset is False:
+        if rhs.is_empty is False:
             return S.false
         
-        if rhs.is_emptyset is True:
+        if rhs.is_empty is True:
             return S.true
 
         
@@ -3081,7 +3101,7 @@ class UniversalSet(Set):
     def _boundary(self):
         return self.etype.emptySet
     
-    def _eval_Abs(self):
+    def _eval_Card(self):
         return S.Infinity
 
     @property
@@ -3378,19 +3398,16 @@ class FiniteSet(Set):
             raise TypeError("Invalid comparison of set with %s" % func_name(other))
         return self.is_proper_subset(other)
 
-    def __abs__(self):
-        return self._eval_Abs()
-
-    def _eval_Abs(self):
+    def _eval_Card(self):
         length = len(self)
         if length == 1:
             return S.One
         from sympy.functions.elementary.piecewise import Piecewise
         * before, last = self.args
-        from sympy import Abs       
+        from sympy import Card       
         before = self.func(*before)
-        length = Abs(before)
-        return Piecewise((length, Contains(last, before).simplify()), (length + 1, True)).simplify()
+        length = Card(before)
+        return Piecewise((length, Element(last, before).simplify()), (length + 1, True)).simplify()
 
     def _eval_is_integer(self):
         for elem in self.args:
@@ -3461,7 +3478,7 @@ class FiniteSet(Set):
         * before, last = self.args
         before = self.func(*before)
         sum_of_before = before.sum()
-        return Piecewise((sum_of_before, Contains(last, before).simplify()), (sum_of_before + last, True)).simplify()
+        return Piecewise((sum_of_before, Element(last, before).simplify()), (sum_of_before + last, True)).simplify()
 
     @classmethod
     def simplify_Equal(cls, self, lhs, rhs):
@@ -3473,7 +3490,7 @@ class FiniteSet(Set):
                 return self.func(lhs.arg, rhs.arg)
         
     @classmethod
-    def simplify_Contains(cls, self, e, s):
+    def simplify_Element(cls, self, e, s):
         """
         precondition: self.lhs is a FiniteSet object!
         """
@@ -3484,7 +3501,7 @@ class FiniteSet(Set):
             return Equal(e, y)
 
     @classmethod
-    def simplify_NotContains(cls, self, e, s):
+    def simplify_NotElement(cls, self, e, s):
         """
         precondition: self.lhs is a FiniteSet object!
         """
@@ -3547,7 +3564,7 @@ def imageset(sym, expr, baseset):
     from sympy.concrete.expr_with_limits import Cup
     if baseset.is_Range:
         limit = (sym, baseset.min(), baseset.max() + 1)
-    elif baseset.is_Contains and baseset.lhs == sym:
+    elif baseset.is_Element and baseset.lhs == sym:
         limit = (sym, baseset.rhs)
     else:
         limit = (sym, baseset)

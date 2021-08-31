@@ -11,8 +11,7 @@ def apply(n, k):
 def prove(Eq):
     from axiom import algebra, discrete
 
-    k = Symbol.k(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
+    k, n = Symbol(integer=True, positive=True)
     Eq << apply(n, k)
 
     Eq << Eq[0].apply(algebra.cond.given.et.all, cond=k < n)

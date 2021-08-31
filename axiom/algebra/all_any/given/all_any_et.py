@@ -11,15 +11,13 @@ def apply(imply):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(shape=(), integer=True)    
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    
-    Eq << apply(All[x:A](Any[y:B](f(x, y) > 0)))  
-    
-    Eq << Eq[1].this.expr.simplify()    
+    x, y = Symbol(integer=True)
+    f = Function(shape=(), integer=True)
+    A, B = Symbol(etype=dtype.integer)
+
+    Eq << apply(All[x:A](Any[y:B](f(x, y) > 0)))
+
+    Eq << Eq[1].this.expr.simplify()
 
 
 if __name__ == '__main__':

@@ -4,18 +4,15 @@ from util import *
 def assumptions():
     # d is the number of output labels
     # oo is the length of the sequence
-    d = Symbol.d(domain=Range(2, oo))
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(shape=(n, d), real=True, random=True, given=True)
-    y = Symbol.y(shape=(n,), domain=Range(0, d), random=True, given=True)
+    d, n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n, d), real=True, random=True, given=True)
+    y = Symbol(shape=(n,), domain=Range(0, d), random=True, given=True)
 
-    k = Symbol.k(domain=Range(1, n))
+    k = Symbol(domain=Range(1, n))
     return Equal(x[k] | x[:k].as_boolean() & y[:k].as_boolean(), x[k]), Equal(y[k] | y[:k], y[k] | y[k - 1]), Equal(y[k] | x[:k], y[k]), Unequal(Probability(x, y), 0)
 
 
-def process_assumptions(*given):
-    x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption = given
-
+def process_assumptions(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption):
     x = x_independence_assumption.rhs.base
     y = y_independence_assumption.lhs.lhs.base
     assert y_independence_assumption.lhs.lhs == y_independence_assumption.rhs.lhs
@@ -27,11 +24,11 @@ def process_assumptions(*given):
 
 
 @apply
-def apply(*given):
-    x, y = process_assumptions(*given)
+def apply(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption):
+    x, y = process_assumptions(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption)
     n, _ = x.shape
-    t = Symbol.t(integer=True, domain=Range(0, n))
-    i = Symbol.i(integer=True)
+    t = Symbol(integer=True, domain=Range(0, n))
+    i = Symbol(integer=True)
 
     return Equal(Probability(x[:t + 1], y[:t + 1]),
                     Probability(x[0] | y[0]) * Probability(y[0]) * Product[i:1:t + 1](Probability(y[i] | y[i - 1]) * Probability(x[i] | y[i])))
@@ -79,7 +76,7 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.ou.subs.apply(Eq[2], k, k + 1)
 
-    Eq << Eq[-1].this.find(NotContains).simplify()
+    Eq << Eq[-1].this.find(NotElement).simplify()
 
     Eq << algebra.ou.imply.all.apply(Eq[-1], pivot=1)
 
@@ -103,7 +100,7 @@ def prove(Eq):
 
     Eq.recursion = Eq.recursion.subs(Eq[-1])
 
-    Eq << algebra.eq.imply.eq.product.apply(Eq.recursion, (k, 1, k + 1))
+    Eq << algebra.eq.imply.eq.prod.apply(Eq.recursion, (k, 1, k + 1))
 
     Eq << Eq[-1].this.rhs.limits_subs(Eq[-1].rhs.variable, Eq.factorization.rhs.args[-1].variable)
 
@@ -116,13 +113,13 @@ def prove(Eq):
     t = Eq.factorization.rhs.args[-1].limits[0][2] - 1
     Eq << algebra.cond.imply.ou.subs.apply(Eq[-1], k, t)
 
-    Eq << Eq[-1].this.find(NotContains).simplify()
+    Eq << Eq[-1].this.find(NotElement).simplify()
 
     Eq << algebra.ou.imply.all.apply(Eq[-1], pivot=-1)
 
     Eq <<= Eq[-1] & Eq.first
 
-    #reference: Neural Architectures for Named Entity Recognition.pdf
+    # reference: Neural Architectures for Named Entity Recognition.pdf
 
 
 if __name__ == '__main__':

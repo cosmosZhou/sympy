@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    x_less_than_y, a_less_than_b = given
+def apply(x_less_than_y, a_less_than_b):
     x, y = x_less_than_y.of(Greater)
     a, b = a_less_than_b.of(Greater)
     return Greater(Max(x, a), Max(y, b))
@@ -13,11 +12,8 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y, a, b = Symbol(real=True)
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
 
     Eq << apply(x > y, a > b)
 

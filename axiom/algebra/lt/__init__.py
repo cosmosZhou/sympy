@@ -9,3 +9,4 @@ from . import to
 from . import simplify
 from . import transposition
 from . import all
+from . import lt_max

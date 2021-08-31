@@ -3,8 +3,8 @@ from util import *
 
 @apply
 def apply(given, function):
-    ((j, Aj), (i, Ai)), ((_i, Bi), (_j, Bj)) = given.of(Equivalent[Contains & Contains, Equal & Contains])
-    
+    ((j, Aj), (i, Ai)), ((_i, Bi), (_j, Bj)) = given.of(Equivalent[Element & Element, Equal & Element])
+
     if i != _i:
         _i, Bi, _j, Bj = _j, Bj, _i, Bi
     assert _i == i
@@ -18,19 +18,17 @@ def apply(given, function):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
 
-    f = Function.f(etype=dtype.integer)
+    f = Function(etype=dtype.integer)
     g = Function.g()
-    h = Function.h(complex=True)
+    h = Function(complex=True)
 
-    Eq << apply(Equivalent(Contains(i, A) & Contains(j, f(i)), Contains(j, B) & Equal(i, g(j))), h(i, j))
+    Eq << apply(Equivalent(Element(i, A) & Element(j, f(i)), Element(j, B) & Equal(i, g(j))), h(i, j))
 
-    Eq << Eq[0].this.find(Equal).apply(sets.eq.to.contains)
+    Eq << Eq[0].this.find(Equal).apply(sets.eq.to.el)
 
     Eq << algebra.equivalent.imply.eq.sum.apply(Eq[-1], h(i, j))
 

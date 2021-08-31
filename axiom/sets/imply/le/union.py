@@ -3,14 +3,13 @@ from util import *
 
 @apply
 def apply(A, B):
-    return LessEqual(abs(Union(A, B)), abs(A) + abs(B))
+    return LessEqual(Card(Union(A, B)), Card(A) + Card(B))
 
 
 @prove
 def prove(Eq):
     from axiom import sets
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(A, B)
 
     Eq << sets.imply.eq.principle.inclusion_exclusion.basic.apply(A, B).reversed

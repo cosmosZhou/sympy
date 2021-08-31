@@ -10,15 +10,15 @@ def apply(given, old, new):
 
 @prove
 def prove(Eq):
-    S = Symbol.S(etype=dtype.real)
-    e = Symbol.e(real=True)
+    S = Symbol(etype=dtype.real)
+    e = Symbol(real=True)
     e_ = Symbol("e'", real=True)
-    f = Function.f(shape=(), integer=True)
+    f = Function(shape=(), integer=True)
 
     Eq << apply(f(e) > 0, e, e_)
-    
+
     Eq << Eq[-1].simplify()
-    
+
 
 if __name__ == '__main__':
     run()

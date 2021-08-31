@@ -11,19 +11,18 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    x = Symbol.x(integer=True)
-    f = Function.f(integer=True)
+    A, B = Symbol(etype=dtype.integer)
+    x = Symbol(integer=True)
+    f = Function(integer=True)
 
     Eq << apply(conditionset(x, f(x) > 0, A) - B)
 
-    Eq << sets.eq.given.suffice.apply(Eq[0])
+    Eq << sets.eq.given.et.suffice.apply(Eq[0])
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.et.split.complement, simplify=None), \
-    Eq[-1].this.rhs.apply(sets.contains.given.et.split.complement, simplify=None)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.et.split.complement, simplify=None), \
+    Eq[-1].this.rhs.apply(sets.el.given.et.split.complement, simplify=None)
 
-    Eq <<= Eq[-2].this.lhs.find(Contains).simplify(), Eq[-1].this.rhs.find(Contains).simplify()
+    Eq <<= Eq[-2].this.lhs.find(Element).simplify(), Eq[-1].this.rhs.find(Element).simplify()
 
     Eq <<= Eq[-2].this.rhs.simplify(), Eq[-1].this.lhs.simplify()
 

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     x = given.of(Expr >= 0)
-    return Contains(sqrt(x), Reals)
+    return Element(sqrt(x), Reals)
 
 
 @prove
@@ -15,7 +15,7 @@ def prove(Eq):
     Eq << apply(x >= 0)
     
     y = Symbol(real=True, nonnegative=True)
-    Eq << Contains(sqrt(y), Reals, plausible=True)
+    Eq << Element(sqrt(y), Reals, plausible=True)
     
     Eq << Eq[-1].subs(y, x)
     

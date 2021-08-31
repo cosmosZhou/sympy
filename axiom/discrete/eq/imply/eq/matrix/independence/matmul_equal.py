@@ -36,12 +36,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete
-    p = Symbol.p(complex=True)
-    m = Symbol.m(positive=True, integer=True)
-    n = Symbol.n(positive=True, integer=True)
-    x = Symbol.x(shape=(n, m), given=True, complex=True)
-    y = Symbol.y(shape=(n, m), given=True, complex=True)
-    k = Symbol.k(positive=True, integer=True)
+    p = Symbol(complex=True)
+    m, n, k = Symbol(positive=True, integer=True)
+    x, y = Symbol(shape=(n, m), given=True, complex=True)
 
     given = Equal(Lamda[k:n](p ** k) @ x, Lamda[k:n](p ** k) @ y)
 

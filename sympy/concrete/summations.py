@@ -968,7 +968,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
 # precondition: domain.is_Complement        
     def simplify_complement_domain(self, domain): 
         from sympy import Unequal, KroneckerDelta
-        from sympy.sets.contains import NotContains, Contains
+        from sympy.sets.contains import NotElement, Element
         if not domain.is_Complement:
             return
         A, B = domain.args
@@ -984,7 +984,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                 else:
                     return Piecewise((self.expr._subs(self.variable, a), Unequal(a, b)), (0, True))
             else:
-                return Piecewise((self.expr._subs(self.variable, a), NotContains(a, B)), (0, True))
+                return Piecewise((self.expr._subs(self.variable, a), NotElement(a, B)), (0, True))
         elif A.is_Intersection:
             for i, s in enumerate(A.args):
                 if s.is_FiniteSet and len(s) == 1:
@@ -992,10 +992,10 @@ class Sum(AddWithLimits, ExprWithIntLimits):
                     del args[i]
                     A = A.func(*args)
                     a, *_ = s
-                    return Piecewise((self.expr._subs(self.variable, a), Contains(a, A - B)), (0, True))
+                    return Piecewise((self.expr._subs(self.variable, a), Element(a, A - B)), (0, True))
         
     def simplify(self, deep=False, **kwargs):
-        from sympy import Contains, Range
+        from sympy import Element, Range
         if deep:
             function = self.expr
             reps = {}
@@ -1073,7 +1073,7 @@ class Sum(AddWithLimits, ExprWithIntLimits):
             
             x, domain = limit
             if domain.is_Boolean:
-                if domain.is_Contains:
+                if domain.is_Element:
                     if domain.lhs == x:
                         return self.func(self.expr, (x, domain.rhs)).simplify()
                 return self
@@ -1113,12 +1113,12 @@ domain & limit[1] = %s
                 if len(singulars) == 1:
                     (a, *_), *_ = singulars
                     domain = domain.func(*domain._argset - singulars, evaluate=True)
-                    return Piecewise((self.expr._subs(x, a).simplify(), Contains(a, domain).simplify()), (0, True))
+                    return Piecewise((self.expr._subs(x, a).simplify(), Element(a, domain).simplify()), (0, True))
                 if len(singulars) == 2:
                     from sympy import KroneckerDelta
                     (a, *_), (b, *_) = singulars
                     domain = domain.func(*domain._argset - singulars, evaluate=True)                                         
-                    return KroneckerDelta(a, b) * Piecewise((self.expr._subs(x, a).simplify(), Contains(a, domain).simplify()), (0, True))
+                    return KroneckerDelta(a, b) * Piecewise((self.expr._subs(x, a).simplify(), Element(a, domain).simplify()), (0, True))
                 
             if isinstance(domain, Complement):
                 A, B = domain.args
@@ -1135,12 +1135,13 @@ domain & limit[1] = %s
             if not self.expr.has(x):
                 if not domain.is_set:
                     domain = x.domain_conditioned(domain)
-                return self.expr * abs(domain)
+                from sympy import Card
+                return self.expr * Card(domain)
             
             if domain_nonzero.is_Complement and domain_nonzero.args[0].is_FiniteSet:
                 if len(domain_nonzero.args[0]) == 1:
                     e, *_ = domain_nonzero.args[0].args 
-                    return Piecewise((self.simplify_finiteset(x, domain_nonzero.args[0]), Contains(e, limit[1])), (0, True))
+                    return Piecewise((self.simplify_finiteset(x, domain_nonzero.args[0]), Element(e, limit[1])), (0, True))
                
             if domain.is_FiniteSet:
                 return self.simplify_finiteset(x, domain)
@@ -1279,7 +1280,7 @@ domain & limit[1] = %s
                     domain, *_ = finiteset
                     if domain not in universe: 
                         e, *_ = domain
-                        return Piecewise((self.expr._subs(x, e), Contains(e, universe).simplify()), (0, True)).simplify()
+                        return Piecewise((self.expr._subs(x, e), Element(e, universe).simplify()), (0, True)).simplify()
 
             if domain.is_FiniteSet:
                 return self.simplify_finiteset(x, domain)
@@ -1329,7 +1330,7 @@ domain & limit[1] = %s
 
     def simplify_finiteset(self, x, s):
         function = self.expr
-        from sympy import Contains
+        from sympy import Element
         
         def _subs(arg):
             if x == arg:
@@ -1346,7 +1347,7 @@ domain & limit[1] = %s
             before = self.func(*before)
             sum_of_before = finite_set_sum(before)
             
-            return Piecewise((sum_of_before, Contains(last, before).simplify()), (sum_of_before + _subs(last), True)).simplify()
+            return Piecewise((sum_of_before, Element(last, before).simplify()), (sum_of_before + _subs(last), True)).simplify()
 
         return finite_set_sum(s)
     
@@ -1440,7 +1441,7 @@ domain & limit[1] = %s
         max_upper = 0
         sign_height = 0
 
-        from sympy import Equal, Contains
+        from sympy import Equal, Element
         for lim in self.limits:
             if len(lim) == 3:
                 if lim[2].is_set:
@@ -1452,7 +1453,7 @@ domain & limit[1] = %s
             elif len(lim) == 2:
                 prettyUpper = p._print("")
                 if lim[1].is_set:
-                    prettyLower = p._print(Contains(lim[0], lim[1], evaluate=False))
+                    prettyLower = p._print(Element(lim[0], lim[1], evaluate=False))
                 else:
                     prettyLower = p._print(Equal(lim[0], lim[1], evaluate=False))
             elif len(lim) == 1:

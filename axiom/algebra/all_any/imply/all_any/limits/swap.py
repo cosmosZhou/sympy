@@ -10,23 +10,20 @@ def apply(given):
     function = function._subs(x, y)
     function = function._subs(z, x)
     assert not Sy._has(x)
-    
+
     return All[y:Sx](Any[x:Sy](function))
 
 
 @prove
 def prove(Eq):
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(shape=(k,), etype=dtype.integer)
-    y = Symbol.y(shape=(k,), etype=dtype.integer)
-    
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
-    
-    Sx = Symbol.S_x(etype=dtype.integer.set * k)
-    Sy = Symbol.S_y(etype=dtype.integer.set * k)
-        
-    Eq << apply(All[x:Sx](Any[y:Sy](Equal(f(x), g(y)))))
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(shape=(k,), etype=dtype.integer)
+
+    f, g = Function(shape=(), integer=True)
+
+    S_x, S_y = Symbol(etype=dtype.integer.set * k)
+
+    Eq << apply(All[x:S_x](Any[y:S_y](Equal(f(x), g(y)))))
 
     Eq << Eq[1].limits_subs(y, Dummy('y', **y.type.dict))
 

@@ -17,7 +17,7 @@ def prove(Eq):
     x, y = Symbol(real=True)
     Eq << apply(x >= 0, LessEqual(x, y))
 
-    Eq << algebra.is_nonnegative.imply.is_nonnegative.sqrt.apply(Eq[0])
+    Eq << algebra.is_nonnegative.imply.sqrt_is_nonnegative.apply(Eq[0])
 
     t = Symbol(nonnegative=True)
     Eq << algebra.ge.imply.ou.split.apply(Eq[-1], t)
@@ -26,9 +26,9 @@ def prove(Eq):
 
     Eq << algebra.le.ge.imply.ge.transit.apply(Eq[1], Eq[0])
 
-    Eq << algebra.is_nonnegative.imply.is_nonnegative.sqrt.apply(Eq[-1])
+    Eq << algebra.is_nonnegative.imply.sqrt_is_nonnegative.apply(Eq[-1])
 
-    Eq << sets.ge.imply.contains.interval.apply(Eq[-1])
+    Eq << sets.ge.imply.el.interval.apply(Eq[-1])
 
     Eq << algebra.cond.cond.imply.cond.subs.apply(Eq[-1], Eq.ou, invert=True)
 

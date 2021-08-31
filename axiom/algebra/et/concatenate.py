@@ -35,13 +35,12 @@ def apply(self, i=None, j=None):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    k = Symbol.k(integer=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    x = Symbol.x(real=True)
-    A = Symbol.A(etype=dtype.real)
-    Eq << apply(Equal(Lamda[k:n](f(k)), Lamda[k:n](g(k))) & Equal(f(n), g(n)) & Contains(x, A), i=0, j=1)
+    n = Symbol(integer=True, positive=True)
+    k = Symbol(integer=True)
+    f, g = Function(real=True)
+    x = Symbol(real=True)
+    A = Symbol(etype=dtype.real)
+    Eq << apply(Equal(Lamda[k:n](f(k)), Lamda[k:n](g(k))) & Equal(f(n), g(n)) & Element(x, A), i=0, j=1)
 
     Eq << algebra.equivalent.given.et.apply(Eq[0])
 

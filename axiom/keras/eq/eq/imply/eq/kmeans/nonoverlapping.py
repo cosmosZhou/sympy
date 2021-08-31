@@ -10,7 +10,7 @@ def apply(eq_sum, eq_union, x=None):
     assert _M == M
     assert zero == 0
 
-    _wi, i = w_sum.of(Sum[Abs, Tuple])
+    _wi, i = w_sum.of(Sum[Card, Tuple])
     wi, _i = w_union.of(Cup[Tuple])
 
     assert i == _i
@@ -23,12 +23,12 @@ def apply(eq_sum, eq_union, x=None):
 
     w_ = Symbol("omega^'", cluster(w, x))
 
-    return Equal(Sum[i](abs(w_[i])), M), Equal(Cup[i](w_[i]), M_interval)
+    return Equal(Sum[i](Card(w_[i])), M), Equal(Cup[i](w_[i]), M_interval)
 
 
 def mean(wi, x):
-    j = Symbol.j(integer=True)
-    return Sum[j:wi](x[j]) / abs(wi)
+    j = Symbol(integer=True)
+    return Sum[j:wi](x[j]) / Card(wi)
 
 
 def __getitem__(self, indices):
@@ -43,10 +43,8 @@ mean = Function.mean(shape=property(lambda self: self.args[1].shape[1:]), real=T
 # c is a list of vectors, (k, n)
 # return a list of set of integers, (k,)
 def cluster(w, x):
-    i = Symbol.i(integer=True)
+    i, j = Symbol(integer=True)
     k = w.shape[0]
-    j = Symbol.j(integer=True)
-
     return Lamda[i:k](conditionset(j, Equal(ArgMin[i](Norm(x[j] - mean(w[i], x))), i)))
 
 
@@ -57,13 +55,12 @@ cluster = Function.cluster(eval=cluster, __getitem__=__getitem__)
 def prove(Eq):
     from axiom import sets
 
-    M = Symbol.M(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    k = Symbol.k(domain=Range(0, M))
-    x = Symbol.x(real=True, shape=(M, n))
-    w = Symbol.omega(shape=(k,), etype=dtype.integer, emptyset=False)
-    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
+    M, n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    k = Symbol(domain=Range(0, M))
+    x = Symbol(real=True, shape=(M, n))
+    w = Symbol(shape=(k,), etype=dtype.integer, empty=False)
+    Eq << apply(Equal(Sum[i](Card(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
 
     Eq << Eq[2].this.rhs.defun()
 
@@ -72,10 +69,10 @@ def prove(Eq):
     Eq.omega_i_definition = Eq.omega_i_definition0.this.rhs.apply(sets.conditionset.rewrite.domain_defined)
 
     j = Eq.omega_i_definition.rhs.variable
-    Eq << sets.eq.given.suffice.apply(Eq[4], wrt=j)
+    Eq << sets.eq.given.et.suffice.apply(Eq[4], wrt=j)
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.any_contains.st.cup), \
-    Eq[-1].this.rhs.apply(sets.contains.given.any_contains.st.cup)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.any_el.st.cup), \
+    Eq[-1].this.rhs.apply(sets.el.given.any_el.st.cup)
 
     Eq <<= Eq[-2].subs(Eq.omega_i_definition), Eq[-1].subs(Eq.omega_i_definition0)
 
@@ -84,20 +81,20 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.expr.simplify()
 
     w_ = Eq.omega_i_definition.lhs.base
-    k_ = Symbol.k(integer=True)
+    k_ = Symbol(integer=True)
     Eq.nonoverlapping = All[i:k_](Equal(w_[i] & w_[k_], w_[i].etype.emptySet), plausible=True)
 
     Eq << Eq.omega_i_definition0.subs(i, k_)
 
-    Eq << sets.eq.eq.imply.eq.intersection.apply(Eq.omega_i_definition0, Eq[-1])
+    Eq << sets.eq.eq.imply.eq.intersect.apply(Eq.omega_i_definition0, Eq[-1])
 
-    Eq << Eq[-1].this.find(And).apply(sets.eq.eq.imply.contains.finiteset)
+    Eq << Eq[-1].this.find(And).apply(sets.eq.eq.imply.el.finiteset)
 
     Eq << Eq.nonoverlapping.subs(Eq[-1])
 
     Eq << Eq[-1].this().find(Intersection).simplify()
 
-    Eq << sets.all_is_emptyset.imply.eq.nonoverlapping.intlimit.utility.apply(Eq.nonoverlapping, k)
+    Eq << sets.all_is_empty.imply.eq.nonoverlapping.intlimit.utility.apply(Eq.nonoverlapping, k)
 
     Eq << Eq[-1].this.find(Cup).limits_subs(k_, i)
 

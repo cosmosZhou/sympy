@@ -14,9 +14,9 @@ def apply(n, k):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    n = Symbol.n(integer=True, nonnegative=True)
+    n = Symbol(integer=True, nonnegative=True)
 
-    k = Symbol.k(integer=True, positive=True)
+    k = Symbol(integer=True, positive=True)
 
     Eq << apply(n, k)
 

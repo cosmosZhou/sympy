@@ -14,14 +14,11 @@ def apply(gt, le):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, y, a, b = Symbol(real=True)
     Eq << apply(x > y, a * (y - x) <= b)
-    
+
     Eq << algebra.gt.imply.is_positive.apply(Eq[0])
-    
+
     Eq << algebra.is_positive.le.imply.le.div.apply(Eq[-1], Eq[1])
 
 

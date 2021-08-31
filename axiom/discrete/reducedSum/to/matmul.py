@@ -4,10 +4,10 @@ from util import *
 @apply
 def apply(self):
     x, y = self.of(ReducedSum[Mul])
-    
+
     assert len(x.shape) == len(y.shape) == 1
     rhs = x @ y
-        
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -15,11 +15,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, discrete
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    y = Symbol.y(shape=(n,), real=True)
-    x = Symbol.x(shape=(n,), real=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    y, x = Symbol(shape=(n,), real=True)
     Eq << apply(ReducedSum(x * y))
 
     Eq << Eq[0].this.lhs.apply(algebra.reducedSum.to.sum)

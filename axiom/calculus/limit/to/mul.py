@@ -2,10 +2,10 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     expr, (x, x0, dir) = self.of(Limit)
     args = expr.of(Mul)
-    
+
     coefficient = []
     factors = []
     for arg in args:
@@ -13,10 +13,10 @@ def apply(self):
             factors.append(arg)
         else:
             coefficient.append(arg)
-    
+
     coefficient = Mul(*coefficient)
     factors = Mul(*factors)
-    
+
     limited = Limit[x:x0:dir](factors).simplify()
     return Equal(self, coefficient * limited)
 
@@ -25,17 +25,15 @@ def apply(self):
 def prove(Eq):
     from axiom import calculus, algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True, zero=False)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
+    x, x0 = Symbol(real=True)
+    y = Symbol(real=True, zero=False)
+    f = Function(real=True)
     Eq << apply(Limit[x:x0](f(x) * y))
 
-    A = Symbol.A(Eq[0].rhs.args[1], real=True)
+    A = Symbol(Eq[0].rhs.args[1], real=True)
     Eq << A.this.definition
 
-    epsilon = Symbol.epsilon(positive=True)
-    delta = Symbol.delta(positive=True)
+    epsilon, delta = Symbol(positive=True)
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[1], epsilon=epsilon, delta=delta)
 
     Eq << Eq[-1].this.find(Less) * abs(y)

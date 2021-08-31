@@ -19,12 +19,10 @@ def apply(given, m, i=None):
 def prove(Eq):
     from axiom import discrete
 
-    m = Symbol.m(integer=True, positive=True, given=False)
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(shape=(n,), real=True, given=True)
-    y = Symbol.y(shape=(n,), real=True, given=True)
-    i = Symbol.i(domain=Range(0, n))
-    j = Symbol.j(domain=Range(0, n))
+    m = Symbol(integer=True, positive=True, given=False)
+    n = Symbol(integer=True, positive=True)
+    x, y = Symbol(shape=(n,), real=True, given=True)
+    i, j = Symbol(domain=Range(0, n))
     Eq << apply(Equal(x @ Swap(n, i, j), y), m)
 
     Eq.initial = Eq[1].subs(m, 1)
@@ -37,7 +35,7 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.simplify()
 
     Eq.induct = Eq[1].subs(m, m + 1)
-    
+
 
 
 if __name__ == '__main__':

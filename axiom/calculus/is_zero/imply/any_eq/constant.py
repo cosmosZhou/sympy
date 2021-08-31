@@ -11,12 +11,12 @@ def apply(given):
 
 @prove(proved=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)    
-    
+    x = Symbol(real=True)
+    f = Function(real=True)
+
     Eq << apply(Equal(Derivative[x](f(x)), 0))
 
-    
+
 if __name__ == '__main__':
     run()
 

@@ -95,15 +95,15 @@ class Invoker:
                                 args[i + 1] = (x, domain_defined)
                                 break
                 else:
-                    if this.is_All:
+                    if this.is_ForAll:
                         for x in set(self._domain_defined):
                             if this._has(x): 
                                 args.append((x, self._domain_defined.pop(x)))                    
 
             obj = this.func(*args, **kwargs)
             
-            if simplify and (not obj.is_All or stop or not self._objs[i - 2].is_Any):
-                # exclude case Any[C](All[x](f(x) == C))
+            if simplify and (not obj.is_ForAll or stop or not self._objs[i - 2].is_Exists):
+                # exclude case Exists[C](All[x](f(x) == C))
                 obj = obj.simplify()
                 
             if stop:
@@ -139,9 +139,9 @@ class Invoker:
         
         this = self.this
         
-        if this.is_All: 
+        if this.is_ForAll: 
             if self.callable.__func__ is this.func.simplify:
-                if self.parent.is_Any:
+                if self.parent.is_Exists:
                     kwargs['local'] = True
                     
         evaluate = kwargs.pop('evaluate', None)
@@ -218,7 +218,7 @@ class Invoker:
                     assumptions = {}
                     for obj in self._objs:
                         if obj.is_ExprWithLimits:
-                            if obj.is_Any:
+                            if obj.is_Exists:
                                 for x in obj.variables:
                                     assumptions[x] = False 
                             else:
@@ -361,6 +361,8 @@ class Invoker:
     def __str__(self):
         return str(self.target)
 
+    __repr__ = __str__
+    
     @property
     def latex(self):
         return self.target.latex

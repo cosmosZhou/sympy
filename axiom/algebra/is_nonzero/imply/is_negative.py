@@ -12,12 +12,12 @@ def apply(given):
 def prove(Eq):
     from axiom import sets
 
-    a = Symbol.a(real=True, nonpositive=True)
+    a = Symbol(real=True, nonpositive=True)
     Eq << apply(Unequal(a, 0))
 
-    Eq << Contains(a, Interval(-oo, 0), plausible=True)
+    Eq << Element(a, Interval(-oo, 0), plausible=True)
 
-    Eq << sets.ne.imply.notcontains.apply(Eq[0], simplify=False)
+    Eq << sets.ne.imply.notin.apply(Eq[0], simplify=False)
 
     Eq <<= Eq[-1] & Eq[-2]
 

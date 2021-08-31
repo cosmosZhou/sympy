@@ -17,11 +17,9 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     from axiom import algebra
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    f = Function.f(real=True)
+    A, B = Symbol(etype=dtype.real)
+    x, y = Symbol(real=True)
+    f = Function(real=True)
 
     Eq << apply(All[x:A](f(x, y) > 0), (y, B))
 

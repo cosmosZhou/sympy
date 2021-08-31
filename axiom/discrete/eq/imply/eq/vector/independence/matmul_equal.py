@@ -33,15 +33,13 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, discrete
 
-    p = Symbol.p(complex=True)
-    n = Symbol.n(domain=Range(1, oo))
-    x = Symbol.x(shape=(n,), complex=True, given=True)
-    y = Symbol.y(shape=(n,), complex=True, given=True)
-    k = Symbol.k(domain=Range(1, oo))
+    p = Symbol(complex=True)
+    n, k = Symbol(domain=Range(1, oo))
+    x, y = Symbol(shape=(n,), complex=True, given=True)
     assert x.is_given and y.is_given
     Eq << apply(Equal(Lamda[k:n](p ** k) @ x, Lamda[k:n](p ** k) @ y))
 
-    i = Symbol.i(domain=Range(1, n + 1))
+    i = Symbol(domain=Range(1, n + 1))
     Eq << Eq[0].subs(p, i)
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], i)
@@ -55,7 +53,7 @@ def prove(Eq):
     Eq.statement = Eq[-1].T
 
     i, k = Eq.statement.lhs.args[1].variables
-    Eq << discrete.det.to.product.matrix.vandermonde.apply(Lamda[i:n](i + 1))
+    Eq << discrete.det.to.prod.matrix.vandermonde.apply(Lamda[i:n](i + 1))
 
     Eq << Unequal(Eq[-1].rhs, 0, plausible=True)
 

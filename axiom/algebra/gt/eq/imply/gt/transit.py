@@ -2,18 +2,16 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(gt, eq):
     from axiom.algebra.lt.eq.imply.lt.transit import swap
-    return Greater(*swap(Greater, *given))
+    return Greater(*swap(Greater, gt, eq))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    x = Symbol.x(real=True)
-    b = Symbol.b(real=True)
+    a, x, b = Symbol(real=True)
     #Eq << apply(b > x, Equal(x, a))
     Eq << apply(b > x, Equal(a, x))
 

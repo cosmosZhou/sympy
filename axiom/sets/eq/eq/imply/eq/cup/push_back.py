@@ -17,11 +17,9 @@ def apply(cond, cond_sum):
 @prove
 def prove(Eq):
     from axiom import sets
-    k = Symbol.k(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(domain=Range(a + 1, oo))
-    g = Function.g(etype=dtype.integer)
-    f = Function.f(etype=dtype.integer)
+    k, a = Symbol(integer=True)
+    b = Symbol(domain=Range(a + 1, oo))
+    g, f = Function(etype=dtype.integer)
 
     Eq << apply(Equal(g(b), f(b)), Equal(Cup[k:a:b](g(k)), Cup[k:a:b](f(k))))
 

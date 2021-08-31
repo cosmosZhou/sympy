@@ -28,19 +28,15 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    A = Symbol.A(etype=dtype.real * k, given=True)
-    B = Symbol.B(etype=dtype.real * k, given=True)
+    k = Symbol(integer=True, positive=True)
+    x, p = Symbol(real=True, shape=(k,), given=True)
+    A, B = Symbol(etype=dtype.real * k, given=True)
 
-    f = Function.f(shape=(k,), real=True)
-    g = Function.g(shape=(k,), real=True)
-    h = Function.h(shape=(k,), real=True)
-    p = Symbol.p(real=True, shape=(k,), given=True)
+    f, g, h = Function(shape=(k,), real=True)
 
-    Eq << apply(Equal(p, Piecewise((f(x), Contains(x, A)), (g(x), Contains(x, B)), (h(x), True))))
+    Eq << apply(Equal(p, Piecewise((f(x), Element(x, A)), (g(x), Element(x, B)), (h(x), True))))
 
-    Eq << algebra.ou.imply.eq.apply(Eq[1], wrt=p)
+    Eq << algebra.ou.imply.eq.piece.apply(Eq[1], wrt=p)
 
     Eq << Eq[-1].reversed
 

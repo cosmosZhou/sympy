@@ -2,8 +2,8 @@ from util import *
 
 
 @apply
-def apply(given, old, new): 
-    assert given.is_Equal    
+def apply(given, old, new):
+    assert given.is_Equal
     assert old.is_symbol
     assert old.is_given is None
 #    old should not be a inductive symbol in mathematical induction proof!
@@ -13,16 +13,14 @@ def apply(given, old, new):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    f = Function.f(real=True, shape=(n,))
-    x = Symbol.x(real=True, shape=(n,))
-    y = Symbol.y(real=True, shape=(n,))
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    f = Function(real=True, shape=(n,))
+    x, y, b = Symbol(real=True, shape=(n,))
+    a = Symbol(real=True)
     Eq << apply(Equal(f(x) * a, b), x, y)
-    
+
     Eq << Eq[0].subs(x, y)
-    
-    
+
+
 if __name__ == '__main__':
     run()

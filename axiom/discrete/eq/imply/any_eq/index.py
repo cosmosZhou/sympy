@@ -25,21 +25,17 @@ def apply(given, j=None):
 def prove(Eq):
     from axiom import sets
 
-    n = Symbol.n(domain=Range(2, oo), given=True)
-
-    x = Symbol.x(shape=(oo,), integer=True, given=True)
-
-    k = Symbol.k(integer=True)
-
-    j = Symbol.j(domain=Range(0, n), given=True)
-
+    n = Symbol(domain=Range(2, oo), given=True)
+    x = Symbol(shape=(oo,), integer=True, given=True)
+    k = Symbol(integer=True)
+    j = Symbol(domain=Range(0, n), given=True)
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), j)
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].reversed.this.expr.apply(sets.ne.imply.notcontains, simplify=False)
+    Eq << Eq[-1].reversed.this.expr.apply(sets.ne.imply.notin, simplify=False)
 
-    Eq << Eq[-1].this.expr.apply(sets.notcontains.imply.notcontains.cup, limit=(k, 0, n))
+    Eq << Eq[-1].this.expr.apply(sets.notin.imply.notin.cup, limit=(k, 0, n))
 
     Eq << Eq[-1].subs(Eq[0])
 

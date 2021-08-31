@@ -17,14 +17,14 @@ def apply(x=None, y=None, **kwargs):
     if y is None:
         y = S.generate_var(excludes={x}, **S.etype.dict)
 
-    return All[S:Equal(abs(S), 2)](Any[x: Unequal(x, y), y](Equal(S, {x, y})))
+    return All[S:Equal(Card(S), 2)](Any[x: Unequal(x, y), y](Equal(S, {x, y})))
 
 
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    k = Symbol.k(integer=True, positive=True)
-    S = Symbol.S(etype=dtype.integer * k)
+    k = Symbol(integer=True, positive=True)
+    S = Symbol(etype=dtype.integer * k)
     Eq << apply(set=S)
 
     Eq << algebra.imply.all.limits_assert.apply(Eq[0].limits)

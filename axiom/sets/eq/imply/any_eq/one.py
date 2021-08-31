@@ -5,8 +5,8 @@ from util import *
 def apply(given, reverse=False):
     S_abs, n = given.of(Equal)
 
-    assert S_abs.is_Abs and n.is_extended_positive
-    S = S_abs.arg
+    assert n.is_extended_positive
+    S = S_abs.of(Card)
     x = S.element_symbol()
     if reverse:
         eq = Equal(S, x.set)
@@ -19,18 +19,18 @@ def apply(given, reverse=False):
 def prove(Eq):
     from axiom import sets
 
-    S = Symbol.S(etype=dtype.integer)
-    Eq << apply(Equal(abs(S), 1))
+    S = Symbol(etype=dtype.integer)
+    Eq << apply(Equal(Card(S), 1))
 
-    Eq << Greater(abs(S), 0, plausible=True)
+    Eq << Greater(Card(S), 0, plausible=True)
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << sets.is_positive.imply.is_nonemptyset.apply(Eq[-1])
+    Eq << sets.is_positive.imply.is_nonempty.apply(Eq[-1])
 
-    Eq << sets.is_nonemptyset.imply.any_contains.apply(Eq[-1], simplify=False)
+    Eq << sets.is_nonempty.imply.any_el.apply(Eq[-1], simplify=False)
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.imply.subset, simplify=False)
+    Eq << Eq[-1].this.expr.apply(sets.el.imply.subset, simplify=False)
 
     Eq << Eq[-1].this.expr.apply(sets.eq.subset.imply.eq, Eq[0])
 

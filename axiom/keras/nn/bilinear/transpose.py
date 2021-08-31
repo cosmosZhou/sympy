@@ -10,14 +10,12 @@ def apply(x, y, W):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True)
-    x = Symbol.x(shape=(n,), real=True)
-    y = Symbol.y(shape=(n,), real=True)
-    W = Symbol.W(shape=(n, n), real=True)
+    n = Symbol(integer=True)
+    x, y = Symbol(shape=(n,), real=True)
+    W = Symbol(shape=(n, n), real=True)
     Eq << apply(x, y, W)
 
-    i = Symbol.i(domain=Range(0, n))
-    j = Symbol.j(domain=Range(0, n))
+    i, j = Symbol(domain=Range(0, n))
     Eq << (x @ W).this.apply(discrete.matmul.to.lamda, var={i, j})
 
     Eq << Eq[-1] @ y

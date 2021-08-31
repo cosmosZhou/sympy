@@ -10,8 +10,8 @@ def apply(given, x):
         x_ = x
     else:
         x, x_ = Dummy('x', **x.type.dict), x
-        fx = fx._subs(x_, x)        
-        
+        fx = fx._subs(x_, x)
+
     p = fx.as_poly(x)
     assert p.degree() == 1
     a = p.nth(1)
@@ -22,20 +22,17 @@ def apply(given, x):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)    
-    c = Symbol.c(real=True, positive=True)
-    d = Symbol.d(real=True)
-    
+    x, a, b, d = Symbol(real=True)
+    c = Symbol(real=True, positive=True)
+
     Eq << apply(Equal(a * x + b, (a + c) * x + d), x=x)
-    
+
     Eq << Eq[-1] * c
-    
+
     Eq << Eq[-1].reversed + d
-    
+
     Eq << Eq[0].this.rhs.expand()
-    
-        
+
+
 if __name__ == '__main__':
     run()

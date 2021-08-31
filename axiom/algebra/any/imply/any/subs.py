@@ -32,16 +32,13 @@ def apply(self, old, new):
 @prove
 def prove(Eq):
     from axiom import algebra
-    e = Symbol.e(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    e, a, b = Symbol(real=True)
 
-    A = Function.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real, given=True)
+    A = Function(etype=dtype.real)
+    B = Symbol(etype=dtype.real, given=True)
 
-    x = Symbol.x(integer=True)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    x = Symbol(integer=True)
+    f, g = Function(shape=(), integer=True)
 
     Eq << apply(Any[e, a:A(b), b:B](f(e) * a > g(f(e)) * b), f(e), x)
 

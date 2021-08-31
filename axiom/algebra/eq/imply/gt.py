@@ -10,13 +10,12 @@ def apply(given, b):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    a, b = Symbol(real=True)
     Eq << apply(Equal(a, b), b - 1)
-    
+
     Eq << Eq[1].subs(Eq[0])
-    
-    
-    
+
+
+
 if __name__ == '__main__':
     run()

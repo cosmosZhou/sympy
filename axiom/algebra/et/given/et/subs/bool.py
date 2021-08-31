@@ -49,24 +49,22 @@ def apply(imply, index=-1, invert=None, reverse=False):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True)
-    S = Symbol.S(etype=dtype.integer)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
-    h = Function.h(shape=(), integer=True)
-    Eq << apply(Equal(Piecewise((f(x), NotContains(x, S)), (g(x), True)), h(x)) & NotContains(x, S))
+    x = Symbol(integer=True)
+    S = Symbol(etype=dtype.integer)
+    f, g, h = Function(shape=(), integer=True)
+    Eq << apply(Equal(Piecewise((f(x), NotElement(x, S)), (g(x), True)), h(x)) & NotElement(x, S))
 
-    Eq << Equal(Bool(NotContains(x, S)), 1, plausible=True)
+    Eq << Equal(Bool(NotElement(x, S)), 1, plausible=True)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piece)
 
-    Eq << Equal(Piecewise((f(x), Equal(Bool(NotContains(x, S)), 1)), (g(x), True)), h(x), plausible=True)
+    Eq << Equal(Piecewise((f(x), Equal(Bool(NotElement(x, S)), 1)), (g(x), True)), h(x), plausible=True)
 
     Eq << Eq[-1].subs(Eq[-2])
 
-    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.find(Bool).apply(algebra.bool.to.piece)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.piecewise.swap.front)
+    Eq << Eq[-1].this.lhs.apply(algebra.piece.swap)
 
     Eq <<= Eq[-1] & Eq[1]
 

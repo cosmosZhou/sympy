@@ -13,14 +13,13 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
+    x, x0 = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(Equal(x0, ArgMax[x](f(x))))
 
     Eq << algebra.eq.imply.eq.argmax.definition.apply(Eq[0])
 
-    Eq << algebra.eq_maximize.imply.all_ge.apply(Eq[-1])
+    Eq << algebra.eq_maxima.imply.all_ge.apply(Eq[-1])
 
 
 if __name__ == '__main__':

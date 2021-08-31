@@ -3,13 +3,13 @@ from util import *
 
 @apply
 def apply(n):
-    i = Symbol.i(integer=True)
+    i = Symbol(integer=True)
 
-    p = Symbol.p(shape=(oo,), integer=True, nonnegative=True)
+    p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
-    P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), Range(0, n))))
 
-    b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
+    b = Symbol(integer=True, shape=(oo,), nonnegative=True)
 
     return All[p[:n]:P](Any[b[:n]](Equal(p[:n], Lamda[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))))
 
@@ -18,7 +18,7 @@ def apply(n):
 def prove(Eq):
     from axiom import algebra, sets, discrete
 
-    n = Symbol.n(domain=Range(2, oo), given=False)
+    n = Symbol(domain=Range(2, oo), given=False)
     Eq << apply(n)
 
     b = Eq[1].expr.variable.base
@@ -53,25 +53,25 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.apply(algebra.et.given.et.subs.eq, index=1)
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq << Eq[-1].this.expr.apply(algebra.eq.given.et.split.matrix)
 
-    Eq.premier, Eq.second = algebra.all_et.given.all.apply(Eq[-1])
+    Eq.premier, Eq.second = algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq << Eq.limits_assertion.this.expr.apply(sets.eq.imply.et.split.finiteset)
 
     Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 
-    Eq << Eq[-2].this.expr.apply(sets.contains.imply.eq.kroneckerDelta.zero).reversed
+    Eq << Eq[-2].this.expr.apply(sets.el.imply.eq.kroneckerDelta.zero).reversed
 
     Eq << -(Eq.premier - 1)
 
     Eq.induct = Eq.hypothesis.subs(n, n + 1)
 
-    Eq << Eq.induct.expr.expr.rhs.args[1].this.apply(discrete.matProduct.to.matmul.pop_back)
+    Eq << Eq.induct.expr.expr.rhs.args[1].this.apply(discrete.matProd.to.matmul.pop_back)
 
-    Eq << discrete.matrix.elementary.swap.concatenate_product.apply(n, n, b)
+    Eq << discrete.blockMatrix.to.matProd.apply(n, n, b)
 
     Eq << Eq[-2].subs(Eq[-1].reversed)
 
@@ -93,14 +93,14 @@ def prove(Eq):
 
     Eq.any_n = Eq[-1].this.limits[0][1].definition
 
-    p_quote = Symbol.p_quote(Eq.deduction.expr.expr.lhs)
+    p_quote = Symbol(Eq.deduction.expr.expr.lhs)
     Eq.p_quote_definition = p_quote.this.definition
 
     Eq.deduction = Eq.deduction.subs(Eq.p_quote_definition.reversed)
 
     Eq << Eq.p_quote_definition.lhs[n].this.definition
 
-    Eq << Eq[-1].this.rhs.args[1].expr.apply(algebra.piecewise.to.kroneckerDelta)
+    Eq << Eq[-1].this.rhs.args[1].expr.apply(algebra.piece.to.kroneckerDelta)
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.sum)
 
@@ -110,7 +110,7 @@ def prove(Eq):
 
     Eq.any_n_plausible = Eq[-1].this.expr.apply(sets.any.imply.any.limits.relax, wrt=Eq[-1].expr.variable)
 
-    Eq << discrete.matrix.elementary.swap.invariant.permutation.basic.apply(n + 1, left=False)
+    Eq << discrete.imply.all_el.permutation.apply(n + 1, left=False)
 
     i, j = Eq[-1].find(Indexed).indices
     Eq << Eq[-1].this.find(Indexed).definition

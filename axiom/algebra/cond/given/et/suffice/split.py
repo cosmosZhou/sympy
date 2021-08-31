@@ -9,8 +9,8 @@ def apply(given, *, cond=None):
 
 @prove
 def prove(Eq):
-    e = Symbol.e(integer=True)
-    f = Function.f(integer=True, shape=())
+    e = Symbol(integer=True)
+    f = Function(integer=True, shape=())
     Eq << apply(f(e) > 0, cond=e > 0)
 
     Eq <<= Eq[1] & Eq[2]

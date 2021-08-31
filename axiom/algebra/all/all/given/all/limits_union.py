@@ -15,18 +15,17 @@ def apply(all_a, all_b):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(real=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    e = Symbol(real=True)
+    f, g = Function(integer=True)
     Eq << apply(All[e:g(e) > 0](f(e) > 0), All[e:g(e) < 0](f(e) > 0))
 
     Eq << algebra.all.imply.et.split.apply(Eq[-1], cond=g(e) < 0)
 
-    
 
-    
 
-    
+
+
+
 
 
 if __name__ == '__main__':

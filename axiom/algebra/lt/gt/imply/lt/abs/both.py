@@ -13,8 +13,7 @@ def apply(x_less_than_y, x_greater_than_y_minus):
 @prove
 def prove(Eq):
     from axiom import algebra
-    y = Symbol.y(real=True)
-    x = Symbol.x(real=True)
+    y, x = Symbol(real=True)
 
     Eq << apply(x < y, x > -y)
 

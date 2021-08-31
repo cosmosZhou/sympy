@@ -12,8 +12,8 @@ def apply(x, d=1, evaluate=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    d = Symbol.d(integer=True, positive=True)
+    x = Symbol(integer=True)
+    d = Symbol(integer=True, positive=True)
 
     Eq << apply(x, d)
 

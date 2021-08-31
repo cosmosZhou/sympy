@@ -5,10 +5,10 @@ def extract(cls, self):
     for i, arg in enumerate(self.of(Mul)):
         if not isinstance(arg, cls):
             continue
-            
+
         args = [*self.args]
         del args[i]
-        
+
         rest = self.func(*args)
         if rest.is_extended_positive:
             return cls(*(e * rest for e in arg.args))
@@ -18,7 +18,7 @@ def extract(cls, self):
             continue
         args = [*self.args]
         del args[i]
-        
+
         rest = self.func(*args)
         if rest.is_extended_negative:
             return cls(*(e * rest for e in arg.args))
@@ -26,7 +26,7 @@ def extract(cls, self):
 @apply
 def apply(self, evaluate=False):
     rhs = extract(Min, self)
-    
+
     return Equal(self, rhs, evaluate=evaluate)
 
 
@@ -34,9 +34,8 @@ def apply(self, evaluate=False):
 def prove(Eq):
     from axiom import algebra
 
-    t = Symbol.t(real=True, positive=True)
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    t = Symbol(real=True, positive=True)
+    x, y = Symbol(real=True)
     Eq << apply(t * Min(x, y))
     Eq << Eq[0].this.rhs.apply(algebra.min.to.mul)
 

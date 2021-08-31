@@ -18,14 +18,12 @@ def apply(limited_f, limited_g):
 def prove(Eq):
     from axiom import calculus, sets, algebra
 
-    x = Symbol.x(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, x0 = Symbol(real=True)
+    f, g = Function(real=True)
     dir = S.One
-    Eq << apply(Contains(Limit[x:x0:dir](f(x)), Reals - {0}), Contains(Limit[x:x0:dir](g(x)), Reals))
+    Eq << apply(Element(Limit[x:x0:dir](f(x)), Reals - {0}), Element(Limit[x:x0:dir](g(x)), Reals))
 
-    ε = Symbol.ε(real=True, positive=True)
+    ε = Symbol(real=True, positive=True)
     ε0 = Symbol.ε_0(real=True, positive=True)
     δ0 = Symbol.δ_0(real=True, positive=True)
     Eq.limit_A_definition = calculus.is_limited.imply.any_all.limit_definition.symbol_subs.apply(Eq[0], ε0, δ0, var='A')
@@ -33,7 +31,7 @@ def prove(Eq):
     A = -Eq.limit_A_definition.expr.expr.lhs.arg.args[0]
     Eq << Eq[0].subs(A.this.definition.reversed)
 
-    Eq.is_positive = sets.contains.imply.is_positive.abs.apply(Eq[-1])
+    Eq.is_positive = sets.el.imply.is_positive.card.apply(Eq[-1])
 
     ε1 = Symbol.ε_1(real=True, positive=True)
     δ1 = Symbol.δ_1(real=True, positive=True)
@@ -67,15 +65,15 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.expr.apply(algebra.lt.le.imply.lt.transit)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
-    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.contains.interval)
+    Eq << Eq[-1].this.expr.limits[0][1].args[0].apply(sets.lt.given.el.interval)
 
     Eq << Eq[-1].this.expr.limits[0][1].args[1].simplify()
 
-    delta = Symbol.delta(real=True, positive=True)
+    delta = Symbol(real=True, positive=True)
     Eq << algebra.any.imply.any.subs.apply(Eq[-1], Min(δ0, δ1, δ2), delta)
 
     Eq << calculus.any_all.imply.eq.limit_definition.apply(Eq[-1])

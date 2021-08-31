@@ -14,8 +14,8 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True, zero=False)
+    a = Symbol(real=True)
+    b = Symbol(real=True, zero=False)
     Eq << apply(Equal(a, b))
 
     Eq << Eq[1].subs(Eq[0])

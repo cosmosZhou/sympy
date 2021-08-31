@@ -12,12 +12,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, b, a = Symbol(integer=True)
+    f, g = Function(integer=True)
 
-    b = Symbol.b(integer=True)
-    a = Symbol.a(integer=True)
 
     Eq << apply(Necessary(f(x) > g(x), (a > b) | (f(a) > f(b))))
 

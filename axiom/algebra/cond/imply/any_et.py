@@ -13,14 +13,14 @@ def apply(given, wrt=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True, given=True)
-    e = Symbol.e(domain=Range(0, n), given=True)
-    f = Function.f(integer=True, shape=())
+    n = Symbol(integer=True, positive=True, given=True)
+    e = Symbol(domain=Range(0, n), given=True)
+    f = Function(integer=True, shape=())
     Eq << apply(f(e) > 0, wrt=e)
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.find(Unequal).apply(sets.ne.imply.notcontains)
+    Eq << Eq[-1].this.find(Unequal).apply(sets.ne.imply.notin)
 
     Eq << Eq[-1].apply(algebra.all_ou.imply.all.limits.absorb, index=1)
 

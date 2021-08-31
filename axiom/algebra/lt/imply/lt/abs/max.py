@@ -13,9 +13,7 @@ def apply(given, swap=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    M = Symbol.M(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    M, a, b = Symbol(real=True)
 
     Eq << apply(Less(abs(a - b), M))
 

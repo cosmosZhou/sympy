@@ -12,7 +12,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(nonnegative=True)
+    x = Symbol(nonnegative=True)
     Eq << apply(x <= 0)
 
     Eq << GreaterEqual(x, 0, plausible=True)

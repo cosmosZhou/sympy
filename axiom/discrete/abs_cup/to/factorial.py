@@ -3,15 +3,15 @@ from util import *
 
 @apply
 def apply(n):
-    x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)
-    return Equal(abs(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(0, n)))), factorial(n))
+    x = Symbol(shape=(oo,), integer=True, nonnegative=True)
+    return Equal(Card(conditionset(x[:n], Equal(x[:n].set_comprehension(), Range(0, n)))), factorial(n))
 
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
+    from axiom import discrete, algebra, sets
 
-    n = Symbol.n(integer=True, positive=True, given=False)
+    n = Symbol(integer=True, positive=True, given=False)
     Eq << apply(n)
 
     Eq.initial = Eq[-1].subs(n, 1)
@@ -23,7 +23,7 @@ def prove(Eq):
     Eq << discrete.cup.to.condset.P2Q_union.apply(n)
 
     Q = Eq[-1].lhs.expr.base
-    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
+    Eq << Eq[-1].apply(sets.eq.imply.eq.card)
 
     Eq << discrete.abs_cup.to.sum_abs.permutation.nonoverlapping.apply(n, Q=Q)
 

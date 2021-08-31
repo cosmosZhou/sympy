@@ -21,11 +21,10 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, stats
 
-    d = Symbol.d(domain=Range(2, oo))
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(shape=(n, d), real=True, random=True, given=True)
-    y = Symbol.y(shape=(n,), domain=Range(0, d), random=True, given=True)
-    k = Symbol.k(integer=True)
+    d, n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n, d), real=True, random=True, given=True)
+    y = Symbol(shape=(n,), domain=Range(0, d), random=True, given=True)
+    k = Symbol(integer=True)
     Eq << apply(Equal(y[k] | (x[:k].as_boolean() & y[:k].as_boolean()), y[k] | y[k - 1]))
 
     Eq << Eq[0].apply(algebra.cond.imply.all.restrict, (k, 2, oo))

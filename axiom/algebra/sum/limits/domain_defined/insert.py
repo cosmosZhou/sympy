@@ -21,13 +21,12 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(shape=(k,), integer=True)
+    i, j = Symbol(integer=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(shape=(k,), integer=True)
 
-    f = Function.f(etype=dtype.integer)
-    h = Function.h(real=True)
+    f = Function(etype=dtype.integer)
+    h = Function(real=True)
 
     Eq << apply(Sum[j:f(i), i](h(x[i], j)))
 

@@ -31,7 +31,7 @@ from sympy.functions.elementary.trigonometric import (TrigonometricFunction,
                                                       HyperbolicFunction)
 from sympy.logic.boolalg import And
 from sympy.sets import (FiniteSet, EmptySet, Interval, Intersection,
-                        Union, ImageSet, Complement, Contains)
+                        Union, ImageSet, Complement, Element)
 from sympy.sets.sets import Set, _imageset
 from sympy.matrices import Matrix, MatrixBase
 from sympy.polys import (roots, Poly, degree, together, PolynomialError,
@@ -346,7 +346,7 @@ def _invert_abs(f, g_ys, symbol):
     if not g_ys.is_FiniteSet:
         # this could be used for FiniteSet, but the
         # results are more compact if they aren't, e.g.
-        # ConditionSet(x, Contains(n, Interval(0, oo)), {-n, n}) vs
+        # ConditionSet(x, Element(n, Interval(0, oo)), {-n, n}) vs
         # Union(Intersection(Interval(0, oo), {n}), Intersection(Interval(-oo, 0), {-n}))
         # for the solution of abs(x) - n
         pos = Intersection(g_ys, Interval(0, S.Infinity))
@@ -366,7 +366,7 @@ def _invert_abs(f, g_ys, symbol):
         elif not ok:
             return symbol, Reals.etype.emptySet
     if unknown:
-        conditions = And(*[Contains(i, Interval(0, oo))
+        conditions = And(*[Element(i, Interval(0, oo))
             for i in unknown])
     else:
         conditions = True

@@ -11,12 +11,9 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     from axiom import calculus, algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, a, b = Symbol(real=True)
 
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
+    f, g = Function(shape=(), real=True)
 
     Eq << apply(Greater(f(x), g(x)), (x, a, b))
 

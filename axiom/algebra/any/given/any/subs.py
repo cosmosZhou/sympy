@@ -20,9 +20,9 @@ def apply(self, old, new):
                 if _eval_domain_defined in domain:
                     ...
                 else:
-                    eqs.append(Contains(new, domain))
+                    eqs.append(Element(new, domain))
             else:
-                eqs.append(Contains(new, domain))
+                eqs.append(Element(new, domain))
 
         if self.expr.is_And:
             for equation in self.expr.args:
@@ -57,7 +57,7 @@ def apply(self, old, new):
             if not isinstance(domain, list):
                 if not domain.is_set:
                     domain = old.domain_conditioned(domain)                    
-                eqs.append(Contains(new, domain))
+                eqs.append(Element(new, domain))
 
         if self.expr.is_And:
             for equation in self.expr.args:
@@ -79,10 +79,9 @@ def apply(self, old, new):
 
 @prove
 def prove(Eq):
-    e = Symbol.e(real=True)
-    x = Symbol.x(integer=True)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    e = Symbol(real=True)
+    x = Symbol(integer=True)
+    f, g = Function(integer=True)
     Eq << apply(Any[x](x > g(x)), x, f(e))
 
     Eq << ~Eq[0]

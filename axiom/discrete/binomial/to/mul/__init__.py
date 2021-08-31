@@ -9,8 +9,7 @@ def apply(self):
 
 @prove(proved=False)
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    k = Symbol.k(integer=True, positive=True)
+    n, k = Symbol(integer=True, positive=True)
     Eq << apply(binomial(n, k))
 
 
@@ -19,6 +18,5 @@ if __name__ == '__main__':
 
 
 from . import fallingFactorial
-del expand
 from . import expand
 from . import half

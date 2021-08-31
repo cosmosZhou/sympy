@@ -14,11 +14,11 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    
-    f = Function.f(real=True)
-    i = Symbol.i(integer=True)
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,))
+
+    f = Function(real=True)
+    i = Symbol(integer=True)
 
     Eq << apply(conditionset(i, f(x[i]) > 0))
 

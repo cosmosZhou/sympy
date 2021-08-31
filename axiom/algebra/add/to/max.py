@@ -14,16 +14,14 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    z = Symbol.z(real=True)
+    x, y, z = Symbol(real=True)
     Eq << apply(Max(x, y) - z)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.max.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.max.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.piecewise.to.add)
+    Eq << Eq[-1].this.rhs.apply(algebra.piece.to.add)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.max.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.max.to.piece)
 
 
 if __name__ == '__main__':

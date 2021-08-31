@@ -22,9 +22,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
-    x = Symbol.x(real=True, shape=(oo,))
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    x = Symbol(real=True, shape=(oo,))
     Eq << apply(Sum[i:n](x[i]) ** 2)
 
     Eq.initial = Eq[0].subs(n, 1)

@@ -1,1 +1,1 @@
-from . import mul_piecewise
+from . import mul_piece

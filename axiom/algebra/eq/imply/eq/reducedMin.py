@@ -10,10 +10,9 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(domain=Range(0, n))
-    f = Symbol.f(shape=(n,), real=True)
-    g = Symbol.g(shape=(n,), real=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(domain=Range(0, n))
+    f, g = Symbol(shape=(n,), real=True)
     Eq << apply(Equal(f, g))
 
     Eq << Eq[-1].subs(Eq[0])

@@ -12,7 +12,8 @@ class Cofactors(MatrixExpr):
     method of matrices.
 
     """
-    def __new__(cls, mat):        
+
+    def __new__(cls, mat): 
         mat = _sympify(mat)
         return Basic.__new__(cls, mat)
 
@@ -23,17 +24,8 @@ class Cofactors(MatrixExpr):
     @property
     def shape(self):
         return self.arg.shape
-
-    def to_wolfram(self, global_variables):
-        from wolframclient.language import wlexpr        
-        return wlexpr("Cofactors[X_] := Array[(-1)^(#1 + #2) &, Dimensions[X]] Map[Reverse, Minors[X], {0, 1}]; Cofactors[%s]" % self.arg.to_wolfram(global_variables))
     
     def doit(self, **hints):
-        wolfram = hints.get("wolfram", None)
-        if wolfram:
-# Cofactors[mat] := SparseArray[{i_, j_} -> (-1)^(i + j), Dimensions[mat]] Map[Reverse, Minors[mat], {0, 1}]
-            return self._eval_wolfram(wolfram)
-        
         try:
             return self.arg.cofactor_matrix()
         except:

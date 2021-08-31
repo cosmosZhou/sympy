@@ -11,36 +11,32 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(etype=dtype.real)
-    g = Function.g(etype=dtype.real)
-    F = Function.F(etype=dtype.real)
 
+    A, B = Symbol(etype=dtype.integer)
+    x, y = Symbol(integer=True)
+    f, g = Function(etype=dtype.real)
     Eq << apply(Cup[x:A, y:B](f(x, y) | g(x, y)))
-#     Eq << apply(Cup[x:A](f(x) | g(x)))
 
-    Eq << sets.eq.given.suffice.apply(Eq[0], wrt=y)
+    #Eq << apply(Cup[x:A](f(x) | g(x)))
+    Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt=y)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.contains.given.ou.split.union, simplify=False), \
-    Eq[-1].this.lhs.apply(sets.contains.imply.ou.split.union, simplify=False)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union, simplify=False), \
+    Eq[-1].this.lhs.apply(sets.el.imply.ou.split.union, simplify=False)
 
-    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.contains.given.any_contains.st.cup), \
-    Eq[-1].this.lhs.args[0].apply(sets.contains.imply.any_contains.st.cup)
+    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el.given.any_el.st.cup), \
+    Eq[-1].this.lhs.args[0].apply(sets.el.imply.any_el.st.cup)
 
-    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.contains.given.any_contains.st.cup), \
-    Eq[-1].this.lhs.args[0].apply(sets.contains.imply.any_contains.st.cup)
+    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el.given.any_el.st.cup), \
+    Eq[-1].this.lhs.args[0].apply(sets.el.imply.any_el.st.cup)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.ou.given.any_ou), \
     Eq[-1].this.lhs.apply(algebra.ou.imply.any_ou)
 
-    Eq <<= Eq[-2].this.rhs.expr.apply(sets.ou.given.contains), \
-    Eq[-1].this.lhs.expr.apply(sets.ou.imply.contains)
+    Eq <<= Eq[-2].this.rhs.expr.apply(sets.ou.given.el), \
+    Eq[-1].this.lhs.expr.apply(sets.ou.imply.el)
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.contains.imply.any_contains.st.cup), \
-    Eq[-1].this.rhs.apply(sets.contains.given.any_contains.st.cup)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.any_el.st.cup), \
+    Eq[-1].this.rhs.apply(sets.el.given.any_el.st.cup)
 
 
 if __name__ == '__main__':

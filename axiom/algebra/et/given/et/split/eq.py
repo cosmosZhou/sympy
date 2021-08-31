@@ -14,10 +14,8 @@ def apply(imply, **kwargs):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    x, y = Symbol(integer=True, given=True)
+    f, g = Function(shape=(), integer=True)
     Eq << apply(Equal(x, y) & Unequal(g(KroneckerDelta(x, y)), f(x, y)))
 
     Eq << Equal(KroneckerDelta(x, y), 1, plausible=True)

@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    a_less_than_b, x_less_than_y = given
+def apply(a_less_than_b, x_less_than_y):
     a, b = a_less_than_b.of(GreaterEqual)
     x, y = x_less_than_y.of(GreaterEqual)
 
@@ -16,14 +15,12 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True)
-    x = Symbol.x(real=True)
-    b = Symbol.b(real=True, nonnegative=True)
-    y = Symbol.y(real=True, nonnegative=True)
+    a, x = Symbol(real=True)
+    b, y = Symbol(real=True, nonnegative=True)
 
     Eq << apply(a >= b, x >= y)
 
-    Eq << algebra.le.le.imply.le.multiply.apply(Eq[0].reversed, Eq[1].reversed)
+    Eq << algebra.le.le.imply.le.mul.apply(Eq[0].reversed, Eq[1].reversed)
 
     Eq << Eq[-1].reversed
 

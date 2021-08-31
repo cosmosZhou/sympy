@@ -15,11 +15,10 @@ def apply(sgm):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    f = Symbol.f(shape=(oo,), real=True)
-    g = Symbol.g(shape=(oo, oo), real=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    f = Symbol(shape=(oo,), real=True)
+    g = Symbol(shape=(oo, oo), real=True)
     Eq << apply(Sum[i:0:n, j:0:n](f[j] * g[i, j]))
 
     Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.sum)

@@ -32,8 +32,7 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(complex=True)
-    b = Symbol.b(complex=True)
+    a, b = Symbol(complex=True)
     Eq << apply(1 / a - 1 / b)
 
     Eq << Eq[0].this.rhs.expand()

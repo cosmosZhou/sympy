@@ -11,7 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(complex=True)
+    a = Symbol(complex=True)
     Eq << apply(Unequal(a, 0))
 
     Eq << algebra.is_nonzero.imply.abs_is_nonzero.apply(Eq[0])

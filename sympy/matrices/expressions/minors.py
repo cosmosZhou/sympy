@@ -28,10 +28,6 @@ class Minors(MatrixExpr):
         return self.arg.shape
 
     def doit(self, **hints):
-        wolfram = hints.get("wolfram", None)
-        if wolfram:
-            return self._eval_wolfram(wolfram)
-        
         try:
             return self.arg._eval_minors()
         except:

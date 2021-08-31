@@ -4,20 +4,17 @@ from util import *
 @apply
 def apply(self):
     from _collections import defaultdict
-    # from sympy.utilities.iterables import topological_sort_depth_first
-    # G = topological_sort_depth_first(graph)
-    
     [[*args], *limits] = self.of(Sum[Mul])
-        
+
     for i, b in enumerate(args):
         if b.is_Bool:
             break
     else:
         return
-    
+
     del args[i]
     function = Mul(*args)
-    
+
     cond = b.arg
     variables = self.variables_set
     if cond.is_And:
@@ -29,7 +26,7 @@ def apply(self):
                 if eq._has(v) and not eq.has(*otherVars):
                     dic[v].add(eq)
             eqs -= dic[v]
-            
+
         if eqs:
             for eq in eqs:
                 for v, s in dic.items():
@@ -38,14 +35,14 @@ def apply(self):
                         break
                 else:
                     return
-        
+
         for v, cond in self.limits_dict.items():
             if not cond:
                 continue
             if cond.is_set:
-                cond = Contains(v, cond)
+                cond = Element(v, cond)
             dic[v].add(cond)
-            
+
         graph = {x: set() for x in variables}
         for y, eqs in dic.items():
             if not eqs:
@@ -58,27 +55,27 @@ def apply(self):
 
         from sympy.utilities.iterables import topological_sort_depth_first
         G = topological_sort_depth_first(graph)
-        print(G)
-        
+        # print(G)
+
         limits = []
         for v in G:
             eqs = dic[v]
             cond = And(*eqs)
-            if cond.is_Contains and cond.lhs == v:
-                cond = cond.rhs                
+            if cond.is_Element and cond.lhs == v:
+                cond = cond.rhs
             limit = (v, cond)
-            
+
             limits.append(limit)
 
     else:
         for i, v in enumerate(self.variables):
             if cond._has(v):
                 [v] = limits[i]
-                if cond.is_Contains and cond.lhs == v:
+                if cond.is_Element and cond.lhs == v:
                     cond = cond.rhs
                 limits[i] = (v, cond)
                 break
-            
+
 
     return Equal(self, Sum(function, *limits))
 
@@ -87,14 +84,11 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Function.B(etype=dtype.integer)
-    C = Symbol.C(etype=dtype.integer)
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    z = Symbol.z(integer=True)
-    f = Function.f(real=True)
-    Eq << apply(Sum[x, y, z:C](f(x, y) * Bool(Contains(x, A) & Contains(y, B(x)))))
+    A, C = Symbol(etype=dtype.integer)
+    B = Function(etype=dtype.integer)
+    x, y, z = Symbol(integer=True)
+    f = Function(real=True)
+    Eq << apply(Sum[x, y, z:C](f(x, y) * Bool(Element(x, A) & Element(y, B(x)))))
 
     Eq << Eq[0].this.rhs.apply(algebra.sum.bool)
 

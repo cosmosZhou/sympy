@@ -663,11 +663,11 @@ class Indexed(Expr):
             return self
         return self.base[indices] 
 
-    def linear_match(self, a):
-        for a in a.preorder_traversal(): 
-            if a.is_Indexed and a.base == self.base:
-                return a.indices == self.indices
-
+    def is_continuous(self, *args):
+        definition = self.definition
+        if definition is None:
+            return True
+        return definition.is_continuous(*args)
 
 class Slice(Expr):
     """Represents a mathematical object with Slices.

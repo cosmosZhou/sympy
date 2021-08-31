@@ -15,9 +15,9 @@ from axiom.discrete.imply.is_positive.alpha import alpha
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(real=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
+    x = Symbol(real=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
 
     Eq << apply(All[i:1:n + 2](x[i] > 0))
 

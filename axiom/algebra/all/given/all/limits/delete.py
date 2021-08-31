@@ -14,13 +14,11 @@ def apply(given, index=-1):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
+    x, y = Symbol(integer=True)
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
 
-    f = Function.f(integer=True)
+    f = Function(integer=True)
 
     Eq << apply(All[x:A, y:B](f(x, y) > 0))
 

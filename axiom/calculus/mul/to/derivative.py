@@ -11,9 +11,9 @@ def mul_to_derivative(self):
             vars = [v for v, *_ in limits]
             for arg in args:
                 assert not arg.has(*vars)
-            return Derivative(Mul(function, *args), *limits)            
-        
-    
+            return Derivative(Mul(function, *args), *limits)
+
+
 @apply
 def apply(self):
     assert self.is_Mul
@@ -22,10 +22,8 @@ def apply(self):
 
 @prove(proved=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    f = Function.f(real=True)    
-    g = Function.g(real=True)
+    x, y = Symbol(real=True)
+    f, g = Function(real=True)
     Eq << apply(Derivative[x](f(x)) * y)
 
 

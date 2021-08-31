@@ -12,10 +12,9 @@ def apply(imply):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    A = Symbol.A(etype=dtype.real, given=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x = Symbol(real=True)
+    A = Symbol(etype=dtype.real, given=True)
+    f, g = Function(integer=True)
     Eq << apply(Any[x:A]((g(x) > 0) | (f(x) > 0)))
 
     Eq <<= ~Eq[0] & Eq[1]

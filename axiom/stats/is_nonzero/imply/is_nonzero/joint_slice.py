@@ -23,10 +23,9 @@ def apply(given, indices):
 def prove(Eq):
     from axiom import algebra, stats
 
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(real=True, shape=(n,), random=True)
-    y = Symbol.y(real=True, shape=(n,), random=True)
-    t = Symbol.t(domain=Range(1, n))
+    n = Symbol(domain=Range(2, oo))
+    x, y = Symbol(real=True, shape=(n,), random=True)
+    t = Symbol(domain=Range(1, n))
     Eq << apply(Unequal(Probability(x, y), 0), [slice(0, t), slice(0, t)])
 
     Eq << Eq[0].this.lhs.arg.args[-1].apply(algebra.eq.imply.et.eq.blockmatrix, t)

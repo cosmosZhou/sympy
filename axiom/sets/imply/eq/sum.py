@@ -6,17 +6,17 @@ def apply(s, wrt=None):
     assert s.is_set
     if wrt is None:
         wrt = s.generate_var(**s.etype.dict)
-    return Equal(Sum[wrt:s](Bool(Contains(wrt, s))), abs(s))
+    return Equal(Sum[wrt:s](Bool(Element(wrt, s))), Card(s))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol(etype=dtype.integer)
 
     Eq << apply(S)
 
-    Eq << Eq[-1].this.lhs.expr.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.bool.to.piece)
 
     Eq << Eq[-1].this.lhs().expr.simplify()
 

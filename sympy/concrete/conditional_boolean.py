@@ -143,7 +143,7 @@ class Quantifier(Boolean, ExprWithLimits):
                         result.given = True
                     else:
                         result = self.bfn(bfn, eq.expr)
-            elif eq.is_All:
+            elif eq.is_ForAll:
                 func = self.func
                 if self.limits == eq.limits:
                     limits = self.limits
@@ -268,7 +268,7 @@ class Quantifier(Boolean, ExprWithLimits):
                 if domain.is_FiniteSet and len(domain) == 1:
                     if len(self.limits) == 1: 
                         return self.func(self.finite_aggregate(x, domain), *self.limits_delete(x)).simplify()
-                if domain.is_Contains:
+                if domain.is_Element:
                     if domain.lhs == x:
                         domain = domain.rhs
                         limits = self.limits_update({x:domain})
@@ -535,7 +535,7 @@ class Quantifier(Boolean, ExprWithLimits):
                 if cond.is_Equal and x in cond.args:
                     y = cond.rhs if x == cond.lhs else cond.lhs
                     return self.subs_with_independent_variable(i, x, y)
-                if cond.is_Contains and cond.lhs == x and cond.rhs.is_FiniteSet and len(cond.rhs) == 1:
+                if cond.is_Element and cond.lhs == x and cond.rhs.is_FiniteSet and len(cond.rhs) == 1:
                     [y] = cond.rhs.args
                     return self.subs_with_independent_variable(i, x, y)
                 

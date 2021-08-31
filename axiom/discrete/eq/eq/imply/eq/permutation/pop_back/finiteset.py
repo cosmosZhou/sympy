@@ -2,10 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(set_comprehension_equality, last_element_equality):
     from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
-    assert len(given) == 2
-    set_comprehension_equality, last_element_equality = given
 
     if last_element_equality.lhs.is_Cup:
         last_element_equality, set_comprehension_equality = set_comprehension_equality, last_element_equality
@@ -27,9 +25,8 @@ def apply(*given):
 def prove(Eq):
     from axiom import sets, algebra
 
-    n = Symbol.n(integer=True, positive=True, given=True)
-    p = Symbol.p(shape=(oo,), etype=dtype.integer, given=True)
-    a = Symbol.a(shape=(oo,), etype=dtype.integer, given=True)
+    n = Symbol(integer=True, positive=True, given=True)
+    p, a = Symbol(shape=(oo,), etype=dtype.integer, given=True)
     Eq << apply(Equal(p[:n + 1].set_comprehension(), a[:n + 1].set_comprehension()),
                 Equal(p[n], a[n]))
 
@@ -43,9 +40,9 @@ def prove(Eq):
 
     return
     Eq << Eq[2].subs(Eq[-1].reversed).reversed
-    Eq.plausible = NotContains(n, Eq[-1].rhs, plausible=True)
+    Eq.plausible = NotElement(n, Eq[-1].rhs, plausible=True)
     Eq << ~Eq.plausible
-    Eq << Eq[-1].apply(sets.contains.imply.any_contains.split.cup)
+    Eq << Eq[-1].apply(sets.element.imply.any_contains.split.cup)
     i = Eq[-1].variable
     _i = i.copy(domain=Range(0, n))
     Eq << Eq[-1].limits_subs(i, _i)

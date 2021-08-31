@@ -11,8 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import stats, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
+    x, y = Symbol(real=True, random=True)
     Eq << apply(Equal(x | y, x))
 
     Eq << stats.eq.imply.eq.probability.apply(Eq[0], simplify=None)

@@ -10,12 +10,10 @@ def apply(given, index=0):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    y = Symbol.y(real=True, shape=(k,), given=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    b = Symbol.b(shape=(k,), real=True)
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(k,), given=True)
+    f, g = Function(real=True)
+    b = Symbol(shape=(k,), real=True)
     Eq << apply(And(Unequal(x, y), Unequal(f(x), g(y)), Equal(f(x), b)))
 
     Eq << Suffice(Eq[0], Eq[1], plausible=True)

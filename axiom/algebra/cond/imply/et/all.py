@@ -16,8 +16,8 @@ def apply(given, *, cond=None, wrt=None):
         given = all(given, wrt)
     else:
         given = All(given, (wrt,))
-    assert given.is_All
-    
+    assert given.is_ForAll
+
     from axiom.algebra.sum.to.add.split import split
     given = split(All, given, wrt.domain_conditioned(cond))
     lhs, rhs = given.of(And)
@@ -28,8 +28,8 @@ def apply(given, *, cond=None, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(integer=True)
-    f = Function.f(integer=True, shape=())
+    e = Symbol(integer=True)
+    f = Function(integer=True, shape=())
     Eq << apply(f(e) > 0, cond=e > 0)
 
     Eq <<= algebra.all.given.ou.apply(Eq[-2]), algebra.all.given.ou.apply(Eq[-1])

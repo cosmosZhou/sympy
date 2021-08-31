@@ -34,11 +34,10 @@ def apply(given, i=None, j=None):
 def prove(Eq):
     from axiom import algebra, discrete
 
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(shape=(n,), integer=True, given=True)
-    k = Symbol.k(integer=True)
-    j = Symbol.j(domain=Range(0, n), given=True)
-    i = Symbol.i(domain=Range(0, n), given=True)
+    n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n,), integer=True, given=True)
+    k = Symbol(integer=True)
+    i, j = Symbol(domain=Range(0, n), given=True)
     Eq << apply(Equal(x[:n].set_comprehension(k), Range(0, n)), i, j)
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=Equal(i, j))
@@ -49,7 +48,7 @@ def prove(Eq):
 
     Eq << Eq[-2].apply(algebra.eq.ne.imply.ne.subs)
 
-    Eq << Eq[-1].this.apply(algebra.et.imply.et.invoke, algebra.ne.cond.imply.cond.subs)
+    Eq << Eq[-1].this.apply(algebra.ne.cond.imply.cond.subs, ret=0)
 
     Eq << discrete.eq.imply.et.index.apply(Eq[0], j=j)[1]
 

@@ -12,25 +12,24 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(integer=True)
-    f = Function.f(real=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    x = Symbol(integer=True)
+    f = Function(real=True)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(Sum[x:A - B](f(x)))
 
     Eq << Eq[-1].this.rhs.args[0].apply(algebra.sum.to.add.split, cond=B)
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

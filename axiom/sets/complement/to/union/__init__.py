@@ -1,1 +1,2 @@
-from . import st, intersection
+from . import intersect
+from . import st

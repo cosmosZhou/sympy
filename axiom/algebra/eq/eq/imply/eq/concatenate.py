@@ -25,10 +25,9 @@ def apply(eq_historic, eq_n):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    k = Symbol.k(integer=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    n = Symbol(integer=True, positive=True)
+    k = Symbol(integer=True)
+    f, g = Function(real=True)
     Eq << apply(Equal(Lamda[k:n](f(k)), Lamda[k:n](g(k))), Equal(f(n), g(n)))
 
     Eq << algebra.eq.given.et.eq.blockmatrix.apply(Eq[-1], simplify=None)

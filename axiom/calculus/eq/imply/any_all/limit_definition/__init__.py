@@ -11,16 +11,14 @@ def apply(given, epsilon=None, delta=None):
 def prove(Eq):
     from axiom import calculus, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True)
+    n = Symbol(integer=True, positive=True)
+    x, x0, a = Symbol(real=True)
     #x = Symbol.x(real=True, shape=(n,))
-    x = Symbol.x(integer=True)
-    f = Function.f(real=True, shape=())
-    x0 = Symbol.x0(real=True)
+    x = Symbol(integer=True)
+    f = Function(real=True, shape=())
     #x0 = Symbol.x0(real=True, shape=(n,))
     x0 = oo
     #x0 = -oo
-    a = Symbol.a(real=True)
     #a = oo
     #a = -oo
     direction = 1
@@ -34,5 +32,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del limit
 from . import limit

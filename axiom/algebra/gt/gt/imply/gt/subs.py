@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(less_than_f, less_than):
     from axiom.algebra.eq.le.imply.le.subs import ratsimp
-    less_than_f, less_than = given
     assert less_than_f.is_Greater
     assert less_than.is_Greater
 
@@ -16,13 +15,10 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    y = Symbol.y(real=True)
-    b = Symbol.b(real=True)
-    k = Symbol.k(real=True, positive=True)
+    y, b, x, t = Symbol(real=True)
+    k = Symbol(real=True, positive=True)
 
-    x = Symbol.x(real=True)
 
-    t = Symbol.t(real=True)
 
     Eq << apply(y > x * k + b, x > t)
 

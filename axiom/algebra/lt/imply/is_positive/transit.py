@@ -10,8 +10,8 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, given=True, negative=False)
-    y = Symbol.y(real=True, given=True)
+    x = Symbol(real=True, given=True, negative=False)
+    y = Symbol(real=True, given=True)
     Eq << apply(x < y)
 
     Eq << ~Eq[-1]

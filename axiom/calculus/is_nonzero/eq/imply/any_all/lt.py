@@ -15,10 +15,8 @@ def apply(is_nonzero, eq, delta=None):
 def prove(Eq):
     from axiom import algebra, calculus
 
-    x = Symbol.x(real=True)
-    A = Symbol.A(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
+    x, x0, A = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(Unequal(A, 0), Equal(Limit[x:x0](f(x)), A))
 
     Eq << algebra.cond.given.et.suffice.split.apply(Eq[2], cond=A > 0)
@@ -35,7 +33,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
-    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.cond.imply.et.invoke, algebra.gt.imply.is_positive.transit)
+    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.gt.imply.is_positive.transit, ret=0)
 
     Eq << Eq[-1].this.rhs.expr.expr.args[0].apply(algebra.is_positive.imply.eq.abs)
 
@@ -59,13 +57,14 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
 
-    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.cond.imply.et.invoke, algebra.lt.imply.is_negative.transit)
+    Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.lt.imply.is_negative.transit, ret=0)
 
     Eq << Eq[-1].this.rhs.expr.expr.args[1].apply(algebra.is_negative.imply.eq.abs)
 
     Eq << -Eq[-1].this.rhs.expr.expr.args[1]
 
     Eq << Eq[-1].this.rhs.expr.expr.apply(algebra.eq.cond.imply.cond.subs, reverse=True)
+
     Eq << -Eq[-1].this.rhs.expr.expr
 
 

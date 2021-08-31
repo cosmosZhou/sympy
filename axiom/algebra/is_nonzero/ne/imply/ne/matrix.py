@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    unequality, eq = given
+def apply(unequality, eq):
     if not unequality.is_Unequal:
         unequality, eq = eq, unequality
     assert unequality.is_Unequal
@@ -18,10 +17,9 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True)
-    A = Symbol.A(real=True, shape=(n, n), given=True)
-    a = Symbol.a(real=True, shape=(n,), given=True)
-    b = Symbol.b(real=True, shape=(n,), given=True)
+    n = Symbol(integer=True)
+    A = Symbol(real=True, shape=(n, n), given=True)
+    a, b = Symbol(real=True, shape=(n,), given=True)
     Eq << apply(Unequal(Determinant(A), 0), Unequal(a @ A, b))
 
     Eq << ~Eq[-1]

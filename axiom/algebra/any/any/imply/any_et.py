@@ -16,12 +16,9 @@ def apply(any_x, any_y):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    x, y = Symbol(real=True)
+    A, B = Symbol(etype=dtype.real)
+    f, g = Function(shape=(), integer=True)
     Eq << apply(Any[x:A](f(x, y) > 0), Any[y:B](g(y, x) > 0))
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[1])

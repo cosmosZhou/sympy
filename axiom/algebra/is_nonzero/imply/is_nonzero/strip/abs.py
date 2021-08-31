@@ -12,7 +12,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True, given=True)
+    a = Symbol(real=True, given=True)
 
     Eq << apply(Unequal(abs(a), 0))
 

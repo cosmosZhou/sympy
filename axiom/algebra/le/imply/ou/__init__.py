@@ -9,14 +9,13 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y = Symbol(real=True, given=True)
     Eq << apply(x <= y)
-    
+
     Eq << ~Eq[-1]
-    
+
     Eq << Eq[-1].simplify()
-    
+
     Eq <<= Eq[-1] & Eq[0]
 
 

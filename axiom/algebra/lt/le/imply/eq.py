@@ -15,8 +15,8 @@ def apply(x1_less_than_y, y_less_than_x):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(integer=True)
+    x = Symbol(real=True)
+    y = Symbol(integer=True)
 
     Eq << apply(x - 1 < y, y <= x)
 

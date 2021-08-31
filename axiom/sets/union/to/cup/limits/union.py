@@ -29,23 +29,22 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    k = Symbol.k(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    f = Function.f(etype=dtype.integer)
+    k = Symbol(integer=True)
+    A, B = Symbol(etype=dtype.integer)
+    f = Function(etype=dtype.integer)
     Eq << apply(Union(Cup[k:A](f(k)), Cup[k:B](f(k)), evaluate=False))
 
-#     Eq << Eq[0].this.find(Cup).apply(sets.cup.piecewise)
+#     Eq << Eq[0].this.find(Cup).apply(sets.cup.piece)
 
-    Eq << Eq[-1].this.lhs.find(Cup).apply(sets.cup.piecewise)
+    Eq << Eq[-1].this.lhs.find(Cup).apply(sets.cup.piece)
 
-    Eq << Eq[-1].this.lhs.find(Cup).apply(sets.cup.piecewise)
+    Eq << Eq[-1].this.lhs.find(Cup).apply(sets.cup.piece)
 
     Eq << Eq[-1].this.lhs.apply(sets.union.to.cup)
 
-    Eq << Eq[-1].this.lhs.expr.apply(sets.union.to.piecewise, simplify=None)
+    Eq << Eq[-1].this.lhs.expr.apply(sets.union.to.piece, simplify=None)
 
-    Eq << Eq[-1].this.lhs.expr.apply(algebra.piecewise.flatten)
+    Eq << Eq[-1].this.lhs.expr.apply(algebra.piece.flatten)
 
 
 if __name__ == '__main__':

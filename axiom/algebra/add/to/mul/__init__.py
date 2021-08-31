@@ -34,10 +34,7 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(complex=True)
-    x = Symbol.x(complex=True)
-    y = Symbol.y(complex=True)
-
+    a, x, y = Symbol(complex=True)
     Eq << apply(a * x - a * y)
 
     Eq << Eq[0].this.rhs.expand()
@@ -47,6 +44,4 @@ if __name__ == '__main__':
     run()
 
 from . import st
-
-del together
 from . import together

@@ -17,12 +17,10 @@ def apply(given, old, new):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(domain=Interval(a, b, right_open=True))
-    y = Symbol.y(domain=Interval(a, b))
-    z = Symbol.z(real=True)
-    f = Function.f(shape=(), integer=True)
+    a, b, z = Symbol(real=True)
+    x = Symbol(domain=Interval(a, b, right_open=True))
+    y = Symbol(domain=Interval(a, b))
+    f = Function(shape=(), integer=True)
 
     Eq << apply(Any[x](f(x) > 0), x, y)
 

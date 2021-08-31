@@ -7,9 +7,9 @@ def apply(given, *, exp=None, base=None):
     if exp is not None:
         assert lhs > 0 or rhs > 0 or exp > 0
         return Equal(lhs ** exp, rhs ** exp)
-    
+
     base = sympify(base)
-    
+
     if base.is_integer:
         if lhs.is_integer:
             ...
@@ -25,11 +25,10 @@ def apply(given, *, exp=None, base=None):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True, given=True)
-    i = Symbol.i(domain=Range(0, n))
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
-    k = Symbol.k(real=True, positive=True)
+    n = Symbol(integer=True, positive=True, given=True)
+    i = Symbol(domain=Range(0, n))
+    f, g = Function(shape=(), integer=True)
+    k = Symbol(real=True, positive=True)
     Eq << apply(Equal(f(i), g(i)), base=k)
 
     Eq << Eq[-1].subs(Eq[0])

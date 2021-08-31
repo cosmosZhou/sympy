@@ -19,9 +19,9 @@ def apply(given):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    x = Symbol.x(real=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
+    x = Symbol(real=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
     Eq << apply(All[i:0:n](x[i] > 0))
 
     x_ = Symbol.x(real=True, positive=True, shape=(oo,))

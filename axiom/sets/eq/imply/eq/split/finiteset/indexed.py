@@ -23,18 +23,17 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, sets
 
-    x = Symbol.x(etype=dtype.complex, given=True)
-    y = Symbol.y(etype=dtype.complex, given=True)
-    a = Symbol.a(etype=dtype.complex, shape=(oo,), given=True)
+    x, y = Symbol(etype=dtype.complex, given=True)
+    a = Symbol(etype=dtype.complex, shape=(oo,), given=True)
     Eq << apply(Equal({x, y}, {a[0], a[1]}))
 
     Eq << algebra.eq.given.et.split.matrix.apply(Eq[1])
 
-    Eq << Contains(x, {x, y}, plausible=True)
+    Eq << Element(x, {x, y}, plausible=True)
 
     Eq.x_contains = Eq[-1].subs(Eq[0])
 
-    Eq << sets.contains.imply.ou.split.finiteset.two.apply(Eq.x_contains, simplify=False)
+    Eq << sets.el.imply.ou.split.finiteset.two.apply(Eq.x_contains, simplify=False)
 
     Eq << Eq[2].apply(algebra.cond.given.et.ou, cond=Equal(x, a[0]))
 
@@ -42,9 +41,9 @@ def prove(Eq):
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq <<= Eq[-2].this.apply(algebra.et.imply.et.invoke, algebra.ne.cond.imply.cond.subs), Eq[-1].this.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.kroneckerDelta)
+    Eq <<= Eq[-2].this.apply(algebra.ne.cond.imply.cond.subs, ret=0), Eq[-1].this.apply(algebra.eq.cond.imply.cond.kroneckerDelta, ret=0)
 
-    Eq << Eq[-1].apply(sets.ne.ne.imply.notcontains, simplify=False)
+    Eq << Eq[-1].apply(sets.ne.ne.imply.notin, simplify=False)
 
     Eq <<= Eq.x_contains & Eq[-1]
 
@@ -54,29 +53,29 @@ def prove(Eq):
 
     Eq <<= ~Eq[-2], ~Eq[-1]
 
-    Eq.a00, Eq.a01 = Eq[-2].this.apply(algebra.et.imply.et.invoke, algebra.ne.cond.imply.cond.subs), Eq[-1].this.apply(algebra.et.imply.et.invoke, algebra.eq.cond.imply.cond.kroneckerDelta)
+    Eq.a00, Eq.a01 = Eq[-2].this.apply(algebra.ne.cond.imply.cond.subs, ret=0), Eq[-1].this.apply(algebra.eq.cond.imply.cond.kroneckerDelta, ret=0)
 
-    Eq << Eq.a00.apply(sets.ne.ne.imply.notcontains, simplify=False)
+    Eq << Eq.a00.apply(sets.ne.ne.imply.notin, simplify=False)
 
-    Eq << Contains(a[0], {a[0], a[1]}, plausible=True)
+    Eq << Element(a[0], {a[0], a[1]}, plausible=True)
 
     Eq << Eq[-1].subs(Eq[0].reversed)
 
     Eq <<= Eq[-1] & Eq[-3]
 
-    Eq << Contains(y, {x, y}, plausible=True)
+    Eq << Element(y, {x, y}, plausible=True)
 
     Eq.y_contains = Eq[-1].subs(Eq[0])
 
-    Eq << sets.contains.imply.ou.split.finiteset.two.apply(Eq.y_contains, simplify=False)
+    Eq << sets.el.imply.ou.split.finiteset.two.apply(Eq.y_contains, simplify=False)
 
     Eq <<= Eq[-1] & Eq.a01
 
-    Eq << Contains(a[1], {a[0], a[1]}, plausible=True)
+    Eq << Element(a[1], {a[0], a[1]}, plausible=True)
 
     Eq << Eq[-1].subs(Eq[0].reversed)
 
-    Eq << sets.contains.imply.ou.split.finiteset.two.apply(Eq[-1], simplify=False)
+    Eq << sets.el.imply.ou.split.finiteset.two.apply(Eq[-1], simplify=False)
 
     Eq <<= Eq[-1] & Eq[-4]
 

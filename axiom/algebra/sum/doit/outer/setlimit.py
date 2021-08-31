@@ -44,11 +44,9 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
-    a = Symbol.a(integer=True)
+    x = Symbol(real=True, shape=(oo, oo))
+    i, j, a = Symbol(integer=True)
+    f = Function(integer=True)
     Eq << apply(Sum[j:f(i), i:{a}](x[i, j]))
 
     Eq << Eq[-1].this.lhs.simplify()

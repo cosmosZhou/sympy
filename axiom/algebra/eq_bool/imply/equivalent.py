@@ -12,9 +12,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    f = Function.f(shape=())
+    a, b = Symbol(integer=True)
+    f = Function(shape=())
 
     Eq << apply(Equal(Bool(a > b), Bool(f(a) > f(b))))
 

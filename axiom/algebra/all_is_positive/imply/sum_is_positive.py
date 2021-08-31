@@ -12,9 +12,9 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    f = Function.f(shape=(), complex=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    f = Function(shape=(), complex=True)
     Eq << apply(All[i:n](f(i) > 0))
 
     Eq << algebra.all_gt.imply.gt.sum.apply(Eq[0])

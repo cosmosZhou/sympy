@@ -6,7 +6,7 @@ from typing import Sequence as tSequence, Union as tUnion
 from sympy import (Matrix, MatrixSymbol, S, Indexed, Basic, Tuple, Range,
                    Set, And, Eq, FiniteSet, ImmutableMatrix, Integer,
                    Lambda, Mul, Dummy, IndexedBase, Add, Interval, oo,
-                   linsolve, eye, Or, Not, Intersection, factorial, Contains,
+                   linsolve, eye, Or, Not, Intersection, factorial, Element,
                    Union, Expr, Function, exp, cacheit, sqrt, pi, gamma,
                    Ge, Piecewise, Symbol, NonSquareMatrixError, EmptySet,
                    ceiling, MatrixBase)
@@ -1302,13 +1302,13 @@ def get_timerv_swaps(expr, condition):
     ========
 
     >>> from sympy.stats.stochastic_process_types import get_timerv_swaps, PoissonProcess
-    >>> from sympy import symbols, Contains, Interval
+    >>> from sympy import symbols, Element, Interval
     >>> x, t, d = symbols('x t d', positive=True)
     >>> X = PoissonProcess("X", 3)
-    >>> get_timerv_swaps(x*X(t), Contains(t, Interval.Lopen(0, 1)))
+    >>> get_timerv_swaps(x*X(t), Element(t, Interval.Lopen(0, 1)))
     ([Interval.Lopen(0, 1)], {X(t): X(1)})
-    >>> get_timerv_swaps((X(t)**2 + X(d)**2), Contains(t, Interval.Lopen(0, 1))
-    ... & Contains(d, Interval.Ropen(1, 4))) # doctest: +SKIP
+    >>> get_timerv_swaps((X(t)**2 + X(d)**2), Element(t, Interval.Lopen(0, 1))
+    ... & Element(d, Interval.Ropen(1, 4))) # doctest: +SKIP
     ([Interval.Ropen(1, 4), Interval.Lopen(0, 1)], {X(d): X(3), X(t): X(1)})
 
     Returns
@@ -1497,7 +1497,7 @@ class CountingProcess(ContinuousTimeStochasticProcess):
             else:
                 given_cond_args = (given_condition, )
             # check that given condition args are numeric or not
-            if given_condition.has(Contains):
+            if given_condition.has(Element):
                 check_given_numeric = False
             # Handle numerical queries
             if check_numeric and check_given_numeric:
@@ -1512,10 +1512,10 @@ class CountingProcess(ContinuousTimeStochasticProcess):
                     return Add.fromiter(res)
                 return self._solve_numerical(condition, given_condition)
 
-            # No numeric queries, go by Contains?... then check that all the
-            # given condition are in form of `Contains`
-            if not all(arg.has(Contains) for arg in given_cond_args):
-                raise ValueError("If given condition is passed with `Contains`, then "
+            # No numeric queries, go by Element?... then check that all the
+            # given condition are in form of `Element`
+            if not all(arg.has(Element) for arg in given_cond_args):
+                raise ValueError("If given condition is passed with `Element`, then "
                 "please pass the evaluated condition with its corresponding information "
                 "in terms of intervals of each time stamp to be passed in given condition.")
 
@@ -1553,7 +1553,7 @@ class PoissonProcess(CountingProcess):
     ========
 
     >>> from sympy.stats import PoissonProcess, P, E
-    >>> from sympy import symbols, Eq, Ne, Contains, Interval
+    >>> from sympy import symbols, Eq, Ne, Element, Interval
     >>> X = PoissonProcess("X", lamda=3)
     >>> X.state_space
     Naturals0
@@ -1562,15 +1562,15 @@ class PoissonProcess(CountingProcess):
     >>> t1, t2 = symbols('t1 t2', positive=True)
     >>> P(X(t1) < 4)
     (9*t1**3/2 + 9*t1**2/2 + 3*t1 + 1)*exp(-3*t1)
-    >>> P(Eq(X(t1), 2) | Ne(X(t1), 4), Contains(t1, Interval.Ropen(2, 4)))
+    >>> P(Eq(X(t1), 2) | Ne(X(t1), 4), Element(t1, Interval.Ropen(2, 4)))
     1 - 36*exp(-6)
-    >>> P(Eq(X(t1), 2) & Eq(X(t2), 3), Contains(t1, Interval.Lopen(0, 2))
-    ... & Contains(t2, Interval.Lopen(2, 4)))
+    >>> P(Eq(X(t1), 2) & Eq(X(t2), 3), Element(t1, Interval.Lopen(0, 2))
+    ... & Element(t2, Interval.Lopen(2, 4)))
     648*exp(-12)
     >>> E(X(t1))
     3*t1
-    >>> E(X(t1)**2 + 2*X(t2),  Contains(t1, Interval.Lopen(0, 1))
-    ... & Contains(t2, Interval.Lopen(1, 2)))
+    >>> E(X(t1)**2 + 2*X(t2),  Element(t1, Interval.Lopen(0, 1))
+    ... & Element(t2, Interval.Lopen(1, 2)))
     18
     >>> P(X(3) < 1, Eq(X(1), 0))
     exp(-6)
@@ -1649,19 +1649,19 @@ class WienerProcess(CountingProcess):
     ========
 
     >>> from sympy.stats import WienerProcess, P, E
-    >>> from sympy import symbols, Contains, Interval
+    >>> from sympy import symbols, Element, Interval
     >>> X = WienerProcess("X")
     >>> X.state_space
     Reals
     >>> t1, t2 = symbols('t1 t2', positive=True)
     >>> P(X(t1) < 7).simplify()
     erf(7*sqrt(2)/(2*sqrt(t1)))/2 + 1/2
-    >>> P((X(t1) > 2) | (X(t1) < 4), Contains(t1, Interval.Ropen(2, 4))).simplify()
+    >>> P((X(t1) > 2) | (X(t1) < 4), Element(t1, Interval.Ropen(2, 4))).simplify()
     -erf(1)/2 + erf(2)/2 + 1
     >>> E(X(t1))
     0
-    >>> E(X(t1) + 2*X(t2),  Contains(t1, Interval.Lopen(0, 1))
-    ... & Contains(t2, Interval.Lopen(1, 2)))
+    >>> E(X(t1) + 2*X(t2),  Element(t1, Interval.Lopen(0, 1))
+    ... & Element(t2, Interval.Lopen(1, 2)))
     0
 
     References
@@ -1707,7 +1707,7 @@ class GammaProcess(CountingProcess):
     ========
 
     >>> from sympy.stats import GammaProcess, E, P, variance
-    >>> from sympy import symbols, Contains, Interval, Not
+    >>> from sympy import symbols, Element, Interval, Not
     >>> t, d, x, l, g = symbols('t d x l g', positive=True)
     >>> X = GammaProcess("X", l, g)
     >>> E(X(t))
@@ -1717,8 +1717,8 @@ class GammaProcess(CountingProcess):
     >>> X = GammaProcess('X', 1, 2)
     >>> P(X(t) < 1).simplify()
     lowergamma(2*t, 1)/gamma(2*t)
-    >>> P(Not((X(t) < 5) & (X(d) > 3)), Contains(t, Interval.Ropen(2, 4)) &
-    ... Contains(d, Interval.Lopen(7, 8))).simplify()
+    >>> P(Not((X(t) < 5) & (X(d) > 3)), Element(t, Interval.Ropen(2, 4)) &
+    ... Element(d, Interval.Lopen(7, 8))).simplify()
     -4*exp(-3) + 472*exp(-8)/3 + 1
     >>> E(X(2) + x*E(X(5)))
     10*x + 4

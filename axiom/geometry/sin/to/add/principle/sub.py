@@ -11,8 +11,7 @@ def apply(self):
 def prove(Eq):
     from axiom import geometry
 
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(sin(x - y))
 
     Eq << geometry.sin.to.add.principle.add.apply(sin(x - y))

@@ -12,7 +12,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(domain=Interval(1, oo))
+    x = Symbol(domain=Interval(1, oo))
 
     Eq << apply(LessEqual(x, 1))
 

@@ -13,7 +13,7 @@ def apply(is_nonzero, equality, simplify=True):
             lhs = Add(*(a / x for a in lhs.args))
         else:
             lhs /= x
-            
+
         if rhs.is_Add:
             rhs = Add(*(a / x for a in rhs.args))
         else:
@@ -27,7 +27,7 @@ def apply(is_nonzero, equality, simplify=True):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     f, g, h = Function(real=True)
     Eq << apply(Unequal(f(x), 0), Equal(g(x) * f(x), h(x) * f(x) + x))
 

@@ -871,6 +871,7 @@ class Function(Application, Expr):
         exp is an exponent
         '''
         func = self.func.__name__
+        func = func.replace('_quote', "'")
         if hasattr(p, '_print_' + func) and \
                 not isinstance(self, AppliedUndef):
             return getattr(p, '_print_' + func)(self, exp)
@@ -1087,7 +1088,11 @@ class AppliedUndef(Function):
             return dtype.complex
         return super(AppliedUndef, self).dtype
 
-    
+    def _eval_is_random(self):
+        for arg in self.args:
+            if arg.is_random:
+                return True
+        
 class UndefSageHelper:
     """
     Helper to facilitate Sage conversion.
@@ -1132,6 +1137,21 @@ class UndefinedFunction(FunctionClass):
                     kwargs['is_set'] = not shape
             else:
                 kwargs['is_set'] = True
+                
+        if 'continuous' in kwargs:
+            continuous = kwargs.pop('continuous')
+            if isinstance(continuous, bool):
+                kwargs['is_continuous'] = lambda self, *_: continuous
+            else:
+                kwargs['is_continuous'] = continuous
+                
+        if 'integrable' in kwargs:
+            integrable = kwargs.pop('integrable')
+            if isinstance(integrable, bool):
+                kwargs['is_integrable'] = lambda self, *_: integrable
+            else:
+                kwargs['is_integrable'] = integrable
+        
         __dict__.update(kwargs)
         # add back the sanitized assumptions without the is_ prefix
         # Save these for __eq__
@@ -2239,6 +2259,36 @@ class Derivative(Expr):
         # object, the default in `Basic` will call a loop over
         # `_eval_derivative`:
         return expr._eval_derivative_n_times(v, count)
+
+
+    def _latex(self, p):
+        from sympy.printing.conventions import requires_partial
+        if requires_partial(self):
+            diff_symbol = r'\partial'
+        else:
+            diff_symbol = r'd'
+
+        tex = ""
+        dim = 0
+        for x, num in reversed(self.variable_count):
+            dim += num
+            if num == 1:
+                tex += r"%s %s" % (diff_symbol, p._print(x))
+            else:
+                tex += r"%s %s^{%s}" % (diff_symbol, p._print(x), num)
+
+        if dim == 1:
+            tex = r"\frac{%s}{%s}" % (diff_symbol, tex)
+        else:
+            tex = r"\frac{%s^{%s}}{%s}" % (diff_symbol, dim, tex)
+
+        if self.expr.is_Mul or self.expr.is_Add:
+            expr = r"\left(%s\right)" % p._print(self.expr)
+        else:
+            from sympy.printing.precedence import PRECEDENCE
+            expr = p.parenthesize(self.expr, PRECEDENCE["Mul"], strict=True)
+            
+        return r"%s %s" % (tex, expr)
 
 
 def _derivative_dispatch(expr, *variables, **kwargs):
@@ -4476,10 +4526,8 @@ class Difference(Expr):
 
     def _latex(self, printer):
         x, n = self.variable_count
-        from sympy import Mul
-
         expr = printer._print(self.expr)
-        if isinstance(self.expr, (Add, Mul)):
+        if self.expr.is_Add or self.expr.is_Mul:
             expr = r'\left(%s\right)' % expr
 
         if n == 1:

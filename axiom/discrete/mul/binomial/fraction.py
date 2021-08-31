@@ -10,8 +10,8 @@ def apply(n, k):
 def prove(Eq):
     from axiom import discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    k = Symbol.k(domain=Range(0, n))
+    n = Symbol(integer=True, positive=True)
+    k = Symbol(domain=Range(0, n))
     Eq << apply(n, k)
 
     Eq << Eq[-1].this.find(binomial).apply(discrete.binomial.to.mul)
@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << Eq[-1] * Factorial(k)
 
-    
+
 
     Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.mul)
 

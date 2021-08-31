@@ -10,11 +10,9 @@ def apply(*imply):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(domain=Range(a + 1, oo))
-    g = Function.g(integer=True)
-    f = Function.f(integer=True)
+    k, a = Symbol(integer=True)
+    b = Symbol(domain=Range(a + 1, oo))
+    g, f = Function(integer=True)
 
     Eq << apply((g(b) >= f(b)), Sum[k:a:b](g(k)) >= Sum[k:a:b](f(k)))
 

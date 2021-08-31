@@ -21,13 +21,9 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     from axiom import algebra
-    e = Symbol.e(integer=True)
-    A = Symbol.A(etype=dtype.integer, emptyset=False)
-
-    assert A.is_integer
-    assert not A.is_emptyset
-
-    f = Function.f(integer=True, shape=())
+    e = Symbol(integer=True)
+    A = Symbol(etype=dtype.integer, empty=False)
+    f = Function(integer=True)
     Eq << apply(f(e) > 0, (e, A))
 
     Eq << algebra.cond.imply.all.restrict.apply(Eq[0], (e, A))

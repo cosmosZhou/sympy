@@ -16,8 +16,7 @@ def apply(self):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
+    n, m = Symbol(integer=True, positive=True)
     Eq << apply(Determinant(BlockMatrix([[ZeroMatrix(n, m), Identity(n)],[Identity(m), ZeroMatrix(m, n)]])))
 
 

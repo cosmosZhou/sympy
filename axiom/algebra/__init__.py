@@ -32,12 +32,11 @@ from . import all_et
 from . import any_eq, all_eq, all_any_eq
 from . import ceiling
 from . import frac
-from . import piecewise
+from . import piece
 from . import sum
 from . import max
 from . import mul
 from . import lamda
-from . import product
 from . import floor
 from . import min
 from . import add, mod
@@ -47,12 +46,8 @@ from . import subs
 from . import suffice
 from . import norm
 from . import slice
-from . import eq_piecewise
-from . import mul_piecewise
-from . import eq_maximize
-from . import eq_minimize
-from . import maximize
-from . import minimize
+from . import eq_piece
+from . import mul_piece
 from . import log
 from . import reducedSum
 from . import sum_mul
@@ -61,7 +56,7 @@ from . import add_ceiling
 from . import kroneckerDelta
 
 
-from . import lamda_piecewise
+from . import lamda_piece
 
 
 from . import suffice_et
@@ -101,7 +96,6 @@ from . import et_any
 from . import add_is_zero
 from . import pow_exp
 from . import mod_is_nonzero
-from . import le_add
 from . import expr
 from . import arg_mul
 from . import arg_pow
@@ -120,11 +114,39 @@ from . import ceiling_is_positive
 from . import ceiling_is_negative
 from . import ceiling_is_nonzero
 from . import gt_arg
-from . import arg_piecewise
-from . import ceiling_piecewise
-from . import floor_piecewise
+from . import arg_piece
+from . import ceiling_piece
+from . import floor_piece
 from . import pow_is_zero
 from . import arg
 from . import ceiling_arg
 from . import eq_square
 from . import ou_is_zero
+from . import ou_is_nonzero
+from . import prod
+from . import lt_piece
+from . import le_piece
+from . import ge_piece
+from . import gt_piece
+from . import ne_piece
+from . import minima
+from . import eq_minima
+from . import maxima
+from . import eq_maxima
+from . import sup
+from . import eq_sup
+from . import eq_inf
+from . import all_any_gt
+from . import all_any_lt
+from . import ge_sup
+from . import le_inf
+from . import mul_is_positive
+from . import add_is_positive
+from . import add_is_negative
+from . import le_sup
+from . import inf
+from . import ge_inf
+from . import eq_reducedMin
+from . import reducedMin
+from . import eq_reducedMax
+from . import reducedMax

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     args = self.of(Determinant[Mul])
-    scalar = []    
+    scalar = []
     for arg in args:
         if arg.shape:
             n = arg.shape[-1]
@@ -18,8 +18,8 @@ def apply(self):
 
 @prove(proved=False)
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(complex=True)
+    n = Symbol(integer=True, positive=True)
+    a = Symbol(complex=True)
     Eq << apply(Determinant(a * Identity(n)))
 
 

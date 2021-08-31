@@ -13,8 +13,8 @@ def prove(Eq):
     from axiom import discrete, algebra
 
     from sympy.functions.combinatorial.numbers import Stirling
-    k = Symbol.k(integer=True, nonnegative=True, given=False)
-    n = Symbol.n(integer=True, nonnegative=True)
+    k = Symbol(integer=True, nonnegative=True, given=False)
+    n = Symbol(integer=True, nonnegative=True)
     Eq.hypothesis = apply(n, k)
 
     i = Eq.hypothesis.rhs.args[1].variable
@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(Eq.hypothesis)
 
-    y = Symbol.y(Lamda[n](Stirling(n, k + 1)))
+    y = Symbol(Lamda[n](Stirling(n, k + 1)))
     Eq << y[n].this.definition
 
     Eq << Eq[-1].subs(n, n + 1)
@@ -36,9 +36,10 @@ def prove(Eq):
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq[-2])
 
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[2], Eq[-1])
+
     Eq.stirling_solution = Eq[-1].this.find(Sum).expr.ratsimp()
 
-    Eq << Eq.stirling_solution.this.expr.apply(algebra.cond.imply.et.invoke, algebra.cond.imply.cond.subs, n, k + 1)
+    Eq << Eq.stirling_solution.this.expr.apply(algebra.cond.imply.cond.subs, n, k + 1, ret=0)
 
     Eq << Eq[-1].this.expr.apply(algebra.eq.eq.imply.eq.cancel, wrt=Eq.stirling_solution.variable)
 

@@ -14,10 +14,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    c = Symbol.c(real=True)
-    b = Symbol.b(real=True)
-    d = Symbol.d(real=True)
+    a, c, b, d = Symbol(real=True)
     Eq << apply(abs(a / b + d) <= c)
 
     Eq << algebra.le_abs.imply.et.apply(Eq[0])

@@ -2,13 +2,13 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption):
     from axiom.keras.eq.eq.eq.is_nonzero.imply.eq.crf.markov import process_assumptions
-    x, y = process_assumptions(*given)
+    x, y = process_assumptions(x_independence_assumption, y_independence_assumption, xy_independence_assumption, xy_nonzero_assumption)
     n, d = x.shape
 
-    t = Symbol.t(domain=Range(0, n))
-    i = Symbol.i(integer=True)
+    t = Symbol(domain=Range(0, n))
+    i = Symbol(integer=True)
 
     joint_probability = Probability(x[:t + 1], y[:t + 1])
     emission_probability = Probability(x[i] | y[i])
@@ -16,19 +16,19 @@ def apply(*given):
     y_given_x_probability = Probability(y | x)
     y = pspace(y).symbol
 
-    G = Symbol.G(Lamda[y[i - 1], y[i]](-log(transition_probability)))
+    G = Symbol(Lamda[y[i - 1], y[i]](-log(transition_probability)))
     assert G.shape == (d, d)
 
-    s = Symbol.s(Lamda[t](-log(joint_probability)))
+    s = Symbol(Lamda[t](-log(joint_probability)))
     assert s.shape == (n,)
 
-    x = Symbol.x(Lamda[y[i], i](-log(emission_probability)))
+    x = Symbol(Lamda[y[i], i](-log(emission_probability)))
     assert x.shape == (n, d)
 
-    z = Symbol.z(Lamda[y[t], t](Sum[y[:t]](E ** -s[t])))
+    z = Symbol(Lamda[y[t], t](Sum[y[:t]](E ** -s[t])))
     assert z.shape == (n, d)
 
-    x_quote = Symbol.x_quote(-Lamda[t](log(z[t])))
+    x_quote = Symbol(-Lamda[t](log(z[t])))
     assert x_quote.shape == (n, d)
 
     return Suffice(t > 0, Equal(x_quote[t], -log(ReducedSum(exp(-x_quote[t - 1] - G))) + x[t])), \
@@ -54,13 +54,13 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(t, t + 1)
 
-    Eq << Eq[-1].this.args[1].apply(sets.notcontains.imply.notcontains.sub, 1)
+    Eq << Eq[-1].this.args[1].apply(sets.notin.imply.notin.sub, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1], 1)
 
     Eq << Eq.z_definition.subs(t, t + 1)
 
-    Eq << Eq[-1].this.args[0].apply(sets.notcontains.imply.notcontains.sub, 1)
+    Eq << Eq[-1].this.args[0].apply(sets.notin.imply.notin.sub, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1])
 
@@ -86,7 +86,7 @@ def prove(Eq):
 
     Eq << Eq[6].subs(t, t + 1)
 
-    Eq << Eq[-1].this.args[0].apply(sets.notcontains.imply.notcontains.sub, 1)
+    Eq << Eq[-1].this.args[0].apply(sets.notin.imply.notin.sub, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1])
 
@@ -104,7 +104,7 @@ def prove(Eq):
 
     Eq << Eq[-1].subs(t, t - 1)
 
-    Eq << Eq[-1].this.args[0].apply(sets.notcontains.imply.notcontains.add, 1)
+    Eq << Eq[-1].this.args[0].apply(sets.notin.imply.notin.add, 1)
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1])
 

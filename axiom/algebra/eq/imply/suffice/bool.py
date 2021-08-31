@@ -21,10 +21,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    h = Symbol.h(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    n = Symbol(integer=True, nonnegative=True)
+    f, h, g = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(Equal(Bool(Equal(f[n], g[n])), Bool(Equal(f[n], g[n])) * Bool(Equal(f[n + 1], g[n + 1]))))
 
@@ -38,9 +36,9 @@ def prove(Eq):
 
     Eq << algebra.ou.imply.suffice.apply(Eq[-1], pivot=1)
 
-    Eq << Eq[-1].this.lhs.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.lhs.apply(algebra.bool.to.piece)
 
-    Eq << Eq[-1].this.rhs.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.rhs.lhs.apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':

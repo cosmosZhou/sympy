@@ -3,9 +3,6 @@ from util import *
 
 @apply
 def apply(exists, ou):
-    if not exists.is_Any:
-        exists, ou = ou, exists
-
     fx, *limits_x = exists.of(Any)
     cond = fx.invert()
     [*eqs] = ou.of(Or)
@@ -18,12 +15,10 @@ def apply(exists, ou):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    A = Symbol.A(etype=dtype.real)
+    x, y = Symbol(real=True)
+    A = Symbol(etype=dtype.real)
 
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    f, g = Function(integer=True)
 
     Eq << apply(Any[x:A](f(x, y) > 0), (g(y, x) > 0) | (f(x, y) <= 0))
 

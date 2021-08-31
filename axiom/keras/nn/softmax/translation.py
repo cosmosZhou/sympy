@@ -14,9 +14,9 @@ def apply(x, delta):
 def prove(Eq):
     from axiom import keras, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    delta = Symbol.delta(real=True)
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,))
+    delta = Symbol(real=True)
     Eq << apply(x, delta)
 
     Eq << Eq[-1].this.lhs.apply(keras.softmax.to.mul)

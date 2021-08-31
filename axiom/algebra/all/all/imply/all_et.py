@@ -15,14 +15,12 @@ def apply(all_a, all_b):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(real=True)
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    e = Symbol(real=True)
+    A, B = Symbol(etype=dtype.real)
+    f, g = Function(integer=True)
     Eq << apply(All[e:A](f(e) > 0), All[e:B](g(e) > 0))
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq << algebra.all.given.all.limits.relax.apply(Eq[-2], domain=A)
 

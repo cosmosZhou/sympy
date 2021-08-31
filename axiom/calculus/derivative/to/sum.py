@@ -12,9 +12,9 @@ def apply(self):
 
 @prove(proved=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)    
-    n = Symbol.n(integer=True)
+    x = Symbol(real=True)
+    f = Function(real=True)
+    n = Symbol(integer=True)
     Eq << apply(Derivative[x](Sum[n:0:oo](f[n](x))))
 
 

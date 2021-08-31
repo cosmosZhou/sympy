@@ -467,7 +467,7 @@ class Pow(Expr):
                     if _half(other):
                         if b.is_negative == True:
                             return S.NegativeOne ** other * Pow(-b, e * other)
-                        if b.is_extended_real == False:
+                        if b.is_extended_real == False or other == S.One / 2:
                             return Pow(b, -other)
                 elif e.is_even:
                     if b.is_extended_real:
@@ -695,6 +695,11 @@ class Pow(Expr):
         if all(a.is_complex for a in self.args):
             return True
 
+    def _eval_is_super_real(self):
+        b, e = self.args
+        if e.is_integer:
+            return b.is_super_real
+        
     def _eval_is_imaginary(self):
         from sympy import arg, log
         if self.base.is_imaginary:

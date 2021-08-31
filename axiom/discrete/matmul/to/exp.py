@@ -10,7 +10,7 @@ def apply(self):
         rhs = ReducedSum(exp(A + B))
     else:
         return
-        
+
     return Equal(self, rhs, evaluate=False)
 
 
@@ -18,13 +18,11 @@ def apply(self):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    k = Symbol.k(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
-    
-    A = Symbol.A(shape=(k, m), complex=True)
-    B = Symbol.B(shape=(m,), complex=True)
-    
+    n, k, m = Symbol(integer=True, positive=True)
+
+    A = Symbol(shape=(k, m), complex=True)
+    B = Symbol(shape=(m,), complex=True)
+
     #A = Symbol.A(shape=(m,), complex=True)
     #B = Symbol.B(shape=(m, n), complex=True)
     Eq << apply(exp(A) @ exp(B))

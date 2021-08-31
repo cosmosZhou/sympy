@@ -3,15 +3,14 @@ from util import *
 
 @apply
 def apply(given):
-    x, a = given.of(LessEqual) 
+    x, a = given.of(LessEqual)
     assert x.is_integer and a.is_integer
     return Less(x, a + 1)
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True, given=True)
-    a = Symbol.a(integer=True, given=True)
+    x, a = Symbol(integer=True, given=True)
 
     Eq << apply(x <= a)
 

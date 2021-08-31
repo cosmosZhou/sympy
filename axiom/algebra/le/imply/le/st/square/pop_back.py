@@ -31,12 +31,11 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    m = Symbol.m(domain=Range(2, oo))
-    y = Symbol.y(real=True, shape=(m,))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,))
+    m = Symbol(domain=Range(2, oo))
+    y = Symbol(real=True, shape=(m,))
+    i, j = Symbol(integer=True)
     Eq << apply(abs(y[m - 1] - Sum[i](x[i]) / n) <= abs(y[m - 1] - Sum[j](y[j]) / m))
 
     Eq << algebra.le.imply.le.square.apply(Eq[0])

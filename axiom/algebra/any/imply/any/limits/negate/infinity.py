@@ -11,11 +11,8 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    c = Symbol.c(integer=True)
-    f = Function.f(real=True)
+    i, a, b, c = Symbol(integer=True)
+    f = Function(real=True)
     Eq << apply(Any[i](f(i) >= 0))
 
     Eq << ~Eq[1]
@@ -23,6 +20,7 @@ def prove(Eq):
     Eq << Eq[-1].simplify()
 
     Eq << Eq[-1].subs(i, -i)
+
     Eq << algebra.cond.any.imply.any_et.apply(Eq[-1], Eq[0])
 
 

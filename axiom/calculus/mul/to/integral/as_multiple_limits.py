@@ -28,13 +28,8 @@ def apply(self):
 def prove(Eq):
     from axiom import calculus
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    c = Symbol.c(real=True)
-    d = Symbol.d(real=True)
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    a, b, c, d, x = Symbol(real=True)
+    f, g = Function(real=True)
     Eq << apply(Integral[x:a:b](f(x)) * Integral[x:c:d](g(x)))
 
     Eq << Eq[-1].this.rhs.apply(calculus.integral.limits.separate)

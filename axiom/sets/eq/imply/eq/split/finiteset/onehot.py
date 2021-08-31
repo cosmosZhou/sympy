@@ -16,19 +16,18 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, sets
 
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
+    x, y = Symbol(integer=True)
     Eq << apply(Equal({x, y}, {0, 1}))
 
     Eq << algebra.eq.given.et.split.matrix.apply(Eq[1])
 
-    
 
-    Eq << Contains(x, {x, y}, plausible=True)
+
+    Eq << Element(x, {x, y}, plausible=True)
 
     Eq << Eq[-1].subs(Eq[0])
 
-    Eq << sets.contains.imply.eq.kroneckerDelta.zero.apply(Eq[-1])
+    Eq << sets.el.imply.eq.kroneckerDelta.zero.apply(Eq[-1])
 
     Eq.x_equality = -Eq[-1] + 1
 

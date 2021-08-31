@@ -11,11 +11,10 @@ def apply(given, *limits):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
 
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
+    f, g = Function(real=True)
 
     Eq << apply(Greater(f(i), g(i)), (i, 0, n))
 
@@ -27,4 +26,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-from . import multiply
+from . import mul

@@ -22,13 +22,13 @@ def apply(given):
 def prove(Eq):
     from axiom import sets
     S = Range(0, oo)
-    e = Symbol.e(integer=True)
-    f = Function.f(integer=True, shape=())
+    e = Symbol(integer=True)
+    f = Function(integer=True, shape=())
     Eq << apply(All[e:S](f(e) > 0))
 
     Eq << Unequal(S, S.etype.emptySet, plausible=True)
 
-    Eq << sets.is_nonemptyset.all.imply.any.apply(Eq[-1], Eq[0])
+    Eq << sets.is_nonempty.all.imply.any.apply(Eq[-1], Eq[0])
 
 
 if __name__ == '__main__':

@@ -11,11 +11,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
+    x, a, b = Symbol(real=True)
+    f, g = Function(shape=(), real=True)
 
     Eq << apply(All[x:a:b](Equal(f(x), g(x))))
 

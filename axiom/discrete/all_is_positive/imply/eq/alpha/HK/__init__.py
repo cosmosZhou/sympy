@@ -15,15 +15,15 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(integer=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True)
-    j = Symbol.j(integer=True)
+    x = Symbol(integer=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    j = Symbol(integer=True)
 
     Eq << apply(All[j:1:n](x[j] > 0))
 
     Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=n >= 3)
 
-    Eq.case1, Eq.case2 = algebra.suffice.given.suffice.split.apply(Eq[-1], cond=n < 2)
+    Eq.case1, Eq.case2 = algebra.suffice.given.et.suffice.split.apply(Eq[-1], cond=n < 2)
 
     Eq << Eq.case1.this.lhs.apply(algebra.lt.to.eq.squeeze)
 

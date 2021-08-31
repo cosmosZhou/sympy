@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply():
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     return Equal(1 / sqrt(2 * pi) * Integral(exp(-x * x / 2), (x, -oo, oo)), 1, evaluate=False)
 
 
@@ -16,7 +16,7 @@ def prove(Eq):
     Eq << Eq[0] * sqrt(2 * pi)
 
     x, *_ = Eq[-1].lhs.limits[0]
-    y = Symbol.y(real=True)
+    y = Symbol(real=True)
     Eq << Eq[-1].lhs.this.limits_subs(x, y)
 
     Eq << Eq[-1] * Eq[-1].lhs

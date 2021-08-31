@@ -11,13 +11,13 @@ def apply(n, Q=None):
     P_quote = Symbol("P'", conditionset(x[:n + 1], Equal(x[:n].set_comprehension(), Range(0, n)) & Equal(x[n], n)))
 
     t = Q.definition.variable
-    return Equal(Abs(Q[t]), Abs(P_quote))
+    return Equal(Card(Q[t]), Card(P_quote))
 
 
 @prove
 def prove(Eq):
     from axiom import discrete, sets
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
     Eq << apply(n)
 
     Eq << discrete.condset.identity_Qn.apply(n)

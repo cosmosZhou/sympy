@@ -177,6 +177,7 @@ def mpf_norm(mpf, prec):
     rv = mpf_normalize(sign, MPZ(man), expt, bc, prec, rnd)
     return rv
 
+
 # TODO: we should use the warnings module
 _errdict = {"divide": False}
 
@@ -220,6 +221,8 @@ def _decimal_to_Rational_prec(dec):
 
 
 _floatpat = regex.compile(r"[-+]?((\d*\.\d+)|(\d+\.?))")
+
+
 def _literal_float(f):
     """Return True if n starts like a floating point number."""
     return bool(_floatpat.match(f))
@@ -227,6 +230,7 @@ def _literal_float(f):
 # (a,b) -> gcd(a,b)
 
 # TODO caching with decorator, but not to degrade performance
+
 
 @lru_cache(1024)
 def igcd(*args):
@@ -255,7 +259,7 @@ def igcd(*args):
     if 1 in args_temp:
         return 1
     a = args_temp.pop()
-    if HAS_GMPY: # Using gmpy if present to speed up.
+    if HAS_GMPY:  # Using gmpy if present to speed up.
         for b in args_temp:
             a = gmpy.gcd(a, b) if b else a
         return as_int(a)
@@ -320,7 +324,7 @@ def igcd_lehmer(a, b):
     # pair (a, b) with a pair of shorter consecutive elements
     # of the Euclidean gcd sequence until a and b
     # fit into two Python (long) int digits.
-    nbits = 2*sys.int_info.bits_per_digit
+    nbits = 2 * sys.int_info.bits_per_digit
 
     while a.bit_length() > nbits and b != 0:
         # Quotients are mostly small integers that can
@@ -588,6 +592,7 @@ class Number(AtomicExpr):
     _prec = -1
 
     kind = NumberKind
+
     def _coeff_isneg(self):
         return self.is_extended_negative
     
@@ -906,6 +911,10 @@ class Number(AtomicExpr):
             return isinstance(self, cls)
         
         return self == cls
+
+    
+    def is_continuous(self, *args):
+        return True
     
 class Float(Number):
     """Represent a floating-point number of arbitrary precision.
@@ -2145,7 +2154,7 @@ class Rational(Number):
                     except AttributeError:
                         ...
             elif p.is_Rational:
-                if q is Expr:                
+                if q is Expr: 
                     num_, den_ = p.p, p.q
                     if num_ == 1:
                         num, den = self.p, self.q
@@ -2158,6 +2167,7 @@ class Rational(Number):
 
     def __invert__(self):
         return self
+
 
 class Integer(Rational):
     """Represents integer numbers of any size.
@@ -2550,10 +2560,6 @@ class Integer(Rational):
     def __rfloordiv__(self, other):
         return Integer(Integer(other).p // self.p)
 
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr(str(self.p))
-
 
 # Add sympify converters
 converter[int] = Integer
@@ -2894,6 +2900,7 @@ class One(with_metaclass(Singleton, IntegerConstant)):
             return self
         if q.is_negative:
             return self + q
+
                 
 class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
     """The number negative one.
@@ -2997,6 +3004,7 @@ class NegativeOne(with_metaclass(Singleton, IntegerConstant)):
         if q.is_negative:
             return self
 
+
 class Half(with_metaclass(Singleton, RationalConstant)):
     """The rational number 1/2.
 
@@ -3068,6 +3076,7 @@ class Infinity(with_metaclass(Singleton, Number)):
     is_number = True
 #     is_complex = False
     is_extended_real = True
+    is_extended_integer = True
     is_infinite = True
     is_extended_positive = True
     is_prime = False
@@ -3253,10 +3262,6 @@ class Infinity(with_metaclass(Singleton, Number)):
     def ceiling(self):
         return self
 
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('oo')
-
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
@@ -3282,6 +3287,7 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
     """
 
     is_extended_real = True
+    is_extended_integer = True
 #     is_complex = False
     is_commutative = True
     is_infinite = True
@@ -3470,10 +3476,6 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
     def as_powers_dict(self):
         return {S.NegativeOne: 1, S.Infinity: 1}
 
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('-oo')
-
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
@@ -3601,10 +3603,6 @@ class NaN(with_metaclass(Singleton, Number)):
     __ge__ = Expr.__ge__
     __lt__ = Expr.__lt__
     __le__ = Expr.__le__
-
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('NaN')
 
 
 nan = S.NaN
@@ -3904,10 +3902,6 @@ class Pi(with_metaclass(Singleton, NumberSymbol)):
 
     def _sympystr(self, _):
         return '\N{GREEK SMALL LETTER PI}'
-
-    def to_wolfram(self, _):        
-        from wolframclient.language import wlexpr
-        return wlexpr('Pi')
 
 
 pi = S.Pi

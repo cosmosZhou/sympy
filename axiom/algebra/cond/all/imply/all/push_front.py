@@ -14,15 +14,14 @@ def apply(cond, forall):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(domain=Range(a + 1, oo))
-    g = Function.g(integer=True)
+    k, a = Symbol(integer=True)
+    b = Symbol(domain=Range(a + 1, oo))
+    g = Function(integer=True)
     Eq << apply((g(a - 1) > 0), All[k:a:b](g(k) > 0))
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={a - 1})
 
-    
+
 
 
 if __name__ == '__main__':

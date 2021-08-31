@@ -11,12 +11,10 @@ def apply(given, *, cond=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True, given=True)
-    f = Symbol.f(integer=True, shape=(oo,), given=True)
-    g = Symbol.g(integer=True, shape=(oo,), given=True)
+    n = Symbol(integer=True, nonnegative=True, given=True)
+    f, g = Symbol(integer=True, shape=(oo,), given=True)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
+    a, b = Symbol(integer=True)
 
     Eq << apply(Suffice(LessEqual(f[0], g[0]), LessEqual(f[n], g[n])), cond=LessEqual(a, b))
 

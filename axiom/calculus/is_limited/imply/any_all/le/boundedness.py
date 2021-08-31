@@ -17,27 +17,25 @@ def apply(given, delta=None, var=None):
 @prove
 def prove(Eq):
     from axiom import calculus, algebra
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
 
-    x = Symbol.x(real=True)
+    x, x0, a = Symbol(real=True)
 #     x = Symbol.x(real=True, shape=(n,))
 #     x = Symbol.x(integer=True)
 
-    f = Function.f(real=True, shape=())
+    f = Function(real=True, shape=())
 
-    x0 = Symbol.x0(real=True)
 #     x0 = Symbol.x0(real=True, shape=(n,))
 
 #     x0 = oo
 #     x0 = -oo
 
-    a = Symbol.a(real=True)
 #     a = oo
 #     a = -oo
 
     direction = 1
 
-    Eq << apply(Contains(Limit[x:x0:direction](f(x)), Reals), var='M')
+    Eq << apply(Element(Limit[x:x0:direction](f(x)), Reals), var='M')
 
     M = Eq[-1].variables[1]
 

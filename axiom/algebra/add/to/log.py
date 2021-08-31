@@ -4,12 +4,12 @@ from util import *
 @apply
 def apply(self):
     args = self.of(Add)
-    
+
     logs = []
     for arg in args:
         if arg.is_Log:
             logs.append(arg.arg)
-        else:            
+        else:
             [*_args] = arg.of(Mul)
             log_x = None
             for i, log_x in enumerate(_args):
@@ -30,8 +30,7 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    a, b = Symbol(real=True)
     Eq << apply(Log(a) - Log(b))
 
     Eq << algebra.eq.given.eq.exp.apply(Eq[-1])

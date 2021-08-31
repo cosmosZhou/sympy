@@ -12,14 +12,14 @@ def apply(given, *, cond=None, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    f = Function.f(integer=True, shape=())
-    d = Symbol.d(real=True, positive=True)
+    x = Symbol(real=True)
+    f = Function(integer=True, shape=())
+    d = Symbol(real=True, positive=True)
     Eq << apply(All[x:-d:d](f(x) > 0), cond=x <= 0)
 
     Eq << algebra.all.imply.et.split.apply(Eq[0], cond=x <= 0)
 
-    
+
 
 
 if __name__ == '__main__':

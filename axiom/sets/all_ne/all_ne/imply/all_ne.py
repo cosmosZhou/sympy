@@ -34,16 +34,15 @@ def apply(all_historic, all_n):
 def prove(Eq):
     from axiom import algebra
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(shape=(oo,), etype=dtype.integer, finite=True)
     Eq << apply(All[j:i, i:n](Unequal(x[i], x[j])),
                 All[i:n](Unequal(x[n], x[i])))
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={n}, wrt=i)
 
-    
+
 
 
 if __name__ == '__main__':

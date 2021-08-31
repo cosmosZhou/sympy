@@ -4,5 +4,6 @@ from . import subs
 from . import min
 from . import max
 from . import add
-from . import sum, product
+from . import sum
 from . import mul
+from . import prod

@@ -15,19 +15,15 @@ def apply(forall, exists):
 def prove(Eq):
     from axiom import algebra
 
-    y = Symbol.y(real=True)
-    x = Symbol.x(real=True)
-    z = Symbol.z(real=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
-    h = Function.h(integer=True)
+    y, x, z = Symbol(real=True)
+    f, g, h = Function(integer=True)
     Eq << apply(All[z:h(z) > 0](h(y, z) > 0), Any[y:g(y) > 1, x:f(x) > 0](g(x) > 0))
 
     Eq << Eq[-1].this.expr.apply(algebra.all_et.given.et.all)
 
     Eq << Eq[-1].this.find(Or).apply(algebra.ou.given.cond, 0)
 
-    
+
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[1])
 
 

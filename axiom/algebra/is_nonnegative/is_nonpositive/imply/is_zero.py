@@ -11,14 +11,14 @@ def apply(is_nonnegative, is_nonpositive):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    
+    x = Symbol(real=True)
+
     Eq << apply(x >= 0, x <= 0)
-    
-    Eq <<= Eq[0] & Eq[1]   
-    
+
+    Eq <<= Eq[0] & Eq[1]
+
     Eq << Eq[-1].simplify()
-        
-    
+
+
 if __name__ == '__main__':
     run()

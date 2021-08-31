@@ -14,18 +14,16 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, sets, calculus
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    a, b, x = Symbol(real=True)
     domain = Interval(a, b)
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
+    f = Function(real=True)
     Eq << apply(All[x:domain](Derivative[x](f(x)) > 0))
 
     Eq << algebra.cond.given.et.suffice.split.apply(Eq[1], cond=a < b)
 
     Eq << Eq[-1].this.rhs.apply(algebra.all.given.all_et.limits_cond, simplify=None)
 
-    Eq << (a >= b).this.apply(sets.ge.imply.is_emptyset, left_open=True)
+    Eq << (a >= b).this.apply(sets.ge.imply.interval_is_empty, left_open=True)
 
     Eq <<= Eq[-1] & Eq[-2]
 

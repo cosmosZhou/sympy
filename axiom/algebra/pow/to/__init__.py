@@ -1,6 +1,7 @@
 from . import bool
-from . import mul, product
-from . import piecewise
+from . import piece
 
 from . import one
 from . import add
+from . import prod
+from . import mul

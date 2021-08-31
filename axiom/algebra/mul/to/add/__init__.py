@@ -24,9 +24,7 @@ def apply(self, deep=False):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(complex=True)
-    a = Symbol.a(complex=True)
-    b = Symbol.b(complex=True)
+    x, a, b = Symbol(complex=True)
     Eq << apply(x * (a + b))
 
     Eq << Eq[-1].this.lhs.expand()
@@ -36,5 +34,4 @@ if __name__ == '__main__':
     run()
 
 from . import st, square
-del poly
 from . import poly

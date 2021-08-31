@@ -11,8 +11,7 @@ def apply(eq):
 def prove(Eq):
     from axiom import algebra
 
-    b = Symbol.b(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
+    b, a = Symbol(real=True, given=True)
     Eq << apply(Equal(a, b))
 
     Eq << algebra.equivalent.given.et.suffice.apply(Eq[0])

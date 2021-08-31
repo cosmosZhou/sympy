@@ -15,22 +15,22 @@ def apply(a, wrt=None):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(complex=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(complex=True, shape=(n,))
 
     Eq << apply(x)
 
-    A = Symbol.A(Eq[0].lhs)
-    B = Symbol.B(Eq[0].rhs)
+    A = Symbol(Eq[0].lhs)
+    B = Symbol(Eq[0].rhs)
 
     a = Eq[0].lhs.variable
-    Eq.all_contains_in_B = All[a:A](Contains(a, B), plausible=True)
+    Eq.all_contains_in_B = All[a:A](Element(a, B), plausible=True)
 
     Eq << Eq.all_contains_in_B.this.limits[0][1].definition
 
     Eq << Eq[-1].this.expr.rhs.definition
 
-    Eq.all_contains_in_A = All[a:B](Contains(a, A), plausible=True)
+    Eq.all_contains_in_A = All[a:B](Element(a, A), plausible=True)
 
     Eq << Eq.all_contains_in_A.this.limits[0][1].definition
 
@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq << algebra.all.imply.all.limits.invert.apply(Eq[-1])
 
-    Eq << sets.all_contains.all_contains.imply.eq.apply(Eq.all_contains_in_A, Eq.all_contains_in_B)
+    Eq << sets.all_el.all_el.imply.eq.apply(Eq.all_contains_in_A, Eq.all_contains_in_B)
 
     Eq << Eq[-1].this.lhs.definition
 

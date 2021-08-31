@@ -5,15 +5,13 @@ from util import *
 def apply(lt, index=0):
     x, args = lt.of(Less[Expr, Min])
     y = args[index]
-    
+
     return Less(x, y)
 
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    z = Symbol.z(real=True, given=True)
+    x, y, z = Symbol(real=True, given=True)
     Eq << apply(x < Min(y, z))
 
     Eq << ~Eq[1]

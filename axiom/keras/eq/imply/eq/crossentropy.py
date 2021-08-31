@@ -17,8 +17,8 @@ def apply(given):
 
     assert n >= 2
 
-    x = Symbol.x(shape=(n,), real=True)
-    y = Symbol.y(softmax(x))
+    x = Symbol(shape=(n,), real=True)
+    y = Symbol(softmax(x))
 
     assert y.is_zero == False
 
@@ -29,16 +29,16 @@ def apply(given):
 def prove(Eq):
     from axiom import discrete, calculus, algebra
 
-    n = Symbol.n(domain=Range(2, oo))
-    t = Symbol.t(shape=(n,), real=True)
-    j = Symbol.j(integer=True)
+    n = Symbol(domain=Range(2, oo))
+    t = Symbol(shape=(n,), real=True)
+    j = Symbol(integer=True)
     Eq << apply(Equal(Sum[j](t[j]), 1))
 
     Eq << Eq[-1].lhs.expr.this.defun()
 
     Eq << Eq[-1].this.rhs.args[1].apply(discrete.matmul.to.sum, var=j)
 
-    i = Symbol.i(domain=Range(0, n))
+    i = Symbol(domain=Range(0, n))
     xi = Eq[2].lhs.variable[i]
     Eq << Eq[-1].apply(calculus.eq.imply.eq.derive, (xi,), simplify=False)
 

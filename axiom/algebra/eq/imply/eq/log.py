@@ -13,9 +13,9 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    f = Function.f(shape=(), positive=True)
-    g = Function.g(shape=(), real=True)
+    x = Symbol(real=True)
+    f = Function(shape=(), positive=True)
+    g = Function(shape=(), real=True)
     Eq << apply(Equal(f(x), g(x)))
 
     Eq << Eq[1].subs(Eq[0])

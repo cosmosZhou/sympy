@@ -20,11 +20,8 @@ def apply(given, index=None):
 def prove(Eq):
     from axiom import algebra
 
-    y = Symbol.y(integer=True)
-    x = Symbol.x(integer=True)
-    t = Function.t(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, y = Symbol(integer=True)
+    t, f, g = Function(integer=True)
     Eq << apply(Suffice(Equal(t(x), y) & (f(x) > y), Equal(f(t(x), y), g(x))))
 
     Eq << algebra.suffice.given.suffice.et.apply(Eq[0])

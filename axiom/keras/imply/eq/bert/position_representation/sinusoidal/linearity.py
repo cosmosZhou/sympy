@@ -7,20 +7,20 @@ def apply(n, d, b):
     PE = sinusoid_position_encoding(n, d, b)
     j, i = PE.definition.variables
 
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
 
     PE_quote = sinusoid_position_encoding(n, d, b, inverse=True)
 
     (e0, c0), (e1, _) = PE[k, j].definition.args
 
-    F = Symbol.F(Lamda[j:d, k:n](Piecewise((cos(e0.arg), c0), (e1, True))))
+    F = Symbol(Lamda[j:d, k:n](Piecewise((cos(e0.arg), c0), (e1, True))))
 
     F_quote = Symbol("F'", Lamda[j:d, k:n](Piecewise((e0, c0), (sin(e1.arg), True))))
 
     I = S.ImaginaryUnit
-    z = Symbol.z(F - I * F_quote)
+    z = Symbol(F - I * F_quote)
 
-    Z = Symbol.Z(PE * I - PE_quote)
+    Z = Symbol(PE * I - PE_quote)
 
     return Equal(Z[i + k], Z[i] * z[1] ** k)
 
@@ -29,8 +29,8 @@ def apply(n, d, b):
 def prove(Eq):
     from axiom import algebra, geometry
 
-    n = Symbol.n(positive=True, integer=True)
-    b = Symbol.b(positive=True)
+    n = Symbol(positive=True, integer=True)
+    b = Symbol(positive=True)
     d = Symbol("d_model", integer=True, positive=True, even=True)
     Eq << apply(n, d, b)
 
@@ -52,15 +52,15 @@ def prove(Eq):
 
     Eq << Eq[1] * Eq[3]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
     Eq << Eq[0] * Eq[4]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
     Eq << Eq[-1] + Eq[-3]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise.st.two_pieces)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece.st.two_pieces)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.cossin, Eq[-1])
 
@@ -82,15 +82,15 @@ def prove(Eq):
 
     Eq << Eq[1] * Eq[4]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
     Eq << Eq[0] * Eq[3]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
     Eq << Eq[-1] - Eq[-3]
 
-    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piecewise.st.two_pieces)
+    Eq << Eq[-1].this.rhs.apply(algebra.add.to.piece.st.two_pieces)
 
     Eq << algebra.eq.eq.imply.eq.transit.apply(Eq.coscos, Eq[-1])
 

@@ -393,7 +393,7 @@ class ConnectMysqli
 
 function select_axiom_by_state($state)
 {
-    global $user;    
+    global $user;
     $result = select("select axiom from tbl_axiom_py where user = '$user' and state = '$state'");
     $array = [];
     foreach ($result as &$value) {
@@ -473,15 +473,18 @@ function yield_from_mysql($axiom)
     global $user;
     error_log("user = $user");
 
-    foreach (select("select latex from tbl_axiom_py where user = '$user' and axiom = '$axiom'") as $latex) {
-        return explode("\n", $latex[0]);
+    foreach (select("select latex, timestamp from tbl_axiom_py where user = '$user' and axiom = '$axiom'") as list ($latex, $timestamp)) {
+        return [
+            explode("\n", $latex),
+            $timestamp
+        ];
     }
 }
 
 function yield_from_sql($sqlFile)
 {
     // error_log("function yield_from_sql($sqlFile)");
-
+    // error_log(file_get_contents($sqlFile));
     // error_log(\std\jsonify(explode(';', file_get_contents($sqlFile))));
     $text = new Text($sqlFile);
 
@@ -490,16 +493,15 @@ function yield_from_sql($sqlFile)
             continue;
         }
 
-        // error_log("line = " . $line);
-        // replace into tbl_axiom_py values(%s,%s,%s,%s,%s);"
-        preg_match('/^replace into tbl_axiom_py values\((.+)\);$/', $line, $matches);
-        $json = "[" . $matches[1] . "]";
-        // error_log("json string = " . $json);
+        if (\std\startsWith($line, 'b')) {
+            $line = substr($line, 2, - 1);
+        }
 
-        $json = json_decode($json);
-
-        // error_log("json object = " . \std\jsonify($json));
-        yield from explode("\n", end($json));
+        preg_match("/update tbl_axiom_py set state = \"\w+\", lapse = \S+, latex = (\"[\s\S]+\") where user = \"\w+\" and axiom = \"\S+\"/", $line, $matches);
+        $latex = $matches[1];
+        $latex = eval("return $latex;");
+        $latex = str_replace("\\'", "'", $latex);
+        yield from explode("\n", $latex);
     }
 }
 
@@ -592,7 +594,7 @@ function suggest($prefix, $phrase)
             $sql .= " and phrase like '%$phrase%'";
         }
 
-//        error_log("in suggest: " . $sql);
+        // error_log("in suggest: " . $sql);
 
         foreach (select($sql) as list ($word,)) {
             $phrases[] = $word;
@@ -603,15 +605,15 @@ function suggest($prefix, $phrase)
 
     if ($phrase) {
         $dict = [];
-        
-        foreach ($phrases as &$word){
+
+        foreach ($phrases as &$word) {
             $dict[$word] = \std\startsWith($word, $phrase);
         }
 
         arsort($dict);
-        $phrases = array_keys($dict);        
+        $phrases = array_keys($dict);
     }
-    
+
     return $phrases;
 }
 
@@ -718,23 +720,19 @@ function delete_from_suggest($theorem, $__init__ = false, $regex = false)
 function update_suggest($package, $old, $new, $is_folder = false)
 {
     global $user;
-    $package = "$package.";
-
     if ($new == null) {
-        $sql = "delete from tbl_suggest_py where user = '$user' and prefix = '$package' and phrase = '$old'";
-    } else {
+        $sql = "delete from tbl_suggest_py where user = '$user' and prefix = '$package.' and phrase = '$old'";
+    } else if ($is_folder) {
+        $package_regex = str_replace(".", "\\.", $package);
+        $sql = "update tbl_suggest_py set prefix = regexp_replace(prefix, '^$package_regex\\.$old\\.(.+)', '$package.$new.$1') where user = '$user' and prefix like '$package.$old.%'";
+    } else
         $sql = "update tbl_suggest_py set phrase = '$new' where user = '$user' and prefix = '$package' and phrase = '$old'";
-    }
 
     error_log("sql = $sql");
 
     $rows_affected = \mysql\execute($sql);
-    if ($rows_affected != 1) {
+    if ($rows_affected < 1) {
         error_log("error found in $sql");
-    }
-
-    if ($is_folder) {
-        $sql = "update tbl_suggest_py set prefix = regexp_replace(prefix, '^$package\\.$old\\.(.+)', '$package.$new.\\1') where user = '$user' and prefix like '$package.$old.%'";
     }
 }
 
@@ -759,33 +757,40 @@ function delete_from_axiom($old, $regex = false)
 function update_axiom($old, $new, $is_folder = false)
 {
     global $user;
-    $sql = "update tbl_axiom_py set axiom = '$new' where user = '$user' and axiom = '$old'";
-    $rows_affected = \mysql\execute($sql);
-    if ($rows_affected != 1) {
-        error_log("error found in $sql");
-    }
 
     if ($is_folder) {
-        $old = str_replace('.', "\\.", $old);
-        $sql = "update tbl_axiom_py set axiom = regexp_replace(axiom, '^$old\.(.+)', '$new.$1') where user = '$user' and axiom regexp '^$old\..+'";
-        error_log("sql = $sql");
+        $old_regex = str_replace('.', "\\.", $old);
+        $sql = "update tbl_axiom_py set axiom = regexp_replace(axiom, '^$old_regex\.(.+)', '$new.$1') where user = '$user' and axiom like '$old.%'";
+    } else {
+        $sql = "update tbl_axiom_py set axiom = '$new' where user = '$user' and axiom = '$old'";
+    }
 
-        $rows_affected = \mysql\execute($sql);
-        if (! $rows_affected) {
-            error_log("error found in $sql");
-        }
+    error_log("sql = $sql");
+    $rows_affected = \mysql\execute($sql);
+    if ($rows_affected < 1) {
+        error_log("error found in $sql");
     }
 }
 
 function replace_with_callee($old, $new)
 {
     $old_regex = str_replace('.', "\\.", $old);
-    $old_regex = "$old_regex(?!\.)|$old_regex(?=\.apply\b)";
+    $old_regex_hierarchy = "$old_regex(?!\.)|$old_regex(?=\.apply\b)";
     global $user;
     foreach (\mysql\select("select caller from tbl_hierarchy_py where user = '$user' and callee = '$old'") as list ($caller,)) {
         $pyFile = module_to_py($caller);
         $pyFile = new Text($pyFile);
 
+        $pyFile->preg_replace($old_regex_hierarchy, $new);
+    }
+
+    $old_regex = "(?<=from axiom\.)$old_regex(?= import \w+)";
+    //php doesn't support variable-lenth looking-behind assertion
+    //$old_regex = "(?<=^ *from axiom\.)$old_regex(?= import \w+)";    
+    foreach (\mysql\select("select caller from tbl_function_py where user = '$user' and callee = '$old'") as list ($caller,)) {
+        $pyFile = module_to_py($caller);
+        $pyFile = new Text($pyFile);
+        
         $pyFile->preg_replace($old_regex, $new);
     }
 }
@@ -798,27 +803,24 @@ function reaplce_axiom_in_hierarchy($old, $new)
 
     error_log("sql = update tbl_hierarchy_py set callee = '$new' where user = '$user' and callee = '$old'");
     $rows_affected = \mysql\execute("update tbl_hierarchy_py set callee = '$new' where user = '$user' and callee = '$old'");
+
+    error_log("sql = update tbl_function_py set caller = '$new' where user = '$user' and caller = '$old'");
+    $rows_affected = \mysql\execute("update tbl_function_py set caller = '$new' where user = '$user' and caller = '$old'");
+    
+    error_log("sql = update tbl_function_py set callee = '$new' where user = '$user' and callee = '$old'");
+    $rows_affected = \mysql\execute("update tbl_function_py set callee = '$new' where user = '$user' and callee = '$old'");
 }
 
 function update_hierarchy($old, $new, $is_folder = false)
 {
     global $user;
-    // update the python files that contains $old theorem!
-    $sql = "select caller from tbl_hierarchy_py where user = '$user' and callee = '$old'";
-
-    error_log("sql = $sql");
-
-    replace_with_callee($old, $new);
-
-    reaplce_axiom_in_hierarchy($old, $new);
-
     if ($is_folder) {
-        $old = str_replace('.', "\\.", $old);
+        $old_regex = str_replace('.', "\\.", $old);
 
         $replaceDict = [];
-        foreach (\mysql\select("select axiom from tbl_axiom_py where user = '$user' and axiom regexp '$old'") as list ($axiom,)) {
+        foreach (\mysql\select("select axiom from tbl_axiom_py where user = '$user' and axiom like '$old.%'") as list ($axiom,)) {
             $oldAxiom = $axiom;
-            $newAxiom = preg_replace("/^$old\.(.+)/", "$new.$1", $oldAxiom);
+            $newAxiom = preg_replace("/^$old_regex\.(.+)/", "$new.$1", $oldAxiom);
 
             $replaceDict[$oldAxiom] = $newAxiom;
             error_log("replace $oldAxiom with $newAxiom");
@@ -826,8 +828,22 @@ function update_hierarchy($old, $new, $is_folder = false)
 
         foreach ($replaceDict as $old => $new) {
             replace_with_callee($old, $new);
-            reaplce_axiom_in_hierarchy($old, $new);
         }
+        // these two for loop cannot be combined because results of replace_with_callee depend on reaplce_axiom_in_hierarchy
+        foreach ($replaceDict as $old => $new) {
+            reaplce_axiom_in_hierarchy($old, $new);            
+        }
+        
+        
+    } else {
+        // update the python files that contains $old theorem!
+        $sql = "select caller from tbl_hierarchy_py where user = '$user' and callee = '$old'";
+
+        error_log("sql = $sql");
+
+        replace_with_callee($old, $new);
+
+        reaplce_axiom_in_hierarchy($old, $new);
     }
 }
 ?>

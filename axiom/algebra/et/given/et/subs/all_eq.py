@@ -30,14 +30,13 @@ def apply(imply, simplify=True):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    a = Symbol.a(integer=True, shape=(oo,))
-    b = Symbol.b(integer=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    a, b = Symbol(integer=True, shape=(oo,))
 
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol(etype=dtype.integer)
 
-    Eq << apply(All[i:n](Equal(a[i], b[i])) & Contains(Sum[i:n](a[i]), S))
+    Eq << apply(All[i:n](Equal(a[i], b[i])) & Element(Sum[i:n](a[i]), S))
 
     Eq << algebra.all_eq.imply.eq.sum.apply(Eq[-2])
 

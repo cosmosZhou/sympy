@@ -11,16 +11,15 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
-    
+    a, b = Symbol(real=True, given=True)
+
     Eq << apply(Unequal(0, a - b))
-    
+
     Eq << Eq[0] + b
-    
+
     Eq << Eq[-1].reversed
-    
-    
+
+
 
 if __name__ == '__main__':
     run()

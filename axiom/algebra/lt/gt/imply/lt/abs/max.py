@@ -12,9 +12,7 @@ def apply(x_less_than_y, x_greater_than_y_minus):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
+    x, a, b = Symbol(real=True, given=True)
 
     Eq << apply(x < a, x > b)
 
@@ -22,7 +20,7 @@ def prove(Eq):
 
     Eq <<= ~Eq[-2], - ~Eq[-1]
 
-    Eq <<= algebra.ge.imply.ge.relaxed.apply(Eq[-2], abs(a)), -algebra.ge.imply.ge.relaxed.apply(Eq[-1], abs(b))
+    Eq <<= algebra.ge.imply.ge.relax.apply(Eq[-2], abs(a)), -algebra.ge.imply.ge.relax.apply(Eq[-1], abs(b))
 
     Eq <<= algebra.lt.ge.imply.gt.transit.apply(Eq[0], Eq[-2]), -algebra.gt.le.imply.lt.transit.apply(Eq[1], Eq[-1])
 

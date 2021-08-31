@@ -4,7 +4,8 @@ from util import *
 from axiom.algebra.add_is_zero.given.et_eq.cubic.one_leaded import cubic_solve
 from axiom.algebra.is_nonzero.add_is_zero.imply.ne import cubic_delta
 
-def solver_set(d, A, B, x, alpha, beta, w):
+
+def solver_set(d, A, B, x, alpha, beta, w, offset=0):
     if d == 0:
         y = A + B    
     elif d % 3 == 1:
@@ -17,12 +18,13 @@ def solver_set(d, A, B, x, alpha, beta, w):
     y0 = -2 * alpha / 3 + y
     y1 = 4 * alpha / 3 + y
 
-    x0 = sqrt(2 * beta / sqrt(y0) - y1) / 2 - sqrt(y0) / 2
-    x1 = -sqrt(2 * beta / sqrt(y0) - y1) / 2 - sqrt(y0) / 2
-    x2 = sqrt(-2 * beta / sqrt(y0) - y1) / 2 + sqrt(y0) / 2
-    x3 = -sqrt(-2 * beta / sqrt(y0) - y1) / 2 + sqrt(y0) / 2
+    x0 = sqrt(2 * beta / sqrt(y0) - y1) / 2 - sqrt(y0) / 2 + offset
+    x1 = -sqrt(2 * beta / sqrt(y0) - y1) / 2 - sqrt(y0) / 2 + offset
+    x2 = sqrt(-2 * beta / sqrt(y0) - y1) / 2 + sqrt(y0) / 2 + offset
+    x3 = -sqrt(-2 * beta / sqrt(y0) - y1) / 2 + sqrt(y0) / 2 + offset
         
     return Equal(x, x0) | Equal(x, x1) | Equal(x, x2) | Equal(x, x3)
+
 
 @apply
 def apply(fx, is_nonzero, x=None):
@@ -57,12 +59,6 @@ def prove(Eq):
     x, alpha, beta, gamma = Symbol(complex=True, given=True)
     fx = x ** 4 + alpha * x ** 2 + beta * x + gamma
     Eq << apply(Equal(fx, 0), Unequal(beta, 0), x=x)
-
-    
-
-    
-
-    
 
     Eq << algebra.cond.imply.suffice.apply(Eq[0] & Eq[1], cond=Eq[2].lhs)
 

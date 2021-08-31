@@ -17,7 +17,7 @@ Rademacher
 
 from sympy import (S, sympify, Rational, binomial, cacheit, Integer,
                    Dummy, Eq, Intersection, Interval,
-                   Symbol, Lambda, Piecewise, Or, Gt, Lt, Ge, Le, Contains)
+                   Symbol, Lambda, Piecewise, Or, Gt, Lt, Ge, Le, Element)
 from sympy import beta as beta_fn
 from sympy.stats.frv import (SingleFiniteDistribution,
                              SingleFinitePSpace)
@@ -208,7 +208,7 @@ class DieDistribution(SingleFiniteDistribution):
         if not (x.is_number or x.is_Symbol or is_random(x)):
             raise ValueError("'x' expected as an argument of type 'number' or 'Symbol' or , "
                         "'RandomSymbol' not %s" % (type(x)))
-        cond = Ge(x, 1) & Le(x, self.sides) & Contains(x, S.Integers)
+        cond = Ge(x, 1) & Le(x, self.sides) & Element(x, S.Integers)
         return Piecewise((S.One/self.sides, cond), (S.Zero, True))
 
 def Die(name, sides=6):
@@ -394,7 +394,7 @@ class BinomialDistribution(SingleFiniteDistribution):
         if not (x.is_number or x.is_Symbol or is_random(x)):
             raise ValueError("'x' expected as an argument of type 'number' or 'Symbol' or , "
                         "'RandomSymbol' not %s" % (type(x)))
-        cond = Ge(x, 0) & Le(x, n) & Contains(x, S.Integers)
+        cond = Ge(x, 0) & Le(x, n) & Element(x, S.Integers)
         return Piecewise((binomial(n, x) * p**x * (1 - p)**(n - x), cond), (S.Zero, True))
 
     @property  # type: ignore

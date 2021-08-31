@@ -21,10 +21,9 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(real=True, shape=(n,))
-    b = Symbol.b(real=True, shape=(n,))
+    j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    a, b = Symbol(real=True, shape=(n,))
     Eq << apply(Lamda[j:n](a[j] ** b[j]))
 
     _j = Symbol.j(domain=Range(0, n))

@@ -16,9 +16,9 @@ def apply(given, *, cond=None, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    d = Symbol.d(real=True, positive=True)
-    f = Function.f(integer=True)
+    x = Symbol(real=True)
+    d = Symbol(real=True, positive=True)
+    f = Function(integer=True)
     Eq << apply(All[x:-d:d](f(x) > 0), cond=x > 0)
 
     Eq << algebra.all.all.imply.all.limits_union.apply(Eq[1], Eq[2])
@@ -27,4 +27,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-from . import split
+from . import all

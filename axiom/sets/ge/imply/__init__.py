@@ -1,10 +1,11 @@
 from . import ne
 from . import any_ne
-from . import any_contains
-from . import contains
-from . import is_nonemptyset
+from . import any_el
+from . import el
+from . import is_nonempty
 from . import subset
 
 from . import eq
 from . import is_real
-from . import is_emptyset
+from . import interval_is_empty
+from . import range_is_empty

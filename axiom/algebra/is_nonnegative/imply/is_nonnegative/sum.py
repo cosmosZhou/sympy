@@ -11,7 +11,7 @@ def apply(given, *limits):
         x, domain = Tuple(*limit).coerce_setlimit()
         domain_defined = fx.domain_defined(x)
         assert domain in domain_defined
-        
+
     return Sum(fx, *limits) >= 0
 
 
@@ -19,9 +19,9 @@ def apply(given, *limits):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    k = Symbol.k(integer=True)
-    h = Symbol.h(real=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    k = Symbol(integer=True)
+    h = Symbol(real=True, shape=(n,))
     Eq << apply(h[k] >= 0, (k, 0, n))
 
     Eq << All[k:n](Eq[0], plausible=True)

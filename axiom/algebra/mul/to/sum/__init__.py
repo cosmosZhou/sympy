@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     for i, sgm in enumerate(self.args):
         if isinstance(sgm, Sum):
             args = [*self.args]
@@ -14,14 +14,14 @@ def apply(self):
                 if duplicates:
                     variables_set -= duplicates
                     duplicate_set |= duplicates
-            
+
             if duplicate_set:
                 excludes = set()
                 for v in duplicate_set:
                     _v = self.generate_var(excludes=excludes, **v.type.dict)
                     sgm = sgm.limits_subs(v, _v)
-                    excludes.add(_v)                        
-                    
+                    excludes.add(_v)
+
             args[i] = sgm.expr
             function = self.func(*args).powsimp()
             return Equal(self, Sum(function, *sgm.limits))
@@ -29,15 +29,14 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True)
-    k = Symbol.k(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    f = Function.f(integer=True)
+    x, k = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    f = Function(integer=True)
     Eq << apply(Sum[k:n](f(k)) * x)
-    
+
     Eq << Eq[-1].this.rhs.simplify()
 
-    
+
 if __name__ == '__main__':
     run()
 

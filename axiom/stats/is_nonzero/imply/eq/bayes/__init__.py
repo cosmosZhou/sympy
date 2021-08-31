@@ -16,8 +16,7 @@ def apply(eq, *expr):
 def prove(Eq):
     from axiom import stats
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
+    x, y = Symbol(real=True, random=True)
     Eq << apply(Unequal(Probability(y), 0), x)
 
     Eq << Eq[-1].this.find(Probability[Conditioned]).apply(stats.probability.to.mul)

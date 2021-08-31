@@ -17,13 +17,11 @@ def apply(self, index):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    B = Symbol.B(etype=dtype.integer)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, y = Symbol(integer=True)
+    B = Symbol(etype=dtype.integer)
+    f, g = Function(integer=True)
 
-    Eq << apply(Or(x <= y, f(x) > g(y), Contains(y, B)), index=slice(1, 3))
+    Eq << apply(Or(x <= y, f(x) > g(y), Element(y, B)), index=slice(1, 3))
 
     Eq << Eq[-1].this.rhs.apply(algebra.necessary.to.ou)
 

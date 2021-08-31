@@ -16,8 +16,8 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import discrete
-    x = Symbol.x(integer=True, shape=(oo,))
-    n = Symbol.n(domain=Range(2, oo))
+    x = Symbol(integer=True, shape=(oo,))
+    n = Symbol(domain=Range(2, oo))
 
     Eq << apply(x[:n + 1])
 

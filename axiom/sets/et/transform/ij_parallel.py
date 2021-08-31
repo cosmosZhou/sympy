@@ -4,8 +4,8 @@ from util import *
 @apply(given=None)
 def apply(given):
     contains_i, contains_j = given.of(And)
-    i, Si = contains_i.of(Contains)
-    j, Sj = contains_j.of(Contains)
+    i, Si = contains_i.of(Element)
+    j, Sj = contains_j.of(Element)
 
     if not Si._has(j):
         i, Si, j, Sj = j, Sj, i, Si
@@ -14,30 +14,25 @@ def apply(given):
     _a, _b = Si.of(Range)
     _a -= j
     _b -= j
-    
-    assert not _a._has(j) and not _b._has(j)    
+
+    assert not _a._has(j) and not _b._has(j)
     a, b = Sj.of(Range)
-    
-    return Equivalent(given, And(Contains(i, Range(_a + a, _b + b - 1)), Contains(j, Range(Max(a, i - _b + 1), Min(b, i - _a + 1)))))
+
+    return Equivalent(given, And(Element(i, Range(_a + a, _b + b - 1)), Element(j, Range(Max(a, i - _b + 1), Min(b, i - _a + 1)))))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra, sets
 
-    a = Symbol.a(integer=True)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True)
-    m = Symbol.m(integer=True)
-    d = Symbol.d(integer=True)
-    Eq << apply(Contains(i, Range(d + j, n + j)) & Contains(j, Range(a, m)))
+    a, i, j, n, m, d = Symbol(integer=True)
+    Eq << apply(Element(i, Range(d + j, n + j)) & Element(j, Range(a, m)))
 
     Eq << algebra.equivalent.given.et.apply(Eq[0])
 
-    Eq << Eq[-2].this.lhs.apply(sets.contains.contains.imply.contains.range.ij_parallel)
+    Eq << Eq[-2].this.lhs.apply(sets.el.el.imply.el.range.ij_parallel)
 
-    Eq << Eq[-1].this.lhs.apply(sets.contains.contains.given.contains.range.ij_parallel)
+    Eq << Eq[-1].this.lhs.apply(sets.el.el.given.el.range.ij_parallel)
 
 
 if __name__ == '__main__':

@@ -15,9 +15,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import discrete, algebra
-    x = Symbol.x(real=True, shape=(oo,))
-    i = Symbol.i(integer=True)
-    n = Symbol.n(domain=Range(2, oo))
+    x = Symbol(real=True, shape=(oo,))
+    i = Symbol(integer=True)
+    n = Symbol(domain=Range(2, oo))
 
     Eq << apply(All[i:1:n + 1](x[i] >= 1))
 

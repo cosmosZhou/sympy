@@ -11,7 +11,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(complex=True, given=True)
+    x = Symbol(complex=True, given=True)
     Eq << apply(Equal(x ** 2, 0))
 
     Eq << Eq[0].this.lhs.base.apply(algebra.expr.to.mul.expi)

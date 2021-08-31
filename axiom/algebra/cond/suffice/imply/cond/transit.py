@@ -3,9 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    cond, suffice = given
-
+def apply(cond, suffice):
     lhs, rhs = suffice.of(Suffice)
     assert cond == lhs
 

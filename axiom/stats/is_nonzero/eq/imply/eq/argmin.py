@@ -18,8 +18,7 @@ def apply(x_equality, inequality):
     y = y_boolean.lhs
 
     assert t.is_positive
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
     return Equal(ArgMin[i](Probability(y[i] | x)), ArgMin[i](Probability(y[i]) * Product[j](Probability(x[j] | y[i]))))
 
 
@@ -27,11 +26,9 @@ def apply(x_equality, inequality):
 def prove(Eq):
     from axiom import stats, algebra
 
-    t = Symbol.t(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,), random=True)
-    y = Symbol.y(real=True, shape=(m,), random=True)
+    t, n, m = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,), random=True)
+    y = Symbol(real=True, shape=(m,), random=True)
     Eq << apply(Equal(y[t] | y[:t], y[t]), Unequal(Probability(y, x), 0))
 
     i = Eq[-1].lhs.variable
@@ -66,12 +63,12 @@ def prove(Eq):
 
     Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[-1], Eq.yt_given_xi_nonzero)
 
-    Eq << algebra.eq.imply.eq.product.apply(Eq[-1], (t, 1, m))
+    Eq << algebra.eq.imply.eq.prod.apply(Eq[-1], (t, 1, m))
 
     t = Eq[-1].rhs.variable
     Eq << Eq[-1] * Eq[-1].find(Pow).base
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.product.limits.push_front)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul.to.prod.limits.push_front)
 
     Eq << Eq[-1].this.rhs.limits_subs(t, j)
 

@@ -13,8 +13,7 @@ def apply(is_positive, is_nonnegative):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    y = Symbol.y(real=True)
+    a, y = Symbol(real=True)
     Eq << apply(y > 0, a >= 0)
 
     Eq << algebra.ge.gt.imply.gt.add.apply(Eq[1], Eq[0])

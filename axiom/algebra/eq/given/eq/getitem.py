@@ -21,10 +21,9 @@ def apply(imply, i=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True, given=True)
-    a = Symbol.a(shape=(n,), etype=dtype.integer)
-    b = Symbol.b(shape=(n,), etype=dtype.integer)
-    i = Symbol.i(domain=Range(0, n))
+    n = Symbol(integer=True, positive=True, given=True)
+    a, b = Symbol(shape=(n,), etype=dtype.integer)
+    i = Symbol(domain=Range(0, n))
 
     Eq << apply(Equal(a, b), i=i)
 

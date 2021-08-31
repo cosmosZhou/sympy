@@ -11,10 +11,9 @@ def apply(given, index=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    f = Function.f(real=True)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    n = Symbol.n(integer=True, positive=True)
+    f = Function(real=True)
+    i, j = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
 
     Eq << apply(Sum[i:n, j:n](f(i, j)) >= 0)
 

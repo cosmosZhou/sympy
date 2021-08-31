@@ -4,8 +4,7 @@ from axiom.keras.eq.eq.imply.eq.kmeans.nonoverlapping import cluster, mean
 
 
 @apply
-def apply(*given, x=None):
-    eq_sum, eq_union = given
+def apply(eq_sum, eq_union, x=None):
     w_sum, M = eq_sum.of(Equal)
     w_union, M_interval = eq_union.of(Equal)
 
@@ -18,7 +17,7 @@ def apply(*given, x=None):
 
     assert limit == _limit
 
-    _wi = wi_abs.of(Abs)
+    _wi = wi_abs.of(Card)
     assert _wi == wi
 
     (i,) = limit
@@ -28,28 +27,27 @@ def apply(*given, x=None):
     _M = x.shape[0]
     assert _M == M
 
-    j = Symbol.j(integer=True)
+    j = Symbol(integer=True)
 
     k = w.shape[0]
     w_ = Symbol("omega^'", cluster(w, x))
 
     c = Lamda[i](mean(w[i], x))
 
-    return Equivalent(Contains(j, w_[i]) & Contains(i, Range(0, k)),
-                      Equal(i, ArgMin[i](Norm(x[j] - c[i]))) & Contains(j, Range(0, M)))
+    return Equivalent(Element(j, w_[i]) & Element(i, Range(0, k)),
+                      Equal(i, ArgMin[i](Norm(x[j] - c[i]))) & Element(j, Range(0, M)))
 
 
 @prove
 def prove(Eq):
     from axiom import keras
 
-    M = Symbol.M(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True)
-    k = Symbol.k(domain=Range(0, M))
-    x = Symbol.x(real=True, shape=(M, n))
-    w = Symbol.omega(shape=(k,), etype=dtype.integer, emptyset=False)
-    Eq << apply(Equal(Sum[i](abs(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
+    M, n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True)
+    k = Symbol(domain=Range(0, M))
+    x = Symbol(real=True, shape=(M, n))
+    w = Symbol(shape=(k,), etype=dtype.integer, empty=False)
+    Eq << apply(Equal(Sum[i](Card(w[i])), M), Equal(Cup[i](w[i]), k.domain), x=x)
 
     Eq << keras.eq.eq.imply.eq.kmeans.nonoverlapping.apply(Eq[0], Eq[1], x=x)
 

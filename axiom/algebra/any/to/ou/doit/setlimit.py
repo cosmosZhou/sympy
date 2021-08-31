@@ -10,16 +10,11 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo, k))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo, k))
+    i, j, a, b, c, d = Symbol(integer=True)
+    f = Function(integer=True)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    c = Symbol.c(integer=True)
-    d = Symbol.d(integer=True)
 
     Eq << apply(Any[i:{a, b, c, d}](x[i] > 0))
 

@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    unequality, eq = given
+def apply(unequality, eq):
     assert eq.is_Unequal
     assert unequality.is_Unequal
     unequality.rhs.is_zero
@@ -16,12 +15,10 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, a, b = Symbol(real=True)
     Eq << apply(Unequal(x, 0), Unequal(x * a, b))
 
-    Eq << algebra.ne.imply.ou.divide.apply(Eq[1], x)
+    Eq << algebra.ne.imply.ou.div.apply(Eq[1], x)
 
     Eq <<= Eq[-1] & Eq[0]
 

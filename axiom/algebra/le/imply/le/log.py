@@ -13,25 +13,25 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(positive=True)
-    y = Symbol.y(real=True)
+    x = Symbol(positive=True)
+    y = Symbol(real=True)
     Eq << apply(LessEqual(x, y))
 
     Eq << algebra.ge.imply.ge.log.apply(Eq[0].reversed).reversed
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
 
-    
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

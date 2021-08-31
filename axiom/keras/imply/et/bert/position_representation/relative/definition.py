@@ -3,31 +3,30 @@ from util import *
 
 @apply
 def apply(n, dx, dz):
-    x = Symbol.x(shape=(n, dx), real=True)
+    x = Symbol(shape=(n, dx), real=True)
     W_Q = Symbol("W^Q", shape=(dx, dz), real=True)
     W_K = Symbol("W^K", shape=(dx, dz), real=True)
     W_V = Symbol("W^V", shape=(dx, dz), real=True)
 
-    Q = Symbol.Q(x @ W_Q)
-    K = Symbol.K(x @ W_K)
-    V = Symbol.V(x @ W_V)
+    Q = Symbol(x @ W_Q)
+    K = Symbol(x @ W_K)
+    V = Symbol(x @ W_V)
 
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
 
-    k = Symbol.k(integer=True, positive=True)
+    k = Symbol(integer=True, positive=True)
     w_K = Symbol("w^K", shape=(2 * k + 1, dz), real=True)
     w_V = Symbol("w^V", shape=(2 * k + 1, dz), real=True)
 
     a_K = Symbol("a^K", Lamda[j:n, i:n](w_K[k + clip(j - i, -k, k)]))
     a_V = Symbol("a^V", Lamda[j:n, i:n](w_V[k + clip(j - i, -k, k)]))
 
-    a = Symbol.a(Q @ (K + a_K).T / sqrt(dz))
-    s = Symbol.s(softmax(a))
+    a = Symbol(Q @ (K + a_K).T / sqrt(dz))
+    s = Symbol(softmax(a))
 
-    z = Symbol.z(s @ (V + a_V))
+    z = Symbol(s @ (V + a_V))
 
-    return Contains(k + clip(j - i, -k, k), Range(0, 2 * k + 1)), \
+    return Element(k + clip(j - i, -k, k), Range(0, 2 * k + 1)), \
         Equal(a[i, j], (x[i] @ W_Q @ (x[j] @ W_K + a_K[i, j])) / sqrt(dz)), \
         Equal(z[i], Sum[j:n](s[i, j] * (x[j] @ W_V + a_V[i, j])))
 
@@ -35,7 +34,7 @@ def apply(n, dx, dz):
 @prove
 def prove(Eq):
     from axiom import algebra, discrete
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
     dx = Symbol.d_x(integer=True, positive=True)
     dz = Symbol.d_z(integer=True, positive=True)
 
@@ -54,7 +53,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.add)
 
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
     Eq << Eq[-1].this.rhs.args[0].apply(discrete.matmul.to.lamda, var={k})
 
     Eq << Eq[-1].this.rhs.args[-1].apply(algebra.lamda.to.sum)

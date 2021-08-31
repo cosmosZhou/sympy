@@ -1150,7 +1150,7 @@ class Expr(Basic, EvalfMixin):
         if a is None:
             A = 0
         else:
-            A = self.subs(x, a)
+            A = self._subs(x, a)
             if A.has(S.NaN, S.Infinity, S.NegativeInfinity, S.ComplexInfinity, AccumBounds):
                 if (a < b) != False:
                     A = limit(self, x, a, True)
@@ -1165,7 +1165,7 @@ class Expr(Basic, EvalfMixin):
         if b is None:
             B = 0
         else:
-            B = self.subs(x, b)
+            B = self._subs(x, b)
             if B.has(S.NaN, S.Infinity, S.NegativeInfinity, S.ComplexInfinity, AccumBounds):
                 if (a < b) != False:
                     B = limit(self, x, b, False)
@@ -3790,12 +3790,12 @@ class Expr(Basic, EvalfMixin):
         return [_LeftRightArgs([S.One, S.One], higher=self._eval_derivative(x))]
 
     def min(self):
-        from sympy.concrete.expr_with_limits import Minimize
-        return self.aggregate(Minimize)
+        from sympy.concrete.expr_with_limits import Minima
+        return self.aggregate(Minima)
 
     def max(self):
-        from sympy.concrete.expr_with_limits import Maximize
-        return self.aggregate(Maximize)
+        from sympy.concrete.expr_with_limits import Maxima
+        return self.aggregate(Maxima)
 
     def aggregate(self, aggregate):
         free_symbols = self.free_symbols
@@ -3867,13 +3867,14 @@ class Expr(Basic, EvalfMixin):
             elif self.is_extended_nonpositive:
                 interval = Interval(-S.Infinity, 0)
             else:
-                from sympy.sets.fancysets import Reals
-                interval = Reals
-        else:
-#             if not self.is_complex:
-#                 print(self.is_complex)            
-            assert self.is_complex, "%s(of type %s) is not complex!" % (self, type(self))
+                interval = Interval(-S.Infinity, S.Infinity)
+        elif self.is_complex or self.is_extended_complex:
             interval = S.Complexes
+        elif self.is_super_real:
+            interval = S.Surreals
+        else:
+            assert self.is_super_complex, "%s(of type %s) is not sur-complex!" % (self, type(self))
+            interval = S.Surcomplexes            
 
         if not shape:
             return interval

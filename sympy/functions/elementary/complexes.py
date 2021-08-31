@@ -454,14 +454,11 @@ class Abs(Function):
 
     is_extended_real = True
     is_extended_negative = False
-    is_extended_nonnegative = True
     unbranched = True
 
     @property
     def dtype(self):
         from sympy.core.symbol import dtype
-        if self.arg.is_set:
-            return dtype.integer(nonnegative=True)
         return dtype.real(nonnegative=True)
 
     def fdiff(self, argindex=1):
@@ -485,7 +482,7 @@ class Abs(Function):
     def eval(cls, arg):
         from sympy.simplify.simplify import signsimp
         from sympy.core.function import expand_mul
-
+        assert not arg.is_set
         if hasattr(arg, '_eval_Abs'):
             obj = arg._eval_Abs()
             if obj is not None:
@@ -527,9 +524,6 @@ class Abs(Function):
                 return sqrt(expand_mul(arg * conj))
 
     def _eval_is_integer(self):
-        if self.arg.is_set:
-            return True
-        
         if self.args[0].is_extended_real:
             return self.args[0].is_integer
 
@@ -634,6 +628,14 @@ class Abs(Function):
     def _sympystr(self, p):
         return "|%s|" % p._print(self.arg)
     
+    def _latex(self, p, exp=None):
+        tex = r"\left|{%s}\right|" % p._print(self.args[0])
+
+        if exp is not None:
+            return r"%s^{%s}" % (tex, exp)
+        else:
+            return tex
+
 
 class Norm(Function):
     """

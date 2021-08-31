@@ -5,3 +5,6 @@ from . import given
 from . import is_positive
 from . import is_nonpositive
 from . import is_negative
+from . import gt
+from . import lt
+from . import le

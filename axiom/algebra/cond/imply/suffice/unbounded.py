@@ -8,7 +8,7 @@ def apply(self, var=None):
     assert var.is_symbol
     assert not var.is_given
     assert self._has(var)
-    
+
     _var = var.unbounded
     domain = var.domain
     if domain.is_Interval:
@@ -23,7 +23,7 @@ def apply(self, var=None):
             else:
                 cond = _var <= domain.stop
     else:
-        cond = Contains(_var, var.domain)
+        cond = Element(_var, var.domain)
     return Suffice(cond, self._subs(var, _var))
 
 
@@ -31,8 +31,8 @@ def apply(self, var=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(positive=True)
-    f = Function.f(integer=True, shape=())
+    x = Symbol(positive=True)
+    f = Function(integer=True, shape=())
     Eq << apply(f(x) > 0, x)
 
     Eq << algebra.cond.imply.all.apply(Eq[0])

@@ -1,23 +1,21 @@
 from util import *
 
 
-
 @apply
 def apply(A, B):
-    return GreaterEqual(abs(Union(A, B)), abs(A))
+    return GreaterEqual(Card(Union(A, B)), Card(A))
 
 
 @prove
 def prove(Eq):
-    from axiom import algebra
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    from axiom import sets, algebra
 
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(A, B)
 
-    Eq << Eq[-1].lhs.arg.this.rewrite(complement=0)
+    Eq << Eq[-1].lhs.arg.this.apply(sets.union.rewrite.complement, index=0)
 
-    Eq << Eq[-1].apply(algebra.eq.imply.eq.abs)
+    Eq << sets.eq.imply.eq.card.apply(Eq[-1])
 
     Eq << Eq[-1] + GreaterEqual(Eq[-1].rhs.args[1], 0, plausible=True)
 

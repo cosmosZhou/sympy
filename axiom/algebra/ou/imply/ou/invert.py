@@ -16,12 +16,10 @@ def apply(given, pivot=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,))
-    y = Symbol.y(real=True, shape=(k,))
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(k,))
 
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    f, g = Function(real=True)
 
     Eq << apply(Unequal(x, y) | Equal(f(x), g(y)), pivot=1)
 

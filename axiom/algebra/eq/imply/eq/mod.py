@@ -6,16 +6,16 @@ def apply(given, divisor=None):
     lhs, rhs = given.of(Equal)
     divisor = sympify(divisor)
     assert divisor > 0 and divisor.is_integer
-    assert lhs.is_integer or rhs.is_integer    
+    assert lhs.is_integer or rhs.is_integer
     return Equal(lhs % divisor, rhs % divisor)
 
 
 @prove
 def prove(Eq):
     x, y = Symbol(integer=True)
-    d = Symbol.d(integer=True, positive=True)
+    d = Symbol(integer=True, positive=True)
     Eq << apply(Equal(x, y), d)
-    
+
     Eq << Eq[-1].subs(Eq[0])
 
 

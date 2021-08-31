@@ -1,1 +1,2 @@
-from . import intersection, piecewise
+from . import intersect
+from . import piece

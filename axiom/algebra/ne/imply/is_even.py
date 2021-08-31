@@ -17,13 +17,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True)
+    n = Symbol(integer=True)
 
     Eq << apply(Unequal(n % 2, 1))
 
-    Eq << sets.imply.contains.mod.apply(n % 2)
+    Eq << sets.imply.el.mod.apply(n % 2)
 
-    Eq << sets.contains.imply.ou.split.interval.apply(Eq[-1])
+    Eq << sets.el.imply.ou.split.range.apply(Eq[-1])
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
 

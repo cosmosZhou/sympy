@@ -21,11 +21,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, y = Symbol(integer=True)
+    A = Symbol(etype=dtype.integer)
+    f, g = Function(integer=True)
 
     Eq << apply(Any[x:A, y:f(y) > 0](g(x, y) > 0))
 

@@ -13,15 +13,13 @@ def apply(all_a, all_b):
 def prove(Eq):
     from axiom import algebra
 
-    e = Symbol.e(real=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
-    h = Function.h(integer=True)
+    e = Symbol(real=True)
+    f, g, h = Function(integer=True)
     Eq << apply(All[e:g(e) > 0](f(e) > 0), All[e:g(e) > 0](h(e) > 0))
 
     Eq << algebra.all_et.imply.et.all.apply(Eq[-1])
 
-    
+
 
 
 if __name__ == '__main__':

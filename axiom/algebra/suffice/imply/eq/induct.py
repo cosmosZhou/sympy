@@ -17,14 +17,13 @@ def apply(given, n=None, start=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    h = Symbol.h(integer=True, shape=(oo,))
+    n = Symbol(integer=True, nonnegative=True)
+    f, h = Symbol(integer=True, shape=(oo,))
     g = Lamda[n](Piecewise((f[0], Equal(n, 0)), (h[n], True)))
 
     Eq << apply(Suffice(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1])), n=n)
 
-    g = Symbol.g(Lamda[n](Piecewise((f[0], Equal(n, 0)), (h[n], True))))
+    g = Symbol(Lamda[n](Piecewise((f[0], Equal(n, 0)), (h[n], True))))
     Eq.equality = g[0].this.definition.reversed
 
     Eq.suffice = Suffice(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1]), plausible=True)

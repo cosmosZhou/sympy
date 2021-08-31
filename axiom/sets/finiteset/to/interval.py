@@ -18,27 +18,27 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    a = Symbol.a(integer=True)
+    a = Symbol(integer=True)
 
     Eq << apply(FiniteSet(a, a + 1, a + 2, a + 3))
 
-    Eq << Contains(a, Eq[0].rhs, plausible=True)
+    Eq << Element(a, Eq[0].rhs, plausible=True)
 
-    Eq << Contains(a + 1, Eq[0].rhs, plausible=True)
+    Eq << Element(a + 1, Eq[0].rhs, plausible=True)
 
-    Eq << sets.contains.contains.imply.subset.finiteset.apply(Eq[-2], Eq[-1], simplify=None)
+    Eq << sets.el.el.imply.subset.finiteset.apply(Eq[-2], Eq[-1], simplify=None)
 
-    Eq << Contains(a + 2, Eq[0].rhs, plausible=True)
+    Eq << Element(a + 2, Eq[0].rhs, plausible=True)
 
-    Eq << sets.contains.subset.imply.subset.apply(Eq[-1], Eq[-2], simplify=None)
+    Eq << sets.el.subset.imply.subset.apply(Eq[-1], Eq[-2], simplify=None)
 
-    Eq << Contains(a + 3, Eq[0].rhs, plausible=True)
+    Eq << Element(a + 3, Eq[0].rhs, plausible=True)
 
-    Eq.subset = sets.contains.subset.imply.subset.apply(Eq[-1], Eq[-2], simplify=None)
+    Eq.subset = sets.el.subset.imply.subset.apply(Eq[-1], Eq[-2], simplify=None)
 
     Eq.supset = Supset(*Eq.subset.args, plausible=True)
 
-    Eq << sets.supset.given.all_contains.apply(Eq.supset)
+    Eq << sets.supset.given.all_el.apply(Eq.supset)
 
     Eq << Eq[-1].this.apply(algebra.all.to.et.doit)
 

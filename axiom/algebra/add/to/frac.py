@@ -14,7 +14,7 @@ def apply(sub):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(ceiling(x) - x)
 
     Eq << Eq[-1].this.rhs.apply(algebra.frac.to.add)

@@ -8,7 +8,7 @@ from sympy.core.sympify import _sympify as _sympify_, sympify
 from sympy.core.basic import Basic
 from sympy.core.cache import cacheit
 from sympy.core.compatibility import ordered, default_sort_key
-from sympy.core.logic import fuzzy_and
+from sympy.core.logic import fuzzy_and, _fuzzy_group
 from sympy.core.parameters import global_parameters
 from sympy.utilities.iterables import sift
 from sympy.multipledispatch.dispatcher import (Dispatcher,
@@ -490,6 +490,10 @@ class AssocOp(Basic):
                 return False
         return True
 
+
+    _eval_is_super_real = lambda self: _fuzzy_group((a.is_super_real for a in self.args), quick_exit=True)
+    _eval_is_extended_integer = lambda self: _fuzzy_group((a.is_extended_integer for a in self.args), quick_exit=True)
+    
     def _eval_is_random(self):
         for arg in self.args:
             if arg.is_random:

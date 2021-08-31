@@ -17,9 +17,9 @@ from axiom.discrete.sigma.to.add.recurrent import sigma
 @prove(proved=False)
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(domain=Range(2, oo), given=False)
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
-    k = Symbol.k(integer=True)
+    n = Symbol(domain=Range(2, oo), given=False)
+    x = Symbol(real=True, positive=True, shape=(oo,))
+    k = Symbol(integer=True)
 
     Eq << apply(x[:n], k)
 
@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(sigma).defun()
 
-    Eq << Eq[-1].this.find(Product).apply(algebra.product.to.mul.doit)
+    Eq << Eq[-1].this.find(Product).apply(algebra.prod.to.mul.doit)
 
     Eq << Eq[-1].this.find(All).apply(algebra.all.to.et.doit.outer)
 
@@ -52,7 +52,7 @@ def prove(Eq):
     Eq << algebra.is_nonnegative.imply.ge.apply(Eq[-1])
 
     k_ = Symbol.k(domain=Range(2, n))
-    t = Function.t(eval=lambda k: (sigma[k](x[:n]) / binomial(n, k)) ** (1 / k), real=True)
+    t = Function(eval=lambda k: (sigma[k](x[:n]) / binomial(n, k)) ** (1 / k), real=True)
     Eq << t(k_).this.defun()
 
     Eq << algebra.eq.imply.eq.pow.apply(Eq[-1], exp=k_)

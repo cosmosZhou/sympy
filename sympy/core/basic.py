@@ -96,6 +96,8 @@ class Basic(Printable, metaclass=ManagedProperties):
     
     is_Operator = False
     
+    is_super_complex = True
+    
     def definition_set(self, dependency):
         from sympy.core.symbol import Symbol
 
@@ -2565,18 +2567,6 @@ class Basic(Printable, metaclass=ManagedProperties):
             return self._assumptions['shape']
         return ()
     
-    def to_wolfram(self, global_variables):
-        from wolframclient.language import wl        
-        return getattr(wl, self.__class__.__name__)(*[arg.to_wolfram(global_variables) for arg in self.args])
-
-    def _eval_wolfram(self, session):
-        global_variables = set()
-        wlexpr = self.to_wolfram(global_variables)                
-        wlexpr = session.evaluate(wlexpr)
-        global_variables = {'Global`' + x.name: x for x in global_variables}
-        from wolframclient.language import expression        
-        return expression.sympify(wlexpr, **global_variables)
-
     @property
     def this(self):
         from sympy.logic.invoker import Identity
@@ -2586,7 +2576,7 @@ class Basic(Printable, metaclass=ManagedProperties):
         return S.true
       
     @classmethod
-    def simplify_All(cls, self, *args):
+    def simplify_ForAll(cls, self, *args):
         ...
 
     @classmethod
@@ -2594,11 +2584,11 @@ class Basic(Printable, metaclass=ManagedProperties):
         ...
 
     @classmethod
-    def simplify_Contains(cls, self, lhs, rhs):
+    def simplify_Element(cls, self, lhs, rhs):
         ...
 
     @classmethod
-    def simplify_NotContains(cls, self, lhs, rhs):
+    def simplify_NotElement(cls, self, lhs, rhs):
         ...
         
     @classmethod
@@ -2635,9 +2625,6 @@ class Basic(Printable, metaclass=ManagedProperties):
         from sympy.sets.sets import UniversalSet
         return UniversalSet(etype=self.type)
     
-    def astype(self, cls, *args, **kwargs):
-        return getattr(cls, 'rewrite_from_' + self.__class__.__name__)(self, *args, **kwargs)    
-    
     def _eval_Subset_reversed(self, lhs):
         ...
     
@@ -2661,6 +2648,9 @@ class Basic(Printable, metaclass=ManagedProperties):
     def inference_status(self, child):
         return False
     
+    def _eval_Card(self):
+        ...
+        
     is_given = True
       
       

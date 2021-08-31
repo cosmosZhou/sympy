@@ -4,8 +4,7 @@ from util import *
 @apply
 def apply(x, w=None, right=None, var=None):
     n = x.shape[0]
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
     if w is None:
         w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
     else:
@@ -21,16 +20,14 @@ def apply(x, w=None, right=None, var=None):
 
 @prove
 def prove(Eq):
-    from axiom import sets, discrete
-    n = Symbol.n(domain=Range(2, oo))
-    x = Symbol.x(shape=(n,), integer=True)
+    from axiom import discrete, sets
 
+    n = Symbol(domain=Range(2, oo))
+    x = Symbol(shape=(n,), integer=True)
     Eq << apply(x)
 
     i, j = Eq[0].lhs.indices
-
     k = Eq[1].lhs.variable.copy(domain=Range(0, n))
-
     Eq << Eq[0].lhs[k].this.definition
 
     Eq << (Eq[0].lhs[k] @ x).this.args[0].definition
@@ -39,13 +36,13 @@ def prove(Eq):
 
     Eq << Eq[-1].apply(sets.eq.imply.eq.set_comprehension, (k, 0, n))
 
-    Eq << Eq[-1].this.find(Complement[Complement]).apply(sets.complement.to.union.intersection)
+    Eq << Eq[-1].this.find(Complement[Complement]).apply(sets.complement.to.union.intersect)
 
     Eq << Eq[-1].this(i, j).find(Unequal, Intersection).simplify()
 
     Eq << Eq[-1].this(i, j).find(NotSubset, Intersection).simplify()
 
-    Eq << Eq[-1].this(i, j).find(Contains[Intersection]).simplify()
+    Eq << Eq[-1].this(i, j).find(Element[Intersection]).simplify()
 
     Eq << Eq[-1].this(i, j).find(Intersection).simplify()
 

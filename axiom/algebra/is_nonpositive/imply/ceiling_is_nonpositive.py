@@ -14,21 +14,22 @@ def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(x <= 0)
 
-    Eq << sets.imply.any_contains.real.left_open.apply(x)
+    Eq << sets.imply.any_el.real.left_open.apply(x)
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.imply.et.split.interval)
+    Eq << Eq[-1].this.expr.apply(sets.el.imply.et.split.interval)
 
     Eq << algebra.cond.any.imply.any_et.apply(Eq[0], Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.expr.args[:2].apply(algebra.et.imply.et.invoke, algebra.gt.le.imply.lt.transit)
+    Eq << Eq[-1].this.expr.args[:2].apply(algebra.gt.le.imply.lt.transit, ret=0)
 
     Eq << Eq[-1].this.expr.args[0].apply(algebra.lt.imply.le.strengthen)
 
     Eq << Eq[-1].this.expr.args[0] + 1
 
-    Eq << Eq[-1].this.expr.args[1:].apply(sets.gt.le.imply.contains.interval)
+    Eq << Eq[-1].this.expr.args[1:].apply(sets.gt.le.imply.el.interval)
 
-    Eq << Eq[-1].this.expr.args[1].apply(sets.contains.imply.eq.ceiling)
+    Eq << Eq[-1].this.expr.args[1].apply(sets.el.imply.eq.ceiling)
+
     Eq << Eq[-1].this.expr.apply(algebra.eq.le.imply.le.add)
 
 

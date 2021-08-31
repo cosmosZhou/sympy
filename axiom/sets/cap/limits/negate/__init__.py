@@ -12,21 +12,21 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
-    f = Function.f(etype=dtype.real)
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, nonnegative=True, given=False)
+    f = Function(etype=dtype.real)
     Eq << apply(Cap[i:-n:n + 1](f(i)))
-    
+
     Eq << Eq[0].subs(n, 0)
-    
+
     Eq.induct = Eq[0].subs(n, n + 1)
-    
-    Eq << sets.eq.imply.eq.intersection.apply(Eq[0], f(n + 1))
-    
-    Eq << sets.eq.imply.eq.intersection.apply(Eq[-1], f(-n - 1))
-    
+
+    Eq << sets.eq.imply.eq.intersect.apply(Eq[0], f(n + 1))
+
+    Eq << sets.eq.imply.eq.intersect.apply(Eq[-1], f(-n - 1))
+
     Eq << Suffice(Eq[0], Eq.induct, plausible=True)
-    
+
     Eq << algebra.suffice.imply.eq.induct.apply(Eq[-1], n=n, start=0)
 
 

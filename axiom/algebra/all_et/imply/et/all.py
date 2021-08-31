@@ -13,12 +13,9 @@ def apply(given, index=-1):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
-    c = Symbol.c(real=True)
-    d = Symbol.d(real=True)
-    f = Function.f(shape=(), real=True)
+    x, c, d = Symbol(real=True)
+    a, b = Symbol(real=True, given=True)
+    f = Function(shape=(), real=True)
     Eq << apply(All[x:a:b]((x <= c) & (f(x) >= d)))
 
     Eq << algebra.all_et.imply.all.apply(Eq[0], 0)

@@ -21,14 +21,14 @@ def limits_absorb(given, index):
                 if cond.is_boolean:
                     eq &= cond
                 else:
-                    eq &= Contains(wrt, cond)
+                    eq &= Element(wrt, cond)
             else:
                 assert len(ab) == 2
                 a, b = ab
                 if a.is_boolean:
-                    eq &= a & Contains(wrt, b)
+                    eq &= a & Element(wrt, b)
                 else:
-                    eq &= Contains(wrt, (Range if wrt.is_integer else Interval)(a, b))
+                    eq &= Element(wrt, (Range if wrt.is_integer else Interval)(a, b))
         limits[i] = (wrt, eq)
     elif len(wrt) == 2:
         x_slice, x_index = wrt
@@ -77,21 +77,16 @@ def apply(given, index):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo,))
 
-    f = Function.f(shape=(), integer=True)
-    f_quote = Function("f'", nargs=(n,), shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
-    h = Function.h(shape=(), integer=True)
-
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo,))
+    f_quote, f, g, h = Function(integer=True)
     Eq << apply(Any[x[:n]:f(x[:n]) > 0, x[n]]((g(x[n]) > f_quote(x[:n])) & (h(x[:n + 1]) > 0)), index=0)
 
-    S = Symbol.S(conditionset(x[:n + 1], (g(x[n]) > f_quote(x[:n])) & (f(x[:n]) > 0)))
-
+    S = Symbol(conditionset(x[:n + 1], (g(x[n]) > f_quote(x[:n])) & (f(x[:n]) > 0)))
     Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[0])
 
-    Eq << Any[x[:n + 1]](Contains(x[:n + 1], S) & (h(x[:n + 1]) > 0), plausible=True)
+    Eq << Any[x[:n + 1]](Element(x[:n + 1], S) & (h(x[:n + 1]) > 0), plausible=True)
 
     Eq << Eq[-1].this.expr.args[1].rhs.definition
 

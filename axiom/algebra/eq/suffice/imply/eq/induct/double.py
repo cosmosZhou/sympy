@@ -3,9 +3,8 @@ from util import *
 
 
 @apply
-def apply(*given, n=None, x=None, start=0, return_hypothesis=True):
+def apply(f0, suffice, n=None, x=None, start=0, return_hypothesis=True):
     start = sympify(start)
-    f0, suffice = given
     f0.of(Equal)
     fn, fn1 = suffice.of(Suffice)
 
@@ -28,12 +27,9 @@ def apply(*given, n=None, x=None, start=0, return_hypothesis=True):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    z = Symbol.z(real=True)
+    n = Symbol(integer=True, nonnegative=True)
+    f, g = Function(shape=(), real=True)
+    x, y, z = Symbol(real=True)
 
     Eq << apply(Equal(f[0](z), g[0](z)), Suffice(Equal(f[n](x), g[n](x)), Equal(f[n + 1](y), g[n + 1](y))), n=n, x=x)
 

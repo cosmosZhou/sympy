@@ -11,13 +11,12 @@ def apply(ne):
 def prove(Eq):
     from axiom import algebra
 
-    b = Symbol.b(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
+    b, a = Symbol(real=True, given=True)
     Eq << apply(Unequal(a, b))
 
     Eq << algebra.ne.imply.ne.reverse.apply(Eq[1])
 
-    
+
 
 
 if __name__ == '__main__':

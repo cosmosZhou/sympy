@@ -6,17 +6,16 @@ def apply(given, index=-1):
     args = given.of(Unequal[Mul, 0])
     first = Mul(*args[:index])
     second = Mul(*args[index:])
-    
+
     return Unequal(first, 0).simplify(), Unequal(second, 0).simplify()
 
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
+    a, b = Symbol(real=True, given=True)
     Eq << apply(Unequal(a * b, 0))
 
-    
+
 
     Eq <<= ~Eq[-1], ~Eq[-2]
 

@@ -13,15 +13,8 @@ def apply(given):
 
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
+    x, y = Symbol(real=True, random=True)
     Eq << apply(Unequal(Probability(x | y), 0))
-
-    
-
-    
-
-    
 
 
 if __name__ == '__main__':

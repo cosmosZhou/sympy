@@ -13,17 +13,14 @@ def apply(lt, ge):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    a, b, x, y = Symbol(real=True)
     Eq << apply(a < b, x >= y)
 
     Eq << algebra.lt.imply.is_positive.apply(Eq[0])
 
     Eq << algebra.is_positive.ge.imply.ge.mul.apply(Eq[-1], Eq[1])
 
-    
+
 
 
 if __name__ == '__main__':

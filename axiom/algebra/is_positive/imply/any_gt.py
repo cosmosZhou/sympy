@@ -16,7 +16,7 @@ def apply(given, var=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(x > 0)
 
     Eq << algebra.any.given.cond.subs.apply(Eq[1], Eq[1].variable, x / 2)

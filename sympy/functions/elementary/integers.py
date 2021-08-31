@@ -25,7 +25,7 @@ class RoundFunction(Function):
         if v is not None:
             return v
 
-        if arg.is_integer or arg.is_finite == False:
+        if arg.is_extended_integer or arg.is_finite == False:
             if arg.is_infinitesimal is None:
                 return arg
         if arg.is_imaginary or (S.ImaginaryUnit * arg).is_real:
@@ -82,6 +82,9 @@ class RoundFunction(Function):
 
     def _eval_is_integer(self):
         return self.args[0].is_real
+
+    def _eval_is_extended_integer(self):
+        return self.args[0].is_extended_real
 
 
 class Floor(RoundFunction):

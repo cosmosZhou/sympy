@@ -14,13 +14,12 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets
-    e = Symbol.e(real=True)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    e = Symbol(real=True)
+    f, g = Function(shape=(), integer=True)
 
     Eq << apply(Any[e:g(e) > 0](f(e) > 0))
 
-    S = Symbol.S(conditionset(e, g(e) > 0))
+    S = Symbol(conditionset(e, g(e) > 0))
 
     Eq << Any[e:S](f(e) > 0, plausible=True)
 

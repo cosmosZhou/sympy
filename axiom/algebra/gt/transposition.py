@@ -9,9 +9,7 @@ def apply(given, lhs=-1, rhs=None):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    a = Symbol.a(real=True)
+    a, x, y = Symbol(real=True)
     Eq << apply(Greater(x + a, y))
 
     Eq << Eq[-1].this.rhs + x

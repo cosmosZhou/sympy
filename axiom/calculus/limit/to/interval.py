@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(self, doit=True): 
+def apply(self, doit=True):
     expr, (x, x0, dir) = self.of(Limit)
     start, stop = expr.of(Interval)
     start = Limit[x:x0:dir](start)
@@ -10,16 +10,16 @@ def apply(self, doit=True):
     if doit:
         start = start.doit()
         stop = stop.doit()
-        
+
     return Equal(self, expr.copy(start=start, stop=stop))
 
 
 @prove(proved=False)
 def prove(Eq):
-    n = Symbol.n(integer=True)
-    
-    Eq << apply(Limit[n:oo](Interval(0, n)))    
+    n = Symbol(integer=True)
 
-    
+    Eq << apply(Limit[n:oo](Interval(0, n)))
+
+
 if __name__ == '__main__':
     run()

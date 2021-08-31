@@ -3,9 +3,6 @@ from util import *
 
 @apply
 def apply(any_eq, cond, reverse=False):
-    if not any_eq.is_Any:
-        any_eq, cond = cond, any_eq
-
     assert not cond.is_Quantifier
     (x, y), *limits = any_eq.of(Any[Equal])
 
@@ -17,12 +14,10 @@ def apply(any_eq, cond, reverse=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    x, y = Symbol(integer=True)
+    f, g = Function(integer=True)
 
-    S = Symbol.S(etype=dtype.integer)
+    S = Symbol(etype=dtype.integer)
 
     Eq << apply(Any[x:S](Equal(g(x), f(x))), g(x) > y)
 

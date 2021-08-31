@@ -14,16 +14,18 @@ def prove(Eq):
     A, B = Symbol(complex=True, given=True)
     Eq << apply(Arg(A) + Arg(B) > S.Pi)
 
-    Eq <<= sets.imply.contains.arg.apply(A), sets.imply.contains.arg.apply(B)
+    Eq <<= sets.imply.el.arg.apply(A), sets.imply.el.arg.apply(B)
 
-    Eq << sets.contains.contains.imply.contains.add.interval.apply(Eq[-1], Eq[-2], simplify=None)
+    Eq << sets.el.el.imply.el.add.interval.apply(Eq[-1], Eq[-2], simplify=None)
 
-    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], S.Pi * 2)
+    Eq << sets.el.imply.el.div.interval.apply(Eq[-1], S.Pi * 2)
 
     Eq << Eq[0] / (S.Pi * 2)
 
-    Eq << sets.gt.contains.imply.contains.intersect.apply(Eq[-1], Eq[-2])
-    Eq << sets.contains.imply.contains.ceiling.apply(Eq[-1])
+    Eq << sets.gt.el.imply.el.intersect.apply(Eq[-1], Eq[-2])
+
+    Eq << sets.el.imply.el.sub.apply(Eq[-1], S.One / 2)
+    Eq << sets.el.imply.el.ceiling.apply(Eq[-1])
 
 
 if __name__ == '__main__':

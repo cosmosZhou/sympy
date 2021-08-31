@@ -20,21 +20,21 @@ if __name__ == '__main__':
                 phrases[i + 1],
                 1
             ])
+            
+            data.append([
+                user,
+                "axiom." + prefix,
+                phrases[i + 1],
+                1
+            ])
 
-#     sql = '''\
-#         CREATE TABLE `tbl_suggest_py` (
-#           `user` varchar(32) NOT NULL,
-#           `prefix` varchar(256) NOT NULL,
-#           `phrase` varchar(32) NOT NULL,
-#           `usage` int default 1,
-#           PRIMARY KEY (`user`, `prefix`, `phrase`)
-#         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-#         PARTITION BY KEY () PARTITIONS 8;
-#     '''
-#     try:
-#         MySQL.instance.execute(sql)
-#     except Exception as e:
-#         print(e)
+    for sec in ['algebra', 'sets', 'calculus', 'discrete', 'geometry', 'keras', 'stats']:
+        data.append([
+            user,
+            'axiom.',
+            sec,
+            1
+        ])
     
     MySQL.instance.execute('delete from tbl_suggest_py')    
     MySQL.instance.load_data('tbl_suggest_py', data)

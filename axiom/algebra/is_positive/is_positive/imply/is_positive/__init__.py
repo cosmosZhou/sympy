@@ -10,9 +10,7 @@ def apply(is_positive_x, is_positive_y):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-
+    x, y = Symbol(real=True)
     Eq << apply(x > 0, y > 0)
 
     Eq << Eq[0] * Eq[1]
@@ -21,5 +19,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del add
 from . import add

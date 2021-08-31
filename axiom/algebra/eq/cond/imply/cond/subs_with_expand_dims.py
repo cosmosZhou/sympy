@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    eq, f_eq = given
+def apply(eq, f_eq):
     lhs, rhs = eq.of(Equal)
 
     args = lhs.of(Mul)
@@ -19,17 +18,15 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    m = Symbol.m(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
+    m, n = Symbol(integer=True, positive=True)
 
-    a = Symbol.a(real=True, shape=(n,))
-    b = Symbol.b(real=True, shape=(m, n))
-    c = Symbol.c(real=True, shape=(m, n))
+    a = Symbol(real=True, shape=(n,))
+    b, c = Symbol(real=True, shape=(m, n))
 
-    S = Symbol.S(etype=dtype.real * (m, n))
-    Eq << apply(Equal(a * OneMatrix(m, n), c), Contains(a * b, S))
+    S = Symbol(etype=dtype.real * (m, n))
+    Eq << apply(Equal(a * OneMatrix(m, n), c), Element(a * b, S))
 
-    a = Symbol.a(a * OneMatrix(m, n))
+    a = Symbol(a * OneMatrix(m, n))
 
     Eq << a.this.definition
 

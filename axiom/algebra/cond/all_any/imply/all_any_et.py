@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    cond, exists = given
+def apply(cond, exists):
     (fn, *limits_e), *limits_f = exists.of(All[Any])
     return All(Any(cond & fn, *limits_e), *limits_f)
 
@@ -12,17 +11,14 @@ def apply(*given):
 def prove(Eq):
     from axiom import algebra
 
-    y = Symbol.y(real=True)
-    x = Symbol.x(real=True)
-    B = Symbol.B(etype=dtype.real)
-    A = Symbol.A(etype=dtype.real)
-    f = Function.f(shape=(), integer=True)
-    g = Function.g(shape=(), integer=True)
+    x, y = Symbol(real=True)
+    A, B = Symbol(etype=dtype.real)
+    f, g = Function(integer=True)
     Eq << apply(f(x, y) > 0, All[y:B](Any[x:A]((g(x, y) > 0))))
 
     Eq << Eq[-1].this.expr.apply(algebra.any_et.given.et, index=0)
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq << algebra.all.given.cond.apply(Eq[-1])
 

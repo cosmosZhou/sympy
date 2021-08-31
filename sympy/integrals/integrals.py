@@ -399,9 +399,6 @@ class Integral(AddWithLimits):
         risch = hints.get('risch', None)
         heurisch = hints.get('heurisch', None)
         manual = hints.get('manual', None)
-        wolfram = hints.get('wolfram', None)
-        if wolfram is not None:
-            return self._eval_wolfram(wolfram)
         
         if len(list(filter(None, (manual, meijerg, risch, heurisch)))) > 1:
             raise ValueError("At most one of manual, meijerg, risch, heurisch can be True")
@@ -1135,7 +1132,7 @@ class Integral(AddWithLimits):
         if len(self.limits) != 1:
             return self
         limit = self.limits[0]
-        if len(limit) > 1:
+        if len(limit) == 3:
             x, a, b = limit
             domain = self.expr.domain_nonzero(x)
             from sympy.sets.sets import Interval
@@ -1181,7 +1178,7 @@ class Integral(AddWithLimits):
             if len(limit) == 1:
                 # deal with indefinite integrals
                 x = limit[0]
-#                 domain = self.expr.domain_nonzero(x)
+
                 function = self.expr.subs(old, new)
                 return self.func(function, (x,))
 
@@ -1197,7 +1194,9 @@ class Integral(AddWithLimits):
             if len(limit) == 3:
                 x, a, b = limit
                 return self.func(function, (x, a.subs(old, new), b.subs(old, new))).simplify()
-
+            elif len(limit) == 2:
+                x, cond = limit
+                return self.func(function, (x, cond._subs(old, new))).simplify()
             else:
                 x = limit[0]
                 return self.func(function, (x.subs(old, new)))
@@ -1232,7 +1231,7 @@ class Integral(AddWithLimits):
                     g = Dummy('g')
                     try:
                         res = solve(old - g, x)
-                    except :
+                    except:
                         res = []
 
                     if not res:
@@ -1541,8 +1540,7 @@ class Integral(AddWithLimits):
             # Use len(self.limits)-1 so that syntax highlighters don't think
             # \" is an escaped quote
             tex = r"\i" + "i"*(len(self.limits) - 1) + "nt"
-            symbols = [r"\, d%s" % p._print(symbol[0])
-                       for symbol in self.limits]
+            symbols = [r"\, d%s" % p._print(symbol[0]) for symbol in self.limits]
 
         else:
             for lim in reversed(self.limits):
@@ -1558,59 +1556,12 @@ class Integral(AddWithLimits):
                         tex += "_{%s}^{%s}" % (p._print(lim[1]),
                                                p._print(lim[2]))
                     if len(lim) == 2:
-                        tex += "^{%s}" % (p._print(lim[1]))
+                        tex += "_{%s}" % (p._print(lim[1]))
 
                 symbols.insert(0, r"\, d%s" % p._print(symbol))
 
         from sympy.printing.precedence import PRECEDENCE
         return r"%s %s%s" % (tex, p.parenthesize(self.expr, PRECEDENCE["Mul"], strict=True), "".join(symbols))
-
-    def to_wolfram(self, global_variables):        
-        from wolframclient.language import wl, wlexpr
-        limit = self.limits[0]
-        local_variables = set()
-        
-        limit = [e.to_wolfram(local_variables) for e in limit]
-        if len(limit) == 1:
-            limit, *_ = limit
-            global_variables.add(self.variable)
-        
-        function = self.expr.to_wolfram(local_variables)
-        local_variables -= self.variables_set
-        
-        conditions = []
-        for variable in local_variables:
-            if variable.is_integer:
-                domain = 'Integers'            
-            elif variable.is_rational:
-                domain = 'Rationals'
-            elif variable.is_real:
-                domain = 'Reals'
-            else:
-                domain = 'Complexes'
-                
-            if variable.is_positive:
-                domain = 'Positive' + domain
-            elif variable.is_negative:
-                domain = 'Negative' + domain
-            elif variable.is_nonpositive:
-                domain = 'NonPositive' + domain
-            elif variable.is_nonnegative:
-                domain = 'NonNegative' + domain
-                
-            domain = wlexpr(domain)
-            variable = variable.to_wolfram(global_variables)
-            conditions.append(wl.Element(variable, domain))
-            
-        if len(conditions) == 0:
-            return wl.Integrate(function, limit)
-        
-        if len(conditions) == 1:
-            conditions = conditions[0]
-        else: 
-            conditions = wl.And(*conditions)
-            
-        return wl.Integrate(function, limit, wl.Rule(wlexpr('Assumptions'), conditions))
 
 
 def integrate(*args, meijerg=None, conds='piecewise', risch=None, heurisch=None, manual=None, **kwargs):

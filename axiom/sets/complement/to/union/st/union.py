@@ -11,14 +11,12 @@ def apply(complement, evaluate=True):
 @prove
 def prove(Eq):
     from axiom import sets
-    B = Symbol.B(etype=dtype.integer)
-    A = Symbol.A(etype=dtype.integer)
-    C = Symbol.C(etype=dtype.integer)
+    B, A, C = Symbol(etype=dtype.integer)
 
     Eq << apply((A | B) - C, evaluate=False)
 
-    A = Symbol.A(A - C)
-    B = Symbol.B(B - C)
+    A = Symbol(A - C)
+    B = Symbol(B - C)
 
     Eq.A_definition = A.this.definition
     Eq.B_definition = B.this.definition

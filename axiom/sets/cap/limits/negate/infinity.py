@@ -11,11 +11,11 @@ def apply(self):
 def prove(Eq):
     from axiom import sets, calculus
 
-    i = Symbol.i(integer=True)
-    f = Function.f(etype=dtype.real)
+    i = Symbol(integer=True)
+    f = Function(etype=dtype.real)
     Eq << apply(Cap[i](f(i)))
 
-    n = Symbol.n(integer=True, nonnegative=True)
+    n = Symbol(integer=True, nonnegative=True)
     Eq << sets.cap.limits.negate.apply(Cap[i:-n:n + 1](f(i)))
 
     Eq << calculus.eq.imply.eq.limit.apply(Eq[-1], (n, oo))

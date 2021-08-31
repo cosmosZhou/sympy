@@ -20,12 +20,12 @@ def apply(self):
 
 @prove(proved=False)
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    X = Symbol.X(shape=(n, n), complex=True)
-    a = Symbol.a(complex=True)
+    n = Symbol(integer=True, positive=True)
+    X = Symbol(shape=(n, n), complex=True)
+    a = Symbol(complex=True)
     Eq << apply(Determinant(a * X))
 
-    
+
 
 
 if __name__ == '__main__':

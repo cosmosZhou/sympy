@@ -1,5 +1,4 @@
 from util import *
-
 from axiom.sets.imply.eq.swap import swap
 
 
@@ -7,22 +6,20 @@ from axiom.sets.imply.eq.swap import swap
 def apply(given):
     from axiom.sets.eq.given.eq.set_comprehension import of_set_comprehension
     set_comprehension_abs, n = given.of(Equal)
-    set_comprehension = set_comprehension_abs.of(Abs)
+    set_comprehension = set_comprehension_abs.of(Card)
     a = of_set_comprehension(set_comprehension)
 
     assert a.shape == (n,)
 
-    i = Symbol.i(integer=True)
+    k, i = Symbol(integer=True)
 
-    p = Symbol.p(shape=(oo,), **a.dtype.dict)
+    p = Symbol(shape=(oo,), **a.dtype.dict)
 
-    P = Symbol.P(conditionset(p[:n], Equal(p[:n].set_comprehension(), set_comprehension)))
+    P = Symbol(conditionset(p[:n], Equal(p[:n].set_comprehension(), set_comprehension)))
 
-    b = Symbol.b(integer=True, shape=(oo,), nonnegative=True)
+    b = Symbol(integer=True, shape=(oo,), nonnegative=True)
 
-    k = Symbol.k(integer=True)
-
-    d = Symbol.d(Lamda[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))
+    d = Symbol(Lamda[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))
     return All[p[:n]:P](Any[b[:n]](Equal(p[:n], Lamda[k:n](a[d[k]]))))
 
 
@@ -30,11 +27,10 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, sets, discrete
 
-    n = Symbol.n(domain=Range(2, oo), given=False)
-    a = Symbol.a(shape=(oo,), etype=dtype.integer, given=True)
-    Eq << apply(Equal(Abs(a[:n].set_comprehension()), n))
+    n = Symbol(domain=Range(2, oo), given=False)
+    a = Symbol(shape=(oo,), etype=dtype.integer, given=True)
+    Eq << apply(Equal(Card(a[:n].set_comprehension()), n))
 
-    i = Symbol.i(integer=True)
     p = Eq[3].variable.base
     b = Eq[3].expr.variable.base
     Eq.hypothesis = Eq[3].subs(Eq[2]).copy(plausible=True)
@@ -54,8 +50,9 @@ def prove(Eq):
     Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.matrix)
 
     return
+    i = Symbol(integer=True)
     Eq.initial_doit = Eq[-1].doit(deep=True)
-    d0 = Symbol.d0(Eq.initial_doit.rhs[0].indices[0])
+    d0 = Symbol(Eq.initial_doit.rhs[0].indices[0])
     Eq << d0.this.definition
     Eq.initial_doit = Eq.initial_doit.subs(Eq[-1].reversed)
     Eq << Eq[-1].this.rhs.args[-1][1].simplify()
@@ -70,7 +67,7 @@ def prove(Eq):
     Eq << Eq[-1].this.rhs.expand()
     Eq << Eq[-1].this.rhs.expand()
     Eq.initial_doit = Eq.initial_doit.subs(Eq[-1])
-    d1 = Symbol.d1(Eq.initial_doit.rhs[1].indices[0])
+    d1 = Symbol(Eq.initial_doit.rhs[1].indices[0])
     Eq << d1.this.definition
     Eq.initial_doit = Eq.initial_doit.subs(Eq[-1].reversed)
     Eq << Eq[-1].this.rhs.args[1].astype(Lamda)
@@ -107,7 +104,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(Eq[-1].rhs.args[0].this.T)
     Eq << Eq[-3].subs(Eq[-1])
     Eq.deduction = Eq[-1] @ Eq[-1].rhs.args[1]
-    d_quote = Symbol.d_quote(Eq.deduction.lhs)
+    d_quote = Symbol(Eq.deduction.lhs)
     Eq.d_quote_definition = d_quote.this.definition
     Eq << Eq.d_swap.this.rhs.args[1].definition - Eq.d_quote_definition + Eq.d_quote_definition.lhs
     Eq << algebra.eq.imply.eq.getitem.apply(Eq[-1], a, i=Eq[-1].lhs.variable, simplify=None)
@@ -128,7 +125,7 @@ def prove(Eq):
     Eq << Eq[-1].subs(i, n).subs(j, b[n]).limits_subs(Eq[-1].variable, Eq.any_n_plausible.variable).subs(Eq.p_quote_definition.reversed)
     Eq << Eq[-1].subs(Eq[-1].expr.rhs.this.definition)
     Eq << Eq.any_n_plausible.apply(discrete.combinatorics.permutation.pop_back, Eq[-1])
-    #Eq << Eq.hypothesis.subs(Eq.hypothesis.variable, p_quote[:n])
+    # Eq << Eq.hypothesis.subs(Eq.hypothesis.variable, p_quote[:n])
     Eq << Eq[-1].subs(Eq[-2].reversed)
     Eq << Eq.p_quote_definition.lhs.this.bisect(slice(-1))
     Eq << Eq[-1].subs(Eq[-2])

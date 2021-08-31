@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    greater_than, _greater_than = given
+def apply(greater_than, _greater_than):
     x, a = greater_than.of(LessEqual)
     y, b = _greater_than.of(GreaterEqual)
 
@@ -15,21 +14,18 @@ def apply(*given):
 def prove(Eq):
     from axiom import sets, algebra
 
-    a = Symbol.a(integer=True, given=True)
-    b = Symbol.b(integer=True, given=True)
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
+    a, b, x, y = Symbol(integer=True, given=True)
     Eq << apply(y <= b, x >= a)
 
-    Eq << sets.subset.given.all_contains.apply(Eq[-1])
+    Eq << sets.subset.given.all_el.apply(Eq[-1])
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.expr.apply(sets.notcontains.imply.ou.split.range)
+    Eq << Eq[-1].this.expr.apply(sets.notin.imply.ou.split.range)
 
     Eq << algebra.any.imply.any_et.limits.single_variable.apply(Eq[-1], simplify=None)
 
-    Eq << Eq[-1].this.expr.args[1].apply(sets.contains.imply.et.split.range)
+    Eq << Eq[-1].this.expr.args[1].apply(sets.el.imply.et.split.range)
 
     #if self implies a False proposition, then self must be False
     Eq << Eq[-1].this.expr.apply(algebra.cond.cond.ou.given.ou, simplify=False)

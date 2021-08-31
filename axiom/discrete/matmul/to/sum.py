@@ -5,7 +5,7 @@ from util import *
 def apply(self, var=None):
     A, B = self.of(MatMul)
     kwargs = {'var': var, 'generator': self}
-    
+
     from axiom.discrete.matmul.to.lamda import generate_k_limit
     assert len(A.shape) == 1
     assert len(B.shape) == 1
@@ -17,9 +17,8 @@ def apply(self, var=None):
 
 @prove(provable=False)
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    A = Symbol.A(shape=(n,), complex=True)
-    B = Symbol.B(shape=(n,), complex=True)
+    n = Symbol(integer=True, positive=True)
+    A, B = Symbol(shape=(n,), complex=True)
     Eq << apply(A @ B)
 
 

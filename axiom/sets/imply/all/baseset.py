@@ -7,24 +7,23 @@ def apply(P):
     assert definition.is_ConditionSet
     x = definition.variable
 
-    return All[x:P](definition.condition & Contains(x, definition.base_set))
+    return All[x:P](definition.condition & Element(x, definition.base_set))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
-    x = Symbol.x(shape=(oo,), integer=True)
+    n, m = Symbol(integer=True, positive=True)
+    x = Symbol(shape=(oo,), integer=True)
 
-    f = Function.f(shape=(), integer=True)
+    f = Function(shape=(), integer=True)
 
-    P = Symbol.P(conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Range(0, m), n)))
+    P = Symbol(conditionset(x[:n], f(x[:n]) > 0, CartesianSpace(Range(0, m), n)))
     Eq << apply(P)
 
     Eq << algebra.all_et.imply.all.apply(Eq[-1])
 
-    Eq << All[x[:n]:P](Contains(x[:n], P), plausible=True)
+    Eq << All[x[:n]:P](Element(x[:n], P), plausible=True)
 
     Eq << Eq[-1].simplify()
 

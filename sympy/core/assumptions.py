@@ -257,9 +257,28 @@ _assume_rules = FactRules([
     'extended_nonzero == extended_real & !zero',
     'invertible == !singular',
     'random -> finite',
-    'emptyset -> finiteset',
+    'empty -> finiteset',
     'infiniteset == !finiteset',
-    'nonemptyset == !emptyset',
+    'nonempty == !empty',
+    'integer -> extended_integer',
+    'complex -> extended_complex',
+    'extended_integer -> extended_real',
+    'extended_real -> extended_complex',
+    
+    'real -> extended_real',
+    'extended_real -> hyper_real',
+    'hyper_real -> super_real',
+    'super_real -> super_complex',
+    
+    'finiteset -> countable',
+    'countable -> measurable',
+    'uncountable == !countable',
+    'unmeasurable -> !measurable',
+    'extended_real -> hyper_real',
+    'extended_complex -> hyper_complex',    
+    'hyper_real -> super_real',
+    'hyper_complex -> super_complex',
+    
 ])
 
 _assume_defined = _assume_rules.defined_facts.copy()

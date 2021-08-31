@@ -1,6 +1,7 @@
 from util import *
 
-#precondition: self.is_Add and factor.is_Add
+
+# precondition: self.is_Add and factor.is_Add
 def try_div_add_args(self_args, factor_args):
     quotient = set()
     for a, b in zip(self_args, factor_args):
@@ -79,7 +80,7 @@ def collect(self, *factors):
         quotient = try_div(arg, factor)
         if quotient is None:
             others.append(arg)
-        else:        
+        else: 
             additives.append(quotient)
     
     sgm = Add(*additives)
@@ -92,7 +93,8 @@ def collect(self, *factors):
     
     return sgm
 
-@apply
+
+@apply(simplify=False)
 def apply(self, factor=None):
     args = self.of(Add)
     common_terms = None
@@ -106,7 +108,7 @@ def apply(self, factor=None):
                 if common_terms is None:
                     common_terms = {*arg.args}
                 else:
-                    if common_terms & {*arg.args}:                            
+                    if common_terms & {*arg.args}: 
                         common_terms &= {*arg.args}
                     else:
                         others.append(arg)
@@ -115,7 +117,7 @@ def apply(self, factor=None):
             else:
                 others.append(arg)
     
-        for arg in muls:        
+        for arg in muls: 
             arg = Mul(*{*arg.args} - common_terms)
             additives.append(arg)
             
@@ -133,10 +135,7 @@ def apply(self, factor=None):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(complex=True)
-    b = Symbol.b(complex=True)
-    x = Symbol.x(complex=True)
-    y = Symbol.y(complex=True)
+    a, b, x, y = Symbol(complex=True)
     Eq << apply(a * x - a * y + b + b * y, factor=b)
 
     Eq << Eq[0].this.find(Mul[Add]).apply(algebra.mul.to.add)

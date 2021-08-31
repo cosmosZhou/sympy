@@ -6,7 +6,7 @@ def apply(gt, index=-1):
     args, x = gt.of(Min > Expr)
     first = args[:index]
     second = args[index:]
-    
+
     return Greater(Min(*first), x), Greater(Min(*second), x)
 
 
@@ -14,9 +14,7 @@ def apply(gt, index=-1):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    z = Symbol.z(real=True, given=True)
+    x, y, z = Symbol(real=True, given=True)
     Eq << apply(Min(y, z) > x)
 
     Eq << algebra.gt_min.imply.gt.apply(Eq[0], index=0)

@@ -17,7 +17,7 @@ def apply(is_nonnegative, less_than):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(x >= 0, x < 1)
 
     Eq << algebra.imply.le.floor.apply(x)

@@ -14,25 +14,23 @@ def apply(self):
     this = self.limits_subs(i, z)
     this = this.limits_subs(j, i)
     this = this.limits_subs(z, j)
-    
+
     return Equal(self, this)
 
 
 @prove
 def prove(Eq):
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    n = Symbol.n(integer=True, positive=True)
+    i, j, k = Symbol(integer=True)
+    A = Symbol(etype=dtype.integer)
+    n = Symbol(integer=True, positive=True)
 
-    f = Function.f(integer=True)
-    g = Symbol.g(shape=(oo, oo), real=True)
-    h = Symbol.h(shape=(oo,), real=True)
-    
+    f = Function(integer=True)
+    g = Symbol(shape=(oo, oo), real=True)
+    h = Symbol(shape=(oo,), real=True)
+
     Eq << apply(Sum[i:f(j), j:A](h[i] * g[i, j]))
-    
-    k = Symbol.k(integer=True)
-    
+
+
     Eq << Eq[-1].this.rhs.limits_subs(i, k)
 
 

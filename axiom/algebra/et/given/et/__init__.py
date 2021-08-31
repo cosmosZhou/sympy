@@ -10,12 +10,10 @@ def apply(given, index=-1):
 
 @prove
 def prove(Eq):
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    y = Symbol.y(real=True, shape=(k,), given=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    b = Symbol.b(shape=(k,), real=True)
+    k = Symbol(integer=True, positive=True)
+    x, y = Symbol(real=True, shape=(k,), given=True)
+    f, g = Function(real=True)
+    b = Symbol(shape=(k,), real=True)
     Eq << apply(And(Unequal(x, y), Unequal(f(x), g(y)), Equal(f(x), b)))
 
     Eq <<= Eq[1] & Eq[2]
@@ -26,9 +24,7 @@ if __name__ == '__main__':
 
 
 from . import split
-del collect
 from . import collect
-del mul
 from . import mul
 from . import subs
 from . import transit

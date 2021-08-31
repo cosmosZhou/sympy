@@ -1,11 +1,11 @@
 from util import *
 
 
-def doit(Sum, self):    
+def doit(Sum, self):
     xi, *limits, limit = self.of(Sum)
     i, a, b = limit.of(Tuple)
     assert i.is_integer
-    
+
     diff = b - a
     assert diff == int(diff)
 
@@ -21,22 +21,21 @@ def doit(Sum, self):
 
 
 @apply
-def apply(self):    
+def apply(self):
     return Equal(self, doit(Sum, self))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    f = Function.f(integer=True)
+    x = Symbol(real=True, shape=(oo, oo))
+    i, j = Symbol(integer=True)
+    f = Function(integer=True)
 
     n = 5
     Eq << apply(Sum[j:f(i), i:n](x[i, j]))
 
-    s = Symbol.s(Lamda[i](Sum[j:f(i)](x[i, j])))
+    s = Symbol(Lamda[i](Sum[j:f(i)](x[i, j])))
 
     Eq << s[i].this.definition
 

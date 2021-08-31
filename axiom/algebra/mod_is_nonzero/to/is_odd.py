@@ -13,7 +13,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True)
+    n = Symbol(integer=True)
 
     Eq << apply(Unequal(n % 2, 0))
 

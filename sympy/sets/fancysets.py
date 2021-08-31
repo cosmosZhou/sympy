@@ -702,17 +702,11 @@ class Range(Set):
             return b
         elif b in self:
             return self
-        elif not self.right_open and b.left_open:
-            if self.stop == b.start:
-                return Range(self.start, b.stop, left_open=self.left_open, right_open=b.right_open)
-        elif not b.right_open and self.left_open:
-            if b.stop == self.start:
-                return Range(b.start, self.stop, left_open=b.left_open, right_open=self.right_open)
 
     def union_sets(self, b):
-        if b.is_Range or b.is_Interval:
+        from sympy.functions.elementary.miscellaneous import Min, Max
+        if b.is_Range:
             if self._is_comparable(b):
-                from sympy.functions.elementary.miscellaneous import Min, Max
                 # Non-overlapping intervals
                 stop = Min(self.stop, b.stop)
                 start = Max(self.start, b.start)
@@ -729,18 +723,49 @@ class Range(Set):
                                   (b.stop != stop or b.right_open))
                     return self.func(start, stop, left_open=left_open, right_open=right_open)
             else:
-                if self.right_open:
-                    if b.left_open:
-                        if self.stop == b.start:
-                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
-                    else:
-                        if self.stop == b.start - 1:
-                            if b.start <= b.stop:                                
-                                return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
-                        if self.stop == b.start:
-                            return self.copy(stop=b.stop, right_open=b.right_open)
+                if b.left_open:
+                    if self.stop == b.start:
+                        return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
+                else:
+                    if self.stop == b.start - 1:
+                        if b.start <= b.stop:                                
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
+                    if self.stop == b.start:
+                        if self.stop >= self.start and b.stop >= b.start:
+                            return self.copy(stop=b.stop)
                     
                 return self._union_sets(b)
+            
+        if b.is_Interval:
+            if self._is_comparable(b):                
+                # Non-overlapping intervals
+                stop = Min(self.stop, b.stop)
+                start = Max(self.start, b.start)
+                if (stop < start or
+                   (stop == start and (stop not in self and stop not in b))):
+                    return 
+                else:
+                    start = Min(self.start, b.start)
+                    stop = Max(self.stop, b.stop)
+
+                    left_open = ((self.start != start or self.left_open) and
+                                 (b.start != start or b.left_open))
+                    right_open = ((self.stop != stop or self.right_open) and
+                                  (b.stop != stop or b.right_open))
+                    return self.func(start, stop, left_open=left_open, right_open=right_open)
+            else:
+                if b.left_open:
+                    if self.stop == b.start:
+                        return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
+                else:
+                    if self.stop == b.start - 1:
+                        if b.start <= b.stop:                                
+                            return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
+                    if self.stop == b.start:
+                        return self.copy(stop=b.stop, right_open=b.right_open)
+                    
+                return self._union_sets(b)
+            
         if b.is_UniversalSet:
             return b
         if b.is_Complement:
@@ -883,7 +908,7 @@ class Range(Set):
         return self        
 
     def element_symbol(self, excludes=set()):
-        return self.generate_var(excludes, integer=True)
+        return self.generate_var(excludes, **self.etype.dict)
 
     @property
     def size(self):
@@ -897,8 +922,6 @@ class Range(Set):
             stop = self.stop + 1
         return stop - start
 
-    def _eval_Abs(self):
-        return self.size
 
     @property
     def start(self):
@@ -1372,7 +1395,7 @@ class Range(Set):
         return r"\left%s%s; %s\right%s" % (left, p._print(self.start), p._print(self.stop), right)
 
     @classmethod
-    def simplify_Contains(cls, self, e, s):
+    def simplify_Element(cls, self, e, s):
         if s.is_integer and e.is_Add:
             if not s.left_open or s.right_open:
                 if S.NegativeOne in e.args:
@@ -1404,7 +1427,7 @@ class Range(Set):
                 return self.invert_type(e, complement).simplify()                
             
     @classmethod
-    def simplify_NotContains(cls, self, e, s):
+    def simplify_NotElement(cls, self, e, s):
         if s.is_integer and e.is_Add:
             if S.NegativeOne in e.args:
                 s += S.One
@@ -1453,7 +1476,11 @@ class Range(Set):
                                                
     @property
     def kwargs(self):
-        return {'left_open': self.left_open, 'right_open': self.right_open}             
+        return {'left_open': self.left_open, 'right_open': self.right_open}
+                 
+    def _eval_Card(self):
+        from sympy import Piecewise
+        return Piecewise((self.stop - self.start, self.stop >= self.start), (0, True))
 
 
 converter[range] = Range
@@ -1955,3 +1982,82 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
     @property
     def etype(self):
         return dtype.complex
+
+
+class Surreals(with_metaclass(Singleton, Set)):
+    
+    def __eq__(self, other):
+        return other.is_Surreals
+
+    def __hash__(self):
+        return hash(self.func.__name__)
+
+    def __str__(self):
+        return "S.Surreals"
+
+    def _latex(self, p):
+        return r"\mathbb{*R}"
+
+    def __repr__(self):
+        return "S.Surreals"
+
+    def __add__(self, other):
+        return self
+
+    def __matmul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        
+        raise Exception("could not multiply %s, %s" % (self, other))
+
+    def __mul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        return self
+
+    @property
+    def etype(self):
+        return dtype.super_real
+
+    def _contains(self, other):
+        if other.is_super_real:
+            return True
+        
+class Surcomplexes(with_metaclass(Singleton, Set)):
+    
+    def __eq__(self, other):
+        return other.is_super_complex
+
+    def __hash__(self):
+        return hash(self.func.__name__)
+
+    def __str__(self):
+        return "S.Surcomplexes"
+
+    def _latex(self, p):
+        return r"\mathbb{*C}"
+
+    def __repr__(self):
+        return "S.Surcomplexes"
+
+    def __add__(self, other):
+        return self
+
+    def __matmul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        
+        raise Exception("could not multiply %s, %s" % (self, other))
+
+    def __mul__(self, other):
+        if other.is_set:
+            return ProductSet(self, other)
+        return self
+
+    @property
+    def etype(self):
+        return dtype.super_complex
+
+    def _contains(self, other):
+        if other.is_super_complex:
+            return True

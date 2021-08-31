@@ -6,16 +6,16 @@ from util import *
 @apply
 def apply(imply, wrt=None):
     cond = imply.domain_defined(wrt)
-    return Or(imply, NotContains(wrt, cond))
+    return Or(imply, NotElement(wrt, cond))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, positive=True)
-    i = Symbol.i(integer=True, given=True)
+    n = Symbol(integer=True, positive=True)
+    i = Symbol(integer=True, given=True)
 
-    x = Symbol.x(shape=(n,), real=True, given=True)
+    x = Symbol(shape=(n,), real=True, given=True)
 
     Eq << apply(x[i] > 0, wrt=i)
 

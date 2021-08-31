@@ -14,13 +14,10 @@ def apply(eq, f_eq, *, reverse=False, simplify=True, assumptions={}):
 
 @prove
 def prove(Eq):
-    m = Symbol(integer=True, positive=True)
-    n = Symbol(integer=True, positive=True)
-    a = Symbol(real=True, shape=(m, n))
-    b = Symbol(real=True, shape=(m, n))
-    c = Symbol(real=True, shape=(m, n))
+    m, n = Symbol(integer=True, positive=True)
+    a, b, c = Symbol(real=True, shape=(m, n))
     S = Symbol(etype=dtype.real * (m, n))
-    Eq << apply(Equal(a, 2 * c), Contains(a * b, S))
+    Eq << apply(Equal(a, 2 * c), Element(a * b, S))
 
     Eq << Eq[1].subs(Eq[0])
 

@@ -12,8 +12,8 @@ def apply(is_nonnegative, less_than):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True, nonnegative=True)
+    x = Symbol(real=True)
+    a = Symbol(real=True, nonnegative=True)
 
     Eq << apply(x >= 0, x <= a)
 

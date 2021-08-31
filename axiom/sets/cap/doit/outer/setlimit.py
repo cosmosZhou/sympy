@@ -10,19 +10,15 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets
-    x = Symbol.x(etype=dtype.real, shape=(oo, oo))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    t = Symbol.t(integer=True)
-    m = Symbol.m(integer=True, positive=True)
+    x = Symbol(etype=dtype.real, shape=(oo, oo))
+    i, j, t, a = Symbol(integer=True)
+    m = Symbol(integer=True, positive=True)
 
-    a = Symbol.a(integer=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
-    s = Function.s(etype=dtype.real)
+    f, g = Function(real=True)
+    s = Function(etype=dtype.real)
     Eq << apply(Cap[t:i, i:g(i, j) > 0:s(i), j:f(i, j) > 0, i:{a}](x[i, j]))
 
-    u = Function.u(eval=lambda a: Cap[t:i, i:g(i, j) > 0:s(a), j:f(a, j) > 0](x[i, j]))
+    u = Function(eval=lambda a: Cap[t:i, i:g(i, j) > 0:s(a), j:f(a, j) > 0](x[i, j]))
 
     Eq << u(i).this.defun()
 

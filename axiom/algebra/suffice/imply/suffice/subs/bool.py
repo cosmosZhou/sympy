@@ -10,7 +10,7 @@ def apply(given, invert=False):
     else:
         old = eq
         new = S.true
-        
+
     return Suffice(eq, f._subs(old, new))
 
 
@@ -18,13 +18,10 @@ def apply(given, invert=False):
 def prove(Eq):
     from axiom import algebra
 
-    y = Symbol.y(integer=True)
-    x = Symbol.x(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    t = Function.t(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
-    Eq << apply(Suffice(Contains(t(x), A), Equal(Piecewise((f(t(x), y), Contains(t(x), A)), (g(x), True)), g(x))))
+    y, x = Symbol(integer=True)
+    A = Symbol(etype=dtype.integer)
+    t, f, g = Function(integer=True)
+    Eq << apply(Suffice(Element(t(x), A), Equal(Piecewise((f(t(x), y), Element(t(x), A)), (g(x), True)), g(x))))
 
     Eq << algebra.suffice.imply.suffice.et.apply(Eq[0])
 

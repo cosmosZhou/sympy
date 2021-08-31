@@ -22,12 +22,8 @@ def apply(given, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    a, b, x, y = Symbol(integer=True)
+    f, g = Function(integer=True)
     Eq << apply(Suffice((f(a) > x) & (f(b) > y), f(a, b) > g(x, y)), wrt=(a, b))
 
     Eq << Eq[0].this.apply(algebra.suffice.fold, index=1)

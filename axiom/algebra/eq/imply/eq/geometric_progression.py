@@ -20,9 +20,9 @@ def apply(given, n=None, a=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
-    r = Symbol.r(complex=True)
-    f = Symbol.f(shape=(oo,), complex=True)
+    n = Symbol(integer=True, nonnegative=True, given=False)
+    r = Symbol(complex=True)
+    f = Symbol(shape=(oo,), complex=True)
 
     Eq << apply(Equal(f[n + 1], r * f[n]), n=n)
 

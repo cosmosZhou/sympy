@@ -24,11 +24,10 @@ def dissect_distance(variance):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    m = Symbol.m(integer=True, positive=True)
-    y = Symbol.y(real=True)
-    i = Symbol.i(integer=True)
+    n, m = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,))
+    y = Symbol(real=True)
+    i = Symbol(integer=True)
     Eq << apply(abs(y - Sum[i](x[i]) / n))
 
     Eq << Eq[0].this.rhs.find(Sum).simplify()

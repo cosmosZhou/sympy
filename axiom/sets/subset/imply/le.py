@@ -1,24 +1,17 @@
 from util import *
 
 
-
-
-# given: A ⊂ B
-# |A| <= |B|
 @apply
 def apply(given):
-    assert given.is_Subset
-    A, B = given.args
+    A, B = given.of(Subset)
 
-    return LessEqual(abs(A), abs(B))
+    return LessEqual(Card(A), Card(B))
 
 
 @prove
 def prove(Eq):
     from axiom import sets
-    A = Symbol.A(etype=dtype.integer, given=True)
-    B = Symbol.B(etype=dtype.integer, given=True)
-
+    A, B = Symbol(etype=dtype.integer, given=True)
     Eq << apply(Subset(A, B))
 
     Eq << sets.subset.imply.eq.complement.apply(Eq[0])

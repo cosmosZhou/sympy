@@ -1,3 +1,3 @@
 from . import st
 from . import log
-from . import divide
+from . import div

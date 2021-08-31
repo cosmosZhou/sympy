@@ -3,7 +3,7 @@ from util import *
 
 def applicable(multiplicand, e):
     if not e.is_rational:
-        return 
+        return
     if e.is_integer:
         return True
     unrealCount = 0
@@ -12,13 +12,13 @@ def applicable(multiplicand, e):
             unrealCount += 1
     return unrealCount < 2
 
-    
+
 @apply
-def apply(self): 
+def apply(self):
     base, e = self.of(Pow)
     multiplicand = base.of(Mul)
     assert applicable(multiplicand, e)
-    
+
     pows = []
 
     for x in multiplicand:
@@ -32,7 +32,7 @@ def prove(Eq):
     from axiom import algebra
 
     a, b = Symbol(real=True, nonnegative=True)
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
+    n = Symbol(integer=True, nonnegative=True, given=False)
     Eq << apply((a * b) ** n)
 
     Eq << Eq[0].subs(n, 0)

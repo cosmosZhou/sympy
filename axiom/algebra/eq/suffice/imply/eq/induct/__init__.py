@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given, n=None, start=0):
+def apply(f0, suffice, n=None, start=0):
     start = sympify(start)
-    f0, suffice = given
     f0.of(Equal)
     fn, fn1 = suffice.of(Suffice)
     assert fn._subs(n, n + 1) == fn1
@@ -18,13 +17,12 @@ def apply(*given, n=None, start=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
+    n = Symbol(integer=True, nonnegative=True, given=False)
+    f, g = Symbol(integer=True, shape=(oo,))
 
     Eq << apply(Equal(f[0], g[0]), Suffice(Equal(f[n], g[n]), Equal(f[n + 1], g[n + 1])), n=n)
 
-    h = Symbol.h(Lamda[n](f[n] - g[n]))
+    h = Symbol(Lamda[n](f[n] - g[n]))
 
     Eq << h[0].this.definition
 

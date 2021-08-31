@@ -9,12 +9,12 @@ def apply(limits):
 
 @prove
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True)
-    f = Any[x: Interval(0, n)](Equal(x * 2, 1)) 
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True)
+    f = Any[x: Interval(0, n)](Equal(x * 2, 1))
 
     Eq << apply(f.limits)
-    
+
     Eq << Eq[-1].simplify()
 
 

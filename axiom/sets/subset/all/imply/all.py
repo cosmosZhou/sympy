@@ -2,12 +2,9 @@ from util import *
 
 
 @apply
-def apply(*given):
-    subset, forall = given
-    if subset.is_All:
-        forall, subset = subset, forall
+def apply(subset, forall):
     function, *limits = forall.of(All)
-    
+
     B, A = subset.of(Subset)
 
     index = -1
@@ -27,16 +24,13 @@ def apply(*given):
 def prove(Eq):
     from axiom import sets, algebra
 
-    n = Symbol.n(complex=True, positive=True)
-    A = Symbol.A(etype=dtype.complex * n)
-    B = Symbol.B(etype=dtype.complex * n)
-    x = Symbol.x(complex=True, shape=(n,))
-    f = Function.f(complex=True, shape=())
-    assert f.is_complex
-    assert f.shape == ()
+    n = Symbol(complex=True, positive=True)
+    A, B = Symbol(etype=dtype.complex * n)
+    x = Symbol(complex=True, shape=(n,))
+    f = Function(complex=True, shape=())
     Eq << apply(Subset(B, A), All[x:A](Equal(f(x), 1)))
 
-    Eq << sets.subset.imply.all_contains.apply(Eq[0], wrt=x)
+    Eq << sets.subset.imply.all_el.apply(Eq[0], wrt=x)
 
     Eq << algebra.all.imply.suffice.apply(Eq[-1])
 

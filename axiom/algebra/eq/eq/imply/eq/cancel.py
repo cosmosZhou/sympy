@@ -11,15 +11,15 @@ def apply(eq0, eq1, wrt=None):
     a, b = f.nth(1), f.nth(0)
     assert a.is_zero is False
     f = -b / a
-    
+
     lhs, rhs = eq1.of(Equal)
     g = lhs - rhs
-    
+
     g = g.as_poly(wrt)
     a, b = g.nth(1), g.nth(0)
     assert a.is_zero is False
     g = -b / a
-    
+
     return Equal(g, f)
 
 
@@ -27,11 +27,8 @@ def apply(eq0, eq1, wrt=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(complex=True)
-    a = Symbol.a(complex=True)
-    b = Symbol.b(complex=True)
-    c = Symbol.c(complex=True, zero=False)
-    d = Symbol.d(complex=True, zero=False)
+    x, a, b = Symbol(complex=True)
+    c, d = Symbol(complex=True, zero=False)
     Eq << apply(Equal(a, c * x), Equal(b, d * x), wrt=x)
 
     Eq <<= Eq[0] / c, Eq[1] / d

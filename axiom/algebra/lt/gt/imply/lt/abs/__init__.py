@@ -2,8 +2,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    x_less_than_y, x_greater_than_y_minus = given
+def apply(x_less_than_y, x_greater_than_y_minus):
     x, y = x_less_than_y.of(Less)
     _x, _y = x_greater_than_y_minus.of(Greater)
     assert x == _x
@@ -15,11 +14,10 @@ def apply(*given):
 def prove(Eq):
     from axiom import algebra
 
-    y = Symbol.y(real=True)
-    x = Symbol.x(real=True)
+    y, x = Symbol(real=True)
     Eq << apply(x < y, x > -y)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.abs.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.abs.to.piece)
 
     Eq << Eq[-1].apply(algebra.cond.given.ou)
 
@@ -27,7 +25,7 @@ def prove(Eq):
 
     Eq << algebra.et.given.et.subs.bool.apply(Eq[-1])
 
-    
+
 
     Eq << -Eq[1]
 

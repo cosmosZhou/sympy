@@ -1353,8 +1353,8 @@ class Mul(Expr, AssocOp):
     def _eval_is_algebraic_expr(self, syms):
         return all(term._eval_is_algebraic_expr(syms) for term in self.args)
 
-    _eval_is_commutative = lambda self: _fuzzy_group(
-        a.is_commutative for a in self.args)
+    _eval_is_commutative = lambda self: _fuzzy_group(a.is_commutative for a in self.args)
+    
     _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
 
     def _eval_is_finite(self):
@@ -2210,9 +2210,13 @@ class Mul(Expr, AssocOp):
         elif self.is_extended_real:
             from sympy.sets.fancysets import Reals
             domain = Reals
-        else: 
-            assert self.is_complex
+        elif self.is_complex or self.is_extended_complex:
             domain = S.Complexes
+        elif self.is_super_real:
+            domain = S.Surreals
+        else:
+            assert self.is_super_complex, "%s is not super_complex" % self
+            domain = S.Surcomplexes
             
         coeff = []
         
@@ -2522,9 +2526,7 @@ class Mul(Expr, AssocOp):
         res = Expr.of(self, cls)
         if isinstance(res, tuple): 
             if cls.is_Mul:
-                if isinstance(cls, type):
-                    ...
-                else:
+                if not isinstance(cls, type):
                     try:
                         if cls.of_LinearPattern():
                             return Mul(*res)
@@ -2536,7 +2538,14 @@ class Mul(Expr, AssocOp):
                                     *res, b = res
                                     a = Mul(*res)
                                     return (a, b)
-                                 
+                        elif len(cls.args) == 1:
+                            for i, r in enumerate(res):
+                                if isinstance(r, tuple):
+                                    first = res[i]
+                                    rest = res[:i] + res[i + 1:]
+                                    res = (first, *rest)  
+                                    break
+                                              
                     except AttributeError:
                         cls = Basic.__new__(Mul, *cls.args)
                         if cls.of_LinearPattern():
@@ -2591,6 +2600,10 @@ class Mul(Expr, AssocOp):
                     return Mul(*args)
                      
         return res
+
+    def is_continuous(self, *args):
+        from sympy.core.logic import fuzzy_and
+        return fuzzy_and(x.is_continuous(*args) for x in self.args)
 
     
 mul = AssocOpDispatcher('mul')

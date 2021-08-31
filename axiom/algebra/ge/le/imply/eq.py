@@ -13,14 +13,13 @@ def apply(greater_than, less_than):
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    
+    a, b = Symbol(real=True)
+
     Eq << apply(a >= b, a <= b)
-    
+
     Eq <<= Eq[0] & Eq[1]
-    
-    
+
+
 
 
 if __name__ == '__main__':

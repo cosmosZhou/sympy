@@ -14,13 +14,11 @@ def apply(is_positive, eq, delta=None):
 def prove(Eq):
     from axiom import calculus, algebra
 
-    x = Symbol.x(real=True)
-    A = Symbol.A(real=True)
-    x0 = Symbol.x0(real=True)
-    f = Function.f(real=True)
+    x, A, x0 = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(A > 0, Equal(Limit[x:x0](f(x)), A))
 
-    epsilon = Symbol.epsilon(positive=True)
+    epsilon = Symbol(positive=True)
     delta = Eq[-1].variable
     Eq << calculus.eq.imply.any_all.limit_definition.apply(Eq[1], epsilon, delta)
 

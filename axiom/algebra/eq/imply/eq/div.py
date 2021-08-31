@@ -12,7 +12,7 @@ def apply(given, divisor=None):
 @prove
 def prove(Eq):
     x, y = Symbol(real=True)
-    d = Symbol.d(real=True, zero=False)
+    d = Symbol(real=True, zero=False)
     Eq << apply(Equal(x, y), d)
 
     Eq << Eq[-1].subs(Eq[0])

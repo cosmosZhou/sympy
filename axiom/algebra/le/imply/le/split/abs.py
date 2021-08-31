@@ -14,8 +14,7 @@ def apply(given, negate=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    M = Symbol.M(real=True)
-    a = Symbol.a(real=True)
+    M, a = Symbol(real=True)
 
     Eq << apply(LessEqual(abs(a), M), negate=True)
 

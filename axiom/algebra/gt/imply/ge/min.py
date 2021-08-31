@@ -12,10 +12,8 @@ def apply(given, m):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y, z = Symbol(real=True, given=True)
 
-    z = Symbol.z(real=True, given=True)
     Eq << apply(x > y, z)
     Eq << algebra.gt.imply.ge.relax.apply(Eq[0])
 

@@ -19,15 +19,14 @@ def apply(self):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
+    n, m = Symbol(integer=True, positive=True)
     #A = Symbol.A(shape=(m, m), complex=True)
     #B = Symbol.B(shape=(n, n), complex=True)
     #C = Symbol.C(shape=(m, n), complex=True)
     #Eq << apply(Determinant(BlockMatrix([[A, C],[ZeroMatrix(n, m), B]])))
-    A = Symbol.A(shape=(m, m), complex=True)
-    B = Symbol.B(shape=(n, n), complex=True)
-    C = Symbol.C(shape=(m, n), complex=True)
+    A = Symbol(shape=(m, m), complex=True)
+    B = Symbol(shape=(n, n), complex=True)
+    C = Symbol(shape=(m, n), complex=True)
     Eq << apply(Determinant(BlockMatrix([[C, A],[B, ZeroMatrix(n, m)]])))
 
     Eq << (Eq[0].lhs.arg @ BlockMatrix([[ZeroMatrix(n, m), Identity(n)],[Identity(m), ZeroMatrix(m, n)]])).this.apply(discrete.matmul.to.blockMatrix)

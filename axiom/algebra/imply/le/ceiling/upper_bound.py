@@ -9,7 +9,7 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
 
     Eq << apply(x)
 

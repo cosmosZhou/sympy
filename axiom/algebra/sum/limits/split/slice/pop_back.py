@@ -12,10 +12,10 @@ def apply(self):
 
 @prove(provable=False)
 def prove(Eq):
-    n = Symbol.n(integer=True, nonnegative=True)
-    i = Symbol.i(domain=Range(0, n))
-    x = Symbol.x(integer=True, shape=(oo,))
-    f = Function.f(real=True, shape=())
+    n = Symbol(integer=True, nonnegative=True)
+    i = Symbol(domain=Range(0, n))
+    x = Symbol(integer=True, shape=(oo,))
+    f = Function(real=True, shape=())
     Eq << apply(Sum[x[i:n + 1]](f(x[i:n + 1])))
 
 

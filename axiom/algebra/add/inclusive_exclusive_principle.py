@@ -13,13 +13,12 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    x = Symbol.x(real=True)
-    A = Symbol.A(etype=dtype.real)
-    B = Symbol.B(etype=dtype.real)
+    x = Symbol(real=True)
+    A, B = Symbol(etype=dtype.real)
 
-    Eq << apply(Bool(Contains(x, A)) + Bool(Contains(x, B)))
+    Eq << apply(Bool(Element(x, A)) + Bool(Element(x, B)))
 
-    Eq << Eq[-1].this.rhs.args[1].arg.apply(sets.contains.to.ou.split.union)
+    Eq << Eq[-1].this.rhs.args[1].arg.apply(sets.el.to.ou.split.union)
 
     Eq << Eq[-1].this.find(Bool[Or]).apply(algebra.bool.to.add)
 

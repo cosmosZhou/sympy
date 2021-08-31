@@ -12,14 +12,14 @@ def apply(self):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
     Eq << apply(factorial(n))
 
-    Eq << Eq[0].this.find(factorial).apply(discrete.factorial.to.product)
+    Eq << Eq[0].this.find(factorial).apply(discrete.factorial.to.prod)
 
-    Eq << Eq[-1].this.find(factorial).apply(discrete.factorial.to.product)
+    Eq << Eq[-1].this.find(factorial).apply(discrete.factorial.to.prod)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.product.to.mul.split, cond={n})
+    Eq << Eq[-1].this.lhs.apply(algebra.prod.to.mul.split, cond={n})
 
 
 if __name__ == '__main__':

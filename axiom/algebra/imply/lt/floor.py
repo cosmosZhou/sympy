@@ -11,7 +11,7 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(x)
 
     Eq << algebra.imply.gt.floor.apply(x)

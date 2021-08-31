@@ -11,11 +11,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    b = Symbol.b(real=True)
-    a = Symbol.a(real=True)
-    x = Symbol.x(domain=Interval(a, b))
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    b, a = Symbol(real=True)
+    x = Symbol(domain=Interval(a, b))
+    f, g = Function(real=True)
 
     Eq << apply(Equal(f(x), g(x)))
 

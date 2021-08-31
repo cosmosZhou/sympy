@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    is_imply_P, is_imply_Q = given
+def apply(is_imply_P, is_imply_Q):
     p, q = is_imply_P.of(Suffice)
     _q, r = is_imply_Q.of(Suffice)
     if q != _q:
@@ -17,12 +16,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    p = Symbol.p(real=True, given=True)
-    q = Symbol.q(real=True, given=True)
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
+    p, q, x, y, a, b = Symbol(real=True, given=True)
 
     Eq << apply(Suffice(p > q, x > y), Suffice(x > y, a > b))
 

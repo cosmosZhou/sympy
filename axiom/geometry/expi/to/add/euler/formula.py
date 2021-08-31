@@ -15,7 +15,7 @@ def prove(Eq):
     Eq << apply(exp(S.ImaginaryUnit * x))
 
     i = S.ImaginaryUnit
-    Eq << calculus.series.maclaurin.exp.apply(i * x)
+    Eq << calculus.exp.to.sum.maclaurin.apply(i * x)
 
     n = Eq[-1].rhs.variable
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond=Equal(n % 2, 0))

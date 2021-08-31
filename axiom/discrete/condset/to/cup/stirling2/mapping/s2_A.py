@@ -4,28 +4,28 @@ from util import *
 @apply
 def apply(n, k, s2=None, A=None):
     from sympy.functions.combinatorial.numbers import Stirling
-    j = Symbol.j(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(0, k + 1))
     if s2 is None:
-        x = Symbol.x(shape=(oo,), etype=dtype.integer, finite=True)
-        s2 = Symbol.s2(Cup[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
+        x = Symbol(shape=(oo,), etype=dtype.integer, finiteset=True)
+        s2 = Symbol(Cup[x[:k + 1]:Stirling.conditionset(n + 1, k + 1, x)](x[:k + 1].set_comprehension().set))
 
-    e = Symbol.e(**s2.etype.dict)
+    e = Symbol(**s2.etype.dict)
     if A is None:
         x = s2.definition.variable.base
-        i = Symbol.i(integer=True)
+        i = Symbol(integer=True)
         s1_quote = Symbol("s'_1", Stirling.conditionset(n, k + 1, x))
-        x_quote = Symbol("x'", Lamda[i:k + 1](Piecewise(({n} | x[i], Equal(i, j)), (x[i], True))))
-        A = Symbol.A(Lamda[j](Cup[x[:k + 1]:s1_quote]({x_quote.set_comprehension()})))
+        x_quote = Symbol(Lamda[i:k + 1](Piecewise(({n} | x[i], Equal(i, j)), (x[i], True))))
+        A = Symbol(Lamda[j](Cup[x[:k + 1]:s1_quote]({x_quote.set_comprehension()})))
 
-    return Equal(conditionset(e, NotContains({n}, e), s2), Cup[j](A[j]))
+    return Equal(conditionset(e, NotElement({n}, e), s2), Cup[j](A[j]))
 
 
 @prove(proved=False)
 def prove(Eq):
     from axiom import sets, algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True, given=True)
+    k = Symbol(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True, given=True)
     Eq << apply(n, k)
 
     s2_quote = Symbol.s_quote_2(conditionset(Eq[0].rhs.variable, Eq[0].rhs.limits[0][1]))
@@ -45,15 +45,15 @@ def prove(Eq):
 
     Eq.x_union_s1 = algebra.all_et.imply.all.apply(Eq[-1], 2)
 
-    j = Symbol.j(domain=Range(0, k + 1))
+    j = Symbol(domain=Range(0, k + 1))
     x_quote = Eq[1].lhs.base
     Eq.x_quote_set_in_s2 = Subset(imageset(x_slice, Cup[i:k + 1](x_quote[i].set), s1_quote), Eq[0].lhs, plausible=True)
 
-    Eq << sets.subset.given.all_contains.apply(Eq.x_quote_set_in_s2)
+    Eq << sets.subset.given.all_el.apply(Eq.x_quote_set_in_s2)
 
     Eq << Eq[-1].subs(Eq.s2_definition)
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.given.contains.split.imageset)
+    Eq << Eq[-1].this.expr.apply(sets.el.given.el.split.imageset)
 
     Eq << Eq[-1].this.expr.rhs.definition
 
@@ -63,7 +63,7 @@ def prove(Eq):
 
     Eq.x_quote_union = algebra.all_eq.cond.imply.all.subs.apply(Eq.x_union_s1, Eq[-1])
 
-    Eq << Eq[1].apply(algebra.eq.imply.eq.abs)
+    Eq << Eq[1].apply(sets.eq.imply.eq.card)
 
     x_quote_abs = Eq[-1]
     Eq << Eq[-1].apply(algebra.eq.imply.eq.sum, (i, 0, k + 1))
@@ -74,7 +74,7 @@ def prove(Eq):
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq.x_abs_sum_s1, Eq[-1])
 
-    Eq << Eq.x_quote_union.this.expr.apply(algebra.eq.imply.eq.abs)
+    Eq << Eq.x_quote_union.this.expr.apply(sets.eq.imply.eq.card)
 
     x_quote_union_abs = Eq[-1]
     u = Eq[-1].lhs.arg
@@ -84,7 +84,7 @@ def prove(Eq):
 
     Eq.SqueezeTheorem = Eq[-4] & Eq[-1]
 
-    Eq << algebra.eq_piecewise.imply.ou.apply(x_quote_abs)
+    Eq << algebra.eq_piece.imply.ou.apply(x_quote_abs)
 
     Eq << Eq[-1].subs(i, j)
 
@@ -104,17 +104,17 @@ def prove(Eq):
 
     Eq << Eq.xi_all_is_positive.this.expr.apply(algebra.cond.given.et.all, cond=Equal(i, j))
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq << Eq[-1].apply(algebra.all.given.all_ou.limits.delete, simplify=None)
 
-    Eq << Eq[-1].this.find(NotContains).apply(sets.notcontains.given.ou.split.complement, simplify=None)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.given.ou.split.complement, simplify=None)
 
     Eq << Eq[-1].this.find(Greater).apply(algebra.cond.given.ou.domain_defined, wrt=i, simplify=None)
 
     Eq << Eq.xi_is_positive.apply(algebra.all.imply.all_ou.limits.delete, simplify=None)
 
-    Eq << Eq[-1].this.find(NotContains).apply(sets.notcontains.imply.ou.split.complement, simplify=None)
+    Eq << Eq[-1].this.find(NotElement).apply(sets.notin.imply.ou.split.complement, simplify=None)
 
     Eq <<= Eq.x_quote_union & Eq.SqueezeTheorem & Eq.xi_all_is_positive
 
@@ -126,19 +126,19 @@ def prove(Eq):
 
     Eq << Eq.supset_A.subs(Eq[3])
 
-    Eq << sets.supset.given.all_contains.apply(Eq[-1])
+    Eq << sets.supset.given.all_el.apply(Eq[-1])
 
     Eq << Eq[-1].this.expr.simplify()
 
-    Eq << algebra.all_et.given.all.apply(Eq[-1])
+    Eq << algebra.all_et.given.et.all.apply(Eq[-1])
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.expr.apply(sets.contains.imply.any_contains.st.cup)
+    Eq << Eq[-1].this.expr.apply(sets.el.imply.any_el.st.cup)
 
     Eq << Eq.x_quote_definition[j]
 
-    Eq << Eq[-2].reversed.this.expr.apply(sets.eq.eq.imply.eq.intersection, Eq[-1])
+    Eq << Eq[-2].reversed.this.expr.apply(sets.eq.eq.imply.eq.intersect, Eq[-1])
 
     Eq << sets.imply.eq.principle.inclusion_exclusion.basic.apply(*Eq[-1].lhs.args)
 
@@ -165,10 +165,10 @@ def prove(Eq):
     Eq << Eq[-1].this.expr.apply(algebra.eq.cond.imply.cond.subs)
     Eq << algebra.all.any.imply.any_et.apply(Eq.SqueezeTheorem, Eq[-1])
     Eq << Eq.subset_A.subs(Eq[3])
-    Eq << sets.subset.given.all_contains.apply(Eq[-1])
+    Eq << sets.subset.given.all_el.apply(Eq[-1])
     s2_hat_n = Symbol("\hat{s}_{2, n}", conditionset(*Eq[-1].limits[0]))
     Eq << sets.all.given.all.conditionset.split.baseset.apply(Eq[-1], simplify=False, s=s2_hat_n)
-    Eq.s2_hat_n_assertion = Eq[-1].this.expr.apply(sets.contains.given.any_contains.split.cup)
+    Eq.s2_hat_n_assertion = Eq[-1].this.expr.apply(sets.element.given.any_contains.split.cup)
     Eq << s2_hat_n.this.definition
     Eq << Eq[-1].this.rhs.apply(sets.conditionset.to.imageset)
     s2_quote_n = Symbol("s'_{2, n}", conditionset(Eq[-1].rhs.variable, Eq[-1].rhs.limits[0][1]))

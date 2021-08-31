@@ -13,9 +13,8 @@ def apply(is_nonpositive, greater_than):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    m = Symbol.m(real=True)
 
+    x, m = Symbol(real=True)
     Eq << apply(x <= 0, x >= m)
 
     Eq << algebra.le.ge.imply.le.transit.apply(Eq[0], Eq[1])

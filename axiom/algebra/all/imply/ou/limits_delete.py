@@ -13,7 +13,7 @@ def apply(given, index=0):
         if isinstance(domain, list):
             cond = conditionset.conditionset(var, *domain).simplify()
         elif domain.is_set:
-            cond = Contains(var, domain).simplify()
+            cond = Element(var, domain).simplify()
         else:
             assert domain.is_boolean
             cond = domain
@@ -32,11 +32,9 @@ def apply(given, index=0):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
-    f = Function.f(shape=(), integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    x, y = Symbol(integer=True)
+    f = Function(shape=(), integer=True)
+    A, B = Symbol(etype=dtype.integer)
 
     Eq << apply(All[x:A, y:B](f(x, y) > 0), index=1)
 

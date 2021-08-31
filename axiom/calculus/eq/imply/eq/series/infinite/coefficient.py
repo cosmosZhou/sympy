@@ -12,7 +12,7 @@ def is_infinite_series(fx):
 
 @apply
 def apply(given, x):
-    
+
     lhs, rhs = given.of(Equal)
     an = is_infinite_series(lhs)
     bn = is_infinite_series(rhs)
@@ -26,10 +26,9 @@ def apply(given, x):
 def prove(Eq):
     from axiom import algebra, calculus
 
-    A = Symbol.A(shape=(oo,), real=True)
-    B = Symbol.B(shape=(oo,), real=True)
-    x = Symbol.x(real=True)
-    n = Symbol.n(integer=True)
+    A, B = Symbol(shape=(oo,), real=True)
+    x = Symbol(real=True)
+    n = Symbol(integer=True)
     Eq << apply(Equal(Sum[n:0:oo](A[n] * x ** n), Sum[n:0:oo](B[n] * x ** n)), x=x)
 
     Eq << Eq[0].this.lhs.simplify()
@@ -42,12 +41,12 @@ def prove(Eq):
 
     Eq.initial = Eq[-1].this.rhs().expr.simplify()
 
-    m = Symbol.m(integer=True, given=False, nonnegative=True)
+    m = Symbol(integer=True, given=False, nonnegative=True)
     Eq.hypothesis = Eq[1].subs(n, m)
 
     Eq.induct = Eq.hypothesis.subs(m, m + 1)
 
-    k = Symbol.k(domain=Range(0, m + 1))
+    k = Symbol(domain=Range(0, m + 1))
     Eq.hypothesis_k = Eq.hypothesis.subs(m, k)
 
     Eq << Eq.hypothesis_k * x ** k
@@ -69,12 +68,12 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum.limits.complement)
 
-    r = Symbol.r(real=True, positive=True)
+    r = Symbol(real=True, positive=True)
     Eq << Eq[-1].subs(x, r)
 
-    Eq << Eq[-1].this.lhs.limits_subs(_k, _k + m + 1)
+    Eq << Eq[-1].this.lhs.apply(algebra.sum.limits.subs.offset, m + 1)
 
-    Eq << Eq[-1].this.rhs.limits_subs(_k, _k + m + 1)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.subs.offset, m + 1)
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.to.mul)
 

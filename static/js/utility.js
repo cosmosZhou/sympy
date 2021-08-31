@@ -109,8 +109,12 @@ function resizeHeight(cm, h) {
 	cm.refresh();
 }
 
+function this_phrases() {
+	return ['apply', 'args', 'expr', 'lhs', 'rhs', 'find'];
+}
+
 function hint(cm, options) {
-	var Pos = CodeMirror.Pos;	
+	var Pos = CodeMirror.Pos;
 	return new Promise(function(accept) {
 		var cur = cm.getCursor();
 		var token = cm.getTokenAt(cur);
@@ -118,36 +122,99 @@ function hint(cm, options) {
 		console.log('tokenString = ' + tokenString);
 
 		var text = cm.getLine(cur.line);
-		var prefix = text.slice(0, cur.ch).match(/[\w.]+$/)[0];
+		text = text.slice(0, cur.ch);
+		var prefix = text.match(/[\w.]+$/)[0];
 
 		var sympy = sympy_user();
 		var url = `/${sympy}/php/request/`;
 
 		var kwargs;
-		if (tokenString == '.') {
-
+		if (tokenString == '.' || prefix.startsWith('.')) {
 			token.start += 1;
-			if (prefix == 'Eq.') {
-				var list = new Set();
-				var self = options.context;
-				for (let editor of self.$parent.proveEditor){
-					var text = editor.editor.getValue();
-					for (var text of text.split("\n")){
-						console.log(text);
-						for (let m of text.matchAll(/\bEq\.(\w+)/g)){
-							list.add(m[1]);
-						}		
+
+			switch (prefix) {
+				case 'Eq.':
+					var list = new Set();
+					var self = options.context;
+					for (let editor of self.$parent.proveEditor) {
+						var text = editor.editor.getValue();
+						for (var text of text.split("\n")) {
+							console.log(text);
+							for (let m of text.matchAll(/\bEq\.(\w+)/g)) {
+								list.add(m[1]);
+							}
+						}
 					}
-				}
-				
-				list = Array.from(list);
-				list.sort();
-				console.log('list = ' + list);				
-				return accept({
-					list: list,
-					from: Pos(cur.line, token.start),
-					to: Pos(cur.line, token.end)
-				});
+
+					list = Array.from(list);
+					list.sort();
+					console.log('list = ' + list);
+					return accept({
+						list: list,
+						from: Pos(cur.line, token.start),
+						to: Pos(cur.line, token.end)
+					});
+				case '.':
+					if (text.match(/\bEq\[-?\d+\]\.$/)) {
+						var list = ['this', 'subs', 'variable', 'reversed', 'lhs', 'rhs'];
+						return accept({
+							list: list,
+							from: Pos(cur.line, token.start),
+							to: Pos(cur.line, token.end)
+						});
+					}
+					else if (text.match(/\w+\.args\[-?\d+\]\.$/) || text.match(/\.find\(.+\)\.$/)) {
+						return accept({
+							list: this_phrases(),
+							from: Pos(cur.line, token.start),
+							to: Pos(cur.line, token.end)
+						});
+					}
+				case ".this.":
+					if (text.match(/\bEq\[-?\d+\]\.this\.$/)) {
+						return accept({
+							list: this_phrases(),
+							from: Pos(cur.line, token.start),
+							to: Pos(cur.line, token.end)
+						});
+					}
+				default:
+					var m = prefix.match(/^\.([\w.]*\.)(\w*)$/);
+					if (m) {
+						var phrase, _;
+						[_, prefix, phrase] = m;
+						switch (prefix) {
+							case "this.":
+								var list = [];
+								for (let word of this_phrases()) {
+									if (word.startsWith(phrase)) {
+										list.push(word);
+									}
+								}
+								token.start -= 1;
+								return accept({
+									list: list,
+									from: Pos(cur.line, token.start),
+									to: Pos(cur.line, token.end)
+								});
+							default:
+								if (!phrase) {
+									var list = prefix.split('.');
+									if (list[list.length - 2] == 'apply') {
+										break;
+									}
+									
+									return accept({
+										list: this_phrases(),
+										from: Pos(cur.line, token.start),
+										to: Pos(cur.line, token.end)
+									});
+								}
+								break;
+						}
+					}
+
+					break;
 			}
 
 			kwargs = { prefix: prefix, phrase: '' };

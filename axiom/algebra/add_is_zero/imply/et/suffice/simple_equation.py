@@ -21,10 +21,7 @@ def apply(given, x):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    d = Symbol.d(real=True)
+    x, a, b = Symbol(real=True)
     Eq << apply(Equal(a * x + b, 0), x=x)
 
     Eq << algebra.cond.imply.et.suffice.split.apply(Eq[0], cond=Equal(a, 0))

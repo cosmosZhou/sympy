@@ -10,13 +10,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(Unequal(abs(x), 0))
-    
+
     Eq << ~Eq[1]
-    
-    
-    
+
+
+
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq[0])
 
 

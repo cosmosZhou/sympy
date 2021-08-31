@@ -27,13 +27,11 @@ def apply(given, index=None, reverse=False):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    A = Symbol.A(etype=dtype.real)
-    y = Symbol.y(real=True)
-    f = Function.f(real=True)
-    g = Function.g(real=True)
+    x, y = Symbol(real=True)
+    A = Symbol(etype=dtype.real)
+    f, g = Function(real=True)
 
-    Eq << apply(Suffice(Equal(f(x), x + 1) & Contains(x, A), Equal(g(f(x)), y)))
+    Eq << apply(Suffice(Equal(f(x), x + 1) & Element(x, A), Equal(g(f(x)), y)))
 
     Eq.suffice, Eq.necessary = algebra.equivalent.given.et.apply(Eq[-1])
 

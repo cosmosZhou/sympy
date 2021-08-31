@@ -10,11 +10,10 @@ def apply(self, simplify=True):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, positive=True, given=False)
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
 
-    f = Function.f(real=True)
-    h = Function.h(real=True)
+    f, h = Function(real=True)
 
     Eq << apply(Any[i:n]((f(i) > 0) | (h(i) > 0)))
 

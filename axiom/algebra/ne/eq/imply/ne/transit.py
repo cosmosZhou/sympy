@@ -2,18 +2,16 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(ne, eq):
     from axiom.algebra.lt.eq.imply.lt.transit import swap
-    return Unequal(*swap(Unequal, *given))
+    return Unequal(*swap(Unequal, ne, eq))
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
 
-    a = Symbol.a(real=True)
-    x = Symbol.x(real=True)
-    b = Symbol.b(real=True)
+    a, x, b = Symbol(real=True)
     #Eq << apply(b > x, Equal(x, a))
     Eq << apply(Unequal(b, x), Equal(a, x))
 

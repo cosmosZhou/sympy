@@ -29,16 +29,14 @@ def apply(given, wrt=None):
 def prove(Eq):
     from axiom import stats, calculus, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
-    z = Symbol.z(real=True, random=True)
+    x, y, z = Symbol(real=True, random=True)
     Eq << apply(Equal(x | y.as_boolean() & z.as_boolean(), x))
 
     Eq << stats.eq_conditioned.imply.is_nonzero.apply(Eq[0])
 
     Eq.y_nonzero, Eq.z_nonzero = stats.is_nonzero.imply.et.apply(Eq[-1])
 
-    
+
 
     Eq.xy_probability = stats.is_nonzero.imply.eq.bayes.apply(Eq.y_nonzero, x)
 

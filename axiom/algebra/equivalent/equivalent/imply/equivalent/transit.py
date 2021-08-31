@@ -2,9 +2,7 @@ from util import *
 
 
 
-def transit(*given, reverse=False):
-    b_eq_x, x_eq_a = given
-
+def transit(b_eq_x, x_eq_a, reverse=False):
     b, x = b_eq_x.of(Equivalent)
     _x, a = x_eq_a.of(Equivalent)
     if x != _x:
@@ -21,17 +19,15 @@ def transit(*given, reverse=False):
 
 
 @apply
-def apply(*given, reverse=False):
-    return transit(*given, reverse=reverse)
+def apply(equivalent_0, equivalent_1, reverse=False):
+    return transit(equivalent_0, equivalent_1, reverse=reverse)
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(etype=dtype.real)
-    x = Symbol.x(etype=dtype.real)
-    b = Symbol.b(etype=dtype.real)
-    f = Function.f(real=True)
+    a, x, b = Symbol(etype=dtype.real)
+    f = Function(real=True)
 
     Eq << apply(Equivalent(f(b) > 0, f(x) > 0), Equivalent(f(x) > 0, f(a) > 0))
 

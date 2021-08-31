@@ -11,14 +11,13 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(integer=True, given=True)
-    Eq << apply(x < y)   
-    
+    x, y = Symbol(integer=True, given=True)
+    Eq << apply(x < y)
+
     Eq << ~Eq[-1]
-    
+
     Eq <<= Eq[-1] & Eq[0]
-    
+
 
 if __name__ == '__main__':
     run()

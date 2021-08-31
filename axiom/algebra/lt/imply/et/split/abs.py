@@ -12,8 +12,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True, given=True)
-    a = Symbol.a(integer=True, given=True)
+    x, a = Symbol(integer=True, given=True)
 
     Eq << apply(abs(x) < a)
 

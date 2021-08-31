@@ -10,13 +10,11 @@ def apply(given, S):
 
 @prove
 def prove(Eq):
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    
-    S = Symbol.S(etype=dtype.integer)
-    
+    A, B, S = Symbol(etype=dtype.integer)
+
+
     Eq << apply(Equal(A, B), S)
-    
+
     Eq << Eq[-1].subs(Eq[0])
 
 

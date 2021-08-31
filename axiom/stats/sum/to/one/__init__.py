@@ -5,13 +5,13 @@ from util import *
 def apply(self):
     (X, x), (_x, *_) = self.of(Sum[Probability[Equal[Symbol, Symbol]]])
     assert x == _x
-    
-    return Equal(self, 1)    
+
+    return Equal(self, 1)
 
 
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(integer=True, random=True)
+    x = Symbol(integer=True, random=True)
     x_ = Symbol.x(integer=True)
     Eq << apply(Sum[x_](Probability(x)))
 

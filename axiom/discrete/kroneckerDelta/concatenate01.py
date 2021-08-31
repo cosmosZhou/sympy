@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(n):
-    k = Symbol.k(integer=True)
+    k = Symbol(integer=True)
 
     return Equal(Lamda[k:n + 1](KroneckerDelta(k, n)), BlockMatrix(ZeroMatrix(n), 1))
 
@@ -11,11 +11,11 @@ def apply(n):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(domain=Range(2, oo))
+    n = Symbol(domain=Range(2, oo))
     Eq << apply(n)
 
-    U = Symbol.U(Eq[0].lhs)
-    V = Symbol.V(Eq[0].rhs)
+    U = Symbol(Eq[0].lhs)
+    V = Symbol(Eq[0].rhs)
 
     assert V.is_complex
     assert V.is_real
@@ -25,13 +25,13 @@ def prove(Eq):
     Eq << U.this.definition
     Eq << V.this.definition
 
-    i = Symbol.i(domain=Range(0, n + 1))
+    i = Symbol(domain=Range(0, n + 1))
 
     Eq << Eq[-1][i]
 
     Eq << U[i].this.definition
 
-    Eq << Eq[-2].this.rhs.apply(algebra.piecewise.to.kroneckerDelta)
+    Eq << Eq[-2].this.rhs.apply(algebra.piece.to.kroneckerDelta)
 
     Eq << Eq[-2] - Eq[-1]
 

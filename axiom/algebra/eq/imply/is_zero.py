@@ -2,16 +2,16 @@ from util import *
 
 
 @apply(simplify=False)
-def apply(given): 
+def apply(given):
     x, y = given.of(Equal)
-        
+
     return Equal(x - y, 0)
 
 
 @prove
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True, zero=False)
+    a = Symbol(real=True)
+    b = Symbol(real=True, zero=False)
     Eq << apply(Equal(a, b))
 
     Eq << Eq[1].subs(Eq[0])

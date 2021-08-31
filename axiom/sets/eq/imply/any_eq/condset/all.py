@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given, x=None):
-    S, n = given.of(Equal[Abs])
+    S, n = given.of(Equal[Card])
     i = S.generate_var(integer=True)
     j = S.generate_var(integer=True, excludes={i})
     kwargs = S.etype.dict
@@ -21,10 +21,9 @@ def apply(given, x=None):
 def prove(Eq):
     from axiom import sets, algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    S = Symbol.S(etype=dtype.integer * k, given=True)
-    Eq << apply(Equal(abs(S), n))
+    n, k = Symbol(integer=True, positive=True)
+    S = Symbol(etype=dtype.integer * k, given=True)
+    Eq << apply(Equal(Card(S), n))
 
     Eq << sets.imply.all_any_eq.apply(n, etype=S.etype, elements=Eq[-1].variable)
 

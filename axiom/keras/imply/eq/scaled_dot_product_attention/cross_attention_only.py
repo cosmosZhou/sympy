@@ -3,23 +3,21 @@ from util import *
 
 @apply
 def apply(n, dz, h):
-    Q = Symbol.Q(shape=(n, dz), real=True)
-    K = Symbol.K(shape=(n, dz), real=True)
-    V = Symbol.V(shape=(n, dz), real=True)
+    Q, K, V = Symbol(shape=(n, dz), real=True)
 
-    a = Symbol.a(Q @ K.T / sqrt(dz))
+    a = Symbol(Q @ K.T / sqrt(dz))
 
     Ξ = Symbol.Ξ(Identity(n) + BlockMatrix([[ZeroMatrix(h, h), OneMatrix(h, n - h)],
                                             [OneMatrix(n - h, h), ZeroMatrix(n - h, n - h)]]))
 
     a_quote = Symbol("a'", a - (1 - Ξ) * oo)
 
-    s = Symbol.s(softmax(a_quote))
+    s = Symbol(softmax(a_quote))
 
-    z = Symbol.z(s @ V)
+    z = Symbol(s @ V)
 
     # diagonal part
-    D = Symbol.D((exp(ReducedSum(Q * K) / sqrt(dz)) * OneMatrix(dz, n)).T)
+    D = Symbol((exp(ReducedSum(Q * K) / sqrt(dz)) * OneMatrix(dz, n)).T)
 
     # upper part
     Wu = Symbol("W^u", exp(Q[:h] @ K[h:n].T / sqrt(dz)))
@@ -38,13 +36,12 @@ def apply(n, dz, h):
 def prove(Eq):
     from axiom import keras, discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    h = Symbol.h(domain=Range(1, n))
-    dz = Symbol.d_z(integer=True, positive=True)
-    Eq << apply(n, dz, h)
+    n, d_z = Symbol(integer=True, positive=True)
+    h = Symbol(domain=Range(1, n))
+    Eq << apply(n, d_z, h)
 
-    i = Symbol.i(domain=Range(0, n))
-    j = Symbol.j(integer=True)
+    i = Symbol(domain=Range(0, n))
+    j = Symbol(integer=True)
     a = Eq[0].lhs
     Eq << keras.imply.eq.bert.mask.cross_attention.apply(a, h)
 
@@ -64,11 +61,11 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.subs(Eq[1][i, j])
 
-    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.sum.to.piece)
 
     Eq << Eq[-1].this.rhs.args[0]().expr.args[0].simplify()
 
-    Eq << Eq[-1].this.rhs.args[-1].expr.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.args[-1].expr.apply(algebra.add.to.piece)
 
     Eq << Eq[-1].this.rhs.args[0]().expr.args[1]().expr.simplify()
 
@@ -76,7 +73,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.simplify(wrt=True)
 
-    Eq.divisor_definition = Eq[-1].this.rhs.apply(algebra.piecewise.to.add)
+    Eq.divisor_definition = Eq[-1].this.rhs.apply(algebra.piece.to.add)
 
     Eq << Eq.divisor_definition.rhs.args[0].args[-1].expr.this.apply(algebra.sum.to.reducedSum)
 
@@ -96,13 +93,13 @@ def prove(Eq):
 
     Eq <<= algebra.eq.imply.eq.exp.apply(Eq[-3]), algebra.eq.imply.eq.exp.apply(Eq[-2]), algebra.eq.imply.eq.exp.apply(Eq[-1])
 
-    Eq << Eq[-1] * OneMatrix(dz)
+    Eq << Eq[-1] * OneMatrix(d_z)
 
     Eq.lower_part, Eq.upper_part, Eq.diagonal_part = algebra.eq.eq.imply.eq.transit.apply(Eq[-4], Eq[7][i]), \
         algebra.eq.eq.imply.eq.transit.apply(Eq[-3], Eq[11][i - h]), \
         algebra.eq.eq.imply.eq.transit.apply(Eq[-1], Eq.M_definition)
 
-    Eq << Eq.divisor_definition * OneMatrix(dz)
+    Eq << Eq.divisor_definition * OneMatrix(d_z)
 
     Eq << Eq[-1].this.rhs.apply(algebra.mul.to.add)
 
@@ -116,13 +113,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this(i).rhs.expr.args[0]().expr.simplify()
 
-    Eq << Eq[-1].this.rhs.expr.args[-1].expr.apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.expr.args[-1].expr.apply(algebra.add.to.piece)
 
-    Eq << Eq[-1].this.rhs.expr.apply(algebra.piecewise.swap.back)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.piece.swap, -2)
 
     Eq << Eq[-1].this.rhs.expr.simplify(wrt=i)
 
-    Eq << Eq[-1].this.rhs.expr.apply(algebra.piecewise.to.add)
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.piece.to.add)
 
     Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.add)
 
@@ -138,7 +135,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Sum).apply(discrete.sum.to.matmul)
 
-    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.piecewise)
+    Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.piece)
 
     Eq << Eq[-1].this.find(Lamda).apply(discrete.lamda_matmul.to.matmul)
 
@@ -154,15 +151,15 @@ def prove(Eq):
 
     Eq << Eq.z_definition.this.rhs.subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.args[0].args[0].apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.args[0].args[0].apply(algebra.add.to.piece)
 
-    Eq << Eq[-1].this.rhs.args[0].apply(algebra.add.to.piecewise)
+    Eq << Eq[-1].this.rhs.args[0].apply(algebra.add.to.piece)
 
-    Eq << Eq[-1].this.rhs.apply(algebra.mul_piecewise.to.piecewise)
+    Eq << Eq[-1].this.rhs.apply(algebra.mul_piece.to.piece)
 
     Eq << algebra.eq.imply.eq.lamda.apply(Eq[-1], (i,))
 
-    Eq << Eq[-1].this.rhs.apply(algebra.lamda_piecewise.to.blockMatrix)
+    Eq << Eq[-1].this.rhs.apply(algebra.lamda_piece.to.blockMatrix)
 
     Eq << Eq[-1].this.find(Lamda).apply(algebra.lamda.to.mul)
 

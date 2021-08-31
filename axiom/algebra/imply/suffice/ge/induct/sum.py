@@ -16,10 +16,9 @@ def apply(given, limit):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True, given=False)
-    k = Symbol.k(integer=True)
-    y = Symbol.y(shape=(oo,), integer=True)
-    x = Symbol.x(shape=(oo,), integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    k = Symbol(integer=True)
+    y, x = Symbol(shape=(oo,), integer=True)
     Eq << apply(x[k] >= y[k], (k, 0, n))
 
     Eq.induct = Eq[0].subs(n, n + 1)

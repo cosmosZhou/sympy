@@ -3,22 +3,19 @@ from util import *
 
 @apply
 def apply(given):
-    B, A = given.of(Equal[Abs[Complement], 0])
+    B, A = given.of(Equal[Card[Complement], 0])
     return Subset(B, A)
 
 
 @prove
 def prove(Eq):
     from axiom import sets
-    A = Symbol.A(etype=dtype.integer, given=True)
-    B = Symbol.B(etype=dtype.integer, given=True)
+    A, B = Symbol(etype=dtype.integer, given=True)
+    Eq << apply(Equal(0, Card(B - A)))
 
-#     Eq << apply(Equal(abs(B - A), 0))
-    Eq << apply(Equal(0, abs(B - A)))
+    Eq << sets.is_zero.imply.is_empty.apply(Eq[0])
 
-    Eq << sets.is_zero.imply.is_emptyset.apply(Eq[0])
-
-    Eq << sets.is_emptyset.imply.subset.complement.apply(Eq[-1])
+    Eq << sets.is_empty.imply.subset.complement.apply(Eq[-1])
 
 
 if __name__ == '__main__':

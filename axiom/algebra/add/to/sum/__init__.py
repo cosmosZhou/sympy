@@ -48,11 +48,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True)
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, positive=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    i, k = Symbol(integer=True)
+    n = Symbol(integer=True, positive=True)
+    f, g = Function(integer=True)
     Eq << apply(Sum[i:k, k:n](f(k, i)) + Sum[k:n](g(k)))
 
     Eq << Eq[0].this.rhs.apply(algebra.sum.to.add)
@@ -61,6 +59,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del limits
 from . import limits
-from . import subtract
+from . import sub

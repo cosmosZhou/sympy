@@ -3,7 +3,7 @@ from util import *
 
 def doit(Sum, self):
     xi, limit = self.of(Sum)
-    try:        
+    try:
         i, a, b = limit
     except:
         (i,) = limit
@@ -11,7 +11,7 @@ def doit(Sum, self):
         a, b = domain.of(Range)
 
     assert i.is_integer
-    
+
     diff = b - a
     assert diff == int(diff)
 
@@ -30,9 +30,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo, k))
-    i = Symbol.i(integer=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo, k))
+    i = Symbol(integer=True)
 
     n = 5
     Eq << apply(Sum[i:n](x[i]))

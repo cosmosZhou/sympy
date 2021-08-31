@@ -17,20 +17,18 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    from axiom import discrete
-    x = Symbol.x(real=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True)
-    a = Symbol.a(integer=True, nonnegative=True)
-    b = Symbol.b(integer=True)
-    i = Symbol.i(integer=True)
+    from axiom import algebra, discrete
 
+    x = Symbol(real=True, shape=(oo,))
+    n = Symbol(integer=True, positive=True)
+    a = Symbol(integer=True, nonnegative=True)
+    b, i = Symbol(integer=True)
     Eq << apply(All[i:a:n](x[i + b] > 0))
 
     x_ = Symbol.x(x[a + b:])
-
     Eq << x_[i].this.definition
 
-    Eq << Eq[0].limits_subs(i, i + a)
+    Eq << Eq[0].this.apply(algebra.all.limits.subs.offset, a)
 
     Eq << Eq[-1].subs(Eq[-2].reversed)
 

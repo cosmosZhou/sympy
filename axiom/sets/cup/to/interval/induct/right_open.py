@@ -16,8 +16,8 @@ def apply(self):
 def prove(Eq):
     from axiom import sets, algebra
 
-    n = Symbol.n(integer=True, positive=True, given=False)
-    k = Symbol.k(integer=True)
+    n = Symbol(integer=True, positive=True, given=False)
+    k = Symbol(integer=True)
     Eq << apply(Cup[k:n](Interval(k, k + 1, right_open=True)))
 
     Eq.induct = Eq[0].subs(n, n + 1)

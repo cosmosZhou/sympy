@@ -11,13 +11,12 @@ def apply(given):
 def prove(Eq):
     from axiom import sets
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(Subset(A, B))
 
     Eq << sets.supset.imply.subset.reverse.apply(Eq[1])
 
-    
+
 
 
 if __name__ == '__main__':

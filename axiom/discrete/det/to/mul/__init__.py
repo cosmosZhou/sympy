@@ -7,7 +7,7 @@ def apply(self, doit=True):
     args = [Det(arg) for arg in args]
     if doit:
         args = [arg.doit() for arg in args]
-    
+
     return Equal(self, Mul(*args))
 
 
@@ -15,13 +15,11 @@ def apply(self, doit=True):
 def prove(Eq):
     from axiom import discrete
 
-    n = Symbol.n(integer=True, positive=True)
-    A = Symbol.A(shape=(n, n), complex=True)
-    B = Symbol.B(shape=(n, n), complex=True)
-    C = Symbol.C(shape=(n, n), complex=True)
+    n = Symbol(integer=True, positive=True)
+    A, B, C = Symbol(shape=(n, n), complex=True)
     Eq << apply(Det(A @ B @ C))
 
-    D = Symbol.D(A @ B)
+    D = Symbol(A @ B)
     Eq << Eq[0].subs(D.this.definition.reversed)
 
     Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul.two)
@@ -34,3 +32,4 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 from . import two
+from . import st

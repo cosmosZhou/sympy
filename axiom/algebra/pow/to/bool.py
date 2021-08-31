@@ -14,8 +14,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
 
     Eq << apply(Bool(x > y) ** 2)
 

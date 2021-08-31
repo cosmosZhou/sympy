@@ -16,7 +16,7 @@ def prove(Eq):
     a, b = Symbol(real=True)
     A, B = Symbol(etype=dtype.real)
     f = Function(integer=True)
-    Eq << apply(Equal(Piecewise((f(a), Contains(a, A)), (f(b), True)), 0), given=Equivalent(Contains(a, A), Contains(b, B)))
+    Eq << apply(Equal(Piecewise((f(a), Element(a, A)), (f(b), True)), 0), given=Equivalent(Element(a, A), Element(b, B)))
 
     Eq << algebra.equivalent.cond.imply.cond.subs.apply(Eq[1].reversed, Eq[2])
 

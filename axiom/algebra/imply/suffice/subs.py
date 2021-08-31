@@ -13,11 +13,9 @@ def apply(given, old, new):
 @prove
 def prove(Eq):
     from axiom import algebra
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
-    t = Function.t(shape=(), real=True)
-    x = Symbol.x(real=True)
+    n = Symbol(integer=True, nonnegative=True)
+    f, g, t = Function(shape=(), real=True)
+    x = Symbol(real=True)
 
     Eq << apply(Equal(f[n](x), g[n](x)), x, t(x))
 

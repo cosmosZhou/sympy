@@ -11,14 +11,10 @@ def apply(given, *, cond=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    f, g = Function(integer=True)
 
-    a = Symbol.a(integer=True)
-    b = Symbol.b(integer=True)
+    a, b, x, y = Symbol(integer=True)
 
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
 
     Eq << apply(Suffice(a > b, f(a) > g(b)), cond=x > y)
 

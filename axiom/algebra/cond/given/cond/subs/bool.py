@@ -17,7 +17,7 @@ def prove(Eq):
     a, b = Symbol(real=True)
     A, B = Symbol(etype=dtype.real)
     f = Function(integer=True)
-    Eq << apply(Equal(Piecewise((f(a), Contains(a, A)), (f(b), True)), 0), given=Contains(a, A))
+    Eq << apply(Equal(Piecewise((f(a), Element(a, A)), (f(b), True)), 0), given=Element(a, A))
 
     Eq <<= Eq[0] & Eq[1]
     Eq << algebra.et.given.et.subs.bool.apply(Eq[-1])

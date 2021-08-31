@@ -13,14 +13,13 @@ def apply(given, index=-1):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, nonnegative=True)
-    f = Symbol.f(integer=True, shape=(oo,))
-    g = Symbol.g(integer=True, shape=(oo,))
-    x = Symbol.x(integer=True)
-    A = Symbol.A(etype=dtype.integer)
-    Eq << apply(Suffice(Equal(f[n], g[n]) & Contains(x, A), Equal(f[n + 1], g[n + 1])))
+    n = Symbol(integer=True, nonnegative=True)
+    f, g = Symbol(integer=True, shape=(oo,))
+    x = Symbol(integer=True)
+    A = Symbol(etype=dtype.integer)
+    Eq << apply(Suffice(Equal(f[n], g[n]) & Element(x, A), Equal(f[n + 1], g[n + 1])))
 
-    Eq << algebra.suffice.imply.suffice.et.both_sided.apply(Eq[1], cond=Contains(x, A))
+    Eq << algebra.suffice.imply.suffice.et.both_sided.apply(Eq[1], cond=Element(x, A))
     Eq << algebra.suffice.imply.suffice.split.et.apply(Eq[-1], index=0)
 
 

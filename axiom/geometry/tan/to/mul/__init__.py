@@ -2,16 +2,16 @@ from util import *
 
 
 @apply
-def apply(self): 
+def apply(self):
     x = self.of(Tan)
-    
+
     rhs = sin(x) / cos(x)
     return Equal(self, rhs, evaluate=False)
 
 
 @prove(provable=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(tan(x))
 
 

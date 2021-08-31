@@ -1,6 +1,4 @@
 from util import *
-from axiom.sets.ou.imply.contains.piecewise.two import expr_cond_pair
-
 
 
 @apply
@@ -20,15 +18,13 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
 
+    x, y = Symbol(real=True, given=True)
     Eq << apply(Equal(y, x) | Equal(y, -x))
 
     Eq << Eq[0].this.args[0].apply(algebra.eq.imply.eq.abs)
 
     Eq << Eq[-1].this.args[0].apply(algebra.eq.imply.eq.abs)
-
 
 
 if __name__ == '__main__':

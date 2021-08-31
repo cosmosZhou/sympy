@@ -15,7 +15,7 @@ def apply(y, x=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    y = Symbol.y(complex=True)
+    y = Symbol(complex=True)
     Eq << apply(y)
 
     Eq << algebra.all.given.ou.apply(Eq[0])

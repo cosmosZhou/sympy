@@ -1,5 +1,4 @@
-import os
-import regex as re
+import os, re
 from sympy.utilities.misc import Text
 from _collections import defaultdict
 
@@ -24,8 +23,9 @@ def read_all_php(root):
 def read_all_py(root):
     for directory in read_directory(root):
         for py in read_all_files(directory, '.py'):
-            if os.path.basename(py) != '__init__.py': 
-                yield py
+            yield py
+            # if os.path.basename(py) != '__init__.py': 
+                # yield py
 
 
 def read_all_files(rootdir, sufix='.py'):
@@ -191,6 +191,13 @@ def search(keyword, caseSensitive=True, wholeWord=False, regularExpression=False
         print_py(module, prefix)
 
     
+def is_py_theorem(py):
+    for line in Text(py):
+        if re.match('from util import \*', line):
+            return True
+        assert re.match('from \. import \w+', line), py
+        return False
+    
 def yield_from_py(py):
     prove = False
     for line in Text(py):
@@ -215,7 +222,87 @@ def yield_from_py(py):
                 yield module
         
         
+def yield_function_from_py(py):
+    # prove = False
+    for line in Text(py):
+#         print("line =", line)
+        # if re.match('^def prove\(', line):
+            # prove = True
+            # continue
+
+        # if prove:
+            # if re.match(r'^    return\b', line):
+                # break
+            
+            # if re.match('^ *#', line):
+                # continue
+            
+        if m := re.match('(?:    )+from axiom((?:\.\w+)+) import (\w+)', line):
+            callee, func = m.groups()
+            callee = callee[1:]
+            print(callee, func)        
+            yield callee, func
+        
+def detect_and_change():
+    for py in read_all_py(axiom_directory()):
+        lines = Text(py).collect()
+        regex = '    (\w+(?:, \w+)*) = (Symbol|Function)\((.+)\) *$'
+        pivot = -1
+        for i, line in enumerate(lines):
+            if re.match('def prove', line):
+                pivot = i            
+        
+        if pivot < 0:
+            continue
+        
+        for i, line in enumerate(lines):
+            if i < pivot: 
+                continue
+            
+            if m := re.match(regex, line):
+                sym, func, kwargs = m.groups()
+                
+                syms = [sym]
+                indices = []
+                for j in range(1, 20):
+                    try:
+                        if m := re.match(regex, lines[i + j]):
+                            sym_, func_, kwargs_ = m.groups()
+                            if kwargs_ != kwargs or func != func_:
+                                continue
+                            syms.append(sym_)
+                            indices.append(j)
+                    except IndexError:
+                        break
+                    
+                if not indices:
+                    continue
+                
+                print(line)
+                for j in indices:
+                    print(lines[i + j])
+                    
+                line = '    %s = %s(%s)' % (', '.join(syms), func, kwargs)
+                lines[i] = line
+                
+                indices.reverse()
+                for j in indices:
+                    del lines[i + j]
+                
+                print('after  deleting:', len(lines))
+                print(line)
+                print(py)
+                print()
+                print()
+                print()
+                Text(py).writelines(lines)
+                
+                break
+        
+        
 if __name__ == '__main__':
+    detect_and_change()
+    exit()
 #     keyword = 'subs'
 
     keyword = ''

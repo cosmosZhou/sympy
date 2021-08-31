@@ -3,8 +3,6 @@ from util import *
 
 @apply
 def apply(cond, forall):
-    if not forall.is_All:
-        cond, forall = forall, cond
     fn, (k, a, b) = forall.of(All[Tuple])
 
     assert k.is_integer
@@ -17,10 +15,9 @@ def apply(cond, forall):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True)
-    a = Symbol.a(integer=True)
-    b = Symbol.b(domain=Range(a + 1, oo))
-    g = Function.g(integer=True)
+    k, a = Symbol(integer=True)
+    b = Symbol(domain=Range(a + 1, oo))
+    g = Function(integer=True)
     Eq << apply((g(b) > 0), All[k:a:b](g(k) > 0))
 
     Eq << algebra.all.given.et.apply(Eq[-1], cond={b})

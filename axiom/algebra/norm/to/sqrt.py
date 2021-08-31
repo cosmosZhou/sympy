@@ -10,12 +10,12 @@ def apply(self):
 
     def next_free_symbol(ch):
         return chr(ord(ch) + 1)
-    
+
     x = self.of(Norm)
     shape = x.shape
     size = len(shape)
-    
-    ch = 'i'        
+
+    ch = 'i'
     excludes = set()
     limits = []
     d = -1
@@ -26,18 +26,18 @@ def apply(self):
         indices.append(var)
         excludes.add(var)
         ch = next_free_symbol(ch)
-        
+
     indices.reverse()
     return Equal(self, sqrt(Sum(Abs(x[tuple(indices)]) ** 2, *limits)))
 
 
 @prove(provable=False)
 def prove(Eq):
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,))
     Eq << apply(Norm(x))
 
 
 if __name__ == '__main__':
     run()
-    
+

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(n):
     n = sympify(n)
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     return Equal(Integral[x:0:pi / 2](sin(x) ** (n - 1)),
                  sqrt(pi) * gamma(n / 2) / (2 * gamma(n / 2 + S.One / 2)))
 
@@ -13,7 +13,7 @@ def apply(n):
 def prove(Eq):
     from axiom import calculus, geometry, algebra
 
-    n = Symbol.n(integer=True, positive=True, given=False)
+    n = Symbol(integer=True, positive=True, given=False)
     Eq << apply(n)
 
     (x, *_), *_ = Eq[0].lhs.limits
@@ -30,7 +30,7 @@ def prove(Eq):
     Eq << Eq.induct.lhs.this.expand()
 
     #Integration by parts
-    Eq << Eq[-1].this.rhs.apply(calculus.integral.by_parts, dv=sin(x)) / n
+    Eq << Eq[-1].this.rhs.apply(calculus.integral.to.add.by_parts, dv=sin(x)) / n
 
     Eq << Eq[-1].this.lhs.args[1].expr.powsimp()
 
@@ -38,7 +38,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Cos ** 2).apply(geometry.square_cos.to.add.square_sin)
 
-    
+
 
     Eq << Eq[-1].this.rhs.expr.apply(algebra.mul.to.add)
 

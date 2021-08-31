@@ -23,8 +23,8 @@ class Subset(BinaryCondition):
         if self.lhs.is_FiniteSet:
             eqs = []
             for e in self.lhs.args:
-                from sympy import Contains                
-                eqs.append(Contains(e, self.rhs))
+                from sympy import Element                
+                eqs.append(Element(e, self.rhs))
             return And(*eqs)
 
         return self
@@ -142,11 +142,11 @@ class Subset(BinaryCondition):
         if self.lhs.is_FiniteSet:
             if x.type in self.lhs.etype:
                 if x in self.lhs:
-                    from sympy import Contains
-                    return Contains(x, self.rhs).domain_conditioned(x)
+                    from sympy import Element
+                    return Element(x, self.rhs).domain_conditioned(x)
 
     @classmethod
-    def simplify_All(cls, self, function, *limits):
+    def simplify_ForAll(cls, self, function, *limits):
         if function.lhs.is_FiniteSet:
             function, S = function.lhs, function.rhs
             res = self.simplify_int_limits(function)
@@ -176,8 +176,8 @@ class NotSubset(BinaryCondition):
             return Any(self.func(self.lhs.expr, self.rhs), *self.lhs.limits)
 
         if self.lhs.is_FiniteSet and len(self.lhs) == 1:
-            from sympy import NotContains
-            return NotContains(self.lhs.arg, self.rhs).simplify()            
+            from sympy import NotElement
+            return NotElement(self.lhs.arg, self.rhs).simplify()            
              
         return self
 
@@ -310,8 +310,8 @@ class Supset(BinaryCondition):
         if self.rhs.is_FiniteSet:
             eqs = []
             for e in self.rhs.args:
-                from sympy import Contains                
-                eqs.append(Contains(e, self.lhs))
+                from sympy import Element                
+                eqs.append(Element(e, self.lhs))
             return And(*eqs)
         return self
 

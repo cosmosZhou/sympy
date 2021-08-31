@@ -15,11 +15,10 @@ def apply(given, q=None):
 def prove(Eq):
     from axiom import algebra
 #     n = q * d + r
-    n = Symbol.n(integer=True, given=True)
+    n, d = Symbol(integer=True, given=True)
 
-    d = Symbol.d(integer=True, given=True)
 
-    r = Symbol.r(integer=True)
+    r = Symbol(integer=True)
 
     Eq << apply(Equal(n % d, r))
 

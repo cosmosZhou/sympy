@@ -11,13 +11,13 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(Less(Ceiling(x), 0))
 
     Eq << ~Eq[-1]
 
     Eq << algebra.is_nonnegative.imply.ceiling_is_nonnegative.apply(Eq[-1])
-    
+
 
     Eq << ~Eq[-1]
 

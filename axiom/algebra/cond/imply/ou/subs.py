@@ -22,13 +22,11 @@ def apply(given, old, new):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True, shape=(oo,))
-    j = Symbol.j(integer=True)
-    t = Symbol.t(domain=Range(0, n + 1))
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    n = Symbol(integer=True, positive=True)
+    x, j = Symbol(integer=True)
+    y = Symbol(integer=True, shape=(oo,))
+    t = Symbol(domain=Range(0, n + 1))
+    f, g = Function(integer=True)
     Eq << apply(f(x, t) > g(t), t, y[j])
 
     Eq << algebra.cond.imply.all.apply(Eq[0], t)

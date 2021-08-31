@@ -16,8 +16,7 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, sets
 
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    a, b = Symbol(real=True)
     Eq << apply(Interval(a, b) | Interval(b, a))
 
     Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=a > b)
@@ -44,7 +43,7 @@ def prove(Eq):
 
     Eq << Suffice(a > b, Equal(Interval(a, b), a.emptySet), plausible=True)
 
-    Eq << Eq[-1].this.lhs.apply(sets.gt.imply.is_emptyset)
+    Eq << Eq[-1].this.lhs.apply(sets.gt.imply.interval_is_empty)
 
     Eq <<= Eq[-2] & Eq[-1]
 

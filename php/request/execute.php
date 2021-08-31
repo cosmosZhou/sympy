@@ -8,6 +8,9 @@ $dict = empty($_POST) ? $_GET : $_POST;
 $sqlFile = $dict['sqlFile'];
 
 // error_log("fetching $sqlFile");
+// error_log(file_get_contents($sqlFile));
+// error_log(\std\jsonify(explode(';', file_get_contents($sqlFile))));
+
 $file = new Text($sqlFile);
 // never put new Text($sqlFile) inside the loop! it will cause the following infinite loop!
 // feof(): supplied resource is not a valid stream resource
@@ -19,17 +22,30 @@ foreach ($file as $query) {
         continue;
     $query = substr($query, 0, - 1);
 
-    error_log("executing $query");
-
-    if (! empty($query) && $query != ";") {
-        \mysql\execute($query);
-    }
-
-    if (! preg_match("/replace into tbl_axiom_py values\((.+)\)/", $query, $m)) {
+    if (! preg_match("/update tbl_axiom_py set state = \"(\w+)\", lapse = (\S+), latex = (\"[\s\S]+\") where user = \"(\w+)\" and axiom = \"(\S+)\"/", $query, $m)) {
         continue;
     }
 
-    list ($user, $axiom, , ,) = json_decode("[" . $m[1] . "]");
+    list ($query, $state, $lapse, $latex, $user, $axiom) = $m;
+    $latex = eval("return $latex;");
+
+    if (! empty($query) && $query != ";") {
+        $latex = json_encode($latex, JSON_UNESCAPED_UNICODE);
+        
+        error_log("latex = $latex");
+        $query = "update tbl_axiom_py set state = \"$state\", lapse = $lapse, latex = $latex where user = \"$user\" and axiom = \"$axiom\"";
+        
+        error_log("query = $query");
+        $affected_rows = \mysql\execute($query);
+        if ($affected_rows < 1){
+            $timestamp = date('Y-m-d h:i:s', time());
+            $query = "insert into tbl_axiom_py values(\"$user\", \"$axiom\", \"$state\", $lapse, $latex, \"$timestamp\")";
+            
+            error_log("query = $query");
+            $affected_rows = \mysql\execute($query);
+        }
+    }
+
     error_log("user = $user");
     error_log("axiom = $axiom");
 
@@ -37,7 +53,7 @@ foreach ($file as $query) {
 
     $tokens = explode('.', $axiom);
     $tokens[] = "apply";
-    
+
     $prefix = "";
 
     $size = count($tokens) - 1;
@@ -58,7 +74,12 @@ foreach ($file as $query) {
     \mysql\insertmany("tbl_suggest_py", $tuples);
 
     $theorem = str_replace('.', '/', $axiom);
-    $py = $ROOT . "/" . $user . "/axiom/$theorem.py";
+    $dir = $ROOT . "/" . $user . "/axiom";
+    $py = "$dir/$theorem.py";
+    if (! file_exists($py)) {
+        $py = "$dir/$theorem/__init__.py";
+    }
+
     error_log("py = $py");
     $linkCount = [];
     foreach (yield_from_py($py) as $dict) {
@@ -87,7 +108,7 @@ foreach ($file as $query) {
     }
 
     \mysql\execute("delete from tbl_hierarchy_py where user = '$user' and caller = '$caller'");
-    
+
     if ($tuples)
         \mysql\insertmany("tbl_hierarchy_py", $tuples, false);
 }

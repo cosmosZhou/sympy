@@ -13,10 +13,9 @@ def apply(x, y, given):
 @prove
 def prove(Eq):
     from axiom import keras
-    n = Symbol.n(integer=True)
-    x = Symbol.x(shape=(n,), real=True)
-    y = Symbol.y(shape=(n,), real=True)
-    W = Symbol.W(shape=(n, n), real=True)
+    n = Symbol(integer=True)
+    x, y = Symbol(shape=(n,), real=True)
+    W = Symbol(shape=(n, n), real=True)
 
     Eq << apply(x, y, Equal(W.T, W))
 

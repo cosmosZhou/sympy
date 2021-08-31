@@ -13,8 +13,8 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x = Symbol(integer=True, given=True)
+    y = Symbol(real=True, given=True)
 
     Eq << apply(x >= y)
 

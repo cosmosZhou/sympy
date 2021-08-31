@@ -23,9 +23,8 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    e = Symbol.e(real=True)
-    f = Function.f(integer=True)
-    g = Function.g(integer=True)
+    e = Symbol(real=True)
+    f, g = Function(integer=True)
 
     Eq << apply(And(All[e:g(e) > 0](f(e) > 0), All[e:g(e) < 0](f(e) > 0)))
 

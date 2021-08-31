@@ -51,7 +51,7 @@ def apply(given):
             lt, gt = domain.args
             xx0, _delta = lt.of(Less)
             assert _delta == delta
-            if xx0.is_Abs:                
+            if xx0.is_Abs:
                 _x, x0 = xx0.of(Abs[Expr - Expr])
                 assert x == _x
                 assert x0.is_real
@@ -84,21 +84,17 @@ def apply(given):
 def prove(Eq):
     from axiom import calculus
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True)
+    n, N = Symbol(integer=True, positive=True)
+    x, x0, a = Symbol(real=True)
     #x = Symbol.x(real=True, shape=(n,))
     #x = Symbol.x(integer=True)
-    f = Function.f(real=True, shape=())
-    x0 = Symbol.x0(real=True)
+    f = Function(real=True, shape=())
     #x0 = Symbol.x0(real=True, shape=(n,))
     #x0 = oo
     #x0 = -oo
-    a = Symbol.a(real=True)
     #a = oo
     #a = -oo
-    N = Symbol.N(integer=True, positive=True)
-    epsilon = Symbol.epsilon(real=True, positive=True)
-    delta = Symbol.delta(real=True, positive=True)
+    epsilon, delta = Symbol(real=True, positive=True)
     Eq << apply(Any[delta](All[x: (abs(x - x0) > 0) & (abs(x - x0) < delta)](abs(f(x) - a) < epsilon)))
 
     Eq << Eq[1].this.apply(calculus.eq.to.any_all.limit_definition)

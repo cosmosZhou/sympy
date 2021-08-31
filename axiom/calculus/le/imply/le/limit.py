@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given, *limits, simplify=True):
     lhs, rhs = given.of(LessEqual)
-    
+
     lhs = Limit(lhs, *limits)
     rhs = Limit(rhs, *limits)
     if simplify:
@@ -15,11 +15,10 @@ def apply(given, *limits, simplify=True):
 
 @prove(proved=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
-    
-    Eq << apply(LessEqual(f(x) / x, g(x) / x), (x, 0))    
+    x = Symbol(real=True)
+    f, g = Function(shape=(), real=True)
+
+    Eq << apply(LessEqual(f(x) / x, g(x) / x), (x, 0))
 
 
 if __name__ == '__main__':

@@ -158,7 +158,6 @@ class Limit(Expr):
     Limit(1/x, x, 0, direction='-')
 
     """
-    is_complex = True
 
     def __new__(cls, e, *limits):
         assert len(limits) == 1
@@ -427,3 +426,6 @@ class Limit(Expr):
             return self
         
         return Expr._subs(self, old, new, **hints)
+    
+    def _eval_is_super_real(self):
+        return self.expr.is_super_real

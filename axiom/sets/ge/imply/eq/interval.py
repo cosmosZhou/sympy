@@ -11,15 +11,14 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra, sets
 
-    x = Symbol.x(real=True, given=True)
-    y = Symbol.y(real=True, given=True)
+    x, y = Symbol(real=True, given=True)
     Eq << apply(x >= y)
 
     Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=x > y)
 
-    Eq.is_zero = (x > y).this.apply(sets.gt.imply.is_emptyset)
+    Eq.is_zero = (x > y).this.apply(sets.gt.imply.interval_is_empty)
 
-    Eq << sets.imply.subset.intersection.apply(x, y)
+    Eq << sets.imply.subset.intersect.apply(x, y)
 
     Eq << algebra.cond.suffice.imply.suffice.et.rhs.apply(Eq[-1], Eq.is_zero)
 

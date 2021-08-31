@@ -11,17 +11,15 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    f = Function.f(shape=(), real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
+    f = Function(shape=(), real=True)
 
     Eq << apply(GreaterEqual(f(x), y))
 
-    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[-1].this.lhs.apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':
     run()
 
-del invert
 from . import invert

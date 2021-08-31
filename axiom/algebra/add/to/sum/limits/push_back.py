@@ -16,10 +16,9 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True)
-    n = Symbol.n(integer=True)
-    i = Symbol.i(domain=Range(0, n + 1))
-    f = Function.f(integer=True)
+    k, n = Symbol(integer=True)
+    i = Symbol(domain=Range(0, n + 1))
+    f = Function(integer=True)
     Eq << apply(Add(Sum[k:i:n](f(k)), f(n)))
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add.split, cond={n})

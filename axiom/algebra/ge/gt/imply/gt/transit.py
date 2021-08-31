@@ -1,12 +1,12 @@
 from util import *
 
 
-
 @apply
-def apply(*given):
-    b_greater_than_x, x_greater_than_a = given
-    b, x = b_greater_than_x.of(GreaterEqual)
-    _x, a = x_greater_than_a.of(Greater)
+def apply(ge, gt):
+    b, x = ge.of(GreaterEqual)
+    _x, a = gt.of(Greater)
+    if x != _x:
+        b, x, _x, a = _x, a, b, x
     assert x == _x
     return Greater(b, a)
 
@@ -14,11 +14,9 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True, given=True)
-    x = Symbol.x(real=True, given=True)
-    b = Symbol.b(real=True, given=True)
 
-    Eq << apply(b >= x, x > a)
+    x, a, b = Symbol(real=True, given=True)
+    Eq << apply(x >= b, a > x)
 
     Eq << ~Eq[-1]
 

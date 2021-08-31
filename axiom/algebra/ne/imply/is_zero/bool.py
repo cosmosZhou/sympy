@@ -18,9 +18,9 @@ def prove(Eq):
     x, y = Symbol(integer=True, given=True)
     Eq << apply(Unequal(Bool(x > y), 1))
 
-    Eq << Eq[0].this.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[0].this.lhs.apply(algebra.bool.to.piece)
 
-    Eq << Eq[1].this.lhs.apply(algebra.bool.to.piecewise)
+    Eq << Eq[1].this.lhs.apply(algebra.bool.to.piece)
 
 
 if __name__ == '__main__':

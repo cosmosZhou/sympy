@@ -7,7 +7,7 @@ def apply(is_nonzero):
     ((A, B), pi2), half = ceiling.of(Ceiling[(Arg + Arg) * Expr - Expr])
     assert half * 2 == 1
     assert 1 / pi2 == S.Pi * 2
-    
+
     return Equal(ceiling, 1) | Equal(ceiling, -1)
 
 
@@ -18,23 +18,23 @@ def prove(Eq):
     A, B = Symbol(complex=True, given=True)
     Eq << apply(Unequal(Ceiling((Arg(A) + Arg(B)) / (S.Pi * 2) - S.One / 2), 0))
 
-    Eq <<= sets.imply.contains.arg.apply(A), sets.imply.contains.arg.apply(B)
+    Eq <<= sets.imply.el.arg.apply(A), sets.imply.el.arg.apply(B)
 
-    Eq << sets.contains.contains.imply.contains.add.interval.apply(Eq[-1], Eq[-2], simplify=None)
+    Eq << sets.el.el.imply.el.add.interval.apply(Eq[-1], Eq[-2], simplify=None)
 
-    Eq << sets.contains.imply.contains.div.interval.apply(Eq[-1], S.Pi * 2)
+    Eq << sets.el.imply.el.div.interval.apply(Eq[-1], S.Pi * 2)
 
-    Eq << sets.contains.imply.contains.sub.apply(Eq[-1], S.One / 2)
+    Eq << sets.el.imply.el.sub.apply(Eq[-1], S.One / 2)
 
-    Eq << sets.contains.imply.contains.ceiling.apply(Eq[-1])
+    Eq << sets.el.imply.el.ceiling.apply(Eq[-1])
 
     Eq << Eq[-1].this.rhs.apply(sets.range.to.finiteset)
 
-    Eq << sets.contains.imply.ou.split.finiteset.apply(Eq[-1])
+    Eq << sets.el.imply.ou.split.finiteset.apply(Eq[-1])
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
 
-    
+
 
 
 if __name__ == '__main__':

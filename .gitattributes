@@ -5,3 +5,4 @@
 *.vue    eol=lf
 *.php    eol=lf
 *.css    eol=lf
+*.txt    eol=lf

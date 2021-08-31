@@ -16,9 +16,9 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import discrete
-    x = Symbol.x(real=True, positive=True, shape=(oo,))
+    x = Symbol(real=True, positive=True, shape=(oo,))
 #     x = Symbol.x(real=True, shape=(oo,))
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
 
     Eq << apply(x[:n + 1])
 

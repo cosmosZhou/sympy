@@ -12,12 +12,10 @@ def apply(x, negate=False):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(x)
 
     Eq << Eq[-1].apply(algebra.cond.given.et.ou, cond=x > 0)
-
-    
 
     Eq << ~Eq[-1]
 
@@ -29,6 +27,5 @@ def prove(Eq):
 if __name__ == '__main__':
     run()
 
-del add
 from . import add
 from . import substract

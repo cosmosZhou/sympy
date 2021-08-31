@@ -17,16 +17,16 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra, sets
 
-    e = Symbol.e(etype=dtype.integer.set)
-    s = Symbol.s(etype=dtype.integer.set.set)
-    f = Function.f(etype=dtype.integer.set)
-    S = Symbol.S(imageset(e, f(e), s))
+    e = Symbol(etype=dtype.integer.set)
+    s = Symbol(etype=dtype.integer.set.set)
+    f = Function(etype=dtype.integer.set)
+    S = Symbol(imageset(e, f(e), s))
     Eq << apply(S)
 
     Eq << algebra.all.given.suffice.apply(Eq[1])
 
     Eq << Eq[-1].this.lhs.rhs.definition
-    Eq << Eq[-1].this.lhs.apply(sets.contains.imply.any_eq.split.imageset)
+    Eq << Eq[-1].this.lhs.apply(sets.el.imply.any_eq.split.imageset)
 
     Eq << Eq[-1].this.args[0].expr.reversed
 

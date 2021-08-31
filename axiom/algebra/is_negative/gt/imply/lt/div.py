@@ -12,16 +12,14 @@ def apply(is_positive_x, strict_greater_than):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
+    x, a, b = Symbol(real=True)
     Eq << apply(x < 0, a > b)
 
     Eq << algebra.is_negative.imply.is_negative.div.apply(Eq[0])
 
     Eq << algebra.is_negative.gt.imply.lt.mul.apply(Eq[-1], Eq[1])
 
-    
+
 
 
 if __name__ == '__main__':

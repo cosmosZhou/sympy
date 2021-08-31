@@ -27,13 +27,11 @@ def apply(self, simplify=True):
 @prove
 def prove(Eq):
     from axiom import algebra
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
+    i, j = Symbol(integer=True)
 
-    C = Symbol.C(etype=dtype.integer, given=True)
+    C = Symbol(etype=dtype.integer, given=True)
 
-    f = Function.f(real=True)
-    h = Function.h(real=True)
+    f, h = Function(real=True)
 
     Eq << apply(Sum[i:C](f(i) * h(j)))
 

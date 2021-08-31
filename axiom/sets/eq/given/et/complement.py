@@ -12,9 +12,7 @@ def apply(given):
 def prove(Eq):
     from axiom import sets
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
-    C = Symbol.C(etype=dtype.integer)
+    A, B, C = Symbol(etype=dtype.integer)
     Eq << apply(Equal(A, B | C))
 
     Eq << sets.eq_complement.subset.imply.eq.apply(Eq[1], Eq[2])

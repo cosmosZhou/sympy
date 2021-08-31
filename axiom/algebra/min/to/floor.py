@@ -35,9 +35,8 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
-    n = Symbol.n(integer=True)
+    x, y = Symbol(real=True)
+    n = Symbol(integer=True)
 
     Eq << apply(Min(n + floor(x), floor(y)))
 

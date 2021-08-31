@@ -20,14 +20,13 @@ def extract(recurrence):
 
 
 @apply
-def apply(*given):
-    initial_condition, recurrence = given
+def apply(initial_condition, recurrence):
     m, g, beta, t = extract(recurrence)
     assert initial_condition.is_Equal
     m0, _0 = initial_condition.args
     assert m0 == m[0] and _0.is_zero
 
-    k = Symbol.k(integer=True, nonnegative=True)
+    k = Symbol(integer=True, nonnegative=True)
 
     return Equal(m[k], beta ** k * (1 - beta) * Sum[t:1:k + 1](beta ** (-t) * g[t]))
 
@@ -36,10 +35,9 @@ def apply(*given):
 def prove(Eq):
     from axiom import algebra
 
-    m = Symbol.m(shape=(oo,), real=True)
-    g = Symbol.g(shape=(oo,), real=True)
-    t = Symbol.t(integer=True, positive=True)
-    beta = Symbol.beta(real=True, nonzero=True)
+    m, g = Symbol(shape=(oo,), real=True)
+    t = Symbol(integer=True, positive=True)
+    beta = Symbol(real=True, nonzero=True)
 #     beta = Symbol.beta(real=True, zero=False)
     Eq << apply(Equal(m[0], 0), Equal(m[t], beta * m[t - 1] + (1 - beta) * g[t]))
 
@@ -65,7 +63,7 @@ def prove(Eq):
     Eq << Eq[-1] * beta ** k
 
     Eq << Eq[-1].this.find(Pow[Add]).apply(algebra.pow.to.mul.split.exponent)
-    
+
     Eq << Eq[-1].this.find(Add).apply(algebra.add.to.mul)
 
 

@@ -3,8 +3,7 @@ from util import *
 
 @apply
 def apply(n, w=None):
-    i = Symbol.i(domain=Range(0, n))
-    j = Symbol.j(domain=Range(0, n))
+    i, j = Symbol(domain=Range(0, n))
 
     assert n >= 2
     if w is None:
@@ -18,7 +17,7 @@ def apply(n, w=None):
 @prove
 def prove(Eq):
     from axiom import discrete
-    n = Symbol.n(domain=Range(2, oo))
+    n = Symbol(domain=Range(2, oo))
     assert 0 in Range(0, n)
     Eq << apply(n)
     w = Eq[0].lhs.base

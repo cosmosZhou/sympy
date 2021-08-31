@@ -9,12 +9,11 @@ def apply(gt):
 
 @prove
 def prove(Eq):
-    x = Symbol.x(real=True, given=True)
-    a = Symbol.a(real=True, given=True)
+    x, a = Symbol(real=True, given=True)
     Eq << apply(x > a)
-    
+
     Eq << ~Eq[1]
-    
+
     Eq <<= Eq[-1] & Eq[0]
 
 

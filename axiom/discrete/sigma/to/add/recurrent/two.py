@@ -17,9 +17,9 @@ from axiom.discrete.sigma.to.add.recurrent import sigma
 @prove(proved=False)
 def prove(Eq):
     from axiom import sets, algebra
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(complex=True, shape=(oo,))
-    k = Symbol.k(domain=Range(2, n + 1))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(complex=True, shape=(oo,))
+    k = Symbol(domain=Range(2, n + 1))
 
     Eq << apply(sigma[k](x[:n + 1]))
 

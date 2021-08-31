@@ -2,9 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given):
+def apply(is_continuous, is_differentiable):
     from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import of_differentiable, of_continuous
-    is_continuous, is_differentiable = given
     fz, (z, a, b) = of_continuous(is_continuous)
     _fz, (_z, _a, _b) = of_differentiable(is_differentiable)
     assert _fz == fz
@@ -24,10 +23,10 @@ def prove(Eq):
     from axiom import calculus
 
     from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import is_differentiable
-    from axiom.calculus.integral.intermediate_value_theorem import is_continuous
-    a = Symbol.a(real=True)
-    b = Symbol.b(domain=Interval(a, oo, left_open=True))
-    f = Function.f(shape=(), real=True)
+    from axiom.calculus.all_eq.imply.all_any_eq.intermediate_value_theorem import is_continuous
+    a = Symbol(real=True)
+    b = Symbol(domain=Interval(a, oo, left_open=True))
+    f = Function(shape=(), real=True)
     Eq << apply(is_continuous(f, a, b), is_differentiable(f, a, b))
 
     Eq << Less(a, b, plausible=True)

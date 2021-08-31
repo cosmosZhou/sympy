@@ -29,13 +29,12 @@ def apply(given):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(n,))
-    m = Symbol.m(domain=Range(2, oo))
-    y = Symbol.y(real=True, shape=(m,))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    t = Symbol.t(domain=Range(0, m))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(n,))
+    m = Symbol(domain=Range(2, oo))
+    y = Symbol(real=True, shape=(m,))
+    i, j = Symbol(integer=True)
+    t = Symbol(domain=Range(0, m))
     Eq << apply(abs(y[t] - Sum[i](x[i]) / n) <= abs(y[t] - Sum[j](y[j]) / m))
 
     y_ = Symbol("y'", y @ Swap(m, t, m - 1))

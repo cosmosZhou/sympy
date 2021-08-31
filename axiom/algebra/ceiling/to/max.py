@@ -13,8 +13,7 @@ def apply(ceil):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(ceiling(Max(x, y)))
 
     Eq << Eq[0].apply(algebra.eq_ceiling.given.et)

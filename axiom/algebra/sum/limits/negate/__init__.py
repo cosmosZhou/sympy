@@ -11,14 +11,12 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, nonnegative=True, given=False)
-    f = Function.f(real=True)
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, nonnegative=True, given=False)
+    f = Function(real=True)
     Eq << apply(Sum[i:-n:n + 1](f(i)))
 
     Eq << Eq[-1] - Eq[-1].rhs
-
-    
 
 
 if __name__ == '__main__':

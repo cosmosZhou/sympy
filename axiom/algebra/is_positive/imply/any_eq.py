@@ -16,7 +16,7 @@ def apply(given, var=None):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True, given=True)
+    x = Symbol(real=True, given=True)
     Eq << apply(x > 0)
 
     Eq << algebra.is_positive.imply.eq.abs.apply(Eq[0])

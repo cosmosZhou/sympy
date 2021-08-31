@@ -10,11 +10,10 @@ def apply(A, B):
 def prove(Eq):
     from axiom import sets
 
-    A = Symbol.A(etype=dtype.integer)
-    B = Symbol.B(etype=dtype.integer)
+    A, B = Symbol(etype=dtype.integer)
     Eq << apply(A, B)
 
-    C = Symbol.C(A - B)
+    C = Symbol(A - B)
     Eq << C.this.definition
 
     Eq << sets.eq.imply.eq.union.apply(Eq[1], A & B)

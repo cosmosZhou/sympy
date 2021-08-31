@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(self):
-    (x, _d), d = self.of(Floor[Expr / Expr] * Expr)    
+    (x, _d), d = self.of(Floor[Expr / Expr] * Expr)
     assert d == _d
 
     assert d.is_integer and x.is_integer
@@ -13,8 +13,7 @@ def apply(self):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(integer=True)
-    d = Symbol.d(integer=True)
+    x, d = Symbol(integer=True)
     Eq << apply(x // d * d)
 
     Eq << algebra.mod.to.add.apply(x % d)

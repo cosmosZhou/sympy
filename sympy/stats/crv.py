@@ -545,7 +545,7 @@ class ContinuousPSpace(PSpace):
             if s.is_EmptySet or s.is_FiniteSet:
                 if cond_inv:
                     return S.One
-                if pdf:       
+                if pdf: 
                     if len(s) == 1:
                         [x] = s             
                         return pdf(x)
@@ -641,7 +641,6 @@ class SingleContinuousPSpace(ContinuousPSpace, SinglePSpace):
             return expr
 
         expr = _sympify(expr)
-#         expr = expr.xreplace({rv: rv.pspace.symbol for rv in rvs})
 
         x = self.symbol
         try:

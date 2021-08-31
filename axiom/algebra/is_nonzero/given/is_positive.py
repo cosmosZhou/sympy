@@ -10,7 +10,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True)
+    a = Symbol(real=True)
     Eq << apply(Unequal(a, 0))
 
     Eq << algebra.is_positive.imply.is_nonzero.apply(Eq[1])

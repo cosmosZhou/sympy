@@ -30,17 +30,14 @@ def apply(imply):
 @prove
 def prove(Eq):
     from axiom import algebra
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(k,), given=True)
-    A = Symbol.A(etype=dtype.real * k, given=True)
-    B = Symbol.B(etype=dtype.real * k, given=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(k,), given=True)
+    A, B = Symbol(etype=dtype.real * k, given=True)
 
-    f = Function.f(shape=(), real=True)
-    g = Function.g(shape=(), real=True)
-    h = Function.h(shape=(), real=True)
-    p = Symbol.p(real=True, shape=(), given=True)
+    f, g, h = Function(shape=(), real=True)
+    p = Symbol(real=True, shape=(), given=True)
 
-    Eq << apply(LessEqual(Piecewise((f(x), Contains(x, A)), (g(x), Contains(x, B)), (h(x), True)), p))
+    Eq << apply(LessEqual(Piecewise((f(x), Element(x, A)), (g(x), Element(x, B)), (h(x), True)), p))
 
     Eq << algebra.ou.imply.le.apply(Eq[1], wrt=p)
 

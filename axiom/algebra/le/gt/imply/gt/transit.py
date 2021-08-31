@@ -3,8 +3,7 @@ from util import *
 
 
 @apply
-def apply(*given):
-    a_less_than_x, b_greater_than_x = given
+def apply(a_less_than_x, b_greater_than_x):
     a, x = a_less_than_x.of(LessEqual)
     b, _x = b_greater_than_x.of(Greater)
     if b == a:
@@ -16,9 +15,7 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True)
-    x = Symbol.x(real=True)
-    b = Symbol.b(real=True)
+    a, x, b = Symbol(real=True)
 
     Eq << apply(a <= x, b > x)
 

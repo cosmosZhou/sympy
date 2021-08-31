@@ -7,7 +7,7 @@ def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     return Equal(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
                     gamma(m / 2) * gamma(n / 2) / (2 * gamma((m + n) / 2)))
 
@@ -16,9 +16,9 @@ def apply(m, n=1):
 def prove(Eq):
     from axiom import calculus, algebra
     #m is the inductive variable
-    m = Symbol.m(integer=True, positive=True, given=False)
+    m = Symbol(integer=True, positive=True, given=False)
     #n is not a inductive variable
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
 
     Eq << apply(m, n)
 
@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << Eq.induct.this.lhs.expr.expand()
 
-    Eq << Eq[-1].this.lhs.apply(calculus.integral.by_parts, u=cos(x) ** m)
+    Eq << Eq[-1].this.lhs.apply(calculus.integral.to.add.by_parts, u=cos(x) ** m)
 
     Eq << Eq[-1] / (m / n)
 
@@ -46,10 +46,10 @@ def prove(Eq):
 
     Eq.two = Eq[0].subs(m, 2)
 
-    t = Symbol.t(domain=Interval(0, 1))
+    t = Symbol(domain=Interval(0, 1))
     Eq << Eq.two.this.lhs.limits_subs(sin(x), t)
 
-    Eq << calculus.integral.power.apply(n - 1, b=1, x=t)
+    Eq << calculus.integral.to.mul.st.pow.apply(n - 1, b=1, x=t)
 
     Eq << Eq[-2] - Eq[-1]
 

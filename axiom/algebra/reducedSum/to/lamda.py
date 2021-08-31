@@ -28,17 +28,14 @@ def apply(self, var=None):
 def prove(Eq):
     from axiom import algebra
 
-    j = Symbol.j(integer=True)
-    p = Symbol.p(integer=True, positive=True)
-    q = Symbol.q(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
-    m = Symbol.m(integer=True, positive=True)
-    y = Symbol.y(shape=(p, q, m, n), real=True)
+    j = Symbol(integer=True)
+    p, q, n, m = Symbol(integer=True, positive=True)
+    y = Symbol(shape=(p, q, m, n), real=True)
     Eq << apply(ReducedSum(y), var=j)
 
-    i = Symbol.i(domain=Range(0, m))
-    k = Symbol.k(domain=Range(0, q))
-    h = Symbol.h(domain=Range(0, p))
+    i = Symbol(domain=Range(0, m))
+    k = Symbol(domain=Range(0, q))
+    h = Symbol(domain=Range(0, p))
     Eq << algebra.eq.given.eq.getitem.apply(Eq[0], h)
 
     Eq << algebra.eq.given.eq.getitem.apply(Eq[-1], k)

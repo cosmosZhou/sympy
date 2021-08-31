@@ -24,23 +24,8 @@ def apply(self, rho=None, theta=None):
 
 @prove(proved=False)
 def prove(Eq):
-    x = Symbol.x(real=True)
-    y = Symbol.y(real=True)
+    x, y = Symbol(real=True)
     Eq << apply(Integral[x, y](E ** (-x ** 2 / 2 - y ** 2 / 2)))
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     #https://ccjou.wordpress.com/2012/11/26/jacobian-矩陣與行列式/
 

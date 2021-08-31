@@ -17,8 +17,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
-    x = Symbol.x(integer=True)
-    y = Symbol.y(integer=True)
+    x, y = Symbol(integer=True)
 
     Eq << apply(Equal({x, y}, {0, 1}))
 

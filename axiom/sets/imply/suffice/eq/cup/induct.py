@@ -13,10 +13,9 @@ def apply(given, limit):
 def prove(Eq):
     from axiom import algebra, sets
 
-    n = Symbol.n(integer=True, positive=True, given=False)
-    k = Symbol.k(integer=True)
-    f = Function.f(shape=(), etype=dtype.integer)
-    g = Function.g(shape=(), etype=dtype.integer)
+    n = Symbol(integer=True, positive=True, given=False)
+    k = Symbol(integer=True)
+    f, g = Function(shape=(), etype=dtype.integer)
     Eq << apply(Equal(f(k), g(k)), (k, 0, n))
 
     Eq.initial = Eq[0].subs(n, 1)

@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(self):
     (_xi, xi), limit = self.of(Sum[Expr - Expr])
-    try:        
+    try:
         i, a, b = limit
     except:
         (i,) = limit
@@ -12,7 +12,7 @@ def apply(self):
         a, b = domain.of(Range)
 
     assert i.is_integer
-    
+
     assert _xi == xi._subs(i, i + 1)
     return Equal(self, xi._subs(i, b) - xi._subs(i, a), evaluate=False)
 
@@ -21,10 +21,10 @@ def apply(self):
 def prove(Eq):
     from axiom import algebra
 
-    k = Symbol.k(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo, k))
-    i = Symbol.i(integer=True)
-    n = Symbol.n(integer=True, nonnegative=True)
+    k = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo, k))
+    i = Symbol(integer=True)
+    n = Symbol(integer=True, nonnegative=True)
     Eq << apply(Sum[i:n + 1](x[i + 1] - x[i]))
 
     Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add)

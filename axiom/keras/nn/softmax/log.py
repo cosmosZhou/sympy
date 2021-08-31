@@ -11,9 +11,9 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import keras, algebra
-    n = Symbol.n(integer=True, positive=True)
+    n = Symbol(integer=True, positive=True)
 
-    x = Symbol.x(real=True, shape=(n,))
+    x = Symbol(real=True, shape=(n,))
     Eq << apply(x)
 
     Eq << keras.nn.softmax.translation.apply(x, -ReducedMax(x)).reversed

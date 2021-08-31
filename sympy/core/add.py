@@ -547,7 +547,7 @@ class Add(Expr, AssocOp):
         return all(term._eval_is_algebraic_expr(syms) for term in self.args)
 
     # assumption methods
-    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)
+    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)    
     _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
     _eval_is_antihermitian = lambda self: _fuzzy_group((a.is_antihermitian for a in self.args), quick_exit=True)
     _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self.args), quick_exit=True)
@@ -1552,6 +1552,10 @@ class Add(Expr, AssocOp):
     
     def __call__(self, other):
         return self * other
+
+    def is_continuous(self, *args):
+        from sympy.core.logic import fuzzy_and
+        return fuzzy_and(x.is_continuous(*args) for x in self.args)
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

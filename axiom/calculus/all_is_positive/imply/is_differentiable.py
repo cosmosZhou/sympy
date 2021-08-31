@@ -15,10 +15,8 @@ def apply(all_is_positive):
 
 @prove(proved=False)
 def prove(Eq):
-    a = Symbol.a(real=True)
-    b = Symbol.b(real=True)
-    x = Symbol.x(real=True)
-    f = Function.f(real=True)
+    a, b, x = Symbol(real=True)
+    f = Function(real=True)
     Eq << apply(All[x:Interval(a, b, left_open=True, right_open=True)](Derivative(f(x), (x, 2)) > 0))
 
 

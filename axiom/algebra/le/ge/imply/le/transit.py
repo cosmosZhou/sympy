@@ -1,12 +1,10 @@
 from util import *
 
 
-
 @apply
-def apply(*given):
-    a_less_than_x, b_greater_than_x = given
-    a, x = a_less_than_x.of(LessEqual)
-    b, _x = b_greater_than_x.of(GreaterEqual)
+def apply(le, ge):
+    a, x = le.of(LessEqual)
+    b, _x = ge.of(GreaterEqual)
     if x != _x:
         x, a, _x, b = b, _x, a, x
     assert x == _x
@@ -16,10 +14,8 @@ def apply(*given):
 @prove
 def prove(Eq):
     from axiom import algebra
-    a = Symbol.a(real=True)
-    x = Symbol.x(real=True)
-    b = Symbol.b(real=True)
 
+    a, x, b = Symbol(real=True)
     Eq << apply(a <= x, b >= x)
 
     Eq << Eq[1].reversed

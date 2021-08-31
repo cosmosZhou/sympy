@@ -4,8 +4,7 @@ from util import *
 # given: Probability(x | z) = Probability(x) and Probability(y | z) = Probability(y)
 # imply: Probability(x & y) | Probability(z) = Probability(x & y)
 @apply
-def apply(*given):
-    given_x, given_y, unequality = given
+def apply(given_x, given_y, unequality):
     assert given_x.is_Equal
     assert given_y.is_Equal
     assert unequality.is_Unequal
@@ -35,9 +34,7 @@ def apply(*given):
 def prove(Eq):
     from axiom import stats, algebra
 
-    x = Symbol.x(real=True, random=True)
-    y = Symbol.y(real=True, random=True)
-    z = Symbol.z(real=True, random=True)
+    x, y, z = Symbol(real=True, random=True)
     Eq << apply(x.is_independent_of(z), y.is_independent_of(z), Unequal(Probability(y), 0))
 
     Eq << stats.eq.imply.eq.mul.apply(Eq[0])

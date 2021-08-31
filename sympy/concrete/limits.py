@@ -227,16 +227,16 @@ def limits_union(limits, _limits):
 
 def limits_cond(limits):
     eqs = []
-    from sympy.sets.contains import Contains
+    from sympy.sets.contains import Element
     limitsdict = limits_dict(limits)
     for x, cond in limitsdict.items():
         if isinstance(cond, list):
             if not cond:
                 continue
             cond, baseset = cond
-            cond &= Contains(x, baseset)
+            cond &= Element(x, baseset)
         elif cond.is_set:
-            cond = Contains(x, cond)
+            cond = Element(x, cond)
         
         eqs.append(cond)
     return And(*eqs)

@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(x):    
+def apply(x):
     return log(x) >= 1 - 1 / x
 
 
@@ -10,7 +10,7 @@ def apply(x):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     Eq << apply(x)
 
     Eq << algebra.imply.le.log.apply(x)

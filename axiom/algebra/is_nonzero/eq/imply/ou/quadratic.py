@@ -2,12 +2,8 @@ from util import *
 
 
 @apply
-def apply(*given, x=None):
-    from axiom.algebra.ge.le.imply.le.quadratic import quadratic_coefficient
-    is_nonzero, eq = given
-    if not is_nonzero.is_Unequal:
-        is_nonzero, eq = eq, is_nonzero
-
+def apply(is_nonzero, eq, x=None):
+    from axiom.algebra.le.ge.imply.le.quadratic import quadratic_coefficient
     a = is_nonzero.of(Unequal[0])
     fx, rhs = eq.of(Equal)
     if not rhs.is_Zero:
@@ -23,13 +19,11 @@ def apply(*given, x=None):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol.x(complex=True, given=True)
-    a = Symbol.a(complex=True, given=True)
-    b = Symbol.b(complex=True, given=True)
-    c = Symbol.c(complex=True, given=True)
+
+    x, a, b, c = Symbol(complex=True, given=True)
     Eq << apply(Unequal(a, 0), Equal(a * x ** 2 + b * x + c, 0), x=x)
 
-    x = Symbol.x(x + b / (2 * a))
+    x = Symbol(x + b / (2 * a))
     Eq << x.this.definition
 
     Eq << Eq[-1] - b / (2 * a)

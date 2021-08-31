@@ -12,25 +12,25 @@ def apply(self):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    k = Symbol.k(domain=Range(0, n + 1))
+    n = Symbol(integer=True, positive=True)
+    k = Symbol(domain=Range(0, n + 1))
     Eq << apply(binomial(n, k))
 
-    Eq << Eq[-1].this.find(FallingFactorial).apply(discrete.fallingFactorial.to.product)
+    Eq << Eq[-1].this.find(FallingFactorial).apply(discrete.fallingFactorial.to.prod)
 
     Eq << Eq[-1].this.lhs.apply(discrete.binomial.to.mul)
     Eq << Eq[-1] * Factorial(k)
 
-    Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.product)
+    Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.prod)
 
-    Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.product)
+    Eq << Eq[-1].this.find(Factorial).apply(discrete.factorial.to.prod)
 
     i = Eq[-1].rhs.variable
-    Eq << Eq[-1].this.lhs.args[0].apply(algebra.product.limits.subs.negate, i, n - i)
+    Eq << Eq[-1].this.lhs.args[0].apply(algebra.prod.limits.subs.negate, i, n - i)
 
-    Eq << Eq[-1].this.find((~Product) ** -1).apply(algebra.product.limits.subs.negate, i, n - i)
+    Eq << Eq[-1].this.find((~Product) ** -1).apply(algebra.prod.limits.subs.negate, i, n - i)
 
-    Eq << Eq[-1].this.lhs.apply(algebra.mul.to.product.limits.complement)
+    Eq << Eq[-1].this.lhs.apply(algebra.mul.to.prod.limits.complement)
 
 
 if __name__ == '__main__':

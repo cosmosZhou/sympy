@@ -501,7 +501,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
     def as_dummy(self):
         return Dummy(self.name)
 
-    def as_real_imag(self, deep=True, **hints):        
+    def as_real_imag(self, deep=True, **hints): 
         if hints.get('ignore') == self:
             return None
         else:
@@ -753,10 +753,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             shape = self.definition.shape            
         else:
             shape = ()
-            
-        # dangerous codes? possibly make the hashable content obselete!
-#         if shape:            
-#             self._assumptions['shape'] = shape
             
         return shape        
 
@@ -1089,11 +1085,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 return False
 
         return True
-
-    def to_wolfram(self, global_variables):
-        from wolframclient.language import wlexpr
-        global_variables.add(self)
-        return wlexpr(self.name)
       
     def is_independent_of(self, y, **kwargs):
         from sympy.core.relational import Equal
@@ -1141,11 +1132,22 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                         assumptions.pop('definition')
                         return self.func(r"{\color{ADAD00} %s}" % self.name, _definition, **assumptions)
         return self
-
-    def linear_match(self, a):
-        return a._has(self)
+        
+    def is_continuous(self, *args):
+        definition = self.definition
+        if definition is None:
+            return True
+        return definition.is_continuous(*args)
 
         
+    def of(self, cls):
+        from sympy import Set
+        if cls is Set:
+            if self.is_set:
+                return self
+            
+        return AtomicExpr.of(self, cls)
+    
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
 
@@ -1687,7 +1689,9 @@ class Dtype:
     is_integer = None
     is_rational = None
     is_real = None
+    is_super_real = None
     is_complex = True
+    is_super_complex = True
     is_extended_positive = None
     is_extended_negative = None
     is_DtypeInteger = None
@@ -1711,6 +1715,10 @@ class Dtype:
         return DtypeReal()
 
     @property
+    def super_real(self):
+        return DtypeSurreal()
+    
+    @property
     def rational(self):
         return DtypeRational()
 
@@ -1718,6 +1726,10 @@ class Dtype:
     def complex(self):
         return DtypeComplex()
 
+    @property
+    def super_complex(self):
+        return DtypeSurcomplex()
+    
     @property
     def set(self):
         return DtypeSet(self)
@@ -1767,7 +1779,37 @@ class Dtype:
         return '%s(%s)' % (head, ', '.join(("%s=%s" % args for args in self.assumptions.items())))
 
 
-class DtypeComplex(Dtype):
+class DtypeSurcomplex(Dtype):
+    
+    is_super_complex = True
+
+    def as_Set(self):
+        return S.Surcomplexes        
+
+    def __str__(self):
+        return 'super_complex'
+    
+    @property
+    def dict(self):
+        return {'super_complex': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeSurcomplex)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeSurcomplexConditional(**kwargs)
+
+    @property
+    def universalSet(self): 
+        return S.Surcomplexes
+
+
+class DtypeComplex(DtypeSurcomplex):
     
     is_complex = True
 
@@ -1892,7 +1934,8 @@ class DtypeRealConditional(DtypeReal):
     def as_Set(self):
         if self.assumptions.get('positive') is True:
             ...
-        return Reals
+        from sympy import Interval
+        return Interval(-S.Infinity, S.Infinity)
 
     def __init__(self, **assumptions):
         self.assumptions = assumptions
@@ -1934,6 +1977,36 @@ class DtypeRealConditional(DtypeReal):
             
         return False
 
+
+class DtypeSurreal(DtypeSurcomplex):
+    
+    is_super_real = True
+    
+    @property
+    def universalSet(self):
+        return S.Surreals
+    
+    def as_Set(self):
+        return S.Surreals
+
+    def __str__(self):
+        return 'super_real'
+    
+    @property
+    def dict(self):
+        return {'super_real': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeSurreal)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeSurrealConditional(**kwargs)
+    
 
 class DtypeRational(DtypeReal):
 
@@ -2038,7 +2111,7 @@ class DtypeIntegerConditional(DtypeInteger):
             from sympy.sets import NonnegativeIntegers
             return NonnegativeIntegers
         
-        from sympy.sets.sets import Interval
+        from sympy import Range
         negative = self.assumptions.get('negative')
         if negative:
             return Range(S.NegativeInfinity, 0)
@@ -2050,9 +2123,9 @@ class DtypeIntegerConditional(DtypeInteger):
         odd = self.assumptions.get('odd')
         
         if even:
-            return Interval(0, S.PositiveInfinity, step=2, integer=True) | Interval(S.NegativeInfinity, 0, step=2, integer=True)
+            return Range(0, S.PositiveInfinity, step=2, integer=True) | Range(S.NegativeInfinity, 0, step=2, integer=True)
         if odd:
-            return Interval(1, S.PositiveInfinity, step=2, integer=True) | Interval(S.NegativeInfinity, -1, step=2, integer=True)
+            return Range(1, S.PositiveInfinity, step=2, integer=True) | Range(S.NegativeInfinity, -1, step=2, integer=True)
         return S.Integers
 
     def __init__(self, **assumptions):
@@ -2074,7 +2147,7 @@ class DtypeIntegerConditional(DtypeInteger):
         return hash(type(self).__name__)
 
     def __add__(self, start):
-        from sympy import Interval, oo
+        from sympy import Range, oo
         if 'nonnegative' in self.assumptions:
             if start != 0:
                 return self.integer(domain=Range(start, oo)) 

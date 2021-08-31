@@ -11,7 +11,7 @@ def apply(n):
 
 @prove(proved=False)
 def prove(Eq):
-    n = Symbol.n(integer=True, nonnegative=True)
+    n = Symbol(integer=True, nonnegative=True)
     Eq << apply(n)
 
 

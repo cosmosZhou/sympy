@@ -143,7 +143,15 @@ if (strpos($new, '.') !== false) {
         }
     }
 } else {
-
+    $oldAxiom = "$package.$old";
+    
+    if ($new == null) {
+        $newAxiom = $package;
+    } else
+        $newAxiom = "$package.$new";
+        
+    \mysql\update_hierarchy($oldAxiom, $newAxiom, true);
+        
     if (is_dir($folder . $new)) {
         $newPyPath = $folder . $new . "/__init__.py";
         if (file_exists($newPyPath)) {
@@ -168,15 +176,7 @@ if (strpos($new, '.') !== false) {
     }
 
     \mysql\update_suggest($package, $old, $new, true);
-    $old = "$package.$old";
-
-    if ($new == null) {
-        $new = $package;
-    } else
-        $new = "$package.$new";
-
-    \mysql\update_hierarchy($old, $new, true);
-    \mysql\update_axiom($old, $new, true);
+    \mysql\update_axiom($oldAxiom, $newAxiom, true);
 }
 
 echo \std\jsonify("renamed!");

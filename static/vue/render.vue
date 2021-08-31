@@ -62,7 +62,13 @@
 				{{log.code}}<br> {{log.type}}: {{log.error}}<br>
 			</font>
 		</div>
-
+		
+		<div class=bottom-right>
+			<p>
+				<font size=2>Created on {{timestamp.slice(0, 10)}}</font>
+			</p>
+		</div>
+		
 	</div>
 </template>
 
@@ -74,7 +80,7 @@
 	
 	module.exports = {
 		components: {renderProve, renderApply },
-		props : [ 'prove', 'logs', 'given', 'imply', 'module', 'apply', 'applyArg', 'unused', 'where'],
+		props : [ 'prove', 'logs', 'given', 'imply', 'module', 'apply', 'applyArg', 'unused', 'where', 'timestamp'],
 		
 		created(){
 		},
@@ -120,7 +126,10 @@
     		proveEditor(){
     			var prove = [];
     			prove.push(this.$refs.given);
-    			return prove.concat(this.$refs.prove);
+    			var _prove = this.$refs.prove;
+    			if (_prove)
+    				return prove.concat(_prove);
+    			return prove;
     		},
     	},
 
@@ -235,4 +244,17 @@
 [v-cloak] {
 	display: none !important;
 }
+
+.bottom-right{
+	width: auto;
+	height: 50px;
+	position: relative;
+}
+
+.bottom-right p{
+	position: absolute;
+	bottom: 0;
+	right: 0;
+}
+
 </style>

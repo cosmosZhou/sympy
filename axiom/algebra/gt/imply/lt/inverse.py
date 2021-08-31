@@ -13,8 +13,8 @@ def apply(ge):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol.x(real=True)
-    a = Symbol.a(real=True, positive=True)
+    x = Symbol(real=True)
+    a = Symbol(real=True, positive=True)
     Eq << apply(x > a)
 
     Eq << algebra.gt.imply.is_positive.transit.apply(Eq[0])

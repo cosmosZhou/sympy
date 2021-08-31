@@ -5,9 +5,8 @@ from util import *
 def apply(r, n):
     if not n >= 2:
         return
-    k = Symbol.k(integer=True)
-    i = Symbol.i(integer=True)
-    j = Symbol.j(domain=Range(0, n))
+    k, i = Symbol(integer=True)
+    j = Symbol(domain=Range(0, n))
 
     A = Lamda[j, i:n - 1]((j + 1) ** (i + 1))
     R = Lamda[j](1 - r ** (j + 1))
@@ -21,8 +20,8 @@ def apply(r, n):
 def prove(Eq):
     from axiom import discrete, algebra
 
-    r = Symbol.r(real=True)
-    n = Symbol.n(domain=Range(2, oo))
+    r = Symbol(real=True)
+    n = Symbol(domain=Range(2, oo))
     Eq << apply(r, n)
 
     (j, *_), (i, *iab) = Eq[0].lhs.arg.args[1].limits
@@ -46,14 +45,13 @@ def prove(Eq):
 
     Eq << algebra.cond.imply.all.apply(Eq[-1], _i)
 
-    Eq << Eq[3].rhs.args[1].expr.this.limits_subs(k, k - 1)
+    Eq << Eq[3].rhs.args[1].expr.this.apply(algebra.sum.limits.subs.offset, -1)
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq[-2], Eq[-1])
 
     Eq.equation = algebra.all_eq.cond.imply.all.subs.apply(Eq[-1], Eq[3])
 
-    i_ = Eq.equation.rhs.args[0].expr.variable
-    Eq << Eq.equation.rhs.args[0].expr.this.limits_subs(i_, i_ - 1)
+    Eq << Eq.equation.rhs.args[0].expr.this.apply(algebra.sum.limits.subs.offset, -1)
 
     i = Eq[-1].rhs.variable
     Eq << Eq[-1].this.rhs.expand()
@@ -92,8 +90,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.powsimp()
 
-    v = Eq[-1].rhs.args[1].variable
-    Eq << Eq[-1].this.rhs.args[1].limits_subs(v, v - 1)
+    Eq << Eq[-1].this.find(Product).apply(algebra.prod.limits.subs.offset, -1)
 
 
 if __name__ == '__main__':

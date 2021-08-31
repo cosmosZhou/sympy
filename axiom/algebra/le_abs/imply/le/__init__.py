@@ -33,13 +33,12 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    n = Symbol.n(integer=True, positive=True)
-    x = Symbol.x(real=True, shape=(oo,))
-    m = Symbol.m(domain=Range(2, oo))
-    y = Symbol.y(real=True, shape=(m,))
-    i = Symbol.i(integer=True)
-    j = Symbol.j(integer=True)
-    t = Symbol.t(domain=Range(0, m))
+    n = Symbol(integer=True, positive=True)
+    x = Symbol(real=True, shape=(oo,))
+    m = Symbol(domain=Range(2, oo))
+    y = Symbol(real=True, shape=(m,))
+    i, j = Symbol(integer=True)
+    t = Symbol(domain=Range(0, m))
     Eq << apply(abs(y[t] - Sum[i](x[i]) / n) <= abs(y[t] - Sum[j](y[j]) / m))
 
     Eq << Eq[-1].rhs.args[0].this.apply(algebra.sum.to.mul.st.variance)
@@ -81,5 +80,6 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
-del function
+
+
 from . import function

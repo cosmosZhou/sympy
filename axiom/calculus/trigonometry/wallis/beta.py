@@ -7,7 +7,7 @@ def apply(m, n=1):
     m = sympify(m)
     n = sympify(n)
 
-    x = Symbol.x(real=True)
+    x = Symbol(real=True)
     return Equal(Integral[x:0:S.Pi / 2](cos(x) ** (m - 1) * sin(x) ** (n - 1)),
                     beta(m / 2, n / 2) / 2)
 
@@ -15,8 +15,7 @@ def apply(m, n=1):
 @prove
 def prove(Eq):
     from axiom import calculus
-    m = Symbol.m(integer=True, positive=True)
-    n = Symbol.n(integer=True, positive=True)
+    m, n = Symbol(integer=True, positive=True)
 
     Eq << apply(m, n)
 
