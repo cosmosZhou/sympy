@@ -71,8 +71,8 @@ def prove(Eq):
     j = Eq.omega_i_definition.rhs.variable
     Eq << sets.eq.given.et.suffice.apply(Eq[4], wrt=j)
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.any_el.st.cup), \
-    Eq[-1].this.rhs.apply(sets.el.given.any_el.st.cup)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), \
+    Eq[-1].this.rhs.apply(sets.el_cup.given.any_el)
 
     Eq <<= Eq[-2].subs(Eq.omega_i_definition), Eq[-1].subs(Eq.omega_i_definition0)
 

@@ -110,13 +110,11 @@ def prove(Eq):
     w_ = Symbol.w(Lamda[i:n](w[i] / (1 - w[n])))
     Eq << w_[i].this.definition * (1 - w[n])
 
-    Eq << algebra.cond.given.cond.subs.apply(Eq[-2], given=Eq[-1].reversed, simplify=None)
+    Eq << Eq[-1].reversed
 
-    Eq << Eq[-1].this.find(Sum[Tuple[0]]).simplify()
+    Eq << algebra.cond.given.et.subs.apply(Eq[-3], *Eq[-1].args, simplify=None)
 
-    Eq << Eq[-1].this.find(Sum[Tuple[0]]).simplify()
-
-    Eq << Eq[-1].this.find(Sum[Tuple[0]]).simplify()
+    Eq << Eq[-1].this.find(~GreaterEqual & Equal).apply(algebra.cond.imply.all.domain_defined, wrt=i)
 
     Eq << Eq[-1].this.find(Add[~Sum]).apply(algebra.sum.to.mul)
 

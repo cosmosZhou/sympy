@@ -122,32 +122,19 @@ def itermonomials(variables, max_degrees, min_degrees=None):
             return
         # Force to list in case of passed tuple or other incompatible collection
         variables = list(variables) + [S(1)]
-        if all(variable.is_commutative for variable in variables):
-            monomials_list_comm = []
-            for item in combinations_with_replacement(variables, max_degree):
-                powers = dict()
-                for variable in variables:
-                    powers[variable] = 0
-                for variable in item:
-                    if variable != 1:
-                        powers[variable] += 1
-                if max(powers.values()) >= min_degree:
-                    monomials_list_comm.append(Mul(*item))
-            for mon in set(monomials_list_comm):
-                yield mon
-        else:
-            monomials_list_non_comm = []
-            for item in product(variables, repeat=max_degree):
-                powers = dict()
-                for variable in variables:
-                    powers[variable] = 0
-                for variable in item:
-                    if variable != 1:
-                        powers[variable] += 1
-                if max(powers.values()) >= min_degree:
-                    monomials_list_non_comm.append(Mul(*item))
-            for mon in set(monomials_list_non_comm):
-                yield mon
+
+        monomials_list_comm = []
+        for item in combinations_with_replacement(variables, max_degree):
+            powers = dict()
+            for variable in variables:
+                powers[variable] = 0
+            for variable in item:
+                if variable != 1:
+                    powers[variable] += 1
+            if max(powers.values()) >= min_degree:
+                monomials_list_comm.append(Mul(*item))
+        for mon in set(monomials_list_comm):
+            yield mon
     else:
         if any(min_degrees[i] > max_degrees[i] for i in range(n)):
             raise ValueError('min_degrees[i] must be <= max_degrees[i] for all i')

@@ -36,11 +36,11 @@ def prove(Eq):
 
     Eq.strict_greater_than = algebra.ge.imply.gt.relax.apply(Eq.greater_than)
 
-    Eq << algebra.gt.ge.imply.gt.transit.apply(Eq.strict_greater_than, algebra.imply.ge.floor.apply(a, 2))
+    Eq << algebra.gt.ge.imply.gt.transit.apply(Eq.strict_greater_than, algebra.imply.ge.floor.integer.apply(a, 2))
 
     Eq << algebra.gt.imply.ge.strengthen.apply(Eq[-1])
 
-    Eq << algebra.imply.le.floor.apply(b - 1, 2) + 1
+    Eq << algebra.imply.le.floor.apply((b - 1) / 2) * 2 + 1
 
     Eq << algebra.le.le.imply.le.transit.apply(Eq.less_than, Eq[-1])
 
@@ -55,8 +55,6 @@ def prove(Eq):
     Eq << Eq[-1] * 2 + 1
 
     Eq << Eq[-1] % 2
-
-
 
 
 if __name__ == '__main__':

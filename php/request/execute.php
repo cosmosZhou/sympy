@@ -28,14 +28,14 @@ foreach ($file as $query) {
 
     list ($query, $state, $lapse, $latex, $user, $axiom) = $m;
     $latex = eval("return $latex;");
-
+    $latex = str_replace("\\'", "'", $latex);    
     if (! empty($query) && $query != ";") {
         $latex = json_encode($latex, JSON_UNESCAPED_UNICODE);
         
-        error_log("latex = $latex");
+//         error_log("latex = $latex");
         $query = "update tbl_axiom_py set state = \"$state\", lapse = $lapse, latex = $latex where user = \"$user\" and axiom = \"$axiom\"";
         
-        error_log("query = $query");
+//         error_log("query = $query");
         $affected_rows = \mysql\execute($query);
         if ($affected_rows < 1){
             $timestamp = date('Y-m-d h:i:s', time());
@@ -46,8 +46,8 @@ foreach ($file as $query) {
         }
     }
 
-    error_log("user = $user");
-    error_log("axiom = $axiom");
+//     error_log("user = $user");
+//     error_log("axiom = $axiom");
 
     $tuples = [];
 
@@ -70,7 +70,7 @@ foreach ($file as $query) {
         ];
     }
 
-    error_log(\std\jsonify($tuples));
+//     error_log(\std\jsonify($tuples));
     \mysql\insertmany("tbl_suggest_py", $tuples);
 
     $theorem = str_replace('.', '/', $axiom);
@@ -80,7 +80,7 @@ foreach ($file as $query) {
         $py = "$dir/$theorem/__init__.py";
     }
 
-    error_log("py = $py");
+//     error_log("py = $py");
     $linkCount = [];
     foreach (yield_from_py($py) as $dict) {
         if (array_key_exists('a', $dict)) {
@@ -94,7 +94,7 @@ foreach ($file as $query) {
         }
     }
 
-    error_log("linkCount = " . \std\jsonify($linkCount));
+//     error_log("linkCount = " . \std\jsonify($linkCount));
 
     $tuples = [];
     $caller = $axiom;

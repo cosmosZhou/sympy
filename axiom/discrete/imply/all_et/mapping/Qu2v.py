@@ -13,14 +13,14 @@ def X_definition(n, w, x):
     j = Symbol(integer=True)
 
     index = index_function(n + 1)
-    return Symbol("X", Lamda[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
+    return Symbol.X(Lamda[j:n + 1](w[n, index[j](x[:n + 1], evaluate=False)] @ x[:n + 1])), index
 
 
 def predefined_symbols(n):
     x = Symbol(shape=(oo,), integer=True, nonnegative=True)
     t, i, j = Symbol(integer=True)
     Q = Symbol(Lamda[t:n + 1](conditionset(x[:n + 1], Equal(x[:n + 1].set_comprehension(), Range(0, n + 1)) & Equal(x[n], t))))
-    w = Symbol(Lamda[j, i](Swap(n + 1, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n + 1, i, j)))
 
     return Q, w, x
 

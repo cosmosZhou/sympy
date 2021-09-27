@@ -5,7 +5,7 @@ from util import *
 def apply(n):
     i, j = Symbol(integer=True)
 
-    return Equal(BlockMatrix([[Swap(n, i, j), ZeroMatrix(n)], [ZeroMatrix(n), S.One]]), Swap(n + 1, i, j))
+    return Equal(BlockMatrix([[SwapMatrix(n, i, j), ZeroMatrix(n)], [ZeroMatrix(n), S.One]]), SwapMatrix(n + 1, i, j))
 
 
 @prove

@@ -7,7 +7,7 @@ def apply(n, w=None):
     t, i, j = Symbol(domain=domain)
     assert n >= 2
     if w is None:
-        w = Symbol(Lamda[j, i](Swap(n, i, j)))
+        w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
 
     return All(Equal(w[t, i] @ w[t, j] @ w[t, i], w[i, j]), (j, domain - {i, t}))
 

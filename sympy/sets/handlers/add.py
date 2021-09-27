@@ -23,7 +23,8 @@ def _set_add(x, y):
     https://en.wikipedia.org/wiki/Interval_arithmetic
     """
     return Interval(x.start + y.start, x.stop + y.stop,
-        x.left_open or y.left_open, x.right_open or y.right_open)
+                    left_open=x.left_open or y.left_open, 
+                    right_open=x.right_open or y.right_open)
 
 @dispatch(Interval, Infinity)
 def _set_add(x, y):
@@ -53,7 +54,8 @@ def _set_sub(x, y):
     https://en.wikipedia.org/wiki/Interval_arithmetic
     """
     return Interval(x.start - y.stop, x.stop - y.start,
-        x.left_open or y.right_open, x.right_open or y.left_open)
+                    left_open=x.left_open or y.right_open, 
+                    right_open=x.right_open or y.left_open)
 
 @dispatch(Interval, Infinity)
 def _set_sub(x, y):

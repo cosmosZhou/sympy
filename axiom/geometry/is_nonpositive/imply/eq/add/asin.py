@@ -35,7 +35,7 @@ def prove(Eq):
 
     Eq << sets.ge.le.imply.el.interval.apply(Eq[-1], Eq[0])
 
-    Eq <<= geometry.el.imply.el.asin.apply(Eq[-1]), sets.el.imply.el.sqrt.apply(Eq[-1])
+    Eq <<= geometry.el.imply.el.asin.apply(Eq[-1]), sets.el.imply.el.sqrt.max.apply(Eq[-1])
 
     Eq <<= sets.el.imply.el.neg.apply(Eq[-2]), geometry.el.imply.el.asin.apply(Eq[-1])
 

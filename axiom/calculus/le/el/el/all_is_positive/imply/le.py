@@ -34,7 +34,7 @@ def prove(Eq):
     domain = Interval(a, b, left_open=True, right_open=True)
     Eq << apply(x0 <= x1, Element(x0, domain), Element(x1, domain), All[x:domain](Derivative[x](f(x)) > 0))
 
-    Eq << Eq[3].this.expr.apply(sets.gt.imply.is_real)
+    Eq << Eq[3].this.expr.apply(sets.gt.imply.is_extended_real)
 
     Eq.subset = sets.el.el.imply.subset.interval.apply(Eq[1], Eq[2])
 

@@ -33,11 +33,11 @@ def apply(n, dx, dz):
 
 @prove
 def prove(Eq):
-    from axiom import algebra, discrete
+    from axiom import discrete, algebra
+
     n = Symbol(integer=True, positive=True)
     dx = Symbol.d_x(integer=True, positive=True)
     dz = Symbol.d_z(integer=True, positive=True)
-
     Eq << apply(n, dx, dz)
 
     i, j = Eq[2].lhs.indices
@@ -53,21 +53,22 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(discrete.matmul.to.add)
 
-    k = Symbol(integer=True)
-    Eq << Eq[-1].this.rhs.args[0].apply(discrete.matmul.to.lamda, var={k})
+    Eq << Eq[-1].this.rhs.args[0].apply(discrete.matmul.to.lamda)
 
     Eq << Eq[-1].this.rhs.args[-1].apply(algebra.lamda.to.sum)
 
-    Eq << Eq[-1].this.rhs.subs(Eq[5][j])
+    h = Eq[-1].find(Sum).variable
+    Eq << Eq[-1].this.rhs.subs(Eq[5][h])
 
-    Eq << Eq[-1].this.rhs.args[0].apply(discrete.matmul.to.lamda, var={k})
+    Eq << Eq[-1].this.rhs.args[0].apply(discrete.matmul.to.lamda)
 
     Eq << Eq[-1].this.rhs.args[0].apply(algebra.lamda.to.sum)
 
     Eq << Eq[-1].this.rhs.apply(algebra.add.to.sum)
 
-    α = Eq[4].lhs
-    Eq << Eq[-1].this.rhs.expr.collect(α[i, j])
+    Eq << Eq[-1].this.rhs.expr.apply(algebra.add.to.mul)
+
+    Eq << Eq[-1].this.rhs.limits_subs(h, j)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.limits.domain_defined.insert)
 

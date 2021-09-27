@@ -59,3 +59,4 @@ if __name__ == '__main__':
 # https://en.wikipedia.org/wiki/Limit_of_a_function#Properties
 
 from . import nonzero
+from . import st

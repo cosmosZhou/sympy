@@ -1,11 +1,9 @@
 from util import *
 
 
-
 @apply
-def apply(given, simplify=True):
-    assert given.is_Element
-    e, domain = given.args
+def apply(given, *, simplify=True):
+    e, domain = given.of(Element)
 
     A, B = domain.of(Union)
 
@@ -22,9 +20,9 @@ def apply(given, simplify=True):
 @prove
 def prove(Eq):
     from axiom import sets
+
     e = Symbol(integer=True, given=True)
     A, B = Symbol(etype=dtype.integer, given=True)
-
     Eq << apply(Element(e, A | B))
 
     Eq << ~Eq[-1]

@@ -39,7 +39,7 @@ def prove(Eq):
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.is_nonnegative.is_positive.imply.is_nonnegative), Eq[-1].this.lhs.apply(algebra.is_positive.ge.imply.ge.div)
 
-    Eq << algebra.cond.given.cond.subs.cond.apply(Eq.eq, given=Eq.equivalent)
+    Eq << algebra.cond.given.cond.subs.cond.apply(Eq.eq, old=Eq.equivalent.lhs, new=Eq.equivalent.rhs)
 
     Eq << Eq[-1].this.lhs.apply(algebra.piece.invert.delete)
 
@@ -47,7 +47,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.piece.invert, 0, 3)
 
-    Eq << algebra.cond.given.cond.subs.cond.apply(Eq[-1], given=Eq.equivalent)
+    Eq << algebra.cond.given.cond.subs.cond.apply(Eq[-1], old=Eq.equivalent.lhs, new=Eq.equivalent.rhs)
 
     Eq.eq1 = Eq[-1].this.lhs.apply(algebra.piece.invert.delete, 0, 3)
 
@@ -96,8 +96,6 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.apply(algebra.piece.swap, 2)
 
     Eq << Eq[-1].this.find(Or).simplify()
-
-
 
 
 if __name__ == '__main__':

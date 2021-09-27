@@ -753,7 +753,7 @@ class Slice(Expr):
             return all(index >= start and index < stop for (start, stop), index in zip(self.indices, other.indices))
 
     def set_comprehension(self, var=None):
-        from sympy.concrete.expr_with_limits import Cup
+        from sympy.concrete.sets import Cup
         i = self.generate_var(integer=True, var=var)
         return Cup({self.base[i]}, (i, *self.index))
 
@@ -1335,7 +1335,7 @@ class SliceIndexed(Expr):
         return index >= start and index < stop
 
     def set_comprehension(self, var=None):
-        from sympy.concrete.expr_with_limits import Cup
+        from sympy.concrete.sets import Cup
 
         i = self.generate_var(integer=True, var=var)
         return Cup({self.base[i]}, (i, *self.index))

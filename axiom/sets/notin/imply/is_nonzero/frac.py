@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << ~Eq[1]
 
-    Eq << sets.is_zero.imply.el.apply(Eq[-1])
+    Eq << sets.frac_is_zero.imply.el.apply(Eq[-1])
 
     Eq <<= Eq[-1] & Eq[0]
 

@@ -2008,7 +2008,6 @@ class Basic(Printable, metaclass=ManagedProperties):
             except Exception as e:
                 continue
             
-            
         raise
                     
     def yield_all(self,
@@ -2375,20 +2374,24 @@ class Basic(Printable, metaclass=ManagedProperties):
                 excludes = {excludes}
             excludes |= self.free_symbols
             
+        excludes = {symbol.name for symbol in excludes}
+        
         from sympy import Symbol
-        if var is not None and var not in excludes:
+        if var is not None:
             if isinstance(var, set):
-                var = var - excludes
+                for v in var:
+                    if v.name not in excludes:
+                        return v 
+                
             else:
                 if isinstance(var, str):
                     var = Symbol(var, **kwargs)
-                var = {var} - excludes
-                
-            if var:
-                var, *_ = var
-                return var
-            
-        excludes = set(symbol.name for symbol in excludes)
+                else:
+                    assert var.is_symbol
+                        
+                if var.name not in excludes:
+                    return var
+                    
         if 'definition' in kwargs:
             definition = kwargs['definition']
             shape = definition.shape
@@ -2425,7 +2428,9 @@ class Basic(Printable, metaclass=ManagedProperties):
             return
         
         if self.is_UniversalSet:
-            return True
+            if other.etype in self.etype:
+                return True
+            
         if other.is_UniversalSet:
             if self.is_FiniteSet:
                 return False
@@ -2505,6 +2510,34 @@ class Basic(Printable, metaclass=ManagedProperties):
                 a = evaluate(self)    
         assumptions[fact] = a
         return a
+    
+    def _eval_is_integer(self):
+        finite = self.is_finite
+        if finite:
+            return self.is_extended_integer
+        if finite == False:
+            return False
+
+    def _eval_is_rational(self):
+        finite = self.is_finite
+        if finite:
+            return self.is_extended_rational
+        if finite == False:
+            return False
+
+    def _eval_is_real(self):
+        finite = self.is_finite
+        if finite:
+            return self.is_extended_real
+        if finite == False:
+            return False
+
+    def _eval_is_complex(self):
+        finite = self.is_finite
+        if finite:
+            return self.is_extended_complex
+        if finite == False:
+            return False
     
     def _eval_is_extended_nonpositive(self):
         extended_positive = self.is_extended_positive        

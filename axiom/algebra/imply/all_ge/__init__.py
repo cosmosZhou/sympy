@@ -1,1 +1,2 @@
-from . import max
+from . import maxima
+from . import sup

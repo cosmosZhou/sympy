@@ -6,7 +6,7 @@ def apply(x):
     n = x.shape[0]
     i, j = Symbol(domain=Range(0, n))
 
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
 
     return Equal(x @ w[i, j] @ w[i, j], x)
 

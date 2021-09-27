@@ -7,9 +7,8 @@ from sympy.core.cache import cacheit
 from sympy.core.evalf import EvalfMixin
 from sympy.core.parameters import global_parameters
 from sympy.core.expr import Expr
-from sympy.core.logic import fuzzy_bool, fuzzy_and
+from sympy.core.logic import fuzzy_bool, fuzzy_and, fuzzy_et, fuzzy_ou
 from sympy.core.mul import Mul
-from sympy.core.numbers import Float
 from sympy.core.operations import LatticeOp
 from sympy.core.relational import Eq, Ne, Equal
 from sympy.core.singleton import S
@@ -47,8 +46,8 @@ class Set(Basic):
     is_interval = False
 
     def _eval_is_finite(self):
-        return False
-    
+        ...
+        
     @property
     def domain(self):
         return self.universalSet        
@@ -98,8 +97,6 @@ class Set(Basic):
         Union(Interval(0, 1), Interval(2, 3))
         >>> Interval(0, 1) + Interval(2, 3)
         Union(Interval(0, 1), Interval(2, 3))
-        >>> Interval(1, 2, True, True) + FiniteSet(2, 3)
-        Union(Interval.Lopen(1, 2), {3})
 
         Similarly it is possible to use the '-' operator for set differences:
 
@@ -198,8 +195,8 @@ class Set(Basic):
 
         elif other.is_Interval:
             if self.is_Interval:
-                from sympy.sets.fancysets import Reals
-                return Intersection(other, self.complement(Reals))
+                U = other.etype.universalSet
+                return Intersection(other, self.complement(U))
 
         elif other.is_Range:
             if self.is_Range:
@@ -467,8 +464,6 @@ class Set(Basic):
 
         >>> from sympy import Interval
         >>> Interval(0, 1).boundary
-        {0, 1}
-        >>> Interval(0, 1, True, False).boundary
         {0, 1}
         """
         return self._boundary
@@ -808,8 +803,8 @@ class CartesianSpace(Set):
     def space_shape(self):
         return self.args[1:]
 
-    def _eval_is_integer(self):
-        return self.space.is_integer
+    def _eval_is_extended_integer(self):
+        return self.space.is_extended_integer
 
     def _contains(self, other):
         from sympy import Range
@@ -890,8 +885,8 @@ class CartesianSpace(Set):
         if n.is_Infinity:
             return self.func(e[k], cls(s.space, *s.space_shape[1:]))
         else:
-            from sympy import All
-            return All[k:n](self.func(e[k], cls(s.space, *s.space_shape[1:])).simplify())
+            from sympy.concrete.forall import ForAll            
+            return ForAll[k:n](self.func(e[k], cls(s.space, *s.space_shape[1:])).simplify())
     
     @classmethod
     def simplify_NotElement(cls, self, e, s): 
@@ -986,21 +981,38 @@ class Interval(Set, EvalfMixin):
 
     @property
     def is_UniversalSet(self):
-        return self.start.is_NegativeInfinity and self.stop.is_Infinity
+        return self.start.is_NegativeInfinity and self.stop.is_Infinity and \
+            (self.left_open and self.right_open or not self.left_open and not self.right_open)
     
     def intersection_sets(self, b):
         if not (b.is_Interval or b.is_Range):
             if self.is_UniversalSet:
                 return b
             return
-        # handle (-oo, oo)
-        infty = S.NegativeInfinity, S.Infinity
-        if self.is_UniversalSet:
-            l, r = self.left, self.right
-            if l.is_real or l in infty or r.is_real or r in infty:
-                if self.is_integer and not b.is_integer:
-                    return b.copy(integer=True)
+        # handle cases like (-oo, oo) and [-oo, oo]
+        if self.start.is_NegativeInfinity and self.stop.is_Infinity:
+            if b.etype.is_real:
                 return b
+            
+            if b.etype.is_extended_real:
+                from sympy import NotElement    
+                if self.left_open:
+                    if self.right_open:
+                        # self = (-oo, oo)
+                        ...
+                    else:
+                        # self = (-oo, oo]
+                        if S.Infinity in b and NotElement(S.NegativeInfinity, b):
+                            return b
+                else:
+                    if self.right_open:
+                        # self = [-oo, oo)
+                        if S.NegativeInfinity in b and NotElement(S.Infinity, b):
+                            return b
+                    else:
+                        # self = [-oo, oo]
+                        if S.Infinity in b and S.NegativeInfinity in b:
+                            return b
 
         # We can't intersect [0,3] with [x,6] -- we don't know if x>0 or x<0
         if not self._is_comparable(b): 
@@ -1131,7 +1143,7 @@ class Interval(Set, EvalfMixin):
             return interval.copy(integer=True)
         return interval
 
-    def _union_sets(self, b):        
+    def _union_sets(self, b): 
         if self.max() in b:
             from sympy import Min
             return b.copy(start=Min(self.min(), b.min()), left_open=False, integer=None)
@@ -1254,35 +1266,47 @@ class Interval(Set, EvalfMixin):
         if self.is_UniversalSet:
             return self
 
-    def __new__(cls, start=None, stop=None, left_open=False, right_open=False, **kwargs):
-        assert 'integer' not in kwargs        
+    def __new__(cls, start=None, stop=None, **kwargs):
         if start is None or stop is None:
             if kwargs.get('positive'):
                 stop = S.Infinity
-                start = 0
-                left_open = True
+                start = S.Zero   
+                kwargs['left_open'] = True            
             elif kwargs.get('nonnegative'):
-                start = 0
+                start = S.Zero
                 stop = S.Infinity
             elif kwargs.get('negative'):
                 start = S.NegativeInfinity
-                stop = 0
-                right_open = True
+                stop = S.Zero
+                kwargs['right_open'] = True          
             elif kwargs.get('nonpositive'):
                 start = S.NegativeInfinity
-                stop = 0
+                stop = S.Zero
             else:
                 start = S.NegativeInfinity
                 stop = S.Infinity
-                
-        start = _sympify(start)
-        stop = _sympify(stop)
-
-        inftys = [S.Infinity, S.NegativeInfinity]
-        # Only allow real intervals (use symbols with 'is_extended_real=True').
-        if not all(i.is_extended_real is not False or i in inftys for i in (start, stop)):
-            raise ValueError("Non-real intervals are not supported")
-
+        else:
+            start = _sympify(start)
+            stop = _sympify(stop)
+        
+        if 'left_open' in kwargs:
+            left_open = kwargs['left_open']
+        else:
+            # by default, infinite interval start points are open.
+            if start == S.NegativeInfinity:
+                left_open = True
+            else:
+                left_open = False
+            
+        if 'right_open' in kwargs:
+            right_open = kwargs['right_open']
+        else:
+            # by default, infinite interval stop points are open.
+            if stop == S.Infinity:
+                right_open = True
+            else:
+                right_open = False
+            
         # evaluate if possible
         if right_open and stop <= start or not right_open and stop < start:
             return start.emptySet
@@ -1291,15 +1315,7 @@ class Interval(Set, EvalfMixin):
             if left_open or right_open:
                 return start.emptySet
             else:
-                if start == S.Infinity or start == S.NegativeInfinity:
-                    return start.emptySet                
                 return FiniteSet(stop)
-
-        # Make sure infinite interval stop points are open.
-        if start == S.NegativeInfinity:
-            left_open = True
-        if stop == S.Infinity:
-            right_open = True
 
         infinitesimal = start.is_infinitesimal
         if infinitesimal is True:
@@ -1359,17 +1375,17 @@ class Interval(Set, EvalfMixin):
     @classmethod
     def open(cls, a, b):
         """Return an interval including neither boundary."""
-        return cls(a, b, True, True)
+        return cls(a, b, left_open=True, right_open=True)
 
     @classmethod
     def Lopen(cls, a, b):
         """Return an interval not including the left boundary."""
-        return cls(a, b, True, False)
+        return cls(a, b, left_open=True, right_open=False)
 
     @classmethod
     def Ropen(cls, a, b):
         """Return an interval not including the right boundary."""
-        return cls(a, b, False, True)
+        return cls(a, b, left_open=False, right_open=True)
 
     @property
     def stop(self):
@@ -1390,16 +1406,12 @@ class Interval(Set, EvalfMixin):
 
     _sup = right = stop
 
-#     trying to evaluate other \ self
+#     trying to evaluate other - self
     def _complement(self, other):
-        from sympy.sets.fancysets import Reals
-        if other == Reals:
-            if self.is_integer:
-                return
-            else:
-                a = Interval(S.NegativeInfinity, self.start, left_open=True, right_open=not self.left_open)
-                b = Interval(self.stop, S.Infinity, left_open=not self.right_open, right_open=True)
-                return a | b
+        if other.is_Interval and other.start.is_infinite and other.stop.is_infinite:
+            a = Interval(S.NegativeInfinity, self.start, left_open=other.left_open, right_open=not self.left_open)
+            b = Interval(self.stop, S.Infinity, left_open=not self.right_open, right_open=other.right_open)
+            return a | b
         
         from sympy.sets import Integers
         if other == Integers:
@@ -1429,21 +1441,36 @@ class Interval(Set, EvalfMixin):
         return FiniteSet(*finite_points)
 
     def _contains(self, other):
-        if not isinstance(other, Expr) or (
-                other is S.Infinity or
-                other is S.NegativeInfinity or
-                other is S.NaN or
-                other is S.ComplexInfinity) or other.is_extended_real == False:
+        if not isinstance(other, Expr) or other is S.NaN or other is S.ComplexInfinity or other.is_extended_real == False:
             return S.false
 
+        if other.is_Infinity:
+            if not self.stop.is_Infinity or self.right_open:
+                return S.false
+                
+        if other.is_NegativeInfinity:
+            if not self.start.is_NegativeInfinity or self.left_open:
+                return S.false
+            
         if self.start is S.NegativeInfinity and self.stop is S.Infinity:
-            if not other.is_extended_real is None:
-                if self.is_integer:
-                    if other.is_integer:
+            if self.left_open:
+                if self.right_open:
+                    # self = (-oo, oo)
+                    if other.is_real:
                         return S.true
-                    return
                 else:
-                    return other.is_extended_real
+                    # self = (-oo, oo]
+                    if other.is_nonpositive or other.is_extended_positive:
+                        return S.true
+            else:
+                if self.right_open:
+                    # self = [-oo, oo)
+                    if other.is_nonnegative or other.is_extended_negative:
+                        return S.true
+                else:
+                    # self = [-oo, oo]
+                    if other.is_extended_real:
+                        return S.true
 
         if other.is_extended_real == False:
             return S.false
@@ -1484,8 +1511,7 @@ class Interval(Set, EvalfMixin):
             mpf(self.stop._eval_evalf(prec)))
 
     def _eval_evalf(self, prec):
-        return Interval(self.left._eval_evalf(prec),
-            self.right._eval_evalf(prec),
+        return Interval(self.left._eval_evalf(prec), self.right._eval_evalf(prec),
                         left_open=self.left_open, right_open=self.right_open)
 
     def _is_comparable(self, other):
@@ -1499,11 +1525,13 @@ class Interval(Set, EvalfMixin):
     @property
     def is_left_unbounded(self):
         """Return ``True`` if the left endpoint is negative infinity. """
+        from sympy.core.numbers import Float
         return self.left is S.NegativeInfinity or self.left == Float("-inf")
 
     @property
     def is_right_unbounded(self):
         """Return ``True`` if the right endpoint is positive infinity. """
+        from sympy.core.numbers import Float
         return self.right is S.Infinity or self.right == Float("+inf")
 
     def as_relational(self, x):
@@ -1565,8 +1593,8 @@ class Interval(Set, EvalfMixin):
                 return self.start + S.Infinitesimal
         return self.start
 
-    def __neg__(self):
-        return self.func(-self.stop, -self.start, self.right_open, self.left_open)
+    def __neg__(self): 
+        return self.func(-self.stop, -self.start, left_open=self.right_open, right_open=self.left_open)
     
     def __sub__(self, other):
         global is_set
@@ -1632,7 +1660,7 @@ class Interval(Set, EvalfMixin):
                 
             return self.func(start, stop, left_open=left_open, right_open=right_open)
         
-        if other.is_Surreals or other.is_Surcomplexes:
+        if other.is_UniversalSet and (other.etype.is_super_real or other.etype.is_super_complex):
             return other
 
         return Set.__add__(self, other)
@@ -1778,8 +1806,8 @@ class Interval(Set, EvalfMixin):
 
     @property
     def etype(self):
-        if self.is_integer:
-            return dtype.integer
+        if self.start.is_infinite and not self.left_open or self.stop.is_infinite and not self.right_open:
+            return dtype.extended_real
         return dtype.real
 
     def _pretty(self, p): 
@@ -1819,7 +1847,14 @@ class Interval(Set, EvalfMixin):
 
         return self._args + (self.left_open, self.right_open, self.is_integer)
 
-    is_extended_real = True    
+    def _eval_is_extended_rational(self):
+        ...
+    
+    def _eval_is_extended_real(self):
+        return True
+        
+    def _eval_is_hyper_real(self):
+        return True
     
     def _eval_is_extended_negative(self):
         if self.min().is_extended_nonnegative:
@@ -1839,56 +1874,29 @@ class Interval(Set, EvalfMixin):
         if self.max().is_extended_negative:
             return False
 
-    def _eval_is_rational(self):
-        if self.is_integer:
-            return True        
-
     def _eval_is_algebraic(self):
         if self.is_integer:
             return True        
 
     def _eval_is_finite(self):
-        if self.is_integer:
-            if self.start.is_finite:
-                return self.stop.is_finite
-            return self.start.is_finite
-        return False
-
+        return (self.start.is_finite or self.left_open) and (self.stop.is_finite or self.right_open)
+            
     def _latex(self, p):
         if self.start == self.stop:
             return r"\left\{%s\right\}" % self._print(self.start)
         elif self.start.is_NegativeInfinity:
-            if self.stop.is_Infinity: 
-                if self.is_integer:
-                    return r"\mathbb{Z}"
-                else:
+            if self.stop.is_Infinity:
+                if self.left_open and self.right_open: 
                     return r"\mathbb{R}"
+                
             elif self.stop.is_Zero:
-                if self.right_open:
-                    if self.is_integer:
-                        return r"\mathbb{Z}^-"
-                    else:
-                        return r"\mathbb{R}^-"
-                else:
-                    ...
-#                     if self.is_integer:
-#                         return r"\overline{\mathbb{Z}^+}"
-#                     else:
-#                         return r"\overline{\mathbb{R}^+}"
+                if self.left_open and self.right_open:
+                    return r"\mathbb{R}^-"
                                     
         elif self.stop.is_Infinity:
             if self.start.is_Zero:
-                if self.left_open:
-                    if self.is_integer:
-                        return r"\mathbb{Z}^+"
-                    else:
-                        return r"\mathbb{R}^+"
-                else:
-                    ...
-#                     if self.is_integer:
-#                         return r"\overline{\mathbb{Z}^-}"
-#                     else:
-#                         return r"\overline{\mathbb{R}^-}"
+                if self.left_open and self.right_open:
+                    return r"\mathbb{R}^+"
         
         if self.left_open:
             left = '('
@@ -1900,24 +1908,22 @@ class Interval(Set, EvalfMixin):
         else:
             right = ']'
 
-        if self.is_integer:
-            return r"\left%s%s; %s\right%s" % (left, p._print(self.start), p._print(self.stop), right)
         return r"\left%s%s, %s\right%s" % (left, p._print(self.start), p._print(self.stop), right)
 
     @classmethod
     def simplify_Element(cls, self, e, s): 
-        if s.start is S.NegativeInfinity:
+        if s.start.is_NegativeInfinity:
             from sympy import Less, LessEqual
             func = Less if s.right_open else LessEqual
-            if e.is_extended_real:
-                return func(e, s.stop)
-            return
-        if s.stop is S.Infinity:
+            if not bool(s.left_open) ^ bool(e.is_finite):
+                return func(e, s.stop).simplify()
+            
+        if s.stop.is_Infinity:
             from sympy import Greater, GreaterEqual
             func = Greater if s.left_open else GreaterEqual
-            if e.is_extended_real:
+            if not bool(s.right_open) ^ bool(e.is_finite):
                 return func(e, s.start).simplify()
-            return
+        
         complement = e.domain - s
         if complement.is_FiniteSet:
             return self.invert_type(e, complement).simplify()                
@@ -1951,12 +1957,34 @@ class Interval(Set, EvalfMixin):
                     if self.left_open == rhs.left_open or self.left_open and not rhs.left_open:
                         if self.start >= rhs.start:
                             return S.true                        
-                                       
 
     @property
     def kwargs(self):
         return {'left_open': self.left_open, 'right_open': self.right_open}             
       
+    @classmethod
+    def assume(cls, **kwargs):
+        left_open = False
+        right_open = False
+        if kwargs.get('positive'):
+            stop = S.Infinity
+            start = S.Zero
+            left_open = True            
+        elif kwargs.get('nonnegative'):
+            start = S.Zero
+            stop = S.Infinity
+        elif kwargs.get('negative'):
+            start = S.NegativeInfinity
+            stop = S.Zero
+            right_open = True      
+        elif kwargs.get('nonpositive'):
+            start = S.NegativeInfinity
+            stop = S.Zero
+        else:
+            start = S.NegativeInfinity
+            stop = S.Infinity
+        return cls(start, stop, left_open=left_open, right_open=right_open)
+        
         
 class Union(Set, LatticeOp, EvalfMixin):
     """
@@ -2154,15 +2182,39 @@ class Union(Set, LatticeOp, EvalfMixin):
         else:
             raise TypeError("Not all constituent sets are iterable")
 
-    def _eval_is_integer(self):
-        for arg in self.args:
-            is_integer = arg.is_integer
-            if is_integer == True:
-                continue
-            if is_integer == False:
-                return False
-            return None
-        return True
+    def _eval_is_finite(self):
+        if fuzzy_et(a.is_finite for a in self.args):
+            return True
+
+    def _eval_is_extended_integer(self):
+        return fuzzy_et(arg.is_extended_integer for arg in self.args)
+
+    def _eval_is_super_integer(self):
+        return fuzzy_et(e.is_super_integer for e in self.args)
+    
+    def _eval_is_extended_rational(self):
+        return fuzzy_et(e.is_extended_rational for e in self.args)
+    
+    def _eval_is_super_rational(self):
+        return fuzzy_et(e.is_super_rational for e in self.args)
+
+    def _eval_is_hyper_rational(self):
+        return fuzzy_et(e.is_hyper_rational for e in self.args)
+    
+    def _eval_is_extended_real(self):
+        return fuzzy_et(e.is_extended_real for e in self.args) 
+
+    def _eval_is_hyper_real(self):
+        return fuzzy_et(e.is_hyper_real for e in self.args)
+    
+    def _eval_is_super_real(self):
+        return fuzzy_et(e.is_super_real for e in self.args)
+    
+    def _eval_is_extended_complex(self):
+        return fuzzy_et(e.is_extended_complex for e in self.args)
+     
+    def _eval_is_hyper_complex(self):
+        return fuzzy_et(e.is_hyper_complex for e in self.args)
 
     @property
     def etype(self):
@@ -2228,9 +2280,6 @@ class Union(Set, LatticeOp, EvalfMixin):
             args.append(latex)
 
         return r" \cup ".join(args)
-
-    def _eval_is_finite(self):
-        return all(a.is_finite for a in self.args)
 
     def __add__(self, other):
         if other.is_set:
@@ -2511,7 +2560,37 @@ class Intersection(Set, LatticeOp):
         return self.func(*self.args, unk, evaluate=False)
                 
     def _eval_is_finite(self):
-        return any(a.is_finite for a in self.args)
+        return fuzzy_ou(a.is_finite for a in self.args)
+        
+    def _eval_is_extended_integer(self):
+        return fuzzy_ou(arg.is_extended_integer for arg in self.args)
+
+    def _eval_is_super_integer(self):
+        return fuzzy_ou(e.is_super_integer for e in self.args)
+    
+    def _eval_is_extended_rational(self):
+        return fuzzy_ou(e.is_extended_rational for e in self.args)
+    
+    def _eval_is_super_rational(self):
+        return fuzzy_ou(e.is_super_rational for e in self.args)
+
+    def _eval_is_hyper_rational(self):
+        return fuzzy_ou(e.is_hyper_rational for e in self.args)
+    
+    def _eval_is_extended_real(self):
+        return fuzzy_ou(e.is_extended_real for e in self.args) 
+
+    def _eval_is_hyper_real(self):
+        return fuzzy_ou(e.is_hyper_real for e in self.args)
+    
+    def _eval_is_super_real(self):
+        return fuzzy_ou(e.is_super_real for e in self.args)
+    
+    def _eval_is_extended_complex(self):
+        return fuzzy_ou(e.is_extended_complex for e in self.args)
+     
+    def _eval_is_hyper_complex(self):
+        return fuzzy_ou(e.is_hyper_complex for e in self.args)
             
     @classmethod
     def simplify_Equal(cls, self, lhs, rhs):
@@ -2823,9 +2902,21 @@ class Complement(Set, EvalfMixin):
 # if B => C, (A - B) | C = A | C
 # if A => C, (A - B) | C = C
 
-    def _eval_is_integer(self):
-        return self.args[0].is_integer
+    def _eval_is_extended_integer(self):
+        return self.args[0].is_extended_integer
 
+    def _eval_is_super_integer(self):
+        return self.args[0].is_super_integer
+    
+    def _eval_is_extended_rational(self):
+        return self.args[0].is_extended_rational
+    
+    def _eval_is_hyper_rational(self):
+        return self.args[0].is_hyper_rational
+    
+    def _eval_is_super_rational(self):
+        return self.args[0].is_super_rational
+    
     def _eval_is_extended_real(self):
         return self.args[0].is_extended_real
     
@@ -2834,18 +2925,21 @@ class Complement(Set, EvalfMixin):
 
     def _eval_is_extended_positive(self):
         return self.args[0].is_extended_positive
+    
+    def _eval_is_hyper_real(self):
+        return self.args[0].is_hyper_real
+    
+    def _eval_is_super_real(self):
+        return self.args[0].is_super_real
+    
+    def _eval_is_extended_complex(self):
+        return self.args[0].is_extended_complex
 
     def _eval_is_zero(self):
         return self.args[0].is_zero
 
-    def _eval_is_rational(self):
-        return self.args[0].is_rational
-
     def _eval_is_finite(self):
         return self.args[0].is_finite
-
-    def _eval_is_complex(self):
-        return self.args[0].is_complex
 
     def _eval_domain_defined(self, x, **_):
         A, B = self.args
@@ -2929,8 +3023,7 @@ class Complement(Set, EvalfMixin):
         elif rhs == A:
             return S.BooleanTrue
             
-
-# class EmptySet(with_metaclass(Singleton, Set)):            
+            
 class EmptySet(Set):
     """
     Represents the empty set. The empty set is available as a singleton
@@ -2959,8 +3052,38 @@ class EmptySet(Set):
     is_FiniteSet = True
 
     def _eval_is_finite(self):
-        return True
+        return self.etype.is_finite
 
+    def _eval_is_extended_integer(self):
+        return self.etype.is_extended_integer
+
+    def _eval_is_super_integer(self):
+        return self.etype.is_super_integer
+    
+    def _eval_is_extended_rational(self):
+        return self.etype.is_extended_rational
+    
+    def _eval_is_hyper_rational(self):
+        return self.etype.is_hyper_rational
+    
+    def _eval_is_super_rational(self):
+        return self.etype.is_super_rational
+    
+    def _eval_is_extended_real(self):
+        return self.etype.is_extended_real
+    
+    def _eval_is_hyper_real(self):
+        return self.etype.is_hyper_real
+    
+    def _eval_is_super_real(self):
+        return self.etype.is_super_real
+    
+    def _eval_is_extended_complex(self):
+        return self.etype.is_extended_complex
+    
+    def _eval_is_hyper_complex(self):
+        return self.etype.is_hyper_complex
+    
     def _eval_is_finiteset(self):
         return True
     
@@ -2969,7 +3092,7 @@ class EmptySet(Set):
         return self._assumptions['etype']
 
     def _eval_Card(self):
-        return 0
+        return S.Zero
 
     def intersection_sets(self, b):
         return self
@@ -3040,7 +3163,6 @@ class EmptySet(Set):
             return S.true
 
         
-# class UniversalSet(with_metaclass(Singleton, Set)):
 class UniversalSet(Set):
     """
     Represents the set of all things.
@@ -3102,12 +3224,43 @@ class UniversalSet(Set):
         return self.etype.emptySet
     
     def _eval_Card(self):
+        # Aleph'\N{HEBREW LETTER ALEF}'
+        from sympy.core.numbers import Aleph
+        if self.etype.is_set:
+            print('unknown aleph number??')
+            return S.Infinity
+        
+        if self.etype.is_extended_rational:
+            return Aleph(0)
+        
+        if self.etype.is_hyper_complex:
+            return Aleph(1)
+        
+        print('unknown aleph number??')
         return S.Infinity
 
     @property
     def etype(self):
         return self._assumptions['etype']
+
+    def __add__(self, other):
+        if self.etype.is_set: 
+            raise Exception("could not add %s, %s with etype = %s" % (self, other, self.etype))
     
+        return self
+    
+    def __mul__(self, other):
+        if self.etype.is_set: 
+            raise Exception("could not add %s, %s with etype = %s" % (self, other, self.etype))
+        
+        return self
+    
+    
+HyperReals = UniversalSet(etype=dtype.hyper_real)
+SuperReals = UniversalSet(etype=dtype.super_real)
+HyperComplexes = UniversalSet(etype=dtype.hyper_complex)
+SuperComplexes = UniversalSet(etype=dtype.super_complex)
+
     
 class FiniteSet(Set):
     """
@@ -3137,9 +3290,6 @@ class FiniteSet(Set):
     .. [1] https://en.wikipedia.org/wiki/Finite_set
     """
     is_iterable = True
-
-    def _eval_is_finite(self):
-        return True
 
     def intersection_sets(self, b):
         if b.is_FiniteSet:
@@ -3205,7 +3355,7 @@ class FiniteSet(Set):
         return iter(self.args)
 
     def _complement(self, other):
-        from sympy import Reals, Integers, Range
+        from sympy import Reals, Range
         if other.is_Range:
             nums = sorted(m for m in self.args if m.is_number)            
             if False and nums != []:
@@ -3247,15 +3397,17 @@ class FiniteSet(Set):
                     return other.copy(stop=other.stop - 1) - self.func(*{*self.args} - {other.max()})
         elif other.is_Interval:
             nums = sorted(m for m in self.args if m.is_number)
-            if other == Reals and nums != []:
+            if other.start.is_NegativeInfinity and other.stop.is_Infinity and nums != []:
+                left_open = other.left_open
+                right_open = other.right_open
                 syms = [m for m in self.args if m.is_Symbol]
                 # Reals cannot contain elements other than numbers and symbols.
 
                 intervals = []  # Build up a list of intervals between the elements
-                intervals += [Interval(S.NegativeInfinity, nums[0], True, True)]
+                intervals += [Interval(S.NegativeInfinity, nums[0], left_open=left_open, right_open=True)]
                 for a, b in zip(nums[:-1], nums[1:]):
-                    intervals.append(Interval(a, b, True, True))  # both open
-                intervals.append(Interval(nums[-1], S.Infinity, True, True))
+                    intervals.append(Interval(a, b, left_open=True, right_open=True))  # both open
+                intervals.append(Interval(nums[-1], S.Infinity, left_open=True, right_open=right_open))
 
                 if syms != []:
                     return Complement(Union(*intervals, evaluate=False),
@@ -3409,23 +3561,39 @@ class FiniteSet(Set):
         length = Card(before)
         return Piecewise((length, Element(last, before).simplify()), (length + 1, True)).simplify()
 
-    def _eval_is_integer(self):
-        for elem in self.args:
-            is_integer = elem.is_integer
-            if is_integer:
-                continue
-            return is_integer
-        return True
+    def _eval_is_finite(self):
+        return fuzzy_et(a.is_finite for a in self.args)
 
-    def _eval_is_extended_real(self): 
-        for arg in self.args:
-            if arg.is_extended_real:
-                continue
-            if arg.is_extended_real == False:
-                return False
-            return 
-        return True
+    def _eval_is_extended_integer(self):
+        return fuzzy_et(e.is_extended_integer for e in self.args)
+    
+    def _eval_is_super_integer(self):
+        return fuzzy_et(e.is_super_integer for e in self.args)
+    
+    def _eval_is_extended_rational(self):
+        return fuzzy_et(e.is_extended_rational for e in self.args)
+    
+    def _eval_is_super_rational(self):
+        return fuzzy_et(e.is_super_rational for e in self.args)
 
+    def _eval_is_hyper_rational(self):
+        return fuzzy_et(e.is_hyper_rational for e in self.args)
+    
+    def _eval_is_extended_real(self):
+        return fuzzy_et(e.is_extended_real for e in self.args) 
+
+    def _eval_is_hyper_real(self):
+        return fuzzy_et(e.is_hyper_real for e in self.args)
+    
+    def _eval_is_super_real(self):
+        return fuzzy_et(e.is_super_real for e in self.args)
+    
+    def _eval_is_extended_complex(self):
+        return fuzzy_et(e.is_extended_complex for e in self.args)
+     
+    def _eval_is_hyper_complex(self):
+        return fuzzy_et(e.is_hyper_complex for e in self.args)
+    
     @property
     def etype(self):
         dtype = None
@@ -3561,7 +3729,7 @@ class SymmetricDifference(Set):
 
 
 def imageset(sym, expr, baseset):
-    from sympy.concrete.expr_with_limits import Cup
+    from sympy.concrete.sets import Cup
     if baseset.is_Range:
         limit = (sym, baseset.min(), baseset.max() + 1)
     elif baseset.is_Element and baseset.lhs == sym:
@@ -3574,7 +3742,7 @@ def imageset(sym, expr, baseset):
 # by definition, we have
 # ConditionSet(variable, condition, base_set) == Union[variable:condition:base_set]({variable})
 def conditionset(*limit):
-    from sympy.concrete.expr_with_limits import Cup
+    from sympy.concrete.sets import Cup
     if len(limit) > 2 and (limit[2] is None or limit[2].is_UniversalSet):
         limit = limit[:2]
     variable, condition, *base_set = limit
@@ -3803,8 +3971,8 @@ def simplify_intersection(args):
 
     # ===== Global Rules =====
     if not args:
+        print('warning: UniversalSet without etype is prohibited!')
         return UniversalSet()
-
     # If any EmptySets return EmptySet
     for s in args:
         if not s.is_set:
@@ -3834,7 +4002,7 @@ def simplify_intersection(args):
             other_sets = args + [s.args[0]]
             return Complement(Intersection(*other_sets), s.args[1])
 
-#     from sympy.sets.handlers.intersection import intersection_sets
+
 
     # At this stage we are guaranteed not to have any
     # EmptySets, FiniteSets, or Unions in the intersection

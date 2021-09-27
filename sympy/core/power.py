@@ -619,23 +619,44 @@ class Pow(Expr):
             if self.exp.is_extended_negative:
                 return False
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         b, e = self.args
-        if b.is_rational:
-            if b.is_integer == False and e.is_positive:
-                return False  # rat**nonneg
-        if b.is_integer and e.is_integer:
-            if b is S.NegativeOne:
+        if b.is_extended_rational:
+            if b.is_extended_integer == False and e.is_extended_positive:
+                return False
+        if b.is_extended_integer and e.is_extended_integer:
+            if b.is_NegativeOne:
                 return True
-            if e.is_nonnegative or e.is_positive:
+            if e.is_extended_nonnegative or e.is_extended_positive:
                 return True
-        if b.is_integer and e.is_negative and (e.is_finite or e.is_integer):
+        if b.is_extended_integer and e.is_extended_negative and (e.is_finite or e.is_extended_integer):
             if fuzzy_not((b - 1).is_zero) and fuzzy_not((b + 1).is_zero):
                 return False
         if b.is_Number and e.is_Number:
             check = self.func(*self.args)
             return check.is_Integer
 
+    def _eval_is_super_integer(self):
+        b, e = self.args
+        if e.is_extended_integer and e.is_extended_positive:
+            return b.is_super_integer
+
+    def _eval_is_extended_rational(self):
+        b, e = self.args
+        if b.is_extended_rational:
+            if e.is_extended_integer:
+                return True
+        
+    def _eval_is_hyper_rational(self):
+        b, e = self.args
+        if e.is_integer:
+            return b.is_hyper_rational
+        
+    def _eval_is_super_rational(self):
+        b, e = self.args
+        if e.is_integer:
+            return b.is_super_rational
+        
     def _eval_is_extended_real(self):
         from sympy import arg, exp, log, Mul
         real_b = self.base.is_extended_real
@@ -691,15 +712,20 @@ class Pow(Expr):
             i = arg(self.base) * self.exp / S.Pi
             return i.is_integer
     
-    def _eval_is_complex(self):
-        if all(a.is_complex for a in self.args):
-            return True
-
+    def _eval_is_hyper_real(self):
+        b, e = self.args
+        if e.is_integer:
+            return b.is_hyper_real
+        
     def _eval_is_super_real(self):
         b, e = self.args
         if e.is_integer:
             return b.is_super_real
-        
+    
+    def _eval_is_extended_complex(self):
+        b, e = self.args
+        return b.is_extended_complex and e.is_extended_complex
+
     def _eval_is_imaginary(self):
         from sympy import arg, log
         if self.base.is_imaginary:
@@ -1912,17 +1938,17 @@ class Pow(Expr):
         from sympy.printing.pretty.stringpict import prettyForm
         
         if e is S.NegativeOne:
-            return prettyForm("1")/p._print(b)
+            return prettyForm("1") / p._print(b)
         n, d = fraction(e)
         if n is S.One and d.is_Atom and not e.is_Integer and p._settings['root_notation']:
             return p._print_nth_root(b, e)
         if e.is_Rational and e < 0:
-            return prettyForm("1")/p._print(Pow(b, -e, evaluate=False))
+            return prettyForm("1") / p._print(Pow(b, -e, evaluate=False))
 
         if b.is_Relational:
             return prettyForm(*p._print(b).parens()).__pow__(p._print(e))
 
-        return p._print(b)**p._print(e)
+        return p._print(b) ** p._print(e)
     
     def _eval_is_random(self):
         for arg in self.args:
@@ -1986,6 +2012,7 @@ class Pow(Expr):
         if e.is_integer:
             return Conjugate(b) ** e
         return Conjugate(self)
+
     
 from .add import Add
 from .numbers import Integer

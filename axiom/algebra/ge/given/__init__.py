@@ -4,3 +4,4 @@ from . import is_nonnegative
 from . import gt
 from . import eq
 from . import le
+from . import et

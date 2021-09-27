@@ -911,10 +911,10 @@ class Number(AtomicExpr):
             return isinstance(self, cls)
         
         return self == cls
-
     
     def is_continuous(self, *args):
         return True
+
     
 class Float(Number):
     """Represent a floating-point number of arbitrary precision.
@@ -3267,8 +3267,10 @@ class Infinity(with_metaclass(Singleton, Number)):
         from sympy.core.symbol import dtype
         return dtype.integer
     
-    def _eval_is_integer(self):
-        return True
+    @property
+    def domain(self):
+        from sympy import ExtendedReals
+        return ExtendedReals
 
 
 oo = S.Infinity
@@ -3481,8 +3483,203 @@ class NegativeInfinity(with_metaclass(Singleton, Number)):
         from sympy.core.symbol import dtype
         return dtype.integer
 
-    def _eval_is_integer(self):
-        return True
+    @property
+    def domain(self):
+        from sympy import ExtendedReals
+        return ExtendedReals
+
+
+class Aleph(Number):
+    r"""Aleph numbers are infinite numbers, while oo is the largest infinity. with the following holds:
+    
+    Aleph0 < Aleph1 < Aleph2 < ... < oo
+    
+    also, 
+    Aleph1 = 2 ** Aleph0
+    Aleph2 = 2 ** Aleph1, etc
+     
+
+    """
+
+    is_number = True
+    is_extended_real = True
+    is_extended_integer = True
+    is_infinite = True
+    is_extended_positive = True
+    is_prime = False
+
+    __slots__ = []
+
+    def __new__(cls, n):
+        n = sympify(n)
+        return AtomicExpr.__new__(cls, n)
+
+    def _latex(self, p):
+        return r"\N{HEBREW LETTER ALEF}" + p._print(self.arg)
+
+    def _sympystr(self, p):
+        return r"\N{HEBREW LETTER ALEF}" + p._print(self.arg)
+    
+    def _eval_subs(self, old, new, **hints):
+        if self == old:
+            return new
+
+    @_sympifyit('other', NotImplemented)
+    def __add__(self, other):
+        if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
+            return other.__radd__(self)
+
+        if isinstance(other, Number):
+            if other is S.NegativeInfinity or other is S.NaN:
+                return S.NaN
+            return self
+        return NotImplemented
+
+    __radd__ = __add__
+
+    @_sympifyit('other', NotImplemented)
+    def __sub__(self, other):
+        if isinstance(other, Number):
+            if other is S.Infinity or other is S.NaN:
+                return S.NaN
+            return self
+        return NotImplemented
+
+    @_sympifyit('other', NotImplemented)
+    def __rsub__(self, other):
+        return (-self).__add__(other)
+
+    @_sympifyit('other', NotImplemented)
+    def __mul__(self, other):
+        if isinstance(other, (Infinitesimal, NegativeInfinitesimal)):
+            return S.NaN
+
+        if isinstance(other, Number):
+            if other.is_zero or other is S.NaN:
+                return S.NaN
+            if other.is_extended_positive:
+                return self
+            return S.NegativeInfinity
+        return NotImplemented
+
+    __rmul__ = __mul__
+
+    @_sympifyit('other', NotImplemented)
+    def __div__(self, other):
+        if isinstance(other, Number):
+            if other is S.Infinity or \
+                other is S.NegativeInfinity or \
+                    other is S.NaN:
+                return S.NaN
+            if other.is_extended_nonnegative:
+                return self
+            return S.NegativeInfinity
+        return NotImplemented
+
+    __truediv__ = __div__
+
+    def __abs__(self):
+        return self
+
+    def _eval_power(self, expt):
+        """
+        ``expt`` is symbolic object but not equal to 0 or 1.
+
+        ================ ======= ==============================
+        Expression       Result  Notes
+        ================ ======= ==============================
+        ``oo ** nan``    ``nan``
+        ``oo ** -p``     ``0``   ``p`` is number, ``oo``
+        ================ ======= ==============================
+
+        See Also
+        ========
+        Pow
+        NaN
+        NegativeInfinity
+
+        """
+        from sympy.functions import Re
+
+        if expt.is_extended_positive:
+            return S.Infinity
+        if expt.is_extended_negative:
+            return S.Zero
+        if expt is S.NaN:
+            return S.NaN
+        if expt is S.ComplexInfinity:
+            return S.NaN
+        if expt.is_extended_real == False and expt.is_number:
+            expt_real = Re(expt)
+            if expt_real.is_positive:
+                return S.ComplexInfinity
+            if expt_real.is_negative:
+                return S.Zero
+            if expt_real.is_zero:
+                return S.NaN
+
+            return self ** expt.evalf()
+
+    def __lt__(self, other):
+        try:
+            other = _sympify(other)
+        except SympifyError:
+            raise TypeError("Invalid comparison %s < %s" % (self, other))
+        if other.is_extended_real:
+            return S.false
+        return Expr.__lt__(self, other)
+
+    def __le__(self, other):
+        try:
+            other = _sympify(other)
+        except SympifyError:
+            raise TypeError("Invalid comparison %s <= %s" % (self, other))
+        if other.is_infinite and other.is_extended_positive:
+            return S.true
+        elif other.is_real or other.is_extended_nonpositive:
+            return S.false
+        return Expr.__le__(self, other)
+
+    def __gt__(self, other):
+        try:
+            other = _sympify(other)
+        except SympifyError:
+            raise TypeError("Invalid comparison %s > %s" % (self, other))
+        if other.is_infinite and other.is_extended_positive:
+            return S.false
+        elif other.is_real or other.is_extended_nonpositive:
+            return S.true
+        return Expr.__gt__(self, other)
+
+    def __ge__(self, other):
+        try:
+            other = _sympify(other)
+        except SympifyError:
+            raise TypeError("Invalid comparison %s >= %s" % (self, other))
+        if other.is_extended_real:
+            return S.true
+        return Expr.__ge__(self, other)
+
+    def __mod__(self, other):
+        return S.NaN
+
+    __rmod__ = __mod__
+
+    def floor(self):
+        return self
+
+    def ceiling(self):
+        return self
+
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.extended_integer
+    
+    @property
+    def domain(self):
+        from sympy import ExtendedReals
+        return ExtendedReals
 
 
 class NaN(with_metaclass(Singleton, Number)):
@@ -3637,11 +3834,10 @@ class ComplexInfinity(with_metaclass(Singleton, AtomicExpr)):
     Infinity
     """
 
-    is_commutative = True
     is_infinite = True
     is_number = True
     is_prime = False
-    is_complex = True
+    is_extended_complex = True
     is_extended_real = False
 
     __slots__ = []
@@ -3686,13 +3882,23 @@ class ComplexInfinity(with_metaclass(Singleton, AtomicExpr)):
     def _eval_exp(self):
         return S.NaN
 
+    @property
+    def dtype(self):
+        from sympy.core.symbol import dtype
+        return dtype.extended_complex
+    
+    @property
+    def domain(self):
+        from sympy import ComplexRegion, oo, Interval
+        ExtendedReals = Interval(-oo, oo, left_open=False, right_open=False)
+        return ComplexRegion(ExtendedReals @ ExtendedReals)
+
         
 zoo = S.ComplexInfinity
 
 
 class NumberSymbol(AtomicExpr):
 
-    is_commutative = True
     is_finite = True
     is_number = True
 

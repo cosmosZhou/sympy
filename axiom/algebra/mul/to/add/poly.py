@@ -1,9 +1,6 @@
 from util import *
 
 
-import functools
-
-
 # return a combination of k elements selected among {0, 1, 2, n - 2, n - 1};
 def generate_combination(n, k):
     assert n >= k and k > 0, "n >= k && k > 0"
@@ -25,6 +22,7 @@ def generate_combination(n, k):
 
 
 def sigmar(x, k):
+    import functools
     if k == 0:
         return 1
     if k == 1:

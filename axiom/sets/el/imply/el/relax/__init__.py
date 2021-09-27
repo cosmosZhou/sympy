@@ -1,11 +1,14 @@
 from util import *
 
 
-
 @apply
 def apply(given, S):
     lhs, rhs = given.of(Element)
-    return Element(lhs, rhs | S)
+    if rhs in S:
+        rhs = S
+    else:
+        rhs |= S
+    return Element(lhs, rhs)
 
 
 @prove

@@ -1,14 +1,12 @@
 from util import *
 
 
-from axiom.algebra.eq.le.imply.le.subs import ratsimp
+
 
 
 @apply
 def apply(equal, less_than):
-    if not equal.is_Equal:
-        equal, less_than = less_than, equal
-
+    from axiom.algebra.eq.le.imply.le.subs import ratsimp
     assert equal.is_Equal
     assert less_than.is_GreaterEqual
 

@@ -25,7 +25,7 @@ def apply(given, i=None, j=None, w=None):
     if w is None:
         _i = Symbol.i(integer=True)
         _j = Symbol.j(integer=True)
-        w = Symbol.w(Lamda[_j, _i](Swap(n, _i, _j)))
+        w = Symbol.w(Lamda[_j, _i](SwapMatrix(n, _i, _j)))
 
     return Equal(index[i](w[index[i](x[:n]), index[j](x[:n])] @ x[:n]), index[j](x[:n]))
 

@@ -3,8 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    assert given.is_Element
-    x, interval = given.args
+    x, interval = given.of(Element)
     a, b = interval.of(Range)
 
     if interval.left_open:
@@ -19,6 +18,7 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets
+
     x, a, b = Symbol(integer=True, given=True)
     Eq << apply(Element(x, Range(a, b)))
 

@@ -63,38 +63,22 @@ if ($like) {
 global $user;
 ?>
 
-<div id=root>
-	<search-result :keyword=keyword :user=user :modules=modules
-		:regular-expression=regularExpression :whole-word=wholeWord
-		:case-sensitive=caseSensitive> </search-result>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 
-<script
-	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
+<script src="https://unpkg.com/vue@3.2.11/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
+
 <script src="static/js/std.js"></script>
 <script src="static/js/utility.js"></script>
-<script>
+<script type=module>
+createApp('searchResult', {
+    modules : <?php echo \std\jsonify($modules)?>,
+	user: <?php echo \std\jsonify($user)?>,
+	keyword: <?php echo \std\jsonify($keyword)?>,
+	regularExpression: <?php echo \std\jsonify($regularExpression)?>,
+	wholeWord: <?php echo \std\jsonify($wholeWord)?>,
+	caseSensitive: <?php echo \std\jsonify($caseSensitive)?>,
+});
 
-	Vue.use(httpVueLoader);
-	Vue.component('search-result', 'url:static/vue/search-result.vue');
-
-	var data = {
-		modules : <?php echo \std\jsonify($modules)?>,
-		user: <?php echo \std\jsonify($user)?>,
-				
-		keyword: <?php echo \std\jsonify($keyword)?>,
-		regularExpression: <?php echo \std\jsonify($regularExpression)?>,
-		wholeWord: <?php echo \std\jsonify($wholeWord)?>,
-		caseSensitive: <?php echo \std\jsonify($caseSensitive)?>,
-	};
-
-	var app = new Vue({
-		el : '#root',
-		data : data, 
-	});	
 </script>

@@ -154,9 +154,7 @@ def prove(Eq):
 
     Eq << discrete.mul.binomial.fraction.apply(2 * n + 2, n + 1)
 
-    Eq << discrete.binomial.to.mul.expand.apply(2 * n + 1, n + 1)
-
-    Eq << Eq[-2].subs(Eq[-1]) * (2 * n + 2)
+    Eq << Eq[-1].this.rhs.args[-1].apply(discrete.binomial.to.mul.expand) * (2 * n + 2)
 
     Eq << algebra.eq.cond.imply.cond.subs.apply(Eq[-1], Eq.g_series)
 

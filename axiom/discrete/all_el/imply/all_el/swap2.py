@@ -22,7 +22,7 @@ def prove(Eq):
     S = Symbol(etype=dtype.integer * n)
     x = Symbol(**S.element_symbol().type.dict)
     i, j = Symbol(integer=True)
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     Eq << apply(All[x:S](Element(w[0, j] @ x, S)))
 
     j_ = j.copy(domain=Range(0, n))

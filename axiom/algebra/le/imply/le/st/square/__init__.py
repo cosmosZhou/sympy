@@ -37,7 +37,7 @@ def prove(Eq):
     t = Symbol(domain=Range(0, m))
     Eq << apply(abs(y[t] - Sum[i](x[i]) / n) <= abs(y[t] - Sum[j](y[j]) / m))
 
-    y_ = Symbol("y'", y @ Swap(m, t, m - 1))
+    y_ = Symbol("y'", y @ SwapMatrix(m, t, m - 1))
     Eq << y_.this.definition
 
     Eq << y_[m - 1].this.definition

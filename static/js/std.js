@@ -12,6 +12,17 @@ function form_post(url, data) {
 	return axios.post(url, Qs.stringify(data)).then(result => result.data);
 }
 
+function json_post(url, data) {
+	return axios({
+		url: url,
+		method: 'post',
+		data: data,
+		header: {
+			'Content-Type':'application/json'
+		}
+	}).then(result => result.data);
+}
+
 String.prototype.format = function() {
 	var args = arguments;
 	var index = 0;

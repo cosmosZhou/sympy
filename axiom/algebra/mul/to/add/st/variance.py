@@ -37,7 +37,7 @@ def prove(Eq):
 
     Eq.y_sum = algebra.eq_piece.imply.eq.sum.apply(Eq[1], Sum[i:n-1](y[i]))
 
-    Eq << algebra.sum.to.mul.st.variance.apply(Sum[i:n-1]((y[i] - Sum[i:n - 1](y[i]) / (n - 1)) ** 2))
+    Eq << algebra.sum_square.to.mul.st.variance.apply(Sum[i:n-1]((y[i] - Sum[i:n - 1](y[i]) / (n - 1)) ** 2))
 
     Eq << Eq[-1].subs(Eq.y_sum).reversed
 

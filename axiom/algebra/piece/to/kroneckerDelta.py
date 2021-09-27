@@ -33,8 +33,11 @@ def from_Bool(self):
         if lhs.is_Symbol:
             domain = lhs.domain_assumed
             if domain and domain.is_Range:
-                if domain.max() == rhs:
+                a, b = domain.args
+                if not b.is_infinite and b - 1 == rhs:
                     return 1 - KroneckerDelta(lhs, rhs)
+                if not a.is_infinite and a == rhs - 1:
+                    return KroneckerDelta(lhs, a)
         if rhs.is_Symbol:
             domain = rhs.domain_assumed
             if domain and domain.is_Range:

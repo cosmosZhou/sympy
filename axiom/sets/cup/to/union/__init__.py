@@ -23,11 +23,11 @@ def prove(Eq):
     Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union, simplify=False), \
     Eq[-1].this.lhs.apply(sets.el.imply.ou.split.union, simplify=False)
 
-    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el.given.any_el.st.cup), \
-    Eq[-1].this.lhs.args[0].apply(sets.el.imply.any_el.st.cup)
+    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el_cup.given.any_el), \
+    Eq[-1].this.lhs.args[0].apply(sets.el_cup.imply.any_el)
 
-    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el.given.any_el.st.cup), \
-    Eq[-1].this.lhs.args[0].apply(sets.el.imply.any_el.st.cup)
+    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el_cup.given.any_el), \
+    Eq[-1].this.lhs.args[0].apply(sets.el_cup.imply.any_el)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.ou.given.any_ou), \
     Eq[-1].this.lhs.apply(algebra.ou.imply.any_ou)
@@ -35,8 +35,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.rhs.expr.apply(sets.ou.given.el), \
     Eq[-1].this.lhs.expr.apply(sets.ou.imply.el)
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.any_el.st.cup), \
-    Eq[-1].this.rhs.apply(sets.el.given.any_el.st.cup)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), \
+    Eq[-1].this.rhs.apply(sets.el_cup.given.any_el)
 
 
 if __name__ == '__main__':

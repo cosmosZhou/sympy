@@ -18,12 +18,13 @@ def prove(Eq):
 
     Eq << sets.el.imply.ou.split.union.two.apply(Eq[0], simplify=None)
 
-    Eq << Eq[-1].this.args[0].apply(sets.el.imply.el.inverse.interval)
+    Eq << Eq[-1].this.args[0].apply(sets.el.imply.el.inverse.interval, simplify=None)
 
-    Eq << Eq[-1].this.args[1].apply(sets.el.imply.el.inverse.interval)
+    Eq << Eq[-1].this.args[1].apply(sets.el.imply.el.inverse.interval, simplify=False)
 
     Eq << Subset(Eq[-1].rhs, Eq[1].rhs, plausible=True)
-    Eq << sets.el.subset.imply.el.apply(Eq[-2], Eq[-1])
+
+    Eq << sets.el.subset.imply.el.apply(Eq[-2], Eq[-1], simplify=None)
 
 
 if __name__ == '__main__':

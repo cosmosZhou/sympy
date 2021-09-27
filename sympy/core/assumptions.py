@@ -197,34 +197,47 @@ from random import shuffle
 
 
 _assume_rules = FactRules([
-
+#integer domain:
     'integer        ->  rational',
-    'rational       ->  real',
-    'rational       ->  algebraic',
-    'algebraic      ->  complex',
-    'transcendental ==  complex & !algebraic',
-    'real           ->  hermitian',
-    'imaginary      ->  complex',
-    'imaginary      ->  antihermitian',
-    'extended_real  ->  commutative',
-    'complex        ->  commutative',
-    'complex        ->  infinite | finite',
-
+    'integer        ==  extended_integer & finite',
+    'integer        ->  extended_integer',
+    
+    'zero           ->  even & finite',
+    'zero           ==  extended_nonnegative & extended_nonpositive',
+    'zero           ==  nonnegative & nonpositive',
+    
+    'prime          ->  integer & positive',
     'odd            ==  integer & !even',
     'even           ==  integer & !odd',
 
-    'extended_real  ->  complex',
-    'extended_real  ->  real | infinite',
+    'composite      ->  integer & positive & !prime',
+    '!composite     ->  !positive | !even | prime',
+    
+    'extended_integer -> extended_rational',
+    'extended_integer -> integer | infinite',
+    'extended_integer -> super_integer',
+    
+    'super_integer -> super_rational',    
+        
+#rational domain:    
+    'rational       ->  real',
+    'rational       ->  algebraic',
+    'rational       ==  extended_rational & finite',
+    
+    'extended_rational -> extended_real',
+    'extended_rational -> rational | infinite',
+    'extended_rational -> hyper_rational',
+    
+    'hyper_rational -> hyper_real',
+    'hyper_rational -> super_rational',
+    'super_rational -> super_real',
+    
+#real domain:    
+    'real           ->  hermitian',
     'real           ==  extended_real & finite',
-
-    'extended_real        ==  extended_negative | zero | extended_positive',
-    'extended_negative    ==  extended_nonpositive & extended_nonzero',
-    'extended_positive    ==  extended_nonnegative & extended_nonzero',
-
-    'extended_nonpositive ==  extended_real & !extended_positive',
-    'extended_nonnegative ==  extended_real & !extended_negative',
-
     'real           ==  negative | zero | positive',
+    'real           ->  extended_real',
+    
     'negative       ==  nonpositive & nonzero',
     'positive       ==  nonnegative & nonzero',
 
@@ -235,50 +248,62 @@ _assume_rules = FactRules([
     'negative       ==  extended_negative & finite',
     'nonpositive    ==  extended_nonpositive & finite',
     'nonnegative    ==  extended_nonnegative & finite',
-#    'nonzero        ->  extended_nonzero & finite',
-# a complex number can also be nonzero
-    'nonzero        ->  !zero', 
+    
+    'irrational     ==  real & !rational',    
+    'noninteger     ==  extended_real & !integer',
+    
+    'extended_real  ->  extended_complex',
+    'extended_real  ->  real | infinite',
+    
+    'extended_real        ==  extended_negative | zero | extended_positive',
+    'extended_real        ->  hyper_real',
+    
+    'extended_negative    ==  extended_nonpositive & extended_nonzero',
+    'extended_positive    ==  extended_nonnegative & extended_nonzero',
 
-    'zero           ->  even & finite',
-    'zero           ==  extended_nonnegative & extended_nonpositive',
-    'zero           ==  nonnegative & nonpositive',
-    'nonzero        ->  complex',
-
-    'prime          ->  integer & positive',
-    'composite      ->  integer & positive & !prime',
-    '!composite     ->  !positive | !even | prime',
-
-    'irrational     ==  real & !rational',
-
+    'extended_nonpositive ==  extended_real & !extended_positive',
+    'extended_nonnegative ==  extended_real & !extended_negative',
+    
+    'hyper_real -> super_real',
+    'hyper_real -> hyper_complex',
+    'super_real -> super_complex',
+    
+#complex domain:
+    'complex        -> extended_complex',
+    'complex        ==  extended_complex & finite',
+    
+    'algebraic      ->  complex',
+    'transcendental ==  complex & !algebraic',
+    'imaginary      ->  complex',
+    'imaginary      ->  antihermitian',
     'imaginary      ->  !extended_real',
+    
+    'nonzero        ->  !zero',
+    'nonzero        ->  extended_nonzero & finite',
 
     'infinite       ==  !finite',
-    'noninteger     ==  extended_real & !integer',
-    'extended_nonzero == extended_real & !zero',
+    
+    'extended_nonzero     ==  extended_complex & !zero',
+    'extended_nonzero     ->  hyper_complex',
+    
+    'extended_complex ->  complex | infinite',
+    'extended_complex ->  hyper_complex',    
+    'hyper_complex    ->  super_complex',
+    
+#matrix domain:
     'invertible == !singular',
+#random domain:
     'random -> finite',
+    
+#set domain:    
     'empty -> finiteset',
     'infiniteset == !finiteset',
     'nonempty == !empty',
-    'integer -> extended_integer',
-    'complex -> extended_complex',
-    'extended_integer -> extended_real',
-    'extended_real -> extended_complex',
-    
-    'real -> extended_real',
-    'extended_real -> hyper_real',
-    'hyper_real -> super_real',
-    'super_real -> super_complex',
     
     'finiteset -> countable',
     'countable -> measurable',
     'uncountable == !countable',
     'unmeasurable -> !measurable',
-    'extended_real -> hyper_real',
-    'extended_complex -> hyper_complex',    
-    'hyper_real -> super_real',
-    'hyper_complex -> super_complex',
-    
 ])
 
 _assume_defined = _assume_rules.defined_facts.copy()

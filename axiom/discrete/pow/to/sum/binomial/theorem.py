@@ -41,7 +41,9 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum.limits.subs.offset, -1)
 
-    Eq << algebra.cond.given.cond.subs.apply(Eq.induct, given=discrete.binomial.to.add.Pascal.apply(n + 1, k))
+    Eq << discrete.binomial.to.add.Pascal.apply(n + 1, k)
+
+    Eq << algebra.cond.given.et.subs.apply(Eq.induct, *Eq[-1].args)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum_mul.to.add)
 

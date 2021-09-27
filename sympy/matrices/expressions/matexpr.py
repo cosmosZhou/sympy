@@ -1282,7 +1282,7 @@ def _make_matrix(x):
 
 
 # precondition: i > j or i < j
-class Swap(Identity): 
+class SwapMatrix(Identity): 
     is_Identity = False
     
     def _pretty(self, p):
@@ -1357,10 +1357,14 @@ class Swap(Identity):
     def _eval_domain_defined(self, x, **_): 
         return self.n.domain_defined(x) & x.domain_conditioned((self.i < self.n) & (self.i >= 0) & ((self.j < self.n) & (self.j >= 0)))
 
-    _eval_is_extended_real = lambda self: self.arg.is_extended_real
+    is_extended_real = True
+    
+    is_finite = True 
+    
+    is_integer = True
 
     
-class Multiplication(Identity):
+class MultiplicationMatrix(Identity):
 
     def _latex(self, p):
         return p._print_Basic(self)
@@ -1446,7 +1450,7 @@ class Multiplication(Identity):
         return MatrixExpr.__rmatmul__(self, lhs)
 
     
-class Addition(Multiplication):
+class AdditionMatrix(MultiplicationMatrix):
     '''
     multiply the ith row and add it to the jth row
     or multiply the ith column and add it to the jth column
@@ -1535,7 +1539,7 @@ class Addition(Multiplication):
         return self.i <= self.j
 
     
-class Shift(Identity):
+class ShiftMatrix(Identity):
     '''
     shift the ith row to the jth row
     or shift the jth column to the ith column
@@ -1561,7 +1565,7 @@ class Shift(Identity):
         return (-1) ** (self.j - self.i)
 
     def _eval_transpose(self):
-        return Shift(self.n, self.j, self.i)
+        return ShiftMatrix(self.n, self.j, self.i)
 
     def _eval_inverse(self):
         return self.T
@@ -1658,8 +1662,12 @@ class Shift(Identity):
     def is_lower(self):
         return self.i == self.j
 
+    is_extended_real = True
+    
+    is_finite = True 
+    
+    is_integer = True
 
 from .matmul import MatMul
 from .matpow import MatPow
-from .transpose import Transpose
 from .inverse import Inverse

@@ -2,7 +2,7 @@ from util import *
 
 
 @apply
-def apply(given): 
+def apply(given):
     (fx, *limits), M = given.of(Equal[Inf])
     return All(fx >= M, *limits)
 
@@ -11,12 +11,16 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    M, x, a, b = Symbol(real=True)
+    M, x = Symbol(real=True)
+    S = Symbol(etype=dtype.real)
     f = Function(real=True)
-    Eq << apply(Equal(M, Inf[x:a:b](f(x))))
+    Eq << apply(Equal(M, Inf[x:S](f(x))))
 
-    Eq << algebra.eq_inf.imply.all_le.apply(Eq[0])
-    Eq << Eq[-1].this.expr.reversed
+    Eq << algebra.imply.le.inf_min.apply(Eq[0].rhs)
+
+    Eq << Eq[-1].subs(Eq[0].reversed).reversed
+
+    Eq << algebra.ge_minima.imply.all_ge.apply(Eq[-1])
 
 
 if __name__ == '__main__':

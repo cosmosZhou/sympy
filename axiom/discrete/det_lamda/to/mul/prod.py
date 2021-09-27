@@ -23,13 +23,13 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.lamda.to.matrix)
 
-    Eq << Eq[-1] @ Multiplication(n, 0, 1 / a[0])
+    Eq << Eq[-1] @ MultiplicationMatrix(n, 0, 1 / a[0])
 
-    Eq << Eq[-1] @ Multiplication(n, n - 1, 1 / b[n - 1])
+    Eq << Eq[-1] @ MultiplicationMatrix(n, n - 1, 1 / b[n - 1])
 
-    Eq << Eq[-1] @ Multiplication(n, n - 2, 1 / b[n - 2])
+    Eq << Eq[-1] @ MultiplicationMatrix(n, n - 2, 1 / b[n - 2])
 
-    Eq << Multiplication(n, n - 1, b[n - 2]) @ Eq[-1]
+    Eq << MultiplicationMatrix(n, n - 1, b[n - 2]) @ Eq[-1]
 
     Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
     Eq << Eq[-1].this.lhs.apply(discrete.det.to.mul)

@@ -24,8 +24,8 @@ def prove(Eq):
 
     Eq << sets.eq.given.et.suffice.apply(Eq[-1])
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.all_el.st.cap),\
-    Eq[-1].this.lhs.apply(sets.el.imply.all_el.st.cap)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_cap.given.all_el),\
+    Eq[-1].this.lhs.apply(sets.el_cap.imply.all_el)
 
     Eq <<= Eq[-2].this.rhs.expr.apply(sets.el.given.ou.split.union),\
     Eq[-1].this.lhs.expr.apply(sets.el.imply.ou.split.union)
@@ -33,8 +33,8 @@ def prove(Eq):
     Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.ou.split.union),\
     Eq[-1].this.rhs.apply(sets.el.given.ou.split.union)
 
-    Eq <<= Eq[-2].this.find(Element[Cap]).apply(sets.el.imply.all_el.st.cap),\
-    Eq[-1].this.find(Element[Cap]).apply(sets.el.given.all_el.st.cap)
+    Eq <<= Eq[-2].this.find(Element[Cap]).apply(sets.el_cap.imply.all_el),\
+    Eq[-1].this.find(Element[Cap]).apply(sets.el_cap.given.all_el)
 
 if __name__ == '__main__':
     run()

@@ -5,6 +5,7 @@ from util import *
 def apply(given, t):
     e, interval = given.of(Element)
     t = sympify(t)
+    assert t.is_finite
     return Element(e + -t, interval + -t)
 
 

@@ -42,9 +42,9 @@ def prove(Eq):
 
     Eq << sets.el.imply.sqrt_is_positive.apply(Eq[2])
 
-    Eq << algebra.is_positive.imply.is_positive.square.apply(Eq[-1])
+    Eq << algebra.is_positive.imply.square_is_positive.apply(Eq[-1])
 
-    Eq << algebra.is_positive.imply.is_positive.square.apply(Eq.x_is_positive)
+    Eq << algebra.is_positive.imply.square_is_positive.apply(Eq.x_is_positive)
 
     Eq << algebra.is_positive.is_positive.imply.is_positive.apply(Eq[-1], Eq[-2])
 

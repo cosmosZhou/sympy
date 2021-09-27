@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(any_x, any_y):
-    from sympy.concrete.limits import limits_dependent
+    from axiom.algebra.all.any.imply.any_all_et import limits_dependent
     fx, *limits_x = any_x.of(Any)
     fy, *limits_y = any_y.of(Any)
 

@@ -4,6 +4,7 @@ from util import *
 @apply
 def apply(is_positive_x, lt):
     x = is_positive_x.of(Expr > 0)
+    assert x.is_finite
     lhs, rhs = lt.of(Less)
     return Less(lhs / x, rhs / x)
 

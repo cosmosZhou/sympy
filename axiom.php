@@ -6,8 +6,8 @@
 require_once 'php/utility.php';
 require_once 'php/mysql.php';
 
-error_log("_GET = " . \std\jsonify($_GET));
-error_log("_POST = " . \std\jsonify($_POST));
+// error_log("_GET = " . \std\jsonify($_GET));
+// error_log("_POST = " . \std\jsonify($_POST));
 
 // if (! $_GET) {
 // // https://www.php.net/manual/en/function.getopt.php
@@ -103,7 +103,7 @@ if (! \std\endsWith($path_info, '/')) {
 
         $proveCodes = insert_section($proveCodes);
         if (is_array($proveCodes)) {
-            error_log("proveCodes = " . \std\jsonify($proveCodes));
+//             error_log("proveCodes = " . \std\jsonify($proveCodes));
 
             modify_codes($py, $proveCodes, $applyCodes);
         } else {
@@ -154,17 +154,17 @@ if (! \std\endsWith($path_info, '/')) {
 
         list ($logs, $sql_statement, $statementsFromSQLFile) = run($py);
 
-        error_log("logs collected from running python script:");
-        foreach ($logs as &$line) {
-            error_log($line);
-        }
+//         error_log("logs collected from running python script:");
+//         foreach ($logs as &$line) {
+//             error_log($line);
+//         }
 
-        error_log("sql_statement = $sql_statement");
+//         error_log("sql_statement = $sql_statement");
         
-        error_log("statementsFromSQLFile = ");
-        foreach ($statementsFromSQLFile as &$line) {
-            error_log($line);
-        }
+//         error_log("statementsFromSQLFile = ");
+//         foreach ($statementsFromSQLFile as &$line) {
+//             error_log($line);
+//         }
         
         if (! $sql_statement) {
             error_log("error detected in python file:");
@@ -255,7 +255,7 @@ if (! \std\endsWith($path_info, '/')) {
     }
 }
 
-error_log("indexOfYield = $indexOfYield");
+// error_log("indexOfYield = $indexOfYield");
 require_once $indexOfYield < 0 ? 'php/package.php' : 'php/theorem.php';
 ?>
 

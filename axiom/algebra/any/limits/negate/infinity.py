@@ -7,7 +7,7 @@ def apply(self):
     return Equivalent(self, Any[i](expr._subs(i, -i)), evaluate=False)
 
 
-@prove(proved=False)
+@prove
 def prove(Eq):
     from axiom import algebra
 

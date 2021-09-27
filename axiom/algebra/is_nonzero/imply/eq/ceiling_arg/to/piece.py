@@ -69,11 +69,11 @@ def prove(Eq):
 
     Eq <<= Eq.suffice & Eq[-1]
 
-    Eq << algebra.cond.given.cond.subs.cond.apply(Eq.eq, given=Eq[-1])
+    Eq << algebra.cond.given.cond.subs.cond.apply(Eq.eq, old=Eq[-1].lhs, new=Eq[-1].rhs)
 
-    Eq.eq_simplified = algebra.cond.given.cond.subs.bool.apply(Eq[-1], given=Eq[0], invert=True)
+    Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-1], cond=Eq[0], invert=True)
 
-    Eq.p_cubic = Eq.eq_simplified.find(Pow[Mul]).this.apply(algebra.root.to.mul.expi.arg)
+    Eq.p_cubic = Eq[-1].find(Pow[Mul]).this.apply(algebra.root.to.mul.expi.arg)
 
     Eq.p_is_positive = algebra.is_nonzero.imply.abs_is_positive.apply(Eq[0])
 
@@ -87,7 +87,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.find(Arg[Mul]).apply(algebra.arg_mul.to.add.st.pow)
 
-    Eq << Eq.eq_simplified.subs(Eq[-1])
+    Eq << Eq[-6].subs(Eq[-1])
 
     Eq.eq_simplified = Eq[-1].this.find(Ceiling[Add[~Mul[Add]]]).apply(algebra.mul.to.add)
 

@@ -28,7 +28,7 @@ def prove(Eq):
     Eq <<= Eq[-2].this.find(Element).apply(sets.el_piece.imply.ou), \
     Eq[-1].this.find(Element).apply(sets.el.imply.et.el.split.intersect)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.el.split.intersect, simplify=False), \
+    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.et.el.split.intersect, simplify=False), \
     Eq[-1].this.lhs.find(Element).apply(sets.el_piece.imply.ou)
 
     Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el_piece.given.ou), \

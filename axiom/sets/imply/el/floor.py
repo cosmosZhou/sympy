@@ -30,6 +30,7 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.apply(algebra.mul.to.add)
 
     Eq << -Eq[-1] + n
+
     Eq << Eq[-1].reversed
 
 

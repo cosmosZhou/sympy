@@ -9,15 +9,13 @@ def apply(x):
 @prove
 def prove(Eq):
     from axiom import algebra
-    x = Symbol(real=True, given=True)
 
+    x = Symbol(real=True, given=True)
     Eq << apply(x)
 
     Eq << algebra.imply.lt.ceiling.apply(x)
 
-    Eq << ~Eq[0]
-
-    Eq << algebra.lt.gt.imply.lt.transit.apply(Eq[1], Eq[2])
+    Eq << algebra.lt.imply.le.floor.apply(Eq[-1])
 
 
 if __name__ == '__main__':

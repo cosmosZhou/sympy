@@ -19,7 +19,7 @@ def prove(Eq):
 
     Eq << apply(All[n:0:m + 1](f(n) > 0), n, m - n)
 
-    Eq << algebra.all.imply.all.limits.subs.negate.apply(Eq[1], n, m - n)
+    Eq << algebra.all.imply.all.limits.subs.reverse.apply(Eq[1], n, m - n)
 
 
 if __name__ == '__main__':

@@ -54,3 +54,4 @@ from . import imply
 from . import det_lamda
 from . import det_add
 from . import ge
+from . import is_nonzero

@@ -10,12 +10,8 @@ def apply(x):
 def prove(Eq):
     x = Symbol(real=True)
     Eq << apply(x)
-    return
-    Eq << Eq[-1].this.lhs.apply(algebra.ceiling.to.mul)
 
-    Eq << Eq[-1] - x
-
-    Eq << Eq[-1].this.lhs.apply(algebra.add.to.frac)
+    
 
 
 if __name__ == '__main__':

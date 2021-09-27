@@ -24,6 +24,18 @@ class Database:
         
         try:
             self.conn = mysql.connector.connect(**kwargs)
+        except mysql.connector.errors.ProgrammingError as err:
+            print(err.msg)
+            m = re.compile("Unknown database '(\w+)'").search(err.msg)
+            assert m
+            database = m[1]
+            assert kwargs['database'] == database
+            kwargs['database'] = 'mysql'
+            self.conn = mysql.connector.connect(**kwargs)
+            self.cursor.execute("create database " + database)
+            kwargs['database'] = database
+            self.conn = mysql.connector.connect(**kwargs)
+
         except Exception as e:
             print(type(e), e)
 
@@ -225,7 +237,7 @@ def select_axiom_lapse_from_tbl_axiom_py(user='root'):
 CREATE TABLE `tbl_axiom_py` (
   `user` varchar(32) NOT NULL,
   `axiom` varchar(256) NOT NULL,  
-  `state` enum('proved','failed','plausible','unproved','unprovable','slow') NOT NULL,
+  `state` enum('proved', 'failed', 'plausible', 'unproved', 'unprovable', 'slow') NOT NULL,
   `lapse` double default NULL,  
   `latex` text NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

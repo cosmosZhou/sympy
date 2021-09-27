@@ -16,7 +16,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(geometry.acos.to.piece.asin)
 
-    Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-1], given=Eq[0])
+    Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-1], cond=Eq[0])
 
     #https://en.wikipedia.org/wiki/Argument_(complex_analysis)
 

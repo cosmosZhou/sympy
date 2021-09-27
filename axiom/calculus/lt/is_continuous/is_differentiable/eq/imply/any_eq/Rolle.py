@@ -1,4 +1,6 @@
 from util import *
+
+
 from axiom.calculus.all_eq.imply.all_any_eq.intermediate_value_theorem import is_continuous
 
 
@@ -11,7 +13,7 @@ def of_continuous(cond):
     return fz, (z, a, b)
 
 
-def of_differentiable(cond, open=True):
+def of_differentiable(cond, open=True, extended=False):
     if open:
         (derivative, R), (x, ab) = cond.of(All[Element])
         a, b = ab.of(Interval)
@@ -19,7 +21,10 @@ def of_differentiable(cond, open=True):
     else:
         (derivative, R), (x, a, b) = cond.of(All[Element])
 
-    assert R.is_UniversalSet
+    if extended:
+        assert R in ExtendedReals
+    else:
+        assert R in Reals
 
     fx, *limits_d = derivative.of(Derivative)
     assert len(limits_d) == 1
@@ -30,7 +35,7 @@ def of_differentiable(cond, open=True):
     return fx, (x, a, b)
 
 
-def is_differentiable(f, a, b, x=None, open=True, plausible=None):
+def is_differentiable(f, a, b, x=None, open=True, plausible=None, extended=False):
     if x is None:
         x = Symbol.x(real=True)
 
@@ -43,7 +48,11 @@ def is_differentiable(f, a, b, x=None, open=True, plausible=None):
     if plausible:
         kwargs['plausible'] = plausible
 
-    return All[x:Interval(a, b, left_open=left_open, right_open=right_open)](Element(Derivative(f(x), x), Reals), **kwargs)
+    if extended:
+        S = Interval(-oo, oo, left_open=False, right_open=False)
+    else:
+        S = Reals
+    return All[x:Interval(a, b, left_open=left_open, right_open=right_open)](Element(Derivative(f(x), x), S), **kwargs)
 
 
 @apply

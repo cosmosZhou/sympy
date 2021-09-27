@@ -1,11 +1,10 @@
 from util import *
 
 
-
-
 @apply
 def apply(given):
     x = given.of(Expr > 0)
+    assert x.is_finite
     return Element(x, Interval(-oo, oo))
 
 
@@ -15,6 +14,7 @@ def prove(Eq):
 
     x = Symbol(complex=True)
     Eq << apply(x > 0)
+
     Eq << sets.gt.imply.is_real.apply(Eq[0])
 
 

@@ -34,6 +34,7 @@ def prove(Eq):
     Eq << algebra.ou.imply.suffice.apply(Eq[-1], 1)
 
     Eq << Eq[-1].this.lhs.simplify()
+
     Eq << algebra.cond.suffice.imply.cond.transit.apply(Eq[0], Eq[-1])
 
 

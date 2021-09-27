@@ -8,10 +8,10 @@ def apply(m, d, w=None, x=None):
 
     assert m >= 0
     if w is None:
-        w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
+        w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
-        assert w[i, j].is_Swap or w[i, j].definition.is_Swap
+        assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     if x is None:
         x = Symbol.x(shape=(oo,), integer=True, nonnegative=True)

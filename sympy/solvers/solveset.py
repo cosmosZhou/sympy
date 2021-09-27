@@ -98,7 +98,7 @@ def _masked(f, *atoms):
     return f, mask
 
 
-def _invert(f_x, y, x, domain=S.Complexes):
+def _invert(f_x, y, x, domain=None):
     r"""
     Reduce the complex valued equation ``f(x) = y`` to a set of equations
     ``{g(x) = h_1(y), g(x) = h_2(y), ..., g(x) = h_n(y) }`` where ``g(x)`` is
@@ -160,6 +160,8 @@ def _invert(f_x, y, x, domain=S.Complexes):
     if x in y.free_symbols:
         raise ValueError("y should be independent of x ")
 
+    if domain is None:
+        domain = S.Complexes
     if domain.is_subset(Reals):
         x1, s = _invert_real(f_x, FiniteSet(y), x)
     else:
@@ -426,7 +428,7 @@ def _domain_check(f, symbol, p):
                     for g in f.args])
 
 
-def _is_finite_with_finite_vars(f, domain=S.Complexes):
+def _is_finite_with_finite_vars(f, domain=None):
     """
     Return True if the given expression is finite. For symbols that
     don't assign a value for `complex` and/or `real`, the domain will
@@ -435,6 +437,9 @@ def _is_finite_with_finite_vars(f, domain=S.Complexes):
     left unmodified.
     """
 
+    if domain is None:
+        domain = S.Complexes
+        
     def assumptions(s):
         A = s.assumptions0
         A.setdefault('finite', A.get('finite', True))
@@ -636,11 +641,14 @@ def _solve_trig2(f, symbol, domain):
         return ConditionSet(symbol, Eq(f_original, 0), Reals)
 
 
-def _solve_as_poly(f, symbol, domain=S.Complexes):
+def _solve_as_poly(f, symbol, domain=None):
     """
     Solve the equation using polynomial techniques if it already is a
     polynomial equation or, with a change of variables, can be made so.
     """
+    if domain is None:
+        domain = S.Complexes
+    
     result = None
     if f.is_polynomial(symbol):
         solns = roots(f, symbol, cubics=True, quartics=True,
@@ -1557,7 +1565,7 @@ def _transolve(f, symbol, domain):
     return result
 
 
-def solveset(f, symbol=None, domain=S.Complexes):
+def solveset(f, symbol=None, domain=None):
     r"""Solves a given inequality or equation with set as output
 
     Parameters
@@ -1657,6 +1665,9 @@ def solveset(f, symbol=None, domain=S.Complexes):
     """
     f = sympify(f)
     symbol = sympify(symbol)
+
+    if domain is None:        
+        domain = S.Complexes
 
     if f is S.true:
         return domain
@@ -1800,7 +1811,7 @@ def solvify(f, symbol, domain):
                     iter_solutions = solution_set.args
 
             for solution in iter_solutions:
-                solutions += solution.intersect(Interval(0, period, False, True))
+                solutions += solution.intersect(Interval(0, period, left_open=False, right_open=True))
 
             if isinstance(solutions, FiniteSet):
                 result = list(solutions)

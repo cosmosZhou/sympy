@@ -25,7 +25,7 @@ def prove(Eq):
     from axiom.calculus.lt.is_continuous.is_differentiable.eq.imply.any_eq.Rolle import is_differentiable
     from axiom.calculus.all_eq.imply.all_any_eq.intermediate_value_theorem import is_continuous
     a, b = Symbol(real=True)
-    f = Function(shape=(), real=True)
+    f = Function(real=True)
     Eq << apply(a <= b, is_continuous(f, a, b), is_differentiable(f, a, b, open=False))
 
     Eq << algebra.cond.given.et.suffice.split.apply(Eq[-1], cond=b > a)
@@ -53,3 +53,4 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+

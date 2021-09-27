@@ -45,7 +45,7 @@ def prove(Eq):
 
     Eq << sets.subset.given.all_subset.split.cup.apply(Eq.subset)
 
-    Eq << Eq[-1].apply(sets.el.given.any_el.st.cup)
+    Eq << Eq[-1].apply(sets.el_cup.given.any_el)
 
     Eq << algebra.any.given.any.subs.apply(Eq[-1], Eq[-1].variable, p[_i])
 
@@ -53,7 +53,7 @@ def prove(Eq):
 
     Eq << sets.supset.given.all_supset.split.cup.apply(Eq.supset)
 
-    Eq.definition = Eq[-1].apply(sets.el.given.any_el.st.cup)
+    Eq.definition = Eq[-1].apply(sets.el_cup.given.any_el)
 
     Eq << discrete.eq.imply.et.index.apply(Eq[0], _j)
 

@@ -4,3 +4,4 @@ from . import max
 
 
 from . import squeeze
+from . import abs

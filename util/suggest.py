@@ -5,7 +5,7 @@ if __name__ == '__main__':
     
     data = []
     user = utility.user
-    for axiom, *_ in MySQL.instance.select("select axiom from tbl_axiom_py"):
+    for axiom, *_ in MySQL.instance.select(f"select axiom from tbl_axiom_py where user = '{user}'"):
         phrases = axiom.split('.')
         size = len(phrases)
         phrases.append('apply')
@@ -36,7 +36,7 @@ if __name__ == '__main__':
             1
         ])
     
-    MySQL.instance.execute('delete from tbl_suggest_py')    
+    MySQL.instance.execute(f"delete from tbl_suggest_py where user = '{user}'")    
     MySQL.instance.load_data('tbl_suggest_py', data)
 
 #exec(open('./util/suggest.py').read())

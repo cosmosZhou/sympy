@@ -150,3 +150,11 @@ from . import eq_reducedMin
 from . import reducedMin
 from . import eq_reducedMax
 from . import reducedMax
+from . import lt_sup
+from . import gt_inf
+from . import le_maxima
+from . import ge_maxima
+from . import gt_maxima
+from . import lt_minima
+from . import le_minima
+from . import ge_minima

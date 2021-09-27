@@ -228,7 +228,7 @@ def function_range(f, symbol, domain):
                 if critical_values.sup == vals.sup:
                     right_open = True
 
-            range_int += Interval(vals.inf, vals.sup, left_open, right_open)
+            range_int += Interval(vals.inf, vals.sup, left_open=left_open, right_open=right_open)
         else:
             raise NotImplementedError(filldedent('''
                 Unable to find range for the given domain.

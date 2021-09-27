@@ -36,7 +36,7 @@ def prove(Eq):
 
     Eq << -sets.el.imply.lt.square.apply(Eq.y_contains) + 1
 
-    Eq << algebra.is_positive.imply.is_positive.sqrt.apply(Eq[-1])
+    Eq << algebra.is_positive.imply.sqrt_is_positive.apply(Eq[-1])
 
     Eq << algebra.cond.imply.suffice.apply(Eq.x_contains, cond=Eq[-4].lhs)
 

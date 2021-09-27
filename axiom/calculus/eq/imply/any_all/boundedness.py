@@ -42,7 +42,7 @@ def prove(Eq):
 
     Eq.less_than = Eq[-1].this.expr.expr.apply(algebra.lt.imply.le.relax)
 
-    Eq << algebra.imply.all_ge.max.apply(Maxima[n:N + 1](abs(x[n])))
+    Eq << algebra.imply.all_ge.maxima.apply(Maxima[n:N + 1](abs(x[n])))
 
     Eq << LessEqual(Maxima[n:N + 1](abs(x[n])), M, plausible=True)
 

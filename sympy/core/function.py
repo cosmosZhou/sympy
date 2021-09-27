@@ -1086,6 +1086,10 @@ class AppliedUndef(Function):
             return dtype.real
         if assumptions.get('complex'):
             return dtype.complex
+
+        if self.eval.__func__.__code__.co_name == '<lambda>':
+            return self.defun().dtype
+        
         return super(AppliedUndef, self).dtype
 
     def _eval_is_random(self):
@@ -1143,7 +1147,31 @@ class UndefinedFunction(FunctionClass):
             if isinstance(continuous, bool):
                 kwargs['is_continuous'] = lambda self, *_: continuous
             else:
-                kwargs['is_continuous'] = continuous
+                def is_continuous(self, *args):
+                    if isinstance(args[0], tuple):
+                        ...
+                    else:
+                        x, *ab = args
+                        
+                        if len(ab) == 2:
+                            from sympy import Interval
+                            domain = Interval(*ab)
+                        else:
+                            [domain] = ab
+                        
+                        if self.arg != x:
+                            p = self.arg.as_poly(x)
+                            p = p.all_coeffs()
+                            if len(p) == 2:
+                                b, a = p
+                                domain = domain * a + b
+                            else:
+                                return
+                        
+                        if domain in continuous:
+                            return True
+                            
+                kwargs['is_continuous'] = is_continuous 
                 
         if 'integrable' in kwargs:
             integrable = kwargs.pop('integrable')
@@ -1843,19 +1871,30 @@ class Derivative(Expr):
                 merged.append([v, c])
         return [Tuple(*i) for i in merged]
 
-    def _eval_is_commutative(self):
-        return self.expr.is_commutative
+    def _eval_is_finite(self):
+        ...
+
+    def _eval_is_extended_positive(self):
+        ...
+
+    def _eval_is_extended_negative(self):
+        ...
 
     def _eval_is_extended_real(self):
-        from sympy.core.function import AppliedUndef
-        if self.expr._has(AppliedUndef):
-            return 
-               
-        return self.expr.is_extended_real
+        return self.is_hyper_real
 
-    def _eval_is_complex(self):
-        return self.expr.is_complex
+    def _eval_is_hyper_real(self):
+        ...
+    
+    def _eval_is_super_real(self):
+        return self.expr.is_super_real
 
+    def _eval_is_extended_complex(self):
+        return self.is_hyper_complex
+
+    def _eval_is_hyper_complex(self):
+        ...
+    
     def _eval_derivative(self, v):
         # If v (the variable of differentiation) is not in
         # self.variables, we might be able to take the derivative.

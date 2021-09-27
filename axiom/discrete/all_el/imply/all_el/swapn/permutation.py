@@ -11,7 +11,7 @@ def apply(given):
 
     k = Symbol(integer=True)
 
-    assert w[i, j].is_Swap or w[i, j].definition.is_Swap
+    assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     p = Symbol(shape=(oo,), integer=True, nonnegative=True)
 
@@ -28,7 +28,7 @@ def prove(Eq):
     S = Symbol(etype=dtype.integer * n, given=True)
     x = Symbol(shape=(oo,), integer=True)
     i, j = Symbol(integer=True)
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     Eq.swap, Eq.P_definition, Eq.w_definition, Eq.axiom = apply(All[x[:n]:S](Element(w[i, j] @ x[:n], S)))
 
     Eq << discrete.imply.all_any.factorization.apply(n)

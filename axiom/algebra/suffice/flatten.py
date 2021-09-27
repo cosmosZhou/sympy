@@ -2,9 +2,12 @@ from util import *
 
 
 @apply(given=None)
-def apply(self):
+def apply(self, *, simplify=True):
     A, (p, q) = self.of(Suffice[Basic, Suffice])
-    return Equivalent(self, Suffice(A & p, q), evaluate=False)
+    p &= A
+    if simplify:
+        p = p.simplify()
+    return Equivalent(self, Suffice(p, q), evaluate=False)
 
 
 @prove
@@ -20,14 +23,6 @@ def prove(Eq):
     Eq << Eq[-1].this.lhs.apply(algebra.suffice.to.ou)
 
     Eq << Eq[-1].this.rhs.apply(algebra.suffice.to.ou)
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':

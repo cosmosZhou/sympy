@@ -8,7 +8,7 @@ def apply(w):
     j = w.generate_var({i}, integer=True)
 
     assert len(w.shape) == 4 and all(s == n for s in w.shape)
-    assert w[i, j].is_Swap or w[i, j].definition.is_Swap
+    assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     return Equal(w[i, j] @ w[i, j], Identity(n))
 
@@ -19,7 +19,7 @@ def prove(Eq):
     i, j = Symbol(integer=True)
 
     assert Identity(n).is_integer
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
 
     Eq << apply(w)
 

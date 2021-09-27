@@ -1,13 +1,10 @@
 from util import *
 
 
-
 @apply
 def apply(given, t):
-    assert given.is_Element
-
-    e, interval = given.args
-
+    e, interval = given.of(Element)
+    assert t.is_finite
     return Element(e + t, interval + t)
 
 

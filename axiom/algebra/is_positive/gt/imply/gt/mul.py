@@ -4,6 +4,7 @@ from util import *
 @apply
 def apply(is_positive_x, strict_greater_than):
     x = is_positive_x.of(Expr > 0)
+    assert x.is_finite
     lhs, rhs = strict_greater_than.of(Greater)
     return Greater(lhs * x, rhs * x)
 

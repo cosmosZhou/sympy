@@ -109,7 +109,7 @@ class Add(Expr, AssocOp):
                 return rv
 #                 return [], rv[0], None
 
-        terms = {}      # term -> coeff
+        terms = {}  # term -> coeff
                         # e.g. x**2 -> 5   for ... + 5*x**2 + ...
 
         coeff = S.Zero  # coefficient (Number or zoo) to always be in slot 0
@@ -547,19 +547,18 @@ class Add(Expr, AssocOp):
         return all(term._eval_is_algebraic_expr(syms) for term in self.args)
 
     # assumption methods
-    _eval_is_extended_real = lambda self: _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)    
-    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
     _eval_is_antihermitian = lambda self: _fuzzy_group((a.is_antihermitian for a in self.args), quick_exit=True)
-    _eval_is_finite = lambda self: _fuzzy_group((a.is_finite for a in self.args), quick_exit=True)
     _eval_is_hermitian = lambda self: _fuzzy_group((a.is_hermitian for a in self.args), quick_exit=True)    
-    _eval_is_rational = lambda self: _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
     _eval_is_algebraic = lambda self: _fuzzy_group((a.is_algebraic for a in self.args), quick_exit=True)
-    _eval_is_commutative = lambda self: _fuzzy_group(a.is_commutative for a in self.args)
     
-    def _eval_is_integer(self):
+    def _eval_is_finite(self):
+        from sympy.core.logic import fuzzy_and
+        return fuzzy_and((a.is_finite for a in self.args))
+    
+    def _eval_is_extended_integer(self):
         nonintegers = []
         for arg in self.args:
-            integer = arg.is_integer
+            integer = arg.is_extended_integer
             if integer is None:
                 return
             if integer:
@@ -570,18 +569,45 @@ class Add(Expr, AssocOp):
         if len(nonintegers) < len(self.args):
             self = self.func(*nonintegers)
         num, den = self.as_numer_denom()
-        if den.is_integer:
+        if den.is_extended_integer:
             rem = num % den
             if rem.is_zero:
                 return True
             if rem.is_zero is None:
                 return
             return False
-        if den.is_integer is None:
+        if den.is_extended_integer is None:
             return
-        if num.is_integer:
+        if num.is_extended_integer:
             return False
                 
+    def _eval_is_super_integer(self):
+        return _fuzzy_group((a.is_super_integer for a in self.args), quick_exit=True)
+    
+    def _eval_is_extended_rational(self):
+        return _fuzzy_group((a.is_extended_rational for a in self.args), quick_exit=True)
+    
+    def _eval_is_hyper_rational(self):
+        return _fuzzy_group((a.is_hyper_rational for a in self.args), quick_exit=True)
+    
+    def _eval_is_super_rational(self):
+        return _fuzzy_group((a.is_super_rational for a in self.args), quick_exit=True)
+    
+    def _eval_is_extended_real(self):
+        return _fuzzy_group((a.is_extended_real for a in self.args), quick_exit=True)
+        
+    def _eval_is_hyper_real(self):
+        return _fuzzy_group((a.is_hyper_real for a in self.args), quick_exit=True)
+    
+    def _eval_is_super_real(self):
+        return _fuzzy_group((a.is_super_real for a in self.args), quick_exit=True)
+    
+    def _eval_is_extended_complex(self):
+        return _fuzzy_group((a.is_extended_complex for a in self.args), quick_exit=True)
+                
+    def _eval_is_hyper_complex(self):
+        return _fuzzy_group((a.is_hyper_complex for a in self.args), quick_exit=True)
+    
     def _eval_is_imaginary(self):
         nz = []
         im_I = []
@@ -1042,10 +1068,14 @@ class Add(Expr, AssocOp):
             rhs_args = [*rhs.args]
             intersect = set(lhs_args) & set(rhs_args)
             if intersect:
+                hit = False
                 for arg in intersect:
-                    lhs_args.remove(arg)
-                    rhs_args.remove(arg)
-                return self.func(cls(*lhs_args), cls(*rhs_args)).simplify()
+                    if arg.is_real:
+                        lhs_args.remove(arg)
+                        rhs_args.remove(arg)
+                        hit = True
+                if hit:
+                    return self.func(cls(*lhs_args), cls(*rhs_args)).simplify()
 
         elif rhs in lhs.args:
             args = [*lhs.args]
@@ -1351,9 +1381,8 @@ class Add(Expr, AssocOp):
                 if self.is_extended_real:
                     from sympy import Reals
                     return Reals
-                else:
-                    from sympy import Complexes
-                    return Complexes
+                else: 
+                    return S.Complexes
             return domain + Add(*coeff)
         return domain
 
@@ -1372,9 +1401,6 @@ class Add(Expr, AssocOp):
             return self.func(*self.args[:-1]) * other + self.args[-1] * other
 
         return Expr.__mul__(self, other)
-
-    def _eval_is_finite(self):
-        return True
 
     def _eval_is_even(self):
         even = True
@@ -1498,7 +1524,7 @@ class Add(Expr, AssocOp):
                     cls = Basic.__new__(Add, b, a)
                     args = Expr.of(self, cls)
                     if args is not None:
-                        if b.is_Number: #b.is_constant()
+                        if b.is_Number:  # b.is_constant()
                             return args
                         if isinstance(args, tuple):
                             _b, _a = args
@@ -1556,6 +1582,7 @@ class Add(Expr, AssocOp):
     def is_continuous(self, *args):
         from sympy.core.logic import fuzzy_and
         return fuzzy_and(x.is_continuous(*args) for x in self.args)
+
 
 from .mul import Mul, _keep_coeff, prod
 from sympy.core.numbers import Rational

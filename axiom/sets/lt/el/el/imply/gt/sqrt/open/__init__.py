@@ -46,7 +46,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs.apply(algebra.gt.imply.ge.relax)
 
-    Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-1], given=Eq[0], invert=True)
+    Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-1], cond=Eq[0], invert=True)
 
     Eq <<= algebra.cond.imply.suffice.et.apply(Eq[1], cond=x > 0), algebra.cond.imply.suffice.et.apply(Eq[2], cond=y > 0)
 
@@ -69,6 +69,7 @@ def prove(Eq):
     Eq << algebra.cond.imply.suffice.apply(Eq[0], cond=Eq[-1].lhs)
 
     Eq <<= Eq[-1] & Eq[-2]
+
     Eq << Eq[-1].this.rhs.apply(sets.lt.el.el.imply.gt.sqrt.open.nonpositive)
 
 

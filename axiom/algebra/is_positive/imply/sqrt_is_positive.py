@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     x = given.of(Expr > 0)
-    return sqrt(x) > 0
+    return Greater(sqrt(x), 0)
 
 
 @prove
@@ -12,16 +12,16 @@ def prove(Eq):
     from axiom import algebra
 
     x = Symbol(real=True, given=True)
-    Eq << apply(x > 0)
+    Eq << apply(Greater(x, 0))
 
-    y = Symbol(positive=True)
-    Eq << Greater(sqrt(y), 0, plausible=True)
+    Eq << algebra.is_positive.imply.is_nonnegative.apply(Eq[0])
 
-    Eq << Eq[-1].subs(y, x)
+    Eq << algebra.is_nonnegative.imply.sqrt_is_nonnegative.apply(Eq[-1])
 
-    Eq << Eq[-1].this.args[0].simplify()
+    Eq << algebra.is_positive.imply.is_nonzero.apply(Eq[0])
 
-    Eq << algebra.cond.ou.imply.cond.apply(Eq[0], Eq[-1])
+    Eq << algebra.is_nonzero.imply.is_nonzero.sqrt.apply(Eq[-1])
+    Eq << algebra.is_nonzero.is_nonnegative.imply.is_positive.apply(Eq[-1], Eq[-3])
 
 
 if __name__ == '__main__':

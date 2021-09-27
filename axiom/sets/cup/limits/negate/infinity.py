@@ -9,24 +9,21 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import sets, calculus
+    from axiom import sets, algebra
 
     i = Symbol(integer=True)
     f = Function(etype=dtype.real)
     Eq << apply(Cup[i](f(i)))
 
-    n = Symbol(integer=True, nonnegative=True)
-    Eq << sets.cup.limits.negate.apply(Cup[i:-n:n + 1](f(i)))
+    Eq << sets.eq.given.et.suffice.apply(Eq[0])
 
-    Eq << calculus.eq.imply.eq.limit.apply(Eq[-1], (n, oo))
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), Eq[-1].this.rhs.apply(sets.el_cup.given.any_el)
 
-    Eq << Eq[-1].this.rhs.apply(calculus.limit.to.cup)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_cup.given.any_el), Eq[-1].this.lhs.apply(sets.el_cup.imply.any_el)
 
-    Eq << Eq[-1].this.lhs.apply(calculus.limit.to.cup)
+    Eq <<= Eq[-2].this.lhs.apply(algebra.any.imply.any.limits.negate.infinity)
 
-    Eq << Eq[-1].this.lhs.simplify()
-
-    Eq << Eq[-1].this.rhs.simplify()
+    Eq <<= Eq[-1].this.lhs.apply(algebra.any.imply.any.limits.negate.infinity)
 
 
 if __name__ == '__main__':

@@ -1,2 +1,2 @@
-from . import astrict
+from . import strengthen
 from . import relax

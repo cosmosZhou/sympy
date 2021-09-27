@@ -28,7 +28,7 @@ def prove(Eq):
 
     Eq << algebra.is_nonzero.eq.imply.eq.scalar.apply(Eq[0], Eq[-1])
 
-    t = Symbol(sqrt(-c / a))
+    t = Symbol(sqrt(Eq[-1].rhs))
     Eq << t.this.definition
 
     Eq.t_squared = Eq[-1] ** 2

@@ -5,7 +5,7 @@ from util import *
 def apply(A):
     n = A.shape[0]
     k = Symbol(integer=True)
-    return Equal(det(Sum[k:1:n]((Shift(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
+    return Equal(det(Sum[k:1:n]((ShiftMatrix(n, 0, n - 1) ** k) @ A)), det(A) * (n - 1) * (-1) ** (n - 1))
 
 
 @prove
@@ -39,45 +39,45 @@ def prove(Eq):
 
     Eq << Eq.L_definition.subs(Eq[-1])
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 2))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 2))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 3))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 3))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 4))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 4))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 5))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 5))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Multiplication(n, 0, S.One / (n - 1)))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], MultiplicationMatrix(n, 0, S.One / (n - 1)))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 1, 0, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 1, 0, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Multiplication(n, 1, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], MultiplicationMatrix(n, 1, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 2, 0, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 2, 0, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Multiplication(n, 2, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], MultiplicationMatrix(n, 2, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 3, 0, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 3, 0, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Multiplication(n, 3, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], MultiplicationMatrix(n, 3, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 4, 0, -1))
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Multiplication(n, 4, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 4, 0, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], MultiplicationMatrix(n, 4, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 5, 0, -1))
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Multiplication(n, 5, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 5, 0, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], MultiplicationMatrix(n, 5, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 1, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 1, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 2, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 2, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 3, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 3, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 4, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 4, -1))
 
-    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], Addition(n, 0, 5, -1))
+    Eq << discrete.eq.imply.eq.rmatmul.apply(Eq[-1], AdditionMatrix(n, 0, 5, -1))
 
     Eq << Eq[-1].apply(discrete.eq.imply.eq.det)
 

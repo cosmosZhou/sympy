@@ -9,7 +9,7 @@ def apply(all_contains):
     else:
         [domain] = domain
 
-    assert R == Interval(-oo, oo)
+    assert R in Interval(-oo, oo)
     assert x == x_
     assert d == 1
     assert not domain.left_open and not domain.right_open
@@ -52,3 +52,4 @@ def prove(Eq):
 
 if __name__ == '__main__':
     run()
+

@@ -6,7 +6,7 @@ def apply(given, m=None, b=None):
     ((x, (w, i, j)), S), (_x, _S) = given.of(All[Element[MatMul[Indexed]]])
     assert S == _S and x == _x
 
-    assert w[i, j].is_Swap or w[i, j].definition.is_Swap
+    assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     if m is None:
         m = Symbol.m(integer=True, nonnegative=True)
@@ -26,7 +26,7 @@ def prove(Eq):
     S = Symbol(etype=dtype.integer * n, given=True)
     x = Symbol(shape=(n,), integer=True)
     i, j = Symbol(integer=True)
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     given = All[x[:n]:S](Element(x[:n] @ w[i, j], S))
     Eq.swap, Eq.w_definition, Eq.hypothesis = apply(given, m=m)
 

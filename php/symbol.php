@@ -35,23 +35,16 @@ $statements[] = [
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
-<script	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
+<script src="https://unpkg.com/vue@3.2.11/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
+
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
 
 <script src="static/js/std.js"></script>
 <script src="static/js/utility.js"></script>
-<script>
-    var data = {
-        statements : <?php echo \std\jsonify($statements)?>,
-    };
-    
-    Vue.use(httpVueLoader);
-    Vue.component('console', 'url:static/vue/console.vue');
 
-    var app = new Vue({
-        el : '#root',
-        data : data,
-    });
-
+<script type=module>
+createApp('console', {
+    statements : <?php echo \std\jsonify($statements)?>,
+});
 </script>

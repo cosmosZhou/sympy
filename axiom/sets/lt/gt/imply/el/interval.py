@@ -2,9 +2,9 @@ from util import *
 
 
 @apply
-def apply(greater_than, _greater_than):
-    x, a = greater_than.of(Less)
-    _x, b = _greater_than.of(Greater)
+def apply(lt, gt):
+    x, a = lt.of(Less)
+    _x, b = gt.of(Greater)
     if x != _x:
         a, x, _x, b = _x, b, a, x,
 
@@ -22,8 +22,6 @@ def prove(Eq):
     Eq << apply(x < b, x > a)
 
     Eq << sets.el.given.et.split.interval.apply(Eq[-1])
-
-
 
     #Eq << Eq[-1].reversed
     #Eq << Eq[-2].reversed

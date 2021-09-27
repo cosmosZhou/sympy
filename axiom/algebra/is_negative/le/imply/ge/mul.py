@@ -2,9 +2,10 @@ from util import *
 
 
 @apply
-def apply(is_positive_x, less_than):
-    x = is_positive_x.of(Expr < 0)
-    lhs, rhs = less_than.of(LessEqual)
+def apply(is_negative, le):
+    x = is_negative.of(Expr < 0)
+    #assert x.is_finite
+    lhs, rhs = le.of(LessEqual)
     return GreaterEqual(lhs * x, rhs * x)
 
 

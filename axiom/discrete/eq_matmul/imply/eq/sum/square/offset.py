@@ -5,7 +5,7 @@ from util import *
 def apply(given, a, i=None):
     (x, w), y = given.of(Equal[MatMul])
     [n] = x.shape
-    _n, _i, _j = w.of(Swap)
+    _n, _i, _j = w.of(SwapMatrix)
     assert n == _n
     assert _i >= 0 and _i < n
     assert _j >= 0 and _j < n
@@ -23,17 +23,18 @@ def prove(Eq):
     x, y = Symbol(shape=(n,), real=True, given=True)
     a = Symbol(real=True, given=True)
     i, j = Symbol(domain=Range(0, n))
-    Eq << apply(Equal(x @ Swap(n, i, j), y), a)
+    Eq << apply(Equal(x @ SwapMatrix(n, i, j), y), a)
 
     Eq << Eq[-1].this.lhs.expr.apply(algebra.square.to.add)
 
     Eq << Eq[-1].this.rhs.expr.apply(algebra.square.to.add)
 
+    k = Eq[-1].lhs.variable
     Eq << Eq[-1].this.lhs.apply(algebra.sum.to.add)
 
     Eq << Eq[-1].this.rhs.apply(algebra.sum.to.add)
 
-    Eq << discrete.eq_matmul.imply.eq.sum.square.apply(Eq[0], i)
+    Eq << discrete.eq_matmul.imply.eq.sum.square.apply(Eq[0], k)
 
     Eq << Eq[-1].this.lhs.simplify()
 
@@ -44,8 +45,11 @@ def prove(Eq):
     Eq << -Eq[-1].this.apply(algebra.eq.simplify.terms.common) / 2
 
     Eq << discrete.eq_matmul.imply.eq.sum.apply(Eq[0], i)
+
     Eq << Eq[-1].this.lhs.simplify()
+
     Eq << Eq[-1].this.rhs.simplify()
+
     Eq << Eq[-4].subs(Eq[-1])
 
 

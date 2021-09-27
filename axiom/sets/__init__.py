@@ -72,3 +72,13 @@ from . import el_piece
 from . import notin_piece
 from . import el_interval
 from . import measure
+from . import is_positive_real
+from . import is_negative_real
+from . import is_nonzero_real
+from . import is_extended_real
+from . import ceiling_is_zero
+from . import frac_is_zero
+from . import floor_is_zero
+from . import el_cup
+from . import el_cap
+from . import is_noninteger

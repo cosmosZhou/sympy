@@ -2,8 +2,7 @@ from util import *
 
 
 def split(self, simplify=True):
-    assert self.is_Element
-    e, domain = self.args
+    e, domain = self.of(Element)
     
     eqs = [Element(e, s) for s in domain.of(Union)]
         
@@ -14,7 +13,7 @@ def split(self, simplify=True):
     
     
 @apply(simplify=False)
-def apply(self, simplify=True):
+def apply(self, *, simplify=True):
     return split(self, simplify=simplify)
 
 

@@ -98,20 +98,19 @@ def _set_function(f, x):
             if end == _start and end not in solns:
                 right_open = x.left_open
 
-        return Interval(start, end, left_open, right_open)
+        return Interval(start, end, left_open=left_open, right_open=right_open)
     else:
-        return imageset(f, Interval(x.start, sing[0],
-                                    x.left_open, True)) + \
-            Union(*[imageset(f, Interval(sing[i], sing[i + 1], True, True))
+        return imageset(f, Interval(x.start, sing[0], left_open=x.left_open, right_open=True)) + \
+            Union(*[imageset(f, Interval(sing[i], sing[i + 1], left_open=True, right_open=True))
                     for i in range(0, len(sing) - 1)]) + \
-            imageset(f, Interval(sing[-1], x.stop, True, x.right_open))
+            imageset(f, Interval(sing[-1], x.stop, left_open=True, right_open=x.right_open))
 
 @dispatch(FunctionClass, Interval)
 def _set_function(f, x):
     if f == exp:
-        return Interval(exp(x.start), exp(x.stop), x.left_open, x.right_open)
+        return Interval(exp(x.start), exp(x.stop), left_open=x.left_open, right_open=x.right_open)
     elif f == log:
-        return Interval(log(x.start), log(x.stop), x.left_open, x.right_open)
+        return Interval(log(x.start), log(x.stop), left_open=x.left_open, right_open=x.right_open)
     return ImageSet(Lambda(_x, f(_x)), x)
 
 @dispatch(FunctionUnion, Union)

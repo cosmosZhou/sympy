@@ -18,7 +18,7 @@ def apply(x, i=None, j=None):
 def swap(p, *indices):
     n = p.shape[0]
     i, j = Symbol(integer=True)
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
 
     (i,), (j,) = indices
     k = Symbol(integer=True)

@@ -8,10 +8,10 @@ def apply(x, d, w=None):
     i, j, k = Symbol(integer=True)
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
+        w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
-        assert w[i, j].is_Swap or w[i, j].definition.is_Swap
+        assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     return Equal(x[d @ w[i, j, k]], Lamda[k:n](x[d[k]]) @ w[i, j, k])
 

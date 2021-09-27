@@ -24,7 +24,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(sets.interval.to.cup.left_open)
 
-    Eq << sets.el.imply.any_el.st.cup.apply(Eq[-1])
+    Eq << sets.el_cup.imply.any_el.apply(Eq[-1])
 
     Eq << Eq[-1].this.expr.apply(sets.el.imply.eq.ceiling)
 

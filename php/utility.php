@@ -639,7 +639,7 @@ function modify_codes($python_file, $_proveCodes, $applyCodes = null)
 
     $proveCodes[] = "\n";
 
-    error_log("in modify_codes: proveCodes = " . \std\jsonify($proveCodes));
+//     error_log("in modify_codes: proveCodes = " . \std\jsonify($proveCodes));
 
     $py = file($python_file);
 
@@ -677,7 +677,7 @@ function modify_codes($python_file, $_proveCodes, $applyCodes = null)
         $codesAfterProve[] = $py[$i];
     }
 
-    error_log("in modify_codes: codes = " . \std\jsonify($codes));
+//     error_log("in modify_codes: codes = " . \std\jsonify($codes));
 
     array_push($codes, ...$proveCodes, ...$codesAfterProve);
 
@@ -823,8 +823,9 @@ function run($py)
     $sql_statement = '';
     $statementsFromSQLFile = '';
     foreach ($array as &$line) {
+//         error_log("line = " . $line);
         if (preg_match("/latex results are saved into: (\S+)/", $line, $m)) {
-            $sqlFileContainingLatex = $m[1];
+            $sqlFileContainingLatex = $m[1];            
             $statementsFromSQLFile = iterator_to_array(\mysql\yield_from_sql($sqlFileContainingLatex));
 
             // error_log("statementsFromSQLFile = " . \std\jsonify($statementsFromSQLFile));
@@ -857,7 +858,6 @@ function compile_python_file($py)
     // }
 
     // $data = ["py"=> $py];
-    // return \std\form_post($url, $data);
     return "error detected!";
 }
 

@@ -11,7 +11,7 @@ def apply(x, i=None, j=None, w=None):
         j = Symbol.j(domain=Range(0, n))
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](Swap(n, i, j)))
+        w = Symbol.w(Lamda[j, i](SwapMatrix(n, i, j)))
 
     return Equal(w[i, j] @ w[i, j] @ x, x)
 

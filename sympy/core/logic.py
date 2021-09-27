@@ -146,6 +146,27 @@ def fuzzy_and(args):
     return rv
 
 
+def fuzzy_et(args):
+    """Return True (all True), False (all False) or None.
+    """
+
+    rv = None
+    for ai in args:
+        ai = fuzzy_bool(ai)
+        if ai is None:
+            return
+        
+        if rv is None:            
+            rv = ai
+            continue
+        
+        if rv == ai:
+            continue
+            
+        return
+            
+    return rv
+
 def fuzzy_not(v):
     """
     LogicNot in fuzzy logic
@@ -189,6 +210,21 @@ def fuzzy_or(args):
     """
     return fuzzy_not(fuzzy_and(fuzzy_not(i) for i in args))
 
+
+def fuzzy_ou(args):
+    """Return True (any True), False (all False) or None.
+    """
+
+    rv = False
+    for ai in args:
+        ai = fuzzy_bool(ai)
+        if ai:
+            return True
+        
+        if ai is None:
+            rv = None
+            
+    return rv
 
 def fuzzy_xor(args):
     """Return None if any element of args is not True or False, else

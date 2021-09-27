@@ -7,11 +7,11 @@ def apply(x, lamda, w=None):
     i, j = Symbol(domain=Range(0, n))
 
     if w is None:
-        w = Symbol.w(Lamda[j, i](Addition(n, i, j, lamda)))
-        w_quote = Symbol.w_quote(Lamda[j, i](Addition(n, i, j, -lamda)))
+        w = Symbol.w(Lamda[j, i](AdditionMatrix(n, i, j, lamda)))
+        w_quote = Symbol.w_quote(Lamda[j, i](AdditionMatrix(n, i, j, -lamda)))
     else:
-        assert w[i, j] == Addition(n, i, j, lamda)
-        assert w_quote[i, j] == Addition(n, i, j, -lamda)
+        assert w[i, j] == AdditionMatrix(n, i, j, lamda)
+        assert w_quote[i, j] == AdditionMatrix(n, i, j, -lamda)
 
     return Equal(w_quote[i, j] @ w[i, j] @ x, x)
 

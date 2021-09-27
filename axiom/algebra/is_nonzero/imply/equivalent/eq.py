@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.lhs / p
 
-    Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-1], given=Eq[0], invert=True)
+    Eq << algebra.cond.given.cond.subs.bool.apply(Eq[-1], cond=Eq[0], invert=True)
 
 
 if __name__ == '__main__':

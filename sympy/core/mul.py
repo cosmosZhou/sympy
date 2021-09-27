@@ -1353,20 +1353,13 @@ class Mul(Expr, AssocOp):
     def _eval_is_algebraic_expr(self, syms):
         return all(term._eval_is_algebraic_expr(syms) for term in self.args)
 
-    _eval_is_commutative = lambda self: _fuzzy_group(a.is_commutative for a in self.args)
-    
-    _eval_is_complex = lambda self: _fuzzy_group((a.is_complex for a in self.args), quick_exit=True)
-
     def _eval_is_finite(self):
         if all(a.is_finite for a in self.args):
             return True
         if any(a.is_infinite for a in self.args):
             if all(a.is_zero == False for a in self.args):
                 return False
-
-    def _eval_is_rational(self):
-        return _fuzzy_group((a.is_rational for a in self.args), quick_exit=True)
-    
+            
     def _eval_is_algebraic(self):
         r = _fuzzy_group((a.is_algebraic for a in self.args), quick_exit=True)
         if r:
@@ -1393,11 +1386,11 @@ class Mul(Expr, AssocOp):
                     zero = None
         return zero
 
-    def _eval_is_integer(self):
-        if all(arg.is_integer for arg in self.args):
+    def _eval_is_extended_integer(self):
+        if all(arg.is_extended_integer for arg in self.args):
             return True
         
-        is_rational = self.is_rational
+        is_rational = self.is_extended_rational
 
         if is_rational:
             n, d = self.as_numer_denom()
@@ -1408,12 +1401,36 @@ class Mul(Expr, AssocOp):
         elif is_rational == False:
             return False
 
+    def _eval_is_super_integer(self):
+        return _fuzzy_group((a.is_super_integer for a in self.args), quick_exit=True)
+        
+    def _eval_is_extended_rational(self):
+        return _fuzzy_group((a.is_extended_rational for a in self.args), quick_exit=True)
+
+    def _eval_is_hyper_rational(self):
+        return _fuzzy_group((a.is_hyper_rational for a in self.args), quick_exit=True)
+        
+    def _eval_is_super_rational(self):
+        return _fuzzy_group((a.is_super_rational for a in self.args), quick_exit=True)
+    
+    def _eval_is_extended_real(self):
+        return self._eval_real_imag(True)
+
+    def _eval_is_hyper_real(self):
+        return _fuzzy_group((a.is_hyper_real for a in self.args), quick_exit=True)
+        
+    def _eval_is_super_real(self):
+        return _fuzzy_group((a.is_super_real for a in self.args), quick_exit=True)
+
+    def _eval_is_hyper_complex(self):
+        return _fuzzy_group((a.is_hyper_complex for a in self.args), quick_exit=True)
+    
+    def _eval_is_extended_complex(self):
+        return _fuzzy_group((a.is_extended_complex for a in self.args), quick_exit=True)
+
     def _eval_is_polar(self):
         has_polar = any(arg.is_polar for arg in self.args)
         return has_polar and all(arg.is_polar or arg.is_positive for arg in self.args)
-
-    def _eval_is_extended_real(self):
-        return self._eval_real_imag(True)
 
     def _eval_real_imag(self, real):
         zero = False
@@ -2207,16 +2224,22 @@ class Mul(Expr, AssocOp):
         if self.is_integer:
             from sympy.sets import Integers
             domain = Integers
-        elif self.is_extended_real:
+        elif self.is_real:
             from sympy.sets.fancysets import Reals
             domain = Reals
-        elif self.is_complex or self.is_extended_complex:
+        elif self.is_extended_real:
+            from sympy.sets.fancysets import ExtendedReals
+            domain = ExtendedReals
+        elif self.is_complex:
             domain = S.Complexes
+        elif self.is_extended_complex:
+            domain = S.ExtendedComplexes
         elif self.is_super_real:
-            domain = S.Surreals
+            from sympy import SuperReals
+            domain = SuperReals
         else:
-            assert self.is_super_complex, "%s is not super_complex" % self
-            domain = S.Surcomplexes
+            from sympy import SuperComplexes
+            domain = SuperComplexes
             
         coeff = []
         
@@ -2509,7 +2532,6 @@ class Mul(Expr, AssocOp):
         
         if all(arg.is_nonnegative for arg in self.args):
             return self
-    
     
     @property
     def dtype(self):

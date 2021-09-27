@@ -12,7 +12,7 @@ def apply(given):
 def prove(Eq):
     from axiom import algebra
 
-    x = Symbol(complex=True)
+    x = Symbol(super_complex=True)
     e = Symbol(real=True)
     Eq << apply(Equal(x, e))
 

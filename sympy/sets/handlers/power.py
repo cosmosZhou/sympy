@@ -44,33 +44,29 @@ def _set_pow(x, exponent):
         sleft = s1
 
     if x.start.is_positive:
-        return Interval(
-            Min(s1, s2),
-            Max(s1, s2), left_open, right_open)
+        return Interval(Min(s1, s2), Max(s1, s2), left_open=left_open, right_open=right_open)
     elif x.stop.is_negative:
-        return Interval(
-            Min(s1, s2),
-            Max(s1, s2), left_open, right_open)
+        return Interval(Min(s1, s2), Max(s1, s2), left_open=left_open, right_open=right_open)
 
     # Case where x.start < 0 and x.stop > 0:
     if exponent.is_odd:
         if exponent.is_negative:
             if x.start.is_zero:
-                return Interval(s2, oo, x.right_open)
+                return Interval(s2, oo, left_open=x.right_open)
             if x.stop.is_zero:
-                return Interval(-oo, s1, True, x.left_open)
-            return Union(Interval(-oo, s1, True, x.left_open), Interval(s2, oo, x.right_open))
+                return Interval(-oo, s1, left_open=True, right_open=x.left_open)
+            return Union(Interval(-oo, s1, left_open=True, right_open=x.left_open), Interval(s2, oo, left_open=x.right_open))
         else:
-            return Interval(s1, s2, x.left_open, x.right_open)
+            return Interval(s1, s2, left_open=x.left_open, right_open=x.right_open)
     elif exponent.is_even:
         if exponent.is_negative:
             if x.start.is_zero:
-                return Interval(s2, oo, x.right_open)
+                return Interval(s2, oo, left_open=x.right_open)
             if x.stop.is_zero:
-                return Interval(s1, oo, x.left_open)
+                return Interval(s1, oo, left_open=x.left_open)
             return Interval(0, oo)
         else:
-            return Interval(S.Zero, sleft, S.Zero not in x, left_open)
+            return Interval(S.Zero, sleft, left_open=S.Zero not in x, right_open=left_open)
 
 @dispatch(Interval, Infinity)
 def _set_pow(b, e):

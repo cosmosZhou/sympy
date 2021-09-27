@@ -22,19 +22,18 @@ def apply(given, d):
 @prove
 def prove(Eq):
     from axiom import sets, algebra
+
     x, a, b = Symbol(integer=True, given=True)
-
     d = Symbol(integer=True, positive=True, given=True)
-
     Eq << apply(NotElement(d * x, Range(a, b + 1)), d)
 
     Eq << ~Eq[-1]
 
     Eq.contains = sets.el.imply.el.mul.range.apply(Eq[-1], d)
 
-    Eq << algebra.imply.le.floor.apply(b, d)
+    Eq << algebra.imply.le.floor.apply(b / d) * d
 
-    Eq << algebra.imply.ge.ceiling.apply(a, d)
+    Eq << algebra.imply.ge.ceiling.apply(a / d) * d
 
     Eq << sets.le.ge.imply.subset.range.apply(Eq[-2], Eq[-1])
 

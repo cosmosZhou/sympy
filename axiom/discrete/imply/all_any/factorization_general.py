@@ -19,7 +19,7 @@ def apply(given):
 
     b = Symbol(integer=True, shape=(oo,), nonnegative=True)
 
-    d = Symbol(Lamda[i:n](i) @ MatProduct[i:n](Swap(n, i, b[i])))
+    d = Symbol(Lamda[i:n](i) @ MatProduct[i:n](SwapMatrix(n, i, b[i])))
     return All[p[:n]:P](Any[b[:n]](Equal(p[:n], Lamda[k:n](a[d[k]]))))
 
 

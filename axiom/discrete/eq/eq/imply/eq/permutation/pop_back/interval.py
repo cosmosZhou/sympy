@@ -40,7 +40,7 @@ def prove(Eq):
 
     Eq << ~Eq.plausible
 
-    Eq << Eq[-1].apply(sets.el.imply.any_el.st.cup)
+    Eq << Eq[-1].apply(sets.el_cup.imply.any_el)
 
     i = Eq[-1].variable
     _i = i.copy(domain=Range(0, n))

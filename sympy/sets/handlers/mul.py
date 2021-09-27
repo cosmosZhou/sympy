@@ -34,12 +34,8 @@ def _set_mul(x, y):
     # TODO: handle symbolic intervals
     minval, minopen = min(comvals)
     maxval, maxopen = max(comvals)
-    return Interval(
-        minval,
-        maxval,
-        minopen,
-        maxopen
-    )
+    return Interval(minval,maxval,
+                    left_open=minopen, right_open=maxopen)
     return SetExpr(Interval(start, end))
 
 
@@ -73,4 +69,4 @@ def _set_div(x, y):
         s1 = -oo
     else:
         s1 = 1/y.stop
-    return set_mul(x, Interval(s1, s2, y.right_open, y.left_open))
+    return set_mul(x, Interval(s1, s2, left_open=y.right_open, right_open=y.left_open))

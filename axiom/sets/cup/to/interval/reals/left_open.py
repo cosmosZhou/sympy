@@ -13,18 +13,23 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import sets
+    from axiom import sets, algebra
 
     k = Symbol(integer=True)
     Eq << apply(Cup[k](Interval(k, k + 1, left_open=True)))
 
-    Eq << Eq[0].this.lhs.apply(sets.cup.to.union.split, cond=k >= 0)
+    Eq << sets.eq.given.et.suffice.apply(Eq[0])
 
-    Eq << Eq[-1].this.find(~Cup | Cup).apply(sets.cup.limits.subs.negate, k, -k - 1)
+    x = Eq[-1].lhs
+    Eq <<= sets.el_cup.given.any_el.apply(Eq[-1])
 
-    Eq << Eq[-1].this.find(Cup).apply(sets.cup.to.interval.infinity.left_open)
+    Eq << algebra.any.given.cond.subs.apply(Eq[-1], Eq[-1].variable, Ceiling(x) - 1)
 
-    Eq << Eq[-1].this.find(Cup).apply(sets.cup.to.interval.negative_infinity.left_open)
+    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
+
+    Eq << algebra.imply.gt.ceiling.apply(x)
+
+    Eq << algebra.imply.le.ceiling.apply(x)
 
 
 if __name__ == '__main__':

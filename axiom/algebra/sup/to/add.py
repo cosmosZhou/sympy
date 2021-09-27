@@ -22,10 +22,25 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    x, m, h = Symbol(real=True)
+    from axiom import algebra
+
+    x, m, M, h = Symbol(real=True)
     f = Function(real=True)
-    M = Symbol(domain=Interval(m, oo, left_open=True))
     Eq << apply(Sup[x:m:M](f(x) + h))
+
+    y = Symbol(Eq[0].rhs.args[1])
+    Eq << y.this.definition.reversed
+
+    Eq <<= algebra.eq.imply.et.squeeze.apply(Eq[-1]), Eq[0].subs(Eq[-1])
+
+    z = Symbol(real=True)
+    Eq <<= algebra.le_sup.imply.all_le.apply(Eq[-3]), algebra.ge_sup.imply.all_any_gt.apply(Eq[-2], z), algebra.eq.given.et.squeeze.apply(Eq[-1])
+
+    Eq <<= algebra.le_sup.given.all_le.apply(Eq[-2]), algebra.ge_sup.given.all_any_gt.apply(Eq[-1], z)
+
+    Eq << algebra.all.given.all.limits.subs.offset.apply(Eq[-1], h)
+
+    Eq << Eq[-1].this.expr.expr - h
 
 
 if __name__ == '__main__':

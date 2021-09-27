@@ -45,8 +45,6 @@ class AssocOp(Basic):
 
     @cacheit
     def __new__(cls, *args, evaluate=None, _sympify=True):
-        from sympy import Order
-
         # Allow faster processing by passing ``_sympify=False``, if all arguments
         # are already sympified.
         if _sympify:
@@ -69,7 +67,7 @@ class AssocOp(Basic):
                 ).warn()
 
         args = [a for a in args if a is not cls.identity]
-        #sifting so here to simplify the result
+        # sifting so here to simplify the result
         if evaluate is None:
             evaluate = global_parameters.evaluate
         if not evaluate:
@@ -88,6 +86,7 @@ class AssocOp(Basic):
 
         if other_symbols is not None:
             if isinstance(other_symbols, tuple):
+                from sympy.series.order import Order
                 return Order(obj, *other_symbols)
             assert other_symbols.is_infinitesimal is not None
             return obj + other_symbols
@@ -364,6 +363,7 @@ class AssocOp(Basic):
                             if _nc[i:i + len(nc)] == nc:
                                 return True
             return False
+
         return is_in
 
     def _eval_evalf(self, prec):
@@ -458,13 +458,6 @@ class AssocOp(Basic):
                 shape = _shape
         return shape
 
-    def _eval_is_integer(self):
-        for arg in self.args:
-            if arg.is_integer:
-                continue
-            return None
-        return True
-
     def _eval_is_even(self):
         odd = self.is_odd
         if odd is None:
@@ -489,7 +482,6 @@ class AssocOp(Basic):
             if arg.is_extended_real == False:
                 return False
         return True
-
 
     _eval_is_super_real = lambda self: _fuzzy_group((a.is_super_real for a in self.args), quick_exit=True)
     _eval_is_extended_integer = lambda self: _fuzzy_group((a.is_extended_integer for a in self.args), quick_exit=True)
@@ -523,12 +515,6 @@ class AssocOp(Basic):
 
         return self.func(*args)
 
-#     def domain_definition(self):
-#         from sympy import S
-#         et = S.BooleanTrue
-#         for arg in self.args:
-#             et &= arg.domain_definition()
-#         return et
 
 class ShortCircuit(Exception):
     pass
@@ -636,7 +622,7 @@ class LatticeOp(AssocOp):
     def _new_args_filter(cls, arg_sequence, call_cls=None):
         """Generator filtering args"""
         ncls = call_cls or cls
-        for arg in arg_sequence:            
+        for arg in arg_sequence: 
             if ncls._need_to_be_raised(arg):
                 raise ShortCircuit(arg)
             elif ncls._need_to_be_filtered(arg):
@@ -683,6 +669,7 @@ class LatticeOp(AssocOp):
                     return (a, b)
         return res 
 
+
 class AssocOpDispatcher:
     """
     Handler dispatcher for associative operators
@@ -721,6 +708,7 @@ class AssocOpDispatcher:
     True
 
     """
+
     def __init__(self, name, doc=None):
         self.name = name
         self.doc = doc

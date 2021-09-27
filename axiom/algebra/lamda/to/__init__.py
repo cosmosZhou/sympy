@@ -8,3 +8,4 @@ from . import add
 from . import pow
 from . import blockMatrix
 from . import piece
+from . import transpose

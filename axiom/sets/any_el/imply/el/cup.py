@@ -16,7 +16,7 @@ def prove(Eq):
     A = Symbol(shape=(oo,), etype=dtype.integer)
     Eq << apply(Any[k:n](Element(x, A[k])))
 
-    Eq << sets.el.given.any_el.st.cup.apply(Eq[1])
+    Eq << sets.el_cup.given.any_el.apply(Eq[1])
 
 
 if __name__ == '__main__':

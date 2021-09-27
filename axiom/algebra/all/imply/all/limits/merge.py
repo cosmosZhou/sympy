@@ -54,12 +54,11 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import algebra
+
     n = Symbol(integer=True, positive=True)
     a, b = Symbol(real=True)
-
     x = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
-
     Eq << apply(All[x[:n]:CartesianSpace(Interval(a, b), n), x[n]:Interval(a, b)](f(x[:n + 1]) > 0))
 
     Eq << algebra.all.given.suffice.apply(Eq[1])

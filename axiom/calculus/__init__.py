@@ -34,3 +34,5 @@ from . import mul_sum
 from . import imply
 from . import eq_limit
 from . import neg
+from . import all_is_positive_real
+from . import limit_is_infinite

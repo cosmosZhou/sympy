@@ -27,7 +27,7 @@ def prove(Eq):
 
     Eq << algebra.gt.imply.is_positive.apply(Eq[-1])
 
-    Eq.sin_is_positive = algebra.eq.gt.imply.gt.add.apply(Eq[-3], Eq[-1])
+    Eq.sin_is_positive = algebra.eq.gt.imply.gt.subs.apply(Eq[-3], Eq[-1])
 
     Eq << geometry.imply.el.acos.apply(x)
 

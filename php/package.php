@@ -52,55 +52,25 @@ $module = substr($PATH_INFO, 1);
 if (\std\endsWith($module, '/')) {
     $module = substr($module, 0, - 1);
 }
-
-// error_log("theorems = " . \std\jsonify($theorems));
-// error_log("packages = " . \std\jsonify($packages));
-
 ?>
 
 <title><?php echo $module;?></title>
+<body></body>
 
-<div id=root>
-	<axiom-contents :packages=packages :theorems=theorems></axiom-contents>
-</div>
+<script src="https://unpkg.com/vue@3.2.11/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 
-<script
-	src="https://cdn.jsdelivr.net/npm/vue-async-computed@3.3.1/dist/vue-async-computed.min.js"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
 <script src='static/js/std.js'></script>
 <script src='static/js/utility.js'></script>
+
 <script>
-	var module = '<?php echo $module?>';
-	var packages = <?php echo \std\jsonify($packages)?>;	
-	var theorems = <?php echo \std\jsonify($theorems)?>;
-
-	Vue.use(httpVueLoader);
-	Vue.use(AsyncComputed);
-
-	Vue.component('axiom-contents', 'url:static/vue/axiom-contents.vue');
-
-	var data = {
-		packages: packages,
-		theorems: theorems,
-	};
-
-	//console.log("data = " + JSON.stringify(data));
-
-	var app = new Vue({
-		el: '#root',
-		data: data,	
-	});
-
-	promise(()=>{
-		document.querySelector('.theorem, .package').focus();
-	});
+createApp('axiomContents', {
+	packages: <?php echo \std\jsonify($packages)?>,
+	theorems: <?php echo \std\jsonify($theorems)?>,
+});
 </script>
 
 

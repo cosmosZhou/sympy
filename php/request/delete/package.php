@@ -46,18 +46,16 @@ if ($init->search('^@apply\b')) {
     rename($initPath, "$path.py");
 
     \mysql\delete_from_suggest($module, true);
-    
+
     \mysql\delete_from_axiom("$module\..+", true);
 } else {
     \std\deleteDirectory($path);
     delete_from_init($section, $package);
 
     \mysql\delete_from_suggest($module);
-    
+
     \mysql\delete_from_axiom('$module\b', true);
 }
-
-
 
 echo \std\jsonify("deleted!");
 ?>

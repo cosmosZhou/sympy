@@ -18,20 +18,20 @@ def prove(Eq):
 
     Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt='y')
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.all_el.st.cap), \
-    Eq[-1].this.rhs.apply(sets.el.given.all_el.st.cap)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cap.imply.all_el), \
+    Eq[-1].this.rhs.apply(sets.el_cap.given.all_el)
 
     Eq <<= Eq[-2].this.lhs.expr.apply(sets.el_piece.imply.ou), \
     Eq[-1].this.rhs.expr.apply(sets.el_piece.given.ou)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.el.split.intersect, simplify=None), \
+    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.et.el.split.intersect, simplify=None), \
     Eq[-1].this.lhs.apply(sets.el.imply.et.el.split.intersect, simplify=None)
 
-    Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el.given.all_el.st.cap), \
-    Eq[-1].this.lhs.find(Element).apply(sets.el.imply.all_el.st.cap)
+    Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el_cap.given.all_el), \
+    Eq[-1].this.lhs.find(Element).apply(sets.el_cap.imply.all_el)
 
-    Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el.given.all_el.st.cap), \
-    Eq[-1].this.lhs.find(Element).apply(sets.el.imply.all_el.st.cap)
+    Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el_cap.given.all_el), \
+    Eq[-1].this.lhs.find(Element).apply(sets.el_cap.imply.all_el)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.all.imply.et.split, cond=A), Eq[-1].this.rhs.apply(algebra.all.given.et.all.split, cond=A)
 

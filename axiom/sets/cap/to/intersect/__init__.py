@@ -21,20 +21,20 @@ def prove(Eq):
     #Eq << apply(Cap[x:A](f(x) & g(x)))
     Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt=y)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.el.split.intersect, simplify=False), \
+    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.et.el.split.intersect, simplify=False), \
     Eq[-1].this.lhs.apply(sets.el.imply.et.el.split.intersect, simplify=False)
 
-    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el.given.all_el.st.cap), \
-    Eq[-1].this.lhs.args[0].apply(sets.el.imply.all_el.st.cap)
+    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el_cap.given.all_el), \
+    Eq[-1].this.lhs.args[0].apply(sets.el_cap.imply.all_el)
 
-    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el.given.all_el.st.cap), \
-    Eq[-1].this.lhs.args[0].apply(sets.el.imply.all_el.st.cap)
+    Eq <<= Eq[-2].this.rhs.args[0].apply(sets.el_cap.given.all_el), \
+    Eq[-1].this.lhs.args[0].apply(sets.el_cap.imply.all_el)
 
     Eq <<= Eq[-2].this.rhs.apply(algebra.all.all.given.all_et), \
     Eq[-1].this.lhs.apply(algebra.all.all.imply.all_et)
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.all_el.st.cap), \
-    Eq[-1].this.rhs.apply(sets.el.given.all_el.st.cap)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cap.imply.all_el), \
+    Eq[-1].this.rhs.apply(sets.el_cap.given.all_el)
 
 
 if __name__ == '__main__':

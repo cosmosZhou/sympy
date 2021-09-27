@@ -1,12 +1,11 @@
 from util.utility import user
 from _collections import defaultdict
-from util.search import py_to_module, read_directory, read_all_files,\
+from util.search import py_to_module, read_directory, read_all_files, \
     yield_from_py, axiom_directory, is_py_theorem
 from os.path import basename
 from util import MySQL
 import time
 import datetime
-
 
 
 def read_all_axioms(dir):
@@ -20,7 +19,7 @@ def read_all_axioms(dir):
                 yield py, py[0:-len('/__init__.py')] + '.php'
 
 
-def retrieve_all_dependency():    
+def retrieve_all_dependency(): 
     print("axiom_directory =", axiom_directory())
     for py, php in read_all_axioms(axiom_directory()):
         source = py_to_module(php)
@@ -36,13 +35,13 @@ def retrieve_all_dependency():
 
 def insert_into_hierarchy():
     data = []
-    for caller, counts in retrieve_all_dependency():         
+    for caller, counts in retrieve_all_dependency(): 
         for callee, count in counts.items():
 #             print(user, caller, callee, count)
             args = user, caller, callee, count
             data.append(args)
         
-    MySQL.instance.execute('delete from tbl_hierarchy_py')
+    MySQL.instance.execute(f"delete from tbl_hierarchy_py where user = '{user}'")
     
     MySQL.instance.load_data('tbl_hierarchy_py', data)
 
@@ -50,7 +49,7 @@ def insert_into_hierarchy():
 def topological_sort():
     graph = {}
     axiomSet = set()
-    for caller, counts in retrieve_all_dependency():         
+    for caller, counts in retrieve_all_dependency(): 
         for callee, count in counts.items():
             if caller not in graph:
                 graph[caller] = []
@@ -68,6 +67,7 @@ def topological_sort():
     
     G = topological_sort_depth_first(graph)
     return G
+
     
 def update_timestamp():
     G = topological_sort()
@@ -92,10 +92,11 @@ def update_timestamp():
     rowcount = MySQL.instance.executemany("update tbl_axiom_py set timestamp = %s where user = 'sympy' and axiom = %s", seq_params)
     print("rowcount =", rowcount)
 
-#from util.hierarchy import update_timestamp
-#update_timestamp()
+
+# from util.hierarchy import update_timestamp
+# update_timestamp()
 if __name__ == '__main__':
     insert_into_hierarchy()
 #     update_timestamp()    
 
-#exec(open('./util/hierarchy.py').read())
+# exec(open('./util/hierarchy.py').read())

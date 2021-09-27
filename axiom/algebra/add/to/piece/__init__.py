@@ -12,9 +12,7 @@ def apply(self):
 
     del args[i]
     a = Add(*args)
-    ecs = ((e + a, c) for e, c in p.args)
-
-    return Equal(self, Piecewise(*ecs))
+    return Equal(self, Piecewise(*((e + a, c) for e, c in p.args)))
 
 
 @prove

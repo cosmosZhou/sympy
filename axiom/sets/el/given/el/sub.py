@@ -4,6 +4,7 @@ from util import *
 @apply
 def apply(imply, c):
     e, interval = imply.of(Element)
+    assert c.is_finite
     return Element(e - c, interval + -c)
 
 
@@ -20,8 +21,6 @@ def prove(Eq):
     Eq << sets.el.imply.ge.split.interval.apply(Eq[1])
 
     Eq << sets.el.given.et.split.interval.apply(Eq[0])
-
-
 
 
 if __name__ == '__main__':

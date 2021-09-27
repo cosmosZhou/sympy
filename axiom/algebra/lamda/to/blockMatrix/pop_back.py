@@ -11,12 +11,19 @@ def apply(self):
     return Equal(self, BlockMatrix(Lamda[i:a:b - 1](function), back), evaluate=False)
 
 
-@prove(provable=False)
+@prove
 def prove(Eq):
+    from axiom import algebra
+
     i = Symbol(integer=True)
     n, m = Symbol(integer=True, positive=True)
     f = Function(real=True, shape=(m, m))
     Eq << apply(Lamda[i:0:n + 1](f(i)))
+
+    i = Symbol(domain=Range(0, n + 1))
+    Eq << algebra.eq.given.eq.getitem.apply(Eq[0], i)
+
+    Eq << Eq[-1].this.rhs.apply(algebra.piece.to.kroneckerDelta)
 
 
 if __name__ == '__main__':

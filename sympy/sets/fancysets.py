@@ -1,14 +1,16 @@
 from sympy.core.basic import Basic
-from sympy.core.compatibility import as_int, with_metaclass, PY3
 from sympy.core.expr import Expr
-from sympy.core.function import Lambda
-from sympy.core.singleton import Singleton, S
+from sympy.core.singleton import S, Singleton
 from sympy.core.symbol import Dummy, symbols, dtype
 from sympy.core.sympify import _sympify, sympify, converter
 from sympy.logic.boolalg import And
-from sympy.sets.sets import Set, Interval, Union, ProductSet, FiniteSet
+from sympy.sets.sets import Set, Interval, Union, FiniteSet
 from sympy.utilities.misc import filldedent
+from sympy.core.logic import fuzzy_or, fuzzy_and
+from sympy.sets.sets import ProductSet
+
 Reals = Interval(S.NegativeInfinity, S.Infinity)
+ExtendedReals = Interval(S.NegativeInfinity, S.Infinity, left_open=False, right_open=False)
 
 
 class ImageSet(Set):
@@ -70,6 +72,7 @@ class ImageSet(Set):
     """
 
     def __new__(cls, flambda, *sets):
+        from sympy.core.function import Lambda
         if not isinstance(flambda, Lambda):
             raise ValueError('first argument must be a Lambda')
         if flambda is S.IdentityFunction and len(sets) == 1:
@@ -80,8 +83,11 @@ class ImageSet(Set):
         return Basic.__new__(cls, flambda, *sets)
 
     lamda = property(lambda self: self.args[0])
-    base_set = property(lambda self: ProductSet(self.args[1:]))
 
+    @property
+    def base_set(self): 
+        return ProductSet(self.args[1:])
+    
     @property
     def etype(self):
         return self.lamda.expr.type
@@ -121,6 +127,7 @@ class ImageSet(Set):
         from sympy.solvers.solveset import solveset, linsolve
         from sympy.solvers.solvers import solve
         from sympy.utilities.iterables import is_sequence, iterable, cartes
+        from sympy.core.function import Lambda
         L = self.lamda
         if is_sequence(other):
             if not is_sequence(L.expr):
@@ -229,331 +236,6 @@ class ImageSet(Set):
         return SetExpr(base_set)._eval_func(f).set
 
 
-class _Range(Set):
-    """
-    Represents a range of integers. Can be called as Range(stop),
-    Range(start, stop), or Range(start, stop, step); when step is
-    not given it defaults to 1.
-
-    `Range(stop)` is the same as `Range(0, stop, 1)` and the stop value
-    (just as for Python ranges) is not included in the Range values.
-
-        >>> from sympy import Range
-        >>> list(Range(3))
-        [0, 1, 2]
-
-    The step can also be negative:
-
-        >>> list(Range(10, 0, -2))
-        [10, 8, 6, 4, 2]
-
-    The stop value is made canonical so equivalent ranges always
-    have the same args:
-
-        >>> Range(0, 10, 3)
-        Range(0, 12, 3)
-
-    Infinite ranges are allowed. ``oo`` and ``-oo`` are never included in the
-    set (``Range`` is always a subset of ``Integers``). If the starting point
-    is infinite, then the final value is ``stop - step``. To iterate such a
-    range, it needs to be reversed:
-
-        >>> from sympy import oo
-        >>> r = Range(-oo, 1)
-        >>> r[-1]
-        0
-        >>> next(iter(r))
-        Traceback (most recent call last):
-        ...
-        ValueError: Cannot iterate over Range with infinite start
-        >>> next(iter(r.reversed))
-        0
-
-    Although Range is a set (and supports the normal set
-    operations) it maintains the order of the elements and can
-    be used in contexts where `range` would be used.
-
-        >>> from sympy import Interval
-        >>> Range(0, 10, 2).intersect(Interval(3, 7))
-        Range(4, 8, 2)
-        >>> list(_)
-        [4, 6]
-
-    Although slicing of a Range will always return a Range -- possibly
-    empty -- an empty set will be returned from any intersection that
-    is empty:
-
-        >>> Range(3)[:0]
-        Range(0, 0, 1)
-        >>> Range(3).intersect(Interval(4, oo))
-        EmptySet()
-        >>> Range(3).intersect(Range(4, oo))
-        EmptySet()
-
-    """
-
-    is_iterable = True
-
-    def __new__(cls, *args):
-        from sympy.functions.elementary.integers import ceiling
-        if len(args) == 1:
-            if isinstance(args[0], range if PY3 else xrange):
-                args = args[0].__reduce__()[1]  # use pickle method
-
-        # expand range
-        slc = slice(*args)
-
-        if slc.step == 0:
-            raise ValueError("step cannot be 0")
-
-        start, stop, step = slc.start or 0, slc.stop, slc.step or 1
-        try:
-            start, stop, step = [
-                w if w in [S.NegativeInfinity, S.Infinity]
-                else sympify(w)
-                for w in (start, stop, step)]
-        except ValueError:
-            raise ValueError(filldedent('''
-    Finite arguments to Range must be integers; `imageset` can define
-    other cases, e.g. use `imageset(i, i/10, Range(3))` to give
-    [0, 1/10, 1/5].'''))
-
-        if not step.is_Integer:
-            raise ValueError(filldedent('''
-    Ranges must have a literal integer step.'''))
-
-        if all(i.is_infinite for i in  (start, stop)):
-            if start == stop:
-                # canonical null handled below
-                start = stop = S.One
-            else:
-                raise ValueError(filldedent('''
-    Either the start or end value of the Range must be finite.'''))
-
-        if start.is_infinite:
-            if step * (stop - start) < 0:
-                start = stop = S.One
-            else:
-                end = stop
-        if not start.is_infinite:
-            ref = start if start.is_finite else stop
-            n = ceiling((stop - ref) / step)
-            if n <= 0:
-                # null Range
-                start = end = S.Zero
-                step = S.One
-            else:
-                end = ref + n * step
-        return Basic.__new__(cls, start, end, step)
-
-    start = property(lambda self: self.args[0])
-    stop = property(lambda self: self.args[1])
-    step = property(lambda self: self.args[2])
-
-    @property
-    def reversed(self):
-        """Return an equivalent Range in the opposite order.
-
-        Examples
-        ========
-
-        >>> from sympy import Range
-        >>> Range(10).reversed
-        Range(9, -1, -1)
-        """
-        if not self:
-            return self
-        return self.func(
-            self.stop - self.step, self.start - self.step, -self.step)
-
-    def _contains(self, other):
-        if not self:
-            return S.false
-        if other.is_infinite:
-            return S.false
-        if not other.is_integer:
-            return other.is_integer
-        ref = self.start if self.start.is_finite else self.stop
-        if (ref - other) % self.step:  # off sequence
-            return S.false
-        return _sympify(other >= self.inf and other <= self.sup)
-
-    def __iter__(self):
-        if self.start in [S.NegativeInfinity, S.Infinity]:
-            raise ValueError("Cannot iterate over Range with infinite start")
-        elif self:
-            i = self.start
-            step = self.step
-
-            while True:
-                if (step > 0 and not (self.start <= i < self.stop)) or \
-                   (step < 0 and not (self.stop < i <= self.start)):
-                    break
-                yield i
-                i += step
-
-    def __abs__(self):
-        if not self:
-            return 0
-        dif = self.stop - self.start
-        if dif.is_infinite:
-            raise ValueError(
-                "Use .size to get the length of an infinite Range")
-        return abs(dif // self.step)
-
-    @property
-    def size(self):
-        try:
-            return _sympify(abs(self))
-        except ValueError:
-            return S.Infinity
-
-    def __nonzero__(self):
-        return self.start != self.stop
-
-    __bool__ = __nonzero__
-
-    def __getitem__(self, i):
-        from sympy.functions.elementary.integers import ceiling
-        ooslice = "cannot slice from the end with an infinite value"
-        zerostep = "slice step cannot be zero"
-        # if we had to take every other element in the following
-        # oo, ..., 6, 4, 2, 0
-        # we might get oo, ..., 4, 0 or oo, ..., 6, 2
-        ambiguous = "cannot unambiguously re-stride from the end " + \
-            "with an infinite value"
-        if isinstance(i, slice):
-            if self.size.is_finite:
-                start, stop, step = i.indices(self.size)
-                n = ceiling((stop - start) / step)
-                if n <= 0:
-                    return Range(0)
-                canonical_stop = start + n * step
-                end = canonical_stop - step
-                ss = step * self.step
-                return Range(self[start], self[end] + ss, ss)
-            else:  # infinite Range
-                start = i.start
-                stop = i.stop
-                if i.step == 0:
-                    raise ValueError(zerostep)
-                step = i.step or 1
-                ss = step * self.step
-                #---------------------
-                # handle infinite on right
-                #   e.g. Range(0, oo) or Range(0, -oo, -1)
-                # --------------------
-                if self.stop.is_infinite:
-                    # start and stop are not interdependent --
-                    # they only depend on step --so we use the
-                    # equivalent reversed values
-                    return self.reversed[
-                        stop if stop is None else -stop + 1:
-                        start if start is None else -start:
-                        step].reversed
-                #---------------------
-                # handle infinite on the left
-                #   e.g. Range(oo, 0, -1) or Range(-oo, 0)
-                # --------------------
-                # consider combinations of
-                # start/stop {== None, < 0, == 0, > 0} and
-                # step {< 0, > 0}
-                if start is None:
-                    if stop is None:
-                        if step < 0:
-                            return Range(self[-1], self.start, ss)
-                        elif step > 1:
-                            raise ValueError(ambiguous)
-                        else:  # == 1
-                            return self
-                    elif stop < 0:
-                        if step < 0:
-                            return Range(self[-1], self[stop], ss)
-                        else:  # > 0
-                            return Range(self.start, self[stop], ss)
-                    elif stop == 0:
-                        if step > 0:
-                            return Range(0)
-                        else:  # < 0
-                            raise ValueError(ooslice)
-                    elif stop == 1:
-                        if step > 0:
-                            raise ValueError(ooslice)  # infinite singleton
-                        else:  # < 0
-                            raise ValueError(ooslice)
-                    else:  # > 1
-                        raise ValueError(ooslice)
-                elif start < 0:
-                    if stop is None:
-                        if step < 0:
-                            return Range(self[start], self.start, ss)
-                        else:  # > 0
-                            return Range(self[start], self.stop, ss)
-                    elif stop < 0:
-                        return Range(self[start], self[stop], ss)
-                    elif stop == 0:
-                        if step < 0:
-                            raise ValueError(ooslice)
-                        else:  # > 0
-                            return Range(0)
-                    elif stop > 0:
-                        raise ValueError(ooslice)
-                elif start == 0:
-                    if stop is None:
-                        if step < 0:
-                            raise ValueError(ooslice)  # infinite singleton
-                        elif step > 1:
-                            raise ValueError(ambiguous)
-                        else:  # == 1
-                            return self
-                    elif stop < 0:
-                        if step > 1:
-                            raise ValueError(ambiguous)
-                        elif step == 1:
-                            return Range(self.start, self[stop], ss)
-                        else:  # < 0
-                            return Range(0)
-                    else:  # >= 0
-                        raise ValueError(ooslice)
-                elif start > 0:
-                    raise ValueError(ooslice)
-        else:
-            if not self:
-                raise IndexError('Range index out of range')
-            if i == 0:
-                return self.start
-            if i == -1 or i is S.Infinity:
-                return self.stop - self.step
-            rv = (self.stop if i < 0 else self.start) + i * self.step
-            if rv.is_infinite:
-                raise ValueError(ooslice)
-            if rv < self.inf or rv > self.sup:
-                raise IndexError("Range index out of range")
-            return rv
-
-    @property
-    def _inf(self):
-        if not self:
-            raise NotImplementedError
-        if self.step > 0:
-            return self.start
-        else:
-            return self.stop - self.step
-
-    @property
-    def _sup(self):
-        if not self:
-            raise NotImplementedError
-        if self.step > 0:
-            return self.stop - self.step
-        else:
-            return self.start
-
-    @property
-    def _boundary(self):
-        return self
-
-
 class Range(Set):
     """
     Represents a range of integers. Can be called as Range(stop),
@@ -602,13 +284,10 @@ class Range(Set):
                 return b
             return
         # handle (-oo, oo)
-        infty = S.NegativeInfinity, S.Infinity
         if self.is_UniversalSet:
-            l, r = self.left, self.right
-            if l.is_real or l in infty or r.is_real or r in infty:
-                if not b.is_integer:
-                    return b.copy(integer=True)
-                return b
+            if b.is_Interval:
+                return b.copy(integer=True)
+            return b
 
         # We can't intersect [0,3] with [x,6] -- we don't know if x>0 or x<0
         if not self._is_comparable(b):
@@ -687,14 +366,11 @@ class Range(Set):
         if empty:
             return self.etype.emptySet
 
-        if self.is_integer or b.is_integer: 
-            return self.func(start, stop, left_open=left_open, right_open=right_open)
-        else:
-            return Interval(start, stop, left_open=left_open, right_open=right_open)
+        return self.func(start, stop, left_open=left_open, right_open=right_open)
 
     def _union_sets(self, b):
         from sympy import Min, Max
-        if self.max() in b:            
+        if self.max() in b: 
             return b.copy(start=Min(self.min(), b.min()), left_open=False, integer=True)
         elif self.min() in b:
             return b.copy(stop=Max(self.max(), b.max()), right_open=False, integer=True)
@@ -728,7 +404,7 @@ class Range(Set):
                         return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
                 else:
                     if self.stop == b.start - 1:
-                        if b.start <= b.stop:                                
+                        if b.start <= b.stop: 
                             return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
                     if self.stop == b.start:
                         if self.stop >= self.start and b.stop >= b.start:
@@ -737,7 +413,7 @@ class Range(Set):
                 return self._union_sets(b)
             
         if b.is_Interval:
-            if self._is_comparable(b):                
+            if self._is_comparable(b): 
                 # Non-overlapping intervals
                 stop = Min(self.stop, b.stop)
                 start = Max(self.start, b.start)
@@ -759,7 +435,7 @@ class Range(Set):
                         return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(b.start)
                 else:
                     if self.stop == b.start - 1:
-                        if b.start <= b.stop:                                
+                        if b.start <= b.stop: 
                             return self.func(self.start, b.stop, left_open=self.left_open, right_open=b.right_open) - FiniteSet(self.stop)
                     if self.stop == b.start:
                         return self.copy(stop=b.stop, right_open=b.right_open)
@@ -821,62 +497,70 @@ class Range(Set):
         if self.is_UniversalSet:
             return self
 
-    def __new__(cls, start=None, stop=None, left_open=False, right_open=True, **kwargs):
+    def __new__(cls, start=None, stop=None, **kwargs):
+         
         assert 'integer' not in kwargs
         if start is None or stop is None:
             if kwargs.get('positive'):
                 stop = S.Infinity
-                start = 1
+                start = S.One
             elif kwargs.get('nonnegative'):
-                start = 0
+                start = S.Zero
                 stop = S.Infinity
             elif kwargs.get('negative'):
                 start = S.NegativeInfinity
-                stop = 0
-                right_open = True
+                stop = S.Zero
+                kwargs['right_open'] = True
             elif kwargs.get('nonpositive'):
                 start = S.NegativeInfinity
-                stop = 0
+                stop = S.Zero
             else:
                 start = S.NegativeInfinity
                 stop = S.Infinity
                 
             if kwargs.get('odd'):
-                return cls(start, stop, left_open=left_open, right_open=right_open).retain_odd()
+                return cls(start, stop, left_open=start.is_NegativeInfinity, right_open=True).retain_odd()
             elif kwargs.get('even'):
-                return cls(start, stop, left_open=left_open, right_open=right_open).retain_even()
+                return cls(start, stop, left_open=start.is_NegativeInfinity, right_open=True).retain_even()
+        else:
+            start = _sympify(start)
+            stop = _sympify(stop)
+            
+        if 'left_open' in kwargs:
+            left_open = kwargs['left_open']
+        else:
+            # by default, infinite interval start points are open.
+            if start.is_NegativeInfinity:
+                left_open = True
+            else:
+                left_open = False
                 
-        start = _sympify(start)
-        stop = _sympify(stop)
-
-        inftys = [S.Infinity, S.NegativeInfinity]
-        # Only allow real intervals (use symbols with 'is_extended_real=True').
-        if not all(i.is_extended_real is not False or i in inftys for i in (start, stop)):
-            raise ValueError("Non-real intervals are not supported")
-
+        if 'right_open' in kwargs:
+            right_open = kwargs['right_open']
+        else:
+            # by default, stop points are open.
+            right_open = True
+                
+        
         # evaluate if possible
         if right_open and stop <= start or not right_open and stop < start:
-            return start.emptySet
+            return S.Zero.emptySet
 
         if stop == start:
             if left_open or right_open:
-                return start.emptySet
+                return S.Zero.emptySet
             else:
-                if start == S.Infinity or start == S.NegativeInfinity:
+                if start.is_Infinity or start.is_NegativeInfinity:
                     return start.emptySet                
                 return FiniteSet(stop)
 
-        # Make sure infinite interval stop points are open.
-        if start == S.NegativeInfinity:
-            left_open = True
-        if stop == S.Infinity:
-            right_open = True
-
         if left_open:
-            if start.is_finite and not start.is_integer:
-                start = start.floor().simplify()
-            start += 1
-            left_open = False
+            if start.is_finite:
+                if not start.is_integer:
+                    start = start.floor().simplify()
+                    
+                start += 1
+                left_open = False
         else:
             if start.is_finite and not start.is_integer: 
                 start = start.ceiling().simplify()                
@@ -899,8 +583,9 @@ class Range(Set):
                 if start == stop:
                     return FiniteSet(stop)
             
-            right_open = True
-            stop += 1
+            if stop.is_finite:
+                right_open = True
+                stop += 1
                 
         self = Basic.__new__(cls, start, stop)
         self.left_open = bool(left_open)
@@ -921,7 +606,6 @@ class Range(Set):
         else:
             stop = self.stop + 1
         return stop - start
-
 
     @property
     def start(self):
@@ -1055,12 +739,10 @@ class Range(Set):
         return self
 
     def to_mpi(self, prec=53):
-        return mpi(mpf(self.start._eval_evalf(prec)),
-            mpf(self.stop._eval_evalf(prec)))
+        return mpi(mpf(self.start._eval_evalf(prec)), mpf(self.stop._eval_evalf(prec)))
 
     def _eval_evalf(self, prec):
-        return Interval(self.left._eval_evalf(prec),
-            self.right._eval_evalf(prec),
+        return Interval(self.left._eval_evalf(prec), self.right._eval_evalf(prec),
                         left_open=self.left_open, right_open=self.right_open)
 
     def _is_comparable(self, other):
@@ -1154,9 +836,9 @@ class Range(Set):
             start += other.min()
             stop += other.max()
                         
-            if other.is_integer:            
+            if other.is_integer: 
                 return self.func(start, stop)
-            else:                
+            else: 
                 stop -= 1
                 return Interval(start, stop)
             
@@ -1299,9 +981,7 @@ class Range(Set):
 
     @property
     def etype(self):
-        if self.is_integer:
-            return dtype.integer
-        return dtype.real
+        return dtype.integer
 
     def _pretty(self, p): 
         if self.start == self.stop:
@@ -1333,8 +1013,33 @@ class Range(Set):
 
         return self._args + (self.left_open, self.right_open)
 
-    is_integer = True
+    def _eval_is_finite(self):
+        return (self.start.is_finite or self.left_open) and (self.stop.is_finite or self.right_open)
     
+    def _eval_is_extended_integer(self):
+        return True
+        
+    def _eval_is_super_integer(self):
+        return True
+    
+    def _eval_is_extended_rational(self):
+        return True        
+
+    def _eval_is_hyper_rational(self):
+        return True
+            
+    def _eval_is_super_rational(self):
+        return True
+    
+    def _eval_is_extended_real(self):
+        return True        
+
+    def _eval_is_hyper_real(self):
+        return True
+            
+    def _eval_is_super_real(self):
+        return True
+   
     def _eval_is_extended_negative(self):
         if self.min().is_extended_nonnegative:
             return False
@@ -1347,22 +1052,20 @@ class Range(Set):
         if self.min().is_extended_positive:
             return True
 
+    def _eval_is_extended_complex(self):
+        return True        
+
+    def _eval_is_hyper_complex(self):
+        return True
+
+    def _eval_is_algebraic(self):
+        return True        
+
     def _eval_is_zero(self):
         if self.min().is_extended_positive:
             return False
         if self.max().is_extended_negative:
             return False
-
-    def _eval_is_rational(self):
-        return True        
-
-    def _eval_is_algebraic(self):
-        return True        
-
-    def _eval_is_finite(self):
-        if self.start.is_finite:
-            return self.stop.is_finite
-        return self.start.is_finite
 
     def inverse(self):
         return
@@ -1371,15 +1074,16 @@ class Range(Set):
         if self.start == self.stop:
             return r"\left\{%s\right\}" % self._print(self.start)
         elif self.start.is_NegativeInfinity:
-            if self.stop.is_Infinity: 
-                return r"\mathbb{Z}"
-            elif self.stop.is_Zero:
-                if self.right_open:
+            if self.stop.is_Infinity:
+                if self.left_open and self.right_open: 
+                    return r"\mathbb{Z}"
+            elif self.stop.is_NegativeOne:
+                if self.left_open and not self.right_open:
                     return r"\mathbb{Z}^-"
                                     
         elif self.stop.is_Infinity:
-            if self.start.is_Zero:
-                if self.left_open:
+            if self.start.is_One:
+                if not self.left_open and self.right_open:
                     return r"\mathbb{Z}^+"
         
         if self.left_open:
@@ -1428,7 +1132,7 @@ class Range(Set):
             
     @classmethod
     def simplify_NotElement(cls, self, e, s):
-        if s.is_integer and e.is_Add:
+        if s.is_Range and e.is_Add:
             if S.NegativeOne in e.args:
                 s += S.One
                 e += S.One
@@ -1532,9 +1236,9 @@ def normalize_theta_set(theta):
         if interval_len >= 2 * S.Pi:
             if interval_len == 2 * S.Pi and theta.left_open and theta.right_open:
                 k = coeff(theta.start)
-                return Union(Interval(0, k * S.Pi, False, True),
-                        Interval(k * S.Pi, 2 * S.Pi, True, True))
-            return Interval(0, 2 * S.Pi, False, True)
+                return Union(Interval(0, k * S.Pi, left_open=False, right_open=True),
+                        Interval(k * S.Pi, 2 * S.Pi, left_open=True, right_open=True))
+            return Interval(0, 2 * S.Pi, left_open=False, right_open=True)
 
         k_start, k_end = coeff(theta.start), coeff(theta.stop)
 
@@ -1545,10 +1249,10 @@ def normalize_theta_set(theta):
         new_end = k_end * S.Pi
 
         if new_start > new_end:
-            return Union(Interval(S.Zero, new_end, False, theta.right_open),
-                         Interval(new_start, 2 * S.Pi, theta.left_open, True))
+            return Union(Interval(S.Zero, new_end, left_open=False, right_open=theta.right_open),
+                         Interval(new_start, 2 * S.Pi, left_open=theta.left_open, right_open=True))
         else:
-            return Interval(new_start, new_end, theta.left_open, theta.right_open)
+            return Interval(new_start, new_end, left_open=theta.left_open, right_open=theta.right_open)
 
     elif theta.is_FiniteSet:
         new_theta = []
@@ -1601,7 +1305,7 @@ class ComplexRegion(Set):
     >>> c = Interval(1, 8)
     >>> c1 = ComplexRegion(a*b)  # Rectangular Form
     >>> c1
-    ComplexRegion(Interval(2, 3) x Interval(4, 6), False)
+    CartesianComplexRegion(ProductSet(Interval(2, 3), Interval(4, 6)))
 
     * c1 represents the rectangular region in complex plane
       surrounded by the coordinates (2, 4), (3, 4), (3, 6) and
@@ -1609,7 +1313,7 @@ class ComplexRegion(Set):
 
     >>> c2 = ComplexRegion(Union(a*b, b*c))
     >>> c2
-    ComplexRegion(Union(Interval(2, 3) x Interval(4, 6), Interval(4, 6) x Interval(1, 8)), False)
+    CartesianComplexRegion(Union(ProductSet(Interval(2, 3), Interval(4, 6)), ProductSet(Interval(4, 6), Interval(1, 8))))
 
     * c2 represents the Union of two rectangular regions in complex
       plane. One of them surrounded by the coordinates of c1 and
@@ -1625,7 +1329,7 @@ class ComplexRegion(Set):
     >>> theta = Interval(0, 2*S.Pi)
     >>> c2 = ComplexRegion(r*theta, polar=True)  # Polar Form
     >>> c2  # unit Disk
-    ComplexRegion(Interval(0, 1) x Interval.Ropen(0, 2*pi), True)
+    PolarComplexRegion(ProductSet(Interval(0, 1), Interval.Ropen(0, 2*pi)))
 
     * c2 represents the region in complex plane inside the
       Unit Disk centered at the origin.
@@ -1639,14 +1343,16 @@ class ComplexRegion(Set):
     >>> upper_half_unit_disk = ComplexRegion(Interval(0, 1)*Interval(0, S.Pi), polar=True)
     >>> intersection = unit_disk.intersect(upper_half_unit_disk)
     >>> intersection
-    ComplexRegion(Interval(0, 1) x Interval(0, pi), True)
+    PolarComplexRegion(ProductSet(Interval(0, 1), Interval(0, pi)))
     >>> intersection == upper_half_unit_disk
     True
 
     See Also
     ========
 
-    Reals
+    CartesianComplexRegion
+    PolarComplexRegion
+    Complexes
 
     """
 
@@ -1668,57 +1374,12 @@ class ComplexRegion(Set):
         return None
 
     def __new__(cls, sets, polar=False):
-        from sympy import sin, cos
-
-        x, y, r, theta = symbols('x, y, r, theta', cls=Dummy)
-        I = S.ImaginaryUnit
-        polar = sympify(polar)
-
-        # Rectangular Form
-        if polar == False:
-            if all(_a.is_FiniteSet for _a in sets.args) and (len(sets.args) == 2):
-
-                # ** ProductSet of FiniteSets in the Complex Plane. **
-                # For Cases like ComplexRegion({2, 4}*{3}), It
-                # would return {2 + 3*I, 4 + 3*I}
-                complex_num = []
-                for x in sets.args[0]:
-                    for y in sets.args[1]:
-                        complex_num.append(x + I * y)
-                obj = FiniteSet(*complex_num)
-            else:
-                obj = ImageSet.__new__(cls, Lambda((x, y), x + I * y), sets)
-            obj._variables = (x, y)
-            obj._expr = x + I * y
-
-        # Polar Form
-        elif polar == True:
-            new_sets = []
-            # sets is Union of ProductSets
-            if not sets.is_ProductSet:
-                for k in sets.args:
-                    new_sets.append(k)
-            # sets is ProductSets
-            else:
-                new_sets.append(sets)
-            # Normalize input theta
-            for k, v in enumerate(new_sets):
-                from sympy.sets import ProductSet
-                new_sets[k] = ProductSet(v.args[0],
-                                         normalize_theta_set(v.args[1]))
-            sets = Union(*new_sets)
-            obj = ImageSet.__new__(cls, Lambda((r, theta),
-                                   r * (cos(theta) + I * sin(theta))),
-                                   sets)
-            obj._variables = (r, theta)
-            obj._expr = r * (cos(theta) + I * sin(theta))
-
+        if polar is False:
+            return CartesianComplexRegion(sets)
+        elif polar is True:
+            return PolarComplexRegion(sets)
         else:
             raise ValueError("polar should be either True or False")
-
-        obj._sets = sets
-        obj._polar = polar
-        return obj
 
     @property
     def sets(self):
@@ -1734,25 +1395,13 @@ class ComplexRegion(Set):
         >>> c = Interval(1, 7)
         >>> C1 = ComplexRegion(a*b)
         >>> C1.sets
-        Interval(2, 3) x Interval(4, 5)
+        ProductSet(Interval(2, 3), Interval(4, 5))
         >>> C2 = ComplexRegion(Union(a*b, b*c))
         >>> C2.sets
-        Union(Interval(2, 3) x Interval(4, 5), Interval(4, 5) x Interval(1, 7))
+        Union(ProductSet(Interval(2, 3), Interval(4, 5)), ProductSet(Interval(4, 5), Interval(1, 7)))
 
         """
-        return self._sets
-
-    @property
-    def args(self):
-        return (self._sets, self._polar)
-
-    @property
-    def variables(self):
-        return self._variables
-
-    @property
-    def expr(self):
-        return self._expr
+        return self.args[0]
 
     @property
     def psets(self):
@@ -1768,10 +1417,10 @@ class ComplexRegion(Set):
         >>> c = Interval(1, 7)
         >>> C1 = ComplexRegion(a*b)
         >>> C1.psets
-        (Interval(2, 3) x Interval(4, 5),)
+        (ProductSet(Interval(2, 3), Interval(4, 5)),)
         >>> C2 = ComplexRegion(Union(a*b, b*c))
         >>> C2.psets
-        (Interval(2, 3) x Interval(4, 5), Interval(4, 5) x Interval(1, 7))
+        (ProductSet(Interval(2, 3), Interval(4, 5)), ProductSet(Interval(4, 5), Interval(1, 7)))
 
         """
         if self.sets.is_ProductSet:
@@ -1840,27 +1489,6 @@ class ComplexRegion(Set):
         return b_interval
 
     @property
-    def polar(self):
-        """
-        Returns True if self is in polar form.
-
-        Examples
-        ========
-
-        >>> from sympy import Interval, ComplexRegion, Union, S
-        >>> a = Interval(2, 3)
-        >>> b = Interval(4, 5)
-        >>> theta = Interval(0, 2*S.Pi)
-        >>> C1 = ComplexRegion(a*b)
-        >>> C1.polar
-        False
-        >>> C2 = ComplexRegion(a*theta, polar=True)
-        >>> C2.polar
-        True
-        """
-        return self._polar
-
-    @property
     def _measure(self):
         """
         The measure of self.sets.
@@ -1892,13 +1520,13 @@ class ComplexRegion(Set):
         >>> from sympy import Interval, ComplexRegion
         >>> unit = Interval(0,1)
         >>> ComplexRegion.from_real(unit)
-        ComplexRegion(Interval(0, 1) x {0}, False)
+        CartesianComplexRegion(ProductSet(Interval(0, 1), FiniteSet(0)))
 
         """
-        if not sets.is_subset(Reals):
+        if not sets.is_subset(S.Reals):
             raise ValueError("sets must be a subset of the real line")
 
-        return cls(sets * FiniteSet(0))
+        return CartesianComplexRegion(sets * FiniteSet(0))
 
     def _contains(self, other):
         from sympy.functions import arg, Abs
@@ -1913,41 +1541,166 @@ class ComplexRegion(Set):
             return S.false
         # self in rectangular form
         if not self.polar:
-            if self is S.Complexes:
-                return True
-            
             re, im = other if isTuple else other.as_real_imag()
-            for element in self.psets:
-                if element.args[0]._contains(re) and element.args[1]._contains(im):
-                    return True
-            return False
+            return fuzzy_or(fuzzy_and([
+                pset.args[0]._contains(re),
+                pset.args[1]._contains(im)])
+                for pset in self.psets)
 
         # self in polar form
         elif self.polar:
+            if other.is_zero:
+                # ignore undefined complex argument
+                return fuzzy_or(pset.args[0]._contains(S.Zero)
+                    for pset in self.psets)
             if isTuple:
                 r, theta = other
-            elif other.is_zero:
-                r, theta = S.Zero, S.Zero
             else:
                 r, theta = Abs(other), arg(other)
-            for element in self.psets:
-                if And(element.args[0]._contains(r),
-                        element.args[1]._contains(theta)):
-                    return True
-            return False
+            if theta.is_real and theta.is_number:
+                # angles in psets are normalized to [0, 2pi)
+                theta %= 2 * S.Pi
+                return fuzzy_or(fuzzy_and([
+                    pset.args[0]._contains(r),
+                    pset.args[1]._contains(theta)])
+                    for pset in self.psets)
 
 
-class Complexes(with_metaclass(Singleton, ComplexRegion)):
+class CartesianComplexRegion(ComplexRegion):
+    """
+    Set representing a square region of the complex plane.
+
+    Z = {z in C | z = x + I*y, x in [Re(z)], y in [Im(z)]}
+
+    Examples
+    ========
+
+    >>> from sympy.sets.fancysets import ComplexRegion
+    >>> from sympy.sets.sets import Interval
+    >>> from sympy import I
+    >>> region = ComplexRegion(Interval(1, 3) * Interval(4, 6))
+    >>> 2 + 5*I in region
+    True
+    >>> 5*I in region
+    False
+
+    See also
+    ========
+
+    ComplexRegion
+    PolarComplexRegion
+    Complexes
+    """
+
+    polar = False
+    variables = symbols('x, y', cls=Dummy)
+
+    def __new__(cls, sets):
+
+        if sets == S.Reals @ S.Reals:
+            return S.Complexes
+
+        if all(_a.is_FiniteSet for _a in sets.args) and (len(sets.args) == 2):
+
+            # ** ProductSet of FiniteSets in the Complex Plane. **
+            # For Cases like ComplexRegion({2, 4}*{3}), It
+            # would return {2 + 3*I, 4 + 3*I}
+
+            # FIXME: This should probably be handled with something like:
+            # return ImageSet(Lambda((x, y), x+I*y), sets).rewrite(FiniteSet)
+            complex_num = []
+            for x in sets.args[0]:
+                for y in sets.args[1]:
+                    complex_num.append(x + S.ImaginaryUnit * y)
+            return FiniteSet(*complex_num)
+        else:
+            return Set.__new__(cls, sets)
+
+    @property
+    def expr(self):
+        x, y = self.variables
+        return x + S.ImaginaryUnit * y
+
+
+class PolarComplexRegion(ComplexRegion):
+    """
+    Set representing a polar region of the complex plane.
+
+    Z = {z in C | z = r*[cos(theta) + I*sin(theta)], r in [r], theta in [theta]}
+
+    Examples
+    ========
+
+    >>> from sympy.sets.fancysets import ComplexRegion, Interval
+    >>> from sympy import oo, pi, I
+    >>> rset = Interval(0, oo)
+    >>> thetaset = Interval(0, pi)
+    >>> upper_half_plane = ComplexRegion(rset * thetaset, polar=True)
+    >>> 1 + I in upper_half_plane
+    True
+    >>> 1 - I in upper_half_plane
+    False
+
+    See also
+    ========
+
+    ComplexRegion
+    CartesianComplexRegion
+    Complexes
+
+    """
+
+    polar = True
+    variables = symbols('r, theta', cls=Dummy)
+
+    def __new__(cls, sets):
+
+        new_sets = []
+        # sets is Union of ProductSets
+        if not sets.is_ProductSet:
+            for k in sets.args:
+                new_sets.append(k)
+        # sets is ProductSets
+        else:
+            new_sets.append(sets)
+        # Normalize input theta
+        for k, v in enumerate(new_sets):
+            new_sets[k] = ProductSet(v.args[0],
+                                     normalize_theta_set(v.args[1]))
+        sets = Union(*new_sets)
+        return Set.__new__(cls, sets)
+
+    @property
+    def expr(self):
+        from sympy.functions.elementary.trigonometric import sin, cos
+        r, theta = self.variables
+        return r * (cos(theta) + S.ImaginaryUnit * sin(theta))
+
+
+class Complexes(CartesianComplexRegion, metaclass=Singleton):
+    """
+    The Set of all complex numbers
+
+    Examples
+    ========
+
+    >>> from sympy import S, I
+    >>> S.Complexes
+    Complexes
+    >>> 1 + I in S.Complexes
+    True
+
+    See also
+    ========
+
+    Reals
+    ComplexRegion
+	"""
+    
     is_UniversalSet = True
     
     def __new__(cls):
-        return ComplexRegion.__new__(cls, Reals @ Reals)
-
-    def __eq__(self, other):
-        return other == ComplexRegion(Reals @ Reals)
-
-    def __hash__(self):
-        return hash(ComplexRegion(Reals @ Reals))
+        return Set.__new__(cls, ProductSet(Reals, Reals))
 
     def __str__(self):
         return "S.Complexes"
@@ -1983,62 +1736,26 @@ class Complexes(with_metaclass(Singleton, ComplexRegion)):
     def etype(self):
         return dtype.complex
 
-
-class Surreals(with_metaclass(Singleton, Set)):
-    
-    def __eq__(self, other):
-        return other.is_Surreals
-
-    def __hash__(self):
-        return hash(self.func.__name__)
-
-    def __str__(self):
-        return "S.Surreals"
-
-    def _latex(self, p):
-        return r"\mathbb{*R}"
-
-    def __repr__(self):
-        return "S.Surreals"
-
-    def __add__(self, other):
-        return self
-
-    def __matmul__(self, other):
-        if other.is_set:
-            return ProductSet(self, other)
-        
-        raise Exception("could not multiply %s, %s" % (self, other))
-
-    def __mul__(self, other):
-        if other.is_set:
-            return ProductSet(self, other)
-        return self
-
-    @property
-    def etype(self):
-        return dtype.super_real
-
     def _contains(self, other):
-        if other.is_super_real:
+        if other.is_complex:
             return True
+
         
-class Surcomplexes(with_metaclass(Singleton, Set)):
+class ExtendedComplexes(CartesianComplexRegion, metaclass=Singleton):
     
-    def __eq__(self, other):
-        return other.is_super_complex
-
-    def __hash__(self):
-        return hash(self.func.__name__)
-
+    is_UniversalSet = True
+    
+    def __new__(cls):
+        return Set.__new__(cls, ProductSet(ExtendedReals, ExtendedReals))
+    
     def __str__(self):
-        return "S.Surcomplexes"
+        return "S.ExtendedComplexes"
 
     def _latex(self, p):
         return r"\mathbb{*C}"
 
     def __repr__(self):
-        return "S.Surcomplexes"
+        return "S.ExtendedComplexes"
 
     def __add__(self, other):
         return self
@@ -2056,8 +1773,8 @@ class Surcomplexes(with_metaclass(Singleton, Set)):
 
     @property
     def etype(self):
-        return dtype.super_complex
+        return dtype.extended_complex
 
     def _contains(self, other):
-        if other.is_super_complex:
+        if other.is_extended_complex:
             return True

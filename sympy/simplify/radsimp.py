@@ -18,8 +18,6 @@ from sympy.polys import gcd
 from sympy.simplify.sqrtdenest import sqrtdenest
 
 
-
-
 def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_term=True):
     """
     Collect additive terms of an expression.
@@ -181,7 +179,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
                 else:
                     product.append(Pow(term, rat))
             else:
-                product.append(Pow(term, rat*sym))
+                product.append(Pow(term, rat * sym))
 
         return Mul(*product)
 
@@ -389,7 +387,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
                         if elem[2] is None:
                             e = elem[1]
                         else:
-                            e = elem[1]*elem[2]
+                            e = elem[1] * elem[2]
                         margs.append(Pow(elem[0], e))
                     index = Mul(*margs)
                 else:
@@ -416,7 +414,7 @@ def collect(expr, syms, func=None, evaluate=None, exact=False, distribute_order_
             [(key, func(val)) for key, val in collected.items()])
 
     if evaluate:
-        return Add(*[key*val for key, val in collected.items()])
+        return Add(*[key * val for key, val in collected.items()])
     else:
         return collected
 
@@ -528,7 +526,7 @@ def collect_sqrt(expr, evaluate=None):
             args = [Add(*args)]
         return tuple(args), nrad
 
-    return coeff*d
+    return coeff * d
 
 
 def collect_const(expr, *vars, **kwargs):
@@ -655,7 +653,7 @@ def collect_const(expr, *vars, **kwargs):
                 args.append(_keep_coeff(k, v, sign=True))
                 uneval = True
             else:
-                args.append(k*v)
+                args.append(k * v)
 
         if hit:
             if uneval:
@@ -744,6 +742,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
     from sympy.simplify.simplify import signsimp
 
     syms = symbols("a:d A:D")
+
     def _num(rterms):
         # return the multiplier that will simplify the expression described
         # by rterms [(sqrt arg, coeff), ... ]
@@ -751,20 +750,20 @@ def radsimp(expr, symbolic=True, max_terms=4):
         if len(rterms) == 2:
             reps = dict(list(zip([A, a, B, b], [j for i in rterms for j in i])))
             return (
-            sqrt(A)*a - sqrt(B)*b).xreplace(reps)
+            sqrt(A) * a - sqrt(B) * b).xreplace(reps)
         if len(rterms) == 3:
             reps = dict(list(zip([A, a, B, b, C, c], [j for i in rterms for j in i])))
             return (
-            (sqrt(A)*a + sqrt(B)*b - sqrt(C)*c)*(2*sqrt(A)*sqrt(B)*a*b - A*a**2 -
-            B*b**2 + C*c**2)).xreplace(reps)
+            (sqrt(A) * a + sqrt(B) * b - sqrt(C) * c) * (2 * sqrt(A) * sqrt(B) * a * b - A * a ** 2 - 
+            B * b ** 2 + C * c ** 2)).xreplace(reps)
         elif len(rterms) == 4:
             reps = dict(list(zip([A, a, B, b, C, c, D, d], [j for i in rterms for j in i])))
-            return ((sqrt(A)*a + sqrt(B)*b - sqrt(C)*c - sqrt(D)*d)*(2*sqrt(A)*sqrt(B)*a*b
-                - A*a**2 - B*b**2 - 2*sqrt(C)*sqrt(D)*c*d + C*c**2 +
-                D*d**2)*(-8*sqrt(A)*sqrt(B)*sqrt(C)*sqrt(D)*a*b*c*d + A**2*a**4 -
-                2*A*B*a**2*b**2 - 2*A*C*a**2*c**2 - 2*A*D*a**2*d**2 + B**2*b**4 -
-                2*B*C*b**2*c**2 - 2*B*D*b**2*d**2 + C**2*c**4 - 2*C*D*c**2*d**2 +
-                D**2*d**4)).xreplace(reps)
+            return ((sqrt(A) * a + sqrt(B) * b - sqrt(C) * c - sqrt(D) * d) * (2 * sqrt(A) * sqrt(B) * a * b
+                -A * a ** 2 - B * b ** 2 - 2 * sqrt(C) * sqrt(D) * c * d + C * c ** 2 + 
+                D * d ** 2) * (-8 * sqrt(A) * sqrt(B) * sqrt(C) * sqrt(D) * a * b * c * d + A ** 2 * a ** 4 - 
+                2 * A * B * a ** 2 * b ** 2 - 2 * A * C * a ** 2 * c ** 2 - 2 * A * D * a ** 2 * d ** 2 + B ** 2 * b ** 4 - 
+                2 * B * C * b ** 2 * c ** 2 - 2 * B * D * b ** 2 * d ** 2 + C ** 2 * c ** 4 - 2 * C * D * c ** 2 * d ** 2 + 
+                D ** 2 * d ** 4)).xreplace(reps)
         elif len(rterms) == 1:
             return sqrt(rterms[0][0])
         else:
@@ -800,26 +799,26 @@ def radsimp(expr, symbolic=True, max_terms=4):
             return expr
         elif not n.is_Atom:
             n = n.func(*[handle(a) for a in n.args])
-            return _unevaluated_Mul(n, handle(1/d))
+            return _unevaluated_Mul(n, handle(1 / d))
         elif n is not S.One:
-            return _unevaluated_Mul(n, handle(1/d))
+            return _unevaluated_Mul(n, handle(1 / d))
         elif d.is_Mul:
-            return _unevaluated_Mul(*[handle(1/d) for d in d.args])
+            return _unevaluated_Mul(*[handle(1 / d) for d in d.args])
 
         # By this step, expr is 1/d, and d is not a mul.
         if not symbolic and d.free_symbols:
             return expr
 
         if ispow2(d):
-            d2 = sqrtdenest(sqrt(d.base))**numer(d.exp)
+            d2 = sqrtdenest(sqrt(d.base)) ** numer(d.exp)
             if d2 != d:
-                return handle(1/d2)
+                return handle(1 / d2)
         elif d.is_Pow and (d.exp.is_integer or d.base.is_positive):
             # (1/d**i) = (1/d)**i
-            return handle(1/d.base)**d.exp
+            return handle(1 / d.base) ** d.exp
 
         if not (d.is_Add or ispow2(d)):
-            return 1/d.func(*[handle(a) for a in d.args])
+            return 1 / d.func(*[handle(a) for a in d.args])
 
         # handle 1/d treating d as an Add (though it may not be)
 
@@ -831,13 +830,13 @@ def radsimp(expr, symbolic=True, max_terms=4):
 
         # did it change?
         if d.is_Atom:
-            return 1/d
+            return 1 / d
 
         # is it a number that might be handled easily?
         if d.is_number:
             _d = nsimplify(d)
             if _d.is_Number and _d.equals(d):
-                return 1/_d
+                return 1 / _d
 
         while True:
             # collect similar terms
@@ -847,7 +846,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
                 other = []
                 for i in Mul.make_args(m):
                     if ispow2(i, log2=True):
-                        p2.append(i.base if i.exp is S.Half else i.base**(2*i.exp))
+                        p2.append(i.base if i.exp is S.Half else i.base ** (2 * i.exp))
                     elif i is S.ImaginaryUnit:
                         p2.append(S.NegativeOne)
                     else:
@@ -870,9 +869,9 @@ def radsimp(expr, symbolic=True, max_terms=4):
                 # in general, only 4 terms can be removed with repeated squaring
                 # but other considerations can guide selection of radical terms
                 # so that radicals are removed
-                if all([x.is_Integer and (y**2).is_Rational for x, y in rterms]):
+                if all([x.is_Integer and (y ** 2).is_Rational for x, y in rterms]):
                     nd, d = rad_rationalize(S.One, Add._from_args(
-                        [sqrt(x)*y for x, y in rterms]))
+                        [sqrt(x) * y for x, y in rterms]))
                     n *= nd
                 else:
                     # is there anything else that might be attempted?
@@ -889,7 +888,7 @@ def radsimp(expr, symbolic=True, max_terms=4):
 
         if not keep:
             return expr
-        return _unevaluated_Mul(n, 1/d)
+        return _unevaluated_Mul(n, 1 / d)
 
     coeff, expr = expr.as_coeff_Add()
     expr = expr.normal()
@@ -900,20 +899,20 @@ def radsimp(expr, symbolic=True, max_terms=4):
             was = (n, d)
             n = signsimp(n, evaluate=False)
             d = signsimp(d, evaluate=False)
-            u = Factors(_unevaluated_Mul(n, 1/d))
-            u = _unevaluated_Mul(*[k**v for k, v in u.factors.items()])
+            u = Factors(_unevaluated_Mul(n, 1 / d))
+            u = _unevaluated_Mul(*[k ** v for k, v in u.factors.items()])
             n, d = fraction(u)
             if old == (n, d):
                 n, d = was
         n = expand_mul(n)
         if d.is_Number or d.is_Add:
-            n2, d2 = fraction(gcd_terms(_unevaluated_Mul(n, 1/d)))
+            n2, d2 = fraction(gcd_terms(_unevaluated_Mul(n, 1 / d)))
             if d2.is_Number or (d2.count_ops() <= d.count_ops()):
                 n, d = [signsimp(i) for i in (n2, d2)]
                 if n.is_Mul and n.args[0].is_Number:
                     n = n.func(*n.args)
 
-    return coeff + _unevaluated_Mul(n, 1/d)
+    return coeff + _unevaluated_Mul(n, 1 / d)
 
 
 def rad_rationalize(num, den):
@@ -932,9 +931,9 @@ def rad_rationalize(num, den):
     if not den.is_Add:
         return num, den
     g, a, b = split_surds(den)
-    a = a*sqrt(g)
-    num = _mexpand((a - b)*num)
-    den = _mexpand(a**2 - b**2)
+    a = a * sqrt(g)
+    num = _mexpand((a - b) * num)
+    den = _mexpand(a ** 2 - b ** 2)
     return rad_rationalize(num, den)
 
 
@@ -1000,7 +999,7 @@ def fraction(expr, exact=False):
 
     for term in Mul.make_args(expr):
 #         if term.is_commutative and (term.is_Pow or isinstance(term, exp)):
-        if term.is_Pow or isinstance(term, exp):            
+        if term.is_Pow or isinstance(term, exp): 
             b, ex = term.as_base_exp()
             if ex.is_negative:
                 if ex is S.NegativeOne:
@@ -1075,26 +1074,26 @@ def split_surds(expr):
     """
     args = sorted(expr.args, key=default_sort_key)
     coeff_muls = [x.as_coeff_Mul() for x in args]
-    surds = [x[1]**2 for x in coeff_muls if x[1].is_Pow]
+    surds = [x[1] ** 2 for x in coeff_muls if x[1].is_Pow]
     surds.sort(key=default_sort_key)
     g, b1, b2 = _split_gcd(*surds)
     g2 = g
     if not b2 and len(b1) >= 2:
-        b1n = [x/g for x in b1]
+        b1n = [x / g for x in b1]
         b1n = [x for x in b1n if x != 1]
         # only a common factor has been factored; split again
         g1, b1n, b2 = _split_gcd(*b1n)
-        g2 = g*g1
+        g2 = g * g1
     a1v, a2v = [], []
     for c, s in coeff_muls:
         if s.is_Pow and s.exp == S.Half:
             s1 = s.base
             if s1 in b1:
-                a1v.append(c*sqrt(s1/g2))
+                a1v.append(c * sqrt(s1 / g2))
             else:
-                a2v.append(c*s)
+                a2v.append(c * s)
         else:
-            a2v.append(c*s)
+            a2v.append(c * s)
     a = Add(*a1v)
     b = Add(*a2v)
     return g2, a, b

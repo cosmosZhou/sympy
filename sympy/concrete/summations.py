@@ -159,9 +159,6 @@ class Sum(AddWithLimits, ExprWithIntLimits):
         else:
             f = self.expr
 
-#         if self.expr.is_Matrix:
-#             return self.expand().doit()
-
         for n, limit in enumerate(self.limits):
             if len(limit) != 3:
                 return self
@@ -1263,7 +1260,7 @@ domain & limit[1] = %s
             domain &= universe
             if not domain:
                 return S.Zero
-            assert domain.is_integer, domain
+            assert domain.is_super_integer, domain
             
             if domain.is_Piecewise:
                 domain = Union(*(e for e, _ in domain.args)) & universe

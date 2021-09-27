@@ -30,7 +30,7 @@ def prove(Eq):
         Eq[-2].this.lhs.apply(algebra.le.gt.imply.lt.transit),\
         algebra.cond.imply.suffice.et.apply(Eq[0] & Eq[1], cond=Eq[-1].lhs)
 
-    Eq <<= Eq[-3].this.rhs.apply(algebra.cond.imply.et.suffice_et.split, cond=M + m > 0), \
+    Eq <<= Eq[-3].this.rhs.apply(algebra.cond.imply.et.suffice.et.split, cond=M + m > 0), \
         Eq[-1].this.rhs.args[::2].apply(algebra.is_nonpositive.lt.imply.eq.max, simplify=None, ret=slice(None)), \
         Eq[-4].this.rhs.args[-1].apply(algebra.gt.imply.ge.relax), \
         Eq[-2].this.lhs.apply(algebra.lt.imply.le.relax)

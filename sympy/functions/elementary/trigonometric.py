@@ -2010,7 +2010,9 @@ class sinc(Function):
 class InverseTrigonometricFunction(Function):
     """Base class for inverse trigonometric functions."""
 
-    pass
+    def _eval_is_finite(self):
+        if self.arg.is_real:
+            return True
 
 
 class asin(InverseTrigonometricFunction):
@@ -3072,7 +3074,7 @@ class atan2(InverseTrigonometricFunction):
                 elif y.is_negative:
                     return -S.Pi / 2
                 elif y.is_zero:
-                    return S.Zero # here we define atan2(0, 0) = 0, previous definition : return S.NaN
+                    return S.Zero  # here we define atan2(0, 0) = 0, previous definition : return S.NaN
         if y.is_zero and x.is_extended_real and fuzzy_not(x.is_zero):
             return S.Pi * (S.One - Heaviside(x))
         if x.is_number and y.is_number:

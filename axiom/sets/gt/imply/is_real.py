@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(given):
     n, b = given.of(Greater)
-
+    assert n.is_finite
     return Element(n, Interval(-oo, oo))
 
 
@@ -17,6 +17,7 @@ def prove(Eq):
     Eq << apply(x > b)
 
     Eq << sets.gt.imply.el.interval.apply(Eq[0])
+
     Eq << sets.el.imply.el.relax.apply(Eq[-1], Interval(-oo, oo))
 
 

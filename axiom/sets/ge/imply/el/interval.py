@@ -4,7 +4,7 @@ from util import *
 @apply(simplify=None)
 def apply(given):
     n, b = given.of(GreaterEqual)
-
+    assert n.is_finite
     return Element(n, Interval(b, oo))
 
 

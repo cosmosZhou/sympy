@@ -83,3 +83,4 @@ if __name__ == '__main__':
     run()
 from . import pop_back
 from . import pop_front
+from . import split

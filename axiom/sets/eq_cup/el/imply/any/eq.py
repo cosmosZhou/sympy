@@ -24,7 +24,7 @@ def prove(Eq):
     Eq << apply(Equal(X, a[:Card(X)].set_comprehension()), Element(x, X))
 
     Eq << Eq[1].subs(Eq[0])
-    Eq << sets.el.imply.any_el.st.cup.apply(Eq[-1])
+    Eq << sets.el_cup.imply.any_el.apply(Eq[-1])
 
 
 if __name__ == '__main__':

@@ -16,7 +16,7 @@ def apply(given):
 
     assert x[j] == xj and x[i] == xi and x[0] == x0 and dtype == x.type
 
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
 
     return All(Element(w[i, j] @ x, S), (x, S))
 

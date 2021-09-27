@@ -174,7 +174,7 @@ function insertmany($table, $matrix, $replace = true)
     $insert = $replace ? 'replace' : 'insert';
 
     $sql = "$insert into $table values" . implode(",", array_map(fn ($vector) => "(" . substr(\std\jsonify($vector), 1, - 1) . ")", $matrix));
-    error_log("sql = $sql");
+//     error_log("sql = $sql");
     return execute($sql);
 }
 
@@ -483,9 +483,10 @@ function yield_from_mysql($axiom)
 
 function yield_from_sql($sqlFile)
 {
-    // error_log("function yield_from_sql($sqlFile)");
-    // error_log(file_get_contents($sqlFile));
-    // error_log(\std\jsonify(explode(';', file_get_contents($sqlFile))));
+//     error_log("function yield_from_sql($sqlFile)");
+//     error_log(file_get_contents($sqlFile));
+//     error_log(\std\jsonify(explode(';', file_get_contents($sqlFile))));
+    
     $text = new Text($sqlFile);
 
     foreach ($text as $line) {
@@ -493,10 +494,10 @@ function yield_from_sql($sqlFile)
             continue;
         }
 
-        if (\std\startsWith($line, 'b')) {
+        if (\std\startsWith($line, 'b'))
             $line = substr($line, 2, - 1);
-        }
 
+//         error_log("line = " . $line);
         preg_match("/update tbl_axiom_py set state = \"\w+\", lapse = \S+, latex = (\"[\s\S]+\") where user = \"\w+\" and axiom = \"\S+\"/", $line, $matches);
         $latex = $matches[1];
         $latex = eval("return $latex;");
@@ -728,7 +729,7 @@ function update_suggest($package, $old, $new, $is_folder = false)
     } else
         $sql = "update tbl_suggest_py set phrase = '$new' where user = '$user' and prefix = '$package' and phrase = '$old'";
 
-    error_log("sql = $sql");
+//     error_log("sql = $sql");
 
     $rows_affected = \mysql\execute($sql);
     if ($rows_affected < 1) {
@@ -765,7 +766,7 @@ function update_axiom($old, $new, $is_folder = false)
         $sql = "update tbl_axiom_py set axiom = '$new' where user = '$user' and axiom = '$old'";
     }
 
-    error_log("sql = $sql");
+//     error_log("sql = $sql");
     $rows_affected = \mysql\execute($sql);
     if ($rows_affected < 1) {
         error_log("error found in $sql");
@@ -785,12 +786,12 @@ function replace_with_callee($old, $new)
     }
 
     $old_regex = "(?<=from axiom\.)$old_regex(?= import \w+)";
-    //php doesn't support variable-lenth looking-behind assertion
-    //$old_regex = "(?<=^ *from axiom\.)$old_regex(?= import \w+)";    
+    // php doesn't support variable-lenth looking-behind assertion
+    // $old_regex = "(?<=^ *from axiom\.)$old_regex(?= import \w+)";
     foreach (\mysql\select("select caller from tbl_function_py where user = '$user' and callee = '$old'") as list ($caller,)) {
         $pyFile = module_to_py($caller);
         $pyFile = new Text($pyFile);
-        
+
         $pyFile->preg_replace($old_regex, $new);
     }
 }
@@ -806,7 +807,7 @@ function reaplce_axiom_in_hierarchy($old, $new)
 
     error_log("sql = update tbl_function_py set caller = '$new' where user = '$user' and caller = '$old'");
     $rows_affected = \mysql\execute("update tbl_function_py set caller = '$new' where user = '$user' and caller = '$old'");
-    
+
     error_log("sql = update tbl_function_py set callee = '$new' where user = '$user' and callee = '$old'");
     $rows_affected = \mysql\execute("update tbl_function_py set callee = '$new' where user = '$user' and callee = '$old'");
 }
@@ -831,15 +832,13 @@ function update_hierarchy($old, $new, $is_folder = false)
         }
         // these two for loop cannot be combined because results of replace_with_callee depend on reaplce_axiom_in_hierarchy
         foreach ($replaceDict as $old => $new) {
-            reaplce_axiom_in_hierarchy($old, $new);            
+            reaplce_axiom_in_hierarchy($old, $new);
         }
-        
-        
     } else {
         // update the python files that contains $old theorem!
         $sql = "select caller from tbl_hierarchy_py where user = '$user' and callee = '$old'";
 
-        error_log("sql = $sql");
+//         error_log("sql = $sql");
 
         replace_with_callee($old, $new);
 

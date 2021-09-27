@@ -6,10 +6,10 @@ def apply(n, w=None, left=True, P=None):
     i, j = Symbol(integer=True)
 
     if w is None:
-        w = Symbol(Lamda[j, i](Swap(n, i, j)))
+        w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     else:
         assert len(w.shape) == 4 and all(s == n for s in w.shape)
-        assert w[i, j].is_Swap or w[i, j].definition.is_Swap
+        assert w[i, j].is_SwapMatrix or w[i, j].definition.is_SwapMatrix
 
     x = Symbol(shape=(oo,), integer=True, nonnegative=True)
     x = x[:n]

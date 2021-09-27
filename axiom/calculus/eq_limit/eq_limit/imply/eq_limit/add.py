@@ -22,11 +22,12 @@ def prove(Eq):
     f, g = Function(real=True)
     Eq << apply(Equal(Limit[x:x0](f(x)), A), Equal(Limit[x:x0](g(x)), B))
 
-    Eq << sets.eq.imply.is_real.apply(Eq[0])
+    Eq << sets.eq.imply.is_real.apply(Eq[0], simplify=None)
 
-    Eq << sets.eq.imply.is_real.apply(Eq[1])
+    Eq << sets.eq.imply.is_real.apply(Eq[1], simplify=None)
 
     Eq << calculus.is_limited.is_limited.imply.eq.algebraic_limit_theorem.add.apply(Eq[-1], Eq[-2])
+
     Eq << Eq[-1].subs(Eq[0], Eq[1])
 
 

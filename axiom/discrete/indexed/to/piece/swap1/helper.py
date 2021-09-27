@@ -7,10 +7,10 @@ def apply(x, w=None):
     i, j = Symbol(integer=True)
 
     if w is None:
-        w = Symbol.w(Lamda[j](Swap(n, 0, j)))
+        w = Symbol.w(Lamda[j](SwapMatrix(n, 0, j)))
 
     assert w.shape == (n, n, n)
-    assert w[j].definition == Swap(n, 0, j)
+    assert w[j].definition == SwapMatrix(n, 0, j)
 
     return Equal(Lamda[i:n](x[w[j][i] @ Lamda[i:n](i)]), Lamda[i:n](Piecewise((x[0], Equal(i, j)), (x[j], Equal(i, 0)), (x[i], True))))
 

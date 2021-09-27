@@ -10,7 +10,7 @@ def apply(eq_cup):
 
     _X, y = X_complement.of(Complement[Basic, FiniteSet])
     assert _X == X
-
+    assert X.is_finiteset
     return Element(y, X)
 
 
@@ -18,7 +18,7 @@ def apply(eq_cup):
 def prove(Eq):
     from axiom import sets, algebra
 
-    X = Symbol(etype=dtype.real, given=True)
+    X = Symbol(etype=dtype.real, given=True, finiteset=True)
     y = Symbol(real=True, given=True)
     b = Symbol(real=True, shape=(oo,))
     n = Card(X)
@@ -33,6 +33,7 @@ def prove(Eq):
     Eq << sets.imply.le.cup.apply(*Eq[-1].rhs.args)
 
     Eq << sets.eq.imply.eq.card.apply(Eq[-2])
+
     Eq << algebra.eq.le.imply.le.subs.apply(Eq[-1], Eq[-2])
 
 

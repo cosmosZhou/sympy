@@ -8,7 +8,7 @@ def apply(eq_xy, eq_ab, i=None):
     assert w == _w
     [n] = x.shape
     [__n] = a.shape
-    _n, _i, _j = w.of(Swap)
+    _n, _i, _j = w.of(SwapMatrix)
     assert n == _n == __n
     assert _i >= 0 and _i < n
     assert _j >= 0 and _j < n
@@ -25,7 +25,7 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     x, y, a, b = Symbol(shape=(n,), real=True, given=True)
     i, j = Symbol(domain=Range(0, n))
-    Eq << apply(Equal(x @ Swap(n, i, j), y), Equal(a @ Swap(n, i, j), b))
+    Eq << apply(Equal(x @ SwapMatrix(n, i, j), y), Equal(a @ SwapMatrix(n, i, j), b))
 
     _i = Eq[-1].lhs.variable
     Eq << Eq[0][_i].reversed

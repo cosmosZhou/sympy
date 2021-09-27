@@ -4,10 +4,7 @@ from util import *
 @apply
 def apply(is_positive, gt):
     x = is_positive.of(Expr > 0)
-    if x is None:
-        is_positive, gt = gt, is_positive
-        x = is_positive.of(Expr > 0)
-
+    assert x.is_finite
     lhs, rhs = gt.of(Greater)
     return Greater(lhs / x, rhs / x)
 

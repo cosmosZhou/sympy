@@ -26,6 +26,7 @@ def transposition(Equal, given, lhs=-1, rhs=None):
         _rhs = Add(*_rhs)
         _lhs -= x
 
+    assert x.is_finite
     return Equal(_lhs, _rhs, evaluate=False)
 
 

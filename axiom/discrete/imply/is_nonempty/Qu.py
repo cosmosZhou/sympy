@@ -4,7 +4,7 @@ from util import *
 @apply
 def apply(n, u=None):
     from axiom.discrete.imply.all_et.mapping.Qu2v import predefined_symbols
-    Q, w, x = predefined_symbols(n)
+    Q, *_ = predefined_symbols(n)
     if u is None:
         u = Q.definition.variable
     return Unequal(Q[u], Q[u].etype.emptySet)
@@ -20,7 +20,7 @@ def prove(Eq):
     i = Symbol(integer=True)
     Q, t = Eq[0].lhs.args
     _t = t.copy(domain=Range(0, n + 1))
-    a = Symbol(Lamda[i:n + 1](i) @ Swap(n + 1, n, _t))
+    a = Symbol(Lamda[i:n + 1](i) @ SwapMatrix(n + 1, n, _t))
     Eq << a.this.definition
 
     Eq << a[n].this.definition.this.rhs.apply(discrete.matmul.to.sum)

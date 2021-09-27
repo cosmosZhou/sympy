@@ -6,7 +6,11 @@ def apply(given):
     (lt, *limits_f), *limits_e = given.of(Any[All])
 
     assert len(limits_f) == 1
-    x, domain = limits_f[0]
+    x, *ab = limits_f[0]
+    if len(ab) == 2:
+        domain = (Range if x.is_integer else Interval)(*ab)
+    else:
+        [domain] = ab
 
     abs_fx_A, epsilon = lt.of(Less)
 
@@ -34,13 +38,18 @@ def apply(given):
 
     assert len(limits_e) == 1
     delta, *_ = limits_e[0]
-    assert delta > 0
+    assert delta >= 0
 
     if x.is_integer:
         assert delta.is_integer
-
-        _x, _delta = domain.of(Greater)
-        assert x == _x
+        
+        if domain.is_set:
+            N1 = domain.of(Range[Infinity])
+            _delta = N1 - 1
+        else:
+            _x, _delta = domain.of(Greater)
+            assert x == _x
+            
         assert delta == _delta
         return Equal(Limit[x:oo](fx), A)
     else:

@@ -11,7 +11,7 @@ def apply(self):
     return Equal(self, rhs, evaluate=False)
 
 
-@prove(provable=False)
+@prove
 def prove(Eq):
     from axiom import algebra
 

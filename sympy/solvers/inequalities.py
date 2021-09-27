@@ -63,7 +63,7 @@ def solve_poly_inequality(poly, rel):
         left = S.NegativeInfinity
 
         for right, _ in reals + [(S.Infinity, 1)]:
-            interval = Interval(left, right, True, True)
+            interval = Interval(left, right, left_open=True, right_open=True)
             intervals.append(interval)
             left = right
     else:
@@ -91,20 +91,20 @@ def solve_poly_inequality(poly, rel):
             if multiplicity % 2:
                 if sign == eq_sign:
                     intervals.insert(
-                        0, Interval(left, right, not equal, right_open))
+                        0, Interval(left, right, left_open=not equal, right_open=right_open))
 
                 sign, right, right_open = -sign, left, not equal
             else:
                 if sign == eq_sign and not equal:
                     intervals.insert(
-                        0, Interval(left, right, True, right_open))
+                        0, Interval(left, right, left_open=True, right_open=right_open))
                     right, right_open = left, True
                 elif sign != eq_sign and equal:
                     intervals.insert(0, Interval(left, left))
 
         if sign == eq_sign:
             intervals.insert(
-                0, Interval(S.NegativeInfinity, right, True, right_open))
+                0, Interval(S.NegativeInfinity, right, left_open=True, right_open=right_open))
 
     return intervals
 
@@ -512,7 +512,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
 
             inf, sup = domain.inf, domain.sup
             if sup - inf is S.Infinity:
-                domain = Interval(0, period, False, True)
+                domain = Interval(0, period, left_open=False, right_open=True)
 
         if rv is None:
             n, d = e.as_numer_denom()
@@ -575,8 +575,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
                 # remove points that are not between inf and sup of domain
                 critical_points = FiniteSet(*(solns + singularities + list(
                     discontinuities))).intersection(
-                    Interval(domain.inf, domain.sup,
-                    domain.inf not in domain, domain.sup not in domain))
+                    Interval(domain.inf, domain.sup, left_open=domain.inf not in domain, right_open=domain.sup not in domain))
                 if all(r.is_number for r in critical_points):
                     reals = _nsort(critical_points, separated=True)[0]
                 else:
@@ -648,7 +647,7 @@ def solve_univariate_inequality(expr, gen, relational=True, domain=None, continu
                 end = x
 
                 if valid(_pt(start, end)):
-                    sol_sets.append(Interval(start, end, True, True))
+                    sol_sets.append(Interval(start, end, left_open=True, right_open=True))
 
                 if x in singularities:
                     singularities.remove(x)

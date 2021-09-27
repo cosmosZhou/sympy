@@ -1,1 +1,2 @@
-from . import min
+from . import minima
+from . import inf

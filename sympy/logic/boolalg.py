@@ -1370,6 +1370,7 @@ class And(LatticeOp, BooleanFunction):
                 complement |= {new}
                 return And(*complement)
         return LatticeOp._subs(self, old, new, **hints)
+
         
 class Or(LatticeOp, BooleanFunction):
     """
@@ -2041,7 +2042,7 @@ class Suffice(BooleanAssumption):
 
     def __new__(cls, p, q, **assumptions):
         if assumptions.get('plausible') and p.is_Inference and q.is_Inference:
-            if q.given_by(p):            
+            if q.given_by(p): 
                 from sympy.core.inference import Inference
                 return Inference(BinaryCondition.__new__(cls, p, q), plausible=None)
             

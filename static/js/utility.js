@@ -136,7 +136,7 @@ function hint(cm, options) {
 				case 'Eq.':
 					var list = new Set();
 					var self = options.context;
-					for (let editor of self.$parent.proveEditor) {
+					for (let editor of self.$parent.renderProve) {
 						var text = editor.editor.getValue();
 						for (var text of text.split("\n")) {
 							console.log(text);
@@ -474,4 +474,61 @@ function saveDocument() {
 	console.log("form.action = " + form.action);
 	console.log("save the content now");
 	form.submit();
+}
+
+async function createApp(component, data, id) {
+	const options = {
+		moduleCache: { vue: Vue },
+	
+		async getFile(url) {
+			const res = await fetch(url);
+	
+			if (!res.ok)
+				throw Object.assign(new Error(res.statusText + ' ' + url), { res });
+			
+			return res.text();
+		},
+	
+		addStyle(textContent) {
+			document.head.insertBefore(
+				Object.assign(document.createElement('style'), { textContent }),
+				document.head.getElementsByTagName('style')[0] || null);
+		},
+	};
+	
+	const { loadModule } = window['vue3-sfc-loader'];
+	
+	id ||= 'root';
+	var div = document.createElement('div');
+	div.setAttribute('id', id);
+	document.body.appendChild(div);
+	
+	var components = {};
+	components[component] = await loadModule(`static/components/${component}.vue`, options);
+	
+	var args = [];
+	for (let key in data){
+		args.push(`:${key}=${key}`);	
+	}
+	
+	var App = {
+		components: components,
+		
+		data() {
+			return data;
+		},
+		
+		template: `<${component} ${args.join(' ')}></${component}>`,
+	};
+	
+	var app = Vue.createApp(App);
+	app.mount('#' + id);
+	return app;
+}
+
+function setAttribute(self, key, value){
+	while (!(key in self.$data)){
+		self = self.$parent;
+	}
+	self.$data[key] = value;
 }

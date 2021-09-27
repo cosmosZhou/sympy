@@ -289,3 +289,6 @@ class Mod(Function):
         
         domain &= n.domain_defined(x)
         return domain
+
+    def _eval_is_finite(self):
+        return self.args[1].is_finite

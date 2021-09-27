@@ -44,7 +44,7 @@ def prove(Eq):
 
     Eq << ~Eq[-1]
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.any_el.st.cup)
+    Eq << Eq[-1].this.expr.apply(sets.el_cup.imply.any_el)
 
     Eq << algebra.all.any.imply.any_et.apply(Eq.x_union_s0, Eq[-1].reversed, simplify=None)
 

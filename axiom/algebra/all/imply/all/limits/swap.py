@@ -3,7 +3,7 @@ from util import *
 
 @apply
 def apply(given):
-    from sympy.concrete.limits import limits_dependent
+    from axiom.algebra.all.any.imply.any_all_et import limits_dependent
     fn, *limits = given.of(All)
     assert len(limits) == 2
     limit_x, limit_y = limits

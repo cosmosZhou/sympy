@@ -5,7 +5,7 @@ from util import *
 def apply(given):
     (x, w), y = given.of(Equal[MatMul])
     [n] = x.shape
-    _n, i, j = w.of(Swap)
+    _n, i, j = w.of(SwapMatrix)
     assert n == _n
     assert i >= 0 and i < n
     assert j >= 0 and j < n
@@ -19,7 +19,7 @@ def prove(Eq):
     n = Symbol(integer=True, positive=True)
     x, y = Symbol(shape=(n,), real=True, given=True)
     i, j = Symbol(domain=Range(0, n))
-    Eq << apply(Equal(x @ Swap(n, i, j), y))
+    Eq << apply(Equal(x @ SwapMatrix(n, i, j), y))
 
     t = Symbol(integer=True)
     Eq << Eq[0][t].reversed

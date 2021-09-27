@@ -3,7 +3,8 @@ from util import *
 
 @apply
 def apply(any_all_0, any_all_1):
-    from sympy.concrete.limits import limits_dependent, limits_intersect
+    from axiom.algebra.all.any.imply.any_all_et import limits_dependent
+    from sympy.concrete.limits import limits_intersect
     (fn0, *limits_f0), *limits_e0 = any_all_0.of(Any[All])
     (fn1, *limits_f1), *limits_e1 = any_all_1.of(Any[All])
 

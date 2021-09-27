@@ -17,7 +17,7 @@ def prove(Eq):
 
     Eq << Eq[-1].simplify()
 
-    Eq << algebra.le.given.lt.apply(Eq[0])
+    Eq << algebra.le.given.lt.one.apply(Eq[0])
 
 
 if __name__ == '__main__':

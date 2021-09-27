@@ -22,7 +22,6 @@ def prove(Eq):
     A = Symbol(etype=dtype.complex * n)
     f = Function(shape=(), integer=True)
     g = Function(shape=(m,))
-
     P = Symbol(conditionset(y, Equal(f(y), 1)))
     Eq << apply(All[x:A](Equal(f(g(x)), 1)), P)
 

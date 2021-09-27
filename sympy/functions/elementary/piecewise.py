@@ -1575,7 +1575,11 @@ class Piecewise(Function):
         return self.func(*((e & unk, c) for e, c in self.args)).simplify()
 
     def _eval_is_finite(self):
-        return all(e.is_finite for e, _ in self.args)
+        if all(e.is_finite for e, _ in self.args):
+            return True
+        
+        if all(e.is_infinite for e, _ in self.args):
+            return False
 
     def _pretty(pexpr, self):
         from sympy.printing.pretty.stringpict import prettyForm

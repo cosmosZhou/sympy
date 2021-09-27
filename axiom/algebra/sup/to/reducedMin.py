@@ -16,6 +16,12 @@ def prove(Eq):
     f = Function(real=True)
     Eq << apply(Sup[x:m:M](f(x)))
 
+    h = Symbol(real=True)
+    f.eval = lambda x : h
+    Eq << Eq[0].this.find(f).defun()
+
+    Eq << Eq[-1].this.find(f).defun()
+
 
 if __name__ == '__main__':
     run()

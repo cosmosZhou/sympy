@@ -5,9 +5,9 @@ from util import *
 def apply(n, m, b):
     i = Symbol(integer=True)
 
-    return Equal(BlockMatrix(BlockMatrix(MatProduct[i:m](Swap(n, i, b[i])), ZeroMatrix(n)).T,
+    return Equal(BlockMatrix(BlockMatrix(MatProduct[i:m](SwapMatrix(n, i, b[i])), ZeroMatrix(n)).T,
                              BlockMatrix(ZeroMatrix(n), 1)).T,
-                             MatProduct[i:m](Swap(n + 1, i, b[i])))
+                             MatProduct[i:m](SwapMatrix(n + 1, i, b[i])))
 
 
 @prove

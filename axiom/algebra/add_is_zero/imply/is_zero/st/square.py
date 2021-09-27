@@ -8,7 +8,7 @@ def apply(given, index=0):
         arg = arg.of(Expr ** 2)
         assert arg.is_extended_real
         args.append(arg)
-    
+
     return Equal(args[index], 0)
 
 
@@ -23,7 +23,7 @@ def prove(Eq):
 
     Eq << algebra.is_nonzero.imply.abs_is_positive.apply(Eq[-1])
 
-    Eq << algebra.is_positive.imply.is_positive.square.apply(Eq[-1])
+    Eq << algebra.is_positive.imply.square_is_positive.apply(Eq[-1])
 
     Eq << algebra.imply.is_nonnegative.square.apply(y)
 

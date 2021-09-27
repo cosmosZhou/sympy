@@ -51,9 +51,18 @@ The inputs of theorems must be expression(s) or condition(s), its outputs are ne
 a, b, c = Symbol(complex=True)  
 [algebra.add_is_zero.imply.et.suffice.cubic.apply](../axiom.php?module=algebra.add_is_zero.imply.et.suffice.cubic)(Equal(x ** 3 + a * x ** 2 + b * x + c, 0), x=x), denotes the determination process of a cubic equation within the domain of Complexes.     
 One can compare it to the solve set of Mathematica:  
-https://www.wolframcloud.com/obj/744984949/Published/cubic_root    
-It can revealed that axiom gives the more comprehensive conclusions of the solve set for cubic equations in complex domain. It encompasses every possible peculiar boundary problem, and print the proving process in latex format through [Python](https://www.python.org/).  
-Detailed observation will reveal that: with no strict mathematical reasoning, Mathematica can sometimes yield a logically imperfect result, in this case, the result is possible to become logically false, since one can find special cases of 0 / 0. This is the direct consequence of negligence for the consideration of whether a divisor can be zero.   
+https://www.wolframcloud.com/obj/744984949/Published/cubic_root.   
+
+The number system set is defined as  
+[prime](https://en.wikipedia.org/wiki/Prime_number) ⊂ [natural](https://en.wikipedia.org/wiki/Natural_number) ⊂ [integer](https://en.wikipedia.org/wiki/Integer) ⊂ extended_integer  
+[rational](https://en.wikipedia.org/wiki/Rational_number) ⊂ extended_rational  
+[real](https://en.wikipedia.org/wiki/Real_number) ⊂ [extended_real](https://en.wikipedia.org/wiki/Extended_real_number_line) ⊂ [hyper_real](https://en.wikipedia.org/wiki/Hyperreal_number) ⊂ [super_real](https://en.wikipedia.org/wiki/Superreal_number)  
+[complex](https://en.wikipedia.org/wiki/Complex_number) ⊂ [extended_complex](https://en.wikipedia.org/wiki/Riemann_sphere) ⊂ [hyper_complex](https://en.wikipedia.org/wiki/Hypercomplex_number) ⊂ [super_complex](https://en.wikipedia.org/wiki/Surreal_number#Surcomplex_numbers)  
+[integer](https://en.wikipedia.org/wiki/Integer) ⊂ [rational](https://en.wikipedia.org/wiki/Rational_number) ⊂ [real](https://en.wikipedia.org/wiki/Real_number) ⊂ [complex](https://en.wikipedia.org/wiki/Complex_number)  
+extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.org/wiki/Extended_real_number_line) ⊂ [extended_complex](https://en.wikipedia.org/wiki/Riemann_sphere)  
+[hyper_real](https://en.wikipedia.org/wiki/Hyperreal_number) ⊂ [hyper_complex](https://en.wikipedia.org/wiki/Hypercomplex_number)  
+[super_real](https://en.wikipedia.org/wiki/Superreal_number) ⊂ [super_complex](https://en.wikipedia.org/wiki/Surreal_number#Surcomplex_numbers)  
+
 <br><br>
 ------
 

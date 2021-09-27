@@ -41,7 +41,7 @@ def prove(Eq):
     t = Symbol(domain=Range(0, m))
     Eq << apply(abs(y[t] - Sum[i](x[i]) / n) <= abs(y[t] - Sum[j](y[j]) / m))
 
-    Eq << Eq[-1].rhs.args[0].this.apply(algebra.sum.to.mul.st.variance)
+    Eq << Eq[-1].rhs.args[0].this.apply(algebra.sum_square.to.mul.st.variance)
 
     Eq << Eq[-1].subs(n, n + 1)
 
@@ -57,9 +57,9 @@ def prove(Eq):
 
     Eq << Eq[1].subs(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum.to.mul.st.variance)
+    Eq << Eq[-1].this.rhs.find(Sum).apply(algebra.sum_square.to.mul.st.variance)
 
-    Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum.to.mul.st.variance)
+    Eq << Eq[-1].this.rhs.args[1].apply(algebra.sum_square.to.mul.st.variance)
 
     Eq << Eq[-1].this.rhs.args[0].find(Sum).limits_subs(i, j)
 

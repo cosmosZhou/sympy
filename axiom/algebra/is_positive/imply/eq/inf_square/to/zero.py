@@ -24,7 +24,7 @@ def prove(Eq):
     Eq << algebra.eq.given.et.squeeze.apply(Eq[1])
 
     t = Symbol(real=True)
-    Eq <<= algebra.le_inf.given.all_any_lt.apply(Eq[-2], t), algebra.ge_inf.given.all_le.apply(Eq[-1])
+    Eq <<= algebra.le_inf.given.all_any_lt.apply(Eq[-2], t), algebra.ge_inf.given.all_ge.apply(Eq[-1])
 
     Eq << algebra.all.given.et.all.split.apply(Eq[-1], cond=t <= M ** 2)
 

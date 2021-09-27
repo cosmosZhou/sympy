@@ -9,24 +9,19 @@ def apply(self):
 
 @prove
 def prove(Eq):
-    from axiom import sets, calculus
+    from axiom import sets, algebra
 
     i = Symbol(integer=True)
     f = Function(etype=dtype.real)
     Eq << apply(Cap[i](f(i)))
 
-    n = Symbol(integer=True, nonnegative=True)
-    Eq << sets.cap.limits.negate.apply(Cap[i:-n:n + 1](f(i)))
+    Eq << sets.eq.given.et.suffice.apply(Eq[-1])
 
-    Eq << calculus.eq.imply.eq.limit.apply(Eq[-1], (n, oo))
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cap.imply.all_el, simplify=None), Eq[-1].this.lhs.apply(sets.el_cap.imply.all_el, simplify=None)
 
-    Eq << Eq[-1].this.rhs.apply(calculus.limit.to.cap)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_cap.given.all_el, simplify=None), Eq[-1].this.rhs.apply(sets.el_cap.given.all_el, simplify=None)
 
-    Eq << Eq[-1].this.lhs.apply(calculus.limit.to.cap)
-
-    Eq << Eq[-1].this.lhs.simplify()
-
-    Eq << Eq[-1].this.rhs.simplify()
+    Eq <<= Eq[-2].this.lhs.apply(algebra.all.imply.all.limits.negate, simplify=None), Eq[-1].this.lhs.apply(algebra.all.imply.all.limits.negate, simplify=None)
 
 
 if __name__ == '__main__':

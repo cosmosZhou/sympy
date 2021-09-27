@@ -6,10 +6,10 @@ def apply(a, var=None, *, simplify=True):
     matmul = a.definition
     lhs, rhs = matmul.of(MatMul)
 
-    if lhs.is_Swap:
+    if lhs.is_SwapMatrix:
         w = lhs
         x = rhs
-    elif rhs.is_Swap:
+    elif rhs.is_SwapMatrix:
         w = rhs
         x = lhs
     else:
@@ -29,10 +29,10 @@ def prove(Eq):
     n = Symbol(domain=Range(2, oo))
     x = Symbol(shape=(n,), integer=True)
     i, j, k = Symbol(integer=True)
-    a = Symbol(x @ Swap(n, i, j))
+    a = Symbol(x @ SwapMatrix(n, i, j))
     Eq << apply(a, var=k)
 
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     Eq << w[i, j].this.definition
 
     Eq << Eq[0].subs(Eq[-1].reversed)

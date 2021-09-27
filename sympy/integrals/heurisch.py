@@ -57,7 +57,7 @@ def components(f, x):
     result = set()
 
     if x in f.free_symbols:
-        if f.is_symbol and f.is_commutative:
+        if f.is_symbol:
             result.add(f)
         elif f.is_Function or f.is_Derivative:
             for g in f.args:

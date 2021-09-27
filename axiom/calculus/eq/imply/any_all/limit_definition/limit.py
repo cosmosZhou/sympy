@@ -1,10 +1,12 @@
 from util import *
-from axiom.calculus.eq.to.any_all.limit_definition import any_all
+
+
 
 
 
 @apply
 def apply(given, ε=None, δ=None):
+    from axiom.calculus.eq.to.any_all.limit_definition import any_all
     cond = any_all(given, ε, δ)
     new, old = given.args
     return cond._subs(old, new)

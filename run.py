@@ -234,6 +234,7 @@ def process(package, debug=False):
             state = interpret_int_from_import(module)
         else:
             print(module, 'from', module)
+            print(e)
             print('importing errors found in', package)
 
             m = re.match('(.*)\.(\w+)', package)
@@ -285,8 +286,13 @@ def prove(**kwargs):
     for key in deleteSet:
         del tasks[key]
     
-    for module in taskSet - tasks.keys():
-        tasks[module] = (random.random(), current_timestamp())
+    newTasks = taskSet - tasks.keys()
+    if newTasks:
+        [[latest_timestamp]] = MySQL.instance.select("select max(timestamp) from tbl_axiom_py where user = '%s'" % user)
+        diff = current_timestamp(strftime=False) - latest_timestamp
+        diff /= len(newTasks)
+        for i, module in enumerate(newTasks):
+            tasks[module] = (random.random(), (latest_timestamp + diff * i).strftime("%Y-%m-%d %H:%M:%S"))
         
     packages = tuple([] for _ in range(cpu_count()))
     timings = [0 for _ in range(cpu_count())]
@@ -513,6 +519,7 @@ def run_with_module(*modules, debug=True):
             user, axiom, state, lapse, latex, *_ = _args
             statement = 'update tbl_axiom_py set state = "%s", lapse = %s, latex = "%s" where user = "%s" and axiom = "%s";' % (state, lapse, latex, user, axiom)
             statement = statement.encode(encoding='utf8')
+            # print(statement)
             print(statement, file=file)                    
     
     print_summary()

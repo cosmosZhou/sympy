@@ -38,7 +38,7 @@ def prove(Eq):
 
     i = Symbol(integer=True, given=True)
     j = Symbol(integer=True)
-    X = Symbol(etype=dtype.real)
+    X = Symbol(etype=dtype.real, finiteset=True)
     x, y = Symbol(real=True)
     a, b = Symbol(real=True, shape=(oo,))
     f = Function(real=True)
@@ -68,6 +68,7 @@ def prove(Eq):
     Eq << Eq.eq.subs(Eq[-1])
 
     Eq << Eq[-1].this.lhs.args[1].apply(algebra.sum.to.add.split, cond={i})
+
     Eq << algebra.cond.cond.imply.cond.subs.apply(Eq[3], Eq[-1])
 
 

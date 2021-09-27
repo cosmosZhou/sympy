@@ -325,6 +325,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
         elif other.is_Quantifier:
             return self.bfn(self.__add__, other)
         else:
+            assert other.is_complex, 'try to prove %s is complex' % other
             return self.func(self.lhs + other, self.rhs + other)
 
     def __sub__(self, other):
@@ -335,6 +336,7 @@ class Relational(BinaryCondition, Expr, EvalfMixin):
             return self.bfn(self.__sub__, other)
         else: 
             assert not other.is_set
+            assert other.is_complex, 'try to prove %s is complex' % other 
             return self.func((self.lhs - other).simplify(), (self.rhs - other).simplify())
 
     def __mul__(self, other):
@@ -567,18 +569,28 @@ class Equal(Relational):
 
             if isinstance(lhs, Expr) and isinstance(rhs, Expr) and not lhs.dtype.is_set and not rhs.dtype.is_set:
                 # see if the difference evaluates
-                if not rhs.is_infinite:
-                    dif = (lhs - rhs).simplify()
-                    z = dif.is_zero
-                    if z is not None:
-    #                     if z is False and dif.is_commutative:  # issue 10728
-                        if z is False:  # issue 10728
+                if lhs.is_infinite:
+                    if rhs.is_infinite:
+                        if lhs == rhs:
+                            return S.true.copy(**options)
+                        else:
                             return S.false.copy(**options)
-                        if z:
-                            if 'plausible' in options:
-                                del options['plausible']
-                            else:
-                                return S.true.copy(**options)
+                    else:  
+                        ...
+                else:
+                    if rhs.is_infinite:
+                        ...
+                    else:                       
+                        dif = (lhs - rhs).simplify()
+                        z = dif.is_zero
+                        if z is not None:
+                            if z is False:
+                                return S.false.copy(**options)
+                            if z:
+                                if 'plausible' in options:
+                                    del options['plausible']
+                                else:
+                                    return S.true.copy(**options)
         if options:
             from sympy.core.inference import Inference
             return Inference(Relational.__new__(cls, lhs, rhs), **options)
@@ -1783,7 +1795,7 @@ class GreaterEqual(_Greater):
             other.rhs == self.lhs and other.lhs >= self.rhs or \
             other.rhs == self.rhs and self.lhs >= other.rhs:
                 return S.true
-        elif other.is_Less:
+        elif other.is_Less or other.is_LessEqual:
 #             x >= -1 | x < 0
             if self.lhs == other.lhs:
                 if self.rhs <= other.rhs:
@@ -2021,7 +2033,7 @@ class LessEqual(_Less):
             other.rhs == self.rhs and self.lhs <= other.rhs:
                 return S.true 
             
-        elif other.is_Greater:
+        elif other.is_Greater or other.is_GreaterEqual:
 #             x <= 1 | x > 0
             if self.lhs == other.lhs:
                 if self.rhs >= other.rhs:

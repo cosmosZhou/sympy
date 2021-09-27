@@ -2,15 +2,14 @@ from util import *
 
 
 def applicable(multiplicand, e):
-    if not e.is_rational:
-        return
-    if e.is_integer:
-        return True
-    unrealCount = 0
-    for x in multiplicand:
-        if not x.is_real:
-            unrealCount += 1
-    return unrealCount < 2
+    if e.is_rational:
+        if e.is_integer:
+            return True
+        unrealCount = 0
+        for x in multiplicand:
+            if not x.is_real:
+                unrealCount += 1
+        return unrealCount < 2
 
 
 @apply

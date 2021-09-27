@@ -17,9 +17,9 @@ def prove(Eq):
 
     Eq << sets.eq.given.et.suffice.apply(Eq[0])
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.all_el.st.cap), Eq[-1].this.lhs.apply(sets.el.imply.all_el.st.cap)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cap.imply.all_el), Eq[-1].this.lhs.apply(sets.el_cap.imply.all_el)
 
-    Eq <<= Eq[-2].this.rhs.apply(sets.el.given.all_el.st.cap), Eq[-1].this.rhs.apply(sets.el.given.all_el.st.cap)
+    Eq <<= Eq[-2].this.rhs.apply(sets.el_cap.given.all_el), Eq[-1].this.rhs.apply(sets.el_cap.given.all_el)
 
     Eq <<= Eq[-2].this.lhs.apply(algebra.all.imply.all.limits.subs.offset, d)
 

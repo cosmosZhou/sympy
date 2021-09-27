@@ -29,7 +29,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.rhs.apply(algebra.eq.given.is_zero)
 
-    Eq << Eq[2].this.lhs.apply(sets.notin.imply.eq.ceiling, ret=0)
+    Eq << Eq[2].this.lhs.apply(sets.is_noninteger.imply.eq.ceiling, ret=0)
 
     Eq << Eq[-1].this.lhs.args[0].apply(sets.notin.imply.eq.floor_frac)
 

@@ -2,23 +2,23 @@ from util import *
 
 
 @apply
-def apply(n, k):
+def apply(self):
+    n, k = self.of(Binomial)
     if not n >= 0:
         print('warning, not proved!')
 
     if not k > 0:
         print('warning, not proved!')
-    return Equal(Binomial(n, k), n / k * Binomial(n - 1, k - 1))
+    return Equal(self, n / k * Binomial(n - 1, k - 1))
 
 
 @prove
 def prove(Eq):
-    from axiom import discrete, algebra
+    from axiom import algebra, discrete
+
     n = Symbol(integer=True, nonnegative=True)
-
     k = Symbol(integer=True, positive=True)
-
-    Eq << apply(n, k)
+    Eq << apply(binomial(n, k))
 
     Eq << algebra.cond.given.et.suffice.split.apply(Eq[0], cond=Equal(n, 0))
 

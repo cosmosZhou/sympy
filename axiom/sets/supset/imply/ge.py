@@ -10,7 +10,9 @@ def apply(given):
 @prove
 def prove(Eq):
     from axiom import sets
-    A, B = Symbol(etype=dtype.integer)
+
+    A = Symbol(etype=dtype.integer, finiteset=True)
+    B = Symbol(etype=dtype.integer)
     Eq << apply(Supset(A, B))
 
     Eq << Eq[0].reversed

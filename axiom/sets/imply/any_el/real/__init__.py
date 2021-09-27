@@ -12,18 +12,21 @@ def apply(x, k=None):
 
 @prove
 def prove(Eq):
-    from axiom import sets
+    from axiom import algebra, sets
 
     x = Symbol(real=True, given=True)
     Eq << apply(x)
 
-    Eq << ~Eq[-1]
+    Eq << algebra.any.given.cond.subs.apply(Eq[0], Eq[0].variable, Floor(x))
 
-    Eq << sets.all_notin.imply.notin.apply(Eq[1])
+    Eq << sets.el.given.et.split.interval.apply(Eq[-1])
 
-    Eq << Eq[-1].this.rhs.apply(sets.cup.to.interval.reals.right_open)
+    Eq << algebra.imply.lt.floor.apply(x)
+
+    Eq << algebra.imply.ge.floor.apply(x)
 
 
 if __name__ == '__main__':
     run()
+    
 from . import left_open

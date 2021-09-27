@@ -138,7 +138,7 @@ class Element(BinaryCondition):
         """Overloading for & operator"""
         if other.is_NotElement:
             if self.element == other.element:
-                return self.func(self.element, self.rhs - other.rhs)
+                return self.func(self.element, self.rhs - other.rhs).simplify()
         elif other.is_Element:
             if self.element == other.element:
                 s = self.rhs & other.rhs

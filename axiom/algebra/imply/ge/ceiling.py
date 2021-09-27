@@ -2,21 +2,16 @@ from util import *
 
 
 @apply
-def apply(x, d=1, evaluate=False):
-    d = sympify(d)
-    assert d.is_integer and d > 0
-    assert x.is_integer
-    return GreaterEqual(Ceiling(x / d) * d, x, evaluate=evaluate)
+def apply(x, evaluate=False):
+    return GreaterEqual(Ceiling(x), x, evaluate=evaluate)
 
 
-@prove
+@prove(provable=False)
 def prove(Eq):
-    x = Symbol(integer=True)
-    d = Symbol(integer=True, positive=True)
+    x = Symbol(real=True)
+    Eq << apply(x)
 
-    Eq << apply(x, d)
-
-    Eq << Eq[-1] / d
+    
 
 
 if __name__ == '__main__':

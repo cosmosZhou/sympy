@@ -1515,15 +1515,7 @@ class Integral(AddWithLimits):
         return I
 
     def _eval_is_finite(self):
-        function = self.expr                
-        for x, domain in self.limits_dict.items():
-            if not isinstance(domain, list):
-                if domain.is_infinite:
-                    return None
-                    
-                _x = x.copy(domain=domain)
-                function = function._subs(x, _x)
-        return function.is_finite
+        ...
 
     def _eval_is_integer(self):
         ...

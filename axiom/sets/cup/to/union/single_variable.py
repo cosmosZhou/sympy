@@ -18,8 +18,8 @@ def prove(Eq):
 
     Eq << sets.eq.given.et.suffice.apply(Eq[0], wrt='y')
 
-    Eq <<= Eq[-2].this.lhs.apply(sets.el.imply.any_el.st.cup), \
-    Eq[-1].this.rhs.apply(sets.el.given.any_el.st.cup)
+    Eq <<= Eq[-2].this.lhs.apply(sets.el_cup.imply.any_el), \
+    Eq[-1].this.rhs.apply(sets.el_cup.given.any_el)
 
     Eq <<= Eq[-2].this.lhs.expr.apply(sets.el_piece.imply.ou), \
     Eq[-1].this.rhs.expr.apply(sets.el_piece.given.ou)
@@ -36,12 +36,12 @@ def prove(Eq):
     Eq <<= Eq[-2].this.rhs.apply(sets.el.given.ou.split.union, simplify=None), \
     Eq[-1].this.lhs.apply(sets.el.imply.ou.split.union, simplify=None)
 
-    Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el.given.any_el.st.cup), \
-    Eq[-1].this.lhs.find(Element).apply(sets.el.imply.any_el.st.cup)
+    Eq <<= Eq[-2].this.rhs.find(Element).apply(sets.el_cup.given.any_el), \
+    Eq[-1].this.lhs.find(Element).apply(sets.el_cup.imply.any_el)
 
-    Eq << Eq[-2].this.rhs.find(Element).apply(sets.el.given.any_el.st.cup)
+    Eq << Eq[-2].this.rhs.find(Element).apply(sets.el_cup.given.any_el)
 
-    Eq << Eq[-1].this.lhs.find(Element).apply(sets.el.imply.any_el.st.cup)
+    Eq << Eq[-1].this.lhs.find(Element).apply(sets.el_cup.imply.any_el)
 
 
 if __name__ == '__main__':

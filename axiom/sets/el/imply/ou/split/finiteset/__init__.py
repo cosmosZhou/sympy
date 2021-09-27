@@ -22,7 +22,7 @@ def prove(Eq):
 
     Eq << Eq[0].subs(Eq[-1].reversed)
 
-    Eq << sets.el.imply.ou.split.union.apply(Eq[-1])
+    Eq << sets.el.imply.ou.split.union.apply(Eq[-1], simplify=True)
 
     Eq << Eq[-1].this.args[1].rhs.definition
 

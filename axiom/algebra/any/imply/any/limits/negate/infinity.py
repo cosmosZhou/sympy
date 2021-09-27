@@ -7,11 +7,11 @@ def apply(self):
     return Any[i](expr._subs(i, -i))
 
 
-@prove(proved=False)
+@prove
 def prove(Eq):
     from axiom import algebra
 
-    i, a, b, c = Symbol(integer=True)
+    i = Symbol(integer=True)
     f = Function(real=True)
     Eq << apply(Any[i](f(i) >= 0))
 

@@ -417,19 +417,17 @@ class Expr(Basic, EvalfMixin):
             other = _sympify(other)
         except SympifyError:
             raise TypeError("Invalid comparison %s >= %s" % (self, other))
-        for me in (self, other):
-            if me.is_complex and me.is_extended_real == False:
-                return Basic.__new__(GreaterEqual, self, other)
-#                 raise TypeError("Invalid comparison of complex %s" % me)
-            if me is S.NaN:
-                raise TypeError("Invalid NaN comparison")
-        n2 = _n2(self, other)
-        if n2 is not None:
-            return _sympify(n2 >= 0)
-        
-        dif = (self - other).simplify()
-        if dif.is_extended_nonnegative is not None:
-            return sympify(dif.is_extended_nonnegative)
+
+        if self.is_real or other.is_real:
+            n2 = _n2(self, other)
+            if n2 is not None:
+                return _sympify(n2 >= 0)
+            
+            dif = (self - other).simplify()
+            if dif.is_extended_nonnegative is not None:
+                return sympify(dif.is_extended_nonnegative)
+        elif self == other:
+            return S.true
         
         return GreaterEqual(self, other, evaluate=False)
 
@@ -465,19 +463,17 @@ class Expr(Basic, EvalfMixin):
             other = _sympify(other)
         except SympifyError:
             raise TypeError("Invalid comparison %s <= %s" % (self, other))
-        for me in (self, other):
-            if me.is_complex and me.is_extended_real == False:
-                return Basic.__new__(LessEqual, self, other)
-#                 raise TypeError("Invalid comparison of complex %s" % me)
-            if me is S.NaN:
-                raise TypeError("Invalid NaN comparison")
-        n2 = _n2(self, other)
-        if n2 is not None:
-            return _sympify(n2 <= 0)
         
-        dif = (self - other).simplify()
-        if dif.is_extended_nonpositive is not None:
-            return sympify(dif.is_extended_nonpositive)
+        if self.is_real or other.is_real:
+            n2 = _n2(self, other)
+            if n2 is not None:
+                return _sympify(n2 <= 0)
+            
+            dif = (self - other).simplify()
+            if dif.is_extended_nonpositive is not None:
+                return sympify(dif.is_extended_nonpositive)
+        elif self == other:
+            return S.true
         
         return LessEqual(self, other, evaluate=False)
 
@@ -513,19 +509,17 @@ class Expr(Basic, EvalfMixin):
             other = _sympify(other)
         except SympifyError:
             raise TypeError("Invalid comparison %s > %s" % (self, other))
-        for me in (self, other):
-            if me.is_complex and me.is_extended_real == False:
-                return Basic.__new__(Greater, self, other)
-#                 raise TypeError("Invalid comparison of complex %s" % me)
-            if me is S.NaN:
-                raise TypeError("Invalid NaN comparison")
-        n2 = _n2(self, other)
-        if n2 is not None:
-            return _sympify(n2 > 0)
-        
-        dif = (self - other).simplify()
-        if dif.is_extended_positive is not None:
-            return sympify(dif.is_extended_positive)
+
+        if self.is_real or other.is_real:
+            n2 = _n2(self, other)
+            if n2 is not None:
+                return _sympify(n2 > 0)
+            
+            dif = (self - other).simplify()
+            if dif.is_extended_positive is not None:
+                return sympify(dif.is_extended_positive)
+        elif self == other:
+            return S.false
 
         return Greater(self, other, evaluate=False)
 
@@ -561,19 +555,17 @@ class Expr(Basic, EvalfMixin):
             other = _sympify(other)
         except SympifyError:
             raise TypeError("Invalid comparison %s < %s" % (self, other))
-        for me in (self, other):
-            if me.is_complex and me.is_extended_real == False:
-                return Basic.__new__(Less, self, other)
-            if me is S.NaN:
-                raise TypeError("Invalid NaN comparison")
-        
-        n2 = _n2(self, other)
-        if n2 is not None:
-            return _sympify(n2 < 0)
-        
-        dif = (self - other).simplify()
-        if dif.is_extended_negative is not None:
-            return sympify(dif.is_extended_negative)
+
+        if self.is_real or other.is_real:
+            n2 = _n2(self, other)
+            if n2 is not None:
+                return _sympify(n2 < 0)
+            
+            dif = (self - other).simplify()
+            if dif.is_extended_negative is not None:
+                return sympify(dif.is_extended_negative)
+        elif self == other:
+            return S.false
 
         return Less(self, other, evaluate=False)
 
@@ -1014,10 +1006,6 @@ class Expr(Basic, EvalfMixin):
         if zero == False:
             return self.is_extended_real
         
-    def _eval_is_real(self):
-        if self.is_finite:
-            return self.is_extended_real
-
     def _eval_is_positive(self):
         finite = self.is_finite
         if finite == False:
@@ -3858,23 +3846,33 @@ class Expr(Basic, EvalfMixin):
             interval = Integers
         elif self.is_extended_real:
             from sympy.sets.sets import Interval
+            is_real = self.is_real
             if self.is_extended_positive: 
-                interval = Interval(0, S.Infinity, left_open=True)
+                interval = Interval(0, S.Infinity, left_open=True, right_open=is_real)
             elif self.is_extended_negative:
-                interval = Interval(-S.Infinity, 0, right_open=True)
+                interval = Interval(-S.Infinity, 0, left_open=is_real, right_open=True)
             elif self.is_extended_nonnegative:
-                interval = Interval(0, S.Infinity)
+                interval = Interval(0, S.Infinity, right_open=is_real)
             elif self.is_extended_nonpositive:
-                interval = Interval(-S.Infinity, 0)
+                interval = Interval(-S.Infinity, 0, left_open=is_real)
             else:
-                interval = Interval(-S.Infinity, S.Infinity)
-        elif self.is_complex or self.is_extended_complex:
-            interval = S.Complexes
+                interval = Interval(-S.Infinity, S.Infinity, left_open=is_real, right_open=is_real)
+        elif self.is_hyper_real:
+            from sympy import HyperReals
+            interval = HyperReals
         elif self.is_super_real:
-            interval = S.Surreals
+            from sympy import SuperReals
+            interval = SuperReals
+        elif self.is_complex:
+            interval = S.Complexes
+        elif self.is_extended_complex:
+            interval = S.ExtendedComplexes
+        elif self.is_hyper_complex:
+            from sympy import HyperComplexes
+            interval = HyperComplexes
         else:
-            assert self.is_super_complex, "%s(of type %s) is not sur-complex!" % (self, type(self))
-            interval = S.Surcomplexes            
+            from sympy import SuperComplexes
+            interval = SuperComplexes
 
         if not shape:
             return interval
@@ -3961,7 +3959,7 @@ class Expr(Basic, EvalfMixin):
         return given(self, exp)
             
     def set_comprehension(self, var=None):
-        from sympy.concrete.expr_with_limits import Cup
+        from sympy.concrete.sets import Cup
 
         i = self.generate_var(integer=True, var=var)
 #         assert self.shape[0] > 1         
@@ -4067,7 +4065,10 @@ class Expr(Basic, EvalfMixin):
             return conditionset(self, condition, self.domain)
         return domain
         
-      
+    def is_continuous(self, *args):
+        ...
+
+        
 class AtomicExpr(Atom, Expr):
     """
     A parent class for object which are both atoms and Exprs.
@@ -4284,7 +4285,7 @@ class Comparator:
                 if factor.is_extended_positive:
                     return self.compare(Mul(*argset - common_args), Mul(*_argset - common_args))
                 elif factor.is_extended_negative:
-                    return self.compare(Mul(*_argset - common_args), Mul(*argset - common_args)) 
+                    return self.compare(Mul(*_argset - common_args), Mul(*argset - common_args))
 
 
 from .mul import Mul

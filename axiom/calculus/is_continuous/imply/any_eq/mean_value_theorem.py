@@ -34,13 +34,13 @@ def prove(Eq):
 
     Eq.intermediate_value = Eq[-1].this.limits[0][2].subs(Eq.max.reversed).this.limits[0][1].subs(Eq.min.reversed)
 
-    Eq << algebra.imply.all_le.min.apply(m.definition)
+    Eq << algebra.imply.all_le.minima.apply(m.definition)
 
     Eq << algebra.all_le.imply.le.integral.apply(Eq[-1])
 
     Eq << Eq[-1].subs(Eq.min.reversed) / (b - a)
 
-    Eq << algebra.imply.all_ge.max.apply(M.definition)
+    Eq << algebra.imply.all_ge.maxima.apply(M.definition)
 
     Eq << calculus.all_ge.imply.ge.integral.apply(Eq[-1])
 

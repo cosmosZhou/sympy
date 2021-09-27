@@ -32,7 +32,7 @@ def prove(Eq):
 
     Eq << algebra.all_eq.cond.imply.all.subs.apply(Eq[-2].reversed, Eq[-1])
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.any_el.st.cup)
+    Eq << Eq[-1].this.expr.apply(sets.el_cup.imply.any_el)
 
     Eq << Eq[-1].reversed
 

@@ -31,3 +31,4 @@ from . import maxima
 from . import sup
 from . import piece
 from . import inf
+from . import sup_inf

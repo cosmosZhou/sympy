@@ -11,8 +11,11 @@ from util.std import json_encode, skip_first_permutation
 from datetime import datetime
 import time
 
-def current_timestamp():
-    return datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d %H:%M:%S")
+def current_timestamp(strftime=True):
+    current_timestamp = datetime.fromtimestamp(time.time())
+    if strftime:
+        return current_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    return current_timestamp
 
 def init(func):
 
@@ -72,54 +75,46 @@ class Eq:
                     
                     if eq.equivalent is not None:
                         if isinstance(eq.equivalent, tuple):
-                            # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
-                            arrow = '=='
+                            arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                            # arrow = '=='
                         else:
                             _expr_reference = self[index]
                             if _expr_reference == eq.equivalent:
-                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
-                                arrow = '=='
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '=='
                             elif _expr_reference.equivalent == eq:
-                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
-                                arrow = '=='
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '=='
                             elif _expr_reference == eq.equivalent.given:
-                                # arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
-                                arrow = '=>'
+                                arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                                # arrow = '=>'
                             elif _expr_reference == eq.equivalent.imply:
-                                # arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
-                                arrow = '=>'
+                                arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                                # arrow = '=>'
                             elif _expr_reference == eq.equivalent.negation:
                                 arrow = '='
                             elif _expr_reference == eq.equivalent.equivalent:
-                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
-                                arrow = '=='
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '=='
                             elif index == -1:
                                 arrow = '='
                             else:
                                 print('index =', index)
                                 print('unknown relationship:', _expr, expr)                                
-#                                 print('_expr_reference = ')
-#                                 print(_expr_reference)
-#                                 print(_expr_reference.equivalent)
-                                
-#                                 print('\neq = ')
-#                                 print(eq)
-#                                 print(eq.equivalent)
-#                                 print(eq.equivalent.negation)
-                                # arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
-                                arrow = '=='
+                                arrow = '\N{LEFT RIGHT DOUBLE ARROW}'
+                                # arrow = '=='
                         
                     elif eq.given is not None:
-                        # arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
-                        arrow = '=>'
+                        arrow = '\N{RIGHTWARDS DOUBLE ARROW}'
+                        # arrow = '=>'
                         
                     elif eq.imply is not None:
                         if isinstance(eq.imply.given, (tuple, list)):
-                            # arrow = '\N{LEFTWARDS ARROW}'
-                            arrow = '<-'
+                            arrow = '\N{LEFTWARDS ARROW}'
+                            # arrow = '<-'
                         else:
-                            # arrow = '\N{LEFTWARDS DOUBLE ARROW}'
-                            arrow = '<='
+                            arrow = '\N{LEFTWARDS DOUBLE ARROW}'
+                            # arrow = '<='
                                 
                     else:
                         arrow = '='
@@ -814,10 +809,27 @@ def detect_error_in_axiom(py, e, _messages, index=-3):
                 return kwargs
 
 
+def remove_annotation(func, state):    
+    py = func.__code__.co_filename
+    print(py, "has been proved already!")
+    [*lines] = Text(py)
+    for i, line in enumerate(lines):
+        if re.match(f"@prove\({state}=False\)", line):                    
+            print(i, line)
+            line = '@prove'
+            lines[i] = line
+            Text(py).writelines(lines)
+            return True
+    print(f"{state}=False not detected!")
+    
 def unprovable(func):
 
     def unprovable(**kwargs):
-        _, latex = _prove(func, **kwargs)
+        state, latex = _prove(func, **kwargs)
+        if state == RetCode.proved:
+            if remove_annotation(func, 'provable'):
+                return state, latex
+
         return RetCode.unprovable, latex
 
     return unprovable
@@ -826,7 +838,11 @@ def unprovable(func):
 def unproved(func):
 
     def unproved(**kwargs):
-        _, latex = _prove(func, **kwargs)
+        state, latex = _prove(func, **kwargs)
+        if state == RetCode.proved:
+            if remove_annotation(func, 'proved'):
+                return state, latex
+
         return RetCode.unproved, latex
 
     return unproved
@@ -914,7 +930,24 @@ def imply(apply, **kwargs):
         return s
 
     def imply(*args, **kwargs):
-        _simplify = kwargs.pop('simplify', True) and simplify
+        if 'simplify' in kwargs:
+            _simplify = kwargs.pop('simplify')
+            if _simplify is None:
+                if simplify is None:
+                    ...
+                elif simplify:
+                    ...
+                else:
+                    _simplify = False
+                    
+            elif _simplify:
+                ...
+            else:
+                ...
+                
+        else:            
+            _simplify = simplify
+            
         ret = kwargs.pop('ret', None)
 
         __kwdefaults__ = apply.__kwdefaults__
@@ -932,6 +965,8 @@ def imply(apply, **kwargs):
                 i += 1
                 
             conds, _args = _args[:i], _args[i:]
+            if not conds:
+                raise e
             for conds in skip_first_permutation(conds):
                 try:
                     statement = apply(*conds, *_args, **kwargs)
@@ -1032,15 +1067,9 @@ def given(apply, **kwargs):
     def given(*args, **kwargs):
         is_applying = apply.__code__.co_filename != traceback.extract_stack()[-2][0]        
         __kwdefaults__ = apply.__kwdefaults__
-        
-        if not is_applying:
-            given = ()
-            if __kwdefaults__ and 'given' in __kwdefaults__:
-                given = kwargs['given']
-                if not isinstance(given, tuple):
-                    given = (given,)            
-                assert all(g.plausible is None for g in given)
-        
+
+        assert not __kwdefaults__ or 'given' not in __kwdefaults__,  apply.__code__.co_filename
+
         _simplify = kwargs.pop('simplify', True) and simplify
         if __kwdefaults__ and 'simplify' in __kwdefaults__ and _simplify != __kwdefaults__['simplify']:
             kwargs['simplify'] = _simplify
@@ -1126,10 +1155,7 @@ def given(apply, **kwargs):
         else:
             definition = ()
             
-        given = tuple(Inference(g, plausible=None) for g in given)
-        given = definition + given
-             
-        statement = add(given, statement)
+        statement = add(definition, statement)
         return add(imply, statement)
 
     return given

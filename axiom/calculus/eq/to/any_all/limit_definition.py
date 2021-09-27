@@ -9,16 +9,19 @@ def apply(given, epsilon=None, delta=None):
 def any_all(given, epsilon=None, delta=None):
     (fx, (x, x0, direction)), a = given.of(Equal[Limit])
 
-    if epsilon is None:
-        epsilon = given.generate_var(real=True, positive=True, var='epsilon')
+    if isinstance(epsilon, Basic):
+        assert epsilon.is_positive
+        assert not epsilon.is_given
     else:
-        assert epsilon > 0
+        if epsilon is None:
+            epsilon = 'epsilon'
+        epsilon = given.generate_var(x, real=True, positive=True, var=epsilon)
 
     if fx.is_real:
-        assert a.is_real
+        assert a.is_extended_real
     else:
         assert fx.is_complex
-        assert a.is_complex
+        assert a.is_extended_complex
 
     kwargs = {}
     if x.is_integer:
@@ -29,7 +32,7 @@ def any_all(given, epsilon=None, delta=None):
         kwargs['var'] = 'delta' if delta is None else delta
 
     if delta is None:
-        delta = given.generate_var(positive=True, **kwargs)
+        delta = given.generate_var(x, positive=True, **kwargs)
     else:
         assert delta > 0
 
@@ -48,9 +51,11 @@ def any_all(given, epsilon=None, delta=None):
     elif not x.is_real or direction == 0:
         cond = (0 < abs(x - x0)) & (abs(x - x0) < delta)
     elif direction == 1:
-        cond = (0 < x - x0) & (x - x0 < delta)
+        cond = Interval(x0, x0 + delta, left_open=True, right_open=True)
+        #cond = (0 < x - x0) & (x - x0 < delta)
     elif direction == -1:
-        cond = (0 < x0 - x) & (x0 - x < delta)
+        cond = Interval(x0 - delta, x0, left_open=True, right_open=True)
+        #cond = (0 < x0 - x) & (x0 - x < delta)
     else:
         ...
 

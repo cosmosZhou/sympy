@@ -56,7 +56,7 @@ def prove(Eq):
 
     Eq << sets.intersect_is_nonempty.imply.any_el.apply(Eq[-1], simplify=None, index=1)
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.any_el.st.cup)
+    Eq << Eq[-1].this.expr.apply(sets.el_cup.imply.any_el)
 
     Eq << algebra.any.imply.any_et.limits.unleash.apply(Eq[-1], simplify=None)
 

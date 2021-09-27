@@ -64,35 +64,23 @@ if ($parent) {
 }
 ?>
 
-<div id=root>
-	<hierarchy :module=module :graph=graph :traceback=traceback :deep=deep
-		:key-input=keyInput></hierarchy>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
-<script
-	src="https://cdn.jsdelivr.net/npm/http-vue-loader@1.4.2/src/httpVueLoader.min.js"></script>
+<script src="https://unpkg.com/vue@3.2.11/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue3-sfc-loader/dist/vue3-sfc-loader.js"></script>
+
 <script src="static/js/std.js"></script>
 <script src="static/js/utility.js"></script>
-<script>
-	var data = {
-		module : <?php echo \std\jsonify($module)?>,
-		graph : <?php echo \std\jsonify($graph)?>,
-		traceback: <?php echo \std\jsonify($traceback)?>,
-		keyInput : <?php echo \std\jsonify($keyInput)?>,
-        deep: <?php echo \std\jsonify($deep)?>,
-	};
 
-	Vue.use(httpVueLoader);
-	Vue.component('hierarchy', 'url:static/vue/hierarchy.vue');
-		
-	var app = new Vue({
-		el : '#root',
-		data : data,
-	});
-	
+<script type=module>
+createApp('hierarchy', {
+	module : <?php echo \std\jsonify($module)?>,
+	graph : <?php echo \std\jsonify($graph)?>,
+	traceback: <?php echo \std\jsonify($traceback)?>,
+	keyInput : <?php echo \std\jsonify($keyInput)?>,
+    deep: <?php echo \std\jsonify($deep)?>,
+});
+
 </script>
 

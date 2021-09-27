@@ -619,8 +619,23 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 domain = Range(**assumptions)
             else:
                 domain = Interval(**assumptions)
-        else: 
+        elif self.is_complex:
             domain = S.Complexes
+        elif self.is_extended_complex:
+            domain = S.ExtendedComplexes
+        elif self.is_hyper_real:
+            from sympy import HyperReals
+            domain = HyperReals
+        elif self.is_hyper_complex:
+            from sympy import HyperComplexes
+            domain = HyperComplexes
+        elif self.is_super_real:
+            from sympy import SuperReals
+            domain = SuperReals
+        else:
+            from sympy import SuperComplexes
+            domain = SuperComplexes 
+            
         shape = self.shape
         if not shape:
             return domain
@@ -672,16 +687,43 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         elif self._assumptions.get('nonpositive'):
             assumptions['nonpositive'] = True
              
-        if self.is_integer:
-            return dtype.integer(**assumptions)
-        elif self.is_rational:
-            return dtype.rational  # (**self.assumptions0)
-        elif self.is_real:
-            return dtype.real  # (**self.assumptions0)
-        elif self.is_complex:
-            return dtype.complex  # (**self.assumptions0)
+        if self.is_super_integer:
+            if self.is_integer:
+                return dtype.integer(**assumptions)
+            elif self.is_extended_integer:
+                return dtype.extended_integer
+            else:
+                return dtype.super_integer
+            
+        elif self.is_super_rational:
+            if self.is_rational:
+                return dtype.rational
+            elif self.is_extended_rational:
+                return dtype.extended_rational
+            elif self.is_hyper_rational:
+                return dtype.hyper_rational
+            else:
+                return dtype.super_rational
+            
+        elif self.is_super_real:
+            if self.is_real:
+                return dtype.real
+            elif self.is_extended_real:
+                return dtype.extended_real
+            elif self.is_hyper_real:
+                return dtype.hyper_real
+            else:
+                return dtype.super_real                      
+
         else:
-            return dtype.real  # (**self.assumptions0)
+            if self.is_complex:
+                return dtype.complex
+            elif self.is_extended_complex:
+                return dtype.extended_complex
+            elif self.is_hyper_complex:
+                return dtype.hyper_complex            
+            else:
+                return dtype.super_complex
 
     def _has(self, pattern):
         """Helper for .has()"""
@@ -952,18 +994,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
             distribution = self._assumptions['distribution']
             return distribution.is_zero
         
-    def _eval_is_extended_real(self):
-        if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_extended_real
-        if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_extended_real
-        if 'distribution' in self._assumptions:
-            distribution = self._assumptions['distribution']
-            return distribution.is_extended_real
-        if 'etype' in self._assumptions:
-            dtype = self._assumptions['etype']
-            return dtype.is_real
-
     def _eval_is_finite(self):
         if 'domain' in self._assumptions:
             domain_assumed = self.domain_assumed
@@ -975,40 +1005,134 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 if all(arg.is_infinite for arg in domain_assumed.args):
                     return False
             return
-        if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_finite
-        return True
+        
+        definition = self._assumptions.get('definition')
+        if definition is not None:
+            return definition.is_finite
+        
+        for key in self._assumptions.keys() & {'integer', 'real', 'complex', 'rational', 'prime', 'even', 'odd', 'composite', 'irrational', 'finite'}:
+            if self._assumptions[key]:
+                return True
 
-    def _eval_is_integer(self):
+    def _eval_is_extended_integer(self):
         if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_integer
+            return self._assumptions['domain'].is_extended_integer
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_integer        
+            return self._assumptions['definition'].is_extended_integer        
         if 'distribution' in self._assumptions:
             distribution = self._assumptions['distribution']
-            return distribution.is_integer
+            return distribution.is_extended_integer
         if 'etype' in self._assumptions:
             dtype = self._assumptions['etype']            
-            return dtype.is_integer
+            return dtype.is_extended_integer
 
-    def _eval_is_rational(self):
+    def _eval_is_super_integer(self):
         if 'domain' in self._assumptions:
-            return self._assumptions['domain'].is_rational
+            return self._assumptions['domain'].is_super_integer
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_rational        
+            return self._assumptions['definition'].is_super_integer        
         if 'distribution' in self._assumptions:
             distribution = self._assumptions['distribution']
-            return distribution.is_rational
+            return distribution.is_super_integer
         if 'etype' in self._assumptions:
             dtype = self._assumptions['etype']            
-            return dtype.is_rational
-
-    def _eval_is_complex(self):
+            return dtype.is_super_integer
+        
+    def _eval_is_extended_rational(self):
         if 'domain' in self._assumptions:
-            return True
+            return self._assumptions['domain'].is_extended_rational
         if 'definition' in self._assumptions:
-            return self._assumptions['definition'].is_complex        
-        return True
+            return self._assumptions['definition'].is_extended_rational        
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_extended_rational
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_extended_rational
+
+    def _eval_is_hyper_rational(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_hyper_rational
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_hyper_rational        
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_hyper_rational
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_hyper_rational
+
+    def _eval_is_super_rational(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_super_rational
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_super_rational        
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_super_rational
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_super_rational
+
+    def _eval_is_extended_real(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_real
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_extended_real
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_extended_real
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']
+            return dtype.is_extended_real
+
+    def _eval_is_hyper_real(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_hyper_real
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_hyper_real        
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_hyper_real
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_hyper_real
+        
+    def _eval_is_super_real(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_super_real
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_super_real        
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_super_real
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_super_real
+
+    def _eval_is_extended_complex(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_extended_complex
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_extended_complex
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_extended_complex
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']
+            return dtype.is_extended_complex
+
+    def _eval_is_hyper_complex(self):
+        if 'domain' in self._assumptions:
+            return self._assumptions['domain'].is_hyper_complex
+        if 'definition' in self._assumptions:
+            return self._assumptions['definition'].is_hyper_complex        
+        if 'distribution' in self._assumptions:
+            distribution = self._assumptions['distribution']
+            return distribution.is_hyper_complex
+        if 'etype' in self._assumptions:
+            dtype = self._assumptions['etype']            
+            return dtype.is_hyper_complex
 
     def _eval_is_algebraic(self):
         if 'domain' in self._assumptions:
@@ -1138,7 +1262,6 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
         if definition is None:
             return True
         return definition.is_continuous(*args)
-
         
     def of(self, cls):
         from sympy import Set
@@ -1147,6 +1270,7 @@ class Symbol(AtomicExpr, NotIterable, metaclass=Symbol):  # @DuplicatedSignature
                 return self
             
         return AtomicExpr.of(self, cls)
+
     
 class Dummy(Symbol):
     """Dummy symbols are each unique, even if they have the same name:
@@ -1686,18 +1810,35 @@ def disambiguate(*iter):
 class Dtype:
     is_set = False
     is_condition = False
+    
+    is_finite = None
+    
     is_integer = None
+    is_extended_integer = None
+    is_super_integer = None
+    
     is_rational = None
+    is_extended_rational = None
+    is_hyper_rational = None
+    is_super_rational = None
+    
     is_real = None
-    is_super_real = None
-    is_complex = True
-    is_super_complex = True
     is_extended_positive = None
-    is_extended_negative = None
+    is_extended_negative = None    
+    is_extended_real = None
+    is_hyper_real = None
+    is_super_real = None
+    
+    is_complex = True
+    is_extended_complex = None
+    is_hyper_complex = None    
+    is_super_complex = True
+    
     is_DtypeInteger = None
     
     def as_Set(self):
-        ...
+        from sympy.sets.sets import UniversalSet
+        return UniversalSet(etype=self)
         
     def __hash__(self):
         return hash(type(self).__name__)
@@ -1711,24 +1852,60 @@ class Dtype:
         return self.integer(nonnegative=True)
 
     @property
-    def real(self):
-        return DtypeReal()
+    def extended_integer(self):
+        return DtypeExtendedInteger()
 
     @property
-    def super_real(self):
-        return DtypeSurreal()
+    def super_integer(self):
+        return DtypeSuperInteger()
     
     @property
     def rational(self):
         return DtypeRational()
 
     @property
+    def extended_rational(self):
+        return DtypeExtendedRational()
+    
+    @property
+    def hyper_rational(self):
+        return DtypeHyperRational()
+    
+    @property
+    def super_rational(self):
+        return DtypeSuperRational()
+    
+    @property
+    def real(self):
+        return DtypeReal()
+
+    @property
+    def extended_real(self):
+        return DtypeExtendedReal()
+    
+    @property
+    def hyper_real(self):
+        return DtypeHyperReal()
+    
+    @property
+    def super_real(self):
+        return DtypeSuperReal()
+    
+    @property
     def complex(self):
         return DtypeComplex()
 
     @property
+    def extended_complex(self):
+        return DtypeExtendedComplex()
+
+    @property
+    def hyper_complex(self):
+        return DtypeHyperComplex()
+    
+    @property
     def super_complex(self):
-        return DtypeSurcomplex()
+        return DtypeSuperComplex()
     
     @property
     def set(self):
@@ -1779,12 +1956,12 @@ class Dtype:
         return '%s(%s)' % (head, ', '.join(("%s=%s" % args for args in self.assumptions.items())))
 
 
-class DtypeSurcomplex(Dtype):
+class DtypeSuperComplex(Dtype):
     
     is_super_complex = True
 
     def as_Set(self):
-        return S.Surcomplexes        
+        return S.SuperComplexes        
 
     def __str__(self):
         return 'super_complex'
@@ -1794,7 +1971,7 @@ class DtypeSurcomplex(Dtype):
         return {'super_complex': True}
 
     def __eq__(self, other):
-        return isinstance(other, DtypeSurcomplex)
+        return isinstance(other, DtypeSuperComplex)
 
     def __hash__(self):
         return hash(type(self).__name__)
@@ -1802,16 +1979,340 @@ class DtypeSurcomplex(Dtype):
     def __call__(self, **kwargs):
         if not kwargs:
             return self
-        return DtypeSurcomplexConditional(**kwargs)
+        return DtypeSuperComplexConditional(**kwargs)
+
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import Set, UniversalSet
+        return Set.__new__(UniversalSet, etype=self.super_complex)
+
+
+class DtypeSuperReal(DtypeSuperComplex):
+    
+    is_super_real = True
+    
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import Set, UniversalSet
+        return Set.__new__(UniversalSet, etype=self.super_real)
+    
+    def as_Set(self):
+        from sympy import SuperReals
+        return SuperReals
+
+    def __str__(self):
+        return 'super_real'
+    
+    @property
+    def dict(self):
+        return {'super_real': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeSuperReal)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeSuperRealConditional(**kwargs)
+    
+
+class DtypeSuperRational(DtypeSuperReal):
+    
+    is_super_rational = True
+    
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import Set, UniversalSet
+        return Set.__new__(UniversalSet, etype=self.super_rational)
+    
+    def as_Set(self):
+        from sympy import SuperRationals
+        return SuperRationals
+
+    def __str__(self):
+        return 'super_rational'
+    
+    @property
+    def dict(self):
+        return {'super_rational': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeSuperRational)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeSuperRationalConditional(**kwargs)
+    
+
+class DtypeSuperInteger(DtypeSuperRational):
+    
+    is_super_integer = True
+    
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import Set, UniversalSet
+        return Set.__new__(UniversalSet, etype=self.super_integer)
+    
+    def as_Set(self):
+        from sympy import SuperIntegers
+        return SuperIntegers
+
+    def __str__(self):
+        return 'super_integer'
+    
+    @property
+    def dict(self):
+        return {'super_integer': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeSuperInteger)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeSuperIntegerConditional(**kwargs)
+
+
+class DtypeHyperComplex(DtypeSuperComplex):
+    
+    is_hyper_complex = True
+
+    def as_Set(self):
+        from sympy import HyperComplexes
+        return HyperComplexes        
+
+    def __str__(self):
+        return 'hyper_complex'
+    
+    @property
+    def dict(self):
+        return {'hyper_complex': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeHyperComplex)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeHyperComplexConditional(**kwargs)
 
     @property
     def universalSet(self): 
-        return S.Surcomplexes
+        from sympy.sets.sets import Set, UniversalSet
+        return Set.__new__(UniversalSet, etype=self.hyper_complex)
 
 
-class DtypeComplex(DtypeSurcomplex):
+class DtypeHyperReal(DtypeSuperReal, DtypeHyperComplex):
+    
+    is_hyper_real = True
+    
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import Set, UniversalSet 
+        return Set.__new__(UniversalSet, etype=dtype.hyper_real)
+    
+    def as_Set(self):
+        from sympy import HyperReals 
+        return HyperReals
+
+    def __str__(self):
+        return 'hyper_real'
+    
+    @property
+    def dict(self):
+        return {'hyper_real': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeHyperReal)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeHyperRealConditional(**kwargs)
+
+
+class DtypeHyperRational(DtypeSuperRational, DtypeHyperReal):
+    
+    is_hyper_rational = True
+    
+    @property
+    def universalSet(self):
+        from sympy.sets.sets import Set, UniversalSet 
+        return Set.__new__(UniversalSet, etype=dtype.hyper_rational)
+    
+    def as_Set(self):
+        from sympy import HyperRationals 
+        return HyperRationals
+
+    def __str__(self):
+        return 'hyper_rational'
+    
+    @property
+    def dict(self):
+        return {'hyper_rational': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeHyperRational)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeHyperRationalConditional(**kwargs)
+
+
+class DtypeExtendedComplex(DtypeHyperComplex):
+    
+    is_extended_complex = True
+
+    def as_Set(self):
+        from sympy import ComplexRegion, oo, Interval
+        ExtendedReals = Interval(-oo, oo, left_open=False, right_open=False)
+        return ComplexRegion(ExtendedReals @ ExtendedReals)
+
+    def __str__(self):
+        return 'extended_complex'
+    
+    @property
+    def dict(self):
+        return {'extended_complex': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeExtendedComplex)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeExtendedComplexConditional(**kwargs)
+
+    @property
+    def universalSet(self): 
+        from sympy import ComplexRegion, oo, Interval
+        ExtendedReals = Interval(-oo, oo, left_open=False, right_open=False)
+        return ComplexRegion(ExtendedReals @ ExtendedReals)
+
+
+class DtypeExtendedReal(DtypeHyperReal, DtypeExtendedComplex):
+    
+    is_extended_real = True
+    
+    @property
+    def universalSet(self):
+        from sympy import Interval, oo 
+        return Interval(-oo, oo, left_open=False, right_open=False)
+    
+    def as_Set(self):
+        from sympy import Interval, oo 
+        return Interval(-oo, oo, left_open=False, right_open=False)
+
+    def __str__(self):
+        return 'extended_real'
+    
+    @property
+    def dict(self):
+        return {'extended_real': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeExtendedReal)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeExtendedRealConditional(**kwargs)
+
+
+class DtypeExtendedRational(DtypeHyperRational, DtypeExtendedReal):
+    
+    is_extended_rational = True
+    
+    @property
+    def universalSet(self):
+        from sympy import Interval, oo 
+        return Interval(-oo, oo, left_open=False, right_open=False, rational=True)
+    
+    def as_Set(self):
+        from sympy import Interval, oo 
+        return Interval(-oo, oo, left_open=False, right_open=False, rational=True)
+
+    def __str__(self):
+        return 'extended_rational'
+    
+    @property
+    def dict(self):
+        return {'extended_rational': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeExtendedRational)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeExtendedRationalConditional(**kwargs)
+
+
+class DtypeExtendedInteger(DtypeSuperInteger, DtypeExtendedRational):
+    
+    is_extended_integer = True
+    
+    @property
+    def universalSet(self):
+        from sympy import Range, oo 
+        return Range(-oo, oo, left_open=False, right_open=False)
+    
+    def as_Set(self):
+        from sympy import Range, oo 
+        return Range(-oo, oo, left_open=False, right_open=False)
+
+    def __str__(self):
+        return 'extended_integer'
+    
+    @property
+    def dict(self):
+        return {'extended_integer': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeExtendedInteger)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+    def __call__(self, **kwargs):
+        if not kwargs:
+            return self
+        return DtypeExtendedIntegerConditional(**kwargs)
+
+
+class DtypeComplex(DtypeExtendedComplex):
     
     is_complex = True
+    is_finite = True
 
     def as_Set(self):
         return S.Complexes        
@@ -1863,43 +2364,10 @@ class DtypeComplexConditional(DtypeComplex):
         return hash(type(self).__name__)
 
 
-class DtypeCondition(Dtype):
-    is_condition = True
-    
-    def __str__(self):
-        return 'condition'
-    
-    @property
-    def dict(self):
-        return {'condition': True}
-
-    def __eq__(self, other):
-        return isinstance(other, DtypeCondition)
-
-    def __hash__(self):
-        return hash(type(self).__name__)
-
-
-class DtypeDistribution(Dtype):
-    is_distribution = True
-    
-    def __str__(self):
-        return 'distribution'
-    
-    @property
-    def dict(self):
-        return {'random': True}
-
-    def __eq__(self, other):
-        return isinstance(other, DtypeDistribution)
-
-    def __hash__(self):
-        return hash(type(self).__name__)
-
-
-class DtypeReal(DtypeComplex):
+class DtypeReal(DtypeExtendedReal, DtypeComplex):
     
     is_real = True
+    is_finite = True
     
     @property
     def universalSet(self):
@@ -1978,40 +2446,11 @@ class DtypeRealConditional(DtypeReal):
         return False
 
 
-class DtypeSurreal(DtypeSurcomplex):
-    
-    is_super_real = True
-    
-    @property
-    def universalSet(self):
-        return S.Surreals
-    
-    def as_Set(self):
-        return S.Surreals
-
-    def __str__(self):
-        return 'super_real'
-    
-    @property
-    def dict(self):
-        return {'super_real': True}
-
-    def __eq__(self, other):
-        return isinstance(other, DtypeSurreal)
-
-    def __hash__(self):
-        return hash(type(self).__name__)
-
-    def __call__(self, **kwargs):
-        if not kwargs:
-            return self
-        return DtypeSurrealConditional(**kwargs)
-    
-
-class DtypeRational(DtypeReal):
+class DtypeRational(DtypeExtendedRational, DtypeReal):
 
     is_rational = True
-
+    is_finite = True
+    
     @property
     def universalSet(self):
         from sympy import Interval        
@@ -2065,11 +2504,11 @@ class DtypeRationalConditional(DtypeRational):
         return hash(type(self).__name__)
 
 
-class DtypeInteger(DtypeRational):
+class DtypeInteger(DtypeExtendedInteger, DtypeRational):
     
-    is_DtypeInteger = True
-    
+    is_DtypeInteger = True    
     is_integer = True
+    is_finite = True
     
     @property
     def universalSet(self):
@@ -2165,6 +2604,10 @@ class DtypeSet(Dtype):
         return '{%s}' % self.etype
     
     @property
+    def is_finite(self):
+        return self.etype.is_finite
+    
+    @property
     def dict(self):
         return {'etype': self.etype}
 
@@ -2188,9 +2631,45 @@ class DtypeSet(Dtype):
         return self.etype.is_integer
     
     @property
+    def is_extended_integer(self):
+        return self.etype.is_extended_integer
+    
+    @property
+    def is_super_integer(self):
+        return self.etype.is_super_integer
+    
+    @property
+    def is_rational(self):
+        return self.etype.is_rational
+    
+    @property
+    def is_extended_rational(self):
+        return self.etype.is_extended_rational
+    
+    @property
+    def is_hyper_rational(self):
+        return self.etype.is_hyper_rational
+    
+    @property
+    def is_super_rational(self):
+        return self.etype.is_super_rational
+    
+    @property
     def is_real(self):
         return self.etype.is_real
 
+    @property
+    def is_extended_real(self):
+        return self.etype.is_extended_real
+    
+    @property
+    def is_hyper_real(self):
+        return self.etype.is_hyper_real
+    
+    @property
+    def is_super_real(self):
+        return self.etype.is_super_real
+    
     @property
     def is_extended_positive(self):
         return self.etype.is_extended_positive
@@ -2200,25 +2679,27 @@ class DtypeSet(Dtype):
         return self.etype.is_extended_negative
     
     @property
-    def is_rational(self):
-        return self.etype.is_rational
-
-    @property
     def is_complex(self):
         return self.etype.is_complex
 
+    @property
+    def is_extended_complex(self):
+        return self.etype.is_extended_complex
 
+    @property
+    def is_hyper_complex(self):
+        return self.etype.is_hyper_complex
+    
 class DtypeMatrix(Dtype):
+    
+    @property
+    def is_finite(self):
+        return self.dtype.is_finite
     
     @property
     def is_integer(self):
         return self.dtype.is_integer
-    
-    @property
-    def universalSet(self):
-        from sympy import CartesianSpace
-        return CartesianSpace(self.dtype.universalSet, *self.shape)
-    
+
     @property
     def is_rational(self):
         return self.dtype.is_rational
@@ -2230,6 +2711,11 @@ class DtypeMatrix(Dtype):
     @property
     def is_complex(self):
         return self.dtype.is_complex
+
+    @property
+    def universalSet(self):
+        from sympy import CartesianSpace
+        return CartesianSpace(self.dtype.universalSet, *self.shape)
 
     def as_Set(self):
         from sympy.sets.sets import CartesianSpace
@@ -2312,6 +2798,40 @@ class DtypeMatrix(Dtype):
             return type(self)(dtype, tuple(lengths))
         
         return self
+
+
+class DtypeCondition(Dtype):
+    is_condition = True
+    
+    def __str__(self):
+        return 'condition'
+    
+    @property
+    def dict(self):
+        return {'condition': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeCondition)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
+
+
+class DtypeDistribution(Dtype):
+    is_distribution = True
+    
+    def __str__(self):
+        return 'distribution'
+    
+    @property
+    def dict(self):
+        return {'random': True}
+
+    def __eq__(self, other):
+        return isinstance(other, DtypeDistribution)
+
+    def __hash__(self):
+        return hash(type(self).__name__)
 
 
 dtype = Dtype()

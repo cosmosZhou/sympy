@@ -31,7 +31,7 @@ def prove(Eq):
 
     Eq << Eq[-1].limits_subs(Eq[-1].variable, Eq[0].rhs.variable)
 
-    Eq << Eq[-1].this.expr.apply(sets.el.given.any_el.st.cup)
+    Eq << Eq[-1].this.expr.apply(sets.el_cup.given.any_el)
 
     Eq << Eq[-1].this.expr.expr.rhs.definition
 

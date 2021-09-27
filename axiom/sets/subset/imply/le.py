@@ -4,14 +4,16 @@ from util import *
 @apply
 def apply(given):
     A, B = given.of(Subset)
-
+    assert B.is_finiteset
     return LessEqual(Card(A), Card(B))
 
 
 @prove
 def prove(Eq):
     from axiom import sets
-    A, B = Symbol(etype=dtype.integer, given=True)
+
+    A = Symbol(etype=dtype.integer, given=True)
+    B = Symbol(etype=dtype.integer, given=True, finiteset=True)
     Eq << apply(Subset(A, B))
 
     Eq << sets.subset.imply.eq.complement.apply(Eq[0])

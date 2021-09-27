@@ -14,7 +14,7 @@ def apply(self, n=None, k=None):
     return Equal(self, (b - a) * Limit[n:oo](Sum[k:n](Maxima[x:a + (b - a) * k / n:a + (b - a) * (k + 1) / n](fx)) / n))
 
 
-@prove(provable=False)
+@prove
 def prove(Eq):
     from axiom import calculus
 

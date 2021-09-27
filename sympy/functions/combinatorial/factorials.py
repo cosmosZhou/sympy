@@ -292,6 +292,7 @@ class Factorial(CombinatorialFunction):
 
 
 factorial = Factorial
+
     
 class MultiFactorial(CombinatorialFunction):
     pass
@@ -614,7 +615,6 @@ class RisingFactorial(CombinatorialFunction):
         return sage.rising_factorial(self.args[0]._sage_(),
                                      self.args[1]._sage_())
 
-
     def _latex(self, p, exp=None):
         n, k = self.args        
         if n.is_Add or n.is_Mul:
@@ -772,6 +772,7 @@ class FallingFactorial(CombinatorialFunction):
         tex = r"%s^\underline{%s}" % (base, sub)
 
         return p._do_exponent(tex, exp)
+
 
 rf = RisingFactorial
 ff = FallingFactorial
@@ -1055,11 +1056,32 @@ class Binomial(CombinatorialFunction):
         if k.is_integer:
             return ff(n, k) / factorial(k)
 
-    def _eval_is_integer(self):
+    def _eval_is_finite(self):
         n, k = self.args
-        if n.is_integer and k.is_integer:
+        return n.is_finite
+        
+    def _eval_is_zero(self):
+        n, k = self.args
+        if k.is_integer:
+            if n.is_integer:
+                if n >= k:
+                    return False
+            if n.is_integer is None:
+                return
+            return False
+
+    def _eval_is_extended_integer(self):
+        n, k = self.args
+        if n.is_extended_integer and k.is_extended_integer:
             return True
-        elif k.is_integer == False:
+        elif k.is_extended_integer == False:
+            return False
+
+    def _eval_is_extended_rational(self):
+        n, k = self.args
+        if n.is_extended_rational and k.is_extended_integer:
+            return True
+        elif k.is_extended_integer == False:
             return False
 
     def _eval_is_extended_real(self):
@@ -1074,6 +1096,11 @@ class Binomial(CombinatorialFunction):
                 return False
             elif k.is_even == False:
                 return True
+
+    def _eval_is_extended_complex(self):
+        n, k = self.args
+        if n.is_extended_complex and k.is_extended_complex:
+            return True
 
     def domain_nonzero(self, x):
         from sympy import Range, oo

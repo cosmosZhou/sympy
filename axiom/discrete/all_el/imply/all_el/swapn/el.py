@@ -10,7 +10,7 @@ def apply(given):
     assert x == _x
     assert __k == k == _k == ___k
 
-    (_n, __i, __j), (_j, *j_limits), (_i, *i_limits) = w.definition.of(Lamda[Swap])
+    (_n, __i, __j), (_j, *j_limits), (_i, *i_limits) = w.definition.of(Lamda[SwapMatrix])
 
     if j_limits:
         zero, n_1 = j_limits
@@ -38,7 +38,7 @@ def prove(Eq):
     S = Symbol(etype=dtype.integer * n)
     x = Symbol(**S.element_symbol().type.dict)
     i, j, k = Symbol(integer=True)
-    w = Symbol(Lamda[j, i](Swap(n, i, j)))
+    w = Symbol(Lamda[j, i](SwapMatrix(n, i, j)))
     Eq.swap, Eq.P_definition, Eq.w_definition, Eq.axiom = apply(All[x:S](Element(Lamda[k:n](x[(w[i, j] @ Lamda[k:n](k))[k]]), S)))
 
     Eq << discrete.lamda_indexed.to.matmul.swap.apply(x, w)

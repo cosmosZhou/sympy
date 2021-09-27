@@ -48,9 +48,11 @@ def prove(Eq):
     Eq.Re_is_zero = algebra.square_is_zero.imply.is_zero.real.apply(Eq[-1])
 
     Eq << algebra.expr.to.add.complex.apply(x)
+
     Eq << Eq[-1].subs(Eq.Im_is_zero, Eq.Re_is_zero)
 
 
 if __name__ == '__main__':
     run()
+    
 from . import real

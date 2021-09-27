@@ -7,7 +7,7 @@ def of_limited(given, **kwargs):
 
     expr, *limits = limit.of(Limit)
     if kwargs.get('real'):
-        assert R.is_UniversalSet
+        assert R == Interval(-oo, oo)
         return (expr, *limits)
 
     if kwargs.get('nonzero'):
@@ -22,6 +22,10 @@ def of_limited(given, **kwargs):
         assert R == Interval(0, oo, left_open=True)
         return (expr, *limits)
 
+    if kwargs.get('extended_real'):
+        assert R in Interval(-oo, oo, left_open=False, right_open=False)
+        return (expr, *limits)
+    
     return (expr, *limits, R)
 
 
@@ -39,25 +43,19 @@ def apply(given, ε=None, δ=None):
 
 @prove
 def prove(Eq):
-    from axiom import calculus, sets
+    from axiom import sets, calculus
+
     n = Symbol(integer=True, positive=True)
-
     x, x0, a = Symbol(real=True)
-#     x = Symbol.x(real=True, shape=(n,))
+    #x = Symbol.x(real=True, shape=(n,))
     x = Symbol(integer=True)
-
     f = Function(real=True, shape=())
-
-#     x0 = Symbol.x0(real=True, shape=(n,))
-
+    #x0 = Symbol.x0(real=True, shape=(n,))
     x0 = oo
-#     x0 = -oo
-
-#     a = oo
-#     a = -oo
-
+    #x0 = -oo
+    #a = oo
+    #a = -oo
     direction = 1
-
     Eq << apply(Element(Limit[x:x0:direction](f(x)), Reals))
 
     Eq << sets.el.imply.any_eq.apply(Eq[0], var='A')

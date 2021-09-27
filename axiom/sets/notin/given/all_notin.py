@@ -20,7 +20,7 @@ def prove(Eq):
 
     Eq << ~Eq[0]
 
-    Eq << sets.el.imply.any_el.st.cup.apply(Eq[-1], simplify=None)
+    Eq << sets.el_cup.imply.any_el.apply(Eq[-1], simplify=None)
 
     Eq << ~Eq[-1]
 

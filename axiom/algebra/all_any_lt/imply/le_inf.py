@@ -11,10 +11,18 @@ def apply(given):
 
 @prove
 def prove(Eq):
-    M0 = Symbol(real=True, given=True)
-    M, x, a, b = Symbol(real=True)
+    from axiom import algebra
+
+    M0, a, b = Symbol(real=True, given=True)
+    M, x = Symbol(real=True)
     f = Function(real=True)
     Eq << apply(All[M:Interval(M0, oo, left_open=True)](Any[x:a:b](f(x) < M)))
+
+    Eq << ~Eq[1]
+
+    Eq << algebra.gt_inf.imply.any_all_ge.apply(Eq[-1])
+
+    Eq << ~Eq[-1]
 
 
 if __name__ == '__main__':

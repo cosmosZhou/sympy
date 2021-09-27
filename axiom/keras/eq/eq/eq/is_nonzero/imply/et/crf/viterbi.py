@@ -25,7 +25,6 @@ def apply(x_independence_assumption, y_independence_assumption, xy_independence_
     x_quote = Symbol(Lamda[y[t], t](Minima[y[:t]](s[t])))
     assert x_quote.shape == (n, d)
 
-    assert x_quote.is_real
     return Suffice(t > 0, Equal(x_quote[t], x[t] + ReducedMin(x_quote[t - 1] + G))), \
         Equal(Maxima[y](joint_probability), exp(-ReducedMin(x_quote[n - 1])))
 

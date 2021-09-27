@@ -6,13 +6,14 @@ def apply(x):
     return Greater(Floor(x), x - 1)
 
 
-@prove
+@prove(provable=False)
 def prove(Eq):
     from axiom import algebra, sets
 
     x = Symbol(real=True, given=True)
     Eq << apply(x)
 
+    return
     Eq << algebra.floor.to.maxima.apply(Eq[0].lhs)
 
     y = Symbol(Eq[1].lhs)

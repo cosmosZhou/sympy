@@ -101,7 +101,7 @@ def prove(Eq):
 
     Eq << Eq[-1].this.expr.subs(Eq[-1].expr.variable, Eq[-1].variable)
 
-    Eq << Eq[-1].this.expr.apply(sets.el.imply.any_el.st.cup)
+    Eq << Eq[-1].this.expr.apply(sets.el_cup.imply.any_el)
 
     Eq << Eq[-1].this.expr.subs(Eq.x_quote_definition)
 

@@ -5,3 +5,4 @@ from . import insert
 from . import invert
 from . import merge
 from . import split
+from . import negate

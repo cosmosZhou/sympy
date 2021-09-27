@@ -39,7 +39,7 @@ def prove(Eq):
     delta1 = Symbol(positive=True)
     Eq << calculus.eq.el.imply.any_all.lt.half.apply(Eq.is_limited, Eq.is_nonzero_real, delta=delta1)
 
-    Eq.A_is_positive = sets.el.imply.is_positive.card.apply(Eq.is_nonzero_real)
+    Eq.A_is_positive = sets.is_nonzero_real.imply.abs_is_positive.apply(Eq.is_nonzero_real)
 
     Eq << algebra.cond.any_all.imply.any_all_et.apply(Eq.A_is_positive / 2, Eq[-1])
 
@@ -70,7 +70,7 @@ def prove(Eq):
     epsilon, delta = Symbol(positive=True)
     Eq << algebra.cond.imply.ou.subs.apply(Eq[-1], epsilon0, abs(A) ** 2 / 2 * epsilon)
 
-    Eq << algebra.is_positive.imply.is_positive.square.apply(Eq.A_is_positive) * epsilon / 2
+    Eq << algebra.is_positive.imply.square_is_positive.apply(Eq.A_is_positive) * epsilon / 2
 
     Eq << algebra.cond.ou.imply.cond.apply(Eq[-1], Eq[-2])
 

@@ -1,0 +1,34 @@
+from util import *
+
+
+@apply
+def apply(contains):
+    x, domain = contains.of(Element)
+    a, b = domain.of(Interval)
+    assert a >= 0
+    return Element(sqrt(x), domain.copy(start=sqrt(a), stop=sqrt(b)))
+
+
+@prove
+def prove(Eq):
+    from axiom import sets, algebra
+
+    x = Symbol(real=True)
+    a, b = Symbol(real=True, nonnegative=True)
+    Eq << apply(Element(x, Interval(a, b, right_open=True)))
+
+    Eq << sets.el.given.et.split.interval.apply(Eq[1])
+
+    Eq << sets.el.imply.et.split.interval.apply(Eq[0])
+
+    Eq << algebra.ge.imply.ge.sqrt.apply(Eq[-2])
+
+    Eq << algebra.ge.imply.ge.relax.apply(Eq[-2], lower=0)
+
+    Eq << algebra.is_nonnegative.lt.imply.lt.sqrt.apply(Eq[-1], Eq[-2])
+
+
+if __name__ == '__main__':
+    run()
+
+from . import max

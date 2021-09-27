@@ -2,15 +2,17 @@ from util import *
 
 
 @apply
-def apply(is_positive_x, strict_less_than):
-    x = is_positive_x.of(Expr < 0)
-    lhs, rhs = strict_less_than.of(GreaterEqual)
+def apply(is_negative, ge):
+    x = is_negative.of(Expr < 0)
+    #assert x.is_finite
+    lhs, rhs = ge.of(GreaterEqual)
     return LessEqual(lhs / x, rhs / x)
 
 
 @prove
 def prove(Eq):
     from axiom import algebra
+
     x, a, b = Symbol(real=True)
     Eq << apply(x < 0, a >= b)
 

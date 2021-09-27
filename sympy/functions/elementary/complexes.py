@@ -561,8 +561,8 @@ class Abs(Function):
             q = exponent.q
             if x.is_Pow:
                 b, e = x.args
-                if not e % q: 
-                    x = b ** (e / q)
+                if q > 1 and not e % q: 
+                    x = b ** (e / q)                    
                     return abs(x) ** exponent.p
             elif x.is_Mul:
                 args = []
@@ -881,6 +881,39 @@ class Conjugate(Function):
     def _eval_is_algebraic(self):
         return self.args[0].is_algebraic
 
+    def _eval_is_finite(self):
+        return self.arg.is_finite
+    
+    def _eval_is_extended_integer(self):
+        return self.arg.is_extended_integer
+    
+    def _eval_is_super_integer(self):
+        return self.arg.is_super_integer
+    
+    def _eval_is_extended_rational(self):
+        return self.arg.is_extended_rational
+    
+    def _eval_is_hyper_rational(self):
+        return self.arg.is_hyper_rational
+    
+    def _eval_is_super_rational(self):
+        return self.arg.is_super_rational
+    
+    def _eval_is_extended_real(self):
+        return self.arg.is_extended_real
+    
+    def _eval_is_hyper_real(self):
+        return self.arg.is_hyper_real
+    
+    def _eval_is_super_real(self):
+        return self.arg.is_super_real
+    
+    def _eval_is_extended_complex(self):
+        return self.arg.is_extended_complex
+    
+    def _eval_is_hyper_complex(self):
+        return self.arg.is_hyper_complex
+    
     def _latex(self, p, exp=None):
         tex = r"\overline{%s}" % p._print(self.args[0])
 
@@ -889,6 +922,13 @@ class Conjugate(Function):
         else:
             return tex
 
+    def _sympystr(self, p):
+        x = self.arg
+        
+        s = p._print(x)
+        if x.is_AssocOp or x.is_MatMul:
+            s = "(%s)" % s
+        return "~%s" % s
 
 conjugate = Conjugate
 
