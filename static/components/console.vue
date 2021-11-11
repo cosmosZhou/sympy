@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<template v-if=location.search>
+		<template v-if=readonly>
 			this document is readonly, trying to edit it will cause the page to jump to 
 			<a :href=interactive_href>interactive python console</a>
 		</template>
@@ -14,8 +14,8 @@
 			Display style
 		</label>
 		<br>
-		<console-statement ref=input v-for="statement of statements" :script=statement.script :latex=statement.latex>
-		</console-statement>
+		<consoleStatement ref=input v-for="statement of statements" :script=statement.script :latex=statement.latex>
+		</consoleStatement>
 	</div>
 </template>
 
@@ -37,6 +37,10 @@ export default {
 			var port = 5000;
 			var symbol = location.search.match(/\?symbol=(\w+)/)[1];
 			return `${location.origin}:${port}/${symbol}`;				
+		},
+		
+		readonly(){
+			return location.search;
 		},
 	},
 	

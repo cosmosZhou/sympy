@@ -1,5 +1,5 @@
 from util import MySQL
-from console import compile_definition_statement
+from blueprint.debug import extract_latex, compile_definition_statement
 
 keywords = ['False', 'None', 'True', 
             'and', 'as', 'assert', 'abs',
@@ -106,9 +106,7 @@ if __name__ == '__main__':
     print(len(data))
     
     MySQL.instance.execute('delete from tbl_hint_py')
-    MySQL.instance.load_data('tbl_hint_py', data)
-    
-    from console import extract_latex
+    MySQL.instance.load_data('tbl_hint_py', data)    
     
     data = []
     __globals__ = globals()
@@ -128,10 +126,10 @@ if __name__ == '__main__':
         print(datum)
         data.append(datum) 
             
-    MySQL.instance.execute('delete from tbl_console_py')
+    MySQL.instance.execute('delete from tbl_debug_py')
     
     print('len(data) =', len(data))
-    MySQL.instance.load_data('tbl_console_py', data)
+    MySQL.instance.load_data('tbl_debug_py', data)
 
 
 # exec(open('./util/hint.py').read())

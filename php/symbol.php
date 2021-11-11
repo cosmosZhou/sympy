@@ -5,7 +5,7 @@ require_once 'mysql.php';
 $symbol = $_GET["symbol"];
 
 // list (list ($script, $latex)) = iterator_to_array();
-foreach (\mysql\select("select script, latex from tbl_console_py where symbol = '$symbol'") as list ($script, $latex)) {
+foreach (\mysql\select("select script, latex from tbl_debug_py where symbol = '$symbol'") as list ($script, $latex)) {
     error_log("script = " . \std\jsonify($script));
     error_log("latex = " . \std\jsonify($latex));
     $latex = trim($latex);
