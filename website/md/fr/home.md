@@ -104,9 +104,6 @@ et preuve partielle de KMeans
 Ce nouveau système de démonstration de théorème axiomatisé semi-mécanisé peut simplifier les étapes de raisonnement dans l’analyse mathématique, atteignant ainsi l’idéal de « brancher les dynamos de la pensée ». Le chercheur n’a qu’à maîtriser le macro squelette du raisonnement, laissant le calcul détaillé à l’ordinateur. Il peut être appliqué pour la preuve mathématique théorique, ce qui peut être utile pour fournir une référence ou des conseils au cours de l’analyse mathématique pour les ingénieurs en algorithmes, chercheurs dans leurs travaux de recherche. Il peut également être utilisé pour les chercheurs en mathématiques pour gérer et éditer leurs articles théoriques, sans avoir besoin d’édition manuelle de formules mathématiques puisque l’impression au latex est automatiquement générée par programmation. On peut même utiliser l’environnement de développement intégré (IDE) en ligne pour [Python] (https://www.python.org/) pour éditer les théorèmes mathématiques afin de terminer les travaux de recherche théorique. L’IDE [Python] (https://www.python.org/) en ligne fournit un puissant raccourci clavier F3 permettant aux utilisateurs de localiser instantanément la définition de n’importe quel symbole ou fonction. Il est d’une utilité pratique pour la recherche théorique, la recherche industrielle ou à des fins pédagogiques. Il s’agit d’un ouvrage de référence en ligne pour les théorèmes mathématiques et les modèles algorithmiques pour l’industrie.
 <br><br>
 
-
-<script	src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-
-<script>
-	$('#count').load("/sympy/php/request/count.php");
+<script type=module>
+	$('#count').innerHTML = await get("/sympy/php/request/count.php");
 </script>

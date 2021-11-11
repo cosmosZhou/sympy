@@ -68,6 +68,21 @@ String.prototype.format = function() {
 	);
 };
 
+String.prototype.transform = function(regex, transformer){
+	var newText = [];
+	var start = 0;
+	
+	for (let m of this.matchAll(regex)){
+	    newText.push(this.slice(start, m.index));
+	    newText.push(transformer(m));
+	    
+	    start = m.index + m[0].length;
+	}
+	
+	newText.push(this.slice(start));
+	return newText.join('');
+}
+
 String.prototype.capitalize = function() {
 	return this[0].toUpperCase() + this.slice(1).toLowerCase();
 };

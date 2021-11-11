@@ -213,21 +213,22 @@ var url = `/sympy/website/md/<?php echo "$lang/$section.md" ?>`;
 
 var text = await get(url);
 url = url.slice(0, -3);
-var newText = [];
-var start = 0;
-for (let m of text.matchAll(/(?<=\n)!\[(.+)\]\((.+)\)/g)){            	
+
+text = text.transform(/(?<=\n)!\[(.+)\]\((.+)\)/g, (m)=>{
 	var title = m[1];            	
 	var address = url + m[2].match(/[^\/]+(\/.+)/)[1];
-	var link = `![${title}](${address})`;
-	console.log(link);
+	return `![${title}](${address})`;
+});
 
-	newText.push(text.slice(start, m.index));
-	newText.push(link);
-	start = m.index + m[0].length;
-}
+text = text.transform(/<script( type=module)?>([\s\S]*)<\/script>/g, (m)=>{
+    var script = m[2];    
+    if (m[1])
+        script = `(async function(){${script}})();`;
 
-newText.push(text.slice(start));
-text = newText.join('');
+    console.log('eval: ', script);
+    setTimeout(()=>eval(script), 100);
+    return '';
+});
 
 $("#content").innerHTML = marked.marked(text);
 

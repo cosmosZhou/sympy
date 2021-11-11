@@ -97,8 +97,6 @@ extended_integer ⊂ extended_rational ⊂ [extended_real](https://en.wikipedia.
 [<font size=2>浙公网安备33060202000937号</font>](http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=33060202000937)
 [<font size=2>浙ICP备20017509号-3</font>](https://beian.miit.gov.cn/)
 
-<script	src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-
-<script>
-	$('#count').load("/sympy/php/request/count.php");
+<script type=module>
+	$('#count').innerHTML = await get("/sympy/php/request/count.php");
 </script>
